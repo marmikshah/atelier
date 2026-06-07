@@ -1028,6 +1028,203 @@ fn base64(bytes: &[u8]) -> String {
     out
 }
 
+// --- prompts ---------------------------------------------------------------
+
+use rmcp::model::{
+    GetPromptRequestParams, GetPromptResult, ListPromptsResult, Prompt, PromptArgument,
+    PromptMessage, PromptMessageRole,
+};
+
+/// Looks up an argument value by name (None when absent — the builder defaults).
+type ArgLookup<'a> = dyn Fn(&str) -> Option<String> + 'a;
+
+/// One packaged workflow: its name, what it does, the args it takes (name +
+/// whether required), and a builder that fills the template from those args.
+struct PromptSpec {
+    name: &'static str,
+    description: &'static str,
+    /// (arg name, description, required) — advertised verbatim as the schema.
+    args: &'static [(&'static str, &'static str, bool)],
+    /// Tool names the rendered text names verbatim; the drift test asserts each
+    /// appears in the text AND in the live tool list.
+    #[cfg_attr(not(test), allow(dead_code))]
+    tools: &'static [&'static str],
+    /// Render the prompt text from the looked-up argument values.
+    build: fn(&ArgLookup) -> String,
+}
+
+/// Look up an argument from the request's object, defaulting when absent so an
+/// optional arg still substitutes cleanly into the template.
+fn arg<'a>(args: &'a Option<serde_json::Map<String, Value>>, key: &str) -> Option<&'a str> {
+    args.as_ref()?.get(key)?.as_str()
+}
+
+/// The three shipped workflows. Each `build` emits ordered, numbered steps with
+/// tool names written verbatim — the get_prompt drift test checks every name
+/// here against the live tool list.
+const PROMPTS: &[PromptSpec] = &[
+    PromptSpec {
+        name: "pixel-sprite",
+        description:
+            "Draw a single pixel-art sprite the right way: lock a ramp, paint, LOOK, audit.",
+        args: &[
+            ("subject", "What to draw, e.g. \"a knight\".", true),
+            ("size", "Canvas size in pixels (default 32).", false),
+            (
+                "palette_hint",
+                "Colour direction, e.g. \"cool steel\".",
+                false,
+            ),
+        ],
+        tools: &[
+            "doc_create",
+            "palette_ramp",
+            "doc_set_palette",
+            "doc_rect",
+            "doc_ellipse",
+            "doc_polygon",
+            "doc_pencil",
+            "doc_line",
+            "doc_batch",
+            "doc_render",
+            "doc_shade",
+            "doc_pixel_perfect",
+            "doc_silhouette",
+            "doc_components",
+            "doc_palette_report",
+            "doc_export_sheet",
+        ],
+        build: |g| {
+            let subject = g("subject").unwrap_or_else(|| "a sprite".into());
+            let size = g("size").unwrap_or_else(|| "32".into());
+            let palette = g("palette_hint").unwrap_or_else(|| "your choice".into());
+            format!(
+                "Draw a pixel-art sprite of {subject} on a {size}x{size} canvas (palette: {palette}).\n\
+                 1. doc_create a {size}x{size} document.\n\
+                 2. palette_ramp a base colour into shades, then doc_set_palette to LOCK the ramp.\n\
+                 3. Block the silhouette with doc_rect / doc_ellipse / doc_polygon.\n\
+                 4. Paint detail with doc_pencil / doc_line, or doc_batch many ops in one call.\n\
+                 5. doc_render after every burst and LOOK at the PNG before continuing.\n\
+                 6. Shade with doc_shade and clean strokes with doc_pixel_perfect.\n\
+                 7. Audit shape: doc_silhouette (readable bbox/fill) and doc_components (no stray specks).\n\
+                 8. Audit colour: doc_palette_report (every colour in_palette, no near-dupes).\n\
+                 9. Fix what the audits flag, then doc_render once more to confirm.\n\
+                 10. doc_export_sheet the finished sprite to a PNG.\n\
+                 Iterate 3-9 until the sprite reads cleanly at 1x."
+            )
+        },
+    },
+    PromptSpec {
+        name: "walk-cycle",
+        description:
+            "Animate a 4-pose walk cycle: reuse frames, change only what moves, verify spacing.",
+        args: &[
+            ("character", "Who walks, e.g. \"the knight\".", true),
+            (
+                "frames",
+                "Total frames (default 4: contact/down/passing/up).",
+                false,
+            ),
+        ],
+        tools: &[
+            "doc_add_frame",
+            "doc_pencil",
+            "doc_move_region",
+            "doc_render",
+            "doc_frame_diff",
+            "doc_anim_audit",
+            "doc_add_tag",
+            "doc_export_gif",
+        ],
+        build: |g| {
+            let character = g("character").unwrap_or_else(|| "the character".into());
+            let frames = g("frames").unwrap_or_else(|| "4".into());
+            format!(
+                "Animate a {frames}-frame walk cycle for {character}.\n\
+                 1. Start from a finished standing pose on frame 0 (use the pixel-sprite flow first).\n\
+                 2. The cycle is contact -> down -> passing -> up; plan those {frames} poses.\n\
+                 3. doc_add_frame with copy_from the previous frame so each pose starts from the last.\n\
+                 4. Repaint ONLY what changes per pose (legs, arms) with doc_pencil / doc_move_region.\n\
+                 5. doc_render every frame and LOOK; use doc_render onion=true to check overlap.\n\
+                 6. Verify each adjacent pair with doc_frame_diff (only the limbs should change).\n\
+                 7. doc_anim_audit mode=\"spacing\" — the per-frame motion must be even, low drift.\n\
+                 8. doc_add_tag the range and doc_anim_audit mode=\"seam\" so the loop wrap is clean.\n\
+                 9. Fix any uneven frame, re-diff, re-audit.\n\
+                 10. doc_export_gif the tagged loop.\n\
+                 Iterate 4-9 until the walk reads smoothly."
+            )
+        },
+    },
+    PromptSpec {
+        name: "seamless-tile",
+        description: "Paint a seamless tile: wrap edges, prove the seam is zero, eyeball the grid.",
+        args: &[
+            ("material", "What to tile, e.g. \"grass\".", true),
+            ("size", "Tile size in pixels (default 32).", false),
+        ],
+        tools: &[
+            "doc_create",
+            "doc_set_palette",
+            "doc_fill_cel",
+            "doc_noise",
+            "doc_scatter",
+            "doc_render",
+            "doc_shift",
+            "doc_seam_report",
+            "doc_palette_report",
+            "doc_export_sheet",
+        ],
+        build: |g| {
+            let material = g("material").unwrap_or_else(|| "the material".into());
+            let size = g("size").unwrap_or_else(|| "32".into());
+            format!(
+                "Paint a seamless {size}x{size} {material} tile.\n\
+                 1. doc_create a {size}x{size} document and doc_set_palette to lock the colours.\n\
+                 2. Fill the base with doc_fill_cel, then texture with doc_noise / doc_scatter.\n\
+                 3. doc_render to LOOK at the raw tile.\n\
+                 4. doc_shift wrap=true to roll the seam into the middle, then paint over the join.\n\
+                 5. Use doc_shift wrap=true again to make detail variants without breaking edges.\n\
+                 6. doc_seam_report MUST return zero mismatches on both axes — fix until it does.\n\
+                 7. doc_render tile=2 and eyeball the 2x2 grid for any visible repeat or seam.\n\
+                 8. doc_palette_report to confirm the texture stayed on-palette.\n\
+                 9. Repeat 4-7 until the seam report is clean and the grid looks continuous.\n\
+                 10. doc_export_sheet the tile to a PNG.\n\
+                 The tile is done only when doc_seam_report is zero."
+            )
+        },
+    },
+];
+
+/// Build the advertised [`Prompt`] descriptors from [`PROMPTS`].
+fn prompt_specs() -> Vec<Prompt> {
+    PROMPTS
+        .iter()
+        .map(|p| {
+            let args = p
+                .args
+                .iter()
+                .map(|(name, desc, required)| {
+                    PromptArgument::new(*name)
+                        .with_description(*desc)
+                        .with_required(*required)
+                })
+                .collect();
+            Prompt::new(p.name, Some(p.description), Some(args))
+        })
+        .collect()
+}
+
+/// Render one prompt's filled text + description from request arguments, or None
+/// if the name is unknown (the caller maps that to an error).
+fn build_prompt(
+    name: &str,
+    args: &Option<serde_json::Map<String, Value>>,
+) -> Option<(String, String)> {
+    let spec = PROMPTS.iter().find(|p| p.name == name)?;
+    let get = |k: &str| arg(args, k).map(str::to_string);
+    Some(((spec.build)(&get), spec.description.to_string()))
+}
+
 // --- server ----------------------------------------------------------------
 
 #[derive(Clone)]
@@ -2108,11 +2305,36 @@ impl ServerHandler for Atelier {
         Ok(ReadResourceResult::new(vec![contents]))
     }
 
+    /// List the packaged workflow prompts (the draw -> render -> audit loop).
+    async fn list_prompts(
+        &self,
+        _request: Option<PaginatedRequestParams>,
+        _context: RequestContext<RoleServer>,
+    ) -> Result<ListPromptsResult, ErrorData> {
+        Ok(ListPromptsResult::with_all_items(prompt_specs()))
+    }
+
+    /// Fill one workflow prompt from its arguments. Unknown names become an
+    /// `invalid_params` error.
+    async fn get_prompt(
+        &self,
+        request: GetPromptRequestParams,
+        _context: RequestContext<RoleServer>,
+    ) -> Result<GetPromptResult, ErrorData> {
+        let (text, description) =
+            build_prompt(&request.name, &request.arguments).ok_or_else(|| {
+                ErrorData::invalid_params(format!("unknown prompt: {}", request.name), None)
+            })?;
+        let message = PromptMessage::new_text(PromptMessageRole::User, text);
+        Ok(GetPromptResult::new(vec![message]).with_description(description))
+    }
+
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
         info.capabilities = ServerCapabilities::builder()
             .enable_tools()
             .enable_resources()
+            .enable_prompts()
             .build();
         info.instructions = Some(
             "atelier: a headless pixel-art editor (Aseprite-as-API). doc_create a \
@@ -2345,5 +2567,95 @@ mod tests {
         assert!(y >= 2025, "year too small: {y}");
         assert!((1..=12).contains(&m), "month: {m}");
         assert!((1..=31).contains(&day), "day: {day}");
+    }
+
+    /// Build a `{name: value}` argument object the way a get_prompt request carries it.
+    fn args(pairs: &[(&str, &str)]) -> Option<serde_json::Map<String, Value>> {
+        Some(
+            pairs
+                .iter()
+                .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
+                .collect(),
+        )
+    }
+
+    #[test]
+    fn prompt_substitutes_args_and_falls_back() {
+        // Provided args (incl. an optional one) are substituted verbatim.
+        let (text, _) = build_prompt(
+            "pixel-sprite",
+            &args(&[
+                ("subject", "a knight"),
+                ("size", "48"),
+                ("palette_hint", "cool steel"),
+            ]),
+        )
+        .expect("known prompt");
+        assert!(text.contains("a knight"), "{text}");
+        assert!(text.contains("48x48"), "{text}");
+        assert!(text.contains("cool steel"), "{text}");
+
+        // Omitted optional args fall back to the template default (no `{size}` leaks).
+        let (text, _) = build_prompt("pixel-sprite", &args(&[("subject", "a slime")])).expect("ok");
+        assert!(text.contains("a slime"), "{text}");
+        assert!(text.contains("32x32"), "{text}");
+        assert!(
+            !text.contains('{') && !text.contains('}'),
+            "unfilled slot: {text}"
+        );
+
+        // Unknown prompt name is rejected.
+        assert!(build_prompt("nope", &None).is_none());
+    }
+
+    #[test]
+    fn every_prompt_references_real_tools() {
+        // The live tool list (the drift target).
+        let names: std::collections::HashSet<String> = Atelier::new()
+            .tool_router
+            .list_all()
+            .into_iter()
+            .map(|t| t.name.to_string())
+            .collect();
+
+        for spec in PROMPTS {
+            // Render with no args so we exercise every fallback branch too.
+            let text = (spec.build)(&|_| None);
+            for tool in spec.tools {
+                // Each declared tool name must actually exist...
+                assert!(
+                    names.contains(*tool),
+                    "prompt {} names missing tool {tool}",
+                    spec.name
+                );
+                // ...and must appear verbatim in the rendered guidance.
+                assert!(
+                    text.contains(tool),
+                    "prompt {} omits its declared tool {tool}",
+                    spec.name
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn prompt_specs_advertise_every_prompt() {
+        let specs = prompt_specs();
+        let names: Vec<&str> = specs.iter().map(|p| p.name.as_str()).collect();
+        assert!(names.contains(&"pixel-sprite"));
+        assert!(names.contains(&"walk-cycle"));
+        assert!(names.contains(&"seamless-tile"));
+        // Each carries a description and its required `subject`/`character`/`material` arg.
+        for p in &specs {
+            assert!(p.description.is_some(), "{} has no description", p.name);
+            let req = p
+                .arguments
+                .as_ref()
+                .expect("args advertised")
+                .iter()
+                .filter(|a| a.required == Some(true))
+                .count();
+            assert!(req >= 1, "{} advertises no required arg", p.name);
+        }
     }
 }
