@@ -685,6 +685,20 @@ pub struct DocSetPalette {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocPaletteSwap {
+    pub doc_id: String,
+    /// Source colours to recolour, each [r,g,b]/[r,g,b,a]. Matched exactly
+    /// (all channels). Same length as `to` — `from[i]` becomes `to[i]`.
+    pub from: Vec<Vec<i64>>,
+    /// Replacement colours, each [r,g,b]/[r,g,b,a]. Same length as `from`.
+    pub to: Vec<Vec<i64>>,
+    /// Restrict to one layer's cels; omit for every layer.
+    pub layer: Option<usize>,
+    /// Restrict to one frame's cels; omit for every frame.
+    pub frame: Option<usize>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocBatch {
     pub doc_id: String,
     pub layer: usize,
@@ -1773,6 +1787,17 @@ impl Atelier {
     async fn doc_set_palette(&self, Parameters(p): Parameters<DocSetPalette>) -> String {
         let colors: Vec<[u8; 4]> = p.colors.iter().map(|c| rgba(c)).collect();
         res(self.studio().doc_set_palette(&p.doc_id, colors))
+    }
+
+    #[tool(
+        description = "Recolour a whole document in one call: swap each `from[i]` colour to `to[i]` across every cel (exact match, all channels), updating the stored palette too. `from`/`to` are equal-length lists of [r,g,b]/[r,g,b,a]. Optional `layer`/`frame` restrict scope. The recolour-variant workflow (one sprite, many palettes). Returns {changed}."
+    )]
+    async fn doc_palette_swap(&self, Parameters(p): Parameters<DocPaletteSwap>) -> String {
+        let from: Vec<[u8; 4]> = p.from.iter().map(|c| rgba(c)).collect();
+        let to: Vec<[u8; 4]> = p.to.iter().map(|c| rgba(c)).collect();
+        res(self
+            .studio()
+            .doc_palette_swap(&p.doc_id, from, to, p.layer, p.frame))
     }
 
     #[tool(

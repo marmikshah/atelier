@@ -293,6 +293,38 @@ impl Document {
         self.meta.palette = colors;
     }
 
+    /// Swap a set of colours across the whole document in one pass — the
+    /// recolour-variant workflow (one sprite, many palettes). For every cel
+    /// (filtered by optional `layer`/`frame`), every pixel matching a `from`
+    /// exactly (all 4 channels) becomes its `to`; stored palette entries that
+    /// match a `from` are updated too. Returns the count of pixels changed.
+    pub fn palette_swap(
+        &mut self,
+        pairs: &[([u8; 4], [u8; 4])],
+        layer: Option<usize>,
+        frame: Option<usize>,
+    ) -> u32 {
+        let mut changed = 0;
+        for ((l, f), (_x, _y, img)) in self.cels.iter_mut() {
+            if layer.is_some_and(|sel| sel != *l) || frame.is_some_and(|sel| sel != *f) {
+                continue;
+            }
+            for p in img.pixels_mut() {
+                if let Some((_, to)) = pairs.iter().find(|(from, _)| p.0 == *from) {
+                    *p = Rgba(*to);
+                    changed += 1;
+                }
+            }
+        }
+        // Keep the stored palette consistent with the recolour.
+        for c in self.meta.palette.iter_mut() {
+            if let Some((_, to)) = pairs.iter().find(|(from, _)| *c == *from) {
+                *c = *to;
+            }
+        }
+        changed
+    }
+
     /// JSON snapshot of the document structure (layers, frames, tags, cels,
     /// palette) for inspection — no pixel data.
     pub fn structure(&self) -> Value {

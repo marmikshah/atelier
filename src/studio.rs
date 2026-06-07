@@ -1278,6 +1278,27 @@ impl Studio {
         Ok(out)
     }
 
+    /// Recolour paired `from`→`to` colours across the whole document (one sprite,
+    /// many palettes) in a single open→save cycle, also updating the stored
+    /// palette. `from`/`to` must be the same non-empty length.
+    pub fn doc_palette_swap(
+        &self,
+        id: &str,
+        from: Vec<[u8; 4]>,
+        to: Vec<[u8; 4]>,
+        layer: Option<usize>,
+        frame: Option<usize>,
+    ) -> Result<Value, String> {
+        if from.is_empty() || from.len() != to.len() {
+            return Err("from/to must be non-empty and the same length".into());
+        }
+        let pairs: Vec<([u8; 4], [u8; 4])> = from.into_iter().zip(to).collect();
+        let (dir, mut doc) = self.open(id)?;
+        let changed = doc.palette_swap(&pairs, layer, frame);
+        doc.save(&dir)?;
+        Ok(json!({"doc_id": id, "changed": changed}))
+    }
+
     /// Apply many ordered drawing ops to one cel in a single open→save cycle.
     pub fn doc_batch(
         &self,
@@ -1644,5 +1665,57 @@ mod tests {
         assert_eq!(meta["count"], 3); // 2 + 1 frames
         assert!(out.exists());
         assert!(out.with_extension("json").exists());
+    }
+
+    #[test]
+    fn palette_swap_recolours_across_frames_and_updates_palette() {
+        let s = studio("palswap");
+        s.doc_create("d", 8, 8).unwrap();
+        s.doc_add_frame("d", 100, None).unwrap(); // two frames
+        let red = [200, 0, 0, 255];
+        let blue = [0, 0, 200, 255];
+        // paint the same source colour into both frames, plus lock it as palette
+        s.doc_pencil("d", 0, 0, vec![(1, 1)], red, 1).unwrap();
+        s.doc_pencil("d", 0, 1, vec![(2, 2)], red, 1).unwrap();
+        s.doc_set_palette("d", vec![red]).unwrap();
+        let out = s
+            .doc_palette_swap("d", vec![red], vec![blue], None, None)
+            .unwrap();
+        assert_eq!(out["changed"], json!(2)); // one pixel per frame
+        assert_eq!(px(&s, "d", 0, 0, 1, 1), blue);
+        assert_eq!(px(&s, "d", 0, 1, 2, 2), blue);
+        // the stored palette entry tracked the swap
+        assert_eq!(s.doc_info("d").unwrap()["palette"][0], json!(blue));
+    }
+
+    #[test]
+    fn palette_swap_layer_filter_limits_scope() {
+        let s = studio("palswaplayer");
+        s.doc_create("d", 8, 8).unwrap();
+        s.doc_add_layer("d", None, 255, "normal".into()).unwrap(); // layer 1
+        let red = [200, 0, 0, 255];
+        let blue = [0, 0, 200, 255];
+        s.doc_pencil("d", 0, 0, vec![(1, 1)], red, 1).unwrap(); // layer 0
+        s.doc_pencil("d", 1, 0, vec![(2, 2)], red, 1).unwrap(); // layer 1
+        let out = s
+            .doc_palette_swap("d", vec![red], vec![blue], Some(0), None)
+            .unwrap();
+        assert_eq!(out["changed"], json!(1)); // only layer 0 touched
+        assert_eq!(px(&s, "d", 0, 0, 1, 1), blue);
+        assert_eq!(px(&s, "d", 1, 0, 2, 2), red); // layer 1 untouched
+    }
+
+    #[test]
+    fn palette_swap_rejects_mismatched_lengths() {
+        let s = studio("palswapbad");
+        s.doc_create("d", 8, 8).unwrap();
+        let red = [200, 0, 0, 255];
+        // one `from`, two `to` → error
+        assert!(s
+            .doc_palette_swap("d", vec![red], vec![red, red], None, None)
+            .unwrap_err()
+            .contains("same length"));
+        // empty lists → error
+        assert!(s.doc_palette_swap("d", vec![], vec![], None, None).is_err());
     }
 }
