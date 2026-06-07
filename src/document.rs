@@ -1738,6 +1738,170 @@ impl Document {
         }
         Ok(pal)
     }
+
+    /// Insert `steps` cross-faded (dissolve) in-between frames after frame
+    /// `from`, interpolating every layer toward frame `to`. Reindexes later cels.
+    pub fn tween(
+        &mut self,
+        from: usize,
+        to: usize,
+        steps: usize,
+        duration_ms: u32,
+    ) -> Result<usize, String> {
+        let n = self.meta.frames.len();
+        if from >= n || to >= n {
+            return Err(format!(
+                "tween frames {}->{} out of range (frames={})",
+                from, to, n
+            ));
+        }
+        if to <= from {
+            return Err("tween requires to > from".into());
+        }
+        let steps = steps.max(1);
+        let insert_at = from + 1;
+        // Capture full-canvas source/target images per layer before reindexing.
+        let nl = self.meta.layers.len();
+        let pairs: Vec<(RgbaImage, RgbaImage)> = (0..nl)
+            .map(|l| (self.cel_full(l, from), self.cel_full(l, to)))
+            .collect();
+        // Shift cels at/after the insertion point up by `steps`.
+        let keys: Vec<(usize, usize)> = self
+            .cels
+            .keys()
+            .filter(|k| k.1 >= insert_at)
+            .cloned()
+            .collect();
+        let mut moved = Vec::new();
+        for k in keys {
+            let v = self.cels.remove(&k).unwrap();
+            moved.push(((k.0, k.1 + steps), v));
+        }
+        self.cels.extend(moved);
+        // Insert frame metadata.
+        for i in 0..steps {
+            self.meta.frames.insert(
+                insert_at + i,
+                FrameMeta {
+                    duration_ms,
+                    pivot: None,
+                },
+            );
+        }
+        // Build cross-fade cels.
+        let (w, h) = (self.meta.w, self.meta.h);
+        for s in 1..=steps {
+            let t = s as f32 / (steps + 1) as f32;
+            let fidx = insert_at + (s - 1);
+            for (l, (a, b)) in pairs.iter().enumerate() {
+                let mut img = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
+                for y in 0..h {
+                    for x in 0..w {
+                        let pa = a.get_pixel(x, y).0;
+                        let pb = b.get_pixel(x, y).0;
+                        let mix = |i: usize| {
+                            (pa[i] as f32 + (pb[i] as f32 - pa[i] as f32) * t)
+                                .round()
+                                .clamp(0.0, 255.0) as u8
+                        };
+                        img.put_pixel(x, y, Rgba([mix(0), mix(1), mix(2), mix(3)]));
+                    }
+                }
+                self.cels.insert((l, fidx), (0, 0, img));
+            }
+        }
+        Ok(steps)
+    }
+
+    /// Resolve the ordered frame indices to *play*. With `tag`, honour that
+    /// tag's `[from,to]` range and direction; without one, play the whole
+    /// timeline forward. `reverse` plays high→low. `pingpong` plays forward
+    /// then back over the inner frames only (endpoints not duplicated) so a
+    /// looping playback doesn't stutter on the turn-around frames.
+    pub fn play_sequence(&self, tag: Option<&str>) -> Result<Vec<usize>, String> {
+        if self.meta.frames.is_empty() {
+            return Ok(vec![]);
+        }
+        let (from, to, dir) = match tag {
+            Some(name) => {
+                let t = self
+                    .meta
+                    .tags
+                    .iter()
+                    .find(|t| t.name == name)
+                    .ok_or_else(|| format!("no tag '{}'", name))?;
+                (t.from, t.to, t.direction.as_str())
+            }
+            None => (0, self.meta.frames.len() - 1, "forward"),
+        };
+        // Clamp defensively in case a tag references frames since removed.
+        let last = self.meta.frames.len() - 1;
+        let (from, to) = (from.min(last), to.min(last));
+        let fwd: Vec<usize> = (from..=to).collect();
+        let seq = match dir {
+            "reverse" => fwd.into_iter().rev().collect(),
+            "pingpong" => {
+                let mut s = fwd;
+                if to > from + 1 {
+                    s.extend((from + 1..to).rev()); // inner frames, no dup of endpoints
+                }
+                s
+            }
+            _ => fwd, // "forward" and any unknown direction
+        };
+        Ok(seq)
+    }
+
+    /// Eased multi-frame region motion. `from_frame`'s region content is the
+    /// source; for each frame f in (from, to] it is stamped (source-over) at the
+    /// eased offset `(round(dx*t), round(dy*t))`, where t advances from 0→1 over
+    /// the span shaped by `easing`. With `clear_source` the ORIGINAL region rect
+    /// is cleared in each destination frame first (so a moved limb leaves no
+    /// stale copy behind). `from_frame` itself is never touched. Reuses the
+    /// region copy/clear/paste clipboard internals. Returns the per-frame applied
+    /// offsets `[[dx,dy], ...]`.
+    pub fn keyframe_move(
+        &mut self,
+        layer: usize,
+        region: (i32, i32, i32, i32),
+        from_frame: usize,
+        to_frame: usize,
+        dx: i32,
+        dy: i32,
+        easing: &str,
+        clear_source: bool,
+    ) -> Result<Vec<[i32; 2]>, String> {
+        if to_frame <= from_frame {
+            return Err("keyframe_move needs to_frame > from_frame".into());
+        }
+        let n = self.meta.frames.len();
+        if to_frame >= n {
+            return Err(format!(
+                "frame {} does not exist (frames={}) — add it with doc_add_frame first",
+                to_frame, n
+            ));
+        }
+        // Snapshot the source region content once, from the start keyframe. The
+        // anchored top-left is where it gets re-stamped (clamped like copy_region).
+        let (x0, y0, x1, y1) = region;
+        let (rw, rh, buf) = self.copy_region(layer, from_frame, x0, y0, x1, y1)?;
+        let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
+        let span = (to_frame - from_frame) as f32;
+        let mut offsets: Vec<[i32; 2]> = Vec::new();
+        for f in (from_frame + 1)..=to_frame {
+            let t = raster::ease((f - from_frame) as f32 / span, easing);
+            let (ox, oy) = (
+                (dx as f32 * t).round() as i32,
+                (dy as f32 * t).round() as i32,
+            );
+            if clear_source {
+                self.clear_region(layer, f, x0, y0, x1, y1)?;
+            }
+            self.paste_region(layer, f, ax + ox, ay + oy, rw, rh, &buf, true)?;
+            offsets.push([ox, oy]);
+        }
+        Ok(offsets)
+    }
 }
 
 #[cfg(test)]
@@ -2123,5 +2287,80 @@ mod tests {
             "expected green-dominant, got {:?}",
             p
         );
+    }
+
+    fn doc_with_frames(n: usize) -> Document {
+        let mut d = Document::new("t", 4, 4);
+        while d.meta.frames.len() < n {
+            d.add_frame(100, None);
+        }
+        d
+    }
+
+    #[test]
+    fn no_tag_plays_whole_timeline_forward() {
+        let d = doc_with_frames(4);
+        assert_eq!(d.play_sequence(None).unwrap(), vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn forward_tag_is_inclusive_range() {
+        let mut d = doc_with_frames(5);
+        d.add_tag("walk", 1, 3, "forward").unwrap();
+        assert_eq!(d.play_sequence(Some("walk")).unwrap(), vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn reverse_tag_plays_high_to_low() {
+        let mut d = doc_with_frames(5);
+        d.add_tag("rev", 1, 3, "reverse").unwrap();
+        assert_eq!(d.play_sequence(Some("rev")).unwrap(), vec![3, 2, 1]);
+    }
+
+    #[test]
+    fn pingpong_does_not_duplicate_endpoints() {
+        let mut d = doc_with_frames(4);
+        d.add_tag("blink", 0, 2, "pingpong").unwrap();
+        // open -> half -> closed -> half (-> loops to open), no double closed/open
+        assert_eq!(d.play_sequence(Some("blink")).unwrap(), vec![0, 1, 2, 1]);
+    }
+
+    #[test]
+    fn pingpong_two_frame_range_has_no_inner_turnaround() {
+        let mut d = doc_with_frames(3);
+        d.add_tag("pp", 0, 1, "pingpong").unwrap();
+        assert_eq!(d.play_sequence(Some("pp")).unwrap(), vec![0, 1]);
+    }
+
+    #[test]
+    fn unknown_tag_errors() {
+        let d = doc_with_frames(2);
+        assert!(d.play_sequence(Some("nope")).is_err());
+    }
+
+    #[test]
+    fn tag_range_clamps_to_existing_frames() {
+        // A tag added when there were more frames must not index out of bounds.
+        let mut d = doc_with_frames(5);
+        d.add_tag("big", 0, 4, "forward").unwrap();
+        d.meta.frames.truncate(3);
+        assert_eq!(d.play_sequence(Some("big")).unwrap(), vec![0, 1, 2]);
+    }
+
+    #[test]
+    fn tween_inserts_and_reindexes_frames() {
+        let mut d = Document::new("t", 4, 4);
+        d.fill_cel(0, 0, [10, 10, 10, 255]).unwrap();
+        d.add_frame(100, None);
+        d.fill_cel(0, 1, [200, 200, 200, 255]).unwrap();
+        d.tween(0, 1, 1, 100).unwrap(); // one in-between after frame 0
+        assert_eq!(d.meta.frames.len(), 3);
+        assert_eq!(d.get_pixel(0, 2, 0, 0).unwrap(), [200, 200, 200, 255]); // old frame 1 → 2
+        let mid = d.get_pixel(0, 1, 0, 0).unwrap();
+        assert!(
+            (mid[0] as i32 - 105).abs() <= 2,
+            "tween mid ~105, got {}",
+            mid[0]
+        ); // dissolve
     }
 }
