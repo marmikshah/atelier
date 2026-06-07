@@ -12,6 +12,8 @@ use serde_json::{json, Value};
 
 use crate::document::Document;
 
+mod analysis;
+
 fn slugify(name: &str) -> String {
     let mut out = String::new();
     let mut prev_dash = false;
