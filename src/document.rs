@@ -834,6 +834,49 @@ impl Document {
         Ok(())
     }
 
+    /// Stamp `text` left-to-right with the built-in 3×5 pixel font, top-left at
+    /// (x,y). `size` is the integer pixel scale of each cell (so a glyph is
+    /// 3·size wide, 5·size tall); glyphs are separated by one scaled pixel of
+    /// spacing. Lowercase maps to uppercase; unknown chars render as a hollow
+    /// box. Returns the rendered width in document pixels so callers can lay out
+    /// the next line/element. HUD text, damage numbers, lettering.
+    pub fn text(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        text: &str,
+        color: [u8; 4],
+        size: i32,
+    ) -> Result<i32, String> {
+        let s = size.max(1);
+        let advance = (raster::GLYPH_W + 1) * s; // glyph cell + 1px scaled spacing
+        let img = self.cel_canvas(layer, frame)?;
+        let mut pen = x;
+        for ch in text.chars() {
+            let bits = raster::glyph(ch);
+            for gy in 0..raster::GLYPH_H {
+                for gx in 0..raster::GLYPH_W {
+                    // Left column is the high bit of each 3-bit row.
+                    let bit = gy * raster::GLYPH_W + (raster::GLYPH_W - 1 - gx);
+                    if (bits >> bit) & 1 == 0 {
+                        continue;
+                    }
+                    // Scale the lit cell into an s×s block.
+                    for dy in 0..s {
+                        for dx in 0..s {
+                            raster::put(img, pen + gx * s + dx, y + gy * s + dy, color);
+                        }
+                    }
+                }
+            }
+            pen += advance;
+        }
+        // Trim the trailing inter-glyph spacing from the reported width.
+        Ok(if text.is_empty() { 0 } else { pen - x - s })
+    }
+
     /// Full-canvas (0,0-anchored) copy of a cel, transparent where absent.
     #[allow(dead_code)] // used by tween (later step)
     fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
@@ -2278,6 +2321,17 @@ impl Document {
                     op.get("color").map(|_| col("color")),
                 )
                 .map(|_| ()),
+            "text" => self
+                .text(
+                    layer,
+                    frame,
+                    gi("x", 0),
+                    gi("y", 0),
+                    op.get("text").and_then(|v| v.as_str()).unwrap_or(""),
+                    col("color"),
+                    gi("size", 1),
+                )
+                .map(|_| ()),
             other => Err(format!("unknown batch op '{}'", other)),
         }
     }
@@ -2511,6 +2565,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
             &["region", "pattern", "density", "only_existing"],
         ),
         "pixel_perfect" => (&[], &["region", "color"]),
+        "text" => (&["x", "y", "text", "color"], &["size"]),
         _ => return None,
     })
 }
@@ -2687,6 +2742,67 @@ mod tests {
             .unwrap();
         assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [200, 0, 0, 255]); // masked pixel painted
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]); // rest restored
+    }
+
+    #[test]
+    fn text_renders_known_glyph_exactly() {
+        // 'I' is a top bar, a centre stem, and a bottom bar in its 3×5 cell.
+        let mut d = Document::new("t", 8, 8);
+        d.text(0, 0, 1, 1, "I", [255, 255, 255, 255], 1).unwrap();
+        let on = |x, y| d.get_pixel(0, 0, x, y).unwrap()[3] > 0;
+        // top bar (y=1): all three columns lit
+        assert!(on(1, 1) && on(2, 1) && on(3, 1));
+        // centre stem (x=2) for the three middle rows
+        assert!(on(2, 2) && on(2, 3) && on(2, 4));
+        // the stem's flanks stay empty
+        assert!(!on(1, 2) && !on(3, 2));
+        // bottom bar (y=5): all three columns lit
+        assert!(on(1, 5) && on(2, 5) && on(3, 5));
+    }
+
+    #[test]
+    fn text_size_two_doubles_every_pixel() {
+        // Each lit cell becomes a 2×2 block, so the top bar spans y=0..1.
+        let mut d = Document::new("t", 16, 16);
+        d.text(0, 0, 0, 0, "I", [10, 20, 30, 255], 2).unwrap();
+        let on = |x, y| d.get_pixel(0, 0, x, y).unwrap()[3] > 0;
+        // top bar doubled vertically and across all six scaled columns
+        for x in 0..6 {
+            assert!(on(x, 0) && on(x, 1), "top bar block missing at x={x}");
+        }
+        // centre stem (cell col 1 -> scaled cols 2,3) doubled at the second row band
+        assert!(on(2, 2) && on(3, 2) && on(2, 3) && on(3, 3));
+    }
+
+    #[test]
+    fn text_returns_layout_width() {
+        // size 1: glyph is 3px, +1px spacing between glyphs, no trailing space.
+        let mut d = Document::new("t", 32, 8);
+        assert_eq!(d.text(0, 0, 0, 0, "", [0; 4], 1).unwrap(), 0);
+        assert_eq!(d.text(0, 0, 0, 0, "I", [255; 4], 1).unwrap(), 3);
+        assert_eq!(d.text(0, 0, 0, 0, "II", [255; 4], 1).unwrap(), 7); // 3 + 1 + 3
+                                                                       // size 2 scales the whole width.
+        assert_eq!(d.text(0, 0, 0, 0, "II", [255; 4], 2).unwrap(), 14);
+    }
+
+    #[test]
+    fn text_unknown_char_is_hollow_box() {
+        // '@' is not in the font, so it renders as the 3×5 hollow box.
+        let mut d = Document::new("t", 8, 8);
+        d.text(0, 0, 0, 0, "@", [255, 255, 255, 255], 1).unwrap();
+        let on = |x, y| d.get_pixel(0, 0, x, y).unwrap()[3] > 0;
+        assert!(on(0, 0) && on(2, 0) && on(0, 4) && on(2, 4)); // corners
+        assert!(!on(1, 2)); // hollow centre
+    }
+
+    #[test]
+    fn batch_text_op_validates() {
+        // The "text" op must be a known batch op with its required keys checked.
+        let ok = json!({"op": "text", "x": 0, "y": 0, "text": "HI", "color": [255, 255, 255]});
+        assert!(validate_batch_op(0, &ok).is_ok());
+        // Missing the required `text` key is rejected.
+        let missing = json!({"op": "text", "x": 0, "y": 0, "color": [255, 255, 255]});
+        assert!(validate_batch_op(0, &missing).is_err());
     }
 
     /// Two opaque full-cel layers, top with `mode`, flattened at frame 0.

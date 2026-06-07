@@ -833,6 +833,30 @@ impl Studio {
         })
     }
 
+    /// Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at
+    /// integer pixel `size`. Masked by the active selection. Returns the rendered
+    /// `width` in document pixels so callers can lay out the next element.
+    pub fn doc_text(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        text: &str,
+        color: [u8; 4],
+        size: i32,
+    ) -> Result<Value, String> {
+        // text returns the rendered width, so thread it out via a cell rather
+        // than the unit-returning edit_masked closure.
+        let width = std::cell::Cell::new(0i32);
+        self.edit_masked(id, layer, frame, |d| {
+            width.set(d.text(layer, frame, x, y, text, color, size)?);
+            Ok(())
+        })?;
+        Ok(json!({"ok": true, "doc_id": id, "width": width.get()}))
+    }
+
     /// Generate a hue-shifted shading ramp from a base colour. If `set_doc` is
     /// given, also store it as that document's palette. Returns the colours.
     pub fn palette_ramp(

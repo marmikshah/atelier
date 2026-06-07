@@ -58,6 +58,78 @@ pub fn draw_line(
     }
 }
 
+// -- built-in 3×5 pixel font ------------------------------------------------
+
+/// Glyph cell dimensions for the built-in font (3 wide × 5 tall).
+pub const GLYPH_W: i32 = 3;
+pub const GLYPH_H: i32 = 5;
+
+/// Pack five 3-bit rows (top→bottom, each `0b___` with the left column as the
+/// high bit) into one 15-bit glyph bitmask: bit `row*3 + col`, col 0 = left.
+const fn g(r0: u16, r1: u16, r2: u16, r3: u16, r4: u16) -> u16 {
+    r0 | (r1 << 3) | (r2 << 6) | (r3 << 9) | (r4 << 12)
+}
+
+/// Unknown characters render as this hollow 3×5 box.
+const GLYPH_UNKNOWN: u16 = g(0b111, 0b101, 0b101, 0b101, 0b111);
+
+/// Look up the 3×5 bitmask for a character. Lowercase maps to uppercase; any
+/// glyph not in the set (covers A-Z, 0-9 and `. , : ! ? - + / ( ) '` and space)
+/// returns the hollow box. See `GLYPH_W`/`GLYPH_H` for the cell size.
+pub fn glyph(c: char) -> u16 {
+    match c.to_ascii_uppercase() {
+        ' ' => 0,
+        'A' => g(0b010, 0b101, 0b111, 0b101, 0b101),
+        'B' => g(0b110, 0b101, 0b110, 0b101, 0b110),
+        'C' => g(0b011, 0b100, 0b100, 0b100, 0b011),
+        'D' => g(0b110, 0b101, 0b101, 0b101, 0b110),
+        'E' => g(0b111, 0b100, 0b110, 0b100, 0b111),
+        'F' => g(0b111, 0b100, 0b110, 0b100, 0b100),
+        'G' => g(0b011, 0b100, 0b101, 0b101, 0b011),
+        'H' => g(0b101, 0b101, 0b111, 0b101, 0b101),
+        'I' => g(0b111, 0b010, 0b010, 0b010, 0b111),
+        'J' => g(0b001, 0b001, 0b001, 0b101, 0b010),
+        'K' => g(0b101, 0b101, 0b110, 0b101, 0b101),
+        'L' => g(0b100, 0b100, 0b100, 0b100, 0b111),
+        'M' => g(0b101, 0b111, 0b111, 0b101, 0b101),
+        'N' => g(0b101, 0b111, 0b111, 0b111, 0b101),
+        'O' => g(0b010, 0b101, 0b101, 0b101, 0b010),
+        'P' => g(0b110, 0b101, 0b110, 0b100, 0b100),
+        'Q' => g(0b010, 0b101, 0b101, 0b110, 0b011),
+        'R' => g(0b110, 0b101, 0b110, 0b101, 0b101),
+        'S' => g(0b011, 0b100, 0b010, 0b001, 0b110),
+        'T' => g(0b111, 0b010, 0b010, 0b010, 0b010),
+        'U' => g(0b101, 0b101, 0b101, 0b101, 0b010),
+        'V' => g(0b101, 0b101, 0b101, 0b010, 0b010),
+        'W' => g(0b101, 0b101, 0b111, 0b111, 0b101),
+        'X' => g(0b101, 0b101, 0b010, 0b101, 0b101),
+        'Y' => g(0b101, 0b101, 0b010, 0b010, 0b010),
+        'Z' => g(0b111, 0b001, 0b010, 0b100, 0b111),
+        '0' => g(0b010, 0b101, 0b101, 0b101, 0b010),
+        '1' => g(0b010, 0b110, 0b010, 0b010, 0b111),
+        '2' => g(0b110, 0b001, 0b010, 0b100, 0b111),
+        '3' => g(0b110, 0b001, 0b010, 0b001, 0b110),
+        '4' => g(0b101, 0b101, 0b111, 0b001, 0b001),
+        '5' => g(0b111, 0b100, 0b110, 0b001, 0b110),
+        '6' => g(0b011, 0b100, 0b110, 0b101, 0b010),
+        '7' => g(0b111, 0b001, 0b010, 0b010, 0b010),
+        '8' => g(0b010, 0b101, 0b010, 0b101, 0b010),
+        '9' => g(0b010, 0b101, 0b011, 0b001, 0b110),
+        '.' => g(0b000, 0b000, 0b000, 0b000, 0b010),
+        ',' => g(0b000, 0b000, 0b000, 0b010, 0b100),
+        ':' => g(0b000, 0b010, 0b000, 0b010, 0b000),
+        '!' => g(0b010, 0b010, 0b010, 0b000, 0b010),
+        '?' => g(0b110, 0b001, 0b010, 0b000, 0b010),
+        '-' => g(0b000, 0b000, 0b111, 0b000, 0b000),
+        '+' => g(0b000, 0b010, 0b111, 0b010, 0b000),
+        '/' => g(0b001, 0b001, 0b010, 0b100, 0b100),
+        '(' => g(0b001, 0b010, 0b010, 0b010, 0b001),
+        ')' => g(0b100, 0b010, 0b010, 0b010, 0b100),
+        '\'' => g(0b010, 0b010, 0b000, 0b000, 0b000),
+        _ => GLYPH_UNKNOWN,
+    }
+}
+
 /// Manhattan colour distance over all 4 channels within tolerance.
 pub fn close(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
     let d: i32 = (0..4).map(|i| (a[i] as i32 - b[i] as i32).abs()).sum();
@@ -805,6 +877,19 @@ pub fn sample_gradient(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn glyph_lowercase_maps_to_uppercase_and_unknown_is_box() {
+        assert_eq!(glyph('a'), glyph('A'));
+        assert_eq!(glyph(' '), 0);
+        // A character outside the set falls back to the hollow box.
+        assert_eq!(glyph('@'), GLYPH_UNKNOWN);
+        // The box is a 3×5 ring: corners on, centre off. Left column is the
+        // high bit of each 3-bit row, so col x reads bit (GLYPH_W-1-x).
+        let bit = |x: i32, y: i32| (GLYPH_UNKNOWN >> (y * GLYPH_W + (GLYPH_W - 1 - x))) & 1 == 1;
+        assert!(bit(0, 0) && bit(2, 0) && bit(0, 4) && bit(2, 4));
+        assert!(!bit(1, 2)); // hollow centre
+    }
 
     #[test]
     fn ramp_runs_dark_to_light() {

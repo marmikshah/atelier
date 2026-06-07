@@ -591,6 +591,24 @@ pub struct DocBezier {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocText {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Top-left corner of the text in document pixels.
+    pub x: i32,
+    pub y: i32,
+    /// The string to stamp. Lowercase maps to uppercase; the font covers
+    /// A-Z, 0-9 and `. , : ! ? - + / ( ) '` and space. Unknown chars render as
+    /// a hollow box.
+    pub text: String,
+    /// [r,g,b] or [r,g,b,a]; alpha 0 erases.
+    pub color: Vec<i64>,
+    /// Integer pixel scale of the 3×5 cell (default 1).
+    pub size: Option<i64>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct PaletteRamp {
     /// Base colour [r,g,b] or [r,g,b,a].
     pub base: Vec<i64>,
@@ -1317,6 +1335,22 @@ impl Atelier {
             rgba(&p.color),
             p.size.unwrap_or(1) as i32,
             p.steps.unwrap_or(24) as i32,
+        ))
+    }
+
+    #[tool(
+        description = "Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at integer pixel `size` (default 1). Covers A-Z, 0-9 and . , : ! ? - + / ( ) ' and space; lowercase maps to uppercase, unknown chars render as a hollow box. Returns the rendered `width` so you can lay out the next element. HUD mockups, damage numbers, lettering. Honours an active selection."
+    )]
+    async fn doc_text(&self, Parameters(p): Parameters<DocText>) -> String {
+        res(self.studio().doc_text(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.x,
+            p.y,
+            &p.text,
+            rgba(&p.color),
+            p.size.unwrap_or(1) as i32,
         ))
     }
 
