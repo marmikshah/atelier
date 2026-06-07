@@ -1,9 +1,9 @@
 //! atelier: an MCP-native headless pixel-art editor (Aseprite-as-API).
 //!
 //! Agents create layered/animated documents, paint them with drawing primitives,
-//! render PNG previews to inspect, and iterate. Documents are grouped into thin
-//! projects (a named folder; no baked-in style). Engine-agnostic PNG/sheet/GIF
-//! output.
+//! render PNG previews to inspect, and iterate. Documents live in a flat,
+//! slug-addressed store (no projects, no baked-in style). Engine-agnostic
+//! PNG/sheet/GIF output.
 //!
 //! Transports:
 //!   atelier                      # stdio (default)
@@ -11,6 +11,11 @@
 //!   ATELIER_HTTP=0.0.0.0:8765 atelier
 //! Extra allowed Host headers for LAN/remote use (DNS-rebind guard):
 //!   ATELIER_ALLOWED_HOSTS="my-workstation.local,192.168.1.20:8765"
+//!
+//! Daemon (background HTTP server, survives logout/reboot):
+//!   atelier service install      # launchd (macOS) / systemd --user (Linux)
+//!   atelier service status
+//!   atelier service uninstall
 
 use atelier::{replay, server, service};
 
