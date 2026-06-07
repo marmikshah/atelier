@@ -1259,8 +1259,13 @@ impl Document {
         stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
         stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         let (rx0, ry0, rx1, ry1) = match region {
-            Some((a, b, c, d)) => raster::clamp_region(a, b, c, d, self.meta.w, self.meta.h)
-                .ok_or("gradient region is empty after clamping")?,
+            // A region fully off-canvas is a silent no-op, not an error.
+            Some((a, b, c, d)) => {
+                match raster::clamp_region(a, b, c, d, self.meta.w, self.meta.h) {
+                    Some(r) => r,
+                    None => return Ok(()),
+                }
+            }
             None => (0, 0, self.meta.w as i32 - 1, self.meta.h as i32 - 1),
         };
         let radial = kind == "radial";
@@ -2878,6 +2883,27 @@ mod tests {
         .unwrap();
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]); // outside region untouched
         assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [9, 9, 9, 255]); // inside painted
+    }
+
+    #[test]
+    fn gradient_region_fully_off_canvas_is_a_no_op() {
+        let mut d = Document::new("t", 8, 8);
+        d.gradient(
+            0,
+            0,
+            "linear",
+            0,
+            0,
+            7,
+            0,
+            vec![(0.0, [9, 9, 9, 255]), (1.0, [9, 9, 9, 255])],
+            "none",
+            0,
+            Some((20, 20, 30, 30)),
+            false,
+        )
+        .unwrap(); // succeeds without painting anything
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]);
     }
 
     #[test]
