@@ -60,20 +60,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => {}
     }
 
-    // Resolve HTTP address from --http flag or env; otherwise stdio.
+    // Resolve HTTP address from --http flag or env; otherwise stdio. The next
+    // token is the address only when it isn't another flag; otherwise default.
     let mut http_addr: Option<String> = std::env::var("ATELIER_HTTP").ok();
     if let Some(i) = args.iter().position(|a| a == "--http") {
-        http_addr = Some(
-            args.get(i + 1)
-                .cloned()
-                .unwrap_or_else(|| "127.0.0.1:8765".into()),
-        );
+        http_addr = Some(match args.get(i + 1) {
+            Some(a) if !a.starts_with("--") => a.clone(),
+            _ => "127.0.0.1:8765".into(),
+        });
     }
 
     // Resolve the optional session-recording path: --record <path> or ATELIER_RECORD.
+    // The path is required, so a missing or flag-like next token is an error.
     let mut record: Option<std::path::PathBuf> = std::env::var_os("ATELIER_RECORD").map(Into::into);
     if let Some(i) = args.iter().position(|a| a == "--record") {
-        let Some(path) = args.get(i + 1) else {
+        let Some(path) = args.get(i + 1).filter(|a| !a.starts_with("--")) else {
             eprintln!("atelier: --record needs a recipe path argument");
             std::process::exit(2);
         };
