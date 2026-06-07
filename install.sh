@@ -30,14 +30,38 @@ ask() { # ask <question> -> stdout: the answer ("" when no terminal)
 }
 
 # -- uninstall ------------------------------------------------------------------
+# Deregistration is best-effort everywhere: removing an MCP entry that was
+# never registered is harmless, so every step tries and continues.
+deregister_cli() { # deregister_cli <binary> <display name>
+  command -v "$1" >/dev/null 2>&1 || return 0
+  "$1" mcp remove --scope user atelier >/dev/null 2>&1 \
+    || "$1" mcp remove atelier >/dev/null 2>&1 \
+    || return 0
+  say "Deregistered from $2."
+}
+
+deregister_cursor() {
+  CFG="$HOME/.cursor/mcp.json"
+  [ -f "$CFG" ] || return 0
+  if command -v jq >/dev/null 2>&1; then
+    jq 'del(.mcpServers.atelier)' "$CFG" > "$CFG.tmp" 2>/dev/null \
+      && mv "$CFG.tmp" "$CFG" \
+      && say "Deregistered from Cursor ($CFG)." \
+      || rm -f "$CFG.tmp"
+  else
+    say "Cursor: jq unavailable — remove the \"atelier\" entry from $CFG manually."
+  fi
+}
+
 do_uninstall() {
   [ -x "$BIN" ] || fail "nothing to uninstall at $BIN"
   "$BIN" service uninstall >/dev/null 2>&1 || true # stop the daemon if present
   rm -f "$BIN"
-  say "Removed $BIN (and stopped the background daemon, if one was installed)."
-  say "Documents in ~/.atelier are untouched. Deregister clients manually:"
-  say "  claude mcp remove atelier        # same for kimi"
-  say "  Cursor: delete the \"atelier\" entry in ~/.cursor/mcp.json"
+  deregister_cli claude "Claude Code"
+  deregister_cli kimi "Kimi Code"
+  deregister_cursor
+  say "Removed $BIN (daemon stopped and clients deregistered where present)."
+  say "Documents in ~/.atelier are untouched."
   exit 0
 }
 [ "${1:-}" = "uninstall" ] && do_uninstall
