@@ -207,6 +207,25 @@ pub struct DocExportGif {
     pub tag: Option<String>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocExportTileset {
+    pub doc_id: String,
+    /// Tile width in source pixels; the canvas width must divide by it exactly.
+    pub tile_w: u32,
+    /// Tile height in source pixels; the canvas height must divide by it exactly.
+    pub tile_h: u32,
+    /// Nearest-neighbour upscale of the PNG and tile size (default 1).
+    pub scale: Option<u32>,
+    pub out_path: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocWangTiles {
+    pub doc_id: String,
+    /// Tile size N in pixels; the source canvas must be at least N×N.
+    pub n: u32,
+}
+
 // --- drawing params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -1091,6 +1110,26 @@ impl Atelier {
             p.scale.unwrap_or(4),
             p.tag.as_deref(),
         ))
+    }
+
+    #[tool(
+        description = "Slice frame 0 into a tile_w×tile_h grid and write an engine-ready tileset: the PNG plus TWO sidecars — <name>.tsx (Tiled XML: tilewidth/tileheight/tilecount/columns/image) and <name>.json (same fields). The canvas must divide exactly by the tile size. Nearest-neighbour `scale` (default 1) upscales the PNG and tile size. Returns {path,tsx,json,tilecount,columns,rows}."
+    )]
+    async fn doc_export_tileset(&self, Parameters(p): Parameters<DocExportTileset>) -> String {
+        res(self.studio().export_tileset(
+            &p.doc_id,
+            p.tile_w,
+            p.tile_h,
+            p.scale.unwrap_or(1),
+            &p.out_path,
+        ))
+    }
+
+    #[tool(
+        description = "Generate the deterministic 16-tile Wang/blob terrain set from a source doc: frame 0's layer 0 holds the INNER material, layer 1 the OUTER (top-left N×N of each is sampled). Creates a NEW document <id>-wang (canvas 4N×4N) holding all 16 corner combinations in a 4×4 grid (tile index = NE,SE,SW,NW corner bits); each set bit fills a quarter-disc (radius N/2) at that corner, adjacent set corners connect along their shared edge. Returns the new doc's structure + id."
+    )]
+    async fn doc_wang_tiles(&self, Parameters(p): Parameters<DocWangTiles>) -> String {
+        res(self.studio().wang_tiles(&p.doc_id, p.n))
     }
 
     // -- per-pixel drawing on a cel (the editor; coords = document pixels) --

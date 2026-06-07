@@ -518,6 +518,173 @@ impl Studio {
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
     }
 
+    /// Slice frame 0 (flattened, nearest-scaled) into a `tile_w`×`tile_h` grid and
+    /// write engine-ready tileset metadata: the PNG plus TWO sidecars — `<name>.tsx`
+    /// (Tiled XML) and `<name>.json` (the same fields as JSON). The canvas must be
+    /// exactly divisible by the tile size.
+    pub fn export_tileset(
+        &self,
+        id: &str,
+        tile_w: u32,
+        tile_h: u32,
+        scale: u32,
+        out_path: &str,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let (tile_w, tile_h, scale) = (tile_w.max(1), tile_h.max(1), scale.max(1));
+        let (cw, ch) = (doc.meta.w, doc.meta.h);
+        if cw % tile_w != 0 || ch % tile_h != 0 {
+            return Err(format!(
+                "canvas {}x{} not divisible by tile {}x{}",
+                cw, ch, tile_w, tile_h
+            ));
+        }
+        let (columns, rows) = (cw / tile_w, ch / tile_h);
+        let tilecount = columns * rows;
+        let (out_w, out_h) = (cw * scale, ch * scale);
+        let mut img = doc.flatten(0);
+        if scale > 1 {
+            img = image::imageops::resize(&img, out_w, out_h, image::imageops::FilterType::Nearest);
+        }
+        let out = Path::new(out_path);
+        if let Some(p) = out.parent() {
+            let _ = fs::create_dir_all(p);
+        }
+        img.save(out).map_err(|e| e.to_string())?;
+        // Scaled tile size — what an engine slices against the emitted PNG.
+        let (stw, sth) = (tile_w * scale, tile_h * scale);
+        let source = out
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| out_path.to_string());
+        let tsx = format!(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+             <tileset version=\"1.10\" name=\"{name}\" tilewidth=\"{tw}\" tileheight=\"{th}\" \
+             tilecount=\"{count}\" columns=\"{cols}\">\n\
+             \x20<image source=\"{src}\" width=\"{iw}\" height=\"{ih}\"/>\n\
+             </tileset>\n",
+            name = id,
+            tw = stw,
+            th = sth,
+            count = tilecount,
+            cols = columns,
+            src = source,
+            iw = out_w,
+            ih = out_h,
+        );
+        let tsx_path = out.with_extension("tsx");
+        fs::write(&tsx_path, &tsx).map_err(|e| e.to_string())?;
+        let meta = json!({
+            "name": id, "image": source, "image_w": out_w, "image_h": out_h,
+            "tilewidth": stw, "tileheight": sth,
+            "tilecount": tilecount, "columns": columns, "rows": rows,
+        });
+        let json_path = out.with_extension("json");
+        fs::write(&json_path, serde_json::to_string_pretty(&meta).unwrap())
+            .map_err(|e| e.to_string())?;
+        Ok(json!({
+            "path": out.to_string_lossy(), "tsx": tsx_path.to_string_lossy(),
+            "json": json_path.to_string_lossy(),
+            "tilecount": tilecount, "columns": columns, "rows": rows,
+            "tilewidth": stw, "tileheight": sth,
+        }))
+    }
+
+    /// Generate the deterministic 16-tile Wang/blob set from a terrain source: its
+    /// frame 0 carries the INNER material on layer 0 and the OUTER material on
+    /// layer 1 (top-left N×N of each layer is sampled). Output is a NEW document
+    /// `<id>-wang`, canvas 4N×4N, laid out as a 4×4 grid of every corner
+    /// combination (tile index = bits NE,SE,SW,NW). Each set corner bit fills a
+    /// quarter-disc (radius N/2) at that tile corner with the inner material;
+    /// adjacent set corners connect via the shared half-edge. Returns the new
+    /// document's structure + id.
+    pub fn wang_tiles(&self, id: &str, n: u32) -> Result<Value, String> {
+        use image::{Rgba, RgbaImage};
+        let (_dir, src) = self.open(id)?;
+        let n = n.max(1);
+        if src.meta.w < n || src.meta.h < n {
+            return Err(format!(
+                "source canvas {}x{} smaller than tile size {}",
+                src.meta.w, src.meta.h, n
+            ));
+        }
+        // Sample the top-left N×N of each layer's full-canvas image.
+        let inner = src.analysis_image(Some(0), 0)?;
+        let outer = src.analysis_image(Some(1), 0)?;
+        let r = n as f32 / 2.0; // corner quarter-disc radius
+                                // The four corners of a tile, in bit order NE,SE,SW,NW (bit 0 = NE).
+        let corners: [(u32, u32); 4] = [
+            (n, 0), // NE (top-right)
+            (n, n), // SE (bottom-right)
+            (0, n), // SW (bottom-left)
+            (0, 0), // NW (top-left)
+        ];
+        let mut canvas = RgbaImage::from_pixel(4 * n, 4 * n, Rgba([0, 0, 0, 0]));
+        for tile in 0..16u32 {
+            let (gx, gy) = (tile % 4, tile / 4); // 4×4 grid placement
+            let (ox, oy) = (gx * n, gy * n);
+            for ty in 0..n {
+                for tx in 0..n {
+                    let inside = Self::wang_inside(tx, ty, n, r, &corners, tile);
+                    let mat = if inside { &inner } else { &outer };
+                    let p = *mat.get_pixel(tx, ty);
+                    canvas.put_pixel(ox + tx, oy + ty, p);
+                }
+            }
+        }
+        // Materialise the new document and place the grid as its single cel.
+        let new_id = self.unique_id(&format!("{}-wang", id));
+        let dir = self.doc_dir(&new_id);
+        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        let mut doc = Document::new(&format!("{}-wang", id), 4 * n, 4 * n);
+        doc.set_cel(0, 0, 0, 0, canvas)?;
+        doc.save(&dir)?;
+        let mut out = doc.structure();
+        out["id"] = json!(new_id);
+        out["tile_size"] = json!(n);
+        Ok(out)
+    }
+
+    /// True when pixel (tx,ty) inside an N×N tile is INNER material for `tile`'s
+    /// corner bitmask: it lies within a set corner's quarter-disc (radius `r`), or
+    /// in the half-edge rectangle joining two adjacent set corners. `corners` is
+    /// the (corner_x, corner_y) of each bit in order NE,SE,SW,NW.
+    fn wang_inside(tx: u32, ty: u32, n: u32, r: f32, corners: &[(u32, u32); 4], tile: u32) -> bool {
+        let (px, py) = (tx as f32 + 0.5, ty as f32 + 0.5);
+        // Quarter-disc per set corner.
+        for (bit, &(cx, cy)) in corners.iter().enumerate() {
+            if tile & (1 << bit) == 0 {
+                continue;
+            }
+            let (dx, dy) = (px - cx as f32, py - cy as f32);
+            if dx * dx + dy * dy <= r * r {
+                return true;
+            }
+        }
+        // Half-edge rectangles when both corners on an edge are set. Bits are
+        // NE=0, SE=1, SW=2, NW=3; edges connect adjacent corners by filling the
+        // half-depth band along their shared edge.
+        let bit = |b: u32| tile & (1 << b) != 0;
+        let half = n as f32 / 2.0;
+        // Top edge: NW(3) + NE(0).
+        if bit(3) && bit(0) && (py <= half) {
+            return true;
+        }
+        // Right edge: NE(0) + SE(1).
+        if bit(0) && bit(1) && (px >= half) {
+            return true;
+        }
+        // Bottom edge: SE(1) + SW(2).
+        if bit(1) && bit(2) && (py >= half) {
+            return true;
+        }
+        // Left edge: SW(2) + NW(3).
+        if bit(2) && bit(3) && (px <= half) {
+            return true;
+        }
+        false
+    }
+
     // -- per-cel drawing ----------------------------------------------------
 
     fn edit<F>(&self, id: &str, f: F) -> Result<Value, String>
@@ -1680,6 +1847,63 @@ mod tests {
         assert_eq!(meta["count"], 3); // 2 + 1 frames
         assert!(out.exists());
         assert!(out.with_extension("json").exists());
+    }
+
+    #[test]
+    fn export_tileset_writes_tsx_with_tilecount_and_errors_on_indivisible() {
+        let s = studio("tileset");
+        // 16x16 canvas, 8x8 tiles → 2 columns × 2 rows = 4 tiles.
+        s.doc_create("t", 16, 16).unwrap();
+        let out = s.docs_dir.join("tiles.png");
+        let meta = s
+            .export_tileset("t", 8, 8, 1, out.to_str().unwrap())
+            .unwrap();
+        assert_eq!(meta["tilecount"], 4);
+        assert_eq!(meta["columns"], 2);
+        assert!(out.exists());
+        let tsx_path = out.with_extension("tsx");
+        let json_path = out.with_extension("json");
+        assert!(tsx_path.exists() && json_path.exists());
+        let tsx = fs::read_to_string(&tsx_path).unwrap();
+        assert!(tsx.contains("tilecount=\"4\"") && tsx.contains("columns=\"2\""));
+        // A canvas not divisible by the tile size is an actionable error.
+        assert!(s
+            .export_tileset("t", 5, 5, 1, out.to_str().unwrap())
+            .unwrap_err()
+            .contains("not divisible"));
+    }
+
+    #[test]
+    fn wang_doc_is_4n_and_corner_tiles_are_pure() {
+        let s = studio("wang");
+        let n = 8u32;
+        s.doc_create("terrain", n, n).unwrap();
+        s.doc_add_layer("terrain", None, 255, "normal".into())
+            .unwrap(); // layer 1 = outer
+        let inner = [200, 50, 50, 255];
+        let outer = [30, 60, 120, 255];
+        s.doc_fill_cel("terrain", 0, 0, inner).unwrap(); // layer 0 inner
+        s.doc_fill_cel("terrain", 1, 0, outer).unwrap(); // layer 1 outer
+        let out = s.wang_tiles("terrain", n).unwrap();
+        let wid = out["id"].as_str().unwrap().to_string();
+        // The new doc is 4N×4N.
+        assert_eq!(out["w"], 4 * n);
+        assert_eq!(out["h"], 4 * n);
+        // Tile 0 (no corner bits) sits at grid (0,0) and is all-outer.
+        assert_eq!(px(&s, &wid, 0, 0, 0, 0), outer);
+        assert_eq!(px(&s, &wid, 0, 0, (n - 1) as i32, (n - 1) as i32), outer);
+        // Tile 15 (all corners) sits at grid (3,3) and is all-inner.
+        let (b15x, b15y) = (3 * n, 3 * n);
+        assert_eq!(px(&s, &wid, 0, 0, b15x as i32, b15y as i32), inner);
+        assert_eq!(
+            px(&s, &wid, 0, 0, (b15x + n - 1) as i32, (b15y + n - 1) as i32),
+            inner
+        );
+        // Tile 1 = NE corner only (bit 0); grid (1,0). The top-right pixel is
+        // inner (in the NE quarter-disc); the bottom-left pixel is outer.
+        let (b1x, b1y) = (n, 0u32);
+        assert_eq!(px(&s, &wid, 0, 0, (b1x + n - 1) as i32, b1y as i32), inner);
+        assert_eq!(px(&s, &wid, 0, 0, b1x as i32, (b1y + n - 1) as i32), outer);
     }
 
     #[test]
