@@ -845,6 +845,309 @@ impl Studio {
             "warnings": warnings,
         }))
     }
+
+    // -- animation & tiling feedback (read-only) ----------------------------
+
+    /// Diff two frames pixel-by-pixel. `layer` None flattens. `region` restricts
+    /// the compared area (else whole canvas). `grid` adds a text map (`.`unchanged
+    /// `+`added `-`removed `~`recolored, area-capped like doc_dump_region).
+    /// `render` "overlay" writes a PNG with frame_b dimmed 40% and changed pixels
+    /// flagged (green=added, red=removed, yellow=recoloured). Returns the change
+    /// tallies, the bbox of all changed pixels, and any grid/path produced.
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_frame_diff(
+        &self,
+        id: &str,
+        frame_a: usize,
+        frame_b: usize,
+        layer: Option<usize>,
+        region: Option<(i32, i32, i32, i32)>,
+        grid: bool,
+        render: &str,
+        out_path: Option<&str>,
+        scale: u32,
+    ) -> Result<Value, String> {
+        use image::{Rgba, RgbaImage};
+        let (dir, doc) = self.open(id)?;
+        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+        let (x0, y0, x1, y1) = match region {
+            Some((a, b, c, d)) => (
+                a.min(c).max(0),
+                b.min(d).max(0),
+                a.max(c).min(cw - 1),
+                b.max(d).min(ch - 1),
+            ),
+            None => (0, 0, cw - 1, ch - 1),
+        };
+        if x0 > x1 || y0 > y1 {
+            return Err("region is empty after clamping to the canvas".into());
+        }
+        let (added, removed, recolored, bbox, ia, ib) =
+            doc.frame_diff_region(frame_a, frame_b, layer, (x0, y0, x1, y1))?;
+        let changed = added + removed + recolored;
+        let mut res = json!({
+            "changed": changed,
+            "added": added,
+            "removed": removed,
+            "recolored": recolored,
+            "change_bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
+        });
+        if grid {
+            // Reuse doc_dump_region's 4096-px area cap so the grid stays readable.
+            area_cap_check(
+                "diff region",
+                (x1 - x0 + 1) as u64,
+                (y1 - y0 + 1) as u64,
+                "pass a smaller `region` for grid=true",
+            )?;
+            let rows: Vec<String> = (y0..=y1)
+                .map(|y| {
+                    (x0..=x1)
+                        .map(|x| {
+                            let pa = ia.get_pixel(x as u32, y as u32).0;
+                            let pb = ib.get_pixel(x as u32, y as u32).0;
+                            if pa == pb {
+                                '.'
+                            } else {
+                                match (pa[3] > 0, pb[3] > 0) {
+                                    (false, true) => '+',
+                                    (true, false) => '-',
+                                    _ => '~',
+                                }
+                            }
+                        })
+                        .collect()
+                })
+                .collect();
+            res["grid"] = json!(rows);
+            res["origin"] = json!([x0, y0]);
+        }
+        if render == "overlay" {
+            let out = match out_path {
+                Some(p) => PathBuf::from(p),
+                None => dir.join(format!("diff_{}_{}.png", frame_a, frame_b)),
+            };
+            if let Some(p) = out.parent() {
+                let _ = fs::create_dir_all(p);
+            }
+            // frame_b dimmed to 40%, then changed pixels in the region flagged.
+            let mut img = RgbaImage::from_pixel(cw as u32, ch as u32, Rgba([0, 0, 0, 0]));
+            for (x, y, p) in ib.enumerate_pixels() {
+                if p.0[3] == 0 {
+                    continue;
+                }
+                let a = (p.0[3] as u32 * 40 / 100) as u8;
+                img.put_pixel(x, y, Rgba([p.0[0], p.0[1], p.0[2], a]));
+            }
+            for y in y0..=y1 {
+                for x in x0..=x1 {
+                    let pa = ia.get_pixel(x as u32, y as u32).0;
+                    let pb = ib.get_pixel(x as u32, y as u32).0;
+                    if pa == pb {
+                        continue;
+                    }
+                    let flag = match (pa[3] > 0, pb[3] > 0) {
+                        (false, true) => [0, 230, 0, 255], // added → green
+                        (true, false) => [230, 0, 0, 255], // removed → red
+                        _ => [230, 230, 0, 255],           // recoloured → yellow
+                    };
+                    img.put_pixel(x as u32, y as u32, Rgba(flag));
+                }
+            }
+            let sc = scale.max(1);
+            if sc > 1 {
+                img = image::imageops::resize(
+                    &img,
+                    cw as u32 * sc,
+                    ch as u32 * sc,
+                    image::imageops::FilterType::Nearest,
+                );
+            }
+            img.save(&out).map_err(|e| e.to_string())?;
+            res["path"] = json!(out.to_string_lossy());
+        } else if render != "none" {
+            return Err(format!("unknown render '{}' — use none|overlay", render));
+        }
+        Ok(res)
+    }
+
+    /// Tiling seam report: wrap-test the far edge against the near edge for the
+    /// requested `axis` ("horizontal" tests left↔right, "vertical" top↔bottom,
+    /// "both" runs each). `threshold` is the max per-channel delta still counted
+    /// a match. `out_path` (optional) renders frame `frame` with every mismatched
+    /// EDGE pixel painted red over the dimmed art and returns its path. Per axis:
+    /// `{mismatches, max_delta, worst:[[x,y,delta] ≤10]}`.
+    pub fn doc_seam_report(
+        &self,
+        id: &str,
+        layer: Option<usize>,
+        frame: usize,
+        axis: &str,
+        threshold: i32,
+        out_path: Option<&str>,
+    ) -> Result<Value, String> {
+        use image::{Rgba, RgbaImage};
+        let (_dir, doc) = self.open(id)?;
+        let (want_h, want_v) = match axis {
+            "both" => (true, true),
+            "horizontal" => (true, false),
+            "vertical" => (false, true),
+            other => {
+                return Err(format!(
+                    "unknown axis '{}' — use both|horizontal|vertical",
+                    other
+                ))
+            }
+        };
+        let report = |horizontal: bool| -> Result<(Value, Vec<[i32; 3]>), String> {
+            let (mismatches, max_delta, worst) =
+                doc.seam_axis(layer, frame, horizontal, threshold)?;
+            let worst_json: Vec<Value> = worst.iter().map(|w| json!(w)).collect();
+            Ok((
+                json!({"mismatches": mismatches, "max_delta": max_delta, "worst": worst_json}),
+                worst,
+            ))
+        };
+        let mut out = json!({});
+        let mut flagged: Vec<[i32; 3]> = Vec::new();
+        if want_h {
+            let (j, w) = report(true)?;
+            out["horizontal"] = j;
+            flagged.extend(w);
+        }
+        if want_v {
+            let (j, w) = report(false)?;
+            out["vertical"] = j;
+            flagged.extend(w);
+        }
+        if let Some(p) = out_path {
+            let img = doc.analysis_image(layer, frame)?;
+            let out_p = PathBuf::from(p);
+            if let Some(parent) = out_p.parent() {
+                let _ = fs::create_dir_all(parent);
+            }
+            // Dim the art to 40%, then paint the (capped) worst edge cells red.
+            let mut canvas = RgbaImage::from_pixel(img.width(), img.height(), Rgba([0, 0, 0, 0]));
+            for (x, y, px) in img.enumerate_pixels() {
+                if px.0[3] == 0 {
+                    continue;
+                }
+                let a = (px.0[3] as u32 * 40 / 100) as u8;
+                canvas.put_pixel(x, y, Rgba([px.0[0], px.0[1], px.0[2], a]));
+            }
+            for w in &flagged {
+                canvas.put_pixel(w[0] as u32, w[1] as u32, Rgba([255, 0, 0, 255]));
+            }
+            canvas.save(&out_p).map_err(|e| e.to_string())?;
+            out["path"] = json!(out_p.to_string_lossy());
+        }
+        Ok(out)
+    }
+
+    /// Audit an animation. mode="seam" diffs the wrap the loop actually plays
+    /// (last→first for forward, first→last for reverse; pingpong has no seam →
+    /// score 0 + note) and reports seam_score = changed/opaque. mode="spacing"
+    /// tracks the silhouette bbox-centre per played frame and reports the
+    /// per-frame offsets, total drift and evenness (stddev of step magnitude /
+    /// mean — 0 = mechanically even). `tag` None audits the whole timeline.
+    pub fn doc_anim_audit(
+        &self,
+        id: &str,
+        tag: Option<&str>,
+        layer: Option<usize>,
+        mode: &str,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let seq = doc.play_sequence(tag)?;
+        if seq.is_empty() {
+            return Err("animation has no frames to audit".into());
+        }
+        match mode {
+            "seam" => {
+                // Pingpong reverses at the ends, so the loop never hard-cuts.
+                let dir = match tag {
+                    Some(name) => doc
+                        .meta
+                        .tags
+                        .iter()
+                        .find(|t| t.name == name)
+                        .map(|t| t.direction.as_str())
+                        .unwrap_or("forward"),
+                    None => "forward",
+                };
+                if dir == "pingpong" {
+                    return Ok(json!({
+                        "seam_score": 0.0,
+                        "note": "pingpong loops reverse at the ends — no last→first seam",
+                    }));
+                }
+                let (last, first) = (*seq.last().unwrap(), seq[0]);
+                let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+                let (added, removed, recolored, _bbox, _ia, _ib) =
+                    doc.frame_diff_region(last, first, layer, (0, 0, cw - 1, ch - 1))?;
+                let changed = added + removed + recolored;
+                // Denominator: opaque pixels of the played last frame (motion base).
+                let opaque = doc.opaque_count(layer, last)?.max(1);
+                let seam_score = (changed as f64 / opaque as f64 * 1000.0).round() / 1000.0;
+                Ok(json!({
+                    "seam_score": seam_score,
+                    "changed": changed,
+                    "added": added,
+                    "removed": removed,
+                    "frames": [last, first],
+                }))
+            }
+            "spacing" => {
+                // Centre per played frame; offsets are step-to-step deltas.
+                let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
+                for &f in &seq {
+                    let c = doc.silhouette_center(layer, f)?.unwrap_or([0.0, 0.0]);
+                    centers.push(c);
+                }
+                let round1 = |v: f64| (v * 10.0).round() / 10.0;
+                let per_frame_center: Vec<Value> = centers
+                    .iter()
+                    .map(|c| json!([round1(c[0]), round1(c[1])]))
+                    .collect();
+                let offsets: Vec<[f64; 2]> = centers
+                    .windows(2)
+                    .map(|w| [w[1][0] - w[0][0], w[1][1] - w[0][1]])
+                    .collect();
+                let per_frame_offset: Vec<Value> = offsets
+                    .iter()
+                    .map(|o| json!([round1(o[0]), round1(o[1])]))
+                    .collect();
+                let total = match (centers.first(), centers.last()) {
+                    (Some(a), Some(b)) => [round1(b[0] - a[0]), round1(b[1] - a[1])],
+                    _ => [0.0, 0.0],
+                };
+                // Evenness: stddev of |offset| over its mean (0 = perfectly even).
+                let mags: Vec<f64> = offsets
+                    .iter()
+                    .map(|o| (o[0] * o[0] + o[1] * o[1]).sqrt())
+                    .collect();
+                let evenness = if mags.is_empty() {
+                    0.0
+                } else {
+                    let mean = mags.iter().sum::<f64>() / mags.len() as f64;
+                    if mean < f64::EPSILON {
+                        0.0
+                    } else {
+                        let var = mags.iter().map(|m| (m - mean).powi(2)).sum::<f64>()
+                            / mags.len() as f64;
+                        (var.sqrt() / mean * 1000.0).round() / 1000.0
+                    }
+                };
+                Ok(json!({
+                    "per_frame_center": per_frame_center,
+                    "per_frame_offset": per_frame_offset,
+                    "total_drift": total,
+                    "evenness": evenness,
+                }))
+            }
+            other => Err(format!("unknown mode '{}' — use seam|spacing", other)),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -1066,5 +1369,135 @@ mod tests {
         let dp = s.doc_ramp_validate(None, Some("p"), None).unwrap();
         assert_eq!(dp["count"], 2);
         assert_eq!(dp["monotonic_value"], json!(true));
+    }
+
+    #[test]
+    fn frame_diff_classifies_changes_and_grids() {
+        let s = studio("framediff");
+        s.doc_create("d", 4, 4).unwrap();
+        s.doc_add_frame("d", 100, Some(0)).unwrap(); // frame 1 copies frame 0
+                                                     // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
+        s.doc_pencil("d", 0, 0, vec![(0, 0)], [255, 0, 0, 255], 1)
+            .unwrap();
+        s.doc_pencil("d", 0, 1, vec![(1, 1)], [0, 255, 0, 255], 1)
+            .unwrap();
+        let r = s
+            .doc_frame_diff("d", 0, 1, None, None, true, "none", None, 1)
+            .unwrap();
+        // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
+        assert_eq!(r["added"], json!(1));
+        assert_eq!(r["removed"], json!(1));
+        assert_eq!(r["recolored"], json!(0));
+        assert_eq!(r["changed"], json!(2));
+        assert_eq!(r["change_bbox"], json!([0, 0, 1, 1]));
+        assert_eq!(r["grid"][0], "-..."); // (0,0) removed
+        assert_eq!(r["grid"][1], ".+.."); // (1,1) added
+                                          // overlay render writes a PNG
+        let out = s.docs_dir.join("diff.png");
+        let ov = s
+            .doc_frame_diff("d", 0, 1, None, None, false, "overlay", out.to_str(), 1)
+            .unwrap();
+        assert!(out.exists());
+        assert_eq!(ov["path"], json!(out.to_string_lossy()));
+        // unknown render mode is an actionable error
+        assert!(s
+            .doc_frame_diff("d", 0, 1, None, None, false, "bogus", None, 1)
+            .is_err());
+    }
+
+    #[test]
+    fn seam_report_finds_edge_mismatches() {
+        let s = studio("seam");
+        s.doc_create("d", 4, 4).unwrap();
+        // A left column that does not match the right column → horizontal seam.
+        s.doc_rect("d", 0, 0, 0, 0, 0, 3, [255, 0, 0, 255], true, 1)
+            .unwrap();
+        let r = s.doc_seam_report("d", None, 0, "both", 0, None).unwrap();
+        assert!(r["horizontal"]["mismatches"].as_u64().unwrap() > 0);
+        assert_eq!(r["vertical"]["mismatches"], json!(0)); // rows tile fine (all blank top/bottom)
+        assert_eq!(r["horizontal"]["max_delta"], json!(255)); // opaque red vs transparent
+                                                              // worst list reports far-edge cells (x = w-1 = 3)
+        let worst = r["horizontal"]["worst"].as_array().unwrap();
+        assert!(!worst.is_empty());
+        assert_eq!(worst[0][0], json!(3));
+        // a seamless cel (uniform fill) has zero mismatches on both axes
+        s.doc_create("e", 4, 4).unwrap();
+        s.doc_fill_cel("e", 0, 0, [10, 20, 30, 255]).unwrap();
+        let clean = s.doc_seam_report("e", None, 0, "both", 0, None).unwrap();
+        assert_eq!(clean["horizontal"]["mismatches"], json!(0));
+        assert_eq!(clean["vertical"]["mismatches"], json!(0));
+        // bad axis errors
+        assert!(s
+            .doc_seam_report("e", None, 0, "diagonal", 0, None)
+            .is_err());
+    }
+
+    #[test]
+    fn anim_audit_seam_and_spacing() {
+        let s = studio("animaudit");
+        s.doc_create("d", 8, 8).unwrap();
+        // 3 frames: a 2x2 block stepping right by 2 each frame (even spacing).
+        s.doc_rect("d", 0, 0, 0, 0, 1, 1, [9, 9, 9, 255], true, 1)
+            .unwrap();
+        s.doc_add_frame("d", 100, None).unwrap();
+        s.doc_rect("d", 0, 1, 2, 0, 3, 1, [9, 9, 9, 255], true, 1)
+            .unwrap();
+        s.doc_add_frame("d", 100, None).unwrap();
+        s.doc_rect("d", 0, 2, 4, 0, 5, 1, [9, 9, 9, 255], true, 1)
+            .unwrap();
+        // spacing: even rightward drift → low evenness, positive total drift.
+        let sp = s.doc_anim_audit("d", None, None, "spacing").unwrap();
+        assert_eq!(sp["per_frame_center"].as_array().unwrap().len(), 3);
+        assert_eq!(sp["per_frame_offset"].as_array().unwrap().len(), 2);
+        assert!(sp["total_drift"][0].as_f64().unwrap() > 0.0); // moved right
+        assert_eq!(sp["evenness"], json!(0.0)); // two equal 2px steps
+                                                // seam: last frame vs first differ → non-zero score
+        let seam = s.doc_anim_audit("d", None, None, "seam").unwrap();
+        assert!(seam["seam_score"].as_f64().unwrap() > 0.0);
+        assert_eq!(seam["frames"], json!([2, 0]));
+        // pingpong tag → no seam (score 0 + note)
+        s.doc_add_tag("d", "pp", 0, 2, "pingpong").unwrap();
+        let pp = s.doc_anim_audit("d", Some("pp"), None, "seam").unwrap();
+        assert_eq!(pp["seam_score"], json!(0.0));
+        assert!(pp["note"].is_string());
+        // bad mode errors
+        assert!(s.doc_anim_audit("d", None, None, "bogus").is_err());
+    }
+
+    #[test]
+    fn keyframe_move_eases_across_frames() {
+        let s = studio("keyframe");
+        s.doc_create("d", 16, 16).unwrap();
+        // a 2x2 block at (1,1) on frame 0; two empty frames to animate into.
+        s.doc_rect("d", 0, 0, 1, 1, 2, 2, [200, 50, 50, 255], true, 1)
+            .unwrap();
+        s.doc_add_frame("d", 100, None).unwrap();
+        s.doc_add_frame("d", 100, None).unwrap();
+        let r = s
+            .doc_keyframe_move("d", 0, (1, 1, 2, 2), 0, 2, 8, 0, "linear", true)
+            .unwrap();
+        assert_eq!(r["frames_touched"], json!(2));
+        assert_eq!(r["offsets"], json!([[4, 0], [8, 0]])); // linear: half then full
+                                                           // frame 0 (source) is untouched
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 1, 1).unwrap()["rgba"],
+            json!([200, 50, 50, 255])
+        );
+        // frame 2 has the block at (1+8, 1) = (9,1); the source rect is cleared
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 2, 9, 1).unwrap()["rgba"],
+            json!([200, 50, 50, 255])
+        );
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 2, 1, 1).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+        // to_frame must exist and be > from_frame
+        assert!(s
+            .doc_keyframe_move("d", 0, (1, 1, 2, 2), 0, 9, 8, 0, "linear", true)
+            .is_err());
+        assert!(s
+            .doc_keyframe_move("d", 0, (1, 1, 2, 2), 2, 0, 8, 0, "linear", true)
+            .is_err());
     }
 }
