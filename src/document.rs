@@ -1902,6 +1902,77 @@ impl Document {
         }
         Ok(offsets)
     }
+
+    pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
+        let n = self.meta.frames.len() as u32;
+        let fw = self.meta.w * scale;
+        let fh = self.meta.h * scale;
+        let mut sheet = RgbaImage::from_pixel(fw * n, fh, Rgba([0, 0, 0, 0]));
+        for f in 0..self.meta.frames.len() {
+            let mut img = self.flatten(f);
+            if scale > 1 {
+                img = image::imageops::resize(&img, fw, fh, image::imageops::FilterType::Nearest);
+            }
+            image::imageops::replace(&mut sheet, &img, (f as u32 * fw) as i64, 0);
+        }
+        sheet.save(out).map_err(|e| e.to_string())?;
+        let frames: Vec<Value> = self
+            .meta
+            .frames
+            .iter()
+            .enumerate()
+            .map(|(i, fr)| {
+                json!({
+                    "rect": [i as u32 * fw, 0, fw, fh],
+                    "duration_ms": fr.duration_ms,
+                    // Pivot scaled into sheet pixels (engine-ready); null if unset.
+                    "pivot": fr.pivot.map(|[px, py]| [px as u32 * scale, py as u32 * scale]),
+                })
+            })
+            .collect();
+        let tags: Vec<Value> = self
+            .meta
+            .tags
+            .iter()
+            .map(|t| json!({"name": t.name, "from": t.from, "to": t.to, "direction": t.direction}))
+            .collect();
+        let meta = json!({
+            "path": out.to_string_lossy(), "frame_w": fw, "frame_h": fh,
+            "count": n, "frames": frames, "tags": tags, "palette": self.meta.palette,
+        });
+        let mp = out.with_extension("json");
+        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
+            .map_err(|e| e.to_string())?;
+        Ok(meta)
+    }
+
+    /// Export an animated GIF. Plays `tag`'s sequence (honouring direction) or
+    /// the whole timeline when `tag` is None. Returns the number of frames
+    /// actually emitted (a pingpong tag emits more than its source range).
+    pub fn export_gif(&self, out: &Path, scale: u32, tag: Option<&str>) -> Result<usize, String> {
+        use image::codecs::gif::{GifEncoder, Repeat};
+        use image::{Delay, Frame};
+        let seq = self.play_sequence(tag)?;
+        let file = std::fs::File::create(out).map_err(|e| e.to_string())?;
+        let mut enc = GifEncoder::new(std::io::BufWriter::new(file));
+        enc.set_repeat(Repeat::Infinite)
+            .map_err(|e| e.to_string())?;
+        for &f in &seq {
+            let mut img = self.flatten(f);
+            if scale > 1 {
+                img = image::imageops::resize(
+                    &img,
+                    self.meta.w * scale,
+                    self.meta.h * scale,
+                    image::imageops::FilterType::Nearest,
+                );
+            }
+            let delay = Delay::from_numer_denom_ms(self.meta.frames[f].duration_ms, 1);
+            enc.encode_frame(Frame::from_parts(img, 0, 0, delay))
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(seq.len())
+    }
 }
 
 #[cfg(test)]
@@ -2362,5 +2433,40 @@ mod tests {
             "tween mid ~105, got {}",
             mid[0]
         ); // dissolve
+    }
+
+    #[test]
+    fn export_sheet_writes_png_and_json_sidecar() {
+        let dir = std::env::temp_dir().join(format!("atelier_sheet_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut d = doc_with_frames(3);
+        d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
+        let out = dir.join("sheet.png");
+        d.export_sheet(&out, 2).unwrap();
+        // 3 frames × (4·2) wide, (4·2) tall.
+        let png = image::open(&out).unwrap().to_rgba8();
+        assert_eq!(png.dimensions(), (24, 8));
+        let json: Value =
+            serde_json::from_str(&std::fs::read_to_string(out.with_extension("json")).unwrap())
+                .unwrap();
+        assert_eq!(json["frames"].as_array().unwrap().len(), 3);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn export_gif_writes_nonempty_file() {
+        let dir = std::env::temp_dir().join(format!("atelier_gif_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut d = doc_with_frames(2);
+        d.fill_cel(0, 0, [0, 255, 0, 255]).unwrap();
+        d.fill_cel(0, 1, [0, 0, 255, 255]).unwrap();
+        let out = dir.join("anim.gif");
+        let n = d.export_gif(&out, 1, None).unwrap();
+        assert_eq!(n, 2);
+        let bytes = std::fs::metadata(&out).unwrap().len();
+        assert!(bytes > 0, "gif should be nonempty");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }
