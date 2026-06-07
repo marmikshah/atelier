@@ -32,10 +32,11 @@ fn slugify(name: &str) -> String {
     }
 }
 
+/// A copied rectangular region: width, height, flat RGBA buffer.
+type Clip = (u32, u32, Vec<u8>);
+
 /// An active pixel selection: which document it belongs to, its dimensions, and
 /// one `bool` per pixel (row-major). Painting ops confine to the `true` pixels.
-// Constructed by `doc_select` (a later step); for now the painting ops read it.
-#[allow(dead_code)]
 #[derive(Clone)]
 struct Selection {
     doc_id: String,
@@ -44,9 +45,22 @@ struct Selection {
     mask: Vec<bool>,
 }
 
+/// A by-colour selection request: which cel to read, an explicit target colour
+/// or a sample point to read it from, and the channel-distance tolerance.
+pub struct ColorSelect {
+    pub layer: usize,
+    pub frame: usize,
+    pub color: Option<[u8; 4]>,
+    pub sample: Option<(i32, i32)>,
+    pub tol: i32,
+}
+
 #[derive(Clone)]
 pub struct Studio {
     docs_dir: PathBuf,
+    /// Cross-cel / cross-document clipboard for copy/cut → paste. Lives for the
+    /// process; one shared studio means one shared clipboard across sessions.
+    clipboard: Option<Clip>,
     /// Active selection mask (at most one), set by `doc_select`; painting ops
     /// confine to it. Process-lived, like the clipboard.
     selection: Option<Selection>,
@@ -62,6 +76,7 @@ impl Studio {
         let _ = fs::create_dir_all(&docs_dir);
         Studio {
             docs_dir,
+            clipboard: None,
             selection: None,
         }
     }
@@ -73,6 +88,7 @@ impl Studio {
         let _ = fs::create_dir_all(&docs_dir);
         Studio {
             docs_dir,
+            clipboard: None,
             selection: None,
         }
     }
@@ -858,6 +874,173 @@ impl Studio {
         (x0 <= x1).then_some((x0, y0, x1, y1))
     }
 
+    /// Set/modify the active selection mask. `shape`: rect / ellipse / color /
+    /// all / none. `mode` combines with the current selection: replace / add /
+    /// subtract / intersect. Painting ops then confine to the `true` pixels
+    /// until the selection is replaced or cleared (shape "none").
+    pub fn doc_select(
+        &mut self,
+        id: &str,
+        shape: &str,
+        mode: &str,
+        rect: Option<(i32, i32, i32, i32)>,
+        ell: Option<(i32, i32, i32, i32)>,
+        color_at: Option<ColorSelect>,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let (w, h) = (doc.meta.w, doc.meta.h);
+        let n = (w * h) as usize;
+        if shape == "none" {
+            self.selection = None;
+            return Ok(json!({"doc_id": id, "selected_pixels": 0, "cleared": true}));
+        }
+        let idx = |x: i32, y: i32| (y as u32 * w + x as u32) as usize;
+        let mut shape_mask = vec![false; n];
+        match shape {
+            "all" => shape_mask.iter_mut().for_each(|b| *b = true),
+            "rect" => {
+                let (x0, y0, x1, y1) = rect.ok_or("rect selection needs x0,y0,x1,y1")?;
+                let (ax, bx) = (x0.min(x1).max(0), x0.max(x1).min(w as i32 - 1));
+                let (ay, by) = (y0.min(y1).max(0), y0.max(y1).min(h as i32 - 1));
+                for y in ay..=by {
+                    for x in ax..=bx {
+                        shape_mask[idx(x, y)] = true;
+                    }
+                }
+            }
+            "ellipse" => {
+                let (cx, cy, rx, ry) = ell.ok_or("ellipse selection needs cx,cy,rx,ry")?;
+                let (a, b) = (rx.max(1) as f32 + 0.5, ry.max(1) as f32 + 0.5);
+                for y in 0..h as i32 {
+                    for x in 0..w as i32 {
+                        if ((x - cx) as f32 / a).powi(2) + ((y - cy) as f32 / b).powi(2) <= 1.0 {
+                            shape_mask[idx(x, y)] = true;
+                        }
+                    }
+                }
+            }
+            "color" => {
+                let c = color_at
+                    .ok_or("color selection needs layer/frame and a color or sample point")?;
+                let target = match (c.color, c.sample) {
+                    (Some(col), _) => col,
+                    (None, Some((px, py))) => doc.get_pixel(c.layer, c.frame, px, py)?,
+                    (None, None) => {
+                        return Err("color selection needs `color` or `x,y` to sample".into())
+                    }
+                };
+                let near = |a: [u8; 4], b: [u8; 4]| -> bool {
+                    (0..4)
+                        .map(|i| (a[i] as i32 - b[i] as i32).abs())
+                        .sum::<i32>()
+                        <= c.tol
+                };
+                for y in 0..h as i32 {
+                    for x in 0..w as i32 {
+                        if near(doc.get_pixel(c.layer, c.frame, x, y)?, target) {
+                            shape_mask[idx(x, y)] = true;
+                        }
+                    }
+                }
+            }
+            other => return Err(format!("unknown selection shape '{}'", other)),
+        }
+        let base = match &self.selection {
+            Some(s) if s.doc_id == id && s.w == w && s.h == h => s.mask.clone(),
+            _ => vec![false; n],
+        };
+        let mask: Vec<bool> = (0..n)
+            .map(|i| match mode {
+                "add" => base[i] || shape_mask[i],
+                "subtract" => base[i] && !shape_mask[i],
+                "intersect" => base[i] && shape_mask[i],
+                _ => shape_mask[i], // "replace"
+            })
+            .collect();
+        let count = mask.iter().filter(|b| **b).count();
+        self.selection = Some(Selection {
+            doc_id: id.to_string(),
+            w,
+            h,
+            mask,
+        });
+        Ok(json!({"doc_id": id, "selected_pixels": count, "w": w, "h": h}))
+    }
+
+    // -- selection / region / clipboard -------------------------------------
+
+    /// Read one pixel — RGBA + a `#rrggbbaa` hex string for convenience.
+    pub fn doc_get_pixel(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let p = doc.get_pixel(layer, frame, x, y)?;
+        let hex = format!("#{:02x}{:02x}{:02x}{:02x}", p[0], p[1], p[2], p[3]);
+        Ok(json!({"x": x, "y": y, "rgba": p, "hex": hex}))
+    }
+
+    /// Copy a region into the shared clipboard (does not modify the document).
+    pub fn doc_copy_region(
+        &mut self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let (w, h, buf) = doc.copy_region(layer, frame, x0, y0, x1, y1)?;
+        self.clipboard = Some((w, h, buf));
+        Ok(json!({"copied": {"w": w, "h": h}}))
+    }
+
+    /// Cut = copy to clipboard, then clear the source region.
+    pub fn doc_cut_region(
+        &mut self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let (w, h, buf) = doc.copy_region(layer, frame, x0, y0, x1, y1)?;
+        doc.clear_region(layer, frame, x0, y0, x1, y1)?;
+        doc.save(&dir)?;
+        self.clipboard = Some((w, h, buf));
+        Ok(json!({"cut": {"w": w, "h": h}, "doc_id": id}))
+    }
+
+    /// Paste the clipboard onto a cel at (x,y). `blend` true = source-over,
+    /// false = overwrite (also stamps transparency). Works across documents.
+    pub fn doc_paste(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        blend: bool,
+    ) -> Result<Value, String> {
+        let (w, h, buf) = self
+            .clipboard
+            .clone()
+            .ok_or("clipboard is empty — copy or cut a region first")?;
+        let (dir, mut doc) = self.open(id)?;
+        doc.paste_region(layer, frame, x, y, w, h, &buf, blend)?;
+        doc.save(&dir)?;
+        Ok(json!({"pasted": {"w": w, "h": h, "at": [x, y]}, "doc_id": id}))
+    }
+
     // -- animation & tiling feedback (read-only) + keyframe write -----------
 
     /// Eased multi-frame region motion across an existing frame span. The region
@@ -1200,5 +1383,83 @@ mod tests {
             )
             .unwrap_err()
             .contains("missing required keys"));
+    }
+
+    #[test]
+    fn clipboard_round_trips_across_documents() {
+        let mut s = studio("clip");
+        s.doc_create("src", 8, 8).unwrap();
+        s.doc_create("dst", 8, 8).unwrap();
+        // paint a pixel in src, copy a 1x1 region, paste into dst
+        s.doc_pencil("src", 0, 0, vec![(2, 2)], [7, 8, 9, 255], 1)
+            .unwrap();
+        s.doc_copy_region("src", 0, 0, 2, 2, 2, 2).unwrap();
+        s.doc_paste("dst", 0, 0, 5, 5, false).unwrap();
+        let px = s.doc_get_pixel("dst", 0, 0, 5, 5).unwrap();
+        assert_eq!(px["rgba"], json!([7, 8, 9, 255]));
+        assert_eq!(px["hex"], "#070809ff");
+    }
+
+    #[test]
+    fn paste_without_copy_errors() {
+        let s = studio("emptyclip");
+        s.doc_create("d", 4, 4).unwrap();
+        assert!(s.doc_paste("d", 0, 0, 0, 0, true).is_err());
+    }
+
+    #[test]
+    fn selection_confines_painting_then_clears() {
+        let mut s = studio("sel");
+        s.doc_create("d", 8, 8).unwrap();
+        // Select a 3x3 box, then flood the whole cel: only the box fills.
+        s.doc_select("d", "rect", "replace", Some((1, 1, 3, 3)), None, None)
+            .unwrap();
+        s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 2, 2).unwrap()["rgba"],
+            json!([9, 9, 9, 255])
+        );
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+        // Clearing the selection lets a fill cover everything again.
+        s.doc_select("d", "none", "replace", None, None, None)
+            .unwrap();
+        s.doc_fill("d", 0, 0, 0, 0, [1, 2, 3, 255], 0).unwrap();
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            json!([1, 2, 3, 255])
+        );
+    }
+
+    #[test]
+    fn dither_confined_to_active_selection() {
+        let mut s = studio("dithersel");
+        s.doc_create("d", 8, 8).unwrap();
+        // select a 3x3 box; dither with no region falls back to the selection.
+        s.doc_select("d", "rect", "replace", Some((1, 1, 3, 3)), None, None)
+            .unwrap();
+        s.doc_dither(
+            "d",
+            0,
+            0,
+            None,
+            [10, 10, 10, 255],
+            [200, 200, 200, 255],
+            "checker",
+            0.5,
+            false,
+        )
+        .unwrap();
+        // inside the selection a colour was painted; outside stays transparent.
+        assert_ne!(
+            s.doc_get_pixel("d", 0, 0, 2, 2).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
     }
 }
