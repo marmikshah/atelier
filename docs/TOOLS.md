@@ -211,7 +211,8 @@ recorder and a web view.
   frame 0 flattened to a PNG (scale 4). Clients can list and read them without a
   tool call; unknown URIs and missing documents return `resource_not_found`.
 - **MCP prompts** — packaged workflows that fill in your subject and hand the
-  agent the right loop: `pixel-sprite` (`subject`, optional `size`),
+  agent the right loop: `pixel-sprite` (`subject`, optional `size`,
+  optional `palette_hint`),
   `walk-cycle` (`character`, optional `frames`), `seamless-tile` (`material`,
   optional `size`). Each names the tools it drives.
 - **Session recorder** — `atelier --record <recipe.json>` (or
