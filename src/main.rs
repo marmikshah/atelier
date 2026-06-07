@@ -24,6 +24,8 @@ const HELP: &str = "atelier — an MCP-native headless pixel-art editor (Aseprit
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
     atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
+    atelier --record <recipe.json>  record this session's tool calls into a replayable recipe
+            (works with stdio and --http; also ATELIER_RECORD=<path>)
     atelier service install       install + start the background daemon (launchd / systemd --user)
             [--bind ADDR] [--home DIR]
     atelier service status        show daemon state and log locations
@@ -35,7 +37,8 @@ USAGE:
 ENVIRONMENT:
     ATELIER_HOME             where documents/exports live (default ~/.atelier)
     ATELIER_HTTP             HTTP bind address (alternative to --http)
-    ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use";
+    ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use
+    ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -67,6 +70,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
+    // Resolve the optional session-recording path: --record <path> or ATELIER_RECORD.
+    let mut record: Option<std::path::PathBuf> = std::env::var_os("ATELIER_RECORD").map(Into::into);
+    if let Some(i) = args.iter().position(|a| a == "--record") {
+        let Some(path) = args.get(i + 1) else {
+            eprintln!("atelier: --record needs a recipe path argument");
+            std::process::exit(2);
+        };
+        record = Some(path.into());
+    }
+
     match http_addr {
         Some(addr) => {
             let mut allowed: Vec<String> = std::env::var("ATELIER_ALLOWED_HOSTS")
@@ -83,8 +96,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             if let Some((host, _)) = addr.rsplit_once(':') {
                 allowed.push(host.to_string());
             }
-            server::run_http(&addr, allowed).await
+            server::run_http(&addr, allowed, record).await
         }
-        None => server::run().await,
+        None => server::run(record).await,
     }
 }

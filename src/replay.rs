@@ -28,21 +28,21 @@ const USAGE: &str = "usage: atelier replay <recipe.json> [--home DIR]";
 
 /// A replay recipe: a named, described sequence of tool calls.
 #[derive(Debug, Deserialize)]
-struct Recipe {
-    name: String,
-    description: String,
-    steps: Vec<Step>,
+pub(crate) struct Recipe {
+    pub(crate) name: String,
+    pub(crate) description: String,
+    pub(crate) steps: Vec<Step>,
 }
 
 /// One scripted tool call.
 #[derive(Debug, Deserialize)]
-struct Step {
-    tool: String,
+pub(crate) struct Step {
+    pub(crate) tool: String,
     #[serde(default = "empty_obj")]
-    args: Value,
+    pub(crate) args: Value,
     /// Optional human note, echoed alongside the step for context.
     #[serde(default)]
-    note: Option<String>,
+    pub(crate) note: Option<String>,
 }
 
 fn empty_obj() -> Value {
@@ -51,7 +51,7 @@ fn empty_obj() -> Value {
 
 impl Recipe {
     /// Parse a recipe from JSON text, with actionable errors.
-    fn parse(src: &str) -> Result<Recipe, String> {
+    pub(crate) fn parse(src: &str) -> Result<Recipe, String> {
         let recipe: Recipe = serde_json::from_str(src).map_err(|e| {
             format!(
                 "invalid recipe JSON: {e} — expected {{name, description, steps:[{{tool, args}}]}}"

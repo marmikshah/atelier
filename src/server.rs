@@ -894,6 +894,79 @@ pub struct DocKeyframeMove {
     pub clear_source: Option<bool>,
 }
 
+// --- session recorder ------------------------------------------------------
+
+/// Records every tool call into a replayable recipe file (the inverse of
+/// `atelier replay`): a good live session becomes a recipe for free. The shape
+/// it writes matches `replay::Recipe` — `{name, description, steps:[{tool,args}]}`.
+///
+/// After each call it rewrites the whole file atomically (write `.tmp`, rename)
+/// so a killed session still leaves a valid recipe up to the last completed step.
+#[derive(Clone)]
+struct Recorder {
+    path: std::sync::Arc<std::path::PathBuf>,
+    /// Accumulated steps, guarded so concurrent HTTP sessions append in order.
+    steps: std::sync::Arc<std::sync::Mutex<Vec<Value>>>,
+}
+
+impl Recorder {
+    fn new(path: std::path::PathBuf) -> Self {
+        Self {
+            path: std::sync::Arc::new(path),
+            steps: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
+        }
+    }
+
+    /// Append one `{tool, args}` step and rewrite the recipe file atomically.
+    /// Best-effort: a write failure is logged to stderr, never fails the call.
+    fn record(&self, tool: &str, args: Value) {
+        let mut steps = self.steps.lock().expect("recorder lock poisoned");
+        steps.push(json!({"tool": tool, "args": args}));
+        let name = self
+            .path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("session");
+        let recipe = json!({
+            "name": name,
+            "description": format!("recorded session {}", iso_date()),
+            "steps": &*steps,
+        });
+        // Pretty so the recipe stays hand-editable, like the shipped examples.
+        let body = serde_json::to_string_pretty(&recipe).unwrap_or_else(|_| "{}".into());
+        let tmp = self.path.with_extension("json.tmp");
+        if let Err(e) = std::fs::write(&tmp, body).and_then(|()| std::fs::rename(&tmp, &*self.path))
+        {
+            eprintln!(
+                "atelier: failed to write recording {}: {e}",
+                self.path.display()
+            );
+        }
+    }
+}
+
+/// UTC calendar date as `YYYY-MM-DD`, computed from the wall clock without a
+/// date-library dependency (civil-from-days, proleptic Gregorian).
+fn iso_date() -> String {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let days = (secs / 86_400) as i64;
+    // Howard Hinnant's civil_from_days.
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z - era * 146_097; // [0, 146096]
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365; // [0, 399]
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100); // [0, 365]
+    let mp = (5 * doy + 2) / 153; // [0, 11]
+    let d = doy - (153 * mp + 2) / 5 + 1; // [1, 31]
+    let m = if mp < 10 { mp + 3 } else { mp - 9 }; // [1, 12]
+    let y = if m <= 2 { y + 1 } else { y };
+    format!("{y:04}-{m:02}-{d:02}")
+}
+
 // --- server ----------------------------------------------------------------
 
 #[derive(Clone)]
@@ -901,6 +974,8 @@ pub struct Atelier {
     /// Shared so concurrent HTTP sessions serialise document file writes.
     studio: std::sync::Arc<std::sync::Mutex<Studio>>,
     tool_router: ToolRouter<Self>,
+    /// Optional session recorder; when set, each tool call is logged to a recipe.
+    recorder: Option<Recorder>,
 }
 
 impl Atelier {
@@ -913,7 +988,14 @@ impl Atelier {
         Self {
             studio,
             tool_router: Self::tool_router(),
+            recorder: None,
         }
+    }
+
+    /// Enable session recording: every tool call is appended to a recipe at `path`.
+    fn with_recording(mut self, path: std::path::PathBuf) -> Self {
+        self.recorder = Some(Recorder::new(path));
+        self
     }
 
     fn studio(&self) -> std::sync::MutexGuard<'_, Studio> {
@@ -1861,6 +1943,35 @@ impl Atelier {
 
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
+    /// Hand-written so we can record each call before delegating to the
+    /// `#[tool_router]`-generated dispatcher. This replicates the body the
+    /// `#[tool_handler]` macro would otherwise emit (build a `ToolCallContext`,
+    /// then `self.tool_router.call(...)`); because we define it, the macro skips
+    /// its own. Recording happens only after the call returns Ok, so a recipe
+    /// holds the steps that actually ran.
+    async fn call_tool(
+        &self,
+        request: rmcp::model::CallToolRequestParams,
+        context: rmcp::service::RequestContext<rmcp::RoleServer>,
+    ) -> Result<rmcp::model::CallToolResult, rmcp::ErrorData> {
+        // Snapshot tool name + raw args up front (the request is moved into the
+        // dispatcher). args default to `{}` to match a recipe step's shape.
+        let recording = self.recorder.as_ref().map(|r| {
+            let args = request
+                .arguments
+                .clone()
+                .map(Value::Object)
+                .unwrap_or_else(|| json!({}));
+            (r.clone(), request.name.to_string(), args)
+        });
+        let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
+        let result = self.tool_router.call(tcc).await?;
+        if let Some((recorder, tool, args)) = recording {
+            recorder.record(&tool, args);
+        }
+        Ok(result)
+    }
+
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
         info.capabilities = ServerCapabilities::builder().enable_tools().build();
@@ -1877,9 +1988,14 @@ impl ServerHandler for Atelier {
     }
 }
 
-/// Run over stdio (default transport).
-pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    let service = Atelier::new().serve(rmcp::transport::stdio()).await?;
+/// Run over stdio (default transport). `record` enables session recording to a
+/// recipe at that path.
+pub async fn run(record: Option<std::path::PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
+    let mut atelier = Atelier::new();
+    if let Some(path) = record {
+        atelier = atelier.with_recording(path);
+    }
+    let service = atelier.serve(rmcp::transport::stdio()).await?;
     service.waiting().await?;
     Ok(())
 }
@@ -1891,6 +2007,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
 pub async fn run_http(
     addr: &str,
     allowed_hosts: Vec<String>,
+    record: Option<std::path::PathBuf>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     use rmcp::transport::streamable_http_server::{
         session::local::LocalSessionManager, StreamableHttpServerConfig, StreamableHttpService,
@@ -1898,6 +2015,8 @@ pub async fn run_http(
 
     // Shared studio across all HTTP sessions.
     let studio = std::sync::Arc::new(std::sync::Mutex::new(Studio::new()));
+    // One recorder shared across sessions so every call lands in one recipe.
+    let recorder = record.map(Recorder::new);
 
     let mut config = StreamableHttpServerConfig::default();
     for h in allowed_hosts {
@@ -1908,7 +2027,12 @@ pub async fn run_http(
 
     let factory = {
         let studio = studio.clone();
-        move || Ok(Atelier::with_studio(studio.clone()))
+        let recorder = recorder.clone();
+        move || {
+            let mut atelier = Atelier::with_studio(studio.clone());
+            atelier.recorder = recorder.clone();
+            Ok(atelier)
+        }
     };
     let service: StreamableHttpService<Atelier, LocalSessionManager> =
         StreamableHttpService::new(factory, Default::default(), config);
@@ -1925,4 +2049,57 @@ pub async fn run_http(
         })
         .await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recorder_writes_replayable_recipe() {
+        let path = std::env::temp_dir().join("atelier-rec-roundtrip.json");
+        let _ = std::fs::remove_file(&path);
+        let rec = Recorder::new(path.clone());
+
+        rec.record("doc_create", json!({"name": "x", "width": 8, "height": 8}));
+        rec.record("doc_info", json!({"doc_id": "x"}));
+
+        // The file each rewrite leaves must parse through replay's own parser.
+        let src = std::fs::read_to_string(&path).expect("recipe file written");
+        let recipe = crate::replay::Recipe::parse(&src).expect("recipe parses");
+
+        // Name is the file stem; description carries the recorded marker.
+        assert_eq!(recipe.name, "atelier-rec-roundtrip");
+        assert!(
+            recipe.description.starts_with("recorded session "),
+            "got: {}",
+            recipe.description
+        );
+        // Steps round-trip in order with their args intact.
+        assert_eq!(recipe.steps.len(), 2);
+        assert_eq!(recipe.steps[0].tool, "doc_create");
+        assert_eq!(recipe.steps[0].args["width"], 8);
+        assert_eq!(recipe.steps[1].tool, "doc_info");
+        assert_eq!(recipe.steps[1].args["doc_id"], "x");
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn iso_date_is_well_formed() {
+        let d = iso_date();
+        let parts: Vec<&str> = d.split('-').collect();
+        assert_eq!(parts.len(), 3, "got: {d}");
+        assert_eq!(parts[0].len(), 4);
+        assert_eq!(parts[1].len(), 2);
+        assert_eq!(parts[2].len(), 2);
+        let (y, m, day): (i64, u32, u32) = (
+            parts[0].parse().unwrap(),
+            parts[1].parse().unwrap(),
+            parts[2].parse().unwrap(),
+        );
+        assert!(y >= 2025, "year too small: {y}");
+        assert!((1..=12).contains(&m), "month: {m}");
+        assert!((1..=31).contains(&day), "day: {day}");
+    }
 }
