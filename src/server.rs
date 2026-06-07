@@ -1771,3 +1771,46 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     service.waiting().await?;
     Ok(())
 }
+
+/// Run as a networked MCP server over Streamable HTTP at `addr`, mounted at
+/// `/mcp`. One shared studio backs all sessions (writes serialised by its Mutex).
+/// `allowed_hosts` extends the loopback default for LAN/remote `Host` validation
+/// (DNS-rebinding guard); pass the host(s) clients will use.
+pub async fn run_http(
+    addr: &str,
+    allowed_hosts: Vec<String>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    use rmcp::transport::streamable_http_server::{
+        session::local::LocalSessionManager, StreamableHttpServerConfig, StreamableHttpService,
+    };
+
+    // Shared studio across all HTTP sessions.
+    let studio = std::sync::Arc::new(std::sync::Mutex::new(Studio::new()));
+
+    let mut config = StreamableHttpServerConfig::default();
+    for h in allowed_hosts {
+        if !config.allowed_hosts.contains(&h) {
+            config.allowed_hosts.push(h);
+        }
+    }
+
+    let factory = {
+        let studio = studio.clone();
+        move || Ok(Atelier::with_studio(studio.clone()))
+    };
+    let service: StreamableHttpService<Atelier, LocalSessionManager> =
+        StreamableHttpService::new(factory, Default::default(), config);
+
+    let router = axum::Router::new().nest_service("/mcp", service);
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+    eprintln!(
+        "atelier MCP listening on http://{}/mcp",
+        listener.local_addr()?
+    );
+    axum::serve(listener, router)
+        .with_graceful_shutdown(async {
+            let _ = tokio::signal::ctrl_c().await;
+        })
+        .await?;
+    Ok(())
+}
