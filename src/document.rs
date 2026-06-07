@@ -997,6 +997,194 @@ impl Document {
         }
         Ok(base)
     }
+
+    /// Draw a 1px outline around the opaque pixels of a cel. `aa` also softens
+    /// the diagonal-only corner pixels (reduced alpha) so the outline reads as
+    /// anti-aliased instead of stair-stepped.
+    pub fn outline_cel(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        color: [u8; 4],
+        aa: bool,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let opaque = |img: &RgbaImage, x: i32, y: i32| {
+            x >= 0 && y >= 0 && x < w && y < h && img.get_pixel(x as u32, y as u32).0[3] > 0
+        };
+        let n4 = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+        let nd = [(-1, -1), (1, -1), (-1, 1), (1, 1)];
+        let mut writes: Vec<(i32, i32, [u8; 4])> = Vec::new();
+        for y in 0..h {
+            for x in 0..w {
+                if opaque(img, x, y) {
+                    continue;
+                }
+                if n4.iter().any(|(ox, oy)| opaque(img, x + ox, y + oy)) {
+                    writes.push((x, y, color));
+                } else if aa && nd.iter().any(|(ox, oy)| opaque(img, x + ox, y + oy)) {
+                    let a = (color[3] as u32 * 110 / 255) as u8; // soft corner
+                    writes.push((x, y, [color[0], color[1], color[2], a]));
+                }
+            }
+        }
+        for (x, y, c) in writes {
+            img.put_pixel(x as u32, y as u32, Rgba(c));
+        }
+        Ok(())
+    }
+
+    /// Project a coloured drop shadow of the cel's opaque silhouette offset by
+    /// (dx,dy), at `opacity`, optionally `blur`red, and composite the original
+    /// art back on top. Self-contained on one cel.
+    pub fn drop_shadow(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        dx: i32,
+        dy: i32,
+        color: [u8; 4],
+        opacity: u8,
+        blur: i32,
+    ) -> Result<(), String> {
+        let orig = self.cel_canvas(layer, frame)?.clone();
+        let (w, h) = (orig.width(), orig.height());
+        let mut shadow = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
+        let scale = (opacity as f32 / 255.0) * (color[3] as f32 / 255.0);
+        for y in 0..h as i32 {
+            for x in 0..w as i32 {
+                let a = orig.get_pixel(x as u32, y as u32).0[3];
+                let (sx, sy) = (x + dx, y + dy);
+                if a > 0 && sx >= 0 && sy >= 0 && (sx as u32) < w && (sy as u32) < h {
+                    let alpha = (a as f32 * scale).round().clamp(0.0, 255.0) as u8;
+                    shadow.put_pixel(
+                        sx as u32,
+                        sy as u32,
+                        Rgba([color[0], color[1], color[2], alpha]),
+                    );
+                }
+            }
+        }
+        let mut out = raster::box_blur(&shadow, blur);
+        raster::composite(&mut out, &orig, 0, 0, 255, raster::Blend::Normal);
+        *self.cel_canvas(layer, frame)? = out;
+        Ok(())
+    }
+
+    /// Bloom: blur a bright copy of the cel and composite it back through a
+    /// light blend (`mode`, e.g. screen/add) at `intensity`. `color` (None =
+    /// the art's own colours) tints the glow. Self-contained on one cel.
+    pub fn glow(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        color: Option<[u8; 4]>,
+        radius: i32,
+        intensity: u8,
+        mode: &str,
+    ) -> Result<(), String> {
+        let orig = self.cel_canvas(layer, frame)?.clone();
+        let (w, h) = (orig.width(), orig.height());
+        let mut src = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
+        for y in 0..h {
+            for x in 0..w {
+                let p = orig.get_pixel(x, y).0;
+                if p[3] > 0 {
+                    let c = color.unwrap_or(p);
+                    src.put_pixel(x, y, Rgba([c[0], c[1], c[2], p[3]]));
+                }
+            }
+        }
+        let g = raster::box_blur(&src, radius.max(1));
+        let mut out = orig.clone();
+        raster::composite(&mut out, &g, 0, 0, intensity, raster::parse_blend(mode));
+        *self.cel_canvas(layer, frame)? = out;
+        Ok(())
+    }
+
+    /// Fake-3D bevel: lighten the top/left edge band and darken the bottom/right
+    /// band of the opaque shape (each within `depth` pixels of a silhouette
+    /// edge), giving raised volume. `light`/`dark` carry their own alpha as the
+    /// effect strength.
+    pub fn bevel(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        light: [u8; 4],
+        dark: [u8; 4],
+        depth: i32,
+    ) -> Result<(), String> {
+        let orig = self.cel_canvas(layer, frame)?.clone();
+        let (w, h) = (orig.width() as i32, orig.height() as i32);
+        let depth = depth.max(1);
+        let opaque = |x: i32, y: i32| {
+            x >= 0 && y >= 0 && x < w && y < h && orig.get_pixel(x as u32, y as u32).0[3] > 0
+        };
+        let img = self.cel_canvas(layer, frame)?;
+        for y in 0..h {
+            for x in 0..w {
+                if !opaque(x, y) {
+                    continue;
+                }
+                let mut lit = false;
+                let mut shd = false;
+                for d in 1..=depth {
+                    if !opaque(x, y - d) || !opaque(x - d, y) {
+                        lit = true;
+                    }
+                    if !opaque(x, y + d) || !opaque(x + d, y) {
+                        shd = true;
+                    }
+                }
+                let base = orig.get_pixel(x as u32, y as u32).0;
+                let np = match (lit, shd) {
+                    (true, false) => raster::composite_px(
+                        base,
+                        light,
+                        light[3] as f32 / 255.0,
+                        raster::Blend::Normal,
+                    ),
+                    (false, true) => raster::composite_px(
+                        base,
+                        dark,
+                        dark[3] as f32 / 255.0,
+                        raster::Blend::Normal,
+                    ),
+                    _ => base,
+                };
+                img.put_pixel(x as u32, y as u32, Rgba(np));
+            }
+        }
+        Ok(())
+    }
+
+    /// Box-blur a cel by `radius` (premultiplied, so no dark haloes), optionally
+    /// limited to `region`. Soft shadows, depth-of-field, smoke.
+    pub fn blur(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        radius: i32,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let blurred = raster::box_blur(img, radius);
+        match region {
+            None => *img = blurred,
+            Some((x0, y0, x1, y1)) => {
+                let (w, h) = (img.width() as i32, img.height() as i32);
+                let (ax, bx) = (x0.min(x1).max(0), x0.max(x1).min(w - 1));
+                let (ay, by) = (y0.min(y1).max(0), y0.max(y1).min(h - 1));
+                for y in ay..=by {
+                    for x in ax..=bx {
+                        img.put_pixel(x as u32, y as u32, *blurred.get_pixel(x as u32, y as u32));
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -1225,5 +1413,24 @@ mod tests {
         let d = Document::new("t", 4, 4);
         let (w, h, _) = d.copy_region(0, 0, -5, -5, 100, 100).unwrap();
         assert_eq!((w, h), (4, 4));
+    }
+
+    #[test]
+    fn blur_spreads_a_dot() {
+        let mut d = Document::new("t", 5, 5);
+        d.pencil(0, 0, &[(2, 2)], [255, 255, 255, 255], 1).unwrap();
+        d.blur(0, 0, 1, None).unwrap();
+        assert!(d.get_pixel(0, 0, 2, 1).unwrap()[3] > 0); // bled into neighbour
+        assert!(d.get_pixel(0, 0, 2, 2).unwrap()[3] < 255); // centre softened
+    }
+
+    #[test]
+    fn drop_shadow_adds_offset_silhouette() {
+        let mut d = Document::new("t", 8, 8);
+        d.rect(0, 0, 1, 1, 3, 3, [255, 255, 255, 255], true, 1)
+            .unwrap();
+        d.drop_shadow(0, 0, 2, 2, [0, 0, 0, 255], 200, 0).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [255, 255, 255, 255]); // art still on top
+        assert!(d.get_pixel(0, 0, 5, 5).unwrap()[3] > 0); // shadow offset by (2,2)
     }
 }
