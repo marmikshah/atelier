@@ -6,6 +6,10 @@ on:
 
 jobs:
   build:
+    # action-gh-release creates the GitHub Release; the default GITHUB_TOKEN is
+    # read-only, so grant write access to repository contents (releases).
+    permissions:
+      contents: write
     strategy:
       matrix:
         include:
