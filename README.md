@@ -60,9 +60,11 @@ The full tool surface (71 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md)
 ## Quickstart
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/marmikshah/atelier/main/install.sh | sh
-claude mcp add --scope user atelier -- atelier
+curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
+
+The installer detects Claude Code, Kimi Code and Cursor and offers to register
+atelier with each (or do it yourself: `claude mcp add --scope user atelier -- atelier`).
 
 Prebuilt binaries cover macOS (Apple Silicon), Linux x86_64 and Windows
 (grab the `.zip` from [releases](https://github.com/marmikshah/atelier/releases/latest));
