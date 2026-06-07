@@ -628,7 +628,7 @@ pub struct DocText {
     pub text: String,
     /// [r,g,b] or [r,g,b,a]; alpha 0 erases.
     pub color: Vec<i64>,
-    /// Integer pixel scale of the 3×5 cell (default 1).
+    /// Integer pixel scale of the 3×5 cell (default 1), clamped to 1..=64.
     pub size: Option<i64>,
 }
 

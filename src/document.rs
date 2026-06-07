@@ -868,10 +868,11 @@ impl Document {
 
     /// Stamp `text` left-to-right with the built-in 3×5 pixel font, top-left at
     /// (x,y). `size` is the integer pixel scale of each cell (so a glyph is
-    /// 3·size wide, 5·size tall); glyphs are separated by one scaled pixel of
-    /// spacing. Lowercase maps to uppercase; unknown chars render as a hollow
-    /// box. Returns the rendered width in document pixels so callers can lay out
-    /// the next line/element. HUD text, damage numbers, lettering.
+    /// 3·size wide, 5·size tall), clamped to 1..=64 to bound the inner loops.
+    /// Glyphs are separated by one scaled pixel of spacing. Lowercase maps to
+    /// uppercase; unknown chars render as a hollow box. Returns the rendered width
+    /// in document pixels so callers can lay out the next line/element. HUD text,
+    /// damage numbers, lettering.
     pub fn text(
         &mut self,
         layer: usize,
@@ -882,7 +883,7 @@ impl Document {
         color: [u8; 4],
         size: i32,
     ) -> Result<i32, String> {
-        let s = size.max(1);
+        let s = size.clamp(1, 64); // bound the s×s inner loops against huge tool input
         let advance = (raster::GLYPH_W + 1) * s; // glyph cell + 1px scaled spacing
         let img = self.cel_canvas(layer, frame)?;
         let mut pen = x;
@@ -2859,6 +2860,16 @@ mod tests {
         assert_eq!(d.text(0, 0, 0, 0, "II", [255; 4], 1).unwrap(), 7); // 3 + 1 + 3
                                                                        // size 2 scales the whole width.
         assert_eq!(d.text(0, 0, 0, 0, "II", [255; 4], 2).unwrap(), 14);
+    }
+
+    #[test]
+    fn text_size_is_clamped_against_runaway_scaling() {
+        // A huge size completes (no hang) and behaves as the 64 clamp ceiling.
+        let mut d = Document::new("t", 256, 512);
+        let clamped = d.text(0, 0, 0, 0, "I", [255; 4], 64).unwrap();
+        let huge = d.text(0, 0, 0, 0, "I", [255; 4], 9999).unwrap();
+        assert_eq!(huge, clamped);
+        assert_eq!(huge, 3 * 64); // 192px, the clamped glyph width
     }
 
     #[test]
