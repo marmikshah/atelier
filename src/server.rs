@@ -1081,6 +1081,18 @@ impl Atelier {
         ))
     }
 
+    #[tool(
+        description = "Export the document as an animated PNG (APNG) — lossless, full alpha (unlike GIF's 256 colours and 1-bit alpha). Pass `tag` to play one animation tag in its direction (forward/reverse/pingpong); omit to play the whole timeline forward."
+    )]
+    async fn doc_export_apng(&self, Parameters(p): Parameters<DocExportGif>) -> String {
+        res(self.studio().doc_export_apng(
+            &p.doc_id,
+            &p.out_path,
+            p.scale.unwrap_or(4),
+            p.tag.as_deref(),
+        ))
+    }
+
     // -- per-pixel drawing on a cel (the editor; coords = document pixels) --
     #[tool(
         description = "Paint pixels into a cel. points=[[x,y],...], color [r,g,b]/[r,g,b,a] (alpha 0 erases), size = square brush."

@@ -503,6 +503,21 @@ impl Studio {
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
     }
 
+    pub fn doc_export_apng(
+        &self,
+        id: &str,
+        out_path: &str,
+        scale: u32,
+        tag: Option<&str>,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        if let Some(p) = Path::new(out_path).parent() {
+            let _ = fs::create_dir_all(p);
+        }
+        let frames = doc.export_apng(Path::new(out_path), scale.max(1), tag)?;
+        Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
+    }
+
     // -- per-cel drawing ----------------------------------------------------
 
     fn edit<F>(&self, id: &str, f: F) -> Result<Value, String>

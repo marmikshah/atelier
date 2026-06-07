@@ -2103,6 +2103,42 @@ impl Document {
         Ok(seq.len())
     }
 
+    /// Export an animated PNG (APNG) — the lossless, full-alpha sibling of
+    /// `export_gif` (GIF is 256 colours with 1-bit alpha). Plays `tag`'s sequence
+    /// (honouring direction) or the whole timeline when `tag` is None;
+    /// nearest-neighbour `scale`; per-frame delay is `duration_ms`/1000s. Returns
+    /// the number of frames emitted (a pingpong tag emits more than its range).
+    pub fn export_apng(&self, out: &Path, scale: u32, tag: Option<&str>) -> Result<usize, String> {
+        let seq = self.play_sequence(tag)?;
+        if seq.is_empty() {
+            return Err("nothing to export: document has no frames".into());
+        }
+        let sc = scale.max(1);
+        let (w, h) = (self.meta.w * sc, self.meta.h * sc);
+        let file = std::fs::File::create(out).map_err(|e| e.to_string())?;
+        let mut enc = png::Encoder::new(std::io::BufWriter::new(file), w, h);
+        enc.set_color(png::ColorType::Rgba);
+        enc.set_depth(png::BitDepth::Eight);
+        enc.set_animated(seq.len() as u32, 0)
+            .map_err(|e| e.to_string())?;
+        let mut writer = enc.write_header().map_err(|e| e.to_string())?;
+        for &f in &seq {
+            let mut img = self.flatten(f);
+            if sc > 1 {
+                img = image::imageops::resize(&img, w, h, image::imageops::FilterType::Nearest);
+            }
+            // PNG frame delay is a rational; express it as milliseconds / 1000.
+            writer
+                .set_frame_delay(self.meta.frames[f].duration_ms as u16, 1000)
+                .map_err(|e| e.to_string())?;
+            writer
+                .write_image_data(img.as_raw())
+                .map_err(|e| e.to_string())?;
+        }
+        writer.finish().map_err(|e| e.to_string())?;
+        Ok(seq.len())
+    }
+
     /// Apply one batched drawing op described by a JSON object `{"op": "...", ...}`.
     /// Lets a headless client send many ordered edits in a single tool call.
     ///
@@ -3247,6 +3283,52 @@ mod tests {
         assert_eq!(n, 2);
         let bytes = std::fs::metadata(&out).unwrap().len();
         assert!(bytes > 0, "gif should be nonempty");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// `acTL` frame count from APNG bytes: scan for the chunk type marker, read
+    /// the following 4-byte big-endian `num_frames` field (start of its data).
+    #[cfg(test)]
+    fn apng_frame_count(bytes: &[u8]) -> Option<u32> {
+        let pos = bytes.windows(4).position(|w| w == b"acTL")?;
+        let n = &bytes[pos + 4..pos + 8];
+        Some(u32::from_be_bytes([n[0], n[1], n[2], n[3]]))
+    }
+
+    #[test]
+    fn export_apng_is_animated_png_with_matching_frame_count() {
+        let dir = std::env::temp_dir().join(format!("atelier_apng_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut d = doc_with_frames(2);
+        d.fill_cel(0, 0, [0, 255, 0, 128]).unwrap(); // partial alpha — APNG keeps it
+        d.fill_cel(0, 1, [0, 0, 255, 255]).unwrap();
+        let out = dir.join("anim.png");
+        let n = d.export_apng(&out, 2, None).unwrap();
+        assert_eq!(n, 2);
+        let bytes = std::fs::read(&out).unwrap();
+        assert_eq!(&bytes[..8], b"\x89PNG\r\n\x1a\n", "PNG signature");
+        assert_eq!(apng_frame_count(&bytes), Some(2), "acTL frame count");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn export_apng_honours_tag_direction() {
+        let dir = std::env::temp_dir().join(format!("atelier_apng_tag_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut d = doc_with_frames(3);
+        // pingpong over 0..2 plays 0,1,2,1 — 4 frames from a 3-frame range.
+        d.add_tag("pp", 0, 2, "pingpong").unwrap();
+        let out = dir.join("pp.png");
+        let n = d.export_apng(&out, 1, Some("pp")).unwrap();
+        assert_eq!(n, 4);
+        let bytes = std::fs::read(&out).unwrap();
+        assert_eq!(
+            apng_frame_count(&bytes),
+            Some(4),
+            "acTL matches pingpong len"
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 

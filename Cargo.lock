@@ -41,6 +41,7 @@ dependencies = [
  "axum",
  "dirs",
  "image",
+ "png",
  "rmcp",
  "schemars",
  "serde",
