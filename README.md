@@ -60,9 +60,13 @@ The full tool surface (71 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md)
 ## Quickstart
 
 ```sh
-cargo install --path .                        # one static binary → ~/.cargo/bin/atelier
+curl -fsSL https://raw.githubusercontent.com/marmikshah/atelier/main/install.sh | sh
 claude mcp add --scope user atelier -- atelier
 ```
+
+Prebuilt binaries cover macOS (Apple Silicon), Linux x86_64 and Windows
+(grab the `.zip` from [releases](https://github.com/marmikshah/atelier/releases/latest));
+anything else builds from source with `cargo install --path .`.
 
 Restart your session (MCP tools load at session start), then ask your agent for
 art — *"draw me a blinking cat sprite and export it as a GIF"*. The agent drives
