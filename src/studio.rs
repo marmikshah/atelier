@@ -86,7 +86,7 @@ impl Studio {
     /// Test-only: build a studio rooted at an explicit directory (avoids the
     /// process-global ATELIER_HOME env var, so tests stay parallel-safe).
     #[cfg(test)]
-    fn with_docs_dir(docs_dir: PathBuf) -> Studio {
+    pub(crate) fn with_docs_dir(docs_dir: PathBuf) -> Studio {
         let _ = fs::create_dir_all(&docs_dir);
         Studio {
             docs_dir,
@@ -478,6 +478,24 @@ impl Studio {
         let (w, h) = (img.width(), img.height());
         img.save(&out).map_err(|e| e.to_string())?;
         Ok(json!({"path": out.to_string_lossy(), "size": [w, h], "frame": frame}))
+    }
+
+    /// Flatten one frame and encode it straight to PNG bytes in memory (no file).
+    /// Backs the MCP `render` resource, which serves the bytes as a blob.
+    pub fn render_png_bytes(&self, id: &str, frame: usize, scale: u32) -> Result<Vec<u8>, String> {
+        let (_dir, doc) = self.open(id)?;
+        if frame >= doc.meta.frames.len() {
+            return Err(format!(
+                "no frame {} (frames={})",
+                frame,
+                doc.meta.frames.len()
+            ));
+        }
+        let img = doc.render_preview(frame, scale.max(1), None, false, 1, None)?;
+        let mut buf = std::io::Cursor::new(Vec::new());
+        img.write_to(&mut buf, image::ImageFormat::Png)
+            .map_err(|e| e.to_string())?;
+        Ok(buf.into_inner())
     }
 
     pub fn doc_export_sheet(&self, id: &str, out_path: &str, scale: u32) -> Result<Value, String> {

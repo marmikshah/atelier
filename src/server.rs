@@ -4,8 +4,13 @@
 
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
-use rmcp::model::{ServerCapabilities, ServerInfo};
-use rmcp::{tool, tool_handler, tool_router, ServerHandler, ServiceExt};
+use rmcp::model::{
+    AnnotateAble, ListResourcesResult, PaginatedRequestParams, RawResource,
+    ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents, ServerCapabilities,
+    ServerInfo,
+};
+use rmcp::service::RequestContext;
+use rmcp::{tool, tool_handler, tool_router, ErrorData, RoleServer, ServerHandler, ServiceExt};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -967,6 +972,62 @@ fn iso_date() -> String {
     format!("{y:04}-{m:02}-{d:02}")
 }
 
+// --- resources -------------------------------------------------------------
+
+/// Scale used when rendering the `render` resource (matches the doc_render default).
+const RESOURCE_RENDER_SCALE: u32 = 4;
+
+/// A parsed `atelier://` resource URI: which document, and which view of it.
+#[derive(Debug, PartialEq, Eq)]
+enum ResourceTarget {
+    /// `atelier://doc/<id>` — the document structure JSON.
+    Structure(String),
+    /// `atelier://doc/<id>/render` — frame 0 PNG render (blob).
+    Render(String),
+}
+
+/// Parse an `atelier://doc/<id>` or `.../render` URI into a [`ResourceTarget`].
+/// Returns None for any other scheme/shape (the caller maps that to an error).
+fn parse_resource_uri(uri: &str) -> Option<ResourceTarget> {
+    let rest = uri.strip_prefix("atelier://doc/")?;
+    match rest.strip_suffix("/render") {
+        Some(id) if !id.is_empty() => Some(ResourceTarget::Render(id.to_string())),
+        Some(_) => None, // "atelier://doc//render"
+        None if !rest.is_empty() && !rest.contains('/') => {
+            Some(ResourceTarget::Structure(rest.to_string()))
+        }
+        None => None, // empty id, or extra path segments
+    }
+}
+
+/// Standard base64 (no line wrapping) — the blob field wants pre-encoded text and
+/// we'd rather not pull in a crate for ~15 lines.
+fn base64(bytes: &[u8]) -> String {
+    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for chunk in bytes.chunks(3) {
+        let b = [
+            chunk[0],
+            *chunk.get(1).unwrap_or(&0),
+            *chunk.get(2).unwrap_or(&0),
+        ];
+        let n = (b[0] as u32) << 16 | (b[1] as u32) << 8 | b[2] as u32;
+        out.push(T[(n >> 18 & 63) as usize] as char);
+        out.push(T[(n >> 12 & 63) as usize] as char);
+        out.push(if chunk.len() > 1 {
+            T[(n >> 6 & 63) as usize] as char
+        } else {
+            '='
+        });
+        out.push(if chunk.len() > 2 {
+            T[(n & 63) as usize] as char
+        } else {
+            '='
+        });
+    }
+    out
+}
+
 // --- server ----------------------------------------------------------------
 
 #[derive(Clone)]
@@ -1000,6 +1061,54 @@ impl Atelier {
 
     fn studio(&self) -> std::sync::MutexGuard<'_, Studio> {
         self.studio.lock().expect("studio lock poisoned")
+    }
+
+    /// Enumerate every browsable resource: per document, its structure JSON and a
+    /// frame-0 PNG render, each with a human-readable name.
+    fn list_resource_specs(&self) -> Vec<Resource> {
+        let docs = self.studio().list_docs();
+        let mut out = Vec::new();
+        for d in docs["documents"].as_array().into_iter().flatten() {
+            let Some(id) = d["id"].as_str() else { continue };
+            let name = d["name"].as_str().unwrap_or(id);
+            out.push(
+                RawResource::new(format!("atelier://doc/{id}"), format!("{name} (structure)"))
+                    .with_description("Document structure: layers, frames, cels, tags.")
+                    .with_mime_type("application/json")
+                    .no_annotation(),
+            );
+            out.push(
+                RawResource::new(
+                    format!("atelier://doc/{id}/render"),
+                    format!("{name} (render)"),
+                )
+                .with_description("Frame 0 flattened to a PNG at scale 4.")
+                .with_mime_type("image/png")
+                .no_annotation(),
+            );
+        }
+        out
+    }
+
+    /// Resolve a parsed [`ResourceTarget`] to its contents (structure JSON text or
+    /// a PNG blob). Studio errors surface as `resource_not_found`.
+    fn fetch_resource(
+        &self,
+        uri: &str,
+        target: ResourceTarget,
+    ) -> Result<ResourceContents, String> {
+        match target {
+            ResourceTarget::Structure(id) => {
+                let v = self.studio().doc_info(&id)?;
+                Ok(ResourceContents::text(j(v), uri).with_mime_type("application/json"))
+            }
+            ResourceTarget::Render(id) => {
+                let png = self
+                    .studio()
+                    .render_png_bytes(&id, 0, RESOURCE_RENDER_SCALE)?;
+                Ok(ResourceContents::blob(base64(&png), uri).with_mime_type("image/png"))
+            }
+        }
     }
 }
 
@@ -1972,9 +2081,39 @@ impl ServerHandler for Atelier {
         Ok(result)
     }
 
+    /// List the browsable resources: structure JSON + frame-0 render per document.
+    async fn list_resources(
+        &self,
+        _request: Option<PaginatedRequestParams>,
+        _context: RequestContext<RoleServer>,
+    ) -> Result<ListResourcesResult, ErrorData> {
+        Ok(ListResourcesResult::with_all_items(
+            self.list_resource_specs(),
+        ))
+    }
+
+    /// Read one resource by URI. Unknown URIs and missing documents become a
+    /// `resource_not_found` error rather than a panic.
+    async fn read_resource(
+        &self,
+        request: ReadResourceRequestParams,
+        _context: RequestContext<RoleServer>,
+    ) -> Result<ReadResourceResult, ErrorData> {
+        let target = parse_resource_uri(&request.uri).ok_or_else(|| {
+            ErrorData::resource_not_found(format!("unknown resource uri: {}", request.uri), None)
+        })?;
+        let contents = self
+            .fetch_resource(&request.uri, target)
+            .map_err(|e| ErrorData::resource_not_found(e, None))?;
+        Ok(ReadResourceResult::new(vec![contents]))
+    }
+
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
-        info.capabilities = ServerCapabilities::builder().enable_tools().build();
+        info.capabilities = ServerCapabilities::builder()
+            .enable_tools()
+            .enable_resources()
+            .build();
         info.instructions = Some(
             "atelier: a headless pixel-art editor (Aseprite-as-API). doc_create a \
              layered/animated document, then paint cels with doc_pencil/line/rect/ \
@@ -2083,6 +2222,111 @@ mod tests {
         assert_eq!(recipe.steps[1].args["doc_id"], "x");
 
         let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn resource_uri_parses_and_rejects() {
+        assert_eq!(
+            parse_resource_uri("atelier://doc/hero"),
+            Some(ResourceTarget::Structure("hero".into()))
+        );
+        assert_eq!(
+            parse_resource_uri("atelier://doc/hero/render"),
+            Some(ResourceTarget::Render("hero".into()))
+        );
+        // Unknown scheme, empty id, extra segments, and bare prefixes -> None.
+        assert_eq!(parse_resource_uri("file:///hero"), None);
+        assert_eq!(parse_resource_uri("atelier://doc/"), None);
+        assert_eq!(parse_resource_uri("atelier://doc//render"), None);
+        assert_eq!(parse_resource_uri("atelier://doc/hero/extra"), None);
+        assert_eq!(parse_resource_uri("atelier://doc/hero/render/x"), None);
+    }
+
+    #[test]
+    fn base64_matches_known_vectors() {
+        // RFC 4648 test vectors exercise the 0/1/2 trailing-byte padding cases.
+        assert_eq!(base64(b""), "");
+        assert_eq!(base64(b"f"), "Zg==");
+        assert_eq!(base64(b"fo"), "Zm8=");
+        assert_eq!(base64(b"foo"), "Zm9v");
+        assert_eq!(base64(b"foobar"), "Zm9vYmFy");
+    }
+
+    /// Build an Atelier whose studio is rooted at a throwaway temp dir.
+    fn temp_atelier(tag: &str) -> Atelier {
+        let dir = std::env::temp_dir().join(format!("atelier-srv-test-{tag}"));
+        let _ = std::fs::remove_dir_all(&dir);
+        let studio = Studio::with_docs_dir(dir);
+        Atelier::with_studio(std::sync::Arc::new(std::sync::Mutex::new(studio)))
+    }
+
+    #[test]
+    fn fetch_returns_structure_json_and_png_blob() {
+        let a = temp_atelier("fetch");
+        a.studio().doc_create("Hero", 8, 8).unwrap();
+
+        // Structure resource: JSON text carrying the document's dimensions.
+        let s = a
+            .fetch_resource(
+                "atelier://doc/hero",
+                ResourceTarget::Structure("hero".into()),
+            )
+            .expect("structure fetched");
+        match s {
+            ResourceContents::TextResourceContents {
+                text, mime_type, ..
+            } => {
+                assert_eq!(mime_type.as_deref(), Some("application/json"));
+                let v: Value = serde_json::from_str(&text).expect("valid json");
+                assert_eq!(v["w"], 8);
+                assert_eq!(v["id"], "hero");
+            }
+            other => panic!("expected text contents, got {other:?}"),
+        }
+
+        // Render resource: a base64 PNG blob (verify the magic bytes decode out).
+        let r = a
+            .fetch_resource(
+                "atelier://doc/hero/render",
+                ResourceTarget::Render("hero".into()),
+            )
+            .expect("render fetched");
+        match r {
+            ResourceContents::BlobResourceContents {
+                blob, mime_type, ..
+            } => {
+                assert_eq!(mime_type.as_deref(), Some("image/png"));
+                // base64 of a PNG always starts with the "iVBOR" signature.
+                assert!(blob.starts_with("iVBOR"), "not a PNG blob: {}", &blob[..8]);
+            }
+            other => panic!("expected blob contents, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn list_resource_specs_pairs_each_doc() {
+        let a = temp_atelier("list");
+        a.studio().doc_create("Hero", 8, 8).unwrap();
+        let specs = a.list_resource_specs();
+        let uris: Vec<&str> = specs.iter().map(|r| r.uri.as_str()).collect();
+        assert!(uris.contains(&"atelier://doc/hero"));
+        assert!(uris.contains(&"atelier://doc/hero/render"));
+        // Both carry their advertised mime types.
+        for r in &specs {
+            assert!(r.mime_type.is_some());
+        }
+    }
+
+    #[test]
+    fn fetch_unknown_doc_errors() {
+        let a = temp_atelier("missing");
+        let err = a
+            .fetch_resource(
+                "atelier://doc/ghost",
+                ResourceTarget::Structure("ghost".into()),
+            )
+            .unwrap_err();
+        assert!(err.contains("no document"), "got: {err}");
     }
 
     #[test]
