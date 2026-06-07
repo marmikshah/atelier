@@ -2758,6 +2758,23 @@ mod tests {
     }
 
     #[test]
+    fn get_pixel_reads_back_a_drawn_pixel() {
+        let mut d = Document::new("t", 8, 8);
+        d.pencil(0, 0, &[(3, 4)], [10, 20, 30, 255], 1).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 3, 4).unwrap(), [10, 20, 30, 255]);
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]); // untouched
+        assert_eq!(d.get_pixel(0, 0, 99, 99).unwrap(), [0, 0, 0, 0]); // OOB
+    }
+
+    #[test]
+    fn shift_wrap_rolls_pixels_around() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(3, 0)], [9, 9, 9, 255], 1).unwrap();
+        d.shift(0, 0, 1, 0, true).unwrap(); // (3+1)%4 = 0
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [9, 9, 9, 255]);
+    }
+
+    #[test]
     fn copy_then_paste_replicates_a_block() {
         let mut d = Document::new("t", 8, 8);
         d.rect(0, 0, 0, 0, 1, 1, [9, 9, 9, 255], true, 1).unwrap(); // 2x2 block
