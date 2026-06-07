@@ -15,12 +15,10 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-          - os: macos-14
+          # One macOS build: Apple Silicon on the latest runner. Intel users
+          # build from source (cargo install --path .).
+          - os: macos-latest
             target: aarch64-apple-darwin
-          # Intel macOS is cross-compiled from the arm64 runner — the macos-13
-          # (last Intel) runner pool is retired and tag builds queue forever.
-          - os: macos-14
-            target: x86_64-apple-darwin
           - os: windows-latest
             target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
