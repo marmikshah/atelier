@@ -99,6 +99,16 @@ impl Studio {
         self.docs_dir.join(id)
     }
 
+    /// Stored ids are always slugs (`doc_create` slugifies the name). Reject
+    /// anything else before it reaches the filesystem — ids arrive untrusted
+    /// over MCP, and an id like `../x` would otherwise escape the store.
+    fn valid_id(id: &str) -> bool {
+        !id.is_empty()
+            && id
+                .chars()
+                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+    }
+
     fn exists(&self, id: &str) -> bool {
         self.doc_dir(id).join("doc.json").exists()
     }
@@ -133,6 +143,9 @@ impl Studio {
     }
 
     fn open(&self, id: &str) -> Result<(PathBuf, Document), String> {
+        if !Self::valid_id(id) {
+            return Err(format!("invalid document id '{}'", id));
+        }
         let dir = self.doc_dir(id);
         if !dir.join("doc.json").exists() {
             let existing = self.doc_ids().join(", ");
@@ -195,6 +208,9 @@ impl Studio {
     }
 
     pub fn delete_doc(&self, id: &str) -> Result<Value, String> {
+        if !Self::valid_id(id) {
+            return Err(format!("invalid document id '{}'", id));
+        }
         if !self.exists(id) {
             return Err(format!("no document '{}'", id));
         }
@@ -1290,6 +1306,27 @@ mod tests {
         assert_eq!(listed["documents"][0]["id"], "hero-sprite");
         // reloads from disk (open path), not just in-memory
         assert_eq!(s.doc_info("hero-sprite").unwrap()["w"], 16);
+    }
+
+    #[test]
+    fn non_slug_ids_are_rejected_before_touching_disk() {
+        let s = studio("traversal");
+        s.doc_create("victim", 4, 4).unwrap();
+        // ids arrive untrusted over MCP — path-traversal shapes must not reach fs
+        for bad in ["../victim", "/etc/passwd", "a/../b", "..", "UPPER", ""] {
+            assert!(
+                s.doc_info(bad).unwrap_err().contains("invalid document id"),
+                "{bad}"
+            );
+            assert!(
+                s.delete_doc(bad)
+                    .unwrap_err()
+                    .contains("invalid document id"),
+                "{bad}"
+            );
+        }
+        // the legitimate document is untouched
+        assert_eq!(s.doc_info("victim").unwrap()["w"], 4);
     }
 
     #[test]
