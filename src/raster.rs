@@ -771,8 +771,8 @@ mod tests {
     fn ramp_runs_dark_to_light() {
         let r = make_ramp([120, 80, 60, 255], 5, 20.0, 0.35, 0.1);
         assert_eq!(r.len(), 5);
-        let luma = |c: [u8; 4]| c[0] as i32 + c[1] as i32 + c[2] as i32;
-        assert!(luma(r[0]) < luma(r[4]), "ramp should brighten");
+        let sum3 = |c: [u8; 4]| c[0] as i32 + c[1] as i32 + c[2] as i32;
+        assert!(sum3(r[0]) < sum3(r[4]), "ramp should brighten");
     }
 
     #[test]

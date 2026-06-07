@@ -77,6 +77,11 @@ pub struct Document {
     cels: HashMap<(usize, usize), (i32, i32, RgbaImage)>,
 }
 
+/// Result of `frame_diff_region`: `(added, removed, recolored, change_bbox,
+/// image_a, image_b)` — the change tallies, the bbox of all changed pixels, and
+/// both analysis images so callers can also render a grid/overlay.
+pub type FrameDiff = (u32, u32, u32, Option<[i32; 4]>, RgbaImage, RgbaImage);
+
 fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
 }
@@ -884,6 +889,47 @@ impl Document {
             Some(l) => self.cel_image(l, frame),
             None => Ok(self.flatten(frame)),
         }
+    }
+
+    /// Render a frame into analysis space: each opaque pixel becomes a grey level
+    /// derived from `mode` (transparency preserved). "grayscale" = luma; "bands" =
+    /// luma posterised into `bands` even steps; "saturation"/"hue" = that HSL
+    /// channel scaled to 0..255 grey. The shared core behind doc_render_value.
+    pub fn value_image(&self, frame: usize, mode: &str, bands: u32) -> Result<RgbaImage, String> {
+        let src = self.analysis_image(None, frame)?;
+        let bands = bands.max(1);
+        let mut out = RgbaImage::from_pixel(src.width(), src.height(), Rgba([0, 0, 0, 0]));
+        for (x, y, p) in src.enumerate_pixels() {
+            let c = p.0;
+            if c[3] == 0 {
+                continue;
+            }
+            let g = match mode {
+                "grayscale" => raster::luma(c),
+                "bands" => {
+                    // Posterise luma into `bands` even buckets, spread back to 0..255.
+                    let l = raster::luma(c) as u32;
+                    let b = (l * bands / 256).min(bands - 1);
+                    if bands == 1 {
+                        128
+                    } else {
+                        (b * 255 / (bands - 1)) as u8
+                    }
+                }
+                "saturation" => (raster::saturation(c) * 255.0).round() as u8,
+                "hue" => (raster::hue_deg(c) / 360.0 * 255.0)
+                    .round()
+                    .clamp(0.0, 255.0) as u8,
+                other => {
+                    return Err(format!(
+                        "unknown value mode '{}' — use grayscale|bands|saturation|hue",
+                        other
+                    ))
+                }
+            };
+            out.put_pixel(x, y, Rgba([g, g, g, c[3]]));
+        }
+        Ok(out)
     }
 
     pub fn flatten(&self, frame: usize) -> RgbaImage {
@@ -2227,6 +2273,118 @@ impl Document {
             other => Err(format!("unknown batch op '{}'", other)),
         }
     }
+
+    // -- animation & tiling feedback (read-only diff/seam primitives) --------
+
+    /// Per-pixel diff of two frames over an (already clamped) region. `layer`
+    /// None diffs the flattened composite, else that cel. Classifies each pixel
+    /// as unchanged / added (transparent→opaque) / removed (opaque→transparent)
+    /// or recoloured (opaque→different opaque), tallying counts and the bbox of
+    /// every changed pixel. Returns `(added, removed, recolored, change_bbox,
+    /// img_a, img_b)` so callers can also build a text grid or overlay render.
+    pub fn frame_diff_region(
+        &self,
+        frame_a: usize,
+        frame_b: usize,
+        layer: Option<usize>,
+        region: (i32, i32, i32, i32),
+    ) -> Result<FrameDiff, String> {
+        let a = self.analysis_image(layer, frame_a)?;
+        let b = self.analysis_image(layer, frame_b)?;
+        let (x0, y0, x1, y1) = region;
+        let (mut added, mut removed, mut recolored) = (0u32, 0u32, 0u32);
+        let mut bbox: Option<[i32; 4]> = None;
+        for y in y0..=y1 {
+            for x in x0..=x1 {
+                let pa = a.get_pixel(x as u32, y as u32).0;
+                let pb = b.get_pixel(x as u32, y as u32).0;
+                if pa == pb {
+                    continue;
+                }
+                match (pa[3] > 0, pb[3] > 0) {
+                    (false, true) => added += 1,
+                    (true, false) => removed += 1,
+                    _ => recolored += 1, // both opaque (different) — recolour
+                }
+                bbox = Some(match bbox {
+                    Some([ax, ay, bx, by]) => [ax.min(x), ay.min(y), bx.max(x), by.max(y)],
+                    None => [x, y, x, y],
+                });
+            }
+        }
+        Ok((added, removed, recolored, bbox, a, b))
+    }
+
+    /// Wrap-test one tiling axis: compare the far edge against the near edge that
+    /// would abut it when the cel repeats. `horizontal` true tests column x=w-1
+    /// vs x=0 (left/right tiling), false tests row y=h-1 vs y=0 (top/bottom).
+    /// `threshold` is the max per-channel delta still counted as a match. Returns
+    /// `(mismatches, max_delta, worst)` where `worst` is up to 10 `[x,y,delta]`
+    /// edge cells sorted by descending delta (the position is the far-edge cell).
+    pub fn seam_axis(
+        &self,
+        layer: Option<usize>,
+        frame: usize,
+        horizontal: bool,
+        threshold: i32,
+    ) -> Result<(u32, i32, Vec<[i32; 3]>), String> {
+        let img = self.analysis_image(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let mut mismatches = 0u32;
+        let mut max_delta = 0i32;
+        let mut all: Vec<[i32; 3]> = Vec::new();
+        // The pairs of (far-edge, near-edge) cells along the seam.
+        let pairs: Vec<((i32, i32), (i32, i32))> = if horizontal {
+            (0..h).map(|y| ((w - 1, y), (0, y))).collect()
+        } else {
+            (0..w).map(|x| ((x, h - 1), (x, 0))).collect()
+        };
+        for ((fx, fy), (nx, ny)) in pairs {
+            let pf = img.get_pixel(fx as u32, fy as u32).0;
+            let pn = img.get_pixel(nx as u32, ny as u32).0;
+            let delta = (0..4)
+                .map(|c| (pf[c] as i32 - pn[c] as i32).abs())
+                .max()
+                .unwrap();
+            if delta > threshold {
+                mismatches += 1;
+                max_delta = max_delta.max(delta);
+                all.push([fx, fy, delta]);
+            }
+        }
+        all.sort_by(|a, b| b[2].cmp(&a[2]));
+        all.truncate(10);
+        Ok((mismatches, max_delta, all))
+    }
+
+    /// The silhouette bbox-centre (mean of the bbox corners) of a frame's opaque
+    /// pixels, or None when the frame is empty. `layer` None flattens. Used by
+    /// the spacing audit to track motion frame-to-frame.
+    pub fn silhouette_center(
+        &self,
+        layer: Option<usize>,
+        frame: usize,
+    ) -> Result<Option<[f64; 2]>, String> {
+        let img = self.analysis_image(layer, frame)?;
+        let mut bbox: Option<[i32; 4]> = None;
+        for (x, y, p) in img.enumerate_pixels() {
+            if p.0[3] == 0 {
+                continue;
+            }
+            let (xi, yi) = (x as i32, y as i32);
+            bbox = Some(match bbox {
+                Some([a, b, c, d]) => [a.min(xi), b.min(yi), c.max(xi), d.max(yi)],
+                None => [xi, yi, xi, yi],
+            });
+        }
+        Ok(bbox.map(|[a, b, c, d]| [(a + c) as f64 / 2.0, (b + d) as f64 / 2.0]))
+    }
+
+    /// Count opaque pixels in a frame (denominator for the seam loop score).
+    pub fn opaque_count(&self, layer: Option<usize>, frame: usize) -> Result<u64, String> {
+        let img = self.analysis_image(layer, frame)?;
+        Ok(img.pixels().filter(|p| p.0[3] > 0).count() as u64)
+    }
 }
 
 // -- batch-op JSON parsing helpers ------------------------------------------
@@ -2910,5 +3068,31 @@ mod tests {
             p[0]
         ); // 50% red over black
         assert_eq!(p[3], 255);
+    }
+
+    #[test]
+    fn silhouette_center_of_known_shape() {
+        let mut d = Document::new("t", 6, 6);
+        // Filled 3×3 block from (1,1) to (3,3): bbox-centre is (2,2).
+        d.rect(0, 0, 1, 1, 3, 3, [255, 255, 255, 255], true, 1)
+            .unwrap();
+        let c = d.silhouette_center(None, 0).unwrap().unwrap();
+        assert_eq!(c, [2.0, 2.0]);
+    }
+
+    #[test]
+    fn seam_axis_solid_is_seamless_edge_mismatch_is_not() {
+        let mut d = Document::new("t", 4, 4);
+        d.fill_cel(0, 0, [120, 120, 120, 255]).unwrap();
+        // A solid cel tiles seamlessly: far edge == near edge on both axes.
+        let (mh, _, _) = d.seam_axis(None, 0, true, 8).unwrap();
+        let (mv, _, _) = d.seam_axis(None, 0, false, 8).unwrap();
+        assert_eq!(mh, 0);
+        assert_eq!(mv, 0);
+        // Recolour the far (right) column so it no longer matches x=0.
+        d.line(0, 0, 3, 0, 3, 3, [10, 10, 10, 255], 1).unwrap();
+        let (mh2, max_delta, _) = d.seam_axis(None, 0, true, 8).unwrap();
+        assert!(mh2 > 0, "edge mismatch should be detected");
+        assert!(max_delta > 8, "delta should exceed threshold");
     }
 }
