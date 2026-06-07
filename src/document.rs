@@ -2106,8 +2106,9 @@ impl Document {
     /// Export an animated PNG (APNG) — the lossless, full-alpha sibling of
     /// `export_gif` (GIF is 256 colours with 1-bit alpha). Plays `tag`'s sequence
     /// (honouring direction) or the whole timeline when `tag` is None;
-    /// nearest-neighbour `scale`; per-frame delay is `duration_ms`/1000s. Returns
-    /// the number of frames emitted (a pingpong tag emits more than its range).
+    /// nearest-neighbour `scale`; per-frame delay is `duration_ms` (in 1/1000s, or
+    /// 1/100s for delays beyond 65s). Returns the number of frames emitted (a
+    /// pingpong tag emits more than its range).
     pub fn export_apng(&self, out: &Path, scale: u32, tag: Option<&str>) -> Result<usize, String> {
         let seq = self.play_sequence(tag)?;
         if seq.is_empty() {
@@ -2127,9 +2128,16 @@ impl Document {
             if sc > 1 {
                 img = image::imageops::resize(&img, w, h, image::imageops::FilterType::Nearest);
             }
-            // PNG frame delay is a rational; express it as milliseconds / 1000.
+            // PNG frame delay is a u16/u16 rational; pick a denominator that fits:
+            // ms/1000 while it fits in u16, else centiseconds/100 (capped at u16).
+            let ms = self.meta.frames[f].duration_ms;
+            let (num, den) = if ms <= u16::MAX as u32 {
+                (ms as u16, 1000)
+            } else {
+                ((ms / 10).min(u16::MAX as u32) as u16, 100)
+            };
             writer
-                .set_frame_delay(self.meta.frames[f].duration_ms as u16, 1000)
+                .set_frame_delay(num, den)
                 .map_err(|e| e.to_string())?;
             writer
                 .write_image_data(img.as_raw())
@@ -3295,6 +3303,16 @@ mod tests {
         Some(u32::from_be_bytes([n[0], n[1], n[2], n[3]]))
     }
 
+    /// First `fcTL`'s `(delay_num, delay_den)` from APNG bytes: the two big-endian
+    /// u16 fields at offsets 20 and 22 into the chunk data (after the marker).
+    #[cfg(test)]
+    fn apng_first_frame_delay(bytes: &[u8]) -> Option<(u16, u16)> {
+        let pos = bytes.windows(4).position(|w| w == b"fcTL")? + 4;
+        let num = u16::from_be_bytes([bytes[pos + 20], bytes[pos + 21]]);
+        let den = u16::from_be_bytes([bytes[pos + 22], bytes[pos + 23]]);
+        Some((num, den))
+    }
+
     #[test]
     fn export_apng_is_animated_png_with_matching_frame_count() {
         let dir = std::env::temp_dir().join(format!("atelier_apng_{}", std::process::id()));
@@ -3329,6 +3347,21 @@ mod tests {
             Some(4),
             "acTL matches pingpong len"
         );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn export_apng_long_delay_does_not_wrap() {
+        let dir = std::env::temp_dir().join(format!("atelier_apng_long_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut d = doc_with_frames(1);
+        d.set_frame_duration(0, 70_000).unwrap(); // > u16::MAX ms — used to wrap
+        let out = dir.join("long.png");
+        d.export_apng(&out, 1, None).unwrap();
+        let bytes = std::fs::read(&out).unwrap();
+        // 70_000ms is encoded as 7000/100s, not a truncated u16.
+        assert_eq!(apng_first_frame_delay(&bytes), Some((7000, 100)));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
