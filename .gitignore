@@ -1,0 +1,6 @@
+/target/
+.atelier/
+.DS_Store
+*.swp
+.claude/
+.venv/
