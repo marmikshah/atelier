@@ -11,6 +11,7 @@
 
 pub mod document;
 pub mod raster;
+pub mod replay;
 pub mod server;
 pub mod service;
 pub mod studio;

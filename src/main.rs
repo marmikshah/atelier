@@ -12,7 +12,7 @@
 //! Extra allowed Host headers for LAN/remote use (DNS-rebind guard):
 //!   ATELIER_ALLOWED_HOSTS="my-workstation.local,192.168.1.20:8765"
 
-use atelier::{server, service};
+use atelier::{replay, server, service};
 
 const HELP: &str = "atelier — an MCP-native headless pixel-art editor (Aseprite-as-API).
 
@@ -23,6 +23,8 @@ USAGE:
             [--bind ADDR] [--home DIR]
     atelier service status        show daemon state and log locations
     atelier service uninstall     stop + remove the daemon
+    atelier replay <recipe.json>  replay a scripted sequence of tool calls (MCP client)
+            [--home DIR]          run against an isolated ATELIER_HOME
     atelier --version             print the version
 
 ENVIRONMENT:
@@ -37,10 +39,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Subcommands / flags that don't start the server.
     match args.get(1).map(|s| s.as_str()) {
         Some("service") => std::process::exit(service::run(&args[2..])),
-        Some("replay") => {
-            eprintln!("atelier replay: not yet available");
-            std::process::exit(1);
-        }
+        // Runs inside this runtime (it drives a child MCP server over stdio).
+        Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
             return Ok(());
