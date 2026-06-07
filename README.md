@@ -104,9 +104,11 @@ with the analysis tools along the way:
 atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 ```
 
-Three annotated examples live in [docs/examples/](docs/examples/): a 2-frame
-invader march, a seamless animated water tile, and an eased pong loop. They
-double as integration tests and as documentation.
+Four annotated examples live in [docs/examples/](docs/examples/): a 2-frame
+invader march, a seamless animated water tile, an eased pong loop, and a
+14-frame stickman kamehameha showing layered character animation (pose-per-frame
+body, camera-shake background, glow-bloomed beam fx). They double as
+integration tests and as documentation.
 
 ## More
 
