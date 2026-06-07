@@ -899,6 +899,20 @@ pub struct DocKeyframeMove {
     pub clear_source: Option<bool>,
 }
 
+/// True when a tool result is a failure: either `is_error` is set, or its first
+/// text content is a `{"error": ...}` payload (how `res` reports app errors).
+fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
+    if result.is_error == Some(true) {
+        return true;
+    }
+    result
+        .content
+        .first()
+        .and_then(|c| c.as_text())
+        .and_then(|t| serde_json::from_str::<Value>(&t.text).ok())
+        .is_some_and(|v| v.get("error").is_some())
+}
+
 // --- session recorder ------------------------------------------------------
 
 /// Records every tool call into a replayable recipe file (the inverse of
@@ -916,14 +930,25 @@ struct Recorder {
 
 impl Recorder {
     fn new(path: std::path::PathBuf) -> Self {
+        // Create the recipe's parent dir once so `--record nested/dir/recipe.json`
+        // works instead of every atomic write silently failing.
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+            if let Err(e) = std::fs::create_dir_all(parent) {
+                eprintln!(
+                    "atelier: failed to create recording dir {}: {e}",
+                    parent.display()
+                );
+            }
+        }
         Self {
             path: std::sync::Arc::new(path),
             steps: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
         }
     }
 
-    /// Append one `{tool, args}` step and rewrite the recipe file atomically.
-    /// Best-effort: a write failure is logged to stderr, never fails the call.
+    /// Append one `{tool, args}` step and rewrite the recipe file atomically. Only
+    /// the caller's successful steps reach here (see `call_tool`), so the recipe
+    /// stays replayable. Best-effort: a write failure is logged, never fails the call.
     fn record(&self, tool: &str, args: Value) {
         let mut steps = self.steps.lock().expect("recorder lock poisoned");
         steps.push(json!({"tool": tool, "args": args}));
@@ -2253,8 +2278,9 @@ impl ServerHandler for Atelier {
     /// `#[tool_router]`-generated dispatcher. This replicates the body the
     /// `#[tool_handler]` macro would otherwise emit (build a `ToolCallContext`,
     /// then `self.tool_router.call(...)`); because we define it, the macro skips
-    /// its own. Recording happens only after the call returns Ok, so a recipe
-    /// holds the steps that actually ran.
+    /// its own. Application errors come back as Ok `{"error": ...}` payloads (see
+    /// `res`), so we record only steps that actually succeeded — a failed step
+    /// would break `atelier replay`, which fails fast on an error payload.
     async fn call_tool(
         &self,
         request: rmcp::model::CallToolRequestParams,
@@ -2273,7 +2299,9 @@ impl ServerHandler for Atelier {
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
         let result = self.tool_router.call(tcc).await?;
         if let Some((recorder, tool, args)) = recording {
-            recorder.record(&tool, args);
+            if !is_error_result(&result) {
+                recorder.record(&tool, args);
+            }
         }
         Ok(result)
     }
@@ -2564,6 +2592,46 @@ mod tests {
         assert_eq!(recipe.steps[1].args["doc_id"], "x");
 
         let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn recorder_skips_failed_steps() {
+        let path = std::env::temp_dir().join("atelier-rec-skip.json");
+        let _ = std::fs::remove_file(&path);
+        let rec = Recorder::new(path.clone());
+
+        // Mirror call_tool: record only when the result is not an error payload.
+        let ok = rmcp::model::CallToolResult::success(vec![rmcp::model::Content::text(j(
+            json!({"id": "x"}),
+        ))]);
+        let err = rmcp::model::CallToolResult::success(vec![rmcp::model::Content::text(j(
+            json!({"error": "no such doc"}),
+        ))]);
+        assert!(!is_error_result(&ok));
+        assert!(is_error_result(&err));
+        if !is_error_result(&ok) {
+            rec.record("doc_create", json!({"name": "x"}));
+        }
+        if !is_error_result(&err) {
+            rec.record("doc_info", json!({"doc_id": "nope"}));
+        }
+
+        let src = std::fs::read_to_string(&path).expect("recipe file written");
+        let recipe = crate::replay::Recipe::parse(&src).expect("recipe parses");
+        assert_eq!(recipe.steps.len(), 1);
+        assert_eq!(recipe.steps[0].tool, "doc_create");
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn recorder_creates_missing_parent_dir() {
+        let base = std::env::temp_dir().join(format!("atelier-rec-nested-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&base);
+        let path = base.join("a").join("b").join("recipe.json");
+        let rec = Recorder::new(path.clone()); // must create a/b/
+        rec.record("doc_create", json!({"name": "x"}));
+        assert!(path.exists(), "recipe written into freshly created dirs");
+        let _ = std::fs::remove_dir_all(&base);
     }
 
     #[test]
