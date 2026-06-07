@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-14
+            target: aarch64-apple-darwin
+          - os: macos-13
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --locked
+
+      - name: Archive (unix)
+        if: runner.os != 'Windows'
+        run: tar -czf atelier-${{ github.ref_name }}-${{ matrix.target }}.tar.gz -C target/release atelier
+      - name: Archive (windows)
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path target/release/atelier.exe -DestinationPath atelier-${{ github.ref_name }}-${{ matrix.target }}.zip
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: atelier-${{ github.ref_name }}-${{ matrix.target }}.*
+
+  # Silently skips when CARGO_REGISTRY_TOKEN is unset (secrets can't be read in
+  # `if:` directly, so route it through env — the documented indirection).
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      HAS_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
+    if: ${{ needs.build.result == 'success' }}
+    steps:
+      - uses: actions/checkout@v5
+        if: env.HAS_TOKEN == 'true'
+      - uses: dtolnay/rust-toolchain@stable
+        if: env.HAS_TOKEN == 'true'
+      - run: cargo publish --locked
+        if: env.HAS_TOKEN == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

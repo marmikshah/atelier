@@ -1,9 +1,12 @@
 [package]
 name = "atelier"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 description = "MCP-native headless pixel-art editor: layered/animated documents, drawing primitives, PNG/sheet/GIF export."
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/marmikshah/atelier"
+keywords = ["mcp", "pixel-art", "aseprite", "sprite", "gamedev"]
+categories = ["command-line-utilities", "multimedia::images", "game-development"]
 
 [[bin]]
 name = "atelier"
