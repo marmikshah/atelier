@@ -8,7 +8,6 @@
 #   ATELIER_VERSION      install a specific tag (e.g. v1.0.1); default: latest
 #   ATELIER_INSTALL_DIR  where the binary goes; default: ~/.local/bin
 #   ATELIER_MODE         "stdio" (default) or "http" (background daemon)
-#   ATELIER_REGISTER     pre-answer registration: "all" or csv of claude,kimi,cursor
 set -eu
 
 REPO="marmikshah/atelier"
@@ -21,47 +20,21 @@ fail() { printf 'install: %s\n' "$*" >&2; exit 1; }
 
 # Interactive prompts read /dev/tty (stdin is the pipe under `curl | sh`);
 # without a usable terminal every prompt falls back to its default.
-has_tty() { { true < /dev/tty; } 2>/dev/null; }
 ask() { # ask <question> -> stdout: the answer ("" when no terminal)
-  has_tty || { printf ''; return; }
+  { true < /dev/tty; } 2>/dev/null || { printf ''; return; }
   printf '%s ' "$1" > /dev/tty
   read -r ans < /dev/tty || ans=""
   printf '%s' "$ans"
 }
 
 # -- uninstall ------------------------------------------------------------------
-# Deregistration is best-effort everywhere: removing an MCP entry that was
-# never registered is harmless, so every step tries and continues.
-deregister_cli() { # deregister_cli <binary> <display name>
-  command -v "$1" >/dev/null 2>&1 || return 0
-  "$1" mcp remove --scope user atelier >/dev/null 2>&1 \
-    || "$1" mcp remove atelier >/dev/null 2>&1 \
-    || return 0
-  say "Deregistered from $2."
-}
-
-deregister_cursor() {
-  CFG="$HOME/.cursor/mcp.json"
-  [ -f "$CFG" ] || return 0
-  if command -v jq >/dev/null 2>&1; then
-    jq 'del(.mcpServers.atelier)' "$CFG" > "$CFG.tmp" 2>/dev/null \
-      && mv "$CFG.tmp" "$CFG" \
-      && say "Deregistered from Cursor ($CFG)." \
-      || rm -f "$CFG.tmp"
-  else
-    say "Cursor: jq unavailable — remove the \"atelier\" entry from $CFG manually."
-  fi
-}
-
 do_uninstall() {
   [ -x "$BIN" ] || fail "nothing to uninstall at $BIN"
   "$BIN" service uninstall >/dev/null 2>&1 || true # stop the daemon if present
   rm -f "$BIN"
-  deregister_cli claude "Claude Code"
-  deregister_cli kimi "Kimi Code"
-  deregister_cursor
-  say "Removed $BIN (daemon stopped and clients deregistered where present)."
-  say "Documents in ~/.atelier are untouched."
+  say "Removed $BIN (and stopped the background daemon, if one was installed)."
+  say "Documents in ~/.atelier are untouched. If registered with an MCP client,"
+  say "deregister manually, e.g.: claude mcp remove atelier"
   exit 0
 }
 [ "${1:-}" = "uninstall" ] && do_uninstall
@@ -145,75 +118,14 @@ if [ "$MODE" = "http" ]; then
   if "$BIN" service install; then
     say "Daemon running at $MCP_URL"
   else
-    say "Daemon install failed — falling back to stdio registration."
+    say "Daemon install failed — register over stdio instead."
     MODE=stdio
   fi
 fi
 
-# -- offer registration with detected MCP clients ---------------------------------
-ask_yn() { # ask_yn <tool-key> <question> -> 0 = yes
-  case ",${ATELIER_REGISTER:-}," in
-    *,all,*|*",$1,"*) return 0 ;;
-  esac
-  case "$(ask "$2 [Y/n]")" in
-    n|N|no|NO) return 1 ;;
-    "") has_tty ;; # no terminal -> skip
-    *) return 0 ;;
-  esac
-}
-
-# Claude Code and Kimi Code share the same `mcp add` CLI shape.
-register_cli() { # register_cli <binary> <display name>
-  command -v "$1" >/dev/null 2>&1 || return 0
-  if ask_yn "$1" "Register atelier with $2?"; then
-    if [ "$MODE" = "http" ]; then
-      ok="$("$1" mcp add --scope user --transport http atelier "$MCP_URL" >/dev/null 2>&1 && echo y || echo n)"
-      manual="$1 mcp add --scope user --transport http atelier $MCP_URL"
-    else
-      ok="$("$1" mcp add --scope user atelier -- "$BIN" >/dev/null 2>&1 && echo y || echo n)"
-      manual="$1 mcp add --scope user atelier -- $BIN"
-    fi
-    if [ "$ok" = "y" ]; then
-      say "Registered with $2 (restart your session to load the tools)."
-    else
-      say "Could not register automatically — run manually:"
-      say "  $manual"
-    fi
-  fi
-}
-
-register_cursor() {
-  { command -v cursor >/dev/null 2>&1 || [ -d "$HOME/.cursor" ]; } || return 0
-  CFG="$HOME/.cursor/mcp.json"
-  ask_yn cursor "Register atelier with Cursor?" || return 0
-  if [ "$MODE" = "http" ]; then
-    ENTRY="{ \"url\": \"$MCP_URL\" }"
-    JQ_ENTRY='{url: $v}'; JQ_VAL="$MCP_URL"
-  else
-    ENTRY="{ \"command\": \"$BIN\" }"
-    JQ_ENTRY='{command: $v}'; JQ_VAL="$BIN"
-  fi
-  if [ ! -f "$CFG" ]; then
-    mkdir -p "$HOME/.cursor"
-    printf '{\n  "mcpServers": {\n    "atelier": %s\n  }\n}\n' "$ENTRY" > "$CFG"
-    say "Registered with Cursor ($CFG)."
-  elif command -v jq >/dev/null 2>&1; then
-    jq --arg v "$JQ_VAL" ".mcpServers.atelier = $JQ_ENTRY" "$CFG" > "$CFG.tmp" \
-      && mv "$CFG.tmp" "$CFG"
-    say "Registered with Cursor ($CFG)."
-  else
-    say "Cursor config exists and jq is unavailable — add this to $CFG manually:"
-    say "  \"atelier\": $ENTRY"
-  fi
-}
-
+# -- next step ---------------------------------------------------------------------
 say ""
-register_cli claude "Claude Code"
-register_cli kimi "Kimi Code"
-register_cursor
-
-say ""
-say "Manual registration, any MCP client:"
+say "Register with your MCP client (then restart its session):"
 if [ "$MODE" = "http" ]; then
   say "  claude mcp add --scope user --transport http atelier $MCP_URL   # Claude Code / Kimi Code"
   say "  Cursor: ~/.cursor/mcp.json -> \"atelier\": { \"url\": \"$MCP_URL\" }"
