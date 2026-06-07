@@ -1185,6 +1185,266 @@ impl Document {
         }
         Ok(())
     }
+
+    /// Paint a colour gradient over a cel. `kind` "linear" runs the axis
+    /// (x0,y0)->(x1,y1); "radial" centres at (x0,y0) with (x1,y1) on the rim.
+    /// `stops` are (pos 0..1, RGBA); `dither` "bayer"/"noise" gives a band-free
+    /// pixel-art look (else smooth lerp). `region` (inclusive corners) clips the
+    /// paint; `blend` true composites over existing pixels (so stop alpha is a
+    /// real falloff — vignettes, light), false overwrites.
+    pub fn gradient(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        kind: &str,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+        mut stops: Vec<(f32, [u8; 4])>,
+        dither: &str,
+        seed: u64,
+        region: Option<(i32, i32, i32, i32)>,
+        blend: bool,
+    ) -> Result<(), String> {
+        if stops.is_empty() {
+            return Err("gradient needs at least one stop".into());
+        }
+        stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
+        stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+        let (rx0, ry0, rx1, ry1) = match region {
+            Some((a, b, c, d)) => raster::clamp_region(a, b, c, d, self.meta.w, self.meta.h)
+                .ok_or("gradient region is empty after clamping")?,
+            None => (0, 0, self.meta.w as i32 - 1, self.meta.h as i32 - 1),
+        };
+        let radial = kind == "radial";
+        let (ax, ay) = (x0 as f32, y0 as f32);
+        let (dx, dy) = (x1 as f32 - ax, y1 as f32 - ay);
+        let len2 = dx * dx + dy * dy;
+        let radius = len2.sqrt();
+        let img = self.cel_canvas(layer, frame)?;
+        for py in ry0..=ry1 {
+            for px in rx0..=rx1 {
+                let (fx, fy) = (px as f32, py as f32);
+                let t = if radial {
+                    if radius <= 0.0 {
+                        0.0
+                    } else {
+                        (((fx - ax).powi(2) + (fy - ay).powi(2)).sqrt() / radius).clamp(0.0, 1.0)
+                    }
+                } else if len2 <= 0.0 {
+                    0.0
+                } else {
+                    (((fx - ax) * dx + (fy - ay) * dy) / len2).clamp(0.0, 1.0)
+                };
+                let c = raster::sample_gradient(&stops, t, dither, px, py, seed);
+                let (ux, uy) = (px as u32, py as u32);
+                let out = if blend {
+                    raster::over(img.get_pixel(ux, uy).0, c)
+                } else {
+                    c
+                };
+                img.put_pixel(ux, uy, Rgba(out));
+            }
+        }
+        Ok(())
+    }
+
+    /// Scatter pixels of random `colors` across a region at `density` (0..1
+    /// probability per pixel), deterministic for a given `seed`. `size` is a
+    /// square dot. Organic grass/foliage/dust/stars without hand-listing each
+    /// speckle. Source-over so alpha colours layer onto existing art.
+    pub fn scatter(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+        colors: &[[u8; 4]],
+        density: f32,
+        seed: u64,
+        size: i32,
+    ) -> Result<(), String> {
+        if colors.is_empty() {
+            return Err("scatter needs at least one colour".into());
+        }
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let (ax, bx) = (x0.min(x1).max(0), x0.max(x1).min(w - 1));
+        let (ay, by) = (y0.min(y1).max(0), y0.max(y1).min(h - 1));
+        let d = density.clamp(0.0, 1.0);
+        let s = size.max(1);
+        let o = s / 2;
+        let img = self.cel_canvas(layer, frame)?;
+        for py in ay..=by {
+            for px in ax..=bx {
+                if (raster::hash2(px, py, seed) as f32 / u32::MAX as f32) >= d {
+                    continue;
+                }
+                let c = colors[raster::hash2(px, py, seed ^ 0xA5A5_5A5A) as usize % colors.len()];
+                for ddy in 0..s {
+                    for ddx in 0..s {
+                        let (tx, ty) = (px - o + ddx, py - o + ddy);
+                        if tx >= 0 && ty >= 0 && tx < w && ty < h {
+                            let (ux, uy) = (tx as u32, ty as u32);
+                            img.put_pixel(ux, uy, Rgba(raster::over(img.get_pixel(ux, uy).0, c)));
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Composite an image ONTO a cel at (x,y) — draws over existing content
+    /// (does not replace the cel), honouring `opacity` and blend `mode`. The
+    /// caller scales/rotates first (see `Studio::doc_stamp_image`). Enables
+    /// sub-sprite reuse without a layer per element.
+    fn stamp(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        src: &RgbaImage,
+        opacity: u8,
+        mode: &str,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        raster::composite(img, src, x, y, opacity, raster::parse_blend(mode));
+        Ok(())
+    }
+
+    /// Place an external image into a cel with optional nearest-neighbour `scale`
+    /// and `rotate` (degrees). `replace` true overwrites the cel (legacy
+    /// behaviour); false composites it OVER existing content with `opacity` +
+    /// blend `mode`.
+    pub fn stamp_image(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        mut src: RgbaImage,
+        scale: f32,
+        rotate: f32,
+        opacity: u8,
+        mode: &str,
+        replace: bool,
+    ) -> Result<(), String> {
+        if (scale - 1.0).abs() > 1e-6 && scale > 0.0 {
+            let nw = (src.width() as f32 * scale).round().max(1.0) as u32;
+            let nh = (src.height() as f32 * scale).round().max(1.0) as u32;
+            src = image::imageops::resize(&src, nw, nh, image::imageops::FilterType::Nearest);
+        }
+        if rotate.abs() > 1e-6 {
+            src = raster::rotate_nn(&src, rotate);
+        }
+        if replace {
+            self.set_cel(layer, frame, x, y, src)
+        } else {
+            self.stamp(layer, frame, x, y, &src, opacity, mode)
+        }
+    }
+
+    /// Mirror a cel across a vertical axis (column `vertical`) and/or a
+    /// horizontal axis (row `horizontal`). `keep_left`/`keep_top` choose which
+    /// side is the source that gets reflected onto the other. Draw half a sprite,
+    /// mirror it for instant symmetry.
+    pub fn symmetry(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        vertical: Option<i32>,
+        horizontal: Option<i32>,
+        keep_left: bool,
+        keep_top: bool,
+    ) -> Result<(), String> {
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let img = self.cel_canvas(layer, frame)?;
+        if let Some(ax) = vertical {
+            for y in 0..h {
+                for x in 0..w {
+                    let on_src = if keep_left { x < ax } else { x > ax };
+                    if on_src {
+                        let mx = 2 * ax - x;
+                        if mx >= 0 && mx < w {
+                            let p = *img.get_pixel(x as u32, y as u32);
+                            img.put_pixel(mx as u32, y as u32, p);
+                        }
+                    }
+                }
+            }
+        }
+        if let Some(ay) = horizontal {
+            for y in 0..h {
+                for x in 0..w {
+                    let on_src = if keep_top { y < ay } else { y > ay };
+                    if on_src {
+                        let my = 2 * ay - y;
+                        if my >= 0 && my < h {
+                            let p = *img.get_pixel(x as u32, y as u32);
+                            img.put_pixel(x as u32, my as u32, p);
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Fill a region with procedural noise mapped through colour `stops`. `kind`
+    /// "cloud" (fBm value noise, `octaves`), "perlin" (gradient) or "voronoi"
+    /// (cellular). `scale` is the feature size in pixels; `blend` composites over
+    /// existing pixels. Textures, terrain, organic mottling.
+    #[allow(clippy::too_many_arguments)]
+    pub fn noise(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        kind: &str,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+        scale: f32,
+        octaves: u32,
+        seed: u64,
+        mut stops: Vec<(f32, [u8; 4])>,
+        blend: bool,
+    ) -> Result<(), String> {
+        if stops.is_empty() {
+            return Err("noise needs at least one colour stop".into());
+        }
+        stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
+        stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let (ax, bx) = (x0.min(x1).max(0), x0.max(x1).min(w - 1));
+        let (ay, by) = (y0.min(y1).max(0), y0.max(y1).min(h - 1));
+        let freq = 1.0 / scale.max(0.0001);
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let (fx, fy) = (x as f32 * freq, y as f32 * freq);
+                let t = match kind {
+                    "perlin" => raster::perlin(fx, fy, seed),
+                    "voronoi" => raster::voronoi(fx, fy, seed),
+                    _ => raster::fbm(fx, fy, seed, octaves),
+                }
+                .clamp(0.0, 1.0);
+                let c = raster::sample_gradient(&stops, t, "none", x, y, seed);
+                let (ux, uy) = (x as u32, y as u32);
+                let out = if blend {
+                    raster::over(img.get_pixel(ux, uy).0, c)
+                } else {
+                    c
+                };
+                img.put_pixel(ux, uy, Rgba(out));
+            }
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -1432,5 +1692,111 @@ mod tests {
         d.drop_shadow(0, 0, 2, 2, [0, 0, 0, 255], 200, 0).unwrap();
         assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [255, 255, 255, 255]); // art still on top
         assert!(d.get_pixel(0, 0, 5, 5).unwrap()[3] > 0); // shadow offset by (2,2)
+    }
+
+    #[test]
+    fn gradient_linear_lerps_between_stops() {
+        let mut d = Document::new("t", 4, 1);
+        d.gradient(
+            0,
+            0,
+            "linear",
+            0,
+            0,
+            3,
+            0,
+            vec![(0.0, [0, 0, 0, 255]), (1.0, [255, 255, 255, 255])],
+            "none",
+            0,
+            None,
+            false,
+        )
+        .unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 255]);
+        assert_eq!(d.get_pixel(0, 0, 3, 0).unwrap(), [255, 255, 255, 255]);
+        assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [85, 85, 85, 255]); // t=1/3
+    }
+
+    #[test]
+    fn gradient_dither_uses_only_stop_colors() {
+        let mut d = Document::new("t", 8, 8);
+        let (a, b) = ([10, 20, 30, 255], [200, 210, 220, 255]);
+        d.gradient(
+            0,
+            0,
+            "linear",
+            0,
+            0,
+            7,
+            0,
+            vec![(0.0, a), (1.0, b)],
+            "bayer",
+            0,
+            None,
+            false,
+        )
+        .unwrap();
+        for x in 0..8 {
+            for y in 0..8 {
+                let p = d.get_pixel(0, 0, x, y).unwrap();
+                assert!(p == a || p == b, "dither pixel {:?} not a stop colour", p);
+            }
+        }
+    }
+
+    #[test]
+    fn gradient_region_clips() {
+        let mut d = Document::new("t", 8, 8);
+        d.gradient(
+            0,
+            0,
+            "linear",
+            0,
+            0,
+            7,
+            0,
+            vec![(0.0, [9, 9, 9, 255]), (1.0, [9, 9, 9, 255])],
+            "none",
+            0,
+            Some((2, 2, 5, 5)),
+            false,
+        )
+        .unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]); // outside region untouched
+        assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [9, 9, 9, 255]); // inside painted
+    }
+
+    #[test]
+    fn scatter_is_deterministic_and_density_bounded() {
+        let count = |seed: u64, dens: f32| {
+            let mut d = Document::new("t", 16, 16);
+            d.scatter(0, 0, 0, 0, 15, 15, &[[255, 0, 0, 255]], dens, seed, 1)
+                .unwrap();
+            (0..16)
+                .flat_map(|y| (0..16).map(move |x| (x, y)))
+                .filter(|(x, y)| d.get_pixel(0, 0, *x, *y).unwrap()[3] > 0)
+                .count()
+        };
+        assert_eq!(count(0, 0.0), 0); // density 0 paints nothing
+        assert_eq!(count(7, 0.3), count(7, 0.3)); // same seed reproduces
+        assert!(count(7, 0.3) < count(7, 0.8)); // higher density paints more
+    }
+
+    #[test]
+    fn stamp_draws_over_without_replacing() {
+        let mut d = Document::new("t", 4, 4);
+        d.fill_cel(0, 0, [0, 255, 0, 255]).unwrap(); // green backdrop
+        let src = RgbaImage::from_pixel(2, 2, Rgba([255, 0, 0, 255]));
+        d.stamp(0, 0, 0, 0, &src, 255, "normal").unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]); // stamped
+        assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [0, 255, 0, 255]); // backdrop kept (not replaced)
+    }
+
+    #[test]
+    fn symmetry_mirrors_across_vertical_axis() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 1)], [9, 9, 9, 255], 1).unwrap();
+        d.symmetry(0, 0, Some(1), None, true, false).unwrap(); // reflect left over column 1
+        assert_eq!(d.get_pixel(0, 0, 2, 1).unwrap(), [9, 9, 9, 255]); // 2*1-0 = 2
     }
 }
