@@ -10,3 +10,4 @@ name = "atelier"
 path = "src/main.rs"
 
 [dependencies]
+image = { version = "0.25", default-features = false, features = ["png", "gif"] }

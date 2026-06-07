@@ -8,3 +8,5 @@
 // Drawing/region ops are inherently coordinate-heavy (layer, frame, x0..y1,
 // colour, …); the argument-count lint fights the domain here.
 #![allow(clippy::too_many_arguments)]
+
+pub mod raster;
