@@ -1906,7 +1906,10 @@ impl Document {
     /// Eased multi-frame region motion. `from_frame`'s region content is the
     /// source; for each frame f in (from, to] it is stamped (source-over) at the
     /// eased offset `(round(dx*t), round(dy*t))`, where t advances from 0→1 over
-    /// the span shaped by `easing`. With `clear_source` the ORIGINAL region rect
+    /// the span shaped by `easing` (forwarded verbatim to `raster::ease` —
+    /// linear/ease-in/ease-out/ease-in-out/bounce/overshoot/elastic; the
+    /// non-monotone curves can push past the full offset before settling). With
+    /// `clear_source` the ORIGINAL region rect
     /// is cleared in each destination frame first (so a moved limb leaves no
     /// stale copy behind). `from_frame` itself is never touched. Reuses the
     /// region copy/clear/paste clipboard internals. Returns the per-frame applied

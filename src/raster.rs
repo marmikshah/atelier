@@ -445,9 +445,12 @@ pub fn lerpf(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 
-/// Cubic easing of a 0..1 progress `t`. "ease-in" t³ (slow start), "ease-out"
-/// the mirror (slow end), "ease-in-out" the symmetric blend, anything else
-/// linear. Used by keyframe motion so a tween accelerates/decelerates.
+/// Easing of a 0..1 progress `t`. "ease-in" t³ (slow start), "ease-out" the
+/// mirror (slow end), "ease-in-out" the symmetric blend, "bounce" (ease-out
+/// bounce), "overshoot" (back ease-out — shoots past 1 then settles), "elastic"
+/// (decaying oscillation ease-out); anything else linear. Every curve satisfies
+/// f(0)=0 and f(1)=1 exactly. Used by keyframe motion so a tween shapes its
+/// acceleration. The non-monotone curves (overshoot/elastic) can exceed [0,1].
 pub fn ease(t: f32, kind: &str) -> f32 {
     let t = t.clamp(0.0, 1.0);
     match kind {
@@ -464,7 +467,43 @@ pub fn ease(t: f32, kind: &str) -> f32 {
                 1.0 - u * u * u / 2.0
             }
         }
+        "bounce" => bounce_out(t),
+        "overshoot" => {
+            // Back ease-out: a single overshoot past 1 that settles back to 1.
+            const C1: f32 = 1.70158;
+            const C3: f32 = C1 + 1.0;
+            let u = t - 1.0;
+            1.0 + C3 * u * u * u + C1 * u * u
+        }
+        "elastic" => {
+            // Decaying sine oscillation that converges on 1 (ease-out elastic).
+            if t == 0.0 || t == 1.0 {
+                t
+            } else {
+                const P: f32 = std::f32::consts::TAU / 3.0;
+                2f32.powf(-10.0 * t) * ((t * 10.0 - 0.75) * P).sin() + 1.0
+            }
+        }
         _ => t, // "linear" and any unknown easing
+    }
+}
+
+/// Ease-out bounce: `t` decelerates in a series of shrinking bounces, staying
+/// within [0,1] with f(0)=0 and f(1)=1. The classic 4-segment piecewise curve.
+fn bounce_out(t: f32) -> f32 {
+    const N1: f32 = 7.5625;
+    const D1: f32 = 2.75;
+    if t < 1.0 / D1 {
+        N1 * t * t
+    } else if t < 2.0 / D1 {
+        let t = t - 1.5 / D1;
+        N1 * t * t + 0.75
+    } else if t < 2.5 / D1 {
+        let t = t - 2.25 / D1;
+        N1 * t * t + 0.9375
+    } else {
+        let t = t - 2.625 / D1;
+        N1 * t * t + 0.984375
     }
 }
 
@@ -833,5 +872,48 @@ mod tests {
         assert_eq!(clamp_region(8, 8, 2, 2, 5, 5), Some((2, 2, 4, 4)));
         // Fully outside → None.
         assert_eq!(clamp_region(20, 20, 30, 30, 5, 5), None);
+    }
+
+    #[test]
+    fn ease_endpoints_exact() {
+        // Every curve must pin 0→0 and 1→1 exactly.
+        for kind in ["bounce", "overshoot", "elastic"] {
+            assert_eq!(ease(0.0, kind), 0.0, "{kind} f(0)");
+            assert_eq!(ease(1.0, kind), 1.0, "{kind} f(1)");
+        }
+    }
+
+    #[test]
+    fn ease_overshoot_exceeds_one() {
+        // Back ease-out shoots past 1 somewhere in the open interval.
+        let peak = (1..100)
+            .map(|i| ease(i as f32 / 100.0, "overshoot"))
+            .fold(f32::MIN, f32::max);
+        assert!(peak > 1.0, "overshoot peak {peak} should exceed 1.0");
+    }
+
+    #[test]
+    fn ease_bounce_stays_in_unit() {
+        // Ease-out bounce is monotone-ish but never leaves [0,1].
+        for i in 0..=100 {
+            let v = ease(i as f32 / 100.0, "bounce");
+            assert!((0.0..=1.0).contains(&v), "bounce({i}) = {v} out of range");
+        }
+    }
+
+    #[test]
+    fn ease_elastic_oscillates() {
+        // The decaying oscillation crosses 1.0 more than once.
+        let samples: Vec<f32> = (0..=100)
+            .map(|i| ease(i as f32 / 100.0, "elastic"))
+            .collect();
+        let crossings = samples
+            .windows(2)
+            .filter(|w| (w[0] - 1.0) * (w[1] - 1.0) < 0.0)
+            .count();
+        assert!(
+            crossings > 1,
+            "elastic should cross 1.0 repeatedly, got {crossings}"
+        );
     }
 }

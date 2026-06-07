@@ -835,7 +835,9 @@ pub struct DocKeyframeMove {
     /// Total displacement applied at to_frame; intermediates are eased fractions.
     pub dx: i32,
     pub dy: i32,
-    /// "linear", "ease-in", "ease-out" or "ease-in-out" (cubic).
+    /// "linear", "ease-in", "ease-out", "ease-in-out" (cubic), "bounce"
+    /// (ease-out bounce), "overshoot" (back ease-out — shoots past the offset
+    /// then settles) or "elastic" (decaying oscillation). Default "linear".
     pub easing: Option<String>,
     /// Clear the original rect in each destination frame first (default true).
     pub clear_source: Option<bool>,
@@ -1652,7 +1654,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Eased multi-frame region motion. Reads the `region` [x0,y0,x1,y1] content from `from_frame` and stamps it (source-over) into every frame in (from_frame, to_frame] at an eased fraction of the total (dx,dy); to_frame gets the full offset. easing: linear/ease-in/ease-out/ease-in-out (cubic). clear_source=true (default) clears the original rect in each destination frame so a moving limb leaves no stale copy. Frames must already exist (else error — doc_add_frame first). Returns frames_touched + per-frame offsets."
+        description = "Eased multi-frame region motion. Reads the `region` [x0,y0,x1,y1] content from `from_frame` and stamps it (source-over) into every frame in (from_frame, to_frame] at an eased fraction of the total (dx,dy); to_frame gets the full offset. easing: linear/ease-in/ease-out/ease-in-out (cubic), bounce, overshoot (shoots past then settles), elastic (decaying oscillation). clear_source=true (default) clears the original rect in each destination frame so a moving limb leaves no stale copy. Frames must already exist (else error — doc_add_frame first). Returns frames_touched + per-frame offsets."
     )]
     async fn doc_keyframe_move(&self, Parameters(p): Parameters<DocKeyframeMove>) -> String {
         if p.region.len() < 4 {
