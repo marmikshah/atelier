@@ -1,0 +1,76 @@
+{
+  "name": "invader-march",
+  "description": "The cheapest possible march cycle: one 16x12 crab invader, a copied frame with a single leg-swap edit, and a pingpong tag exported to GIF. The whole animation is two frames that differ only in the legs — the classic space-invader trick — so it costs almost nothing to author yet reads as motion.",
+  "steps": [
+    {
+      "tool": "doc_create",
+      "args": { "name": "invader", "width": 16, "height": 12 },
+      "note": "A 16x12 canvas is the tightest grid that still fits a two-eyed crab with antennae and a 3px leg span on each side. Fresh store, so the id slugifies to 'invader'."
+    },
+    {
+      "tool": "doc_batch",
+      "args": {
+        "doc_id": "invader",
+        "layer": 0,
+        "frame": 0,
+        "ops": [
+          { "op": "rect",  "x0": 5, "y0": 0, "x1": 10, "y1": 0, "color": [64, 224, 96], "fill": true },
+          { "op": "rect",  "x0": 4, "y0": 1, "x1": 11, "y1": 1, "color": [64, 224, 96], "fill": true },
+          { "op": "rect",  "x0": 3, "y0": 2, "x1": 12, "y1": 2, "color": [64, 224, 96], "fill": true },
+          { "op": "pencil", "points": [[2, 3], [13, 3]], "color": [64, 224, 96] },
+          { "op": "rect",  "x0": 2, "y0": 4, "x1": 13, "y1": 6, "color": [64, 224, 96], "fill": true },
+          { "op": "rect",  "x0": 3, "y0": 7, "x1": 12, "y1": 7, "color": [64, 224, 96], "fill": true },
+          { "op": "pencil", "points": [[3, 8], [6, 8], [9, 8], [12, 8]], "color": [64, 224, 96] },
+          { "op": "pencil", "points": [[2, 9], [3, 9], [6, 9], [9, 9], [12, 9], [13, 9]], "color": [64, 224, 96] },
+          { "op": "pencil", "points": [[1, 10], [2, 10], [13, 10], [14, 10]], "color": [64, 224, 96] },
+          { "op": "pencil", "points": [[4, 5], [11, 5]], "color": [16, 32, 24] }
+        ]
+      },
+      "note": "Paint pose-A in one call. Every coordinate is placed as a mirror pair across the col 7|8 centre line (2<->13, 4<->11, ...), so the sprite is symmetric by construction rather than by an axis op that would round on an even width. Body is one green; the two eyes are the only second colour. Antenna stubs (2,3)/(13,3) hang off the head; legs+feet live in rows 8-10."
+    },
+    {
+      "tool": "doc_components",
+      "args": { "doc_id": "invader", "frame": 0, "connectivity": 8 },
+      "note": "Catch floating pixels BEFORE animating: a stray would get copied into frame 1 and ruin both. Expect exactly one component covering every opaque pixel — the legs attach to the body diagonally, which 8-connectivity (the default) treats as joined."
+    },
+    {
+      "tool": "doc_add_frame",
+      "args": { "doc_id": "invader", "copy_from": 0 },
+      "note": "Frame 1 starts as a pixel-perfect clone of frame 0, so the body, head, eyes and antennae are guaranteed identical for free — we only have to repaint what moves."
+    },
+    {
+      "tool": "doc_batch",
+      "args": {
+        "doc_id": "invader",
+        "layer": 0,
+        "frame": 1,
+        "ops": [
+          { "op": "rect", "x0": 0, "y0": 9, "x1": 15, "y1": 10, "color": [0, 0, 0, 0] },
+          { "op": "pencil", "points": [[3, 9], [5, 9], [10, 9], [12, 9]], "color": [64, 224, 96] },
+          { "op": "pencil", "points": [[2, 10], [3, 10], [5, 10], [10, 10], [12, 10], [13, 10]], "color": [64, 224, 96] }
+        ]
+      },
+      "note": "Pose B, the leg swap. The four leg stubs in row 8 stay put; only the lower joints move. Clear rows 9-10 (alpha 0 erases) to wipe pose-A's outward splay, then redraw the legs tucked inward to the opposite phase. The shared body in rows 0-8 is never touched, keeping the edit minimal and the diff clean."
+    },
+    {
+      "tool": "doc_frame_diff",
+      "args": { "doc_id": "invader", "frame_a": 0, "frame_b": 1, "grid": true },
+      "note": "Verify the leg-swap is honest: the diff must be confined to rows 9-10. If any change shows up in the head/eyes/antennae, pose B accidentally disturbed the static body and the march would jitter instead of cycle cleanly."
+    },
+    {
+      "tool": "doc_add_tag",
+      "args": { "doc_id": "invader", "name": "march", "from": 0, "to": 1, "direction": "pingpong" },
+      "note": "Tag both frames as 'march'. Pingpong on a 2-frame range plays 0,1,0,1... which is exactly the alternating leg cycle, and it spends no extra frames on turnaround (no inner frames between two endpoints)."
+    },
+    {
+      "tool": "doc_anim_audit",
+      "args": { "doc_id": "invader", "tag": "march", "mode": "seam" },
+      "note": "A pingpong loop reverses at its ends, so there is no last->first hard cut to worry about; the audit returns seam_score 0 by construction. Running it documents that the loop is seamless rather than leaving the reader to assume it."
+    },
+    {
+      "tool": "doc_export_gif",
+      "args": { "doc_id": "invader", "tag": "march", "scale": 6, "out_path": "invader-march.gif" },
+      "note": "Render the 'march' tag at 6x (96x72) so the pixels are legible. A plain filename keeps the GIF in the caller's cwd; the recipe stays agnostic about where that is."
+    }
+  ]
+}
