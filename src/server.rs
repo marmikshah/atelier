@@ -2491,7 +2491,40 @@ async fn gallery_render(
     };
     match bytes {
         Ok(png) => ([(axum::http::header::CONTENT_TYPE, "image/png")], png).into_response(),
-        Err(e) => (axum::http::StatusCode::NOT_FOUND, e).into_response(),
+        // Generic body — don't leak the studio error that enumerates all doc ids.
+        Err(_) => (axum::http::StatusCode::NOT_FOUND, "not found").into_response(),
+    }
+}
+
+/// True when `host` (a raw `Host` header) matches one of `allowed`. Each entry
+/// is a bare host or `host:port`; a portless entry matches any port (mirrors
+/// rmcp's host validation). An empty allowlist allows all (rmcp's convention).
+fn host_allowed(host: &str, allowed: &[String]) -> bool {
+    if allowed.is_empty() {
+        return true;
+    }
+    let host_only = host.rsplit_once(':').map_or(host, |(h, _)| h);
+    allowed.iter().any(|a| match a.rsplit_once(':') {
+        Some(_) => a == host,   // host:port entry — match the full authority
+        None => a == host_only, // bare host entry — match any port
+    })
+}
+
+/// Reject gallery requests whose `Host` header is not in the allowlist (403),
+/// closing the DNS-rebinding hole the rmcp `/mcp` route is already protected from.
+async fn gallery_host_guard(
+    allowed: std::sync::Arc<Vec<String>>,
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::response::IntoResponse;
+    let host = req
+        .headers()
+        .get(axum::http::header::HOST)
+        .and_then(|h| h.to_str().ok());
+    match host {
+        Some(h) if host_allowed(h, &allowed) => next.run(req).await,
+        _ => (axum::http::StatusCode::FORBIDDEN, "forbidden host").into_response(),
     }
 }
 
@@ -2519,6 +2552,8 @@ pub async fn run_http(
             config.allowed_hosts.push(h);
         }
     }
+    // Snapshot the same allowlist for the gallery guard before `config` is moved.
+    let allowed = std::sync::Arc::new(config.allowed_hosts.clone());
 
     let factory = {
         let studio = studio.clone();
@@ -2533,7 +2568,8 @@ pub async fn run_http(
         StreamableHttpService::new(factory, Default::default(), config);
 
     // The read-only gallery rides the same studio Arc; its handlers carry it as
-    // router state and lock only around each render.
+    // router state and lock only around each render. It is merged outside rmcp's
+    // host validation, so guard it with the same allowlist (DNS-rebind defence).
     let gallery = axum::Router::new()
         .route(
             "/gallery",
@@ -2544,7 +2580,11 @@ pub async fn run_http(
             "/gallery/{id}/render.png",
             axum::routing::get(gallery_render),
         )
-        .with_state(studio.clone());
+        .with_state(studio.clone())
+        .layer(axum::middleware::from_fn(move |req, next| {
+            let allowed = allowed.clone();
+            async move { gallery_host_guard(allowed, req, next).await }
+        }));
     let router = axum::Router::new()
         .nest_service("/mcp", service)
         .merge(gallery);
@@ -2650,6 +2690,19 @@ mod tests {
         assert_eq!(parse_resource_uri("atelier://doc//render"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/extra"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/render/x"), None);
+    }
+
+    #[test]
+    fn gallery_host_guard_matches_allowlist() {
+        let allowed = vec!["localhost".to_string(), "example.com:9000".to_string()];
+        // Bare-host entry matches any port; full authority must match exactly.
+        assert!(host_allowed("localhost", &allowed));
+        assert!(host_allowed("localhost:8765", &allowed));
+        assert!(host_allowed("example.com:9000", &allowed));
+        assert!(!host_allowed("example.com:1", &allowed)); // wrong port
+        assert!(!host_allowed("evil.example", &allowed));
+        // Empty allowlist allows all (rmcp's convention).
+        assert!(host_allowed("anything", &[]));
     }
 
     #[test]
