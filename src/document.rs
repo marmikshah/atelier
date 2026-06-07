@@ -335,6 +335,104 @@ impl Document {
         Ok(img.get_pixel(lx as u32, ly as u32).0)
     }
 
+    /// Copy a rectangular region of a cel as a flat RGBA buffer (w*h*4),
+    /// returned with its width/height. Out-of-cel pixels come back transparent.
+    /// The rect is given as inclusive corners and normalised/clamped to canvas.
+    pub fn copy_region(
+        &self,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+    ) -> Result<(u32, u32, Vec<u8>), String> {
+        self.check_cel(layer, frame)?;
+        let (ax, ay, bx, by) = raster::clamp_region(x0, y0, x1, y1, self.meta.w, self.meta.h)
+            .ok_or("region is empty after clamping to the canvas")?;
+        let (rw, rh) = ((bx - ax + 1) as u32, (by - ay + 1) as u32);
+        let mut buf = vec![0u8; (rw * rh * 4) as usize];
+        for ry in 0..rh as i32 {
+            for rx in 0..rw as i32 {
+                let p = self.get_pixel(layer, frame, ax + rx, ay + ry)?;
+                let i = ((ry as u32 * rw + rx as u32) * 4) as usize;
+                buf[i..i + 4].copy_from_slice(&p);
+            }
+        }
+        Ok((rw, rh, buf))
+    }
+
+    /// Paste a flat RGBA buffer onto a cel at (x,y). `blend` true = source-over
+    /// (transparent source pixels keep the destination); false = overwrite
+    /// (copy every pixel including transparency, so it also erases).
+    pub fn paste_region(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        rw: u32,
+        rh: u32,
+        buf: &[u8],
+        blend: bool,
+    ) -> Result<(), String> {
+        if buf.len() != (rw * rh * 4) as usize {
+            return Err(format!("buffer length {} != {}x{}x4", buf.len(), rw, rh));
+        }
+        let img = self.cel_canvas(layer, frame)?;
+        for ry in 0..rh as i32 {
+            for rx in 0..rw as i32 {
+                let i = ((ry as u32 * rw + rx as u32) * 4) as usize;
+                let p = [buf[i], buf[i + 1], buf[i + 2], buf[i + 3]];
+                if blend && p[3] == 0 {
+                    continue;
+                }
+                raster::put(img, x + rx, y + ry, p);
+            }
+        }
+        Ok(())
+    }
+
+    /// Erase a rectangular region of a cel (set to transparent).
+    pub fn clear_region(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let (ax, bx) = (x0.min(x1), x0.max(x1));
+        let (ay, by) = (y0.min(y1), y0.max(y1));
+        for y in ay..=by {
+            for x in ax..=bx {
+                raster::put(img, x, y, [0, 0, 0, 0]);
+            }
+        }
+        Ok(())
+    }
+
+    /// Move a region within one cel by (dx,dy): copy it, clear the source, paste
+    /// at the offset. Overwrite-paste so the moved block is exact.
+    pub fn move_region(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+        dx: i32,
+        dy: i32,
+    ) -> Result<(), String> {
+        let (rw, rh, buf) = self.copy_region(layer, frame, x0, y0, x1, y1)?;
+        let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
+        self.clear_region(layer, frame, x0, y0, x1, y1)?;
+        self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, false)
+    }
+
     // -- per-pixel drawing --------------------------------------------------
 
     /// Get the cel as a full-canvas image anchored at (0,0), creating/normalising
@@ -1090,5 +1188,42 @@ mod tests {
             .render_preview(0, 1, Some((0, 0, 1, 1)), false, 1, None)
             .unwrap();
         assert_eq!((crop.width(), crop.height()), (2, 2));
+    }
+
+    #[test]
+    fn copy_then_paste_replicates_a_block() {
+        let mut d = Document::new("t", 8, 8);
+        d.rect(0, 0, 0, 0, 1, 1, [9, 9, 9, 255], true, 1).unwrap(); // 2x2 block
+        let (w, h, buf) = d.copy_region(0, 0, 0, 0, 1, 1).unwrap();
+        assert_eq!((w, h), (2, 2));
+        d.paste_region(0, 0, 5, 5, w, h, &buf, false).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 6, 6).unwrap(), [9, 9, 9, 255]);
+    }
+
+    #[test]
+    fn move_region_clears_source_and_fills_dest() {
+        let mut d = Document::new("t", 8, 8);
+        d.pencil(0, 0, &[(1, 1)], [5, 5, 5, 255], 1).unwrap();
+        d.move_region(0, 0, 1, 1, 1, 1, 3, 0).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 1, 1).unwrap(), [0, 0, 0, 0]); // source cleared
+        assert_eq!(d.get_pixel(0, 0, 4, 1).unwrap(), [5, 5, 5, 255]); // moved here
+    }
+
+    #[test]
+    fn paste_blend_keeps_dest_under_transparent_source() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 0)], [1, 2, 3, 255], 1).unwrap();
+        let buf = vec![0u8; 4]; // 1x1 fully transparent
+        d.paste_region(0, 0, 0, 0, 1, 1, &buf, true).unwrap(); // blend: no-op
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [1, 2, 3, 255]);
+        d.paste_region(0, 0, 0, 0, 1, 1, &buf, false).unwrap(); // overwrite: erases
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn copy_region_clamps_to_canvas() {
+        let d = Document::new("t", 4, 4);
+        let (w, h, _) = d.copy_region(0, 0, -5, -5, 100, 100).unwrap();
+        assert_eq!((w, h), (4, 4));
     }
 }
