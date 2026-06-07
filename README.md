@@ -64,7 +64,9 @@ curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
 The installer detects Claude Code, Kimi Code and Cursor and offers to register
-atelier with each (or do it yourself: `claude mcp add --scope user atelier -- atelier`).
+atelier with each (or do it yourself: `claude mcp add --scope user atelier -- atelier`),
+lets you pick stdio or a shared background HTTP daemon, and handles updates —
+re-run it to reinstall, or append `-s -- uninstall` to remove.
 
 Prebuilt binaries cover macOS (Apple Silicon), Linux x86_64 and Windows
 (grab the `.zip` from [releases](https://github.com/marmikshah/atelier/releases/latest));
