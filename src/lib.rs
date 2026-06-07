@@ -9,4 +9,5 @@
 // colour, …); the argument-count lint fights the domain here.
 #![allow(clippy::too_many_arguments)]
 
+pub mod document;
 pub mod raster;
