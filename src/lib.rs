@@ -11,3 +11,4 @@
 
 pub mod document;
 pub mod raster;
+pub mod studio;
