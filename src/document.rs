@@ -13,9 +13,11 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use image::RgbaImage;
+use image::{Rgba, RgbaImage};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+
+use crate::raster;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LayerMeta {
@@ -316,6 +318,418 @@ impl Document {
             "palette_len": self.meta.palette.len(),
         })
     }
+
+    /// Read one pixel from a cel (document coords). Returns RGBA; out-of-bounds
+    /// or an empty cel reads as transparent [0,0,0,0]. Read-only — never
+    /// materialises a blank cel (unlike `cel_canvas`).
+    pub fn get_pixel(&self, layer: usize, frame: usize, x: i32, y: i32) -> Result<[u8; 4], String> {
+        self.check_cel(layer, frame)?;
+        let transparent = [0, 0, 0, 0];
+        let Some((cx, cy, img)) = self.cels.get(&(layer, frame)) else {
+            return Ok(transparent);
+        };
+        let (lx, ly) = (x - cx, y - cy);
+        if lx < 0 || ly < 0 || lx as u32 >= img.width() || ly as u32 >= img.height() {
+            return Ok(transparent);
+        }
+        Ok(img.get_pixel(lx as u32, ly as u32).0)
+    }
+
+    // -- per-pixel drawing --------------------------------------------------
+
+    /// Get the cel as a full-canvas image anchored at (0,0), creating/normalising
+    /// it if needed so drawing coordinates equal document pixel coordinates.
+    fn cel_canvas(&mut self, layer: usize, frame: usize) -> Result<&mut RgbaImage, String> {
+        self.check_cel(layer, frame)?;
+        let (w, h) = (self.meta.w, self.meta.h);
+        let key = (layer, frame);
+        let needs = match self.cels.get(&key) {
+            Some((x, y, img)) => *x != 0 || *y != 0 || img.width() != w || img.height() != h,
+            None => true,
+        };
+        if needs {
+            let mut full = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
+            if let Some((x, y, img)) = self.cels.get(&key) {
+                for yy in 0..img.height() {
+                    for xx in 0..img.width() {
+                        let p = img.get_pixel(xx, yy).0;
+                        if p[3] > 0 {
+                            let (tx, ty) = (*x + xx as i32, *y + yy as i32);
+                            if tx >= 0 && ty >= 0 && (tx as u32) < w && (ty as u32) < h {
+                                full.put_pixel(tx as u32, ty as u32, Rgba(p));
+                            }
+                        }
+                    }
+                }
+            }
+            self.cels.insert(key, (0, 0, full));
+        }
+        Ok(&mut self.cels.get_mut(&key).unwrap().2)
+    }
+
+    pub fn pencil(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        points: &[(i32, i32)],
+        color: [u8; 4],
+        size: i32,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        for (x, y) in points {
+            raster::brush(img, *x, *y, color, size.max(1));
+        }
+        Ok(())
+    }
+
+    pub fn line(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+        color: [u8; 4],
+        size: i32,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        raster::draw_line(img, x0, y0, x1, y1, color, size.max(1));
+        Ok(())
+    }
+
+    pub fn rect(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+        color: [u8; 4],
+        fill: bool,
+        size: i32,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let (ax, bx) = (x0.min(x1), x0.max(x1));
+        let (ay, by) = (y0.min(y1), y0.max(y1));
+        if fill {
+            for y in ay..=by {
+                for x in ax..=bx {
+                    raster::put(img, x, y, color);
+                }
+            }
+        } else {
+            raster::draw_line(img, ax, ay, bx, ay, color, size.max(1));
+            raster::draw_line(img, ax, by, bx, by, color, size.max(1));
+            raster::draw_line(img, ax, ay, ax, by, color, size.max(1));
+            raster::draw_line(img, bx, ay, bx, by, color, size.max(1));
+        }
+        Ok(())
+    }
+
+    /// Draw an ellipse (rx==ry ⇒ circle). Filled or 1px outline. The radii are
+    /// inflated by half a pixel in the boundary test so the four cardinal tips
+    /// come out rounded instead of single-pixel nubs; the outline is the
+    /// morphological inner edge of that same fill, so it is always a clean,
+    /// closed, gap-free 1px ring that matches the filled shape exactly.
+    pub fn ellipse(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        cx: i32,
+        cy: i32,
+        rx: i32,
+        ry: i32,
+        color: [u8; 4],
+        fill: bool,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let (rx, ry) = (rx.max(1), ry.max(1));
+        let (a, b) = (rx as f32 + 0.5, ry as f32 + 0.5);
+        let inside = |x: i32, y: i32| (x as f32 / a).powi(2) + (y as f32 / b).powi(2) <= 1.0;
+        for y in -ry..=ry {
+            for x in -rx..=rx {
+                if !inside(x, y) {
+                    continue;
+                }
+                let draw = fill
+                    || !(inside(x - 1, y)
+                        && inside(x + 1, y)
+                        && inside(x, y - 1)
+                        && inside(x, y + 1));
+                if draw {
+                    raster::put(img, cx + x, cy + y, color);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Connected line segments through `points` (open path). `closed` also joins
+    /// the last point back to the first (polygon outline). Square brush `size`.
+    pub fn polyline(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        points: &[(i32, i32)],
+        color: [u8; 4],
+        size: i32,
+        closed: bool,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let s = size.max(1);
+        if points.len() == 1 {
+            raster::brush(img, points[0].0, points[0].1, color, s);
+        }
+        for w in points.windows(2) {
+            raster::draw_line(img, w[0].0, w[0].1, w[1].0, w[1].1, color, s);
+        }
+        if closed && points.len() >= 3 {
+            let (a, b) = (*points.last().unwrap(), points[0]);
+            raster::draw_line(img, a.0, a.1, b.0, b.1, color, s);
+        }
+        Ok(())
+    }
+
+    /// Polygon through `points`. `fill` scanline-fills the interior (even-odd)
+    /// and strokes the edge so steep sides have no 1px gaps; otherwise draws the
+    /// closed outline only. Clean organic curves — canopies, ponds, bodies.
+    pub fn polygon(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        points: &[(i32, i32)],
+        color: [u8; 4],
+        fill: bool,
+    ) -> Result<(), String> {
+        if points.len() < 3 || !fill {
+            return self.polyline(layer, frame, points, color, 1, true);
+        }
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let img = self.cel_canvas(layer, frame)?;
+        let ymin = points.iter().map(|p| p.1).min().unwrap().max(0);
+        let ymax = points.iter().map(|p| p.1).max().unwrap().min(h - 1);
+        let n = points.len();
+        for y in ymin..=ymax {
+            let yf = y as f32 + 0.5;
+            // X where each edge crosses this scanline's centre.
+            let mut xs: Vec<f32> = Vec::new();
+            for i in 0..n {
+                let (x1, y1) = points[i];
+                let (x2, y2) = points[(i + 1) % n];
+                let (y1f, y2f) = (y1 as f32, y2 as f32);
+                if (y1f <= yf && y2f > yf) || (y2f <= yf && y1f > yf) {
+                    let t = (yf - y1f) / (y2f - y1f);
+                    xs.push(x1 as f32 + t * (x2 as f32 - x1 as f32));
+                }
+            }
+            xs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+            let mut i = 0;
+            while i + 1 < xs.len() {
+                let xa = (xs[i].ceil() as i32).max(0);
+                let xb = (xs[i + 1].floor() as i32).min(w - 1);
+                for x in xa..=xb {
+                    raster::put(img, x, y, color);
+                }
+                i += 2;
+            }
+        }
+        self.polyline(layer, frame, points, color, 1, true)
+    }
+
+    /// Run `f` (a painting op) confined to a selection `mask` (one bool per
+    /// document pixel, row-major). Snapshots the cel, runs the op over the whole
+    /// cel, then restores every pixel the mask does not cover — so any op honours
+    /// an arbitrary selection without each op knowing about masks.
+    pub fn apply_masked<F>(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        mask: &[bool],
+        f: F,
+    ) -> Result<(), String>
+    where
+        F: FnOnce(&mut Self) -> Result<(), String>,
+    {
+        self.check_cel(layer, frame)?;
+        let before = self.cel_canvas(layer, frame)?.clone();
+        f(self)?;
+        let img = self.cel_canvas(layer, frame)?;
+        let w = img.width();
+        for y in 0..img.height() {
+            for x in 0..w {
+                let i = (y * w + x) as usize;
+                if mask.get(i).copied() != Some(true) {
+                    img.put_pixel(x, y, *before.get_pixel(x, y));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub fn bucket_fill(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        color: [u8; 4],
+        tol: i32,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        if x < 0 || y < 0 || x >= w || y >= h {
+            return Ok(());
+        }
+        let target = img.get_pixel(x as u32, y as u32).0;
+        if raster::close(target, color, 0) {
+            return Ok(());
+        }
+        let mut stack = vec![(x, y)];
+        while let Some((px, py)) = stack.pop() {
+            if px < 0 || py < 0 || px >= w || py >= h {
+                continue;
+            }
+            let p = img.get_pixel(px as u32, py as u32).0;
+            if !raster::close(p, target, tol) {
+                continue;
+            }
+            img.put_pixel(px as u32, py as u32, Rgba(color));
+            stack.push((px + 1, py));
+            stack.push((px - 1, py));
+            stack.push((px, py + 1));
+            stack.push((px, py - 1));
+        }
+        Ok(())
+    }
+
+    pub fn replace_color(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        from: [u8; 4],
+        to: [u8; 4],
+        tol: i32,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        for p in img.pixels_mut() {
+            if raster::close(p.0, from, tol) {
+                *p = Rgba(to);
+            }
+        }
+        Ok(())
+    }
+
+    pub fn flip(&mut self, layer: usize, frame: usize, horizontal: bool) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let flipped = if horizontal {
+            image::imageops::flip_horizontal(img)
+        } else {
+            image::imageops::flip_vertical(img)
+        };
+        *img = flipped;
+        Ok(())
+    }
+
+    /// Shift a cel's contents by (dx,dy). `wrap` true rolls pixels around the
+    /// edges (toroidal — for making/checking seamless tiles); false leaves the
+    /// exposed edges transparent.
+    pub fn shift(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        dx: i32,
+        dy: i32,
+        wrap: bool,
+    ) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let mut out = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
+        for y in 0..h {
+            for x in 0..w {
+                let (tx, ty) = if wrap {
+                    ((x + dx).rem_euclid(w), (y + dy).rem_euclid(h))
+                } else {
+                    (x + dx, y + dy)
+                };
+                if tx >= 0 && ty >= 0 && tx < w && ty < h {
+                    out.put_pixel(tx as u32, ty as u32, *img.get_pixel(x as u32, y as u32));
+                }
+            }
+        }
+        *img = out;
+        Ok(())
+    }
+
+    pub fn fill_cel(&mut self, layer: usize, frame: usize, color: [u8; 4]) -> Result<(), String> {
+        self.check_cel(layer, frame)?;
+        let img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba(color));
+        self.cels.insert((layer, frame), (0, 0, img));
+        Ok(())
+    }
+
+    /// Draw a Bézier curve through control `points`: 2 = line, 3 = quadratic,
+    /// 4+ = cubic (first four). Sampled into `steps` segments with brush `size`.
+    /// Smooth organic strokes — tails, vines, hair.
+    pub fn bezier(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        points: &[(i32, i32)],
+        color: [u8; 4],
+        size: i32,
+        steps: i32,
+    ) -> Result<(), String> {
+        let s = size.max(1);
+        let steps = steps.max(2);
+        let img = self.cel_canvas(layer, frame)?;
+        if points.len() < 2 {
+            if let Some(p) = points.first() {
+                raster::brush(img, p.0, p.1, color, s);
+            }
+            return Ok(());
+        }
+        let p: Vec<(f32, f32)> = points.iter().map(|&(x, y)| (x as f32, y as f32)).collect();
+        let at = |t: f32| -> (f32, f32) {
+            let mt = 1.0 - t;
+            match p.len() {
+                2 => (
+                    raster::lerpf(p[0].0, p[1].0, t),
+                    raster::lerpf(p[0].1, p[1].1, t),
+                ),
+                3 => (
+                    mt * mt * p[0].0 + 2.0 * mt * t * p[1].0 + t * t * p[2].0,
+                    mt * mt * p[0].1 + 2.0 * mt * t * p[1].1 + t * t * p[2].1,
+                ),
+                _ => (
+                    mt * mt * mt * p[0].0
+                        + 3.0 * mt * mt * t * p[1].0
+                        + 3.0 * mt * t * t * p[2].0
+                        + t * t * t * p[3].0,
+                    mt * mt * mt * p[0].1
+                        + 3.0 * mt * mt * t * p[1].1
+                        + 3.0 * mt * t * t * p[2].1
+                        + t * t * t * p[3].1,
+                ),
+            }
+        };
+        let mut prev = at(0.0);
+        for i in 1..=steps {
+            let cur = at(i as f32 / steps as f32);
+            raster::draw_line(
+                img,
+                prev.0.round() as i32,
+                prev.1.round() as i32,
+                cur.0.round() as i32,
+                cur.1.round() as i32,
+                color,
+                s,
+            );
+            prev = cur;
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -380,5 +794,61 @@ mod tests {
         assert_eq!(cels.len(), 1);
         assert_eq!(cels[0]["layer"], 1);
         assert_eq!(cels[0]["frame"], 0);
+    }
+
+    #[test]
+    fn filled_ellipse_top_row_is_wide_not_a_nub() {
+        // Regression: the old rasteriser left a single-pixel spike at each
+        // cardinal tip. The half-pixel-inflated test rounds them.
+        let mut d = Document::new("t", 48, 24);
+        d.ellipse(0, 0, 24, 12, 12, 8, [0, 200, 0, 255], true)
+            .unwrap();
+        let top = 12 - 8; // y of the extreme top row
+        let width = (0..48)
+            .filter(|x| d.get_pixel(0, 0, *x, top).unwrap()[3] > 0)
+            .count();
+        assert!(width >= 5, "top row width {} — looks like a nub", width);
+    }
+
+    #[test]
+    fn ellipse_outline_is_closed_and_thin() {
+        // Every outline pixel is opaque; the centre stays empty (true ring).
+        let mut d = Document::new("t", 40, 40);
+        d.ellipse(0, 0, 20, 20, 15, 15, [200, 0, 0, 255], false)
+            .unwrap();
+        assert_eq!(d.get_pixel(0, 0, 20, 20).unwrap(), [0, 0, 0, 0]); // hollow centre
+        assert!(d.get_pixel(0, 0, 20, 5).unwrap()[3] > 0); // top of ring drawn
+        assert!(d.get_pixel(0, 0, 5, 20).unwrap()[3] > 0); // left of ring drawn
+    }
+
+    #[test]
+    fn filled_polygon_covers_interior_only() {
+        let mut d = Document::new("t", 24, 24);
+        let tri = [(2, 2), (20, 2), (11, 18)];
+        d.polygon(0, 0, &tri, [60, 60, 200, 255], true).unwrap();
+        assert!(d.get_pixel(0, 0, 11, 8).unwrap()[3] > 0); // inside
+        assert_eq!(d.get_pixel(0, 0, 2, 17).unwrap(), [0, 0, 0, 0]); // outside (bottom-left)
+        assert!(d.get_pixel(0, 0, 11, 18).unwrap()[3] > 0); // apex vertex stroked
+    }
+
+    #[test]
+    fn polyline_draws_segments_and_can_close() {
+        let mut d = Document::new("t", 16, 16);
+        d.polyline(0, 0, &[(1, 1), (10, 1), (10, 10)], [9, 9, 9, 255], 1, false)
+            .unwrap();
+        assert!(d.get_pixel(0, 0, 5, 1).unwrap()[3] > 0); // along first segment
+        assert!(d.get_pixel(0, 0, 10, 5).unwrap()[3] > 0); // along second segment
+        assert_eq!(d.get_pixel(0, 0, 5, 10).unwrap(), [0, 0, 0, 0]); // open: no closing edge
+    }
+
+    #[test]
+    fn apply_masked_confines_op_to_mask() {
+        let mut d = Document::new("t", 4, 4);
+        let mut mask = vec![false; 16];
+        mask[2 * 4 + 2] = true; // select only (x=2,y=2)
+        d.apply_masked(0, 0, &mask, |dd| dd.fill_cel(0, 0, [200, 0, 0, 255]))
+            .unwrap();
+        assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [200, 0, 0, 255]); // masked pixel painted
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]); // rest restored
     }
 }
