@@ -12,13 +12,17 @@
 //! Extra allowed Host headers for LAN/remote use (DNS-rebind guard):
 //!   ATELIER_ALLOWED_HOSTS="my-workstation.local,192.168.1.20:8765"
 
-use atelier::server;
+use atelier::{server, service};
 
 const HELP: &str = "atelier — an MCP-native headless pixel-art editor (Aseprite-as-API).
 
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
     atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
+    atelier service install       install + start the background daemon (launchd / systemd --user)
+            [--bind ADDR] [--home DIR]
+    atelier service status        show daemon state and log locations
+    atelier service uninstall     stop + remove the daemon
     atelier --version             print the version
 
 ENVIRONMENT:
@@ -32,10 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Subcommands / flags that don't start the server.
     match args.get(1).map(|s| s.as_str()) {
-        Some("service") => {
-            eprintln!("atelier service: not yet available");
-            std::process::exit(1);
-        }
+        Some("service") => std::process::exit(service::run(&args[2..])),
         Some("replay") => {
             eprintln!("atelier replay: not yet available");
             std::process::exit(1);
