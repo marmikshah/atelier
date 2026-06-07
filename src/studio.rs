@@ -200,6 +200,113 @@ impl Studio {
         Ok(json!({"deleted": id}))
     }
 
+    /// Export every document as a spritesheet PNG (+ JSON meta) into a flat
+    /// target dir for a game's assets/.
+    pub fn export_all(&self, target_dir: &str, scale: u32) -> Result<Value, String> {
+        let target = Path::new(target_dir);
+        fs::create_dir_all(target).map_err(|e| e.to_string())?;
+        let mut exported = Vec::new();
+        for id in self.doc_ids() {
+            let (_dir, doc) = self.open(&id)?;
+            let out = target.join(format!("{}.png", id));
+            doc.export_sheet(&out, scale.max(1))?;
+            exported.push(out.to_string_lossy().to_string());
+        }
+        Ok(json!({"target": target.to_string_lossy(), "exported": exported}))
+    }
+
+    /// Pack every frame of every document into ONE atlas PNG (a simple shelf
+    /// layout: rows of frames, wrapping at `max_width`) plus a master JSON map
+    /// of `{doc_id, frame, rect:[x,y,w,h], duration_ms, pivot}` so an engine can
+    /// slice the whole game's sprites from a single texture. Frames are emitted
+    /// at native size × `scale`.
+    pub fn export_atlas(
+        &self,
+        out_path: &str,
+        scale: u32,
+        max_width: u32,
+    ) -> Result<Value, String> {
+        use image::{Rgba, RgbaImage};
+        let scale = scale.max(1);
+        let ids = self.doc_ids();
+        if ids.is_empty() {
+            return Err("no documents to pack".into());
+        }
+        // Gather every frame image first (so we can size the atlas).
+        struct Item {
+            doc: String,             // owning document id
+            frame: usize,            // frame index within that document
+            img: RgbaImage,          // flattened (and scaled) frame pixels
+            duration_ms: u32,        // frame duration, carried into the map
+            pivot: Option<[i32; 2]>, // pivot in atlas-pixel space (scaled)
+        }
+        let mut items: Vec<Item> = Vec::new();
+        for id in &ids {
+            let (_dir, doc) = self.open(id)?;
+            for f in 0..doc.meta.frames.len() {
+                let mut img = doc.flatten(f);
+                if scale > 1 {
+                    img = image::imageops::resize(
+                        &img,
+                        doc.meta.w * scale,
+                        doc.meta.h * scale,
+                        image::imageops::FilterType::Nearest,
+                    );
+                }
+                items.push(Item {
+                    doc: id.clone(),
+                    frame: f,
+                    img,
+                    duration_ms: doc.meta.frames[f].duration_ms,
+                    pivot: doc.meta.frames[f]
+                        .pivot
+                        .map(|[x, y]| [x * scale as i32, y * scale as i32]),
+                });
+            }
+        }
+        // Shelf pack: lay frames left→right, wrap when the row exceeds max_width.
+        let min_w = items.iter().map(|i| i.img.width()).max().unwrap_or(1);
+        let max_width = max_width.max(min_w);
+        let (pad, mut x, mut y, mut row_h, mut atlas_w) = (1u32, 0u32, 0u32, 0u32, 0u32);
+        let mut placed: Vec<(usize, u32, u32)> = Vec::new(); // (item idx, x, y)
+        for (idx, it) in items.iter().enumerate() {
+            let (iw, ih) = (it.img.width(), it.img.height());
+            if x > 0 && x + iw > max_width {
+                x = 0;
+                y += row_h + pad;
+                row_h = 0;
+            }
+            placed.push((idx, x, y));
+            x += iw + pad;
+            atlas_w = atlas_w.max(x.saturating_sub(pad));
+            row_h = row_h.max(ih);
+        }
+        let atlas_h = y + row_h;
+        let mut atlas = RgbaImage::from_pixel(atlas_w.max(1), atlas_h.max(1), Rgba([0, 0, 0, 0]));
+        let mut frames_meta: Vec<Value> = Vec::new();
+        for (idx, px, py) in placed {
+            let it = &items[idx];
+            image::imageops::replace(&mut atlas, &it.img, px as i64, py as i64);
+            frames_meta.push(json!({
+                "doc": it.doc, "frame": it.frame,
+                "rect": [px, py, it.img.width(), it.img.height()],
+                "duration_ms": it.duration_ms, "pivot": it.pivot,
+            }));
+        }
+        if let Some(p) = Path::new(out_path).parent() {
+            let _ = fs::create_dir_all(p);
+        }
+        atlas.save(out_path).map_err(|e| e.to_string())?;
+        let meta = json!({
+            "path": out_path, "atlas_w": atlas_w, "atlas_h": atlas_h,
+            "count": frames_meta.len(), "frames": frames_meta,
+        });
+        let mp = Path::new(out_path).with_extension("json");
+        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
+            .map_err(|e| e.to_string())?;
+        Ok(meta)
+    }
+
     // -- structure / timeline (open -> mutate -> save) ----------------------
 
     fn commit(&self, dir: &Path, id: &str, mut doc: Document) -> Result<Value, String> {
@@ -1461,5 +1568,18 @@ mod tests {
             s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
+    }
+
+    #[test]
+    fn atlas_packs_every_frame() {
+        let s = studio("atlas");
+        s.doc_create("a", 8, 8).unwrap();
+        s.doc_add_frame("a", 100, None).unwrap(); // a now has 2 frames
+        s.doc_create("b", 8, 8).unwrap(); // b has 1
+        let out = s.docs_dir.join("atlas.png");
+        let meta = s.export_atlas(out.to_str().unwrap(), 1, 64).unwrap();
+        assert_eq!(meta["count"], 3); // 2 + 1 frames
+        assert!(out.exists());
+        assert!(out.with_extension("json").exists());
     }
 }
