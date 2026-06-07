@@ -2361,6 +2361,112 @@ pub async fn run(record: Option<std::path::PathBuf>) -> Result<(), Box<dyn std::
     Ok(())
 }
 
+/// Clamp a render scale to the 1..=16 the gallery serves (0/absent -> default 4).
+fn gallery_scale(scale: Option<u32>) -> u32 {
+    scale.unwrap_or(4).clamp(1, 16)
+}
+
+/// The whole live gallery page, self-contained (no external assets). Cards are
+/// filled and refreshed by the inline script from `/gallery` + the render route.
+const GALLERY_HTML: &str = r#"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>atelier gallery</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; padding: 1.5rem; background: #14161a; color: #e6e8ec;
+         font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  h1 { font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem; }
+  #grid { display: grid; gap: 1rem;
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .card { background: #1d2026; border: 1px solid #2a2e36; border-radius: 8px;
+          padding: .75rem; }
+  .card img { width: 100%; height: auto; display: block; border-radius: 4px;
+              background: #0c0d10; image-rendering: pixelated; }
+  .name { margin: .5rem 0 .15rem; font-weight: 600; word-break: break-all; }
+  .meta { color: #8b919c; font-size: 12px; }
+  #empty { color: #8b919c; }
+</style>
+</head>
+<body>
+<h1>atelier &middot; live gallery</h1>
+<div id="grid"></div>
+<p id="empty" hidden>No documents yet. Create one and it will appear here.</p>
+<script>
+const grid = document.getElementById('grid');
+const empty = document.getElementById('empty');
+function imgUrl(id) { return `/gallery/${encodeURIComponent(id)}/render.png?frame=0&scale=4&t=${Date.now()}`; }
+async function load() {
+  let data;
+  try { data = await (await fetch('/gallery/docs')).json(); } catch (e) { return; }
+  const docs = data.documents || [];
+  empty.hidden = docs.length > 0;
+  const seen = new Set();
+  for (const d of docs) {
+    seen.add(d.id);
+    let card = document.getElementById('c-' + d.id);
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'card';
+      card.id = 'c-' + d.id;
+      card.innerHTML = '<img alt=""><div class="name"></div><div class="meta"></div>';
+      grid.appendChild(card);
+    }
+    card.querySelector('.name').textContent = d.name;
+    card.querySelector('.meta').textContent =
+      `${d.w}x${d.h} · ${d.frames}f · ${d.layers}L`;
+    if (!card.querySelector('img').src) card.querySelector('img').src = imgUrl(d.id);
+  }
+  for (const card of [...grid.children]) {
+    if (!seen.has(card.id.slice(2))) card.remove();
+  }
+}
+function refreshImages() {
+  for (const card of grid.children) card.querySelector('img').src = imgUrl(card.id.slice(2));
+}
+load();
+setInterval(refreshImages, 2000);
+setInterval(load, 10000);
+</script>
+</body>
+</html>"#;
+
+/// Query params for the gallery render route (`?frame=0&scale=4`).
+#[derive(Deserialize)]
+struct GalleryRender {
+    frame: Option<usize>,
+    scale: Option<u32>,
+}
+
+/// GET /gallery/docs — the live document list the page polls (same shape as the
+/// `list_docs` tool). Locks the studio only to read the index.
+async fn gallery_docs(
+    axum::extract::State(studio): axum::extract::State<std::sync::Arc<std::sync::Mutex<Studio>>>,
+) -> axum::response::Json<Value> {
+    let docs = studio.lock().expect("studio lock poisoned").list_docs();
+    axum::response::Json(docs)
+}
+
+/// GET /gallery/:id/render.png — one frame as PNG bytes (scale clamped 1..=16).
+/// Unknown ids 404; the lock is held only around the render itself.
+async fn gallery_render(
+    axum::extract::State(studio): axum::extract::State<std::sync::Arc<std::sync::Mutex<Studio>>>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    axum::extract::Query(q): axum::extract::Query<GalleryRender>,
+) -> axum::response::Response {
+    use axum::response::IntoResponse;
+    let bytes = {
+        let studio = studio.lock().expect("studio lock poisoned");
+        studio.render_png_bytes(&id, q.frame.unwrap_or(0), gallery_scale(q.scale))
+    };
+    match bytes {
+        Ok(png) => ([(axum::http::header::CONTENT_TYPE, "image/png")], png).into_response(),
+        Err(e) => (axum::http::StatusCode::NOT_FOUND, e).into_response(),
+    }
+}
+
 /// Run as a networked MCP server over Streamable HTTP at `addr`, mounted at
 /// `/mcp`. One shared studio backs all sessions (writes serialised by its Mutex).
 /// `allowed_hosts` extends the loopback default for LAN/remote `Host` validation
@@ -2398,12 +2504,26 @@ pub async fn run_http(
     let service: StreamableHttpService<Atelier, LocalSessionManager> =
         StreamableHttpService::new(factory, Default::default(), config);
 
-    let router = axum::Router::new().nest_service("/mcp", service);
+    // The read-only gallery rides the same studio Arc; its handlers carry it as
+    // router state and lock only around each render.
+    let gallery = axum::Router::new()
+        .route(
+            "/gallery",
+            axum::routing::get(|| async { axum::response::Html(GALLERY_HTML) }),
+        )
+        .route("/gallery/docs", axum::routing::get(gallery_docs))
+        .route(
+            "/gallery/{id}/render.png",
+            axum::routing::get(gallery_render),
+        )
+        .with_state(studio.clone());
+    let router = axum::Router::new()
+        .nest_service("/mcp", service)
+        .merge(gallery);
     let listener = tokio::net::TcpListener::bind(addr).await?;
-    eprintln!(
-        "atelier MCP listening on http://{}/mcp",
-        listener.local_addr()?
-    );
+    let local = listener.local_addr()?;
+    eprintln!("atelier MCP listening on http://{local}/mcp");
+    eprintln!("atelier gallery at http://{local}/gallery");
     axum::serve(listener, router)
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;
@@ -2462,6 +2582,14 @@ mod tests {
         assert_eq!(parse_resource_uri("atelier://doc//render"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/extra"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/render/x"), None);
+    }
+
+    #[test]
+    fn gallery_scale_clamps_and_defaults() {
+        assert_eq!(gallery_scale(None), 4); // absent -> doc_render default
+        assert_eq!(gallery_scale(Some(0)), 1); // 0 floors to 1
+        assert_eq!(gallery_scale(Some(8)), 8); // in range passes through
+        assert_eq!(gallery_scale(Some(999)), 16); // caps at 16
     }
 
     #[test]
