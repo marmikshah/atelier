@@ -730,6 +730,175 @@ impl Document {
         }
         Ok(())
     }
+
+    /// Full-canvas (0,0-anchored) copy of a cel, transparent where absent.
+    #[allow(dead_code)] // used by tween (later step)
+    fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
+        let mut img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
+        if let Some((cx, cy, src)) = self.cels.get(&(layer, frame)) {
+            for y in 0..src.height() as i32 {
+                for x in 0..src.width() as i32 {
+                    let (tx, ty) = (cx + x, cy + y);
+                    if tx >= 0 && ty >= 0 && (tx as u32) < self.meta.w && (ty as u32) < self.meta.h
+                    {
+                        img.put_pixel(tx as u32, ty as u32, *src.get_pixel(x as u32, y as u32));
+                    }
+                }
+            }
+        }
+        img
+    }
+
+    // -- render / export ----------------------------------------------------
+
+    /// Full-canvas RGBA image of one layer's cel at `frame` (anchored at 0,0,
+    /// transparent where the cel is empty/outside). Read-only sibling of
+    /// `flatten` for analysis tools that want a single layer instead of the
+    /// composite. Out-of-range layer/frame → error.
+    fn cel_image(&self, layer: usize, frame: usize) -> Result<RgbaImage, String> {
+        self.check_cel(layer, frame)?;
+        let (w, h) = (self.meta.w, self.meta.h);
+        let mut out = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
+        if let Some((cx, cy, img)) = self.cels.get(&(layer, frame)) {
+            for yy in 0..img.height() {
+                for xx in 0..img.width() {
+                    let (tx, ty) = (*cx + xx as i32, *cy + yy as i32);
+                    if tx >= 0 && ty >= 0 && (tx as u32) < w && (ty as u32) < h {
+                        out.put_pixel(tx as u32, ty as u32, *img.get_pixel(xx, yy));
+                    }
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    /// Analysis image for a frame: the flattened composite, or one layer's cel
+    /// when `layer` is given. The single entry point read-only tools share.
+    pub fn analysis_image(&self, layer: Option<usize>, frame: usize) -> Result<RgbaImage, String> {
+        if frame >= self.meta.frames.len() {
+            return Err(format!(
+                "no frame {} (frames={})",
+                frame,
+                self.meta.frames.len()
+            ));
+        }
+        match layer {
+            Some(l) => self.cel_image(l, frame),
+            None => Ok(self.flatten(frame)),
+        }
+    }
+
+    pub fn flatten(&self, frame: usize) -> RgbaImage {
+        let mut out = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
+        for (li, layer) in self.meta.layers.iter().enumerate() {
+            if !layer.visible || layer.opacity == 0 {
+                continue;
+            }
+            if let Some((cx, cy, img)) = self.cels.get(&(li, frame)) {
+                raster::composite(
+                    &mut out,
+                    img,
+                    *cx,
+                    *cy,
+                    layer.opacity,
+                    raster::parse_blend(&layer.blend),
+                );
+            }
+        }
+        out
+    }
+
+    /// Flatten `frame` with onion-skin ghosts of the neighbours behind it: the
+    /// previous frame tinted blue and the next tinted red, both faded, so motion
+    /// is visible at a glance.
+    fn flatten_onion(&self, frame: usize) -> RgbaImage {
+        let n = self.meta.frames.len();
+        let mut out = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
+        let ghost = |src: RgbaImage, tint: [u8; 3]| -> RgbaImage {
+            let mut g = src;
+            for p in g.pixels_mut() {
+                if p.0[3] == 0 {
+                    continue;
+                }
+                let mix = |i: usize| ((p.0[i] as u32 + tint[i] as u32 * 2) / 3) as u8;
+                p.0 = [mix(0), mix(1), mix(2), (p.0[3] as u32 * 90 / 255) as u8];
+            }
+            g
+        };
+        if frame > 0 {
+            let g = ghost(self.flatten(frame - 1), [70, 110, 255]);
+            raster::composite(&mut out, &g, 0, 0, 255, raster::Blend::Normal);
+        }
+        if frame + 1 < n {
+            let g = ghost(self.flatten(frame + 1), [255, 90, 90]);
+            raster::composite(&mut out, &g, 0, 0, 255, raster::Blend::Normal);
+        }
+        let cur = self.flatten(frame);
+        raster::composite(&mut out, &cur, 0, 0, 255, raster::Blend::Normal);
+        out
+    }
+
+    /// Render a frame to an image with preview options: `onion` ghosts the
+    /// neighbours; `region` crops (document pixels); `tile` repeats the result
+    /// in an N×N grid (seam check); `scale` nearest-upscales; `max_size`
+    /// down-scales the longest side for a cheap thumbnail.
+    pub fn render_preview(
+        &self,
+        frame: usize,
+        scale: u32,
+        region: Option<(i32, i32, i32, i32)>,
+        onion: bool,
+        tile: u32,
+        max_size: Option<u32>,
+    ) -> Result<RgbaImage, String> {
+        let mut base = if onion {
+            self.flatten_onion(frame)
+        } else {
+            self.flatten(frame)
+        };
+        if let Some((x0, y0, x1, y1)) = region {
+            let (ax, ay, bx, by) = raster::clamp_region(x0, y0, x1, y1, self.meta.w, self.meta.h)
+                .ok_or("render region is empty after clamping")?;
+            base = image::imageops::crop_imm(
+                &base,
+                ax as u32,
+                ay as u32,
+                (bx - ax + 1) as u32,
+                (by - ay + 1) as u32,
+            )
+            .to_image();
+        }
+        let tile = tile.max(1);
+        if tile > 1 {
+            let (tw, th) = (base.width(), base.height());
+            let mut t = RgbaImage::from_pixel(tw * tile, th * tile, Rgba([0, 0, 0, 0]));
+            for ty in 0..tile {
+                for tx in 0..tile {
+                    image::imageops::replace(&mut t, &base, (tx * tw) as i64, (ty * th) as i64);
+                }
+            }
+            base = t;
+        }
+        let sc = scale.max(1);
+        if sc > 1 {
+            base = image::imageops::resize(
+                &base,
+                base.width() * sc,
+                base.height() * sc,
+                image::imageops::FilterType::Nearest,
+            );
+        }
+        if let Some(ms) = max_size {
+            let long = base.width().max(base.height());
+            if long > ms && long > 0 {
+                let f = ms as f32 / long as f32;
+                let nw = (base.width() as f32 * f).round().max(1.0) as u32;
+                let nh = (base.height() as f32 * f).round().max(1.0) as u32;
+                base = image::imageops::resize(&base, nw, nh, image::imageops::FilterType::Nearest);
+            }
+        }
+        Ok(base)
+    }
 }
 
 #[cfg(test)]
@@ -850,5 +1019,76 @@ mod tests {
             .unwrap();
         assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [200, 0, 0, 255]); // masked pixel painted
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]); // rest restored
+    }
+
+    /// Two opaque full-cel layers, top with `mode`, flattened at frame 0.
+    fn blend_two(mode: &str, bottom: [u8; 4], top: [u8; 4]) -> [u8; 4] {
+        let mut d = Document::new("t", 1, 1);
+        d.fill_cel(0, 0, bottom).unwrap();
+        let l = d.add_layer(None, 255, mode.into());
+        d.fill_cel(l, 0, top).unwrap();
+        d.flatten(0).get_pixel(0, 0).0
+    }
+
+    #[test]
+    fn normal_blend_matches_plain_source_over() {
+        // Opaque top fully covers the backdrop, unchanged from old compositor.
+        assert_eq!(
+            blend_two("normal", [255, 0, 0, 255], [0, 255, 0, 255]),
+            [0, 255, 0, 255]
+        );
+    }
+
+    #[test]
+    fn multiply_darkens_screen_lightens() {
+        // red x green channelwise -> black; red screen green -> yellow.
+        assert_eq!(
+            blend_two("multiply", [255, 0, 0, 255], [0, 255, 0, 255]),
+            [0, 0, 0, 255]
+        );
+        assert_eq!(
+            blend_two("screen", [255, 0, 0, 255], [0, 255, 0, 255]),
+            [255, 255, 0, 255]
+        );
+        assert_eq!(
+            blend_two("add", [200, 100, 0, 255], [100, 200, 50, 255]),
+            [255, 255, 50, 255]
+        );
+    }
+
+    #[test]
+    fn multiply_over_empty_backdrop_keeps_source() {
+        // No backdrop (αb=0): a multiply layer must not collapse to black.
+        let mut d = Document::new("t", 1, 1);
+        let l = d.add_layer(None, 255, "multiply".into());
+        d.fill_cel(l, 0, [40, 90, 160, 255]).unwrap();
+        assert_eq!(d.flatten(0).get_pixel(0, 0).0, [40, 90, 160, 255]);
+    }
+
+    #[test]
+    fn layer_opacity_blends_toward_backdrop() {
+        // A 50%-opacity red layer over an opaque black backdrop flattens to ~half red.
+        let mut d = Document::new("t", 1, 1);
+        d.fill_cel(0, 0, [0, 0, 0, 255]).unwrap();
+        let l = d.add_layer(None, 128, "normal".into());
+        d.fill_cel(l, 0, [255, 0, 0, 255]).unwrap();
+        let p = d.flatten(0).get_pixel(0, 0).0;
+        assert!(
+            (p[0] as i32 - 128).abs() <= 2,
+            "expected ~128, got {}",
+            p[0]
+        );
+        assert_eq!(p[3], 255);
+    }
+
+    #[test]
+    fn render_preview_tile_and_region_size() {
+        let d = Document::new("t", 4, 4);
+        let tiled = d.render_preview(0, 1, None, false, 3, None).unwrap();
+        assert_eq!((tiled.width(), tiled.height()), (12, 12)); // 3×3 grid
+        let crop = d
+            .render_preview(0, 1, Some((0, 0, 1, 1)), false, 1, None)
+            .unwrap();
+        assert_eq!((crop.width(), crop.height()), (2, 2));
     }
 }
