@@ -1445,6 +1445,299 @@ impl Document {
         }
         Ok(())
     }
+
+    /// Shift hue (`dh` degrees) and add to saturation (`ds`) / lightness (`dl`,
+    /// each -1..1) of every opaque pixel, optionally limited to `region`.
+    /// Recolour / tint / brighten part of a cel.
+    pub fn adjust(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        dh: f32,
+        ds: f32,
+        dl: f32,
+    ) -> Result<(), String> {
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
+                Some(r) => r,
+                None => return Ok(()),
+            },
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let p = img.get_pixel(x as u32, y as u32).0;
+                if p[3] == 0 {
+                    continue;
+                }
+                let (hh, ss, ll) = raster::rgb_to_hsl(p[0], p[1], p[2]);
+                let rgb = raster::hsl_to_rgb(
+                    hh + dh,
+                    (ss + ds).clamp(0.0, 1.0),
+                    (ll + dl).clamp(0.0, 1.0),
+                );
+                img.put_pixel(x as u32, y as u32, Rgba([rgb[0], rgb[1], rgb[2], p[3]]));
+            }
+        }
+        Ok(())
+    }
+
+    /// Edge-lit on-ramp shading. For each opaque pixel: if the neighbour 1px
+    /// *toward* the light is transparent/outside it is a lit rim (push `steps`
+    /// toward the light end); if the neighbour *away* from the light is
+    /// transparent/outside it is core shadow (push `steps` toward the dark end).
+    /// `mode` limits to just highlights or just shadows.
+    ///
+    /// With a `ramp` (ordered dark→light) each touched pixel snaps to its
+    /// nearest ramp entry by luma, then moves ±`steps` along the ramp. Without a
+    /// ramp we HSL-shift: lit pixels gain +12% lightness/`steps` and warm their
+    /// hue toward 50°; shadow pixels lose 12%/`steps` and cool toward 250°.
+    /// Reads the pre-op cel for neighbour tests so all writes are simultaneous
+    /// (a rim pixel never re-reads an already-shaded neighbour mid-pass).
+    #[allow(clippy::too_many_arguments)]
+    pub fn shade(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        light_dir: &str,
+        steps: i32,
+        region: Option<(i32, i32, i32, i32)>,
+        mode: &str,
+        ramp: Option<Vec<[u8; 4]>>,
+    ) -> Result<(), String> {
+        let (ldx, ldy) = match light_dir {
+            "top-left" => (-1, -1),
+            "top" => (0, -1),
+            "top-right" => (1, -1),
+            "left" => (-1, 0),
+            "right" => (1, 0),
+            "bottom-left" => (-1, 1),
+            "bottom" => (0, 1),
+            "bottom-right" => (1, 1),
+            other => {
+                return Err(format!(
+                    "unknown light_dir '{}' — use top-left/top/top-right/left/right/bottom-left/bottom/bottom-right",
+                    other
+                ))
+            }
+        };
+        let (do_hi, do_sh) = match mode {
+            "both" => (true, true),
+            "highlight" => (true, false),
+            "shadow" => (false, true),
+            other => {
+                return Err(format!(
+                    "unknown mode '{}' — use both/highlight/shadow",
+                    other
+                ))
+            }
+        };
+        let steps = steps.max(1);
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
+                Some(r) => r,
+                None => return Ok(()),
+            },
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let (w, h) = (w as i32, h as i32);
+        // Snapshot so neighbour opacity/colour reads are all pre-op.
+        let before = self.cel_canvas(layer, frame)?.clone();
+        let opaque = |x: i32, y: i32| -> bool {
+            x >= 0 && y >= 0 && x < w && y < h && before.get_pixel(x as u32, y as u32).0[3] > 0
+        };
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let p = before.get_pixel(x as u32, y as u32).0;
+                if p[3] == 0 {
+                    continue;
+                }
+                // Lit rim wins over core shadow when a pixel is both (thin art).
+                let lit = !opaque(x + ldx, y + ldy);
+                let shadow = !opaque(x - ldx, y - ldy);
+                let dir = if lit && do_hi {
+                    1
+                } else if shadow && do_sh {
+                    -1
+                } else {
+                    continue;
+                };
+                let out = match &ramp {
+                    Some(r) if !r.is_empty() => raster::shade_ramp(p, r, dir * steps),
+                    _ => raster::shade_hsl(p, dir, steps),
+                };
+                img.put_pixel(x as u32, y as u32, Rgba(out));
+            }
+        }
+        Ok(())
+    }
+
+    /// Two-colour ordered dither over a region. `pattern` "checker"/"bayer2"/
+    /// "bayer4"/"bayer8"; `density` 0..1 biases the mix toward `color_b` (the
+    /// fraction of pixels that take color_b via the threshold matrix). When
+    /// `only_existing` only pixels already equal to color_a or color_b are
+    /// repainted — recolour an existing flat region into a dither without
+    /// spilling onto neighbouring art. Honours an active selection via the
+    /// studio mask. Reuses the shared Bayer thresholds (bayer8).
+    #[allow(clippy::too_many_arguments)]
+    pub fn dither(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: (i32, i32, i32, i32),
+        color_a: [u8; 4],
+        color_b: [u8; 4],
+        pattern: &str,
+        density: f32,
+        only_existing: bool,
+    ) -> Result<(), String> {
+        let valid = ["checker", "bayer2", "bayer4", "bayer8"];
+        if !valid.contains(&pattern) {
+            return Err(format!(
+                "unknown pattern '{}' — use checker/bayer2/bayer4/bayer8",
+                pattern
+            ));
+        }
+        let density = density.clamp(0.0, 1.0);
+        let (x0, y0, x1, y1) = region;
+        let (ax, ay, bx, by) = raster::clamp_region(x0, y0, x1, y1, self.meta.w, self.meta.h)
+            .ok_or("dither region is empty after clamping to the canvas")?;
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                if only_existing {
+                    let p = img.get_pixel(x as u32, y as u32).0;
+                    if p != color_a && p != color_b {
+                        continue;
+                    }
+                }
+                // threshold in [0,1): paint color_b where density exceeds it.
+                let c = if density > raster::dither_threshold(pattern, x, y) {
+                    color_b
+                } else {
+                    color_a
+                };
+                img.put_pixel(x as u32, y as u32, Rgba(c));
+            }
+        }
+        Ok(())
+    }
+
+    /// Remove L-corner doubles from 1px strokes (Aseprite "pixel-perfect"
+    /// cleanup). A pixel P is erased when it matches the target colour(s), two
+    /// orthogonally-adjacent neighbours forming an L (left+top, top+right,
+    /// right+bottom or bottom+left) also match, AND the diagonal cell between
+    /// that pair does NOT match — i.e. P only exists to thicken an elbow.
+    /// Iterates to a fixpoint (max 8 passes). `color` (optional) restricts the
+    /// target to strokes of that exact colour. Returns the count erased.
+    pub fn pixel_perfect(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        color: Option<[u8; 4]>,
+    ) -> Result<u32, String> {
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
+                Some(r) => r,
+                None => return Ok(0),
+            },
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let (w, h) = (w as i32, h as i32);
+        let img = self.cel_canvas(layer, frame)?;
+        // A cell "matches" the stroke when opaque (and == color, if restricted).
+        let stroke = |img: &RgbaImage, x: i32, y: i32| -> bool {
+            if x < 0 || y < 0 || x >= w || y >= h {
+                return false;
+            }
+            let p = img.get_pixel(x as u32, y as u32).0;
+            match color {
+                Some(c) => p == c,
+                None => p[3] > 0,
+            }
+        };
+        // The four L-corners: (a-offset, b-offset, diagonal-offset).
+        let corners = [
+            ((-1, 0), (0, -1), (-1, -1)), // left + top
+            ((0, -1), (1, 0), (1, -1)),   // top + right
+            ((1, 0), (0, 1), (1, 1)),     // right + bottom
+            ((0, 1), (-1, 0), (-1, 1)),   // bottom + left
+        ];
+        let mut removed = 0u32;
+        for _ in 0..8 {
+            let mut drop: Vec<(i32, i32)> = Vec::new();
+            for y in ay..=by {
+                for x in ax..=bx {
+                    if !stroke(img, x, y) {
+                        continue;
+                    }
+                    let elbow = corners.iter().any(|&((ax2, ay2), (bx2, by2), (dx, dy))| {
+                        stroke(img, x + ax2, y + ay2)
+                            && stroke(img, x + bx2, y + by2)
+                            && !stroke(img, x + dx, y + dy)
+                    });
+                    if elbow {
+                        drop.push((x, y));
+                    }
+                }
+            }
+            if drop.is_empty() {
+                break;
+            }
+            for (x, y) in drop {
+                img.put_pixel(x as u32, y as u32, Rgba([0, 0, 0, 0]));
+                removed += 1;
+            }
+        }
+        Ok(removed)
+    }
+
+    /// Snap every opaque pixel to the nearest colour in `palette`. With an empty
+    /// palette, derive one of `max_colors` from the cel by median cut. Returns
+    /// the palette used. Posterise / down-palette imported art.
+    pub fn quantize(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        palette: Vec<[u8; 4]>,
+        max_colors: usize,
+    ) -> Result<Vec<[u8; 4]>, String> {
+        let img = self.cel_canvas(layer, frame)?;
+        let pal = if !palette.is_empty() {
+            palette
+        } else {
+            let opaque: Vec<[u8; 3]> = img
+                .pixels()
+                .filter(|p| p.0[3] > 0)
+                .map(|p| [p.0[0], p.0[1], p.0[2]])
+                .collect();
+            raster::median_cut(&opaque, max_colors)
+        };
+        if pal.is_empty() {
+            return Err("quantize needs a palette or max_colors >= 1".into());
+        }
+        for p in img.pixels_mut() {
+            if p.0[3] == 0 {
+                continue;
+            }
+            let nearest = pal
+                .iter()
+                .min_by_key(|c| {
+                    let d = |i: usize| (c[i] as i32 - p.0[i] as i32).pow(2);
+                    d(0) + d(1) + d(2)
+                })
+                .unwrap();
+            *p = Rgba([nearest[0], nearest[1], nearest[2], p.0[3]]);
+        }
+        Ok(pal)
+    }
 }
 
 #[cfg(test)]
@@ -1798,5 +2091,37 @@ mod tests {
         d.pencil(0, 0, &[(0, 1)], [9, 9, 9, 255], 1).unwrap();
         d.symmetry(0, 0, Some(1), None, true, false).unwrap(); // reflect left over column 1
         assert_eq!(d.get_pixel(0, 0, 2, 1).unwrap(), [9, 9, 9, 255]); // 2*1-0 = 2
+    }
+
+    #[test]
+    fn quantize_snaps_to_palette() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 0)], [250, 10, 10, 255], 1).unwrap();
+        d.pencil(0, 0, &[(1, 0)], [10, 10, 250, 255], 1).unwrap();
+        d.quantize(0, 0, vec![[255, 0, 0, 255], [0, 0, 255, 255]], 2)
+            .unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
+        assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 255, 255]);
+    }
+
+    #[test]
+    fn quantize_derives_palette_by_median_cut() {
+        let mut d = Document::new("t", 4, 4);
+        d.fill_cel(0, 0, [20, 30, 40, 255]).unwrap();
+        let pal = d.quantize(0, 0, vec![], 4).unwrap();
+        assert!(!pal.is_empty() && pal.len() <= 4);
+    }
+
+    #[test]
+    fn adjust_hue_rotates_red_toward_green() {
+        let mut d = Document::new("t", 2, 2);
+        d.fill_cel(0, 0, [200, 0, 0, 255]).unwrap(); // hue 0
+        d.adjust(0, 0, None, 120.0, 0.0, 0.0).unwrap(); // +120° → green
+        let p = d.get_pixel(0, 0, 0, 0).unwrap();
+        assert!(
+            p[1] > p[0] && p[1] > p[2],
+            "expected green-dominant, got {:?}",
+            p
+        );
     }
 }
