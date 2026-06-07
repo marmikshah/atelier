@@ -34,6 +34,14 @@ fn slugify(name: &str) -> String {
     }
 }
 
+/// Escape the five XML metacharacters so attribute values stay well-formed.
+fn xml_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+}
+
 /// A copied rectangular region: width, height, flat RGBA buffer.
 type Clip = (u32, u32, Vec<u8>);
 
@@ -586,7 +594,7 @@ impl Studio {
             th = sth,
             count = tilecount,
             cols = columns,
-            src = source,
+            src = xml_escape(&source),
             iw = out_w,
             ih = out_h,
         );
@@ -619,6 +627,12 @@ impl Studio {
     pub fn wang_tiles(&self, id: &str, n: u32) -> Result<Value, String> {
         use image::{Rgba, RgbaImage};
         let (_dir, src) = self.open(id)?;
+        if src.meta.layers.len() < 2 {
+            return Err(
+                "wang_tiles needs two layers: layer 0 = inner material, layer 1 = outer material"
+                    .into(),
+            );
+        }
         let n = n.max(1);
         if src.meta.w < n || src.meta.h < n {
             return Err(format!(
@@ -1889,6 +1903,29 @@ mod tests {
             .export_tileset("t", 5, 5, 1, out.to_str().unwrap())
             .unwrap_err()
             .contains("not divisible"));
+    }
+
+    #[test]
+    fn export_tileset_escapes_xml_in_image_source() {
+        let s = studio("tileset-xml");
+        s.doc_create("t", 16, 16).unwrap();
+        // A basename with XML metacharacters must be escaped in the .tsx source.
+        let out = s.docs_dir.join("a&b\".png");
+        let meta = s
+            .export_tileset("t", 8, 8, 1, out.to_str().unwrap())
+            .unwrap();
+        let tsx_path = Path::new(meta["tsx"].as_str().unwrap());
+        let tsx = fs::read_to_string(tsx_path).unwrap();
+        assert!(tsx.contains("a&amp;b&quot;.png"), "tsx: {tsx}");
+        assert!(!tsx.contains("a&b\".png"));
+    }
+
+    #[test]
+    fn wang_tiles_single_layer_errors_with_actionable_message() {
+        let s = studio("wang-onelayer");
+        s.doc_create("terrain", 8, 8).unwrap(); // only layer 0
+        let err = s.wang_tiles("terrain", 8).unwrap_err();
+        assert!(err.contains("needs two layers") && err.contains("layer 1 = outer material"));
     }
 
     #[test]
