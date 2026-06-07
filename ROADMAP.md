@@ -35,8 +35,9 @@ and palettes. What exists is documented in the README; this file is the backlog.
 ## Engineering
 
 - **Integration tests** over the MCP tool layer (currently unit-tested at the
-  `Document`/`Studio` level — 86 tests — plus the replayable recipes under
-  `docs/examples/`, which double as end-to-end checks).
+  `Document`/`Studio` level — 114 tests — plus the replayable recipes under
+  `docs/examples/`, which double as end-to-end checks; the `--record` recorder
+  turns a live session straight into one of those recipes).
 - **Undo / history** per document, so a bad op can be reverted without rebuilding
   the cel.
 

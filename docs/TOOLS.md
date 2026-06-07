@@ -41,8 +41,10 @@ stays crisp.
   engine reads it to position the sprite. Emitted (scaled) in sheet/atlas JSON.
 - `doc_keyframe_move` — eased multi-frame region motion: take a region from one
   frame and stamp it across following frames along an interpolated offset
-  (`linear` / `ease-in` / `ease-out` / `ease-in-out`). A jump arc is two calls
-  (rise ease-out, fall ease-in) — motion as structure, no redrawing.
+  (`linear` / `ease-in` / `ease-out` / `ease-in-out` cubic, `bounce`,
+  `overshoot` (shoots past then settles), `elastic` (decaying oscillation)). A
+  jump arc is two calls (rise ease-out, fall ease-in) — motion as structure, no
+  redrawing.
 
 ## Drawing
 
@@ -69,11 +71,16 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
 - `doc_stamp_image` — place an external PNG into a cel with optional `scale` /
   `rotate`, drawn OVER existing content (`opacity` + `blend`) for sub-sprite
   reuse, or `replace` the whole cel. Import bridge for AI-gen / scanned / Figma.
+- `doc_text` — stamp a string with the built-in 3×5 pixel font (top-left at
+  `(x,y)`, integer `size`): covers A-Z, 0-9 and `. , : ! ? - + / ( ) '` and
+  space; lowercase maps to uppercase, unknown chars render as a hollow box.
+  Returns the rendered `width` so you can lay out the next element — HUD mockups,
+  damage numbers, lettering.
 - `doc_batch` — apply many ordered ops to one cel in a single call (fast headless
   editing). Each op is `{"op":"rect|line|ellipse|polyline|polygon|bezier|pencil|
   fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|
-  noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel", ...}`; add per-op
-  `opacity` / `blend_mode` to composite that op instead of overwriting.
+  noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|text", ...}`; add
+  per-op `opacity` / `blend_mode` to composite that op instead of overwriting.
 
 ## Effects, colour & procedural
 
@@ -90,6 +97,10 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   (posterise / down-palette imported art).
 - `palette_ramp` — generate a hue-shifted shading ramp from a base colour (warm
   highlights, cool shadows); optionally store it as a document's palette.
+- `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
+  colour to `to[i]` across every cel (exact match, all channels), updating the
+  stored palette too; optional `layer` / `frame` restrict scope. The
+  recolour-variant workflow — one sprite, many palettes.
 - `doc_shade` — on-ramp shading from a light direction: rim pixels facing the
   light shift up the colour ramp, pixels facing away shift down (hue-shifted
   when no explicit `ramp` is given). The agent supplies form and light; the
@@ -173,10 +184,44 @@ The limb/keyframe-animation toolkit.
 - `doc_export_gif` — animated GIF honouring per-frame durations. Pass a `tag` to
   play that animation in its direction (`forward` / `reverse` / `pingpong`);
   omit it to play the whole timeline forward.
+- `doc_export_apng` — the same animation as an APNG: lossless, full alpha (unlike
+  GIF's 256 colours and 1-bit alpha). Honours `tag` direction; omit it to play
+  the timeline forward.
+- `doc_export_tileset` — slice frame 0 into a `tile_w`×`tile_h` grid and write an
+  engine-ready tileset: the PNG plus two sidecars — `<name>.tsx` (Tiled XML) and
+  `<name>.json` (same fields: tilewidth / tileheight / tilecount / columns /
+  image). The canvas must divide exactly by the tile size; `scale` upscales both.
+- `doc_wang_tiles` — generate the deterministic 16-tile Wang/blob terrain set
+  from a source doc (layer 0 = inner material, layer 1 = outer; top-left N×N of
+  each sampled) into a NEW `<id>-wang` document (4N×4N, the 16 corner
+  combinations in a 4×4 grid). Each set corner bit fills a quarter-disc; adjacent
+  set corners connect along their shared edge.
 - `export_all` — one spritesheet per document into a flat dir.
 - `export_atlas` — pack **every frame of every document** into a single atlas PNG
   + master JSON (`doc`, `frame`, `rect`, `duration_ms`, `pivot`) so a whole
   game's sprites slice from one texture.
+
+## Beyond the tools
+
+The server exposes more than the tool list — the MCP standard surfaces, plus a
+recorder and a web view.
+
+- **MCP resources** — every document is browsable as a resource:
+  `atelier://doc/<id>` is its structure JSON, `atelier://doc/<id>/render` is
+  frame 0 flattened to a PNG (scale 4). Clients can list and read them without a
+  tool call; unknown URIs and missing documents return `resource_not_found`.
+- **MCP prompts** — packaged workflows that fill in your subject and hand the
+  agent the right loop: `pixel-sprite` (`subject`, optional `size`),
+  `walk-cycle` (`character`, optional `frames`), `seamless-tile` (`material`,
+  optional `size`). Each names the tools it drives.
+- **Session recorder** — `atelier --record <recipe.json>` (or
+  `ATELIER_RECORD=<path>`) writes every tool call of a live session into a
+  replayable recipe — a real session becomes a deterministic `atelier replay`
+  fixture. Works with stdio and `--http`.
+- **Live gallery** — the `--http` server also serves a read-only web view at
+  `/gallery`: a self-contained page that polls `/gallery/docs` and renders each
+  document live via `/gallery/<id>/render.png?frame=&scale=` (scale clamped
+  1..=16). Open it in a browser to watch art appear as the agent draws.
 
 ## Example: a blinking sprite
 

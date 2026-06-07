@@ -47,9 +47,15 @@ deterministic.
 - **An eye for critique** — silhouette, stray-pixel, palette, contrast, frame-diff
   and loop-seam reports turn "does it look right?" into numbers an agent can act on.
 - **Game-ready output** — spritesheets with rects/durations/tags/pivots,
-  animated GIFs, packed texture atlases. Any engine can slice it.
+  animated GIFs/APNGs, packed texture atlases, Tiled-ready tilesets and
+  deterministic Wang-blob terrain sets. Any engine can slice it.
+- **More than pixels** — a built-in pixel font (`doc_text`), one-call palette
+  swaps for recolour variants, and the procedural/critique leverage above.
+- **Built for agents** — MCP resources (browse documents + renders), packaged
+  prompts (sprite / walk-cycle / tile workflows), a session recorder that turns a
+  live session into a replayable recipe, and a live `/gallery` web view.
 
-The full tool surface (66 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
+The full tool surface (71 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Quickstart
 
@@ -72,7 +78,7 @@ Documents live under `~/.atelier` (override with `ATELIER_HOME`).
 
 ```sh
 atelier                       # stdio MCP server (default — the client spawns it)
-atelier --http 0.0.0.0:8765   # streamable HTTP at /mcp, shared document store
+atelier --http 0.0.0.0:8765   # streamable HTTP at /mcp + a live /gallery web view
 make daemon                   # background HTTP server via launchd / systemd --user
 ```
 
