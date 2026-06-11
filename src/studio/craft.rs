@@ -14,7 +14,7 @@ use std::path::Path;
 use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
-use super::Studio;
+use super::{Selection, Studio};
 use crate::document::Document;
 use crate::raster;
 
@@ -546,6 +546,320 @@ impl Studio {
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "pixels_changed": changed, "palette_len": pal.len()}))
     }
+
+    // -- doc_select_wand: contiguous magic-wand ----------------------------
+
+    /// Flood a contiguous region into the active selection mask (the magic-wand
+    /// the roadmap promised). `layer` None samples the flattened composite.
+    /// `mode` combines with any current selection: `replace`|`add`|`subtract`|
+    /// `intersect`. Perceptual (OKLab) tolerance by default.
+    #[allow(clippy::too_many_arguments)]
+    pub fn select_wand(
+        &mut self,
+        id: &str,
+        layer: Option<usize>,
+        frame: usize,
+        x: i32,
+        y: i32,
+        tol: i32,
+        conn8: bool,
+        perceptual: bool,
+        mode: &str,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let (w, h) = (doc.meta.w, doc.meta.h);
+        let new = doc.flood_mask(layer, frame, x, y, tol, conn8, perceptual)?;
+        let base = match &self.selection {
+            Some(s) if s.doc_id == id && s.w == w && s.h == h => s.mask.clone(),
+            _ => vec![false; (w * h) as usize],
+        };
+        let combined: Vec<bool> = (0..base.len())
+            .map(|i| {
+                let (b, n) = (base[i], new[i]);
+                match mode {
+                    "add" => b || n,
+                    "subtract" => b && !n,
+                    "intersect" => b && n,
+                    _ => n,
+                }
+            })
+            .collect();
+        let count = combined.iter().filter(|b| **b).count();
+        self.selection = Some(Selection {
+            doc_id: id.to_string(),
+            w,
+            h,
+            mask: combined,
+        });
+        Ok(json!({"doc_id": id, "selected_pixels": count, "mode": mode, "matched": new.iter().filter(|b| **b).count()}))
+    }
+
+    // -- doc_smooth_edges: selective anti-aliasing -------------------------
+
+    /// Selout anti-aliasing of the silhouette's staircase corners (master-grade
+    /// smooth diagonals vs Bresenham stairs). `ramp` keeps the AA on-palette.
+    #[allow(clippy::too_many_arguments)]
+    pub fn smooth_edges(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        ramp: Option<Vec<[u8; 4]>>,
+        max_run: i32,
+        only_color: Option<[u8; 4]>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let added = doc.smooth_edges(layer, frame, ramp.as_deref(), max_run, only_color, region)?;
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "aa_pixels_added": added}))
+    }
+
+    // -- doc_transform_cel: in-place rotate / scale / skew -----------------
+
+    /// Affine-transform a cel or region in place — the #1 missing primitive.
+    /// `method` `rotsprite` (cluster-preserving) | `nearest`. `snap_palette`
+    /// re-snaps the transform fringe to the locked palette; `clear_source`
+    /// makes it a move rather than an overlay.
+    #[allow(clippy::too_many_arguments)]
+    pub fn transform_cel(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        rot: f32,
+        sx: f32,
+        sy: f32,
+        skew_x: f32,
+        skew_y: f32,
+        method: &str,
+        snap_palette: bool,
+        clear_source: bool,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let (bbox, placed) =
+            doc.transform_cel(layer, frame, region, rot, sx, sy, skew_x, skew_y, method, clear_source)?;
+        let mut snapped = 0;
+        if snap_palette && !doc.meta.palette.is_empty() {
+            let pal = doc.meta.palette.clone();
+            snapped = doc.snap_to_palette(&pal, Some(layer), Some(frame));
+        }
+        doc.save(&dir)?;
+        Ok(json!({
+            "ok": true, "doc_id": id,
+            "placed_bbox": {"x": bbox[0], "y": bbox[1], "w": bbox[2], "h": bbox[3]},
+            "placed_pixels": placed, "snapped": snapped,
+        }))
+    }
+
+    // -- doc_critique: the art-director scorecard --------------------------
+
+    /// Aggregated craft scorecard — the named pixel-art failure modes the agent
+    /// cannot see: orphan specks, un-AA'd jaggies, low contrast, pillow-shading,
+    /// off-palette drift, and value-soup massing. Conservative verdicts so a
+    /// blind agent doesn't wreck deliberate choices chasing false defects.
+    pub fn critique(
+        &self,
+        id: &str,
+        frame: usize,
+        layer: Option<usize>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let full = doc.analysis_image(layer, frame)?;
+        let (img, _ox, _oy) = crop_region(&full, region)?;
+        let palette = doc.meta.palette.clone();
+        Ok(critique_image(id, frame, &img, &palette))
+    }
+}
+
+/// Pure scorecard over a single image — the guts of `critique`, factored out so
+/// it can be unit-tested without a Studio/disk.
+fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) -> Value {
+    let (w, h) = (img.width() as i32, img.height() as i32);
+    let op = |x: i32, y: i32| -> Option<[u8; 4]> {
+        if x < 0 || y < 0 || x >= w || y >= h {
+            return None;
+        }
+        let p = img.get_pixel(x as u32, y as u32).0;
+        if p[3] == 0 {
+            None
+        } else {
+            Some(p)
+        }
+    };
+    // -- value stats + masses --
+    let (mut min, mut max, mut sum, mut n) = (255u8, 0u8, 0f64, 0u64);
+    let (mut shadow, mut mid, mut light) = (0u64, 0u64, 0u64);
+    let (mut cxs, mut cys) = (0f64, 0f64);
+    for y in 0..h {
+        for x in 0..w {
+            if let Some(p) = op(x, y) {
+                let v = raster::luma(p);
+                min = min.min(v);
+                max = max.max(v);
+                sum += v as f64;
+                n += 1;
+                cxs += x as f64;
+                cys += y as f64;
+                if v < 85 {
+                    shadow += 1;
+                } else if v < 170 {
+                    mid += 1;
+                } else {
+                    light += 1;
+                }
+            }
+        }
+    }
+    if n == 0 {
+        return json!({"doc_id": id, "frame": frame, "note": "nothing opaque to critique"});
+    }
+    let nf = n as f64;
+    let contrast = (max - min) as f64 / 255.0;
+    let masses = [shadow as f64 / nf, mid as f64 / nf, light as f64 / nf];
+    let soup = masses.iter().all(|m| (0.22..=0.45).contains(m));
+
+    // -- orphans: connected components of size <= 2 --
+    let mut seen = vec![false; (w * h) as usize];
+    let mut orphan_cells: Vec<Value> = Vec::new();
+    let mut orphans = 0u32;
+    for y in 0..h {
+        for x in 0..w {
+            let i = (y * w + x) as usize;
+            if seen[i] || op(x, y).is_none() {
+                continue;
+            }
+            // flood this component (4-conn), counting size
+            let mut stack = vec![(x, y)];
+            let mut cells = Vec::new();
+            while let Some((px, py)) = stack.pop() {
+                if px < 0 || py < 0 || px >= w || py >= h {
+                    continue;
+                }
+                let j = (py * w + px) as usize;
+                if seen[j] || op(px, py).is_none() {
+                    continue;
+                }
+                seen[j] = true;
+                cells.push((px, py));
+                stack.extend_from_slice(&[(px + 1, py), (px - 1, py), (px, py + 1), (px, py - 1)]);
+                if cells.len() > 2 {
+                    // not an orphan; drain the rest without recording
+                    while let Some((qx, qy)) = stack.pop() {
+                        if qx < 0 || qy < 0 || qx >= w || qy >= h {
+                            continue;
+                        }
+                        let k = (qy * w + qx) as usize;
+                        if seen[k] || op(qx, qy).is_none() {
+                            continue;
+                        }
+                        seen[k] = true;
+                        stack.extend_from_slice(&[
+                            (qx + 1, qy),
+                            (qx - 1, qy),
+                            (qx, qy + 1),
+                            (qx, qy - 1),
+                        ]);
+                    }
+                    break;
+                }
+            }
+            if (1..=2).contains(&cells.len()) {
+                orphans += 1;
+                if orphan_cells.len() < 12 {
+                    orphan_cells.push(json!([cells[0].0, cells[0].1]));
+                }
+            }
+        }
+    }
+
+    // -- jaggies: outer-corner notches (un-AA'd staircases) --
+    let mut jaggies = 0u32;
+    let mut jag_cells: Vec<Value> = Vec::new();
+    for y in 0..h {
+        for x in 0..w {
+            if op(x, y).is_some() {
+                continue;
+            }
+            let nb = [op(x, y - 1), op(x, y + 1), op(x + 1, y), op(x - 1, y)];
+            let cnt = nb.iter().filter(|p| p.is_some()).count();
+            // exactly two perpendicular opaque neighbours == an outer step corner
+            let perp = (nb[0].is_some() || nb[1].is_some()) && (nb[2].is_some() || nb[3].is_some());
+            if cnt == 2 && perp {
+                jaggies += 1;
+                if jag_cells.len() < 12 {
+                    jag_cells.push(json!([x, y]));
+                }
+            }
+        }
+    }
+
+    // -- pillow-shading: luma falling radially from the centroid --
+    let (mcx, mcy) = (cxs / nf, cys / nf);
+    let (mut sr, mut sv, mut srr, mut svv, mut srv) = (0f64, 0f64, 0f64, 0f64, 0f64);
+    for y in 0..h {
+        for x in 0..w {
+            if let Some(p) = op(x, y) {
+                let r = (((x as f64 - mcx).powi(2)) + ((y as f64 - mcy).powi(2))).sqrt();
+                let v = raster::luma(p) as f64;
+                sr += r;
+                sv += v;
+                srr += r * r;
+                svv += v * v;
+                srv += r * v;
+            }
+        }
+    }
+    let cov = srv / nf - (sr / nf) * (sv / nf);
+    let vr = (srr / nf - (sr / nf).powi(2)).max(0.0).sqrt();
+    let vv = (svv / nf - (sv / nf).powi(2)).max(0.0).sqrt();
+    let corr = if vr > 1e-6 && vv > 1e-6 {
+        cov / (vr * vv)
+    } else {
+        0.0
+    };
+    // negative correlation (bright centre, dark edges, no direction) => pillow
+    let pillow = (-corr).max(0.0);
+
+    // -- palette adherence --
+    let palette_check = if palette.is_empty() {
+        json!({"value": Value::Null, "verdict": "info", "note": "no locked palette"})
+    } else {
+        let inset: std::collections::HashSet<[u8; 4]> = palette.iter().copied().collect();
+        let mut off = 0u64;
+        for y in 0..h {
+            for x in 0..w {
+                if let Some(p) = op(x, y) {
+                    if !inset.contains(&p) {
+                        off += 1;
+                    }
+                }
+            }
+        }
+        let off_pct = (off as f64 / nf * 1000.0).round() / 10.0;
+        json!({"off_palette_pct": off_pct, "verdict": if off_pct > 5.0 { "warn" } else { "ok" },
+               "note": "exact-match check; soft FX bloom counts as off-palette — snap with doc_snap_palette if undeliberate"})
+    };
+
+    let round = |x: f64| (x * 1000.0).round() / 1000.0;
+    json!({
+        "doc_id": id, "frame": frame, "opaque_pixels": n,
+        "checks": {
+            "contrast": {"value": round(contrast), "verdict": if contrast < 0.25 { "warn" } else { "ok" },
+                         "min": min, "max": max, "mean": (sum / nf).round() as u32},
+            "value_masses": {"shadow": round(masses[0]), "mid": round(masses[1]), "light": round(masses[2]),
+                             "verdict": if soup { "warn" } else { "ok" },
+                             "note": if soup { "even thirds — value soup; group into clearer masses" } else { "" }},
+            "orphans": {"count": orphans, "verdict": if orphans > 0 { "warn" } else { "ok" }, "cells": orphan_cells},
+            "jaggies": {"count": jaggies, "verdict": if jaggies > (n / 12).max(6) as u32 { "warn" } else { "info" },
+                        "cells": jag_cells, "note": "outer step corners; run doc_smooth_edges to selout them"},
+            "pillow_shading": {"score": round(pillow), "verdict": if pillow > 0.55 { "warn" } else { "ok" },
+                               "note": "high = light pooled at the centre with no direction; shade from a light source instead"},
+            "palette_adherence": palette_check,
+        }
+    })
 }
 
 #[cfg(test)]
@@ -634,6 +948,54 @@ mod tests {
             .unwrap();
         let r = s.snap_palette("c", None, None, None).unwrap();
         assert_eq!(r["pixels_changed"], 16);
+    }
+
+    #[test]
+    fn transform_cel_rotate_moves_the_pixel() {
+        let s = studio("xform");
+        s.doc_create("c", 5, 5).unwrap();
+        s.doc_pencil("c", 0, 0, vec![(4, 2)], [255, 255, 255, 255], 1)
+            .unwrap();
+        let r = s
+            .transform_cel("c", 0, 0, None, 90.0, 1.0, 1.0, 0.0, 0.0, "nearest", false, true)
+            .unwrap();
+        assert_eq!(r["placed_pixels"], 1);
+        let look = s
+            .look("c", 0, 1, None, "render", 4, false, false, false, None)
+            .unwrap();
+        assert_eq!(opaque(&look.1), 1); // cleared source, one pixel placed elsewhere
+    }
+
+    #[test]
+    fn smooth_edges_adds_aa_to_a_staircase() {
+        let s = studio("aa");
+        s.doc_create("c", 6, 6).unwrap();
+        for (x, y) in [(0, 0), (1, 0), (1, 1), (2, 1)] {
+            s.doc_pencil("c", 0, 0, vec![(x, y)], [0, 0, 0, 255], 1).unwrap();
+        }
+        let r = s.smooth_edges("c", 0, 0, None, 2, None, None).unwrap();
+        assert!(r["aa_pixels_added"].as_u64().unwrap() >= 2);
+    }
+
+    #[test]
+    fn select_wand_floods_a_solid_cel() {
+        let mut s = studio("wand");
+        s.doc_create("c", 4, 4).unwrap();
+        s.doc_fill_cel("c", 0, 0, [10, 10, 10, 255]).unwrap();
+        let r = s
+            .select_wand("c", Some(0), 0, 0, 0, 8, false, true, "replace")
+            .unwrap();
+        assert_eq!(r["selected_pixels"], 16);
+    }
+
+    #[test]
+    fn critique_flags_an_orphan_speck() {
+        let s = studio("crit");
+        s.doc_create("c", 8, 8).unwrap();
+        s.doc_pencil("c", 0, 0, vec![(1, 1)], [255, 255, 255, 255], 1)
+            .unwrap();
+        let r = s.critique("c", 0, None, None).unwrap();
+        assert_eq!(r["checks"]["orphans"]["count"], 1);
     }
 }
 

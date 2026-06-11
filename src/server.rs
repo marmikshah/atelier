@@ -1125,6 +1125,61 @@ pub struct DocSnapPalette {
     pub palette: Option<Vec<Vec<i64>>>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocSelectWand {
+    pub doc_id: String,
+    /// Layer to sample; omit to sample the flattened composite.
+    pub layer: Option<usize>,
+    pub frame: Option<usize>,
+    pub x: i32,
+    pub y: i32,
+    pub tol: Option<i32>,
+    pub conn8: Option<bool>,
+    pub perceptual: Option<bool>,
+    /// replace | add | subtract | intersect.
+    pub mode: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocSmoothEdges {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Optional ramp [[r,g,b],...] to keep AA pixels on-palette.
+    pub ramp: Option<Vec<Vec<i64>>>,
+    /// Notches whose both opaque legs run longer than this stay crisp.
+    pub max_run: Option<i32>,
+    pub only_color: Option<Vec<i64>>,
+    pub region: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocTransformCel {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    pub region: Option<Vec<i32>>,
+    pub rotate: Option<f32>,
+    pub scale_x: Option<f32>,
+    pub scale_y: Option<f32>,
+    pub skew_x: Option<f32>,
+    pub skew_y: Option<f32>,
+    /// rotsprite (cluster-preserving) | nearest.
+    pub method: Option<String>,
+    /// With scale_x set and scale_y omitted, derive scale_y = 1/scale_x.
+    pub preserve_volume: Option<bool>,
+    pub snap_palette: Option<bool>,
+    pub clear_source: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocCritique {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    pub layer: Option<usize>,
+    pub region: Option<Vec<i32>>,
+}
+
 // --- resources -------------------------------------------------------------
 
 /// Scale used when rendering the `render` resource (matches the doc_render default).
@@ -2519,6 +2574,72 @@ impl Atelier {
             p.frame,
             p.palette.map(|v| palette_list(&v)),
         ))
+    }
+
+    #[tool(
+        description = "Contiguous magic-wand → the active selection mask. Floods from (x,y) over same-colour pixels (perceptual OKLab tolerance by default; `conn8` for 8-connectivity). `layer` omitted samples the flattened composite. `mode` combines with the current selection: replace|add|subtract|intersect. The precondition for local recolour/re-shade; pair with doc_select_render to SEE the mask."
+    )]
+    async fn doc_select_wand(&self, Parameters(p): Parameters<DocSelectWand>) -> String {
+        res(self.studio().select_wand(
+            &p.doc_id,
+            p.layer,
+            p.frame.unwrap_or(0),
+            p.x,
+            p.y,
+            p.tol.unwrap_or(16),
+            p.conn8.unwrap_or(false),
+            p.perceptual.unwrap_or(true),
+            p.mode.as_deref().unwrap_or("replace"),
+        ))
+    }
+
+    #[tool(
+        description = "Selective anti-aliasing (selout): drop one opaque, mid-value pixel into each outer staircase notch of the silhouette so diagonals read smooth instead of as Bresenham stairs. Pass a `ramp` to keep the AA on-palette; `max_run` keeps genuine sharp corners crisp; `only_color`/`region` scope it. Returns the AA pixel count."
+    )]
+    async fn doc_smooth_edges(&self, Parameters(p): Parameters<DocSmoothEdges>) -> String {
+        res(self.studio().smooth_edges(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.ramp.map(|v| palette_list(&v)),
+            p.max_run.unwrap_or(2),
+            p.only_color.as_deref().map(rgba),
+            region(&p.region),
+        ))
+    }
+
+    #[tool(
+        description = "Affine-transform a cel (or `region`) IN PLACE about its centre — the #1 missing primitive: rotate degrees, scale_x/scale_y, skew_x/skew_y degrees. method rotsprite (super-sampled, keeps clusters from shattering) | nearest. preserve_volume derives scale_y=1/scale_x for squash-and-stretch. snap_palette re-snaps the transform fringe; clear_source makes it a move. Returns placed bbox + pixel counts."
+    )]
+    async fn doc_transform_cel(&self, Parameters(p): Parameters<DocTransformCel>) -> String {
+        let sx = p.scale_x.unwrap_or(1.0);
+        let sy = match (p.preserve_volume.unwrap_or(false), p.scale_y) {
+            (true, None) if sx.abs() > 1e-6 => 1.0 / sx,
+            _ => p.scale_y.unwrap_or(1.0),
+        };
+        res(self.studio().transform_cel(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            region(&p.region),
+            p.rotate.unwrap_or(0.0),
+            sx,
+            sy,
+            p.skew_x.unwrap_or(0.0),
+            p.skew_y.unwrap_or(0.0),
+            p.method.as_deref().unwrap_or("rotsprite"),
+            p.snap_palette.unwrap_or(false),
+            p.clear_source.unwrap_or(false),
+        ))
+    }
+
+    #[tool(
+        description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, pillow-shading (light pooled at the centre with no direction), value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
+    )]
+    async fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> String {
+        res(self
+            .studio()
+            .critique(&p.doc_id, p.frame.unwrap_or(0), p.layer, region(&p.region)))
     }
 }
 

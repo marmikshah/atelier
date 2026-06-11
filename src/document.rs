@@ -703,6 +703,222 @@ impl Document {
         self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, false)
     }
 
+    /// Affine-transform a cel (or a `region` of it) in place about its centre:
+    /// rotate `rot` degrees, scale (`sx`,`sy`), shear (`skew_x`,`skew_y` deg).
+    /// `method` `"rotsprite"` super-samples to keep clusters from shattering;
+    /// `"nearest"` is the raw grid transform. `clear_source` empties the source
+    /// rect first (a true move rather than an overlay). Returns
+    /// `(placed_bbox [x,y,w,h], placed_opaque_px)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn transform_cel(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        rot: f32,
+        sx: f32,
+        sy: f32,
+        skew_x: f32,
+        skew_y: f32,
+        method: &str,
+        clear_source: bool,
+    ) -> Result<([i32; 4], u32), String> {
+        self.check_cel(layer, frame)?;
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let (rw, rh) = ((bx - ax + 1) as u32, (by - ay + 1) as u32);
+        // Lift the source rect to a standalone image.
+        let full = self.cel_image(layer, frame)?;
+        let sub =
+            image::imageops::crop_imm(&full, ax as u32, ay as u32, rw, rh).to_image();
+        let ss = if method == "rotsprite" { 4 } else { 1 };
+        let out = raster::affine_nn(&sub, rot, sx, sy, skew_x, skew_y, ss);
+        let (tw, th) = (out.width(), out.height());
+        if clear_source {
+            self.clear_region(layer, frame, ax, ay, bx, by)?;
+        }
+        // Centre the result on the source rect's centre.
+        let cx = ax as f32 + rw as f32 / 2.0;
+        let cy = ay as f32 + rh as f32 / 2.0;
+        let px = (cx - tw as f32 / 2.0).round() as i32;
+        let py = (cy - th as f32 / 2.0).round() as i32;
+        let placed_px = out.pixels().filter(|p| p.0[3] > 0).count() as u32;
+        let buf = out.into_raw();
+        self.paste_region(layer, frame, px, py, tw, th, &buf, true)?;
+        Ok(([px, py, tw as i32, th as i32], placed_px))
+    }
+
+    /// Flood a contiguous same-colour region from `(x,y)` into a row-major
+    /// boolean mask the size of the canvas — the magic-wand. `layer` None reads
+    /// the flattened composite. `perceptual` uses OKLab ΔE (`tol` as a 0..255
+    /// scale) instead of raw channel distance. `conn8` uses 8-connectivity.
+    pub fn flood_mask(
+        &self,
+        layer: Option<usize>,
+        frame: usize,
+        x: i32,
+        y: i32,
+        tol: i32,
+        conn8: bool,
+        perceptual: bool,
+    ) -> Result<Vec<bool>, String> {
+        let img = self.analysis_image(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let mut mask = vec![false; (w * h) as usize];
+        if x < 0 || y < 0 || x >= w || y >= h {
+            return Ok(mask);
+        }
+        let target = img.get_pixel(x as u32, y as u32).0;
+        let de = tol as f32 / 255.0;
+        let matches = |p: [u8; 4]| -> bool {
+            if perceptual {
+                raster::oklab_delta(p, target) <= de
+            } else {
+                raster::close(p, target, tol)
+            }
+        };
+        let mut stack = vec![(x, y)];
+        while let Some((px, py)) = stack.pop() {
+            if px < 0 || py < 0 || px >= w || py >= h {
+                continue;
+            }
+            let i = (py * w + px) as usize;
+            if mask[i] {
+                continue;
+            }
+            if !matches(img.get_pixel(px as u32, py as u32).0) {
+                continue;
+            }
+            mask[i] = true;
+            stack.push((px + 1, py));
+            stack.push((px - 1, py));
+            stack.push((px, py + 1));
+            stack.push((px, py - 1));
+            if conn8 {
+                stack.push((px + 1, py + 1));
+                stack.push((px - 1, py - 1));
+                stack.push((px + 1, py - 1));
+                stack.push((px - 1, py + 1));
+            }
+        }
+        Ok(mask)
+    }
+
+    /// Selective anti-aliasing (selout): soften the staircase corners of the
+    /// silhouette by dropping one opaque, mid-value pixel into each outer step
+    /// notch. The new pixel is the mean of the two edge colours that meet there
+    /// (snapped to `ramp` if given, so AA stays on-palette). `max_run` guards
+    /// genuine sharp corners: a notch where BOTH opaque legs run longer than
+    /// `max_run` is left crisp. `only_color` restricts to corners of that fill
+    /// colour; `region` clips. Returns the number of AA pixels added.
+    #[allow(clippy::too_many_arguments)]
+    pub fn smooth_edges(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        ramp: Option<&[[u8; 4]]>,
+        max_run: i32,
+        only_color: Option<[u8; 4]>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<u32, String> {
+        self.check_cel(layer, frame)?;
+        let src = self.cel_image(layer, frame)?;
+        let (w, h) = (src.width() as i32, src.height() as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w - 1, h - 1),
+        };
+        let op = |x: i32, y: i32| -> Option<[u8; 4]> {
+            if x < 0 || y < 0 || x >= w || y >= h {
+                return None;
+            }
+            let p = src.get_pixel(x as u32, y as u32).0;
+            if p[3] == 0 {
+                None
+            } else {
+                Some(p)
+            }
+        };
+        // Opaque-run length from `(x,y)` stepping `(dx,dy)`, capped at max_run+1.
+        let leg = |mut x: i32, mut y: i32, dx: i32, dy: i32| -> i32 {
+            let mut n = 0;
+            while op(x, y).is_some() && n <= max_run + 1 {
+                n += 1;
+                x += dx;
+                y += dy;
+            }
+            n
+        };
+        let mut adds: Vec<(i32, i32, [u8; 4])> = Vec::new();
+        // Each outer corner is an empty pixel with exactly two perpendicular
+        // opaque orthogonal neighbours.
+        let corners = [
+            ((0, -1), (1, 0)),  // N + E
+            ((1, 0), (0, 1)),   // E + S
+            ((0, 1), (-1, 0)),  // S + W
+            ((-1, 0), (0, -1)), // W + N
+        ];
+        for y in ay..=by {
+            for x in ax..=bx {
+                if op(x, y).is_some() {
+                    continue; // only fill empty notches
+                }
+                // total opaque orthogonal neighbours must be exactly 2
+                let north = op(x, y - 1);
+                let south = op(x, y + 1);
+                let east = op(x + 1, y);
+                let west = op(x - 1, y);
+                let count = [north, south, east, west].iter().filter(|n| n.is_some()).count();
+                if count != 2 {
+                    continue;
+                }
+                for ((ax1, ay1), (ax2, ay2)) in corners {
+                    let (Some(c1), Some(c2)) = (op(x + ax1, y + ay1), op(x + ax2, y + ay2)) else {
+                        continue;
+                    };
+                    if let Some(oc) = only_color {
+                        if c1 != oc || c2 != oc {
+                            continue;
+                        }
+                    }
+                    // Keep sharp corners crisp: skip when both legs are long.
+                    let l1 = leg(x + ax1, y + ay1, ax1, ay1);
+                    let l2 = leg(x + ax2, y + ay2, ax2, ay2);
+                    if l1 > max_run && l2 > max_run {
+                        continue;
+                    }
+                    let mean = [
+                        ((c1[0] as u16 + c2[0] as u16) / 2) as u8,
+                        ((c1[1] as u16 + c2[1] as u16) / 2) as u8,
+                        ((c1[2] as u16 + c2[2] as u16) / 2) as u8,
+                        255,
+                    ];
+                    let color = match ramp {
+                        Some(r) if !r.is_empty() => {
+                            let i = raster::nearest_oklab(mean, r).unwrap_or(0);
+                            let c = r[i];
+                            [c[0], c[1], c[2], 255]
+                        }
+                        _ => mean,
+                    };
+                    adds.push((x, y, color));
+                    break;
+                }
+            }
+        }
+        let n = adds.len() as u32;
+        let img = self.cel_canvas(layer, frame)?;
+        for (x, y, c) in adds {
+            raster::put(img, x, y, c);
+        }
+        Ok(n)
+    }
+
     // -- per-pixel drawing --------------------------------------------------
 
     /// Get the cel as a full-canvas image anchored at (0,0), creating/normalising

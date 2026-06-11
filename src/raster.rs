@@ -656,6 +656,91 @@ pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
     out
 }
 
+/// General affine transform about the image centre — rotate (deg, clockwise),
+/// non-uniform scale (`sx`,`sy`) and shear (`skew_x`,`skew_y` in degrees), in
+/// that compose order (scale → shear → rotate). Returns a new image sized to
+/// the transformed bounding box, sampled by nearest-neighbour. `supersample`
+/// (1..=4) renders at N× then area-downscales — the RotSprite trick that keeps
+/// rotated/scaled pixel clusters from shattering into jaggies.
+pub fn affine_nn(
+    src: &RgbaImage,
+    rot_deg: f32,
+    sx: f32,
+    sy: f32,
+    skew_x_deg: f32,
+    skew_y_deg: f32,
+    supersample: u32,
+) -> RgbaImage {
+    let ss = supersample.clamp(1, 4);
+    let work = if ss > 1 {
+        image::imageops::resize(
+            src,
+            (src.width() * ss).max(1),
+            (src.height() * ss).max(1),
+            image::imageops::FilterType::Nearest,
+        )
+    } else {
+        src.clone()
+    };
+    let (w, h) = (work.width() as f32, work.height() as f32);
+    let r = rot_deg.to_radians();
+    let (cos, sin) = (r.cos(), r.sin());
+    let kx = skew_x_deg.to_radians().tan();
+    let ky = skew_y_deg.to_radians().tan();
+    // M = R * H * S  (column-vector convention)
+    let m00 = cos * sx - sin * ky * sx;
+    let m01 = cos * kx * sy - sin * sy;
+    let m10 = sin * sx + cos * ky * sx;
+    let m11 = sin * kx * sy + cos * sy;
+    let det = m00 * m11 - m01 * m10;
+    if det.abs() < 1e-6 {
+        return RgbaImage::from_pixel(1, 1, Rgba([0, 0, 0, 0]));
+    }
+    let (i00, i01, i10, i11) = (m11 / det, -m01 / det, -m10 / det, m00 / det);
+    let (cx, cy) = (w / 2.0, h / 2.0);
+    let fwd = |x: f32, y: f32| (m00 * x + m01 * y, m10 * x + m11 * y);
+    let corners = [
+        fwd(-cx, -cy),
+        fwd(cx, -cy),
+        fwd(-cx, cy),
+        fwd(cx, cy),
+    ];
+    let minx = corners.iter().map(|p| p.0).fold(f32::MAX, f32::min);
+    let maxx = corners.iter().map(|p| p.0).fold(f32::MIN, f32::max);
+    let miny = corners.iter().map(|p| p.1).fold(f32::MAX, f32::min);
+    let maxy = corners.iter().map(|p| p.1).fold(f32::MIN, f32::max);
+    let (nw, nh) = (
+        ((maxx - minx).ceil() as u32).max(1),
+        ((maxy - miny).ceil() as u32).max(1),
+    );
+    let mut out = RgbaImage::from_pixel(nw, nh, Rgba([0, 0, 0, 0]));
+    for oy in 0..nh {
+        for ox in 0..nw {
+            // dest coord (centred) → inverse map → source pixel
+            let (dx, dy) = (minx + ox as f32, miny + oy as f32);
+            let sxp = i00 * dx + i01 * dy + cx;
+            let syp = i10 * dx + i11 * dy + cy;
+            if sxp >= 0.0 && syp >= 0.0 && (sxp as u32) < work.width() && (syp as u32) < work.height()
+            {
+                let p = *work.get_pixel(sxp as u32, syp as u32);
+                if p.0[3] > 0 {
+                    out.put_pixel(ox, oy, p);
+                }
+            }
+        }
+    }
+    if ss > 1 {
+        image::imageops::resize(
+            &out,
+            (out.width() / ss).max(1),
+            (out.height() / ss).max(1),
+            image::imageops::FilterType::Triangle,
+        )
+    } else {
+        out
+    }
+}
+
 /// Linear interpolation between `a` and `b` by `t`.
 pub fn lerpf(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
