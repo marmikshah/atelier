@@ -1189,11 +1189,20 @@ impl Document {
         if raster::close(target, color, 0) {
             return Ok(());
         }
+        // Visited mask, not a colour check: when the fill colour is itself
+        // within `tol` of the target, painted pixels still match and the
+        // scan loops forever without it.
+        let mut visited = vec![false; (w * h) as usize];
         let mut stack = vec![(x, y)];
         while let Some((px, py)) = stack.pop() {
             if px < 0 || py < 0 || px >= w || py >= h {
                 continue;
             }
+            let i = (py * w + px) as usize;
+            if visited[i] {
+                continue;
+            }
+            visited[i] = true;
             let p = img.get_pixel(px as u32, py as u32).0;
             if !raster::close(p, target, tol) {
                 continue;
@@ -1273,8 +1282,10 @@ impl Document {
     }
 
     /// Draw a Bézier curve through control `points`: 2 = line, 3 = quadratic,
-    /// 4+ = cubic (first four). Sampled into `steps` segments with brush `size`.
-    /// Smooth organic strokes — tails, vines, hair.
+    /// 4 = cubic. More than 4 is an error (the old behaviour silently dropped
+    /// the extras — a curve that quietly ignored half its control points).
+    /// Sampled into `steps` segments with brush `size`. Smooth organic
+    /// strokes — tails, vines, hair.
     pub fn bezier(
         &mut self,
         layer: usize,
@@ -1284,6 +1295,13 @@ impl Document {
         size: i32,
         steps: i32,
     ) -> Result<(), String> {
+        if points.len() > 4 {
+            return Err(format!(
+                "bezier supports at most 4 control points (got {}) — chain several bezier calls \
+                 to draw a longer curve",
+                points.len()
+            ));
+        }
         let s = size.max(1);
         let steps = steps.max(2);
         let img = self.cel_canvas(layer, frame)?;
@@ -3730,6 +3748,20 @@ mod tests {
         d.set_palette(vec![[1, 1, 1, 255], [2, 2, 2, 255]]);
         assert_eq!(d.meta.palette.len(), 2);
         assert_eq!(d.meta.palette[1], [2, 2, 2, 255]);
+    }
+
+    #[test]
+    fn bezier_rejects_more_than_four_control_points() {
+        let mut d = Document::new("t", 8, 8);
+        let c = [9, 9, 9, 255];
+        // 4 points (cubic) draws fine.
+        d.bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7)], c, 1, 8)
+            .unwrap();
+        // 5 points used to silently drop the 5th; now it's an actionable error.
+        let err = d
+            .bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7), (3, 3)], c, 1, 8)
+            .unwrap_err();
+        assert!(err.contains("at most 4"), "got: {err}");
     }
 
     #[test]

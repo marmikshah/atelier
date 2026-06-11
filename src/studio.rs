@@ -770,19 +770,40 @@ impl Studio {
         Ok(json!({"ok": true, "doc_id": id}))
     }
 
-    /// Like `edit`, but if an active selection covers this document (matching
-    /// id + dimensions) the op `f` is confined to the selected pixels. Used by
-    /// the painting ops so `doc_select` masks any of them.
+    /// The active selection's mask for document `id`, validated against the
+    /// canvas: Ok(None) = no selection targets this doc; Err = the selection
+    /// targets this doc but no longer matches its dimensions. Erroring beats
+    /// the old behaviour (silently applying the op UNMASKED), which let a
+    /// paint the agent believed was confined repaint the whole cel.
+    fn selection_mask_for(&self, id: &str, w: u32, h: u32) -> Result<Option<&[bool]>, String> {
+        match &self.selection {
+            Some(s) if s.doc_id == id => {
+                if s.w != w || s.h != h {
+                    Err(format!(
+                        "active selection is stale: it covers a {}x{} canvas but '{}' is {}x{} — \
+                         doc_select shape=none to clear it, then reselect",
+                        s.w, s.h, id, w, h
+                    ))
+                } else {
+                    Ok(Some(&s.mask))
+                }
+            }
+            _ => Ok(None),
+        }
+    }
+
+    /// Like `edit`, but if an active selection covers this document the op `f`
+    /// is confined to the selected pixels. Used by the painting ops so
+    /// `doc_select` masks any of them. A stale selection (dims mismatch) is an
+    /// error, never a silent unmasked apply.
     fn edit_masked<F>(&self, id: &str, layer: usize, frame: usize, f: F) -> Result<Value, String>
     where
         F: FnOnce(&mut Document) -> Result<(), String>,
     {
         let (dir, mut doc) = self.open(id)?;
-        match &self.selection {
-            Some(s) if s.doc_id == id && s.w == doc.meta.w && s.h == doc.meta.h => {
-                doc.apply_masked(layer, frame, &s.mask, f)?
-            }
-            _ => f(&mut doc)?,
+        match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+            Some(mask) => doc.apply_masked(layer, frame, mask, f)?,
+            None => f(&mut doc)?,
         }
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id}))
@@ -1606,11 +1627,9 @@ impl Studio {
             }
             Ok(())
         };
-        match &self.selection {
-            Some(s) if s.doc_id == id && s.w == doc.meta.w && s.h == doc.meta.h => {
-                doc.apply_masked(layer, frame, &s.mask, run)?
-            }
-            _ => run(&mut doc)?,
+        match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+            Some(mask) => doc.apply_masked(layer, frame, mask, run)?,
+            None => run(&mut doc)?,
         }
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "ops": ops.len()}))
@@ -1946,6 +1965,43 @@ mod tests {
         assert_eq!(
             s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
             json!([1, 2, 3, 255])
+        );
+    }
+
+    #[test]
+    fn stale_selection_errors_instead_of_unmasked_apply() {
+        let mut s = studio("stalesel");
+        s.doc_create("d", 8, 8).unwrap();
+        s.doc_select("d", "rect", "replace", Some((1, 1, 3, 3)), None, None)
+            .unwrap();
+        // Recreate the doc at different dims: the selection is now stale.
+        s.delete_doc("d").unwrap();
+        s.doc_create("d", 4, 4).unwrap();
+        let err = s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap_err();
+        assert!(err.contains("stale"), "got: {err}");
+        // Nothing was painted — the op refused rather than running unmasked.
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+        // Clearing the selection unblocks painting.
+        s.doc_select("d", "none", "replace", None, None, None)
+            .unwrap();
+        s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
+    }
+
+    #[test]
+    fn bucket_fill_terminates_when_fill_color_within_tolerance() {
+        let s = studio("filltol");
+        s.doc_create("d", 8, 8).unwrap();
+        s.doc_fill_cel("d", 0, 0, [100, 100, 100, 255]).unwrap();
+        // Replacement within tol of the target: the old scan re-matched its own
+        // paint and looped forever; the visited mask must terminate it.
+        s.doc_fill("d", 0, 0, 4, 4, [101, 100, 100, 255], 16)
+            .unwrap();
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            json!([101, 100, 100, 255])
         );
     }
 

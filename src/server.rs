@@ -2202,7 +2202,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw a Bézier curve through control `points` (2=line, 3=quadratic, 4+=cubic) with brush `size`. Smooth organic strokes — tails, vines, hair. Honours an active selection."
+        description = "Draw a Bézier curve through control `points` (2=line, 3=quadratic, 4=cubic; >4 errors — chain calls for longer curves) with brush `size`. Smooth organic strokes — tails, vines, hair. Honours an active selection."
     )]
     async fn doc_bezier(&self, Parameters(p): Parameters<DocBezier>) -> CallToolResult {
         let pts = points(&p.points);
