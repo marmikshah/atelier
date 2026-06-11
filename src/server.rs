@@ -1389,6 +1389,45 @@ pub struct DocImportClean {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocExtractToLayer {
+    pub doc_id: String,
+    /// Source layer holding the flat sprite.
+    pub layer: usize,
+    /// Frame to read when frames="one" (default 0).
+    pub frame: Option<usize>,
+    /// Rect [x0,y0,x1,y1] of the part to cut. Omit to use the active selection.
+    pub region: Option<Vec<i32>>,
+    /// Use the active selection mask (set with doc_select / doc_select_wand).
+    pub use_selection: Option<bool>,
+    /// Name for the new part layer, e.g. "arm-front".
+    pub name: Option<String>,
+    /// "one" (default) cuts just `frame`; "all" cuts every frame's cel.
+    pub frames: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocKeyframeTransform {
+    pub doc_id: String,
+    pub layer: usize,
+    /// Rect [x0,y0,x1,y1] of the part to rotate (document pixels), read from from_frame.
+    pub region: Vec<i32>,
+    /// The JOINT the part rotates about, [x,y] in document pixels (e.g. the shoulder).
+    pub pivot: Vec<f32>,
+    pub from_frame: usize,
+    /// Last frame of the motion (> from_frame); frames must already exist.
+    pub to_frame: usize,
+    /// Total rotation in degrees at to_frame (clockwise positive); intermediates eased.
+    pub rot_deg: Option<f32>,
+    /// Total translation applied at to_frame; intermediates eased.
+    pub dx: Option<i32>,
+    pub dy: Option<i32>,
+    /// linear | ease-in | ease-out | ease-in-out | bounce | overshoot | elastic.
+    pub easing: Option<String>,
+    /// Snap resampled pixels back to the locked palette (default true).
+    pub snap_palette: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocSetReference {
     pub doc_id: String,
     /// Path to the reference image. Omit to clear the stored reference.
@@ -3160,6 +3199,53 @@ impl Atelier {
             p.frame.unwrap_or(0),
             r,
         )
+    }
+
+    // -- part-layer rig: limb animation as transforms, not repaints --
+    #[tool(
+        description = "RIG step: cut a part (arm, head, tail) of a flat sprite onto its OWN new layer directly above, same coordinates — by `region` rect or the active selection (doc_select_wand the limb, then use_selection=true). frames=\"all\" cuts every frame so the part stays separated across the timeline. After extraction, animate the part with doc_keyframe_transform / doc_keyframe_move on ITS layer while the body stays untouched. Returns the new layer index."
+    )]
+    async fn doc_extract_to_layer(
+        &self,
+        Parameters(p): Parameters<DocExtractToLayer>,
+    ) -> CallToolResult {
+        res(self.studio().doc_extract_to_layer(
+            &p.doc_id,
+            p.layer,
+            p.frame.unwrap_or(0),
+            region(&p.region),
+            p.use_selection.unwrap_or(false),
+            p.name,
+            p.frames.as_deref() == Some("all"),
+        ))
+    }
+
+    #[tool(
+        description = "JOINT-rotate a part across frames in ONE call: reads `region` from from_frame, then every frame in (from_frame, to_frame] gets the part rotated by the eased fraction of `rot_deg` about `pivot` (the joint, e.g. the shoulder — document pixels) plus the eased (dx,dy), original region cleared first. THE replacement for blind per-frame limb repainting — 'swing the arm 30° about the shoulder over frames 1-4' is one call. Works best on a part layer from doc_extract_to_layer. Resampled pixels snap to the locked palette by default."
+    )]
+    async fn doc_keyframe_transform(
+        &self,
+        Parameters(p): Parameters<DocKeyframeTransform>,
+    ) -> CallToolResult {
+        if p.region.len() < 4 {
+            return res(Err("region must be [x0,y0,x1,y1]".into()));
+        }
+        if p.pivot.len() < 2 {
+            return res(Err("pivot must be [x,y]".into()));
+        }
+        res(self.studio().doc_keyframe_transform(
+            &p.doc_id,
+            p.layer,
+            (p.region[0], p.region[1], p.region[2], p.region[3]),
+            (p.pivot[0], p.pivot[1]),
+            p.from_frame,
+            p.to_frame,
+            p.rot_deg.unwrap_or(0.0),
+            p.dx.unwrap_or(0),
+            p.dy.unwrap_or(0),
+            p.easing.as_deref().unwrap_or("linear"),
+            p.snap_palette.unwrap_or(true),
+        ))
     }
 
     // -- reference subsystem: recreate-from-sample as a measurable loop --

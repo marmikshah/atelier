@@ -1573,6 +1573,68 @@ impl Studio {
         }))
     }
 
+    /// Cut a region/selection of a layer onto its own part layer (above it),
+    /// optionally across all frames — the rig step before keyframe_transform.
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_extract_to_layer(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        use_selection: bool,
+        name: Option<String>,
+        all_frames: bool,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let mask = if use_selection {
+            match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+                Some(m) => Some(m.to_vec()),
+                None => return Err("use_selection=true but no active selection on this doc".into()),
+            }
+        } else {
+            None
+        };
+        let (new_layer, moved) =
+            doc.extract_to_layer(layer, frame, region, mask.as_deref(), name, all_frames)?;
+        doc.save(&dir)?;
+        Ok(json!({
+            "doc_id": id,
+            "new_layer": new_layer,
+            "pixels_moved": moved,
+            "layers": doc.meta.layers.iter().map(|l| l.name.clone()).collect::<Vec<_>>(),
+        }))
+    }
+
+    /// Eased pivot rotation + translation of a region across frames — the
+    /// joint-swing primitive.
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_keyframe_transform(
+        &self,
+        id: &str,
+        layer: usize,
+        region: (i32, i32, i32, i32),
+        pivot: (f32, f32),
+        from_frame: usize,
+        to_frame: usize,
+        rot_deg: f32,
+        dx: i32,
+        dy: i32,
+        easing: &str,
+        snap: bool,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let placed = doc.keyframe_transform(
+            layer, region, pivot, from_frame, to_frame, rot_deg, dx, dy, easing, snap,
+        )?;
+        doc.save(&dir)?;
+        Ok(json!({
+            "doc_id": id,
+            "frames_touched": placed.len(),
+            "placements": placed,
+        }))
+    }
+
     pub fn doc_move_region(
         &self,
         id: &str,

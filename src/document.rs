@@ -3232,6 +3232,185 @@ impl Document {
         Ok(offsets)
     }
 
+    /// Cut a region (and/or selection-masked pixels) of `layer` onto its OWN
+    /// new layer directly above, same coordinates — converts a flat sprite
+    /// into part layers (arm, head, tail) that keyframe_transform can move
+    /// independently. `all_frames` cuts every frame's cel, keeping the part
+    /// aligned across the timeline. Returns `(new_layer_index, pixels_moved)`.
+    pub fn extract_to_layer(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        mask: Option<&[bool]>,
+        name: Option<String>,
+        all_frames: bool,
+    ) -> Result<(usize, u64), String> {
+        if layer >= self.meta.layers.len() {
+            return Err(format!("no layer {}", layer));
+        }
+        if region.is_none() && mask.is_none() {
+            return Err("extract needs a `region` or an active selection".into());
+        }
+        if !all_frames && frame >= self.meta.frames.len() {
+            return Err(format!("no frame {}", frame));
+        }
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let norm = region.map(|(x0, y0, x1, y1)| (x0.min(x1), y0.min(y1), x0.max(x1), y0.max(y1)));
+        let in_scope = |x: i32, y: i32| -> bool {
+            if let Some((ax, ay, bx, by)) = norm {
+                if x < ax || x > bx || y < ay || y > by {
+                    return false;
+                }
+            }
+            match mask {
+                Some(m) => m.get((y * w + x) as usize).copied() == Some(true),
+                None => true,
+            }
+        };
+        let new_layer = layer + 1;
+        self.insert_layer(
+            new_layer,
+            name.or_else(|| Some("part".into())),
+            255,
+            "normal".into(),
+        );
+        let frames: Vec<usize> = if all_frames {
+            (0..self.meta.frames.len()).collect()
+        } else {
+            vec![frame]
+        };
+        let mut moved_total = 0u64;
+        for f in frames {
+            if !self.cels.contains_key(&(layer, f)) {
+                continue;
+            }
+            let full = self.cel_full(layer, f);
+            let mut part = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
+            let mut rest = full.clone();
+            let mut moved = 0u64;
+            for y in 0..h {
+                for x in 0..w {
+                    let p = *full.get_pixel(x as u32, y as u32);
+                    if p.0[3] > 0 && in_scope(x, y) {
+                        part.put_pixel(x as u32, y as u32, p);
+                        rest.put_pixel(x as u32, y as u32, Rgba([0, 0, 0, 0]));
+                        moved += 1;
+                    }
+                }
+            }
+            if moved > 0 {
+                self.set_cel(layer, f, 0, 0, rest)?;
+                self.set_cel(new_layer, f, 0, 0, part)?;
+                moved_total += moved;
+            }
+        }
+        Ok((new_layer, moved_total))
+    }
+
+    /// Eased rotation + translation of a region about an arbitrary PIVOT
+    /// across a frame range on one layer — the joint primitive: "swing the arm
+    /// 30° about the shoulder over frames 1..4" in one call instead of four
+    /// blind repaints. Reads the region's content from `from_frame`; each
+    /// later frame gets the part rotated by the eased angle and offset by the
+    /// eased (dx,dy) about `pivot` (document coords), with the original region
+    /// cleared first so no stale copy remains. `snap` re-snaps the resampled
+    /// pixels to the locked palette.
+    #[allow(clippy::too_many_arguments)]
+    pub fn keyframe_transform(
+        &mut self,
+        layer: usize,
+        region: (i32, i32, i32, i32),
+        pivot: (f32, f32),
+        from_frame: usize,
+        to_frame: usize,
+        rot_deg: f32,
+        dx: i32,
+        dy: i32,
+        easing: &str,
+        snap: bool,
+    ) -> Result<Vec<Value>, String> {
+        if to_frame <= from_frame {
+            return Err("keyframe_transform needs to_frame > from_frame".into());
+        }
+        let n = self.meta.frames.len();
+        if to_frame >= n {
+            return Err(format!(
+                "frame {} does not exist (frames={}) — add it with doc_add_frame first",
+                to_frame, n
+            ));
+        }
+        let (x0, y0, x1, y1) = (
+            region.0.min(region.2),
+            region.1.min(region.3),
+            region.0.max(region.2),
+            region.1.max(region.3),
+        );
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let (rx0, ry0) = (x0.max(0), y0.max(0));
+        let (rx1, ry1) = (x1.min(w - 1), y1.min(h - 1));
+        if rx0 > rx1 || ry0 > ry1 {
+            return Err("region is empty after clamping to the canvas".into());
+        }
+        let (rw, rh) = ((rx1 - rx0 + 1) as u32, (ry1 - ry0 + 1) as u32);
+        let full = self.cel_full(layer, from_frame);
+        let mut part = RgbaImage::from_pixel(rw, rh, Rgba([0, 0, 0, 0]));
+        for y in 0..rh {
+            for x in 0..rw {
+                part.put_pixel(x, y, *full.get_pixel(rx0 as u32 + x, ry0 as u32 + y));
+            }
+        }
+        let palette = self.meta.palette.clone();
+        let span = (to_frame - from_frame) as f32;
+        let mut placed = Vec::new();
+        for f in (from_frame + 1)..=to_frame {
+            let t = raster::ease((f - from_frame) as f32 / span, easing);
+            let theta = rot_deg * t;
+            let (ox, oy) = (
+                (dx as f32 * t).round() as i32,
+                (dy as f32 * t).round() as i32,
+            );
+            let rotated = raster::affine_nn(&part, theta, 1.0, 1.0, 0.0, 0.0, 2);
+            // affine_nn rotates about the part's centre and returns a
+            // bbox-sized image; place it so the JOINT pivot stays fixed:
+            // c' = pivot + R(c - pivot), then the eased translation.
+            let (cx, cy) = (rx0 as f32 + rw as f32 / 2.0, ry0 as f32 + rh as f32 / 2.0);
+            let r = theta.to_radians();
+            let (cos, sin) = (r.cos(), r.sin());
+            let (vx, vy) = (cx - pivot.0, cy - pivot.1);
+            let ncx = pivot.0 + cos * vx - sin * vy;
+            let ncy = pivot.1 + sin * vx + cos * vy;
+            let px = (ncx + ox as f32 - rotated.width() as f32 / 2.0).round() as i32;
+            let py = (ncy + oy as f32 - rotated.height() as f32 / 2.0).round() as i32;
+            self.clear_region(layer, f, rx0, ry0, rx1, ry1)?;
+            let img = self.cel_canvas(layer, f)?;
+            for (sx, sy, p) in rotated.enumerate_pixels() {
+                if p.0[3] == 0 {
+                    continue;
+                }
+                let (tx, ty) = (px + sx as i32, py + sy as i32);
+                if tx < 0 || ty < 0 || tx >= w || ty >= h {
+                    continue;
+                }
+                let c = if snap && !palette.is_empty() {
+                    let pi =
+                        raster::nearest_oklab([p.0[0], p.0[1], p.0[2], 255], &palette).unwrap_or(0);
+                    Rgba([palette[pi][0], palette[pi][1], palette[pi][2], p.0[3]])
+                } else {
+                    *p
+                };
+                img.put_pixel(tx as u32, ty as u32, c);
+            }
+            placed.push(json!({
+                "frame": f,
+                "rot_deg": (theta * 10.0).round() / 10.0,
+                "offset": [ox, oy],
+                "placed_at": [px, py],
+            }));
+        }
+        Ok(placed)
+    }
+
     pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
         let n = self.meta.frames.len() as u32;
         let fw = self.meta.w * scale;
@@ -3925,6 +4104,78 @@ mod tests {
         d.set_palette(vec![[1, 1, 1, 255], [2, 2, 2, 255]]);
         assert_eq!(d.meta.palette.len(), 2);
         assert_eq!(d.meta.palette[1], [2, 2, 2, 255]);
+    }
+
+    #[test]
+    fn extract_to_layer_cuts_part_onto_new_layer() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
+        d.pencil(0, 0, &[(3, 3)], [2, 2, 2, 255], 1).unwrap();
+        let (new_layer, moved) = d
+            .extract_to_layer(0, 0, Some((2, 2, 3, 3)), None, Some("arm".into()), false)
+            .unwrap();
+        assert_eq!((new_layer, moved), (1, 1));
+        assert_eq!(d.meta.layers[1].name, "arm");
+        // The part moved: gone from the source, present on the new layer.
+        assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [0, 0, 0, 0]);
+        assert_eq!(d.get_pixel(1, 0, 3, 3).unwrap(), [2, 2, 2, 255]);
+        // Untouched pixels stayed on the source layer.
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [1, 1, 1, 255]);
+    }
+
+    #[test]
+    fn keyframe_transform_translates_and_rotates_about_pivot() {
+        let mut d = Document::new("t", 8, 8);
+        d.pencil(0, 0, &[(1, 1)], [9, 9, 9, 255], 1).unwrap();
+        d.add_frame(100, Some(0));
+        d.add_frame(100, Some(0));
+        // Pure translation: behaves like keyframe_move.
+        d.keyframe_transform(
+            0,
+            (1, 1, 1, 1),
+            (1.5, 1.5),
+            0,
+            2,
+            0.0,
+            4,
+            0,
+            "linear",
+            false,
+        )
+        .unwrap();
+        assert_eq!(d.get_pixel(0, 1, 3, 1).unwrap(), [9, 9, 9, 255]); // halfway
+        assert_eq!(d.get_pixel(0, 2, 5, 1).unwrap(), [9, 9, 9, 255]); // full offset
+        assert_eq!(d.get_pixel(0, 2, 1, 1).unwrap(), [0, 0, 0, 0]); // source cleared
+                                                                    // Rotation: a bar swung 90° about its base ends up horizontal.
+        let mut r = Document::new("r", 9, 9);
+        for y in 1..=4 {
+            r.pencil(0, 0, &[(4, y)], [9, 9, 9, 255], 1).unwrap();
+        }
+        r.add_frame(100, Some(0));
+        let placed = r
+            .keyframe_transform(
+                0,
+                (4, 1, 4, 4),
+                (4.5, 4.5),
+                0,
+                1,
+                90.0,
+                0,
+                0,
+                "linear",
+                false,
+            )
+            .unwrap();
+        assert_eq!(placed.len(), 1);
+        // The vertical bar above the pivot is gone in frame 1...
+        assert_eq!(r.get_pixel(0, 1, 4, 1).unwrap(), [0, 0, 0, 0]);
+        // ...and opaque pixels now sit to the LEFT of the pivot (90° clockwise
+        // takes "up" to "left" in screen coords... or right for cw): just
+        // assert the mass moved off the original column onto one row.
+        let count_row4: usize = (0..9)
+            .filter(|&x| r.get_pixel(0, 1, x, 4).unwrap()[3] > 0)
+            .count();
+        assert!(count_row4 >= 3, "bar should now lie along row 4");
     }
 
     #[test]
