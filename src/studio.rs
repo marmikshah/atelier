@@ -13,6 +13,7 @@ use serde_json::{json, Value};
 use crate::document::Document;
 
 mod analysis;
+mod craft;
 
 fn slugify(name: &str) -> String {
     let mut out = String::new();
@@ -265,6 +266,7 @@ impl Studio {
             img: RgbaImage,          // flattened (and scaled) frame pixels
             duration_ms: u32,        // frame duration, carried into the map
             pivot: Option<[i32; 2]>, // pivot in atlas-pixel space (scaled)
+            boxes: Vec<Value>,       // collision boxes, pre-scaled to atlas pixels
         }
         let mut items: Vec<Item> = Vec::new();
         for id in &ids {
@@ -287,6 +289,11 @@ impl Studio {
                     pivot: doc.meta.frames[f]
                         .pivot
                         .map(|[x, y]| [x * scale as i32, y * scale as i32]),
+                    boxes: doc.meta.frames[f]
+                        .boxes
+                        .iter()
+                        .map(|b| b.to_json(scale))
+                        .collect(),
                 });
             }
         }
@@ -317,6 +324,7 @@ impl Studio {
                 "doc": it.doc, "frame": it.frame,
                 "rect": [px, py, it.img.width(), it.img.height()],
                 "duration_ms": it.duration_ms, "pivot": it.pivot,
+                "boxes": it.boxes.clone(),
             }));
         }
         if let Some(p) = Path::new(out_path).parent() {
@@ -1160,6 +1168,26 @@ impl Studio {
         })
     }
 
+    /// Volume/form shading — fill a shape's interior with a rounded light
+    /// gradient snapped to a ramp (sphere/cylinder/auto). Masked by the active
+    /// selection, like the other painting ops.
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_form(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        light_dir: &str,
+        form: &str,
+        region: Option<(i32, i32, i32, i32)>,
+        ramp: Option<Vec<[u8; 4]>>,
+        strength: f32,
+    ) -> Result<Value, String> {
+        self.edit_masked(id, layer, frame, |d| {
+            d.form(layer, frame, light_dir, form, region, ramp, strength)
+        })
+    }
+
     /// Two-colour ordered dither over a region. `region` is required unless an
     /// active selection covers this document (the selection then bounds it).
     /// Masked by the active selection, like the other painting ops.
@@ -1484,6 +1512,17 @@ impl Studio {
         self.commit(&dir, id, doc)
     }
 
+    pub fn doc_set_frame_boxes(
+        &self,
+        id: &str,
+        frame: usize,
+        boxes: Vec<crate::document::BoxMeta>,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        doc.set_frame_boxes(frame, boxes)?;
+        self.commit(&dir, id, doc)
+    }
+
     pub fn doc_set_palette(&self, id: &str, colors: Vec<[u8; 4]>) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         doc.set_palette(colors);
@@ -1634,6 +1673,31 @@ mod tests {
         let info = s.doc_info("p").unwrap(); // reloads from disk
         assert_eq!(info["frames"][0]["pivot"], json!([4, 7]));
         assert_eq!(info["palette_len"], 2);
+    }
+
+    #[test]
+    fn frame_boxes_persist_and_export_scaled() {
+        use crate::document::BoxMeta;
+        let s = studio("boxes");
+        s.doc_create("b", 8, 8).unwrap();
+        s.doc_set_frame_boxes(
+            "b",
+            0,
+            vec![BoxMeta {
+                name: "torso".into(),
+                kind: "hurt".into(),
+                rect: [1, 1, 3, 4],
+            }],
+        )
+        .unwrap();
+        // Round-trips through disk in doc_info (raw, unscaled).
+        let info = s.doc_info("b").unwrap();
+        assert_eq!(info["frames"][0]["boxes"][0]["kind"], "hurt");
+        assert_eq!(info["frames"][0]["boxes"][0]["rect"], json!([1, 1, 3, 4]));
+        // Emitted scaled in the sheet sidecar.
+        let out = std::env::temp_dir().join("atelier-test-boxes-sheet.png");
+        let meta = s.doc_export_sheet("b", out.to_str().unwrap(), 4).unwrap();
+        assert_eq!(meta["frames"][0]["boxes"][0]["rect"], json!([4, 4, 12, 16]));
     }
 
     #[test]

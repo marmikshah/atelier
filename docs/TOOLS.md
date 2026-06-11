@@ -39,6 +39,13 @@ stays crisp.
 - `doc_add_tag` — named frame range (`forward` / `reverse` / `pingpong`).
 - `doc_set_pivot` — set a frame's anchor point `[x,y]` (feet, weapon mount); the
   engine reads it to position the sprite. Emitted (scaled) in sheet/atlas JSON.
+- `doc_set_frame_boxes` — set a frame's collision boxes: a list of
+  `{name, kind: body|hit|hurt, rect: [x,y,w,h]}` (`body` = collision, `hit` =
+  deals damage, `hurt` = takes damage). Replaces the frame's whole set; `[]`
+  clears. Pure gameplay metadata — never rasterized, emitted (scaled) in
+  sheet/atlas JSON beside `pivot` so the engine drives gameplay straight off the
+  sheet. Pairs with `doc_components`, which already reports tight per-blob bboxes
+  if you want to size a box from the art.
 - `doc_keyframe_move` — eased multi-frame region motion: take a region from one
   frame and stamp it across following frames along an interpolated offset
   (`linear` / `ease-in` / `ease-out` / `ease-in-out` cubic, `bounce`,
@@ -180,7 +187,8 @@ The limb/keyframe-animation toolkit.
   Options: `region` crops, `onion` ghosts the neighbour frames, `tile` repeats
   N×N to check seamlessness, `max_size` makes a cheap thumbnail.
 - `doc_export_sheet` — horizontal spritesheet PNG + JSON meta (frame rects,
-  durations, tags, pivots, palette) so any engine can slice and play it.
+  durations, tags, pivots, collision boxes, palette) so any engine can slice and
+  play it.
 - `doc_export_gif` — animated GIF honouring per-frame durations. Pass a `tag` to
   play that animation in its direction (`forward` / `reverse` / `pingpong`);
   omit it to play the whole timeline forward.
@@ -198,8 +206,8 @@ The limb/keyframe-animation toolkit.
   set corners connect along their shared edge.
 - `export_all` — one spritesheet per document into a flat dir.
 - `export_atlas` — pack **every frame of every document** into a single atlas PNG
-  + master JSON (`doc`, `frame`, `rect`, `duration_ms`, `pivot`) so a whole
-  game's sprites slice from one texture.
+  + master JSON (`doc`, `frame`, `rect`, `duration_ms`, `pivot`, `boxes`) so a
+  whole game's sprites slice from one texture.
 
 ## Beyond the tools
 

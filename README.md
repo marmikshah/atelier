@@ -42,8 +42,9 @@ deterministic.
 - **Real editor, headless** — layered, animated documents: 14 blend modes,
   frames + tags, selections, cross-document clipboard, palettes, onion-skinning.
 - **Procedural leverage** — dithered gradients, fBm/perlin/voronoi noise,
-  scatter, Bézier strokes, symmetry, shadow/glow/bevel: compose effects instead
-  of placing every pixel.
+  scatter, Bézier strokes, symmetry, shadow/glow/bevel, and one-call volume
+  shading (`doc_form`: sphere/cylinder/auto — a flat silhouette gains real
+  rounded-form lighting): compose effects instead of placing every pixel.
 - **An eye for critique** — silhouette, stray-pixel, palette, contrast, frame-diff
   and loop-seam reports turn "does it look right?" into numbers an agent can act on.
 - **Game-ready output** — spritesheets with rects/durations/tags/pivots,
@@ -55,7 +56,7 @@ deterministic.
   prompts (sprite / walk-cycle / tile workflows), a session recorder that turns a
   live session into a replayable recipe, and a live `/gallery` web view.
 
-The full tool surface (71 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
+The full tool surface (72 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Quickstart
 

@@ -5,9 +5,9 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    AnnotateAble, ListResourcesResult, PaginatedRequestParams, RawResource,
-    ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents, ServerCapabilities,
-    ServerInfo,
+    AnnotateAble, CallToolResult, Content, ListResourcesResult, PaginatedRequestParams,
+    RawResource, ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents,
+    ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
 use rmcp::{tool, tool_handler, tool_router, ErrorData, RoleServer, ServerHandler, ServiceExt};
@@ -28,6 +28,25 @@ fn res(r: Result<Value, String>) -> String {
         Ok(v) => j(v),
         Err(e) => j(json!({"error": e})),
     }
+}
+
+/// Wrap an image-producing studio result as MCP content: an inline PNG (so the
+/// agent SEES the pixels in the same turn — no separate file read) plus a JSON
+/// text part with the measured stats. Errors come back as a `{"error": ...}`
+/// text part, matching `res`.
+fn img_result(r: Result<(Vec<u8>, Value), String>) -> CallToolResult {
+    match r {
+        Ok((png, report)) => CallToolResult::success(vec![
+            Content::image(base64(&png), "image/png"),
+            Content::text(j(report)),
+        ]),
+        Err(e) => CallToolResult::success(vec![Content::text(j(json!({"error": e})))]),
+    }
+}
+
+/// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
+fn palette_list(v: &[Vec<i64>]) -> Vec<[u8; 4]> {
+    v.iter().map(|c| rgba(c)).collect()
 }
 
 /// [r,g,b] or [r,g,b,a] -> RGBA (alpha defaults to 255).
@@ -482,6 +501,25 @@ pub struct DocShade {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocForm {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Form model: "sphere" (default) | "cylinder-h" | "cylinder-v" | "auto".
+    /// "auto" derives volume from the silhouette's interior distance (any shape).
+    pub form: Option<String>,
+    /// Highlight origin — same 8 dirs as doc_shade (default "top-left").
+    pub light_dir: Option<String>,
+    /// Region [x0,y0,x1,y1] bounding the form; omit for the cel's opaque bbox.
+    pub region: Option<Vec<i32>>,
+    /// Shading ramp ordered dark→light (each [r,g,b]/[r,g,b,a]); omit to derive
+    /// one from the mean fill colour.
+    pub ramp: Option<Vec<Vec<i64>>>,
+    /// 0..1 — compress (low) or span the full ramp (1, default).
+    pub strength: Option<f32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocDither {
     pub doc_id: String,
     pub layer: usize,
@@ -699,6 +737,24 @@ pub struct DocSetPivot {
     pub frame: usize,
     /// Anchor point [x,y] in document pixels; omit to clear the pivot.
     pub pivot: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct BoxInput {
+    /// Label for this box (e.g. "torso", "sword", "feet").
+    pub name: String,
+    /// `body` (collision), `hit` (deals damage) or `hurt` (takes damage).
+    pub kind: String,
+    /// `[x, y, w, h]` in document pixels.
+    pub rect: Vec<i32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocSetFrameBoxes {
+    pub doc_id: String,
+    pub frame: usize,
+    /// The frame's full box list; pass `[]` to clear. Replaces any existing set.
+    pub boxes: Vec<BoxInput>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -995,6 +1051,78 @@ fn iso_date() -> String {
     let m = if mp < 10 { mp + 3 } else { mp - 9 }; // [1, 12]
     let y = if m <= 2 { y + 1 } else { y };
     format!("{y:04}-{m:02}-{d:02}")
+}
+
+// --- world-class-art tool params (see docs/ART-QUALITY-REVIEW.md) ----------
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocLook {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    pub scale: Option<u32>,
+    /// Inclusive crop corners [x0,y0,x1,y1].
+    pub region: Option<Vec<i32>>,
+    /// render | value | bands | sat | hue | notan.
+    pub mode: Option<String>,
+    /// Band count for mode=bands.
+    pub bands: Option<u32>,
+    pub grid: Option<bool>,
+    pub coords: Option<bool>,
+    pub onion: Option<bool>,
+    pub max_size: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocSelectRender {
+    pub doc_id: String,
+    pub scale: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocCheckpoint {
+    pub doc_id: String,
+    /// save | list | restore | diff | prune.
+    pub action: String,
+    pub label: Option<String>,
+    pub checkpoint_id: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocLayerOps {
+    pub doc_id: String,
+    /// move | insert | delete | rename | duplicate | merge_down.
+    pub action: String,
+    pub index: Option<usize>,
+    pub to_index: Option<usize>,
+    pub name: Option<String>,
+    pub opacity: Option<u8>,
+    pub blend: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocPerceptualRamp {
+    /// Base colour [r,g,b(,a)].
+    pub base: Vec<i64>,
+    pub count: Option<usize>,
+    /// Target OKLab lightness (0..1) of the darkest / lightest step.
+    pub value_lo: Option<f32>,
+    pub value_hi: Option<f32>,
+    /// Total hue rotation (degrees) across the ramp.
+    pub hue_shift: Option<f32>,
+    /// flat | arc | sat-in-shadow.
+    pub sat_curve: Option<String>,
+    pub anchor_midtone: Option<bool>,
+    /// If set, store the ramp as this document's palette.
+    pub set_doc: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocSnapPalette {
+    pub doc_id: String,
+    pub layer: Option<usize>,
+    pub frame: Option<usize>,
+    /// Override palette as a list of [r,g,b(,a)]; defaults to the doc's palette.
+    pub palette: Option<Vec<Vec<i64>>>,
 }
 
 // --- resources -------------------------------------------------------------
@@ -1909,6 +2037,26 @@ impl Atelier {
     }
 
     #[tool(
+        description = "Volume shading: lay a rounded-form light gradient across a shape's *interior* and snap it to a dark→light `ramp` — a flat-filled blob gains real volume in one call (where doc_shade only lights rims). `form` sphere (default) / cylinder-h / cylinder-v / auto; 'auto' uses the silhouette's interior-distance so any shape works, not just an ellipse. `light_dir` places the highlight. `region` bounds it (else the opaque bbox); `ramp` omitted is derived from the mean fill colour. `strength` 0..1 spans the ramp. Honours an active selection."
+    )]
+    async fn doc_form(&self, Parameters(p): Parameters<DocForm>) -> String {
+        let ramp = p
+            .ramp
+            .as_ref()
+            .map(|r| r.iter().map(|c| rgba(c)).collect::<Vec<_>>());
+        res(self.studio().doc_form(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.light_dir.as_deref().unwrap_or("top-left"),
+            p.form.as_deref().unwrap_or("sphere"),
+            region(&p.region),
+            ramp,
+            p.strength.unwrap_or(1.0),
+        ))
+    }
+
+    #[tool(
         description = "Fill a `region` with an ordered dither of `color_a`/`color_b` (`pattern` checker/bayer2/bayer4/bayer8). `density` 0..1 biases toward color_b. `only_existing`=true repaints just pixels already color_a/color_b (turn a flat fill into a gradient-dither without spilling). The pixel-art way to fake a mid-tone between two ramp colours. `region` required unless a selection is active."
     )]
     async fn doc_dither(&self, Parameters(p): Parameters<DocDither>) -> String {
@@ -2246,6 +2394,24 @@ impl Atelier {
     }
 
     #[tool(
+        description = "Set a frame's collision boxes — body/hit/hurt rects an engine reads straight off the sheet. Each box is {name, kind:body|hit|hurt, rect:[x,y,w,h]}. Replaces the frame's whole set; pass boxes=[] to clear. Emitted (scaled) in sheet/atlas JSON next to pivot."
+    )]
+    async fn doc_set_frame_boxes(&self, Parameters(p): Parameters<DocSetFrameBoxes>) -> String {
+        let mut boxes = Vec::with_capacity(p.boxes.len());
+        for b in &p.boxes {
+            if b.rect.len() != 4 {
+                return j(json!({"error": format!("box '{}' rect must be [x,y,w,h]", b.name)}));
+            }
+            boxes.push(crate::document::BoxMeta {
+                name: b.name.clone(),
+                kind: b.kind.clone(),
+                rect: [b.rect[0], b.rect[1], b.rect[2], b.rect[3]],
+            });
+        }
+        res(self.studio().doc_set_frame_boxes(&p.doc_id, p.frame, boxes))
+    }
+
+    #[tool(
         description = "Set the document's palette: a list of [r,g,b]/[r,g,b,a] swatches. Stored on the doc and emitted in exports — lock a cohesive N-colour set across sprites."
     )]
     async fn doc_set_palette(&self, Parameters(p): Parameters<DocSetPalette>) -> String {
@@ -2269,6 +2435,90 @@ impl Atelier {
     )]
     async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> String {
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
+    }
+
+    // -- world-class-art tools (see docs/ART-QUALITY-REVIEW.md) --
+    #[tool(
+        description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary eye; use this instead of doc_render when you want to look. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail. Stats report value min/max/mean/contrast and shadow/mid/light mass %."
+    )]
+    async fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
+        img_result(self.studio().look(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.scale.unwrap_or(6),
+            region(&p.region),
+            p.mode.as_deref().unwrap_or("render"),
+            p.bands.unwrap_or(4),
+            p.grid.unwrap_or(false),
+            p.coords.unwrap_or(false),
+            p.onion.unwrap_or(false),
+            p.max_size,
+        ))
+    }
+
+    #[tool(
+        description = "Render the ACTIVE selection as a quick-mask overlay (selected art shown, the rest dimmed + magenta-tinted) so you never paint through an unseen mask. Returns an inline PNG + selected-pixel count and bbox."
+    )]
+    async fn doc_select_render(&self, Parameters(p): Parameters<DocSelectRender>) -> CallToolResult {
+        img_result(self.studio().select_render(&p.doc_id, p.scale.unwrap_or(6)))
+    }
+
+    #[tool(
+        description = "Document history for an all-destructive editor. action: save (snapshot the doc) | list | restore (roll back) | diff (regression deltas vs a snapshot: pixel/colour/contrast change, added/removed/recoloured) | prune. Snapshot before a risky op (form/quantize/relight/fill) and restore if it gets worse."
+    )]
+    async fn doc_checkpoint(&self, Parameters(p): Parameters<DocCheckpoint>) -> String {
+        res(self.studio().checkpoint(
+            &p.doc_id,
+            &p.action,
+            p.label.as_deref(),
+            p.checkpoint_id.as_deref(),
+        ))
+    }
+
+    #[tool(
+        description = "Layer-stack lifecycle in one tool. action: move (needs to_index) | insert (empty layer at index) | delete | rename (needs name) | duplicate | merge_down (bake a layer's opacity+blend onto the one below it). Cels follow the layer. Returns the new layer list."
+    )]
+    async fn doc_layer_ops(&self, Parameters(p): Parameters<DocLayerOps>) -> String {
+        res(self.studio().layer_ops(
+            &p.doc_id,
+            &p.action,
+            p.index.unwrap_or(0),
+            p.to_index,
+            p.name,
+            p.opacity.unwrap_or(255),
+            p.blend.unwrap_or_else(|| "normal".into()),
+        ))
+    }
+
+    #[tool(
+        description = "Generate a PERCEPTUALLY-EVEN shading ramp in OKLCh (fixes linear-HSL's crushed midtones): equal perceptual-lightness steps between value_lo..value_hi (OKLab L, 0..1; defaults bracket the base), total hue_shift° across the ramp (light warm / dark cool), sat_curve flat|arc|sat-in-shadow, anchor_midtone forces the centre step to be exactly base. Reports an evenness validation; set_doc stores it as that document's palette."
+    )]
+    async fn doc_make_perceptual_ramp(
+        &self,
+        Parameters(p): Parameters<DocPerceptualRamp>,
+    ) -> String {
+        res(self.studio().make_perceptual_ramp(
+            rgba(&p.base),
+            p.count.unwrap_or(5),
+            p.value_lo,
+            p.value_hi,
+            p.hue_shift.unwrap_or(20.0),
+            p.sat_curve.as_deref().unwrap_or("arc"),
+            p.anchor_midtone.unwrap_or(false),
+            p.set_doc.as_deref(),
+        ))
+    }
+
+    #[tool(
+        description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. Returns the pixel count moved."
+    )]
+    async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> String {
+        res(self.studio().snap_palette(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.palette.map(|v| palette_list(&v)),
+        ))
     }
 }
 

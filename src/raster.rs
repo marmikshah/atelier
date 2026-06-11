@@ -476,6 +476,150 @@ pub fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [u8; 3] {
     ]
 }
 
+// -- OKLab / OKLCh perceptual colour space ----------------------------------
+//
+// Björn Ottosson's OKLab: a perceptually uniform space where equal numeric
+// steps in L look like equal steps in brightness, and Euclidean distance
+// approximates perceived colour difference. atelier's ramps, quantize and
+// palette-snap all live in sRGB+HSL today, which crushes the midtones and
+// picks perceptually-wrong nearest colours; OKLab fixes both. See the
+// art-quality review (docs/ART-QUALITY-REVIEW.md, §4 unlock 2).
+
+fn srgb_to_linear(c: f32) -> f32 {
+    if c <= 0.04045 {
+        c / 12.92
+    } else {
+        ((c + 0.055) / 1.055).powf(2.4)
+    }
+}
+
+fn linear_to_srgb(c: f32) -> f32 {
+    if c <= 0.0031308 {
+        12.92 * c
+    } else {
+        1.055 * c.powf(1.0 / 2.4) - 0.055
+    }
+}
+
+/// sRGB (0..255) → OKLab `(L, a, b)`. L is perceptual lightness in [0,1]; a/b
+/// are the green–red and blue–yellow opponent axes (roughly ±0.4).
+pub fn srgb_to_oklab(c: [u8; 4]) -> (f32, f32, f32) {
+    let r = srgb_to_linear(c[0] as f32 / 255.0);
+    let g = srgb_to_linear(c[1] as f32 / 255.0);
+    let b = srgb_to_linear(c[2] as f32 / 255.0);
+    let l = 0.412_221_46 * r + 0.536_332_55 * g + 0.051_445_995 * b;
+    let m = 0.211_903_5 * r + 0.680_699_55 * g + 0.107_396_96 * b;
+    let s = 0.088_302_46 * r + 0.281_718_85 * g + 0.629_978_7 * b;
+    let (l_, m_, s_) = (l.cbrt(), m.cbrt(), s.cbrt());
+    (
+        0.210_454_26 * l_ + 0.793_617_8 * m_ - 0.004_072_047 * s_,
+        1.977_998_5 * l_ - 2.428_592_2 * m_ + 0.450_593_7 * s_,
+        0.025_904_037 * l_ + 0.782_771_77 * m_ - 0.808_675_77 * s_,
+    )
+}
+
+/// OKLab `(L, a, b)` → sRGB (0..255), gamut-clamped. Alpha is the caller's job.
+pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
+    let (l, a, b) = lab;
+    let l_ = l + 0.396_337_78 * a + 0.215_803_76 * b;
+    let m_ = l - 0.105_561_346 * a - 0.063_854_17 * b;
+    let s_ = l - 0.089_484_18 * a - 1.291_485_5 * b;
+    let (l3, m3, s3) = (l_ * l_ * l_, m_ * m_ * m_, s_ * s_ * s_);
+    let r = 4.076_741_7 * l3 - 3.307_711_6 * m3 + 0.230_969_94 * s3;
+    let g = -1.268_438 * l3 + 2.609_757_4 * m3 - 0.341_319_38 * s3;
+    let bl = -0.004_196_086_3 * l3 - 0.703_418_6 * m3 + 1.707_614_7 * s3;
+    [
+        (linear_to_srgb(r) * 255.0).round().clamp(0.0, 255.0) as u8,
+        (linear_to_srgb(g) * 255.0).round().clamp(0.0, 255.0) as u8,
+        (linear_to_srgb(bl) * 255.0).round().clamp(0.0, 255.0) as u8,
+    ]
+}
+
+/// OKLab → OKLCh `(L, C, h°)`: chroma magnitude + hue angle in degrees.
+pub fn oklab_to_oklch(lab: (f32, f32, f32)) -> (f32, f32, f32) {
+    let (l, a, b) = lab;
+    let c = (a * a + b * b).sqrt();
+    let h = b.atan2(a).to_degrees().rem_euclid(360.0);
+    (l, c, h)
+}
+
+/// OKLCh `(L, C, h°)` → OKLab `(L, a, b)`.
+pub fn oklch_to_oklab(lch: (f32, f32, f32)) -> (f32, f32, f32) {
+    let (l, c, h) = lch;
+    let r = h.to_radians();
+    (l, c * r.cos(), c * r.sin())
+}
+
+/// Perceptual colour difference (OKLab ΔE, Euclidean). ~0.02 is a just-
+/// noticeable step; > 0.1 reads as a distinct colour. RGB-only (ignores alpha).
+pub fn oklab_delta(a: [u8; 4], b: [u8; 4]) -> f32 {
+    let (l1, a1, b1) = srgb_to_oklab(a);
+    let (l2, a2, b2) = srgb_to_oklab(b);
+    ((l1 - l2).powi(2) + (a1 - a2).powi(2) + (b1 - b2).powi(2)).sqrt()
+}
+
+/// Index of the perceptually nearest entry in `palette` to `p` (OKLab ΔE).
+/// Returns None for an empty palette.
+pub fn nearest_oklab(p: [u8; 4], palette: &[[u8; 4]]) -> Option<usize> {
+    palette
+        .iter()
+        .enumerate()
+        .min_by(|(_, x), (_, y)| {
+            oklab_delta(p, **x)
+                .partial_cmp(&oklab_delta(p, **y))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .map(|(i, _)| i)
+}
+
+/// A perceptually-even shading ramp built in OKLCh, darkest → lightest.
+///
+/// Unlike [`make_ramp`] (linear HSL, which bunches the midtones), every step is
+/// an equal stride in perceptual lightness between `value_lo`..`value_hi`
+/// (OKLab L, 0..1). `hue_shift` is the total hue rotation across the ramp
+/// (lighter end warm-shifted, darker end cool-shifted — the classic move).
+/// `sat_curve` shapes chroma: `"flat"` holds the base chroma, `"arc"` peaks it
+/// at the midtone (the painterly default), `"sat-in-shadow"` pushes chroma into
+/// the darks. `anchor_midtone` forces the centre step to be exactly `base`.
+pub fn make_ramp_oklch(
+    base: [u8; 4],
+    count: usize,
+    value_lo: f32,
+    value_hi: f32,
+    hue_shift: f32,
+    sat_curve: &str,
+    anchor_midtone: bool,
+) -> Vec<[u8; 4]> {
+    let count = count.max(1);
+    let (_lb, cb, hb) = oklab_to_oklch(srgb_to_oklab(base));
+    let mid = (count - 1) / 2;
+    (0..count)
+        .map(|i| {
+            if anchor_midtone && i == mid && count > 1 {
+                return base;
+            }
+            let t = if count == 1 {
+                0.5
+            } else {
+                i as f32 / (count - 1) as f32
+            };
+            let l = value_lo + (value_hi - value_lo) * t;
+            let h = hb + (t - 0.5) * hue_shift;
+            let c = match sat_curve {
+                "flat" => cb,
+                // peak chroma at the midtone, falling toward both ends
+                "arc" => cb * (1.0 - 0.55 * (2.0 * t - 1.0).powi(2)),
+                // richer colour in the shadows, desaturating into the light
+                "sat-in-shadow" => cb * (1.15 - 0.5 * t),
+                _ => cb,
+            }
+            .max(0.0);
+            let rgb = oklab_to_srgb(oklch_to_oklab((l, c, h)));
+            [rgb[0], rgb[1], rgb[2], base[3]]
+        })
+        .collect()
+}
+
 /// Rotate `src` by `deg` (clockwise) about its centre with nearest-neighbour
 /// sampling, returning a new image sized to the rotated bounding box.
 pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
@@ -818,6 +962,73 @@ pub fn shade_hsl(p: [u8; 4], dir: i32, steps: i32) -> [u8; 4] {
     [rgb[0], rgb[1], rgb[2], p[3]]
 }
 
+/// Normalised interior distance for each cell of a `w`×`h` boolean foreground
+/// mask `fg`: 0 on background (and the outermost foreground rim), rising toward
+/// 1 at the most-interior foreground pixel. A two-pass 3/4-weight chamfer
+/// distance transform, divided by its max so the field is resolution- and
+/// shape-independent. Used by `Document::form` "auto" to give an arbitrary blob
+/// volume (bright core, dark edges) without assuming an elliptical outline.
+pub fn interior_distance(fg: &[bool], w: usize, h: usize) -> Vec<f32> {
+    let n = w * h;
+    const BIG: f32 = 1.0e9;
+    const D1: f32 = 1.0;
+    const D2: f32 = std::f32::consts::SQRT_2;
+    let idx = |x: usize, y: usize| y * w + x;
+    let mut d = vec![0.0f32; n];
+    for i in 0..n {
+        d[i] = if fg[i] { BIG } else { 0.0 };
+    }
+    // Forward pass (top-left → bottom-right).
+    for y in 0..h {
+        for x in 0..w {
+            if !fg[idx(x, y)] {
+                continue;
+            }
+            let mut m = d[idx(x, y)];
+            if x > 0 {
+                m = m.min(d[idx(x - 1, y)] + D1);
+            }
+            if y > 0 {
+                m = m.min(d[idx(x, y - 1)] + D1);
+            }
+            if x > 0 && y > 0 {
+                m = m.min(d[idx(x - 1, y - 1)] + D2);
+            }
+            if x + 1 < w && y > 0 {
+                m = m.min(d[idx(x + 1, y - 1)] + D2);
+            }
+            d[idx(x, y)] = m;
+        }
+    }
+    // Backward pass (bottom-right → top-left).
+    for y in (0..h).rev() {
+        for x in (0..w).rev() {
+            if !fg[idx(x, y)] {
+                continue;
+            }
+            let mut m = d[idx(x, y)];
+            if x + 1 < w {
+                m = m.min(d[idx(x + 1, y)] + D1);
+            }
+            if y + 1 < h {
+                m = m.min(d[idx(x, y + 1)] + D1);
+            }
+            if x + 1 < w && y + 1 < h {
+                m = m.min(d[idx(x + 1, y + 1)] + D2);
+            }
+            if x > 0 && y + 1 < h {
+                m = m.min(d[idx(x - 1, y + 1)] + D2);
+            }
+            d[idx(x, y)] = m;
+        }
+    }
+    let mx = d.iter().copied().fold(0.0f32, f32::max).max(1.0);
+    for v in d.iter_mut() {
+        *v /= mx;
+    }
+    d
+}
+
 /// Sample the colour at parameter `t` (0..1) across sorted `stops`. `dither`
 /// "bayer"/"noise" picks one of the two bracketing stop colours by an ordered
 /// threshold (the classic pixel-art look, palette-true); anything else lerps.
@@ -877,6 +1088,37 @@ pub fn sample_gradient(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn oklab_round_trips_within_one_step() {
+        for c in [[10, 20, 30, 255], [200, 120, 40, 255], [255, 255, 255, 255], [0, 128, 64, 255]] {
+            let back = oklab_to_srgb(srgb_to_oklab(c));
+            for i in 0..3 {
+                assert!((back[i] as i32 - c[i] as i32).abs() <= 1, "{:?} -> {:?}", c, back);
+            }
+        }
+    }
+
+    #[test]
+    fn perceptual_ramp_is_monotonic_and_anchors_midtone() {
+        let base = [120, 80, 60, 255];
+        let ramp = make_ramp_oklch(base, 5, 0.2, 0.85, 25.0, "arc", true);
+        assert_eq!(ramp.len(), 5);
+        // perceptual lightness rises across the ramp
+        let ls: Vec<f32> = ramp.iter().map(|c| srgb_to_oklab(*c).0).collect();
+        for w in ls.windows(2) {
+            assert!(w[1] >= w[0] - 0.001, "not monotonic: {:?}", ls);
+        }
+        // midtone anchored to base
+        assert_eq!(ramp[2], base);
+    }
+
+    #[test]
+    fn nearest_oklab_beats_naive_rgb_on_a_hue() {
+        // a desaturated teal is perceptually nearer teal than near-equal-RGB grey
+        let i = nearest_oklab([60, 120, 120, 255], &[[128, 128, 128, 255], [40, 150, 150, 255]]);
+        assert_eq!(i, Some(1));
+    }
 
     #[test]
     fn glyph_lowercase_maps_to_uppercase_and_unknown_is_box() {
