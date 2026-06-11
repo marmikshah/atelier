@@ -205,7 +205,7 @@ impl Studio {
         &self,
         id: &str,
         frame: usize,
-        scale: u32,
+        scale: Option<u32>,
         region: Option<(i32, i32, i32, i32)>,
         mode: &str,
         bands: u32,
@@ -222,6 +222,9 @@ impl Studio {
                 doc.meta.frames.len()
             ));
         }
+        // Adaptive default: big enough to judge a small sprite, clamped so a
+        // large canvas doesn't waste vision tokens.
+        let scale = scale.unwrap_or_else(|| crate::studio::preview_scale(doc.meta.w, doc.meta.h));
         // Native, full-canvas image for the requested mode.
         let native = match mode {
             "render" => {
@@ -1592,13 +1595,13 @@ mod tests {
         s.doc_create("c", 8, 8).unwrap();
         s.doc_fill_cel("c", 0, 0, [255, 0, 0, 255]).unwrap();
         let (png, report) = s
-            .look("c", 0, 6, None, "render", 4, true, true, false, None)
+            .look("c", 0, Some(6), None, "render", 4, true, true, false, None)
             .unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(opaque(&report), 64);
         // value mode also works and reports masses
         let (_p, v) = s
-            .look("c", 0, 4, None, "value", 4, false, false, false, None)
+            .look("c", 0, Some(4), None, "value", 4, false, false, false, None)
             .unwrap();
         assert!(v["stats"]["masses_pct"].is_object());
     }
@@ -1612,12 +1615,34 @@ mod tests {
         assert_eq!(saved["saved"], "cp1");
         s.doc_clear_cel("c", 0, 0).unwrap();
         let after = s
-            .look("c", 0, 1, None, "render", 4, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                4,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert_eq!(opaque(&after.1), 0);
         s.checkpoint("c", "restore", None, Some("cp1")).unwrap();
         let restored = s
-            .look("c", 0, 1, None, "render", 4, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                4,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert_eq!(opaque(&restored.1), 64);
     }
@@ -1690,7 +1715,18 @@ mod tests {
             .unwrap();
         assert_eq!(r["placed_pixels"], 1);
         let look = s
-            .look("c", 0, 1, None, "render", 4, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                4,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert_eq!(opaque(&look.1), 1); // cleared source, one pixel placed elsewhere
     }
@@ -1759,7 +1795,18 @@ mod tests {
         )
         .unwrap();
         let look = s
-            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                1,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert!(
             distinct(&look.1) > 1,
@@ -1784,7 +1831,18 @@ mod tests {
         )
         .unwrap();
         let look = s
-            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                1,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert!(distinct(&look.1) >= 2);
     }
@@ -1814,7 +1872,18 @@ mod tests {
         s.box_iso("c", 0, 0, 16, 10, 8, 10, [150, 110, 80, 255], true)
             .unwrap();
         let look = s
-            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                1,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert!(distinct(&look.1) >= 3, "three faces => three shades");
     }
@@ -1828,7 +1897,18 @@ mod tests {
         s.material("c", 0, 0, None, "metal", [120, 120, 130, 255], 1, None)
             .unwrap();
         let look = s
-            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                1,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         // still exactly one opaque pixel — material clings to the shape
         assert_eq!(opaque(&look.1), 1);
@@ -1876,7 +1956,18 @@ mod tests {
         )
         .unwrap();
         let look = s
-            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                1,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert!(distinct(&look.1) >= 2);
     }
@@ -1948,7 +2039,18 @@ mod tests {
             .unwrap();
         assert!(!r["palette"].as_array().unwrap().is_empty());
         let look = s
-            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(1),
+                None,
+                "render",
+                1,
+                false,
+                false,
+                false,
+                None,
+            )
             .unwrap();
         assert_eq!(opaque(&look.1), 4);
     }

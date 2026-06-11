@@ -428,6 +428,7 @@ impl Studio {
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments)]
     pub fn doc_stamp_image(
         &self,
         id: &str,
@@ -437,12 +438,19 @@ impl Studio {
         y: i32,
         png_path: &str,
         scale: f32,
+        target_w: Option<u32>,
         rotate: f32,
         opacity: u8,
         blend: &str,
         replace: bool,
     ) -> Result<Value, String> {
         let img = image::open(png_path).map_err(|e| e.to_string())?.to_rgba8();
+        // target_w wins over scale: derive the factor from the source width so
+        // "stamp this at 32px wide" needs no mental math.
+        let scale = match target_w {
+            Some(tw) => tw.max(1) as f32 / img.width().max(1) as f32,
+            None => scale,
+        };
         self.edit_masked(id, layer, frame, |d| {
             d.stamp_image(
                 layer, frame, x, y, img, scale, rotate, opacity, blend, replace,
@@ -476,13 +484,16 @@ impl Studio {
         id: &str,
         frame: usize,
         out_path: Option<&str>,
-        scale: u32,
+        scale: Option<u32>,
         region: Option<(i32, i32, i32, i32)>,
         onion: bool,
         tile: u32,
         max_size: Option<u32>,
     ) -> Result<(Vec<u8>, Value), String> {
         let (dir, doc) = self.open(id)?;
+        // Adaptive default: big enough to judge a small sprite, clamped so a
+        // large canvas doesn't waste vision tokens.
+        let scale = scale.unwrap_or_else(|| preview_scale(doc.meta.w, doc.meta.h));
         let out = match out_path {
             Some(p) => PathBuf::from(p),
             None => dir.join(format!("preview_f{}.png", frame)),
@@ -1748,6 +1759,90 @@ impl Studio {
     }
 
     /// Apply many ordered drawing ops to one cel in a single open→save cycle.
+    /// Declarative grid painting: legend (char -> colour or palette index) +
+    /// row strings paint a whole region in one call. Palette-index legends are
+    /// palette-true by construction. Honours an active selection.
+    pub fn doc_paint_grid(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        legend: serde_json::Map<String, Value>,
+        rows: Vec<String>,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let palette = doc.meta.palette.clone();
+        drop(doc);
+        let mut map = std::collections::HashMap::new();
+        for (k, v) in &legend {
+            let mut chars = k.chars();
+            let ch = match (chars.next(), chars.next()) {
+                (Some(c), None) => c,
+                _ => return Err(format!("legend key '{}' must be a single character", k)),
+            };
+            if ch == '.' || ch == ' ' {
+                return Err("'.' and ' ' are reserved for 'leave untouched'".into());
+            }
+            let color = match v {
+                Value::Number(n) => {
+                    let i = n.as_u64().ok_or_else(|| {
+                        format!(
+                            "legend '{}': palette index must be a non-negative integer",
+                            k
+                        )
+                    })? as usize;
+                    *palette.get(i).ok_or_else(|| {
+                        format!(
+                            "legend '{}': palette index {} out of range (palette has {})",
+                            k,
+                            i,
+                            palette.len()
+                        )
+                    })?
+                }
+                Value::Array(a) => {
+                    let c: Vec<i64> = a.iter().filter_map(|x| x.as_i64()).collect();
+                    if c.len() < 3 {
+                        return Err(format!(
+                            "legend '{}': colour must be [r,g,b] or [r,g,b,a]",
+                            k
+                        ));
+                    }
+                    [
+                        c[0] as u8,
+                        c[1] as u8,
+                        c[2] as u8,
+                        c.get(3).copied().unwrap_or(255) as u8,
+                    ]
+                }
+                _ => {
+                    return Err(format!(
+                        "legend '{}': value must be [r,g,b(,a)] or a palette index",
+                        k
+                    ))
+                }
+            };
+            map.insert(ch, color);
+        }
+        let counts = std::cell::Cell::new((0u64, 0u64));
+        let mut ack = self.edit_masked(id, layer, frame, |d| {
+            counts.set(d.paint_grid(layer, frame, x, y, &map, &rows)?);
+            Ok(())
+        })?;
+        let (painted, clipped) = counts.get();
+        ack["painted"] = json!(painted);
+        if clipped > 0 {
+            ack["clipped"] = json!(clipped);
+            ack["warning"] = json!(format!(
+                "{} grid cells fell outside the canvas — check x/y and row widths",
+                clipped
+            ));
+        }
+        Ok(ack)
+    }
+
     pub fn doc_batch(
         &self,
         id: &str,
@@ -2133,6 +2228,53 @@ mod tests {
         s.doc_select("d", "none", "replace", None, None, None)
             .unwrap();
         s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
+    }
+
+    #[test]
+    fn paint_grid_paints_from_legend_and_palette_indices() {
+        let s = studio("paintgrid");
+        s.doc_create("d", 4, 4).unwrap();
+        s.doc_set_palette("d", vec![[10, 10, 10, 255], [200, 50, 50, 255]])
+            .unwrap();
+        let mut legend = serde_json::Map::new();
+        legend.insert("k".into(), json!(0)); // palette index
+        legend.insert("r".into(), json!([200, 50, 50])); // explicit colour
+        let r = s
+            .doc_paint_grid(
+                "d",
+                0,
+                0,
+                0,
+                0,
+                legend.clone(),
+                vec![".k..".into(), "kr..".into()],
+            )
+            .unwrap();
+        assert_eq!(r["painted"], json!(3));
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 1, 0).unwrap()["rgba"],
+            json!([10, 10, 10, 255])
+        );
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 1, 1).unwrap()["rgba"],
+            json!([200, 50, 50, 255])
+        );
+        // '.' left the pixel untouched.
+        assert_eq!(
+            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+        // Unknown character is an actionable error; out-of-range index too.
+        let err = s
+            .doc_paint_grid("d", 0, 0, 0, 0, legend, vec!["z".into()])
+            .unwrap_err();
+        assert!(err.contains("not in the legend"));
+        let mut bad = serde_json::Map::new();
+        bad.insert("q".into(), json!(9));
+        assert!(s
+            .doc_paint_grid("d", 0, 0, 0, 0, bad, vec!["q".into()])
+            .unwrap_err()
+            .contains("out of range"));
     }
 
     #[test]

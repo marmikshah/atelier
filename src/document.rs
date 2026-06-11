@@ -2321,7 +2321,14 @@ impl Document {
         if (scale - 1.0).abs() > 1e-6 && scale > 0.0 {
             let nw = (src.width() as f32 * scale).round().max(1.0) as u32;
             let nh = (src.height() as f32 * scale).round().max(1.0) as u32;
-            src = image::imageops::resize(&src, nw, nh, image::imageops::FilterType::Nearest);
+            // Shrinking: area-average so a hi-res reference keeps its features
+            // (nearest keeps ~1 of every k² pixels). Growing: nearest stays
+            // crisp for pixel art.
+            src = if scale < 1.0 {
+                raster::downscale_area(&src, nw, nh)
+            } else {
+                image::imageops::resize(&src, nw, nh, image::imageops::FilterType::Nearest)
+            };
         }
         if rotate.abs() > 1e-6 {
             src = raster::rotate_nn(&src, rotate);
@@ -3230,6 +3237,47 @@ impl Document {
             offsets.push([ox, oy]);
         }
         Ok(offsets)
+    }
+
+    /// Paint a whole region declaratively from a character grid — the inverse
+    /// of dump_region. Each row string is one pixel row starting at (ox,oy);
+    /// every character must be in `legend` ('.'/' ' skip, leaving the pixel
+    /// untouched). LLMs emit a sprite as a grid far more reliably than as a
+    /// sequence of absolute-coordinate draw calls — this removes the
+    /// coordinate-math failure class. Returns `(painted, clipped)`.
+    pub fn paint_grid(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        ox: i32,
+        oy: i32,
+        legend: &std::collections::HashMap<char, [u8; 4]>,
+        rows: &[String],
+    ) -> Result<(u64, u64), String> {
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let img = self.cel_canvas(layer, frame)?;
+        let (mut painted, mut clipped) = (0u64, 0u64);
+        for (ry, row) in rows.iter().enumerate() {
+            for (rx, ch) in row.chars().enumerate() {
+                if ch == '.' || ch == ' ' {
+                    continue;
+                }
+                let color = legend.get(&ch).ok_or_else(|| {
+                    format!(
+                        "row {} col {}: character '{}' is not in the legend",
+                        ry, rx, ch
+                    )
+                })?;
+                let (tx, ty) = (ox + rx as i32, oy + ry as i32);
+                if tx < 0 || ty < 0 || tx >= w || ty >= h {
+                    clipped += 1;
+                    continue;
+                }
+                img.put_pixel(tx as u32, ty as u32, Rgba(*color));
+                painted += 1;
+            }
+        }
+        Ok((painted, clipped))
     }
 
     /// Cut a region (and/or selection-masked pixels) of `layer` onto its OWN

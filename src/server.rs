@@ -209,8 +209,12 @@ pub struct DocStampImage {
     pub x: Option<i32>,
     pub y: Option<i32>,
     pub png_path: String,
-    /// Nearest-neighbour scale factor (default 1.0).
+    /// Scale factor (default 1.0). Shrinking uses area-average (features
+    /// survive); growing uses nearest (stays crisp).
     pub scale: Option<f32>,
+    /// Scale to this width in pixels instead (wins over `scale`) — e.g. stamp
+    /// a 1024px reference at 32px wide without computing the factor.
+    pub target_w: Option<u32>,
     /// Rotation in degrees, clockwise (default 0).
     pub rotate: Option<f32>,
     /// Opacity 0..255 when compositing (default 255).
@@ -1389,6 +1393,21 @@ pub struct DocImportClean {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocPaintGrid {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Top-left of the grid in document pixels (default 0,0).
+    pub x: Option<i32>,
+    pub y: Option<i32>,
+    /// Single-character keys -> [r,g,b(,a)] colour OR an integer palette index
+    /// (palette-true by construction). '.' and ' ' are reserved: untouched.
+    pub legend: serde_json::Map<String, Value>,
+    /// One string per pixel row, e.g. ["..kk..", ".koook."].
+    pub rows: Vec<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocExtractToLayer {
     pub doc_id: String,
     /// Source layer holding the flat sprite.
@@ -1940,6 +1959,7 @@ impl Atelier {
             p.y.unwrap_or(0),
             &p.png_path,
             p.scale.unwrap_or(1.0),
+            p.target_w,
             p.rotate.unwrap_or(0.0),
             p.opacity.unwrap_or(255),
             p.blend.as_deref().unwrap_or("normal"),
@@ -1971,7 +1991,7 @@ impl Atelier {
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.out_path.as_deref(),
-            p.scale.unwrap_or(4),
+            p.scale,
             region(&p.region),
             p.onion.unwrap_or(false),
             p.tile.unwrap_or(1),
@@ -2841,7 +2861,7 @@ impl Atelier {
         img_result(self.studio().look(
             &p.doc_id,
             p.frame.unwrap_or(0),
-            p.scale.unwrap_or(6),
+            p.scale,
             region(&p.region),
             p.mode.as_deref().unwrap_or("render"),
             p.bands.unwrap_or(4),
@@ -3199,6 +3219,23 @@ impl Atelier {
             p.frame.unwrap_or(0),
             r,
         )
+    }
+
+    #[tool(
+        description = "Paint a whole region DECLARATIVELY from a character grid (the inverse of doc_dump_region): `legend` maps single characters to [r,g,b(,a)] colours or integer PALETTE INDICES, `rows` are pixel-row strings ('.'/' ' leave the pixel untouched). Emitting a sprite as a grid eliminates the absolute-coordinate failure class — prefer this over long pencil/rect sequences for detailed shapes. Verify by diffing against doc_dump_region. Returns painted/clipped counts plus an INLINE preview. Honours an active selection."
+    )]
+    async fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
+        let studio = self.studio();
+        let r = studio.doc_paint_grid(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.x.unwrap_or(0),
+            p.y.unwrap_or(0),
+            p.legend,
+            p.rows,
+        );
+        previewed(&studio, &p.doc_id, Some(p.layer), p.frame, r)
     }
 
     // -- part-layer rig: limb animation as transforms, not repaints --
