@@ -1756,6 +1756,186 @@ impl Document {
         Ok(changed)
     }
 
+    /// Selective / form-following outline. Instead of a flat keyline, each
+    /// silhouette edge pixel takes a colour derived from the fill it borders:
+    /// `mode="from_fill"` darkens that fill (a coloured contour that turns with
+    /// the form), `mode="light"`/`"dark"` biases the whole outline toward the
+    /// light/shadow. `ramp` keeps the outline on-palette; `steps` is how far
+    /// along the ramp/HSL to push. Returns the outline pixel count.
+    pub fn outline_selective(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        mode: &str,
+        ramp: Option<&[[u8; 4]]>,
+        steps: i32,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<u32, String> {
+        self.check_cel(layer, frame)?;
+        let src = self.cel_image(layer, frame)?;
+        let (w, h) = (src.width() as i32, src.height() as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w - 1, h - 1),
+        };
+        let op = |x: i32, y: i32| -> Option<[u8; 4]> {
+            if x < 0 || y < 0 || x >= w || y >= h {
+                return None;
+            }
+            let p = src.get_pixel(x as u32, y as u32).0;
+            if p[3] == 0 {
+                None
+            } else {
+                Some(p)
+            }
+        };
+        // Darken/lighten a fill colour for the contour.
+        let dir = if mode == "light" { 1 } else { -1 };
+        let shade = |fill: [u8; 4]| -> [u8; 4] {
+            match ramp {
+                Some(r) if !r.is_empty() => raster::shade_ramp(fill, r, dir * steps.abs()),
+                _ => raster::shade_hsl(fill, dir, steps.abs()),
+            }
+        };
+        let mut adds: Vec<(i32, i32, [u8; 4])> = Vec::new();
+        for y in ay..=by {
+            for x in ax..=bx {
+                if op(x, y).is_some() {
+                    continue; // outline goes on the empty side of the edge
+                }
+                // nearest opaque orthogonal neighbour donates the fill colour
+                let donor = [op(x, y - 1), op(x, y + 1), op(x + 1, y), op(x - 1, y)]
+                    .into_iter()
+                    .flatten()
+                    .next();
+                if let Some(fill) = donor {
+                    let c = shade(fill);
+                    adds.push((x, y, [c[0], c[1], c[2], 255]));
+                }
+            }
+        }
+        let n = adds.len() as u32;
+        let img = self.cel_canvas(layer, frame)?;
+        for (x, y, c) in adds {
+            raster::put(img, x, y, c);
+        }
+        Ok(n)
+    }
+
+    /// Paint a procedural material onto the OPAQUE pixels of a cel (region-
+    /// clipped) by mapping a per-pixel value field through `ramp`: `metal`
+    /// (vertical falloff + specular band + base reflection), `wood` (directional
+    /// grain), `stone` (cloud mottle + speckle), `water` (horizontal ripples),
+    /// `cloth` (fine low-contrast weave), `skin` (soft vertical gradient),
+    /// `glass` (vertical sheen + diagonal streak). Deterministic in `seed`. A
+    /// light `ign` dither smooths the bands. Returns the pixel count painted.
+    pub fn material(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        material: &str,
+        ramp: &[[u8; 4]],
+        seed: u64,
+    ) -> Result<u32, String> {
+        if ramp.len() < 2 {
+            return Err("material needs a ramp of >= 2 colours".into());
+        }
+        self.check_cel(layer, frame)?;
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let (spanx, spany) = ((bx - ax).max(1) as f32, (by - ay).max(1) as f32);
+        let n = ramp.len();
+        let hash = |x: i32, y: i32| -> f32 {
+            let mut h = (x as u32)
+                .wrapping_mul(374_761_393)
+                ^ (y as u32).wrapping_mul(668_265_263)
+                ^ (seed as u32).wrapping_mul(2_246_822_519);
+            h = (h ^ (h >> 13)).wrapping_mul(1_274_126_177);
+            ((h ^ (h >> 16)) & 0xffff) as f32 / 65535.0
+        };
+        // smooth value noise: bilinear over a coarse hash grid
+        let vnoise = |fx: f32, fy: f32| -> f32 {
+            let (x0, y0) = (fx.floor() as i32, fy.floor() as i32);
+            let (tx, ty) = (fx - x0 as f32, fy - y0 as f32);
+            let lerp = |a: f32, b: f32, t: f32| a + (b - a) * t;
+            let top = lerp(hash(x0, y0), hash(x0 + 1, y0), tx);
+            let bot = lerp(hash(x0, y0 + 1), hash(x0 + 1, y0 + 1), tx);
+            lerp(top, bot, ty)
+        };
+        let known = ["metal", "wood", "stone", "water", "cloth", "skin", "glass"];
+        if !known.contains(&material) {
+            return Err(format!("unknown material '{}' — use {:?}", material, known));
+        }
+        let img = self.cel_canvas(layer, frame)?;
+        let mut painted = 0u32;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let cur = img.get_pixel(x as u32, y as u32).0;
+                if cur[3] == 0 {
+                    continue; // material clings to the existing shape
+                }
+                let (u, v) = ((x - ax) as f32 / spanx, (y - ay) as f32 / spany);
+                let mut t = match material {
+                    // dark top, bright specular band, mid body, faint floor bounce
+                    "metal" => {
+                        let spec = (-((v - 0.28).powi(2)) / 0.01).exp();
+                        let bounce = (-((v - 0.92).powi(2)) / 0.02).exp() * 0.5;
+                        (0.25 + 0.55 * v + spec + bounce).clamp(0.0, 1.0)
+                    }
+                    // directional grain: stretched noise along x
+                    "wood" => {
+                        let g = vnoise(x as f32 * 0.12, y as f32 * 0.9);
+                        (0.5 + 0.45 * (x as f32 * 0.18 + g * 4.0).sin()).clamp(0.0, 1.0)
+                    }
+                    // cloud mottle + occasional bright/dark speckle
+                    "stone" => {
+                        let base = vnoise(x as f32 * 0.18, y as f32 * 0.18);
+                        let sp = hash(x, y);
+                        if sp > 0.97 {
+                            0.95
+                        } else if sp < 0.03 {
+                            0.05
+                        } else {
+                            base.clamp(0.0, 1.0)
+                        }
+                    }
+                    // horizontal ripples with a noisy phase
+                    "water" => {
+                        let ph = vnoise(x as f32 * 0.2, y as f32 * 0.05) * 3.0;
+                        (0.5 + 0.45 * (y as f32 * 0.6 + ph + x as f32 * 0.08).sin()).clamp(0.0, 1.0)
+                    }
+                    // fine low-contrast weave
+                    "cloth" => {
+                        let weave = (((x + y) & 1) as f32 - 0.5) * 0.12;
+                        (0.5 + weave + (vnoise(x as f32 * 0.4, y as f32 * 0.4) - 0.5) * 0.3)
+                            .clamp(0.0, 1.0)
+                    }
+                    // soft vertical gradient, gentle mottle
+                    "skin" => (0.35 + 0.4 * v + (vnoise(x as f32 * 0.25, y as f32 * 0.25) - 0.5) * 0.15)
+                        .clamp(0.0, 1.0),
+                    // vertical sheen + a diagonal highlight streak
+                    _ => {
+                        let streak = (-(((u - v) - 0.0).powi(2)) / 0.01).exp();
+                        (0.3 + 0.5 * v + streak * 0.8).clamp(0.0, 1.0)
+                    }
+                };
+                // light blue-noise dither to break the bands
+                t = (t + (raster::ign(x, y) - 0.5) / n as f32).clamp(0.0, 1.0);
+                let idx = (t * (n - 1) as f32).round() as usize;
+                let c = ramp[idx.min(n - 1)];
+                img.put_pixel(x as u32, y as u32, Rgba([c[0], c[1], c[2], cur[3]]));
+                painted += 1;
+            }
+        }
+        Ok(painted)
+    }
+
     /// Draw a 1px outline around the opaque pixels of a cel. `aa` also softens
     /// the diagonal-only corner pixels (reduced alpha) so the outline reads as
     /// anti-aliased instead of stair-stepped.

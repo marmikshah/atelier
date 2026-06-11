@@ -857,6 +857,169 @@ impl Studio {
         }
         Ok(out)
     }
+
+    // -- doc_box: 3-face shaded isometric cuboid ----------------------------
+
+    /// Draw a shaded isometric cuboid (top + two side faces) from one base
+    /// colour, auto-shaded along a perceptual ramp — the hard-surface form
+    /// primitive `form` can't make. `(cx,cy)` is the centre of the top diamond,
+    /// `s` its half-width, `ht` the body height; `light_right` brightens the
+    /// right face (else the left).
+    #[allow(clippy::too_many_arguments)]
+    pub fn box_iso(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        cx: i32,
+        cy: i32,
+        s: i32,
+        ht: i32,
+        base: [u8; 4],
+        light_right: bool,
+    ) -> Result<Value, String> {
+        let s = s.max(1);
+        let ht = ht.max(1);
+        let hh = (s / 2).max(1);
+        let top = vec![(cx, cy - hh), (cx + s, cy), (cx, cy + hh), (cx - s, cy)];
+        let left = vec![(cx - s, cy), (cx, cy + hh), (cx, cy + hh + ht), (cx - s, cy + ht)];
+        let right = vec![(cx + s, cy), (cx, cy + hh), (cx, cy + hh + ht), (cx + s, cy + ht)];
+        let r = auto_ramp(base, 5);
+        let (top_c, bright, dark) = (r[4], r[3], r[1]);
+        let (right_c, left_c) = if light_right { (bright, dark) } else { (dark, bright) };
+        self.edit(id, |d| {
+            d.polygon(layer, frame, &left, left_c, true)?;
+            d.polygon(layer, frame, &right, right_c, true)?;
+            d.polygon(layer, frame, &top, top_c, true)?;
+            Ok(())
+        })
+    }
+
+    // -- doc_perspective_guide: non-destructive construction layer ---------
+
+    /// Add a faint guide layer (`thirds` | `grid` | `iso` | `vp`) you can build
+    /// against and then delete with doc_layer_ops. `vp` radiates from a
+    /// vanishing point; `grid`/`iso` use `spacing`.
+    pub fn perspective_guide(
+        &self,
+        id: &str,
+        kind: &str,
+        color: [u8; 4],
+        spacing: i32,
+        vp: Option<(i32, i32)>,
+    ) -> Result<Value, String> {
+        let sp = spacing.max(2);
+        let res = self.edit(id, |d| {
+            let li = d.add_layer(Some("guides".into()), 160, "normal".into());
+            let (w, h) = (d.meta.w as i32, d.meta.h as i32);
+            for f in 0..d.meta.frames.len() {
+                match kind {
+                    "thirds" => {
+                        for k in 1..3 {
+                            let x = w * k / 3;
+                            d.line(li, f, x, 0, x, h - 1, color, 1)?;
+                            let y = h * k / 3;
+                            d.line(li, f, 0, y, w - 1, y, color, 1)?;
+                        }
+                    }
+                    "grid" => {
+                        let mut x = 0;
+                        while x < w {
+                            d.line(li, f, x, 0, x, h - 1, color, 1)?;
+                            x += sp;
+                        }
+                        let mut y = 0;
+                        while y < h {
+                            d.line(li, f, 0, y, w - 1, y, color, 1)?;
+                            y += sp;
+                        }
+                    }
+                    "iso" => {
+                        let mut b = -w;
+                        while b < h + w {
+                            // 2:1 iso lines both ways
+                            d.line(li, f, 0, b, w - 1, b + (w - 1) / 2, color, 1)?;
+                            d.line(li, f, 0, b, w - 1, b - (w - 1) / 2, color, 1)?;
+                            b += sp;
+                        }
+                    }
+                    "vp" => {
+                        let (vx, vy) = vp.unwrap_or((w / 2, 0));
+                        // radiate to evenly spaced points around the border
+                        let steps = 24;
+                        for i in 0..steps {
+                            let t = i as f32 / steps as f32 * 4.0;
+                            let (ex, ey) = match t as i32 {
+                                0 => ((t.fract() * w as f32) as i32, 0),
+                                1 => (w - 1, (t.fract() * h as f32) as i32),
+                                2 => ((1.0 - t.fract()) as i32 * (w - 1), h - 1),
+                                _ => (0, ((1.0 - t.fract()) * h as f32) as i32),
+                            };
+                            d.line(li, f, vx, vy, ex, ey, color, 1)?;
+                        }
+                    }
+                    other => return Err(format!("unknown guide kind '{}' — use thirds|grid|iso|vp", other)),
+                }
+            }
+            Ok(())
+        })?;
+        Ok(res)
+    }
+
+    // -- doc_outline_selective: form-following contour ---------------------
+
+    /// Form-following selective outline (vs a flat black keyline). `mode`
+    /// `from_fill` colours each edge from the fill it borders; `light`/`dark`
+    /// bias it. `ramp` keeps it on-palette.
+    #[allow(clippy::too_many_arguments)]
+    pub fn outline_selective(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        mode: &str,
+        ramp: Option<Vec<[u8; 4]>>,
+        steps: i32,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let n = doc.outline_selective(layer, frame, mode, ramp.as_deref(), steps, region)?;
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "outline_pixels": n}))
+    }
+
+    // -- doc_material: procedural material recipes -------------------------
+
+    /// Paint a procedural material onto the opaque pixels of a cel — metal,
+    /// wood, stone, water, cloth, skin, glass — derived from one base colour (or
+    /// an explicit `ramp`). Honours an active selection so it clings to a
+    /// selected shape. Snap afterwards if it drifts.
+    #[allow(clippy::too_many_arguments)]
+    pub fn material(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        material: &str,
+        base: [u8; 4],
+        seed: u64,
+        ramp: Option<Vec<[u8; 4]>>,
+    ) -> Result<Value, String> {
+        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, 6));
+        self.edit_masked(id, layer, frame, |d| {
+            d.material(layer, frame, region, material, &ramp, seed).map(|_| ())
+        })
+    }
+}
+
+/// A perceptually-even ramp bracketing a base colour's lightness — the default
+/// ramp shared by `box_iso` and `material`.
+fn auto_ramp(base: [u8; 4], count: usize) -> Vec<[u8; 4]> {
+    let (lb, _, _) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
+    let lo = (lb - 0.34).max(0.04);
+    let hi = (lb + 0.34).min(0.97);
+    raster::make_ramp_oklch(base, count, lo, hi, 18.0, "arc", false)
 }
 
 /// Pure scorecard over a single image — the guts of `critique`, factored out so
@@ -1236,6 +1399,54 @@ mod tests {
             .harmony_palette([200, 80, 60, 255], "triadic", 4, None, None, 20.0, None)
             .unwrap();
         assert_eq!(r["palette"].as_array().unwrap().len(), 12);
+    }
+
+    #[test]
+    fn box_iso_draws_three_shaded_faces() {
+        let s = studio("box");
+        s.doc_create("c", 32, 32).unwrap();
+        s.box_iso("c", 0, 0, 16, 10, 8, 10, [150, 110, 80, 255], true)
+            .unwrap();
+        let look = s
+            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .unwrap();
+        assert!(distinct(&look.1) >= 3, "three faces => three shades");
+    }
+
+    #[test]
+    fn material_paints_only_opaque_pixels() {
+        let s = studio("material");
+        s.doc_create("c", 16, 16).unwrap();
+        s.doc_pencil("c", 0, 0, vec![(4, 4)], [120, 120, 120, 255], 1)
+            .unwrap();
+        s.material("c", 0, 0, None, "metal", [120, 120, 130, 255], 1, None)
+            .unwrap();
+        let look = s
+            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .unwrap();
+        // still exactly one opaque pixel — material clings to the shape
+        assert_eq!(opaque(&look.1), 1);
+    }
+
+    #[test]
+    fn outline_selective_rings_a_shape() {
+        let s = studio("outsel");
+        s.doc_create("c", 8, 8).unwrap();
+        s.doc_rect("c", 0, 0, 2, 2, 5, 5, [200, 60, 60, 255], true, 1)
+            .unwrap();
+        let r = s
+            .outline_selective("c", 0, 0, "from_fill", None, 2, None)
+            .unwrap();
+        assert!(r["outline_pixels"].as_u64().unwrap() > 0);
+    }
+
+    #[test]
+    fn perspective_guide_adds_a_layer() {
+        let s = studio("guide");
+        s.doc_create("c", 24, 24).unwrap();
+        s.perspective_guide("c", "thirds", [255, 0, 255, 130], 8, None)
+            .unwrap();
+        assert_eq!(s.doc_info("c").unwrap()["layers"].as_array().unwrap().len(), 2);
     }
 }
 

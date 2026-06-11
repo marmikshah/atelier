@@ -1245,6 +1245,58 @@ pub struct DocHarmonyPalette {
     pub set_doc: Option<String>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocBox {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Centre of the top diamond.
+    pub cx: i32,
+    pub cy: i32,
+    /// Half-width of the top diamond.
+    pub s: i32,
+    /// Body height.
+    pub ht: i32,
+    pub color: Vec<i64>,
+    pub light_right: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocPerspectiveGuide {
+    pub doc_id: String,
+    /// thirds | grid | iso | vp.
+    pub kind: Option<String>,
+    pub color: Option<Vec<i64>>,
+    pub spacing: Option<i32>,
+    /// Vanishing point [x,y] for kind=vp.
+    pub vp: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocOutlineSelective {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// from_fill | light | dark.
+    pub mode: Option<String>,
+    pub ramp: Option<Vec<Vec<i64>>>,
+    pub steps: Option<i32>,
+    pub region: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocMaterial {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    pub region: Option<Vec<i32>>,
+    /// metal | wood | stone | water | cloth | skin | glass.
+    pub material: String,
+    pub color: Vec<i64>,
+    pub seed: Option<u64>,
+    pub ramp: Option<Vec<Vec<i64>>>,
+}
+
 // --- resources -------------------------------------------------------------
 
 /// Scale used when rendering the `render` resource (matches the doc_render default).
@@ -2769,6 +2821,78 @@ impl Atelier {
             p.value_hi,
             p.hue_shift.unwrap_or(20.0),
             p.set_doc.as_deref(),
+        ))
+    }
+
+    #[tool(
+        description = "Draw a shaded isometric cuboid (top + two side faces) from one base colour, auto-shaded along a perceptual ramp — the hard-surface form primitive `form` can't make (crates, blocks, buildings, dice). (cx,cy) = centre of the top diamond, s = its half-width, ht = body height; light_right brightens the right face."
+    )]
+    async fn doc_box(&self, Parameters(p): Parameters<DocBox>) -> String {
+        res(self.studio().box_iso(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.cx,
+            p.cy,
+            p.s,
+            p.ht,
+            rgba(&p.color),
+            p.light_right.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
+        description = "Add a faint, non-destructive guide layer to construct against, then delete with doc_layer_ops. kind: thirds (rule-of-thirds) | grid (square, `spacing`) | iso (2:1 lattice) | vp (rays from a vanishing point `vp`=[x,y]). Pure construction scaffolding — perspective, iso, and composition."
+    )]
+    async fn doc_perspective_guide(
+        &self,
+        Parameters(p): Parameters<DocPerspectiveGuide>,
+    ) -> String {
+        let vp = p
+            .vp
+            .as_ref()
+            .filter(|v| v.len() >= 2)
+            .map(|v| (v[0], v[1]));
+        res(self.studio().perspective_guide(
+            &p.doc_id,
+            p.kind.as_deref().unwrap_or("thirds"),
+            p.color.as_deref().map(rgba).unwrap_or([255, 0, 255, 130]),
+            p.spacing.unwrap_or(8),
+            vp,
+        ))
+    }
+
+    #[tool(
+        description = "Form-following selective outline (vs a flat black keyline): mode from_fill colours each silhouette edge from the fill it borders, shaded `steps` darker/lighter; light/dark bias the whole contour. `ramp` keeps it on-palette. The 'painted' contour that turns with the form."
+    )]
+    async fn doc_outline_selective(
+        &self,
+        Parameters(p): Parameters<DocOutlineSelective>,
+    ) -> String {
+        res(self.studio().outline_selective(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.mode.as_deref().unwrap_or("from_fill"),
+            p.ramp.map(|v| palette_list(&v)),
+            p.steps.unwrap_or(2),
+            region(&p.region),
+        ))
+    }
+
+    #[tool(
+        description = "Paint a procedural MATERIAL onto the opaque pixels of a cel from one base colour: metal (specular band + reflection), wood (grain), stone (mottle + speckle), water (ripples), cloth (weave), skin (soft gradient), glass (sheen + streak). Deterministic in `seed`; pass `ramp` to control the palette, or `region`/an active selection to clip it. Turns 6–10 blind calls into 'reads as the material'."
+    )]
+    async fn doc_material(&self, Parameters(p): Parameters<DocMaterial>) -> String {
+        res(self.studio().material(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            region(&p.region),
+            &p.material,
+            rgba(&p.color),
+            p.seed.unwrap_or(1),
+            p.ramp.map(|v| palette_list(&v)),
         ))
     }
 }
