@@ -49,6 +49,15 @@ fn palette_list(v: &[Vec<i64>]) -> Vec<[u8; 4]> {
     v.iter().map(|c| rgba(c)).collect()
 }
 
+/// [r,g,b] -> RGB (drops alpha) for light/tint colours.
+fn rgb3(v: &[i64]) -> [u8; 3] {
+    [
+        v.first().copied().unwrap_or(0) as u8,
+        v.get(1).copied().unwrap_or(0) as u8,
+        v.get(2).copied().unwrap_or(0) as u8,
+    ]
+}
+
 /// [r,g,b] or [r,g,b,a] -> RGBA (alpha defaults to 255).
 fn rgba(v: &[i64]) -> [u8; 4] {
     [
@@ -1178,6 +1187,62 @@ pub struct DocCritique {
     pub frame: Option<usize>,
     pub layer: Option<usize>,
     pub region: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocRelight {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    pub region: Option<Vec<i32>>,
+    /// Key light: azimuth (0=right,90=down,180=left,270=up) + elevation (0..90).
+    pub key_azimuth: Option<f32>,
+    pub key_elevation: Option<f32>,
+    pub key_intensity: Option<f32>,
+    pub key_color: Option<Vec<i64>>,
+    pub fill_intensity: Option<f32>,
+    pub fill_color: Option<Vec<i64>>,
+    pub rim_intensity: Option<f32>,
+    pub rim_color: Option<Vec<i64>>,
+    pub ambient: Option<f32>,
+    pub ambient_color: Option<Vec<i64>>,
+    /// How domed the silhouette reads as a form (higher = flatter).
+    pub bulge: Option<f32>,
+    pub ramp: Option<Vec<Vec<i64>>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocDitherRamp {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// The ramp to dither across (>= 2 colours), as [[r,g,b],...].
+    pub ramp: Vec<Vec<i64>>,
+    pub region: Option<Vec<i32>>,
+    /// h | v | radial.
+    pub axis: Option<String>,
+    /// bayer2 | bayer4 | bayer8 | checker | ign.
+    pub pattern: Option<String>,
+    pub only_existing: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocContactSheet {
+    pub doc_id: String,
+    pub scale: Option<u32>,
+    pub cols: Option<usize>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocHarmonyPalette {
+    pub base: Vec<i64>,
+    /// complementary | triadic | analogous | split | tetradic | mono.
+    pub scheme: Option<String>,
+    pub per_ramp: Option<usize>,
+    pub value_lo: Option<f32>,
+    pub value_hi: Option<f32>,
+    pub hue_shift: Option<f32>,
+    pub set_doc: Option<String>,
 }
 
 // --- resources -------------------------------------------------------------
@@ -2640,6 +2705,71 @@ impl Atelier {
         res(self
             .studio()
             .critique(&p.doc_id, p.frame.unwrap_or(0), p.layer, region(&p.region)))
+    }
+
+    #[tool(
+        description = "Multi-light form shading — key/fill/rim, the leap from one-direction `form` to PAINTED form. Reads the silhouette as a height field, derives surface normals (bulge = how domed), and lights it: key by azimuth (0=right,90=down,180=left,270=up) + elevation (0=grazing,90=head-on), an auto fill opposite the key, a Fresnel rim, and ambient. Output multiplies the base colour (hue preserved, light colour tints) or snaps to `ramp`. Honours an active selection; pass a region on multi-material sprites."
+    )]
+    async fn doc_relight(&self, Parameters(p): Parameters<DocRelight>) -> String {
+        res(self.studio().relight(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            region(&p.region),
+            p.key_azimuth.unwrap_or(315.0),
+            p.key_elevation.unwrap_or(50.0),
+            p.key_intensity.unwrap_or(1.0),
+            p.key_color.as_deref().map(rgb3).unwrap_or([255, 255, 255]),
+            p.fill_intensity.unwrap_or(0.25),
+            p.fill_color.as_deref().map(rgb3).unwrap_or([120, 140, 200]),
+            p.rim_intensity.unwrap_or(0.0),
+            p.rim_color.as_deref().map(rgb3).unwrap_or([255, 255, 255]),
+            p.ambient.unwrap_or(0.35),
+            p.ambient_color.as_deref().map(rgb3).unwrap_or([120, 130, 170]),
+            p.bulge.unwrap_or(2.0),
+            p.ramp.map(|v| palette_list(&v)),
+        ))
+    }
+
+    #[tool(
+        description = "Graduated multi-tone dithering across a whole RAMP along an axis (h|v|radial) — master gradient shading, vs the two-colour `dither`. pattern bayer2/4/8 | checker | ign (blue-noise, no visible matrix grid). only_existing repaints just opaque pixels (shade existing art, keep alpha). Honours an active selection. Snap afterwards with doc_snap_palette if it drifts."
+    )]
+    async fn doc_dither_ramp(&self, Parameters(p): Parameters<DocDitherRamp>) -> String {
+        res(self.studio().dither_ramp(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            region(&p.region),
+            palette_list(&p.ramp),
+            p.axis.as_deref().unwrap_or("v"),
+            p.pattern.as_deref().unwrap_or("bayer4"),
+            p.only_existing.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
+        description = "Every frame in ONE labelled inline grid (index + duration) — the animator's flip-test the agent can't otherwise do. cols sets the grid width; scale upscales each frame."
+    )]
+    async fn doc_contact_sheet(&self, Parameters(p): Parameters<DocContactSheet>) -> CallToolResult {
+        img_result(
+            self.studio()
+                .contact_sheet(&p.doc_id, p.scale.unwrap_or(4), p.cols.unwrap_or(8)),
+        )
+    }
+
+    #[tool(
+        description = "Build a HARMONIOUS multi-ramp palette in OKLCh: one perceptual ramp per hue of a colour scheme (complementary | triadic | analogous | split | tetradic | mono), all sharing lightness poles so the set reads as one cohesive palette. set_doc stores the flattened palette on that document."
+    )]
+    async fn doc_harmony_palette(&self, Parameters(p): Parameters<DocHarmonyPalette>) -> String {
+        res(self.studio().harmony_palette(
+            rgba(&p.base),
+            p.scheme.as_deref().unwrap_or("complementary"),
+            p.per_ramp.unwrap_or(5),
+            p.value_lo,
+            p.value_hi,
+            p.hue_shift.unwrap_or(20.0),
+            p.set_doc.as_deref(),
+        ))
     }
 }
 

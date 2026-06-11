@@ -15,7 +15,7 @@ use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
 use super::{Selection, Studio};
-use crate::document::Document;
+use crate::document::{Document, Light};
 use crate::raster;
 
 // -- shared raster helpers --------------------------------------------------
@@ -672,6 +672,191 @@ impl Studio {
         let palette = doc.meta.palette.clone();
         Ok(critique_image(id, frame, &img, &palette))
     }
+
+    // -- doc_relight: multi-light form shading -----------------------------
+
+    /// Key/fill/rim form shading (the "painted form" leap). Lights are given by
+    /// azimuth (0=right, 90=down, 180=left, 270=up) and elevation (0=grazing,
+    /// 90=head-on). Fill is auto-placed opposite the key at low elevation. RGB
+    /// colours are 0..255. Honours an active selection; `ramp` keeps it on-palette.
+    #[allow(clippy::too_many_arguments)]
+    pub fn relight(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        key_az: f32,
+        key_elev: f32,
+        key_intensity: f32,
+        key_color: [u8; 3],
+        fill_intensity: f32,
+        fill_color: [u8; 3],
+        rim_intensity: f32,
+        rim_color: [u8; 3],
+        ambient: f32,
+        ambient_color: [u8; 3],
+        bulge: f32,
+        ramp: Option<Vec<[u8; 4]>>,
+    ) -> Result<Value, String> {
+        let dir = |az: f32, elev: f32| {
+            let (a, e) = (az.to_radians(), elev.to_radians());
+            [e.cos() * a.cos(), e.cos() * a.sin(), e.sin()]
+        };
+        let c01 = |x: [u8; 3]| [x[0] as f32 / 255.0, x[1] as f32 / 255.0, x[2] as f32 / 255.0];
+        let mut lights = vec![Light {
+            dir: dir(key_az, key_elev),
+            intensity: key_intensity,
+            color: c01(key_color),
+        }];
+        if fill_intensity > 0.0 {
+            lights.push(Light {
+                dir: dir(key_az + 180.0, (key_elev * 0.5).max(8.0)),
+                intensity: fill_intensity,
+                color: c01(fill_color),
+            });
+        }
+        self.edit_masked(id, layer, frame, |d| {
+            d.relight(
+                layer,
+                frame,
+                region,
+                &lights,
+                ambient,
+                c01(ambient_color),
+                rim_intensity,
+                c01(rim_color),
+                bulge,
+                ramp.clone(),
+            )
+        })
+    }
+
+    // -- doc_dither_ramp: graduated multi-tone dithering -------------------
+
+    /// Graduated dithering across a whole ramp along an axis (h|v|radial) with
+    /// an ordered or `ign` blue-noise pattern — master gradient shading.
+    /// Honours an active selection.
+    #[allow(clippy::too_many_arguments)]
+    pub fn dither_ramp(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        ramp: Vec<[u8; 4]>,
+        axis: &str,
+        pattern: &str,
+        only_existing: bool,
+    ) -> Result<Value, String> {
+        self.edit_masked(id, layer, frame, |d| {
+            d.dither_ramp(layer, frame, region, &ramp, axis, pattern, only_existing)
+                .map(|_| ())
+        })
+    }
+
+    // -- doc_contact_sheet: the animator's flip-test -----------------------
+
+    /// Every frame in one labelled inline grid — the flip-test the agent can't
+    /// otherwise do. Returns `(png_bytes, report)`.
+    pub fn contact_sheet(
+        &self,
+        id: &str,
+        scale: u32,
+        cols: usize,
+    ) -> Result<(Vec<u8>, Value), String> {
+        let (_dir, doc) = self.open(id)?;
+        let n = doc.meta.frames.len();
+        let cols = cols.max(1).min(n.max(1));
+        let rows = n.div_ceil(cols);
+        let (w, h) = (doc.meta.w, doc.meta.h);
+        let s = scale.max(1);
+        let (pad, label_h) = (3u32, raster::GLYPH_H as u32 + 1);
+        let cellw = w * s;
+        let cellh = h * s + label_h;
+        let sheetw = cols as u32 * (cellw + pad) + pad;
+        let sheeth = rows as u32 * (cellh + pad) + pad;
+        let mut sheet = RgbaImage::from_pixel(sheetw, sheeth, Rgba([20, 20, 26, 255]));
+        for f in 0..n {
+            let scaled = scale_nn(&doc.flatten(f), s);
+            let (col, row) = ((f % cols) as u32, (f / cols) as u32);
+            let ox = pad + col * (cellw + pad);
+            let oy = pad + row * (cellh + pad) + label_h;
+            for (x, y, p) in scaled.enumerate_pixels() {
+                if p.0[3] > 0 {
+                    blend_put(&mut sheet, (ox + x) as i32, (oy + y) as i32, p.0);
+                }
+            }
+            let dur = doc.meta.frames[f].duration_ms;
+            draw_label(
+                &mut sheet,
+                ox as i32,
+                (oy - label_h) as i32,
+                &format!("F{} {}", f, dur),
+                [200, 200, 210, 255],
+            );
+        }
+        let png = encode_png(&sheet)?;
+        Ok((png, json!({"doc_id": id, "frames": n, "cols": cols, "rows": rows, "size": [sheetw, sheeth]})))
+    }
+
+    // -- doc_harmony_palette: cohesive multi-ramp palettes -----------------
+
+    /// Build a harmonious multi-ramp palette in OKLCh: a perceptual ramp per hue
+    /// of a colour scheme (complementary | triadic | analogous | split |
+    /// tetradic), sharing lightness poles so the set reads as one palette.
+    #[allow(clippy::too_many_arguments)]
+    pub fn harmony_palette(
+        &self,
+        base: [u8; 4],
+        scheme: &str,
+        per_ramp: usize,
+        value_lo: Option<f32>,
+        value_hi: Option<f32>,
+        hue_shift: f32,
+        set_doc: Option<&str>,
+    ) -> Result<Value, String> {
+        let offsets: Vec<f32> = match scheme {
+            "complementary" => vec![0.0, 180.0],
+            "triadic" => vec![0.0, 120.0, 240.0],
+            "analogous" => vec![0.0, 30.0, -30.0],
+            "split" => vec![0.0, 150.0, 210.0],
+            "tetradic" => vec![0.0, 90.0, 180.0, 270.0],
+            "mono" => vec![0.0],
+            other => {
+                return Err(format!(
+                "unknown scheme '{}' — use complementary|triadic|analogous|split|tetradic|mono",
+                other
+            ))
+            }
+        };
+        let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
+        let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
+        let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
+        let per_ramp = per_ramp.max(2);
+        let mut ramps: Vec<Vec<[u8; 4]>> = Vec::new();
+        for off in &offsets {
+            let rgb = raster::oklab_to_srgb(raster::oklch_to_oklab((lb, cb, hb + off)));
+            let anchor = [rgb[0], rgb[1], rgb[2], 255];
+            ramps.push(raster::make_ramp_oklch(
+                anchor, per_ramp, lo, hi, hue_shift, "arc", false,
+            ));
+        }
+        let flat: Vec<[u8; 4]> = ramps.iter().flatten().copied().collect();
+        let hex: Vec<String> = flat
+            .iter()
+            .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
+            .collect();
+        let mut out = json!({"scheme": scheme, "ramps": ramps, "palette": flat, "hex": hex, "count": flat.len()});
+        if let Some(did) = set_doc {
+            self.edit(did, |d| {
+                d.set_palette(flat.clone());
+                Ok(())
+            })?;
+            out["set_doc"] = json!(did);
+        }
+        Ok(out)
+    }
 }
 
 /// Pure scorecard over a single image — the guts of `critique`, factored out so
@@ -996,6 +1181,61 @@ mod tests {
             .unwrap();
         let r = s.critique("c", 0, None, None).unwrap();
         assert_eq!(r["checks"]["orphans"]["count"], 1);
+    }
+
+    fn distinct(stats: &Value) -> u64 {
+        stats["stats"]["distinct_colors"].as_u64().unwrap_or(0)
+    }
+
+    #[test]
+    fn relight_shades_a_flat_fill_into_form() {
+        let s = studio("relight");
+        s.doc_create("c", 16, 16).unwrap();
+        s.doc_fill_cel("c", 0, 0, [128, 128, 128, 255]).unwrap();
+        s.relight(
+            "c", 0, 0, None, 315.0, 50.0, 1.0, [255, 255, 255], 0.25, [120, 140, 200], 0.0,
+            [255, 255, 255], 0.3, [120, 130, 170], 2.0, None,
+        )
+        .unwrap();
+        let look = s
+            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .unwrap();
+        assert!(distinct(&look.1) > 1, "relight should produce a value gradient");
+    }
+
+    #[test]
+    fn dither_ramp_spreads_across_the_ramp() {
+        let s = studio("dramp");
+        s.doc_create("c", 4, 8).unwrap();
+        s.doc_fill_cel("c", 0, 0, [100, 100, 100, 255]).unwrap();
+        s.dither_ramp(
+            "c", 0, 0, None,
+            vec![[0, 0, 0, 255], [128, 128, 128, 255], [255, 255, 255, 255]],
+            "v", "bayer4", true,
+        )
+        .unwrap();
+        let look = s
+            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .unwrap();
+        assert!(distinct(&look.1) >= 2);
+    }
+
+    #[test]
+    fn contact_sheet_returns_a_grid() {
+        let s = studio("contact");
+        s.doc_create("c", 4, 4).unwrap();
+        let (png, report) = s.contact_sheet("c", 4, 8).unwrap();
+        assert_eq!(&png[0..4], b"\x89PNG");
+        assert_eq!(report["frames"], 1);
+    }
+
+    #[test]
+    fn harmony_palette_triadic_has_three_ramps() {
+        let s = studio("harmony");
+        let r = s
+            .harmony_palette([200, 80, 60, 255], "triadic", 4, None, None, 20.0, None)
+            .unwrap();
+        assert_eq!(r["palette"].as_array().unwrap().len(), 12);
     }
 }
 

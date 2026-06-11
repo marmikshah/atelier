@@ -1015,6 +1015,24 @@ pub fn dither_threshold(pattern: &str, x: i32, y: i32) -> f32 {
     }
 }
 
+/// Interleaved-gradient-noise threshold in [0,1) at (x,y) — Jorge Jimenez's
+/// cheap blue-noise-ish dither, less regular than Bayer (no visible matrix
+/// grid), used by `doc_dither_ramp`'s `ign` pattern.
+pub fn ign(x: i32, y: i32) -> f32 {
+    let v = 52.982_918 * (0.067_110_56 * x as f32 + 0.005_837_15 * y as f32).fract();
+    v.fract().abs()
+}
+
+/// Ordered/blue-noise threshold in [0,1) at (x,y) for a graduated-ramp dither.
+/// Adds `ign` on top of the patterns `dither_threshold` knows.
+pub fn ramp_dither_threshold(pattern: &str, x: i32, y: i32) -> f32 {
+    if pattern == "ign" {
+        ign(x, y)
+    } else {
+        dither_threshold(pattern, x, y)
+    }
+}
+
 /// Snap `p` to its nearest entry in `ramp` (ordered dark→light) by luma, then
 /// step `delta` entries along it (clamped to the ends). Alpha is preserved.
 pub fn shade_ramp(p: [u8; 4], ramp: &[[u8; 4]], delta: i32) -> [u8; 4] {

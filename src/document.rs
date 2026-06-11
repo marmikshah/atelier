@@ -109,6 +109,14 @@ pub struct Document {
 /// both analysis images so callers can also render a grid/overlay.
 pub type FrameDiff = (u32, u32, u32, Option<[i32; 4]>, RgbaImage, RgbaImage);
 
+/// One light for [`Document::relight`]: a direction (need not be unit length),
+/// an intensity multiplier, and an RGB colour in 0..1.
+pub struct Light {
+    pub dir: [f32; 3],
+    pub intensity: f32,
+    pub color: [f32; 3],
+}
+
 fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
 }
@@ -1567,6 +1575,185 @@ impl Document {
             }
         }
         Ok(base)
+    }
+
+    /// Multi-light form shading. The silhouette's interior-distance field is
+    /// read as a height map, differentiated into per-pixel surface normals
+    /// (`bulge` sets how domed), then lit by Lambert diffuse from each light
+    /// plus a Fresnel-style rim term — the leap from one-direction `form`
+    /// shading to key/fill/rim "painted" form. Output multiplies the base
+    /// colour by the accumulated light (so hue is preserved and light colour
+    /// tints it); if `ramp` is given the lit value snaps to the ramp instead,
+    /// keeping the result on-palette. Region defaults to the silhouette bbox.
+    #[allow(clippy::too_many_arguments)]
+    pub fn relight(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        lights: &[Light],
+        ambient: f32,
+        amb_color: [f32; 3],
+        rim: f32,
+        rim_color: [f32; 3],
+        bulge: f32,
+        ramp: Option<Vec<[u8; 4]>>,
+    ) -> Result<(), String> {
+        let (w, h) = (self.meta.w, self.meta.h);
+        let before = self.cel_canvas(layer, frame)?.clone();
+        // Foreground mask + height field over the whole canvas.
+        let fg: Vec<bool> = (0..(w * h))
+            .map(|i| before.as_raw()[i as usize * 4 + 3] > 0)
+            .collect();
+        let dist = raster::interior_distance(&fg, w as usize, h as usize);
+        let at = |x: i32, y: i32| -> f32 {
+            if x < 0 || y < 0 || x >= w as i32 || y >= h as i32 {
+                0.0
+            } else {
+                dist[(y as usize) * w as usize + x as usize]
+            }
+        };
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
+                Some(r) => r,
+                None => return Ok(()),
+            },
+            None => {
+                let (mut x0, mut y0, mut x1, mut y1) = (w as i32, h as i32, -1i32, -1i32);
+                for (i, on) in fg.iter().enumerate() {
+                    if *on {
+                        let (x, y) = ((i % w as usize) as i32, (i / w as usize) as i32);
+                        x0 = x0.min(x);
+                        y0 = y0.min(y);
+                        x1 = x1.max(x);
+                        y1 = y1.max(y);
+                    }
+                }
+                if x1 < 0 {
+                    return Ok(());
+                }
+                (x0, y0, x1, y1)
+            }
+        };
+        let bulge = bulge.max(0.2);
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let base = before.get_pixel(x as u32, y as u32).0;
+                if base[3] == 0 {
+                    continue;
+                }
+                // Surface normal from the height gradient (Sobel-ish).
+                let gx = at(x + 1, y) - at(x - 1, y);
+                let gy = at(x, y + 1) - at(x, y - 1);
+                let nz = bulge;
+                let nl = (gx * gx + gy * gy + nz * nz).sqrt().max(1e-6);
+                let n = [-gx / nl, -gy / nl, nz / nl];
+                // Accumulate diffuse light (per channel, so light colour tints).
+                let mut acc = [
+                    ambient * amb_color[0],
+                    ambient * amb_color[1],
+                    ambient * amb_color[2],
+                ];
+                for lt in lights {
+                    let ll =
+                        (lt.dir[0].powi(2) + lt.dir[1].powi(2) + lt.dir[2].powi(2)).sqrt().max(1e-6);
+                    let ndl = ((n[0] * lt.dir[0] + n[1] * lt.dir[1] + n[2] * lt.dir[2]) / ll)
+                        .max(0.0)
+                        * lt.intensity;
+                    for c in 0..3 {
+                        acc[c] += ndl * lt.color[c];
+                    }
+                }
+                // Rim/Fresnel: bright where the surface turns away from the viewer.
+                if rim > 0.0 {
+                    let fres = (1.0 - n[2]).clamp(0.0, 1.0).powf(2.0) * rim;
+                    for c in 0..3 {
+                        acc[c] += fres * rim_color[c];
+                    }
+                }
+                let lit = match &ramp {
+                    Some(r) if !r.is_empty() => {
+                        // Lit luminance picks the ramp step.
+                        let f = (acc[0] * 0.2126 + acc[1] * 0.7152 + acc[2] * 0.0722).clamp(0.0, 2.0);
+                        let i = ((f / 2.0) * (r.len() as f32 - 1.0)).round() as usize;
+                        let cc = r[i.min(r.len() - 1)];
+                        [cc[0], cc[1], cc[2], base[3]]
+                    }
+                    _ => [
+                        (base[0] as f32 * acc[0]).round().clamp(0.0, 255.0) as u8,
+                        (base[1] as f32 * acc[1]).round().clamp(0.0, 255.0) as u8,
+                        (base[2] as f32 * acc[2]).round().clamp(0.0, 255.0) as u8,
+                        base[3],
+                    ],
+                };
+                img.put_pixel(x as u32, y as u32, Rgba(lit));
+            }
+        }
+        Ok(())
+    }
+
+    /// Graduated multi-tone dithering across a whole ramp along an axis — master
+    /// gradient shading, vs the two-colour Bayer of `dither`. For each pixel the
+    /// position `t` along `axis` (`h`|`v`|`radial`) picks a ramp pair; an ordered
+    /// or blue-noise (`ign`) threshold dithers between them. `only_existing`
+    /// repaints just the opaque pixels (shade existing art) and keeps their
+    /// alpha. Returns the pixel count changed.
+    #[allow(clippy::too_many_arguments)]
+    pub fn dither_ramp(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        ramp: &[[u8; 4]],
+        axis: &str,
+        pattern: &str,
+        only_existing: bool,
+    ) -> Result<u32, String> {
+        if ramp.len() < 2 {
+            return Err("dither_ramp needs a ramp of >= 2 colours".into());
+        }
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => raster::clamp_region(a, b, c, d, w, h)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let span_x = (bx - ax).max(1) as f32;
+        let span_y = (by - ay).max(1) as f32;
+        let (cx, cy) = ((ax + bx) as f32 / 2.0, (ay + by) as f32 / 2.0);
+        let rmax = ((span_x / 2.0).powi(2) + (span_y / 2.0).powi(2)).sqrt().max(1.0);
+        let last = ramp.len() - 1;
+        let img = self.cel_canvas(layer, frame)?;
+        let mut changed = 0;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let cur = img.get_pixel(x as u32, y as u32).0;
+                if only_existing && cur[3] == 0 {
+                    continue;
+                }
+                let t = match axis {
+                    "v" => (y - ay) as f32 / span_y,
+                    "radial" => {
+                        ((x as f32 - cx).powi(2) + (y as f32 - cy).powi(2)).sqrt() / rmax
+                    }
+                    _ => (x - ax) as f32 / span_x,
+                }
+                .clamp(0.0, 1.0);
+                let pos = t * last as f32;
+                let k = pos.floor() as usize;
+                let frac = pos - k as f32;
+                let thr = raster::ramp_dither_threshold(pattern, x, y);
+                let idx = if frac > thr { (k + 1).min(last) } else { k.min(last) };
+                let c = ramp[idx];
+                let out = [c[0], c[1], c[2], if only_existing { cur[3] } else { 255 }];
+                if out != cur {
+                    img.put_pixel(x as u32, y as u32, Rgba(out));
+                    changed += 1;
+                }
+            }
+        }
+        Ok(changed)
     }
 
     /// Draw a 1px outline around the opaque pixels of a cel. `aa` also softens
