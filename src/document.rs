@@ -3117,8 +3117,7 @@ impl Document {
                     for (newi, &old) in order.iter().enumerate() {
                         map[old] = newi;
                     }
-                    let all: Vec<((usize, usize), (i32, i32, RgbaImage))> =
-                        self.cels.drain().collect();
+                    let all: Vec<_> = self.cels.drain().collect();
                     self.cels = all
                         .into_iter()
                         .map(|((l, f), v)| ((l, map[f]), v))
