@@ -741,8 +741,7 @@ impl Document {
         let (rw, rh) = ((bx - ax + 1) as u32, (by - ay + 1) as u32);
         // Lift the source rect to a standalone image.
         let full = self.cel_image(layer, frame)?;
-        let sub =
-            image::imageops::crop_imm(&full, ax as u32, ay as u32, rw, rh).to_image();
+        let sub = image::imageops::crop_imm(&full, ax as u32, ay as u32, rw, rh).to_image();
         let ss = if method == "rotsprite" { 4 } else { 1 };
         let out = raster::affine_nn(&sub, rot, sx, sy, skew_x, skew_y, ss);
         let (tw, th) = (out.width(), out.height());
@@ -873,10 +872,10 @@ impl Document {
         // opaque orthogonal neighbours; (out1/out2) point from each leg toward
         // the notch so `flat` can measure edge straightness.
         let corners = [
-            ((0, -1), (1, 0), (0, 1), (-1, 0)),  // N + E
-            ((1, 0), (0, 1), (-1, 0), (0, -1)),  // E + S
-            ((0, 1), (-1, 0), (0, -1), (1, 0)),  // S + W
-            ((-1, 0), (0, -1), (1, 0), (0, 1)),  // W + N
+            ((0, -1), (1, 0), (0, 1), (-1, 0)), // N + E
+            ((1, 0), (0, 1), (-1, 0), (0, -1)), // E + S
+            ((0, 1), (-1, 0), (0, -1), (1, 0)), // S + W
+            ((-1, 0), (0, -1), (1, 0), (0, 1)), // W + N
         ];
         for y in ay..=by {
             for x in ax..=bx {
@@ -888,7 +887,10 @@ impl Document {
                 let south = op(x, y + 1);
                 let east = op(x + 1, y);
                 let west = op(x - 1, y);
-                let count = [north, south, east, west].iter().filter(|n| n.is_some()).count();
+                let count = [north, south, east, west]
+                    .iter()
+                    .filter(|n| n.is_some())
+                    .count();
                 if count != 2 {
                     continue;
                 }
@@ -1665,26 +1667,28 @@ impl Document {
                     ambient * amb_color[2],
                 ];
                 for lt in lights {
-                    let ll =
-                        (lt.dir[0].powi(2) + lt.dir[1].powi(2) + lt.dir[2].powi(2)).sqrt().max(1e-6);
+                    let ll = (lt.dir[0].powi(2) + lt.dir[1].powi(2) + lt.dir[2].powi(2))
+                        .sqrt()
+                        .max(1e-6);
                     let ndl = ((n[0] * lt.dir[0] + n[1] * lt.dir[1] + n[2] * lt.dir[2]) / ll)
                         .max(0.0)
                         * lt.intensity;
-                    for c in 0..3 {
-                        acc[c] += ndl * lt.color[c];
+                    for (c, a) in acc.iter_mut().enumerate() {
+                        *a += ndl * lt.color[c];
                     }
                 }
                 // Rim/Fresnel: bright where the surface turns away from the viewer.
                 if rim > 0.0 {
                     let fres = (1.0 - n[2]).clamp(0.0, 1.0).powf(2.0) * rim;
-                    for c in 0..3 {
-                        acc[c] += fres * rim_color[c];
+                    for (c, a) in acc.iter_mut().enumerate() {
+                        *a += fres * rim_color[c];
                     }
                 }
                 let lit = match &ramp {
                     Some(r) if !r.is_empty() => {
                         // Lit luminance picks the ramp step.
-                        let f = (acc[0] * 0.2126 + acc[1] * 0.7152 + acc[2] * 0.0722).clamp(0.0, 2.0);
+                        let f =
+                            (acc[0] * 0.2126 + acc[1] * 0.7152 + acc[2] * 0.0722).clamp(0.0, 2.0);
                         let i = ((f / 2.0) * (r.len() as f32 - 1.0)).round() as usize;
                         let cc = r[i.min(r.len() - 1)];
                         [cc[0], cc[1], cc[2], base[3]]
@@ -1731,7 +1735,9 @@ impl Document {
         let span_x = (bx - ax).max(1) as f32;
         let span_y = (by - ay).max(1) as f32;
         let (cx, cy) = ((ax + bx) as f32 / 2.0, (ay + by) as f32 / 2.0);
-        let rmax = ((span_x / 2.0).powi(2) + (span_y / 2.0).powi(2)).sqrt().max(1.0);
+        let rmax = ((span_x / 2.0).powi(2) + (span_y / 2.0).powi(2))
+            .sqrt()
+            .max(1.0);
         let last = ramp.len() - 1;
         let img = self.cel_canvas(layer, frame)?;
         let mut changed = 0;
@@ -1743,9 +1749,7 @@ impl Document {
                 }
                 let t = match axis {
                     "v" => (y - ay) as f32 / span_y,
-                    "radial" => {
-                        ((x as f32 - cx).powi(2) + (y as f32 - cy).powi(2)).sqrt() / rmax
-                    }
+                    "radial" => ((x as f32 - cx).powi(2) + (y as f32 - cy).powi(2)).sqrt() / rmax,
                     _ => (x - ax) as f32 / span_x,
                 }
                 .clamp(0.0, 1.0);
@@ -1753,7 +1757,11 @@ impl Document {
                 let k = pos.floor() as usize;
                 let frac = pos - k as f32;
                 let thr = raster::ramp_dither_threshold(pattern, x, y);
-                let idx = if frac > thr { (k + 1).min(last) } else { k.min(last) };
+                let idx = if frac > thr {
+                    (k + 1).min(last)
+                } else {
+                    k.min(last)
+                };
                 let c = ramp[idx];
                 let out = [c[0], c[1], c[2], if only_existing { cur[3] } else { 255 }];
                 if out != cur {
@@ -1861,8 +1869,7 @@ impl Document {
         let (spanx, spany) = ((bx - ax).max(1) as f32, (by - ay).max(1) as f32);
         let n = ramp.len();
         let hash = |x: i32, y: i32| -> f32 {
-            let mut h = (x as u32)
-                .wrapping_mul(374_761_393)
+            let mut h = (x as u32).wrapping_mul(374_761_393)
                 ^ (y as u32).wrapping_mul(668_265_263)
                 ^ (seed as u32).wrapping_mul(2_246_822_519);
             h = (h ^ (h >> 13)).wrapping_mul(1_274_126_177);
@@ -1926,8 +1933,10 @@ impl Document {
                             .clamp(0.0, 1.0)
                     }
                     // soft vertical gradient, gentle mottle
-                    "skin" => (0.35 + 0.4 * v + (vnoise(x as f32 * 0.25, y as f32 * 0.25) - 0.5) * 0.15)
-                        .clamp(0.0, 1.0),
+                    "skin" => {
+                        (0.35 + 0.4 * v + (vnoise(x as f32 * 0.25, y as f32 * 0.25) - 0.5) * 0.15)
+                            .clamp(0.0, 1.0)
+                    }
                     // vertical sheen + a diagonal highlight streak
                     _ => {
                         let streak = (-(((u - v) - 0.0).powi(2)) / 0.01).exp();

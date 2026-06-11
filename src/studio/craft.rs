@@ -81,7 +81,7 @@ fn overlay_grid(img: &mut RgbaImage, ox: i32, oy: i32, scale: u32, step: i32, co
     let s = scale as i32;
     let (w, h) = (img.width() as i32, img.height() as i32);
     let line = [255, 0, 255, 70]; // magenta, faint — survives over any art
-    // Vertical lines at every `step`-th native column boundary.
+                                  // Vertical lines at every `step`-th native column boundary.
     let mut nx = ox - ox.rem_euclid(step);
     while (nx - ox) * s <= w {
         let sx = (nx - ox) * s;
@@ -216,7 +216,11 @@ impl Studio {
     ) -> Result<(Vec<u8>, Value), String> {
         let (_dir, doc) = self.open(id)?;
         if frame >= doc.meta.frames.len() {
-            return Err(format!("no frame {} (frames={})", frame, doc.meta.frames.len()));
+            return Err(format!(
+                "no frame {} (frames={})",
+                frame,
+                doc.meta.frames.len()
+            ));
         }
         // Native, full-canvas image for the requested mode.
         let native = match mode {
@@ -297,7 +301,9 @@ impl Studio {
         for y in 0..h as i32 {
             for x in 0..w as i32 {
                 let i = (y as u32 * w + x as u32) as usize;
-                let sel = mask.map(|m| m.get(i).copied() == Some(true)).unwrap_or(true);
+                let sel = mask
+                    .map(|m| m.get(i).copied() == Some(true))
+                    .unwrap_or(true);
                 let art = base.get_pixel(x as u32, y as u32).0;
                 let px = if sel {
                     selected += 1;
@@ -306,12 +312,27 @@ impl Studio {
                         Some([a, b, c, d]) => [a.min(x), b.min(y), c.max(x), d.max(y)],
                     });
                     // selected: art over a faint magenta wash
-                    let wash = raster::composite_px([40, 12, 40, 255], [255, 0, 255, 40], 40.0 / 255.0, raster::Blend::Normal);
+                    let wash = raster::composite_px(
+                        [40, 12, 40, 255],
+                        [255, 0, 255, 40],
+                        40.0 / 255.0,
+                        raster::Blend::Normal,
+                    );
                     raster::composite_px(wash, art, art[3] as f32 / 255.0, raster::Blend::Normal)
                 } else {
                     // unselected: dim the art heavily (rubylith feel)
-                    let dim = [(art[0] as u32 * 35 / 100) as u8, (art[1] as u32 * 35 / 100) as u8, (art[2] as u32 * 35 / 100) as u8, art[3]];
-                    raster::composite_px([24, 24, 32, 255], dim, dim[3] as f32 / 255.0, raster::Blend::Normal)
+                    let dim = [
+                        (art[0] as u32 * 35 / 100) as u8,
+                        (art[1] as u32 * 35 / 100) as u8,
+                        (art[2] as u32 * 35 / 100) as u8,
+                        art[3],
+                    ];
+                    raster::composite_px(
+                        [24, 24, 32, 255],
+                        dim,
+                        dim[3] as f32 / 255.0,
+                        raster::Blend::Normal,
+                    )
                 };
                 out.put_pixel(x as u32, y as u32, Rgba(px));
             }
@@ -452,9 +473,9 @@ impl Studio {
             "merge_down" => doc.merge_down(index)?,
             other => {
                 return Err(format!(
-                    "unknown layer action '{}' — use move|insert|delete|rename|duplicate|merge_down",
-                    other
-                ))
+                "unknown layer action '{}' — use move|insert|delete|rename|duplicate|merge_down",
+                other
+            ))
             }
         }
         doc.save(&dir)?;
@@ -465,7 +486,9 @@ impl Studio {
             .enumerate()
             .map(|(i, l)| json!({"index": i, "name": l.name, "opacity": l.opacity, "visible": l.visible, "blend": l.blend}))
             .collect();
-        Ok(json!({"ok": true, "doc_id": id, "action": action, "new_index": new_index, "layers": layers}))
+        Ok(
+            json!({"ok": true, "doc_id": id, "action": action, "new_index": new_index, "layers": layers}),
+        )
     }
 
     // -- doc_make_perceptual_ramp ------------------------------------------
@@ -488,7 +511,15 @@ impl Studio {
         let (lb, _, _) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
         let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
         let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
-        let ramp = raster::make_ramp_oklch(base, count.max(1), lo, hi, hue_shift, sat_curve, anchor_midtone);
+        let ramp = raster::make_ramp_oklch(
+            base,
+            count.max(1),
+            lo,
+            hi,
+            hue_shift,
+            sat_curve,
+            anchor_midtone,
+        );
         let hex: Vec<String> = ramp
             .iter()
             .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
@@ -540,7 +571,9 @@ impl Studio {
             None => doc.meta.palette.clone(),
         };
         if pal.is_empty() {
-            return Err("no palette to snap to — pass `palette` or set one with doc_set_palette".into());
+            return Err(
+                "no palette to snap to — pass `palette` or set one with doc_set_palette".into(),
+            );
         }
         let changed = doc.snap_to_palette(&pal, layer, frame);
         doc.save(&dir)?;
@@ -591,7 +624,9 @@ impl Studio {
             h,
             mask: combined,
         });
-        Ok(json!({"doc_id": id, "selected_pixels": count, "mode": mode, "matched": new.iter().filter(|b| **b).count()}))
+        Ok(
+            json!({"doc_id": id, "selected_pixels": count, "mode": mode, "matched": new.iter().filter(|b| **b).count()}),
+        )
     }
 
     // -- doc_smooth_edges: selective anti-aliasing -------------------------
@@ -612,8 +647,15 @@ impl Studio {
         region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        let added =
-            doc.smooth_edges(layer, frame, ramp.as_deref(), max_run, keep_square, only_color, region)?;
+        let added = doc.smooth_edges(
+            layer,
+            frame,
+            ramp.as_deref(),
+            max_run,
+            keep_square,
+            only_color,
+            region,
+        )?;
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "aa_pixels_added": added}))
     }
@@ -641,8 +683,18 @@ impl Studio {
         clear_source: bool,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        let (bbox, placed) =
-            doc.transform_cel(layer, frame, region, rot, sx, sy, skew_x, skew_y, method, clear_source)?;
+        let (bbox, placed) = doc.transform_cel(
+            layer,
+            frame,
+            region,
+            rot,
+            sx,
+            sy,
+            skew_x,
+            skew_y,
+            method,
+            clear_source,
+        )?;
         let mut snapped = 0;
         if snap_palette && !doc.meta.palette.is_empty() {
             let pal = doc.meta.palette.clone();
@@ -706,7 +758,13 @@ impl Studio {
             let (a, e) = (az.to_radians(), elev.to_radians());
             [e.cos() * a.cos(), e.cos() * a.sin(), e.sin()]
         };
-        let c01 = |x: [u8; 3]| [x[0] as f32 / 255.0, x[1] as f32 / 255.0, x[2] as f32 / 255.0];
+        let c01 = |x: [u8; 3]| {
+            [
+                x[0] as f32 / 255.0,
+                x[1] as f32 / 255.0,
+                x[2] as f32 / 255.0,
+            ]
+        };
         let mut lights = vec![Light {
             dir: dir(key_az, key_elev),
             intensity: key_intensity,
@@ -800,7 +858,10 @@ impl Studio {
             );
         }
         let png = encode_png(&sheet)?;
-        Ok((png, json!({"doc_id": id, "frames": n, "cols": cols, "rows": rows, "size": [sheetw, sheeth]})))
+        Ok((
+            png,
+            json!({"doc_id": id, "frames": n, "cols": cols, "rows": rows, "size": [sheetw, sheeth]}),
+        ))
     }
 
     // -- doc_harmony_palette: cohesive multi-ramp palettes -----------------
@@ -828,9 +889,9 @@ impl Studio {
             "mono" => vec![0.0],
             other => {
                 return Err(format!(
-                "unknown scheme '{}' — use complementary|triadic|analogous|split|tetradic|mono",
-                other
-            ))
+                    "unknown scheme '{}' — use complementary|triadic|analogous|split|tetradic|mono",
+                    other
+                ))
             }
         };
         let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
@@ -885,11 +946,25 @@ impl Studio {
         let ht = ht.max(1);
         let hh = (s / 2).max(1);
         let top = vec![(cx, cy - hh), (cx + s, cy), (cx, cy + hh), (cx - s, cy)];
-        let left = vec![(cx - s, cy), (cx, cy + hh), (cx, cy + hh + ht), (cx - s, cy + ht)];
-        let right = vec![(cx + s, cy), (cx, cy + hh), (cx, cy + hh + ht), (cx + s, cy + ht)];
+        let left = vec![
+            (cx - s, cy),
+            (cx, cy + hh),
+            (cx, cy + hh + ht),
+            (cx - s, cy + ht),
+        ];
+        let right = vec![
+            (cx + s, cy),
+            (cx, cy + hh),
+            (cx, cy + hh + ht),
+            (cx + s, cy + ht),
+        ];
         let r = auto_ramp(base, 5);
         let (top_c, bright, dark) = (r[4], r[3], r[1]);
-        let (right_c, left_c) = if light_right { (bright, dark) } else { (dark, bright) };
+        let (right_c, left_c) = if light_right {
+            (bright, dark)
+        } else {
+            (dark, bright)
+        };
         self.edit(id, |d| {
             d.polygon(layer, frame, &left, left_c, true)?;
             d.polygon(layer, frame, &right, right_c, true)?;
@@ -961,7 +1036,12 @@ impl Studio {
                             d.line(li, f, vx, vy, ex, ey, color, 1)?;
                         }
                     }
-                    other => return Err(format!("unknown guide kind '{}' — use thirds|grid|iso|vp", other)),
+                    other => {
+                        return Err(format!(
+                            "unknown guide kind '{}' — use thirds|grid|iso|vp",
+                            other
+                        ))
+                    }
                 }
             }
             Ok(())
@@ -1011,7 +1091,8 @@ impl Studio {
     ) -> Result<Value, String> {
         let ramp = ramp.unwrap_or_else(|| auto_ramp(base, 6));
         self.edit_masked(id, layer, frame, |d| {
-            d.material(layer, frame, region, material, &ramp, seed).map(|_| ())
+            d.material(layer, frame, region, material, &ramp, seed)
+                .map(|_| ())
         })
     }
 
@@ -1119,7 +1200,11 @@ impl Studio {
                 ];
                 let pi = raster::nearest_oklab(cur, &palette).unwrap_or(0);
                 let chosen = palette[pi];
-                out.put_pixel(x as u32, y as u32, Rgba([chosen[0], chosen[1], chosen[2], p[3] as u8]));
+                out.put_pixel(
+                    x as u32,
+                    y as u32,
+                    Rgba([chosen[0], chosen[1], chosen[2], p[3] as u8]),
+                );
                 if dither {
                     let err = [
                         p[0] - chosen[0] as f32,
@@ -1148,7 +1233,9 @@ impl Studio {
             doc.set_palette(palette.clone());
         }
         doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id, "size": [w, h], "palette_len": palette.len(), "dithered": dither}))
+        Ok(
+            json!({"ok": true, "doc_id": id, "size": [w, h], "palette_len": palette.len(), "dithered": dither}),
+        )
     }
 
     // -- doc_burst: radial FX across frames -------------------------------
@@ -1174,7 +1261,7 @@ impl Studio {
         if layer >= doc.meta.layers.len() {
             return Err(format!("no layer {}", layer));
         }
-        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, frames.min(8).max(2)));
+        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, frames.clamp(2, 8)));
         while doc.meta.frames.len() < frames {
             doc.add_frame(80, None);
         }
@@ -1196,7 +1283,12 @@ impl Studio {
                         doc.line(layer, f, cx, cy, ex, ey, col, 1)?;
                     }
                 }
-                other => return Err(format!("unknown burst kind '{}' — use ring|disc|rays", other)),
+                other => {
+                    return Err(format!(
+                        "unknown burst kind '{}' — use ring|disc|rays",
+                        other
+                    ))
+                }
             }
         }
         if !doc.meta.tags.iter().any(|t| t.name == "burst") {
@@ -1404,6 +1496,55 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
     })
 }
 
+/// Cross-snapshot diff: structural + per-pixel change tallies on frame 0.
+fn checkpoint_diff(cpid: &str, was: &Document, now: &Document) -> Value {
+    let stat = |d: &Document| -> (u64, usize, u8, u8) {
+        let img = d.flatten(0);
+        let (mut n, mut min, mut max) = (0u64, 255u8, 0u8);
+        let mut distinct = std::collections::HashSet::new();
+        for p in img.pixels() {
+            if p.0[3] == 0 {
+                continue;
+            }
+            n += 1;
+            let v = raster::luma(p.0);
+            min = min.min(v);
+            max = max.max(v);
+            distinct.insert(p.0);
+        }
+        (n, distinct.len(), min, max)
+    };
+    let (an, ac, amin, amax) = stat(was);
+    let (bn, bc, bmin, bmax) = stat(now);
+    // Per-pixel change tally where the canvases line up.
+    let (mut added, mut removed, mut changed) = (0u64, 0u64, 0u64);
+    if was.meta.w == now.meta.w && was.meta.h == now.meta.h {
+        let (ia, ib) = (was.flatten(0), now.flatten(0));
+        for (pa, pb) in ia.pixels().zip(ib.pixels()) {
+            match (pa.0[3] == 0, pb.0[3] == 0) {
+                (true, false) => added += 1,
+                (false, true) => removed += 1,
+                (false, false) if pa.0 != pb.0 => changed += 1,
+                _ => {}
+            }
+        }
+    }
+    json!({
+        "checkpoint": cpid,
+        "pixels": {"was": an, "now": bn, "delta": bn as i64 - an as i64},
+        "distinct_colors": {"was": ac, "now": bc, "delta": bc as i64 - ac as i64},
+        "contrast": {
+            "was": ((amax - amin) as f64 / 255.0 * 1000.0).round() / 1000.0,
+            "now": ((bmax - bmin) as f64 / 255.0 * 1000.0).round() / 1000.0,
+        },
+        "frame0_change": {"added": added, "removed": removed, "recolored": changed},
+        "regressions": {
+            "lost_contrast": (bmax - bmin) < (amax - amin),
+            "color_creep": bc > ac + (ac / 4).max(2),
+        }
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1459,7 +1600,15 @@ mod tests {
         let s = studio("layers");
         s.doc_create("c", 4, 4).unwrap();
         let r = s
-            .layer_ops("c", "insert", 0, None, Some("bg".into()), 255, "normal".into())
+            .layer_ops(
+                "c",
+                "insert",
+                0,
+                None,
+                Some("bg".into()),
+                255,
+                "normal".into(),
+            )
             .unwrap();
         assert_eq!(r["layers"].as_array().unwrap().len(), 2);
         let m = s
@@ -1473,7 +1622,16 @@ mod tests {
         let s = studio("ramp");
         s.doc_create("c", 4, 4).unwrap();
         let r = s
-            .make_perceptual_ramp([120, 80, 60, 255], 5, None, None, 20.0, "arc", true, Some("c"))
+            .make_perceptual_ramp(
+                [120, 80, 60, 255],
+                5,
+                None,
+                None,
+                20.0,
+                "arc",
+                true,
+                Some("c"),
+            )
             .unwrap();
         assert_eq!(r["ramp"].as_array().unwrap().len(), 5);
         assert_eq!(r["validation"]["monotonic_lightness"], true);
@@ -1499,7 +1657,9 @@ mod tests {
         s.doc_pencil("c", 0, 0, vec![(4, 2)], [255, 255, 255, 255], 1)
             .unwrap();
         let r = s
-            .transform_cel("c", 0, 0, None, 90.0, 1.0, 1.0, 0.0, 0.0, "nearest", false, true)
+            .transform_cel(
+                "c", 0, 0, None, 90.0, 1.0, 1.0, 0.0, 0.0, "nearest", false, true,
+            )
             .unwrap();
         assert_eq!(r["placed_pixels"], 1);
         let look = s
@@ -1513,9 +1673,12 @@ mod tests {
         let s = studio("aa");
         s.doc_create("c", 6, 6).unwrap();
         for (x, y) in [(0, 0), (1, 0), (1, 1), (2, 1)] {
-            s.doc_pencil("c", 0, 0, vec![(x, y)], [0, 0, 0, 255], 1).unwrap();
+            s.doc_pencil("c", 0, 0, vec![(x, y)], [0, 0, 0, 255], 1)
+                .unwrap();
         }
-        let r = s.smooth_edges("c", 0, 0, None, 2, true, None, None).unwrap();
+        let r = s
+            .smooth_edges("c", 0, 0, None, 2, true, None, None)
+            .unwrap();
         assert!(r["aa_pixels_added"].as_u64().unwrap() >= 2);
     }
 
@@ -1550,14 +1713,31 @@ mod tests {
         s.doc_create("c", 16, 16).unwrap();
         s.doc_fill_cel("c", 0, 0, [128, 128, 128, 255]).unwrap();
         s.relight(
-            "c", 0, 0, None, 315.0, 50.0, 1.0, [255, 255, 255], 0.25, [120, 140, 200], 0.0,
-            [255, 255, 255], 0.3, [120, 130, 170], 2.0, None,
+            "c",
+            0,
+            0,
+            None,
+            315.0,
+            50.0,
+            1.0,
+            [255, 255, 255],
+            0.25,
+            [120, 140, 200],
+            0.0,
+            [255, 255, 255],
+            0.3,
+            [120, 130, 170],
+            2.0,
+            None,
         )
         .unwrap();
         let look = s
             .look("c", 0, 1, None, "render", 1, false, false, false, None)
             .unwrap();
-        assert!(distinct(&look.1) > 1, "relight should produce a value gradient");
+        assert!(
+            distinct(&look.1) > 1,
+            "relight should produce a value gradient"
+        );
     }
 
     #[test]
@@ -1566,9 +1746,14 @@ mod tests {
         s.doc_create("c", 4, 8).unwrap();
         s.doc_fill_cel("c", 0, 0, [100, 100, 100, 255]).unwrap();
         s.dither_ramp(
-            "c", 0, 0, None,
+            "c",
+            0,
+            0,
+            None,
             vec![[0, 0, 0, 255], [128, 128, 128, 255], [255, 255, 255, 255]],
-            "v", "bayer4", true,
+            "v",
+            "bayer4",
+            true,
         )
         .unwrap();
         let look = s
@@ -1640,15 +1825,29 @@ mod tests {
         s.doc_create("c", 24, 24).unwrap();
         s.perspective_guide("c", "thirds", [255, 0, 255, 130], 8, None)
             .unwrap();
-        assert_eq!(s.doc_info("c").unwrap()["layers"].as_array().unwrap().len(), 2);
+        assert_eq!(
+            s.doc_info("c").unwrap()["layers"].as_array().unwrap().len(),
+            2
+        );
     }
 
     #[test]
     fn panel_draws_fill_and_border() {
         let s = studio("panel");
         s.doc_create("c", 20, 12).unwrap();
-        s.panel("c", 0, 0, 1, 1, 18, 10, [60, 60, 90, 255], [10, 10, 20, 255], true)
-            .unwrap();
+        s.panel(
+            "c",
+            0,
+            0,
+            1,
+            1,
+            18,
+            10,
+            [60, 60, 90, 255],
+            [10, 10, 20, 255],
+            true,
+        )
+        .unwrap();
         let look = s
             .look("c", 0, 1, None, "render", 1, false, false, false, None)
             .unwrap();
@@ -1663,7 +1862,11 @@ mod tests {
             .unwrap();
         let info = s.doc_info("c").unwrap();
         assert!(info["frames"].as_array().unwrap().len() >= 5);
-        assert!(info["tags"].as_array().unwrap().iter().any(|t| t["name"] == "burst"));
+        assert!(info["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|t| t["name"] == "burst"));
     }
 
     #[test]
@@ -1681,9 +1884,12 @@ mod tests {
         s.doc_create("c", 16, 16).unwrap();
         s.doc_add_frame("c", 100, None).unwrap();
         s.doc_add_frame("c", 100, None).unwrap();
-        s.doc_pencil("c", 0, 0, vec![(2, 8)], [255, 255, 255, 255], 1).unwrap();
-        s.doc_pencil("c", 0, 1, vec![(8, 2)], [255, 255, 255, 255], 1).unwrap();
-        s.doc_pencil("c", 0, 2, vec![(14, 8)], [255, 255, 255, 255], 1).unwrap();
+        s.doc_pencil("c", 0, 0, vec![(2, 8)], [255, 255, 255, 255], 1)
+            .unwrap();
+        s.doc_pencil("c", 0, 1, vec![(8, 2)], [255, 255, 255, 255], 1)
+            .unwrap();
+        s.doc_pencil("c", 0, 2, vec![(14, 8)], [255, 255, 255, 255], 1)
+            .unwrap();
         let r = s.doc_anim_audit("c", None, None, "arc").unwrap();
         assert!(r["arc_residual"].as_f64().unwrap() > 0.0);
         assert_eq!(r["shape"], "arced");
@@ -1706,53 +1912,4 @@ mod tests {
             .unwrap();
         assert_eq!(opaque(&look.1), 4);
     }
-}
-
-/// Cross-snapshot diff: structural + per-pixel change tallies on frame 0.
-fn checkpoint_diff(cpid: &str, was: &Document, now: &Document) -> Value {
-    let stat = |d: &Document| -> (u64, usize, u8, u8) {
-        let img = d.flatten(0);
-        let (mut n, mut min, mut max) = (0u64, 255u8, 0u8);
-        let mut distinct = std::collections::HashSet::new();
-        for p in img.pixels() {
-            if p.0[3] == 0 {
-                continue;
-            }
-            n += 1;
-            let v = raster::luma(p.0);
-            min = min.min(v);
-            max = max.max(v);
-            distinct.insert(p.0);
-        }
-        (n, distinct.len(), min, max)
-    };
-    let (an, ac, amin, amax) = stat(was);
-    let (bn, bc, bmin, bmax) = stat(now);
-    // Per-pixel change tally where the canvases line up.
-    let (mut added, mut removed, mut changed) = (0u64, 0u64, 0u64);
-    if was.meta.w == now.meta.w && was.meta.h == now.meta.h {
-        let (ia, ib) = (was.flatten(0), now.flatten(0));
-        for (pa, pb) in ia.pixels().zip(ib.pixels()) {
-            match (pa.0[3] == 0, pb.0[3] == 0) {
-                (true, false) => added += 1,
-                (false, true) => removed += 1,
-                (false, false) if pa.0 != pb.0 => changed += 1,
-                _ => {}
-            }
-        }
-    }
-    json!({
-        "checkpoint": cpid,
-        "pixels": {"was": an, "now": bn, "delta": bn as i64 - an as i64},
-        "distinct_colors": {"was": ac, "now": bc, "delta": bc as i64 - ac as i64},
-        "contrast": {
-            "was": ((amax - amin) as f64 / 255.0 * 1000.0).round() / 1000.0,
-            "now": ((bmax - bmin) as f64 / 255.0 * 1000.0).round() / 1000.0,
-        },
-        "frame0_change": {"added": added, "removed": removed, "recolored": changed},
-        "regressions": {
-            "lost_contrast": (bmax - bmin) < (amax - amin),
-            "color_creep": bc > ac + (ac / 4).max(2),
-        }
-    })
 }

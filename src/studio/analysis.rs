@@ -1210,8 +1210,10 @@ impl Studio {
         let img = doc.analysis_image(layer, frame)?;
         let (w, h) = (img.width() as i32, img.height() as i32);
         let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => crate::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
-                .ok_or("region is empty after clamping to the canvas")?,
+            Some((x0, y0, x1, y1)) => {
+                crate::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                    .ok_or("region is empty after clamping to the canvas")?
+            }
             None => (0, 0, w - 1, h - 1),
         };
         let (mut opaque, mut partial, mut transparent) = (0u64, 0u64, 0u64);

@@ -209,6 +209,78 @@ The limb/keyframe-animation toolkit.
   + master JSON (`doc`, `frame`, `rect`, `duration_ms`, `pivot`, `boxes`) so a
   whole game's sprites slice from one texture.
 
+## World-class craft (the art-quality pass)
+
+The tools from the 30-agent art-quality review (`docs/ART-QUALITY-REVIEW.md`).
+The theme: let the near-blind agent *see* and *measure*, edit *structurally* and
+*non-destructively*, and reach *perceptual* colour and master finish.
+
+**See & measure (the agent's eye).**
+
+- `doc_look` — the primary SEE call: a frame as an **inline PNG** (no separate
+  file read) plus measured stats, in one turn. `mode`: `render` · `value` ·
+  `bands` · `sat` · `hue` · `notan` (3-value squint). `grid`/`coords` burn a
+  pixel ruler into the upscale; `onion`, `region`, `max_size` as on `doc_render`.
+  Stats report value min/max/mean/contrast and shadow/mid/light mass %.
+- `doc_select_render` — the active selection as a quick-mask overlay (selected
+  art shown, the rest dimmed + magenta-tinted) so you never paint through an
+  unseen mask. Inline PNG + selected-pixel count/bbox.
+- `doc_contact_sheet` — every frame in one labelled inline grid (the flip-test).
+- `doc_critique` — the art-director scorecard: orphan specks, un-AA'd jaggies,
+  low contrast, pillow-shading, value-soup massing and off-palette drift, with
+  worst-offending cells. Conservative verdicts (ok/warn/info).
+- `doc_translucency_report` — glass/glow alpha as data: opaque/partial/
+  transparent counts, mean alpha, partial-alpha band histogram + bbox.
+- `doc_anim_audit mode="arc"` — trajectory arc-residual (straight slide vs real
+  arc) + volume constancy, beside the existing `seam`/`spacing`.
+
+**Edit without fear (structure & non-destructive).**
+
+- `doc_checkpoint` — `save` · `list` · `restore` · `diff` · `prune`: snapshot a
+  document before a risky op and roll back, or diff regression deltas
+  (pixel/colour/contrast change, added/removed/recoloured). Undo for a
+  destructive editor.
+- `doc_layer_ops` — `move` · `insert` · `delete` · `rename` · `duplicate` ·
+  `merge_down` (bakes opacity+blend onto the layer below). Cels follow the layer.
+- `doc_transform_cel` — affine-transform a cel/region **in place**: rotate,
+  scale, skew. `method` `rotsprite` (super-sampled, cluster-preserving) or
+  `nearest`; `preserve_volume` (squash-and-stretch), `snap_palette`,
+  `clear_source` (move vs overlay).
+- `doc_select_wand` — contiguous magic-wand → the active selection (perceptual
+  OKLab tolerance, 4/8-connectivity, `replace`/`add`/`subtract`/`intersect`).
+
+**Perceptual colour (OKLab/OKLCh).**
+
+- `doc_make_perceptual_ramp` — perceptually-even ramp (fixes HSL's crushed
+  midtones): equal-lightness steps, hue shift, `sat_curve` flat/arc/sat-in-shadow,
+  midtone anchor; validates evenness; `set_doc` stores it as the palette.
+- `doc_harmony_palette` — a perceptual ramp per hue of a scheme
+  (complementary/triadic/analogous/split/tetradic/mono), shared lightness poles.
+- `doc_snap_palette` — snap a cel/document to its locked palette by perceptual
+  nearest colour, killing off-palette drift from blends/dithers/FX.
+
+**Master finish & form.**
+
+- `doc_relight` — multi-light form shading (key/fill/rim): silhouette → height →
+  normals → Lambert + Fresnel rim. Azimuth/elevation lights, ambient, `bulge`;
+  multiplies the base (light colour tints) or snaps to a `ramp`.
+- `doc_smooth_edges` — selout: an opaque mid-value pixel into each outer
+  staircase notch so diagonals read smooth; `keep_square` preserves deliberate
+  right angles; `ramp` keeps the AA on-palette.
+- `doc_dither_ramp` — graduated multi-tone dithering across a whole ramp along
+  `h`/`v`/`radial`, ordered or `ign` blue-noise — master gradient shading.
+- `doc_outline_selective` — form-following contour coloured from the fill it
+  borders (vs a flat black keyline).
+- `doc_material` — procedural material recipes: metal/wood/stone/water/cloth/
+  skin/glass, from one base colour, deterministic in `seed`, on the opaque pixels.
+- `doc_box` — a 3-face shaded isometric cuboid (hard-surface form `form` can't
+  make).
+- `doc_perspective_guide` — a faint, deletable guide layer (thirds/grid/iso/vp).
+- `doc_panel` — a HUD/UI panel (fill + border + bevel).
+- `doc_burst` — radial FX frames (ring/disc/rays) tagged `burst`.
+- `doc_import_clean` — external image (AI-gen/photo/scan) → clean pixel art:
+  area-downscale + Floyd–Steinberg error-diffuse to a palette (+ defringe).
+
 ## Beyond the tools
 
 The server exposes more than the tool list — the MCP standard surfaces, plus a

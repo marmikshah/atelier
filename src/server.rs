@@ -2683,7 +2683,10 @@ impl Atelier {
     #[tool(
         description = "Render the ACTIVE selection as a quick-mask overlay (selected art shown, the rest dimmed + magenta-tinted) so you never paint through an unseen mask. Returns an inline PNG + selected-pixel count and bbox."
     )]
-    async fn doc_select_render(&self, Parameters(p): Parameters<DocSelectRender>) -> CallToolResult {
+    async fn doc_select_render(
+        &self,
+        Parameters(p): Parameters<DocSelectRender>,
+    ) -> CallToolResult {
         img_result(self.studio().select_render(&p.doc_id, p.scale.unwrap_or(6)))
     }
 
@@ -2830,7 +2833,10 @@ impl Atelier {
             p.rim_intensity.unwrap_or(0.0),
             p.rim_color.as_deref().map(rgb3).unwrap_or([255, 255, 255]),
             p.ambient.unwrap_or(0.35),
-            p.ambient_color.as_deref().map(rgb3).unwrap_or([120, 130, 170]),
+            p.ambient_color
+                .as_deref()
+                .map(rgb3)
+                .unwrap_or([120, 130, 170]),
             p.bulge.unwrap_or(2.0),
             p.ramp.map(|v| palette_list(&v)),
         ))
@@ -2855,11 +2861,15 @@ impl Atelier {
     #[tool(
         description = "Every frame in ONE labelled inline grid (index + duration) — the animator's flip-test the agent can't otherwise do. cols sets the grid width; scale upscales each frame."
     )]
-    async fn doc_contact_sheet(&self, Parameters(p): Parameters<DocContactSheet>) -> CallToolResult {
-        img_result(
-            self.studio()
-                .contact_sheet(&p.doc_id, p.scale.unwrap_or(4), p.cols.unwrap_or(8)),
-        )
+    async fn doc_contact_sheet(
+        &self,
+        Parameters(p): Parameters<DocContactSheet>,
+    ) -> CallToolResult {
+        img_result(self.studio().contact_sheet(
+            &p.doc_id,
+            p.scale.unwrap_or(4),
+            p.cols.unwrap_or(8),
+        ))
     }
 
     #[tool(
@@ -2901,11 +2911,7 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocPerspectiveGuide>,
     ) -> String {
-        let vp = p
-            .vp
-            .as_ref()
-            .filter(|v| v.len() >= 2)
-            .map(|v| (v[0], v[1]));
+        let vp = p.vp.as_ref().filter(|v| v.len() >= 2).map(|v| (v[0], v[1]));
         res(self.studio().perspective_guide(
             &p.doc_id,
             p.kind.as_deref().unwrap_or("thirds"),

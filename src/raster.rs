@@ -503,6 +503,8 @@ fn linear_to_srgb(c: f32) -> f32 {
 
 /// sRGB (0..255) → OKLab `(L, a, b)`. L is perceptual lightness in [0,1]; a/b
 /// are the green–red and blue–yellow opponent axes (roughly ±0.4).
+// The matrix constants are OKLab's canonical f64 values; keep them verbatim.
+#[allow(clippy::excessive_precision)]
 pub fn srgb_to_oklab(c: [u8; 4]) -> (f32, f32, f32) {
     let r = srgb_to_linear(c[0] as f32 / 255.0);
     let g = srgb_to_linear(c[1] as f32 / 255.0);
@@ -519,6 +521,7 @@ pub fn srgb_to_oklab(c: [u8; 4]) -> (f32, f32, f32) {
 }
 
 /// OKLab `(L, a, b)` → sRGB (0..255), gamut-clamped. Alpha is the caller's job.
+#[allow(clippy::excessive_precision)]
 pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
     let (l, a, b) = lab;
     let l_ = l + 0.396_337_78 * a + 0.215_803_76 * b;
@@ -699,12 +702,7 @@ pub fn affine_nn(
     let (i00, i01, i10, i11) = (m11 / det, -m01 / det, -m10 / det, m00 / det);
     let (cx, cy) = (w / 2.0, h / 2.0);
     let fwd = |x: f32, y: f32| (m00 * x + m01 * y, m10 * x + m11 * y);
-    let corners = [
-        fwd(-cx, -cy),
-        fwd(cx, -cy),
-        fwd(-cx, cy),
-        fwd(cx, cy),
-    ];
+    let corners = [fwd(-cx, -cy), fwd(cx, -cy), fwd(-cx, cy), fwd(cx, cy)];
     let minx = corners.iter().map(|p| p.0).fold(f32::MAX, f32::min);
     let maxx = corners.iter().map(|p| p.0).fold(f32::MIN, f32::max);
     let miny = corners.iter().map(|p| p.1).fold(f32::MAX, f32::min);
@@ -720,7 +718,10 @@ pub fn affine_nn(
             let (dx, dy) = (minx + ox as f32, miny + oy as f32);
             let sxp = i00 * dx + i01 * dy + cx;
             let syp = i10 * dx + i11 * dy + cy;
-            if sxp >= 0.0 && syp >= 0.0 && (sxp as u32) < work.width() && (syp as u32) < work.height()
+            if sxp >= 0.0
+                && syp >= 0.0
+                && (sxp as u32) < work.width()
+                && (syp as u32) < work.height()
             {
                 let p = *work.get_pixel(sxp as u32, syp as u32);
                 if p.0[3] > 0 {
@@ -1194,10 +1195,20 @@ mod tests {
 
     #[test]
     fn oklab_round_trips_within_one_step() {
-        for c in [[10, 20, 30, 255], [200, 120, 40, 255], [255, 255, 255, 255], [0, 128, 64, 255]] {
+        for c in [
+            [10, 20, 30, 255],
+            [200, 120, 40, 255],
+            [255, 255, 255, 255],
+            [0, 128, 64, 255],
+        ] {
             let back = oklab_to_srgb(srgb_to_oklab(c));
             for i in 0..3 {
-                assert!((back[i] as i32 - c[i] as i32).abs() <= 1, "{:?} -> {:?}", c, back);
+                assert!(
+                    (back[i] as i32 - c[i] as i32).abs() <= 1,
+                    "{:?} -> {:?}",
+                    c,
+                    back
+                );
             }
         }
     }
@@ -1219,7 +1230,10 @@ mod tests {
     #[test]
     fn nearest_oklab_beats_naive_rgb_on_a_hue() {
         // a desaturated teal is perceptually nearer teal than near-equal-RGB grey
-        let i = nearest_oklab([60, 120, 120, 255], &[[128, 128, 128, 255], [40, 150, 150, 255]]);
+        let i = nearest_oklab(
+            [60, 120, 120, 255],
+            &[[128, 128, 128, 255], [40, 150, 150, 255]],
+        );
         assert_eq!(i, Some(1));
     }
 
