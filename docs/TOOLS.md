@@ -211,9 +211,9 @@ The limb/keyframe-animation toolkit.
 
 ## World-class craft (the art-quality pass)
 
-The tools from the 30-agent art-quality review (`docs/ART-QUALITY-REVIEW.md`).
-The theme: let the near-blind agent *see* and *measure*, edit *structurally* and
-*non-destructively*, and reach *perceptual* colour and master finish.
+The tools from the art-quality pass. The theme: let the near-blind agent *see*
+and *measure*, edit *structurally* and *non-destructively*, and reach
+*perceptual* colour and master finish.
 
 **See & measure (the agent's eye).**
 

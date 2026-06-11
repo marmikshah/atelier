@@ -1,7 +1,7 @@
 //! World-class-art tooling — the craft layer on top of the primitives.
 //!
-//! These methods exist to close the gaps the 30-agent art-quality review found
-//! (see docs/ART-QUALITY-REVIEW.md): let the near-blind agent actually SEE
+//! These methods exist to close the gaps the art-quality review found:
+//! let the near-blind agent actually SEE
 //! (`look`, `select_render`), work without fear (`checkpoint`), edit structure
 //! (`layer_ops`, `transform_cel`), and reach perceptual colour & master finish
 //! (`make_perceptual_ramp`, `snap_palette`, `smooth_edges`, `select_wand`,

@@ -1062,7 +1062,7 @@ fn iso_date() -> String {
     format!("{y:04}-{m:02}-{d:02}")
 }
 
-// --- world-class-art tool params (see docs/ART-QUALITY-REVIEW.md) ----------
+// --- world-class-art tool params (the art-quality pass) --------------------
 
 #[derive(Deserialize, JsonSchema)]
 pub struct DocLook {
@@ -2661,7 +2661,7 @@ impl Atelier {
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
     }
 
-    // -- world-class-art tools (see docs/ART-QUALITY-REVIEW.md) --
+    // -- world-class-art tools (the art-quality pass) --
     #[tool(
         description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary eye; use this instead of doc_render when you want to look. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail. Stats report value min/max/mean/contrast and shadow/mid/light mass %."
     )]

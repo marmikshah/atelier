@@ -482,8 +482,7 @@ pub fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [u8; 3] {
 // steps in L look like equal steps in brightness, and Euclidean distance
 // approximates perceived colour difference. atelier's ramps, quantize and
 // palette-snap all live in sRGB+HSL today, which crushes the midtones and
-// picks perceptually-wrong nearest colours; OKLab fixes both. See the
-// art-quality review (docs/ART-QUALITY-REVIEW.md, §4 unlock 2).
+// picks perceptually-wrong nearest colours; OKLab fixes both.
 
 fn srgb_to_linear(c: f32) -> f32 {
     if c <= 0.04045 {
