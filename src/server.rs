@@ -416,6 +416,19 @@ pub struct DocTween {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocFrameOps {
+    pub doc_id: String,
+    /// delete | insert | duplicate | move.
+    pub action: String,
+    /// The frame to act on (for insert: the index the new frame takes).
+    pub frame: usize,
+    /// Destination index for `move`.
+    pub to_index: Option<usize>,
+    /// Duration for `insert` (default 100ms).
+    pub duration_ms: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocOutline {
     pub doc_id: String,
     pub layer: usize,
@@ -2114,6 +2127,7 @@ impl Atelier {
             .map(|cs| cs.iter().map(|c| rgba(c)).collect())
             .unwrap_or_default();
         let studio = self.studio();
+        studio.auto_checkpoint(&p.doc_id, "quantize");
         let r = studio.doc_quantize(
             &p.doc_id,
             p.layer,
@@ -2125,16 +2139,27 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to`, so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). doc_checkpoint save first: there is no frame delete, so a bad tween is otherwise permanent. Reindexes later cels."
+        description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame_ops delete. Reindexes later cels and remaps tags."
     )]
     async fn doc_tween(&self, Parameters(p): Parameters<DocTween>) -> CallToolResult {
-        res(self.studio().doc_tween(
+        let studio = self.studio();
+        studio.auto_checkpoint(&p.doc_id, "tween");
+        res(studio.doc_tween(
             &p.doc_id,
             p.from,
             p.to,
             p.steps.unwrap_or(1),
             p.duration_ms.unwrap_or(100),
         ))
+    }
+
+    #[tool(
+        description = "Timeline lifecycle: action=\"delete\" removes a frame (cels reindex, tags remap, tags covering only that frame are dropped; the last frame is protected), \"insert\" adds an empty frame at `frame`, \"duplicate\" copies a frame to frame+1, \"move\" relocates `frame` to `to_index`. The recovery path for a bad tween or extra pose — pair with doc_checkpoint for whole-doc rollback."
+    )]
+    async fn doc_frame_ops(&self, Parameters(p): Parameters<DocFrameOps>) -> CallToolResult {
+        res(self
+            .studio()
+            .doc_frame_ops(&p.doc_id, &p.action, p.frame, p.to_index, p.duration_ms))
     }
 
     #[tool(
@@ -2356,7 +2381,9 @@ impl Atelier {
             .ramp
             .as_ref()
             .map(|r| r.iter().map(|c| rgba(c)).collect::<Vec<_>>());
-        res(self.studio().doc_form(
+        let studio = self.studio();
+        studio.auto_checkpoint(&p.doc_id, "form");
+        res(studio.doc_form(
             &p.doc_id,
             p.layer,
             p.frame,
@@ -2930,7 +2957,9 @@ impl Atelier {
         description = "Multi-light form shading — key/fill/rim, the leap from one-direction `form` to PAINTED form. Reads the silhouette as a height field, derives surface normals (bulge = how domed), and lights it: key by azimuth (0=right,90=down,180=left,270=up) + elevation (0=grazing,90=head-on), an auto fill opposite the key, a Fresnel rim, and ambient. Output multiplies the base colour (hue preserved, light colour tints) or snaps to `ramp`. Honours an active selection; pass a region on multi-material sprites."
     )]
     async fn doc_relight(&self, Parameters(p): Parameters<DocRelight>) -> CallToolResult {
-        res(self.studio().relight(
+        let studio = self.studio();
+        studio.auto_checkpoint(&p.doc_id, "relight");
+        res(studio.relight(
             &p.doc_id,
             p.layer,
             p.frame,
@@ -3057,7 +3086,9 @@ impl Atelier {
         description = "Paint a procedural MATERIAL onto the opaque pixels of a cel from one base colour: metal (specular band + reflection), wood (grain), stone (mottle + speckle), water (ripples), cloth (weave), skin (soft gradient), glass (sheen + streak). Deterministic in `seed`; pass `ramp` to control the palette, or `region`/an active selection to clip it. Turns 6–10 blind calls into 'reads as the material'."
     )]
     async fn doc_material(&self, Parameters(p): Parameters<DocMaterial>) -> CallToolResult {
-        res(self.studio().material(
+        let studio = self.studio();
+        studio.auto_checkpoint(&p.doc_id, "material");
+        res(studio.material(
             &p.doc_id,
             p.layer,
             p.frame,

@@ -2932,18 +2932,32 @@ impl Document {
             moved.push(((k.0, k.1 + steps), v));
         }
         self.cels.extend(moved);
-        // Insert frame metadata.
+        // Insert frame metadata, inheriting the source frame's pivot/boxes so
+        // in-betweens don't arrive with no anchor and no collision data.
+        let src_meta = self.meta.frames[from].clone();
         for i in 0..steps {
             self.meta.frames.insert(
                 insert_at + i,
                 FrameMeta {
                     duration_ms,
-                    pivot: None,
-                    boxes: Vec::new(),
+                    pivot: src_meta.pivot,
+                    boxes: src_meta.boxes.clone(),
                 },
             );
         }
-        // Build cross-fade cels.
+        // Keep tag ranges pointing at the frames they tagged (a tag spanning
+        // the insertion stretches over the new in-betweens).
+        for t in &mut self.meta.tags {
+            if t.from >= insert_at {
+                t.from += steps;
+            }
+            if t.to >= insert_at {
+                t.to += steps;
+            }
+        }
+        // Build cross-fade cels; with a locked palette, snap each blend so the
+        // dissolve can't mint off-palette colours.
+        let palette = self.meta.palette.clone();
         let (w, h) = (self.meta.w, self.meta.h);
         for s in 1..=steps {
             let t = s as f32 / (steps + 1) as f32;
@@ -2959,13 +2973,171 @@ impl Document {
                                 .round()
                                 .clamp(0.0, 255.0) as u8
                         };
-                        img.put_pixel(x, y, Rgba([mix(0), mix(1), mix(2), mix(3)]));
+                        let mixed = [mix(0), mix(1), mix(2), mix(3)];
+                        let px = if mixed[3] > 0 && !palette.is_empty() {
+                            let pi = raster::nearest_oklab(
+                                [mixed[0], mixed[1], mixed[2], 255],
+                                &palette,
+                            )
+                            .unwrap_or(0);
+                            [palette[pi][0], palette[pi][1], palette[pi][2], mixed[3]]
+                        } else {
+                            mixed
+                        };
+                        img.put_pixel(x, y, Rgba(px));
                     }
                 }
                 self.cels.insert((l, fidx), (0, 0, img));
             }
         }
         Ok(steps)
+    }
+
+    /// Timeline lifecycle: `delete` | `insert` | `duplicate` | `move`. Cels
+    /// reindex and tag ranges remap with the frames; a tag covering only a
+    /// deleted frame is dropped. The last remaining frame can't be deleted —
+    /// this is the recovery path for a bad tween or duplicated pose.
+    pub fn frame_ops(
+        &mut self,
+        action: &str,
+        frame: usize,
+        to_index: Option<usize>,
+        duration_ms: Option<u32>,
+    ) -> Result<Value, String> {
+        let n = self.meta.frames.len();
+        match action {
+            "delete" => {
+                if frame >= n {
+                    return Err(format!("no frame {} (frames={})", frame, n));
+                }
+                if n == 1 {
+                    return Err("cannot delete the last remaining frame".into());
+                }
+                self.meta.frames.remove(frame);
+                self.cels.retain(|k, _| k.1 != frame);
+                let keys: Vec<(usize, usize)> =
+                    self.cels.keys().filter(|k| k.1 > frame).cloned().collect();
+                let mut moved = Vec::new();
+                for k in keys {
+                    let v = self.cels.remove(&k).unwrap();
+                    moved.push(((k.0, k.1 - 1), v));
+                }
+                self.cels.extend(moved);
+                self.meta
+                    .tags
+                    .retain(|t| !(t.from == frame && t.to == frame));
+                for t in &mut self.meta.tags {
+                    if t.from > frame {
+                        t.from -= 1;
+                    }
+                    if t.to >= frame {
+                        t.to -= 1;
+                    }
+                }
+            }
+            "insert" => {
+                if frame > n {
+                    return Err(format!(
+                        "insert index {} out of range (frames={})",
+                        frame, n
+                    ));
+                }
+                self.meta.frames.insert(
+                    frame,
+                    FrameMeta {
+                        duration_ms: duration_ms.unwrap_or(100),
+                        pivot: None,
+                        boxes: Vec::new(),
+                    },
+                );
+                let keys: Vec<(usize, usize)> =
+                    self.cels.keys().filter(|k| k.1 >= frame).cloned().collect();
+                let mut moved = Vec::new();
+                for k in keys {
+                    let v = self.cels.remove(&k).unwrap();
+                    moved.push(((k.0, k.1 + 1), v));
+                }
+                self.cels.extend(moved);
+                for t in &mut self.meta.tags {
+                    if t.from >= frame {
+                        t.from += 1;
+                    }
+                    if t.to >= frame {
+                        t.to += 1;
+                    }
+                }
+            }
+            "duplicate" => {
+                if frame >= n {
+                    return Err(format!("no frame {} (frames={})", frame, n));
+                }
+                let meta = self.meta.frames[frame].clone();
+                self.meta.frames.insert(frame + 1, meta);
+                let keys: Vec<(usize, usize)> =
+                    self.cels.keys().filter(|k| k.1 > frame).cloned().collect();
+                let mut moved = Vec::new();
+                for k in keys {
+                    let v = self.cels.remove(&k).unwrap();
+                    moved.push(((k.0, k.1 + 1), v));
+                }
+                self.cels.extend(moved);
+                let to_copy: Vec<(usize, (i32, i32, RgbaImage))> = self
+                    .cels
+                    .iter()
+                    .filter(|((_, f), _)| *f == frame)
+                    .map(|((l, _), v)| (*l, (v.0, v.1, v.2.clone())))
+                    .collect();
+                for (l, v) in to_copy {
+                    self.cels.insert((l, frame + 1), v);
+                }
+                // A tag ending on the duplicated frame grows to cover the copy.
+                for t in &mut self.meta.tags {
+                    if t.from > frame {
+                        t.from += 1;
+                    }
+                    if t.to >= frame {
+                        t.to += 1;
+                    }
+                }
+            }
+            "move" => {
+                let to = to_index.ok_or("move needs `to_index`")?;
+                if frame >= n || to >= n {
+                    return Err(format!(
+                        "move {}->{} out of range (frames={})",
+                        frame, to, n
+                    ));
+                }
+                if frame != to {
+                    let mut order: Vec<usize> = (0..n).filter(|&i| i != frame).collect();
+                    order.insert(to, frame);
+                    let old_frames = std::mem::take(&mut self.meta.frames);
+                    self.meta.frames = order.iter().map(|&o| old_frames[o].clone()).collect();
+                    let mut map = vec![0usize; n];
+                    for (newi, &old) in order.iter().enumerate() {
+                        map[old] = newi;
+                    }
+                    let all: Vec<((usize, usize), (i32, i32, RgbaImage))> =
+                        self.cels.drain().collect();
+                    self.cels = all
+                        .into_iter()
+                        .map(|((l, f), v)| ((l, map[f]), v))
+                        .collect();
+                    for t in &mut self.meta.tags {
+                        let (a, b) = (map[t.from], map[t.to]);
+                        t.from = a.min(b);
+                        t.to = a.max(b);
+                    }
+                }
+            }
+            other => {
+                return Err(format!(
+                    "unknown frame action '{}' — use delete|insert|duplicate|move",
+                    other
+                ))
+            }
+        }
+        Ok(json!({"ok": true, "action": action, "frames": self.meta.frames.len()}))
     }
 
     /// Resolve the ordered frame indices to *play*. With `tag`, honour that
@@ -3754,6 +3926,65 @@ mod tests {
         d.set_palette(vec![[1, 1, 1, 255], [2, 2, 2, 255]]);
         assert_eq!(d.meta.palette.len(), 2);
         assert_eq!(d.meta.palette[1], [2, 2, 2, 255]);
+    }
+
+    #[test]
+    fn tween_inherits_meta_remaps_tags_and_snaps_palette() {
+        let mut d = Document::new("t", 2, 2);
+        d.set_palette(vec![[0, 0, 0, 255], [255, 255, 255, 255]]);
+        d.pencil(0, 0, &[(0, 0)], [0, 0, 0, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 1, &[(0, 0)], [255, 255, 255, 255], 1).unwrap();
+        d.set_pivot(0, Some([1, 1])).unwrap();
+        d.add_tag("walk", 0, 1, "forward").unwrap();
+        d.tween(0, 1, 1, 50).unwrap();
+        // Tag stretched over the inserted in-between.
+        assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 2));
+        // The in-between inherited the source frame's pivot.
+        assert_eq!(d.meta.frames[1].pivot, Some([1, 1]));
+        // The 50% grey blend snapped to a palette colour instead of minting one.
+        let px = d.get_pixel(0, 1, 0, 0).unwrap();
+        assert!(
+            d.meta.palette.iter().any(|c| c[..3] == px[..3]),
+            "blend {:?} should be on-palette",
+            px
+        );
+    }
+
+    #[test]
+    fn frame_ops_delete_reindexes_and_protects_last() {
+        let mut d = Document::new("t", 2, 2);
+        d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 2, &[(0, 0)], [3, 3, 3, 255], 1).unwrap();
+        d.add_tag("mid", 1, 1, "forward").unwrap();
+        d.add_tag("all", 0, 2, "forward").unwrap();
+        d.frame_ops("delete", 1, None, None).unwrap();
+        assert_eq!(d.meta.frames.len(), 2);
+        // Frame 2's cel slid down to index 1.
+        assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [3, 3, 3, 255]);
+        // The tag covering only the deleted frame is gone; the spanning one shrank.
+        assert_eq!(d.meta.tags.len(), 1);
+        assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 1));
+        d.frame_ops("delete", 1, None, None).unwrap();
+        assert!(d.frame_ops("delete", 0, None, None).is_err()); // last frame protected
+    }
+
+    #[test]
+    fn frame_ops_move_and_duplicate() {
+        let mut d = Document::new("t", 2, 2);
+        d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
+        d.frame_ops("move", 0, Some(1), None).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [2, 2, 2, 255]);
+        assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [1, 1, 1, 255]);
+        d.frame_ops("duplicate", 0, None, None).unwrap();
+        assert_eq!(d.meta.frames.len(), 3);
+        assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [2, 2, 2, 255]); // the copy
+        assert_eq!(d.get_pixel(0, 2, 0, 0).unwrap(), [1, 1, 1, 255]); // shifted
     }
 
     #[test]

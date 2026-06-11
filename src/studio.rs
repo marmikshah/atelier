@@ -1000,6 +1000,53 @@ impl Studio {
         Ok(out)
     }
 
+    /// Timeline lifecycle (delete | insert | duplicate | move) with cel
+    /// reindexing and tag remapping — the recovery path for a bad tween.
+    pub fn doc_frame_ops(
+        &self,
+        id: &str,
+        action: &str,
+        frame: usize,
+        to_index: Option<usize>,
+        duration_ms: Option<u32>,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let out = doc.frame_ops(action, frame, to_index, duration_ms)?;
+        doc.save(&dir)?;
+        Ok(out)
+    }
+
+    /// Best-effort auto-checkpoint before a destructive op, labelled
+    /// `auto:<tool>`, keeping only the newest few auto snapshots so repeated
+    /// ops don't grow the doc dir without bound. Never fails the caller.
+    pub fn auto_checkpoint(&self, id: &str, tool: &str) {
+        const KEEP: usize = 5;
+        let label = format!("auto:{}", tool);
+        let _ = self.checkpoint(id, "save", Some(&label), None);
+        if let Ok(list) = self.checkpoint(id, "list", None, None) {
+            let mut autos: Vec<String> = list["checkpoints"]
+                .as_array()
+                .map(|a| {
+                    a.iter()
+                        .filter(|c| c["label"].as_str().is_some_and(|l| l.starts_with("auto:")))
+                        .filter_map(|c| c["id"].as_str().map(String::from))
+                        .collect()
+                })
+                .unwrap_or_default();
+            // Numeric order — lexical sort would call cp10 older than cp2.
+            autos.sort_by_key(|s| {
+                s.strip_prefix("cp")
+                    .and_then(|t| t.parse::<u32>().ok())
+                    .unwrap_or(0)
+            });
+            if autos.len() > KEEP {
+                for cpid in &autos[..autos.len() - KEEP] {
+                    let _ = self.checkpoint(id, "prune", None, Some(cpid));
+                }
+            }
+        }
+    }
+
     pub fn doc_outline(
         &self,
         id: &str,
