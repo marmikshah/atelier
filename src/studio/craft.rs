@@ -822,12 +822,16 @@ impl Studio {
     // -- doc_contact_sheet: the animator's flip-test -----------------------
 
     /// Every frame in one labelled inline grid — the flip-test the agent can't
-    /// otherwise do. Returns `(png_bytes, report)`.
+    /// otherwise do. `onion` draws each cell over a 35%-alpha ghost of the
+    /// PREVIOUS frame: the closest a single still image gets to letting a
+    /// vision model perceive motion (spacing, overlap, popping) per pair.
+    /// Returns `(png_bytes, report)`.
     pub fn contact_sheet(
         &self,
         id: &str,
         scale: u32,
         cols: usize,
+        onion: bool,
     ) -> Result<(Vec<u8>, Value), String> {
         let (_dir, doc) = self.open(id)?;
         let n = doc.meta.frames.len();
@@ -846,6 +850,20 @@ impl Studio {
             let (col, row) = ((f % cols) as u32, (f / cols) as u32);
             let ox = pad + col * (cellw + pad);
             let oy = pad + row * (cellh + pad) + label_h;
+            if onion && f > 0 {
+                let ghost = scale_nn(&doc.flatten(f - 1), s);
+                for (x, y, p) in ghost.enumerate_pixels() {
+                    if p.0[3] > 0 {
+                        let a = (p.0[3] as u32 * 35 / 100) as u8;
+                        blend_put(
+                            &mut sheet,
+                            (ox + x) as i32,
+                            (oy + y) as i32,
+                            [p.0[0], p.0[1], p.0[2], a],
+                        );
+                    }
+                }
+            }
             for (x, y, p) in scaled.enumerate_pixels() {
                 if p.0[3] > 0 {
                     blend_put(&mut sheet, (ox + x) as i32, (oy + y) as i32, p.0);
@@ -1851,7 +1869,7 @@ mod tests {
     fn contact_sheet_returns_a_grid() {
         let s = studio("contact");
         s.doc_create("c", 4, 4).unwrap();
-        let (png, report) = s.contact_sheet("c", 4, 8).unwrap();
+        let (png, report) = s.contact_sheet("c", 4, 8, false).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(report["frames"], 1);
     }
@@ -2008,7 +2026,7 @@ mod tests {
             .unwrap();
         s.doc_pencil("c", 0, 2, vec![(14, 8)], [255, 255, 255, 255], 1)
             .unwrap();
-        let r = s.doc_anim_audit("c", None, None, "arc").unwrap();
+        let r = s.doc_anim_audit("c", None, None, "arc", None).unwrap();
         assert!(r["arc_residual"].as_f64().unwrap() > 0.0);
         assert_eq!(r["shape"], "arced");
     }

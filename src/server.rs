@@ -986,8 +986,12 @@ pub struct DocAnimAudit {
     pub tag: Option<String>,
     /// Use this layer's cel; omit for the flattened composite.
     pub layer: Option<usize>,
-    /// "seam" (loop wrap diff) or "spacing" (per-frame motion evenness).
+    /// "seam" (loop wrap diff), "spacing" (per-frame motion evenness),
+    /// "arc" (trajectory shape) or "timing" (per-frame durations).
     pub mode: String,
+    /// [x0,y0,x1,y1] clips spacing/arc to one part (e.g. a swinging arm) so
+    /// its motion is measurable over a static body.
+    pub region: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -1279,6 +1283,9 @@ pub struct DocContactSheet {
     pub doc_id: String,
     pub scale: Option<u32>,
     pub cols: Option<usize>,
+    /// Ghost each cell's PREVIOUS frame under it at 35% alpha — per-pair
+    /// onion skinning, the closest a still image gets to showing motion.
+    pub onion: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -2715,12 +2722,16 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Audit an animation loop. mode=\"seam\" diffs the wrap the loop actually plays (last→first forward, first→last reverse; pingpong has no seam → score 0 + note) and returns seam_score = changed/opaque pixels — high means a jarring loop cut. mode=\"spacing\" tracks the silhouette centre per played frame and returns per_frame_center/per_frame_offset, total_drift and evenness (stddev of step size / mean; 0 = mechanically even) — catch uneven/stuttering motion. mode=\"arc\" returns the centre trajectory, arc_residual (RMS deviation from a straight line; ~0 = a mechanical straight slide, higher = a proper arc for jumps/swings) and volume_cv (opaque-area coefficient of variation; ~0 = constant mass, unless deliberate squash/stretch). `tag` audits one tag (omit = whole timeline)."
+        description = "Audit an animation loop. mode=\"seam\" diffs the wrap the loop actually plays and returns seam_score = changed/opaque plus the change_bbox naming WHERE the loop pops. mode=\"spacing\" tracks the opaque-mass CENTROID per played frame (per_frame_center/offset, total_drift, evenness; 0 = mechanically even); pass `region` to isolate one part (a swinging arm) over a static body. mode=\"arc\" returns the centroid trajectory, arc_residual (~0 = mechanical straight slide; higher = proper arc) and volume_cv (~0 = constant mass). mode=\"timing\" returns per-frame durations and flags uniform timing (reads mechanical — hold contacts ~1.5x). `tag` audits one tag (omit = whole timeline)."
     )]
     async fn doc_anim_audit(&self, Parameters(p): Parameters<DocAnimAudit>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_anim_audit(&p.doc_id, p.tag.as_deref(), p.layer, &p.mode))
+        res(self.studio().doc_anim_audit(
+            &p.doc_id,
+            p.tag.as_deref(),
+            p.layer,
+            &p.mode,
+            region(&p.region),
+        ))
     }
 
     #[tool(
@@ -3058,7 +3069,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Every frame in ONE labelled inline grid (index + duration) — the animator's flip-test the agent can't otherwise do. cols sets the grid width; scale upscales each frame."
+        description = "Every frame in ONE labelled inline grid (index + duration) — the animator's flip-test the agent can't otherwise do. onion=true ghosts each cell's previous frame under it (per-pair onion skin — judge spacing/overlap/popping from a single image). cols sets the grid width; scale upscales each frame."
     )]
     async fn doc_contact_sheet(
         &self,
@@ -3068,6 +3079,7 @@ impl Atelier {
             &p.doc_id,
             p.scale.unwrap_or(4),
             p.cols.unwrap_or(8),
+            p.onion.unwrap_or(false),
         ))
     }
 

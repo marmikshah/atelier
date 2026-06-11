@@ -1076,6 +1076,7 @@ impl Studio {
         tag: Option<&str>,
         layer: Option<usize>,
         mode: &str,
+        region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let seq = doc.play_sequence(tag)?;
@@ -1103,7 +1104,7 @@ impl Studio {
                 }
                 let (last, first) = (*seq.last().unwrap(), seq[0]);
                 let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-                let (added, removed, recolored, _bbox, _ia, _ib) =
+                let (added, removed, recolored, bbox, _ia, _ib) =
                     doc.frame_diff_region(last, first, layer, (0, 0, cw - 1, ch - 1))?;
                 let changed = added + removed + recolored;
                 // Denominator: opaque pixels of the played last frame (motion base).
@@ -1114,6 +1115,8 @@ impl Studio {
                     "changed": changed,
                     "added": added,
                     "removed": removed,
+                    // WHERE the loop pops — fix this area, not the whole frame.
+                    "change_bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
                     "frames": [last, first],
                 }))
             }
@@ -1121,7 +1124,9 @@ impl Studio {
                 // Centre per played frame; offsets are step-to-step deltas.
                 let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
                 for &f in &seq {
-                    let c = doc.silhouette_center(layer, f)?.unwrap_or([0.0, 0.0]);
+                    let c = doc
+                        .silhouette_center(layer, f, region)?
+                        .unwrap_or([0.0, 0.0]);
                     centers.push(c);
                 }
                 let round1 = |v: f64| (v * 10.0).round() / 10.0;
@@ -1172,7 +1177,10 @@ impl Studio {
                 let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
                 let mut areas: Vec<f64> = Vec::with_capacity(seq.len());
                 for &f in &seq {
-                    centers.push(doc.silhouette_center(layer, f)?.unwrap_or([0.0, 0.0]));
+                    centers.push(
+                        doc.silhouette_center(layer, f, region)?
+                            .unwrap_or([0.0, 0.0]),
+                    );
                     areas.push(doc.opaque_count(layer, f)? as f64);
                 }
                 // RMS perpendicular distance of the centres from the straight
@@ -1210,7 +1218,30 @@ impl Studio {
                     "note": "arc_residual ~0 = straight slide (often too mechanical for jumps/swings); volume_cv near 0 = constant mass (good unless deliberate squash)",
                 }))
             }
-            other => Err(format!("unknown mode '{}' — use seam|spacing|arc", other)),
+            "timing" => {
+                let durs: Vec<u32> = seq
+                    .iter()
+                    .map(|&f| doc.meta.frames[f].duration_ms)
+                    .collect();
+                let total: u32 = durs.iter().sum();
+                let uniform = durs.windows(2).all(|w| w[0] == w[1]);
+                let mut out = json!({
+                    "per_frame_ms": durs,
+                    "total_ms": total,
+                    "uniform": uniform,
+                });
+                if uniform && seq.len() > 2 {
+                    out["note"] = json!(
+                        "uniform timing reads mechanical — hold contact/key poses ~1.5x longer \
+                         with doc_set_frame_duration"
+                    );
+                }
+                Ok(out)
+            }
+            other => Err(format!(
+                "unknown mode '{}' — use seam|spacing|arc|timing",
+                other
+            )),
         }
     }
 
@@ -1575,22 +1606,24 @@ mod tests {
         s.doc_rect("d", 0, 2, 4, 0, 5, 1, [9, 9, 9, 255], true, 1)
             .unwrap();
         // spacing: even rightward drift → low evenness, positive total drift.
-        let sp = s.doc_anim_audit("d", None, None, "spacing").unwrap();
+        let sp = s.doc_anim_audit("d", None, None, "spacing", None).unwrap();
         assert_eq!(sp["per_frame_center"].as_array().unwrap().len(), 3);
         assert_eq!(sp["per_frame_offset"].as_array().unwrap().len(), 2);
         assert!(sp["total_drift"][0].as_f64().unwrap() > 0.0); // moved right
         assert_eq!(sp["evenness"], json!(0.0)); // two equal 2px steps
                                                 // seam: last frame vs first differ → non-zero score
-        let seam = s.doc_anim_audit("d", None, None, "seam").unwrap();
+        let seam = s.doc_anim_audit("d", None, None, "seam", None).unwrap();
         assert!(seam["seam_score"].as_f64().unwrap() > 0.0);
         assert_eq!(seam["frames"], json!([2, 0]));
         // pingpong tag → no seam (score 0 + note)
         s.doc_add_tag("d", "pp", 0, 2, "pingpong").unwrap();
-        let pp = s.doc_anim_audit("d", Some("pp"), None, "seam").unwrap();
+        let pp = s
+            .doc_anim_audit("d", Some("pp"), None, "seam", None)
+            .unwrap();
         assert_eq!(pp["seam_score"], json!(0.0));
         assert!(pp["note"].is_string());
         // bad mode errors
-        assert!(s.doc_anim_audit("d", None, None, "bogus").is_err());
+        assert!(s.doc_anim_audit("d", None, None, "bogus", None).is_err());
     }
 
     #[test]

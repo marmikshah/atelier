@@ -3938,24 +3938,34 @@ impl Document {
     /// The silhouette bbox-centre (mean of the bbox corners) of a frame's opaque
     /// pixels, or None when the frame is empty. `layer` None flattens. Used by
     /// the spacing audit to track motion frame-to-frame.
+    /// Opaque-mass CENTROID of a frame's silhouette (mean of opaque pixel
+    /// coordinates), optionally clipped to `region`. A mass centroid, unlike
+    /// the old bbox-corner midpoint, actually moves when a limb swings over a
+    /// static torso — and the region clip makes one part's motion measurable
+    /// on its own.
     pub fn silhouette_center(
         &self,
         layer: Option<usize>,
         frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Option<[f64; 2]>, String> {
         let img = self.analysis_image(layer, frame)?;
-        let mut bbox: Option<[i32; 4]> = None;
+        let (mut sx, mut sy, mut n) = (0f64, 0f64, 0u64);
         for (x, y, p) in img.enumerate_pixels() {
             if p.0[3] == 0 {
                 continue;
             }
-            let (xi, yi) = (x as i32, y as i32);
-            bbox = Some(match bbox {
-                Some([a, b, c, d]) => [a.min(xi), b.min(yi), c.max(xi), d.max(yi)],
-                None => [xi, yi, xi, yi],
-            });
+            if let Some((x0, y0, x1, y1)) = region {
+                let (xi, yi) = (x as i32, y as i32);
+                if xi < x0.min(x1) || xi > x0.max(x1) || yi < y0.min(y1) || yi > y0.max(y1) {
+                    continue;
+                }
+            }
+            sx += x as f64;
+            sy += y as f64;
+            n += 1;
         }
-        Ok(bbox.map(|[a, b, c, d]| [(a + c) as f64 / 2.0, (b + d) as f64 / 2.0]))
+        Ok((n > 0).then(|| [sx / n as f64, sy / n as f64]))
     }
 
     /// Count opaque pixels in a frame (denominator for the seam loop score).
@@ -5111,7 +5121,7 @@ mod tests {
         // Filled 3×3 block from (1,1) to (3,3): bbox-centre is (2,2).
         d.rect(0, 0, 1, 1, 3, 3, [255, 255, 255, 255], true, 1)
             .unwrap();
-        let c = d.silhouette_center(None, 0).unwrap().unwrap();
+        let c = d.silhouette_center(None, 0, None).unwrap().unwrap();
         assert_eq!(c, [2.0, 2.0]);
     }
 
