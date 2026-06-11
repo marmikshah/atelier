@@ -793,21 +793,52 @@ impl Studio {
         }
     }
 
+    /// Diff two canvas-sized snapshots into a mutation ack: pixel count + bbox
+    /// of every change, and an explicit warning when NOTHING changed — the
+    /// usual symptom of coordinates that ran off-canvas or hit the wrong cel.
+    /// Blind `{ok:true}` acks let those mistakes compound between renders.
+    fn change_ack(id: &str, before: &image::RgbaImage, after: &image::RgbaImage) -> Value {
+        let (mut changed, mut bbox): (u64, Option<[u32; 4]>) = (0, None);
+        for (b, (x, y, a)) in before.pixels().zip(after.enumerate_pixels()) {
+            if b != a {
+                changed += 1;
+                bbox = Some(match bbox {
+                    None => [x, y, x, y],
+                    Some([a0, b0, c0, d0]) => [a0.min(x), b0.min(y), c0.max(x), d0.max(y)],
+                });
+            }
+        }
+        let mut out = json!({
+            "ok": true,
+            "doc_id": id,
+            "pixels_changed": changed,
+            "change_bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
+        });
+        if changed == 0 {
+            out["warning"] =
+                json!("no pixels changed — coordinates may be off-canvas, the colour may match what's already there, or the selection may exclude the area");
+        }
+        out
+    }
+
     /// Like `edit`, but if an active selection covers this document the op `f`
     /// is confined to the selected pixels. Used by the painting ops so
     /// `doc_select` masks any of them. A stale selection (dims mismatch) is an
-    /// error, never a silent unmasked apply.
+    /// error, never a silent unmasked apply. Returns a change ack (pixel
+    /// count + bbox) instead of a blind ok.
     fn edit_masked<F>(&self, id: &str, layer: usize, frame: usize, f: F) -> Result<Value, String>
     where
         F: FnOnce(&mut Document) -> Result<(), String>,
     {
         let (dir, mut doc) = self.open(id)?;
+        let before = doc.cel_full(layer, frame);
         match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
             Some(mask) => doc.apply_masked(layer, frame, mask, f)?,
             None => f(&mut doc)?,
         }
+        let after = doc.cel_full(layer, frame);
         doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id}))
+        Ok(Self::change_ack(id, &before, &after))
     }
 
     pub fn doc_pencil(
@@ -1737,12 +1768,16 @@ impl Studio {
             }
             Ok(())
         };
+        let before = doc.cel_full(layer, frame);
         match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
             Some(mask) => doc.apply_masked(layer, frame, mask, run)?,
             None => run(&mut doc)?,
         }
+        let after = doc.cel_full(layer, frame);
         doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id, "ops": ops.len()}))
+        let mut ack = Self::change_ack(id, &before, &after);
+        ack["ops"] = json!(ops.len());
+        Ok(ack)
     }
 }
 
@@ -2098,6 +2133,24 @@ mod tests {
         s.doc_select("d", "none", "replace", None, None, None)
             .unwrap();
         s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
+    }
+
+    #[test]
+    fn paint_acks_report_changed_pixels_and_warn_on_noop() {
+        let s = studio("ack");
+        s.doc_create("d", 8, 8).unwrap();
+        let r = s
+            .doc_pencil("d", 0, 0, vec![(2, 3)], [9, 9, 9, 255], 1)
+            .unwrap();
+        assert_eq!(r["pixels_changed"], json!(1));
+        assert_eq!(r["change_bbox"], json!([2, 3, 2, 3]));
+        assert!(r.get("warning").is_none());
+        // Entirely off-canvas: zero changes + an explicit warning.
+        let miss = s
+            .doc_pencil("d", 0, 0, vec![(50, 50)], [9, 9, 9, 255], 1)
+            .unwrap();
+        assert_eq!(miss["pixels_changed"], json!(0));
+        assert!(miss["warning"].as_str().unwrap().contains("off-canvas"));
     }
 
     #[test]

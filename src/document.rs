@@ -1403,8 +1403,8 @@ impl Document {
     }
 
     /// Full-canvas (0,0-anchored) copy of a cel, transparent where absent.
-    #[allow(dead_code)] // used by tween (later step)
-    fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
+    /// Also the before/after snapshot for the studio's mutation-diff acks.
+    pub(crate) fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
         let mut img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
         if let Some((cx, cy, src)) = self.cels.get(&(layer, frame)) {
             for y in 0..src.height() as i32 {
