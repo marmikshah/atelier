@@ -819,10 +819,12 @@ impl Document {
     /// Selective anti-aliasing (selout): soften the staircase corners of the
     /// silhouette by dropping one opaque, mid-value pixel into each outer step
     /// notch. The new pixel is the mean of the two edge colours that meet there
-    /// (snapped to `ramp` if given, so AA stays on-palette). `max_run` guards
-    /// genuine sharp corners: a notch where BOTH opaque legs run longer than
-    /// `max_run` is left crisp. `only_color` restricts to corners of that fill
-    /// colour; `region` clips. Returns the number of AA pixels added.
+    /// (snapped to `ramp` if given, so AA stays on-palette). With `keep_square`
+    /// a notch whose two opaque legs are both axis-aligned straight runs longer
+    /// than `max_run` is left crisp (so deliberate right-angle corners survive),
+    /// while diagonal staircases — whose perpendicular run is 1px — are always
+    /// smoothed. `only_color` restricts to corners of that fill colour; `region`
+    /// clips. Returns the number of AA pixels added.
     #[allow(clippy::too_many_arguments)]
     pub fn smooth_edges(
         &mut self,
@@ -830,6 +832,7 @@ impl Document {
         frame: usize,
         ramp: Option<&[[u8; 4]]>,
         max_run: i32,
+        keep_square: bool,
         only_color: Option<[u8; 4]>,
         region: Option<(i32, i32, i32, i32)>,
     ) -> Result<u32, String> {
@@ -852,24 +855,28 @@ impl Document {
                 Some(p)
             }
         };
-        // Opaque-run length from `(x,y)` stepping `(dx,dy)`, capped at max_run+1.
-        let leg = |mut x: i32, mut y: i32, dx: i32, dy: i32| -> i32 {
-            let mut n = 0;
-            while op(x, y).is_some() && n <= max_run + 1 {
+        // Length of the FLAT edge a leg sits on: walking along the leg's
+        // direction, how many steps stay on the silhouette boundary (the next
+        // pixel outward toward the notch is empty). A diagonal staircase breaks
+        // this after 1px (it steps); a true straight wall runs long.
+        let flat = |sx: i32, sy: i32, along: (i32, i32), out: (i32, i32)| -> i32 {
+            let (mut x, mut y, mut n) = (sx, sy, 0);
+            while op(x, y).is_some() && op(x + out.0, y + out.1).is_none() && n <= max_run + 1 {
                 n += 1;
-                x += dx;
-                y += dy;
+                x += along.0;
+                y += along.1;
             }
             n
         };
         let mut adds: Vec<(i32, i32, [u8; 4])> = Vec::new();
         // Each outer corner is an empty pixel with exactly two perpendicular
-        // opaque orthogonal neighbours.
+        // opaque orthogonal neighbours; (out1/out2) point from each leg toward
+        // the notch so `flat` can measure edge straightness.
         let corners = [
-            ((0, -1), (1, 0)),  // N + E
-            ((1, 0), (0, 1)),   // E + S
-            ((0, 1), (-1, 0)),  // S + W
-            ((-1, 0), (0, -1)), // W + N
+            ((0, -1), (1, 0), (0, 1), (-1, 0)),  // N + E
+            ((1, 0), (0, 1), (-1, 0), (0, -1)),  // E + S
+            ((0, 1), (-1, 0), (0, -1), (1, 0)),  // S + W
+            ((-1, 0), (0, -1), (1, 0), (0, 1)),  // W + N
         ];
         for y in ay..=by {
             for x in ax..=bx {
@@ -885,7 +892,7 @@ impl Document {
                 if count != 2 {
                     continue;
                 }
-                for ((ax1, ay1), (ax2, ay2)) in corners {
+                for ((ax1, ay1), (ax2, ay2), out1, out2) in corners {
                     let (Some(c1), Some(c2)) = (op(x + ax1, y + ay1), op(x + ax2, y + ay2)) else {
                         continue;
                     };
@@ -894,11 +901,13 @@ impl Document {
                             continue;
                         }
                     }
-                    // Keep sharp corners crisp: skip when both legs are long.
-                    let l1 = leg(x + ax1, y + ay1, ax1, ay1);
-                    let l2 = leg(x + ax2, y + ay2, ax2, ay2);
-                    if l1 > max_run && l2 > max_run {
-                        continue;
+                    // Preserve deliberate right angles: both edges run long & flat.
+                    if keep_square {
+                        let l1 = flat(x + ax1, y + ay1, (ax1, ay1), out1);
+                        let l2 = flat(x + ax2, y + ay2, (ax2, ay2), out2);
+                        if l1 > max_run && l2 > max_run {
+                            continue;
+                        }
                     }
                     let mean = [
                         ((c1[0] as u16 + c2[0] as u16) / 2) as u8,

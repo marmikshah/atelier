@@ -599,6 +599,7 @@ impl Studio {
     /// Selout anti-aliasing of the silhouette's staircase corners (master-grade
     /// smooth diagonals vs Bresenham stairs). `ramp` keeps the AA on-palette.
     #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments)]
     pub fn smooth_edges(
         &self,
         id: &str,
@@ -606,11 +607,13 @@ impl Studio {
         frame: usize,
         ramp: Option<Vec<[u8; 4]>>,
         max_run: i32,
+        keep_square: bool,
         only_color: Option<[u8; 4]>,
         region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        let added = doc.smooth_edges(layer, frame, ramp.as_deref(), max_run, only_color, region)?;
+        let added =
+            doc.smooth_edges(layer, frame, ramp.as_deref(), max_run, keep_square, only_color, region)?;
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "aa_pixels_added": added}))
     }
@@ -1011,6 +1014,197 @@ impl Studio {
             d.material(layer, frame, region, material, &ramp, seed).map(|_| ())
         })
     }
+
+    // -- doc_panel: a HUD/UI 9-slice-style panel ---------------------------
+
+    /// Draw a UI panel: filled body, border, and an optional inner bevel
+    /// (top/left lit, bottom/right shadowed) — a ready HUD panel/dialog box vs
+    /// hand-placing every edge pixel.
+    #[allow(clippy::too_many_arguments)]
+    pub fn panel(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        w: i32,
+        h: i32,
+        fill: [u8; 4],
+        border: [u8; 4],
+        bevel: bool,
+    ) -> Result<Value, String> {
+        let (x1, y1) = (x + w - 1, y + h - 1);
+        self.edit(id, |d| {
+            d.rect(layer, frame, x, y, x1, y1, fill, true, 1)?;
+            d.rect(layer, frame, x, y, x1, y1, border, false, 1)?;
+            if bevel && w > 3 && h > 3 {
+                let hi = raster::shade_hsl(fill, 1, 2);
+                let lo = raster::shade_hsl(fill, -1, 2);
+                d.line(layer, frame, x + 1, y + 1, x1 - 1, y + 1, hi, 1)?; // top
+                d.line(layer, frame, x + 1, y + 1, x + 1, y1 - 1, hi, 1)?; // left
+                d.line(layer, frame, x1 - 1, y + 1, x1 - 1, y1 - 1, lo, 1)?; // right
+                d.line(layer, frame, x + 1, y1 - 1, x1 - 1, y1 - 1, lo, 1)?; // bottom
+            }
+            Ok(())
+        })
+    }
+
+    // -- doc_import_clean: reference -> clean pixel art --------------------
+
+    /// Import an external image as clean pixel art: area-downscale to the target
+    /// size, then Floyd–Steinberg error-diffuse to a palette (the document's
+    /// locked one, or a median-cut of `colors`), with optional alpha defringe.
+    /// The modern AI/photo reference-onboarding pipeline.
+    #[allow(clippy::too_many_arguments)]
+    pub fn import_clean(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        path: &str,
+        target_w: u32,
+        target_h: u32,
+        colors: usize,
+        dither: bool,
+        defringe: bool,
+        to_doc_palette: bool,
+    ) -> Result<Value, String> {
+        let (dir, mut doc) = self.open(id)?;
+        let src = image::open(path).map_err(|e| e.to_string())?.to_rgba8();
+        let resized = image::imageops::resize(
+            &src,
+            target_w.max(1),
+            target_h.max(1),
+            image::imageops::FilterType::Triangle,
+        );
+        let mut work: Vec<[f32; 4]> = resized
+            .pixels()
+            .map(|p| [p.0[0] as f32, p.0[1] as f32, p.0[2] as f32, p.0[3] as f32])
+            .collect();
+        let (w, h) = (resized.width() as i32, resized.height() as i32);
+        if defringe {
+            for px in work.iter_mut() {
+                px[3] = if px[3] < 128.0 { 0.0 } else { 255.0 };
+            }
+        }
+        // Palette: the doc's locked one, or a median cut of the opaque pixels.
+        let palette: Vec<[u8; 4]> = if to_doc_palette && !doc.meta.palette.is_empty() {
+            doc.meta.palette.clone()
+        } else {
+            let opaque: Vec<[u8; 3]> = work
+                .iter()
+                .filter(|p| p[3] > 0.0)
+                .map(|p| [p[0] as u8, p[1] as u8, p[2] as u8])
+                .collect();
+            if opaque.is_empty() {
+                return Err("imported image is fully transparent".into());
+            }
+            raster::median_cut(&opaque, colors.max(2))
+        };
+        // Quantise (optionally Floyd–Steinberg) to the palette.
+        let mut out = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
+        let idx = |x: i32, y: i32| (y * w + x) as usize;
+        for y in 0..h {
+            for x in 0..w {
+                let p = work[idx(x, y)];
+                if p[3] <= 0.0 {
+                    continue;
+                }
+                let cur = [
+                    p[0].clamp(0.0, 255.0) as u8,
+                    p[1].clamp(0.0, 255.0) as u8,
+                    p[2].clamp(0.0, 255.0) as u8,
+                    255,
+                ];
+                let pi = raster::nearest_oklab(cur, &palette).unwrap_or(0);
+                let chosen = palette[pi];
+                out.put_pixel(x as u32, y as u32, Rgba([chosen[0], chosen[1], chosen[2], p[3] as u8]));
+                if dither {
+                    let err = [
+                        p[0] - chosen[0] as f32,
+                        p[1] - chosen[1] as f32,
+                        p[2] - chosen[2] as f32,
+                    ];
+                    let mut spread = |sx: i32, sy: i32, f: f32| {
+                        if sx >= 0 && sy >= 0 && sx < w && sy < h {
+                            let q = &mut work[idx(sx, sy)];
+                            if q[3] > 0.0 {
+                                for c in 0..3 {
+                                    q[c] += err[c] * f;
+                                }
+                            }
+                        }
+                    };
+                    spread(x + 1, y, 7.0 / 16.0);
+                    spread(x - 1, y + 1, 3.0 / 16.0);
+                    spread(x, y + 1, 5.0 / 16.0);
+                    spread(x + 1, y + 1, 1.0 / 16.0);
+                }
+            }
+        }
+        doc.set_cel(layer, frame, 0, 0, out)?;
+        if to_doc_palette && doc.meta.palette.is_empty() {
+            doc.set_palette(palette.clone());
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "size": [w, h], "palette_len": palette.len(), "dithered": dither}))
+    }
+
+    // -- doc_burst: radial FX across frames -------------------------------
+
+    /// Generate a radial FX animation (ring | disc | rays) expanding from a
+    /// centre across `frames`, fading along the ramp, tagged `burst`. VFX-as-
+    /// frames: impacts, shockwaves, explosions. Clears the target layer's cels.
+    #[allow(clippy::too_many_arguments)]
+    pub fn burst(
+        &self,
+        id: &str,
+        layer: usize,
+        cx: i32,
+        cy: i32,
+        frames: usize,
+        max_radius: i32,
+        kind: &str,
+        base: [u8; 4],
+        ramp: Option<Vec<[u8; 4]>>,
+    ) -> Result<Value, String> {
+        let frames = frames.max(2);
+        let (dir, mut doc) = self.open(id)?;
+        if layer >= doc.meta.layers.len() {
+            return Err(format!("no layer {}", layer));
+        }
+        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, frames.min(8).max(2)));
+        while doc.meta.frames.len() < frames {
+            doc.add_frame(80, None);
+        }
+        let last = ramp.len() - 1;
+        for f in 0..frames {
+            let t = f as f32 / (frames - 1) as f32;
+            let r = (t * max_radius as f32).round().max(1.0) as i32;
+            doc.clear_cel(layer, f);
+            // brighter early, fading out late
+            let col = ramp[(((1.0 - t) * last as f32).round() as usize).min(last)];
+            match kind {
+                "ring" => doc.ellipse(layer, f, cx, cy, r, r, col, false)?,
+                "disc" => doc.ellipse(layer, f, cx, cy, r, r, col, true)?,
+                "rays" => {
+                    for a in (0..360).step_by(30) {
+                        let rad = (a as f32).to_radians();
+                        let ex = cx + (r as f32 * rad.cos()) as i32;
+                        let ey = cy + (r as f32 * rad.sin()) as i32;
+                        doc.line(layer, f, cx, cy, ex, ey, col, 1)?;
+                    }
+                }
+                other => return Err(format!("unknown burst kind '{}' — use ring|disc|rays", other)),
+            }
+        }
+        if !doc.meta.tags.iter().any(|t| t.name == "burst") {
+            doc.add_tag("burst", 0, frames - 1, "forward")?;
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "frames": frames, "kind": kind}))
+    }
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
@@ -1321,7 +1515,7 @@ mod tests {
         for (x, y) in [(0, 0), (1, 0), (1, 1), (2, 1)] {
             s.doc_pencil("c", 0, 0, vec![(x, y)], [0, 0, 0, 255], 1).unwrap();
         }
-        let r = s.smooth_edges("c", 0, 0, None, 2, None, None).unwrap();
+        let r = s.smooth_edges("c", 0, 0, None, 2, true, None, None).unwrap();
         assert!(r["aa_pixels_added"].as_u64().unwrap() >= 2);
     }
 
@@ -1447,6 +1641,70 @@ mod tests {
         s.perspective_guide("c", "thirds", [255, 0, 255, 130], 8, None)
             .unwrap();
         assert_eq!(s.doc_info("c").unwrap()["layers"].as_array().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn panel_draws_fill_and_border() {
+        let s = studio("panel");
+        s.doc_create("c", 20, 12).unwrap();
+        s.panel("c", 0, 0, 1, 1, 18, 10, [60, 60, 90, 255], [10, 10, 20, 255], true)
+            .unwrap();
+        let look = s
+            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .unwrap();
+        assert!(distinct(&look.1) >= 2);
+    }
+
+    #[test]
+    fn burst_creates_frames_and_tag() {
+        let s = studio("burst");
+        s.doc_create("c", 16, 16).unwrap();
+        s.burst("c", 0, 8, 8, 5, 7, "ring", [255, 200, 60, 255], None)
+            .unwrap();
+        let info = s.doc_info("c").unwrap();
+        assert!(info["frames"].as_array().unwrap().len() >= 5);
+        assert!(info["tags"].as_array().unwrap().iter().any(|t| t["name"] == "burst"));
+    }
+
+    #[test]
+    fn translucency_report_counts_partial_alpha() {
+        let s = studio("trans");
+        s.doc_create("c", 4, 4).unwrap();
+        s.doc_fill_cel("c", 0, 0, [255, 255, 255, 128]).unwrap();
+        let r = s.doc_translucency_report("c", 0, None, None).unwrap();
+        assert_eq!(r["partial"], 16);
+    }
+
+    #[test]
+    fn anim_audit_arc_reports_trajectory_shape() {
+        let s = studio("arc");
+        s.doc_create("c", 16, 16).unwrap();
+        s.doc_add_frame("c", 100, None).unwrap();
+        s.doc_add_frame("c", 100, None).unwrap();
+        s.doc_pencil("c", 0, 0, vec![(2, 8)], [255, 255, 255, 255], 1).unwrap();
+        s.doc_pencil("c", 0, 1, vec![(8, 2)], [255, 255, 255, 255], 1).unwrap();
+        s.doc_pencil("c", 0, 2, vec![(14, 8)], [255, 255, 255, 255], 1).unwrap();
+        let r = s.doc_anim_audit("c", None, None, "arc").unwrap();
+        assert!(r["arc_residual"].as_f64().unwrap() > 0.0);
+        assert_eq!(r["shape"], "arced");
+    }
+
+    #[test]
+    fn import_clean_downscales_and_quantizes() {
+        let s = studio("import");
+        s.doc_create("c", 2, 2).unwrap();
+        let p = std::env::temp_dir().join("atelier-import-src.png");
+        RgbaImage::from_pixel(4, 4, Rgba([200, 30, 30, 255]))
+            .save(&p)
+            .unwrap();
+        let r = s
+            .import_clean("c", 0, 0, p.to_str().unwrap(), 2, 2, 4, true, false, false)
+            .unwrap();
+        assert!(r["palette_len"].as_u64().unwrap() > 0);
+        let look = s
+            .look("c", 0, 1, None, "render", 1, false, false, false, None)
+            .unwrap();
+        assert_eq!(opaque(&look.1), 4);
     }
 }
 

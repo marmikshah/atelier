@@ -1156,8 +1156,10 @@ pub struct DocSmoothEdges {
     pub frame: usize,
     /// Optional ramp [[r,g,b],...] to keep AA pixels on-palette.
     pub ramp: Option<Vec<Vec<i64>>>,
-    /// Notches whose both opaque legs run longer than this stay crisp.
+    /// With keep_square, edges flat-straight for longer than this stay crisp.
     pub max_run: Option<i32>,
+    /// Preserve deliberate right-angle corners (default true).
+    pub keep_square: Option<bool>,
     pub only_color: Option<Vec<i64>>,
     pub region: Option<Vec<i32>>,
 }
@@ -1294,6 +1296,56 @@ pub struct DocMaterial {
     pub material: String,
     pub color: Vec<i64>,
     pub seed: Option<u64>,
+    pub ramp: Option<Vec<Vec<i64>>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocTranslucency {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    pub layer: Option<usize>,
+    pub region: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocPanel {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    pub x: i32,
+    pub y: i32,
+    pub w: i32,
+    pub h: i32,
+    pub fill: Vec<i64>,
+    pub border: Option<Vec<i64>>,
+    pub bevel: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocImportClean {
+    pub doc_id: String,
+    pub layer: Option<usize>,
+    pub frame: Option<usize>,
+    pub path: String,
+    pub target_w: u32,
+    pub target_h: u32,
+    pub colors: Option<usize>,
+    pub dither: Option<bool>,
+    pub defringe: Option<bool>,
+    pub to_doc_palette: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocBurst {
+    pub doc_id: String,
+    pub layer: Option<usize>,
+    pub cx: i32,
+    pub cy: i32,
+    pub frames: Option<usize>,
+    pub max_radius: i32,
+    /// ring | disc | rays.
+    pub kind: Option<String>,
+    pub color: Vec<i64>,
     pub ramp: Option<Vec<Vec<i64>>>,
 }
 
@@ -2477,7 +2529,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Audit an animation loop. mode=\"seam\" diffs the wrap the loop actually plays (last→first forward, first→last reverse; pingpong has no seam → score 0 + note) and returns seam_score = changed/opaque pixels — high means a jarring loop cut. mode=\"spacing\" tracks the silhouette centre per played frame and returns per_frame_center/per_frame_offset, total_drift and evenness (stddev of step size / mean; 0 = mechanically even) — catch uneven/stuttering motion. `tag` audits one tag (omit = whole timeline)."
+        description = "Audit an animation loop. mode=\"seam\" diffs the wrap the loop actually plays (last→first forward, first→last reverse; pingpong has no seam → score 0 + note) and returns seam_score = changed/opaque pixels — high means a jarring loop cut. mode=\"spacing\" tracks the silhouette centre per played frame and returns per_frame_center/per_frame_offset, total_drift and evenness (stddev of step size / mean; 0 = mechanically even) — catch uneven/stuttering motion. mode=\"arc\" returns the centre trajectory, arc_residual (RMS deviation from a straight line; ~0 = a mechanical straight slide, higher = a proper arc for jumps/swings) and volume_cv (opaque-area coefficient of variation; ~0 = constant mass, unless deliberate squash/stretch). `tag` audits one tag (omit = whole timeline)."
     )]
     async fn doc_anim_audit(&self, Parameters(p): Parameters<DocAnimAudit>) -> String {
         res(self
@@ -2720,6 +2772,7 @@ impl Atelier {
             p.frame,
             p.ramp.map(|v| palette_list(&v)),
             p.max_run.unwrap_or(2),
+            p.keep_square.unwrap_or(true),
             p.only_color.as_deref().map(rgba),
             region(&p.region),
         ))
@@ -2892,6 +2945,71 @@ impl Atelier {
             &p.material,
             rgba(&p.color),
             p.seed.unwrap_or(1),
+            p.ramp.map(|v| palette_list(&v)),
+        ))
+    }
+
+    #[tool(
+        description = "Translucency report — makes glass/glow/soft-FX alpha MEASURABLE instead of eyeballed. Over the flattened frame (or one layer, region-clipped): counts opaque/partial/transparent pixels, mean alpha of non-transparent pixels, a partial-alpha band histogram, and the bbox of the partial pixels."
+    )]
+    async fn doc_translucency_report(&self, Parameters(p): Parameters<DocTranslucency>) -> String {
+        res(self.studio().doc_translucency_report(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.layer,
+            region(&p.region),
+        ))
+    }
+
+    #[tool(
+        description = "Draw a HUD/UI panel: filled body + border + optional inner bevel (top/left lit, bottom/right shadowed) — a ready dialog/HUD box. Pairs with doc_text for labels."
+    )]
+    async fn doc_panel(&self, Parameters(p): Parameters<DocPanel>) -> String {
+        res(self.studio().panel(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.x,
+            p.y,
+            p.w,
+            p.h,
+            rgba(&p.fill),
+            p.border.as_deref().map(rgba).unwrap_or([20, 20, 28, 255]),
+            p.bevel.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
+        description = "Import an external image (AI-gen / photo / scan) as CLEAN pixel art: area-downscale to target_w×target_h, then Floyd–Steinberg error-diffuse to a palette — the document's locked one (to_doc_palette) or a median-cut of `colors` — with optional alpha defringe. The modern reference-onboarding pipeline; follow with doc_critique / doc_smooth_edges."
+    )]
+    async fn doc_import_clean(&self, Parameters(p): Parameters<DocImportClean>) -> String {
+        res(self.studio().import_clean(
+            &p.doc_id,
+            p.layer.unwrap_or(0),
+            p.frame.unwrap_or(0),
+            &p.path,
+            p.target_w,
+            p.target_h,
+            p.colors.unwrap_or(16),
+            p.dither.unwrap_or(true),
+            p.defringe.unwrap_or(false),
+            p.to_doc_palette.unwrap_or(false),
+        ))
+    }
+
+    #[tool(
+        description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export_gif tag=burst."
+    )]
+    async fn doc_burst(&self, Parameters(p): Parameters<DocBurst>) -> String {
+        res(self.studio().burst(
+            &p.doc_id,
+            p.layer.unwrap_or(0),
+            p.cx,
+            p.cy,
+            p.frames.unwrap_or(6),
+            p.max_radius,
+            p.kind.as_deref().unwrap_or("ring"),
+            rgba(&p.color),
             p.ramp.map(|v| palette_list(&v)),
         ))
     }

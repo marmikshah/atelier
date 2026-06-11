@@ -1145,8 +1145,110 @@ impl Studio {
                     "evenness": evenness,
                 }))
             }
-            other => Err(format!("unknown mode '{}' — use seam|spacing", other)),
+            "arc" => {
+                // Trajectory shape: does the centre follow an arc (good for
+                // jumps/swings) or a straight slide? Plus volume constancy —
+                // squash/stretch should trade height for width, not vanish.
+                let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
+                let mut areas: Vec<f64> = Vec::with_capacity(seq.len());
+                for &f in &seq {
+                    centers.push(doc.silhouette_center(layer, f)?.unwrap_or([0.0, 0.0]));
+                    areas.push(doc.opaque_count(layer, f)? as f64);
+                }
+                // RMS perpendicular distance of the centres from the straight
+                // line joining the first and last centre (0 = dead straight).
+                let (a, b) = (centers[0], *centers.last().unwrap());
+                let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
+                let len = (dx * dx + dy * dy).sqrt();
+                let arc_residual = if len < 1e-6 || centers.len() < 3 {
+                    0.0
+                } else {
+                    let (nx, ny) = (-dy / len, dx / len); // unit normal
+                    let ss: f64 = centers
+                        .iter()
+                        .map(|c| ((c[0] - a[0]) * nx + (c[1] - a[1]) * ny).powi(2))
+                        .sum();
+                    ((ss / centers.len() as f64).sqrt() * 100.0).round() / 100.0
+                };
+                let (vol_mean, vol_cv) = {
+                    let m = areas.iter().sum::<f64>() / areas.len() as f64;
+                    let cv = if m < f64::EPSILON {
+                        0.0
+                    } else {
+                        let var =
+                            areas.iter().map(|a| (a - m).powi(2)).sum::<f64>() / areas.len() as f64;
+                        (var.sqrt() / m * 1000.0).round() / 1000.0
+                    };
+                    (m.round(), cv)
+                };
+                Ok(json!({
+                    "trajectory": centers.iter().map(|c| json!([(c[0]*10.0).round()/10.0, (c[1]*10.0).round()/10.0])).collect::<Vec<_>>(),
+                    "arc_residual": arc_residual,
+                    "shape": if arc_residual < 1.0 { "straight" } else { "arced" },
+                    "volume_mean": vol_mean,
+                    "volume_cv": vol_cv,
+                    "note": "arc_residual ~0 = straight slide (often too mechanical for jumps/swings); volume_cv near 0 = constant mass (good unless deliberate squash)",
+                }))
+            }
+            other => Err(format!("unknown mode '{}' — use seam|spacing|arc", other)),
         }
+    }
+
+    /// Translucency report — makes glass / glow / soft FX measurable instead of
+    /// eyeballed. Over the flattened frame (or one `layer`, `region`-clipped):
+    /// counts fully-opaque / partial (0<a<255) / transparent pixels, the mean
+    /// alpha of non-transparent pixels, a coarse alpha-band histogram, and the
+    /// bbox of the partially-transparent pixels.
+    pub fn doc_translucency_report(
+        &self,
+        id: &str,
+        frame: usize,
+        layer: Option<usize>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let img = doc.analysis_image(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => crate::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w - 1, h - 1),
+        };
+        let (mut opaque, mut partial, mut transparent) = (0u64, 0u64, 0u64);
+        let (mut sum_a, mut nz) = (0u64, 0u64);
+        let mut bands = [0u64; 4]; // 1-64, 65-128, 129-192, 193-254
+        let mut bbox: Option<[i32; 4]> = None;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let a = img.get_pixel(x as u32, y as u32).0[3];
+                match a {
+                    0 => transparent += 1,
+                    255 => {
+                        opaque += 1;
+                        sum_a += 255;
+                        nz += 1;
+                    }
+                    _ => {
+                        partial += 1;
+                        sum_a += a as u64;
+                        nz += 1;
+                        bands[(a as usize - 1) / 64] += 1;
+                        bbox = Some(match bbox {
+                            None => [x, y, x, y],
+                            Some([a0, b0, c0, d0]) => [a0.min(x), b0.min(y), c0.max(x), d0.max(y)],
+                        });
+                    }
+                }
+            }
+        }
+        Ok(json!({
+            "doc_id": id, "frame": frame,
+            "opaque": opaque, "partial": partial, "transparent": transparent,
+            "mean_alpha_nonzero": if nz > 0 { (sum_a as f64 / nz as f64).round() as u32 } else { 0 },
+            "partial_alpha_bands": {"1-64": bands[0], "65-128": bands[1], "129-192": bands[2], "193-254": bands[3]},
+            "partial_bbox": bbox.map(|b| json!({"x": b[0], "y": b[1], "w": b[2]-b[0]+1, "h": b[3]-b[1]+1})),
+            "note": "partial pixels are soft/AA/glow edges; many over a glass shape = readable translucency, scattered specks = stray AA",
+        }))
     }
 }
 
