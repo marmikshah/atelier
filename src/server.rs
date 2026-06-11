@@ -1,6 +1,7 @@
 //! atelier MCP server (rmcp). Exposes the headless document editor as MCP
-//! tools over stdio or Streamable HTTP. Tools return JSON strings; studio errors
-//! come back as {"error": ...} payloads rather than failing the call.
+//! tools over stdio or Streamable HTTP. Tools return JSON text content; studio
+//! errors keep the {"error": ...} payload AND set `is_error` so MCP harnesses
+//! flag the failure instead of treating it as a success.
 
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
@@ -21,26 +22,27 @@ fn j(v: Value) -> String {
     serde_json::to_string(&v).unwrap_or_else(|_| "{}".into())
 }
 
-/// Wraps a studio result as a JSON string: errors become {"error": ...} payloads
-/// rather than failing the MCP call.
-fn res(r: Result<Value, String>) -> String {
+/// Wraps a studio result as a tool result: Ok becomes a JSON text part; errors
+/// keep the {"error": ...} payload (replay and older clients sniff it) and set
+/// `is_error` so the harness surfaces the failure.
+fn res(r: Result<Value, String>) -> CallToolResult {
     match r {
-        Ok(v) => j(v),
-        Err(e) => j(json!({"error": e})),
+        Ok(v) => CallToolResult::success(vec![Content::text(j(v))]),
+        Err(e) => CallToolResult::error(vec![Content::text(j(json!({"error": e})))]),
     }
 }
 
 /// Wrap an image-producing studio result as MCP content: an inline PNG (so the
 /// agent SEES the pixels in the same turn — no separate file read) plus a JSON
 /// text part with the measured stats. Errors come back as a `{"error": ...}`
-/// text part, matching `res`.
+/// text part with `is_error` set, matching `res`.
 fn img_result(r: Result<(Vec<u8>, Value), String>) -> CallToolResult {
     match r {
         Ok((png, report)) => CallToolResult::success(vec![
             Content::image(base64(&png), "image/png"),
             Content::text(j(report)),
         ]),
-        Err(e) => CallToolResult::success(vec![Content::text(j(json!({"error": e})))]),
+        Err(e) => CallToolResult::error(vec![Content::text(j(json!({"error": e})))]),
     }
 }
 
@@ -1463,9 +1465,10 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_pencil",
             "doc_line",
             "doc_batch",
-            "doc_render",
+            "doc_look",
             "doc_shade",
             "doc_pixel_perfect",
+            "doc_critique",
             "doc_silhouette",
             "doc_components",
             "doc_palette_report",
@@ -1480,12 +1483,12 @@ const PROMPTS: &[PromptSpec] = &[
                  1. doc_create a {size}x{size} document.\n\
                  2. palette_ramp a base colour into shades, then doc_set_palette to LOCK the ramp.\n\
                  3. Block the silhouette with doc_rect / doc_ellipse / doc_polygon.\n\
-                 4. Paint detail with doc_pencil / doc_line, or doc_batch many ops in one call.\n\
-                 5. doc_render after every burst and LOOK at the PNG before continuing.\n\
+                 4. Paint detail with doc_batch (many ops in one call) or doc_pencil / doc_line.\n\
+                 5. doc_look after every burst — it returns the frame INLINE; study it before continuing.\n\
                  6. Shade with doc_shade and clean strokes with doc_pixel_perfect.\n\
                  7. Audit shape: doc_silhouette (readable bbox/fill) and doc_components (no stray specks).\n\
                  8. Audit colour: doc_palette_report (every colour in_palette, no near-dupes).\n\
-                 9. Fix what the audits flag, then doc_render once more to confirm.\n\
+                 9. doc_critique for the failure modes you can't see; fix what it flags, doc_look to confirm.\n\
                  10. doc_export_sheet the finished sprite to a PNG.\n\
                  Iterate 3-9 until the sprite reads cleanly at 1x."
             )
@@ -1507,9 +1510,12 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_add_frame",
             "doc_pencil",
             "doc_move_region",
-            "doc_render",
+            "doc_keyframe_move",
+            "doc_look",
+            "doc_contact_sheet",
             "doc_frame_diff",
             "doc_anim_audit",
+            "doc_set_frame_duration",
             "doc_add_tag",
             "doc_export_gif",
         ],
@@ -1519,15 +1525,21 @@ const PROMPTS: &[PromptSpec] = &[
             format!(
                 "Animate a {frames}-frame walk cycle for {character}.\n\
                  1. Start from a finished standing pose on frame 0 (use the pixel-sprite flow first).\n\
-                 2. The cycle is contact -> down -> passing -> up; plan those {frames} poses.\n\
+                 2. The cycle is contact -> down -> passing -> up. Plan numbers FIRST: stride ~1/3 of \
+                 the character's height in px, body bobs 1px DOWN on contact and UP on passing, arms \
+                 counter-swing the legs. NEVER doc_tween poses — it dissolves (ghost frames), it does \
+                 not move limbs.\n\
                  3. doc_add_frame with copy_from the previous frame so each pose starts from the last.\n\
-                 4. Repaint ONLY what changes per pose (legs, arms) with doc_pencil / doc_move_region.\n\
-                 5. doc_render every frame and LOOK; use doc_render onion=true to check overlap.\n\
+                 4. Repaint ONLY what changes per pose (legs, arms) with doc_pencil / doc_move_region; \
+                 doc_keyframe_move eases a region across several frames in one call.\n\
+                 5. doc_look every frame (onion=true ghosts the neighbours); doc_contact_sheet shows \
+                 the whole cycle in one inline grid.\n\
                  6. Verify each adjacent pair with doc_frame_diff (only the limbs should change).\n\
                  7. doc_anim_audit mode=\"spacing\" — the per-frame motion must be even, low drift.\n\
                  8. doc_add_tag the range and doc_anim_audit mode=\"seam\" so the loop wrap is clean.\n\
-                 9. Fix any uneven frame, re-diff, re-audit.\n\
-                 10. doc_export_gif the tagged loop.\n\
+                 9. doc_set_frame_duration ~120ms per frame, with contact poses held ~1.5x longer — \
+                 uniform 100ms reads mechanical.\n\
+                 10. doc_export_gif the tagged loop and study it.\n\
                  Iterate 4-9 until the walk reads smoothly."
             )
         },
@@ -1558,7 +1570,7 @@ const PROMPTS: &[PromptSpec] = &[
                 "Paint a seamless {size}x{size} {material} tile.\n\
                  1. doc_create a {size}x{size} document and doc_set_palette to lock the colours.\n\
                  2. Fill the base with doc_fill_cel, then texture with doc_noise / doc_scatter.\n\
-                 3. doc_render to LOOK at the raw tile.\n\
+                 3. doc_look to study the raw tile inline.\n\
                  4. doc_shift wrap=true to roll the seam into the middle, then paint over the join.\n\
                  5. Use doc_shift wrap=true again to make detail variants without breaking edges.\n\
                  6. doc_seam_report MUST return zero mismatches on both axes — fix until it does.\n\
@@ -1692,29 +1704,29 @@ impl Atelier {
     #[tool(
         description = "Create an editable document (layered canvas + timeline). Returns its id + structure."
     )]
-    async fn doc_create(&self, Parameters(p): Parameters<DocCreate>) -> String {
+    async fn doc_create(&self, Parameters(p): Parameters<DocCreate>) -> CallToolResult {
         res(self.studio().doc_create(&p.name, p.width, p.height))
     }
 
     #[tool(description = "List all documents (id, name, size, frame/layer counts).")]
-    async fn list_docs(&self) -> String {
-        j(self.studio().list_docs())
+    async fn list_docs(&self) -> CallToolResult {
+        res(Ok(self.studio().list_docs()))
     }
 
     #[tool(description = "Get a document's structure: layers, frames, cels, tags.")]
-    async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> String {
+    async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().doc_info(&p.doc_id))
     }
 
     #[tool(description = "Delete a document and all its files.")]
-    async fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> String {
+    async fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().delete_doc(&p.doc_id))
     }
 
     #[tool(
         description = "Export every document as a spritesheet PNG (+ JSON meta) into a flat target dir."
     )]
-    async fn export_all(&self, Parameters(p): Parameters<ExportAll>) -> String {
+    async fn export_all(&self, Parameters(p): Parameters<ExportAll>) -> CallToolResult {
         res(self
             .studio()
             .export_all(&p.target_dir, p.scale.unwrap_or(4)))
@@ -1723,7 +1735,7 @@ impl Atelier {
     #[tool(
         description = "Pack EVERY frame of EVERY document into one atlas PNG + master JSON map (doc/frame/rect/duration/pivot) for slicing a whole game's sprites from a single texture. max_width wraps the shelf packer."
     )]
-    async fn export_atlas(&self, Parameters(p): Parameters<ExportAtlas>) -> String {
+    async fn export_atlas(&self, Parameters(p): Parameters<ExportAtlas>) -> CallToolResult {
         res(self.studio().export_atlas(
             &p.out_path,
             p.scale.unwrap_or(4),
@@ -1735,7 +1747,7 @@ impl Atelier {
     #[tool(
         description = "Add a layer to a document (top of the stack). opacity 0..255. blend: normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion (multiply=shadow/AO, add|screen=light/glow/bloom, overlay|soft-light=colour grade)."
     )]
-    async fn doc_add_layer(&self, Parameters(p): Parameters<DocAddLayer>) -> String {
+    async fn doc_add_layer(&self, Parameters(p): Parameters<DocAddLayer>) -> CallToolResult {
         res(self.studio().doc_add_layer(
             &p.doc_id,
             p.name,
@@ -1747,7 +1759,7 @@ impl Atelier {
     #[tool(
         description = "Set a layer's visibility / opacity / blend (normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion)."
     )]
-    async fn doc_set_layer(&self, Parameters(p): Parameters<DocSetLayer>) -> String {
+    async fn doc_set_layer(&self, Parameters(p): Parameters<DocSetLayer>) -> CallToolResult {
         res(self
             .studio()
             .doc_set_layer(&p.doc_id, p.layer, p.visible, p.opacity, p.blend))
@@ -1756,14 +1768,17 @@ impl Atelier {
     #[tool(
         description = "Append a frame to the timeline. duration_ms default 100; copy_from duplicates that frame's cels."
     )]
-    async fn doc_add_frame(&self, Parameters(p): Parameters<DocAddFrame>) -> String {
+    async fn doc_add_frame(&self, Parameters(p): Parameters<DocAddFrame>) -> CallToolResult {
         res(self
             .studio()
             .doc_add_frame(&p.doc_id, p.duration_ms.unwrap_or(100), p.copy_from))
     }
 
     #[tool(description = "Set a frame's duration in milliseconds.")]
-    async fn doc_set_frame_duration(&self, Parameters(p): Parameters<DocFrameDuration>) -> String {
+    async fn doc_set_frame_duration(
+        &self,
+        Parameters(p): Parameters<DocFrameDuration>,
+    ) -> CallToolResult {
         res(self
             .studio()
             .doc_set_frame_duration(&p.doc_id, p.frame, p.duration_ms))
@@ -1772,7 +1787,7 @@ impl Atelier {
     #[tool(
         description = "Add an animation tag (named frame range). direction: forward/reverse/pingpong."
     )]
-    async fn doc_add_tag(&self, Parameters(p): Parameters<DocAddTag>) -> String {
+    async fn doc_add_tag(&self, Parameters(p): Parameters<DocAddTag>) -> CallToolResult {
         res(self.studio().doc_add_tag(
             &p.doc_id,
             &p.name,
@@ -1783,21 +1798,21 @@ impl Atelier {
     }
 
     #[tool(description = "Fill a layer×frame cel with a solid colour [r,g,b] or [r,g,b,a].")]
-    async fn doc_fill_cel(&self, Parameters(p): Parameters<DocFillCel>) -> String {
+    async fn doc_fill_cel(&self, Parameters(p): Parameters<DocFillCel>) -> CallToolResult {
         res(self
             .studio()
             .doc_fill_cel(&p.doc_id, p.layer, p.frame, rgba(&p.color)))
     }
 
     #[tool(description = "Clear (empty) a layer×frame cel.")]
-    async fn doc_clear_cel(&self, Parameters(p): Parameters<DocCel>) -> String {
+    async fn doc_clear_cel(&self, Parameters(p): Parameters<DocCel>) -> CallToolResult {
         res(self.studio().doc_clear_cel(&p.doc_id, p.layer, p.frame))
     }
 
     #[tool(
         description = "Place an external PNG into a cel at (x,y) — import bridge for AI-gen/real/Figma art. Optional `scale` (nearest-neighbour) and `rotate` (degrees). By default draws OVER existing content with `opacity`+`blend` (sub-sprite reuse, no layer-per-element); `replace`=true overwrites the whole cel. Honours an active selection."
     )]
-    async fn doc_stamp_image(&self, Parameters(p): Parameters<DocStampImage>) -> String {
+    async fn doc_stamp_image(&self, Parameters(p): Parameters<DocStampImage>) -> CallToolResult {
         res(self.studio().doc_stamp_image(
             &p.doc_id,
             p.layer,
@@ -1816,7 +1831,7 @@ impl Atelier {
     #[tool(
         description = "Mirror a cel for instant symmetry: `vertical` (a column) reflects left↔right, `horizontal` (a row) reflects top↔bottom, both gives 4-way symmetry. keep_left/keep_top pick the source side. Draw half a sprite, mirror the rest."
     )]
-    async fn doc_symmetry(&self, Parameters(p): Parameters<DocSymmetry>) -> String {
+    async fn doc_symmetry(&self, Parameters(p): Parameters<DocSymmetry>) -> CallToolResult {
         res(self.studio().doc_symmetry(
             &p.doc_id,
             p.layer,
@@ -1829,10 +1844,10 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Flatten a frame (visible layers) to a PNG preview so you can SEE the canvas. Returns the path. Options: `region` [x0,y0,x1,y1] crops, `onion` ghosts neighbour frames, `tile` repeats N×N to check seamlessness, `max_size` makes a cheap thumbnail."
+        description = "Flatten a frame (visible layers) to a PNG preview — returned INLINE so you SEE the canvas in the same turn (also written to `out_path` or the doc dir for file workflows). Options: `region` [x0,y0,x1,y1] crops, `onion` ghosts neighbour frames, `tile` repeats N×N to check seamlessness, `max_size` makes a cheap thumbnail. For analysis overlays (value/bands/grid/coords) use doc_look."
     )]
-    async fn doc_render(&self, Parameters(p): Parameters<DocRender>) -> String {
-        res(self.studio().doc_render(
+    async fn doc_render(&self, Parameters(p): Parameters<DocRender>) -> CallToolResult {
+        img_result(self.studio().doc_render(
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.out_path.as_deref(),
@@ -1847,7 +1862,7 @@ impl Atelier {
     #[tool(
         description = "Export the document as a horizontal spritesheet PNG + JSON meta (frames, durations, tags)."
     )]
-    async fn doc_export_sheet(&self, Parameters(p): Parameters<DocExport>) -> String {
+    async fn doc_export_sheet(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
         res(self
             .studio()
             .doc_export_sheet(&p.doc_id, &p.out_path, p.scale.unwrap_or(4)))
@@ -1856,7 +1871,7 @@ impl Atelier {
     #[tool(
         description = "Export the document as an animated GIF honouring per-frame durations. Pass `tag` to play one animation tag in its direction (forward/reverse/pingpong); omit to play the whole timeline forward."
     )]
-    async fn doc_export_gif(&self, Parameters(p): Parameters<DocExportGif>) -> String {
+    async fn doc_export_gif(&self, Parameters(p): Parameters<DocExportGif>) -> CallToolResult {
         res(self.studio().doc_export_gif(
             &p.doc_id,
             &p.out_path,
@@ -1868,7 +1883,7 @@ impl Atelier {
     #[tool(
         description = "Export the document as an animated PNG (APNG) — lossless, full alpha (unlike GIF's 256 colours and 1-bit alpha). Pass `tag` to play one animation tag in its direction (forward/reverse/pingpong); omit to play the whole timeline forward."
     )]
-    async fn doc_export_apng(&self, Parameters(p): Parameters<DocExportGif>) -> String {
+    async fn doc_export_apng(&self, Parameters(p): Parameters<DocExportGif>) -> CallToolResult {
         res(self.studio().doc_export_apng(
             &p.doc_id,
             &p.out_path,
@@ -1880,7 +1895,10 @@ impl Atelier {
     #[tool(
         description = "Slice frame 0 into a tile_w×tile_h grid and write an engine-ready tileset: the PNG plus TWO sidecars — <name>.tsx (Tiled XML: tilewidth/tileheight/tilecount/columns/image) and <name>.json (same fields). The canvas must divide exactly by the tile size. Nearest-neighbour `scale` (default 1) upscales the PNG and tile size. Returns {path,tsx,json,tilecount,columns,rows}."
     )]
-    async fn doc_export_tileset(&self, Parameters(p): Parameters<DocExportTileset>) -> String {
+    async fn doc_export_tileset(
+        &self,
+        Parameters(p): Parameters<DocExportTileset>,
+    ) -> CallToolResult {
         res(self.studio().export_tileset(
             &p.doc_id,
             p.tile_w,
@@ -1893,7 +1911,7 @@ impl Atelier {
     #[tool(
         description = "Generate the deterministic 16-tile Wang/blob terrain set from a source doc: frame 0's layer 0 holds the INNER material, layer 1 the OUTER (top-left N×N of each is sampled). Creates a NEW document <id>-wang (canvas 4N×4N) holding all 16 corner combinations in a 4×4 grid (tile index = NE,SE,SW,NW corner bits); each set bit fills a quarter-disc (radius N/2) at that corner, adjacent set corners connect along their shared edge. Returns the new doc's structure + id."
     )]
-    async fn doc_wang_tiles(&self, Parameters(p): Parameters<DocWangTiles>) -> String {
+    async fn doc_wang_tiles(&self, Parameters(p): Parameters<DocWangTiles>) -> CallToolResult {
         res(self.studio().wang_tiles(&p.doc_id, p.n))
     }
 
@@ -1901,7 +1919,7 @@ impl Atelier {
     #[tool(
         description = "Paint pixels into a cel. points=[[x,y],...], color [r,g,b]/[r,g,b,a] (alpha 0 erases), size = square brush."
     )]
-    async fn doc_pencil(&self, Parameters(p): Parameters<DocPencil>) -> String {
+    async fn doc_pencil(&self, Parameters(p): Parameters<DocPencil>) -> CallToolResult {
         let pts = points(&p.points);
         res(self.studio().doc_pencil(
             &p.doc_id,
@@ -1914,7 +1932,7 @@ impl Atelier {
     }
 
     #[tool(description = "Draw a line between (x0,y0) and (x1,y1) with a square brush.")]
-    async fn doc_line(&self, Parameters(p): Parameters<DocLine>) -> String {
+    async fn doc_line(&self, Parameters(p): Parameters<DocLine>) -> CallToolResult {
         res(self.studio().doc_line(
             &p.doc_id,
             p.layer,
@@ -1929,7 +1947,7 @@ impl Atelier {
     }
 
     #[tool(description = "Draw a rectangle (outline or filled) from (x0,y0) to (x1,y1).")]
-    async fn doc_rect(&self, Parameters(p): Parameters<DocRect>) -> String {
+    async fn doc_rect(&self, Parameters(p): Parameters<DocRect>) -> CallToolResult {
         res(self.studio().doc_rect(
             &p.doc_id,
             p.layer,
@@ -1947,7 +1965,7 @@ impl Atelier {
     #[tool(
         description = "Draw an ellipse centred at (cx,cy) with radii (rx,ry), outline or filled."
     )]
-    async fn doc_ellipse(&self, Parameters(p): Parameters<DocEllipse>) -> String {
+    async fn doc_ellipse(&self, Parameters(p): Parameters<DocEllipse>) -> CallToolResult {
         res(self.studio().doc_ellipse(
             &p.doc_id,
             p.layer,
@@ -1964,7 +1982,7 @@ impl Atelier {
     #[tool(
         description = "Flood (bucket) fill from (x,y) with a colour. tolerance = max channel distance to spread."
     )]
-    async fn doc_fill(&self, Parameters(p): Parameters<DocFill>) -> String {
+    async fn doc_fill(&self, Parameters(p): Parameters<DocFill>) -> CallToolResult {
         res(self.studio().doc_fill(
             &p.doc_id,
             p.layer,
@@ -1977,7 +1995,7 @@ impl Atelier {
     }
 
     #[tool(description = "Replace every pixel near `from` with `to` across the cel (recolour).")]
-    async fn doc_replace_color(&self, Parameters(p): Parameters<DocReplace>) -> String {
+    async fn doc_replace_color(&self, Parameters(p): Parameters<DocReplace>) -> CallToolResult {
         res(self.studio().doc_replace_color(
             &p.doc_id,
             p.layer,
@@ -1989,7 +2007,7 @@ impl Atelier {
     }
 
     #[tool(description = "Flip a cel horizontally (default) or vertically.")]
-    async fn doc_flip(&self, Parameters(p): Parameters<DocFlip>) -> String {
+    async fn doc_flip(&self, Parameters(p): Parameters<DocFlip>) -> CallToolResult {
         res(self
             .studio()
             .doc_flip(&p.doc_id, p.layer, p.frame, p.horizontal.unwrap_or(true)))
@@ -1998,7 +2016,7 @@ impl Atelier {
     #[tool(
         description = "Shift a cel's contents by (dx,dy) pixels; exposed edges become transparent, or `wrap`=true rolls them around (toroidal) for making/checking seamless tiles."
     )]
-    async fn doc_shift(&self, Parameters(p): Parameters<DocShift>) -> String {
+    async fn doc_shift(&self, Parameters(p): Parameters<DocShift>) -> CallToolResult {
         res(self.studio().doc_shift(
             &p.doc_id,
             p.layer,
@@ -2012,7 +2030,7 @@ impl Atelier {
     #[tool(
         description = "Box-blur a cel by `radius` (premultiplied — no dark haloes), optionally limited to `region`. Soft shadows, depth-of-field, smoke. Honours an active selection."
     )]
-    async fn doc_blur(&self, Parameters(p): Parameters<DocBlur>) -> String {
+    async fn doc_blur(&self, Parameters(p): Parameters<DocBlur>) -> CallToolResult {
         res(self
             .studio()
             .doc_blur(&p.doc_id, p.layer, p.frame, p.radius, region(&p.region)))
@@ -2021,7 +2039,7 @@ impl Atelier {
     #[tool(
         description = "Snap every opaque pixel to the nearest colour in `colors`; with no `colors`, derive a `max_colors` palette from the cel by median cut. Returns the palette used. Posterise / down-palette imported or AI-gen art."
     )]
-    async fn doc_quantize(&self, Parameters(p): Parameters<DocQuantize>) -> String {
+    async fn doc_quantize(&self, Parameters(p): Parameters<DocQuantize>) -> CallToolResult {
         let palette: Vec<[u8; 4]> = p
             .colors
             .as_ref()
@@ -2037,9 +2055,9 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Insert `steps` cross-faded (dissolve) in-between frames after frame `from`, interpolating every layer toward frame `to`. Reindexes later cels. Smooth a two-pose animation."
+        description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to`, so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). doc_checkpoint save first: there is no frame delete, so a bad tween is otherwise permanent. Reindexes later cels."
     )]
-    async fn doc_tween(&self, Parameters(p): Parameters<DocTween>) -> String {
+    async fn doc_tween(&self, Parameters(p): Parameters<DocTween>) -> CallToolResult {
         res(self.studio().doc_tween(
             &p.doc_id,
             p.from,
@@ -2052,7 +2070,7 @@ impl Atelier {
     #[tool(
         description = "Draw a 1px outline around the opaque pixels of a cel. `aa`=true softens diagonal corners (anti-aliased)."
     )]
-    async fn doc_outline(&self, Parameters(p): Parameters<DocOutline>) -> String {
+    async fn doc_outline(&self, Parameters(p): Parameters<DocOutline>) -> CallToolResult {
         res(self.studio().doc_outline(
             &p.doc_id,
             p.layer,
@@ -2065,7 +2083,7 @@ impl Atelier {
     #[tool(
         description = "Drop a coloured shadow of the cel's silhouette offset by (dx,dy), at `opacity`, optionally `blur`red, with the art composited back on top. Self-contained on one cel. Honours an active selection."
     )]
-    async fn doc_drop_shadow(&self, Parameters(p): Parameters<DocDropShadow>) -> String {
+    async fn doc_drop_shadow(&self, Parameters(p): Parameters<DocDropShadow>) -> CallToolResult {
         let color = p.color.as_ref().map(|c| rgba(c)).unwrap_or([0, 0, 0, 255]);
         res(self.studio().doc_drop_shadow(
             &p.doc_id,
@@ -2082,7 +2100,7 @@ impl Atelier {
     #[tool(
         description = "Bloom/glow: blur a bright copy of the cel and composite it back through a light blend (`mode` screen/add) at `intensity`. `color` tints the glow (omit = the art's own colours). Honours an active selection."
     )]
-    async fn doc_glow(&self, Parameters(p): Parameters<DocGlow>) -> String {
+    async fn doc_glow(&self, Parameters(p): Parameters<DocGlow>) -> CallToolResult {
         let color = p.color.as_ref().map(|c| rgba(c));
         res(self.studio().doc_glow(
             &p.doc_id,
@@ -2098,7 +2116,7 @@ impl Atelier {
     #[tool(
         description = "Fake-3D bevel: lighten the top/left edge band and darken the bottom/right band of the opaque shape (within `depth` px of an edge) for raised volume. `light`/`dark` alpha = strength. Honours an active selection."
     )]
-    async fn doc_bevel(&self, Parameters(p): Parameters<DocBevel>) -> String {
+    async fn doc_bevel(&self, Parameters(p): Parameters<DocBevel>) -> CallToolResult {
         let light = p
             .light
             .as_ref()
@@ -2118,7 +2136,7 @@ impl Atelier {
     #[tool(
         description = "Shift hue/saturation/lightness of opaque pixels (optionally only within `region`). Tint, recolour or brighten part of a cel. Honours an active selection."
     )]
-    async fn doc_adjust(&self, Parameters(p): Parameters<DocAdjust>) -> String {
+    async fn doc_adjust(&self, Parameters(p): Parameters<DocAdjust>) -> CallToolResult {
         res(self.studio().doc_adjust(
             &p.doc_id,
             p.layer,
@@ -2133,7 +2151,7 @@ impl Atelier {
     #[tool(
         description = "Fill a region with procedural noise (kind 'cloud' fBm / 'perlin' / 'voronoi') mapped through colour `stops`. `scale` = feature size in px. Terrain, clouds, organic texture, mottling. Honours an active selection."
     )]
-    async fn doc_noise(&self, Parameters(p): Parameters<DocNoise>) -> String {
+    async fn doc_noise(&self, Parameters(p): Parameters<DocNoise>) -> CallToolResult {
         let stops: Vec<(f32, [u8; 4])> = p.stops.iter().map(|s| (s.pos, rgba(&s.color))).collect();
         res(self.studio().doc_noise(
             &p.doc_id,
@@ -2155,7 +2173,7 @@ impl Atelier {
     #[tool(
         description = "Draw a Bézier curve through control `points` (2=line, 3=quadratic, 4+=cubic) with brush `size`. Smooth organic strokes — tails, vines, hair. Honours an active selection."
     )]
-    async fn doc_bezier(&self, Parameters(p): Parameters<DocBezier>) -> String {
+    async fn doc_bezier(&self, Parameters(p): Parameters<DocBezier>) -> CallToolResult {
         let pts = points(&p.points);
         res(self.studio().doc_bezier(
             &p.doc_id,
@@ -2171,7 +2189,7 @@ impl Atelier {
     #[tool(
         description = "Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at integer pixel `size` (default 1). Covers A-Z, 0-9 and . , : ! ? - + / ( ) ' and space; lowercase maps to uppercase, unknown chars render as a hollow box. Returns the rendered `width` so you can lay out the next element. HUD mockups, damage numbers, lettering. Honours an active selection."
     )]
-    async fn doc_text(&self, Parameters(p): Parameters<DocText>) -> String {
+    async fn doc_text(&self, Parameters(p): Parameters<DocText>) -> CallToolResult {
         res(self.studio().doc_text(
             &p.doc_id,
             p.layer,
@@ -2187,7 +2205,7 @@ impl Atelier {
     #[tool(
         description = "Generate a hue-shifted shading ramp from a base colour (darkest→lightest): warm highlights, cool shadows, the classic pixel-art ramp. Returns the colours (+ hex); pass `doc_id` to also store it as that document's palette."
     )]
-    async fn palette_ramp(&self, Parameters(p): Parameters<PaletteRamp>) -> String {
+    async fn palette_ramp(&self, Parameters(p): Parameters<PaletteRamp>) -> CallToolResult {
         res(self.studio().palette_ramp(
             rgba(&p.base),
             p.count,
@@ -2201,7 +2219,7 @@ impl Atelier {
     #[tool(
         description = "Paint a linear/radial colour gradient over a cel from colour `stops` (each {pos 0..1, color}). `dither` 'bayer'/'noise' gives band-free pixel-art skies/water/falloff; 'none' lerps. `region` [x0,y0,x1,y1] clips. `blend` true (default) composites so stop alpha is a real falloff (vignettes, light) — replaces hand-placed dither."
     )]
-    async fn doc_gradient(&self, Parameters(p): Parameters<DocGradient>) -> String {
+    async fn doc_gradient(&self, Parameters(p): Parameters<DocGradient>) -> CallToolResult {
         let stops: Vec<(f32, [u8; 4])> = p.stops.iter().map(|s| (s.pos, rgba(&s.color))).collect();
         res(self.studio().doc_gradient(
             &p.doc_id,
@@ -2223,7 +2241,7 @@ impl Atelier {
     #[tool(
         description = "Scatter pixels of random `colors` across a region at `density` (0..1 per-pixel chance), deterministic per `seed`. Organic grass/foliage/dust/stars/noise without hand-listing every speckle. `size` = square dot; source-over so alpha colours layer onto existing art."
     )]
-    async fn doc_scatter(&self, Parameters(p): Parameters<DocScatter>) -> String {
+    async fn doc_scatter(&self, Parameters(p): Parameters<DocScatter>) -> CallToolResult {
         let colors: Vec<[u8; 4]> = p.colors.iter().map(|c| rgba(c)).collect();
         res(self.studio().doc_scatter(
             &p.doc_id,
@@ -2243,7 +2261,7 @@ impl Atelier {
     #[tool(
         description = "Edge-lit shading: lit rims toward `light_dir`, core shadow away from it, pushed `steps` along a ramp (or HSL-shifted: warm highlights, cool shadows). `mode` 'highlight'/'shadow' limits which side. Pass `ramp` (dark→light) to keep shading palette-true. One-call form/volume on a flat silhouette. `region` clips; honours an active selection."
     )]
-    async fn doc_shade(&self, Parameters(p): Parameters<DocShade>) -> String {
+    async fn doc_shade(&self, Parameters(p): Parameters<DocShade>) -> CallToolResult {
         let ramp = p
             .ramp
             .as_ref()
@@ -2263,7 +2281,7 @@ impl Atelier {
     #[tool(
         description = "Volume shading: lay a rounded-form light gradient across a shape's *interior* and snap it to a dark→light `ramp` — a flat-filled blob gains real volume in one call (where doc_shade only lights rims). `form` sphere (default) / cylinder-h / cylinder-v / auto; 'auto' uses the silhouette's interior-distance so any shape works, not just an ellipse. `light_dir` places the highlight. `region` bounds it (else the opaque bbox); `ramp` omitted is derived from the mean fill colour. `strength` 0..1 spans the ramp. Honours an active selection."
     )]
-    async fn doc_form(&self, Parameters(p): Parameters<DocForm>) -> String {
+    async fn doc_form(&self, Parameters(p): Parameters<DocForm>) -> CallToolResult {
         let ramp = p
             .ramp
             .as_ref()
@@ -2283,7 +2301,7 @@ impl Atelier {
     #[tool(
         description = "Fill a `region` with an ordered dither of `color_a`/`color_b` (`pattern` checker/bayer2/bayer4/bayer8). `density` 0..1 biases toward color_b. `only_existing`=true repaints just pixels already color_a/color_b (turn a flat fill into a gradient-dither without spilling). The pixel-art way to fake a mid-tone between two ramp colours. `region` required unless a selection is active."
     )]
-    async fn doc_dither(&self, Parameters(p): Parameters<DocDither>) -> String {
+    async fn doc_dither(&self, Parameters(p): Parameters<DocDither>) -> CallToolResult {
         res(self.studio().doc_dither(
             &p.doc_id,
             p.layer,
@@ -2300,7 +2318,10 @@ impl Atelier {
     #[tool(
         description = "Pixel-perfect cleanup: erase L-corner doubles from 1px strokes (the extra pixel that thickens an elbow), iterating to a fixpoint. `color` restricts to that exact stroke colour; `region` clips. Returns `removed`. Clean up jagged hand-drawn or line-tool strokes. Honours an active selection."
     )]
-    async fn doc_pixel_perfect(&self, Parameters(p): Parameters<DocPixelPerfect>) -> String {
+    async fn doc_pixel_perfect(
+        &self,
+        Parameters(p): Parameters<DocPixelPerfect>,
+    ) -> CallToolResult {
         let color = p.color.as_ref().map(|c| rgba(c));
         res(self
             .studio()
@@ -2310,7 +2331,7 @@ impl Atelier {
     #[tool(
         description = "Draw a polygon through `points` ([[x,y],...], auto-closed). fill=true (default) scanline-fills the interior; false draws the outline. Clean organic shapes — canopies, ponds, bodies."
     )]
-    async fn doc_polygon(&self, Parameters(p): Parameters<DocPolygon>) -> String {
+    async fn doc_polygon(&self, Parameters(p): Parameters<DocPolygon>) -> CallToolResult {
         let pts = points(&p.points);
         res(self.studio().doc_polygon(
             &p.doc_id,
@@ -2325,7 +2346,7 @@ impl Atelier {
     #[tool(
         description = "Draw connected line segments through `points` ([[x,y],...]). `closed`=true joins the last point back to the first. `size` = square brush. Open organic curves / paths."
     )]
-    async fn doc_polyline(&self, Parameters(p): Parameters<DocPolyline>) -> String {
+    async fn doc_polyline(&self, Parameters(p): Parameters<DocPolyline>) -> CallToolResult {
         let pts = points(&p.points);
         res(self.studio().doc_polyline(
             &p.doc_id,
@@ -2341,7 +2362,7 @@ impl Atelier {
     #[tool(
         description = "Set/modify the active pixel selection so subsequent painting ops (fill/gradient/scatter/rect/ellipse/polygon/pencil/line/batch) are confined to it. shape: rect (x0,y0,x1,y1) | ellipse (cx,cy,rx,ry) | color (layer,frame + `color` or sample x,y + tolerance) | all | none (clear). mode: replace (default) | add | subtract | intersect."
     )]
-    async fn doc_select(&self, Parameters(p): Parameters<DocSelect>) -> String {
+    async fn doc_select(&self, Parameters(p): Parameters<DocSelect>) -> CallToolResult {
         let shape = p.shape.as_deref().unwrap_or("rect");
         let mode = p.mode.as_deref().unwrap_or("replace");
         let rect = match (p.x0, p.y0, p.x1, p.y1) {
@@ -2375,7 +2396,7 @@ impl Atelier {
     #[tool(
         description = "Read one pixel from a cel. Returns its RGBA array and #rrggbbaa hex (use to verify colours while editing blind)."
     )]
-    async fn doc_get_pixel(&self, Parameters(p): Parameters<DocPixel>) -> String {
+    async fn doc_get_pixel(&self, Parameters(p): Parameters<DocPixel>) -> CallToolResult {
         res(self
             .studio()
             .doc_get_pixel(&p.doc_id, p.layer, p.frame, p.x, p.y))
@@ -2385,7 +2406,7 @@ impl Atelier {
     #[tool(
         description = "Dump a region of a frame as a text grid so you can read exact pixels blind. mode=\"symbol\" maps each distinct colour to a glyph (A..Z a..z 0..9) with a legend, `.`=transparent; mode=\"hex\" emits #rrggbb(aa)/`.` tokens. `layer` dumps one cel (omit = flattened). `region` [x0,y0,x1,y1] caps at 4096 px — crop large canvases."
     )]
-    async fn doc_dump_region(&self, Parameters(p): Parameters<DocDumpRegion>) -> String {
+    async fn doc_dump_region(&self, Parameters(p): Parameters<DocDumpRegion>) -> CallToolResult {
         res(self.studio().doc_dump_region(
             &p.doc_id,
             p.frame.unwrap_or(0),
@@ -2398,7 +2419,7 @@ impl Atelier {
     #[tool(
         description = "Opaque-vs-transparent shape report for a frame: tight bbox, fill_ratio (opaque/canvas), and a #/. grid of the whole canvas. `layer` reads one cel (omit = flattened). `alpha_threshold` is the min alpha counted opaque (default 1). Read a sprite's silhouette/readability at a glance."
     )]
-    async fn doc_silhouette(&self, Parameters(p): Parameters<DocSilhouette>) -> String {
+    async fn doc_silhouette(&self, Parameters(p): Parameters<DocSilhouette>) -> CallToolResult {
         res(self.studio().doc_silhouette(
             &p.doc_id,
             p.frame.unwrap_or(0),
@@ -2410,7 +2431,7 @@ impl Atelier {
     #[tool(
         description = "Connected-component analysis of a frame: each blob's bbox, centroid, area and dominant colour (sorted by area desc, capped 64). `connectivity` 4|8 (default 8); `color` restricts to that exact colour (omit = any opaque); `min_area` filters the list. Stray 1–2px `specks` are always reported — catches orphan/leftover pixels."
     )]
-    async fn doc_components(&self, Parameters(p): Parameters<DocComponents>) -> String {
+    async fn doc_components(&self, Parameters(p): Parameters<DocComponents>) -> CallToolResult {
         let color = p.color.as_ref().filter(|c| c.len() >= 3).map(|c| rgba(c));
         res(self.studio().doc_components(
             &p.doc_id,
@@ -2425,7 +2446,7 @@ impl Atelier {
     #[tool(
         description = "Coarse coverage/composition heatmap: split the flattened frame into rows×cols cells (default 8×8), each reporting opaque fill 0..1 and mean luma (null if empty), plus the content bbox and its centre offset from the canvas centre. Check balance/placement/negative space."
     )]
-    async fn doc_coverage_map(&self, Parameters(p): Parameters<DocCoverageMap>) -> String {
+    async fn doc_coverage_map(&self, Parameters(p): Parameters<DocCoverageMap>) -> CallToolResult {
         res(self.studio().doc_coverage_map(
             &p.doc_id,
             p.frame.unwrap_or(0),
@@ -2438,7 +2459,7 @@ impl Atelier {
     #[tool(
         description = "Render a frame in analysis space to a PNG you can SEE: mode=\"grayscale\" (luma/value), \"bands\" (posterise luma into `bands` even steps to read the value structure), \"saturation\" or \"hue\" (that HSL channel as grey). Same output as doc_render. Pass report=true for value stats (min/max/mean grey, contrast=(max-min)/255, per-band coverage) over opaque pixels."
     )]
-    async fn doc_render_value(&self, Parameters(p): Parameters<DocRenderValue>) -> String {
+    async fn doc_render_value(&self, Parameters(p): Parameters<DocRenderValue>) -> CallToolResult {
         res(self.studio().doc_render_value(
             &p.doc_id,
             p.frame.unwrap_or(0),
@@ -2453,7 +2474,10 @@ impl Atelier {
     #[tool(
         description = "WCAG contrast check. mode=\"region\" compares the mean colour inside `region` [x0,y0,x1,y1] against its 4px surround → {ratio, pass}. mode=\"palette\" scores every pair of the frame's distinct opaque colours (capped 16 — quantize first if more) and lists failures. mode=\"one-bit\" thresholds luma to a pure B/W PNG (returns path + black/white %). pass = ratio ≥ min_ratio (default 1.5)."
     )]
-    async fn doc_contrast_check(&self, Parameters(p): Parameters<DocContrastCheck>) -> String {
+    async fn doc_contrast_check(
+        &self,
+        Parameters(p): Parameters<DocContrastCheck>,
+    ) -> CallToolResult {
         res(self.studio().doc_contrast_check(
             &p.doc_id,
             p.frame.unwrap_or(0),
@@ -2468,7 +2492,10 @@ impl Atelier {
     #[tool(
         description = "Colour-usage report for a frame (or all frames): every distinct opaque colour with pixel count, percent, and in_palette (null when the doc has no locked palette), sorted by usage. Flags off-palette colours and near-duplicate pairs (max channel distance ≤ dupe_threshold, default 8). `layer` reads one cel; `region` restricts the tally. Audit colour discipline / find stray shades."
     )]
-    async fn doc_palette_report(&self, Parameters(p): Parameters<DocPaletteReport>) -> String {
+    async fn doc_palette_report(
+        &self,
+        Parameters(p): Parameters<DocPaletteReport>,
+    ) -> CallToolResult {
         res(self.studio().doc_palette_report(
             &p.doc_id,
             p.frame,
@@ -2481,7 +2508,10 @@ impl Atelier {
     #[tool(
         description = "Validate a colour ramp's craft from explicit `colors` [[r,g,b],...] (≥2) OR a `doc_id`'s locked palette (optional [start,end) `slice`). Returns monotonic_value, value_deltas, even_spacing (max step deviation ≤25% of mean), per-step hue_shift_deg (signed shortest-arc), hue_direction (warm-to-cool|cool-to-warm|mixed|none), sat_arc, and warnings (e.g. value reversals). Doc-independent."
     )]
-    async fn doc_ramp_validate(&self, Parameters(p): Parameters<DocRampValidate>) -> String {
+    async fn doc_ramp_validate(
+        &self,
+        Parameters(p): Parameters<DocRampValidate>,
+    ) -> CallToolResult {
         let colors = p
             .colors
             .as_ref()
@@ -2500,7 +2530,7 @@ impl Atelier {
     #[tool(
         description = "Diff two frames pixel-by-pixel: returns changed/added/removed/recolored counts and the change_bbox. `layer` diffs one cel (omit = flattened). `region` [x0,y0,x1,y1] restricts the area. grid=true adds a text map (`.`unchanged `+`added `-`removed `~`recolored, area capped 4096 px). render=\"overlay\" writes a PNG of frame_b dimmed 40% with changed pixels flagged (green=added/red=removed/yellow=recoloured). Inspect what actually moved between animation frames."
     )]
-    async fn doc_frame_diff(&self, Parameters(p): Parameters<DocFrameDiff>) -> String {
+    async fn doc_frame_diff(&self, Parameters(p): Parameters<DocFrameDiff>) -> CallToolResult {
         res(self.studio().doc_frame_diff(
             &p.doc_id,
             p.frame_a,
@@ -2517,7 +2547,7 @@ impl Atelier {
     #[tool(
         description = "Tiling seam check: wrap-test a frame's far edge against the near edge it abuts when repeated. axis=\"horizontal\" tests left↔right, \"vertical\" top↔bottom, \"both\" runs each. Per axis returns {mismatches, max_delta, worst:[[x,y,delta] ≤10]}. `threshold` is the max per-channel delta still counted a match (default 0). `out_path` renders the frame with mismatched edge pixels highlighted red. Verify seamless tiles."
     )]
-    async fn doc_seam_report(&self, Parameters(p): Parameters<DocSeamReport>) -> String {
+    async fn doc_seam_report(&self, Parameters(p): Parameters<DocSeamReport>) -> CallToolResult {
         res(self.studio().doc_seam_report(
             &p.doc_id,
             p.layer,
@@ -2531,7 +2561,7 @@ impl Atelier {
     #[tool(
         description = "Audit an animation loop. mode=\"seam\" diffs the wrap the loop actually plays (last→first forward, first→last reverse; pingpong has no seam → score 0 + note) and returns seam_score = changed/opaque pixels — high means a jarring loop cut. mode=\"spacing\" tracks the silhouette centre per played frame and returns per_frame_center/per_frame_offset, total_drift and evenness (stddev of step size / mean; 0 = mechanically even) — catch uneven/stuttering motion. mode=\"arc\" returns the centre trajectory, arc_residual (RMS deviation from a straight line; ~0 = a mechanical straight slide, higher = a proper arc for jumps/swings) and volume_cv (opaque-area coefficient of variation; ~0 = constant mass, unless deliberate squash/stretch). `tag` audits one tag (omit = whole timeline)."
     )]
-    async fn doc_anim_audit(&self, Parameters(p): Parameters<DocAnimAudit>) -> String {
+    async fn doc_anim_audit(&self, Parameters(p): Parameters<DocAnimAudit>) -> CallToolResult {
         res(self
             .studio()
             .doc_anim_audit(&p.doc_id, p.tag.as_deref(), p.layer, &p.mode))
@@ -2540,9 +2570,12 @@ impl Atelier {
     #[tool(
         description = "Eased multi-frame region motion. Reads the `region` [x0,y0,x1,y1] content from `from_frame` and stamps it (source-over) into every frame in (from_frame, to_frame] at an eased fraction of the total (dx,dy); to_frame gets the full offset. easing: linear/ease-in/ease-out/ease-in-out (cubic), bounce, overshoot (shoots past then settles), elastic (decaying oscillation). clear_source=true (default) clears the original rect in each destination frame so a moving limb leaves no stale copy. Frames must already exist (else error — doc_add_frame first). Returns frames_touched + per-frame offsets."
     )]
-    async fn doc_keyframe_move(&self, Parameters(p): Parameters<DocKeyframeMove>) -> String {
+    async fn doc_keyframe_move(
+        &self,
+        Parameters(p): Parameters<DocKeyframeMove>,
+    ) -> CallToolResult {
         if p.region.len() < 4 {
-            return j(json!({"error": "region must be [x0,y0,x1,y1]"}));
+            return res(Err("region must be [x0,y0,x1,y1]".into()));
         }
         let region = (p.region[0], p.region[1], p.region[2], p.region[3]);
         res(self.studio().doc_keyframe_move(
@@ -2561,14 +2594,14 @@ impl Atelier {
     #[tool(
         description = "Move a rectangular region of a cel by (dx,dy): copies it, clears the source, stamps it at the offset. Key tool for limb/keyframe animation."
     )]
-    async fn doc_move_region(&self, Parameters(p): Parameters<DocMoveRegion>) -> String {
+    async fn doc_move_region(&self, Parameters(p): Parameters<DocMoveRegion>) -> CallToolResult {
         res(self.studio().doc_move_region(
             &p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1, p.dx, p.dy,
         ))
     }
 
     #[tool(description = "Erase a rectangular region of a cel (set transparent).")]
-    async fn doc_clear_region(&self, Parameters(p): Parameters<DocRegion>) -> String {
+    async fn doc_clear_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         res(self
             .studio()
             .doc_clear_region(&p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1))
@@ -2577,14 +2610,14 @@ impl Atelier {
     #[tool(
         description = "Copy a rectangular region into the shared clipboard (does not modify the document). Paste with doc_paste — works across frames and documents."
     )]
-    async fn doc_copy_region(&self, Parameters(p): Parameters<DocRegion>) -> String {
+    async fn doc_copy_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         res(self
             .studio()
             .doc_copy_region(&p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1))
     }
 
     #[tool(description = "Cut a rectangular region: copy to clipboard, then clear the source.")]
-    async fn doc_cut_region(&self, Parameters(p): Parameters<DocRegion>) -> String {
+    async fn doc_cut_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         res(self
             .studio()
             .doc_cut_region(&p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1))
@@ -2593,7 +2626,7 @@ impl Atelier {
     #[tool(
         description = "Paste the clipboard onto a cel at (x,y). blend=true keeps the destination under transparent source pixels; blend=false overwrites. Reuses art across frames/documents."
     )]
-    async fn doc_paste(&self, Parameters(p): Parameters<DocPaste>) -> String {
+    async fn doc_paste(&self, Parameters(p): Parameters<DocPaste>) -> CallToolResult {
         res(self.studio().doc_paste(
             &p.doc_id,
             p.layer,
@@ -2608,10 +2641,10 @@ impl Atelier {
     #[tool(
         description = "Set a frame's anchor/pivot point [x,y] in document pixels (feet, weapon mount, …) so engines position the sprite. Omit `pivot` to clear it. Exported (scaled) in sheet/atlas JSON."
     )]
-    async fn doc_set_pivot(&self, Parameters(p): Parameters<DocSetPivot>) -> String {
+    async fn doc_set_pivot(&self, Parameters(p): Parameters<DocSetPivot>) -> CallToolResult {
         let pivot = match &p.pivot {
             Some(v) if v.len() >= 2 => Some([v[0], v[1]]),
-            Some(_) => return j(json!({"error": "pivot must be [x,y]"})),
+            Some(_) => return res(Err("pivot must be [x,y]".into())),
             None => None,
         };
         res(self.studio().doc_set_pivot(&p.doc_id, p.frame, pivot))
@@ -2620,11 +2653,14 @@ impl Atelier {
     #[tool(
         description = "Set a frame's collision boxes — body/hit/hurt rects an engine reads straight off the sheet. Each box is {name, kind:body|hit|hurt, rect:[x,y,w,h]}. Replaces the frame's whole set; pass boxes=[] to clear. Emitted (scaled) in sheet/atlas JSON next to pivot."
     )]
-    async fn doc_set_frame_boxes(&self, Parameters(p): Parameters<DocSetFrameBoxes>) -> String {
+    async fn doc_set_frame_boxes(
+        &self,
+        Parameters(p): Parameters<DocSetFrameBoxes>,
+    ) -> CallToolResult {
         let mut boxes = Vec::with_capacity(p.boxes.len());
         for b in &p.boxes {
             if b.rect.len() != 4 {
-                return j(json!({"error": format!("box '{}' rect must be [x,y,w,h]", b.name)}));
+                return res(Err(format!("box '{}' rect must be [x,y,w,h]", b.name)));
             }
             boxes.push(crate::document::BoxMeta {
                 name: b.name.clone(),
@@ -2638,7 +2674,7 @@ impl Atelier {
     #[tool(
         description = "Set the document's palette: a list of [r,g,b]/[r,g,b,a] swatches. Stored on the doc and emitted in exports — lock a cohesive N-colour set across sprites."
     )]
-    async fn doc_set_palette(&self, Parameters(p): Parameters<DocSetPalette>) -> String {
+    async fn doc_set_palette(&self, Parameters(p): Parameters<DocSetPalette>) -> CallToolResult {
         let colors: Vec<[u8; 4]> = p.colors.iter().map(|c| rgba(c)).collect();
         res(self.studio().doc_set_palette(&p.doc_id, colors))
     }
@@ -2646,7 +2682,7 @@ impl Atelier {
     #[tool(
         description = "Recolour a whole document in one call: swap each `from[i]` colour to `to[i]` across every cel (exact match, all channels), updating the stored palette too. `from`/`to` are equal-length lists of [r,g,b]/[r,g,b,a]. Optional `layer`/`frame` restrict scope. The recolour-variant workflow (one sprite, many palettes). Returns {changed}."
     )]
-    async fn doc_palette_swap(&self, Parameters(p): Parameters<DocPaletteSwap>) -> String {
+    async fn doc_palette_swap(&self, Parameters(p): Parameters<DocPaletteSwap>) -> CallToolResult {
         let from: Vec<[u8; 4]> = p.from.iter().map(|c| rgba(c)).collect();
         let to: Vec<[u8; 4]> = p.to.iter().map(|c| rgba(c)).collect();
         res(self
@@ -2657,7 +2693,7 @@ impl Atelier {
     #[tool(
         description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|bezier|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
     )]
-    async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> String {
+    async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> CallToolResult {
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
     }
 
@@ -2693,7 +2729,7 @@ impl Atelier {
     #[tool(
         description = "Document history for an all-destructive editor. action: save (snapshot the doc) | list | restore (roll back) | diff (regression deltas vs a snapshot: pixel/colour/contrast change, added/removed/recoloured) | prune. Snapshot before a risky op (form/quantize/relight/fill) and restore if it gets worse."
     )]
-    async fn doc_checkpoint(&self, Parameters(p): Parameters<DocCheckpoint>) -> String {
+    async fn doc_checkpoint(&self, Parameters(p): Parameters<DocCheckpoint>) -> CallToolResult {
         res(self.studio().checkpoint(
             &p.doc_id,
             &p.action,
@@ -2705,7 +2741,7 @@ impl Atelier {
     #[tool(
         description = "Layer-stack lifecycle in one tool. action: move (needs to_index) | insert (empty layer at index) | delete | rename (needs name) | duplicate | merge_down (bake a layer's opacity+blend onto the one below it). Cels follow the layer. Returns the new layer list."
     )]
-    async fn doc_layer_ops(&self, Parameters(p): Parameters<DocLayerOps>) -> String {
+    async fn doc_layer_ops(&self, Parameters(p): Parameters<DocLayerOps>) -> CallToolResult {
         res(self.studio().layer_ops(
             &p.doc_id,
             &p.action,
@@ -2723,7 +2759,7 @@ impl Atelier {
     async fn doc_make_perceptual_ramp(
         &self,
         Parameters(p): Parameters<DocPerceptualRamp>,
-    ) -> String {
+    ) -> CallToolResult {
         res(self.studio().make_perceptual_ramp(
             rgba(&p.base),
             p.count.unwrap_or(5),
@@ -2739,7 +2775,7 @@ impl Atelier {
     #[tool(
         description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. Returns the pixel count moved."
     )]
-    async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> String {
+    async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
         res(self.studio().snap_palette(
             &p.doc_id,
             p.layer,
@@ -2751,7 +2787,7 @@ impl Atelier {
     #[tool(
         description = "Contiguous magic-wand → the active selection mask. Floods from (x,y) over same-colour pixels (perceptual OKLab tolerance by default; `conn8` for 8-connectivity). `layer` omitted samples the flattened composite. `mode` combines with the current selection: replace|add|subtract|intersect. The precondition for local recolour/re-shade; pair with doc_select_render to SEE the mask."
     )]
-    async fn doc_select_wand(&self, Parameters(p): Parameters<DocSelectWand>) -> String {
+    async fn doc_select_wand(&self, Parameters(p): Parameters<DocSelectWand>) -> CallToolResult {
         res(self.studio().select_wand(
             &p.doc_id,
             p.layer,
@@ -2768,7 +2804,7 @@ impl Atelier {
     #[tool(
         description = "Selective anti-aliasing (selout): drop one opaque, mid-value pixel into each outer staircase notch of the silhouette so diagonals read smooth instead of as Bresenham stairs. Pass a `ramp` to keep the AA on-palette; `max_run` keeps genuine sharp corners crisp; `only_color`/`region` scope it. Returns the AA pixel count."
     )]
-    async fn doc_smooth_edges(&self, Parameters(p): Parameters<DocSmoothEdges>) -> String {
+    async fn doc_smooth_edges(&self, Parameters(p): Parameters<DocSmoothEdges>) -> CallToolResult {
         res(self.studio().smooth_edges(
             &p.doc_id,
             p.layer,
@@ -2784,7 +2820,10 @@ impl Atelier {
     #[tool(
         description = "Affine-transform a cel (or `region`) IN PLACE about its centre — the #1 missing primitive: rotate degrees, scale_x/scale_y, skew_x/skew_y degrees. method rotsprite (super-sampled, keeps clusters from shattering) | nearest. preserve_volume derives scale_y=1/scale_x for squash-and-stretch. snap_palette re-snaps the transform fringe; clear_source makes it a move. Returns placed bbox + pixel counts."
     )]
-    async fn doc_transform_cel(&self, Parameters(p): Parameters<DocTransformCel>) -> String {
+    async fn doc_transform_cel(
+        &self,
+        Parameters(p): Parameters<DocTransformCel>,
+    ) -> CallToolResult {
         let sx = p.scale_x.unwrap_or(1.0);
         let sy = match (p.preserve_volume.unwrap_or(false), p.scale_y) {
             (true, None) if sx.abs() > 1e-6 => 1.0 / sx,
@@ -2809,7 +2848,7 @@ impl Atelier {
     #[tool(
         description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, pillow-shading (light pooled at the centre with no direction), value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
     )]
-    async fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> String {
+    async fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> CallToolResult {
         res(self
             .studio()
             .critique(&p.doc_id, p.frame.unwrap_or(0), p.layer, region(&p.region)))
@@ -2818,7 +2857,7 @@ impl Atelier {
     #[tool(
         description = "Multi-light form shading — key/fill/rim, the leap from one-direction `form` to PAINTED form. Reads the silhouette as a height field, derives surface normals (bulge = how domed), and lights it: key by azimuth (0=right,90=down,180=left,270=up) + elevation (0=grazing,90=head-on), an auto fill opposite the key, a Fresnel rim, and ambient. Output multiplies the base colour (hue preserved, light colour tints) or snaps to `ramp`. Honours an active selection; pass a region on multi-material sprites."
     )]
-    async fn doc_relight(&self, Parameters(p): Parameters<DocRelight>) -> String {
+    async fn doc_relight(&self, Parameters(p): Parameters<DocRelight>) -> CallToolResult {
         res(self.studio().relight(
             &p.doc_id,
             p.layer,
@@ -2845,7 +2884,7 @@ impl Atelier {
     #[tool(
         description = "Graduated multi-tone dithering across a whole RAMP along an axis (h|v|radial) — master gradient shading, vs the two-colour `dither`. pattern bayer2/4/8 | checker | ign (blue-noise, no visible matrix grid). only_existing repaints just opaque pixels (shade existing art, keep alpha). Honours an active selection. Snap afterwards with doc_snap_palette if it drifts."
     )]
-    async fn doc_dither_ramp(&self, Parameters(p): Parameters<DocDitherRamp>) -> String {
+    async fn doc_dither_ramp(&self, Parameters(p): Parameters<DocDitherRamp>) -> CallToolResult {
         res(self.studio().dither_ramp(
             &p.doc_id,
             p.layer,
@@ -2875,7 +2914,10 @@ impl Atelier {
     #[tool(
         description = "Build a HARMONIOUS multi-ramp palette in OKLCh: one perceptual ramp per hue of a colour scheme (complementary | triadic | analogous | split | tetradic | mono), all sharing lightness poles so the set reads as one cohesive palette. set_doc stores the flattened palette on that document."
     )]
-    async fn doc_harmony_palette(&self, Parameters(p): Parameters<DocHarmonyPalette>) -> String {
+    async fn doc_harmony_palette(
+        &self,
+        Parameters(p): Parameters<DocHarmonyPalette>,
+    ) -> CallToolResult {
         res(self.studio().harmony_palette(
             rgba(&p.base),
             p.scheme.as_deref().unwrap_or("complementary"),
@@ -2890,7 +2932,7 @@ impl Atelier {
     #[tool(
         description = "Draw a shaded isometric cuboid (top + two side faces) from one base colour, auto-shaded along a perceptual ramp — the hard-surface form primitive `form` can't make (crates, blocks, buildings, dice). (cx,cy) = centre of the top diamond, s = its half-width, ht = body height; light_right brightens the right face."
     )]
-    async fn doc_box(&self, Parameters(p): Parameters<DocBox>) -> String {
+    async fn doc_box(&self, Parameters(p): Parameters<DocBox>) -> CallToolResult {
         res(self.studio().box_iso(
             &p.doc_id,
             p.layer,
@@ -2910,7 +2952,7 @@ impl Atelier {
     async fn doc_perspective_guide(
         &self,
         Parameters(p): Parameters<DocPerspectiveGuide>,
-    ) -> String {
+    ) -> CallToolResult {
         let vp = p.vp.as_ref().filter(|v| v.len() >= 2).map(|v| (v[0], v[1]));
         res(self.studio().perspective_guide(
             &p.doc_id,
@@ -2927,7 +2969,7 @@ impl Atelier {
     async fn doc_outline_selective(
         &self,
         Parameters(p): Parameters<DocOutlineSelective>,
-    ) -> String {
+    ) -> CallToolResult {
         res(self.studio().outline_selective(
             &p.doc_id,
             p.layer,
@@ -2942,7 +2984,7 @@ impl Atelier {
     #[tool(
         description = "Paint a procedural MATERIAL onto the opaque pixels of a cel from one base colour: metal (specular band + reflection), wood (grain), stone (mottle + speckle), water (ripples), cloth (weave), skin (soft gradient), glass (sheen + streak). Deterministic in `seed`; pass `ramp` to control the palette, or `region`/an active selection to clip it. Turns 6–10 blind calls into 'reads as the material'."
     )]
-    async fn doc_material(&self, Parameters(p): Parameters<DocMaterial>) -> String {
+    async fn doc_material(&self, Parameters(p): Parameters<DocMaterial>) -> CallToolResult {
         res(self.studio().material(
             &p.doc_id,
             p.layer,
@@ -2958,7 +3000,10 @@ impl Atelier {
     #[tool(
         description = "Translucency report — makes glass/glow/soft-FX alpha MEASURABLE instead of eyeballed. Over the flattened frame (or one layer, region-clipped): counts opaque/partial/transparent pixels, mean alpha of non-transparent pixels, a partial-alpha band histogram, and the bbox of the partial pixels."
     )]
-    async fn doc_translucency_report(&self, Parameters(p): Parameters<DocTranslucency>) -> String {
+    async fn doc_translucency_report(
+        &self,
+        Parameters(p): Parameters<DocTranslucency>,
+    ) -> CallToolResult {
         res(self.studio().doc_translucency_report(
             &p.doc_id,
             p.frame.unwrap_or(0),
@@ -2970,7 +3015,7 @@ impl Atelier {
     #[tool(
         description = "Draw a HUD/UI panel: filled body + border + optional inner bevel (top/left lit, bottom/right shadowed) — a ready dialog/HUD box. Pairs with doc_text for labels."
     )]
-    async fn doc_panel(&self, Parameters(p): Parameters<DocPanel>) -> String {
+    async fn doc_panel(&self, Parameters(p): Parameters<DocPanel>) -> CallToolResult {
         res(self.studio().panel(
             &p.doc_id,
             p.layer,
@@ -2988,7 +3033,7 @@ impl Atelier {
     #[tool(
         description = "Import an external image (AI-gen / photo / scan) as CLEAN pixel art: area-downscale to target_w×target_h, then Floyd–Steinberg error-diffuse to a palette — the document's locked one (to_doc_palette) or a median-cut of `colors` — with optional alpha defringe. The modern reference-onboarding pipeline; follow with doc_critique / doc_smooth_edges."
     )]
-    async fn doc_import_clean(&self, Parameters(p): Parameters<DocImportClean>) -> String {
+    async fn doc_import_clean(&self, Parameters(p): Parameters<DocImportClean>) -> CallToolResult {
         res(self.studio().import_clean(
             &p.doc_id,
             p.layer.unwrap_or(0),
@@ -3006,7 +3051,7 @@ impl Atelier {
     #[tool(
         description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export_gif tag=burst."
     )]
-    async fn doc_burst(&self, Parameters(p): Parameters<DocBurst>) -> String {
+    async fn doc_burst(&self, Parameters(p): Parameters<DocBurst>) -> CallToolResult {
         res(self.studio().burst(
             &p.doc_id,
             p.layer.unwrap_or(0),
@@ -3116,10 +3161,18 @@ impl ServerHandler for Atelier {
         info.instructions = Some(
             "atelier: a headless pixel-art editor (Aseprite-as-API). doc_create a \
              layered/animated document, then paint cels with doc_pencil/line/rect/ \
-             ellipse/fill/outline (or doc_batch for many ops at once). Call doc_render \
-             to flatten a frame to a PNG you can SEE, inspect it, and iterate. Export \
-             with doc_export_sheet / doc_export_gif, or export_all to bundle every \
-             document. list_docs to browse the library."
+             ellipse/fill (prefer doc_batch: many ops in one call). LOOK with doc_look \
+             after every burst of edits — it returns the frame as an INLINE image plus \
+             value stats (doc_render also inlines; use it when you need the PNG file). \
+             Working from a reference image? doc_import_clean it onto a separate guide \
+             layer, lock a palette with doc_set_palette, and compare as you paint. \
+             Audit before exporting: doc_critique (failure modes), doc_palette_report, \
+             doc_silhouette. Animate by duplicating frames (doc_add_frame copy_from) \
+             and editing what moves — doc_keyframe_move for eased motion; doc_tween is \
+             a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
+             (tween/form/quantize/relight) — restore rolls back. Export with \
+             doc_export_sheet / doc_export_gif / export_all. list_docs browses the \
+             library."
                 .into(),
         );
         info

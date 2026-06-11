@@ -466,6 +466,9 @@ impl Studio {
 
     // -- render / export ----------------------------------------------------
 
+    /// Render a frame preview: writes the PNG to disk (for file workflows) AND
+    /// returns the encoded bytes so the MCP layer can inline the image — the
+    /// agent sees the pixels in the same turn instead of needing a file read.
     #[allow(clippy::too_many_arguments)]
     pub fn doc_render(
         &self,
@@ -477,7 +480,7 @@ impl Studio {
         onion: bool,
         tile: u32,
         max_size: Option<u32>,
-    ) -> Result<Value, String> {
+    ) -> Result<(Vec<u8>, Value), String> {
         let (dir, doc) = self.open(id)?;
         let out = match out_path {
             Some(p) => PathBuf::from(p),
@@ -493,7 +496,13 @@ impl Studio {
         let img = doc.render_preview(frame, scale.max(1), region, onion, tile, max_size)?;
         let (w, h) = (img.width(), img.height());
         img.save(&out).map_err(|e| e.to_string())?;
-        Ok(json!({"path": out.to_string_lossy(), "size": [w, h], "frame": frame}))
+        let mut buf = std::io::Cursor::new(Vec::new());
+        img.write_to(&mut buf, image::ImageFormat::Png)
+            .map_err(|e| e.to_string())?;
+        Ok((
+            buf.into_inner(),
+            json!({"path": out.to_string_lossy(), "size": [w, h], "frame": frame}),
+        ))
     }
 
     /// Flatten one frame and encode it straight to PNG bytes in memory (no file).
