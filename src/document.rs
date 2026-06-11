@@ -95,6 +95,10 @@ pub struct DocMeta {
     #[serde(default)]
     pub tags: Vec<TagMeta>,
     pub cels: Vec<CelMeta>,
+    /// Reference image filename inside the doc dir (set by doc_set_reference)
+    /// — the original the artwork is recreating, kept for compare loops.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference: Option<String>,
 }
 
 /// A loaded document: structure + the cel images in memory.
@@ -155,6 +159,7 @@ impl Document {
             }],
             tags: Vec::new(),
             cels: Vec::new(),
+            reference: None,
         };
         Document {
             meta,
@@ -594,6 +599,7 @@ impl Document {
             "cels": cels,
             "palette": self.meta.palette,
             "palette_len": self.meta.palette.len(),
+            "reference": self.meta.reference,
         })
     }
 

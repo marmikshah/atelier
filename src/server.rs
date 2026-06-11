@@ -1376,6 +1376,34 @@ pub struct DocImportClean {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocSetReference {
+    pub doc_id: String,
+    /// Path to the reference image. Omit to clear the stored reference.
+    pub path: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocRefAnalyze {
+    pub doc_id: String,
+    /// Analyze this file instead of the doc's stored reference.
+    pub path: Option<String>,
+    /// Width to plan at (default: the canvas width); height derives aspect-true.
+    pub target_w: Option<u32>,
+    /// Subject palette size to extract (default 8).
+    pub colors: Option<usize>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocRefCompare {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    /// "side_by_side" (default) or "overlay" (reference ghosted under the art).
+    pub mode: Option<String>,
+    /// Grid divisions per axis for the ΔE cells (default 8, clamped 2..=16).
+    pub cells: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocBurst {
     pub doc_id: String,
     pub layer: Option<usize>,
@@ -3103,6 +3131,41 @@ impl Atelier {
         )
     }
 
+    // -- reference subsystem: recreate-from-sample as a measurable loop --
+    #[tool(
+        description = "Attach the ORIGINAL reference image (the sample being recreated) to a document — copied into the doc dir, persists with it. Do this FIRST when recreating a character from an image: it unlocks doc_ref_analyze (plan) and doc_ref_compare (score likeness every iteration). Returns aspect-true fit suggestions so the canvas can't silently squash the subject. Omit `path` to clear."
+    )]
+    async fn doc_set_reference(
+        &self,
+        Parameters(p): Parameters<DocSetReference>,
+    ) -> CallToolResult {
+        res(self.studio().set_reference(&p.doc_id, p.path.as_deref()))
+    }
+
+    #[tool(
+        description = "VIEW and decompose the document's reference image (inline PNG): background coverage, a frequency-weighted SUBJECT palette to lock with doc_set_palette, and the subject's silhouette as a text grid at target size — the scaffolding to redraw deliberately instead of freehanding from memory. `path` analyzes an external file instead; `target_w` plans at a different size."
+    )]
+    async fn doc_ref_analyze(&self, Parameters(p): Parameters<DocRefAnalyze>) -> CallToolResult {
+        img_result(self.studio().ref_analyze(
+            &p.doc_id,
+            p.path.as_deref(),
+            p.target_w,
+            p.colors.unwrap_or(8),
+        ))
+    }
+
+    #[tool(
+        description = "SCORE a frame against the stored reference — run this after every drawing pass when recreating from a sample. Returns an inline side-by-side (mode=\"overlay\" ghosts the reference under the art for proportion checks), silhouette IoU (≥0.80 = shape reads), per-cell OKLab ΔE with the worst cells as canvas rects (fix those first), and reference colours missing from the palette. Iterate until iou/mean_delta stop improving."
+    )]
+    async fn doc_ref_compare(&self, Parameters(p): Parameters<DocRefCompare>) -> CallToolResult {
+        img_result(self.studio().ref_compare(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.mode.as_deref().unwrap_or("side_by_side"),
+            p.cells.unwrap_or(8),
+        ))
+    }
+
     #[tool(
         description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export_gif tag=burst."
     )]
@@ -3219,8 +3282,11 @@ impl ServerHandler for Atelier {
              ellipse/fill (prefer doc_batch: many ops in one call). LOOK with doc_look \
              after every burst of edits — it returns the frame as an INLINE image plus \
              value stats (doc_render also inlines; use it when you need the PNG file). \
-             Working from a reference image? doc_import_clean it onto a separate guide \
-             layer, lock a palette with doc_set_palette, and compare as you paint. \
+             Recreating from a reference image? doc_set_reference FIRST, doc_ref_analyze \
+             to plan (subject palette + silhouette), optionally doc_import_clean onto a \
+             guide layer, then doc_ref_compare after EVERY pass — it scores silhouette \
+             IoU and per-cell colour ΔE against the reference so likeness is measured, \
+             not remembered. \
              Audit before exporting: doc_critique (failure modes), doc_palette_report, \
              doc_silhouette. Animate by duplicating frames (doc_add_frame copy_from) \
              and editing what moves — doc_keyframe_move for eased motion; doc_tween is \

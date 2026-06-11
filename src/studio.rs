@@ -14,6 +14,7 @@ use crate::document::Document;
 
 mod analysis;
 mod craft;
+mod reference;
 
 fn slugify(name: &str) -> String {
     let mut out = String::new();
