@@ -1357,11 +1357,22 @@ pub struct DocImportClean {
     pub frame: Option<usize>,
     pub path: String,
     pub target_w: u32,
-    pub target_h: u32,
+    /// Omit to derive an aspect-true height from the source (recommended —
+    /// a wrong guess silently squashes the subject).
+    pub target_h: Option<u32>,
     pub colors: Option<usize>,
+    /// Default: true only when the target's longest side is > 64px — at sprite
+    /// scale error-diffusion reads as single-pixel speckle.
     pub dither: Option<bool>,
     pub defringe: Option<bool>,
     pub to_doc_palette: Option<bool>,
+    /// Corner-seeded background removal (OKLab flood) BEFORE palette
+    /// extraction. Set true for a subject on a backdrop; leave false for
+    /// full-bleed art like textures.
+    pub remove_bg: Option<bool>,
+    /// Colours ([r,g,b] or [r,g,b,a]) the derived palette must keep —
+    /// e.g. a pure-black outline.
+    pub pin: Option<Vec<Vec<i64>>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -3064,7 +3075,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Import an external image (AI-gen / photo / scan) as CLEAN pixel art: area-downscale to target_w×target_h, then Floyd–Steinberg error-diffuse to a palette — the document's locked one (to_doc_palette) or a median-cut of `colors` — with optional alpha defringe. The modern reference-onboarding pipeline; follow with doc_critique / doc_smooth_edges."
+        description = "Import an external image (reference photo / AI-gen / scan) as CLEAN pixel art, with an INLINE preview of the result: true area-average downscale to target_w (height derived aspect-true when target_h omitted), quantised to a palette — the document's locked one (to_doc_palette) or a frequency-weighted median-cut of `colors`, `pin`ning colours you must keep. remove_bg=true corner-floods the backdrop away BEFORE palette extraction (use for characters/objects on a background). Dithering defaults OFF at sprite scale (≤64px) where it reads as speckle. Returns the derived palette — doc_set_palette it to lock. The reference-onboarding pipeline; follow with doc_critique / doc_smooth_edges."
     )]
     async fn doc_import_clean(&self, Parameters(p): Parameters<DocImportClean>) -> CallToolResult {
         let studio = self.studio();
@@ -3076,9 +3087,12 @@ impl Atelier {
             p.target_w,
             p.target_h,
             p.colors.unwrap_or(16),
-            p.dither.unwrap_or(true),
+            p.dither
+                .unwrap_or(p.target_w.max(p.target_h.unwrap_or(0)) > 64),
             p.defringe.unwrap_or(false),
             p.to_doc_palette.unwrap_or(false),
+            p.remove_bg.unwrap_or(false),
+            p.pin.as_ref().map(|v| palette_list(v)).unwrap_or_default(),
         );
         previewed(
             &studio,

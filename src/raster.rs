@@ -943,6 +943,174 @@ pub fn median_cut(pixels: &[[u8; 3]], n: usize) -> Vec<[u8; 4]> {
         .collect()
 }
 
+/// Frequency-weighted median-cut quantisation over `(colour, count)` pairs:
+/// boxes split at the WEIGHTED median (a colour used 5000× pulls the cut toward
+/// itself; a 3-pixel accent no longer wins a box by mere variety) and each box
+/// averages weighted. Pass deduped pixels with their counts. `pinned` colours
+/// are always included and consume their share of `n`.
+pub fn median_cut_weighted(
+    pixels: &[([u8; 3], u64)],
+    n: usize,
+    pinned: &[[u8; 4]],
+) -> Vec<[u8; 4]> {
+    let mut out: Vec<[u8; 4]> = pinned.to_vec();
+    let want = n.max(1).saturating_sub(out.len()).max(1);
+    if pixels.is_empty() {
+        if out.is_empty() {
+            out.push([0, 0, 0, 255]);
+        }
+        return out;
+    }
+    let mut boxes: Vec<Vec<([u8; 3], u64)>> = vec![pixels.to_vec()];
+    while boxes.len() < want {
+        // Pick the splittable box with the widest channel range.
+        let pick = boxes
+            .iter()
+            .enumerate()
+            .filter(|(_, b)| b.len() > 1)
+            .max_by_key(|(_, b)| {
+                (0..3)
+                    .map(|c| {
+                        let (mn, mx) = b.iter().fold((255u8, 0u8), |(mn, mx), (p, _)| {
+                            (mn.min(p[c]), mx.max(p[c]))
+                        });
+                        mx - mn
+                    })
+                    .max()
+                    .unwrap_or(0)
+            });
+        let Some((bi, _)) = pick else { break };
+        let axis = (0..3)
+            .max_by_key(|&c| {
+                let (mn, mx) = boxes[bi].iter().fold((255u8, 0u8), |(mn, mx), (p, _)| {
+                    (mn.min(p[c]), mx.max(p[c]))
+                });
+                mx - mn
+            })
+            .unwrap();
+        boxes[bi].sort_by_key(|(p, _)| p[axis]);
+        // Split at the weighted median so heavily-used colours dominate the cut.
+        let total: u64 = boxes[bi].iter().map(|(_, w)| w).sum();
+        let mut acc = 0u64;
+        let mut mid = boxes[bi].len() / 2;
+        for (i, (_, w)) in boxes[bi].iter().enumerate() {
+            acc += w;
+            if acc * 2 >= total {
+                mid = (i + 1).min(boxes[bi].len() - 1).max(1);
+                break;
+            }
+        }
+        let hi = boxes[bi].split_off(mid);
+        if hi.is_empty() {
+            break;
+        }
+        boxes.push(hi);
+    }
+    out.extend(boxes.iter().map(|b| {
+        let (mut r, mut g, mut bl, mut wsum) = (0u64, 0u64, 0u64, 0u64);
+        for (p, w) in b {
+            r += p[0] as u64 * w;
+            g += p[1] as u64 * w;
+            bl += p[2] as u64 * w;
+            wsum += w;
+        }
+        let wsum = wsum.max(1);
+        [(r / wsum) as u8, (g / wsum) as u8, (bl / wsum) as u8, 255]
+    }));
+    out
+}
+
+/// True area-average downscale (box filter over each target pixel's exact
+/// source footprint, fractional edges included), alpha-weighted so transparent
+/// source pixels don't darken edges. Keeps thin outlines readable where
+/// bilinear smears them. Falls back to nearest when not actually shrinking.
+pub fn downscale_area(src: &RgbaImage, tw: u32, th: u32) -> RgbaImage {
+    let (sw, sh) = (src.width(), src.height());
+    let (tw, th) = (tw.max(1), th.max(1));
+    if tw >= sw && th >= sh {
+        return image::imageops::resize(src, tw, th, image::imageops::FilterType::Nearest);
+    }
+    let mut out = RgbaImage::new(tw, th);
+    let fx = sw as f64 / tw as f64;
+    let fy = sh as f64 / th as f64;
+    for ty in 0..th {
+        let (y0, y1) = (ty as f64 * fy, (ty + 1) as f64 * fy);
+        for tx in 0..tw {
+            let (x0, x1) = (tx as f64 * fx, (tx + 1) as f64 * fx);
+            let (mut r, mut g, mut b, mut a, mut area) = (0f64, 0f64, 0f64, 0f64, 0f64);
+            let mut sy = y0.floor() as u32;
+            while (sy as f64) < y1 && sy < sh {
+                let hy = y1.min(sy as f64 + 1.0) - y0.max(sy as f64);
+                let mut sx = x0.floor() as u32;
+                while (sx as f64) < x1 && sx < sw {
+                    let wx = x1.min(sx as f64 + 1.0) - x0.max(sx as f64);
+                    let wgt = wx * hy;
+                    let p = src.get_pixel(sx, sy).0;
+                    let pa = p[3] as f64 / 255.0;
+                    r += p[0] as f64 * pa * wgt;
+                    g += p[1] as f64 * pa * wgt;
+                    b += p[2] as f64 * pa * wgt;
+                    a += pa * wgt;
+                    area += wgt;
+                    sx += 1;
+                }
+                sy += 1;
+            }
+            let px = if a > 1e-9 {
+                [
+                    (r / a).round().clamp(0.0, 255.0) as u8,
+                    (g / a).round().clamp(0.0, 255.0) as u8,
+                    (b / a).round().clamp(0.0, 255.0) as u8,
+                    (a / area.max(1e-9) * 255.0).round().clamp(0.0, 255.0) as u8,
+                ]
+            } else {
+                [0, 0, 0, 0]
+            };
+            out.put_pixel(tx, ty, Rgba(px));
+        }
+    }
+    out
+}
+
+/// Corner-seeded background removal: flood from each opaque corner over pixels
+/// perceptually close to that corner's colour (OKLab ΔE ≤ `tol`), zeroing
+/// their alpha. Run BEFORE palette extraction so a backdrop can't steal
+/// palette slots from the subject. Handles flat and gently-graded backdrops;
+/// leaves enclosed interior regions alone.
+pub fn remove_background(img: &mut RgbaImage, tol: f32) {
+    let (w, h) = (img.width() as i32, img.height() as i32);
+    if w == 0 || h == 0 {
+        return;
+    }
+    let mut cleared = vec![false; (w * h) as usize];
+    let mut stack: Vec<(i32, i32, [u8; 4])> = Vec::new();
+    for &(cx, cy) in &[(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)] {
+        let seed = img.get_pixel(cx as u32, cy as u32).0;
+        if seed[3] > 0 {
+            stack.push((cx, cy, seed));
+        }
+    }
+    while let Some((x, y, seed)) = stack.pop() {
+        if x < 0 || y < 0 || x >= w || y >= h {
+            continue;
+        }
+        let i = (y * w + x) as usize;
+        if cleared[i] {
+            continue;
+        }
+        let p = img.get_pixel(x as u32, y as u32).0;
+        if p[3] == 0 || oklab_delta(p, seed) > tol {
+            continue;
+        }
+        cleared[i] = true;
+        img.put_pixel(x as u32, y as u32, Rgba([0, 0, 0, 0]));
+        stack.push((x + 1, y, seed));
+        stack.push((x - 1, y, seed));
+        stack.push((x, y + 1, seed));
+        stack.push((x, y - 1, seed));
+    }
+}
+
 /// Generate a hue-shifted shading ramp from a base colour, darkest → lightest.
 /// Lighter steps shift hue by `+hue_shift`° (toward warm) and lower saturation;
 /// darker steps shift `-hue_shift`° (toward cool) and gain saturation — the

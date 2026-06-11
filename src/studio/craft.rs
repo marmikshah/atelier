@@ -1133,10 +1133,13 @@ impl Studio {
 
     // -- doc_import_clean: reference -> clean pixel art --------------------
 
-    /// Import an external image as clean pixel art: area-downscale to the target
-    /// size, then Floyd–Steinberg error-diffuse to a palette (the document's
-    /// locked one, or a median-cut of `colors`), with optional alpha defringe.
-    /// The modern AI/photo reference-onboarding pipeline.
+    /// Import an external image as clean pixel art: optional corner-seeded
+    /// background removal, TRUE area-average downscale to the target size
+    /// (aspect-derived height when omitted), then quantise — optionally
+    /// Floyd–Steinberg — to a palette (the document's locked one, or a
+    /// frequency-weighted median-cut of the SUBJECT's colours, with `pin`ned
+    /// colours always kept), with optional alpha defringe. The reference-
+    /// onboarding pipeline for characters and AI/photo art.
     #[allow(clippy::too_many_arguments)]
     pub fn import_clean(
         &self,
@@ -1145,20 +1148,34 @@ impl Studio {
         frame: usize,
         path: &str,
         target_w: u32,
-        target_h: u32,
+        target_h: Option<u32>,
         colors: usize,
         dither: bool,
         defringe: bool,
         to_doc_palette: bool,
+        remove_bg: bool,
+        pin: Vec<[u8; 4]>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        let src = image::open(path).map_err(|e| e.to_string())?.to_rgba8();
-        let resized = image::imageops::resize(
-            &src,
-            target_w.max(1),
-            target_h.max(1),
-            image::imageops::FilterType::Triangle,
-        );
+        let mut src = image::open(path).map_err(|e| e.to_string())?.to_rgba8();
+        // Background removal runs at SOURCE resolution, before any pixel of
+        // backdrop can be averaged into the subject's edges or its palette.
+        if remove_bg {
+            raster::remove_background(&mut src, 0.08);
+        }
+        let tw = target_w.max(1);
+        let th = target_h.unwrap_or_else(|| {
+            // Derive an aspect-true height so a wrong guess can't squash the
+            // subject. Round to nearest, floor 1.
+            ((src.height() as f64 * tw as f64 / src.width().max(1) as f64).round() as u32).max(1)
+        });
+        if th as usize * tw as usize > 1_048_576 {
+            return Err(format!(
+                "target {}x{} is over the 1M-pixel cap — import at a smaller size",
+                tw, th
+            ));
+        }
+        let resized = raster::downscale_area(&src, tw, th);
         let mut work: Vec<[f32; 4]> = resized
             .pixels()
             .map(|p| [p.0[0] as f32, p.0[1] as f32, p.0[2] as f32, p.0[3] as f32])
@@ -1169,19 +1186,23 @@ impl Studio {
                 px[3] = if px[3] < 128.0 { 0.0 } else { 255.0 };
             }
         }
-        // Palette: the doc's locked one, or a median cut of the opaque pixels.
+        // Palette: the doc's locked one, or a frequency-weighted median cut of
+        // the (post-bg-removal) opaque pixels so the subject owns every slot.
         let palette: Vec<[u8; 4]> = if to_doc_palette && !doc.meta.palette.is_empty() {
             doc.meta.palette.clone()
         } else {
-            let opaque: Vec<[u8; 3]> = work
-                .iter()
-                .filter(|p| p[3] > 0.0)
-                .map(|p| [p[0] as u8, p[1] as u8, p[2] as u8])
-                .collect();
-            if opaque.is_empty() {
+            let mut counts: std::collections::HashMap<[u8; 3], u64> =
+                std::collections::HashMap::new();
+            for p in work.iter().filter(|p| p[3] > 0.0) {
+                *counts
+                    .entry([p[0] as u8, p[1] as u8, p[2] as u8])
+                    .or_insert(0) += 1;
+            }
+            if counts.is_empty() {
                 return Err("imported image is fully transparent".into());
             }
-            raster::median_cut(&opaque, colors.max(2))
+            let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
+            raster::median_cut_weighted(&pairs, colors.max(2), &pin)
         };
         // Quantise (optionally Floyd–Steinberg) to the palette.
         let mut out = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
@@ -1233,9 +1254,15 @@ impl Studio {
             doc.set_palette(palette.clone());
         }
         doc.save(&dir)?;
-        Ok(
-            json!({"ok": true, "doc_id": id, "size": [w, h], "palette_len": palette.len(), "dithered": dither}),
-        )
+        let pal_json: Vec<Value> = palette.iter().map(|c| json!(c)).collect();
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "size": [w, h],
+            "palette": pal_json,
+            "dithered": dither,
+            "bg_removed": remove_bg,
+        }))
     }
 
     // -- doc_burst: radial FX across frames -------------------------------
@@ -1904,12 +1931,71 @@ mod tests {
             .save(&p)
             .unwrap();
         let r = s
-            .import_clean("c", 0, 0, p.to_str().unwrap(), 2, 2, 4, true, false, false)
+            .import_clean(
+                "c",
+                0,
+                0,
+                p.to_str().unwrap(),
+                2,
+                Some(2),
+                4,
+                true,
+                false,
+                false,
+                false,
+                vec![],
+            )
             .unwrap();
-        assert!(r["palette_len"].as_u64().unwrap() > 0);
+        assert!(!r["palette"].as_array().unwrap().is_empty());
         let look = s
             .look("c", 0, 1, None, "render", 1, false, false, false, None)
             .unwrap();
         assert_eq!(opaque(&look.1), 4);
+    }
+
+    #[test]
+    fn import_clean_derives_aspect_and_removes_backdrop() {
+        let s = studio("importbg");
+        s.doc_create("c", 8, 4).unwrap();
+        // 16x8 source: flat grey backdrop, red 8x8 block in the middle.
+        let mut src = RgbaImage::from_pixel(16, 8, Rgba([90, 90, 90, 255]));
+        for y in 0..8 {
+            for x in 4..12 {
+                src.put_pixel(x, y, Rgba([200, 30, 30, 255]));
+            }
+        }
+        let p = std::env::temp_dir().join("atelier-import-bg.png");
+        src.save(&p).unwrap();
+        // target_h omitted → derived 4 from the 2:1 aspect; remove_bg floods
+        // the grey corners away so the palette is subject-only.
+        let r = s
+            .import_clean(
+                "c",
+                0,
+                0,
+                p.to_str().unwrap(),
+                8,
+                None,
+                4,
+                false,
+                false,
+                false,
+                true,
+                vec![],
+            )
+            .unwrap();
+        assert_eq!(r["size"], json!([8, 4]));
+        assert_eq!(r["bg_removed"], json!(true));
+        // The backdrop corner became transparent; the subject survived.
+        assert_eq!(
+            s.doc_get_pixel("c", 0, 0, 0, 0).unwrap()["rgba"][3],
+            json!(0)
+        );
+        assert!(
+            s.doc_get_pixel("c", 0, 0, 4, 2).unwrap()["rgba"][0]
+                .as_i64()
+                .unwrap()
+                > 150
+        );
     }
 }
