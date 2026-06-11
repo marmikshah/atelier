@@ -549,6 +549,7 @@ impl Document {
             return 0;
         }
         let mut changed = 0;
+        let mut lab = raster::PaletteLab::new(palette);
         for ((l, f), (_x, _y, img)) in self.cels.iter_mut() {
             if layer.is_some_and(|s| s != *l) || frame.is_some_and(|s| s != *f) {
                 continue;
@@ -557,8 +558,8 @@ impl Document {
                 if p.0[3] == 0 {
                     continue;
                 }
-                if let Some(i) = raster::nearest_oklab(p.0, palette) {
-                    let c = palette[i];
+                if let Some(i) = lab.nearest(p.0) {
+                    let c = lab.color(i);
                     let snapped = [c[0], c[1], c[2], p.0[3]];
                     if snapped != p.0 {
                         *p = Rgba(snapped);
@@ -2884,18 +2885,18 @@ impl Document {
         if pal.is_empty() {
             return Err("quantize needs a palette or max_colors >= 1".into());
         }
+        // OKLab nearest, matching snap_to_palette — the old RGB squared
+        // distance disagreed with the snap metric, so iterative quantize/snap
+        // cycles flipped colours back and forth (and skin tones snapped grey).
+        let mut lab = raster::PaletteLab::new(&pal);
         for p in img.pixels_mut() {
             if p.0[3] == 0 {
                 continue;
             }
-            let nearest = pal
-                .iter()
-                .min_by_key(|c| {
-                    let d = |i: usize| (c[i] as i32 - p.0[i] as i32).pow(2);
-                    d(0) + d(1) + d(2)
-                })
-                .unwrap();
-            *p = Rgba([nearest[0], nearest[1], nearest[2], p.0[3]]);
+            if let Some(i) = lab.nearest(p.0) {
+                let c = lab.color(i);
+                *p = Rgba([c[0], c[1], c[2], p.0[3]]);
+            }
         }
         Ok(pal)
     }
@@ -2964,7 +2965,7 @@ impl Document {
         }
         // Build cross-fade cels; with a locked palette, snap each blend so the
         // dissolve can't mint off-palette colours.
-        let palette = self.meta.palette.clone();
+        let mut lab = raster::PaletteLab::new(&self.meta.palette);
         let (w, h) = (self.meta.w, self.meta.h);
         for s in 1..=steps {
             let t = s as f32 / (steps + 1) as f32;
@@ -2981,15 +2982,12 @@ impl Document {
                                 .clamp(0.0, 255.0) as u8
                         };
                         let mixed = [mix(0), mix(1), mix(2), mix(3)];
-                        let px = if mixed[3] > 0 && !palette.is_empty() {
-                            let pi = raster::nearest_oklab(
-                                [mixed[0], mixed[1], mixed[2], 255],
-                                &palette,
-                            )
-                            .unwrap_or(0);
-                            [palette[pi][0], palette[pi][1], palette[pi][2], mixed[3]]
-                        } else {
-                            mixed
+                        let px = match (mixed[3] > 0, lab.nearest(mixed)) {
+                            (true, Some(pi)) => {
+                                let c = lab.color(pi);
+                                [c[0], c[1], c[2], mixed[3]]
+                            }
+                            _ => mixed,
                         };
                         img.put_pixel(x, y, Rgba(px));
                     }
@@ -3408,7 +3406,7 @@ impl Document {
                 part.put_pixel(x, y, *full.get_pixel(rx0 as u32 + x, ry0 as u32 + y));
             }
         }
-        let palette = self.meta.palette.clone();
+        let mut lab = raster::PaletteLab::new(&self.meta.palette);
         let span = (to_frame - from_frame) as f32;
         let mut placed = Vec::new();
         for f in (from_frame + 1)..=to_frame {
@@ -3440,12 +3438,12 @@ impl Document {
                 if tx < 0 || ty < 0 || tx >= w || ty >= h {
                     continue;
                 }
-                let c = if snap && !palette.is_empty() {
-                    let pi =
-                        raster::nearest_oklab([p.0[0], p.0[1], p.0[2], 255], &palette).unwrap_or(0);
-                    Rgba([palette[pi][0], palette[pi][1], palette[pi][2], p.0[3]])
-                } else {
-                    *p
+                let c = match (snap, lab.nearest(p.0)) {
+                    (true, Some(pi)) => {
+                        let pc = lab.color(pi);
+                        Rgba([pc[0], pc[1], pc[2], p.0[3]])
+                    }
+                    _ => *p,
                 };
                 img.put_pixel(tx as u32, ty as u32, c);
             }

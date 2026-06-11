@@ -360,9 +360,15 @@ impl Studio {
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let idx = doc.add_layer(name, opacity, blend);
-        let mut out = self.commit(&dir, id, doc)?;
-        out["added_layer"] = json!(idx);
-        Ok(out)
+        doc.save(&dir)?;
+        // Slim ack — echoing the whole structure() grew O(layers×frames) per
+        // call; doc_info still serves the full picture on demand.
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "added_layer": idx,
+            "layers": doc.meta.layers.len(),
+        }))
     }
 
     pub fn doc_set_layer(
@@ -386,9 +392,15 @@ impl Studio {
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let idx = doc.add_frame(duration_ms, copy_from);
-        let mut out = self.commit(&dir, id, doc)?;
-        out["added_frame"] = json!(idx);
-        Ok(out)
+        doc.save(&dir)?;
+        // Slim ack — echoing the whole structure() grew O(layers×frames) per
+        // call during walk-cycle work; doc_info has the full picture.
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "added_frame": idx,
+            "frames": doc.meta.frames.len(),
+        }))
     }
 
     pub fn doc_set_frame_duration(&self, id: &str, frame: usize, ms: u32) -> Result<Value, String> {

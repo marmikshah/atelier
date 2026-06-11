@@ -1226,6 +1226,7 @@ impl Studio {
             raster::median_cut_weighted(&pairs, colors.max(2), &pin)
         };
         // Quantise (optionally Floyd–Steinberg) to the palette.
+        let mut lab = raster::PaletteLab::new(&palette);
         let mut out = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
         let idx = |x: i32, y: i32| (y * w + x) as usize;
         for y in 0..h {
@@ -1240,8 +1241,8 @@ impl Studio {
                     p[2].clamp(0.0, 255.0) as u8,
                     255,
                 ];
-                let pi = raster::nearest_oklab(cur, &palette).unwrap_or(0);
-                let chosen = palette[pi];
+                let pi = lab.nearest(cur).unwrap_or(0);
+                let chosen = lab.color(pi);
                 out.put_pixel(
                     x as u32,
                     y as u32,

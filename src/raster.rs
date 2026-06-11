@@ -561,17 +561,75 @@ pub fn oklab_delta(a: [u8; 4], b: [u8; 4]) -> f32 {
 }
 
 /// Index of the perceptually nearest entry in `palette` to `p` (OKLab ΔE).
-/// Returns None for an empty palette.
+/// Returns None for an empty palette. Converts the probe ONCE and single-passes
+/// the palette (the old min_by evaluated both deltas — and re-converted the
+/// probe — per comparison). For per-pixel loops prefer [`PaletteLab`].
 pub fn nearest_oklab(p: [u8; 4], palette: &[[u8; 4]]) -> Option<usize> {
-    palette
-        .iter()
-        .enumerate()
-        .min_by(|(_, x), (_, y)| {
-            oklab_delta(p, **x)
-                .partial_cmp(&oklab_delta(p, **y))
-                .unwrap_or(std::cmp::Ordering::Equal)
-        })
-        .map(|(i, _)| i)
+    if palette.is_empty() {
+        return None;
+    }
+    let (l, a, b) = srgb_to_oklab(p);
+    let (mut best, mut bd) = (0usize, f32::MAX);
+    for (i, c) in palette.iter().enumerate() {
+        let (l2, a2, b2) = srgb_to_oklab(*c);
+        let d = (l - l2).powi(2) + (a - a2).powi(2) + (b - b2).powi(2);
+        if d < bd {
+            bd = d;
+            best = i;
+        }
+    }
+    Some(best)
+}
+
+/// Precomputed OKLab palette for per-pixel nearest-colour loops: the palette
+/// converts once, and lookups memoize per distinct probe RGB — pixel art has
+/// dozens of distinct colours but thousands of pixels, so the powf-heavy
+/// sRGB→OKLab conversion drops from per-pixel to per-distinct-colour.
+pub struct PaletteLab {
+    palette: Vec<[u8; 4]>,
+    labs: Vec<(f32, f32, f32)>,
+    memo: std::collections::HashMap<[u8; 3], usize>,
+}
+
+impl PaletteLab {
+    pub fn new(palette: &[[u8; 4]]) -> Self {
+        PaletteLab {
+            palette: palette.to_vec(),
+            labs: palette.iter().map(|c| srgb_to_oklab(*c)).collect(),
+            memo: std::collections::HashMap::new(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.palette.is_empty()
+    }
+
+    pub fn color(&self, i: usize) -> [u8; 4] {
+        self.palette[i]
+    }
+
+    /// Index of the perceptually nearest palette entry (alpha ignored), or
+    /// None for an empty palette.
+    pub fn nearest(&mut self, p: [u8; 4]) -> Option<usize> {
+        if self.palette.is_empty() {
+            return None;
+        }
+        let key = [p[0], p[1], p[2]];
+        if let Some(&i) = self.memo.get(&key) {
+            return Some(i);
+        }
+        let (l, a, b) = srgb_to_oklab(p);
+        let (mut best, mut bd) = (0usize, f32::MAX);
+        for (i, (l2, a2, b2)) in self.labs.iter().enumerate() {
+            let d = (l - l2).powi(2) + (a - a2).powi(2) + (b - b2).powi(2);
+            if d < bd {
+                bd = d;
+                best = i;
+            }
+        }
+        self.memo.insert(key, best);
+        Some(best)
+    }
 }
 
 /// A perceptually-even shading ramp built in OKLCh, darkest → lightest.

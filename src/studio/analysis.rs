@@ -141,23 +141,39 @@ impl Studio {
         let (w, h) = (img.width(), img.height());
         let mut bbox: Option<[i32; 4]> = None;
         let mut opaque = 0u64;
-        let mut grid: Vec<String> = Vec::with_capacity(h as usize);
-        for y in 0..h {
-            let mut row = String::with_capacity(w as usize);
-            for x in 0..w {
-                let on = img.get_pixel(x, y).0[3] >= alpha_threshold;
-                if on {
-                    opaque += 1;
-                    let (xi, yi) = (x as i32, y as i32);
-                    bbox = Some(match bbox {
-                        Some([a, b, c, d]) => [a.min(xi), b.min(yi), c.max(xi), d.max(yi)],
-                        None => [xi, yi, xi, yi],
-                    });
-                }
-                row.push(if on { '#' } else { '.' });
+        for (x, y, p) in img.enumerate_pixels() {
+            if p.0[3] >= alpha_threshold {
+                opaque += 1;
+                let (xi, yi) = (x as i32, y as i32);
+                bbox = Some(match bbox {
+                    Some([a, b, c, d]) => [a.min(xi), b.min(yi), c.max(xi), d.max(yi)],
+                    None => [xi, yi, xi, yi],
+                });
             }
-            grid.push(row);
         }
+        // The text grid is capped like doc_dump_region's — an uncapped
+        // 128x128 grid is ~4K tokens of mostly dots.
+        let grid: Value = if (w as u64) * (h as u64) <= 4096 {
+            let rows: Vec<String> = (0..h)
+                .map(|y| {
+                    (0..w)
+                        .map(|x| {
+                            if img.get_pixel(x, y).0[3] >= alpha_threshold {
+                                '#'
+                            } else {
+                                '.'
+                            }
+                        })
+                        .collect()
+                })
+                .collect();
+            json!(rows)
+        } else {
+            json!(format!(
+                "skipped — {}x{} exceeds the 4096-px grid cap; use doc_look or doc_dump_region on a region",
+                w, h
+            ))
+        };
         let fill_ratio = opaque as f64 / (w as u64 * h as u64) as f64;
         Ok(json!({
             "bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
@@ -665,8 +681,11 @@ impl Studio {
         let in_pal = |c: [u8; 4]| -> bool { doc.meta.palette.contains(&c) };
         let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]);
         let count = entries.len();
-        let truncated = count > 256;
-        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(256).collect();
+        // Top-48 with an "others" rollup: an unquantized import has hundreds
+        // of distinct colours, and 256 JSON objects of them helps nobody.
+        let truncated = count > 48;
+        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(48).collect();
+        let others_pixels: u64 = entries.iter().skip(48).map(|(_, n)| n).sum();
         let mut off_palette_count = 0u32;
         let colors: Vec<Value> = listed
             .iter()
@@ -707,13 +726,26 @@ impl Studio {
                 }
             }
         }
-        Ok(json!({
+        // Off-palette tally covers EVERY distinct colour, not just the listed top.
+        if has_palette {
+            off_palette_count +=
+                entries.iter().skip(48).filter(|(c, _)| !in_pal(*c)).count() as u32;
+        }
+        let mut out = json!({
             "count": count,
             "colors": colors,
             "off_palette_count": if has_palette { json!(off_palette_count) } else { Value::Null },
             "near_dupes": near_dupes,
             "truncated": truncated,
-        }))
+        });
+        if truncated {
+            out["others"] = json!({
+                "colors": count - 48,
+                "pixels": others_pixels,
+                "note": "rolled up — quantize/snap_palette first for a readable report",
+            });
+        }
+        Ok(out)
     }
 
     /// Validate a colour ramp's craft: monotonic value, even value spacing, hue
