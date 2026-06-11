@@ -505,6 +505,30 @@ impl Studio {
         ))
     }
 
+    /// Encode one cel (`layer` Some) or the flattened frame (`layer` None) as an
+    /// adaptively-scaled PNG for same-turn inline previews after a mutation.
+    pub fn preview_png(
+        &self,
+        id: &str,
+        layer: Option<usize>,
+        frame: usize,
+    ) -> Result<Vec<u8>, String> {
+        let (_dir, doc) = self.open(id)?;
+        let img = doc.analysis_image(layer, frame)?;
+        let sc = preview_scale(img.width(), img.height());
+        let scaled = if sc > 1 {
+            image::imageops::resize(
+                &img,
+                img.width() * sc,
+                img.height() * sc,
+                image::imageops::FilterType::Nearest,
+            )
+        } else {
+            img
+        };
+        encode_png(&scaled)
+    }
+
     /// Flatten one frame and encode it straight to PNG bytes in memory (no file).
     /// Backs the MCP `render` resource, which serves the bytes as a blob.
     pub fn render_png_bytes(&self, id: &str, frame: usize, scale: u32) -> Result<Vec<u8>, String> {
@@ -1591,6 +1615,20 @@ impl Studio {
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "ops": ops.len()}))
     }
+}
+
+/// Adaptive preview scale: aim for ~384px on the longest side (big enough for a
+/// vision model to judge sprite-scale detail), clamped to 1..=16.
+pub fn preview_scale(w: u32, h: u32) -> u32 {
+    (384 / w.max(h).max(1)).clamp(1, 16)
+}
+
+/// Encode an RGBA image to in-memory PNG bytes.
+pub fn encode_png(img: &image::RgbaImage) -> Result<Vec<u8>, String> {
+    let mut buf = std::io::Cursor::new(Vec::new());
+    img.write_to(&mut buf, image::ImageFormat::Png)
+        .map_err(|e| e.to_string())?;
+    Ok(buf.into_inner())
 }
 
 #[cfg(test)]

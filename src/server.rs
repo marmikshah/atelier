@@ -46,6 +46,33 @@ fn img_result(r: Result<(Vec<u8>, Value), String>) -> CallToolResult {
     }
 }
 
+/// Like `img_result`, but the PNG is optional: tools whose preview is
+/// conditional (diff overlays, seam overlays) degrade to a plain text result.
+fn opt_img_result(r: Result<(Option<Vec<u8>>, Value), String>) -> CallToolResult {
+    match r {
+        Ok((Some(png), report)) => img_result(Ok((png, report))),
+        Ok((None, report)) => res(Ok(report)),
+        Err(e) => res(Err(e)),
+    }
+}
+
+/// Append a best-effort inline preview to a successful mutation: the op's JSON
+/// report plus a PNG of the touched cel (or flattened frame), so the agent SEES
+/// the result of an import/stamp/quantize in the same turn. A preview failure
+/// never fails the call — the op already landed.
+fn previewed(
+    studio: &Studio,
+    id: &str,
+    layer: Option<usize>,
+    frame: usize,
+    r: Result<Value, String>,
+) -> CallToolResult {
+    match r {
+        Ok(report) => opt_img_result(Ok((studio.preview_png(id, layer, frame).ok(), report))),
+        Err(e) => res(Err(e)),
+    }
+}
+
 /// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
 fn palette_list(v: &[Vec<i64>]) -> Vec<[u8; 4]> {
     v.iter().map(|c| rgba(c)).collect()
@@ -1810,10 +1837,11 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Place an external PNG into a cel at (x,y) — import bridge for AI-gen/real/Figma art. Optional `scale` (nearest-neighbour) and `rotate` (degrees). By default draws OVER existing content with `opacity`+`blend` (sub-sprite reuse, no layer-per-element); `replace`=true overwrites the whole cel. Honours an active selection."
+        description = "Place an external PNG into a cel at (x,y) — import bridge for AI-gen/real/Figma art. Optional `scale` (nearest-neighbour) and `rotate` (degrees). By default draws OVER existing content with `opacity`+`blend` (sub-sprite reuse, no layer-per-element); `replace`=true overwrites the whole cel. Honours an active selection. Returns an INLINE preview of the stamped cel."
     )]
     async fn doc_stamp_image(&self, Parameters(p): Parameters<DocStampImage>) -> CallToolResult {
-        res(self.studio().doc_stamp_image(
+        let studio = self.studio();
+        let r = studio.doc_stamp_image(
             &p.doc_id,
             p.layer,
             p.frame,
@@ -1825,7 +1853,8 @@ impl Atelier {
             p.opacity.unwrap_or(255),
             p.blend.as_deref().unwrap_or("normal"),
             p.replace.unwrap_or(false),
-        ))
+        );
+        previewed(&studio, &p.doc_id, Some(p.layer), p.frame, r)
     }
 
     #[tool(
@@ -2037,7 +2066,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Snap every opaque pixel to the nearest colour in `colors`; with no `colors`, derive a `max_colors` palette from the cel by median cut. Returns the palette used. Posterise / down-palette imported or AI-gen art."
+        description = "Snap every opaque pixel to the nearest colour in `colors`; with no `colors`, derive a `max_colors` palette from the cel by median cut. Returns the palette used plus an INLINE preview of the result. Posterise / down-palette imported or AI-gen art."
     )]
     async fn doc_quantize(&self, Parameters(p): Parameters<DocQuantize>) -> CallToolResult {
         let palette: Vec<[u8; 4]> = p
@@ -2045,13 +2074,15 @@ impl Atelier {
             .as_ref()
             .map(|cs| cs.iter().map(|c| rgba(c)).collect())
             .unwrap_or_default();
-        res(self.studio().doc_quantize(
+        let studio = self.studio();
+        let r = studio.doc_quantize(
             &p.doc_id,
             p.layer,
             p.frame,
             palette,
             p.max_colors.unwrap_or(16),
-        ))
+        );
+        previewed(&studio, &p.doc_id, Some(p.layer), p.frame, r)
     }
 
     #[tool(
@@ -2457,10 +2488,10 @@ impl Atelier {
 
     // -- value & colour feedback (read-only analysis to judge values/colour) --
     #[tool(
-        description = "Render a frame in analysis space to a PNG you can SEE: mode=\"grayscale\" (luma/value), \"bands\" (posterise luma into `bands` even steps to read the value structure), \"saturation\" or \"hue\" (that HSL channel as grey). Same output as doc_render. Pass report=true for value stats (min/max/mean grey, contrast=(max-min)/255, per-band coverage) over opaque pixels."
+        description = "Render a frame in analysis space, returned INLINE so you SEE it in the same turn: mode=\"grayscale\" (luma/value), \"bands\" (posterise luma into `bands` even steps to read the value structure), \"saturation\" or \"hue\" (that HSL channel as grey). Pass report=true for value stats (min/max/mean grey, contrast=(max-min)/255, per-band coverage) over opaque pixels."
     )]
     async fn doc_render_value(&self, Parameters(p): Parameters<DocRenderValue>) -> CallToolResult {
-        res(self.studio().doc_render_value(
+        img_result(self.studio().doc_render_value(
             &p.doc_id,
             p.frame.unwrap_or(0),
             &p.mode,
@@ -2528,10 +2559,10 @@ impl Atelier {
 
     // -- animation & tiling feedback (read-only) + keyframe write --
     #[tool(
-        description = "Diff two frames pixel-by-pixel: returns changed/added/removed/recolored counts and the change_bbox. `layer` diffs one cel (omit = flattened). `region` [x0,y0,x1,y1] restricts the area. grid=true adds a text map (`.`unchanged `+`added `-`removed `~`recolored, area capped 4096 px). render=\"overlay\" writes a PNG of frame_b dimmed 40% with changed pixels flagged (green=added/red=removed/yellow=recoloured). Inspect what actually moved between animation frames."
+        description = "Diff two frames pixel-by-pixel: returns changed/added/removed/recolored counts and the change_bbox. `layer` diffs one cel (omit = flattened). `region` [x0,y0,x1,y1] restricts the area. grid=true adds a text map (`.`unchanged `+`added `-`removed `~`recolored, area capped 4096 px). render=\"overlay\" returns an INLINE PNG of frame_b dimmed 40% with changed pixels flagged (green=added/red=removed/yellow=recoloured). Inspect what actually moved between animation frames."
     )]
     async fn doc_frame_diff(&self, Parameters(p): Parameters<DocFrameDiff>) -> CallToolResult {
-        res(self.studio().doc_frame_diff(
+        opt_img_result(self.studio().doc_frame_diff(
             &p.doc_id,
             p.frame_a,
             p.frame_b,
@@ -2545,10 +2576,10 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Tiling seam check: wrap-test a frame's far edge against the near edge it abuts when repeated. axis=\"horizontal\" tests left↔right, \"vertical\" top↔bottom, \"both\" runs each. Per axis returns {mismatches, max_delta, worst:[[x,y,delta] ≤10]}. `threshold` is the max per-channel delta still counted a match (default 0). `out_path` renders the frame with mismatched edge pixels highlighted red. Verify seamless tiles."
+        description = "Tiling seam check: wrap-test a frame's far edge against the near edge it abuts when repeated. axis=\"horizontal\" tests left↔right, \"vertical\" top↔bottom, \"both\" runs each. Per axis returns {mismatches, max_delta, worst:[[x,y,delta] ≤10]}; any mismatch also returns an INLINE overlay PNG (frame dimmed, bad edge pixels red) so you see WHERE the seam pops. `threshold` is the max per-channel delta still counted a match (default 0). Verify seamless tiles."
     )]
     async fn doc_seam_report(&self, Parameters(p): Parameters<DocSeamReport>) -> CallToolResult {
-        res(self.studio().doc_seam_report(
+        opt_img_result(self.studio().doc_seam_report(
             &p.doc_id,
             p.layer,
             p.frame.unwrap_or(0),
@@ -2773,15 +2804,17 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. Returns the pixel count moved."
+        description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. Returns the pixel count moved plus an INLINE preview of the result."
     )]
     async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
-        res(self.studio().snap_palette(
+        let studio = self.studio();
+        let r = studio.snap_palette(
             &p.doc_id,
             p.layer,
             p.frame,
             p.palette.map(|v| palette_list(&v)),
-        ))
+        );
+        previewed(&studio, &p.doc_id, p.layer, p.frame.unwrap_or(0), r)
     }
 
     #[tool(
@@ -3034,7 +3067,8 @@ impl Atelier {
         description = "Import an external image (AI-gen / photo / scan) as CLEAN pixel art: area-downscale to target_w×target_h, then Floyd–Steinberg error-diffuse to a palette — the document's locked one (to_doc_palette) or a median-cut of `colors` — with optional alpha defringe. The modern reference-onboarding pipeline; follow with doc_critique / doc_smooth_edges."
     )]
     async fn doc_import_clean(&self, Parameters(p): Parameters<DocImportClean>) -> CallToolResult {
-        res(self.studio().import_clean(
+        let studio = self.studio();
+        let r = studio.import_clean(
             &p.doc_id,
             p.layer.unwrap_or(0),
             p.frame.unwrap_or(0),
@@ -3045,7 +3079,14 @@ impl Atelier {
             p.dither.unwrap_or(true),
             p.defringe.unwrap_or(false),
             p.to_doc_palette.unwrap_or(false),
-        ))
+        );
+        previewed(
+            &studio,
+            &p.doc_id,
+            Some(p.layer.unwrap_or(0)),
+            p.frame.unwrap_or(0),
+            r,
+        )
     }
 
     #[tool(

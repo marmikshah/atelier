@@ -368,8 +368,9 @@ impl Studio {
 
     /// Render a frame in an analysis colour space to a PNG you can SEE: grayscale
     /// (luma), `bands` (posterised luma), or the saturation/hue HSL channel as
-    /// grey. Same output shape as doc_render; when `report`, adds value stats over
-    /// the opaque pixels (min/max/mean grey, contrast, per-band coverage).
+    /// grey. Returns the encoded PNG bytes (inlined by the MCP layer) plus the
+    /// report; when `report`, adds value stats over the opaque pixels
+    /// (min/max/mean grey, contrast, per-band coverage).
     #[allow(clippy::too_many_arguments)]
     pub fn doc_render_value(
         &self,
@@ -380,7 +381,7 @@ impl Studio {
         scale: u32,
         out_path: Option<&str>,
         report: bool,
-    ) -> Result<Value, String> {
+    ) -> Result<(Vec<u8>, Value), String> {
         let (dir, doc) = self.open(id)?;
         let img = doc.value_image(frame, mode, bands)?;
         let out = match out_path {
@@ -441,7 +442,7 @@ impl Studio {
                 });
             }
         }
-        Ok(res)
+        Ok((crate::studio::encode_png(&saved)?, res))
     }
 
     /// WCAG contrast check in one of three modes. `region`: mean colour inside vs
@@ -851,9 +852,10 @@ impl Studio {
     /// Diff two frames pixel-by-pixel. `layer` None flattens. `region` restricts
     /// the compared area (else whole canvas). `grid` adds a text map (`.`unchanged
     /// `+`added `-`removed `~`recolored, area-capped like doc_dump_region).
-    /// `render` "overlay" writes a PNG with frame_b dimmed 40% and changed pixels
-    /// flagged (green=added, red=removed, yellow=recoloured). Returns the change
-    /// tallies, the bbox of all changed pixels, and any grid/path produced.
+    /// `render` "overlay" produces a PNG with frame_b dimmed 40% and changed
+    /// pixels flagged (green=added, red=removed, yellow=recoloured) — returned as
+    /// bytes for the MCP layer to inline, and written to `out_path` when given.
+    /// Returns the change tallies and the bbox of all changed pixels.
     #[allow(clippy::too_many_arguments)]
     pub fn doc_frame_diff(
         &self,
@@ -866,7 +868,7 @@ impl Studio {
         render: &str,
         out_path: Option<&str>,
         scale: u32,
-    ) -> Result<Value, String> {
+    ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
         let (dir, doc) = self.open(id)?;
         let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
@@ -922,6 +924,7 @@ impl Studio {
             res["grid"] = json!(rows);
             res["origin"] = json!([x0, y0]);
         }
+        let mut png = None;
         if render == "overlay" {
             let out = match out_path {
                 Some(p) => PathBuf::from(p),
@@ -965,18 +968,20 @@ impl Studio {
             }
             img.save(&out).map_err(|e| e.to_string())?;
             res["path"] = json!(out.to_string_lossy());
+            png = Some(crate::studio::encode_png(&img)?);
         } else if render != "none" {
             return Err(format!("unknown render '{}' — use none|overlay", render));
         }
-        Ok(res)
+        Ok((png, res))
     }
 
     /// Tiling seam report: wrap-test the far edge against the near edge for the
     /// requested `axis` ("horizontal" tests left↔right, "vertical" top↔bottom,
     /// "both" runs each). `threshold` is the max per-channel delta still counted
-    /// a match. `out_path` (optional) renders frame `frame` with every mismatched
-    /// EDGE pixel painted red over the dimmed art and returns its path. Per axis:
-    /// `{mismatches, max_delta, worst:[[x,y,delta] ≤10]}`.
+    /// a match. When any edge pixel mismatches (or `out_path` is given) an
+    /// overlay PNG — frame dimmed, mismatched EDGE pixels painted red — is
+    /// returned as bytes for the MCP layer to inline (and written to `out_path`
+    /// when given). Per axis: `{mismatches, max_delta, worst:[[x,y,delta] ≤10]}`.
     pub fn doc_seam_report(
         &self,
         id: &str,
@@ -985,7 +990,7 @@ impl Studio {
         axis: &str,
         threshold: i32,
         out_path: Option<&str>,
-    ) -> Result<Value, String> {
+    ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
         let (_dir, doc) = self.open(id)?;
         let (want_h, want_v) = match axis {
@@ -1020,12 +1025,9 @@ impl Studio {
             out["vertical"] = j;
             flagged.extend(w);
         }
-        if let Some(p) = out_path {
+        let mut png = None;
+        if out_path.is_some() || !flagged.is_empty() {
             let img = doc.analysis_image(layer, frame)?;
-            let out_p = PathBuf::from(p);
-            if let Some(parent) = out_p.parent() {
-                let _ = fs::create_dir_all(parent);
-            }
             // Dim the art to 40%, then paint the (capped) worst edge cells red.
             let mut canvas = RgbaImage::from_pixel(img.width(), img.height(), Rgba([0, 0, 0, 0]));
             for (x, y, px) in img.enumerate_pixels() {
@@ -1038,10 +1040,28 @@ impl Studio {
             for w in &flagged {
                 canvas.put_pixel(w[0] as u32, w[1] as u32, Rgba([255, 0, 0, 255]));
             }
-            canvas.save(&out_p).map_err(|e| e.to_string())?;
-            out["path"] = json!(out_p.to_string_lossy());
+            let sc = crate::studio::preview_scale(canvas.width(), canvas.height());
+            let scaled = if sc > 1 {
+                image::imageops::resize(
+                    &canvas,
+                    canvas.width() * sc,
+                    canvas.height() * sc,
+                    image::imageops::FilterType::Nearest,
+                )
+            } else {
+                canvas
+            };
+            if let Some(p) = out_path {
+                let out_p = PathBuf::from(p);
+                if let Some(parent) = out_p.parent() {
+                    let _ = fs::create_dir_all(parent);
+                }
+                scaled.save(&out_p).map_err(|e| e.to_string())?;
+                out["path"] = json!(out_p.to_string_lossy());
+            }
+            png = Some(crate::studio::encode_png(&scaled)?);
         }
-        Ok(out)
+        Ok((png, out))
     }
 
     /// Audit an animation. mode="seam" diffs the wrap the loop actually plays
@@ -1349,10 +1369,11 @@ mod tests {
         s.doc_pencil("d", 0, 0, vec![(1, 0)], [255, 255, 255, 255], 1)
             .unwrap();
         let out = s.docs_dir.join("val.png");
-        let r = s
+        let (png, r) = s
             .doc_render_value("d", 0, "grayscale", 4, 1, out.to_str(), true)
             .unwrap();
         assert!(out.exists());
+        assert!(!png.is_empty()); // inline preview bytes
         assert_eq!(r["size"], json!([4, 4])); // scale 1 keeps native size
         let rep = &r["report"];
         assert_eq!(rep["min"], json!(0)); // black luma
@@ -1485,10 +1506,11 @@ mod tests {
             .unwrap();
         s.doc_pencil("d", 0, 1, vec![(1, 1)], [0, 255, 0, 255], 1)
             .unwrap();
-        let r = s
+        let (png, r) = s
             .doc_frame_diff("d", 0, 1, None, None, true, "none", None, 1)
             .unwrap();
-        // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
+        assert!(png.is_none()); // render="none" → no inline overlay
+                                // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
         assert_eq!(r["added"], json!(1));
         assert_eq!(r["removed"], json!(1));
         assert_eq!(r["recolored"], json!(0));
@@ -1496,12 +1518,13 @@ mod tests {
         assert_eq!(r["change_bbox"], json!([0, 0, 1, 1]));
         assert_eq!(r["grid"][0], "-..."); // (0,0) removed
         assert_eq!(r["grid"][1], ".+.."); // (1,1) added
-                                          // overlay render writes a PNG
+                                          // overlay render writes a PNG and returns the bytes for inlining
         let out = s.docs_dir.join("diff.png");
-        let ov = s
+        let (ov_png, ov) = s
             .doc_frame_diff("d", 0, 1, None, None, false, "overlay", out.to_str(), 1)
             .unwrap();
         assert!(out.exists());
+        assert!(ov_png.is_some());
         assert_eq!(ov["path"], json!(out.to_string_lossy()));
         // unknown render mode is an actionable error
         assert!(s
@@ -1516,7 +1539,8 @@ mod tests {
         // A left column that does not match the right column → horizontal seam.
         s.doc_rect("d", 0, 0, 0, 0, 0, 3, [255, 0, 0, 255], true, 1)
             .unwrap();
-        let r = s.doc_seam_report("d", None, 0, "both", 0, None).unwrap();
+        let (png, r) = s.doc_seam_report("d", None, 0, "both", 0, None).unwrap();
+        assert!(png.is_some()); // mismatches → inline overlay
         assert!(r["horizontal"]["mismatches"].as_u64().unwrap() > 0);
         assert_eq!(r["vertical"]["mismatches"], json!(0)); // rows tile fine (all blank top/bottom)
         assert_eq!(r["horizontal"]["max_delta"], json!(255)); // opaque red vs transparent
@@ -1527,7 +1551,8 @@ mod tests {
         // a seamless cel (uniform fill) has zero mismatches on both axes
         s.doc_create("e", 4, 4).unwrap();
         s.doc_fill_cel("e", 0, 0, [10, 20, 30, 255]).unwrap();
-        let clean = s.doc_seam_report("e", None, 0, "both", 0, None).unwrap();
+        let (clean_png, clean) = s.doc_seam_report("e", None, 0, "both", 0, None).unwrap();
+        assert!(clean_png.is_none()); // no mismatches → no overlay
         assert_eq!(clean["horizontal"]["mismatches"], json!(0));
         assert_eq!(clean["vertical"]["mismatches"], json!(0));
         // bad axis errors
