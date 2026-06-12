@@ -1012,8 +1012,10 @@ pub fn median_cut_weighted(
     pinned: &[[u8; 4]],
 ) -> Vec<[u8; 4]> {
     let mut out: Vec<[u8; 4]> = pinned.to_vec();
-    let want = n.max(1).saturating_sub(out.len()).max(1);
-    if pixels.is_empty() {
+    let want = n.max(1).saturating_sub(out.len());
+    if pixels.is_empty() || want == 0 {
+        // Pins are "must keep": when they already fill the budget, the
+        // palette is exactly the pins — never one bonus derived colour.
         if out.is_empty() {
             out.push([0, 0, 0, 255]);
         }
@@ -1133,8 +1135,11 @@ pub fn downscale_area(src: &RgbaImage, tw: u32, th: u32) -> RgbaImage {
 /// Corner-seeded background removal: flood from each opaque corner over pixels
 /// perceptually close to that corner's colour (OKLab ΔE ≤ `tol`), zeroing
 /// their alpha. Run BEFORE palette extraction so a backdrop can't steal
-/// palette slots from the subject. Handles flat and gently-graded backdrops;
-/// leaves enclosed interior regions alone.
+/// palette slots from the subject. Corner seeds (not whole-border seeds) on
+/// purpose: a subject that touches a canvas edge — feet at the bottom, a
+/// full-bleed portrait — must not seed its own deletion. The cost is that
+/// strongly-graded backdrops clear only the corner-toned bands; flat and
+/// gently-graded backdrops clear fully. Leaves enclosed interior regions alone.
 pub fn remove_background(img: &mut RgbaImage, tol: f32) {
     let (w, h) = (img.width() as i32, img.height() as i32);
     if w == 0 || h == 0 {
@@ -1417,6 +1422,24 @@ pub fn sample_gradient(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn median_cut_weighted_pins_consume_the_budget() {
+        let pixels: Vec<([u8; 3], u64)> = vec![([10, 20, 30], 100), ([200, 50, 50], 5)];
+        let pins = [
+            [0, 0, 0, 255],
+            [255, 255, 255, 255],
+            [255, 0, 0, 255],
+            [0, 255, 0, 255],
+        ];
+        // Pins fill the budget exactly: no bonus derived colour sneaks past n.
+        let pal = median_cut_weighted(&pixels, 4, &pins);
+        assert_eq!(pal.len(), 4);
+        assert_eq!(pal, pins.to_vec());
+        // With headroom, derived colours fill the remainder.
+        let pal6 = median_cut_weighted(&pixels, 6, &pins);
+        assert!(pal6.len() > 4 && pal6.len() <= 6);
+    }
 
     #[test]
     fn oklab_round_trips_within_one_step() {

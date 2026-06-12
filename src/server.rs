@@ -2223,9 +2223,14 @@ impl Atelier {
         description = "Timeline lifecycle: action=\"delete\" removes a frame (cels reindex, tags remap, tags covering only that frame are dropped; the last frame is protected), \"insert\" adds an empty frame at `frame`, \"duplicate\" copies a frame to frame+1, \"move\" relocates `frame` to `to_index`. The recovery path for a bad tween or extra pose — pair with doc_checkpoint for whole-doc rollback."
     )]
     async fn doc_frame_ops(&self, Parameters(p): Parameters<DocFrameOps>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_frame_ops(&p.doc_id, &p.action, p.frame, p.to_index, p.duration_ms))
+        let studio = self.studio();
+        // delete destroys cels and move can scramble tags — same pre-op net
+        // as the other destructive tools. insert/duplicate are additive;
+        // don't churn the 5-slot auto-checkpoint ring for them.
+        if p.action == "delete" || p.action == "move" {
+            studio.auto_checkpoint(&p.doc_id, "frame_ops");
+        }
+        res(studio.doc_frame_ops(&p.doc_id, &p.action, p.frame, p.to_index, p.duration_ms))
     }
 
     #[tool(
@@ -3217,8 +3222,7 @@ impl Atelier {
             p.target_w,
             p.target_h,
             p.colors.unwrap_or(16),
-            p.dither
-                .unwrap_or(p.target_w.max(p.target_h.unwrap_or(0)) > 64),
+            p.dither,
             p.defringe.unwrap_or(false),
             p.to_doc_palette.unwrap_or(false),
             p.remove_bg.unwrap_or(false),

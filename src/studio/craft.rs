@@ -395,7 +395,13 @@ impl Studio {
                     + 1;
                 let cpid = format!("cp{}", n);
                 let dst = cps.join(&cpid);
-                snapshot_files(&dir, &dst)?;
+                // A failed snapshot must not leave a partial checkpoint dir —
+                // restore would treat it as valid and the prune rotation
+                // (which lists by doc.json presence) might never collect it.
+                if let Err(e) = snapshot_files(&dir, &dst) {
+                    let _ = fs::remove_dir_all(&dst);
+                    return Err(e);
+                }
                 if let Some(lbl) = label {
                     let _ = fs::write(dst.join("label.txt"), lbl);
                 }
@@ -1171,7 +1177,7 @@ impl Studio {
         target_w: u32,
         target_h: Option<u32>,
         colors: usize,
-        dither: bool,
+        dither: Option<bool>,
         defringe: bool,
         to_doc_palette: bool,
         remove_bg: bool,
@@ -1196,6 +1202,9 @@ impl Studio {
                 tw, th
             ));
         }
+        // Default decided HERE, where the derived height is known — at sprite
+        // scale (longest side ≤ 64px) error diffusion reads as speckle.
+        let dither = dither.unwrap_or(tw.max(th) > 64);
         let resized = raster::downscale_area(&src, tw, th);
         let mut work: Vec<[f32; 4]> = resized
             .pixels()
@@ -2049,7 +2058,7 @@ mod tests {
                 2,
                 Some(2),
                 4,
-                true,
+                Some(true),
                 false,
                 false,
                 false,
@@ -2098,7 +2107,7 @@ mod tests {
                 8,
                 None,
                 4,
-                false,
+                Some(false),
                 false,
                 false,
                 true,

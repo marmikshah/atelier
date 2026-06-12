@@ -1154,27 +1154,44 @@ impl Studio {
             }
             "spacing" => {
                 // Centre per played frame; offsets are step-to-step deltas.
-                let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
+                // A frame whose silhouette has no opaque pixel in the region
+                // stays None — scoring it as motion to the canvas origin
+                // poisoned drift/evenness whenever a part swung out of a
+                // fixed region rect.
+                let mut centers: Vec<Option<[f64; 2]>> = Vec::with_capacity(seq.len());
                 for &f in &seq {
-                    let c = doc
-                        .silhouette_center(layer, f, region)?
-                        .unwrap_or([0.0, 0.0]);
-                    centers.push(c);
+                    centers.push(doc.silhouette_center(layer, f, region)?);
                 }
                 let round1 = |v: f64| (v * 10.0).round() / 10.0;
                 let per_frame_center: Vec<Value> = centers
                     .iter()
-                    .map(|c| json!([round1(c[0]), round1(c[1])]))
+                    .map(|c| match c {
+                        Some(c) => json!([round1(c[0]), round1(c[1])]),
+                        None => Value::Null,
+                    })
                     .collect();
-                let offsets: Vec<[f64; 2]> = centers
-                    .windows(2)
-                    .map(|w| [w[1][0] - w[0][0], w[1][1] - w[0][1]])
-                    .collect();
-                let per_frame_offset: Vec<Value> = offsets
+                let empty_frames: Vec<usize> = centers
                     .iter()
-                    .map(|o| json!([round1(o[0]), round1(o[1])]))
+                    .enumerate()
+                    .filter(|(_, c)| c.is_none())
+                    .map(|(i, _)| seq[i])
                     .collect();
-                let total = match (centers.first(), centers.last()) {
+                // Offsets only between consecutive frames that BOTH have a
+                // centre; the per-frame list keeps nulls in place.
+                let mut offsets: Vec<[f64; 2]> = Vec::new();
+                let per_frame_offset: Vec<Value> = centers
+                    .windows(2)
+                    .map(|w| match (w[0], w[1]) {
+                        (Some(a), Some(b)) => {
+                            let o = [b[0] - a[0], b[1] - a[1]];
+                            offsets.push(o);
+                            json!([round1(o[0]), round1(o[1])])
+                        }
+                        _ => Value::Null,
+                    })
+                    .collect();
+                let known: Vec<[f64; 2]> = centers.iter().flatten().copied().collect();
+                let total = match (known.first(), known.last()) {
                     (Some(a), Some(b)) => [round1(b[0] - a[0]), round1(b[1] - a[1])],
                     _ => [0.0, 0.0],
                 };
@@ -1195,25 +1212,43 @@ impl Studio {
                         (var.sqrt() / mean * 1000.0).round() / 1000.0
                     }
                 };
-                Ok(json!({
+                let mut out = json!({
                     "per_frame_center": per_frame_center,
                     "per_frame_offset": per_frame_offset,
                     "total_drift": total,
                     "evenness": evenness,
-                }))
+                });
+                if !empty_frames.is_empty() {
+                    out["frames_without_center"] = json!(empty_frames);
+                    out["note"] = json!(
+                        "some frames have no opaque pixels in the region — skipped, not \
+                         scored; widen the region if the part swings past it"
+                    );
+                }
+                Ok(out)
             }
             "arc" => {
                 // Trajectory shape: does the centre follow an arc (good for
                 // jumps/swings) or a straight slide? Plus volume constancy —
                 // squash/stretch should trade height for width, not vanish.
+                // Frames with no centre in the region are skipped, matching
+                // spacing mode — a [0,0] fallback faked a dive to the origin.
                 let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
                 let mut areas: Vec<f64> = Vec::with_capacity(seq.len());
+                let mut skipped: Vec<usize> = Vec::new();
                 for &f in &seq {
-                    centers.push(
-                        doc.silhouette_center(layer, f, region)?
-                            .unwrap_or([0.0, 0.0]),
+                    match doc.silhouette_center(layer, f, region)? {
+                        Some(c) => {
+                            centers.push(c);
+                            areas.push(doc.opaque_count(layer, f)? as f64);
+                        }
+                        None => skipped.push(f),
+                    }
+                }
+                if centers.len() < 2 {
+                    return Err(
+                        "fewer than two frames have opaque pixels in the region — widen it".into(),
                     );
-                    areas.push(doc.opaque_count(layer, f)? as f64);
                 }
                 // RMS perpendicular distance of the centres from the straight
                 // line joining the first and last centre (0 = dead straight).
@@ -1241,14 +1276,18 @@ impl Studio {
                     };
                     (m.round(), cv)
                 };
-                Ok(json!({
+                let mut out = json!({
                     "trajectory": centers.iter().map(|c| json!([(c[0]*10.0).round()/10.0, (c[1]*10.0).round()/10.0])).collect::<Vec<_>>(),
                     "arc_residual": arc_residual,
                     "shape": if arc_residual < 1.0 { "straight" } else { "arced" },
                     "volume_mean": vol_mean,
                     "volume_cv": vol_cv,
                     "note": "arc_residual ~0 = straight slide (often too mechanical for jumps/swings); volume_cv near 0 = constant mass (good unless deliberate squash)",
-                }))
+                });
+                if !skipped.is_empty() {
+                    out["frames_without_center"] = json!(skipped);
+                }
+                Ok(out)
             }
             "timing" => {
                 let durs: Vec<u32> = seq

@@ -25,7 +25,9 @@ impl Studio {
         let (dir, mut doc) = self.open(id)?;
         let Some(path) = path else {
             if let Some(name) = doc.meta.reference.take() {
-                let _ = std::fs::remove_file(dir.join(name));
+                if let Ok(p) = ref_path(&dir, &name) {
+                    let _ = std::fs::remove_file(p);
+                }
             }
             doc.save(&dir)?;
             return Ok(json!({"ok": true, "doc_id": id, "reference": Value::Null}));
@@ -58,7 +60,7 @@ impl Studio {
             .reference
             .as_ref()
             .ok_or("document has no reference image — doc_set_reference first")?;
-        Ok(image::open(dir.join(name))
+        Ok(image::open(ref_path(dir, name)?)
             .map_err(|e| format!("reference unreadable: {e}"))?
             .to_rgba8())
     }
@@ -88,6 +90,14 @@ impl Studio {
             - src.pixels().filter(|p| p.0[3] == 0).count() as u64;
         let tw = target_w.unwrap_or(doc.meta.w).max(1);
         let th = ((rh as f64 * tw as f64 / rw.max(1) as f64).round() as u32).max(1);
+        // Same 1M-pixel cap as import_clean — an oversized target_w would
+        // otherwise allocate an unbounded image in one call.
+        if tw as usize * th as usize > 1_048_576 {
+            return Err(format!(
+                "target {}x{} is over the 1M-pixel cap — pass a smaller target_w",
+                tw, th
+            ));
+        }
         let small = raster::downscale_area(&subject, tw, th);
         // Frequency-weighted subject palette of the downscaled art.
         let mut counts: std::collections::HashMap<[u8; 3], u64> = std::collections::HashMap::new();
@@ -303,6 +313,22 @@ impl Studio {
             }),
         ))
     }
+}
+
+/// Resolve a stored reference filename inside the doc dir, rejecting anything
+/// that isn't a bare file name — the server only ever writes "reference.png",
+/// so a doc.json edited to hold "../../<something>" must not turn the clear
+/// path into an arbitrary file deletion (or the read path into a file probe).
+fn ref_path(dir: &Path, name: &str) -> Result<std::path::PathBuf, String> {
+    let p = Path::new(name);
+    let is_bare = p.components().count() == 1 && p.file_name().is_some() && !p.is_absolute();
+    if !is_bare {
+        return Err(format!(
+            "stored reference name '{}' is not a bare filename — refusing",
+            name
+        ));
+    }
+    Ok(dir.join(p))
 }
 
 /// Downscale (area-average) so the longest side fits under `max`; smaller

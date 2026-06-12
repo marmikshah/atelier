@@ -2976,12 +2976,24 @@ impl Document {
                     for x in 0..w {
                         let pa = a.get_pixel(x, y).0;
                         let pb = b.get_pixel(x, y).0;
-                        let mix = |i: usize| {
-                            (pa[i] as f32 + (pb[i] as f32 - pa[i] as f32) * t)
-                                .round()
-                                .clamp(0.0, 255.0) as u8
+                        // Alpha-weighted (premultiplied) RGB blend: transparent
+                        // pixels are stored [0,0,0,0], and a plain lerp lets
+                        // that black bleed into fringes — which the palette
+                        // snap then quantizes into wrong-hue colours.
+                        let alpha = (pa[3] as f32 + (pb[3] as f32 - pa[3] as f32) * t)
+                            .round()
+                            .clamp(0.0, 255.0) as u8;
+                        let (wa, wb) = (pa[3] as f32 * (1.0 - t), pb[3] as f32 * t);
+                        let mixed = if wa + wb > 0.0 {
+                            let ch = |i: usize| {
+                                ((pa[i] as f32 * wa + pb[i] as f32 * wb) / (wa + wb))
+                                    .round()
+                                    .clamp(0.0, 255.0) as u8
+                            };
+                            [ch(0), ch(1), ch(2), alpha]
+                        } else {
+                            [0, 0, 0, 0]
                         };
-                        let mixed = [mix(0), mix(1), mix(2), mix(3)];
                         let px = match (mixed[3] > 0, lab.nearest(mixed)) {
                             (true, Some(pi)) => {
                                 let c = lab.color(pi);
@@ -3127,10 +3139,37 @@ impl Document {
                         .into_iter()
                         .map(|((l, f), v)| ((l, map[f]), v))
                         .collect();
+                    // Tag remap = remove-then-insert, NOT endpoint min/max
+                    // through the permutation (that balloons a tag over
+                    // untagged frames when a member moves far away, and drops
+                    // a member on an in-tag reorder). A single-frame tag on
+                    // the moved frame simply follows it.
                     for t in &mut self.meta.tags {
-                        let (a, b) = (map[t.from], map[t.to]);
-                        t.from = a.min(b);
-                        t.to = a.max(b);
+                        if t.from == frame && t.to == frame {
+                            t.from = to;
+                            t.to = to;
+                            continue;
+                        }
+                        let was_inside = t.from <= frame && frame <= t.to;
+                        // Phase 1: the moved frame leaves its old index.
+                        let mut f0 = t.from - usize::from(t.from > frame);
+                        let mut t0 = t.to - usize::from(t.to >= frame);
+                        // Phase 2: it re-enters at final index `to`.
+                        if f0 >= to {
+                            f0 += 1;
+                        }
+                        if t0 >= to {
+                            t0 += 1;
+                        }
+                        // A member landing back inside-or-adjacent rejoins its
+                        // tag; one that moved far away leaves it (a tag must
+                        // stay a contiguous range of TAGGED frames).
+                        if was_inside && to <= t0 + 1 && to + 1 >= f0 {
+                            f0 = f0.min(to);
+                            t0 = t0.max(to);
+                        }
+                        t.from = f0;
+                        t.to = t0;
                     }
                 }
             }
@@ -4276,6 +4315,36 @@ mod tests {
         assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 1));
         d.frame_ops("delete", 1, None, None).unwrap();
         assert!(d.frame_ops("delete", 0, None, None).is_err()); // last frame protected
+    }
+
+    #[test]
+    fn frame_ops_move_remaps_tags_without_ballooning() {
+        // A tagged frame moved far away LEAVES its tag (no ballooning over
+        // untagged frames).
+        let mut d = Document::new("t", 2, 2);
+        for _ in 0..3 {
+            d.add_frame(100, None);
+        }
+        d.add_tag("walk", 0, 1, "forward").unwrap();
+        d.frame_ops("move", 1, Some(3), None).unwrap();
+        assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 0));
+
+        // A reorder entirely INSIDE a tag keeps the tag's full coverage.
+        let mut e = Document::new("t", 2, 2);
+        e.add_frame(100, None);
+        e.add_frame(100, None);
+        e.add_tag("all", 0, 2, "forward").unwrap();
+        e.frame_ops("move", 1, Some(2), None).unwrap();
+        assert_eq!((e.meta.tags[0].from, e.meta.tags[0].to), (0, 2));
+
+        // A single-frame tag follows its frame.
+        let mut s = Document::new("t", 2, 2);
+        for _ in 0..3 {
+            s.add_frame(100, None);
+        }
+        s.add_tag("pose", 1, 1, "forward").unwrap();
+        s.frame_ops("move", 1, Some(3), None).unwrap();
+        assert_eq!((s.meta.tags[0].from, s.meta.tags[0].to), (3, 3));
     }
 
     #[test]

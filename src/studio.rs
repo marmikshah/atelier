@@ -1843,7 +1843,41 @@ impl Studio {
             counts.set(d.paint_grid(layer, frame, x, y, &map, &rows)?);
             Ok(())
         })?;
-        let (painted, clipped) = counts.get();
+        let (mut painted, clipped) = counts.get();
+        // Under an active selection, edit_masked reverts cells the mask
+        // excludes AFTER paint_grid counted them — recount so `painted`
+        // reports what actually landed.
+        if let Ok((_, doc2)) = self.open(id) {
+            let (dw, dh) = (doc2.meta.w, doc2.meta.h);
+            if let Some(mask) = self.selection_mask_for(id, dw, dh)? {
+                let (dwi, dhi) = (dw as i32, dh as i32);
+                let (mut kept, mut masked) = (0u64, 0u64);
+                for (ry, row) in rows.iter().enumerate() {
+                    for (rx, ch) in row.chars().enumerate() {
+                        if ch == '.' || ch == ' ' {
+                            continue;
+                        }
+                        let (tx, ty) = (x + rx as i32, y + ry as i32);
+                        if tx < 0 || ty < 0 || tx >= dwi || ty >= dhi {
+                            continue;
+                        }
+                        match mask.get((ty * dwi + tx) as usize).copied() {
+                            Some(true) => kept += 1,
+                            _ => masked += 1,
+                        }
+                    }
+                }
+                if masked > 0 {
+                    painted = kept;
+                    ack["masked"] = json!(masked);
+                    ack["warning"] = json!(format!(
+                        "{} grid cells fell inside the canvas but outside the active \
+                         selection and were not painted",
+                        masked
+                    ));
+                }
+            }
+        }
         ack["painted"] = json!(painted);
         if clipped > 0 {
             ack["clipped"] = json!(clipped);
