@@ -56,7 +56,7 @@ deterministic.
   prompts (sprite / walk-cycle / tile workflows), a session recorder that turns a
   live session into a replayable recipe, and a live `/gallery` web view.
 
-The full tool surface (95 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
+The full tool surface (102 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Quickstart
 

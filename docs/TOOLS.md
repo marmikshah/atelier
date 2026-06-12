@@ -34,8 +34,12 @@ stays crisp.
   shadow/AO, `add`/`screen` for light/glow/bloom, `overlay`/`soft-light` to grade.
 - `doc_add_frame` (optionally `copy_from` an existing frame) /
   `doc_set_frame_duration`.
-- `doc_tween` — insert N cross-faded in-between frames between two poses
-  (dissolve), reindexing later cels.
+- `doc_tween` — insert N cross-faded DISSOLVE frames between two poses
+  (palette-snapped, tags remapped, pivot/boxes inherited). For fades and FX
+  only — never pose motion (limbs ghost); auto-checkpoints first.
+- `doc_frame_ops` — timeline lifecycle: `delete` (last frame protected) /
+  `insert` / `duplicate` / `move`, with cels reindexed and tag ranges remapped.
+  The recovery path for a bad tween or extra pose.
 - `doc_add_tag` — named frame range (`forward` / `reverse` / `pingpong`).
 - `doc_set_pivot` — set a frame's anchor point `[x,y]` (feet, weapon mount); the
   engine reads it to position the sprite. Emitted (scaled) in sheet/atlas JSON.
@@ -52,6 +56,15 @@ stays crisp.
   `overshoot` (shoots past then settles), `elastic` (decaying oscillation)). A
   jump arc is two calls (rise ease-out, fall ease-in) — motion as structure, no
   redrawing.
+- `doc_extract_to_layer` — cut a part (region rect or active selection) of a
+  flat sprite onto its OWN named layer directly above, same coordinates,
+  optionally across all frames — the rig step that makes per-part motion
+  possible.
+- `doc_keyframe_transform` — swing a part about an arbitrary JOINT pivot across
+  a frame range: each frame gets the eased rotation (rotsprite-supersampled) +
+  eased translation, source region cleared first, pixels snapped back to the
+  locked palette. "Rotate the arm 30° about the shoulder over frames 1–4" in
+  one call — the replacement for blind per-frame limb repainting.
 
 ## Drawing
 
@@ -65,7 +78,13 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
 - `doc_polyline` — connected segments through `[[x,y],...]` (`closed` loops it
   back); square brush `size`.
 - `doc_bezier` — Bézier curve through control points (2 = line, 3 = quadratic,
-  4+ = cubic): smooth organic strokes — tails, vines, hair.
+  4 = cubic; more than 4 errors — chain calls): smooth organic strokes — tails,
+  vines, hair.
+- `doc_paint_grid` — paint a whole region DECLARATIVELY from a character grid:
+  `legend` maps single chars to `[r,g,b(,a)]` colours or integer palette
+  indices (palette-true by construction), `rows` are pixel-row strings
+  (`.`/` ` leave the pixel untouched). The inverse of `doc_dump_region`;
+  eliminates absolute-coordinate mistakes for detailed shapes.
 - `doc_gradient` — linear / radial gradient from colour `stops`, with optional
   `bayer` / `noise` ordered dithering (band-free skies, water, light falloff,
   vignettes) and a clip `region`. Replaces hand-placed dither pixels.
@@ -157,9 +176,11 @@ Read the canvas as *data* — the agent's other eye.
   vertical), worst offenders with deltas, optional highlight render — replaces
   eyeballing `doc_render tile=N`.
 - `doc_anim_audit` — `seam`: pixel diff of the transition the loop actually
-  plays (honours tag direction; pingpong has no seam) as a seam score.
-  `spacing`: per-frame silhouette-centre offsets + evenness — the animator's
-  timing chart.
+  plays (honours tag direction; pingpong has no seam) as a seam score, plus the
+  change_bbox naming WHERE it pops. `spacing`: per-frame opaque-mass-centroid
+  offsets + evenness (pass `region` to isolate one limb over a static body).
+  `arc`: trajectory shape + volume constancy. `timing`: per-frame durations
+  with a uniform-timing flag.
 
 ## Selection, regions & clipboard
 
@@ -225,7 +246,8 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 - `doc_select_render` — the active selection as a quick-mask overlay (selected
   art shown, the rest dimmed + magenta-tinted) so you never paint through an
   unseen mask. Inline PNG + selected-pixel count/bbox.
-- `doc_contact_sheet` — every frame in one labelled inline grid (the flip-test).
+- `doc_contact_sheet` — every frame in one labelled inline grid (the flip-test);
+  `onion=true` ghosts each cell's previous frame under it — per-pair onion skin.
 - `doc_critique` — the art-director scorecard: orphan specks, un-AA'd jaggies,
   low contrast, pillow-shading, value-soup massing and off-palette drift, with
   worst-offending cells. Conservative verdicts (ok/warn/info).
@@ -279,7 +301,27 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 - `doc_panel` — a HUD/UI panel (fill + border + bevel).
 - `doc_burst` — radial FX frames (ring/disc/rays) tagged `burst`.
 - `doc_import_clean` — external image (AI-gen/photo/scan) → clean pixel art:
-  area-downscale + Floyd–Steinberg error-diffuse to a palette (+ defringe).
+  TRUE area-average downscale (aspect-derived height when `target_h` omitted),
+  optional corner-flood `remove_bg` BEFORE palette extraction, frequency-
+  weighted median-cut palette with `pin`ned colours, optional Floyd–Steinberg
+  (defaults off ≤64px where it reads as speckle), inline preview.
+
+## Reference loop (recreate from a sample)
+
+The closed loop that turns "does my sprite match the character?" from memory
+recall into a measured, same-turn signal:
+
+- `doc_set_reference` — attach the ORIGINAL image to a document (copied into
+  the doc dir, persists with it); returns aspect-true canvas-fit suggestions.
+  Omit `path` to clear.
+- `doc_ref_analyze` — VIEW the reference inline and decompose it into drawing
+  scaffolding: background coverage, a frequency-weighted subject palette to
+  lock with `doc_set_palette`, and the subject's silhouette as a text grid at
+  target size.
+- `doc_ref_compare` — SCORE a frame against the reference after every pass:
+  inline side-by-side (or `mode="overlay"` ghost), silhouette IoU (≥0.80 =
+  shape reads), per-cell OKLab ΔE with the worst cells named as canvas rects,
+  and reference colours missing from the palette.
 
 ## Beyond the tools
 
