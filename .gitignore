@@ -4,3 +4,5 @@
 *.swp
 .claude/
 .venv/
+resume.sh
+docs/ART-QUALITY-REVIEW.md

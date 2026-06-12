@@ -255,15 +255,18 @@ fn print_step(idx: usize, step: &Step, summary: &str) {
 }
 
 /// Condense a `tools/call` result into a single readable line. atelier returns
-/// its payload as the first text content block (a JSON string); fall back to a
-/// compact dump of whatever shape we get.
+/// its JSON payload in a text content block — but image-first results
+/// (doc_render, doc_look, diff overlays) put the PNG block before it, so find
+/// the first TEXT block rather than dumping base64 from blocks[0]; fall back
+/// to a compact dump of whatever shape we get.
 fn summarize(result: &Value) -> String {
-    let text = result
-        .get("content")
-        .and_then(Value::as_array)
-        .and_then(|blocks| blocks.first())
-        .and_then(|b| b.get("text"))
-        .and_then(Value::as_str);
+    let text = result.get("content").and_then(Value::as_array).and_then(
+        |blocks: &Vec<Value>| -> Option<&str> {
+            blocks
+                .iter()
+                .find_map(|b| b.get("text").and_then(Value::as_str))
+        },
+    );
     let line = match text {
         Some(t) => t.to_string(),
         None => result.to_string(),
@@ -372,6 +375,19 @@ mod tests {
             "content": [{"type": "text", "text": "{\"doc_id\":\"x\",\"w\":8}"}]
         });
         assert_eq!(summarize(&result), "{\"doc_id\":\"x\",\"w\":8}");
+    }
+
+    #[test]
+    fn summarize_skips_leading_image_blocks() {
+        // img_result puts the PNG first and the JSON report second — the log
+        // line must be the report, never truncated base64.
+        let result = json!({
+            "content": [
+                {"type": "image", "data": "iVBORw0KGgo…", "mimeType": "image/png"},
+                {"type": "text", "text": "{\"path\":\"p.png\"}"}
+            ]
+        });
+        assert_eq!(summarize(&result), "{\"path\":\"p.png\"}");
     }
 
     #[test]

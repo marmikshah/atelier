@@ -141,23 +141,39 @@ impl Studio {
         let (w, h) = (img.width(), img.height());
         let mut bbox: Option<[i32; 4]> = None;
         let mut opaque = 0u64;
-        let mut grid: Vec<String> = Vec::with_capacity(h as usize);
-        for y in 0..h {
-            let mut row = String::with_capacity(w as usize);
-            for x in 0..w {
-                let on = img.get_pixel(x, y).0[3] >= alpha_threshold;
-                if on {
-                    opaque += 1;
-                    let (xi, yi) = (x as i32, y as i32);
-                    bbox = Some(match bbox {
-                        Some([a, b, c, d]) => [a.min(xi), b.min(yi), c.max(xi), d.max(yi)],
-                        None => [xi, yi, xi, yi],
-                    });
-                }
-                row.push(if on { '#' } else { '.' });
+        for (x, y, p) in img.enumerate_pixels() {
+            if p.0[3] >= alpha_threshold {
+                opaque += 1;
+                let (xi, yi) = (x as i32, y as i32);
+                bbox = Some(match bbox {
+                    Some([a, b, c, d]) => [a.min(xi), b.min(yi), c.max(xi), d.max(yi)],
+                    None => [xi, yi, xi, yi],
+                });
             }
-            grid.push(row);
         }
+        // The text grid is capped like doc_dump_region's — an uncapped
+        // 128x128 grid is ~4K tokens of mostly dots.
+        let grid: Value = if (w as u64) * (h as u64) <= 4096 {
+            let rows: Vec<String> = (0..h)
+                .map(|y| {
+                    (0..w)
+                        .map(|x| {
+                            if img.get_pixel(x, y).0[3] >= alpha_threshold {
+                                '#'
+                            } else {
+                                '.'
+                            }
+                        })
+                        .collect()
+                })
+                .collect();
+            json!(rows)
+        } else {
+            json!(format!(
+                "skipped — {}x{} exceeds the 4096-px grid cap; use doc_look or doc_dump_region on a region",
+                w, h
+            ))
+        };
         let fill_ratio = opaque as f64 / (w as u64 * h as u64) as f64;
         Ok(json!({
             "bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
@@ -368,8 +384,9 @@ impl Studio {
 
     /// Render a frame in an analysis colour space to a PNG you can SEE: grayscale
     /// (luma), `bands` (posterised luma), or the saturation/hue HSL channel as
-    /// grey. Same output shape as doc_render; when `report`, adds value stats over
-    /// the opaque pixels (min/max/mean grey, contrast, per-band coverage).
+    /// grey. Returns the encoded PNG bytes (inlined by the MCP layer) plus the
+    /// report; when `report`, adds value stats over the opaque pixels
+    /// (min/max/mean grey, contrast, per-band coverage).
     #[allow(clippy::too_many_arguments)]
     pub fn doc_render_value(
         &self,
@@ -380,7 +397,7 @@ impl Studio {
         scale: u32,
         out_path: Option<&str>,
         report: bool,
-    ) -> Result<Value, String> {
+    ) -> Result<(Vec<u8>, Value), String> {
         let (dir, doc) = self.open(id)?;
         let img = doc.value_image(frame, mode, bands)?;
         let out = match out_path {
@@ -441,7 +458,7 @@ impl Studio {
                 });
             }
         }
-        Ok(res)
+        Ok((crate::studio::encode_png(&saved)?, res))
     }
 
     /// WCAG contrast check in one of three modes. `region`: mean colour inside vs
@@ -664,8 +681,11 @@ impl Studio {
         let in_pal = |c: [u8; 4]| -> bool { doc.meta.palette.contains(&c) };
         let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]);
         let count = entries.len();
-        let truncated = count > 256;
-        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(256).collect();
+        // Top-48 with an "others" rollup: an unquantized import has hundreds
+        // of distinct colours, and 256 JSON objects of them helps nobody.
+        let truncated = count > 48;
+        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(48).collect();
+        let others_pixels: u64 = entries.iter().skip(48).map(|(_, n)| n).sum();
         let mut off_palette_count = 0u32;
         let colors: Vec<Value> = listed
             .iter()
@@ -706,13 +726,26 @@ impl Studio {
                 }
             }
         }
-        Ok(json!({
+        // Off-palette tally covers EVERY distinct colour, not just the listed top.
+        if has_palette {
+            off_palette_count +=
+                entries.iter().skip(48).filter(|(c, _)| !in_pal(*c)).count() as u32;
+        }
+        let mut out = json!({
             "count": count,
             "colors": colors,
             "off_palette_count": if has_palette { json!(off_palette_count) } else { Value::Null },
             "near_dupes": near_dupes,
             "truncated": truncated,
-        }))
+        });
+        if truncated {
+            out["others"] = json!({
+                "colors": count - 48,
+                "pixels": others_pixels,
+                "note": "rolled up — quantize/snap_palette first for a readable report",
+            });
+        }
+        Ok(out)
     }
 
     /// Validate a colour ramp's craft: monotonic value, even value spacing, hue
@@ -851,9 +884,10 @@ impl Studio {
     /// Diff two frames pixel-by-pixel. `layer` None flattens. `region` restricts
     /// the compared area (else whole canvas). `grid` adds a text map (`.`unchanged
     /// `+`added `-`removed `~`recolored, area-capped like doc_dump_region).
-    /// `render` "overlay" writes a PNG with frame_b dimmed 40% and changed pixels
-    /// flagged (green=added, red=removed, yellow=recoloured). Returns the change
-    /// tallies, the bbox of all changed pixels, and any grid/path produced.
+    /// `render` "overlay" produces a PNG with frame_b dimmed 40% and changed
+    /// pixels flagged (green=added, red=removed, yellow=recoloured) — returned as
+    /// bytes for the MCP layer to inline, and written to `out_path` when given.
+    /// Returns the change tallies and the bbox of all changed pixels.
     #[allow(clippy::too_many_arguments)]
     pub fn doc_frame_diff(
         &self,
@@ -866,7 +900,7 @@ impl Studio {
         render: &str,
         out_path: Option<&str>,
         scale: u32,
-    ) -> Result<Value, String> {
+    ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
         let (dir, doc) = self.open(id)?;
         let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
@@ -922,6 +956,7 @@ impl Studio {
             res["grid"] = json!(rows);
             res["origin"] = json!([x0, y0]);
         }
+        let mut png = None;
         if render == "overlay" {
             let out = match out_path {
                 Some(p) => PathBuf::from(p),
@@ -965,18 +1000,20 @@ impl Studio {
             }
             img.save(&out).map_err(|e| e.to_string())?;
             res["path"] = json!(out.to_string_lossy());
+            png = Some(crate::studio::encode_png(&img)?);
         } else if render != "none" {
             return Err(format!("unknown render '{}' — use none|overlay", render));
         }
-        Ok(res)
+        Ok((png, res))
     }
 
     /// Tiling seam report: wrap-test the far edge against the near edge for the
     /// requested `axis` ("horizontal" tests left↔right, "vertical" top↔bottom,
     /// "both" runs each). `threshold` is the max per-channel delta still counted
-    /// a match. `out_path` (optional) renders frame `frame` with every mismatched
-    /// EDGE pixel painted red over the dimmed art and returns its path. Per axis:
-    /// `{mismatches, max_delta, worst:[[x,y,delta] ≤10]}`.
+    /// a match. When any edge pixel mismatches (or `out_path` is given) an
+    /// overlay PNG — frame dimmed, mismatched EDGE pixels painted red — is
+    /// returned as bytes for the MCP layer to inline (and written to `out_path`
+    /// when given). Per axis: `{mismatches, max_delta, worst:[[x,y,delta] ≤10]}`.
     pub fn doc_seam_report(
         &self,
         id: &str,
@@ -985,7 +1022,7 @@ impl Studio {
         axis: &str,
         threshold: i32,
         out_path: Option<&str>,
-    ) -> Result<Value, String> {
+    ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
         let (_dir, doc) = self.open(id)?;
         let (want_h, want_v) = match axis {
@@ -1020,12 +1057,9 @@ impl Studio {
             out["vertical"] = j;
             flagged.extend(w);
         }
-        if let Some(p) = out_path {
+        let mut png = None;
+        if out_path.is_some() || !flagged.is_empty() {
             let img = doc.analysis_image(layer, frame)?;
-            let out_p = PathBuf::from(p);
-            if let Some(parent) = out_p.parent() {
-                let _ = fs::create_dir_all(parent);
-            }
             // Dim the art to 40%, then paint the (capped) worst edge cells red.
             let mut canvas = RgbaImage::from_pixel(img.width(), img.height(), Rgba([0, 0, 0, 0]));
             for (x, y, px) in img.enumerate_pixels() {
@@ -1038,10 +1072,28 @@ impl Studio {
             for w in &flagged {
                 canvas.put_pixel(w[0] as u32, w[1] as u32, Rgba([255, 0, 0, 255]));
             }
-            canvas.save(&out_p).map_err(|e| e.to_string())?;
-            out["path"] = json!(out_p.to_string_lossy());
+            let sc = crate::studio::preview_scale(canvas.width(), canvas.height());
+            let scaled = if sc > 1 {
+                image::imageops::resize(
+                    &canvas,
+                    canvas.width() * sc,
+                    canvas.height() * sc,
+                    image::imageops::FilterType::Nearest,
+                )
+            } else {
+                canvas
+            };
+            if let Some(p) = out_path {
+                let out_p = PathBuf::from(p);
+                if let Some(parent) = out_p.parent() {
+                    let _ = fs::create_dir_all(parent);
+                }
+                scaled.save(&out_p).map_err(|e| e.to_string())?;
+                out["path"] = json!(out_p.to_string_lossy());
+            }
+            png = Some(crate::studio::encode_png(&scaled)?);
         }
-        Ok(out)
+        Ok((png, out))
     }
 
     /// Audit an animation. mode="seam" diffs the wrap the loop actually plays
@@ -1056,6 +1108,7 @@ impl Studio {
         tag: Option<&str>,
         layer: Option<usize>,
         mode: &str,
+        region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let seq = doc.play_sequence(tag)?;
@@ -1083,7 +1136,7 @@ impl Studio {
                 }
                 let (last, first) = (*seq.last().unwrap(), seq[0]);
                 let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-                let (added, removed, recolored, _bbox, _ia, _ib) =
+                let (added, removed, recolored, bbox, _ia, _ib) =
                     doc.frame_diff_region(last, first, layer, (0, 0, cw - 1, ch - 1))?;
                 let changed = added + removed + recolored;
                 // Denominator: opaque pixels of the played last frame (motion base).
@@ -1094,30 +1147,51 @@ impl Studio {
                     "changed": changed,
                     "added": added,
                     "removed": removed,
+                    // WHERE the loop pops — fix this area, not the whole frame.
+                    "change_bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
                     "frames": [last, first],
                 }))
             }
             "spacing" => {
                 // Centre per played frame; offsets are step-to-step deltas.
-                let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
+                // A frame whose silhouette has no opaque pixel in the region
+                // stays None — scoring it as motion to the canvas origin
+                // poisoned drift/evenness whenever a part swung out of a
+                // fixed region rect.
+                let mut centers: Vec<Option<[f64; 2]>> = Vec::with_capacity(seq.len());
                 for &f in &seq {
-                    let c = doc.silhouette_center(layer, f)?.unwrap_or([0.0, 0.0]);
-                    centers.push(c);
+                    centers.push(doc.silhouette_center(layer, f, region)?);
                 }
                 let round1 = |v: f64| (v * 10.0).round() / 10.0;
                 let per_frame_center: Vec<Value> = centers
                     .iter()
-                    .map(|c| json!([round1(c[0]), round1(c[1])]))
+                    .map(|c| match c {
+                        Some(c) => json!([round1(c[0]), round1(c[1])]),
+                        None => Value::Null,
+                    })
                     .collect();
-                let offsets: Vec<[f64; 2]> = centers
-                    .windows(2)
-                    .map(|w| [w[1][0] - w[0][0], w[1][1] - w[0][1]])
-                    .collect();
-                let per_frame_offset: Vec<Value> = offsets
+                let empty_frames: Vec<usize> = centers
                     .iter()
-                    .map(|o| json!([round1(o[0]), round1(o[1])]))
+                    .enumerate()
+                    .filter(|(_, c)| c.is_none())
+                    .map(|(i, _)| seq[i])
                     .collect();
-                let total = match (centers.first(), centers.last()) {
+                // Offsets only between consecutive frames that BOTH have a
+                // centre; the per-frame list keeps nulls in place.
+                let mut offsets: Vec<[f64; 2]> = Vec::new();
+                let per_frame_offset: Vec<Value> = centers
+                    .windows(2)
+                    .map(|w| match (w[0], w[1]) {
+                        (Some(a), Some(b)) => {
+                            let o = [b[0] - a[0], b[1] - a[1]];
+                            offsets.push(o);
+                            json!([round1(o[0]), round1(o[1])])
+                        }
+                        _ => Value::Null,
+                    })
+                    .collect();
+                let known: Vec<[f64; 2]> = centers.iter().flatten().copied().collect();
+                let total = match (known.first(), known.last()) {
                     (Some(a), Some(b)) => [round1(b[0] - a[0]), round1(b[1] - a[1])],
                     _ => [0.0, 0.0],
                 };
@@ -1138,15 +1212,167 @@ impl Studio {
                         (var.sqrt() / mean * 1000.0).round() / 1000.0
                     }
                 };
-                Ok(json!({
+                let mut out = json!({
                     "per_frame_center": per_frame_center,
                     "per_frame_offset": per_frame_offset,
                     "total_drift": total,
                     "evenness": evenness,
-                }))
+                });
+                if !empty_frames.is_empty() {
+                    out["frames_without_center"] = json!(empty_frames);
+                    out["note"] = json!(
+                        "some frames have no opaque pixels in the region — skipped, not \
+                         scored; widen the region if the part swings past it"
+                    );
+                }
+                Ok(out)
             }
-            other => Err(format!("unknown mode '{}' — use seam|spacing", other)),
+            "arc" => {
+                // Trajectory shape: does the centre follow an arc (good for
+                // jumps/swings) or a straight slide? Plus volume constancy —
+                // squash/stretch should trade height for width, not vanish.
+                // Frames with no centre in the region are skipped, matching
+                // spacing mode — a [0,0] fallback faked a dive to the origin.
+                let mut centers: Vec<[f64; 2]> = Vec::with_capacity(seq.len());
+                let mut areas: Vec<f64> = Vec::with_capacity(seq.len());
+                let mut skipped: Vec<usize> = Vec::new();
+                for &f in &seq {
+                    match doc.silhouette_center(layer, f, region)? {
+                        Some(c) => {
+                            centers.push(c);
+                            areas.push(doc.opaque_count(layer, f)? as f64);
+                        }
+                        None => skipped.push(f),
+                    }
+                }
+                if centers.len() < 2 {
+                    return Err(
+                        "fewer than two frames have opaque pixels in the region — widen it".into(),
+                    );
+                }
+                // RMS perpendicular distance of the centres from the straight
+                // line joining the first and last centre (0 = dead straight).
+                let (a, b) = (centers[0], *centers.last().unwrap());
+                let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
+                let len = (dx * dx + dy * dy).sqrt();
+                let arc_residual = if len < 1e-6 || centers.len() < 3 {
+                    0.0
+                } else {
+                    let (nx, ny) = (-dy / len, dx / len); // unit normal
+                    let ss: f64 = centers
+                        .iter()
+                        .map(|c| ((c[0] - a[0]) * nx + (c[1] - a[1]) * ny).powi(2))
+                        .sum();
+                    ((ss / centers.len() as f64).sqrt() * 100.0).round() / 100.0
+                };
+                let (vol_mean, vol_cv) = {
+                    let m = areas.iter().sum::<f64>() / areas.len() as f64;
+                    let cv = if m < f64::EPSILON {
+                        0.0
+                    } else {
+                        let var =
+                            areas.iter().map(|a| (a - m).powi(2)).sum::<f64>() / areas.len() as f64;
+                        (var.sqrt() / m * 1000.0).round() / 1000.0
+                    };
+                    (m.round(), cv)
+                };
+                let mut out = json!({
+                    "trajectory": centers.iter().map(|c| json!([(c[0]*10.0).round()/10.0, (c[1]*10.0).round()/10.0])).collect::<Vec<_>>(),
+                    "arc_residual": arc_residual,
+                    "shape": if arc_residual < 1.0 { "straight" } else { "arced" },
+                    "volume_mean": vol_mean,
+                    "volume_cv": vol_cv,
+                    "note": "arc_residual ~0 = straight slide (often too mechanical for jumps/swings); volume_cv near 0 = constant mass (good unless deliberate squash)",
+                });
+                if !skipped.is_empty() {
+                    out["frames_without_center"] = json!(skipped);
+                }
+                Ok(out)
+            }
+            "timing" => {
+                let durs: Vec<u32> = seq
+                    .iter()
+                    .map(|&f| doc.meta.frames[f].duration_ms)
+                    .collect();
+                let total: u32 = durs.iter().sum();
+                let uniform = durs.windows(2).all(|w| w[0] == w[1]);
+                let mut out = json!({
+                    "per_frame_ms": durs,
+                    "total_ms": total,
+                    "uniform": uniform,
+                });
+                if uniform && seq.len() > 2 {
+                    out["note"] = json!(
+                        "uniform timing reads mechanical — hold contact/key poses ~1.5x longer \
+                         with doc_set_frame_duration"
+                    );
+                }
+                Ok(out)
+            }
+            other => Err(format!(
+                "unknown mode '{}' — use seam|spacing|arc|timing",
+                other
+            )),
         }
+    }
+
+    /// Translucency report — makes glass / glow / soft FX measurable instead of
+    /// eyeballed. Over the flattened frame (or one `layer`, `region`-clipped):
+    /// counts fully-opaque / partial (0<a<255) / transparent pixels, the mean
+    /// alpha of non-transparent pixels, a coarse alpha-band histogram, and the
+    /// bbox of the partially-transparent pixels.
+    pub fn doc_translucency_report(
+        &self,
+        id: &str,
+        frame: usize,
+        layer: Option<usize>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let img = doc.analysis_image(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => {
+                crate::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                    .ok_or("region is empty after clamping to the canvas")?
+            }
+            None => (0, 0, w - 1, h - 1),
+        };
+        let (mut opaque, mut partial, mut transparent) = (0u64, 0u64, 0u64);
+        let (mut sum_a, mut nz) = (0u64, 0u64);
+        let mut bands = [0u64; 4]; // 1-64, 65-128, 129-192, 193-254
+        let mut bbox: Option<[i32; 4]> = None;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let a = img.get_pixel(x as u32, y as u32).0[3];
+                match a {
+                    0 => transparent += 1,
+                    255 => {
+                        opaque += 1;
+                        sum_a += 255;
+                        nz += 1;
+                    }
+                    _ => {
+                        partial += 1;
+                        sum_a += a as u64;
+                        nz += 1;
+                        bands[(a as usize - 1) / 64] += 1;
+                        bbox = Some(match bbox {
+                            None => [x, y, x, y],
+                            Some([a0, b0, c0, d0]) => [a0.min(x), b0.min(y), c0.max(x), d0.max(y)],
+                        });
+                    }
+                }
+            }
+        }
+        Ok(json!({
+            "doc_id": id, "frame": frame,
+            "opaque": opaque, "partial": partial, "transparent": transparent,
+            "mean_alpha_nonzero": if nz > 0 { (sum_a as f64 / nz as f64).round() as u32 } else { 0 },
+            "partial_alpha_bands": {"1-64": bands[0], "65-128": bands[1], "129-192": bands[2], "193-254": bands[3]},
+            "partial_bbox": bbox.map(|b| json!({"x": b[0], "y": b[1], "w": b[2]-b[0]+1, "h": b[3]-b[1]+1})),
+            "note": "partial pixels are soft/AA/glow edges; many over a glass shape = readable translucency, scattered specks = stray AA",
+        }))
     }
 }
 
@@ -1245,10 +1471,11 @@ mod tests {
         s.doc_pencil("d", 0, 0, vec![(1, 0)], [255, 255, 255, 255], 1)
             .unwrap();
         let out = s.docs_dir.join("val.png");
-        let r = s
+        let (png, r) = s
             .doc_render_value("d", 0, "grayscale", 4, 1, out.to_str(), true)
             .unwrap();
         assert!(out.exists());
+        assert!(!png.is_empty()); // inline preview bytes
         assert_eq!(r["size"], json!([4, 4])); // scale 1 keeps native size
         let rep = &r["report"];
         assert_eq!(rep["min"], json!(0)); // black luma
@@ -1381,10 +1608,11 @@ mod tests {
             .unwrap();
         s.doc_pencil("d", 0, 1, vec![(1, 1)], [0, 255, 0, 255], 1)
             .unwrap();
-        let r = s
+        let (png, r) = s
             .doc_frame_diff("d", 0, 1, None, None, true, "none", None, 1)
             .unwrap();
-        // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
+        assert!(png.is_none()); // render="none" → no inline overlay
+                                // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
         assert_eq!(r["added"], json!(1));
         assert_eq!(r["removed"], json!(1));
         assert_eq!(r["recolored"], json!(0));
@@ -1392,12 +1620,13 @@ mod tests {
         assert_eq!(r["change_bbox"], json!([0, 0, 1, 1]));
         assert_eq!(r["grid"][0], "-..."); // (0,0) removed
         assert_eq!(r["grid"][1], ".+.."); // (1,1) added
-                                          // overlay render writes a PNG
+                                          // overlay render writes a PNG and returns the bytes for inlining
         let out = s.docs_dir.join("diff.png");
-        let ov = s
+        let (ov_png, ov) = s
             .doc_frame_diff("d", 0, 1, None, None, false, "overlay", out.to_str(), 1)
             .unwrap();
         assert!(out.exists());
+        assert!(ov_png.is_some());
         assert_eq!(ov["path"], json!(out.to_string_lossy()));
         // unknown render mode is an actionable error
         assert!(s
@@ -1412,7 +1641,8 @@ mod tests {
         // A left column that does not match the right column → horizontal seam.
         s.doc_rect("d", 0, 0, 0, 0, 0, 3, [255, 0, 0, 255], true, 1)
             .unwrap();
-        let r = s.doc_seam_report("d", None, 0, "both", 0, None).unwrap();
+        let (png, r) = s.doc_seam_report("d", None, 0, "both", 0, None).unwrap();
+        assert!(png.is_some()); // mismatches → inline overlay
         assert!(r["horizontal"]["mismatches"].as_u64().unwrap() > 0);
         assert_eq!(r["vertical"]["mismatches"], json!(0)); // rows tile fine (all blank top/bottom)
         assert_eq!(r["horizontal"]["max_delta"], json!(255)); // opaque red vs transparent
@@ -1423,7 +1653,8 @@ mod tests {
         // a seamless cel (uniform fill) has zero mismatches on both axes
         s.doc_create("e", 4, 4).unwrap();
         s.doc_fill_cel("e", 0, 0, [10, 20, 30, 255]).unwrap();
-        let clean = s.doc_seam_report("e", None, 0, "both", 0, None).unwrap();
+        let (clean_png, clean) = s.doc_seam_report("e", None, 0, "both", 0, None).unwrap();
+        assert!(clean_png.is_none()); // no mismatches → no overlay
         assert_eq!(clean["horizontal"]["mismatches"], json!(0));
         assert_eq!(clean["vertical"]["mismatches"], json!(0));
         // bad axis errors
@@ -1446,22 +1677,24 @@ mod tests {
         s.doc_rect("d", 0, 2, 4, 0, 5, 1, [9, 9, 9, 255], true, 1)
             .unwrap();
         // spacing: even rightward drift → low evenness, positive total drift.
-        let sp = s.doc_anim_audit("d", None, None, "spacing").unwrap();
+        let sp = s.doc_anim_audit("d", None, None, "spacing", None).unwrap();
         assert_eq!(sp["per_frame_center"].as_array().unwrap().len(), 3);
         assert_eq!(sp["per_frame_offset"].as_array().unwrap().len(), 2);
         assert!(sp["total_drift"][0].as_f64().unwrap() > 0.0); // moved right
         assert_eq!(sp["evenness"], json!(0.0)); // two equal 2px steps
                                                 // seam: last frame vs first differ → non-zero score
-        let seam = s.doc_anim_audit("d", None, None, "seam").unwrap();
+        let seam = s.doc_anim_audit("d", None, None, "seam", None).unwrap();
         assert!(seam["seam_score"].as_f64().unwrap() > 0.0);
         assert_eq!(seam["frames"], json!([2, 0]));
         // pingpong tag → no seam (score 0 + note)
         s.doc_add_tag("d", "pp", 0, 2, "pingpong").unwrap();
-        let pp = s.doc_anim_audit("d", Some("pp"), None, "seam").unwrap();
+        let pp = s
+            .doc_anim_audit("d", Some("pp"), None, "seam", None)
+            .unwrap();
         assert_eq!(pp["seam_score"], json!(0.0));
         assert!(pp["note"].is_string());
         // bad mode errors
-        assert!(s.doc_anim_audit("d", None, None, "bogus").is_err());
+        assert!(s.doc_anim_audit("d", None, None, "bogus", None).is_err());
     }
 
     #[test]
