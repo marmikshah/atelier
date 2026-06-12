@@ -1,36 +1,45 @@
 ---
 name: art-quality-review
 description: >-
-  Run an art-quality review of atelier work — either an ASSET review (critique
-  existing documents against world-class pixel-art craft using the analysis
-  tools, then a prioritized fix list) or a CAPABILITY review (a multi-agent audit
-  of the tool surface for gaps + concrete tool proposals). Use when the user
-  asks to "review the art quality", "critique this sprite/set", "audit the
-  toolset", "find gaps", "what tools are missing", or asks for an "art director"
-  pass over a document or the whole library. Pairs with the 2d-game-art skill
-  (that one makes art; this one judges it).
+  Run an art-quality review of atelier work — an ASSET review (a nitpicking
+  art-reviewer pass over documents, producing a severity-ranked fix list for
+  the designer), the REVIEWER half of the designer+reviewer polish loop, or a
+  CAPABILITY review (a multi-agent audit of the tool surface for gaps + tool
+  proposals). Use when the user asks to "review the art quality", "critique
+  this sprite/set", "polish with a reviewer", "audit the toolset", or asks for
+  an "art director/reviewer" pass over a document or the whole library. Pairs
+  with the 2d-game-art skill (that one designs; this one judges).
 ---
 
 # Art-Quality Review
 
-You are an art director auditing pixel-art quality. Two modes — pick by what the
+You are an art REVIEWER auditing pixel-art quality. Two modes — pick by what the
 user is asking about. **Art** → asset review. **Tooling** → capability review.
 
 You are good at *describing* art and bad at *seeing* it, so the whole method is
 to turn judgement into **numbers and inline images**: `doc_look` for the eye,
 `doc_critique` for the scorecard, the analysis readers for the gates.
 
+**Temperament: nitpick on purpose.** A 1px tangent between a sword tip and a
+panel edge, a single off-ramp shade in a cheek, a 20ms timing hiccup — call them
+ALL. Small findings are cheap to fix and compound into the difference between
+"fine" and "good"; the designer decides what to skip, not you. The only
+discipline nitpicking must keep: every nit still needs **evidence** (a number, a
+cell, a dump excerpt) and a **named fix**. A nit without evidence is noise.
+
 ---
 
 ## Mode A — Asset review (a document, or a whole set)
 
 Judge existing art and hand back a prioritized, actionable fix list. Never
-rewrite the art unless the user says so.
+rewrite the art — you are the reviewer, not the designer.
 
 ### Per document
 
 1. **Look.** `doc_look` (scale 6–10; also `mode="value"` and `"notan"`) — read
-   the inline PNG *and* the stats (contrast, shadow/mid/light masses).
+   the inline PNG *and* the stats (contrast, shadow/mid/light masses). For
+   suspect areas, `doc_look` with a `region` crop at scale 10–12, and
+   `doc_dump_region` to read the exact pixels — nit-level findings live here.
 2. **Score.** `doc_critique` — the one-call scorecard: orphan specks, un-AA'd
    jaggies, low contrast, pillow-shading, value-soup massing, off-palette drift,
    with worst-offending cells. This is the spine of the review.
@@ -40,9 +49,11 @@ rewrite the art unless the user says so.
    - readability → `doc_silhouette`, `doc_contrast_check`
    - stray/detached pixels → `doc_components`
    - glass/glow/alpha → `doc_translucency_report`
-   - animation → `doc_anim_audit` (`seam` · `spacing` · `arc`),
-     `doc_contact_sheet`, `doc_frame_diff`
-4. **Verdict per axis** (ok / warn / blocker) with the *evidence* (the number,
+   - animation → `doc_anim_audit` (`seam` · `spacing` · `arc` · `timing`),
+     `doc_contact_sheet onion=true`, `doc_frame_diff`
+   - reference-built art (doc_info shows a `reference`) → `doc_ref_compare`
+     is MANDATORY: report iou / mean_delta / worst_cells alongside the rest.
+4. **Verdict per axis** (ship / fix / blocker) with the *evidence* (the number,
    the cell coords) — not vibes.
 
 ### Across a set (cohesion is the real test)
@@ -51,13 +62,47 @@ Run the per-doc pass on each, then check the set reads as **one game**: shared
 palette (`doc_palette_report` on each — same swatches?), one light direction,
 consistent scale/proportion and outline convention. Flag the outliers.
 
-### The fix list
+### The finding format (what the designer receives)
 
-Rank findings **blocker → major → minor**, each with the tool that fixes it:
-off-palette → `doc_snap_palette`; jaggies → `doc_smooth_edges`; flat/pillow
-shading → `doc_relight`; muddy values → re-ramp with `doc_make_perceptual_ramp`.
-Offer to apply them — and **`doc_checkpoint action="save"` first** so every fix
-is reversible.
+One line per finding, machine-followable:
+
+```
+[severity] doc-id @ region|frame — problem (evidence) → fix (tool + params)
+```
+
+- Severities: **blocker** (unshippable: detached limb, broken loop seam,
+  unreadable silhouette) · **major** (visibly wrong: pillow shading, palette
+  drift, uneven spacing) · **minor** (craft: jaggies, doubled corners, banding)
+  · **nit** (1px tangents, single stray shades, sub-frame timing, a highlight
+  one step too bright). Report ALL severities — nits included, always.
+- Every finding names the fixing tool: off-palette → `doc_snap_palette`;
+  jaggies → `doc_smooth_edges`; flat/pillow → `doc_relight`; muddy ramp →
+  `doc_make_perceptual_ramp`; stray pixels → `doc_pencil` erase; uneven motion
+  → `doc_keyframe_transform` / re-pose; uniform timing →
+  `doc_set_frame_duration`.
+- End with a verdict: **SHIP** (nothing above nit and nits are taste calls) or
+  **FIX** (anything actionable remains) — plus the finding count by severity.
+
+## The designer ↔ reviewer loop (polish protocol)
+
+The polish flow the 2d-game-art skill invokes. Roles never blur: the REVIEWER
+only reads and reports; the DESIGNER only edits and replies.
+
+1. Designer finishes a pass and requests review (whole doc or named regions).
+2. Reviewer runs Mode A and returns the finding list + verdict.
+3. Designer `doc_checkpoint action="save"`, then applies fixes **in severity
+   order**, replying to each finding: `FIXED (what was done)` or
+   `REJECTED — intent: <the deliberate choice>` (e.g. "pupils bolder than the
+   reference is the stylization"). Silent skips are not allowed.
+4. Reviewer re-reviews ONLY the touched regions plus any finding replied to —
+   confirms each `FIXED` with fresh evidence, records each rejection as
+   `ACCEPTED-INTENT` (it stops reappearing in later rounds).
+5. Loop until SHIP or 3 rounds — after round 3, remaining findings go to the
+   user as open questions instead of looping forever.
+
+Keep rounds honest: the reviewer never softens a finding because the designer
+pushed back without naming an intent, and the designer never marks FIXED
+without the edit actually landing (`pixels_changed > 0`).
 
 ---
 

@@ -238,6 +238,28 @@ Then:
   the clear op is `clear_cel` (whole cel) — there is no `clear_region` batch op, so
   clear a sub-rect with a separate `doc_clear_region` call, not in the batch list.
 
+## The designer ↔ reviewer polish loop
+
+Self-review is blind to its own choices — for anything the user will actually
+see (showcase pieces, shipped sets), run the polish loop against the
+**art-quality-review** skill's reviewer:
+
+1. Finish your pass (all gates green is the ENTRY condition, not the exit).
+2. Spawn a reviewer subagent (fresh eyes, no memory of your intent) instructed
+   to follow the art-quality-review skill on the doc(s). Nits are wanted —
+   tell it so.
+3. `doc_checkpoint action="save"`, then work the finding list **in severity
+   order**. Reply to every finding: `FIXED (what you did)` or `REJECTED —
+   intent: <the deliberate choice the reviewer couldn't know>`. Never skip one
+   silently — unaddressed findings rot.
+4. Request re-review of the touched regions. Loop to SHIP or 3 rounds; park
+   what's still contested as questions for the user.
+5. Re-export anything that ships (GIF/sheet) so the artifact matches the doc.
+
+The reviewer's nitpicks are the advantage: a 1px tangent or a stray shade is
+cheap to fix now and invisible-but-felt later. Treat `nit` findings as real
+work items, not noise.
+
 ## Working as a director across a set
 
 - **Cohesion:** build the palette once, lock it on every doc, reuse silhouette
