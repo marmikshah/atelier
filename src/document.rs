@@ -30,6 +30,30 @@ pub struct LayerMeta {
     pub blend: String,
 }
 
+/// A named collision rectangle on a frame: the body box, an attack hitbox, a
+/// vulnerable hurtbox. Pure gameplay metadata — never rasterized; emitted
+/// (scaled) in sheet/atlas JSON so the engine reads it straight off the sheet.
+#[derive(Serialize, Deserialize, Clone)]
+pub struct BoxMeta {
+    pub name: String,
+    /// `body` | `hit` | `hurt` (validated on set).
+    pub kind: String,
+    /// `[x, y, w, h]` in document pixels.
+    pub rect: [i32; 4],
+}
+
+impl BoxMeta {
+    /// JSON form with the rect scaled into export pixels (`scale = 1` = raw).
+    pub fn to_json(&self, scale: u32) -> Value {
+        let s = scale as i32;
+        let [x, y, w, h] = self.rect;
+        json!({"name": self.name, "kind": self.kind, "rect": [x * s, y * s, w * s, h * s]})
+    }
+}
+
+/// The accepted box kinds, in declaration order — the error message lists them.
+pub const BOX_KINDS: [&str; 3] = ["body", "hit", "hurt"];
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FrameMeta {
     pub duration_ms: u32,
@@ -37,6 +61,9 @@ pub struct FrameMeta {
     /// Engines read this to position the sprite; None = top-left origin.
     #[serde(default)]
     pub pivot: Option<[i32; 2]>,
+    /// Collision/hit/hurt boxes on this frame (gameplay metadata, not pixels).
+    #[serde(default)]
+    pub boxes: Vec<BoxMeta>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -68,6 +95,10 @@ pub struct DocMeta {
     #[serde(default)]
     pub tags: Vec<TagMeta>,
     pub cels: Vec<CelMeta>,
+    /// Reference image filename inside the doc dir (set by doc_set_reference)
+    /// — the original the artwork is recreating, kept for compare loops.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference: Option<String>,
 }
 
 /// A loaded document: structure + the cel images in memory.
@@ -82,8 +113,30 @@ pub struct Document {
 /// both analysis images so callers can also render a grid/overlay.
 pub type FrameDiff = (u32, u32, u32, Option<[i32; 4]>, RgbaImage, RgbaImage);
 
+/// One light for [`Document::relight`]: a direction (need not be unit length),
+/// an intensity multiplier, and an RGB colour in 0..1.
+pub struct Light {
+    pub dir: [f32; 3],
+    pub intensity: f32,
+    pub color: [f32; 3],
+}
+
 fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
+}
+
+/// New index of a layer after moving the element at `from` to `to` (the same
+/// remove-then-insert the `Vec` does). Used to keep cel keys in step with
+/// `move_layer`.
+fn remap_move(old: usize, from: usize, to: usize) -> usize {
+    if old == from {
+        return to;
+    }
+    let mut i = if old > from { old - 1 } else { old };
+    if i >= to {
+        i += 1;
+    }
+    i
 }
 
 impl Document {
@@ -102,9 +155,11 @@ impl Document {
             frames: vec![FrameMeta {
                 duration_ms: 100,
                 pivot: None,
+                boxes: Vec::new(),
             }],
             tags: Vec::new(),
             cels: Vec::new(),
+            reference: None,
         };
         Document {
             meta,
@@ -188,12 +243,149 @@ impl Document {
         Ok(())
     }
 
+    // -- layer lifecycle ----------------------------------------------------
+    //
+    // The layer stack is a `Vec<LayerMeta>`; cels are keyed by `(layer, frame)`.
+    // Any structural change to the stack therefore has to re-key the cel map in
+    // lock-step. `remap_cel_layers` is the single choke point for that so the
+    // two never drift apart.
+
+    /// Rebuild the cel map under a layer-index remapping. `map(old)` gives the
+    /// new layer index, or `None` to drop that layer's cels. Frames are kept.
+    fn remap_cel_layers<F: Fn(usize) -> Option<usize>>(&mut self, map: F) {
+        let old = std::mem::take(&mut self.cels);
+        for ((l, f), v) in old {
+            if let Some(nl) = map(l) {
+                self.cels.insert((nl, f), v);
+            }
+        }
+    }
+
+    /// Move layer `from` to index `to` (clamped), shifting the rest; cels follow.
+    pub fn move_layer(&mut self, from: usize, to: usize) -> Result<(), String> {
+        let n = self.meta.layers.len();
+        if from >= n {
+            return Err(format!("no layer {} (layers={})", from, n));
+        }
+        let to = to.min(n - 1);
+        if from == to {
+            return Ok(());
+        }
+        let lm = self.meta.layers.remove(from);
+        self.meta.layers.insert(to, lm);
+        self.remap_cel_layers(|old| Some(remap_move(old, from, to)));
+        Ok(())
+    }
+
+    /// Insert a new empty layer at `index` (clamped to the stack length),
+    /// shifting existing layers (and their cels) up. Returns the new index.
+    pub fn insert_layer(
+        &mut self,
+        index: usize,
+        name: Option<String>,
+        opacity: u8,
+        blend: String,
+    ) -> usize {
+        let n = self.meta.layers.len();
+        let index = index.min(n);
+        self.meta.layers.insert(
+            index,
+            LayerMeta {
+                name: name.unwrap_or_else(|| format!("Layer {}", n + 1)),
+                opacity,
+                visible: true,
+                blend,
+            },
+        );
+        self.remap_cel_layers(|old| Some(if old >= index { old + 1 } else { old }));
+        index
+    }
+
+    /// Delete a layer and its cels (cannot remove the last remaining layer).
+    pub fn delete_layer(&mut self, index: usize) -> Result<(), String> {
+        let n = self.meta.layers.len();
+        if index >= n {
+            return Err(format!("no layer {} (layers={})", index, n));
+        }
+        if n == 1 {
+            return Err("cannot delete the only layer".into());
+        }
+        self.meta.layers.remove(index);
+        self.remap_cel_layers(|old| match old.cmp(&index) {
+            std::cmp::Ordering::Equal => None,
+            std::cmp::Ordering::Greater => Some(old - 1),
+            std::cmp::Ordering::Less => Some(old),
+        });
+        Ok(())
+    }
+
+    /// Rename a layer.
+    pub fn rename_layer(&mut self, index: usize, name: String) -> Result<(), String> {
+        let l = self
+            .meta
+            .layers
+            .get_mut(index)
+            .ok_or_else(|| format!("no layer {}", index))?;
+        l.name = name;
+        Ok(())
+    }
+
+    /// Duplicate a layer (meta + cels) directly above it. Returns the new index.
+    pub fn duplicate_layer(&mut self, index: usize) -> Result<usize, String> {
+        let n = self.meta.layers.len();
+        if index >= n {
+            return Err(format!("no layer {} (layers={})", index, n));
+        }
+        let mut lm = self.meta.layers[index].clone();
+        lm.name = format!("{} copy", lm.name);
+        let new_index = index + 1;
+        self.meta.layers.insert(new_index, lm);
+        // Shift cels at/above the insertion point up; the source (at `index <
+        // new_index`) is untouched, so we can then copy it into `new_index`.
+        self.remap_cel_layers(|old| Some(if old >= new_index { old + 1 } else { old }));
+        let src: Vec<(usize, (i32, i32, RgbaImage))> = self
+            .cels
+            .iter()
+            .filter(|((l, _), _)| *l == index)
+            .map(|((_, f), v)| (*f, (v.0, v.1, v.2.clone())))
+            .collect();
+        for (f, v) in src {
+            self.cels.insert((new_index, f), v);
+        }
+        Ok(new_index)
+    }
+
+    /// Merge layer `index` down onto the layer below it, baking in the upper
+    /// layer's opacity and blend mode (per frame), then remove the upper layer.
+    pub fn merge_down(&mut self, index: usize) -> Result<(), String> {
+        let n = self.meta.layers.len();
+        if index >= n {
+            return Err(format!("no layer {} (layers={})", index, n));
+        }
+        if index == 0 {
+            return Err("layer 0 has nothing below it to merge into".into());
+        }
+        let lower = index - 1;
+        let upper = self.meta.layers[index].clone();
+        let blend = raster::parse_blend(&upper.blend);
+        for f in 0..self.meta.frames.len() {
+            if !self.cels.contains_key(&(index, f)) {
+                continue;
+            }
+            let upper_img = self.cel_full(index, f);
+            let lower_canvas = self.cel_canvas(lower, f)?;
+            raster::composite(lower_canvas, &upper_img, 0, 0, upper.opacity, blend);
+        }
+        self.delete_layer(index)
+    }
+
     /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
     pub fn add_frame(&mut self, duration_ms: u32, copy_from: Option<usize>) -> usize {
         let idx = self.meta.frames.len();
         self.meta.frames.push(FrameMeta {
             duration_ms,
             pivot: None,
+            boxes: Vec::new(),
         });
         if let Some(src) = copy_from {
             // duplicate every cel of frame `src` into the new frame
@@ -229,6 +421,24 @@ impl Document {
             .get_mut(frame)
             .ok_or_else(|| format!("no frame {}", frame))?;
         f.pivot = pivot;
+        Ok(())
+    }
+
+    /// Replace a frame's collision boxes (empty vec clears them). Each box kind
+    /// must be one of `BOX_KINDS`; an unknown kind fails fast with the list.
+    pub fn set_frame_boxes(&mut self, frame: usize, boxes: Vec<BoxMeta>) -> Result<(), String> {
+        if let Some(b) = boxes.iter().find(|b| !BOX_KINDS.contains(&b.kind.as_str())) {
+            return Err(format!(
+                "box kind must be one of {:?}, got '{}'",
+                BOX_KINDS, b.kind
+            ));
+        }
+        let f = self
+            .meta
+            .frames
+            .get_mut(frame)
+            .ok_or_else(|| format!("no frame {}", frame))?;
+        f.boxes = boxes;
         Ok(())
     }
 
@@ -325,6 +535,42 @@ impl Document {
         changed
     }
 
+    /// Snap every opaque pixel to its perceptually nearest palette swatch
+    /// (OKLab ΔE), preserving alpha. Scope to a `layer`/`frame` or the whole
+    /// document. Kills the off-palette drift that blends/dithers/effects leave
+    /// behind. Returns the number of pixels moved to a different colour.
+    pub fn snap_to_palette(
+        &mut self,
+        palette: &[[u8; 4]],
+        layer: Option<usize>,
+        frame: Option<usize>,
+    ) -> u32 {
+        if palette.is_empty() {
+            return 0;
+        }
+        let mut changed = 0;
+        let mut lab = raster::PaletteLab::new(palette);
+        for ((l, f), (_x, _y, img)) in self.cels.iter_mut() {
+            if layer.is_some_and(|s| s != *l) || frame.is_some_and(|s| s != *f) {
+                continue;
+            }
+            for p in img.pixels_mut() {
+                if p.0[3] == 0 {
+                    continue;
+                }
+                if let Some(i) = lab.nearest(p.0) {
+                    let c = lab.color(i);
+                    let snapped = [c[0], c[1], c[2], p.0[3]];
+                    if snapped != p.0 {
+                        *p = Rgba(snapped);
+                        changed += 1;
+                    }
+                }
+            }
+        }
+        changed
+    }
+
     /// JSON snapshot of the document structure (layers, frames, tags, cels,
     /// palette) for inspection — no pixel data.
     pub fn structure(&self) -> Value {
@@ -345,7 +591,8 @@ impl Document {
                 "index": i, "name": l.name, "opacity": l.opacity, "visible": l.visible, "blend": l.blend
             })).collect::<Vec<_>>(),
             "frames": self.meta.frames.iter().enumerate().map(|(i, f)| json!({
-                "index": i, "duration_ms": f.duration_ms, "pivot": f.pivot
+                "index": i, "duration_ms": f.duration_ms, "pivot": f.pivot,
+                "boxes": f.boxes.iter().map(|b| b.to_json(1)).collect::<Vec<_>>(),
             })).collect::<Vec<_>>(),
             "tags": self.meta.tags.iter().map(|t| json!({
                 "name": t.name, "from": t.from, "to": t.to, "direction": t.direction
@@ -353,6 +600,7 @@ impl Document {
             "cels": cels,
             "palette": self.meta.palette,
             "palette_len": self.meta.palette.len(),
+            "reference": self.meta.reference,
         })
     }
 
@@ -468,6 +716,233 @@ impl Document {
         let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
         self.clear_region(layer, frame, x0, y0, x1, y1)?;
         self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, false)
+    }
+
+    /// Affine-transform a cel (or a `region` of it) in place about its centre:
+    /// rotate `rot` degrees, scale (`sx`,`sy`), shear (`skew_x`,`skew_y` deg).
+    /// `method` `"rotsprite"` super-samples to keep clusters from shattering;
+    /// `"nearest"` is the raw grid transform. `clear_source` empties the source
+    /// rect first (a true move rather than an overlay). Returns
+    /// `(placed_bbox [x,y,w,h], placed_opaque_px)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn transform_cel(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        rot: f32,
+        sx: f32,
+        sy: f32,
+        skew_x: f32,
+        skew_y: f32,
+        method: &str,
+        clear_source: bool,
+    ) -> Result<([i32; 4], u32), String> {
+        self.check_cel(layer, frame)?;
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let (rw, rh) = ((bx - ax + 1) as u32, (by - ay + 1) as u32);
+        // Lift the source rect to a standalone image.
+        let full = self.cel_image(layer, frame)?;
+        let sub = image::imageops::crop_imm(&full, ax as u32, ay as u32, rw, rh).to_image();
+        let ss = if method == "rotsprite" { 4 } else { 1 };
+        let out = raster::affine_nn(&sub, rot, sx, sy, skew_x, skew_y, ss);
+        let (tw, th) = (out.width(), out.height());
+        if clear_source {
+            self.clear_region(layer, frame, ax, ay, bx, by)?;
+        }
+        // Centre the result on the source rect's centre.
+        let cx = ax as f32 + rw as f32 / 2.0;
+        let cy = ay as f32 + rh as f32 / 2.0;
+        let px = (cx - tw as f32 / 2.0).round() as i32;
+        let py = (cy - th as f32 / 2.0).round() as i32;
+        let placed_px = out.pixels().filter(|p| p.0[3] > 0).count() as u32;
+        let buf = out.into_raw();
+        self.paste_region(layer, frame, px, py, tw, th, &buf, true)?;
+        Ok(([px, py, tw as i32, th as i32], placed_px))
+    }
+
+    /// Flood a contiguous same-colour region from `(x,y)` into a row-major
+    /// boolean mask the size of the canvas — the magic-wand. `layer` None reads
+    /// the flattened composite. `perceptual` uses OKLab ΔE (`tol` as a 0..255
+    /// scale) instead of raw channel distance. `conn8` uses 8-connectivity.
+    pub fn flood_mask(
+        &self,
+        layer: Option<usize>,
+        frame: usize,
+        x: i32,
+        y: i32,
+        tol: i32,
+        conn8: bool,
+        perceptual: bool,
+    ) -> Result<Vec<bool>, String> {
+        let img = self.analysis_image(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let mut mask = vec![false; (w * h) as usize];
+        if x < 0 || y < 0 || x >= w || y >= h {
+            return Ok(mask);
+        }
+        let target = img.get_pixel(x as u32, y as u32).0;
+        let de = tol as f32 / 255.0;
+        let matches = |p: [u8; 4]| -> bool {
+            if perceptual {
+                raster::oklab_delta(p, target) <= de
+            } else {
+                raster::close(p, target, tol)
+            }
+        };
+        let mut stack = vec![(x, y)];
+        while let Some((px, py)) = stack.pop() {
+            if px < 0 || py < 0 || px >= w || py >= h {
+                continue;
+            }
+            let i = (py * w + px) as usize;
+            if mask[i] {
+                continue;
+            }
+            if !matches(img.get_pixel(px as u32, py as u32).0) {
+                continue;
+            }
+            mask[i] = true;
+            stack.push((px + 1, py));
+            stack.push((px - 1, py));
+            stack.push((px, py + 1));
+            stack.push((px, py - 1));
+            if conn8 {
+                stack.push((px + 1, py + 1));
+                stack.push((px - 1, py - 1));
+                stack.push((px + 1, py - 1));
+                stack.push((px - 1, py + 1));
+            }
+        }
+        Ok(mask)
+    }
+
+    /// Selective anti-aliasing (selout): soften the staircase corners of the
+    /// silhouette by dropping one opaque, mid-value pixel into each outer step
+    /// notch. The new pixel is the mean of the two edge colours that meet there
+    /// (snapped to `ramp` if given, so AA stays on-palette). With `keep_square`
+    /// a notch whose two opaque legs are both axis-aligned straight runs longer
+    /// than `max_run` is left crisp (so deliberate right-angle corners survive),
+    /// while diagonal staircases — whose perpendicular run is 1px — are always
+    /// smoothed. `only_color` restricts to corners of that fill colour; `region`
+    /// clips. Returns the number of AA pixels added.
+    #[allow(clippy::too_many_arguments)]
+    pub fn smooth_edges(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        ramp: Option<&[[u8; 4]]>,
+        max_run: i32,
+        keep_square: bool,
+        only_color: Option<[u8; 4]>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<u32, String> {
+        self.check_cel(layer, frame)?;
+        let src = self.cel_image(layer, frame)?;
+        let (w, h) = (src.width() as i32, src.height() as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w - 1, h - 1),
+        };
+        let op = |x: i32, y: i32| -> Option<[u8; 4]> {
+            if x < 0 || y < 0 || x >= w || y >= h {
+                return None;
+            }
+            let p = src.get_pixel(x as u32, y as u32).0;
+            if p[3] == 0 {
+                None
+            } else {
+                Some(p)
+            }
+        };
+        // Length of the FLAT edge a leg sits on: walking along the leg's
+        // direction, how many steps stay on the silhouette boundary (the next
+        // pixel outward toward the notch is empty). A diagonal staircase breaks
+        // this after 1px (it steps); a true straight wall runs long.
+        let flat = |sx: i32, sy: i32, along: (i32, i32), out: (i32, i32)| -> i32 {
+            let (mut x, mut y, mut n) = (sx, sy, 0);
+            while op(x, y).is_some() && op(x + out.0, y + out.1).is_none() && n <= max_run + 1 {
+                n += 1;
+                x += along.0;
+                y += along.1;
+            }
+            n
+        };
+        let mut adds: Vec<(i32, i32, [u8; 4])> = Vec::new();
+        // Each outer corner is an empty pixel with exactly two perpendicular
+        // opaque orthogonal neighbours; (out1/out2) point from each leg toward
+        // the notch so `flat` can measure edge straightness.
+        let corners = [
+            ((0, -1), (1, 0), (0, 1), (-1, 0)), // N + E
+            ((1, 0), (0, 1), (-1, 0), (0, -1)), // E + S
+            ((0, 1), (-1, 0), (0, -1), (1, 0)), // S + W
+            ((-1, 0), (0, -1), (1, 0), (0, 1)), // W + N
+        ];
+        for y in ay..=by {
+            for x in ax..=bx {
+                if op(x, y).is_some() {
+                    continue; // only fill empty notches
+                }
+                // total opaque orthogonal neighbours must be exactly 2
+                let north = op(x, y - 1);
+                let south = op(x, y + 1);
+                let east = op(x + 1, y);
+                let west = op(x - 1, y);
+                let count = [north, south, east, west]
+                    .iter()
+                    .filter(|n| n.is_some())
+                    .count();
+                if count != 2 {
+                    continue;
+                }
+                for ((ax1, ay1), (ax2, ay2), out1, out2) in corners {
+                    let (Some(c1), Some(c2)) = (op(x + ax1, y + ay1), op(x + ax2, y + ay2)) else {
+                        continue;
+                    };
+                    if let Some(oc) = only_color {
+                        if c1 != oc || c2 != oc {
+                            continue;
+                        }
+                    }
+                    // Preserve deliberate right angles: both edges run long & flat.
+                    if keep_square {
+                        let l1 = flat(x + ax1, y + ay1, (ax1, ay1), out1);
+                        let l2 = flat(x + ax2, y + ay2, (ax2, ay2), out2);
+                        if l1 > max_run && l2 > max_run {
+                            continue;
+                        }
+                    }
+                    let mean = [
+                        ((c1[0] as u16 + c2[0] as u16) / 2) as u8,
+                        ((c1[1] as u16 + c2[1] as u16) / 2) as u8,
+                        ((c1[2] as u16 + c2[2] as u16) / 2) as u8,
+                        255,
+                    ];
+                    let color = match ramp {
+                        Some(r) if !r.is_empty() => {
+                            let i = raster::nearest_oklab(mean, r).unwrap_or(0);
+                            let c = r[i];
+                            [c[0], c[1], c[2], 255]
+                        }
+                        _ => mean,
+                    };
+                    adds.push((x, y, color));
+                    break;
+                }
+            }
+        }
+        let n = adds.len() as u32;
+        let img = self.cel_canvas(layer, frame)?;
+        for (x, y, c) in adds {
+            raster::put(img, x, y, c);
+        }
+        Ok(n)
     }
 
     // -- per-pixel drawing --------------------------------------------------
@@ -721,11 +1196,20 @@ impl Document {
         if raster::close(target, color, 0) {
             return Ok(());
         }
+        // Visited mask, not a colour check: when the fill colour is itself
+        // within `tol` of the target, painted pixels still match and the
+        // scan loops forever without it.
+        let mut visited = vec![false; (w * h) as usize];
         let mut stack = vec![(x, y)];
         while let Some((px, py)) = stack.pop() {
             if px < 0 || py < 0 || px >= w || py >= h {
                 continue;
             }
+            let i = (py * w + px) as usize;
+            if visited[i] {
+                continue;
+            }
+            visited[i] = true;
             let p = img.get_pixel(px as u32, py as u32).0;
             if !raster::close(p, target, tol) {
                 continue;
@@ -805,8 +1289,10 @@ impl Document {
     }
 
     /// Draw a Bézier curve through control `points`: 2 = line, 3 = quadratic,
-    /// 4+ = cubic (first four). Sampled into `steps` segments with brush `size`.
-    /// Smooth organic strokes — tails, vines, hair.
+    /// 4 = cubic. More than 4 is an error (the old behaviour silently dropped
+    /// the extras — a curve that quietly ignored half its control points).
+    /// Sampled into `steps` segments with brush `size`. Smooth organic
+    /// strokes — tails, vines, hair.
     pub fn bezier(
         &mut self,
         layer: usize,
@@ -816,6 +1302,13 @@ impl Document {
         size: i32,
         steps: i32,
     ) -> Result<(), String> {
+        if points.len() > 4 {
+            return Err(format!(
+                "bezier supports at most 4 control points (got {}) — chain several bezier calls \
+                 to draw a longer curve",
+                points.len()
+            ));
+        }
         let s = size.max(1);
         let steps = steps.max(2);
         let img = self.cel_canvas(layer, frame)?;
@@ -911,8 +1404,8 @@ impl Document {
     }
 
     /// Full-canvas (0,0-anchored) copy of a cel, transparent where absent.
-    #[allow(dead_code)] // used by tween (later step)
-    fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
+    /// Also the before/after snapshot for the studio's mutation-diff acks.
+    pub(crate) fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
         let mut img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
         if let Some((cx, cy, src)) = self.cels.get(&(layer, frame)) {
             for y in 0..src.height() as i32 {
@@ -1118,6 +1611,372 @@ impl Document {
             }
         }
         Ok(base)
+    }
+
+    /// Multi-light form shading. The silhouette's interior-distance field is
+    /// read as a height map, differentiated into per-pixel surface normals
+    /// (`bulge` sets how domed), then lit by Lambert diffuse from each light
+    /// plus a Fresnel-style rim term — the leap from one-direction `form`
+    /// shading to key/fill/rim "painted" form. Output multiplies the base
+    /// colour by the accumulated light (so hue is preserved and light colour
+    /// tints it); if `ramp` is given the lit value snaps to the ramp instead,
+    /// keeping the result on-palette. Region defaults to the silhouette bbox.
+    #[allow(clippy::too_many_arguments)]
+    pub fn relight(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        lights: &[Light],
+        ambient: f32,
+        amb_color: [f32; 3],
+        rim: f32,
+        rim_color: [f32; 3],
+        bulge: f32,
+        ramp: Option<Vec<[u8; 4]>>,
+    ) -> Result<(), String> {
+        let (w, h) = (self.meta.w, self.meta.h);
+        let before = self.cel_canvas(layer, frame)?.clone();
+        // Foreground mask + height field over the whole canvas.
+        let fg: Vec<bool> = (0..(w * h))
+            .map(|i| before.as_raw()[i as usize * 4 + 3] > 0)
+            .collect();
+        let dist = raster::interior_distance(&fg, w as usize, h as usize);
+        let at = |x: i32, y: i32| -> f32 {
+            if x < 0 || y < 0 || x >= w as i32 || y >= h as i32 {
+                0.0
+            } else {
+                dist[(y as usize) * w as usize + x as usize]
+            }
+        };
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
+                Some(r) => r,
+                None => return Ok(()),
+            },
+            None => {
+                let (mut x0, mut y0, mut x1, mut y1) = (w as i32, h as i32, -1i32, -1i32);
+                for (i, on) in fg.iter().enumerate() {
+                    if *on {
+                        let (x, y) = ((i % w as usize) as i32, (i / w as usize) as i32);
+                        x0 = x0.min(x);
+                        y0 = y0.min(y);
+                        x1 = x1.max(x);
+                        y1 = y1.max(y);
+                    }
+                }
+                if x1 < 0 {
+                    return Ok(());
+                }
+                (x0, y0, x1, y1)
+            }
+        };
+        let bulge = bulge.max(0.2);
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let base = before.get_pixel(x as u32, y as u32).0;
+                if base[3] == 0 {
+                    continue;
+                }
+                // Surface normal from the height gradient (Sobel-ish).
+                let gx = at(x + 1, y) - at(x - 1, y);
+                let gy = at(x, y + 1) - at(x, y - 1);
+                let nz = bulge;
+                let nl = (gx * gx + gy * gy + nz * nz).sqrt().max(1e-6);
+                let n = [-gx / nl, -gy / nl, nz / nl];
+                // Accumulate diffuse light (per channel, so light colour tints).
+                let mut acc = [
+                    ambient * amb_color[0],
+                    ambient * amb_color[1],
+                    ambient * amb_color[2],
+                ];
+                for lt in lights {
+                    let ll = (lt.dir[0].powi(2) + lt.dir[1].powi(2) + lt.dir[2].powi(2))
+                        .sqrt()
+                        .max(1e-6);
+                    let ndl = ((n[0] * lt.dir[0] + n[1] * lt.dir[1] + n[2] * lt.dir[2]) / ll)
+                        .max(0.0)
+                        * lt.intensity;
+                    for (c, a) in acc.iter_mut().enumerate() {
+                        *a += ndl * lt.color[c];
+                    }
+                }
+                // Rim/Fresnel: bright where the surface turns away from the viewer.
+                if rim > 0.0 {
+                    let fres = (1.0 - n[2]).clamp(0.0, 1.0).powf(2.0) * rim;
+                    for (c, a) in acc.iter_mut().enumerate() {
+                        *a += fres * rim_color[c];
+                    }
+                }
+                let lit = match &ramp {
+                    Some(r) if !r.is_empty() => {
+                        // Lit luminance picks the ramp step.
+                        let f =
+                            (acc[0] * 0.2126 + acc[1] * 0.7152 + acc[2] * 0.0722).clamp(0.0, 2.0);
+                        let i = ((f / 2.0) * (r.len() as f32 - 1.0)).round() as usize;
+                        let cc = r[i.min(r.len() - 1)];
+                        [cc[0], cc[1], cc[2], base[3]]
+                    }
+                    _ => [
+                        (base[0] as f32 * acc[0]).round().clamp(0.0, 255.0) as u8,
+                        (base[1] as f32 * acc[1]).round().clamp(0.0, 255.0) as u8,
+                        (base[2] as f32 * acc[2]).round().clamp(0.0, 255.0) as u8,
+                        base[3],
+                    ],
+                };
+                img.put_pixel(x as u32, y as u32, Rgba(lit));
+            }
+        }
+        Ok(())
+    }
+
+    /// Graduated multi-tone dithering across a whole ramp along an axis — master
+    /// gradient shading, vs the two-colour Bayer of `dither`. For each pixel the
+    /// position `t` along `axis` (`h`|`v`|`radial`) picks a ramp pair; an ordered
+    /// or blue-noise (`ign`) threshold dithers between them. `only_existing`
+    /// repaints just the opaque pixels (shade existing art) and keeps their
+    /// alpha. Returns the pixel count changed.
+    #[allow(clippy::too_many_arguments)]
+    pub fn dither_ramp(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        ramp: &[[u8; 4]],
+        axis: &str,
+        pattern: &str,
+        only_existing: bool,
+    ) -> Result<u32, String> {
+        if ramp.len() < 2 {
+            return Err("dither_ramp needs a ramp of >= 2 colours".into());
+        }
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => raster::clamp_region(a, b, c, d, w, h)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let span_x = (bx - ax).max(1) as f32;
+        let span_y = (by - ay).max(1) as f32;
+        let (cx, cy) = ((ax + bx) as f32 / 2.0, (ay + by) as f32 / 2.0);
+        let rmax = ((span_x / 2.0).powi(2) + (span_y / 2.0).powi(2))
+            .sqrt()
+            .max(1.0);
+        let last = ramp.len() - 1;
+        let img = self.cel_canvas(layer, frame)?;
+        let mut changed = 0;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let cur = img.get_pixel(x as u32, y as u32).0;
+                if only_existing && cur[3] == 0 {
+                    continue;
+                }
+                let t = match axis {
+                    "v" => (y - ay) as f32 / span_y,
+                    "radial" => ((x as f32 - cx).powi(2) + (y as f32 - cy).powi(2)).sqrt() / rmax,
+                    _ => (x - ax) as f32 / span_x,
+                }
+                .clamp(0.0, 1.0);
+                let pos = t * last as f32;
+                let k = pos.floor() as usize;
+                let frac = pos - k as f32;
+                let thr = raster::ramp_dither_threshold(pattern, x, y);
+                let idx = if frac > thr {
+                    (k + 1).min(last)
+                } else {
+                    k.min(last)
+                };
+                let c = ramp[idx];
+                let out = [c[0], c[1], c[2], if only_existing { cur[3] } else { 255 }];
+                if out != cur {
+                    img.put_pixel(x as u32, y as u32, Rgba(out));
+                    changed += 1;
+                }
+            }
+        }
+        Ok(changed)
+    }
+
+    /// Selective / form-following outline. Instead of a flat keyline, each
+    /// silhouette edge pixel takes a colour derived from the fill it borders:
+    /// `mode="from_fill"` darkens that fill (a coloured contour that turns with
+    /// the form), `mode="light"`/`"dark"` biases the whole outline toward the
+    /// light/shadow. `ramp` keeps the outline on-palette; `steps` is how far
+    /// along the ramp/HSL to push. Returns the outline pixel count.
+    pub fn outline_selective(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        mode: &str,
+        ramp: Option<&[[u8; 4]]>,
+        steps: i32,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<u32, String> {
+        self.check_cel(layer, frame)?;
+        let src = self.cel_image(layer, frame)?;
+        let (w, h) = (src.width() as i32, src.height() as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w - 1, h - 1),
+        };
+        let op = |x: i32, y: i32| -> Option<[u8; 4]> {
+            if x < 0 || y < 0 || x >= w || y >= h {
+                return None;
+            }
+            let p = src.get_pixel(x as u32, y as u32).0;
+            if p[3] == 0 {
+                None
+            } else {
+                Some(p)
+            }
+        };
+        // Darken/lighten a fill colour for the contour.
+        let dir = if mode == "light" { 1 } else { -1 };
+        let shade = |fill: [u8; 4]| -> [u8; 4] {
+            match ramp {
+                Some(r) if !r.is_empty() => raster::shade_ramp(fill, r, dir * steps.abs()),
+                _ => raster::shade_hsl(fill, dir, steps.abs()),
+            }
+        };
+        let mut adds: Vec<(i32, i32, [u8; 4])> = Vec::new();
+        for y in ay..=by {
+            for x in ax..=bx {
+                if op(x, y).is_some() {
+                    continue; // outline goes on the empty side of the edge
+                }
+                // nearest opaque orthogonal neighbour donates the fill colour
+                let donor = [op(x, y - 1), op(x, y + 1), op(x + 1, y), op(x - 1, y)]
+                    .into_iter()
+                    .flatten()
+                    .next();
+                if let Some(fill) = donor {
+                    let c = shade(fill);
+                    adds.push((x, y, [c[0], c[1], c[2], 255]));
+                }
+            }
+        }
+        let n = adds.len() as u32;
+        let img = self.cel_canvas(layer, frame)?;
+        for (x, y, c) in adds {
+            raster::put(img, x, y, c);
+        }
+        Ok(n)
+    }
+
+    /// Paint a procedural material onto the OPAQUE pixels of a cel (region-
+    /// clipped) by mapping a per-pixel value field through `ramp`: `metal`
+    /// (vertical falloff + specular band + base reflection), `wood` (directional
+    /// grain), `stone` (cloud mottle + speckle), `water` (horizontal ripples),
+    /// `cloth` (fine low-contrast weave), `skin` (soft vertical gradient),
+    /// `glass` (vertical sheen + diagonal streak). Deterministic in `seed`. A
+    /// light `ign` dither smooths the bands. Returns the pixel count painted.
+    pub fn material(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        material: &str,
+        ramp: &[[u8; 4]],
+        seed: u64,
+    ) -> Result<u32, String> {
+        if ramp.len() < 2 {
+            return Err("material needs a ramp of >= 2 colours".into());
+        }
+        self.check_cel(layer, frame)?;
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
+                .ok_or("region is empty after clamping to the canvas")?,
+            None => (0, 0, w as i32 - 1, h as i32 - 1),
+        };
+        let (spanx, spany) = ((bx - ax).max(1) as f32, (by - ay).max(1) as f32);
+        let n = ramp.len();
+        let hash = |x: i32, y: i32| -> f32 {
+            let mut h = (x as u32).wrapping_mul(374_761_393)
+                ^ (y as u32).wrapping_mul(668_265_263)
+                ^ (seed as u32).wrapping_mul(2_246_822_519);
+            h = (h ^ (h >> 13)).wrapping_mul(1_274_126_177);
+            ((h ^ (h >> 16)) & 0xffff) as f32 / 65535.0
+        };
+        // smooth value noise: bilinear over a coarse hash grid
+        let vnoise = |fx: f32, fy: f32| -> f32 {
+            let (x0, y0) = (fx.floor() as i32, fy.floor() as i32);
+            let (tx, ty) = (fx - x0 as f32, fy - y0 as f32);
+            let lerp = |a: f32, b: f32, t: f32| a + (b - a) * t;
+            let top = lerp(hash(x0, y0), hash(x0 + 1, y0), tx);
+            let bot = lerp(hash(x0, y0 + 1), hash(x0 + 1, y0 + 1), tx);
+            lerp(top, bot, ty)
+        };
+        let known = ["metal", "wood", "stone", "water", "cloth", "skin", "glass"];
+        if !known.contains(&material) {
+            return Err(format!("unknown material '{}' — use {:?}", material, known));
+        }
+        let img = self.cel_canvas(layer, frame)?;
+        let mut painted = 0u32;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let cur = img.get_pixel(x as u32, y as u32).0;
+                if cur[3] == 0 {
+                    continue; // material clings to the existing shape
+                }
+                let (u, v) = ((x - ax) as f32 / spanx, (y - ay) as f32 / spany);
+                let mut t = match material {
+                    // dark top, bright specular band, mid body, faint floor bounce
+                    "metal" => {
+                        let spec = (-((v - 0.28).powi(2)) / 0.01).exp();
+                        let bounce = (-((v - 0.92).powi(2)) / 0.02).exp() * 0.5;
+                        (0.25 + 0.55 * v + spec + bounce).clamp(0.0, 1.0)
+                    }
+                    // directional grain: stretched noise along x
+                    "wood" => {
+                        let g = vnoise(x as f32 * 0.12, y as f32 * 0.9);
+                        (0.5 + 0.45 * (x as f32 * 0.18 + g * 4.0).sin()).clamp(0.0, 1.0)
+                    }
+                    // cloud mottle + occasional bright/dark speckle
+                    "stone" => {
+                        let base = vnoise(x as f32 * 0.18, y as f32 * 0.18);
+                        let sp = hash(x, y);
+                        if sp > 0.97 {
+                            0.95
+                        } else if sp < 0.03 {
+                            0.05
+                        } else {
+                            base.clamp(0.0, 1.0)
+                        }
+                    }
+                    // horizontal ripples with a noisy phase
+                    "water" => {
+                        let ph = vnoise(x as f32 * 0.2, y as f32 * 0.05) * 3.0;
+                        (0.5 + 0.45 * (y as f32 * 0.6 + ph + x as f32 * 0.08).sin()).clamp(0.0, 1.0)
+                    }
+                    // fine low-contrast weave
+                    "cloth" => {
+                        let weave = (((x + y) & 1) as f32 - 0.5) * 0.12;
+                        (0.5 + weave + (vnoise(x as f32 * 0.4, y as f32 * 0.4) - 0.5) * 0.3)
+                            .clamp(0.0, 1.0)
+                    }
+                    // soft vertical gradient, gentle mottle
+                    "skin" => {
+                        (0.35 + 0.4 * v + (vnoise(x as f32 * 0.25, y as f32 * 0.25) - 0.5) * 0.15)
+                            .clamp(0.0, 1.0)
+                    }
+                    // vertical sheen + a diagonal highlight streak
+                    _ => {
+                        let streak = (-(((u - v) - 0.0).powi(2)) / 0.01).exp();
+                        (0.3 + 0.5 * v + streak * 0.8).clamp(0.0, 1.0)
+                    }
+                };
+                // light blue-noise dither to break the bands
+                t = (t + (raster::ign(x, y) - 0.5) / n as f32).clamp(0.0, 1.0);
+                let idx = (t * (n - 1) as f32).round() as usize;
+                let c = ramp[idx.min(n - 1)];
+                img.put_pixel(x as u32, y as u32, Rgba([c[0], c[1], c[2], cur[3]]));
+                painted += 1;
+            }
+        }
+        Ok(painted)
     }
 
     /// Draw a 1px outline around the opaque pixels of a cel. `aa` also softens
@@ -1463,7 +2322,14 @@ impl Document {
         if (scale - 1.0).abs() > 1e-6 && scale > 0.0 {
             let nw = (src.width() as f32 * scale).round().max(1.0) as u32;
             let nh = (src.height() as f32 * scale).round().max(1.0) as u32;
-            src = image::imageops::resize(&src, nw, nh, image::imageops::FilterType::Nearest);
+            // Shrinking: area-average so a hi-res reference keeps its features
+            // (nearest keeps ~1 of every k² pixels). Growing: nearest stays
+            // crisp for pixel art.
+            src = if scale < 1.0 {
+                raster::downscale_area(&src, nw, nh)
+            } else {
+                image::imageops::resize(&src, nw, nh, image::imageops::FilterType::Nearest)
+            };
         }
         if rotate.abs() > 1e-6 {
             src = raster::rotate_nn(&src, rotate);
@@ -1704,6 +2570,175 @@ impl Document {
         Ok(())
     }
 
+    /// Volume shading: lay a rounded-form light gradient across the *interior*
+    /// of a shape and snap it to a dark→light `ramp`. Where `shade` only lights
+    /// silhouette rims, `form` fills the body — a flat-filled blob gains real
+    /// volume in one call (the move that turns stacked ellipses into one lit
+    /// sphere).
+    ///
+    /// `form`:
+    ///   "sphere"      ball: radial surface-normal falloff in the region ellipse
+    ///   "cylinder-h"  horizontal tube: rounds top↔bottom, flat left↔right
+    ///   "cylinder-v"  vertical tube: rounds left↔right, flat top↔bottom
+    ///   "auto"        any shape: interior-distance of the opaque silhouette
+    ///                 (bright core → dark edge), nudged toward `light_dir`
+    /// `light_dir` places the highlight (the 8 compass dirs `shade` uses).
+    /// `region` sets the form's bounds/centre; omitted, it's the opaque bbox.
+    /// `ramp` ordered dark→light; omitted, one is derived from the mean colour.
+    /// `strength` 0..1 compresses (low) or spans the full ramp (1, default).
+    #[allow(clippy::too_many_arguments)]
+    pub fn form(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        light_dir: &str,
+        form: &str,
+        region: Option<(i32, i32, i32, i32)>,
+        ramp: Option<Vec<[u8; 4]>>,
+        strength: f32,
+    ) -> Result<(), String> {
+        let (ldx, ldy) = match light_dir {
+            "top-left" => (-1.0f32, -1.0f32),
+            "top" => (0.0, -1.0),
+            "top-right" => (1.0, -1.0),
+            "left" => (-1.0, 0.0),
+            "right" => (1.0, 0.0),
+            "bottom-left" => (-1.0, 1.0),
+            "bottom" => (0.0, 1.0),
+            "bottom-right" => (1.0, 1.0),
+            other => {
+                return Err(format!(
+                    "unknown light_dir '{}' — use top-left/top/top-right/left/right/bottom-left/bottom/bottom-right",
+                    other
+                ))
+            }
+        };
+        if !matches!(form, "sphere" | "cylinder-h" | "cylinder-v" | "auto") {
+            return Err(format!(
+                "unknown form '{}' — use sphere/cylinder-h/cylinder-v/auto",
+                form
+            ));
+        }
+        let strength = strength.clamp(0.05, 1.0);
+        let (w, h) = (self.meta.w, self.meta.h);
+
+        // Snapshot so every read is pre-op; resolve the working region.
+        let before = self.cel_canvas(layer, frame)?.clone();
+        let (ax, ay, bx, by) = match region {
+            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
+                Some(r) => r,
+                None => return Ok(()),
+            },
+            None => {
+                let (mut x0, mut y0, mut x1, mut y1) = (w as i32, h as i32, -1i32, -1i32);
+                for y in 0..h as i32 {
+                    for x in 0..w as i32 {
+                        if before.get_pixel(x as u32, y as u32).0[3] > 0 {
+                            x0 = x0.min(x);
+                            y0 = y0.min(y);
+                            x1 = x1.max(x);
+                            y1 = y1.max(y);
+                        }
+                    }
+                }
+                if x1 < 0 {
+                    return Ok(()); // nothing opaque to shade
+                }
+                (x0, y0, x1, y1)
+            }
+        };
+
+        // Ramp: explicit, else derived from the mean opaque colour in-region.
+        let ramp = match ramp {
+            Some(r) if !r.is_empty() => r,
+            _ => {
+                let (mut sr, mut sg, mut sb, mut cnt) = (0u64, 0u64, 0u64, 0u64);
+                for y in ay..=by {
+                    for x in ax..=bx {
+                        let p = before.get_pixel(x as u32, y as u32).0;
+                        if p[3] > 0 {
+                            sr += p[0] as u64;
+                            sg += p[1] as u64;
+                            sb += p[2] as u64;
+                            cnt += 1;
+                        }
+                    }
+                }
+                if cnt == 0 {
+                    return Ok(());
+                }
+                let base = [(sr / cnt) as u8, (sg / cnt) as u8, (sb / cnt) as u8, 255];
+                raster::make_ramp(base, 5, 12.0, 0.22, 0.18)
+            }
+        };
+        let n = ramp.len() as f32;
+
+        // Region ellipse centre + radii (sphere/cylinder geometry).
+        let cx = (ax + bx) as f32 * 0.5;
+        let cy = (ay + by) as f32 * 0.5;
+        let rx = ((bx - ax) as f32 * 0.5).max(1.0);
+        let ry = ((by - ay) as f32 * 0.5).max(1.0);
+
+        // Light vector toward the key; z biased to the viewer for a soft front-key.
+        let llen = (ldx * ldx + ldy * ldy + 0.36).sqrt();
+        let (lx, ly, lz) = (ldx / llen, ldy / llen, 0.6 / llen);
+
+        // "auto" needs the silhouette's interior distance over the region rect.
+        let rw = (bx - ax + 1) as usize;
+        let dt = if form == "auto" {
+            let rh = (by - ay + 1) as usize;
+            let mut fg = vec![false; rw * rh];
+            for y in ay..=by {
+                for x in ax..=bx {
+                    if before.get_pixel(x as u32, y as u32).0[3] > 0 {
+                        fg[(y - ay) as usize * rw + (x - ax) as usize] = true;
+                    }
+                }
+            }
+            Some(raster::interior_distance(&fg, rw, rh))
+        } else {
+            None
+        };
+
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let p = before.get_pixel(x as u32, y as u32).0;
+                if p[3] == 0 {
+                    continue;
+                }
+                let nx = (x as f32 - cx) / rx; // -1..1 across the region
+                let ny = (y as f32 - cy) / ry;
+                // intensity: 0 (shadow) .. 1 (lit)
+                let intensity = match form {
+                    "sphere" => {
+                        let z = (1.0 - nx * nx - ny * ny).max(0.0).sqrt();
+                        (nx * lx + ny * ly + z * lz) * 0.5 + 0.5
+                    }
+                    "cylinder-h" => {
+                        let z = (1.0 - ny * ny).max(0.0).sqrt();
+                        (ny * ly + z * lz) * 0.5 + 0.5
+                    }
+                    "cylinder-v" => {
+                        let z = (1.0 - nx * nx).max(0.0).sqrt();
+                        (nx * lx + z * lz) * 0.5 + 0.5
+                    }
+                    _ => {
+                        // auto: bright core, dark edge, nudged toward the light.
+                        let d = dt.as_ref().unwrap()[(y - ay) as usize * rw + (x - ax) as usize];
+                        let bias = (-(nx * lx) - (ny * ly)) * 0.5 + 0.5;
+                        (d * (0.55 + 0.45 * bias)).clamp(0.0, 1.0)
+                    }
+                };
+                let t = ((intensity - 0.5) * strength + 0.5).clamp(0.0, 1.0);
+                let i = (t * (n - 1.0)).round().clamp(0.0, n - 1.0) as usize;
+                let c = ramp[i];
+                img.put_pixel(x as u32, y as u32, Rgba([c[0], c[1], c[2], p[3]]));
+            }
+        }
+        Ok(())
+    }
+
     /// Two-colour ordered dither over a region. `pattern` "checker"/"bayer2"/
     /// "bayer4"/"bayer8"; `density` 0..1 biases the mix toward `color_b` (the
     /// fraction of pixels that take color_b via the threshold matrix). When
@@ -1850,18 +2885,18 @@ impl Document {
         if pal.is_empty() {
             return Err("quantize needs a palette or max_colors >= 1".into());
         }
+        // OKLab nearest, matching snap_to_palette — the old RGB squared
+        // distance disagreed with the snap metric, so iterative quantize/snap
+        // cycles flipped colours back and forth (and skin tones snapped grey).
+        let mut lab = raster::PaletteLab::new(&pal);
         for p in img.pixels_mut() {
             if p.0[3] == 0 {
                 continue;
             }
-            let nearest = pal
-                .iter()
-                .min_by_key(|c| {
-                    let d = |i: usize| (c[i] as i32 - p.0[i] as i32).pow(2);
-                    d(0) + d(1) + d(2)
-                })
-                .unwrap();
-            *p = Rgba([nearest[0], nearest[1], nearest[2], p.0[3]]);
+            if let Some(i) = lab.nearest(p.0) {
+                let c = lab.color(i);
+                *p = Rgba([c[0], c[1], c[2], p.0[3]]);
+            }
         }
         Ok(pal)
     }
@@ -1905,17 +2940,32 @@ impl Document {
             moved.push(((k.0, k.1 + steps), v));
         }
         self.cels.extend(moved);
-        // Insert frame metadata.
+        // Insert frame metadata, inheriting the source frame's pivot/boxes so
+        // in-betweens don't arrive with no anchor and no collision data.
+        let src_meta = self.meta.frames[from].clone();
         for i in 0..steps {
             self.meta.frames.insert(
                 insert_at + i,
                 FrameMeta {
                     duration_ms,
-                    pivot: None,
+                    pivot: src_meta.pivot,
+                    boxes: src_meta.boxes.clone(),
                 },
             );
         }
-        // Build cross-fade cels.
+        // Keep tag ranges pointing at the frames they tagged (a tag spanning
+        // the insertion stretches over the new in-betweens).
+        for t in &mut self.meta.tags {
+            if t.from >= insert_at {
+                t.from += steps;
+            }
+            if t.to >= insert_at {
+                t.to += steps;
+            }
+        }
+        // Build cross-fade cels; with a locked palette, snap each blend so the
+        // dissolve can't mint off-palette colours.
+        let mut lab = raster::PaletteLab::new(&self.meta.palette);
         let (w, h) = (self.meta.w, self.meta.h);
         for s in 1..=steps {
             let t = s as f32 / (steps + 1) as f32;
@@ -1926,18 +2976,211 @@ impl Document {
                     for x in 0..w {
                         let pa = a.get_pixel(x, y).0;
                         let pb = b.get_pixel(x, y).0;
-                        let mix = |i: usize| {
-                            (pa[i] as f32 + (pb[i] as f32 - pa[i] as f32) * t)
-                                .round()
-                                .clamp(0.0, 255.0) as u8
+                        // Alpha-weighted (premultiplied) RGB blend: transparent
+                        // pixels are stored [0,0,0,0], and a plain lerp lets
+                        // that black bleed into fringes — which the palette
+                        // snap then quantizes into wrong-hue colours.
+                        let alpha = (pa[3] as f32 + (pb[3] as f32 - pa[3] as f32) * t)
+                            .round()
+                            .clamp(0.0, 255.0) as u8;
+                        let (wa, wb) = (pa[3] as f32 * (1.0 - t), pb[3] as f32 * t);
+                        let mixed = if wa + wb > 0.0 {
+                            let ch = |i: usize| {
+                                ((pa[i] as f32 * wa + pb[i] as f32 * wb) / (wa + wb))
+                                    .round()
+                                    .clamp(0.0, 255.0) as u8
+                            };
+                            [ch(0), ch(1), ch(2), alpha]
+                        } else {
+                            [0, 0, 0, 0]
                         };
-                        img.put_pixel(x, y, Rgba([mix(0), mix(1), mix(2), mix(3)]));
+                        let px = match (mixed[3] > 0, lab.nearest(mixed)) {
+                            (true, Some(pi)) => {
+                                let c = lab.color(pi);
+                                [c[0], c[1], c[2], mixed[3]]
+                            }
+                            _ => mixed,
+                        };
+                        img.put_pixel(x, y, Rgba(px));
                     }
                 }
                 self.cels.insert((l, fidx), (0, 0, img));
             }
         }
         Ok(steps)
+    }
+
+    /// Timeline lifecycle: `delete` | `insert` | `duplicate` | `move`. Cels
+    /// reindex and tag ranges remap with the frames; a tag covering only a
+    /// deleted frame is dropped. The last remaining frame can't be deleted —
+    /// this is the recovery path for a bad tween or duplicated pose.
+    pub fn frame_ops(
+        &mut self,
+        action: &str,
+        frame: usize,
+        to_index: Option<usize>,
+        duration_ms: Option<u32>,
+    ) -> Result<Value, String> {
+        let n = self.meta.frames.len();
+        match action {
+            "delete" => {
+                if frame >= n {
+                    return Err(format!("no frame {} (frames={})", frame, n));
+                }
+                if n == 1 {
+                    return Err("cannot delete the last remaining frame".into());
+                }
+                self.meta.frames.remove(frame);
+                self.cels.retain(|k, _| k.1 != frame);
+                let keys: Vec<(usize, usize)> =
+                    self.cels.keys().filter(|k| k.1 > frame).cloned().collect();
+                let mut moved = Vec::new();
+                for k in keys {
+                    let v = self.cels.remove(&k).unwrap();
+                    moved.push(((k.0, k.1 - 1), v));
+                }
+                self.cels.extend(moved);
+                self.meta
+                    .tags
+                    .retain(|t| !(t.from == frame && t.to == frame));
+                for t in &mut self.meta.tags {
+                    if t.from > frame {
+                        t.from -= 1;
+                    }
+                    if t.to >= frame {
+                        t.to -= 1;
+                    }
+                }
+            }
+            "insert" => {
+                if frame > n {
+                    return Err(format!(
+                        "insert index {} out of range (frames={})",
+                        frame, n
+                    ));
+                }
+                self.meta.frames.insert(
+                    frame,
+                    FrameMeta {
+                        duration_ms: duration_ms.unwrap_or(100),
+                        pivot: None,
+                        boxes: Vec::new(),
+                    },
+                );
+                let keys: Vec<(usize, usize)> =
+                    self.cels.keys().filter(|k| k.1 >= frame).cloned().collect();
+                let mut moved = Vec::new();
+                for k in keys {
+                    let v = self.cels.remove(&k).unwrap();
+                    moved.push(((k.0, k.1 + 1), v));
+                }
+                self.cels.extend(moved);
+                for t in &mut self.meta.tags {
+                    if t.from >= frame {
+                        t.from += 1;
+                    }
+                    if t.to >= frame {
+                        t.to += 1;
+                    }
+                }
+            }
+            "duplicate" => {
+                if frame >= n {
+                    return Err(format!("no frame {} (frames={})", frame, n));
+                }
+                let meta = self.meta.frames[frame].clone();
+                self.meta.frames.insert(frame + 1, meta);
+                let keys: Vec<(usize, usize)> =
+                    self.cels.keys().filter(|k| k.1 > frame).cloned().collect();
+                let mut moved = Vec::new();
+                for k in keys {
+                    let v = self.cels.remove(&k).unwrap();
+                    moved.push(((k.0, k.1 + 1), v));
+                }
+                self.cels.extend(moved);
+                let to_copy: Vec<(usize, (i32, i32, RgbaImage))> = self
+                    .cels
+                    .iter()
+                    .filter(|((_, f), _)| *f == frame)
+                    .map(|((l, _), v)| (*l, (v.0, v.1, v.2.clone())))
+                    .collect();
+                for (l, v) in to_copy {
+                    self.cels.insert((l, frame + 1), v);
+                }
+                // A tag ending on the duplicated frame grows to cover the copy.
+                for t in &mut self.meta.tags {
+                    if t.from > frame {
+                        t.from += 1;
+                    }
+                    if t.to >= frame {
+                        t.to += 1;
+                    }
+                }
+            }
+            "move" => {
+                let to = to_index.ok_or("move needs `to_index`")?;
+                if frame >= n || to >= n {
+                    return Err(format!(
+                        "move {}->{} out of range (frames={})",
+                        frame, to, n
+                    ));
+                }
+                if frame != to {
+                    let mut order: Vec<usize> = (0..n).filter(|&i| i != frame).collect();
+                    order.insert(to, frame);
+                    let old_frames = std::mem::take(&mut self.meta.frames);
+                    self.meta.frames = order.iter().map(|&o| old_frames[o].clone()).collect();
+                    let mut map = vec![0usize; n];
+                    for (newi, &old) in order.iter().enumerate() {
+                        map[old] = newi;
+                    }
+                    let all: Vec<_> = self.cels.drain().collect();
+                    self.cels = all
+                        .into_iter()
+                        .map(|((l, f), v)| ((l, map[f]), v))
+                        .collect();
+                    // Tag remap = remove-then-insert, NOT endpoint min/max
+                    // through the permutation (that balloons a tag over
+                    // untagged frames when a member moves far away, and drops
+                    // a member on an in-tag reorder). A single-frame tag on
+                    // the moved frame simply follows it.
+                    for t in &mut self.meta.tags {
+                        if t.from == frame && t.to == frame {
+                            t.from = to;
+                            t.to = to;
+                            continue;
+                        }
+                        let was_inside = t.from <= frame && frame <= t.to;
+                        // Phase 1: the moved frame leaves its old index.
+                        let mut f0 = t.from - usize::from(t.from > frame);
+                        let mut t0 = t.to - usize::from(t.to >= frame);
+                        // Phase 2: it re-enters at final index `to`.
+                        if f0 >= to {
+                            f0 += 1;
+                        }
+                        if t0 >= to {
+                            t0 += 1;
+                        }
+                        // A member landing back inside-or-adjacent rejoins its
+                        // tag; one that moved far away leaves it (a tag must
+                        // stay a contiguous range of TAGGED frames).
+                        if was_inside && to <= t0 + 1 && to + 1 >= f0 {
+                            f0 = f0.min(to);
+                            t0 = t0.max(to);
+                        }
+                        t.from = f0;
+                        t.to = t0;
+                    }
+                }
+            }
+            other => {
+                return Err(format!(
+                    "unknown frame action '{}' — use delete|insert|duplicate|move",
+                    other
+                ))
+            }
+        }
+        Ok(json!({"ok": true, "action": action, "frames": self.meta.frames.len()}))
     }
 
     /// Resolve the ordered frame indices to *play*. With `tag`, honour that
@@ -2033,6 +3276,226 @@ impl Document {
         Ok(offsets)
     }
 
+    /// Paint a whole region declaratively from a character grid — the inverse
+    /// of dump_region. Each row string is one pixel row starting at (ox,oy);
+    /// every character must be in `legend` ('.'/' ' skip, leaving the pixel
+    /// untouched). LLMs emit a sprite as a grid far more reliably than as a
+    /// sequence of absolute-coordinate draw calls — this removes the
+    /// coordinate-math failure class. Returns `(painted, clipped)`.
+    pub fn paint_grid(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        ox: i32,
+        oy: i32,
+        legend: &std::collections::HashMap<char, [u8; 4]>,
+        rows: &[String],
+    ) -> Result<(u64, u64), String> {
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let img = self.cel_canvas(layer, frame)?;
+        let (mut painted, mut clipped) = (0u64, 0u64);
+        for (ry, row) in rows.iter().enumerate() {
+            for (rx, ch) in row.chars().enumerate() {
+                if ch == '.' || ch == ' ' {
+                    continue;
+                }
+                let color = legend.get(&ch).ok_or_else(|| {
+                    format!(
+                        "row {} col {}: character '{}' is not in the legend",
+                        ry, rx, ch
+                    )
+                })?;
+                let (tx, ty) = (ox + rx as i32, oy + ry as i32);
+                if tx < 0 || ty < 0 || tx >= w || ty >= h {
+                    clipped += 1;
+                    continue;
+                }
+                img.put_pixel(tx as u32, ty as u32, Rgba(*color));
+                painted += 1;
+            }
+        }
+        Ok((painted, clipped))
+    }
+
+    /// Cut a region (and/or selection-masked pixels) of `layer` onto its OWN
+    /// new layer directly above, same coordinates — converts a flat sprite
+    /// into part layers (arm, head, tail) that keyframe_transform can move
+    /// independently. `all_frames` cuts every frame's cel, keeping the part
+    /// aligned across the timeline. Returns `(new_layer_index, pixels_moved)`.
+    pub fn extract_to_layer(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+        mask: Option<&[bool]>,
+        name: Option<String>,
+        all_frames: bool,
+    ) -> Result<(usize, u64), String> {
+        if layer >= self.meta.layers.len() {
+            return Err(format!("no layer {}", layer));
+        }
+        if region.is_none() && mask.is_none() {
+            return Err("extract needs a `region` or an active selection".into());
+        }
+        if !all_frames && frame >= self.meta.frames.len() {
+            return Err(format!("no frame {}", frame));
+        }
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let norm = region.map(|(x0, y0, x1, y1)| (x0.min(x1), y0.min(y1), x0.max(x1), y0.max(y1)));
+        let in_scope = |x: i32, y: i32| -> bool {
+            if let Some((ax, ay, bx, by)) = norm {
+                if x < ax || x > bx || y < ay || y > by {
+                    return false;
+                }
+            }
+            match mask {
+                Some(m) => m.get((y * w + x) as usize).copied() == Some(true),
+                None => true,
+            }
+        };
+        let new_layer = layer + 1;
+        self.insert_layer(
+            new_layer,
+            name.or_else(|| Some("part".into())),
+            255,
+            "normal".into(),
+        );
+        let frames: Vec<usize> = if all_frames {
+            (0..self.meta.frames.len()).collect()
+        } else {
+            vec![frame]
+        };
+        let mut moved_total = 0u64;
+        for f in frames {
+            if !self.cels.contains_key(&(layer, f)) {
+                continue;
+            }
+            let full = self.cel_full(layer, f);
+            let mut part = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
+            let mut rest = full.clone();
+            let mut moved = 0u64;
+            for y in 0..h {
+                for x in 0..w {
+                    let p = *full.get_pixel(x as u32, y as u32);
+                    if p.0[3] > 0 && in_scope(x, y) {
+                        part.put_pixel(x as u32, y as u32, p);
+                        rest.put_pixel(x as u32, y as u32, Rgba([0, 0, 0, 0]));
+                        moved += 1;
+                    }
+                }
+            }
+            if moved > 0 {
+                self.set_cel(layer, f, 0, 0, rest)?;
+                self.set_cel(new_layer, f, 0, 0, part)?;
+                moved_total += moved;
+            }
+        }
+        Ok((new_layer, moved_total))
+    }
+
+    /// Eased rotation + translation of a region about an arbitrary PIVOT
+    /// across a frame range on one layer — the joint primitive: "swing the arm
+    /// 30° about the shoulder over frames 1..4" in one call instead of four
+    /// blind repaints. Reads the region's content from `from_frame`; each
+    /// later frame gets the part rotated by the eased angle and offset by the
+    /// eased (dx,dy) about `pivot` (document coords), with the original region
+    /// cleared first so no stale copy remains. `snap` re-snaps the resampled
+    /// pixels to the locked palette.
+    #[allow(clippy::too_many_arguments)]
+    pub fn keyframe_transform(
+        &mut self,
+        layer: usize,
+        region: (i32, i32, i32, i32),
+        pivot: (f32, f32),
+        from_frame: usize,
+        to_frame: usize,
+        rot_deg: f32,
+        dx: i32,
+        dy: i32,
+        easing: &str,
+        snap: bool,
+    ) -> Result<Vec<Value>, String> {
+        if to_frame <= from_frame {
+            return Err("keyframe_transform needs to_frame > from_frame".into());
+        }
+        let n = self.meta.frames.len();
+        if to_frame >= n {
+            return Err(format!(
+                "frame {} does not exist (frames={}) — add it with doc_add_frame first",
+                to_frame, n
+            ));
+        }
+        let (x0, y0, x1, y1) = (
+            region.0.min(region.2),
+            region.1.min(region.3),
+            region.0.max(region.2),
+            region.1.max(region.3),
+        );
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let (rx0, ry0) = (x0.max(0), y0.max(0));
+        let (rx1, ry1) = (x1.min(w - 1), y1.min(h - 1));
+        if rx0 > rx1 || ry0 > ry1 {
+            return Err("region is empty after clamping to the canvas".into());
+        }
+        let (rw, rh) = ((rx1 - rx0 + 1) as u32, (ry1 - ry0 + 1) as u32);
+        let full = self.cel_full(layer, from_frame);
+        let mut part = RgbaImage::from_pixel(rw, rh, Rgba([0, 0, 0, 0]));
+        for y in 0..rh {
+            for x in 0..rw {
+                part.put_pixel(x, y, *full.get_pixel(rx0 as u32 + x, ry0 as u32 + y));
+            }
+        }
+        let mut lab = raster::PaletteLab::new(&self.meta.palette);
+        let span = (to_frame - from_frame) as f32;
+        let mut placed = Vec::new();
+        for f in (from_frame + 1)..=to_frame {
+            let t = raster::ease((f - from_frame) as f32 / span, easing);
+            let theta = rot_deg * t;
+            let (ox, oy) = (
+                (dx as f32 * t).round() as i32,
+                (dy as f32 * t).round() as i32,
+            );
+            let rotated = raster::affine_nn(&part, theta, 1.0, 1.0, 0.0, 0.0, 2);
+            // affine_nn rotates about the part's centre and returns a
+            // bbox-sized image; place it so the JOINT pivot stays fixed:
+            // c' = pivot + R(c - pivot), then the eased translation.
+            let (cx, cy) = (rx0 as f32 + rw as f32 / 2.0, ry0 as f32 + rh as f32 / 2.0);
+            let r = theta.to_radians();
+            let (cos, sin) = (r.cos(), r.sin());
+            let (vx, vy) = (cx - pivot.0, cy - pivot.1);
+            let ncx = pivot.0 + cos * vx - sin * vy;
+            let ncy = pivot.1 + sin * vx + cos * vy;
+            let px = (ncx + ox as f32 - rotated.width() as f32 / 2.0).round() as i32;
+            let py = (ncy + oy as f32 - rotated.height() as f32 / 2.0).round() as i32;
+            self.clear_region(layer, f, rx0, ry0, rx1, ry1)?;
+            let img = self.cel_canvas(layer, f)?;
+            for (sx, sy, p) in rotated.enumerate_pixels() {
+                if p.0[3] == 0 {
+                    continue;
+                }
+                let (tx, ty) = (px + sx as i32, py + sy as i32);
+                if tx < 0 || ty < 0 || tx >= w || ty >= h {
+                    continue;
+                }
+                let c = match (snap, lab.nearest(p.0)) {
+                    (true, Some(pi)) => {
+                        let pc = lab.color(pi);
+                        Rgba([pc[0], pc[1], pc[2], p.0[3]])
+                    }
+                    _ => *p,
+                };
+                img.put_pixel(tx as u32, ty as u32, c);
+            }
+            placed.push(json!({
+                "frame": f,
+                "rot_deg": (theta * 10.0).round() / 10.0,
+                "offset": [ox, oy],
+                "placed_at": [px, py],
+            }));
+        }
+        Ok(placed)
+    }
+
     pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
         let n = self.meta.frames.len() as u32;
         let fw = self.meta.w * scale;
@@ -2057,6 +3520,8 @@ impl Document {
                     "duration_ms": fr.duration_ms,
                     // Pivot scaled into sheet pixels (engine-ready); null if unset.
                     "pivot": fr.pivot.map(|[px, py]| [px as u32 * scale, py as u32 * scale]),
+                    // Collision boxes scaled into sheet pixels (gameplay metadata).
+                    "boxes": fr.boxes.iter().map(|b| b.to_json(scale)).collect::<Vec<_>>(),
                 })
             })
             .collect();
@@ -2371,6 +3836,17 @@ impl Document {
                 op.get("mode").and_then(|v| v.as_str()).unwrap_or("both"),
                 op.get("ramp").map(|v| colors_val(Some(v))),
             ),
+            "form" => self.form(
+                layer,
+                frame,
+                op.get("light_dir")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("top-left"),
+                op.get("form").and_then(|v| v.as_str()).unwrap_or("sphere"),
+                region_val(op.get("region")),
+                op.get("ramp").map(|v| colors_val(Some(v))),
+                op.get("strength").and_then(|v| v.as_f64()).unwrap_or(1.0) as f32,
+            ),
             "dither" => self.dither(
                 layer,
                 frame,
@@ -2499,24 +3975,34 @@ impl Document {
     /// The silhouette bbox-centre (mean of the bbox corners) of a frame's opaque
     /// pixels, or None when the frame is empty. `layer` None flattens. Used by
     /// the spacing audit to track motion frame-to-frame.
+    /// Opaque-mass CENTROID of a frame's silhouette (mean of opaque pixel
+    /// coordinates), optionally clipped to `region`. A mass centroid, unlike
+    /// the old bbox-corner midpoint, actually moves when a limb swings over a
+    /// static torso — and the region clip makes one part's motion measurable
+    /// on its own.
     pub fn silhouette_center(
         &self,
         layer: Option<usize>,
         frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Option<[f64; 2]>, String> {
         let img = self.analysis_image(layer, frame)?;
-        let mut bbox: Option<[i32; 4]> = None;
+        let (mut sx, mut sy, mut n) = (0f64, 0f64, 0u64);
         for (x, y, p) in img.enumerate_pixels() {
             if p.0[3] == 0 {
                 continue;
             }
-            let (xi, yi) = (x as i32, y as i32);
-            bbox = Some(match bbox {
-                Some([a, b, c, d]) => [a.min(xi), b.min(yi), c.max(xi), d.max(yi)],
-                None => [xi, yi, xi, yi],
-            });
+            if let Some((x0, y0, x1, y1)) = region {
+                let (xi, yi) = (x as i32, y as i32);
+                if xi < x0.min(x1) || xi > x0.max(x1) || yi < y0.min(y1) || yi > y0.max(y1) {
+                    continue;
+                }
+            }
+            sx += x as f64;
+            sy += y as f64;
+            n += 1;
         }
-        Ok(bbox.map(|[a, b, c, d]| [(a + c) as f64 / 2.0, (b + d) as f64 / 2.0]))
+        Ok((n > 0).then(|| [sx / n as f64, sy / n as f64]))
     }
 
     /// Count opaque pixels in a frame (denominator for the seam loop score).
@@ -2637,6 +4123,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
             &["kind", "scale", "octaves", "seed", "blend"],
         ),
         "shade" => (&[], &["light_dir", "steps", "region", "mode", "ramp"]),
+        "form" => (&[], &["form", "light_dir", "region", "ramp", "strength"]),
         "dither" => (
             &["color_a", "color_b"],
             &["region", "pattern", "density", "only_existing"],
@@ -2715,6 +4202,243 @@ mod tests {
     }
 
     #[test]
+    fn extract_to_layer_cuts_part_onto_new_layer() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
+        d.pencil(0, 0, &[(3, 3)], [2, 2, 2, 255], 1).unwrap();
+        let (new_layer, moved) = d
+            .extract_to_layer(0, 0, Some((2, 2, 3, 3)), None, Some("arm".into()), false)
+            .unwrap();
+        assert_eq!((new_layer, moved), (1, 1));
+        assert_eq!(d.meta.layers[1].name, "arm");
+        // The part moved: gone from the source, present on the new layer.
+        assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [0, 0, 0, 0]);
+        assert_eq!(d.get_pixel(1, 0, 3, 3).unwrap(), [2, 2, 2, 255]);
+        // Untouched pixels stayed on the source layer.
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [1, 1, 1, 255]);
+    }
+
+    #[test]
+    fn keyframe_transform_translates_and_rotates_about_pivot() {
+        let mut d = Document::new("t", 8, 8);
+        d.pencil(0, 0, &[(1, 1)], [9, 9, 9, 255], 1).unwrap();
+        d.add_frame(100, Some(0));
+        d.add_frame(100, Some(0));
+        // Pure translation: behaves like keyframe_move.
+        d.keyframe_transform(
+            0,
+            (1, 1, 1, 1),
+            (1.5, 1.5),
+            0,
+            2,
+            0.0,
+            4,
+            0,
+            "linear",
+            false,
+        )
+        .unwrap();
+        assert_eq!(d.get_pixel(0, 1, 3, 1).unwrap(), [9, 9, 9, 255]); // halfway
+        assert_eq!(d.get_pixel(0, 2, 5, 1).unwrap(), [9, 9, 9, 255]); // full offset
+        assert_eq!(d.get_pixel(0, 2, 1, 1).unwrap(), [0, 0, 0, 0]); // source cleared
+                                                                    // Rotation: a bar swung 90° about its base ends up horizontal.
+        let mut r = Document::new("r", 9, 9);
+        for y in 1..=4 {
+            r.pencil(0, 0, &[(4, y)], [9, 9, 9, 255], 1).unwrap();
+        }
+        r.add_frame(100, Some(0));
+        let placed = r
+            .keyframe_transform(
+                0,
+                (4, 1, 4, 4),
+                (4.5, 4.5),
+                0,
+                1,
+                90.0,
+                0,
+                0,
+                "linear",
+                false,
+            )
+            .unwrap();
+        assert_eq!(placed.len(), 1);
+        // The vertical bar above the pivot is gone in frame 1...
+        assert_eq!(r.get_pixel(0, 1, 4, 1).unwrap(), [0, 0, 0, 0]);
+        // ...and opaque pixels now sit to the LEFT of the pivot (90° clockwise
+        // takes "up" to "left" in screen coords... or right for cw): just
+        // assert the mass moved off the original column onto one row.
+        let count_row4: usize = (0..9)
+            .filter(|&x| r.get_pixel(0, 1, x, 4).unwrap()[3] > 0)
+            .count();
+        assert!(count_row4 >= 3, "bar should now lie along row 4");
+    }
+
+    #[test]
+    fn tween_inherits_meta_remaps_tags_and_snaps_palette() {
+        let mut d = Document::new("t", 2, 2);
+        d.set_palette(vec![[0, 0, 0, 255], [255, 255, 255, 255]]);
+        d.pencil(0, 0, &[(0, 0)], [0, 0, 0, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 1, &[(0, 0)], [255, 255, 255, 255], 1).unwrap();
+        d.set_pivot(0, Some([1, 1])).unwrap();
+        d.add_tag("walk", 0, 1, "forward").unwrap();
+        d.tween(0, 1, 1, 50).unwrap();
+        // Tag stretched over the inserted in-between.
+        assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 2));
+        // The in-between inherited the source frame's pivot.
+        assert_eq!(d.meta.frames[1].pivot, Some([1, 1]));
+        // The 50% grey blend snapped to a palette colour instead of minting one.
+        let px = d.get_pixel(0, 1, 0, 0).unwrap();
+        assert!(
+            d.meta.palette.iter().any(|c| c[..3] == px[..3]),
+            "blend {:?} should be on-palette",
+            px
+        );
+    }
+
+    #[test]
+    fn frame_ops_delete_reindexes_and_protects_last() {
+        let mut d = Document::new("t", 2, 2);
+        d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 2, &[(0, 0)], [3, 3, 3, 255], 1).unwrap();
+        d.add_tag("mid", 1, 1, "forward").unwrap();
+        d.add_tag("all", 0, 2, "forward").unwrap();
+        d.frame_ops("delete", 1, None, None).unwrap();
+        assert_eq!(d.meta.frames.len(), 2);
+        // Frame 2's cel slid down to index 1.
+        assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [3, 3, 3, 255]);
+        // The tag covering only the deleted frame is gone; the spanning one shrank.
+        assert_eq!(d.meta.tags.len(), 1);
+        assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 1));
+        d.frame_ops("delete", 1, None, None).unwrap();
+        assert!(d.frame_ops("delete", 0, None, None).is_err()); // last frame protected
+    }
+
+    #[test]
+    fn frame_ops_move_remaps_tags_without_ballooning() {
+        // A tagged frame moved far away LEAVES its tag (no ballooning over
+        // untagged frames).
+        let mut d = Document::new("t", 2, 2);
+        for _ in 0..3 {
+            d.add_frame(100, None);
+        }
+        d.add_tag("walk", 0, 1, "forward").unwrap();
+        d.frame_ops("move", 1, Some(3), None).unwrap();
+        assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 0));
+
+        // A reorder entirely INSIDE a tag keeps the tag's full coverage.
+        let mut e = Document::new("t", 2, 2);
+        e.add_frame(100, None);
+        e.add_frame(100, None);
+        e.add_tag("all", 0, 2, "forward").unwrap();
+        e.frame_ops("move", 1, Some(2), None).unwrap();
+        assert_eq!((e.meta.tags[0].from, e.meta.tags[0].to), (0, 2));
+
+        // A single-frame tag follows its frame.
+        let mut s = Document::new("t", 2, 2);
+        for _ in 0..3 {
+            s.add_frame(100, None);
+        }
+        s.add_tag("pose", 1, 1, "forward").unwrap();
+        s.frame_ops("move", 1, Some(3), None).unwrap();
+        assert_eq!((s.meta.tags[0].from, s.meta.tags[0].to), (3, 3));
+    }
+
+    #[test]
+    fn frame_ops_move_and_duplicate() {
+        let mut d = Document::new("t", 2, 2);
+        d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
+        d.add_frame(100, None);
+        d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
+        d.frame_ops("move", 0, Some(1), None).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [2, 2, 2, 255]);
+        assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [1, 1, 1, 255]);
+        d.frame_ops("duplicate", 0, None, None).unwrap();
+        assert_eq!(d.meta.frames.len(), 3);
+        assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [2, 2, 2, 255]); // the copy
+        assert_eq!(d.get_pixel(0, 2, 0, 0).unwrap(), [1, 1, 1, 255]); // shifted
+    }
+
+    #[test]
+    fn bezier_rejects_more_than_four_control_points() {
+        let mut d = Document::new("t", 8, 8);
+        let c = [9, 9, 9, 255];
+        // 4 points (cubic) draws fine.
+        d.bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7)], c, 1, 8)
+            .unwrap();
+        // 5 points used to silently drop the 5th; now it's an actionable error.
+        let err = d
+            .bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7), (3, 3)], c, 1, 8)
+            .unwrap_err();
+        assert!(err.contains("at most 4"), "got: {err}");
+    }
+
+    #[test]
+    fn move_layer_reorders_and_cels_follow() {
+        let mut d = Document::new("t", 4, 4);
+        d.add_layer(None, 255, "normal".into()); // layer 1
+        d.pencil(0, 0, &[(0, 0)], [255, 0, 0, 255], 1).unwrap();
+        d.pencil(1, 0, &[(1, 1)], [0, 0, 255, 255], 1).unwrap();
+        d.move_layer(0, 1).unwrap();
+        // old layer 1 (blue) is now index 0; old layer 0 (red) is index 1
+        assert_eq!(d.get_pixel(0, 0, 1, 1).unwrap(), [0, 0, 255, 255]);
+        assert_eq!(d.get_pixel(1, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
+    }
+
+    #[test]
+    fn insert_and_delete_layer_shift_cels() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 0)], [9, 9, 9, 255], 1).unwrap();
+        d.insert_layer(0, Some("bg".into()), 255, "normal".into());
+        // the drawn cel moved from layer 0 to layer 1
+        assert_eq!(d.meta.layers.len(), 2);
+        assert_eq!(d.get_pixel(1, 0, 0, 0).unwrap(), [9, 9, 9, 255]);
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]);
+        d.delete_layer(0).unwrap();
+        assert_eq!(d.meta.layers.len(), 1);
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [9, 9, 9, 255]);
+    }
+
+    #[test]
+    fn delete_last_layer_is_refused() {
+        let mut d = Document::new("t", 4, 4);
+        assert!(d.delete_layer(0).is_err());
+    }
+
+    #[test]
+    fn duplicate_layer_copies_cels_above() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(2, 2)], [7, 7, 7, 255], 1).unwrap();
+        let ni = d.duplicate_layer(0).unwrap();
+        assert_eq!(ni, 1);
+        assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [7, 7, 7, 255]);
+        assert_eq!(d.get_pixel(1, 0, 2, 2).unwrap(), [7, 7, 7, 255]);
+    }
+
+    #[test]
+    fn merge_down_bakes_upper_onto_lower() {
+        let mut d = Document::new("t", 4, 4);
+        d.add_layer(None, 255, "normal".into());
+        d.pencil(0, 0, &[(0, 0)], [255, 0, 0, 255], 1).unwrap();
+        d.pencil(1, 0, &[(0, 0)], [0, 0, 255, 255], 1).unwrap();
+        d.merge_down(1).unwrap();
+        assert_eq!(d.meta.layers.len(), 1);
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 255, 255]);
+    }
+
+    #[test]
+    fn snap_to_palette_picks_perceptual_nearest() {
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 0)], [200, 10, 10, 255], 1).unwrap();
+        let changed = d.snap_to_palette(&[[255, 0, 0, 255], [0, 0, 255, 255]], None, None);
+        assert_eq!(changed, 1);
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
+    }
+
+    #[test]
     fn pivot_set_and_clear() {
         let mut d = Document::new("t", 4, 4);
         d.set_pivot(0, Some([2, 3])).unwrap();
@@ -2722,6 +4446,29 @@ mod tests {
         d.set_pivot(0, None).unwrap();
         assert_eq!(d.meta.frames[0].pivot, None);
         assert!(d.set_pivot(9, Some([0, 0])).is_err());
+    }
+
+    #[test]
+    fn frame_boxes_set_validate_and_scale() {
+        let mut d = Document::new("t", 4, 4);
+        let b = |kind: &str| BoxMeta {
+            name: "b".into(),
+            kind: kind.into(),
+            rect: [1, 2, 3, 4],
+        };
+        d.set_frame_boxes(0, vec![b("body"), b("hit")]).unwrap();
+        assert_eq!(d.meta.frames[0].boxes.len(), 2);
+        // Unknown kind fails fast; a bad kind leaves the frame untouched.
+        assert!(d.set_frame_boxes(0, vec![b("shield")]).is_err());
+        assert_eq!(d.meta.frames[0].boxes.len(), 2);
+        // Bad frame index errors.
+        assert!(d.set_frame_boxes(9, vec![b("hurt")]).is_err());
+        // Rect scales by the export factor; raw at scale 1.
+        assert_eq!(b("hit").to_json(1)["rect"], json!([1, 2, 3, 4]));
+        assert_eq!(b("hit").to_json(8)["rect"], json!([8, 16, 24, 32]));
+        // Empty vec clears.
+        d.set_frame_boxes(0, vec![]).unwrap();
+        assert!(d.meta.frames[0].boxes.is_empty());
     }
 
     #[test]
@@ -2808,6 +4555,51 @@ mod tests {
         assert!(d.get_pixel(0, 0, 5, 1).unwrap()[3] > 0); // along first segment
         assert!(d.get_pixel(0, 0, 10, 5).unwrap()[3] > 0); // along second segment
         assert_eq!(d.get_pixel(0, 0, 5, 10).unwrap(), [0, 0, 0, 0]); // open: no closing edge
+    }
+
+    #[test]
+    fn form_sphere_gives_volume_toward_light() {
+        let mut d = Document::new("t", 32, 32);
+        // A flat-filled disc — no volume yet.
+        d.ellipse(0, 0, 16, 16, 12, 12, [120, 120, 120, 255], true)
+            .unwrap();
+        let ramp: Vec<[u8; 4]> = vec![
+            [20, 20, 20, 255],
+            [70, 70, 70, 255],
+            [120, 120, 120, 255],
+            [180, 180, 180, 255],
+            [240, 240, 240, 255],
+        ];
+        d.form(0, 0, "top-left", "sphere", None, Some(ramp), 1.0)
+            .unwrap();
+        let lum = |p: [u8; 4]| p[0] as i32 + p[1] as i32 + p[2] as i32;
+        let tl = d.get_pixel(0, 0, 9, 9).unwrap(); // toward the light
+        let br = d.get_pixel(0, 0, 23, 23).unwrap(); // away from it
+        assert!(tl[3] > 0 && br[3] > 0); // both still opaque
+        assert!(
+            lum(tl) > lum(br),
+            "lit corner {:?} should outshine shadow corner {:?}",
+            tl,
+            br
+        );
+    }
+
+    #[test]
+    fn form_auto_brightens_interior_over_edge() {
+        let mut d = Document::new("t", 32, 32);
+        d.ellipse(0, 0, 16, 16, 12, 12, [120, 120, 120, 255], true)
+            .unwrap();
+        d.form(0, 0, "top", "auto", None, None, 1.0).unwrap();
+        let lum = |p: [u8; 4]| p[0] as i32 + p[1] as i32 + p[2] as i32;
+        let core = d.get_pixel(0, 0, 16, 16).unwrap(); // deep interior
+        let edge = d.get_pixel(0, 0, 16, 27).unwrap(); // bottom rim
+        assert!(core[3] > 0 && edge[3] > 0);
+        assert!(
+            lum(core) > lum(edge),
+            "interior {:?} should be brighter than the rim {:?}",
+            core,
+            edge
+        );
     }
 
     #[test]
@@ -3396,7 +5188,7 @@ mod tests {
         // Filled 3×3 block from (1,1) to (3,3): bbox-centre is (2,2).
         d.rect(0, 0, 1, 1, 3, 3, [255, 255, 255, 255], true, 1)
             .unwrap();
-        let c = d.silhouette_center(None, 0).unwrap().unwrap();
+        let c = d.silhouette_center(None, 0, None).unwrap().unwrap();
         assert_eq!(c, [2.0, 2.0]);
     }
 
