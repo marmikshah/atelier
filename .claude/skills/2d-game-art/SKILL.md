@@ -83,25 +83,39 @@ Each playbook ends in **gates** — audits that must pass before the asset is do
 The cardinal rule: **likeness is measured, never remembered.** Working from your
 memory of a chat attachment produces generic sprites that drift off-model.
 
-1. **Save the attachment to disk**, then **`doc_set_reference`** on the doc —
-   the original now lives WITH the document, and the compare loop unlocks. Heed
-   the returned aspect-true fit (a wrong canvas ratio silently squashes the
-   character).
+1. **Save the attachment to disk and CROP to the subject first** (`sips -c <h>
+   <w> --cropOffset <y> <x>` on macOS) — references often carry huge empty
+   margins, and `doc_set_reference`'s aspect fit is computed from the FULL
+   image: uncropped, a 48px-wide import leaves the character 25px tall. Then
+   **`doc_set_reference`** — the original now lives WITH the document, and the
+   compare loop unlocks. Heed the returned aspect-true fit (a wrong canvas
+   ratio silently squashes the character).
 2. **`doc_ref_analyze`** — view the reference inline and take its decomposition:
    the subject palette (lock it with `doc_set_palette`), the silhouette grid
-   (your blocking map), and the background coverage.
+   (your blocking map), and the background coverage. A near-100% match between
+   its silhouette grid and your canvas plan means the crop was right.
 3. Either **`doc_import_clean`** (set `remove_bg=true` for a subject on a
    backdrop; `target_h` omitted derives aspect-true; dither stays off at sprite
    scale) for a one-call base to clean up, or import onto a hidden low-opacity
    **guide layer** and redraw over the ghost (flatten skips invisible layers, so
    the guide never ships).
-4. Block silhouette → detail, as in the character playbook.
-5. **`doc_ref_compare` after EVERY pass.** It returns a side-by-side (or
+4. **Denoise a grainy source (pencil / photo / JPEG) by posterising**: quantize
+   the imported cel to a SUBSET of the locked ramp (drop the in-between tones)
+   — kills mottle in one call. Then clean per MATERIAL: `doc_select` rect
+   zones (subtract the face/fists/other-material rects from the zone first)
+   and `doc_replace_color` tone→tone inside the selection. Cel-wide
+   replace_color bleeds across materials; selection-confined doesn't.
+5. Detail pass: **`doc_paint_grid` the face** — eyes are identity; place clean
+   pupils/mouth as a grid over the imported mush instead of nudging pixels.
+6. **`doc_ref_compare` after EVERY pass.** It returns a side-by-side (or
    `mode="overlay"` ghost for proportion checks), silhouette IoU, per-cell
    colour ΔE with the worst cells named as rects, and reference colours your
    palette is missing. **Fix the worst cells first.**
 
-**Gates:** `silhouette_iou ≥ 0.80`; `mean_delta ≤ 0.06`; no
+**Gates:** `silhouette_iou ≥ 0.80`; `mean_delta ≤ 0.06` for a *faithful* copy —
+deliberate stylisation (bolder pupils, crisper edges than a soft sketch)
+legitimately raises the eye/face cells, so judge `worst_cells` one by one:
+accept a cell only when you can name the intentional choice behind it; no
 `missing_reference_colors`; plus the normal character gates below.
 
 ### Character sprite (single pose)
