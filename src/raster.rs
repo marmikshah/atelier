@@ -476,6 +476,210 @@ pub fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [u8; 3] {
     ]
 }
 
+// -- OKLab / OKLCh perceptual colour space ----------------------------------
+//
+// Björn Ottosson's OKLab: a perceptually uniform space where equal numeric
+// steps in L look like equal steps in brightness, and Euclidean distance
+// approximates perceived colour difference. atelier's ramps, quantize and
+// palette-snap all live in sRGB+HSL today, which crushes the midtones and
+// picks perceptually-wrong nearest colours; OKLab fixes both.
+
+fn srgb_to_linear(c: f32) -> f32 {
+    if c <= 0.04045 {
+        c / 12.92
+    } else {
+        ((c + 0.055) / 1.055).powf(2.4)
+    }
+}
+
+fn linear_to_srgb(c: f32) -> f32 {
+    if c <= 0.0031308 {
+        12.92 * c
+    } else {
+        1.055 * c.powf(1.0 / 2.4) - 0.055
+    }
+}
+
+/// sRGB (0..255) → OKLab `(L, a, b)`. L is perceptual lightness in [0,1]; a/b
+/// are the green–red and blue–yellow opponent axes (roughly ±0.4).
+// The matrix constants are OKLab's canonical f64 values; keep them verbatim.
+#[allow(clippy::excessive_precision)]
+pub fn srgb_to_oklab(c: [u8; 4]) -> (f32, f32, f32) {
+    let r = srgb_to_linear(c[0] as f32 / 255.0);
+    let g = srgb_to_linear(c[1] as f32 / 255.0);
+    let b = srgb_to_linear(c[2] as f32 / 255.0);
+    let l = 0.412_221_46 * r + 0.536_332_55 * g + 0.051_445_995 * b;
+    let m = 0.211_903_5 * r + 0.680_699_55 * g + 0.107_396_96 * b;
+    let s = 0.088_302_46 * r + 0.281_718_85 * g + 0.629_978_7 * b;
+    let (l_, m_, s_) = (l.cbrt(), m.cbrt(), s.cbrt());
+    (
+        0.210_454_26 * l_ + 0.793_617_8 * m_ - 0.004_072_047 * s_,
+        1.977_998_5 * l_ - 2.428_592_2 * m_ + 0.450_593_7 * s_,
+        0.025_904_037 * l_ + 0.782_771_77 * m_ - 0.808_675_77 * s_,
+    )
+}
+
+/// OKLab `(L, a, b)` → sRGB (0..255), gamut-clamped. Alpha is the caller's job.
+#[allow(clippy::excessive_precision)]
+pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
+    let (l, a, b) = lab;
+    let l_ = l + 0.396_337_78 * a + 0.215_803_76 * b;
+    let m_ = l - 0.105_561_346 * a - 0.063_854_17 * b;
+    let s_ = l - 0.089_484_18 * a - 1.291_485_5 * b;
+    let (l3, m3, s3) = (l_ * l_ * l_, m_ * m_ * m_, s_ * s_ * s_);
+    let r = 4.076_741_7 * l3 - 3.307_711_6 * m3 + 0.230_969_94 * s3;
+    let g = -1.268_438 * l3 + 2.609_757_4 * m3 - 0.341_319_38 * s3;
+    let bl = -0.004_196_086_3 * l3 - 0.703_418_6 * m3 + 1.707_614_7 * s3;
+    [
+        (linear_to_srgb(r) * 255.0).round().clamp(0.0, 255.0) as u8,
+        (linear_to_srgb(g) * 255.0).round().clamp(0.0, 255.0) as u8,
+        (linear_to_srgb(bl) * 255.0).round().clamp(0.0, 255.0) as u8,
+    ]
+}
+
+/// OKLab → OKLCh `(L, C, h°)`: chroma magnitude + hue angle in degrees.
+pub fn oklab_to_oklch(lab: (f32, f32, f32)) -> (f32, f32, f32) {
+    let (l, a, b) = lab;
+    let c = (a * a + b * b).sqrt();
+    let h = b.atan2(a).to_degrees().rem_euclid(360.0);
+    (l, c, h)
+}
+
+/// OKLCh `(L, C, h°)` → OKLab `(L, a, b)`.
+pub fn oklch_to_oklab(lch: (f32, f32, f32)) -> (f32, f32, f32) {
+    let (l, c, h) = lch;
+    let r = h.to_radians();
+    (l, c * r.cos(), c * r.sin())
+}
+
+/// Perceptual colour difference (OKLab ΔE, Euclidean). ~0.02 is a just-
+/// noticeable step; > 0.1 reads as a distinct colour. RGB-only (ignores alpha).
+pub fn oklab_delta(a: [u8; 4], b: [u8; 4]) -> f32 {
+    let (l1, a1, b1) = srgb_to_oklab(a);
+    let (l2, a2, b2) = srgb_to_oklab(b);
+    ((l1 - l2).powi(2) + (a1 - a2).powi(2) + (b1 - b2).powi(2)).sqrt()
+}
+
+/// Index of the perceptually nearest entry in `palette` to `p` (OKLab ΔE).
+/// Returns None for an empty palette. Converts the probe ONCE and single-passes
+/// the palette (the old min_by evaluated both deltas — and re-converted the
+/// probe — per comparison). For per-pixel loops prefer [`PaletteLab`].
+pub fn nearest_oklab(p: [u8; 4], palette: &[[u8; 4]]) -> Option<usize> {
+    if palette.is_empty() {
+        return None;
+    }
+    let (l, a, b) = srgb_to_oklab(p);
+    let (mut best, mut bd) = (0usize, f32::MAX);
+    for (i, c) in palette.iter().enumerate() {
+        let (l2, a2, b2) = srgb_to_oklab(*c);
+        let d = (l - l2).powi(2) + (a - a2).powi(2) + (b - b2).powi(2);
+        if d < bd {
+            bd = d;
+            best = i;
+        }
+    }
+    Some(best)
+}
+
+/// Precomputed OKLab palette for per-pixel nearest-colour loops: the palette
+/// converts once, and lookups memoize per distinct probe RGB — pixel art has
+/// dozens of distinct colours but thousands of pixels, so the powf-heavy
+/// sRGB→OKLab conversion drops from per-pixel to per-distinct-colour.
+pub struct PaletteLab {
+    palette: Vec<[u8; 4]>,
+    labs: Vec<(f32, f32, f32)>,
+    memo: std::collections::HashMap<[u8; 3], usize>,
+}
+
+impl PaletteLab {
+    pub fn new(palette: &[[u8; 4]]) -> Self {
+        PaletteLab {
+            palette: palette.to_vec(),
+            labs: palette.iter().map(|c| srgb_to_oklab(*c)).collect(),
+            memo: std::collections::HashMap::new(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.palette.is_empty()
+    }
+
+    pub fn color(&self, i: usize) -> [u8; 4] {
+        self.palette[i]
+    }
+
+    /// Index of the perceptually nearest palette entry (alpha ignored), or
+    /// None for an empty palette.
+    pub fn nearest(&mut self, p: [u8; 4]) -> Option<usize> {
+        if self.palette.is_empty() {
+            return None;
+        }
+        let key = [p[0], p[1], p[2]];
+        if let Some(&i) = self.memo.get(&key) {
+            return Some(i);
+        }
+        let (l, a, b) = srgb_to_oklab(p);
+        let (mut best, mut bd) = (0usize, f32::MAX);
+        for (i, (l2, a2, b2)) in self.labs.iter().enumerate() {
+            let d = (l - l2).powi(2) + (a - a2).powi(2) + (b - b2).powi(2);
+            if d < bd {
+                bd = d;
+                best = i;
+            }
+        }
+        self.memo.insert(key, best);
+        Some(best)
+    }
+}
+
+/// A perceptually-even shading ramp built in OKLCh, darkest → lightest.
+///
+/// Unlike [`make_ramp`] (linear HSL, which bunches the midtones), every step is
+/// an equal stride in perceptual lightness between `value_lo`..`value_hi`
+/// (OKLab L, 0..1). `hue_shift` is the total hue rotation across the ramp
+/// (lighter end warm-shifted, darker end cool-shifted — the classic move).
+/// `sat_curve` shapes chroma: `"flat"` holds the base chroma, `"arc"` peaks it
+/// at the midtone (the painterly default), `"sat-in-shadow"` pushes chroma into
+/// the darks. `anchor_midtone` forces the centre step to be exactly `base`.
+pub fn make_ramp_oklch(
+    base: [u8; 4],
+    count: usize,
+    value_lo: f32,
+    value_hi: f32,
+    hue_shift: f32,
+    sat_curve: &str,
+    anchor_midtone: bool,
+) -> Vec<[u8; 4]> {
+    let count = count.max(1);
+    let (_lb, cb, hb) = oklab_to_oklch(srgb_to_oklab(base));
+    let mid = (count - 1) / 2;
+    (0..count)
+        .map(|i| {
+            if anchor_midtone && i == mid && count > 1 {
+                return base;
+            }
+            let t = if count == 1 {
+                0.5
+            } else {
+                i as f32 / (count - 1) as f32
+            };
+            let l = value_lo + (value_hi - value_lo) * t;
+            let h = hb + (t - 0.5) * hue_shift;
+            let c = match sat_curve {
+                "flat" => cb,
+                // peak chroma at the midtone, falling toward both ends
+                "arc" => cb * (1.0 - 0.55 * (2.0 * t - 1.0).powi(2)),
+                // richer colour in the shadows, desaturating into the light
+                "sat-in-shadow" => cb * (1.15 - 0.5 * t),
+                _ => cb,
+            }
+            .max(0.0);
+            let rgb = oklab_to_srgb(oklch_to_oklab((l, c, h)));
+            [rgb[0], rgb[1], rgb[2], base[3]]
+        })
+        .collect()
+}
+
 /// Rotate `src` by `deg` (clockwise) about its centre with nearest-neighbour
 /// sampling, returning a new image sized to the rotated bounding box.
 pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
@@ -510,6 +714,89 @@ pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
         }
     }
     out
+}
+
+/// General affine transform about the image centre — rotate (deg, clockwise),
+/// non-uniform scale (`sx`,`sy`) and shear (`skew_x`,`skew_y` in degrees), in
+/// that compose order (scale → shear → rotate). Returns a new image sized to
+/// the transformed bounding box, sampled by nearest-neighbour. `supersample`
+/// (1..=4) renders at N× then area-downscales — the RotSprite trick that keeps
+/// rotated/scaled pixel clusters from shattering into jaggies.
+pub fn affine_nn(
+    src: &RgbaImage,
+    rot_deg: f32,
+    sx: f32,
+    sy: f32,
+    skew_x_deg: f32,
+    skew_y_deg: f32,
+    supersample: u32,
+) -> RgbaImage {
+    let ss = supersample.clamp(1, 4);
+    let work = if ss > 1 {
+        image::imageops::resize(
+            src,
+            (src.width() * ss).max(1),
+            (src.height() * ss).max(1),
+            image::imageops::FilterType::Nearest,
+        )
+    } else {
+        src.clone()
+    };
+    let (w, h) = (work.width() as f32, work.height() as f32);
+    let r = rot_deg.to_radians();
+    let (cos, sin) = (r.cos(), r.sin());
+    let kx = skew_x_deg.to_radians().tan();
+    let ky = skew_y_deg.to_radians().tan();
+    // M = R * H * S  (column-vector convention)
+    let m00 = cos * sx - sin * ky * sx;
+    let m01 = cos * kx * sy - sin * sy;
+    let m10 = sin * sx + cos * ky * sx;
+    let m11 = sin * kx * sy + cos * sy;
+    let det = m00 * m11 - m01 * m10;
+    if det.abs() < 1e-6 {
+        return RgbaImage::from_pixel(1, 1, Rgba([0, 0, 0, 0]));
+    }
+    let (i00, i01, i10, i11) = (m11 / det, -m01 / det, -m10 / det, m00 / det);
+    let (cx, cy) = (w / 2.0, h / 2.0);
+    let fwd = |x: f32, y: f32| (m00 * x + m01 * y, m10 * x + m11 * y);
+    let corners = [fwd(-cx, -cy), fwd(cx, -cy), fwd(-cx, cy), fwd(cx, cy)];
+    let minx = corners.iter().map(|p| p.0).fold(f32::MAX, f32::min);
+    let maxx = corners.iter().map(|p| p.0).fold(f32::MIN, f32::max);
+    let miny = corners.iter().map(|p| p.1).fold(f32::MAX, f32::min);
+    let maxy = corners.iter().map(|p| p.1).fold(f32::MIN, f32::max);
+    let (nw, nh) = (
+        ((maxx - minx).ceil() as u32).max(1),
+        ((maxy - miny).ceil() as u32).max(1),
+    );
+    let mut out = RgbaImage::from_pixel(nw, nh, Rgba([0, 0, 0, 0]));
+    for oy in 0..nh {
+        for ox in 0..nw {
+            // dest coord (centred) → inverse map → source pixel
+            let (dx, dy) = (minx + ox as f32, miny + oy as f32);
+            let sxp = i00 * dx + i01 * dy + cx;
+            let syp = i10 * dx + i11 * dy + cy;
+            if sxp >= 0.0
+                && syp >= 0.0
+                && (sxp as u32) < work.width()
+                && (syp as u32) < work.height()
+            {
+                let p = *work.get_pixel(sxp as u32, syp as u32);
+                if p.0[3] > 0 {
+                    out.put_pixel(ox, oy, p);
+                }
+            }
+        }
+    }
+    if ss > 1 {
+        image::imageops::resize(
+            &out,
+            (out.width() / ss).max(1),
+            (out.height() / ss).max(1),
+            image::imageops::FilterType::Triangle,
+        )
+    } else {
+        out
+    }
 }
 
 /// Linear interpolation between `a` and `b` by `t`.
@@ -714,6 +1001,179 @@ pub fn median_cut(pixels: &[[u8; 3]], n: usize) -> Vec<[u8; 4]> {
         .collect()
 }
 
+/// Frequency-weighted median-cut quantisation over `(colour, count)` pairs:
+/// boxes split at the WEIGHTED median (a colour used 5000× pulls the cut toward
+/// itself; a 3-pixel accent no longer wins a box by mere variety) and each box
+/// averages weighted. Pass deduped pixels with their counts. `pinned` colours
+/// are always included and consume their share of `n`.
+pub fn median_cut_weighted(
+    pixels: &[([u8; 3], u64)],
+    n: usize,
+    pinned: &[[u8; 4]],
+) -> Vec<[u8; 4]> {
+    let mut out: Vec<[u8; 4]> = pinned.to_vec();
+    let want = n.max(1).saturating_sub(out.len());
+    if pixels.is_empty() || want == 0 {
+        // Pins are "must keep": when they already fill the budget, the
+        // palette is exactly the pins — never one bonus derived colour.
+        if out.is_empty() {
+            out.push([0, 0, 0, 255]);
+        }
+        return out;
+    }
+    let mut boxes: Vec<Vec<([u8; 3], u64)>> = vec![pixels.to_vec()];
+    while boxes.len() < want {
+        // Pick the splittable box with the widest channel range.
+        let pick = boxes
+            .iter()
+            .enumerate()
+            .filter(|(_, b)| b.len() > 1)
+            .max_by_key(|(_, b)| {
+                (0..3)
+                    .map(|c| {
+                        let (mn, mx) = b.iter().fold((255u8, 0u8), |(mn, mx), (p, _)| {
+                            (mn.min(p[c]), mx.max(p[c]))
+                        });
+                        mx - mn
+                    })
+                    .max()
+                    .unwrap_or(0)
+            });
+        let Some((bi, _)) = pick else { break };
+        let axis = (0..3)
+            .max_by_key(|&c| {
+                let (mn, mx) = boxes[bi].iter().fold((255u8, 0u8), |(mn, mx), (p, _)| {
+                    (mn.min(p[c]), mx.max(p[c]))
+                });
+                mx - mn
+            })
+            .unwrap();
+        boxes[bi].sort_by_key(|(p, _)| p[axis]);
+        // Split at the weighted median so heavily-used colours dominate the cut.
+        let total: u64 = boxes[bi].iter().map(|(_, w)| w).sum();
+        let mut acc = 0u64;
+        let mut mid = boxes[bi].len() / 2;
+        for (i, (_, w)) in boxes[bi].iter().enumerate() {
+            acc += w;
+            if acc * 2 >= total {
+                mid = (i + 1).min(boxes[bi].len() - 1).max(1);
+                break;
+            }
+        }
+        let hi = boxes[bi].split_off(mid);
+        if hi.is_empty() {
+            break;
+        }
+        boxes.push(hi);
+    }
+    out.extend(boxes.iter().map(|b| {
+        let (mut r, mut g, mut bl, mut wsum) = (0u64, 0u64, 0u64, 0u64);
+        for (p, w) in b {
+            r += p[0] as u64 * w;
+            g += p[1] as u64 * w;
+            bl += p[2] as u64 * w;
+            wsum += w;
+        }
+        let wsum = wsum.max(1);
+        [(r / wsum) as u8, (g / wsum) as u8, (bl / wsum) as u8, 255]
+    }));
+    out
+}
+
+/// True area-average downscale (box filter over each target pixel's exact
+/// source footprint, fractional edges included), alpha-weighted so transparent
+/// source pixels don't darken edges. Keeps thin outlines readable where
+/// bilinear smears them. Falls back to nearest when not actually shrinking.
+pub fn downscale_area(src: &RgbaImage, tw: u32, th: u32) -> RgbaImage {
+    let (sw, sh) = (src.width(), src.height());
+    let (tw, th) = (tw.max(1), th.max(1));
+    if tw >= sw && th >= sh {
+        return image::imageops::resize(src, tw, th, image::imageops::FilterType::Nearest);
+    }
+    let mut out = RgbaImage::new(tw, th);
+    let fx = sw as f64 / tw as f64;
+    let fy = sh as f64 / th as f64;
+    for ty in 0..th {
+        let (y0, y1) = (ty as f64 * fy, (ty + 1) as f64 * fy);
+        for tx in 0..tw {
+            let (x0, x1) = (tx as f64 * fx, (tx + 1) as f64 * fx);
+            let (mut r, mut g, mut b, mut a, mut area) = (0f64, 0f64, 0f64, 0f64, 0f64);
+            let mut sy = y0.floor() as u32;
+            while (sy as f64) < y1 && sy < sh {
+                let hy = y1.min(sy as f64 + 1.0) - y0.max(sy as f64);
+                let mut sx = x0.floor() as u32;
+                while (sx as f64) < x1 && sx < sw {
+                    let wx = x1.min(sx as f64 + 1.0) - x0.max(sx as f64);
+                    let wgt = wx * hy;
+                    let p = src.get_pixel(sx, sy).0;
+                    let pa = p[3] as f64 / 255.0;
+                    r += p[0] as f64 * pa * wgt;
+                    g += p[1] as f64 * pa * wgt;
+                    b += p[2] as f64 * pa * wgt;
+                    a += pa * wgt;
+                    area += wgt;
+                    sx += 1;
+                }
+                sy += 1;
+            }
+            let px = if a > 1e-9 {
+                [
+                    (r / a).round().clamp(0.0, 255.0) as u8,
+                    (g / a).round().clamp(0.0, 255.0) as u8,
+                    (b / a).round().clamp(0.0, 255.0) as u8,
+                    (a / area.max(1e-9) * 255.0).round().clamp(0.0, 255.0) as u8,
+                ]
+            } else {
+                [0, 0, 0, 0]
+            };
+            out.put_pixel(tx, ty, Rgba(px));
+        }
+    }
+    out
+}
+
+/// Corner-seeded background removal: flood from each opaque corner over pixels
+/// perceptually close to that corner's colour (OKLab ΔE ≤ `tol`), zeroing
+/// their alpha. Run BEFORE palette extraction so a backdrop can't steal
+/// palette slots from the subject. Corner seeds (not whole-border seeds) on
+/// purpose: a subject that touches a canvas edge — feet at the bottom, a
+/// full-bleed portrait — must not seed its own deletion. The cost is that
+/// strongly-graded backdrops clear only the corner-toned bands; flat and
+/// gently-graded backdrops clear fully. Leaves enclosed interior regions alone.
+pub fn remove_background(img: &mut RgbaImage, tol: f32) {
+    let (w, h) = (img.width() as i32, img.height() as i32);
+    if w == 0 || h == 0 {
+        return;
+    }
+    let mut cleared = vec![false; (w * h) as usize];
+    let mut stack: Vec<(i32, i32, [u8; 4])> = Vec::new();
+    for &(cx, cy) in &[(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)] {
+        let seed = img.get_pixel(cx as u32, cy as u32).0;
+        if seed[3] > 0 {
+            stack.push((cx, cy, seed));
+        }
+    }
+    while let Some((x, y, seed)) = stack.pop() {
+        if x < 0 || y < 0 || x >= w || y >= h {
+            continue;
+        }
+        let i = (y * w + x) as usize;
+        if cleared[i] {
+            continue;
+        }
+        let p = img.get_pixel(x as u32, y as u32).0;
+        if p[3] == 0 || oklab_delta(p, seed) > tol {
+            continue;
+        }
+        cleared[i] = true;
+        img.put_pixel(x as u32, y as u32, Rgba([0, 0, 0, 0]));
+        stack.push((x + 1, y, seed));
+        stack.push((x - 1, y, seed));
+        stack.push((x, y + 1, seed));
+        stack.push((x, y - 1, seed));
+    }
+}
+
 /// Generate a hue-shifted shading ramp from a base colour, darkest → lightest.
 /// Lighter steps shift hue by `+hue_shift`° (toward warm) and lower saturation;
 /// darker steps shift `-hue_shift`° (toward cool) and gain saturation — the
@@ -786,6 +1246,24 @@ pub fn dither_threshold(pattern: &str, x: i32, y: i32) -> f32 {
     }
 }
 
+/// Interleaved-gradient-noise threshold in [0,1) at (x,y) — Jorge Jimenez's
+/// cheap blue-noise-ish dither, less regular than Bayer (no visible matrix
+/// grid), used by `doc_dither_ramp`'s `ign` pattern.
+pub fn ign(x: i32, y: i32) -> f32 {
+    let v = 52.982_918 * (0.067_110_56 * x as f32 + 0.005_837_15 * y as f32).fract();
+    v.fract().abs()
+}
+
+/// Ordered/blue-noise threshold in [0,1) at (x,y) for a graduated-ramp dither.
+/// Adds `ign` on top of the patterns `dither_threshold` knows.
+pub fn ramp_dither_threshold(pattern: &str, x: i32, y: i32) -> f32 {
+    if pattern == "ign" {
+        ign(x, y)
+    } else {
+        dither_threshold(pattern, x, y)
+    }
+}
+
 /// Snap `p` to its nearest entry in `ramp` (ordered dark→light) by luma, then
 /// step `delta` entries along it (clamped to the ends). Alpha is preserved.
 pub fn shade_ramp(p: [u8; 4], ramp: &[[u8; 4]], delta: i32) -> [u8; 4] {
@@ -816,6 +1294,73 @@ pub fn shade_hsl(p: [u8; 4], dir: i32, steps: i32) -> [u8; 4] {
     let nl = (l + dir as f32 * amt).clamp(0.0, 1.0);
     let rgb = hsl_to_rgb(hue, s, nl);
     [rgb[0], rgb[1], rgb[2], p[3]]
+}
+
+/// Normalised interior distance for each cell of a `w`×`h` boolean foreground
+/// mask `fg`: 0 on background (and the outermost foreground rim), rising toward
+/// 1 at the most-interior foreground pixel. A two-pass 3/4-weight chamfer
+/// distance transform, divided by its max so the field is resolution- and
+/// shape-independent. Used by `Document::form` "auto" to give an arbitrary blob
+/// volume (bright core, dark edges) without assuming an elliptical outline.
+pub fn interior_distance(fg: &[bool], w: usize, h: usize) -> Vec<f32> {
+    let n = w * h;
+    const BIG: f32 = 1.0e9;
+    const D1: f32 = 1.0;
+    const D2: f32 = std::f32::consts::SQRT_2;
+    let idx = |x: usize, y: usize| y * w + x;
+    let mut d = vec![0.0f32; n];
+    for i in 0..n {
+        d[i] = if fg[i] { BIG } else { 0.0 };
+    }
+    // Forward pass (top-left → bottom-right).
+    for y in 0..h {
+        for x in 0..w {
+            if !fg[idx(x, y)] {
+                continue;
+            }
+            let mut m = d[idx(x, y)];
+            if x > 0 {
+                m = m.min(d[idx(x - 1, y)] + D1);
+            }
+            if y > 0 {
+                m = m.min(d[idx(x, y - 1)] + D1);
+            }
+            if x > 0 && y > 0 {
+                m = m.min(d[idx(x - 1, y - 1)] + D2);
+            }
+            if x + 1 < w && y > 0 {
+                m = m.min(d[idx(x + 1, y - 1)] + D2);
+            }
+            d[idx(x, y)] = m;
+        }
+    }
+    // Backward pass (bottom-right → top-left).
+    for y in (0..h).rev() {
+        for x in (0..w).rev() {
+            if !fg[idx(x, y)] {
+                continue;
+            }
+            let mut m = d[idx(x, y)];
+            if x + 1 < w {
+                m = m.min(d[idx(x + 1, y)] + D1);
+            }
+            if y + 1 < h {
+                m = m.min(d[idx(x, y + 1)] + D1);
+            }
+            if x + 1 < w && y + 1 < h {
+                m = m.min(d[idx(x + 1, y + 1)] + D2);
+            }
+            if x > 0 && y + 1 < h {
+                m = m.min(d[idx(x - 1, y + 1)] + D2);
+            }
+            d[idx(x, y)] = m;
+        }
+    }
+    let mx = d.iter().copied().fold(0.0f32, f32::max).max(1.0);
+    for v in d.iter_mut() {
+        *v /= mx;
+    }
+    d
 }
 
 /// Sample the colour at parameter `t` (0..1) across sorted `stops`. `dither`
@@ -877,6 +1422,68 @@ pub fn sample_gradient(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn median_cut_weighted_pins_consume_the_budget() {
+        let pixels: Vec<([u8; 3], u64)> = vec![([10, 20, 30], 100), ([200, 50, 50], 5)];
+        let pins = [
+            [0, 0, 0, 255],
+            [255, 255, 255, 255],
+            [255, 0, 0, 255],
+            [0, 255, 0, 255],
+        ];
+        // Pins fill the budget exactly: no bonus derived colour sneaks past n.
+        let pal = median_cut_weighted(&pixels, 4, &pins);
+        assert_eq!(pal.len(), 4);
+        assert_eq!(pal, pins.to_vec());
+        // With headroom, derived colours fill the remainder.
+        let pal6 = median_cut_weighted(&pixels, 6, &pins);
+        assert!(pal6.len() > 4 && pal6.len() <= 6);
+    }
+
+    #[test]
+    fn oklab_round_trips_within_one_step() {
+        for c in [
+            [10, 20, 30, 255],
+            [200, 120, 40, 255],
+            [255, 255, 255, 255],
+            [0, 128, 64, 255],
+        ] {
+            let back = oklab_to_srgb(srgb_to_oklab(c));
+            for i in 0..3 {
+                assert!(
+                    (back[i] as i32 - c[i] as i32).abs() <= 1,
+                    "{:?} -> {:?}",
+                    c,
+                    back
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn perceptual_ramp_is_monotonic_and_anchors_midtone() {
+        let base = [120, 80, 60, 255];
+        let ramp = make_ramp_oklch(base, 5, 0.2, 0.85, 25.0, "arc", true);
+        assert_eq!(ramp.len(), 5);
+        // perceptual lightness rises across the ramp
+        let ls: Vec<f32> = ramp.iter().map(|c| srgb_to_oklab(*c).0).collect();
+        for w in ls.windows(2) {
+            assert!(w[1] >= w[0] - 0.001, "not monotonic: {:?}", ls);
+        }
+        // midtone anchored to base
+        assert_eq!(ramp[2], base);
+    }
+
+    #[test]
+    fn nearest_oklab_beats_naive_rgb_on_a_hue() {
+        // a desaturated teal is perceptually nearer teal than near-equal-RGB grey
+        let i = nearest_oklab(
+            [60, 120, 120, 255],
+            &[[128, 128, 128, 255], [40, 150, 150, 255]],
+        );
+        assert_eq!(i, Some(1));
+    }
 
     #[test]
     fn glyph_lowercase_maps_to_uppercase_and_unknown_is_box() {
