@@ -1334,8 +1334,12 @@ impl Studio {
             let t = f as f32 / (frames - 1) as f32;
             let r = (t * max_radius as f32).round().max(1.0) as i32;
             doc.clear_cel(layer, f);
-            // brighter early, fading out late
-            let col = ramp[(((1.0 - t) * last as f32).round() as usize).min(last)];
+            // Expand-and-dissipate: bright and solid at the flash, thinning to a
+            // faint rim as it grows — the shockwave fades OUT, instead of
+            // darkening while staying fully opaque (which read as a solid ring).
+            let c = ramp[(((1.0 - t) * last as f32).round() as usize).min(last)];
+            let a = ((1.0 - 0.8 * t) * c[3] as f32).round().clamp(0.0, 255.0) as u8;
+            let col = [c[0], c[1], c[2], a];
             match kind {
                 "ring" => doc.ellipse(layer, f, cx, cy, r, r, col, false)?,
                 "disc" => doc.ellipse(layer, f, cx, cy, r, r, col, true)?,

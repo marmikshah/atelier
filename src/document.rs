@@ -1714,7 +1714,14 @@ impl Document {
         let fg: Vec<bool> = (0..(w * h))
             .map(|i| before.as_raw()[i as usize * 4 + 3] > 0)
             .collect();
-        let dist = raster::interior_distance(&fg, w as usize, h as usize);
+        // Smooth the height field before differentiating to normals, so the
+        // medial-axis ridge doesn't read as facet creases (spheres go round).
+        let dist = raster::blur_field(
+            &raster::interior_distance(&fg, w as usize, h as usize),
+            w as usize,
+            h as usize,
+            2,
+        );
         let at = |x: i32, y: i32| -> f32 {
             if x < 0 || y < 0 || x >= w as i32 || y >= h as i32 {
                 0.0

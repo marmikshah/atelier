@@ -1404,6 +1404,47 @@ pub fn shade_hsl(p: [u8; 4], dir: i32, steps: i32) -> [u8; 4] {
 /// distance transform, divided by its max so the field is resolution- and
 /// shape-independent. Used by `Document::form` "auto" to give an arbitrary blob
 /// volume (bright core, dark edges) without assuming an elliptical outline.
+/// Separable box-blur of a scalar field. Used to smooth the interior-distance
+/// height field before it is differentiated into surface normals: the raw
+/// chamfer field has a sharp ridge along the medial axis, and central
+/// differences across that ridge read as facet creases. A light blur rounds the
+/// ridge so a blob lights as a smooth dome. `radius` is per-axis, one pass.
+pub fn blur_field(field: &[f32], w: usize, h: usize, radius: i32) -> Vec<f32> {
+    if radius <= 0 || w == 0 || h == 0 {
+        return field.to_vec();
+    }
+    let idx = |x: usize, y: usize| y * w + x;
+    let mut tmp = vec![0f32; w * h];
+    for y in 0..h {
+        for x in 0..w {
+            let (mut acc, mut n) = (0.0f32, 0.0f32);
+            for k in -radius..=radius {
+                let sx = x as i32 + k;
+                if sx >= 0 && (sx as usize) < w {
+                    acc += field[idx(sx as usize, y)];
+                    n += 1.0;
+                }
+            }
+            tmp[idx(x, y)] = acc / n;
+        }
+    }
+    let mut out = vec![0f32; w * h];
+    for y in 0..h {
+        for x in 0..w {
+            let (mut acc, mut n) = (0.0f32, 0.0f32);
+            for k in -radius..=radius {
+                let sy = y as i32 + k;
+                if sy >= 0 && (sy as usize) < h {
+                    acc += tmp[idx(x, sy as usize)];
+                    n += 1.0;
+                }
+            }
+            out[idx(x, y)] = acc / n;
+        }
+    }
+    out
+}
+
 pub fn interior_distance(fg: &[bool], w: usize, h: usize) -> Vec<f32> {
     let n = w * h;
     const BIG: f32 = 1.0e9;
@@ -1561,6 +1602,20 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn blur_field_spreads_a_spike() {
+        // A single spike should spread to its neighbours and lose its peak —
+        // this is what rounds the relight height-field ridge.
+        let mut f = vec![0.0f32; 5 * 5];
+        f[2 * 5 + 2] = 1.0;
+        let out = blur_field(&f, 5, 5, 1);
+        assert!(out[2 * 5 + 2] < 1.0, "peak should drop");
+        assert!(out[2 * 5 + 1] > 0.0 && out[1 * 5 + 2] > 0.0, "neighbours pick up signal");
+        // mass is roughly preserved (interior, no clipping)
+        let sum: f32 = out.iter().sum();
+        assert!((sum - 1.0).abs() < 0.2, "blur should roughly conserve mass, got {sum}");
     }
 
     #[test]
