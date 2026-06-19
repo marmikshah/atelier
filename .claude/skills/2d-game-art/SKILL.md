@@ -126,9 +126,13 @@ accept a cell only when you can name the intentional choice behind it; no
 `missing_reference_colors`; plus the normal character gates below.
 
 ### Character sprite (single pose)
-`doc_create` → lock ramp → block silhouette (`doc_rect`/`doc_ellipse`/`doc_polygon`,
-and **`doc_stroke` capsule limbs** for arms/legs/neck — share the joint endpoint so
-they stay attached and taper naturally, instead of blocky rect stacks)
+`doc_create` → lock ramp → block the body. For a humanoid, the fastest base is
+**`doc_figure`**: pass the joint coordinates (head, shoulders, elbows, hands,
+hips, knees, feet) and it draws a single CONNECTED capsule silhouette — reason in
+joint space, not silhouette vertices. For non-humanoid or partial shapes, block
+with `doc_rect`/`doc_ellipse`/`doc_polygon` and **`doc_stroke` capsule limbs**
+(share the joint endpoint so they stay attached and taper naturally, vs blocky
+rect stacks)
 → `doc_render` + `doc_silhouette` (pose reads?) → detail (`doc_pencil`/`doc_line`/
 `doc_batch`) → volume with `doc_form` (sphere/cylinder/auto) and rim light with
 `doc_shade` → `doc_pixel_perfect` to clean doubled corners → `doc_outline` if the
@@ -146,6 +150,12 @@ Finish frame 0 as a clean pose first. **Plan numbers before frames:** stride ≈
 1/3 of character height in px; body bobs 1px DOWN on contacts, UP on passing;
 arms counter-swing the legs; durations 110–140ms with contact poses held ~1.5×
 (`doc_set_frame_duration` — uniform 100ms reads mechanical).
+
+**For a humanoid, pose from joints.** Author the base with **`doc_figure`**, then
+per frame call `doc_figure` again with the joints moved (a contact→passing→up
+joint table) — the connected capsule body regenerates cleanly each frame, so
+limbs never detach or wobble the way hand-repainting does. This is the
+non-wobbly animation path; the rig tools below cover non-humanoid parts.
 
 **Rig limbs instead of repainting them.** `doc_select_wand` the limb (or a
 region) → **`doc_extract_to_layer`** (`frames="all"`) puts it on its own part

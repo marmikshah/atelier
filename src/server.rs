@@ -1545,6 +1545,28 @@ pub struct DocBurst {
     pub ramp: Option<Vec<Vec<i64>>>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocFigure {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Named joint coordinates as `{"head":[x,y], "shoulder_l":[x,y], ...}`.
+    /// Required: head, shoulder_l/r, elbow_l/r, hand_l/r, hip_l/r, knee_l/r,
+    /// foot_l/r. chest and pelvis are derived from the shoulder/hip midpoints.
+    pub joints: std::collections::HashMap<String, Vec<i64>>,
+    pub color: Vec<i64>,
+    /// Arm/leg capsule width (default 3).
+    pub limb_w: Option<i64>,
+    /// Torso capsule width (default 6).
+    pub torso_w: Option<i64>,
+    /// Head radius (default 4).
+    pub head_r: Option<i64>,
+    /// Anti-alias the capsule edges (default true).
+    pub aa: Option<bool>,
+    /// Snap on-palette afterwards when a palette is locked (default true).
+    pub snap: Option<bool>,
+}
+
 // --- resources -------------------------------------------------------------
 
 /// Scale used when rendering the `render` resource (matches the doc_render default).
@@ -3438,6 +3460,30 @@ impl Atelier {
             p.kind.as_deref().unwrap_or("ring"),
             rgba(&p.color),
             p.ramp.map(|v| palette_list(&v)),
+        ))
+    }
+
+    #[tool(
+        description = "Build a CONNECTED humanoid figure from named JOINT coordinates — reason in joint space (which you do well) instead of placing every silhouette vertex (which you don't). Each bone is drawn as a tapered capsule (the doc_stroke core) sharing its endpoints, so the whole body is ONE connected silhouette by construction: no detached limbs, no blocky rect stacks. joints = {\"head\":[x,y],\"shoulder_l\":[x,y],\"shoulder_r\":[x,y],\"elbow_l\":...,\"elbow_r\":...,\"hand_l\":...,\"hand_r\":...,\"hip_l\":...,\"hip_r\":...,\"knee_l\":...,\"knee_r\":...,\"foot_l\":...,\"foot_r\":...} (chest/pelvis derived from the midpoints). Re-pose across frames by calling again with new joints — the base for non-wobbly animation. Tune limb_w/torso_w/head_r to the sprite size."
+    )]
+    async fn doc_figure(&self, Parameters(p): Parameters<DocFigure>) -> CallToolResult {
+        let joints: std::collections::HashMap<String, (i32, i32)> = p
+            .joints
+            .iter()
+            .filter(|(_, v)| v.len() >= 2)
+            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
+            .collect();
+        res(self.studio().figure(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            &joints,
+            rgba(&p.color),
+            p.limb_w.unwrap_or(3) as i32,
+            p.torso_w.unwrap_or(6) as i32,
+            p.head_r.unwrap_or(4) as i32,
+            p.aa.unwrap_or(true),
+            p.snap.unwrap_or(true),
         ))
     }
 }

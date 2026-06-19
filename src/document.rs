@@ -3628,12 +3628,46 @@ impl Document {
         use image::codecs::gif::{GifEncoder, Repeat};
         use image::{Delay, Frame};
         let seq = self.play_sequence(tag)?;
+        // Build ONE palette across every frame and snap each frame to it before
+        // encoding. The image crate quantizes each frame independently, so on
+        // multi-colour art it picks a different 256-subset per frame — the
+        // source of GIF inter-frame flicker. A shared palette (the locked one,
+        // else a median-cut over all frames) makes the colours identical
+        // frame-to-frame, so motion is the only thing that changes.
+        let global: Vec<[u8; 4]> = if !self.meta.palette.is_empty() {
+            self.meta.palette.clone()
+        } else {
+            let mut px: Vec<[u8; 3]> = Vec::new();
+            for &f in &seq {
+                for p in self.flatten(f).pixels() {
+                    if p.0[3] > 0 {
+                        px.push([p.0[0], p.0[1], p.0[2]]);
+                    }
+                }
+            }
+            if px.is_empty() {
+                Vec::new()
+            } else {
+                raster::median_cut(&px, 256)
+            }
+        };
+        let mut lab = raster::PaletteLab::new(&global);
         let file = std::fs::File::create(out).map_err(|e| e.to_string())?;
         let mut enc = GifEncoder::new(std::io::BufWriter::new(file));
         enc.set_repeat(Repeat::Infinite)
             .map_err(|e| e.to_string())?;
         for &f in &seq {
             let mut img = self.flatten(f);
+            if !global.is_empty() {
+                for p in img.pixels_mut() {
+                    if p.0[3] > 0 {
+                        if let Some(i) = lab.nearest(p.0) {
+                            let c = lab.color(i);
+                            *p = Rgba([c[0], c[1], c[2], p.0[3]]);
+                        }
+                    }
+                }
+            }
             if scale > 1 {
                 img = image::imageops::resize(
                     &img,
