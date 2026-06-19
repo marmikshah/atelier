@@ -55,6 +55,13 @@ them: producing a *whole game's* coherent, engine-ready asset set.
    `doc_batch` runs many ops on one cel in a single call. For a detailed shape,
    **`doc_paint_grid`** paints a whole region from a character grid (legend →
    colours or palette indices) — far more reliable than sequencing coordinates.
+   For any ORGANIC or TAPERED stroke — a sword-arc trail, hair, a vine, a
+   tentacle, an energy wisp — reach for **`doc_stroke`** (a width-profiled
+   capsule-union: connected with no gaps, tapered, anti-aliased on-palette by
+   construction) instead of stacking `doc_bezier`/`doc_line`, which leave gappy,
+   frayed, hard-staircased curves. A **2-point `doc_stroke` is a tapered capsule
+   LIMB**: build arms/legs/fingers/necks from capsules that share a joint
+   endpoint and they stay attached — a far better figure than blocky rect stacks.
 7. **Read the ack.** Every paint op returns `pixels_changed` + `change_bbox`.
    A `warning: no pixels changed` means your coordinates ran off-canvas or the
    colour already matched — stop and re-check before stacking more ops on a
@@ -119,7 +126,9 @@ accept a cell only when you can name the intentional choice behind it; no
 `missing_reference_colors`; plus the normal character gates below.
 
 ### Character sprite (single pose)
-`doc_create` → lock ramp → block silhouette (`doc_rect`/`doc_ellipse`/`doc_polygon`)
+`doc_create` → lock ramp → block silhouette (`doc_rect`/`doc_ellipse`/`doc_polygon`,
+and **`doc_stroke` capsule limbs** for arms/legs/neck — share the joint endpoint so
+they stay attached and taper naturally, instead of blocky rect stacks)
 → `doc_render` + `doc_silhouette` (pose reads?) → detail (`doc_pencil`/`doc_line`/
 `doc_batch`) → volume with `doc_form` (sphere/cylinder/auto) and rim light with
 `doc_shade` → `doc_pixel_perfect` to clean doubled corners → `doc_outline` if the
@@ -185,11 +194,14 @@ call with `doc_palette_swap` (one sprite, many palettes — e.g. potion colours)
 **Gates:** `doc_silhouette` reads tiny (icons must read at 16px); on shared palette.
 
 ### FX (impacts, glows, particles-as-frames)
-`doc_glow` (bloom), `doc_scatter` (sparks/dust), `doc_gradient` (radial falloff,
-dithered), `doc_blur` (smoke/soft shadow), composited via layer blend modes
-(`add`/`screen` for light, `multiply` for shadow). Animate as frames + tags. atelier
-makes the FX *sprite*; runtime emitters are out of scope (don't build particle
-configs — ship the texture).
+`doc_glow` (bloom — with a palette locked it auto-snaps the bloom back on-palette
+so it stays crisp; pass `snap=false` for a deliberately soft glow), `doc_stroke`
+(tapered energy arcs/beams/wisps — connected and smooth, not gappy beziers),
+`doc_scatter` (sparks/dust), `doc_gradient` (radial falloff, dithered), `doc_blur`
+(smoke/soft shadow), composited via layer blend modes (`add`/`screen` for light,
+`multiply` for shadow). After any soft FX on a locked palette, `doc_snap_palette
+alpha="opaque"` collapses leftover bloom into crisp on-palette pixels. Animate as
+frames + tags. atelier makes the FX *sprite*; runtime emitters are out of scope.
 **Gates:** reads as motion across frames (`doc_render` each, `doc_frame_diff`).
 
 ### HUD / UI / text
@@ -281,7 +293,8 @@ work items, not noise.
 [from a reference: set_reference → ref_analyze (palette+silhouette) → lock palette]
 doc_create → make_perceptual_ramp/harmony_palette (lock) → block silhouette
    → doc_look (LOOK) → doc_silhouette (reads?) → checkpoint save
-   → detail + doc_batch / doc_paint_grid → doc_relight / doc_material / doc_dither_ramp
+   → detail + doc_batch / doc_paint_grid / doc_stroke (tapered limbs & organic arcs)
+   → doc_relight / doc_material / doc_dither_ramp
    → doc_smooth_edges (selout) / doc_outline_selective → doc_pixel_perfect
    → AUDIT: doc_critique (scorecard) · palette_report · contrast_check · snap_palette
        [+ ref_compare: iou ≥ 0.80, fix worst_cells first]

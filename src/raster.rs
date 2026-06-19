@@ -58,6 +58,98 @@ pub fn draw_line(
     }
 }
 
+/// Distance from point (px,py) to the segment a→b, plus the projection
+/// parameter `t` clamped to [0,1] (0 at a, 1 at b). The geometric primitive the
+/// variable-width stroke core is built on.
+fn point_seg(px: f32, py: f32, ax: f32, ay: f32, bx: f32, by: f32) -> (f32, f32) {
+    let (vx, vy) = (bx - ax, by - ay);
+    let len2 = vx * vx + vy * vy;
+    let t = if len2 <= 1e-6 {
+        0.0
+    } else {
+        (((px - ax) * vx + (py - ay) * vy) / len2).clamp(0.0, 1.0)
+    };
+    let (cx, cy) = (ax + t * vx, ay + t * vy);
+    let (dx, dy) = (px - cx, py - cy);
+    ((dx * dx + dy * dy).sqrt(), t)
+}
+
+/// Rasterize a variable-width, anti-aliased stroke as the UNION of round-capped
+/// capsules through `pts` (each `x, y, half_width` in pixels). This is the
+/// "clean by construction" stroke core: the union makes the run connected with
+/// no gaps, the per-vertex half-width gives taper, and the analytic coverage
+/// (`clamp(half_width(t) + 0.5 − distance, 0, 1)`) gives a smooth edge instead of
+/// a Bresenham staircase. Each covered pixel blends `color` over the existing
+/// pixel weighted by coverage×alpha (so AA resolves against the real backdrop,
+/// staying contiguous along the contour rather than scattering as speckle).
+/// `aa=false` hard-thresholds coverage at 0.5 for a crisp — but still
+/// union-connected and tapered — edge.
+pub fn stroke_ribbon(img: &mut RgbaImage, pts: &[(f32, f32, f32)], color: [u8; 4], aa: bool) {
+    if pts.is_empty() {
+        return;
+    }
+    let (w, h) = (img.width() as i32, img.height() as i32);
+    let max_hw = pts.iter().fold(0.5f32, |m, p| m.max(p.2));
+    let (mut x0, mut y0, mut x1, mut y1) = (f32::MAX, f32::MAX, f32::MIN, f32::MIN);
+    for &(x, y, _) in pts {
+        x0 = x0.min(x);
+        y0 = y0.min(y);
+        x1 = x1.max(x);
+        y1 = y1.max(y);
+    }
+    let pad = max_hw + 1.0;
+    let bx0 = ((x0 + 0.5 - pad).floor() as i32).max(0);
+    let by0 = ((y0 + 0.5 - pad).floor() as i32).max(0);
+    let bx1 = ((x1 + 0.5 + pad).ceil() as i32).min(w - 1);
+    let by1 = ((y1 + 0.5 + pad).ceil() as i32).min(h - 1);
+    let single = pts.len() == 1;
+    for py in by0..=by1 {
+        for px in bx0..=bx1 {
+            let (sx, sy) = (px as f32 + 0.5, py as f32 + 0.5);
+            // Coverage is the union (max) over every capsule segment.
+            let mut cov = 0.0f32;
+            if single {
+                let (x, y, hw) = pts[0];
+                let d = ((sx - (x + 0.5)).powi(2) + (sy - (y + 0.5)).powi(2)).sqrt();
+                cov = (hw + 0.5 - d).clamp(0.0, 1.0);
+            } else {
+                for win in pts.windows(2) {
+                    let (ax, ay, aw) = win[0];
+                    let (bx, by, bw) = win[1];
+                    let (d, t) = point_seg(sx, sy, ax + 0.5, ay + 0.5, bx + 0.5, by + 0.5);
+                    let hw = aw + (bw - aw) * t;
+                    let c = (hw + 0.5 - d).clamp(0.0, 1.0);
+                    if c > cov {
+                        cov = c;
+                    }
+                }
+            }
+            let eff = if aa {
+                cov
+            } else if cov >= 0.5 {
+                1.0
+            } else {
+                0.0
+            };
+            if eff <= 0.0 {
+                continue;
+            }
+            let a = (color[3] as f32 / 255.0) * eff;
+            if a <= 0.0 {
+                continue;
+            }
+            let dst = img.get_pixel(px as u32, py as u32).0;
+            let src = [
+                color[0],
+                color[1],
+                color[2],
+                (a * 255.0).round().clamp(0.0, 255.0) as u8,
+            ];
+            img.put_pixel(px as u32, py as u32, Rgba(over(dst, src)));
+        }
+    }
+}
+
 // -- built-in 3×5 pixel font ------------------------------------------------
 
 /// Glyph cell dimensions for the built-in font (3 wide × 5 tall).
