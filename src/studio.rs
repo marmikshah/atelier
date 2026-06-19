@@ -2100,6 +2100,54 @@ mod tests {
         assert!(colors.iter().all(|c| pal.contains(c)), "off-palette: {colors:?}");
     }
 
+    fn humanoid_joints() -> std::collections::HashMap<String, (i32, i32)> {
+        [
+            ("head", (24, 8)), ("shoulder_l", (20, 16)), ("shoulder_r", (28, 16)),
+            ("elbow_l", (15, 22)), ("elbow_r", (33, 22)), ("hand_l", (12, 14)),
+            ("hand_r", (37, 28)), ("hip_l", (21, 30)), ("hip_r", (27, 30)),
+            ("knee_l", (17, 38)), ("knee_r", (31, 38)), ("foot_l", (14, 46)),
+            ("foot_r", (34, 46)),
+        ]
+        .iter()
+        .map(|(k, v)| (k.to_string(), *v))
+        .collect()
+    }
+
+    #[test]
+    fn figure_is_one_connected_component() {
+        let s = studio("figure");
+        s.doc_create("f", 48, 48).unwrap();
+        let j = humanoid_joints();
+        s.figure("f", 0, 0, &j, [70, 110, 200, 255], 3, 6, 4, false, false)
+            .unwrap();
+        // The capsules share joint endpoints, so the whole body is one blob.
+        let rep = s.doc_components("f", 0, Some(0), 8, None, 1).unwrap();
+        assert_eq!(rep["count"], 1, "figure should be a single connected silhouette: {rep}");
+    }
+
+    #[test]
+    fn figure_rejects_missing_joint() {
+        let s = studio("figure-bad");
+        s.doc_create("f", 48, 48).unwrap();
+        let mut j = humanoid_joints();
+        j.remove("hand_l");
+        assert!(s.figure("f", 0, 0, &j, [70, 110, 200, 255], 3, 6, 4, false, false).is_err());
+    }
+
+    #[test]
+    #[ignore]
+    fn figure_demo_renders() {
+        let s = studio("figure-demo");
+        s.doc_create("hero", 48, 48).unwrap();
+        s.doc_set_palette("hero", vec![[40, 60, 120, 255], [70, 110, 200, 255]])
+            .unwrap();
+        s.figure("hero", 0, 0, &humanoid_joints(), [70, 110, 200, 255], 3, 7, 4, true, true)
+            .unwrap();
+        s.doc_render("hero", 0, Some("/tmp/atelier-demo-figure-hero.png"), Some(6), None, false, 1, None)
+            .unwrap();
+        println!("wrote /tmp/atelier-demo-figure-hero.png");
+    }
+
     // Visual: relight rounding + burst dissipation. Ignored; run with
     // cargo test --release quality_demo2 -- --ignored --nocapture
     #[test]

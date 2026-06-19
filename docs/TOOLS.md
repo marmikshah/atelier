@@ -89,6 +89,14 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   tapered capsule LIMB** (arm/leg/finger) that stays attached when it shares an
   endpoint with another, so figures are built from connected limbs rather than
   blocky rect stacks.
+- `doc_figure` — build a whole CONNECTED humanoid from named JOINT coordinates
+  (`{"head":[x,y],"shoulder_l":[x,y],…,"foot_r":[x,y]}`): each bone is fleshed as
+  a tapered `doc_stroke` capsule sharing its endpoints, so the body is one
+  connected silhouette by construction — no detached limbs, no rect stacks. You
+  reason in joint space (which you do well) instead of placing every silhouette
+  vertex (which you don't). Re-pose across frames by calling again with new
+  joints — the base for non-wobbly animation. `limb_w`/`torso_w`/`head_r` size
+  it to the sprite.
 - `doc_paint_grid` — paint a whole region DECLARATIVELY from a character grid:
   `legend` maps single chars to `[r,g,b(,a)]` colours or integer palette
   indices (palette-true by construction), `rows` are pixel-row strings
@@ -224,7 +232,9 @@ The limb/keyframe-animation toolkit.
   play it.
 - `doc_export_gif` — animated GIF honouring per-frame durations. Pass a `tag` to
   play that animation in its direction (`forward` / `reverse` / `pingpong`);
-  omit it to play the whole timeline forward.
+  omit it to play the whole timeline forward. All frames are snapped to ONE
+  shared palette (the locked one, else a median-cut over every frame) before
+  encoding, so colours don't shimmer frame-to-frame — only the motion moves.
 - `doc_export_apng` — the same animation as an APNG: lossless, full alpha (unlike
   GIF's 256 colours and 1-bit alpha). Honours `tag` direction; omit it to play
   the timeline forward.

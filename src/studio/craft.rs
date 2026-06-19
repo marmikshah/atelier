@@ -1365,6 +1365,80 @@ impl Studio {
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "frames": frames, "kind": kind}))
     }
+
+    /// Build a connected humanoid figure from named JOINT coordinates — the
+    /// agent reasons in joint space (which it does well) instead of emitting
+    /// every silhouette vertex (which it does not). Each bone is fleshed as an
+    /// F1 capsule (`Document::stroke`) sharing its endpoints with its neighbours,
+    /// so the whole figure is ONE connected, tapered silhouette by construction —
+    /// no detached limbs, no blocky rect stacks. Re-pose by calling again with
+    /// new joints. Required joints: head, shoulder_l/r, elbow_l/r, hand_l/r,
+    /// hip_l/r, knee_l/r, foot_l/r (chest/pelvis are derived as the shoulder/hip
+    /// midpoints).
+    #[allow(clippy::too_many_arguments)]
+    pub fn figure(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        joints: &std::collections::HashMap<String, (i32, i32)>,
+        color: [u8; 4],
+        limb_w: i32,
+        torso_w: i32,
+        head_r: i32,
+        aa: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        const NEED: [&str; 13] = [
+            "head", "shoulder_l", "shoulder_r", "elbow_l", "elbow_r", "hand_l", "hand_r",
+            "hip_l", "hip_r", "knee_l", "knee_r", "foot_l", "foot_r",
+        ];
+        for k in NEED {
+            if !joints.contains_key(k) {
+                return Err(format!(
+                    "figure missing joint '{k}' — required joints: {}",
+                    NEED.join(", ")
+                ));
+            }
+        }
+        let j = |k: &str| joints[k];
+        let mid = |a: (i32, i32), b: (i32, i32)| ((a.0 + b.0) / 2, (a.1 + b.1) / 2);
+        let chest = mid(j("shoulder_l"), j("shoulder_r"));
+        let pelvis = mid(j("hip_l"), j("hip_r"));
+        let lw = limb_w.max(1);
+        let tw = torso_w.max(1);
+        let hr = head_r.max(1);
+        let taper = |w: i32| (w * 7 / 10).max(1);
+        let cap = |a: (i32, i32), w0: i32, b: (i32, i32), w1: i32| {
+            vec![(a.0, a.1, w0), (b.0, b.1, w1)]
+        };
+        // Torso + girdles first, limbs over them, neck, then head on top.
+        let bones: Vec<Vec<(i32, i32, i32)>> = vec![
+            cap(chest, tw, pelvis, (tw * 85 / 100).max(1)), // spine
+            cap(j("shoulder_l"), lw, j("shoulder_r"), lw),  // clavicle (arms stay attached)
+            cap(j("hip_l"), (lw * 11 / 10).max(1), j("hip_r"), (lw * 11 / 10).max(1)), // hips
+            cap(j("shoulder_l"), lw, j("elbow_l"), lw),     // upper arm L
+            cap(j("elbow_l"), lw, j("hand_l"), taper(lw)),  // forearm L
+            cap(j("shoulder_r"), lw, j("elbow_r"), lw),     // upper arm R
+            cap(j("elbow_r"), lw, j("hand_r"), taper(lw)),  // forearm R
+            cap(j("hip_l"), (lw * 12 / 10).max(1), j("knee_l"), lw), // thigh L
+            cap(j("knee_l"), lw, j("foot_l"), taper(lw)),   // shin L
+            cap(j("hip_r"), (lw * 12 / 10).max(1), j("knee_r"), lw), // thigh R
+            cap(j("knee_r"), lw, j("foot_r"), taper(lw)),   // shin R
+            cap(chest, lw, j("head"), lw),                  // neck
+            vec![(j("head").0, j("head").1, hr * 2)],       // head disc (round cap)
+        ];
+        let (dir, mut doc) = self.open(id)?;
+        for b in &bones {
+            doc.stroke(layer, frame, b, color, aa, false)?;
+        }
+        if snap && !doc.meta.palette.is_empty() {
+            let pal = doc.meta.palette.clone();
+            doc.snap_to_palette(&pal, Some(layer), Some(frame), crate::document::AlphaSnap::Preserve);
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "bones": bones.len()}))
+    }
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
