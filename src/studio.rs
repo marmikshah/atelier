@@ -959,6 +959,22 @@ impl Studio {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_stroke(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        points: Vec<(i32, i32, i32)>,
+        color: [u8; 4],
+        aa: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        self.edit_masked(id, layer, frame, |d| {
+            d.stroke(layer, frame, &points, color, aa, snap)
+        })
+    }
+
     pub fn doc_fill(
         &self,
         id: &str,
@@ -1128,6 +1144,7 @@ impl Studio {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn doc_glow(
         &self,
         id: &str,
@@ -1137,9 +1154,19 @@ impl Studio {
         radius: i32,
         intensity: u8,
         mode: &str,
+        snap: Option<crate::document::AlphaSnap>,
     ) -> Result<Value, String> {
         self.edit_masked(id, layer, frame, |d| {
-            d.glow(layer, frame, color, radius, intensity, mode)
+            d.glow(layer, frame, color, radius, intensity, mode)?;
+            // Re-snap the continuous-tone bloom back onto the locked palette so
+            // it stays crisp pixel art (the FX-palette-blowup fix).
+            if let Some(a) = snap {
+                if !d.meta.palette.is_empty() {
+                    let pal = d.meta.palette.clone();
+                    d.snap_to_palette(&pal, Some(layer), Some(frame), a);
+                }
+            }
+            Ok(())
         })
     }
 
@@ -1944,6 +1971,101 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    // Visual demo of the F1 stroke core + F2 glow-snap. Ignored by default;
+    // run with: cargo test --release quality_demo -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn quality_demo_renders() {
+        use crate::document::AlphaSnap;
+        let s = studio("quality-demo");
+
+        // --- A: a smooth tapered crescent SLASH ARC (was choppy stacked beziers)
+        s.doc_create("arc", 48, 48).unwrap();
+        s.doc_set_palette(
+            "arc",
+            vec![[255, 255, 255, 255], [120, 220, 255, 255], [40, 130, 220, 255]],
+        )
+        .unwrap();
+        // fat in the middle, tapering to 1px points at both tips
+        let crescent = vec![
+            (41, 9, 0),
+            (44, 18, 5),
+            (41, 28, 7),
+            (33, 36, 5),
+            (23, 40, 0),
+        ];
+        s.doc_stroke("arc", 0, 0, crescent, [120, 220, 255, 255], true, true)
+            .unwrap();
+        let (_b, _m) = s
+            .doc_render("arc", 0, Some("/tmp/atelier-demo-arc.png"), Some(8), None, false, 1, None)
+            .unwrap();
+
+        // --- B: a stick figure built from CAPSULE LIMBS (connected, tapered)
+        s.doc_create("figure", 48, 48).unwrap();
+        s.doc_set_palette("figure", vec![[30, 30, 40, 255], [90, 90, 110, 255]])
+            .unwrap();
+        let limbs: Vec<Vec<(i32, i32, i32)>> = vec![
+            vec![(24, 12, 7)],                 // head (single round dot)
+            vec![(24, 16, 6), (24, 30, 6)],    // torso
+            vec![(24, 19, 4), (36, 13, 3)],    // sword arm, tapering
+            vec![(24, 20, 4), (13, 26, 3)],    // off arm
+            vec![(24, 30, 5), (16, 44, 3)],    // left leg
+            vec![(24, 30, 5), (33, 44, 3)],    // right leg
+        ];
+        for l in limbs {
+            s.doc_stroke("figure", 0, 0, l, [30, 30, 40, 255], true, true)
+                .unwrap();
+        }
+        s.doc_render("figure", 0, Some("/tmp/atelier-demo-figure.png"), Some(8), None, false, 1, None)
+            .unwrap();
+
+        // --- C: a glow orb — FX bloom auto-snapped back on-palette (F2)
+        s.doc_create("orb", 32, 32).unwrap();
+        let pal = vec![
+            [255, 255, 255, 255],
+            [180, 240, 255, 255],
+            [90, 200, 255, 255],
+            [30, 110, 210, 255],
+        ];
+        s.doc_set_palette("orb", pal.clone()).unwrap();
+        s.doc_ellipse("orb", 0, 0, 16, 16, 5, 5, [255, 255, 255, 255], true)
+            .unwrap();
+        s.doc_glow(
+            "orb",
+            0,
+            0,
+            Some([90, 200, 255, 255]),
+            5,
+            220,
+            "screen",
+            Some(AlphaSnap::Opaque(64)),
+        )
+        .unwrap();
+        s.doc_render("orb", 0, Some("/tmp/atelier-demo-orb.png"), Some(8), None, false, 1, None)
+            .unwrap();
+
+        // Count distinct opaque colours in the orb cel — must stay on-palette.
+        let (_d, doc) = s.open("orb").unwrap();
+        let mut colors = std::collections::HashSet::new();
+        let (w, h) = (doc.meta.w, doc.meta.h);
+        for y in 0..h {
+            for x in 0..w {
+                let p = doc.get_pixel(0, 0, x as i32, y as i32).unwrap();
+                if p[3] > 0 {
+                    colors.insert(p);
+                }
+            }
+        }
+        println!("ORB distinct opaque colours after glow+snap: {}", colors.len());
+        assert!(
+            colors.len() <= pal.len(),
+            "glow snap should hold the palette ({} colours), got {}",
+            pal.len(),
+            colors.len()
+        );
+        println!("wrote /tmp/atelier-demo-arc.png /tmp/atelier-demo-figure.png /tmp/atelier-demo-orb.png");
     }
 
     #[test]

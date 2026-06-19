@@ -80,6 +80,15 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
 - `doc_bezier` — Bézier curve through control points (2 = line, 3 = quadratic,
   4 = cubic; more than 4 errors — chain calls): smooth organic strokes — tails,
   vines, hair.
+- `doc_stroke` — a CLEAN tapered stroke through `points` as the union of
+  round-capped capsules: **connected** by construction (no gaps, unlike stacked
+  beziers), **tapered** (per-vertex `width`, or `[[x,y,w],...]`; `w=0` ends in a
+  1px point), and **anti-aliased** (smooth edge, not a Bresenham staircase),
+  snapped on-palette. The fix for choppy curves and disconnected action arcs —
+  sword-arc trails, hair, vines, tentacles, energy wisps. A **2-point call is a
+  tapered capsule LIMB** (arm/leg/finger) that stays attached when it shares an
+  endpoint with another, so figures are built from connected limbs rather than
+  blocky rect stacks.
 - `doc_paint_grid` — paint a whole region DECLARATIVELY from a character grid:
   `legend` maps single chars to `[r,g,b(,a)]` colours or integer palette
   indices (palette-true by construction), `rows` are pixel-row strings
@@ -103,17 +112,20 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   Returns the rendered `width` so you can lay out the next element — HUD mockups,
   damage numbers, lettering.
 - `doc_batch` — apply many ordered ops to one cel in a single call (fast headless
-  editing). Each op is `{"op":"rect|line|ellipse|polyline|polygon|bezier|pencil|
-  fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|
-  noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|text", ...}`; add
-  per-op `opacity` / `blend_mode` to composite that op instead of overwriting.
+  editing). Each op is `{"op":"rect|line|ellipse|polyline|polygon|stroke|bezier|
+  pencil|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|
+  scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|text",
+  ...}`; add per-op `opacity` / `blend_mode` to composite that op instead of
+  overwriting.
 
 ## Effects, colour & procedural
 
 - `doc_outline` (`aa` softens corners) · `doc_drop_shadow` (offset, blur) ·
-  `doc_glow` (bloom via blur + light blend) · `doc_bevel` (raised top-left /
-  shadowed bottom-right edges) — real lighting & finishing, self-contained on
-  one cel.
+  `doc_glow` (bloom via blur + light blend; when a palette is locked it
+  re-snaps the bloom back ON-palette by default so it stays crisp pixel art
+  instead of hundreds of soft tints — `snap=false` keeps it soft) · `doc_bevel`
+  (raised top-left / shadowed bottom-right edges) — real lighting & finishing,
+  self-contained on one cel.
 - `doc_noise` — `cloud` (fBm) / `perlin` / `voronoi` noise mapped through colour
   stops: terrain, clouds, organic mottling.
 - `doc_blur` — premultiplied box blur (soft shadows, depth-of-field, smoke).
@@ -279,7 +291,10 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 - `doc_harmony_palette` — a perceptual ramp per hue of a scheme
   (complementary/triadic/analogous/split/tetradic/mono), shared lightness poles.
 - `doc_snap_palette` — snap a cel/document to its locked palette by perceptual
-  nearest colour, killing off-palette drift from blends/dithers/FX.
+  nearest colour, killing off-palette drift from blends/dithers/FX. `alpha`
+  governs FX bloom / AA fringe: `preserve` (default, RGB-only) · `opaque`
+  (binarise alpha at `cutoff`, default 128 — collapse a soft bloom into crisp
+  on-palette pixels) · `flatten` (composite over `bg`, then snap fully opaque).
 
 **Master finish & form.**
 
