@@ -97,6 +97,16 @@ fn rgba(v: &[i64]) -> [u8; 4] {
     ]
 }
 
+/// Parse the `doc_snap_palette` / FX alpha policy string into an `AlphaSnap`.
+fn alpha_snap(mode: Option<&str>, cutoff: Option<u8>, bg: Option<&[i64]>) -> crate::document::AlphaSnap {
+    use crate::document::AlphaSnap;
+    match mode.unwrap_or("preserve") {
+        "opaque" => AlphaSnap::Opaque(cutoff.unwrap_or(128)),
+        "flatten" => AlphaSnap::Flatten(bg.map(rgba).unwrap_or([0, 0, 0, 255])),
+        _ => AlphaSnap::Preserve,
+    }
+}
+
 /// [[x,y],...] -> Vec<(i32,i32)> for polyline/polygon vertices.
 fn points(v: &[Vec<i64>]) -> Vec<(i32, i32)> {
     v.iter()
@@ -470,6 +480,14 @@ pub struct DocGlow {
     pub intensity: Option<u8>,
     /// Blend mode for the bloom (default "screen"; "add" for hotter).
     pub mode: Option<String>,
+    /// When a palette is locked, re-snap the bloom back ON-palette afterwards so
+    /// it stays crisp pixel art instead of hundreds of soft off-palette tints
+    /// (the bloom is binarised at `snap_cutoff`). Default true when a palette is
+    /// set; pass false to keep a deliberately soft bloom.
+    pub snap: Option<bool>,
+    /// Alpha cutoff for the post-glow snap (0..255, default 64 — keeps the
+    /// brighter bloom core, drops the faint halo).
+    pub snap_cutoff: Option<u8>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -614,6 +632,23 @@ pub struct DocPolygon {
     pub color: Vec<i64>,
     /// true (default) scanline-fills the interior; false draws the outline only.
     pub fill: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocStroke {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Centerline as [[x,y],...] (uniform `width`) or [[x,y,width],...] for a
+    /// per-vertex taper (e.g. [0,3,5,5,3,0] tips to 1px). 2 points = a capsule.
+    pub points: Vec<Vec<i64>>,
+    pub color: Vec<i64>,
+    /// Default full stroke width for points given as [x,y] (default 2).
+    pub width: Option<i64>,
+    /// Anti-alias the edges (default true). false = crisp, still union-connected.
+    pub aa: Option<bool>,
+    /// Snap RGB on-palette afterwards when a palette is locked (default true).
+    pub snap: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -1182,6 +1217,15 @@ pub struct DocSnapPalette {
     pub frame: Option<usize>,
     /// Override palette as a list of [r,g,b(,a)]; defaults to the doc's palette.
     pub palette: Option<Vec<Vec<i64>>>,
+    /// Partial-alpha policy for FX bloom / AA fringe: `preserve` (default — keep
+    /// soft alpha, snap RGB only) | `opaque` (binarise alpha at `cutoff`,
+    /// default 128 — collapse a bloom into a crisp on-palette silhouette) |
+    /// `flatten` (composite over `bg` then snap fully opaque).
+    pub alpha: Option<String>,
+    /// Alpha cutoff for `alpha="opaque"` (0..255, default 128).
+    pub cutoff: Option<u8>,
+    /// Backdrop `[r,g,b]` for `alpha="flatten"` (default opaque black).
+    pub bg: Option<Vec<i64>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -2268,6 +2312,12 @@ impl Atelier {
     )]
     async fn doc_glow(&self, Parameters(p): Parameters<DocGlow>) -> CallToolResult {
         let color = p.color.as_ref().map(|c| rgba(c));
+        // Default to snapping the bloom on-palette; `snap=false` keeps it soft.
+        let snap = if p.snap != Some(false) {
+            Some(crate::document::AlphaSnap::Opaque(p.snap_cutoff.unwrap_or(64)))
+        } else {
+            None
+        };
         res(self.studio().doc_glow(
             &p.doc_id,
             p.layer,
@@ -2276,6 +2326,7 @@ impl Atelier {
             p.radius.unwrap_or(2),
             p.intensity.unwrap_or(180),
             p.mode.as_deref().unwrap_or("screen"),
+            snap,
         ))
     }
 
@@ -2508,6 +2559,34 @@ impl Atelier {
             pts,
             rgba(&p.color),
             p.fill.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
+        description = "Draw a CLEAN tapered stroke through `points` — the union of round-capped capsules, so it is CONNECTED by construction (no gaps like stacked beziers leave), TAPERED (per-vertex width; [[x,y,w],...] or a uniform `width`, w=0 tips to 1px), and SMOOTH (analytic anti-aliased edge, not a Bresenham staircase). Use this for sword-arc trails, hair/vines, tentacles, energy wisps — and a 2-point call is a tapered CAPSULE LIMB (arm/leg/finger) that stays attached when it shares an endpoint with another. `aa=false` for a crisp edge; `snap` keeps it on the locked palette. The fix for choppy curves and disconnected action arcs."
+    )]
+    async fn doc_stroke(&self, Parameters(p): Parameters<DocStroke>) -> CallToolResult {
+        let default_w = p.width.unwrap_or(2);
+        let pts: Vec<(i32, i32, i32)> = p
+            .points
+            .iter()
+            .filter(|pt| pt.len() >= 2)
+            .map(|pt| {
+                (
+                    pt[0] as i32,
+                    pt[1] as i32,
+                    pt.get(2).copied().unwrap_or(default_w) as i32,
+                )
+            })
+            .collect();
+        res(self.studio().doc_stroke(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            pts,
+            rgba(&p.color),
+            p.aa.unwrap_or(true),
+            p.snap.unwrap_or(true),
         ))
     }
 
@@ -2863,7 +2942,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|bezier|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
+        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|stroke|bezier|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
     )]
     async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> CallToolResult {
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
@@ -2945,15 +3024,17 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. Returns the pixel count moved plus an INLINE preview of the result."
+        description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. `alpha` controls FX bloom / AA fringe: preserve (default, RGB-only) | opaque (binarise alpha at `cutoff`, default 128 — turn a soft bloom into crisp on-palette pixels) | flatten (composite over `bg` then snap opaque). Returns the pixel count moved plus an INLINE preview of the result."
     )]
     async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
         let studio = self.studio();
+        let alpha = alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref());
         let r = studio.snap_palette(
             &p.doc_id,
             p.layer,
             p.frame,
             p.palette.map(|v| palette_list(&v)),
+            alpha,
         );
         previewed(&studio, &p.doc_id, p.layer, p.frame.unwrap_or(0), r)
     }

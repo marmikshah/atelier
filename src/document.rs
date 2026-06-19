@@ -125,6 +125,24 @@ fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
 }
 
+/// How `snap_to_palette` treats the partial-alpha pixels that continuous-tone FX
+/// (glow/blur/gradient/drop_shadow) and AA fringes leave behind — the difference
+/// between "snap the colour but keep 200 soft alphas off-palette" and "make it
+/// crisp pixel art again".
+#[derive(Clone, Copy, Debug)]
+pub enum AlphaSnap {
+    /// Keep each pixel's source alpha; only the RGB is snapped (legacy default,
+    /// preserves deliberate soft edges).
+    Preserve,
+    /// Binarise alpha at `cutoff`: a pixel with alpha ≥ cutoff becomes fully
+    /// opaque and snaps to the palette; below cutoff it is cleared. Collapses a
+    /// bloom/AA gradient into a single crisp on-palette silhouette.
+    Opaque(u8),
+    /// Composite each pixel over `bg` (straight-alpha source-over) and snap the
+    /// resulting opaque colour — flattens soft FX onto a known backdrop colour.
+    Flatten([u8; 4]),
+}
+
 /// New index of a layer after moving the element at `from` to `to` (the same
 /// remove-then-insert the `Vec` does). Used to keep cel keys in step with
 /// `move_layer`.
@@ -544,6 +562,7 @@ impl Document {
         palette: &[[u8; 4]],
         layer: Option<usize>,
         frame: Option<usize>,
+        alpha: AlphaSnap,
     ) -> u32 {
         if palette.is_empty() {
             return 0;
@@ -555,16 +574,29 @@ impl Document {
                 continue;
             }
             for p in img.pixels_mut() {
-                if p.0[3] == 0 {
+                let src = p.0;
+                if src[3] == 0 {
                     continue;
                 }
-                if let Some(i) = lab.nearest(p.0) {
+                // Decide the colour to snap and the alpha to keep, per policy.
+                // `Opaque` collapses a continuous-tone FX bloom into a crisp
+                // on-palette silhouette; `Flatten` melts it onto a known backdrop.
+                let (rgb_in, out_alpha, clear) = match alpha {
+                    AlphaSnap::Preserve => (src, src[3], false),
+                    AlphaSnap::Opaque(cut) => (src, 255u8, src[3] < cut),
+                    AlphaSnap::Flatten(bg) => (raster::over(bg, src), 255u8, false),
+                };
+                let new = if clear {
+                    [0, 0, 0, 0]
+                } else if let Some(i) = lab.nearest(rgb_in) {
                     let c = lab.color(i);
-                    let snapped = [c[0], c[1], c[2], p.0[3]];
-                    if snapped != p.0 {
-                        *p = Rgba(snapped);
-                        changed += 1;
-                    }
+                    [c[0], c[1], c[2], out_alpha]
+                } else {
+                    src
+                };
+                if new != src {
+                    *p = Rgba(new);
+                    changed += 1;
                 }
             }
         }
@@ -1355,6 +1387,39 @@ impl Document {
                 s,
             );
             prev = cur;
+        }
+        Ok(())
+    }
+
+    /// Draw a variable-width, anti-aliased stroke through `pts` (each
+    /// `(x, y, full_width)`) as the union of round-capped capsules — the
+    /// clean-by-construction stroke core. Connected (union, no gaps between
+    /// samples like stacked beziers leave), tapered (per-vertex width — `0` ends
+    /// give a 1px point), and smooth (analytic coverage, not a Bresenham
+    /// staircase). A two-point call is a tapered capsule limb. `aa=false` keeps a
+    /// crisp edge; with a palette locked and `snap`, the stroke's RGB is pulled
+    /// on-palette (alpha preserved, so soft AA stays soft but on-palette).
+    pub fn stroke(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        pts: &[(i32, i32, i32)],
+        color: [u8; 4],
+        aa: bool,
+        snap: bool,
+    ) -> Result<(), String> {
+        if pts.is_empty() {
+            return Err("stroke needs at least one point".into());
+        }
+        let pal = self.meta.palette.clone();
+        let f: Vec<(f32, f32, f32)> = pts
+            .iter()
+            .map(|&(x, y, w)| (x as f32, y as f32, w.max(0) as f32 / 2.0))
+            .collect();
+        let img = self.cel_canvas(layer, frame)?;
+        raster::stroke_ribbon(img, &f, color, aa);
+        if snap && !pal.is_empty() {
+            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
         }
         Ok(())
     }
@@ -3711,6 +3776,14 @@ impl Document {
                 col("color"),
                 gb("fill", true),
             ),
+            "stroke" => self.stroke(
+                layer,
+                frame,
+                &points3_val(op.get("points"), gi("width", 2)),
+                col("color"),
+                gb("aa", true),
+                gb("snap", true),
+            ),
             "fill" | "bucket" => self.bucket_fill(
                 layer,
                 frame,
@@ -4035,6 +4108,23 @@ fn rgba_val(v: Option<&Value>) -> [u8; 4] {
     [0, 0, 0, 255]
 }
 
+/// Parse `[[x,y], ...]` or `[[x,y,width], ...]` into stroke vertices, filling
+/// the missing width with `default_w`. Points shorter than 2 are dropped.
+fn points3_val(v: Option<&Value>, default_w: i32) -> Vec<(i32, i32, i32)> {
+    v.and_then(|x| x.as_array())
+        .map(|a| {
+            a.iter()
+                .filter_map(|p| p.as_array())
+                .filter(|pt| pt.len() >= 2)
+                .map(|pt| {
+                    let g = |i: usize, d: i64| pt.get(i).and_then(|n| n.as_i64()).unwrap_or(d) as i32;
+                    (g(0, 0), g(1, 0), g(2, default_w as i64))
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 fn points_val(v: Option<&Value>) -> Vec<(i32, i32)> {
     v.and_then(|x| x.as_array())
         .map(|a| {
@@ -4093,6 +4183,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "ellipse" => (&["cx", "cy", "rx", "ry", "color"], &["fill"]),
         "polyline" => (&["points", "color"], &["size", "closed"]),
         "polygon" => (&["points", "color"], &["fill"]),
+        "stroke" => (&["points", "color"], &["width", "aa", "snap"]),
         "bezier" => (&["points", "color"], &["size", "steps"]),
         "fill" | "bucket" => (&["x", "y", "color"], &["tolerance"]),
         "replace_color" => (&["from", "to"], &["tolerance"]),
@@ -4433,9 +4524,77 @@ mod tests {
     fn snap_to_palette_picks_perceptual_nearest() {
         let mut d = Document::new("t", 4, 4);
         d.pencil(0, 0, &[(0, 0)], [200, 10, 10, 255], 1).unwrap();
-        let changed = d.snap_to_palette(&[[255, 0, 0, 255], [0, 0, 255, 255]], None, None);
+        let changed =
+            d.snap_to_palette(&[[255, 0, 0, 255], [0, 0, 255, 255]], None, None, AlphaSnap::Preserve);
         assert_eq!(changed, 1);
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
+    }
+
+    #[test]
+    fn snap_opaque_collapses_bloom_to_crisp_palette() {
+        // A continuous-tone bloom: one bright core + one faint halo pixel, both
+        // off-palette tints. Opaque snap should make the core a solid palette
+        // colour and clear the faint halo — crisp, not soft.
+        let mut d = Document::new("t", 4, 4);
+        let pal = [[255, 0, 0, 255], [0, 0, 255, 255]];
+        d.pencil(0, 0, &[(0, 0)], [200, 12, 12, 200], 1).unwrap(); // bright core
+        d.pencil(0, 0, &[(1, 0)], [180, 30, 30, 30], 1).unwrap(); // faint halo
+        d.snap_to_palette(&pal, None, None, AlphaSnap::Opaque(128));
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]); // core → solid
+        assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]); // halo → cleared
+    }
+
+    #[test]
+    fn snap_flatten_melts_partial_alpha_onto_backdrop() {
+        // A faint bluish bloom over a dark backdrop should flatten to an opaque
+        // on-palette colour rather than staying semi-transparent off-palette.
+        let mut d = Document::new("t", 4, 4);
+        let pal = [[20, 20, 40, 255], [120, 140, 255, 255]];
+        d.pencil(0, 0, &[(0, 0)], [168, 207, 255, 60], 1).unwrap();
+        d.snap_to_palette(&pal, None, None, AlphaSnap::Flatten([20, 20, 40, 255]));
+        let p = d.get_pixel(0, 0, 0, 0).unwrap();
+        assert_eq!(p[3], 255); // fully opaque after flatten
+        assert!(pal.contains(&p)); // and on-palette
+    }
+
+    #[test]
+    fn stroke_is_gap_free_union() {
+        // A thin diagonal capsule: the union rasterizer must leave NO empty row
+        // across the span (the gap-free property stacked beziers lack).
+        let mut d = Document::new("t", 48, 48);
+        d.stroke(0, 0, &[(2, 2, 2), (45, 45, 2)], [255, 255, 255, 255], false, false)
+            .unwrap();
+        for y in 4..44 {
+            let any = (0..48).any(|x| d.get_pixel(0, 0, x, y).unwrap()[3] > 0);
+            assert!(any, "row {y} had a gap");
+        }
+    }
+
+    #[test]
+    fn stroke_tapers_toward_zero_width_tip() {
+        let mut d = Document::new("t", 48, 16);
+        d.stroke(0, 0, &[(8, 8, 0), (40, 8, 10)], [255, 255, 255, 255], false, false)
+            .unwrap();
+        let col = |x: i32| (0..16).filter(|&y| d.get_pixel(0, 0, x, y).unwrap()[3] > 0).count();
+        assert!(col(10) <= 2, "tip should be ~1px, got {}", col(10));
+        assert!(col(38) >= 7, "wide end should be ~10px, got {}", col(38));
+    }
+
+    #[test]
+    fn stroke_aa_emits_fractional_coverage() {
+        // Bresenham yields zero partial-alpha pixels; the analytic coverage core
+        // must produce a smooth AA edge.
+        let mut d = Document::new("t", 32, 32);
+        d.stroke(0, 0, &[(4, 4, 3), (28, 28, 3)], [255, 255, 255, 255], true, false)
+            .unwrap();
+        let frac = (0..32)
+            .flat_map(|y| (0..32).map(move |x| (x, y)))
+            .filter(|&(x, y)| {
+                let a = d.get_pixel(0, 0, x, y).unwrap()[3];
+                a > 0 && a < 255
+            })
+            .count();
+        assert!(frac >= 20, "AA capsule should have ≥20 fractional pixels, got {frac}");
     }
 
     #[test]

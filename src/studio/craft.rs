@@ -573,6 +573,7 @@ impl Studio {
         layer: Option<usize>,
         frame: Option<usize>,
         palette: Option<Vec<[u8; 4]>>,
+        alpha: crate::document::AlphaSnap,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let pal = match palette {
@@ -584,7 +585,7 @@ impl Studio {
                 "no palette to snap to — pass `palette` or set one with doc_set_palette".into(),
             );
         }
-        let changed = doc.snap_to_palette(&pal, layer, frame);
+        let changed = doc.snap_to_palette(&pal, layer, frame, alpha);
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "pixels_changed": changed, "palette_len": pal.len()}))
     }
@@ -707,7 +708,12 @@ impl Studio {
         let mut snapped = 0;
         if snap_palette && !doc.meta.palette.is_empty() {
             let pal = doc.meta.palette.clone();
-            snapped = doc.snap_to_palette(&pal, Some(layer), Some(frame));
+            snapped = doc.snap_to_palette(
+                &pal,
+                Some(layer),
+                Some(frame),
+                crate::document::AlphaSnap::Preserve,
+            );
         }
         doc.save(&dir)?;
         Ok(json!({
@@ -1726,7 +1732,9 @@ mod tests {
         s.doc_fill_cel("c", 0, 0, [200, 12, 12, 255]).unwrap();
         s.doc_set_palette("c", vec![[255, 0, 0, 255], [0, 0, 255, 255]])
             .unwrap();
-        let r = s.snap_palette("c", None, None, None).unwrap();
+        let r = s
+            .snap_palette("c", None, None, None, crate::document::AlphaSnap::Preserve)
+            .unwrap();
         assert_eq!(r["pixels_changed"], 16);
     }
 
