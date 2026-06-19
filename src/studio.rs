@@ -176,6 +176,11 @@ impl Studio {
     // -- library ------------------------------------------------------------
 
     pub fn doc_create(&self, name: &str, w: u32, h: u32) -> Result<Value, String> {
+        if w == 0 || h == 0 || w > 4096 || h > 4096 {
+            return Err(format!(
+                "canvas {w}x{h} out of range — width/height must be 1..=4096"
+            ));
+        }
         let id = self.unique_id(name);
         let dir = self.doc_dir(&id);
         fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
@@ -358,6 +363,12 @@ impl Studio {
         opacity: u8,
         blend: String,
     ) -> Result<Value, String> {
+        if !crate::raster::valid_blend(&blend) {
+            return Err(format!(
+                "unknown blend '{blend}' — valid: {}",
+                crate::raster::BLEND_NAMES
+            ));
+        }
         let (dir, mut doc) = self.open(id)?;
         let idx = doc.add_layer(name, opacity, blend);
         doc.save(&dir)?;
@@ -379,6 +390,14 @@ impl Studio {
         opacity: Option<u8>,
         blend: Option<String>,
     ) -> Result<Value, String> {
+        if let Some(b) = &blend {
+            if !crate::raster::valid_blend(b) {
+                return Err(format!(
+                    "unknown blend '{b}' — valid: {}",
+                    crate::raster::BLEND_NAMES
+                ));
+            }
+        }
         let (dir, mut doc) = self.open(id)?;
         doc.set_layer(layer, visible, opacity, blend)?;
         self.commit(&dir, id, doc)
@@ -391,6 +410,15 @@ impl Studio {
         copy_from: Option<usize>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
+        if let Some(src) = copy_from {
+            if src >= doc.meta.frames.len() {
+                return Err(format!(
+                    "copy_from {src} out of range — document has {} frame(s) (0..={})",
+                    doc.meta.frames.len(),
+                    doc.meta.frames.len().saturating_sub(1)
+                ));
+            }
+        }
         let idx = doc.add_frame(duration_ms, copy_from);
         doc.save(&dir)?;
         // Slim ack — echoing the whole structure() grew O(layers×frames) per
@@ -417,6 +445,11 @@ impl Studio {
         to: usize,
         direction: &str,
     ) -> Result<Value, String> {
+        if !matches!(direction, "forward" | "reverse" | "pingpong") {
+            return Err(format!(
+                "unknown tag direction '{direction}' — valid: forward | reverse | pingpong"
+            ));
+        }
         let (dir, mut doc) = self.open(id)?;
         doc.add_tag(name, from, to, direction)?;
         self.commit(&dir, id, doc)
@@ -1273,7 +1306,16 @@ impl Studio {
         sat_shift: f32,
         set_doc: Option<&str>,
     ) -> Result<Value, String> {
-        let ramp = crate::raster::make_ramp(base, count, hue_shift, light_range, sat_shift);
+        // Build on the OKLCh engine (same path as doc_make_perceptual_ramp) so
+        // the ramp has perceptually-even steps instead of the legacy linear-HSL
+        // make_ramp that crushed midtones into near-black mud. `light_range`
+        // sets the spread around the base lightness; `sat_shift` is folded into
+        // the chroma arc.
+        let _ = sat_shift;
+        let (lb, _, _) = crate::raster::oklab_to_oklch(crate::raster::srgb_to_oklab(base));
+        let lo = (lb - light_range).max(0.04);
+        let hi = (lb + light_range).min(0.97);
+        let ramp = crate::raster::make_ramp_oklch(base, count.max(1), lo, hi, hue_shift, "arc", false);
         if let Some(id) = set_doc {
             let (dir, mut doc) = self.open(id)?;
             doc.set_palette(ramp.clone());
@@ -1971,6 +2013,40 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    #[test]
+    fn create_rejects_degenerate_and_huge_canvases() {
+        let s = studio("dims");
+        assert!(s.doc_create("zero", 0, 16).is_err());
+        assert!(s.doc_create("zero2", 16, 0).is_err());
+        assert!(s.doc_create("huge", 100000, 100000).is_err());
+        assert!(s.doc_create("ok", 32, 32).is_ok());
+    }
+
+    #[test]
+    fn add_layer_and_set_layer_reject_unknown_blend() {
+        let s = studio("blend");
+        s.doc_create("c", 8, 8).unwrap();
+        assert!(s.doc_add_layer("c", None, 255, "multiply".into()).is_ok());
+        assert!(s.doc_add_layer("c", None, 255, "mutiply".into()).is_err()); // typo
+        assert!(s.doc_set_layer("c", 0, None, None, Some("glow".into())).is_err());
+    }
+
+    #[test]
+    fn add_tag_rejects_unknown_direction() {
+        let s = studio("dir");
+        s.doc_create("c", 8, 8).unwrap();
+        assert!(s.doc_add_tag("c", "walk", 0, 0, "pingpong").is_ok());
+        assert!(s.doc_add_tag("c", "bad", 0, 0, "ping-pong").is_err());
+    }
+
+    #[test]
+    fn add_frame_rejects_out_of_range_copy_from() {
+        let s = studio("cf");
+        s.doc_create("c", 8, 8).unwrap();
+        assert!(s.doc_add_frame("c", 100, Some(0)).is_ok());
+        assert!(s.doc_add_frame("c", 100, Some(9)).is_err());
     }
 
     // Visual demo of the F1 stroke core + F2 glow-snap. Ignored by default;

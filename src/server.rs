@@ -1273,6 +1273,8 @@ pub struct DocTransformCel {
     pub method: Option<String>,
     /// With scale_x set and scale_y omitted, derive scale_y = 1/scale_x.
     pub preserve_volume: Option<bool>,
+    /// Snap the resample fringe back to the locked palette (default true; only
+    /// acts when a palette is set).
     pub snap_palette: Option<bool>,
     pub clear_source: Option<bool>,
 }
@@ -3095,7 +3097,7 @@ impl Atelier {
             p.skew_x.unwrap_or(0.0),
             p.skew_y.unwrap_or(0.0),
             p.method.as_deref().unwrap_or("rotsprite"),
-            p.snap_palette.unwrap_or(false),
+            p.snap_palette.unwrap_or(true),
             p.clear_source.unwrap_or(false),
         ))
     }

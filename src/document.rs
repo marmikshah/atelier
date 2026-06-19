@@ -732,7 +732,9 @@ impl Document {
     }
 
     /// Move a region within one cel by (dx,dy): copy it, clear the source, paste
-    /// at the offset. Overwrite-paste so the moved block is exact.
+    /// at the offset. Source-over paste so transparent pixels in the moved block
+    /// do NOT punch a rectangular hole through the art already at the
+    /// destination (the limb-nudge footgun) — only opaque source pixels write.
     pub fn move_region(
         &mut self,
         layer: usize,
@@ -747,7 +749,7 @@ impl Document {
         let (rw, rh, buf) = self.copy_region(layer, frame, x0, y0, x1, y1)?;
         let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
         self.clear_region(layer, frame, x0, y0, x1, y1)?;
-        self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, false)
+        self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, true)
     }
 
     /// Affine-transform a cel (or a `region` of it) in place about its centre:
@@ -821,6 +823,12 @@ impl Document {
         let target = img.get_pixel(x as u32, y as u32).0;
         let de = tol as f32 / 255.0;
         let matches = |p: [u8; 4]| -> bool {
+            // Never flood across the opaque/transparent boundary: the perceptual
+            // ΔE ignores alpha, so without this a wand on a black fill would
+            // bleed into a transparent black background (ΔE 0).
+            if (p[3] == 0) != (target[3] == 0) {
+                return false;
+            }
             if perceptual {
                 raster::oklab_delta(p, target) <= de
             } else {
@@ -4948,6 +4956,19 @@ mod tests {
         d.move_region(0, 0, 1, 1, 1, 1, 3, 0).unwrap();
         assert_eq!(d.get_pixel(0, 0, 1, 1).unwrap(), [0, 0, 0, 0]); // source cleared
         assert_eq!(d.get_pixel(0, 0, 4, 1).unwrap(), [5, 5, 5, 255]); // moved here
+    }
+
+    #[test]
+    fn move_region_does_not_punch_a_hole_in_dest_art() {
+        // Move a 2x2 block that contains a transparent corner over existing art;
+        // the transparent corner must NOT erase the art already there.
+        let mut d = Document::new("t", 8, 8);
+        d.pencil(0, 0, &[(0, 0)], [9, 9, 9, 255], 1).unwrap(); // only opaque pixel of the 2x2 source
+        d.pencil(0, 0, &[(6, 2)], [7, 7, 7, 255], 1).unwrap(); // dest art, under the block's transparent corner
+        // Move the 2x2 rect (0,0)-(1,1) by (+5,+1): source(0,0)->(5,1), source(1,1)->(6,2).
+        d.move_region(0, 0, 0, 0, 1, 1, 5, 1).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 5, 1).unwrap(), [9, 9, 9, 255]); // opaque pixel landed
+        assert_eq!(d.get_pixel(0, 0, 6, 2).unwrap(), [7, 7, 7, 255]); // dest art survived the transparent corner
     }
 
     #[test]
