@@ -1344,11 +1344,19 @@ impl Studio {
         seed: u64,
         region: Option<(i32, i32, i32, i32)>,
         blend: bool,
+        snap: bool,
     ) -> Result<Value, String> {
         self.edit_masked(id, layer, frame, |d| {
             d.gradient(
                 layer, frame, kind, x0, y0, x1, y1, stops, dither, seed, region, blend,
-            )
+            )?;
+            // On-palette discipline: pull the interpolated gradient back to the
+            // locked palette (RGB only — soft falloff alpha is preserved).
+            if snap && !d.meta.palette.is_empty() {
+                let pal = d.meta.palette.clone();
+                d.snap_to_palette(&pal, Some(layer), Some(frame), crate::document::AlphaSnap::Preserve);
+            }
+            Ok(())
         })
     }
 
@@ -2047,6 +2055,75 @@ mod tests {
         s.doc_create("c", 8, 8).unwrap();
         assert!(s.doc_add_frame("c", 100, Some(0)).is_ok());
         assert!(s.doc_add_frame("c", 100, Some(9)).is_err());
+    }
+
+    #[test]
+    fn burst_dissipates_instead_of_staying_opaque() {
+        let s = studio("burst");
+        s.doc_create("b", 24, 24).unwrap();
+        s.burst("b", 0, 12, 12, 4, 10, "ring", [255, 220, 80, 255], None)
+            .unwrap();
+        let (_d, doc) = s.open("b").unwrap();
+        let max_alpha = |f: usize| {
+            (0..24)
+                .flat_map(|y| (0..24).map(move |x| (x, y)))
+                .map(|(x, y)| doc.get_pixel(0, f, x, y).unwrap()[3])
+                .max()
+                .unwrap()
+        };
+        let last = doc.meta.frames.len() - 1;
+        assert_eq!(max_alpha(0), 255, "flash frame should be solid");
+        assert!(max_alpha(last) < 200, "rim should have faded out, got {}", max_alpha(last));
+    }
+
+    #[test]
+    fn gradient_snaps_on_palette_when_locked() {
+        let s = studio("grad");
+        s.doc_create("g", 16, 4).unwrap();
+        let pal = vec![[20, 20, 60, 255], [200, 220, 255, 255]];
+        s.doc_set_palette("g", pal.clone()).unwrap();
+        // smooth (none-dither) gradient between the two palette ends, snap default on
+        s.doc_gradient(
+            "g", 0, 0, "linear", 0, 0, 15, 0,
+            vec![(0.0, pal[0]), (1.0, pal[1])],
+            "none", 0, None, false, true,
+        )
+        .unwrap();
+        let (_d, doc) = s.open("g").unwrap();
+        let mut colors = std::collections::HashSet::new();
+        for x in 0..16 {
+            let p = doc.get_pixel(0, 0, x, 0).unwrap();
+            if p[3] > 0 {
+                colors.insert(p);
+            }
+        }
+        assert!(colors.iter().all(|c| pal.contains(c)), "off-palette: {colors:?}");
+    }
+
+    // Visual: relight rounding + burst dissipation. Ignored; run with
+    // cargo test --release quality_demo2 -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn quality_demo2_renders() {
+        let s = studio("quality-demo2");
+        // Relit sphere — should read as a smooth round dome, not faceted.
+        s.doc_create("sphere", 48, 48).unwrap();
+        s.doc_ellipse("sphere", 0, 0, 24, 24, 16, 16, [150, 90, 70, 255], true)
+            .unwrap();
+        s.relight(
+            "sphere", 0, 0, None, 225.0, 45.0, 1.1, [255, 240, 210], 0.35,
+            [120, 150, 200], 0.4, [255, 255, 255], 0.25, [80, 90, 120], 1.0, None,
+        )
+        .unwrap();
+        s.doc_render("sphere", 0, Some("/tmp/atelier-demo-sphere.png"), Some(6), None, false, 1, None)
+            .unwrap();
+        // Burst — render a mid frame; should be a faint expanding ring.
+        s.doc_create("shock", 32, 32).unwrap();
+        s.burst("shock", 0, 16, 16, 5, 14, "ring", [255, 220, 90, 255], None)
+            .unwrap();
+        s.doc_render("shock", 3, Some("/tmp/atelier-demo-burst.png"), Some(8), None, false, 1, None)
+            .unwrap();
+        println!("wrote /tmp/atelier-demo-sphere.png /tmp/atelier-demo-burst.png");
     }
 
     // Visual demo of the F1 stroke core + F2 glow-snap. Ignored by default;

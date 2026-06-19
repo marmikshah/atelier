@@ -532,6 +532,10 @@ pub struct DocGradient {
     /// true (default) composites over existing pixels so stop alpha is a real
     /// falloff (vignette/light); false overwrites.
     pub blend: Option<bool>,
+    /// When a palette is locked, snap the gradient on-palette afterwards (default
+    /// true) so a smooth `none`-dither fill becomes crisp on-palette bands
+    /// instead of off-palette continuous tone. Pass false to keep it smooth.
+    pub snap: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -2454,6 +2458,7 @@ impl Atelier {
             p.seed.unwrap_or(0),
             region(&p.region),
             p.blend.unwrap_or(true),
+            p.snap.unwrap_or(true),
         ))
     }
 
@@ -3135,7 +3140,7 @@ impl Atelier {
                 .as_deref()
                 .map(rgb3)
                 .unwrap_or([120, 130, 170]),
-            p.bulge.unwrap_or(2.0),
+            p.bulge.unwrap_or(0.8),
             p.ramp.map(|v| palette_list(&v)),
         ))
     }
