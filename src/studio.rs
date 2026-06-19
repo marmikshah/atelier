@@ -2123,7 +2123,29 @@ mod tests {
             .unwrap();
         s.doc_render("shock", 3, Some("/tmp/atelier-demo-burst.png"), Some(8), None, false, 1, None)
             .unwrap();
-        println!("wrote /tmp/atelier-demo-sphere.png /tmp/atelier-demo-burst.png");
+        // RotSprite rotation — a 2-tone bar rotated 35° should stay crisp and
+        // on-palette (no blurred fringe), not shredded.
+        s.doc_create("bar", 40, 40).unwrap();
+        s.doc_set_palette("bar", vec![[210, 60, 50, 255], [240, 220, 120, 255]])
+            .unwrap();
+        s.doc_rect("bar", 0, 0, 8, 17, 31, 22, [210, 60, 50, 255], true, 1).unwrap();
+        s.doc_rect("bar", 0, 0, 8, 17, 31, 19, [240, 220, 120, 255], true, 1).unwrap();
+        s.transform_cel("bar", 0, 0, None, 35.0, 1.0, 1.0, 0.0, 0.0, "rotsprite", true, true)
+            .unwrap();
+        s.doc_render("bar", 0, Some("/tmp/atelier-demo-rotate.png"), Some(7), None, false, 1, None)
+            .unwrap();
+        let (_d, doc) = s.open("bar").unwrap();
+        let mut cols = std::collections::HashSet::new();
+        for y in 0..40 {
+            for x in 0..40 {
+                let p = doc.get_pixel(0, 0, x, y).unwrap();
+                if p[3] > 0 {
+                    cols.insert(p);
+                }
+            }
+        }
+        println!("ROTATED bar distinct colours: {} (palette 2)", cols.len());
+        println!("wrote /tmp/atelier-demo-sphere.png /tmp/atelier-demo-burst.png /tmp/atelier-demo-rotate.png");
     }
 
     // Visual demo of the F1 stroke core + F2 glow-snap. Ignored by default;
