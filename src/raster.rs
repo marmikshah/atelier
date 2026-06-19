@@ -785,34 +785,74 @@ pub fn make_ramp_oklch(
 /// Rotate `src` by `deg` (clockwise) about its centre with nearest-neighbour
 /// sampling, returning a new image sized to the rotated bounding box.
 pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
-    let rad = deg.to_radians();
-    let (c, s) = (rad.cos(), rad.sin());
-    let (w, h) = (src.width() as f32, src.height() as f32);
-    let rot = |x: f32, y: f32| (x * c - y * s, x * s + y * c);
-    let corners = [rot(0.0, 0.0), rot(w, 0.0), rot(0.0, h), rot(w, h)];
-    let minx = corners.iter().map(|p| p.0).fold(f32::MAX, f32::min);
-    let maxx = corners.iter().map(|p| p.0).fold(f32::MIN, f32::max);
-    let miny = corners.iter().map(|p| p.1).fold(f32::MAX, f32::min);
-    let maxy = corners.iter().map(|p| p.1).fold(f32::MIN, f32::max);
-    let (nw, nh) = (
-        ((maxx - minx).ceil() as u32).max(1),
-        ((maxy - miny).ceil() as u32).max(1),
-    );
-    let (cx, cy) = (w / 2.0, h / 2.0);
-    let (ncx, ncy) = (nw as f32 / 2.0, nh as f32 / 2.0);
-    let mut out = RgbaImage::from_pixel(nw, nh, Rgba([0, 0, 0, 0]));
-    for oy in 0..nh {
-        for ox in 0..nw {
-            let (dx, dy) = (ox as f32 - ncx, oy as f32 - ncy);
-            // inverse rotation (about centre)
-            let sx = dx * c + dy * s + cx;
-            let sy = -dx * s + dy * c + cy;
-            if sx >= 0.0 && sy >= 0.0 && (sx as u32) < src.width() && (sy as u32) < src.height() {
-                let p = *src.get_pixel(sx as u32, sy as u32);
-                if p.0[3] > 0 {
-                    out.put_pixel(ox, oy, p);
+    // Pure rotation is the no-scale, no-shear case of the affine RotSprite
+    // pipeline; routing through it (supersample 2×) keeps clusters from
+    // shattering and never mints off-palette fringe, vs the old raw NN rotate.
+    affine_nn(src, deg, 1.0, 1.0, 0.0, 0.0, 2)
+}
+
+/// EPX / Scale2x edge-preserving 2× upscale: each pixel becomes 2×2, and a
+/// sub-pixel only takes a neighbour's colour when two orthogonal neighbours
+/// agree and the diagonal disagrees (smooths a staircase without inventing
+/// colours). Emits ONLY colours already in `src` — the property that lets the
+/// RotSprite pipeline rotate without minting off-palette fringe.
+fn scale2x(src: &RgbaImage) -> RgbaImage {
+    let (w, h) = (src.width(), src.height());
+    let mut out = RgbaImage::new(w * 2, h * 2);
+    let get = |x: i32, y: i32| -> [u8; 4] {
+        let cx = x.clamp(0, w as i32 - 1) as u32;
+        let cy = y.clamp(0, h as i32 - 1) as u32;
+        src.get_pixel(cx, cy).0
+    };
+    for y in 0..h as i32 {
+        for x in 0..w as i32 {
+            let p = get(x, y);
+            let (a, b, c, d) = (get(x, y - 1), get(x + 1, y), get(x - 1, y), get(x, y + 1));
+            let e0 = if c == a && c != d && a != b { a } else { p };
+            let e1 = if a == b && a != c && b != d { b } else { p };
+            let e2 = if d == c && d != b && c != a { c } else { p };
+            let e3 = if b == d && b != a && d != c { d } else { p };
+            let (ox, oy) = (x as u32 * 2, y as u32 * 2);
+            out.put_pixel(ox, oy, Rgba(e0));
+            out.put_pixel(ox + 1, oy, Rgba(e1));
+            out.put_pixel(ox, oy + 1, Rgba(e2));
+            out.put_pixel(ox + 1, oy + 1, Rgba(e3));
+        }
+    }
+    out
+}
+
+/// Downscale by an integer `factor` by majority vote: each output pixel is the
+/// most common colour in its `factor×factor` source block (ties broken toward
+/// the more opaque colour, then deterministically by channel). Unlike a bilinear
+/// downscale this emits ONLY colours present in the source — no blended fringe,
+/// so a palette stays intact through a rotate/scale.
+fn majority_downscale(src: &RgbaImage, factor: u32) -> RgbaImage {
+    if factor <= 1 {
+        return src.clone();
+    }
+    let (w, h) = ((src.width() / factor).max(1), (src.height() / factor).max(1));
+    let mut out = RgbaImage::new(w, h);
+    for oy in 0..h {
+        for ox in 0..w {
+            let mut counts: std::collections::HashMap<[u8; 4], u32> =
+                std::collections::HashMap::new();
+            for dy in 0..factor {
+                for dx in 0..factor {
+                    let (sx, sy) = (ox * factor + dx, oy * factor + dy);
+                    if sx < src.width() && sy < src.height() {
+                        *counts.entry(src.get_pixel(sx, sy).0).or_insert(0) += 1;
+                    }
                 }
             }
+            // Total ordering so ties resolve deterministically: count, then
+            // alpha (opaque wins so silhouette edges survive), then channels.
+            let best = counts
+                .into_iter()
+                .max_by_key(|(c, n)| (*n, c[3], c[0], c[1], c[2]))
+                .map(|(c, _)| c)
+                .unwrap_or([0, 0, 0, 0]);
+            out.put_pixel(ox, oy, Rgba(best));
         }
     }
     out
@@ -822,8 +862,9 @@ pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
 /// non-uniform scale (`sx`,`sy`) and shear (`skew_x`,`skew_y` in degrees), in
 /// that compose order (scale → shear → rotate). Returns a new image sized to
 /// the transformed bounding box, sampled by nearest-neighbour. `supersample`
-/// (1..=4) renders at N× then area-downscales — the RotSprite trick that keeps
-/// rotated/scaled pixel clusters from shattering into jaggies.
+/// (1..=4) renders at N× with an edge-preserving Scale2x upscale, transforms,
+/// then majority-vote downscales — a RotSprite pipeline that keeps rotated /
+/// scaled pixel clusters from shattering AND never mints off-palette fringe.
 pub fn affine_nn(
     src: &RgbaImage,
     rot_deg: f32,
@@ -833,17 +874,22 @@ pub fn affine_nn(
     skew_y_deg: f32,
     supersample: u32,
 ) -> RgbaImage {
+    // Round the supersample up to a power of two (Scale2x doubles per pass):
+    // 1 -> none, 2 -> ×2, 3/4 -> ×4. `factor` is the true upscale used below.
     let ss = supersample.clamp(1, 4);
-    let work = if ss > 1 {
-        image::imageops::resize(
-            src,
-            (src.width() * ss).max(1),
-            (src.height() * ss).max(1),
-            image::imageops::FilterType::Nearest,
-        )
+    let factor: u32 = if ss <= 1 {
+        1
+    } else if ss <= 2 {
+        2
     } else {
-        src.clone()
+        4
     };
+    let mut work = src.clone();
+    let mut f = factor;
+    while f > 1 {
+        work = scale2x(&work);
+        f /= 2;
+    }
     let (w, h) = (work.width() as f32, work.height() as f32);
     let r = rot_deg.to_radians();
     let (cos, sin) = (r.cos(), r.sin());
@@ -889,13 +935,8 @@ pub fn affine_nn(
             }
         }
     }
-    if ss > 1 {
-        image::imageops::resize(
-            &out,
-            (out.width() / ss).max(1),
-            (out.height() / ss).max(1),
-            image::imageops::FilterType::Triangle,
-        )
+    if factor > 1 {
+        majority_downscale(&out, factor)
     } else {
         out
     }
@@ -1601,6 +1642,26 @@ mod tests {
                     back
                 );
             }
+        }
+    }
+
+    #[test]
+    fn affine_rotation_emits_no_off_palette_fringe() {
+        // Two opaque colours; rotate 30°. The RotSprite pipeline must emit ONLY
+        // those colours or full transparency — never a blended partial-alpha
+        // fringe (the bilinear-downscale bug that turned 3 colours into 66).
+        let mut img = RgbaImage::from_pixel(14, 14, Rgba([0, 0, 0, 0]));
+        for y in 3..11 {
+            for x in 3..11 {
+                let c = if x < 7 { [200, 30, 30, 255] } else { [30, 30, 200, 255] };
+                img.put_pixel(x, y, Rgba(c));
+            }
+        }
+        let out = affine_nn(&img, 30.0, 1.0, 1.0, 0.0, 0.0, 2);
+        let allowed = [[0, 0, 0, 0], [200, 30, 30, 255], [30, 30, 200, 255]];
+        for p in out.pixels() {
+            assert!(p.0[3] == 0 || p.0[3] == 255, "partial-alpha fringe {:?}", p.0);
+            assert!(allowed.contains(&p.0), "off-palette colour {:?}", p.0);
         }
     }
 
