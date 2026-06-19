@@ -1063,7 +1063,7 @@ impl Studio {
                             let (ex, ey) = match t as i32 {
                                 0 => ((t.fract() * w as f32) as i32, 0),
                                 1 => (w - 1, (t.fract() * h as f32) as i32),
-                                2 => ((1.0 - t.fract()) as i32 * (w - 1), h - 1),
+                                2 => (((1.0 - t.fract()) * (w - 1) as f32) as i32, h - 1),
                                 _ => (0, ((1.0 - t.fract()) * h as f32) as i32),
                             };
                             d.line(li, f, vx, vy, ex, ey, color, 1)?;

@@ -329,6 +329,16 @@ pub fn parse_blend(s: &str) -> Blend {
     }
 }
 
+/// Human-readable list of accepted blend tokens (for validation error messages).
+pub const BLEND_NAMES: &str = "normal | multiply | screen | add | subtract | darken | \
+lighten | difference | exclusion | overlay | hard-light | soft-light | color-dodge | color-burn";
+
+/// Whether `s` is a blend token `parse_blend` recognizes (incl. "normal").
+/// Used to reject silent typos that would otherwise composite as Normal.
+pub fn valid_blend(s: &str) -> bool {
+    s == "normal" || !matches!(parse_blend(s), Blend::Normal)
+}
+
 /// `overlay(cb, cs)` — multiply on the dark half of the backdrop, screen on the
 /// light half. `hard-light` is the same with the operands swapped.
 fn overlay(cb: f32, cs: f32) -> f32 {
