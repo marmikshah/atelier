@@ -331,64 +331,91 @@ impl Studio {
         raster::remove_background(&mut subject, BG_TOL);
         let small = raster::downscale_area(&subject, cw, ch);
         let mut heat = RgbaImage::from_pixel(cw, ch, Rgba([0, 0, 0, 0]));
-        // (ΔE, x, y, ΔL, ΔC, ΔH)
+        // (ΔE, x, y, ΔL, ΔC, chroma-weighted ΔH magnitude)
         let mut worst: Vec<(f32, u32, u32, f32, f32, f32)> = Vec::new();
         let (mut sum, mut n, mut maxd) = (0f64, 0u64, 0f32);
+        let (mut inter, mut union) = (0u64, 0u64);
+        // One dominance rule drives BOTH the heat colour and the fix string, so
+        // they can never contradict; hue is chroma-weighted so it vanishes on
+        // near-gray pixels (where an OKLCh hue angle is meaningless).
+        let classify = |dl: f32, dc: f32, hue: f32| -> (bool, f32) {
+            let value_err = dl.abs();
+            let colour_err = dc.abs() + hue;
+            (value_err >= colour_err, value_err.max(colour_err))
+        };
         for y in 0..ch {
             for x in 0..cw {
                 let a = canvas.get_pixel(x, y).0;
                 let b = small.get_pixel(x, y).0;
-                if a[3] < 128 || b[3] < 128 {
+                let (ao, bo) = (a[3] >= 128, b[3] >= 128);
+                if ao && bo {
+                    inter += 1;
+                }
+                if ao || bo {
+                    union += 1;
+                }
+                if !(ao && bo) {
                     continue;
                 }
                 let (la, ca, ha) = raster::oklab_to_oklch(raster::srgb_to_oklab(a));
                 let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(b));
                 let (dl, dc) = (la - lb, ca - cb);
-                let dh = {
-                    let mut d = ha - hb; // degrees, wrap to [-180, 180]
-                    if d > 180.0 {
-                        d -= 360.0;
-                    } else if d < -180.0 {
-                        d += 360.0;
-                    }
-                    d
-                };
+                let mut dd = ha - hb; // degrees, wrap to [-180, 180]
+                if dd > 180.0 {
+                    dd -= 360.0;
+                } else if dd < -180.0 {
+                    dd += 360.0;
+                }
+                // Chroma-weighted hue arc in OKLab units (comparable to ΔL/ΔC);
+                // ~0 when either colour is achromatic.
+                let hue = 2.0 * ca.min(cb) * (dd.to_radians() / 2.0).sin().abs();
                 let de = raster::oklab_delta(a, b);
                 sum += de as f64;
                 n += 1;
                 maxd = maxd.max(de);
-                // Heat: value error dominant -> red(too light)/blue(too dark);
-                // else colour error -> green. Brightness scales with ΔE.
+                let (value_dom, _) = classify(dl, dc, hue);
                 let i = ((de / 0.2).clamp(0.0, 1.0) * 255.0) as u8;
-                let px = if dl.abs() * 1.5 >= dc.abs() + dh.abs() * 0.01 {
+                let px = if value_dom {
                     if dl > 0.0 {
-                        [i, 0, 0, 255]
+                        [i, 0, 0, 255] // too light
                     } else {
-                        [0, 0, i, 255]
+                        [0, 0, i, 255] // too dark
                     }
                 } else {
-                    [0, i, 0, 255]
+                    [0, i, 0, 255] // wrong colour (chroma/hue)
                 };
                 heat.put_pixel(x, y, Rgba(px));
-                worst.push((de, x, y, dl, dc, dh));
+                worst.push((de, x, y, dl, dc, hue));
             }
         }
+        let iou = if union == 0 {
+            0.0
+        } else {
+            inter as f64 / union as f64
+        };
         worst.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
         let top = top.clamp(1, 64);
         let worst_pixels: Vec<Value> = worst
             .iter()
             .take(top)
             .filter(|w| w.0 > 0.02)
-            .map(|(de, x, y, dl, dc, dh)| {
+            .map(|&(de, x, y, dl, dc, hue)| {
+                let (value_dom, _) = classify(dl, dc, hue);
                 let mut fix: Vec<&str> = Vec::new();
-                if dl.abs() > 0.02 {
-                    fix.push(if *dl > 0.0 { "darken" } else { "lighten" });
+                if value_dom {
+                    if dl.abs() > 0.02 {
+                        fix.push(if dl > 0.0 { "darken" } else { "lighten" });
+                    }
+                } else {
+                    if dc.abs() > 0.02 {
+                        fix.push(if dc > 0.0 { "desaturate" } else { "saturate" });
+                    }
+                    if hue > 0.02 {
+                        fix.push("shift hue toward reference");
+                    }
                 }
-                if dc.abs() > 0.02 {
-                    fix.push(if *dc > 0.0 { "desaturate" } else { "saturate" });
-                }
-                if dh.abs() > 10.0 {
-                    fix.push("shift hue toward reference");
+                if fix.is_empty() && dl.abs() > 0.02 {
+                    fix.push(if dl > 0.0 { "darken" } else { "lighten" });
                 }
                 json!({
                     "x": x, "y": y,
@@ -420,9 +447,12 @@ impl Studio {
                 "mean_delta": mean,
                 "max_delta": (maxd * 1000.0).round() / 1000.0,
                 "compared_pixels": n,
+                "silhouette_iou": (iou * 1000.0).round() / 1000.0,
                 "worst_pixels": worst_pixels,
-                "heat_legend": "brightness = ΔE; red = canvas too light, blue = too dark, green = wrong colour",
-                "guide": "Fix the worst_pixels first (paint_grid / shade), then re-run. delta ≤ 0.06 reads right.",
+                "canvas_size": [cw, ch],
+                "scale": sc,
+                "heat_legend": "PNG is canvas×scale; worst_pixels x,y are doc coords. brightness = ΔE; red = too light, blue = too dark, green = wrong colour",
+                "guide": "worst_pixels are only meaningful once silhouette_iou is high (≥0.8) — align the shape first, then fix the named pixels and re-run. delta ≤ 0.06 reads right.",
             }),
         ))
     }
