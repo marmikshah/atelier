@@ -1713,16 +1713,16 @@ mod tests {
         assert_eq!(r["offsets"], json!([[4, 0], [8, 0]])); // linear: half then full
                                                            // frame 0 (source) is untouched
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 1, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 1, 1).unwrap()["rgba"],
             json!([200, 50, 50, 255])
         );
         // frame 2 has the block at (1+8, 1) = (9,1); the source rect is cleared
         assert_eq!(
-            s.doc_get_pixel("d", 0, 2, 9, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 2, 9, 1).unwrap()["rgba"],
             json!([200, 50, 50, 255])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 2, 1, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 2, 1, 1).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // to_frame must exist and be > from_frame

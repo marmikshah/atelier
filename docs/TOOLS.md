@@ -219,7 +219,8 @@ The limb/keyframe-animation toolkit.
   scatter, rect, ellipse, polygon, pencil, line, batch…) is confined to it —
   e.g. select a pond shape, then gradient + scatter only inside it.
 - `doc_get_pixel` — read one pixel back as RGBA + `#rrggbbaa` (verify colours
-  while editing blind).
+  while editing blind). Omit `layer` to read the flattened composite (the visible
+  pixel); pass `layer` to read one cel.
 - `doc_move_region` — copy a rectangle, clear the source, stamp it at `(dx,dy)`.
   Draw a limb once, nudge it per frame.
 - `doc_copy_region` / `doc_cut_region` / `doc_paste` — a shared clipboard that
