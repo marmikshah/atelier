@@ -3877,6 +3877,10 @@ pub async fn run_http(
     let local = listener.local_addr()?;
     eprintln!("atelier MCP listening on http://{local}/mcp");
     eprintln!("atelier gallery at http://{local}/gallery");
+    eprintln!(
+        "try the tools in a window: npx @modelcontextprotocol/inspector \
+         (transport: Streamable HTTP, URL: http://{local}/mcp)"
+    );
     axum::serve(listener, router)
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;
