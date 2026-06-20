@@ -72,7 +72,10 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
   `doc_form` / `doc_dither_ramp`.
 - **Alpha-aware palette snap** (`AlphaSnap` Preserve/Opaque/Flatten); `doc_figure`
   / `doc_walk` snap opaque for crisp edges.
-- `doc_get_pixel`'s `layer` is now optional — omit it for the flattened composite.
+- **Shape tools reframed as blocking** — `doc_ellipse`/`doc_polygon` descriptions
+  and the 2d-game-art skill now state a stamped shape is a *base*, never a finished
+  sprite, and mandate the volume + pixel-detail + polish pass (the fix for clumsy
+  stamped art); ≥48px canvases for detailed characters.
 - Tighter input validation and correctness across the surface (perspective
   vanishing-point, `doc_move_region` source-over, `doc_select_wand` flood guards,
   `doc_create` dimension clamp, blend/direction/`copy_from` validation).
@@ -82,6 +85,10 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
 - **`doc_export_gif`**, **`doc_export_apng`** (→ `doc_export_anim`),
   **`palette_ramp`**, **`doc_make_perceptual_ramp`**, **`doc_harmony_palette`**
   (→ `doc_palette`). Hard removal — no deprecated aliases.
+- **`doc_bezier`** (gappy, hard-staircased — `doc_stroke` supersedes it) and the
+  **`doc_get_pixel`** *tool* (a strict subset of `doc_dump_region` 1×1; the
+  internal pixel reader stays). Renamed **`doc_tween` → `doc_dissolve`** — it
+  cross-fades, it never interpolated poses, so the old name was a footgun. 103 tools.
 
 ### Fixed
 

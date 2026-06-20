@@ -34,7 +34,7 @@ stays crisp.
   shadow/AO, `add`/`screen` for light/glow/bloom, `overlay`/`soft-light` to grade.
 - `doc_add_frame` (optionally `copy_from` an existing frame) /
   `doc_set_frame_duration`.
-- `doc_tween` — insert N cross-faded DISSOLVE frames between two poses
+- `doc_dissolve` — insert N cross-faded DISSOLVE frames between two poses
   (palette-snapped, tags remapped, pivot/boxes inherited). For fades and FX
   only — never pose motion (limbs ghost); auto-checkpoints first.
 - `doc_frame_ops` — timeline lifecycle: `delete` (last frame protected) /
@@ -77,9 +77,6 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   else draws the closed outline (organic canopies, ponds, bodies).
 - `doc_polyline` — connected segments through `[[x,y],...]` (`closed` loops it
   back); square brush `size`.
-- `doc_bezier` — Bézier curve through control points (2 = line, 3 = quadratic,
-  4 = cubic; more than 4 errors — chain calls): smooth organic strokes — tails,
-  vines, hair.
 - `doc_stroke` — a CLEAN tapered stroke through `points` as the union of
   round-capped capsules: **connected** by construction (no gaps, unlike stacked
   beziers), **tapered** (per-vertex `width`, or `[[x,y,w],...]`; `w=0` ends in a
@@ -222,9 +219,6 @@ The limb/keyframe-animation toolkit.
   / `subtract` / `intersect`). While set, every painting op (fill, gradient,
   scatter, rect, ellipse, polygon, pencil, line, batch…) is confined to it —
   e.g. select a pond shape, then gradient + scatter only inside it.
-- `doc_get_pixel` — read one pixel back as RGBA + `#rrggbbaa` (verify colours
-  while editing blind). Omit `layer` to read the flattened composite (the visible
-  pixel); pass `layer` to read one cel.
 - `doc_move_region` — copy a rectangle, clear the source, stamp it at `(dx,dy)`.
   Draw a limb once, nudge it per frame.
 - `doc_copy_region` / `doc_cut_region` / `doc_paste` — a shared clipboard that

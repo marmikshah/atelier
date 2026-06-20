@@ -761,19 +761,6 @@ pub struct DocNoise {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocBezier {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Control points [[x,y],...]: 2 = line, 3 = quadratic, 4+ = cubic.
-    pub points: Vec<Vec<i64>>,
-    pub color: Vec<i64>,
-    pub size: Option<i64>,
-    /// Number of sampled segments (default 24).
-    pub steps: Option<i64>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocText {
     pub doc_id: String,
     pub layer: usize,
@@ -789,17 +776,6 @@ pub struct DocText {
     pub color: Vec<i64>,
     /// Integer pixel scale of the 3×5 cell (default 1), clamped to 1..=64.
     pub size: Option<i64>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPixel {
-    pub doc_id: String,
-    /// One layer's cel; OMIT to read the flattened composite (what's actually
-    /// visible) — otherwise a pixel painted on another layer reads transparent.
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    pub x: i32,
-    pub y: i32,
 }
 
 /// A rectangular region of a cel (inclusive corners) + optional offset.
@@ -1797,7 +1773,7 @@ const PROMPTS: &[PromptSpec] = &[
                  1. Start from a finished standing pose on frame 0 (use the pixel-sprite flow first).\n\
                  2. The cycle is contact -> down -> passing -> up. Plan numbers FIRST: stride ~1/3 of \
                  the character's height in px, body bobs 1px DOWN on contact and UP on passing, arms \
-                 counter-swing the legs. NEVER doc_tween poses — it dissolves (ghost frames), it does \
+                 counter-swing the legs. NEVER doc_dissolve poses — it cross-fades (ghost frames), it does \
                  not move limbs.\n\
                  3. doc_add_frame with copy_from the previous frame so each pose starts from the last.\n\
                  4. Repaint ONLY what changes per pose (legs, arms) with doc_pencil / doc_move_region; \
@@ -2235,7 +2211,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw an ellipse centred at (cx,cy) with radii (rx,ry), outline or filled."
+        description = "Draw an ellipse centred at (cx,cy) with radii (rx,ry), outline or filled. BLOCKING/geometry primitive: for a character this is a base to detail over — add volume (doc_form/doc_relight) and pixel detail (doc_paint_grid/doc_pencil) after; a flat stamped ellipse is never a finished sprite."
     )]
     async fn doc_ellipse(&self, Parameters(p): Parameters<DocEllipse>) -> CallToolResult {
         res(self.studio().doc_ellipse(
@@ -2334,9 +2310,9 @@ impl Atelier {
     #[tool(
         description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame_ops delete. Reindexes later cels and remaps tags."
     )]
-    async fn doc_tween(&self, Parameters(p): Parameters<DocTween>) -> CallToolResult {
+    async fn doc_dissolve(&self, Parameters(p): Parameters<DocTween>) -> CallToolResult {
         let studio = self.studio();
-        studio.auto_checkpoint(&p.doc_id, "tween");
+        studio.auto_checkpoint(&p.doc_id, "dissolve");
         res(studio.doc_tween(
             &p.doc_id,
             p.from,
@@ -2490,22 +2466,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw a Bézier curve through control `points` (2=line, 3=quadratic, 4=cubic; >4 errors — chain calls for longer curves) with brush `size`. Smooth organic strokes — tails, vines, hair. Honours an active selection."
-    )]
-    async fn doc_bezier(&self, Parameters(p): Parameters<DocBezier>) -> CallToolResult {
-        let pts = points(&p.points);
-        res(self.studio().doc_bezier(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            pts,
-            rgba(&p.color),
-            p.size.unwrap_or(1) as i32,
-            p.steps.unwrap_or(24) as i32,
-        ))
-    }
-
-    #[tool(
         description = "Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at integer pixel `size` (default 1). Covers A-Z, 0-9 and . , : ! ? - + / ( ) ' and space; lowercase maps to uppercase, unknown chars render as a hollow box. Returns the rendered `width` so you can lay out the next element. HUD mockups, damage numbers, lettering. Honours an active selection."
     )]
     async fn doc_text(&self, Parameters(p): Parameters<DocText>) -> CallToolResult {
@@ -2637,7 +2597,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw a polygon through `points` ([[x,y],...], auto-closed). fill=true (default) scanline-fills the interior; false draws the outline. Clean organic shapes — canopies, ponds, bodies."
+        description = "Draw a polygon through `points` ([[x,y],...], auto-closed). fill=true (default) scanline-fills the interior; false draws the outline. Clean organic shapes — canopies, ponds, bodies. BLOCKING base for characters: detail it (doc_form volume + doc_paint_grid/doc_pencil) afterwards — don't ship the flat fill."
     )]
     async fn doc_polygon(&self, Parameters(p): Parameters<DocPolygon>) -> CallToolResult {
         let pts = points(&p.points);
@@ -2729,15 +2689,6 @@ impl Atelier {
     }
 
     // -- selection / region / clipboard (move limbs, reuse art) --
-    #[tool(
-        description = "Read one pixel from a cel. Returns its RGBA array and #rrggbbaa hex (use to verify colours while editing blind)."
-    )]
-    async fn doc_get_pixel(&self, Parameters(p): Parameters<DocPixel>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_get_pixel(&p.doc_id, p.layer, p.frame.unwrap_or(0), p.x, p.y))
-    }
-
     // -- canvas readers (read-only analysis to SEE the canvas as data) --
     #[tool(
         description = "Dump a region of a frame as a text grid so you can read exact pixels blind. mode=\"symbol\" maps each distinct colour to a glyph (A..Z a..z 0..9) with a legend, `.`=transparent; mode=\"hex\" emits #rrggbb(aa)/`.` tokens. `layer` dumps one cel (omit = flattened). `region` [x0,y0,x1,y1] caps at 4096 px — crop large canvases."
@@ -3802,7 +3753,7 @@ impl ServerHandler for Atelier {
              not remembered. \
              Audit before exporting: doc_critique (failure modes), doc_palette_report, \
              doc_silhouette. Animate by duplicating frames (doc_add_frame copy_from) \
-             and editing what moves — doc_keyframe_move for eased motion; doc_tween is \
+             and editing what moves — doc_keyframe_move for eased motion; doc_dissolve is \
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
              doc_export_sheet / doc_export_anim / export_all. list_docs browses the \
