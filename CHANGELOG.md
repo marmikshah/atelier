@@ -8,7 +8,7 @@ All notable changes to atelier are documented here. Format follows
 
 The drawing-quality release: the engine that was choppy and palette-blowing now
 draws connected, tapered, perceptually-shaded, palette-true art — and the agent
-can finally *see* its own error to repair it. 104 tools, 198 tests.
+can finally *see* its own error to repair it. 105 tools, 198 tests.
 
 ### Added
 
@@ -25,6 +25,12 @@ can finally *see* its own error to repair it. 104 tools, 198 tests.
   hue). The see-and-repair eye for the perceptual last 5%.
 - **`doc_rim_light`** — outward-normal edge light from an azimuth; `dark=true`
   paints the away-facing contact shadow. Topological, survives tiny canvases.
+- **`doc_critique_vision`** — the AI eye for free-form art (no reference): renders
+  the frame and asks the MCP host to run its own vision model over it, returning a
+  structured critique (reads-as, silhouette/proportion, value/colour, top-3 fixes).
+  Ethos-pure — atelier ships no weights, makes no network call, holds no keys; the
+  host samples. Requires a host advertising the `sampling` capability; errors
+  clearly (no hang) if absent.
 - **`doc_palette`** — one OKLCh generator for a single shading ramp
   (`scheme="mono"`) or a multi-hue scheme (complementary / triadic / analogous /
   split / tetradic), with hue-shift, saturation curve, midtone anchor and

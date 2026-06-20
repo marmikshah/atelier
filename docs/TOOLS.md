@@ -363,6 +363,12 @@ recall into a measured, same-turn signal:
   too dark, green = wrong colour; brightness = ΔE) plus the `top` worst individual
   pixels, each with x,y, ΔE and a fix direction (lighten/darken + saturate/
   desaturate + shift hue). Fix the named pixels, re-run — converges the last 5%.
+- `doc_critique_vision` — the AI eye for FREE-FORM art (no reference). Renders the
+  frame and asks the MCP HOST to run its own vision model over it (atelier ships
+  no weights, makes no network call, holds no keys — the host samples). Returns a
+  structured critique: reads-as, silhouette/proportion, value/colour, top-3 fixes;
+  `focus` weights one axis. Requires a host advertising the `sampling` capability
+  — errors clearly if absent.
 
 ## Beyond the tools
 
