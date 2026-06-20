@@ -1217,6 +1217,25 @@ impl Studio {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_rim_light(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        color: [u8; 4],
+        az_deg: f32,
+        width: i32,
+        falloff: f32,
+        dark: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        self.edit_masked(id, layer, frame, |d| {
+            d.rim_light(layer, frame, color, az_deg, width, falloff, dark, snap)
+                .map(|_| ())
+        })
+    }
+
     pub fn doc_adjust(
         &self,
         id: &str,

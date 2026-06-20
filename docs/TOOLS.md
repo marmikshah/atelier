@@ -141,6 +141,12 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   instead of hundreds of soft tints — `snap=false` keeps it soft) · `doc_bevel`
   (raised top-left / shadowed bottom-right edges) — real lighting & finishing,
   self-contained on one cel.
+- `doc_rim_light` — paint a RIM/edge light on the silhouette edges that FACE the
+  light (`az`: 0=right, 90=down, 180=left, 270=up): estimates each edge pixel's
+  outward normal and stamps `color` where it faces the light, `width` px thick,
+  `falloff` tightens it; `dark=true` lights the away-facing edge (core/contact
+  shadow). Topological, so it survives small canvases where a Fresnel rim washes
+  out — replaces hand-placing edge highlights pixel by pixel.
 - `doc_noise` — `cloud` (fBm) / `perlin` / `voronoi` noise mapped through colour
   stops: terrain, clouds, organic mottling.
 - `doc_blur` — premultiplied box blur (soft shadows, depth-of-field, smoke).
@@ -352,6 +358,11 @@ recall into a measured, same-turn signal:
   inline side-by-side (or `mode="overlay"` ghost), silhouette IoU (≥0.80 =
   shape reads), per-cell OKLab ΔE with the worst cells named as canvas rects,
   and reference colours missing from the palette.
+- `doc_diff_map` — PER-PIXEL signed error map vs the reference (the see-and-repair
+  eye `ref_compare`'s aggregate ΔE can't be): a HEAT png (red = too light, blue =
+  too dark, green = wrong colour; brightness = ΔE) plus the `top` worst individual
+  pixels, each with x,y, ΔE and a fix direction (lighten/darken + saturate/
+  desaturate + shift hue). Fix the named pixels, re-run — converges the last 5%.
 
 ## Beyond the tools
 
