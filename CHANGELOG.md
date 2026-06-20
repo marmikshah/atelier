@@ -40,6 +40,11 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
   canvas — plus a **draw mode** where mouse gestures *are* tool calls
   (pencil/eraser → `doc_pencil`, line/rect/ellipse drag → the matching tool,
   click → `doc_fill`). No Node, no external assets, rides the existing `/mcp`.
+- **Live render** — `/gallery` and `/playground` now update the instant the agent
+  edits a document, via a Server-Sent Events stream (`/gallery/events`) the server
+  pushes a changed `doc_id` to on every successful mutating tool call. No more
+  2.5s polling lag (the poll stays only as a fallback); watch a sprite take shape
+  in the browser as the agent draws it.
 - **Quality benchmark** (`quality_benchmark` test, `docs/QUALITY-BENCHMARK.md`):
   a deterministic, agent-free measure of the v1.1.0→v1.2.0 engine lift that runs
   in CI as a regression guard.

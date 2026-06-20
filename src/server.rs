@@ -1884,6 +1884,10 @@ pub struct Atelier {
     tool_router: ToolRouter<Self>,
     /// Optional session recorder; when set, each tool call is logged to a recipe.
     recorder: Option<Recorder>,
+    /// Optional doc-change notifier (HTTP only): after a successful tool call its
+    /// `doc_id` is broadcast so the live `/gallery/events` SSE stream can push a
+    /// "this doc changed" event and the browser re-renders without polling.
+    change_tx: Option<tokio::sync::broadcast::Sender<String>>,
 }
 
 impl Atelier {
@@ -1897,6 +1901,7 @@ impl Atelier {
             studio,
             tool_router: Self::tool_router(),
             recorder: None,
+            change_tx: None,
         }
     }
 
@@ -3678,11 +3683,26 @@ impl ServerHandler for Atelier {
                 .unwrap_or_else(|| json!({}));
             (r.clone(), request.name.to_string(), args)
         });
+        // Snapshot the target doc_id (if any) before the request is moved, so a
+        // successful mutating call can notify the live gallery/playground viewers.
+        let changed_doc = self.change_tx.as_ref().and_then(|_| {
+            request
+                .arguments
+                .as_ref()
+                .and_then(|m| m.get("doc_id"))
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        });
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
         let result = self.tool_router.call(tcc).await?;
         if let Some((recorder, tool, args)) = recording {
             if !is_error_result(&result) {
                 recorder.record(&tool, args);
+            }
+        }
+        if let (Some(tx), Some(id)) = (&self.change_tx, &changed_doc) {
+            if !is_error_result(&result) {
+                let _ = tx.send(id.clone());
             }
         }
         Ok(result)
@@ -3847,8 +3867,18 @@ async function load() {
 function refreshImages() {
   for (const card of grid.children) card.querySelector('img').src = imgUrl(card.id.slice(2));
 }
+function refreshOne(id) {
+  const card = document.getElementById('d-' + id);
+  if (card) card.querySelector('img').src = imgUrl(id); else load();
+}
 load();
-setInterval(refreshImages, 2000);
+// Live: the server pushes the changed doc_id on each successful tool call —
+// re-render just that card instantly. Polls stay as a fallback.
+try {
+  const es = new EventSource('/gallery/events');
+  es.onmessage = (e) => { if (e.data) refreshOne(e.data); };
+} catch (err) {}
+setInterval(refreshImages, 5000);
 setInterval(load, 10000);
 </script>
 </body>
@@ -4119,6 +4149,12 @@ document.getElementById("docsel").onchange = () => showDoc();
     tools = ((await rpc("tools/list", {})).tools || []).sort((a,b)=>a.name.localeCompare(b.name));
     renderTools("");
     await loadDocs();
+    // Live render: the server pushes a changed doc_id on every successful tool
+    // call (agent or this page) — re-render instantly. Poll stays as a fallback.
+    try {
+      const es = new EventSource("/gallery/events");
+      es.onmessage = (e) => { if (!drawing && e.data && e.data === curId) showDoc(curId); };
+    } catch (err) {}
     setInterval(() => { if (!drawing) showDoc(); }, 2500);
   } catch (e) { document.getElementById("tools").innerHTML = `<span class="err">connect failed: ${e.message}</span>`; }
 })();
@@ -4159,6 +4195,23 @@ async fn gallery_render(
         // Generic body — don't leak the studio error that enumerates all doc ids.
         Err(_) => (axum::http::StatusCode::NOT_FOUND, "not found").into_response(),
     }
+}
+
+/// GET /gallery/events — a Server-Sent Events stream of changed document ids.
+/// Every successful mutating tool call broadcasts its `doc_id`; the live gallery
+/// and playground subscribe and re-render that document instantly (push, not the
+/// 2.5s poll). `KeepAlive` holds the connection open through idle periods.
+async fn gallery_events(
+    change_tx: tokio::sync::broadcast::Sender<String>,
+) -> axum::response::sse::Sse<
+    impl tokio_stream::Stream<Item = Result<axum::response::sse::Event, std::convert::Infallible>>,
+> {
+    use axum::response::sse::{Event, KeepAlive, Sse};
+    use tokio_stream::wrappers::BroadcastStream;
+    use tokio_stream::StreamExt;
+    let stream = BroadcastStream::new(change_tx.subscribe())
+        .filter_map(|r| r.ok().map(|id| Ok(Event::default().data(id))));
+    Sse::new(stream).keep_alive(KeepAlive::default())
 }
 
 /// True when `host` (a raw `Host` header) matches one of `allowed`. Each entry
@@ -4210,6 +4263,10 @@ pub async fn run_http(
     let studio = std::sync::Arc::new(std::sync::Mutex::new(Studio::new()));
     // One recorder shared across sessions so every call lands in one recipe.
     let recorder = record.map(Recorder::new);
+    // Doc-change bus: every session's Atelier sends the touched doc_id here, the
+    // live `/gallery/events` SSE stream fans it out to browsers. Lagging/closed
+    // receivers are dropped silently (send errors ignored).
+    let (change_tx, _) = tokio::sync::broadcast::channel::<String>(256);
 
     let mut config = StreamableHttpServerConfig::default();
     for h in allowed_hosts {
@@ -4223,9 +4280,11 @@ pub async fn run_http(
     let factory = {
         let studio = studio.clone();
         let recorder = recorder.clone();
+        let change_tx = change_tx.clone();
         move || {
             let mut atelier = Atelier::with_studio(studio.clone());
             atelier.recorder = recorder.clone();
+            atelier.change_tx = Some(change_tx.clone());
             Ok(atelier)
         }
     };
@@ -4248,6 +4307,13 @@ pub async fn run_http(
         .route(
             "/gallery/{id}/render.png",
             axum::routing::get(gallery_render),
+        )
+        .route(
+            "/gallery/events",
+            axum::routing::get({
+                let change_tx = change_tx.clone();
+                move || gallery_events(change_tx.clone())
+            }),
         )
         .with_state(studio.clone())
         .layer(axum::middleware::from_fn(move |req, next| {
