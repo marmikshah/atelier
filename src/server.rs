@@ -3746,6 +3746,188 @@ setInterval(load, 10000);
 </body>
 </html>"#;
 
+/// The native interactive playground: a self-contained page that speaks MCP to
+/// `/mcp` (the same endpoint clients use) — auto-builds a form per tool from its
+/// JSON schema, runs it, shows the inline image + JSON result, and renders the
+/// live canvas. No Node, no external assets.
+const PLAYGROUND_HTML: &str = r##"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>atelier playground</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: grid; grid-template-columns: 240px 1fr 1fr;
+         background: #14161a; color: #e6e8ec; overflow: hidden;
+         font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .col { height: 100vh; overflow-y: auto; padding: .75rem; border-right: 1px solid #2a2e36; }
+  h1 { font-size: 1rem; margin: 0 0 .5rem; }
+  h2 { font-size: .85rem; color: #8b919c; margin: 0 0 .5rem; text-transform: uppercase; letter-spacing: .05em; }
+  input, textarea, select, button { font: inherit; }
+  #filter { width: 100%; padding: .4rem; margin-bottom: .5rem; background: #0c0d10;
+            border: 1px solid #2a2e36; border-radius: 5px; color: #e6e8ec; }
+  .tool { display: block; width: 100%; text-align: left; padding: .35rem .5rem; margin: 1px 0;
+          background: none; border: none; border-radius: 5px; color: #c9cdd4; cursor: pointer; word-break: break-all; }
+  .tool:hover { background: #1d2026; }
+  .tool.sel { background: #2a3550; color: #fff; }
+  .field { margin: .5rem 0; }
+  .field label { display: block; color: #aeb3bd; margin-bottom: .15rem; }
+  .field .req { color: #e0a0a0; }
+  .field .desc { color: #6f7681; font-size: 11px; margin-bottom: .2rem; }
+  .field input[type=text], .field input[type=number], .field textarea, .field select {
+    width: 100%; padding: .35rem; background: #0c0d10; border: 1px solid #2a2e36;
+    border-radius: 5px; color: #e6e8ec; }
+  .field textarea { min-height: 3rem; resize: vertical; }
+  #run { margin-top: .6rem; padding: .5rem 1rem; background: #2f6f4f; color: #fff;
+         border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+  #run:hover { background: #3a8a62; }
+  #status { margin-left: .6rem; color: #8b919c; }
+  #result img, #canvas { max-width: 100%; image-rendering: pixelated; background: #0c0d10;
+                         border: 1px solid #2a2e36; border-radius: 6px; display: block; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #0c0d10; border: 1px solid #2a2e36;
+        border-radius: 6px; padding: .5rem; max-height: 40vh; overflow: auto; color: #c9cdd4; }
+  .err { color: #e0a0a0; }
+</style>
+</head>
+<body>
+<div class="col" id="left">
+  <h1>atelier</h1>
+  <input id="filter" placeholder="filter tools...">
+  <div id="tools"></div>
+</div>
+<div class="col" id="mid">
+  <h2 id="toolName">pick a tool</h2>
+  <div id="toolDesc" class="desc" style="color:#8b919c;margin-bottom:.5rem"></div>
+  <form id="form" onsubmit="return false"></form>
+  <button id="run" hidden>Run</button><span id="status"></span>
+</div>
+<div class="col" id="right" style="border-right:none">
+  <h2>canvas</h2>
+  <select id="docsel" style="width:100%;padding:.35rem;background:#0c0d10;border:1px solid #2a2e36;border-radius:5px;color:#e6e8ec;margin-bottom:.5rem"></select>
+  <img id="canvas" alt="">
+  <h2 style="margin-top:1rem">result</h2>
+  <div id="result"></div>
+</div>
+<script>
+let sessionId = null, rpcId = 0, tools = [], current = null;
+async function rpc(method, params, notify) {
+  const body = notify ? {jsonrpc:"2.0",method,params} : {jsonrpc:"2.0",id:++rpcId,method,params};
+  const headers = {"Content-Type":"application/json","Accept":"application/json, text/event-stream"};
+  if (sessionId) headers["Mcp-Session-Id"] = sessionId;
+  const res = await fetch("/mcp", {method:"POST",headers,body:JSON.stringify(body)});
+  const sid = res.headers.get("mcp-session-id"); if (sid) sessionId = sid;
+  if (notify) return null;
+  const ct = res.headers.get("content-type") || "";
+  const text = await res.text();
+  let msg;
+  if (ct.includes("text/event-stream")) {
+    for (const line of text.split(/\r?\n/)) {
+      if (line.startsWith("data:")) { try { const o = JSON.parse(line.slice(5).trim()); if (o.result || o.error) msg = o; } catch(e){} }
+    }
+  } else { try { msg = JSON.parse(text); } catch(e){} }
+  if (!msg) throw new Error("no MCP response");
+  if (msg.error) throw new Error(msg.error.message || JSON.stringify(msg.error));
+  return msg.result;
+}
+function schemaType(p) { let t = p.type; if (Array.isArray(t)) t = t.find(x => x !== "null") || "string"; return t; }
+function renderTools(filter) {
+  const box = document.getElementById("tools"); box.innerHTML = "";
+  for (const t of tools) {
+    if (filter && !t.name.includes(filter)) continue;
+    const b = document.createElement("button");
+    b.className = "tool" + (current && current.name === t.name ? " sel" : "");
+    b.textContent = t.name;
+    b.onclick = () => selectTool(t);
+    box.appendChild(b);
+  }
+}
+function selectTool(t) {
+  current = t;
+  document.getElementById("toolName").textContent = t.name;
+  document.getElementById("toolDesc").textContent = t.description || "";
+  const form = document.getElementById("form"); form.innerHTML = "";
+  const props = (t.inputSchema && t.inputSchema.properties) || {};
+  const req = (t.inputSchema && t.inputSchema.required) || [];
+  for (const [name, p] of Object.entries(props)) {
+    const ty = schemaType(p);
+    const wrap = document.createElement("div"); wrap.className = "field";
+    const isReq = req.includes(name);
+    wrap.innerHTML = `<label>${name}${isReq?' <span class="req">*</span>':''} <span style="color:#6f7681">(${ty})</span></label>` +
+      (p.description?`<div class="desc">${p.description.replace(/</g,'&lt;')}</div>`:'');
+    let inp;
+    if (ty === "boolean") { inp = document.createElement("input"); inp.type = "checkbox"; }
+    else if (ty === "integer" || ty === "number") { inp = document.createElement("input"); inp.type = "number"; if (ty==="number") inp.step="any"; }
+    else if (ty === "array" || ty === "object") { inp = document.createElement("textarea"); inp.placeholder = ty==="array"?'[ ... ] JSON':'{ ... } JSON'; }
+    else { inp = document.createElement("input"); inp.type = "text"; }
+    inp.dataset.name = name; inp.dataset.ty = ty; inp.dataset.req = isReq;
+    if (name === "doc_id") { const sel = document.getElementById("docsel"); if (sel.value) inp.value = sel.value; }
+    wrap.appendChild(inp); form.appendChild(wrap);
+  }
+  renderTools(document.getElementById("filter").value);
+  document.getElementById("run").hidden = false;
+}
+function collectArgs() {
+  const args = {};
+  for (const inp of document.querySelectorAll("#form [data-name]")) {
+    const { name, ty, req } = inp.dataset;
+    if (ty === "boolean") { if (inp.checked) args[name] = true; continue; }
+    const v = inp.value.trim();
+    if (v === "") { if (req === "true") throw new Error("missing required: " + name); continue; }
+    if (ty === "integer") args[name] = parseInt(v, 10);
+    else if (ty === "number") args[name] = parseFloat(v);
+    else if (ty === "array" || ty === "object") args[name] = JSON.parse(v);
+    else args[name] = v;
+  }
+  return args;
+}
+async function runTool() {
+  if (!current) return;
+  const status = document.getElementById("status"); const out = document.getElementById("result");
+  status.textContent = "running..."; status.className = "";
+  let args;
+  try { args = collectArgs(); } catch (e) { status.textContent = e.message; status.className = "err"; return; }
+  try {
+    const r = await rpc("tools/call", {name: current.name, arguments: args});
+    out.innerHTML = "";
+    for (const c of (r.content || [])) {
+      if (c.type === "image" && c.data) { const im = document.createElement("img"); im.src = `data:${c.mimeType||'image/png'};base64,${c.data}`; out.appendChild(im); }
+      else if (c.type === "text") { const pre = document.createElement("pre"); pre.textContent = c.text; if (r.isError) pre.className="err"; out.appendChild(pre); }
+    }
+    status.textContent = r.isError ? "error" : "ok"; status.className = r.isError ? "err" : "";
+    await loadDocs(); if (args.doc_id) showDoc(args.doc_id);
+  } catch (e) { status.textContent = e.message; status.className = "err"; }
+}
+function showDoc(id) {
+  const sel = document.getElementById("docsel"); if (id) sel.value = id;
+  const cur = sel.value; if (!cur) return;
+  document.getElementById("canvas").src = `/gallery/${encodeURIComponent(cur)}/render.png?scale=8&t=${Date.now()}`;
+}
+async function loadDocs() {
+  let data; try { data = await (await fetch("/gallery/docs")).json(); } catch(e){ return; }
+  const sel = document.getElementById("docsel"); const keep = sel.value;
+  sel.innerHTML = "<option value=''>(pick a doc)</option>";
+  for (const d of (data.documents||[])) { const o = document.createElement("option"); o.value = d.id; o.textContent = `${d.id} (${d.w}x${d.h})`; sel.appendChild(o); }
+  if (keep) sel.value = keep;
+}
+document.getElementById("filter").oninput = e => renderTools(e.target.value);
+document.getElementById("run").onclick = runTool;
+document.getElementById("docsel").onchange = () => showDoc();
+(async () => {
+  try {
+    await rpc("initialize", {protocolVersion:"2025-06-18", capabilities:{}, clientInfo:{name:"atelier-playground",version:"1"}});
+    await rpc("notifications/initialized", {}, true);
+    tools = ((await rpc("tools/list", {})).tools || []).sort((a,b)=>a.name.localeCompare(b.name));
+    renderTools("");
+    await loadDocs();
+    setInterval(() => showDoc(), 2500);
+  } catch (e) { document.getElementById("tools").innerHTML = `<span class="err">connect failed: ${e.message}</span>`; }
+})();
+</script>
+</body>
+</html>"##;
+
 /// Query params for the gallery render route (`?frame=0&scale=4`).
 #[derive(Deserialize)]
 struct GalleryRender {
@@ -3860,6 +4042,10 @@ pub async fn run_http(
             "/gallery",
             axum::routing::get(|| async { axum::response::Html(GALLERY_HTML) }),
         )
+        .route(
+            "/playground",
+            axum::routing::get(|| async { axum::response::Html(PLAYGROUND_HTML) }),
+        )
         .route("/gallery/docs", axum::routing::get(gallery_docs))
         .route(
             "/gallery/{id}/render.png",
@@ -3877,10 +4063,7 @@ pub async fn run_http(
     let local = listener.local_addr()?;
     eprintln!("atelier MCP listening on http://{local}/mcp");
     eprintln!("atelier gallery at http://{local}/gallery");
-    eprintln!(
-        "try the tools in a window: npx @modelcontextprotocol/inspector \
-         (transport: Streamable HTTP, URL: http://{local}/mcp)"
-    );
+    eprintln!("atelier playground (try the tools in a window) at http://{local}/playground");
     axum::serve(listener, router)
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;
