@@ -52,7 +52,9 @@ rewrite the art — you are the reviewer, not the designer.
    - animation → `doc_anim_audit` (`seam` · `spacing` · `arc` · `timing`),
      `doc_contact_sheet onion=true`, `doc_frame_diff`
    - reference-built art (doc_info shows a `reference`) → `doc_ref_compare`
-     is MANDATORY: report iou / mean_delta / worst_cells alongside the rest.
+     is MANDATORY: report iou / mean_delta / worst_cells alongside the rest;
+     once iou ≥ 0.8, `doc_diff_map` names the worst individual pixels + fix
+     directions for the last 5%.
 4. **Verdict per axis** (ship / fix / blocker) with the *evidence* (the number,
    the cell coords) — not vibes.
 
@@ -77,7 +79,7 @@ One line per finding, machine-followable:
   one step too bright). Report ALL severities — nits included, always.
 - Every finding names the fixing tool: off-palette → `doc_snap_palette`;
   jaggies → `doc_smooth_edges`; flat/pillow → `doc_relight`; muddy ramp →
-  `doc_make_perceptual_ramp`; stray pixels → `doc_pencil` erase; uneven motion
+  `doc_palette`; stray pixels → `doc_pencil` erase; uneven motion
   → `doc_keyframe_transform` / re-pose; uniform timing →
   `doc_set_frame_duration`.
 - End with a verdict: **SHIP** (nothing above nit and nits are taste calls) or

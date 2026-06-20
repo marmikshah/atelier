@@ -54,9 +54,12 @@ deterministic.
   swaps for recolour variants, and the procedural/critique leverage above.
 - **Built for agents** — MCP resources (browse documents + renders), packaged
   prompts (sprite / walk-cycle / tile workflows), a session recorder that turns a
-  live session into a replayable recipe, and a live `/gallery` web view.
+  live session into a replayable recipe, a live `/gallery` web view, and an
+  interactive `/playground` — run any tool from an auto-built form, or draw with
+  the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-The full tool surface (102 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
+The full tool surface (104 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
+release notes live in [CHANGELOG.md](CHANGELOG.md).
 
 ## Quickstart
 
@@ -78,7 +81,7 @@ art — *"draw me a blinking cat sprite and export it as a GIF"*. The agent driv
 the loop:
 
 ```
-doc_create → paint → doc_render (look!) → fix → doc_export_gif
+doc_create → paint → doc_render (look!) → fix → doc_export_anim
 ```
 
 Documents live under `~/.atelier` (override with `ATELIER_HOME`).
@@ -87,7 +90,7 @@ Documents live under `~/.atelier` (override with `ATELIER_HOME`).
 
 ```sh
 atelier                       # stdio MCP server (default — the client spawns it)
-atelier --http 0.0.0.0:8765   # streamable HTTP at /mcp + a live /gallery web view
+atelier --http 0.0.0.0:8765   # streamable HTTP at /mcp + live /gallery + /playground
 make daemon                   # background HTTP server via launchd / systemd --user
 ```
 

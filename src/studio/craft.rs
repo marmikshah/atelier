@@ -4,7 +4,7 @@
 //! let the near-blind agent actually SEE
 //! (`look`, `select_render`), work without fear (`checkpoint`), edit structure
 //! (`layer_ops`, `transform_cel`), and reach perceptual colour & master finish
-//! (`make_perceptual_ramp`, `snap_palette`, `smooth_edges`, `select_wand`,
+//! (`palette`, `snap_palette`, `smooth_edges`, `select_wand`,
 //! `critique`). Image-returning methods hand back raw PNG bytes; the server
 //! wraps them as inline MCP image content so the pixels arrive in the same turn.
 
