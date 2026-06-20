@@ -2162,7 +2162,7 @@ impl Document {
         let op = |x: i32, y: i32| {
             x >= 0 && y >= 0 && x < w && y < h && orig.get_pixel(x as u32, y as u32).0[3] > 0
         };
-        let r = width.max(1);
+        let r = width.clamp(1, w.max(h).max(1));
         let az = az_deg.to_radians();
         let (lx, ly) = (az.cos(), az.sin());
         let sign = if dark { -1.0 } else { 1.0 };
@@ -2172,30 +2172,49 @@ impl Document {
                 if !op(x, y) {
                     continue;
                 }
-                // Outward normal ≈ sum of unit vectors toward nearby empty pixels.
+                // Outward normal ≈ distance-weighted sum of vectors toward nearby
+                // EMPTY (in-canvas transparent) pixels. Out-of-bounds counts as
+                // solid, so the canvas border is not mistaken for a silhouette edge.
                 let (mut sx, mut sy) = (0f32, 0f32);
                 for dy in -r..=r {
                     for dx in -r..=r {
-                        if (dx == 0 && dy == 0) || op(x + dx, y + dy) {
+                        if dx == 0 && dy == 0 {
                             continue;
                         }
-                        let len = ((dx * dx + dy * dy) as f32).sqrt();
-                        sx += dx as f32 / len;
-                        sy += dy as f32 / len;
+                        let (nx, ny) = (x + dx, y + dy);
+                        let empty = nx >= 0
+                            && ny >= 0
+                            && nx < w
+                            && ny < h
+                            && orig.get_pixel(nx as u32, ny as u32).0[3] == 0;
+                        if !empty {
+                            continue;
+                        }
+                        let d2 = (dx * dx + dy * dy) as f32; // weight ~ 1/len (closer empties dominate)
+                        sx += dx as f32 / d2;
+                        sy += dy as f32 / d2;
                     }
                 }
                 let mag = (sx * sx + sy * sy).sqrt();
-                if mag < 1e-3 {
+                if mag < 1e-4 {
                     continue; // interior pixel, no edge nearby
                 }
                 let facing = sign * (sx / mag * lx + sy / mag * ly);
                 if facing <= 0.0 {
                     continue;
                 }
-                if facing.powf(falloff.max(0.1)) < 0.15 {
+                // Composite by facing strength (a real falloff, never punches a
+                // hole) instead of a hard binary stamp.
+                let strength = facing.powf(falloff.max(0.1));
+                if strength < 0.06 {
                     continue;
                 }
-                img.put_pixel(x as u32, y as u32, Rgba(color));
+                let base = orig.get_pixel(x as u32, y as u32).0;
+                let a = ((color[3] as f32 / 255.0) * strength * 255.0)
+                    .round()
+                    .clamp(0.0, 255.0) as u8;
+                let px = raster::over(base, [color[0], color[1], color[2], a]);
+                img.put_pixel(x as u32, y as u32, Rgba(px));
                 changed += 1;
             }
         }
@@ -4784,14 +4803,14 @@ mod tests {
         let opaque = |x: i32| d.get_pixel(0, 0, x, 8).unwrap()[3] > 0;
         let rmost = (0..16).rev().find(|&x| opaque(x)).unwrap();
         let lmost = (0..16).find(|&x| opaque(x)).unwrap();
-        assert_eq!(
-            d.get_pixel(0, 0, rmost, 8).unwrap(),
-            [255, 255, 255, 255],
-            "right (light-facing) edge should be rim-lit"
+        // Right (light-facing) edge lightens toward white; left edge untouched.
+        assert!(
+            d.get_pixel(0, 0, rmost, 8).unwrap()[0] > 80,
+            "right (light-facing) edge should be rim-lit (lighter than base 80)"
         );
-        assert_ne!(
+        assert_eq!(
             d.get_pixel(0, 0, lmost, 8).unwrap(),
-            [255, 255, 255, 255],
+            [80, 80, 80, 255],
             "left (away) edge should NOT be rim-lit"
         );
     }

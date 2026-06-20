@@ -3071,6 +3071,13 @@ impl Atelier {
     )]
     async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
         let studio = self.studio();
+        if let Some(m) = p.alpha.as_deref() {
+            if !matches!(m, "preserve" | "opaque" | "flatten") {
+                return res(Err(format!(
+                    "unknown alpha mode '{m}' — use preserve | opaque | flatten"
+                )));
+            }
+        }
         let alpha = alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref());
         let r = studio.snap_palette(
             &p.doc_id,
