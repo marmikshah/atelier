@@ -32,10 +32,10 @@
 by agents through the MCP tools. No hand-editing, no image imports.</em></p>
 
 <p align="center">
-  <img src="docs/style-bakeoff.png" width="760" alt="the same wizard drawn in five artist styles: minimal, 8-bit, chibi, painterly, hi-bit">
+  <img src="docs/style-bakeoff.png" width="860" alt="the same wizard drawn in six artist styles: minimal, 8-bit, deliberate, chibi, painterly, hi-bit">
 </p>
 
-<p align="center"><em>One subject, five artist styles — each a separate skill
+<p align="center"><em>One subject, six artist styles — each a separate skill
 (<code>.claude/skills/art-*</code>) driving the same decompose-and-build method,
 then sharpened by a reviewer-agent feedback loop.</em></p>
 
