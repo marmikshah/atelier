@@ -2140,6 +2140,82 @@ mod tests {
     }
 
     #[test]
+    fn batch_gradient_snaps_on_palette_like_standalone() {
+        // Parity fix: the batch gradient op used to skip the on-palette re-snap.
+        let s = studio("batchgrad");
+        s.doc_create("b", 16, 4).unwrap();
+        let pal = vec![[20, 20, 60, 255], [200, 220, 255, 255]];
+        s.doc_set_palette("b", pal.clone()).unwrap();
+        let op = json!({
+            "op": "gradient", "kind": "linear", "x0": 0, "y0": 0, "x1": 15, "y1": 0,
+            "stops": [{"pos": 0.0, "color": [20, 20, 60]}, {"pos": 1.0, "color": [200, 220, 255]}],
+            "dither": "none", "blend": false
+        });
+        s.doc_batch("b", 0, 0, vec![op]).unwrap();
+        let (_d, doc) = s.open("b").unwrap();
+        let mut cols = std::collections::HashSet::new();
+        for x in 0..16 {
+            let p = doc.get_pixel(0, 0, x, 0).unwrap();
+            if p[3] > 0 {
+                cols.insert(p);
+            }
+        }
+        assert!(
+            cols.iter().all(|c| pal.contains(c)),
+            "batch gradient left off-palette: {cols:?}"
+        );
+    }
+
+    #[test]
+    fn palette_mono_and_schemes() {
+        let s = studio("palette");
+        let mono = s
+            .palette(
+                [150, 90, 70, 255],
+                "mono",
+                5,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None,
+            )
+            .unwrap();
+        assert_eq!(mono["ramps"].as_array().unwrap().len(), 1);
+        assert_eq!(mono["count"], 5);
+        assert_eq!(mono["validation"]["monotonic_lightness"], true);
+        let tri = s
+            .palette(
+                [150, 90, 70, 255],
+                "triadic",
+                4,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None,
+            )
+            .unwrap();
+        assert_eq!(tri["ramps"].as_array().unwrap().len(), 3);
+        assert_eq!(tri["count"], 12);
+        assert!(s
+            .palette(
+                [1, 2, 3, 255],
+                "bogus",
+                5,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None
+            )
+            .is_err());
+    }
+
+    #[test]
     fn get_pixel_none_reads_flattened_composite() {
         let s = studio("getpix");
         s.doc_create("g", 4, 4).unwrap();
