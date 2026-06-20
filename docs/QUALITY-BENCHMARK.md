@@ -46,7 +46,7 @@ reproducible, and it runs in CI as a regression guard.
   has sampling variance) — that's the separate end-to-end eval, still open.
 - The atelier metrics (palette discipline, AA, value steps, ramp evenness)
   measure **craft discipline**, not beauty. The perceptual "last 5%" is what
-  `doc_diff_map` (shipped) and a vision judge (deferred `doc_critique_vision`)
-  address.
+  `doc_diff_map` (vs a reference) and `doc_critique_vision` (a host-run vision
+  judge, for free-form art) address.
 - New benchmark rows are cheap to add: pick a capability, draw old-vs-new, score
   a metric, assert new > old.
