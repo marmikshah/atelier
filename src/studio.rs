@@ -2236,6 +2236,232 @@ mod tests {
         );
     }
 
+    // Deterministic v1.1.0 -> v1.2.0 quality benchmark: the OLD way to make each
+    // thing (primitives that still exist) vs the NEW tool, scored on objective
+    // atelier metrics. No agent, no randomness — a reproducible regression guard.
+    // Run `cargo test --release quality_benchmark -- --nocapture` for the table.
+    #[test]
+    fn quality_benchmark() {
+        let s = studio("bench");
+        let distinct = |id: &str, w: u32, h: u32| -> usize {
+            let (_d, doc) = s.open(id).unwrap();
+            let mut set = std::collections::HashSet::new();
+            for y in 0..h as i32 {
+                for x in 0..w as i32 {
+                    let p = doc.get_pixel(0, 0, x, y).unwrap();
+                    if p[3] > 0 {
+                        set.insert(p);
+                    }
+                }
+            }
+            set.len()
+        };
+        let aa_count = |id: &str, w: u32, h: u32| -> usize {
+            let (_d, doc) = s.open(id).unwrap();
+            (0..h as i32)
+                .flat_map(|y| (0..w as i32).map(move |x| (x, y)))
+                .filter(|&(x, y)| {
+                    let a = doc.get_pixel(0, 0, x, y).unwrap()[3];
+                    a > 0 && a < 255
+                })
+                .count()
+        };
+        let col_h = |id: &str, x: i32, h: u32| -> usize {
+            let (_d, doc) = s.open(id).unwrap();
+            (0..h as i32)
+                .filter(|&y| doc.get_pixel(0, 0, x, y).unwrap()[3] > 0)
+                .count()
+        };
+
+        // 1+2 tapered stroke: tip width + AA — old uniform polyline vs doc_stroke.
+        s.doc_create("b-strk-old", 48, 16).unwrap();
+        s.doc_polyline(
+            "b-strk-old",
+            0,
+            0,
+            vec![(4, 8), (16, 4), (32, 4), (44, 8)],
+            [255, 255, 255, 255],
+            3,
+            false,
+        )
+        .unwrap();
+        s.doc_create("b-strk-new", 48, 16).unwrap();
+        s.doc_stroke(
+            "b-strk-new",
+            0,
+            0,
+            vec![(4, 8, 1), (16, 4, 6), (32, 4, 6), (44, 8, 1)],
+            [255, 255, 255, 255],
+            true,
+            false,
+        )
+        .unwrap();
+        let (tip_old, tip_new) = (col_h("b-strk-old", 44, 16), col_h("b-strk-new", 44, 16));
+        let (aa_old, aa_new) = (
+            aa_count("b-strk-old", 48, 16),
+            aa_count("b-strk-new", 48, 16),
+        );
+
+        // 3 FX glow palette discipline — snap off (old) vs on (new) on 8 colours.
+        let pal8: Vec<[u8; 4]> = (0..8)
+            .map(|i| [(i * 32) as u8, (224 - i * 24) as u8, 128, 255])
+            .collect();
+        for (id, snap) in [
+            ("b-glow-old", None),
+            ("b-glow-new", Some(crate::document::AlphaSnap::Opaque(64))),
+        ] {
+            s.doc_create(id, 24, 24).unwrap();
+            s.doc_set_palette(id, pal8.clone()).unwrap();
+            s.doc_ellipse(id, 0, 0, 12, 12, 6, 6, [255, 224, 128, 255], true)
+                .unwrap();
+            s.doc_glow(id, 0, 0, Some([128, 200, 255, 255]), 4, 200, "screen", snap)
+                .unwrap();
+        }
+        let (glow_old, glow_new) = (
+            distinct("b-glow-old", 24, 24),
+            distinct("b-glow-new", 24, 24),
+        );
+
+        // 4 lit form value steps — flat fill (old) vs doc_form + doc_rim_light (new).
+        let ramp5 = vec![
+            [20, 15, 50, 255],
+            [60, 45, 100, 255],
+            [110, 80, 160, 255],
+            [165, 135, 205, 255],
+            [210, 190, 230, 255],
+        ];
+        for id in ["b-form-old", "b-form-new"] {
+            s.doc_create(id, 32, 32).unwrap();
+            s.doc_set_palette(id, ramp5.clone()).unwrap();
+            s.doc_ellipse(id, 0, 0, 16, 16, 12, 12, [110, 80, 160, 255], true)
+                .unwrap();
+        }
+        s.doc_form(
+            "b-form-new",
+            0,
+            0,
+            "top-left",
+            "sphere",
+            None,
+            Some(ramp5.clone()),
+            1.0,
+        )
+        .unwrap();
+        s.doc_rim_light(
+            "b-form-new",
+            0,
+            0,
+            [210, 190, 230, 255],
+            315.0,
+            2,
+            1.5,
+            false,
+            true,
+        )
+        .unwrap();
+        let (form_old, form_new) = (
+            distinct("b-form-old", 32, 32),
+            distinct("b-form-new", 32, 32),
+        );
+
+        // 5 ramp perceptual evenness — naive RGB lerp (old) vs OKLCh doc_palette.
+        let lerp = |a: u8, b: u8, t: f32| (a as f32 + (b as f32 - a as f32) * t).round() as u8;
+        let (lo, hi) = ([18u8, 12, 43], [208u8, 187, 228]);
+        let old_ramp: Vec<[u8; 4]> = (0..5)
+            .map(|i| {
+                let t = i as f32 / 4.0;
+                [
+                    lerp(lo[0], hi[0], t),
+                    lerp(lo[1], hi[1], t),
+                    lerp(lo[2], hi[2], t),
+                    255,
+                ]
+            })
+            .collect();
+        let np = s
+            .palette(
+                [110, 80, 165, 255],
+                "mono",
+                5,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None,
+            )
+            .unwrap();
+        let new_ramp: Vec<[u8; 4]> = np["ramps"][0]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|c| {
+                let a = c.as_array().unwrap();
+                [
+                    a[0].as_i64().unwrap() as u8,
+                    a[1].as_i64().unwrap() as u8,
+                    a[2].as_i64().unwrap() as u8,
+                    255,
+                ]
+            })
+            .collect();
+        let l_spread = |ramp: &[[u8; 4]]| -> f32 {
+            let ls: Vec<f32> = ramp
+                .iter()
+                .map(|c| crate::raster::srgb_to_oklab(*c).0)
+                .collect();
+            let steps: Vec<f32> = ls.windows(2).map(|w| w[1] - w[0]).collect();
+            steps.iter().cloned().fold(f32::MIN, f32::max)
+                - steps.iter().cloned().fold(f32::MAX, f32::min)
+        };
+        let (ramp_old, ramp_new) = (l_spread(&old_ramp), l_spread(&new_ramp));
+
+        println!("\n=== atelier quality benchmark (old method -> new tool) ===");
+        println!("{:<34}{:>9}{:>9}", "capability / metric", "OLD", "NEW");
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "slash tip width px (lower=tapered)", tip_old, tip_new
+        );
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "stroke AA pixels (higher=smooth)", aa_old, aa_new
+        );
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "glow distinct colours (lower=crisp)", glow_old, glow_new
+        );
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "lit-form value steps (higher=form)", form_old, form_new
+        );
+        println!(
+            "{:<34}{:>9.3}{:>9.3}",
+            "ramp L-step spread (lower=even)", ramp_old, ramp_new
+        );
+
+        // Regression guard: the new path must win on every axis.
+        assert!(
+            tip_new < tip_old,
+            "stroke should taper thinner: {tip_old} -> {tip_new}"
+        );
+        assert!(
+            aa_new > aa_old,
+            "stroke should add AA: {aa_old} -> {aa_new}"
+        );
+        assert!(
+            glow_new < glow_old && glow_new <= 8,
+            "glow should stay on-palette: {glow_old} -> {glow_new}"
+        );
+        assert!(
+            form_new > form_old,
+            "form+rim should add value steps: {form_old} -> {form_new}"
+        );
+        assert!(
+            ramp_new < ramp_old,
+            "OKLCh ramp should be more even than RGB lerp: {ramp_old} -> {ramp_new}"
+        );
+    }
+
     fn humanoid_joints() -> std::collections::HashMap<String, (i32, i32)> {
         [
             ("head", (24, 8)),
