@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "dev/**"]
   pull_request:
     branches: [main]
 
@@ -11,6 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: No local machine paths
+        # Fail if a tracked file leaks an absolute local path (home dir, temp,
+        # build workspace). The public repo URL and generic test fixtures are
+        # fine; real per-machine paths are not.
+        run: |
+          if git grep -nI -E '/Users/|/private/(tmp|var)|[A-Za-z]:\\Users\\|/home/[a-z0-9_.-]+/Workspace' \
+              -- . ':!*.lock' ':!.github/workflows/ci.yml'; then
+            echo "::error::Local machine path found in a tracked file — scrub it before pushing."
+            exit 1
+          fi
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
