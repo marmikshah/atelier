@@ -3789,6 +3789,18 @@ const PLAYGROUND_HTML: &str = r##"<!doctype html>
   pre { white-space: pre-wrap; word-break: break-word; background: #0c0d10; border: 1px solid #2a2e36;
         border-radius: 6px; padding: .5rem; max-height: 40vh; overflow: auto; color: #c9cdd4; }
   .err { color: #e0a0a0; }
+  #stage { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
+  #overlay { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair;
+             touch-action: none; image-rendering: pixelated; }
+  #drawbar { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin: .25rem 0 .5rem; }
+  #drawbar button { padding: .3rem .5rem; background: #1d2026; color: #c9cdd4; border: 1px solid #2a2e36;
+                    border-radius: 5px; cursor: pointer; }
+  #drawbar button.sel { background: #2a3550; color: #fff; border-color: #3a4a72; }
+  #drawbar label { color: #aeb3bd; display: flex; align-items: center; gap: .25rem; }
+  #drawbar input[type=number] { width: 3.4rem; padding: .25rem; background: #0c0d10;
+                                border: 1px solid #2a2e36; border-radius: 5px; color: #e6e8ec; }
+  #drawbar input[type=color] { width: 2rem; height: 1.7rem; padding: 0; background: none;
+                               border: 1px solid #2a2e36; border-radius: 5px; }
 </style>
 </head>
 <body>
@@ -3804,14 +3816,29 @@ const PLAYGROUND_HTML: &str = r##"<!doctype html>
   <button id="run" hidden>Run</button><span id="status"></span>
 </div>
 <div class="col" id="right" style="border-right:none">
-  <h2>canvas</h2>
+  <h2>canvas — draw = tool calls</h2>
   <select id="docsel" style="width:100%;padding:.35rem;background:#0c0d10;border:1px solid #2a2e36;border-radius:5px;color:#e6e8ec;margin-bottom:.5rem"></select>
-  <img id="canvas" alt="">
+  <div id="drawbar">
+    <button data-dt="pencil" class="sel">pencil</button>
+    <button data-dt="line">line</button>
+    <button data-dt="rect">rect</button>
+    <button data-dt="ellipse">ellipse</button>
+    <button data-dt="fill">fill</button>
+    <button data-dt="eraser">eraser</button>
+    <label title="rect/ellipse filled"><input type="checkbox" id="fillchk">fill</label>
+    <label>col<input type="color" id="col" value="#ffffff"></label>
+    <label>size<input type="number" id="brush" value="1" min="1"></label>
+    <label>L<input type="number" id="dlayer" value="0" min="0"></label>
+    <label>F<input type="number" id="dframe" value="0" min="0"></label>
+  </div>
+  <div id="stage"><img id="canvas" alt=""><canvas id="overlay"></canvas></div>
+  <div id="drawmsg" class="desc" style="color:#6f7681;margin-top:.25rem"></div>
   <h2 style="margin-top:1rem">result</h2>
   <div id="result"></div>
 </div>
 <script>
 let sessionId = null, rpcId = 0, tools = [], current = null;
+let dims = {}, curId = "", curW = 0, curH = 0, drawTool = "pencil", drawing = false, pts = [], startPt = null;
 async function rpc(method, params, notify) {
   const body = notify ? {jsonrpc:"2.0",method,params} : {jsonrpc:"2.0",id:++rpcId,method,params};
   const headers = {"Content-Type":"application/json","Accept":"application/json, text/event-stream"};
@@ -3902,14 +3929,77 @@ async function runTool() {
 function showDoc(id) {
   const sel = document.getElementById("docsel"); if (id) sel.value = id;
   const cur = sel.value; if (!cur) return;
+  curId = cur;
+  const d = dims[cur]; const ov = document.getElementById("overlay");
+  if (d) { curW = d[0]; curH = d[1]; if (ov.width !== curW || ov.height !== curH) { ov.width = curW; ov.height = curH; } }
   document.getElementById("canvas").src = `/gallery/${encodeURIComponent(cur)}/render.png?scale=8&t=${Date.now()}`;
 }
 async function loadDocs() {
   let data; try { data = await (await fetch("/gallery/docs")).json(); } catch(e){ return; }
   const sel = document.getElementById("docsel"); const keep = sel.value;
   sel.innerHTML = "<option value=''>(pick a doc)</option>";
-  for (const d of (data.documents||[])) { const o = document.createElement("option"); o.value = d.id; o.textContent = `${d.id} (${d.w}x${d.h})`; sel.appendChild(o); }
+  for (const d of (data.documents||[])) { dims[d.id] = [d.w, d.h]; const o = document.createElement("option"); o.value = d.id; o.textContent = `${d.id} (${d.w}x${d.h})`; sel.appendChild(o); }
   if (keep) sel.value = keep;
+}
+const overlay = document.getElementById("overlay"), octx = overlay.getContext("2d");
+function hex2rgba(h){ return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16), 255]; }
+function brushSize(){ return Math.max(1, parseInt(document.getElementById("brush").value,10)||1); }
+function drawColor(){ return drawTool==="eraser" ? [0,0,0,0] : hex2rgba(document.getElementById("col").value); }
+function isFill(){ return document.getElementById("fillchk").checked; }
+function previewCss(){ return drawTool==="eraser" ? "rgba(255,80,80,.5)" : document.getElementById("col").value; }
+function docPt(e){
+  const r = overlay.getBoundingClientRect();
+  const x = Math.floor((e.clientX-r.left)/r.width*curW), y = Math.floor((e.clientY-r.top)/r.height*curH);
+  return [Math.max(0,Math.min(curW-1,x)), Math.max(0,Math.min(curH-1,y))];
+}
+function clearPrev(){ octx.clearRect(0,0,overlay.width,overlay.height); }
+function stampPrev(x,y){ octx.fillStyle = previewCss(); const s = brushSize(), o = (s-1)>>1; octx.fillRect(x-o,y-o,s,s); }
+async function emit(name, args){
+  const msg = document.getElementById("drawmsg");
+  if(!curId){ msg.textContent = "pick a doc first"; return; }
+  args.doc_id = curId; args.layer = parseInt(document.getElementById("dlayer").value,10)||0; args.frame = parseInt(document.getElementById("dframe").value,10)||0;
+  try {
+    const r = await rpc("tools/call", {name, arguments: args});
+    const t = (r.content||[]).find(c => c.type==="text");
+    msg.textContent = (r.isError ? "err: " : name + " ✓  ") + (t ? t.text : ""); msg.className = r.isError ? "err" : "desc";
+  } catch(e){ msg.textContent = "err: " + e.message; msg.className = "err"; }
+  showDoc(curId); loadDocs();
+}
+overlay.addEventListener("pointerdown", e => {
+  if(!curId || !curW){ document.getElementById("drawmsg").textContent = "pick a doc first"; return; }
+  e.preventDefault(); overlay.setPointerCapture(e.pointerId);
+  const p = docPt(e);
+  if(drawTool==="fill"){ emit("doc_fill", {x:p[0], y:p[1], color:drawColor()}); return; }
+  drawing = true; startPt = p; pts = [p]; clearPrev();
+  if(drawTool==="pencil" || drawTool==="eraser") stampPrev(p[0], p[1]);
+});
+overlay.addEventListener("pointermove", e => {
+  if(!drawing) return;
+  const p = docPt(e);
+  if(drawTool==="pencil" || drawTool==="eraser"){
+    const last = pts[pts.length-1];
+    if(p[0]!==last[0] || p[1]!==last[1]){ pts.push(p); stampPrev(p[0], p[1]); }
+    return;
+  }
+  clearPrev(); octx.strokeStyle = previewCss(); octx.fillStyle = previewCss(); octx.lineWidth = 1;
+  const x0=startPt[0], y0=startPt[1], x1=p[0], y1=p[1];
+  if(drawTool==="line"){ octx.beginPath(); octx.moveTo(x0+.5,y0+.5); octx.lineTo(x1+.5,y1+.5); octx.stroke(); }
+  else if(drawTool==="rect"){ const x=Math.min(x0,x1), y=Math.min(y0,y1), w=Math.abs(x1-x0)+1, h=Math.abs(y1-y0)+1; isFill()?octx.fillRect(x,y,w,h):octx.strokeRect(x+.5,y+.5,Math.max(w-1,0),Math.max(h-1,0)); }
+  else if(drawTool==="ellipse"){ const cx=(x0+x1)/2, cy=(y0+y1)/2, rx=Math.max(Math.abs(x1-x0)/2,.5), ry=Math.max(Math.abs(y1-y0)/2,.5); octx.beginPath(); octx.ellipse(cx+.5,cy+.5,rx,ry,0,0,7); isFill()?octx.fill():octx.stroke(); }
+});
+overlay.addEventListener("pointerup", e => {
+  if(!drawing) return; drawing = false;
+  const p = docPt(e), col = drawColor(), sz = brushSize(), fill = isFill();
+  const x0=startPt[0], y0=startPt[1], x1=p[0], y1=p[1];
+  clearPrev();
+  if(drawTool==="pencil" || drawTool==="eraser"){ if(pts.length) emit("doc_pencil", {points:pts, color:col, size:sz}); }
+  else if(drawTool==="line"){ emit("doc_line", {x0,y0,x1,y1, color:col, size:sz}); }
+  else if(drawTool==="rect"){ emit("doc_rect", {x0,y0,x1,y1, color:col, fill, size:sz}); }
+  else if(drawTool==="ellipse"){ const cx=Math.round((x0+x1)/2), cy=Math.round((y0+y1)/2), rx=Math.round(Math.abs(x1-x0)/2), ry=Math.round(Math.abs(y1-y0)/2); if(rx>0||ry>0) emit("doc_ellipse", {cx,cy, rx:Math.max(rx,1), ry:Math.max(ry,1), color:col, fill}); }
+  pts = []; startPt = null;
+});
+for(const b of document.querySelectorAll("#drawbar [data-dt]")){
+  b.onclick = () => { drawTool = b.dataset.dt; for(const x of document.querySelectorAll("#drawbar [data-dt]")) x.classList.toggle("sel", x===b); };
 }
 document.getElementById("filter").oninput = e => renderTools(e.target.value);
 document.getElementById("run").onclick = runTool;
@@ -3921,7 +4011,7 @@ document.getElementById("docsel").onchange = () => showDoc();
     tools = ((await rpc("tools/list", {})).tools || []).sort((a,b)=>a.name.localeCompare(b.name));
     renderTools("");
     await loadDocs();
-    setInterval(() => showDoc(), 2500);
+    setInterval(() => { if (!drawing) showDoc(); }, 2500);
   } catch (e) { document.getElementById("tools").innerHTML = `<span class="err">connect failed: ${e.message}</span>`; }
 })();
 </script>
