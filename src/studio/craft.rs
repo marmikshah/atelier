@@ -1389,45 +1389,7 @@ impl Studio {
         aa: bool,
         snap: bool,
     ) -> Result<Value, String> {
-        const NEED: [&str; 13] = [
-            "head", "shoulder_l", "shoulder_r", "elbow_l", "elbow_r", "hand_l", "hand_r",
-            "hip_l", "hip_r", "knee_l", "knee_r", "foot_l", "foot_r",
-        ];
-        for k in NEED {
-            if !joints.contains_key(k) {
-                return Err(format!(
-                    "figure missing joint '{k}' — required joints: {}",
-                    NEED.join(", ")
-                ));
-            }
-        }
-        let j = |k: &str| joints[k];
-        let mid = |a: (i32, i32), b: (i32, i32)| ((a.0 + b.0) / 2, (a.1 + b.1) / 2);
-        let chest = mid(j("shoulder_l"), j("shoulder_r"));
-        let pelvis = mid(j("hip_l"), j("hip_r"));
-        let lw = limb_w.max(1);
-        let tw = torso_w.max(1);
-        let hr = head_r.max(1);
-        let taper = |w: i32| (w * 7 / 10).max(1);
-        let cap = |a: (i32, i32), w0: i32, b: (i32, i32), w1: i32| {
-            vec![(a.0, a.1, w0), (b.0, b.1, w1)]
-        };
-        // Torso + girdles first, limbs over them, neck, then head on top.
-        let bones: Vec<Vec<(i32, i32, i32)>> = vec![
-            cap(chest, tw, pelvis, (tw * 85 / 100).max(1)), // spine
-            cap(j("shoulder_l"), lw, j("shoulder_r"), lw),  // clavicle (arms stay attached)
-            cap(j("hip_l"), (lw * 11 / 10).max(1), j("hip_r"), (lw * 11 / 10).max(1)), // hips
-            cap(j("shoulder_l"), lw, j("elbow_l"), lw),     // upper arm L
-            cap(j("elbow_l"), lw, j("hand_l"), taper(lw)),  // forearm L
-            cap(j("shoulder_r"), lw, j("elbow_r"), lw),     // upper arm R
-            cap(j("elbow_r"), lw, j("hand_r"), taper(lw)),  // forearm R
-            cap(j("hip_l"), (lw * 12 / 10).max(1), j("knee_l"), lw), // thigh L
-            cap(j("knee_l"), lw, j("foot_l"), taper(lw)),   // shin L
-            cap(j("hip_r"), (lw * 12 / 10).max(1), j("knee_r"), lw), // thigh R
-            cap(j("knee_r"), lw, j("foot_r"), taper(lw)),   // shin R
-            cap(chest, lw, j("head"), lw),                  // neck
-            vec![(j("head").0, j("head").1, hr * 2)],       // head disc (round cap)
-        ];
+        let bones = humanoid_bones(joints, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
         let (dir, mut doc) = self.open(id)?;
         for b in &bones {
             doc.stroke(layer, frame, b, color, aa, false)?;
@@ -1439,6 +1401,157 @@ impl Studio {
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "bones": bones.len()}))
     }
+
+    /// Generate a side-view WALK CYCLE: from a base standing pose (the 13
+    /// humanoid joints) plus gait parameters, compute each frame's joint table —
+    /// feet stride along a gait path (one planted, one swinging, half a cycle
+    /// apart), knees/elbows solved by 2-bone IK from the derived bone lengths,
+    /// arms counter-swing the legs, the body bobs — then draw each frame with the
+    /// connected-capsule figure and tag the range "walk". The walk is GENERATED
+    /// from joints, not hand-repainted, so limbs never wobble or detach.
+    #[allow(clippy::too_many_arguments)]
+    pub fn walk(
+        &self,
+        id: &str,
+        layer: usize,
+        base: &std::collections::HashMap<String, (i32, i32)>,
+        frames: usize,
+        stride: i32,
+        lift: i32,
+        bob: i32,
+        arm_swing: i32,
+        color: [u8; 4],
+        limb_w: i32,
+        torso_w: i32,
+        head_r: i32,
+        aa: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        // Validate up front (re-uses the figure joint contract).
+        humanoid_bones(base, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+        let frames = frames.clamp(2, 24);
+        let g = |k: &str| {
+            let v = base[k];
+            (v.0 as f32, v.1 as f32)
+        };
+        let dist = |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
+        // Bone lengths from the base pose (assume left/right symmetric).
+        let l_thigh = dist(g("hip_l"), g("knee_l")).max(2.0);
+        let l_shin = dist(g("knee_l"), g("foot_l")).max(2.0);
+        let l_uarm = dist(g("shoulder_l"), g("elbow_l")).max(2.0);
+        let l_farm = dist(g("elbow_l"), g("hand_l")).max(2.0);
+        let tau = std::f32::consts::TAU;
+        let (dir, mut doc) = self.open(id)?;
+        while doc.meta.frames.len() < frames {
+            doc.add_frame(120, None);
+        }
+        // Per-frame: build the posed joint table, flesh it, draw into frame f.
+        for f in 0..frames {
+            let t = f as f32 / frames as f32;
+            // Body bob: rises on the passing pose, twice per stride.
+            let body_dy = (bob as f32 * (tau * t * 2.0).sin()).round() as i32;
+            let shift = |p: (f32, f32)| (p.0.round() as i32, (p.1 + body_dy as f32).round() as i32);
+            let mut j: std::collections::HashMap<String, (i32, i32)> = std::collections::HashMap::new();
+            // Body/girdle joints just bob.
+            for k in ["head", "shoulder_l", "shoulder_r", "hip_l", "hip_r"] {
+                j.insert(k.to_string(), shift(g(k)));
+            }
+            // Legs: foot strides front/back + lifts on the swing half; knee via IK.
+            for (side, phase) in [("l", t), ("r", t + 0.5)] {
+                let ph = phase.fract();
+                let hip = shift(g(&format!("hip_{side}")));
+                let base_foot = g(&format!("foot_{side}"));
+                let fx = base_foot.0 + (stride as f32 * 0.5) * (tau * ph).cos();
+                let fy = base_foot.1 - (lift as f32) * (tau * ph).sin().max(0.0);
+                let foot = (fx.round() as i32, fy.round() as i32);
+                let knee = raster::solve_ik2(
+                    (hip.0 as f32, hip.1 as f32),
+                    (foot.0 as f32, foot.1 as f32),
+                    l_thigh,
+                    l_shin,
+                    1.0, // knee bends forward (+x)
+                );
+                j.insert(format!("knee_{side}"), (knee.0.round() as i32, knee.1.round() as i32));
+                j.insert(format!("foot_{side}"), foot);
+            }
+            // Arms counter-swing the legs (half-cycle offset); elbow via IK.
+            for (side, phase) in [("l", t + 0.5), ("r", t)] {
+                let ph = phase.fract();
+                let sh = shift(g(&format!("shoulder_{side}")));
+                let base_hand = g(&format!("hand_{side}"));
+                let hx = base_hand.0 + (arm_swing as f32) * (tau * ph).cos();
+                let hand = (hx.round() as i32, base_hand.1.round() as i32 + body_dy);
+                let elbow = raster::solve_ik2(
+                    (sh.0 as f32, sh.1 as f32),
+                    (hand.0 as f32, hand.1 as f32),
+                    l_uarm,
+                    l_farm,
+                    -1.0, // elbow bends backward
+                );
+                j.insert(format!("elbow_{side}"), (elbow.0.round() as i32, elbow.1.round() as i32));
+                j.insert(format!("hand_{side}"), hand);
+            }
+            let bones = humanoid_bones(&j, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+            doc.clear_cel(layer, f);
+            for b in &bones {
+                doc.stroke(layer, f, b, color, aa, false)?;
+            }
+            if snap && !doc.meta.palette.is_empty() {
+                let pal = doc.meta.palette.clone();
+                doc.snap_to_palette(&pal, Some(layer), Some(f), crate::document::AlphaSnap::Preserve);
+            }
+        }
+        if !doc.meta.tags.iter().any(|t| t.name == "walk") {
+            doc.add_tag("walk", 0, frames - 1, "forward")?;
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "frames": frames, "tag": "walk"}))
+    }
+}
+
+/// The humanoid capsule bone list for `figure`/`walk`: validates the 13 required
+/// joints and returns each bone as a width-profiled point chain (drawn via the
+/// `doc_stroke` core). Shared so a posed figure and an animated walk frame flesh
+/// identically.
+/// One bone as a width-profiled point chain `[(x,y,width), ...]` for the stroke core.
+type Bone = Vec<(i32, i32, i32)>;
+
+fn humanoid_bones(
+    joints: &std::collections::HashMap<String, (i32, i32)>,
+    lw: i32,
+    tw: i32,
+    hr: i32,
+) -> Result<Vec<Bone>, String> {
+    const NEED: [&str; 13] = [
+        "head", "shoulder_l", "shoulder_r", "elbow_l", "elbow_r", "hand_l", "hand_r", "hip_l",
+        "hip_r", "knee_l", "knee_r", "foot_l", "foot_r",
+    ];
+    for k in NEED {
+        if !joints.contains_key(k) {
+            return Err(format!("missing joint '{k}' — required joints: {}", NEED.join(", ")));
+        }
+    }
+    let j = |k: &str| joints[k];
+    let mid = |a: (i32, i32), b: (i32, i32)| ((a.0 + b.0) / 2, (a.1 + b.1) / 2);
+    let chest = mid(j("shoulder_l"), j("shoulder_r"));
+    let pelvis = mid(j("hip_l"), j("hip_r"));
+    let taper = |w: i32| (w * 7 / 10).max(1);
+    let cap = |a: (i32, i32), w0: i32, b: (i32, i32), w1: i32| vec![(a.0, a.1, w0), (b.0, b.1, w1)];
+    Ok(vec![
+        cap(chest, tw, pelvis, (tw * 85 / 100).max(1)), // spine
+        cap(j("shoulder_l"), lw, j("shoulder_r"), lw),  // clavicle
+        cap(j("hip_l"), (lw * 11 / 10).max(1), j("hip_r"), (lw * 11 / 10).max(1)), // hips
+        cap(j("shoulder_l"), lw, j("elbow_l"), lw),     // upper arm L
+        cap(j("elbow_l"), lw, j("hand_l"), taper(lw)),  // forearm L
+        cap(j("shoulder_r"), lw, j("elbow_r"), lw),     // upper arm R
+        cap(j("elbow_r"), lw, j("hand_r"), taper(lw)),  // forearm R
+        cap(j("hip_l"), (lw * 12 / 10).max(1), j("knee_l"), lw), // thigh L
+        cap(j("knee_l"), lw, j("foot_l"), taper(lw)),   // shin L
+        cap(j("hip_r"), (lw * 12 / 10).max(1), j("knee_r"), lw), // thigh R
+        cap(j("knee_r"), lw, j("foot_r"), taper(lw)),   // shin R
+        cap(chest, lw, j("head"), lw),                  // neck
+        vec![(j("head").0, j("head").1, hr * 2)],       // head disc
+    ])
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
