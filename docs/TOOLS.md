@@ -97,6 +97,13 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   vertex (which you don't). Re-pose across frames by calling again with new
   joints — the base for non-wobbly animation. `limb_w`/`torso_w`/`head_r` size
   it to the sprite.
+- `doc_walk` — GENERATE a side-view walk cycle from a base standing pose (the
+  same 13 joints): feet stride along a gait path (one planted, one swinging, half
+  a cycle apart), knees/elbows solved by 2-bone IK, arms counter-swing the legs,
+  the body bobs — each frame drawn as the connected-capsule figure, range tagged
+  `walk`. Generated from joints, not hand-painted, so limbs never wobble or
+  detach. Tune `frames`/`stride`/`lift`/`bob`/`arm_swing`; export with
+  `doc_export_gif tag=walk`.
 - `doc_paint_grid` — paint a whole region DECLARATIVELY from a character grid:
   `legend` maps single chars to `[r,g,b(,a)]` colours or integer palette
   indices (palette-true by construction), `rows` are pixel-row strings

@@ -942,6 +942,26 @@ pub fn affine_nn(
     }
 }
 
+/// Two-bone analytic inverse kinematics (law of cosines). Given a `root` joint
+/// (shoulder/hip), an end-effector `target` (hand/foot), and the two bone
+/// lengths `l1` (upper) and `l2` (lower), return the middle joint (elbow/knee)
+/// position. `bend` (+1 / -1) selects which side the joint bends. The target is
+/// clamped to the reachable annulus `[|l1-l2|, l1+l2]` so an out-of-reach foot
+/// just straightens the leg instead of producing NaNs.
+pub fn solve_ik2(root: (f32, f32), target: (f32, f32), l1: f32, l2: f32, bend: f32) -> (f32, f32) {
+    let (dx, dy) = (target.0 - root.0, target.1 - root.1);
+    let dist = (dx * dx + dy * dy).sqrt().max(1e-4);
+    let lo = (l1 - l2).abs() + 1e-3;
+    let hi = (l1 + l2) - 1e-3;
+    let d = dist.clamp(lo, hi);
+    let base = dy.atan2(dx);
+    // interior angle at the root between root->target and the upper bone
+    let cos_t = ((l1 * l1 + d * d - l2 * l2) / (2.0 * l1 * d)).clamp(-1.0, 1.0);
+    let theta = cos_t.acos();
+    let ang = base + bend.signum() * theta;
+    (root.0 + l1 * ang.cos(), root.1 + l1 * ang.sin())
+}
+
 /// Linear interpolation between `a` and `b` by `t`.
 pub fn lerpf(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
@@ -1643,6 +1663,20 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn ik2_keeps_bone_lengths_and_bends() {
+        let (root, target) = ((0.0, 0.0), (6.0, 0.0));
+        let mid = solve_ik2(root, target, 4.0, 4.0, 1.0);
+        let d1 = ((mid.0 - root.0).powi(2) + (mid.1 - root.1).powi(2)).sqrt();
+        let d2 = ((mid.0 - target.0).powi(2) + (mid.1 - target.1).powi(2)).sqrt();
+        assert!((d1 - 4.0).abs() < 0.05, "upper bone length {d1}");
+        assert!((d2 - 4.0).abs() < 0.05, "lower bone length {d2}");
+        assert!(mid.1.abs() > 0.1, "joint should bend off the root-target line");
+        // bend sign flips the joint to the other side
+        let mid2 = solve_ik2(root, target, 4.0, 4.0, -1.0);
+        assert!(mid.1 * mid2.1 < 0.0, "bend +/- should be on opposite sides");
     }
 
     #[test]

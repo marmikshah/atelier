@@ -2135,6 +2135,39 @@ mod tests {
     }
 
     #[test]
+    fn walk_generates_tagged_frames_with_motion() {
+        let s = studio("walk");
+        s.doc_create("w", 48, 48).unwrap();
+        s.walk("w", 0, &humanoid_joints(), 8, 12, 5, 1, 6, [70, 110, 200, 255], 3, 6, 4, false, false)
+            .unwrap();
+        let (_d, doc) = s.open("w").unwrap();
+        assert_eq!(doc.meta.frames.len(), 8);
+        assert!(doc.meta.tags.iter().any(|t| t.name == "walk"), "walk tag missing");
+        // frame 0 vs the half-cycle frame 4 must differ (the legs have swapped).
+        let diff = (0..48)
+            .flat_map(|y| (0..48).map(move |x| (x, y)))
+            .filter(|&(x, y)| doc.get_pixel(0, 0, x, y).unwrap() != doc.get_pixel(0, 4, x, y).unwrap())
+            .count();
+        assert!(diff > 20, "walk should show motion across the cycle, diff={diff}");
+    }
+
+    #[test]
+    #[ignore]
+    fn walk_demo_renders() {
+        let s = studio("walk-demo");
+        s.doc_create("stroll", 48, 48).unwrap();
+        s.doc_set_palette("stroll", vec![[40, 60, 120, 255], [70, 110, 200, 255]])
+            .unwrap();
+        s.walk("stroll", 0, &humanoid_joints(), 8, 13, 5, 1, 7, [70, 110, 200, 255], 3, 7, 4, true, true)
+            .unwrap();
+        for f in [0usize, 2, 4, 6] {
+            s.doc_render("stroll", f, Some(&format!("/tmp/atelier-walk-{f}.png")), Some(6), None, false, 1, None)
+                .unwrap();
+        }
+        println!("wrote /tmp/atelier-walk-0/2/4/6.png");
+    }
+
+    #[test]
     #[ignore]
     fn figure_demo_renders() {
         let s = studio("figure-demo");
