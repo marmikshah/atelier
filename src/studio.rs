@@ -1315,7 +1315,8 @@ impl Studio {
         let (lb, _, _) = crate::raster::oklab_to_oklch(crate::raster::srgb_to_oklab(base));
         let lo = (lb - light_range).max(0.04);
         let hi = (lb + light_range).min(0.97);
-        let ramp = crate::raster::make_ramp_oklch(base, count.max(1), lo, hi, hue_shift, "arc", false);
+        let ramp =
+            crate::raster::make_ramp_oklch(base, count.max(1), lo, hi, hue_shift, "arc", false);
         if let Some(id) = set_doc {
             let (dir, mut doc) = self.open(id)?;
             doc.set_palette(ramp.clone());
@@ -1354,7 +1355,12 @@ impl Studio {
             // locked palette (RGB only — soft falloff alpha is preserved).
             if snap && !d.meta.palette.is_empty() {
                 let pal = d.meta.palette.clone();
-                d.snap_to_palette(&pal, Some(layer), Some(frame), crate::document::AlphaSnap::Preserve);
+                d.snap_to_palette(
+                    &pal,
+                    Some(layer),
+                    Some(frame),
+                    crate::document::AlphaSnap::Preserve,
+                );
             }
             Ok(())
         })
@@ -2051,7 +2057,9 @@ mod tests {
         s.doc_create("c", 8, 8).unwrap();
         assert!(s.doc_add_layer("c", None, 255, "multiply".into()).is_ok());
         assert!(s.doc_add_layer("c", None, 255, "mutiply".into()).is_err()); // typo
-        assert!(s.doc_set_layer("c", 0, None, None, Some("glow".into())).is_err());
+        assert!(s
+            .doc_set_layer("c", 0, None, None, Some("glow".into()))
+            .is_err());
     }
 
     #[test]
@@ -2086,7 +2094,11 @@ mod tests {
         };
         let last = doc.meta.frames.len() - 1;
         assert_eq!(max_alpha(0), 255, "flash frame should be solid");
-        assert!(max_alpha(last) < 200, "rim should have faded out, got {}", max_alpha(last));
+        assert!(
+            max_alpha(last) < 200,
+            "rim should have faded out, got {}",
+            max_alpha(last)
+        );
     }
 
     #[test]
@@ -2097,9 +2109,20 @@ mod tests {
         s.doc_set_palette("g", pal.clone()).unwrap();
         // smooth (none-dither) gradient between the two palette ends, snap default on
         s.doc_gradient(
-            "g", 0, 0, "linear", 0, 0, 15, 0,
+            "g",
+            0,
+            0,
+            "linear",
+            0,
+            0,
+            15,
+            0,
             vec![(0.0, pal[0]), (1.0, pal[1])],
-            "none", 0, None, false, true,
+            "none",
+            0,
+            None,
+            false,
+            true,
         )
         .unwrap();
         let (_d, doc) = s.open("g").unwrap();
@@ -2110,7 +2133,10 @@ mod tests {
                 colors.insert(p);
             }
         }
-        assert!(colors.iter().all(|c| pal.contains(c)), "off-palette: {colors:?}");
+        assert!(
+            colors.iter().all(|c| pal.contains(c)),
+            "off-palette: {colors:?}"
+        );
     }
 
     #[test]
@@ -2118,19 +2144,34 @@ mod tests {
         let s = studio("getpix");
         s.doc_create("g", 4, 4).unwrap();
         s.doc_add_layer("g", None, 255, "normal".into()).unwrap();
-        s.doc_pencil("g", 1, 0, vec![(1, 1)], [10, 20, 30, 255], 1).unwrap();
+        s.doc_pencil("g", 1, 0, vec![(1, 1)], [10, 20, 30, 255], 1)
+            .unwrap();
         // Reading layer 0 alone misses the pixel painted on layer 1.
-        assert_eq!(s.doc_get_pixel("g", Some(0), 0, 1, 1).unwrap()["rgba"], json!([0, 0, 0, 0]));
+        assert_eq!(
+            s.doc_get_pixel("g", Some(0), 0, 1, 1).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
         // Omitting layer reads the visible (flattened) pixel.
-        assert_eq!(s.doc_get_pixel("g", None, 0, 1, 1).unwrap()["rgba"], json!([10, 20, 30, 255]));
+        assert_eq!(
+            s.doc_get_pixel("g", None, 0, 1, 1).unwrap()["rgba"],
+            json!([10, 20, 30, 255])
+        );
     }
 
     fn humanoid_joints() -> std::collections::HashMap<String, (i32, i32)> {
         [
-            ("head", (24, 8)), ("shoulder_l", (20, 16)), ("shoulder_r", (28, 16)),
-            ("elbow_l", (15, 22)), ("elbow_r", (33, 22)), ("hand_l", (12, 14)),
-            ("hand_r", (37, 28)), ("hip_l", (21, 30)), ("hip_r", (27, 30)),
-            ("knee_l", (17, 38)), ("knee_r", (31, 38)), ("foot_l", (14, 46)),
+            ("head", (24, 8)),
+            ("shoulder_l", (20, 16)),
+            ("shoulder_r", (28, 16)),
+            ("elbow_l", (15, 22)),
+            ("elbow_r", (33, 22)),
+            ("hand_l", (12, 14)),
+            ("hand_r", (37, 28)),
+            ("hip_l", (21, 30)),
+            ("hip_r", (27, 30)),
+            ("knee_l", (17, 38)),
+            ("knee_r", (31, 38)),
+            ("foot_l", (14, 46)),
             ("foot_r", (34, 46)),
         ]
         .iter()
@@ -2147,7 +2188,10 @@ mod tests {
             .unwrap();
         // The capsules share joint endpoints, so the whole body is one blob.
         let rep = s.doc_components("f", 0, Some(0), 8, None, 1).unwrap();
-        assert_eq!(rep["count"], 1, "figure should be a single connected silhouette: {rep}");
+        assert_eq!(
+            rep["count"], 1,
+            "figure should be a single connected silhouette: {rep}"
+        );
     }
 
     #[test]
@@ -2156,24 +2200,49 @@ mod tests {
         s.doc_create("f", 48, 48).unwrap();
         let mut j = humanoid_joints();
         j.remove("hand_l");
-        assert!(s.figure("f", 0, 0, &j, [70, 110, 200, 255], 3, 6, 4, false, false).is_err());
+        assert!(s
+            .figure("f", 0, 0, &j, [70, 110, 200, 255], 3, 6, 4, false, false)
+            .is_err());
     }
 
     #[test]
     fn walk_generates_tagged_frames_with_motion() {
         let s = studio("walk");
         s.doc_create("w", 48, 48).unwrap();
-        s.walk("w", 0, &humanoid_joints(), 8, 12, 5, 1, 6, [70, 110, 200, 255], 3, 6, 4, false, false)
-            .unwrap();
+        s.walk(
+            "w",
+            0,
+            &humanoid_joints(),
+            8,
+            12,
+            5,
+            1,
+            6,
+            [70, 110, 200, 255],
+            3,
+            6,
+            4,
+            false,
+            false,
+        )
+        .unwrap();
         let (_d, doc) = s.open("w").unwrap();
         assert_eq!(doc.meta.frames.len(), 8);
-        assert!(doc.meta.tags.iter().any(|t| t.name == "walk"), "walk tag missing");
+        assert!(
+            doc.meta.tags.iter().any(|t| t.name == "walk"),
+            "walk tag missing"
+        );
         // frame 0 vs the half-cycle frame 4 must differ (the legs have swapped).
         let diff = (0..48)
             .flat_map(|y| (0..48).map(move |x| (x, y)))
-            .filter(|&(x, y)| doc.get_pixel(0, 0, x, y).unwrap() != doc.get_pixel(0, 4, x, y).unwrap())
+            .filter(|&(x, y)| {
+                doc.get_pixel(0, 0, x, y).unwrap() != doc.get_pixel(0, 4, x, y).unwrap()
+            })
             .count();
-        assert!(diff > 20, "walk should show motion across the cycle, diff={diff}");
+        assert!(
+            diff > 20,
+            "walk should show motion across the cycle, diff={diff}"
+        );
     }
 
     #[test]
@@ -2183,11 +2252,35 @@ mod tests {
         s.doc_create("stroll", 48, 48).unwrap();
         s.doc_set_palette("stroll", vec![[40, 60, 120, 255], [70, 110, 200, 255]])
             .unwrap();
-        s.walk("stroll", 0, &humanoid_joints(), 8, 13, 5, 1, 7, [70, 110, 200, 255], 3, 7, 4, true, true)
-            .unwrap();
+        s.walk(
+            "stroll",
+            0,
+            &humanoid_joints(),
+            8,
+            13,
+            5,
+            1,
+            7,
+            [70, 110, 200, 255],
+            3,
+            7,
+            4,
+            true,
+            true,
+        )
+        .unwrap();
         for f in [0usize, 2, 4, 6] {
-            s.doc_render("stroll", f, Some(&format!("/tmp/atelier-walk-{f}.png")), Some(6), None, false, 1, None)
-                .unwrap();
+            s.doc_render(
+                "stroll",
+                f,
+                Some(&format!("/tmp/atelier-walk-{f}.png")),
+                Some(6),
+                None,
+                false,
+                1,
+                None,
+            )
+            .unwrap();
         }
         println!("wrote /tmp/atelier-walk-0/2/4/6.png");
     }
@@ -2199,10 +2292,30 @@ mod tests {
         s.doc_create("hero", 48, 48).unwrap();
         s.doc_set_palette("hero", vec![[40, 60, 120, 255], [70, 110, 200, 255]])
             .unwrap();
-        s.figure("hero", 0, 0, &humanoid_joints(), [70, 110, 200, 255], 3, 7, 4, true, true)
-            .unwrap();
-        s.doc_render("hero", 0, Some("/tmp/atelier-demo-figure-hero.png"), Some(6), None, false, 1, None)
-            .unwrap();
+        s.figure(
+            "hero",
+            0,
+            0,
+            &humanoid_joints(),
+            [70, 110, 200, 255],
+            3,
+            7,
+            4,
+            true,
+            true,
+        )
+        .unwrap();
+        s.doc_render(
+            "hero",
+            0,
+            Some("/tmp/atelier-demo-figure-hero.png"),
+            Some(6),
+            None,
+            false,
+            1,
+            None,
+        )
+        .unwrap();
         println!("wrote /tmp/atelier-demo-figure-hero.png");
     }
 
@@ -2217,29 +2330,85 @@ mod tests {
         s.doc_ellipse("sphere", 0, 0, 24, 24, 16, 16, [150, 90, 70, 255], true)
             .unwrap();
         s.relight(
-            "sphere", 0, 0, None, 225.0, 45.0, 1.1, [255, 240, 210], 0.35,
-            [120, 150, 200], 0.4, [255, 255, 255], 0.25, [80, 90, 120], 1.0, None,
+            "sphere",
+            0,
+            0,
+            None,
+            225.0,
+            45.0,
+            1.1,
+            [255, 240, 210],
+            0.35,
+            [120, 150, 200],
+            0.4,
+            [255, 255, 255],
+            0.25,
+            [80, 90, 120],
+            1.0,
+            None,
         )
         .unwrap();
-        s.doc_render("sphere", 0, Some("/tmp/atelier-demo-sphere.png"), Some(6), None, false, 1, None)
-            .unwrap();
+        s.doc_render(
+            "sphere",
+            0,
+            Some("/tmp/atelier-demo-sphere.png"),
+            Some(6),
+            None,
+            false,
+            1,
+            None,
+        )
+        .unwrap();
         // Burst — render a mid frame; should be a faint expanding ring.
         s.doc_create("shock", 32, 32).unwrap();
         s.burst("shock", 0, 16, 16, 5, 14, "ring", [255, 220, 90, 255], None)
             .unwrap();
-        s.doc_render("shock", 3, Some("/tmp/atelier-demo-burst.png"), Some(8), None, false, 1, None)
-            .unwrap();
+        s.doc_render(
+            "shock",
+            3,
+            Some("/tmp/atelier-demo-burst.png"),
+            Some(8),
+            None,
+            false,
+            1,
+            None,
+        )
+        .unwrap();
         // RotSprite rotation — a 2-tone bar rotated 35° should stay crisp and
         // on-palette (no blurred fringe), not shredded.
         s.doc_create("bar", 40, 40).unwrap();
         s.doc_set_palette("bar", vec![[210, 60, 50, 255], [240, 220, 120, 255]])
             .unwrap();
-        s.doc_rect("bar", 0, 0, 8, 17, 31, 22, [210, 60, 50, 255], true, 1).unwrap();
-        s.doc_rect("bar", 0, 0, 8, 17, 31, 19, [240, 220, 120, 255], true, 1).unwrap();
-        s.transform_cel("bar", 0, 0, None, 35.0, 1.0, 1.0, 0.0, 0.0, "rotsprite", true, true)
+        s.doc_rect("bar", 0, 0, 8, 17, 31, 22, [210, 60, 50, 255], true, 1)
             .unwrap();
-        s.doc_render("bar", 0, Some("/tmp/atelier-demo-rotate.png"), Some(7), None, false, 1, None)
+        s.doc_rect("bar", 0, 0, 8, 17, 31, 19, [240, 220, 120, 255], true, 1)
             .unwrap();
+        s.transform_cel(
+            "bar",
+            0,
+            0,
+            None,
+            35.0,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            "rotsprite",
+            true,
+            true,
+        )
+        .unwrap();
+        s.doc_render(
+            "bar",
+            0,
+            Some("/tmp/atelier-demo-rotate.png"),
+            Some(7),
+            None,
+            false,
+            1,
+            None,
+        )
+        .unwrap();
         let (_d, doc) = s.open("bar").unwrap();
         let mut cols = std::collections::HashSet::new();
         for y in 0..40 {
@@ -2266,7 +2435,11 @@ mod tests {
         s.doc_create("arc", 48, 48).unwrap();
         s.doc_set_palette(
             "arc",
-            vec![[255, 255, 255, 255], [120, 220, 255, 255], [40, 130, 220, 255]],
+            vec![
+                [255, 255, 255, 255],
+                [120, 220, 255, 255],
+                [40, 130, 220, 255],
+            ],
         )
         .unwrap();
         // fat in the middle, tapering to 1px points at both tips
@@ -2280,7 +2453,16 @@ mod tests {
         s.doc_stroke("arc", 0, 0, crescent, [120, 220, 255, 255], true, true)
             .unwrap();
         let (_b, _m) = s
-            .doc_render("arc", 0, Some("/tmp/atelier-demo-arc.png"), Some(8), None, false, 1, None)
+            .doc_render(
+                "arc",
+                0,
+                Some("/tmp/atelier-demo-arc.png"),
+                Some(8),
+                None,
+                false,
+                1,
+                None,
+            )
             .unwrap();
 
         // --- B: a stick figure built from CAPSULE LIMBS (connected, tapered)
@@ -2288,19 +2470,28 @@ mod tests {
         s.doc_set_palette("figure", vec![[30, 30, 40, 255], [90, 90, 110, 255]])
             .unwrap();
         let limbs: Vec<Vec<(i32, i32, i32)>> = vec![
-            vec![(24, 12, 7)],                 // head (single round dot)
-            vec![(24, 16, 6), (24, 30, 6)],    // torso
-            vec![(24, 19, 4), (36, 13, 3)],    // sword arm, tapering
-            vec![(24, 20, 4), (13, 26, 3)],    // off arm
-            vec![(24, 30, 5), (16, 44, 3)],    // left leg
-            vec![(24, 30, 5), (33, 44, 3)],    // right leg
+            vec![(24, 12, 7)],              // head (single round dot)
+            vec![(24, 16, 6), (24, 30, 6)], // torso
+            vec![(24, 19, 4), (36, 13, 3)], // sword arm, tapering
+            vec![(24, 20, 4), (13, 26, 3)], // off arm
+            vec![(24, 30, 5), (16, 44, 3)], // left leg
+            vec![(24, 30, 5), (33, 44, 3)], // right leg
         ];
         for l in limbs {
             s.doc_stroke("figure", 0, 0, l, [30, 30, 40, 255], true, true)
                 .unwrap();
         }
-        s.doc_render("figure", 0, Some("/tmp/atelier-demo-figure.png"), Some(8), None, false, 1, None)
-            .unwrap();
+        s.doc_render(
+            "figure",
+            0,
+            Some("/tmp/atelier-demo-figure.png"),
+            Some(8),
+            None,
+            false,
+            1,
+            None,
+        )
+        .unwrap();
 
         // --- C: a glow orb — FX bloom auto-snapped back on-palette (F2)
         s.doc_create("orb", 32, 32).unwrap();
@@ -2324,8 +2515,17 @@ mod tests {
             Some(AlphaSnap::Opaque(64)),
         )
         .unwrap();
-        s.doc_render("orb", 0, Some("/tmp/atelier-demo-orb.png"), Some(8), None, false, 1, None)
-            .unwrap();
+        s.doc_render(
+            "orb",
+            0,
+            Some("/tmp/atelier-demo-orb.png"),
+            Some(8),
+            None,
+            false,
+            1,
+            None,
+        )
+        .unwrap();
 
         // Count distinct opaque colours in the orb cel — must stay on-palette.
         let (_d, doc) = s.open("orb").unwrap();
@@ -2339,7 +2539,10 @@ mod tests {
                 }
             }
         }
-        println!("ORB distinct opaque colours after glow+snap: {}", colors.len());
+        println!(
+            "ORB distinct opaque colours after glow+snap: {}",
+            colors.len()
+        );
         assert!(
             colors.len() <= pal.len(),
             "glow snap should hold the palette ({} colours), got {}",

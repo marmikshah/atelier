@@ -4168,7 +4168,8 @@ fn points3_val(v: Option<&Value>, default_w: i32) -> Vec<(i32, i32, i32)> {
                 .filter_map(|p| p.as_array())
                 .filter(|pt| pt.len() >= 2)
                 .map(|pt| {
-                    let g = |i: usize, d: i64| pt.get(i).and_then(|n| n.as_i64()).unwrap_or(d) as i32;
+                    let g =
+                        |i: usize, d: i64| pt.get(i).and_then(|n| n.as_i64()).unwrap_or(d) as i32;
                     (g(0, 0), g(1, 0), g(2, default_w as i64))
                 })
                 .collect()
@@ -4575,8 +4576,12 @@ mod tests {
     fn snap_to_palette_picks_perceptual_nearest() {
         let mut d = Document::new("t", 4, 4);
         d.pencil(0, 0, &[(0, 0)], [200, 10, 10, 255], 1).unwrap();
-        let changed =
-            d.snap_to_palette(&[[255, 0, 0, 255], [0, 0, 255, 255]], None, None, AlphaSnap::Preserve);
+        let changed = d.snap_to_palette(
+            &[[255, 0, 0, 255], [0, 0, 255, 255]],
+            None,
+            None,
+            AlphaSnap::Preserve,
+        );
         assert_eq!(changed, 1);
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
     }
@@ -4588,7 +4593,8 @@ mod tests {
         let mut d = Document::new("t", 3, 1);
         d.pencil(0, 0, &[(0, 0)], [200, 0, 0, 255], 1).unwrap();
         d.pencil(0, 0, &[(1, 0)], [200, 0, 0, 80], 1).unwrap();
-        d.replace_color(0, 0, [200, 0, 0, 255], [0, 0, 255, 255], 0).unwrap();
+        d.replace_color(0, 0, [200, 0, 0, 255], [0, 0, 255, 255], 0)
+            .unwrap();
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 255, 255]);
         assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 255, 255]); // AA edge too
     }
@@ -4625,8 +4631,15 @@ mod tests {
         // A thin diagonal capsule: the union rasterizer must leave NO empty row
         // across the span (the gap-free property stacked beziers lack).
         let mut d = Document::new("t", 48, 48);
-        d.stroke(0, 0, &[(2, 2, 2), (45, 45, 2)], [255, 255, 255, 255], false, false)
-            .unwrap();
+        d.stroke(
+            0,
+            0,
+            &[(2, 2, 2), (45, 45, 2)],
+            [255, 255, 255, 255],
+            false,
+            false,
+        )
+        .unwrap();
         for y in 4..44 {
             let any = (0..48).any(|x| d.get_pixel(0, 0, x, y).unwrap()[3] > 0);
             assert!(any, "row {y} had a gap");
@@ -4636,9 +4649,20 @@ mod tests {
     #[test]
     fn stroke_tapers_toward_zero_width_tip() {
         let mut d = Document::new("t", 48, 16);
-        d.stroke(0, 0, &[(8, 8, 0), (40, 8, 10)], [255, 255, 255, 255], false, false)
-            .unwrap();
-        let col = |x: i32| (0..16).filter(|&y| d.get_pixel(0, 0, x, y).unwrap()[3] > 0).count();
+        d.stroke(
+            0,
+            0,
+            &[(8, 8, 0), (40, 8, 10)],
+            [255, 255, 255, 255],
+            false,
+            false,
+        )
+        .unwrap();
+        let col = |x: i32| {
+            (0..16)
+                .filter(|&y| d.get_pixel(0, 0, x, y).unwrap()[3] > 0)
+                .count()
+        };
         assert!(col(10) <= 2, "tip should be ~1px, got {}", col(10));
         assert!(col(38) >= 7, "wide end should be ~10px, got {}", col(38));
     }
@@ -4648,8 +4672,15 @@ mod tests {
         // Bresenham yields zero partial-alpha pixels; the analytic coverage core
         // must produce a smooth AA edge.
         let mut d = Document::new("t", 32, 32);
-        d.stroke(0, 0, &[(4, 4, 3), (28, 28, 3)], [255, 255, 255, 255], true, false)
-            .unwrap();
+        d.stroke(
+            0,
+            0,
+            &[(4, 4, 3), (28, 28, 3)],
+            [255, 255, 255, 255],
+            true,
+            false,
+        )
+        .unwrap();
         let frac = (0..32)
             .flat_map(|y| (0..32).map(move |x| (x, y)))
             .filter(|&(x, y)| {
@@ -4657,7 +4688,10 @@ mod tests {
                 a > 0 && a < 255
             })
             .count();
-        assert!(frac >= 20, "AA capsule should have ≥20 fractional pixels, got {frac}");
+        assert!(
+            frac >= 20,
+            "AA capsule should have ≥20 fractional pixels, got {frac}"
+        );
     }
 
     #[test]
@@ -5020,7 +5054,7 @@ mod tests {
         let mut d = Document::new("t", 8, 8);
         d.pencil(0, 0, &[(0, 0)], [9, 9, 9, 255], 1).unwrap(); // only opaque pixel of the 2x2 source
         d.pencil(0, 0, &[(6, 2)], [7, 7, 7, 255], 1).unwrap(); // dest art, under the block's transparent corner
-        // Move the 2x2 rect (0,0)-(1,1) by (+5,+1): source(0,0)->(5,1), source(1,1)->(6,2).
+                                                               // Move the 2x2 rect (0,0)-(1,1) by (+5,+1): source(0,0)->(5,1), source(1,1)->(6,2).
         d.move_region(0, 0, 0, 0, 1, 1, 5, 1).unwrap();
         assert_eq!(d.get_pixel(0, 0, 5, 1).unwrap(), [9, 9, 9, 255]); // opaque pixel landed
         assert_eq!(d.get_pixel(0, 0, 6, 2).unwrap(), [7, 7, 7, 255]); // dest art survived the transparent corner

@@ -1396,7 +1396,12 @@ impl Studio {
         }
         if snap && !doc.meta.palette.is_empty() {
             let pal = doc.meta.palette.clone();
-            doc.snap_to_palette(&pal, Some(layer), Some(frame), crate::document::AlphaSnap::Preserve);
+            doc.snap_to_palette(
+                &pal,
+                Some(layer),
+                Some(frame),
+                crate::document::AlphaSnap::Preserve,
+            );
         }
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "bones": bones.len()}))
@@ -1434,7 +1439,8 @@ impl Studio {
             let v = base[k];
             (v.0 as f32, v.1 as f32)
         };
-        let dist = |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
+        let dist =
+            |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
         // Bone lengths from the base pose (assume left/right symmetric).
         let l_thigh = dist(g("hip_l"), g("knee_l")).max(2.0);
         let l_shin = dist(g("knee_l"), g("foot_l")).max(2.0);
@@ -1451,7 +1457,8 @@ impl Studio {
             // Body bob: rises on the passing pose, twice per stride.
             let body_dy = (bob as f32 * (tau * t * 2.0).sin()).round() as i32;
             let shift = |p: (f32, f32)| (p.0.round() as i32, (p.1 + body_dy as f32).round() as i32);
-            let mut j: std::collections::HashMap<String, (i32, i32)> = std::collections::HashMap::new();
+            let mut j: std::collections::HashMap<String, (i32, i32)> =
+                std::collections::HashMap::new();
             // Body/girdle joints just bob.
             for k in ["head", "shoulder_l", "shoulder_r", "hip_l", "hip_r"] {
                 j.insert(k.to_string(), shift(g(k)));
@@ -1471,7 +1478,10 @@ impl Studio {
                     l_shin,
                     1.0, // knee bends forward (+x)
                 );
-                j.insert(format!("knee_{side}"), (knee.0.round() as i32, knee.1.round() as i32));
+                j.insert(
+                    format!("knee_{side}"),
+                    (knee.0.round() as i32, knee.1.round() as i32),
+                );
                 j.insert(format!("foot_{side}"), foot);
             }
             // Arms counter-swing the legs (half-cycle offset); elbow via IK.
@@ -1488,7 +1498,10 @@ impl Studio {
                     l_farm,
                     -1.0, // elbow bends backward
                 );
-                j.insert(format!("elbow_{side}"), (elbow.0.round() as i32, elbow.1.round() as i32));
+                j.insert(
+                    format!("elbow_{side}"),
+                    (elbow.0.round() as i32, elbow.1.round() as i32),
+                );
                 j.insert(format!("hand_{side}"), hand);
             }
             let bones = humanoid_bones(&j, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
@@ -1498,7 +1511,12 @@ impl Studio {
             }
             if snap && !doc.meta.palette.is_empty() {
                 let pal = doc.meta.palette.clone();
-                doc.snap_to_palette(&pal, Some(layer), Some(f), crate::document::AlphaSnap::Preserve);
+                doc.snap_to_palette(
+                    &pal,
+                    Some(layer),
+                    Some(f),
+                    crate::document::AlphaSnap::Preserve,
+                );
             }
         }
         if !doc.meta.tags.iter().any(|t| t.name == "walk") {
@@ -1523,12 +1541,26 @@ fn humanoid_bones(
     hr: i32,
 ) -> Result<Vec<Bone>, String> {
     const NEED: [&str; 13] = [
-        "head", "shoulder_l", "shoulder_r", "elbow_l", "elbow_r", "hand_l", "hand_r", "hip_l",
-        "hip_r", "knee_l", "knee_r", "foot_l", "foot_r",
+        "head",
+        "shoulder_l",
+        "shoulder_r",
+        "elbow_l",
+        "elbow_r",
+        "hand_l",
+        "hand_r",
+        "hip_l",
+        "hip_r",
+        "knee_l",
+        "knee_r",
+        "foot_l",
+        "foot_r",
     ];
     for k in NEED {
         if !joints.contains_key(k) {
-            return Err(format!("missing joint '{k}' — required joints: {}", NEED.join(", ")));
+            return Err(format!(
+                "missing joint '{k}' — required joints: {}",
+                NEED.join(", ")
+            ));
         }
     }
     let j = |k: &str| joints[k];
@@ -1540,7 +1572,12 @@ fn humanoid_bones(
     Ok(vec![
         cap(chest, tw, pelvis, (tw * 85 / 100).max(1)), // spine
         cap(j("shoulder_l"), lw, j("shoulder_r"), lw),  // clavicle
-        cap(j("hip_l"), (lw * 11 / 10).max(1), j("hip_r"), (lw * 11 / 10).max(1)), // hips
+        cap(
+            j("hip_l"),
+            (lw * 11 / 10).max(1),
+            j("hip_r"),
+            (lw * 11 / 10).max(1),
+        ), // hips
         cap(j("shoulder_l"), lw, j("elbow_l"), lw),     // upper arm L
         cap(j("elbow_l"), lw, j("hand_l"), taper(lw)),  // forearm L
         cap(j("shoulder_r"), lw, j("elbow_r"), lw),     // upper arm R
