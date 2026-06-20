@@ -78,6 +78,45 @@ them: producing a *whole game's* coherent, engine-ready asset set.
    colour already matched — stop and re-check before stacking more ops on a
    mistake. If the bbox isn't where you expected, look immediately.
 
+## Think like an artist: decompose, then build part by part
+
+Clumsy agent art comes from trying to draw "a cat" in ONE pass. No artist works
+that way — they **decompose** the subject into components and build each, coarse
+to fine, bringing the whole piece up together. This mindset is the difference
+between a 3/100 blob and a real sprite. Do it every time:
+
+1. **Name the parts first — this list IS your plan.** Before any pixel, decompose
+   the subject into components and how they relate in space and proportion:
+   a cat = head (ears · eyes · nose · muzzle · cheeks) + body (chest · belly) +
+   legs/paws + tail; a knight = helm + torso + arms + legs + weapon. Write it down.
+
+2. **Establish the WHOLE before any part.** Block the overall gesture, silhouette
+   and proportion as flat masses (one tone); confirm the big read with
+   `doc_silhouette` / `doc_look`. **Fix proportion now** — head-to-body ratio,
+   relative part sizes, eye spacing. Detailing a mis-proportioned blob only
+   polishes the mistake.
+
+3. **Build in PASSES across all parts — never one corner to completion.** Bring
+   the whole image up in layers: block every part → give every part volume
+   (`doc_form`/`doc_relight`) → detail every part (`doc_paint_grid` /
+   `doc_dump_region`→edit / `doc_pencil`) → polish every part (edges, highlights,
+   markings). Finishing the face while the body is still a flat blob makes them
+   look pasted together.
+
+4. **Each part is its own mini-loop.** For an identity-critical component (eyes,
+   face, a weapon emblem), zoom in with `doc_dump_region`, run
+   block→detail→polish on just that region (bound it with `doc_select` so you
+   don't disturb neighbours), then re-integrate and re-`doc_look` the whole.
+
+5. **Unify at the end — cohesion is a deliberate pass, not luck.** One light
+   direction across every part, one palette (`doc_palette_report`), one edge
+   treatment (`doc_smooth_edges`), a shared contact shadow. This whole-image pass
+   is what makes the components read as a single object.
+
+The cat that worked was built exactly this way — silhouette → head/body/tail
+volume → eyes (pixel-detailed) → nose/ears → whiskers/paws → one unifying
+rim-shadow. The ones that failed were single-pass stamped blobs.
+
 ## Before you draw: pin the brief
 
 Get these straight (ask the user only if genuinely ambiguous, else pick sensible
@@ -319,10 +358,13 @@ work items, not noise.
 
 ```
 [from a reference: set_reference → ref_analyze (palette+silhouette) → lock palette]
-doc_create → make_perceptual_ramp/harmony_palette (lock) → block silhouette
-   → doc_look (LOOK) → doc_silhouette (reads?) → checkpoint save
-   → detail + doc_batch / doc_paint_grid / doc_stroke (tapered limbs & organic arcs)
-   → doc_relight / doc_material / doc_dither_ramp
+NAME THE PARTS → doc_create (≥48px if it needs detail) → doc_palette (lock)
+   → block WHOLE silhouette + fix proportion → doc_look (LOOK) → doc_silhouette
+   (reads?) → checkpoint save
+   → build in PASSES across ALL parts: volume (doc_form/doc_relight) → pixel
+     detail per component (doc_paint_grid / doc_dump_region→edit / doc_pencil /
+     doc_stroke for tapered limbs & organic arcs)
+   → doc_material / doc_dither_ramp
    → doc_smooth_edges (selout) / doc_outline_selective → doc_pixel_perfect
    → AUDIT: doc_critique (scorecard) · palette_report · contrast_check · snap_palette
        [+ ref_compare: iou ≥ 0.80, fix worst_cells first]
