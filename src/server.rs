@@ -510,6 +510,25 @@ pub struct DocBevel {
     pub depth: Option<i32>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocRimLight {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Rim colour [r,g,b(,a)].
+    pub color: Vec<i64>,
+    /// Light azimuth in degrees: 0=right, 90=down, 180=left, 270=up.
+    pub az: f32,
+    /// Rim band thickness in pixels (default 1).
+    pub width: Option<i32>,
+    /// Facing falloff exponent — higher = tighter rim (default 1.5).
+    pub falloff: Option<f32>,
+    /// Light the AWAY-facing edge instead (core/contact shadow). Default false.
+    pub dark: Option<bool>,
+    /// Snap on-palette afterwards when a palette is locked (default true).
+    pub snap: Option<bool>,
+}
+
 /// One gradient colour stop: position along the axis (0..1) + RGBA colour.
 #[derive(Deserialize, JsonSchema)]
 pub struct GradientStop {
@@ -1513,6 +1532,14 @@ pub struct DocRefCompare {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocDiffMap {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    /// How many worst individual pixels to list (default 20, clamped 1..=64).
+    pub top: Option<usize>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocBurst {
     pub doc_id: String,
     pub layer: Option<usize>,
@@ -2378,6 +2405,23 @@ impl Atelier {
             light,
             dark,
             p.depth.unwrap_or(1),
+        ))
+    }
+
+    #[tool(
+        description = "Paint a RIM/edge light along the silhouette edges that FACE the light (`az`: 0=right, 90=down, 180=left, 270=up) — the edge-relative highlight that was otherwise hand-placed pixel by pixel. Estimates each edge pixel's outward normal and stamps `color` where it faces the light, `width` px thick, `falloff` tightens it. `dark=true` lights the away-facing edge instead (core/contact shadow). Topological — survives small canvases where a Fresnel term washes out. Honours an active selection."
+    )]
+    async fn doc_rim_light(&self, Parameters(p): Parameters<DocRimLight>) -> CallToolResult {
+        res(self.studio().doc_rim_light(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            rgba(&p.color),
+            p.az,
+            p.width.unwrap_or(1),
+            p.falloff.unwrap_or(1.5),
+            p.dark.unwrap_or(false),
+            p.snap.unwrap_or(true),
         ))
     }
 
@@ -3413,6 +3457,16 @@ impl Atelier {
             p.mode.as_deref().unwrap_or("side_by_side"),
             p.cells.unwrap_or(8),
         ))
+    }
+
+    #[tool(
+        description = "PER-PIXEL signed error map vs the stored reference — the see-and-repair eye for the last 5% that ref_compare's aggregate ΔE can't show. Returns a HEAT png (red = canvas too light, blue = too dark, green = wrong colour; brightness = ΔE) plus the `top` worst INDIVIDUAL pixels, each with x,y, ΔE, and a fix direction (lighten/darken + saturate/desaturate + shift hue). Run after a pass, fix the named pixels, re-run."
+    )]
+    async fn doc_diff_map(&self, Parameters(p): Parameters<DocDiffMap>) -> CallToolResult {
+        img_result(
+            self.studio()
+                .diff_map(&p.doc_id, p.frame.unwrap_or(0), p.top.unwrap_or(20)),
+        )
     }
 
     #[tool(
