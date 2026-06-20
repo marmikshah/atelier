@@ -58,7 +58,7 @@ deterministic.
   interactive `/playground` — run any tool from an auto-built form, or draw with
   the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-The full tool surface (104 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
+The full tool surface (105 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
 release notes live in [CHANGELOG.md](CHANGELOG.md).
 
 ## Quickstart
@@ -117,7 +117,7 @@ integration tests and as documentation.
 ## More
 
 - [docs/TOOLS.md](docs/TOOLS.md) — the complete MCP tool reference.
-- [ROADMAP.md](ROADMAP.md) — the backlog.
+- [CHANGELOG.md](CHANGELOG.md) — release notes.
 - Everything in [docs/](docs/) is agent-made; the gallery pieces were each
   drawn, self-audited and reviewed entirely over MCP.
 

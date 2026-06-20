@@ -6,8 +6,9 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    AnnotateAble, CallToolResult, Content, ListResourcesResult, PaginatedRequestParams,
-    RawResource, ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents,
+    AnnotateAble, CallToolResult, Content, CreateMessageRequestParams, ListResourcesResult,
+    PaginatedRequestParams, RawImageContent, RawResource, ReadResourceRequestParams,
+    ReadResourceResult, Resource, ResourceContents, Role, SamplingMessage, SamplingMessageContent,
     ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
@@ -1537,6 +1538,18 @@ pub struct DocDiffMap {
     pub frame: Option<usize>,
     /// How many worst individual pixels to list (default 20, clamped 1..=64).
     pub top: Option<usize>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocCritiqueVision {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    /// What to weight the critique toward — e.g. "anatomy", "readability",
+    /// "colour", "appeal". Omit for a balanced pass.
+    pub focus: Option<String>,
+    /// Render scale handed to the host's vision model (default 8, clamped
+    /// 1..=16). Bigger = more pixel detail for the model to read.
+    pub scale: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -3474,6 +3487,101 @@ impl Atelier {
             self.studio()
                 .diff_map(&p.doc_id, p.frame.unwrap_or(0), p.top.unwrap_or(20)),
         )
+    }
+
+    #[tool(
+        description = "AI eye for FREE-FORM art — what diff_map can't do without a reference. Renders the frame and asks the MCP HOST to run its own vision model over it (atelier ships no weights, makes no network call, holds no keys — the host samples; nothing leaves your client beyond that). Returns a structured critique: does the silhouette read, are proportions/anatomy right, is the value/colour structure working, what 3 fixes raise it most. `focus` weights one axis. Requires a host that advertises the `sampling` capability; errors clearly if it doesn't."
+    )]
+    async fn doc_critique_vision(
+        &self,
+        Parameters(p): Parameters<DocCritiqueVision>,
+        peer: rmcp::Peer<RoleServer>,
+    ) -> CallToolResult {
+        // Fail fast if the client never advertised sampling — otherwise
+        // create_message would block waiting for a response a non-sampling host
+        // never sends.
+        let supports_sampling = peer
+            .peer_info()
+            .map(|i| i.capabilities.sampling.is_some())
+            .unwrap_or(false);
+        if !supports_sampling {
+            return res(Err(
+                "vision critique unavailable — this MCP host does not advertise \
+                the `sampling` capability, so it cannot run a vision model on the render. \
+                (atelier ships no model and makes no network call; the host must sample.)"
+                    .to_string(),
+            ));
+        }
+
+        let frame = p.frame.unwrap_or(0);
+        let scale = p.scale.unwrap_or(8).clamp(1, 16);
+        // Render to owned bytes; the studio guard drops before the await below so
+        // the lock is never held across the sampling round-trip.
+        let png = match self.studio().render_png_bytes(&p.doc_id, frame, scale) {
+            Ok(bytes) => bytes,
+            Err(e) => return res(Err(e)),
+        };
+
+        let focus = match p.focus.as_deref().map(str::trim) {
+            Some(f) if !f.is_empty() => format!(" Weight the critique toward: {f}."),
+            _ => String::new(),
+        };
+        let system = "You are a master pixel-art director reviewing a single sprite/frame. \
+            Be specific and honest — name what is wrong and where (use rough pixel regions \
+            like 'upper-left', 'the head'), not vague praise. Pixel art is low-resolution on \
+            purpose; judge it as such (silhouette readability, value grouping, palette \
+            discipline, proportion/anatomy, appeal), not as a photo."
+            .to_string();
+        let instruction = format!(
+            "Critique this pixel-art frame.{focus}\n\nReturn:\n\
+             1. Reads-as: what the subject clearly is, or 'unclear' + why.\n\
+             2. Silhouette & proportion: what's off.\n\
+             3. Value & colour: flat/muddy/banding/off-palette issues.\n\
+             4. Top 3 fixes, highest-impact first, each naming where on the canvas.\n\
+             Keep it tight."
+        );
+
+        let image = SamplingMessageContent::Image(RawImageContent {
+            data: base64(&png),
+            mime_type: "image/png".to_string(),
+            meta: None,
+        });
+        let text = SamplingMessageContent::text(instruction);
+        let mut params = CreateMessageRequestParams::default();
+        params.messages = vec![SamplingMessage::new_multiple(Role::User, vec![image, text])];
+        params.system_prompt = Some(system);
+        params.max_tokens = 1024;
+
+        match peer.create_message(params).await {
+            Ok(result) => {
+                let critique = result
+                    .message
+                    .content
+                    .iter()
+                    .filter_map(|c| c.as_text().map(|t| t.text.clone()))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+                    .trim()
+                    .to_string();
+                if critique.is_empty() {
+                    return res(Err(format!(
+                        "the host's vision model returned no text (model: {})",
+                        result.model
+                    )));
+                }
+                res(Ok(json!({
+                    "doc_id": p.doc_id,
+                    "frame": frame,
+                    "model": result.model,
+                    "critique": critique,
+                })))
+            }
+            Err(e) => res(Err(format!(
+                "vision critique unavailable — the MCP host must advertise the `sampling` \
+                 capability (it runs its own vision model; atelier sends nothing elsewhere). \
+                 host: {e}"
+            ))),
+        }
     }
 
     #[tool(
