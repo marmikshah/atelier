@@ -647,6 +647,42 @@ pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
     ]
 }
 
+/// Whether an OKLCh colour is inside the sRGB gamut (its linear RGB all in
+/// [0,1]) — so a ramp can reduce chroma to fit instead of letting the per-channel
+/// clamp in `oklab_to_srgb` shift its hue.
+#[allow(clippy::excessive_precision)]
+fn oklch_in_gamut(l: f32, c: f32, h: f32) -> bool {
+    let (_, a, b) = oklch_to_oklab((l, c, h));
+    let l_ = l + 0.396_337_78 * a + 0.215_803_76 * b;
+    let m_ = l - 0.105_561_346 * a - 0.063_854_17 * b;
+    let s_ = l - 0.089_484_18 * a - 1.291_485_5 * b;
+    let (l3, m3, s3) = (l_ * l_ * l_, m_ * m_ * m_, s_ * s_ * s_);
+    let r = 4.076_741_7 * l3 - 3.307_711_6 * m3 + 0.230_969_94 * s3;
+    let g = -1.268_438 * l3 + 2.609_757_4 * m3 - 0.341_319_38 * s3;
+    let bl = -0.004_196_086_3 * l3 - 0.703_418_6 * m3 + 1.707_614_7 * s3;
+    let eps = 0.001;
+    [r, g, bl].iter().all(|&v| v >= -eps && v <= 1.0 + eps)
+}
+
+/// OKLCh → sRGB with chroma binary-searched down until the colour is in gamut —
+/// a vivid step desaturates EVENLY (L and hue preserved) instead of being
+/// per-channel clamped, which shifts the hue (e.g. a bright red → orange).
+pub fn oklch_to_srgb_gamut(l: f32, c: f32, h: f32) -> [u8; 3] {
+    if oklch_in_gamut(l, c, h) {
+        return oklab_to_srgb(oklch_to_oklab((l, c, h)));
+    }
+    let (mut lo, mut hi) = (0.0f32, c);
+    for _ in 0..20 {
+        let mid = (lo + hi) * 0.5;
+        if oklch_in_gamut(l, mid, h) {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    oklab_to_srgb(oklch_to_oklab((l, lo, h)))
+}
+
 /// OKLab → OKLCh `(L, C, h°)`: chroma magnitude + hue angle in degrees.
 pub fn oklab_to_oklch(lab: (f32, f32, f32)) -> (f32, f32, f32) {
     let (l, a, b) = lab;
@@ -784,7 +820,9 @@ pub fn make_ramp_oklch(
                 _ => cb,
             }
             .max(0.0);
-            let rgb = oklab_to_srgb(oklch_to_oklab((l, c, h)));
+            // Gamut-map: a vivid step reduces chroma to fit sRGB (even
+            // desaturation) rather than clamping channels (which shifts hue).
+            let rgb = oklch_to_srgb_gamut(l, c, h);
             [rgb[0], rgb[1], rgb[2], base[3]]
         })
         .collect()
@@ -1705,6 +1743,27 @@ mod tests {
         // bend sign flips the joint to the other side
         let mid2 = solve_ik2(root, target, 4.0, 4.0, -1.0);
         assert!(mid.1 * mid2.1 < 0.0, "bend +/- should be on opposite sides");
+    }
+
+    #[test]
+    fn ramp_gamut_maps_without_hue_shift() {
+        // A vivid red at full chroma across the lightness range would, without
+        // gamut mapping, per-channel clamp on the bright steps and skew red→orange.
+        // With chroma reduced to fit, every chromatic step keeps the base hue.
+        let base = [220, 30, 40, 255];
+        let (_, _, base_h) = oklab_to_oklch(srgb_to_oklab(base));
+        let ramp = make_ramp_oklch(base, 6, 0.2, 0.92, 0.0, "flat", false);
+        for c in &ramp {
+            let (_, cc, hh) = oklab_to_oklch(srgb_to_oklab(*c));
+            if cc < 0.03 {
+                continue; // achromatic — hue is meaningless
+            }
+            let dh = ((hh - base_h + 540.0).rem_euclid(360.0) - 180.0).abs();
+            assert!(
+                dh < 12.0,
+                "step {c:?} hue {hh:.0}° drifted {dh:.0}° from base {base_h:.0}°"
+            );
+        }
     }
 
     #[test]
