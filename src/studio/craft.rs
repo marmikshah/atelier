@@ -1374,7 +1374,7 @@ impl Studio {
                 &pal,
                 Some(layer),
                 Some(frame),
-                crate::document::AlphaSnap::Preserve,
+                crate::document::AlphaSnap::Opaque(128),
             );
         }
         doc.save(&dir)?;
@@ -1421,6 +1421,18 @@ impl Studio {
         let l_uarm = dist(g("shoulder_l"), g("elbow_l")).max(2.0);
         let l_farm = dist(g("elbow_l"), g("hand_l")).max(2.0);
         let tau = std::f32::consts::TAU;
+        // World-anchored IK: pick the bend that keeps the mid-joint on a
+        // consistent world side (knees AHEAD of the hip, elbows BEHIND the
+        // shoulder) no matter how the limb swings — otherwise solve_ik2's
+        // axis-relative bend flips the joint to the wrong side mid-stride.
+        let ik_world = |root: (f32, f32), tgt: (f32, f32), l1: f32, l2: f32, ahead: bool| {
+            let c = raster::solve_ik2(root, tgt, l1, l2, 1.0);
+            if (c.0 >= root.0) == ahead {
+                c
+            } else {
+                raster::solve_ik2(root, tgt, l1, l2, -1.0)
+            }
+        };
         let (dir, mut doc) = self.open(id)?;
         while doc.meta.frames.len() < frames {
             doc.add_frame(120, None);
@@ -1445,12 +1457,12 @@ impl Studio {
                 let fx = base_foot.0 + (stride as f32 * 0.5) * (tau * ph).cos();
                 let fy = base_foot.1 - (lift as f32) * (tau * ph).sin().max(0.0);
                 let foot = (fx.round() as i32, fy.round() as i32);
-                let knee = raster::solve_ik2(
+                let knee = ik_world(
                     (hip.0 as f32, hip.1 as f32),
                     (foot.0 as f32, foot.1 as f32),
                     l_thigh,
                     l_shin,
-                    1.0, // knee bends forward (+x)
+                    true, // knee stays ahead of the hip (bends forward)
                 );
                 j.insert(
                     format!("knee_{side}"),
@@ -1465,12 +1477,12 @@ impl Studio {
                 let base_hand = g(&format!("hand_{side}"));
                 let hx = base_hand.0 + (arm_swing as f32) * (tau * ph).cos();
                 let hand = (hx.round() as i32, base_hand.1.round() as i32 + body_dy);
-                let elbow = raster::solve_ik2(
+                let elbow = ik_world(
                     (sh.0 as f32, sh.1 as f32),
                     (hand.0 as f32, hand.1 as f32),
                     l_uarm,
                     l_farm,
-                    -1.0, // elbow bends backward
+                    false, // elbow stays behind the shoulder (bends back)
                 );
                 j.insert(
                     format!("elbow_{side}"),
@@ -1489,7 +1501,7 @@ impl Studio {
                     &pal,
                     Some(layer),
                     Some(f),
-                    crate::document::AlphaSnap::Preserve,
+                    crate::document::AlphaSnap::Opaque(128),
                 );
             }
         }

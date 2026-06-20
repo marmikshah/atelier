@@ -927,13 +927,20 @@ pub fn affine_nn(
         ((maxx - minx).ceil() as u32).max(1),
         ((maxy - miny).ceil() as u32).max(1),
     );
+    // Refuse an absurd transform (e.g. scale_x=50000) before allocating — a
+    // giant buffer would abort the process. ~4M px (2048²) is the ceiling.
+    if (nw as u64) * (nh as u64) > 4_194_304 {
+        return RgbaImage::from_pixel(1, 1, Rgba([0, 0, 0, 0]));
+    }
     let mut out = RgbaImage::from_pixel(nw, nh, Rgba([0, 0, 0, 0]));
     for oy in 0..nh {
         for ox in 0..nw {
-            // dest coord (centred) → inverse map → source pixel
-            let (dx, dy) = (minx + ox as f32, miny + oy as f32);
-            let sxp = i00 * dx + i01 * dy + cx;
-            let syp = i10 * dx + i11 * dy + cy;
+            // Inverse-map the dest pixel CENTRE (not its corner) back to source,
+            // then take the source pixel that contains it — so a 90/180/270°
+            // rotation is a clean permutation, not a half-pixel-biased resample.
+            let (dx, dy) = (minx + ox as f32 + 0.5, miny + oy as f32 + 0.5);
+            let sxp = (i00 * dx + i01 * dy + cx).floor();
+            let syp = (i10 * dx + i11 * dy + cy).floor();
             if sxp >= 0.0
                 && syp >= 0.0
                 && (sxp as u32) < work.width()
@@ -1698,6 +1705,30 @@ mod tests {
         // bend sign flips the joint to the other side
         let mid2 = solve_ik2(root, target, 4.0, 4.0, -1.0);
         assert!(mid.1 * mid2.1 < 0.0, "bend +/- should be on opposite sides");
+    }
+
+    #[test]
+    fn affine_90_rotation_is_a_clean_permutation() {
+        // 16 unique colours; a 90° rotate (raw ss=1 path) must keep every one —
+        // i.e. it's a permutation, not a half-pixel-biased lossy resample.
+        let mut img = RgbaImage::new(4, 4);
+        for y in 0..4u32 {
+            for x in 0..4u32 {
+                img.put_pixel(
+                    x,
+                    y,
+                    Rgba([(x * 60 + 10) as u8, (y * 60 + 10) as u8, 200, 255]),
+                );
+            }
+        }
+        let out = affine_nn(&img, 90.0, 1.0, 1.0, 0.0, 0.0, 1);
+        let mut src: std::collections::HashSet<[u8; 4]> = img.pixels().map(|p| p.0).collect();
+        for p in out.pixels() {
+            if p.0[3] > 0 {
+                src.remove(&p.0);
+            }
+        }
+        assert!(src.is_empty(), "90° rotate dropped source colours: {src:?}");
     }
 
     #[test]
