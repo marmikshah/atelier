@@ -148,8 +148,8 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   recolour, brighten).
 - `doc_quantize` — snap to a palette, or derive one of N colours by median cut
   (posterise / down-palette imported art).
-- `palette_ramp` — generate a hue-shifted shading ramp from a base colour (warm
-  highlights, cool shadows); optionally store it as a document's palette.
+- `palette_ramp` — *(deprecated — use `doc_palette` `scheme=mono`)* hue-shifted
+  shading ramp from a base colour; optionally store it as a document's palette.
 - `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
   colour to `to[i]` across every cel (exact match, all channels), updating the
   stored palette too; optional `layer` / `frame` restrict scope. The
@@ -238,14 +238,14 @@ The limb/keyframe-animation toolkit.
 - `doc_export_sheet` — horizontal spritesheet PNG + JSON meta (frame rects,
   durations, tags, pivots, collision boxes, palette) so any engine can slice and
   play it.
-- `doc_export_gif` — animated GIF honouring per-frame durations. Pass a `tag` to
-  play that animation in its direction (`forward` / `reverse` / `pingpong`);
-  omit it to play the whole timeline forward. All frames are snapped to ONE
-  shared palette (the locked one, else a median-cut over every frame) before
-  encoding, so colours don't shimmer frame-to-frame — only the motion moves.
-- `doc_export_apng` — the same animation as an APNG: lossless, full alpha (unlike
-  GIF's 256 colours and 1-bit alpha). Honours `tag` direction; omit it to play
-  the timeline forward.
+- `doc_export_anim` — export an animation as `format=gif` or `format=apng`,
+  honouring per-frame durations. Pass a `tag` to play that animation in its
+  direction (`forward` / `reverse` / `pingpong`); omit it to play the whole
+  timeline forward. All frames are snapped to ONE shared palette (the locked one,
+  else a median-cut over every frame) before encoding, so colours don't shimmer
+  frame-to-frame — only the motion moves. GIF = 256 colours + 1-bit alpha
+  (smaller); APNG = lossless, full alpha. *(Supersedes `doc_export_gif` /
+  `doc_export_apng`, kept as deprecated aliases.)*
 - `doc_export_tileset` — slice frame 0 into a `tile_w`×`tile_h` grid and write an
   engine-ready tileset: the PNG plus two sidecars — `<name>.tsx` (Tiled XML) and
   `<name>.json` (same fields: tilewidth / tileheight / tilecount / columns /
@@ -303,11 +303,13 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 
 **Perceptual colour (OKLab/OKLCh).**
 
-- `doc_make_perceptual_ramp` — perceptually-even ramp (fixes HSL's crushed
-  midtones): equal-lightness steps, hue shift, `sat_curve` flat/arc/sat-in-shadow,
-  midtone anchor; validates evenness; `set_doc` stores it as the palette.
-- `doc_harmony_palette` — a perceptual ramp per hue of a scheme
-  (complementary/triadic/analogous/split/tetradic/mono), shared lightness poles.
+- `doc_palette` — the OKLCh palette generator: `scheme=mono` for a single
+  perceptually-even shading ramp (equal-lightness steps, hue shift, `sat_curve`
+  flat/arc/sat-in-shadow, `anchor_midtone`, evenness validation) or
+  `complementary/triadic/analogous/split/tetradic` for a cohesive multi-hue set
+  sharing lightness poles. `count` per ramp; `set_doc` locks it. *(Supersedes
+  `palette_ramp` / `doc_make_perceptual_ramp` / `doc_harmony_palette`, kept as
+  deprecated aliases.)*
 - `doc_snap_palette` — snap a cel/document to its locked palette by perceptual
   nearest colour, killing off-palette drift from blends/dithers/FX. `alpha`
   governs FX bloom / AA fringe: `preserve` (default, RGB-only) · `opaque`

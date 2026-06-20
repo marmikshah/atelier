@@ -288,6 +288,19 @@ pub struct DocExportGif {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocExportAnim {
+    pub doc_id: String,
+    pub out_path: String,
+    /// "gif" (256 colours, 1-bit alpha, smaller) or "apng" (lossless, full
+    /// alpha). Default "gif".
+    pub format: Option<String>,
+    pub scale: Option<u32>,
+    /// Animation tag to play (honours its direction: forward/reverse/pingpong).
+    /// Omit to play the whole timeline forward.
+    pub tag: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocExportTileset {
     pub doc_id: String,
     /// Tile width in source pixels; the canvas width must divide by it exactly.
@@ -1357,6 +1370,23 @@ pub struct DocHarmonyPalette {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocPalette {
+    pub base: Vec<i64>,
+    /// mono | complementary | triadic | analogous | split | tetradic. Default mono.
+    pub scheme: Option<String>,
+    /// Colours per ramp (default 5).
+    pub count: Option<usize>,
+    pub value_lo: Option<f32>,
+    pub value_hi: Option<f32>,
+    pub hue_shift: Option<f32>,
+    /// flat | arc | sat-in-shadow (default arc).
+    pub sat_curve: Option<String>,
+    pub anchor_midtone: Option<bool>,
+    /// Store the flattened palette on this document id.
+    pub set_doc: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocBox {
     pub doc_id: String,
     pub layer: usize,
@@ -2118,7 +2148,25 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Export the document as an animated GIF honouring per-frame durations. Pass `tag` to play one animation tag in its direction (forward/reverse/pingpong); omit to play the whole timeline forward."
+        description = "Export the document as an animated GIF or APNG honouring per-frame durations. `format`: gif (256 colours, 1-bit alpha, smaller) | apng (lossless, full alpha). Pass `tag` to play one animation tag in its direction (forward/reverse/pingpong); omit to play the whole timeline forward."
+    )]
+    async fn doc_export_anim(&self, Parameters(p): Parameters<DocExportAnim>) -> CallToolResult {
+        let studio = self.studio();
+        let (id, out, scale, tag) = (
+            &p.doc_id,
+            &p.out_path,
+            p.scale.unwrap_or(4),
+            p.tag.as_deref(),
+        );
+        let r = match p.format.as_deref().unwrap_or("gif") {
+            "apng" => studio.doc_export_apng(id, out, scale, tag),
+            _ => studio.doc_export_gif(id, out, scale, tag),
+        };
+        res(r)
+    }
+
+    #[tool(
+        description = "DEPRECATED alias of doc_export_anim(format=\"gif\"). Export the document as an animated GIF honouring per-frame durations. Pass `tag` to play one animation tag in its direction; omit to play the whole timeline forward."
     )]
     async fn doc_export_gif(&self, Parameters(p): Parameters<DocExportGif>) -> CallToolResult {
         res(self.studio().doc_export_gif(
@@ -2130,7 +2178,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Export the document as an animated PNG (APNG) — lossless, full alpha (unlike GIF's 256 colours and 1-bit alpha). Pass `tag` to play one animation tag in its direction (forward/reverse/pingpong); omit to play the whole timeline forward."
+        description = "DEPRECATED alias of doc_export_anim(format=\"apng\"). Export an animated PNG (lossless, full alpha). Pass `tag` to play one animation tag in its direction; omit to play the whole timeline forward."
     )]
     async fn doc_export_apng(&self, Parameters(p): Parameters<DocExportGif>) -> CallToolResult {
         res(self.studio().doc_export_apng(
@@ -2482,7 +2530,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Generate a hue-shifted shading ramp from a base colour (darkest→lightest): warm highlights, cool shadows, the classic pixel-art ramp. Returns the colours (+ hex); pass `doc_id` to also store it as that document's palette."
+        description = "DEPRECATED — use doc_palette (scheme=\"mono\"). Generate a hue-shifted OKLCh shading ramp from a base colour (darkest→lightest): warm highlights, cool shadows. Returns the colours (+ hex); pass `doc_id` to also store it as that document's palette."
     )]
     async fn palette_ramp(&self, Parameters(p): Parameters<PaletteRamp>) -> CallToolResult {
         res(self.studio().palette_ramp(
@@ -3068,7 +3116,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Generate a PERCEPTUALLY-EVEN shading ramp in OKLCh (fixes linear-HSL's crushed midtones): equal perceptual-lightness steps between value_lo..value_hi (OKLab L, 0..1; defaults bracket the base), total hue_shift° across the ramp (light warm / dark cool), sat_curve flat|arc|sat-in-shadow, anchor_midtone forces the centre step to be exactly base. Reports an evenness validation; set_doc stores it as that document's palette."
+        description = "DEPRECATED — use doc_palette (scheme=\"mono\"). Generate a PERCEPTUALLY-EVEN shading ramp in OKLCh (fixes linear-HSL's crushed midtones): equal perceptual-lightness steps between value_lo..value_hi, total hue_shift° across the ramp, sat_curve flat|arc|sat-in-shadow, anchor_midtone forces the centre step to be exactly base. Reports an evenness validation; set_doc stores it as that document's palette."
     )]
     async fn doc_make_perceptual_ramp(
         &self,
@@ -3233,7 +3281,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Build a HARMONIOUS multi-ramp palette in OKLCh: one perceptual ramp per hue of a colour scheme (complementary | triadic | analogous | split | tetradic | mono), all sharing lightness poles so the set reads as one cohesive palette. set_doc stores the flattened palette on that document."
+        description = "DEPRECATED — use doc_palette. Build a HARMONIOUS multi-ramp palette in OKLCh: one perceptual ramp per hue of a colour scheme (complementary | triadic | analogous | split | tetradic | mono), all sharing lightness poles so the set reads as one cohesive palette. set_doc stores the flattened palette on that document."
     )]
     async fn doc_harmony_palette(
         &self,
@@ -3246,6 +3294,23 @@ impl Atelier {
             p.value_lo,
             p.value_hi,
             p.hue_shift.unwrap_or(20.0),
+            p.set_doc.as_deref(),
+        ))
+    }
+
+    #[tool(
+        description = "Generate a cohesive palette in OKLCh — ONE generator for a single shading ramp (scheme=\"mono\") or a multi-hue scheme (complementary|triadic|analogous|split|tetradic). `count` colours per ramp, `hue_shift` warms light / cools shadow across each ramp, `sat_curve` (flat|arc|sat-in-shadow), `anchor_midtone` pins the base at the mid step. Returns ramps + flat palette + hex + evenness validation; `set_doc` locks it on a document. Supersedes palette_ramp / doc_make_perceptual_ramp / doc_harmony_palette."
+    )]
+    async fn doc_palette(&self, Parameters(p): Parameters<DocPalette>) -> CallToolResult {
+        res(self.studio().palette(
+            rgba(&p.base),
+            p.scheme.as_deref().unwrap_or("mono"),
+            p.count.unwrap_or(5),
+            p.value_lo,
+            p.value_hi,
+            p.hue_shift.unwrap_or(20.0),
+            p.sat_curve.as_deref().unwrap_or("arc"),
+            p.anchor_midtone.unwrap_or(false),
             p.set_doc.as_deref(),
         ))
     }

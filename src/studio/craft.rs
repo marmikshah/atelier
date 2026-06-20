@@ -955,6 +955,101 @@ impl Studio {
         Ok(out)
     }
 
+    // -- doc_palette: one OKLCh generator for mono + harmony schemes -------
+
+    /// Unified palette generator: one OKLCh engine for a single shading ramp
+    /// (`scheme="mono"`) or a cohesive multi-hue scheme (complementary | triadic
+    /// | analogous | split | tetradic), folding in the sat_curve / midtone-anchor
+    /// / evenness-validation that the old `make_perceptual_ramp` had and the old
+    /// `harmony_palette` lacked. Supersedes `palette_ramp` / `make_perceptual_ramp`
+    /// / `harmony_palette`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn palette(
+        &self,
+        base: [u8; 4],
+        scheme: &str,
+        count: usize,
+        value_lo: Option<f32>,
+        value_hi: Option<f32>,
+        hue_shift: f32,
+        sat_curve: &str,
+        anchor_midtone: bool,
+        set_doc: Option<&str>,
+    ) -> Result<Value, String> {
+        let offsets: Vec<f32> = match scheme {
+            "mono" => vec![0.0],
+            "complementary" => vec![0.0, 180.0],
+            "triadic" => vec![0.0, 120.0, 240.0],
+            "analogous" => vec![0.0, 30.0, -30.0],
+            "split" => vec![0.0, 150.0, 210.0],
+            "tetradic" => vec![0.0, 90.0, 180.0, 270.0],
+            other => {
+                return Err(format!(
+                    "unknown scheme '{other}' — use mono|complementary|triadic|analogous|split|tetradic"
+                ))
+            }
+        };
+        let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
+        let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
+        let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
+        // mono honours the exact count; a multi-hue scheme needs >=2 per ramp.
+        let per = if scheme == "mono" {
+            count.max(1)
+        } else {
+            count.max(2)
+        };
+        let mut ramps: Vec<Vec<[u8; 4]>> = Vec::new();
+        for off in &offsets {
+            let rgb = raster::oklab_to_srgb(raster::oklch_to_oklab((lb, cb, hb + off)));
+            let anchor = [rgb[0], rgb[1], rgb[2], 255];
+            ramps.push(raster::make_ramp_oklch(
+                anchor,
+                per,
+                lo,
+                hi,
+                hue_shift,
+                sat_curve,
+                anchor_midtone,
+            ));
+        }
+        let flat: Vec<[u8; 4]> = ramps.iter().flatten().copied().collect();
+        let hex: Vec<String> = flat
+            .iter()
+            .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
+            .collect();
+        // Evenness validation on the primary ramp.
+        let ls: Vec<f32> = ramps[0]
+            .iter()
+            .map(|c| raster::srgb_to_oklab(*c).0)
+            .collect();
+        let steps: Vec<f32> = ls.windows(2).map(|w| w[1] - w[0]).collect();
+        let monotonic = steps.iter().all(|d| *d > -0.001);
+        let (mean_step, max_dev) = if steps.is_empty() {
+            (0.0, 0.0)
+        } else {
+            let m = steps.iter().sum::<f32>() / steps.len() as f32;
+            let dev = steps.iter().map(|d| (d - m).abs()).fold(0.0_f32, f32::max);
+            (m, dev)
+        };
+        let mut out = json!({
+            "scheme": scheme, "ramps": ramps, "palette": flat, "hex": hex, "count": flat.len(),
+            "validation": {
+                "monotonic_lightness": monotonic,
+                "mean_step": (mean_step * 1000.0).round() / 1000.0,
+                "max_step_deviation": (max_dev * 1000.0).round() / 1000.0,
+                "even": max_dev < mean_step.abs() * 0.5 + 0.01,
+            }
+        });
+        if let Some(did) = set_doc {
+            self.edit(did, |d| {
+                d.set_palette(flat.clone());
+                Ok(())
+            })?;
+            out["set_doc"] = json!(did);
+        }
+        Ok(out)
+    }
+
     // -- doc_box: 3-face shaded isometric cuboid ----------------------------
 
     /// Draw a shaded isometric cuboid (top + two side faces) from one base

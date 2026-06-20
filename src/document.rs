@@ -3881,20 +3881,29 @@ impl Document {
                 self.clear_cel(layer, frame);
                 Ok(())
             }
-            "gradient" => self.gradient(
-                layer,
-                frame,
-                op.get("kind").and_then(|v| v.as_str()).unwrap_or("linear"),
-                gi("x0", 0),
-                gi("y0", 0),
-                gi("x1", 0),
-                gi("y1", 0),
-                stops_val(op.get("stops")),
-                op.get("dither").and_then(|v| v.as_str()).unwrap_or("none"),
-                op.get("seed").and_then(|v| v.as_u64()).unwrap_or(0),
-                region_val(op.get("region")),
-                gb("blend", true),
-            ),
+            "gradient" => {
+                self.gradient(
+                    layer,
+                    frame,
+                    op.get("kind").and_then(|v| v.as_str()).unwrap_or("linear"),
+                    gi("x0", 0),
+                    gi("y0", 0),
+                    gi("x1", 0),
+                    gi("y1", 0),
+                    stops_val(op.get("stops")),
+                    op.get("dither").and_then(|v| v.as_str()).unwrap_or("none"),
+                    op.get("seed").and_then(|v| v.as_u64()).unwrap_or(0),
+                    region_val(op.get("region")),
+                    gb("blend", true),
+                )?;
+                // Parity with the standalone doc_gradient: re-snap on-palette by
+                // default when a palette is locked (the batch path used to skip it).
+                if gb("snap", true) && !self.meta.palette.is_empty() {
+                    let pal = self.meta.palette.clone();
+                    self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
+                }
+                Ok(())
+            }
             "scatter" => self.scatter(
                 layer,
                 frame,
@@ -4252,7 +4261,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "gradient" => (
             &["stops"],
             &[
-                "kind", "x0", "y0", "x1", "y1", "dither", "seed", "region", "blend",
+                "kind", "x0", "y0", "x1", "y1", "dither", "seed", "region", "blend", "snap",
             ],
         ),
         "scatter" => (
