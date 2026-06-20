@@ -98,7 +98,11 @@ fn rgba(v: &[i64]) -> [u8; 4] {
 }
 
 /// Parse the `doc_snap_palette` / FX alpha policy string into an `AlphaSnap`.
-fn alpha_snap(mode: Option<&str>, cutoff: Option<u8>, bg: Option<&[i64]>) -> crate::document::AlphaSnap {
+fn alpha_snap(
+    mode: Option<&str>,
+    cutoff: Option<u8>,
+    bg: Option<&[i64]>,
+) -> crate::document::AlphaSnap {
     use crate::document::AlphaSnap;
     match mode.unwrap_or("preserve") {
         "opaque" => AlphaSnap::Opaque(cutoff.unwrap_or(128)),
@@ -2239,7 +2243,9 @@ impl Atelier {
         ))
     }
 
-    #[tool(description = "Replace every pixel near `from` with `to` across the cel (recolour). `tolerance` = max channel distance over RGB (alpha ignored), so anti-aliased / semi-transparent edges of the target colour are recoloured too instead of left as a halo. tolerance 0 = exact RGB match.")]
+    #[tool(
+        description = "Replace every pixel near `from` with `to` across the cel (recolour). `tolerance` = max channel distance over RGB (alpha ignored), so anti-aliased / semi-transparent edges of the target colour are recoloured too instead of left as a halo. tolerance 0 = exact RGB match."
+    )]
     async fn doc_replace_color(&self, Parameters(p): Parameters<DocReplace>) -> CallToolResult {
         res(self.studio().doc_replace_color(
             &p.doc_id,
@@ -2368,7 +2374,9 @@ impl Atelier {
         let color = p.color.as_ref().map(|c| rgba(c));
         // Default to snapping the bloom on-palette; `snap=false` keeps it soft.
         let snap = if p.snap != Some(false) {
-            Some(crate::document::AlphaSnap::Opaque(p.snap_cutoff.unwrap_or(64)))
+            Some(crate::document::AlphaSnap::Opaque(
+                p.snap_cutoff.unwrap_or(64),
+            ))
         } else {
             None
         };

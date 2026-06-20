@@ -839,7 +839,10 @@ fn majority_downscale(src: &RgbaImage, factor: u32) -> RgbaImage {
     if factor <= 1 {
         return src.clone();
     }
-    let (w, h) = ((src.width() / factor).max(1), (src.height() / factor).max(1));
+    let (w, h) = (
+        (src.width() / factor).max(1),
+        (src.height() / factor).max(1),
+    );
     let mut out = RgbaImage::new(w, h);
     for oy in 0..h {
         for ox in 0..w {
@@ -1688,7 +1691,10 @@ mod tests {
         let d2 = ((mid.0 - target.0).powi(2) + (mid.1 - target.1).powi(2)).sqrt();
         assert!((d1 - 4.0).abs() < 0.05, "upper bone length {d1}");
         assert!((d2 - 4.0).abs() < 0.05, "lower bone length {d2}");
-        assert!(mid.1.abs() > 0.1, "joint should bend off the root-target line");
+        assert!(
+            mid.1.abs() > 0.1,
+            "joint should bend off the root-target line"
+        );
         // bend sign flips the joint to the other side
         let mid2 = solve_ik2(root, target, 4.0, 4.0, -1.0);
         assert!(mid.1 * mid2.1 < 0.0, "bend +/- should be on opposite sides");
@@ -1702,14 +1708,22 @@ mod tests {
         let mut img = RgbaImage::from_pixel(14, 14, Rgba([0, 0, 0, 0]));
         for y in 3..11 {
             for x in 3..11 {
-                let c = if x < 7 { [200, 30, 30, 255] } else { [30, 30, 200, 255] };
+                let c = if x < 7 {
+                    [200, 30, 30, 255]
+                } else {
+                    [30, 30, 200, 255]
+                };
                 img.put_pixel(x, y, Rgba(c));
             }
         }
         let out = affine_nn(&img, 30.0, 1.0, 1.0, 0.0, 0.0, 2);
         let allowed = [[0, 0, 0, 0], [200, 30, 30, 255], [30, 30, 200, 255]];
         for p in out.pixels() {
-            assert!(p.0[3] == 0 || p.0[3] == 255, "partial-alpha fringe {:?}", p.0);
+            assert!(
+                p.0[3] == 0 || p.0[3] == 255,
+                "partial-alpha fringe {:?}",
+                p.0
+            );
             assert!(allowed.contains(&p.0), "off-palette colour {:?}", p.0);
         }
     }
@@ -1718,14 +1732,21 @@ mod tests {
     fn blur_field_spreads_a_spike() {
         // A single spike should spread to its neighbours and lose its peak —
         // this is what rounds the relight height-field ridge.
+        let at = |x: usize, y: usize| y * 5 + x;
         let mut f = vec![0.0f32; 5 * 5];
-        f[2 * 5 + 2] = 1.0;
+        f[at(2, 2)] = 1.0;
         let out = blur_field(&f, 5, 5, 1);
-        assert!(out[2 * 5 + 2] < 1.0, "peak should drop");
-        assert!(out[2 * 5 + 1] > 0.0 && out[1 * 5 + 2] > 0.0, "neighbours pick up signal");
+        assert!(out[at(2, 2)] < 1.0, "peak should drop");
+        assert!(
+            out[at(1, 2)] > 0.0 && out[at(2, 1)] > 0.0,
+            "neighbours pick up signal"
+        );
         // mass is roughly preserved (interior, no clipping)
         let sum: f32 = out.iter().sum();
-        assert!((sum - 1.0).abs() < 0.2, "blur should roughly conserve mass, got {sum}");
+        assert!(
+            (sum - 1.0).abs() < 0.2,
+            "blur should roughly conserve mass, got {sum}"
+        );
     }
 
     #[test]
