@@ -154,8 +154,11 @@ arms counter-swing the legs; durations 110–140ms with contact poses held ~1.5�
 **For a humanoid, pose from joints.** Author the base with **`doc_figure`**, then
 per frame call `doc_figure` again with the joints moved (a contact→passing→up
 joint table) — the connected capsule body regenerates cleanly each frame, so
-limbs never detach or wobble the way hand-repainting does. This is the
-non-wobbly animation path; the rig tools below cover non-humanoid parts.
+limbs never detach or wobble the way hand-repainting does. For a **walk**, skip
+the hand-posing entirely: **`doc_walk`** generates the whole cycle from the base
+standing pose (gait path + 2-bone IK knees/elbows + counter-swinging arms + body
+bob), tagged `walk`. This is the non-wobbly animation path; the rig tools below
+cover non-humanoid parts.
 
 **Rig limbs instead of repainting them.** `doc_select_wand` the limb (or a
 region) → **`doc_extract_to_layer`** (`frames="all"`) puts it on its own part

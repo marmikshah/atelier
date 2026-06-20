@@ -1567,6 +1567,30 @@ pub struct DocFigure {
     pub snap: Option<bool>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocWalk {
+    pub doc_id: String,
+    pub layer: usize,
+    /// The base STANDING pose: the same 13 named joints as doc_figure.
+    pub joints: std::collections::HashMap<String, Vec<i64>>,
+    pub color: Vec<i64>,
+    /// Number of frames in the cycle (default 8, clamped 2..=24).
+    pub frames: Option<usize>,
+    /// Foot front-to-back travel in px (default 10).
+    pub stride: Option<i64>,
+    /// Foot lift height on the swing in px (default 4).
+    pub lift: Option<i64>,
+    /// Body bob amplitude in px (default 1).
+    pub bob: Option<i64>,
+    /// Hand front-to-back swing in px (default 6).
+    pub arm_swing: Option<i64>,
+    pub limb_w: Option<i64>,
+    pub torso_w: Option<i64>,
+    pub head_r: Option<i64>,
+    pub aa: Option<bool>,
+    pub snap: Option<bool>,
+}
+
 // --- resources -------------------------------------------------------------
 
 /// Scale used when rendering the `render` resource (matches the doc_render default).
@@ -3478,6 +3502,34 @@ impl Atelier {
             p.layer,
             p.frame,
             &joints,
+            rgba(&p.color),
+            p.limb_w.unwrap_or(3) as i32,
+            p.torso_w.unwrap_or(6) as i32,
+            p.head_r.unwrap_or(4) as i32,
+            p.aa.unwrap_or(true),
+            p.snap.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
+        description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export_gif tag=walk."
+    )]
+    async fn doc_walk(&self, Parameters(p): Parameters<DocWalk>) -> CallToolResult {
+        let joints: std::collections::HashMap<String, (i32, i32)> = p
+            .joints
+            .iter()
+            .filter(|(_, v)| v.len() >= 2)
+            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
+            .collect();
+        res(self.studio().walk(
+            &p.doc_id,
+            p.layer,
+            &joints,
+            p.frames.unwrap_or(8),
+            p.stride.unwrap_or(10) as i32,
+            p.lift.unwrap_or(4) as i32,
+            p.bob.unwrap_or(1) as i32,
+            p.arm_swing.unwrap_or(6) as i32,
             rgba(&p.color),
             p.limb_w.unwrap_or(3) as i32,
             p.torso_w.unwrap_or(6) as i32,
