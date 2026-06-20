@@ -3683,15 +3683,20 @@ impl ServerHandler for Atelier {
                 .unwrap_or_else(|| json!({}));
             (r.clone(), request.name.to_string(), args)
         });
-        // Snapshot the target doc_id (if any) before the request is moved, so a
-        // successful mutating call can notify the live gallery/playground viewers.
-        let changed_doc = self.change_tx.as_ref().and_then(|_| {
-            request
-                .arguments
-                .as_ref()
-                .and_then(|m| m.get("doc_id"))
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string())
+        // Snapshot a live-feed event (doc_id + tool + compact args) before the
+        // request is moved, so a successful call can push it to the live viewers.
+        let change_event = self.change_tx.as_ref().and_then(|_| {
+            let m = request.arguments.as_ref()?;
+            let doc = m.get("doc_id")?.as_str()?.to_string();
+            // Compact, length-capped args so a fat call (point lists, base64)
+            // can't bloat the SSE frame fanned out to every browser.
+            let mut args = serde_json::to_string(&Value::Object(m.clone())).unwrap_or_default();
+            const MAX: usize = 280;
+            if args.chars().count() > MAX {
+                args = args.chars().take(MAX).collect::<String>();
+                args.push('…');
+            }
+            Some(json!({ "doc": doc, "tool": request.name, "args": args }).to_string())
         });
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
         let result = self.tool_router.call(tcc).await?;
@@ -3700,9 +3705,9 @@ impl ServerHandler for Atelier {
                 recorder.record(&tool, args);
             }
         }
-        if let (Some(tx), Some(id)) = (&self.change_tx, &changed_doc) {
+        if let (Some(tx), Some(ev)) = (&self.change_tx, &change_event) {
             if !is_error_result(&result) {
-                let _ = tx.send(id.clone());
+                let _ = tx.send(ev.clone());
             }
         }
         Ok(result)
@@ -3876,7 +3881,7 @@ load();
 // re-render just that card instantly. Polls stay as a fallback.
 try {
   const es = new EventSource('/gallery/events');
-  es.onmessage = (e) => { if (e.data) refreshOne(e.data); };
+  es.onmessage = (e) => { try { refreshOne(JSON.parse(e.data).doc); } catch (_) {} };
 } catch (err) {}
 setInterval(refreshImages, 5000);
 setInterval(load, 10000);
@@ -4153,10 +4158,118 @@ document.getElementById("docsel").onchange = () => showDoc();
     // call (agent or this page) — re-render instantly. Poll stays as a fallback.
     try {
       const es = new EventSource("/gallery/events");
-      es.onmessage = (e) => { if (!drawing && e.data && e.data === curId) showDoc(curId); };
+      es.onmessage = (e) => { try { const m = JSON.parse(e.data); if (!drawing && m.doc === curId) showDoc(curId); } catch (_) {} };
     } catch (err) {}
     setInterval(() => { if (!drawing) showDoc(); }, 2500);
   } catch (e) { document.getElementById("tools").innerHTML = `<span class="err">connect failed: ${e.message}</span>`; }
+})();
+</script>
+</body>
+</html>"##;
+
+/// A focused, read-only LIVE view of ONE document: pick a doc, then watch the
+/// canvas re-render and a feed of the tool calls hitting it stream in real time
+/// (driven by the same `/gallery/events` SSE the gallery uses). For watching an
+/// agent draw — no tool forms, no editing.
+const LIVE_HTML: &str = r##"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>atelier live</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: flex; flex-direction: column;
+         background: #14161a; color: #e6e8ec; overflow: hidden;
+         font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  header { display: flex; align-items: center; gap: .75rem; padding: .6rem .9rem;
+           border-bottom: 1px solid #2a2e36; }
+  header h1 { font-size: 1rem; margin: 0; }
+  header .live { font-size: 11px; color: #6f7681; }
+  header .dot { color: #3a8a62; }
+  select { padding: .35rem; background: #0c0d10; border: 1px solid #2a2e36;
+           border-radius: 5px; color: #e6e8ec; min-width: 16rem; }
+  main { flex: 1; display: grid; grid-template-columns: 1fr 26rem; min-height: 0; }
+  #stage { display: flex; align-items: center; justify-content: center; padding: 1rem;
+           overflow: auto; background:
+             repeating-conic-gradient(#1a1d22 0% 25%, #16181d 0% 50%) 50% / 24px 24px; }
+  #canvas { max-width: 100%; max-height: 100%; image-rendering: pixelated;
+            border: 1px solid #2a2e36; border-radius: 6px; background: #0c0d10; }
+  #side { border-left: 1px solid #2a2e36; display: flex; flex-direction: column; min-height: 0; }
+  #side h2 { font-size: .8rem; color: #8b919c; margin: 0; padding: .6rem .8rem;
+             border-bottom: 1px solid #2a2e36; text-transform: uppercase; letter-spacing: .05em;
+             display: flex; justify-content: space-between; }
+  #feed { flex: 1; overflow-y: auto; padding: .4rem; }
+  .row { padding: .35rem .5rem; border-radius: 5px; margin: 1px 0; background: #1a1d22;
+         animation: in .25s ease; }
+  @keyframes in { from { background: #2a4a38; } to { background: #1a1d22; } }
+  .row .tool { color: #9ad5b0; font-weight: 600; }
+  .row .args { color: #7d8590; word-break: break-all; }
+  .row .t { color: #565c66; float: right; font-size: 11px; }
+  #empty { color: #6f7681; padding: 1rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>atelier <span class="live"><span class="dot">●</span> live</span></h1>
+  <select id="docsel"></select>
+  <span class="live" id="dims"></span>
+</header>
+<main>
+  <div id="stage"><img id="canvas" alt=""></div>
+  <div id="side">
+    <h2><span>tool calls</span><span id="count">0</span></h2>
+    <div id="feed"><div id="empty">pick a document, then watch the agent work…</div></div>
+  </div>
+</main>
+<script>
+let curId = "", dims = {}, count = 0;
+function showDoc(id) {
+  const sel = document.getElementById("docsel"); if (id) sel.value = id;
+  curId = sel.value; if (!curId) return;
+  const d = dims[curId];
+  document.getElementById("dims").textContent = d ? `${curId} · ${d[0]}×${d[1]}` : curId;
+  document.getElementById("canvas").src = `/gallery/${encodeURIComponent(curId)}/render.png?scale=8&t=${Date.now()}`;
+}
+async function loadDocs() {
+  let data; try { data = await (await fetch("/gallery/docs")).json(); } catch (e) { return; }
+  const sel = document.getElementById("docsel"); const keep = sel.value;
+  sel.innerHTML = "<option value=''>(pick a document)</option>";
+  for (const d of (data.documents || [])) { dims[d.id] = [d.w, d.h];
+    const o = document.createElement("option"); o.value = d.id; o.textContent = `${d.id} (${d.w}×${d.h})`; sel.appendChild(o); }
+  if (keep) sel.value = keep;
+}
+function logCall(m) {
+  const feed = document.getElementById("feed");
+  const empty = document.getElementById("empty"); if (empty) empty.remove();
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,"0"), mm = String(now.getMinutes()).padStart(2,"0"), ss = String(now.getSeconds()).padStart(2,"0");
+  const row = document.createElement("div"); row.className = "row";
+  row.innerHTML = `<span class="t">${hh}:${mm}:${ss}</span><span class="tool"></span> <span class="args"></span>`;
+  row.querySelector(".tool").textContent = m.tool || "?";
+  row.querySelector(".args").textContent = m.args || "";
+  feed.insertBefore(row, feed.firstChild);
+  while (feed.children.length > 250) feed.removeChild(feed.lastChild);
+  document.getElementById("count").textContent = ++count;
+}
+document.getElementById("docsel").onchange = () => {
+  count = 0; document.getElementById("count").textContent = 0;
+  document.getElementById("feed").innerHTML = "";
+  showDoc();
+};
+(async () => {
+  await loadDocs();
+  try {
+    const es = new EventSource("/gallery/events");
+    es.onmessage = (e) => {
+      let m; try { m = JSON.parse(e.data); } catch (_) { return; }
+      if (!curId || m.doc !== curId) return;
+      logCall(m);
+      showDoc(curId);
+    };
+  } catch (err) {}
+  setInterval(loadDocs, 5000);
 })();
 </script>
 </body>
@@ -4303,6 +4416,10 @@ pub async fn run_http(
             "/playground",
             axum::routing::get(|| async { axum::response::Html(PLAYGROUND_HTML) }),
         )
+        .route(
+            "/live",
+            axum::routing::get(|| async { axum::response::Html(LIVE_HTML) }),
+        )
         .route("/gallery/docs", axum::routing::get(gallery_docs))
         .route(
             "/gallery/{id}/render.png",
@@ -4328,6 +4445,7 @@ pub async fn run_http(
     eprintln!("atelier MCP listening on http://{local}/mcp");
     eprintln!("atelier gallery at http://{local}/gallery");
     eprintln!("atelier playground (try the tools in a window) at http://{local}/playground");
+    eprintln!("atelier live (watch the agent draw one doc) at http://{local}/live");
     axum::serve(listener, router)
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;
