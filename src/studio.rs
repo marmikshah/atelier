@@ -1275,21 +1275,6 @@ impl Studio {
         })
     }
 
-    pub fn doc_bezier(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        points: Vec<(i32, i32)>,
-        color: [u8; 4],
-        size: i32,
-        steps: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.bezier(layer, frame, &points, color, size, steps)
-        })
-    }
-
     /// Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at
     /// integer pixel `size`. Masked by the active selection. Returns the rendered
     /// `width` in document pixels so callers can lay out the next element.
@@ -1586,7 +1571,9 @@ impl Studio {
 
     // -- selection / region / clipboard -------------------------------------
 
-    /// Read one pixel — RGBA + a `#rrggbbaa` hex string for convenience.
+    /// Read one pixel — RGBA + a `#rrggbbaa` hex string. Test-only helper; the
+    /// `doc_get_pixel` tool was removed (use `doc_dump_region` in production).
+    #[cfg(test)]
     pub fn doc_get_pixel(
         &self,
         id: &str,
@@ -1596,9 +1583,6 @@ impl Studio {
         y: i32,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        // Omitting `layer` reads the flattened composite — the visible pixel —
-        // instead of one layer's cel (which reads transparent if the colour is
-        // on another layer).
         let p = match layer {
             Some(l) => doc.get_pixel(l, frame, x, y)?,
             None => {
