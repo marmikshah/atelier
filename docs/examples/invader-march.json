@@ -68,7 +68,7 @@
       "note": "A pingpong loop reverses at its ends, so there is no last->first hard cut to worry about; the audit returns seam_score 0 by construction. Running it documents that the loop is seamless rather than leaving the reader to assume it."
     },
     {
-      "tool": "doc_export_gif",
+      "tool": "doc_export_anim",
       "args": { "doc_id": "invader", "tag": "march", "scale": 6, "out_path": "invader-march.gif" },
       "note": "Render the 'march' tag at 6x (96x72) so the pixels are legible. A plain filename keeps the GIF in the caller's cwd; the recipe stays agnostic about where that is."
     }
