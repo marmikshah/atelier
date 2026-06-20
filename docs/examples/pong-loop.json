@@ -103,7 +103,7 @@
       "note": "The animator's timing chart for the ball layer: per_frame_center marches x 4.5 -> 18.5 -> 26.5 -> 12.5, and per_frame_offset reads +14, +8, -14 along x (the closing wrap 12.5 -> 4.5 is -8). The non-zero evenness is the eased motion made measurable — long strides (14) in the open court, short ones (8) braking into a paddle."
     },
     {
-      "tool": "doc_export_gif",
+      "tool": "doc_export_anim",
       "args": { "doc_id": "pong", "tag": "rally", "scale": 8, "out_path": "pong-loop.gif" },
       "note": "Render the rally tag to an 8x GIF so the 32x24 court is legible. This is the payoff: a crisp Pong loop built from nothing but rectangles moved on a timeline."
     }

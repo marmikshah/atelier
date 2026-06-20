@@ -278,16 +278,6 @@ pub struct DocExport {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocExportGif {
-    pub doc_id: String,
-    pub out_path: String,
-    pub scale: Option<u32>,
-    /// Animation tag to play (honours its direction: forward/reverse/pingpong).
-    /// Omit to play the whole timeline forward.
-    pub tag: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocExportAnim {
     pub doc_id: String,
     pub out_path: String,
@@ -782,22 +772,6 @@ pub struct DocText {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct PaletteRamp {
-    /// Base colour [r,g,b] or [r,g,b,a].
-    pub base: Vec<i64>,
-    /// Number of shades (darkest → lightest).
-    pub count: usize,
-    /// Hue shift per end in degrees (warm highlights / cool shadows). Default 20.
-    pub hue_shift: Option<f32>,
-    /// Half-spread in lightness 0..1 (default 0.35).
-    pub light_range: Option<f32>,
-    /// Saturation spread (shadows gain, highlights lose). Default 0.1.
-    pub sat_shift: Option<f32>,
-    /// If set, also store the ramp as this document's palette.
-    pub doc_id: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocPixel {
     pub doc_id: String,
     /// One layer's cel; OMIT to read the flattened composite (what's actually
@@ -1217,23 +1191,6 @@ pub struct DocLayerOps {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPerceptualRamp {
-    /// Base colour [r,g,b(,a)].
-    pub base: Vec<i64>,
-    pub count: Option<usize>,
-    /// Target OKLab lightness (0..1) of the darkest / lightest step.
-    pub value_lo: Option<f32>,
-    pub value_hi: Option<f32>,
-    /// Total hue rotation (degrees) across the ramp.
-    pub hue_shift: Option<f32>,
-    /// flat | arc | sat-in-shadow.
-    pub sat_curve: Option<String>,
-    pub anchor_midtone: Option<bool>,
-    /// If set, store the ramp as this document's palette.
-    pub set_doc: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocSnapPalette {
     pub doc_id: String,
     pub layer: Option<usize>,
@@ -1355,18 +1312,6 @@ pub struct DocContactSheet {
     /// Ghost each cell's PREVIOUS frame under it at 35% alpha — per-pair
     /// onion skinning, the closest a still image gets to showing motion.
     pub onion: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocHarmonyPalette {
-    pub base: Vec<i64>,
-    /// complementary | triadic | analogous | split | tetradic | mono.
-    pub scheme: Option<String>,
-    pub per_ramp: Option<usize>,
-    pub value_lo: Option<f32>,
-    pub value_hi: Option<f32>,
-    pub hue_shift: Option<f32>,
-    pub set_doc: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -1733,7 +1678,7 @@ const PROMPTS: &[PromptSpec] = &[
         ],
         tools: &[
             "doc_create",
-            "palette_ramp",
+            "doc_palette",
             "doc_set_palette",
             "doc_rect",
             "doc_ellipse",
@@ -1757,7 +1702,7 @@ const PROMPTS: &[PromptSpec] = &[
             format!(
                 "Draw a pixel-art sprite of {subject} on a {size}x{size} canvas (palette: {palette}).\n\
                  1. doc_create a {size}x{size} document.\n\
-                 2. palette_ramp a base colour into shades, then doc_set_palette to LOCK the ramp.\n\
+                 2. doc_palette (scheme=mono) a base colour into shades, then doc_set_palette to LOCK the ramp.\n\
                  3. Block the silhouette with doc_rect / doc_ellipse / doc_polygon.\n\
                  4. Paint detail with doc_batch (many ops in one call) or doc_pencil / doc_line.\n\
                  5. doc_look after every burst — it returns the frame INLINE; study it before continuing.\n\
@@ -1793,7 +1738,7 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_anim_audit",
             "doc_set_frame_duration",
             "doc_add_tag",
-            "doc_export_gif",
+            "doc_export_anim",
         ],
         build: |g| {
             let character = g("character").unwrap_or_else(|| "the character".into());
@@ -1815,7 +1760,7 @@ const PROMPTS: &[PromptSpec] = &[
                  8. doc_add_tag the range and doc_anim_audit mode=\"seam\" so the loop wrap is clean.\n\
                  9. doc_set_frame_duration ~120ms per frame, with contact poses held ~1.5x longer — \
                  uniform 100ms reads mechanical.\n\
-                 10. doc_export_gif the tagged loop and study it.\n\
+                 10. doc_export_anim the tagged loop and study it.\n\
                  Iterate 4-9 until the walk reads smoothly."
             )
         },
@@ -2166,30 +2111,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "DEPRECATED alias of doc_export_anim(format=\"gif\"). Export the document as an animated GIF honouring per-frame durations. Pass `tag` to play one animation tag in its direction; omit to play the whole timeline forward."
-    )]
-    async fn doc_export_gif(&self, Parameters(p): Parameters<DocExportGif>) -> CallToolResult {
-        res(self.studio().doc_export_gif(
-            &p.doc_id,
-            &p.out_path,
-            p.scale.unwrap_or(4),
-            p.tag.as_deref(),
-        ))
-    }
-
-    #[tool(
-        description = "DEPRECATED alias of doc_export_anim(format=\"apng\"). Export an animated PNG (lossless, full alpha). Pass `tag` to play one animation tag in its direction; omit to play the whole timeline forward."
-    )]
-    async fn doc_export_apng(&self, Parameters(p): Parameters<DocExportGif>) -> CallToolResult {
-        res(self.studio().doc_export_apng(
-            &p.doc_id,
-            &p.out_path,
-            p.scale.unwrap_or(4),
-            p.tag.as_deref(),
-        ))
-    }
-
-    #[tool(
         description = "Slice frame 0 into a tile_w×tile_h grid and write an engine-ready tileset: the PNG plus TWO sidecars — <name>.tsx (Tiled XML: tilewidth/tileheight/tilecount/columns/image) and <name>.json (same fields). The canvas must divide exactly by the tile size. Nearest-neighbour `scale` (default 1) upscales the PNG and tile size. Returns {path,tsx,json,tilecount,columns,rows}."
     )]
     async fn doc_export_tileset(
@@ -2526,20 +2447,6 @@ impl Atelier {
             &p.text,
             rgba(&p.color),
             p.size.unwrap_or(1) as i32,
-        ))
-    }
-
-    #[tool(
-        description = "DEPRECATED — use doc_palette (scheme=\"mono\"). Generate a hue-shifted OKLCh shading ramp from a base colour (darkest→lightest): warm highlights, cool shadows. Returns the colours (+ hex); pass `doc_id` to also store it as that document's palette."
-    )]
-    async fn palette_ramp(&self, Parameters(p): Parameters<PaletteRamp>) -> CallToolResult {
-        res(self.studio().palette_ramp(
-            rgba(&p.base),
-            p.count,
-            p.hue_shift.unwrap_or(20.0),
-            p.light_range.unwrap_or(0.35),
-            p.sat_shift.unwrap_or(0.1),
-            p.doc_id.as_deref(),
         ))
     }
 
@@ -3116,25 +3023,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "DEPRECATED — use doc_palette (scheme=\"mono\"). Generate a PERCEPTUALLY-EVEN shading ramp in OKLCh (fixes linear-HSL's crushed midtones): equal perceptual-lightness steps between value_lo..value_hi, total hue_shift° across the ramp, sat_curve flat|arc|sat-in-shadow, anchor_midtone forces the centre step to be exactly base. Reports an evenness validation; set_doc stores it as that document's palette."
-    )]
-    async fn doc_make_perceptual_ramp(
-        &self,
-        Parameters(p): Parameters<DocPerceptualRamp>,
-    ) -> CallToolResult {
-        res(self.studio().make_perceptual_ramp(
-            rgba(&p.base),
-            p.count.unwrap_or(5),
-            p.value_lo,
-            p.value_hi,
-            p.hue_shift.unwrap_or(20.0),
-            p.sat_curve.as_deref().unwrap_or("arc"),
-            p.anchor_midtone.unwrap_or(false),
-            p.set_doc.as_deref(),
-        ))
-    }
-
-    #[tool(
         description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. `alpha` controls FX bloom / AA fringe: preserve (default, RGB-only) | opaque (binarise alpha at `cutoff`, default 128 — turn a soft bloom into crisp on-palette pixels) | flatten (composite over `bg` then snap opaque). Returns the pixel count moved plus an INLINE preview of the result."
     )]
     async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
@@ -3277,24 +3165,6 @@ impl Atelier {
             p.scale.unwrap_or(4),
             p.cols.unwrap_or(8),
             p.onion.unwrap_or(false),
-        ))
-    }
-
-    #[tool(
-        description = "DEPRECATED — use doc_palette. Build a HARMONIOUS multi-ramp palette in OKLCh: one perceptual ramp per hue of a colour scheme (complementary | triadic | analogous | split | tetradic | mono), all sharing lightness poles so the set reads as one cohesive palette. set_doc stores the flattened palette on that document."
-    )]
-    async fn doc_harmony_palette(
-        &self,
-        Parameters(p): Parameters<DocHarmonyPalette>,
-    ) -> CallToolResult {
-        res(self.studio().harmony_palette(
-            rgba(&p.base),
-            p.scheme.as_deref().unwrap_or("complementary"),
-            p.per_ramp.unwrap_or(5),
-            p.value_lo,
-            p.value_hi,
-            p.hue_shift.unwrap_or(20.0),
-            p.set_doc.as_deref(),
         ))
     }
 
@@ -3546,7 +3416,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export_gif tag=burst."
+        description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export_anim tag=burst."
     )]
     async fn doc_burst(&self, Parameters(p): Parameters<DocBurst>) -> CallToolResult {
         res(self.studio().burst(
@@ -3587,7 +3457,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export_gif tag=walk."
+        description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export_anim tag=walk."
     )]
     async fn doc_walk(&self, Parameters(p): Parameters<DocWalk>) -> CallToolResult {
         let joints: std::collections::HashMap<String, (i32, i32)> = p
@@ -3723,7 +3593,7 @@ impl ServerHandler for Atelier {
              and editing what moves — doc_keyframe_move for eased motion; doc_tween is \
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
-             doc_export_sheet / doc_export_gif / export_all. list_docs browses the \
+             doc_export_sheet / doc_export_anim / export_all. list_docs browses the \
              library."
                 .into(),
         );

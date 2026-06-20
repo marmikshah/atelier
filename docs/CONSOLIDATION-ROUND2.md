@@ -28,8 +28,10 @@ Back-compat: every fuse ships the old tool names as thin deprecated alias handle
 for one release. These are public MCP tools; no hard breaks.
 
 **SHIPPED** (dev/v1.2.0): #1 batch-gradient snap parity bug · #2 `doc_export_anim`
-(gif/apng aliases kept) · #3 `doc_palette` (palette_ramp/make_perceptual_ramp/
-harmony_palette aliases kept). 195 lib tests, CI green.
+· #3 `doc_palette`. **HARD BREAK** (no users yet): the 5 superseded tools
+(`doc_export_gif`, `doc_export_apng`, `palette_ramp`, `doc_make_perceptual_ramp`,
+`doc_harmony_palette`) and their studio methods/structs were REMOVED outright
+(not kept as aliases). Prompts, recipes, TOOLS.md updated to the new names.
 
 **Deferred to its own release (#4 `doc_look` fold):** add `tile`/`out_path` to
 `doc_look` and fix `look_stats` to report the analysis channel, then retire

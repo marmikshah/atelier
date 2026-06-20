@@ -500,69 +500,6 @@ impl Studio {
         )
     }
 
-    // -- doc_make_perceptual_ramp ------------------------------------------
-
-    /// Build a perceptually-even shading ramp in OKLCh (the fix for HSL's
-    /// crushed midtones). Optionally validate evenness and/or store it as a
-    /// document's palette.
-    #[allow(clippy::too_many_arguments)]
-    pub fn make_perceptual_ramp(
-        &self,
-        base: [u8; 4],
-        count: usize,
-        value_lo: Option<f32>,
-        value_hi: Option<f32>,
-        hue_shift: f32,
-        sat_curve: &str,
-        anchor_midtone: bool,
-        set_doc: Option<&str>,
-    ) -> Result<Value, String> {
-        let (lb, _, _) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
-        let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
-        let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
-        let ramp = raster::make_ramp_oklch(
-            base,
-            count.max(1),
-            lo,
-            hi,
-            hue_shift,
-            sat_curve,
-            anchor_midtone,
-        );
-        let hex: Vec<String> = ramp
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
-            .collect();
-        // Validate: perceptual lightness should rise monotonically in even steps.
-        let ls: Vec<f32> = ramp.iter().map(|c| raster::srgb_to_oklab(*c).0).collect();
-        let steps: Vec<f32> = ls.windows(2).map(|w| w[1] - w[0]).collect();
-        let monotonic = steps.iter().all(|d| *d > -0.001);
-        let (mean_step, max_dev) = if steps.is_empty() {
-            (0.0, 0.0)
-        } else {
-            let m = steps.iter().sum::<f32>() / steps.len() as f32;
-            let dev = steps.iter().map(|d| (d - m).abs()).fold(0.0_f32, f32::max);
-            (m, dev)
-        };
-        let mut out = json!({
-            "ramp": ramp, "hex": hex, "count": ramp.len(),
-            "validation": {
-                "monotonic_lightness": monotonic,
-                "mean_step": (mean_step * 1000.0).round() / 1000.0,
-                "max_step_deviation": (max_dev * 1000.0).round() / 1000.0,
-                "even": max_dev < mean_step.abs() * 0.5 + 0.01,
-            }
-        });
-        if let Some(did) = set_doc {
-            self.edit(did, |d| {
-                d.set_palette(ramp.clone());
-                Ok(())
-            })?;
-            out["set_doc"] = json!(did);
-        }
-        Ok(out)
-    }
-
     // -- doc_snap_palette ---------------------------------------------------
 
     /// Snap a cel (or the whole document) to its locked palette by perceptual
@@ -895,64 +832,6 @@ impl Studio {
             png,
             json!({"doc_id": id, "frames": n, "cols": cols, "rows": rows, "size": [sheetw, sheeth]}),
         ))
-    }
-
-    // -- doc_harmony_palette: cohesive multi-ramp palettes -----------------
-
-    /// Build a harmonious multi-ramp palette in OKLCh: a perceptual ramp per hue
-    /// of a colour scheme (complementary | triadic | analogous | split |
-    /// tetradic), sharing lightness poles so the set reads as one palette.
-    #[allow(clippy::too_many_arguments)]
-    pub fn harmony_palette(
-        &self,
-        base: [u8; 4],
-        scheme: &str,
-        per_ramp: usize,
-        value_lo: Option<f32>,
-        value_hi: Option<f32>,
-        hue_shift: f32,
-        set_doc: Option<&str>,
-    ) -> Result<Value, String> {
-        let offsets: Vec<f32> = match scheme {
-            "complementary" => vec![0.0, 180.0],
-            "triadic" => vec![0.0, 120.0, 240.0],
-            "analogous" => vec![0.0, 30.0, -30.0],
-            "split" => vec![0.0, 150.0, 210.0],
-            "tetradic" => vec![0.0, 90.0, 180.0, 270.0],
-            "mono" => vec![0.0],
-            other => {
-                return Err(format!(
-                    "unknown scheme '{}' — use complementary|triadic|analogous|split|tetradic|mono",
-                    other
-                ))
-            }
-        };
-        let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
-        let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
-        let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
-        let per_ramp = per_ramp.max(2);
-        let mut ramps: Vec<Vec<[u8; 4]>> = Vec::new();
-        for off in &offsets {
-            let rgb = raster::oklab_to_srgb(raster::oklch_to_oklab((lb, cb, hb + off)));
-            let anchor = [rgb[0], rgb[1], rgb[2], 255];
-            ramps.push(raster::make_ramp_oklch(
-                anchor, per_ramp, lo, hi, hue_shift, "arc", false,
-            ));
-        }
-        let flat: Vec<[u8; 4]> = ramps.iter().flatten().copied().collect();
-        let hex: Vec<String> = flat
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
-            .collect();
-        let mut out = json!({"scheme": scheme, "ramps": ramps, "palette": flat, "hex": hex, "count": flat.len()});
-        if let Some(did) = set_doc {
-            self.edit(did, |d| {
-                d.set_palette(flat.clone());
-                Ok(())
-            })?;
-            out["set_doc"] = json!(did);
-        }
-        Ok(out)
     }
 
     // -- doc_palette: one OKLCh generator for mono + harmony schemes -------
@@ -2027,28 +1906,6 @@ mod tests {
     }
 
     #[test]
-    fn perceptual_ramp_validates_and_sets_palette() {
-        let s = studio("ramp");
-        s.doc_create("c", 4, 4).unwrap();
-        let r = s
-            .make_perceptual_ramp(
-                [120, 80, 60, 255],
-                5,
-                None,
-                None,
-                20.0,
-                "arc",
-                true,
-                Some("c"),
-            )
-            .unwrap();
-        assert_eq!(r["ramp"].as_array().unwrap().len(), 5);
-        assert_eq!(r["validation"]["monotonic_lightness"], true);
-        // stored on the doc
-        assert_eq!(s.doc_info("c").unwrap()["palette_len"], 5);
-    }
-
-    #[test]
     fn snap_palette_moves_off_palette_pixels() {
         let s = studio("snap");
         s.doc_create("c", 4, 4).unwrap();
@@ -2213,15 +2070,6 @@ mod tests {
         let (png, report) = s.contact_sheet("c", 4, 8, false).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(report["frames"], 1);
-    }
-
-    #[test]
-    fn harmony_palette_triadic_has_three_ramps() {
-        let s = studio("harmony");
-        let r = s
-            .harmony_palette([200, 80, 60, 255], "triadic", 4, None, None, 20.0, None)
-            .unwrap();
-        assert_eq!(r["palette"].as_array().unwrap().len(), 12);
     }
 
     #[test]
