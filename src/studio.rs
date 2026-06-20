@@ -1297,38 +1297,6 @@ impl Studio {
 
     /// Generate a hue-shifted shading ramp from a base colour. If `set_doc` is
     /// given, also store it as that document's palette. Returns the colours.
-    pub fn palette_ramp(
-        &self,
-        base: [u8; 4],
-        count: usize,
-        hue_shift: f32,
-        light_range: f32,
-        sat_shift: f32,
-        set_doc: Option<&str>,
-    ) -> Result<Value, String> {
-        // Build on the OKLCh engine (same path as doc_make_perceptual_ramp) so
-        // the ramp has perceptually-even steps instead of the legacy linear-HSL
-        // make_ramp that crushed midtones into near-black mud. `light_range`
-        // sets the spread around the base lightness; `sat_shift` is folded into
-        // the chroma arc.
-        let _ = sat_shift;
-        let (lb, _, _) = crate::raster::oklab_to_oklch(crate::raster::srgb_to_oklab(base));
-        let lo = (lb - light_range).max(0.04);
-        let hi = (lb + light_range).min(0.97);
-        let ramp =
-            crate::raster::make_ramp_oklch(base, count.max(1), lo, hi, hue_shift, "arc", false);
-        if let Some(id) = set_doc {
-            let (dir, mut doc) = self.open(id)?;
-            doc.set_palette(ramp.clone());
-            doc.save(&dir)?;
-        }
-        let hex: Vec<String> = ramp
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]))
-            .collect();
-        Ok(json!({"count": ramp.len(), "colors": ramp, "hex": hex, "set_doc": set_doc}))
-    }
-
     #[allow(clippy::too_many_arguments)]
     pub fn doc_gradient(
         &self,
@@ -2213,6 +2181,21 @@ mod tests {
                 None
             )
             .is_err());
+        // set_doc stores the flattened palette on the document.
+        s.doc_create("pd", 4, 4).unwrap();
+        s.palette(
+            [120, 80, 60, 255],
+            "mono",
+            5,
+            None,
+            None,
+            20.0,
+            "arc",
+            true,
+            Some("pd"),
+        )
+        .unwrap();
+        assert_eq!(s.doc_info("pd").unwrap()["palette_len"], 5);
     }
 
     #[test]

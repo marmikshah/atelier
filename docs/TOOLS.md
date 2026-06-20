@@ -14,7 +14,7 @@ stays crisp.
   addressed by `id`. No projects, no baked-in art style — the agent draws
   everything.
 - The loop: `doc_create` → paint (`doc_*`) → `doc_render` (flatten a frame to a
-  PNG you can SEE) → inspect → fix → `doc_export_sheet` / `doc_export_gif`.
+  PNG you can SEE) → inspect → fix → `doc_export_sheet` / `doc_export_anim`.
 
 ## Library
 
@@ -103,7 +103,7 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   the body bobs — each frame drawn as the connected-capsule figure, range tagged
   `walk`. Generated from joints, not hand-painted, so limbs never wobble or
   detach. Tune `frames`/`stride`/`lift`/`bob`/`arm_swing`; export with
-  `doc_export_gif tag=walk`.
+  `doc_export_anim tag=walk`.
 - `doc_paint_grid` — paint a whole region DECLARATIVELY from a character grid:
   `legend` maps single chars to `[r,g,b(,a)]` colours or integer palette
   indices (palette-true by construction), `rows` are pixel-row strings
@@ -148,8 +148,6 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   recolour, brighten).
 - `doc_quantize` — snap to a palette, or derive one of N colours by median cut
   (posterise / down-palette imported art).
-- `palette_ramp` — *(deprecated — use `doc_palette` `scheme=mono`)* hue-shifted
-  shading ramp from a base colour; optionally store it as a document's palette.
 - `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
   colour to `to[i]` across every cel (exact match, all channels), updating the
   stored palette too; optional `layer` / `frame` restrict scope. The
@@ -244,8 +242,7 @@ The limb/keyframe-animation toolkit.
   timeline forward. All frames are snapped to ONE shared palette (the locked one,
   else a median-cut over every frame) before encoding, so colours don't shimmer
   frame-to-frame — only the motion moves. GIF = 256 colours + 1-bit alpha
-  (smaller); APNG = lossless, full alpha. *(Supersedes `doc_export_gif` /
-  `doc_export_apng`, kept as deprecated aliases.)*
+  (smaller); APNG = lossless, full alpha. (replaces `doc_export_gif` / `doc_export_apng`)
 - `doc_export_tileset` — slice frame 0 into a `tile_w`×`tile_h` grid and write an
   engine-ready tileset: the PNG plus two sidecars — `<name>.tsx` (Tiled XML) and
   `<name>.json` (same fields: tilewidth / tileheight / tilecount / columns /
@@ -307,9 +304,7 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
   perceptually-even shading ramp (equal-lightness steps, hue shift, `sat_curve`
   flat/arc/sat-in-shadow, `anchor_midtone`, evenness validation) or
   `complementary/triadic/analogous/split/tetradic` for a cohesive multi-hue set
-  sharing lightness poles. `count` per ramp; `set_doc` locks it. *(Supersedes
-  `palette_ramp` / `doc_make_perceptual_ramp` / `doc_harmony_palette`, kept as
-  deprecated aliases.)*
+  sharing lightness poles. `count` per ramp; `set_doc` locks it. (replaces `palette_ramp` / `doc_make_perceptual_ramp` / `doc_harmony_palette`)
 - `doc_snap_palette` — snap a cel/document to its locked palette by perceptual
   nearest colour, killing off-palette drift from blends/dithers/FX. `alpha`
   governs FX bloom / AA fringe: `preserve` (default, RGB-only) · `opaque`
@@ -392,7 +387,7 @@ doc_render   doc_id="cat" frame=0 scale=8                  → PNG to LOOK at
 doc_add_frame doc_id="cat" copy_from=0                     → frame 1 (dupe)
 doc_batch    doc_id="cat" layer=0 frame=1 ops=[ …eyes… ]   → repaint as closed
 doc_add_tag  doc_id="cat" name="blink" from=0 to=1 direction="pingpong"
-doc_export_gif doc_id="cat" out_path="cat.gif" tag="blink" scale=8
+doc_export_anim doc_id="cat" out_path="cat.gif" tag="blink" scale=8
 ```
 
 > An animation needs **two or more frames**: draw frame 0, `doc_add_frame`
