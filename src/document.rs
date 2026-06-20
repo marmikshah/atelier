@@ -1335,72 +1335,6 @@ impl Document {
     /// the extras — a curve that quietly ignored half its control points).
     /// Sampled into `steps` segments with brush `size`. Smooth organic
     /// strokes — tails, vines, hair.
-    pub fn bezier(
-        &mut self,
-        layer: usize,
-        frame: usize,
-        points: &[(i32, i32)],
-        color: [u8; 4],
-        size: i32,
-        steps: i32,
-    ) -> Result<(), String> {
-        if points.len() > 4 {
-            return Err(format!(
-                "bezier supports at most 4 control points (got {}) — chain several bezier calls \
-                 to draw a longer curve",
-                points.len()
-            ));
-        }
-        let s = size.max(1);
-        let steps = steps.max(2);
-        let img = self.cel_canvas(layer, frame)?;
-        if points.len() < 2 {
-            if let Some(p) = points.first() {
-                raster::brush(img, p.0, p.1, color, s);
-            }
-            return Ok(());
-        }
-        let p: Vec<(f32, f32)> = points.iter().map(|&(x, y)| (x as f32, y as f32)).collect();
-        let at = |t: f32| -> (f32, f32) {
-            let mt = 1.0 - t;
-            match p.len() {
-                2 => (
-                    raster::lerpf(p[0].0, p[1].0, t),
-                    raster::lerpf(p[0].1, p[1].1, t),
-                ),
-                3 => (
-                    mt * mt * p[0].0 + 2.0 * mt * t * p[1].0 + t * t * p[2].0,
-                    mt * mt * p[0].1 + 2.0 * mt * t * p[1].1 + t * t * p[2].1,
-                ),
-                _ => (
-                    mt * mt * mt * p[0].0
-                        + 3.0 * mt * mt * t * p[1].0
-                        + 3.0 * mt * t * t * p[2].0
-                        + t * t * t * p[3].0,
-                    mt * mt * mt * p[0].1
-                        + 3.0 * mt * mt * t * p[1].1
-                        + 3.0 * mt * t * t * p[2].1
-                        + t * t * t * p[3].1,
-                ),
-            }
-        };
-        let mut prev = at(0.0);
-        for i in 1..=steps {
-            let cur = at(i as f32 / steps as f32);
-            raster::draw_line(
-                img,
-                prev.0.round() as i32,
-                prev.1.round() as i32,
-                cur.0.round() as i32,
-                cur.1.round() as i32,
-                color,
-                s,
-            );
-            prev = cur;
-        }
-        Ok(())
-    }
-
     /// Draw a variable-width, anti-aliased stroke through `pts` (each
     /// `(x, y, full_width)`) as the union of round-capped capsules — the
     /// clean-by-construction stroke core. Connected (union, no gaps between
@@ -4039,14 +3973,6 @@ impl Document {
                 stops_val(op.get("stops")),
                 gb("blend", false),
             ),
-            "bezier" => self.bezier(
-                layer,
-                frame,
-                &points_val(op.get("points")),
-                col("color"),
-                gi("size", 1),
-                gi("steps", 24),
-            ),
             "shade" => self.shade(
                 layer,
                 frame,
@@ -4334,7 +4260,6 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "polyline" => (&["points", "color"], &["size", "closed"]),
         "polygon" => (&["points", "color"], &["fill"]),
         "stroke" => (&["points", "color"], &["width", "aa", "snap"]),
-        "bezier" => (&["points", "color"], &["size", "steps"]),
         "fill" | "bucket" => (&["x", "y", "color"], &["tolerance"]),
         "replace_color" => (&["from", "to"], &["tolerance"]),
         "flip" => (&[], &["horizontal"]),
@@ -4601,20 +4526,6 @@ mod tests {
         assert_eq!(d.meta.frames.len(), 3);
         assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [2, 2, 2, 255]); // the copy
         assert_eq!(d.get_pixel(0, 2, 0, 0).unwrap(), [1, 1, 1, 255]); // shifted
-    }
-
-    #[test]
-    fn bezier_rejects_more_than_four_control_points() {
-        let mut d = Document::new("t", 8, 8);
-        let c = [9, 9, 9, 255];
-        // 4 points (cubic) draws fine.
-        d.bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7)], c, 1, 8)
-            .unwrap();
-        // 5 points used to silently drop the 5th; now it's an actionable error.
-        let err = d
-            .bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7), (3, 3)], c, 1, 8)
-            .unwrap_err();
-        assert!(err.contains("at most 4"), "got: {err}");
     }
 
     #[test]

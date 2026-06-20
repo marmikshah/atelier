@@ -58,7 +58,7 @@ deterministic.
   interactive `/playground` — run any tool from an auto-built form, or draw with
   the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-The full tool surface (105 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
+The full tool surface (103 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
 release notes live in [CHANGELOG.md](CHANGELOG.md).
 
 ## Quickstart

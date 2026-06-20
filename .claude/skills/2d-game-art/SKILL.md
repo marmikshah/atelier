@@ -32,8 +32,8 @@ them: producing a *whole game's* coherent, engine-ready asset set.
 2. **Audit as data, not vibes.** atelier's critique tools turn "does it look
    right?" into numbers. Run **`doc_critique`** for the one-call scorecard
    (orphans, jaggies, contrast, pillow-shading, value-soup, off-palette), then
-   the targeted readers as gates. When unsure of a pixel, `doc_dump_region` /
-   `doc_get_pixel` reads it back as text.
+   the targeted readers as gates. When unsure of a pixel, `doc_dump_region`
+   reads the exact pixels back as a text grid.
 3. **Checkpoint before risk.** Before a high-variance op (`doc_form`,
    `doc_relight`, `doc_quantize`, `doc_material`, a big fill) **`doc_checkpoint`
    action="save"** — `restore` if it gets worse, `diff` to see the regression.
@@ -44,10 +44,20 @@ them: producing a *whole game's* coherent, engine-ready asset set.
    multi-hue set, `set_doc` to lock it, then stay on it.
    `doc_palette_report` catches stray tints; **`doc_snap_palette`** pulls drift
    back on-palette after blends/dithers/FX.
-5. **Silhouette before detail.** Block the big shapes (`doc_rect` / `doc_ellipse`
-   / `doc_polygon` / `doc_box`), confirm the pose reads with `doc_silhouette`,
-   *then* detail. A sprite that fails the squint test will never be saved by
-   rendering.
+5. **Silhouette before detail — but a blocked shape is a BASE, never a finish.**
+   Block the big masses with shapes (`doc_ellipse`/`doc_rect`/`doc_polygon`/
+   `doc_box`) ONLY to rough the silhouette; confirm the pose reads with
+   `doc_silhouette`. Then you MUST do the work that turns a blob into art:
+   **(1) volume** — `doc_form`/`doc_relight` so it isn't one flat tone;
+   **(2) pixel detail** — `doc_paint_grid` / `doc_dump_region`→edit / `doc_pencil`
+   for eyes, fur, features, markings, paw toes; **(3) polish** — `doc_smooth_edges`
+   (selout the staircased outline), edge fur tufts, crisp cast shadows, eye
+   highlights. A sprite left as a flat stamped blob — smooth ellipse edges, one
+   tone, no pixel work — reads as **clumsy** however correct its structure. Shapes
+   get you ~30%; the form + pixel-detail pass is the other ~70%, and it is not
+   optional. **Size the canvas to hold detail: use ≥48px (64 for a hero) for any
+   character with a face — 32px forces crude, blocky shapes that can't be polished
+   out.**
 6. **Compose, don't place every pixel.** Reach for the procedural/craft leverage
    — `doc_relight` (key/fill/rim form), `doc_material` (metal/wood/stone/…),
    `doc_dither_ramp` (graduated shading), `doc_smooth_edges` (selout AA),
@@ -59,7 +69,7 @@ them: producing a *whole game's* coherent, engine-ready asset set.
    For any ORGANIC or TAPERED stroke — a sword-arc trail, hair, a vine, a
    tentacle, an energy wisp — reach for **`doc_stroke`** (a width-profiled
    capsule-union: connected with no gaps, tapered, anti-aliased on-palette by
-   construction) instead of stacking `doc_bezier`/`doc_line`, which leave gappy,
+   construction) instead of stacking straight line segments, which leave gappy,
    frayed, hard-staircased curves. A **2-point `doc_stroke` is a tapered capsule
    LIMB**: build arms/legs/fingers/necks from capsules that share a joint
    endpoint and they stay attached — a far better figure than blocky rect stacks.
@@ -177,9 +187,9 @@ for eased translation) → `doc_look onion=true`, and `doc_contact_sheet
 onion=true` to judge the whole cycle's spacing from one image. Tag the range
 with `doc_add_tag` (`forward`/`reverse`/`pingpong`).
 
-**`doc_tween` is a DISSOLVE** — alpha cross-fade, never pose motion (limbs
+**`doc_dissolve` is a DISSOLVE** — alpha cross-fade, never pose motion (limbs
 ghost instead of moving). Use it only for fades/FX. It auto-checkpoints, and a
-bad tween is recoverable: **`doc_frame_ops action="delete"`** removes frames
+bad dissolve is recoverable: **`doc_frame_ops action="delete"`** removes frames
 with tags remapped.
 
 **Gates:** `doc_frame_diff` between adjacent frames — only the moving limbs
