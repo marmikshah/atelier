@@ -1597,15 +1597,28 @@ impl Studio {
     pub fn doc_get_pixel(
         &self,
         id: &str,
-        layer: usize,
+        layer: Option<usize>,
         frame: usize,
         x: i32,
         y: i32,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let p = doc.get_pixel(layer, frame, x, y)?;
+        // Omitting `layer` reads the flattened composite — the visible pixel —
+        // instead of one layer's cel (which reads transparent if the colour is
+        // on another layer).
+        let p = match layer {
+            Some(l) => doc.get_pixel(l, frame, x, y)?,
+            None => {
+                let img = doc.flatten(frame);
+                if x < 0 || y < 0 || x as u32 >= img.width() || y as u32 >= img.height() {
+                    [0, 0, 0, 0]
+                } else {
+                    img.get_pixel(x as u32, y as u32).0
+                }
+            }
+        };
         let hex = format!("#{:02x}{:02x}{:02x}{:02x}", p[0], p[1], p[2], p[3]);
-        Ok(json!({"x": x, "y": y, "rgba": p, "hex": hex}))
+        Ok(json!({"x": x, "y": y, "rgba": p, "hex": hex, "layer": layer}))
     }
 
     /// Copy a region into the shared clipboard (does not modify the document).
@@ -2098,6 +2111,18 @@ mod tests {
             }
         }
         assert!(colors.iter().all(|c| pal.contains(c)), "off-palette: {colors:?}");
+    }
+
+    #[test]
+    fn get_pixel_none_reads_flattened_composite() {
+        let s = studio("getpix");
+        s.doc_create("g", 4, 4).unwrap();
+        s.doc_add_layer("g", None, 255, "normal".into()).unwrap();
+        s.doc_pencil("g", 1, 0, vec![(1, 1)], [10, 20, 30, 255], 1).unwrap();
+        // Reading layer 0 alone misses the pixel painted on layer 1.
+        assert_eq!(s.doc_get_pixel("g", Some(0), 0, 1, 1).unwrap()["rgba"], json!([0, 0, 0, 0]));
+        // Omitting layer reads the visible (flattened) pixel.
+        assert_eq!(s.doc_get_pixel("g", None, 0, 1, 1).unwrap()["rgba"], json!([10, 20, 30, 255]));
     }
 
     fn humanoid_joints() -> std::collections::HashMap<String, (i32, i32)> {
@@ -2594,7 +2619,7 @@ mod tests {
             .unwrap();
         s.doc_copy_region("src", 0, 0, 2, 2, 2, 2).unwrap();
         s.doc_paste("dst", 0, 0, 5, 5, false).unwrap();
-        let px = s.doc_get_pixel("dst", 0, 0, 5, 5).unwrap();
+        let px = s.doc_get_pixel("dst", Some(0), 0, 5, 5).unwrap();
         assert_eq!(px["rgba"], json!([7, 8, 9, 255]));
         assert_eq!(px["hex"], "#070809ff");
     }
@@ -2615,11 +2640,11 @@ mod tests {
             .unwrap();
         s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 2, 2).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 2, 2).unwrap()["rgba"],
             json!([9, 9, 9, 255])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 6, 6).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // Clearing the selection lets a fill cover everything again.
@@ -2627,7 +2652,7 @@ mod tests {
             .unwrap();
         s.doc_fill("d", 0, 0, 0, 0, [1, 2, 3, 255], 0).unwrap();
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 6, 6).unwrap()["rgba"],
             json!([1, 2, 3, 255])
         );
     }
@@ -2645,7 +2670,7 @@ mod tests {
         assert!(err.contains("stale"), "got: {err}");
         // Nothing was painted — the op refused rather than running unmasked.
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 0, 0).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // Clearing the selection unblocks painting.
@@ -2676,16 +2701,16 @@ mod tests {
             .unwrap();
         assert_eq!(r["painted"], json!(3));
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 1, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 1, 0).unwrap()["rgba"],
             json!([10, 10, 10, 255])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 1, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 1, 1).unwrap()["rgba"],
             json!([200, 50, 50, 255])
         );
         // '.' left the pixel untouched.
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 0, 0).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // Unknown character is an actionable error; out-of-range index too.
@@ -2729,7 +2754,7 @@ mod tests {
         s.doc_fill("d", 0, 0, 4, 4, [101, 100, 100, 255], 16)
             .unwrap();
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 0, 0).unwrap()["rgba"],
             json!([101, 100, 100, 255])
         );
     }
@@ -2755,11 +2780,11 @@ mod tests {
         .unwrap();
         // inside the selection a colour was painted; outside stays transparent.
         assert_ne!(
-            s.doc_get_pixel("d", 0, 0, 2, 2).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 2, 2).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 6, 6).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
     }
