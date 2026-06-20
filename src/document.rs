@@ -2135,6 +2135,76 @@ impl Document {
         Ok(())
     }
 
+    /// Paint a RIM light along the silhouette edges that FACE the light — the
+    /// edge-relative move that was 100% manual (dump-region round-trips). For each
+    /// opaque pixel near the edge it estimates the outward surface normal from the
+    /// directions to nearby transparent pixels (radius `width`), and where that
+    /// normal faces the light (`az_deg`: 0=right, 90=down, 180=left, 270=up) it
+    /// stamps `color`, weighted by `falloff`. `dark=true` lights the AWAY-facing
+    /// edge instead (core/contact shadow). Topological, so it survives small
+    /// canvases where a Fresnel term washes out. Returns pixels painted.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rim_light(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        color: [u8; 4],
+        az_deg: f32,
+        width: i32,
+        falloff: f32,
+        dark: bool,
+        snap: bool,
+    ) -> Result<u32, String> {
+        let pal = self.meta.palette.clone();
+        let img = self.cel_canvas(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let orig = img.clone();
+        let op = |x: i32, y: i32| {
+            x >= 0 && y >= 0 && x < w && y < h && orig.get_pixel(x as u32, y as u32).0[3] > 0
+        };
+        let r = width.max(1);
+        let az = az_deg.to_radians();
+        let (lx, ly) = (az.cos(), az.sin());
+        let sign = if dark { -1.0 } else { 1.0 };
+        let mut changed = 0u32;
+        for y in 0..h {
+            for x in 0..w {
+                if !op(x, y) {
+                    continue;
+                }
+                // Outward normal ≈ sum of unit vectors toward nearby empty pixels.
+                let (mut sx, mut sy) = (0f32, 0f32);
+                for dy in -r..=r {
+                    for dx in -r..=r {
+                        if (dx == 0 && dy == 0) || op(x + dx, y + dy) {
+                            continue;
+                        }
+                        let len = ((dx * dx + dy * dy) as f32).sqrt();
+                        sx += dx as f32 / len;
+                        sy += dy as f32 / len;
+                    }
+                }
+                let mag = (sx * sx + sy * sy).sqrt();
+                if mag < 1e-3 {
+                    continue; // interior pixel, no edge nearby
+                }
+                let facing = sign * (sx / mag * lx + sy / mag * ly);
+                if facing <= 0.0 {
+                    continue;
+                }
+                if facing.powf(falloff.max(0.1)) < 0.15 {
+                    continue;
+                }
+                img.put_pixel(x as u32, y as u32, Rgba(color));
+                changed += 1;
+            }
+        }
+        if snap && !pal.is_empty() {
+            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
+        }
+        Ok(changed)
+    }
+
     /// Bloom: blur a bright copy of the cel and composite it back through a
     /// light blend (`mode`, e.g. screen/add) at `intensity`. `color` (None =
     /// the art's own colours) tints the glow. Self-contained on one cel.
@@ -4700,6 +4770,29 @@ mod tests {
         assert!(
             frac >= 20,
             "AA capsule should have ≥20 fractional pixels, got {frac}"
+        );
+    }
+
+    #[test]
+    fn rim_light_lights_only_the_facing_edge() {
+        let mut d = Document::new("t", 16, 16);
+        d.ellipse(0, 0, 8, 8, 6, 6, [80, 80, 80, 255], true)
+            .unwrap();
+        // Light from the right (az=0): the right edge lights, the left does not.
+        d.rim_light(0, 0, [255, 255, 255, 255], 0.0, 1, 1.5, false, false)
+            .unwrap();
+        let opaque = |x: i32| d.get_pixel(0, 0, x, 8).unwrap()[3] > 0;
+        let rmost = (0..16).rev().find(|&x| opaque(x)).unwrap();
+        let lmost = (0..16).find(|&x| opaque(x)).unwrap();
+        assert_eq!(
+            d.get_pixel(0, 0, rmost, 8).unwrap(),
+            [255, 255, 255, 255],
+            "right (light-facing) edge should be rim-lit"
+        );
+        assert_ne!(
+            d.get_pixel(0, 0, lmost, 8).unwrap(),
+            [255, 255, 255, 255],
+            "left (away) edge should NOT be rim-lit"
         );
     }
 
