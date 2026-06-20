@@ -38,9 +38,10 @@ them: producing a *whole game's* coherent, engine-ready asset set.
    `doc_relight`, `doc_quantize`, `doc_material`, a big fill) **`doc_checkpoint`
    action="save"** — `restore` if it gets worse, `diff` to see the regression.
    It is the undo a destructive editor otherwise lacks.
-4. **Lock a perceptual palette first.** **`doc_make_perceptual_ramp`** (OKLCh,
-   even steps — not HSL's crushed midtones) or **`doc_harmony_palette`** for a
-   cohesive multi-hue set, `set_doc` to lock it, then stay on it.
+4. **Lock a perceptual palette first.** **`doc_palette`** (OKLCh, even steps —
+   not HSL's crushed midtones): `scheme="mono"` for a single shading ramp, or
+   `complementary`/`triadic`/`analogous`/`split`/`tetradic` for a cohesive
+   multi-hue set, `set_doc` to lock it, then stay on it.
    `doc_palette_report` catches stray tints; **`doc_snap_palette`** pulls drift
    back on-palette after blends/dithers/FX.
 5. **Silhouette before detail.** Block the big shapes (`doc_rect` / `doc_ellipse`
@@ -117,7 +118,10 @@ memory of a chat attachment produces generic sprites that drift off-model.
 6. **`doc_ref_compare` after EVERY pass.** It returns a side-by-side (or
    `mode="overlay"` ghost for proportion checks), silhouette IoU, per-cell
    colour ΔE with the worst cells named as rects, and reference colours your
-   palette is missing. **Fix the worst cells first.**
+   palette is missing. **Fix the worst cells first.** For the last 5%,
+   **`doc_diff_map`** returns a per-pixel error heat-map plus the worst individual
+   pixels — each with x,y and a fix direction (lighten/darken, saturate/desaturate,
+   shift hue). Fix the named pixels, re-run.
 
 **Gates:** `silhouette_iou ≥ 0.80`; `mean_delta ≤ 0.06` for a *faithful* copy —
 deliberate stylisation (bolder pupils, crisper edges than a soft sketch)
@@ -134,9 +138,10 @@ with `doc_rect`/`doc_ellipse`/`doc_polygon` and **`doc_stroke` capsule limbs**
 (share the joint endpoint so they stay attached and taper naturally, vs blocky
 rect stacks)
 → `doc_render` + `doc_silhouette` (pose reads?) → detail (`doc_pencil`/`doc_line`/
-`doc_batch`) → volume with `doc_form` (sphere/cylinder/auto) and rim light with
-`doc_shade` → `doc_pixel_perfect` to clean doubled corners → `doc_outline` if the
-style wants it.
+`doc_batch`) → volume with `doc_form` (sphere/cylinder/auto) and edge light with
+`doc_rim_light` (outward-normal rim from an azimuth; `dark=true` paints the
+away-facing contact shadow) → `doc_pixel_perfect` to clean doubled corners →
+`doc_outline` if the style wants it.
 **Watch out:** on a multi-material sprite, ALWAYS pass a `region` to `doc_shade` /
 `doc_form`. Unclipped, they push *every* opaque pixel they touch toward the given
 ramp — skin, hair and cloth all snap into one material. Shade one material at a
@@ -242,9 +247,9 @@ Art only matters once an engine can slice it. atelier emits the gameplay metadat
 Then:
 - **`doc_export_sheet`** — one sprite/animation → horizontal sheet PNG + JSON
   (rects, durations, tags, pivots, boxes, palette).
-- **`doc_export_gif` / `doc_export_apng`** — preview/loop. GIF = 256 colours +
-  1-bit alpha (smaller); APNG = lossless full alpha (pick by whether the art has
-  soft/AA edges).
+- **`doc_export_anim`** — preview/loop. `format="gif"` = 256 colours + 1-bit
+  alpha (smaller); `format="apng"` = lossless full alpha (pick by whether the art
+  has soft/AA edges).
 - **`doc_export_tileset`** — tiles + Tiled `.tsx`/JSON.
 - **`export_all`** — one sheet per doc into a flat `assets/` dir.
 - **`export_atlas`** — every frame of every doc packed into one atlas PNG + master
