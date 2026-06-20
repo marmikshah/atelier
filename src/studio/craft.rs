@@ -2317,11 +2317,11 @@ mod tests {
         assert_eq!(r["bg_removed"], json!(true));
         // The backdrop corner became transparent; the subject survived.
         assert_eq!(
-            s.doc_get_pixel("c", 0, 0, 0, 0).unwrap()["rgba"][3],
+            s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap()["rgba"][3],
             json!(0)
         );
         assert!(
-            s.doc_get_pixel("c", 0, 0, 4, 2).unwrap()["rgba"][0]
+            s.doc_get_pixel("c", Some(0), 0, 4, 2).unwrap()["rgba"][0]
                 .as_i64()
                 .unwrap()
                 > 150

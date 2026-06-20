@@ -783,8 +783,10 @@ pub struct PaletteRamp {
 #[derive(Deserialize, JsonSchema)]
 pub struct DocPixel {
     pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+    /// One layer's cel; OMIT to read the flattened composite (what's actually
+    /// visible) — otherwise a pixel painted on another layer reads transparent.
+    pub layer: Option<usize>,
+    pub frame: Option<usize>,
     pub x: i32,
     pub y: i32,
 }
@@ -2237,7 +2239,7 @@ impl Atelier {
         ))
     }
 
-    #[tool(description = "Replace every pixel near `from` with `to` across the cel (recolour).")]
+    #[tool(description = "Replace every pixel near `from` with `to` across the cel (recolour). `tolerance` = max channel distance over RGB (alpha ignored), so anti-aliased / semi-transparent edges of the target colour are recoloured too instead of left as a halo. tolerance 0 = exact RGB match.")]
     async fn doc_replace_color(&self, Parameters(p): Parameters<DocReplace>) -> CallToolResult {
         res(self.studio().doc_replace_color(
             &p.doc_id,
@@ -2699,7 +2701,7 @@ impl Atelier {
     async fn doc_get_pixel(&self, Parameters(p): Parameters<DocPixel>) -> CallToolResult {
         res(self
             .studio()
-            .doc_get_pixel(&p.doc_id, p.layer, p.frame, p.x, p.y))
+            .doc_get_pixel(&p.doc_id, p.layer, p.frame.unwrap_or(0), p.x, p.y))
     }
 
     // -- canvas readers (read-only analysis to SEE the canvas as data) --
@@ -2772,7 +2774,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "WCAG contrast check. mode=\"region\" compares the mean colour inside `region` [x0,y0,x1,y1] against its 4px surround → {ratio, pass}. mode=\"palette\" scores every pair of the frame's distinct opaque colours (capped 16 — quantize first if more) and lists failures. mode=\"one-bit\" thresholds luma to a pure B/W PNG (returns path + black/white %). pass = ratio ≥ min_ratio (default 1.5)."
+        description = "Contrast as a number (the WCAG luminance-ratio formula). NOTE: WCAG is a text-on-UI legibility standard, not a sprite-vs-scene readability metric — treat the ratio as a value-separation HINT, not a pass/fail. mode=\"region\" compares the mean colour inside `region` [x0,y0,x1,y1] against its 4px surround → {ratio}. mode=\"palette\" scores every pair of the frame's distinct opaque colours (capped 16 — quantize first if more) and lists the lowest-contrast pairs. mode=\"one-bit\" thresholds luma to a pure B/W PNG (returns path + black/white %) — the real silhouette-readability check. `min_ratio` (default 1.5) only flags pairs below it."
     )]
     async fn doc_contrast_check(
         &self,

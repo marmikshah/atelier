@@ -228,6 +228,14 @@ pub fn close(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
     d <= tol
 }
 
+/// Colour match by MAX channel distance over RGB only (alpha ignored) — the
+/// metric the fill/replace tools actually promise ("max channel distance"), and
+/// the one that lets an anti-aliased edge (same RGB, different alpha) still
+/// match instead of being left as a halo of the old colour.
+pub fn close_rgb(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
+    (0..3).all(|i| (a[i] as i32 - b[i] as i32).abs() <= tol)
+}
+
 /// Normalise a possibly-reversed rect and clamp it to a `w`×`h` canvas, returning
 /// `(x0,y0,x1,y1)` (inclusive) or `None` when it lies fully outside the canvas.
 pub fn clamp_region(
@@ -1663,6 +1671,13 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn close_rgb_ignores_alpha_and_uses_max_channel() {
+        assert!(close_rgb([200, 0, 0, 255], [200, 0, 0, 10], 0)); // same RGB, diff alpha
+        assert!(close_rgb([200, 0, 0, 255], [205, 3, 0, 255], 5)); // within 5 per channel
+        assert!(!close_rgb([200, 0, 0, 255], [180, 0, 0, 255], 5)); // R off by 20 > 5
     }
 
     #[test]

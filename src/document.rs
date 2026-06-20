@@ -1251,7 +1251,7 @@ impl Document {
             }
             visited[i] = true;
             let p = img.get_pixel(px as u32, py as u32).0;
-            if !raster::close(p, target, tol) {
+            if !raster::close_rgb(p, target, tol) {
                 continue;
             }
             img.put_pixel(px as u32, py as u32, Rgba(color));
@@ -1273,7 +1273,9 @@ impl Document {
     ) -> Result<(), String> {
         let img = self.cel_canvas(layer, frame)?;
         for p in img.pixels_mut() {
-            if raster::close(p.0, from, tol) {
+            // RGB max-channel match (alpha ignored) so AA/semi-transparent edges
+            // of the target colour are recoloured too, not left as a halo.
+            if raster::close_rgb(p.0, from, tol) {
                 *p = Rgba(to);
             }
         }
@@ -4577,6 +4579,18 @@ mod tests {
             d.snap_to_palette(&[[255, 0, 0, 255], [0, 0, 255, 255]], None, None, AlphaSnap::Preserve);
         assert_eq!(changed, 1);
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
+    }
+
+    #[test]
+    fn replace_color_recolours_aa_edges() {
+        // A solid pixel and a same-RGB anti-aliased (low-alpha) edge: both should
+        // recolour at tol 0 now that the match ignores alpha (RGB max-channel).
+        let mut d = Document::new("t", 3, 1);
+        d.pencil(0, 0, &[(0, 0)], [200, 0, 0, 255], 1).unwrap();
+        d.pencil(0, 0, &[(1, 0)], [200, 0, 0, 80], 1).unwrap();
+        d.replace_color(0, 0, [200, 0, 0, 255], [0, 0, 255, 255], 0).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 255, 255]);
+        assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 255, 255]); // AA edge too
     }
 
     #[test]
