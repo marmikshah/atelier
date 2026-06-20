@@ -47,6 +47,9 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
 - **`/live`** — a focused single-document session view: pick a doc, then watch the
   canvas re-render AND a live feed of the tool calls hitting it (name + compact
   args) stream in real time. For watching an agent draw — no tool forms, no editing.
+  A freshly created doc (`doc_create`, whose id comes from the result not the args)
+  is broadcast too and auto-attaches the view, so you can open `/live` empty and
+  watch the agent start from scratch.
 - **Quality benchmark** (`quality_benchmark` test, `docs/QUALITY-BENCHMARK.md`):
   a deterministic, agent-free measure of the v1.1.0→v1.2.0 engine lift that runs
   in CI as a regression guard.

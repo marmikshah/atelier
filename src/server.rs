@@ -1068,6 +1068,15 @@ pub struct DocKeyframeMove {
 
 /// True when a tool result is a failure: either `is_error` is set, or its first
 /// text content is a `{"error": ...}` payload (how `res` reports app errors).
+/// The document id named in a tool result's top-level `id` field (doc_create
+/// returns the new doc this way — its id isn't in the args). None for the common
+/// case where the result carries no `id`.
+fn result_doc_id(result: &rmcp::model::CallToolResult) -> Option<String> {
+    let text = &result.content.first()?.as_text()?.text;
+    let v: Value = serde_json::from_str(text).ok()?;
+    v.get("id").and_then(|x| x.as_str()).map(|s| s.to_string())
+}
+
 fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
     if result.is_error == Some(true) {
         return true;
@@ -3683,20 +3692,27 @@ impl ServerHandler for Atelier {
                 .unwrap_or_else(|| json!({}));
             (r.clone(), request.name.to_string(), args)
         });
-        // Snapshot a live-feed event (doc_id + tool + compact args) before the
-        // request is moved, so a successful call can push it to the live viewers.
-        let change_event = self.change_tx.as_ref().and_then(|_| {
-            let m = request.arguments.as_ref()?;
-            let doc = m.get("doc_id")?.as_str()?.to_string();
+        // Snapshot the live-feed pieces before the request moves: tool name,
+        // compact (length-capped) args, and the args doc_id if present. The doc id
+        // may instead come from the RESULT (doc_create names the new doc) — that's
+        // resolved after the call, so freshly created docs still show in the feed.
+        let feed = self.change_tx.as_ref().map(|_| {
+            let m = request.arguments.as_ref();
+            let args_doc = m
+                .and_then(|m| m.get("doc_id"))
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
             // Compact, length-capped args so a fat call (point lists, base64)
             // can't bloat the SSE frame fanned out to every browser.
-            let mut args = serde_json::to_string(&Value::Object(m.clone())).unwrap_or_default();
+            let mut args = m
+                .map(|m| serde_json::to_string(&Value::Object(m.clone())).unwrap_or_default())
+                .unwrap_or_default();
             const MAX: usize = 280;
             if args.chars().count() > MAX {
                 args = args.chars().take(MAX).collect::<String>();
                 args.push('…');
             }
-            Some(json!({ "doc": doc, "tool": request.name, "args": args }).to_string())
+            (request.name.to_string(), args, args_doc)
         });
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
         let result = self.tool_router.call(tcc).await?;
@@ -3705,9 +3721,11 @@ impl ServerHandler for Atelier {
                 recorder.record(&tool, args);
             }
         }
-        if let (Some(tx), Some(ev)) = (&self.change_tx, &change_event) {
+        if let (Some(tx), Some((tool, args, args_doc))) = (&self.change_tx, &feed) {
             if !is_error_result(&result) {
-                let _ = tx.send(ev.clone());
+                if let Some(doc) = args_doc.clone().or_else(|| result_doc_id(&result)) {
+                    let _ = tx.send(json!({ "doc": doc, "tool": tool, "args": args }).to_string());
+                }
             }
         }
         Ok(result)
@@ -4262,9 +4280,13 @@ document.getElementById("docsel").onchange = () => {
   await loadDocs();
   try {
     const es = new EventSource("/gallery/events");
-    es.onmessage = (e) => {
+    es.onmessage = async (e) => {
       let m; try { m = JSON.parse(e.data); } catch (_) { return; }
-      if (!curId || m.doc !== curId) return;
+      // New doc the dropdown hasn't seen (e.g. doc_create) — refresh the list so
+      // it's selectable, and auto-attach if we're not already watching one.
+      if (!(m.doc in dims)) await loadDocs();
+      if (!curId) showDoc(m.doc);
+      if (m.doc !== curId) return;
       logCall(m);
       showDoc(curId);
     };
