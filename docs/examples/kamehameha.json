@@ -8,13 +8,13 @@
       "note": "96x96 leaves room for a full-body character on the left third and a beam crossing the remaining two thirds."
     },
     {
-      "tool": "doc_add_layer",
-      "args": { "doc_id": "kamehameha", "name": "body" },
+      "tool": "doc_layer",
+      "args": { "op": "add", "doc_id": "kamehameha", "name": "body" },
       "note": "Layer 1: the stickman. Keeping him separate from the background means each pose redraw is a cheap clear_cel + ~10 ops."
     },
     {
-      "tool": "doc_add_layer",
-      "args": { "doc_id": "kamehameha", "name": "fx" },
+      "tool": "doc_layer",
+      "args": { "op": "add", "doc_id": "kamehameha", "name": "fx" },
       "note": "Layer 2: orb, beam, dust and aura. Isolated so the glow bloom only blooms the energy, never the character."
     },
     {

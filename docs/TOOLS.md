@@ -27,11 +27,13 @@ stays crisp.
 
 ## Structure & timeline
 
-- `doc_add_layer` / `doc_set_layer` — stack layers; toggle visibility / opacity /
-  blend mode: `normal` · `multiply` · `screen` · `add` · `overlay` · `soft-light`
-  · `hard-light` · `darken` · `lighten` · `color-dodge` · `color-burn` ·
-  `difference` · `subtract` · `exclusion`. Real lighting: `multiply` for
-  shadow/AO, `add`/`screen` for light/glow/bloom, `overlay`/`soft-light` to grade.
+- `doc_layer` — layer structure in one tool. `op`: `add` (new layer on top) ·
+  `set` (toggle a layer's visibility / opacity / blend) · `move` · `insert` ·
+  `delete` · `rename` · `duplicate` · `merge_down`. Blend modes: `normal` ·
+  `multiply` · `screen` · `add` · `overlay` · `soft-light` · `hard-light` ·
+  `darken` · `lighten` · `color-dodge` · `color-burn` · `difference` · `subtract`
+  · `exclusion`. Real lighting: `multiply` for shadow/AO, `add`/`screen` for
+  light/glow/bloom, `overlay`/`soft-light` to grade.
 - `doc_add_frame` (optionally `copy_from` an existing frame) /
   `doc_set_frame_duration`.
 - `doc_dissolve` — insert N cross-faded DISSOLVE frames between two poses
@@ -273,8 +275,6 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
   document before a risky op and roll back, or diff regression deltas
   (pixel/colour/contrast change, added/removed/recoloured). Undo for a
   destructive editor.
-- `doc_layer_ops` — `move` · `insert` · `delete` · `rename` · `duplicate` ·
-  `merge_down` (bakes opacity+blend onto the layer below). Cels follow the layer.
 - `doc_transform_cel` — affine-transform a cel/region **in place**: rotate,
   scale, skew. `method` `rotsprite` (super-sampled, cluster-preserving) or
   `nearest`; `preserve_volume` (squash-and-stretch), `snap_palette`,

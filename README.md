@@ -66,7 +66,7 @@ deterministic.
   interactive `/playground` — run any tool from an auto-built form, or draw with
   the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-The full tool surface (74 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
+The full tool surface (72 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
 release notes live in [CHANGELOG.md](CHANGELOG.md).
 
 ## Quickstart
@@ -89,7 +89,7 @@ art — *"draw me a blinking cat sprite and export it as a GIF"*. The agent driv
 the loop:
 
 ```
-doc_create → paint → doc_look (look!) → fix → doc_export_anim
+doc_create → paint → doc_look (look!) → fix → doc_export op=anim
 ```
 
 Documents live under `~/.atelier` (override with `ATELIER_HOME`).

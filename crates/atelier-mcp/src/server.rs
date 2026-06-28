@@ -150,23 +150,6 @@ pub struct ExportAtlas {
 // --- document params -------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocAddLayer {
-    pub doc_id: String,
-    pub name: Option<String>,
-    pub opacity: Option<u8>,
-    pub blend: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSetLayer {
-    pub doc_id: String,
-    pub layer: usize,
-    pub visible: Option<bool>,
-    pub opacity: Option<u8>,
-    pub blend: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocAddFrame {
     pub doc_id: String,
     pub duration_ms: Option<u32>,
@@ -469,6 +452,24 @@ pub struct DocExport {
     pub params: serde_json::Map<String, serde_json::Value>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocLayer {
+    pub doc_id: String,
+    /// add (new layer on top) | set (visibility/opacity/blend of layer `index`) |
+    /// move | insert | delete | rename | duplicate | merge_down.
+    pub op: String,
+    /// Target layer index (the layer for `set`/`move`/`delete`/…).
+    pub index: Option<usize>,
+    /// Destination index for `move`.
+    pub to_index: Option<usize>,
+    /// Layer name for `add`/`insert`/`rename`.
+    pub name: Option<String>,
+    /// Visibility for `set`.
+    pub visible: Option<bool>,
+    pub opacity: Option<u8>,
+    pub blend: Option<String>,
+}
+
 // --- canvas reader params --------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -767,18 +768,6 @@ pub struct DocCheckpoint {
     pub action: String,
     pub label: Option<String>,
     pub checkpoint_id: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocLayerOps {
-    pub doc_id: String,
-    /// move | insert | delete | rename | duplicate | merge_down.
-    pub action: String,
-    pub index: Option<usize>,
-    pub to_index: Option<usize>,
-    pub name: Option<String>,
-    pub opacity: Option<u8>,
-    pub blend: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -1575,24 +1564,12 @@ impl Atelier {
 
     // -- documents: editable layered/timeline sprites (Aseprite-style) --
     #[tool(
-        description = "Add a layer to a document (top of the stack). opacity 0..255. blend: normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion (multiply=shadow/AO, add|screen=light/glow/bloom, overlay|soft-light=colour grade)."
+        description = "Layer structure in one tool. `op`: add (new layer on top — name/opacity/blend) · set (change layer `index`'s visible/opacity/blend; omit a field to leave it) · move (`index`→`to_index`) · insert (new layer at `index`) · delete · rename · duplicate · merge_down (`index` onto the layer below). Blend ∈ normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion."
     )]
-    async fn doc_add_layer(&self, Parameters(p): Parameters<DocAddLayer>) -> CallToolResult {
-        res(self.studio().doc_add_layer(
-            &p.doc_id,
-            p.name,
-            p.opacity.unwrap_or(255),
-            p.blend.unwrap_or_else(|| "normal".into()),
+    async fn doc_layer(&self, Parameters(p): Parameters<DocLayer>) -> CallToolResult {
+        res(self.studio().doc_layer(
+            &p.doc_id, &p.op, p.index, p.to_index, p.name, p.visible, p.opacity, p.blend,
         ))
-    }
-
-    #[tool(
-        description = "Set a layer's visibility / opacity / blend (normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion)."
-    )]
-    async fn doc_set_layer(&self, Parameters(p): Parameters<DocSetLayer>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_set_layer(&p.doc_id, p.layer, p.visible, p.opacity, p.blend))
     }
 
     #[tool(
@@ -2122,21 +2099,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Layer-stack lifecycle in one tool. action: move (needs to_index) | insert (empty layer at index) | delete | rename (needs name) | duplicate | merge_down (bake a layer's opacity+blend onto the one below it). Cels follow the layer. Returns the new layer list."
-    )]
-    async fn doc_layer_ops(&self, Parameters(p): Parameters<DocLayerOps>) -> CallToolResult {
-        res(self.studio().layer_ops(
-            &p.doc_id,
-            &p.action,
-            p.index.unwrap_or(0),
-            p.to_index,
-            p.name,
-            p.opacity.unwrap_or(255),
-            p.blend.unwrap_or_else(|| "normal".into()),
-        ))
-    }
-
-    #[tool(
         description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. `alpha` controls FX bloom / AA fringe: preserve (default, RGB-only) | opaque (binarise alpha at `cutoff`, default 128 — turn a soft bloom into crisp on-palette pixels) | flatten (composite over `bg` then snap opaque). Returns the pixel count moved plus an INLINE preview of the result."
     )]
     async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
@@ -2324,7 +2286,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Add a faint, non-destructive guide layer to construct against, then delete with doc_layer_ops. kind: thirds (rule-of-thirds) | grid (square, `spacing`) | iso (2:1 lattice) | vp (rays from a vanishing point `vp`=[x,y]). Pure construction scaffolding — perspective, iso, and composition."
+        description = "Add a faint, non-destructive guide layer to construct against, then delete with doc_layer op=delete. kind: thirds (rule-of-thirds) | grid (square, `spacing`) | iso (2:1 lattice) | vp (rays from a vanishing point `vp`=[x,y]). Pure construction scaffolding — perspective, iso, and composition."
     )]
     async fn doc_perspective_guide(
         &self,
