@@ -38,16 +38,45 @@ dependencies = [
 name = "atelier"
 version = "1.2.0"
 dependencies = [
- "axum",
- "dirs",
+ "atelier-mcp",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "atelier-core"
+version = "1.2.0"
+dependencies = [
  "image",
  "png",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "atelier-mcp"
+version = "1.2.0"
+dependencies = [
+ "atelier-core",
+ "atelier-studio",
+ "axum",
  "rmcp",
  "schemars",
  "serde",
  "serde_json",
  "tokio",
  "tokio-stream",
+]
+
+[[package]]
+name = "atelier-studio"
+version = "1.2.0"
+dependencies = [
+ "atelier-core",
+ "dirs",
+ "image",
+ "serde_json",
 ]
 
 [[package]]

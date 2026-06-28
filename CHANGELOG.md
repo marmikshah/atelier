@@ -88,7 +88,21 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
 - **`doc_bezier`** (gappy, hard-staircased — `doc_stroke` supersedes it) and the
   **`doc_get_pixel`** *tool* (a strict subset of `doc_dump_region` 1×1; the
   internal pixel reader stays). Renamed **`doc_tween` → `doc_dissolve`** — it
-  cross-fades, it never interpolated poses, so the old name was a footgun. 103 tools.
+  cross-fades, it never interpolated poses, so the old name was a footgun.
+- **`doc_render`** and **`doc_render_value`** → folded into **`doc_look`** (the
+  deferred round-2 consolidation). `doc_look` absorbs `tile` (N×N seam check) and
+  `out_path` (file write) from `doc_render`, and `band_pcts` per-band coverage in
+  `bands`/`notan` modes from `doc_render_value` — so one SEE call covers render +
+  every analysis channel, killing the three-way "show me the canvas" name clash.
+  Hard removal, no aliases.
+- **Round-3 op-dispatch fusion (pilot):** the 13 geometry/paint tools
+  (`doc_pencil`, `doc_line`, `doc_rect`, `doc_ellipse`, `doc_polyline`,
+  `doc_polygon`, `doc_stroke`, `doc_fill`, `doc_fill_cel`, `doc_gradient`,
+  `doc_scatter`, `doc_noise`, `doc_text`) fold into one **`doc_draw`**`(op, …)` —
+  the single-op form of `doc_batch`, over the same validated `apply_op` dispatch,
+  with every op's params verified identical (no capability lost). The studio
+  methods stay as internal/library API. See `docs/CONSOLIDATION-ROUND3.md`.
+  **89 tools.**
 
 ### Fixed
 

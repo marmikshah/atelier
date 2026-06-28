@@ -17,7 +17,10 @@
 //!   atelier service status
 //!   atelier service uninstall
 
-use atelier::{replay, server, service};
+use atelier_mcp::server;
+
+mod replay;
+mod service;
 
 const HELP: &str = "atelier — an MCP-native headless pixel-art editor (Aseprite-as-API).
 
