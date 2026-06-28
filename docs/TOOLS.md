@@ -205,12 +205,11 @@ The limb/keyframe-animation toolkit.
   / `subtract` / `intersect`). While set, every painting op (fill, gradient,
   scatter, rect, ellipse, polygon, pencil, line, batch…) is confined to it —
   e.g. select a pond shape, then gradient + scatter only inside it.
-- `doc_move_region` — copy a rectangle, clear the source, stamp it at `(dx,dy)`.
-  Draw a limb once, nudge it per frame.
-- `doc_copy_region` / `doc_cut_region` / `doc_paste` — a shared clipboard that
-  works across frames **and** documents (`blend` keeps the destination under
-  transparent pixels; overwrite stamps everything).
-- `doc_clear_region` — erase a rectangle.
+- `doc_region` — region + clipboard ops on a cel. `op`: `copy` · `cut` (copy +
+  clear) · `paste` (clipboard at `x,y`; `blend` keeps the destination under
+  transparent pixels, overwrite stamps everything) · `move` (shift the rect
+  `[x0,y0,x1,y1]` by `dx,dy` in place — draw a limb once, nudge it per frame) ·
+  `clear` (erase the rect). The clipboard works across frames **and** documents.
 - `doc_set_palette` — lock a cohesive list of swatches on the document; stored
   and emitted in exports so a whole sprite set stays on-palette.
 

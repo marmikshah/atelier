@@ -1840,6 +1840,43 @@ impl Studio {
         self.edit(id, |d| d.clear_region(layer, frame, x0, y0, x1, y1))
     }
 
+    /// One-tool dispatch over region + clipboard ops — `op`: `copy` | `cut` |
+    /// `clear` (the `[x0,y0,x1,y1]` rect) | `move` (rect by `dx,dy`) | `paste`
+    /// (the clipboard at `x,y`, `blend` source-over by default). Routes to the
+    /// kept region methods. (`stamp_image` and `extract_to_layer` keep their own
+    /// tools — image import and rigging, not region mobility.)
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_region(
+        &mut self,
+        id: &str,
+        op: &str,
+        layer: usize,
+        frame: usize,
+        x0: Option<i32>,
+        y0: Option<i32>,
+        x1: Option<i32>,
+        y1: Option<i32>,
+        dx: Option<i32>,
+        dy: Option<i32>,
+        x: Option<i32>,
+        y: Option<i32>,
+        blend: Option<bool>,
+    ) -> Result<Value, String> {
+        let v = |o: Option<i32>| o.unwrap_or(0);
+        match op {
+            "copy" => self.doc_copy_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
+            "cut" => self.doc_cut_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
+            "clear" => self.doc_clear_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
+            "move" => {
+                self.doc_move_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1), v(dx), v(dy))
+            }
+            "paste" => self.doc_paste(id, layer, frame, v(x), v(y), blend.unwrap_or(true)),
+            other => Err(format!(
+                "doc_region: unknown op '{other}' — use copy|cut|paste|move|clear"
+            )),
+        }
+    }
+
     // -- pivots / palette ---------------------------------------------------
 
     pub fn doc_set_pivot(
