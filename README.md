@@ -34,7 +34,7 @@ by agents through the MCP tools. No hand-editing, no image imports.</em></p>
 ## What it is
 
 Agents are good at *describing* art and bad at *seeing* it. atelier closes the
-loop: every drawing op is a tool call, and `doc_render` hands back a PNG the
+loop: every drawing op is a tool call, and `doc_look` hands back a PNG the
 agent can actually look at, judge, and correct — the same look-and-fix loop a
 human uses in an editor. One static Rust binary; no API keys, no network, fully
 deterministic.
@@ -43,20 +43,28 @@ deterministic.
   frames + tags, selections, cross-document clipboard, palettes, onion-skinning.
 - **Procedural leverage** — dithered gradients, fBm/perlin/voronoi noise,
   scatter, Bézier strokes, symmetry, shadow/glow/bevel, and one-call volume
-  shading (`doc_form`: sphere/cylinder/auto — a flat silhouette gains real
+  shading (`doc_fx op=form`: sphere/cylinder/auto — a flat silhouette gains real
   rounded-form lighting): compose effects instead of placing every pixel.
 - **An eye for critique** — silhouette, stray-pixel, palette, contrast, frame-diff
   and loop-seam reports turn "does it look right?" into numbers an agent can act on.
 - **Game-ready output** — spritesheets with rects/durations/tags/pivots,
   animated GIFs/APNGs, packed texture atlases, Tiled-ready tilesets and
   deterministic Wang-blob terrain sets. Any engine can slice it.
-- **More than pixels** — a built-in pixel font (`doc_text`), one-call palette
+- **More than pixels** — a built-in pixel font (`doc_draw op=text`), one-call palette
   swaps for recolour variants, and the procedural/critique leverage above.
 - **Built for agents** — MCP resources (browse documents + renders), packaged
   prompts (sprite / walk-cycle / tile workflows), a session recorder that turns a
-  live session into a replayable recipe, and a live `/gallery` web view.
+  live session into a replayable recipe, a live `/gallery` web view, and an
+  interactive `/playground` — run any tool from an auto-built form, or draw with
+  the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-The full tool surface (102 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md).
+By default the server advertises a **core profile** of ~28 tools — everything the
+sprite / animation / tile / recreate-from-reference loops need. Set
+`ATELIER_PROFILE=full` for the complete 65-tool surface (extra effects, rigging,
+audits, library exports). The profile filters *discovery* only — every tool still
+executes, so recipes and `atelier replay` always reach the long tail. The full
+surface is documented in [docs/TOOLS.md](docs/TOOLS.md); release notes live in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## Quickstart
 
@@ -78,7 +86,7 @@ art — *"draw me a blinking cat sprite and export it as a GIF"*. The agent driv
 the loop:
 
 ```
-doc_create → paint → doc_render (look!) → fix → doc_export_gif
+doc_create → paint → doc_look (look!) → fix → doc_export op=anim
 ```
 
 Documents live under `~/.atelier` (override with `ATELIER_HOME`).
@@ -87,7 +95,7 @@ Documents live under `~/.atelier` (override with `ATELIER_HOME`).
 
 ```sh
 atelier                       # stdio MCP server (default — the client spawns it)
-atelier --http 0.0.0.0:8765   # streamable HTTP at /mcp + a live /gallery web view
+atelier --http 0.0.0.0:8765   # streamable HTTP at /mcp + live /gallery + /playground
 make daemon                   # background HTTP server via launchd / systemd --user
 ```
 
@@ -114,7 +122,8 @@ integration tests and as documentation.
 ## More
 
 - [docs/TOOLS.md](docs/TOOLS.md) — the complete MCP tool reference.
-- [ROADMAP.md](ROADMAP.md) — the backlog.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — the crate layout and how it fits together.
+- [CHANGELOG.md](CHANGELOG.md) — release notes.
 - Everything in [docs/](docs/) is agent-made; the gallery pieces were each
   drawn, self-audited and reviewed entirely over MCP.
 

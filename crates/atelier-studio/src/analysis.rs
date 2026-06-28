@@ -338,7 +338,7 @@ impl Studio {
                         let p = img.get_pixel(x, y).0;
                         if p[3] > 0 {
                             opaque += 1;
-                            luma_sum += crate::raster::luma(p) as u64;
+                            luma_sum += atelier_core::raster::luma(p) as u64;
                             let (xi, yi) = (x as i32, y as i32);
                             bbox = Some(match bbox {
                                 Some([a, b, cc, d]) => {
@@ -381,85 +381,6 @@ impl Studio {
     }
 
     // -- value & colour feedback (read-only analysis) -----------------------
-
-    /// Render a frame in an analysis colour space to a PNG you can SEE: grayscale
-    /// (luma), `bands` (posterised luma), or the saturation/hue HSL channel as
-    /// grey. Returns the encoded PNG bytes (inlined by the MCP layer) plus the
-    /// report; when `report`, adds value stats over the opaque pixels
-    /// (min/max/mean grey, contrast, per-band coverage).
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_render_value(
-        &self,
-        id: &str,
-        frame: usize,
-        mode: &str,
-        bands: u32,
-        scale: u32,
-        out_path: Option<&str>,
-        report: bool,
-    ) -> Result<(Vec<u8>, Value), String> {
-        let (dir, doc) = self.open(id)?;
-        let img = doc.value_image(frame, mode, bands)?;
-        let out = match out_path {
-            Some(p) => PathBuf::from(p),
-            None => dir.join(format!("value_{}_f{}.png", mode, frame)),
-        };
-        if let Some(p) = out.parent() {
-            let _ = fs::create_dir_all(p);
-        }
-        // Save at scale (nearest) so the preview matches doc_render's behaviour.
-        let sc = scale.max(1);
-        let saved = if sc > 1 {
-            image::imageops::resize(
-                &img,
-                img.width() * sc,
-                img.height() * sc,
-                image::imageops::FilterType::Nearest,
-            )
-        } else {
-            img.clone()
-        };
-        let (w, h) = (saved.width(), saved.height());
-        saved.save(&out).map_err(|e| e.to_string())?;
-        let mut res = json!({"path": out.to_string_lossy(), "size": [w, h], "frame": frame});
-        if report {
-            // Stats over the grey value of opaque pixels (analysis channel).
-            let nb = bands.max(1) as usize;
-            let mut counts = vec![0u64; nb];
-            let (mut min, mut max, mut sum, mut n) = (255u8, 0u8, 0u64, 0u64);
-            for p in img.pixels() {
-                if p.0[3] == 0 {
-                    continue;
-                }
-                let v = p.0[0];
-                min = min.min(v);
-                max = max.max(v);
-                sum += v as u64;
-                n += 1;
-                let b = (v as usize * nb / 256).min(nb - 1);
-                counts[b] += 1;
-            }
-            if n == 0 {
-                res["report"] = json!({
-                    "min": Value::Null, "max": Value::Null, "mean": Value::Null,
-                    "contrast": 0.0, "band_pcts": Vec::<f64>::new(),
-                });
-            } else {
-                let band_pcts: Vec<f64> = counts
-                    .iter()
-                    .map(|c| (*c as f64 / n as f64 * 1000.0).round() / 1000.0)
-                    .collect();
-                res["report"] = json!({
-                    "min": min,
-                    "max": max,
-                    "mean": (sum as f64 / n as f64).round() as u32,
-                    "contrast": ((max - min) as f64 / 255.0 * 1000.0).round() / 1000.0,
-                    "band_pcts": band_pcts,
-                });
-            }
-        }
-        Ok((crate::studio::encode_png(&saved)?, res))
-    }
 
     /// WCAG contrast check in one of three modes. `region`: mean colour inside vs
     /// a 4px surrounding band. `palette`: every pair of the frame's distinct
@@ -539,7 +460,7 @@ impl Studio {
                     [(s[0] / n) as u8, (s[1] / n) as u8, (s[2] / n) as u8, 255]
                 };
                 let (a, b) = (mean(inside, n_in), mean(band, n_band));
-                let ratio = crate::raster::wcag_ratio(a, b);
+                let ratio = atelier_core::raster::wcag_ratio(a, b);
                 Ok(json!({
                     "mode": "region",
                     "inside": format!("#{:02x}{:02x}{:02x}", a[0], a[1], a[2]),
@@ -567,7 +488,7 @@ impl Studio {
                 let mut failures: Vec<Value> = Vec::new();
                 for i in 0..colors.len() {
                     for j in (i + 1)..colors.len() {
-                        let ratio = crate::raster::wcag_ratio(colors[i], colors[j]);
+                        let ratio = atelier_core::raster::wcag_ratio(colors[i], colors[j]);
                         let pass = ratio >= min_ratio;
                         let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
                         let entry = json!({
@@ -604,7 +525,7 @@ impl Studio {
                     if p.0[3] == 0 {
                         continue;
                     }
-                    if crate::raster::luma(p.0) >= threshold {
+                    if atelier_core::raster::luma(p.0) >= threshold {
                         bw.put_pixel(x, y, Rgba([255, 255, 255, 255]));
                         white += 1;
                     } else {
@@ -794,7 +715,7 @@ impl Studio {
         }
         let lumas: Vec<i32> = ramp
             .iter()
-            .map(|c| crate::raster::luma(*c) as i32)
+            .map(|c| atelier_core::raster::luma(*c) as i32)
             .collect();
         let value_deltas: Vec<i32> = lumas.windows(2).map(|w| w[1] - w[0]).collect();
         // Monotonic value: every step moves the same direction (allow flats).
@@ -815,7 +736,10 @@ impl Studio {
                 .all(|d| (d.unsigned_abs() as f64 - mean_abs).abs() <= 0.25 * mean_abs)
         };
         // Hue shift per step: signed shortest-arc in degrees.
-        let hues: Vec<f32> = ramp.iter().map(|c| crate::raster::hue_deg(*c)).collect();
+        let hues: Vec<f32> = ramp
+            .iter()
+            .map(|c| atelier_core::raster::hue_deg(*c))
+            .collect();
         let arc = |a: f32, b: f32| -> f32 {
             let mut d = b - a;
             while d > 180.0 {
@@ -846,7 +770,10 @@ impl Studio {
                 "warm-to-cool"
             }
         };
-        let sat: Vec<f32> = ramp.iter().map(|c| crate::raster::saturation(*c)).collect();
+        let sat: Vec<f32> = ramp
+            .iter()
+            .map(|c| atelier_core::raster::saturation(*c))
+            .collect();
         let sat_arc: Vec<f64> = sat
             .windows(2)
             .map(|w| ((w[1] - w[0]) as f64 * 1000.0).round() / 1000.0)
@@ -1000,7 +927,7 @@ impl Studio {
             }
             img.save(&out).map_err(|e| e.to_string())?;
             res["path"] = json!(out.to_string_lossy());
-            png = Some(crate::studio::encode_png(&img)?);
+            png = Some(crate::encode_png(&img)?);
         } else if render != "none" {
             return Err(format!("unknown render '{}' — use none|overlay", render));
         }
@@ -1072,7 +999,7 @@ impl Studio {
             for w in &flagged {
                 canvas.put_pixel(w[0] as u32, w[1] as u32, Rgba([255, 0, 0, 255]));
             }
-            let sc = crate::studio::preview_scale(canvas.width(), canvas.height());
+            let sc = crate::preview_scale(canvas.width(), canvas.height());
             let scaled = if sc > 1 {
                 image::imageops::resize(
                     &canvas,
@@ -1091,7 +1018,7 @@ impl Studio {
                 scaled.save(&out_p).map_err(|e| e.to_string())?;
                 out["path"] = json!(out_p.to_string_lossy());
             }
-            png = Some(crate::studio::encode_png(&scaled)?);
+            png = Some(crate::encode_png(&scaled)?);
         }
         Ok((png, out))
     }
@@ -1333,7 +1260,7 @@ impl Studio {
         let (w, h) = (img.width() as i32, img.height() as i32);
         let (ax, ay, bx, by) = match region {
             Some((x0, y0, x1, y1)) => {
-                crate::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
+                atelier_core::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
                     .ok_or("region is empty after clamping to the canvas")?
             }
             None => (0, 0, w - 1, h - 1),
@@ -1462,7 +1389,7 @@ mod tests {
     }
 
     #[test]
-    fn render_value_grayscale_and_report() {
+    fn look_grayscale_writes_file_and_reports() {
         let s = studio("renderval");
         s.doc_create("d", 4, 4).unwrap();
         // one black-ish and one white pixel; rest transparent
@@ -1472,19 +1399,45 @@ mod tests {
             .unwrap();
         let out = s.docs_dir.join("val.png");
         let (png, r) = s
-            .doc_render_value("d", 0, "grayscale", 4, 1, out.to_str(), true)
+            .look(
+                "d",
+                0,
+                Some(1),
+                None,
+                "grayscale",
+                4,
+                false,
+                false,
+                false,
+                None,
+                None,
+                out.to_str(),
+            )
             .unwrap();
-        assert!(out.exists());
+        assert!(out.exists()); // out_path written
         assert!(!png.is_empty()); // inline preview bytes
-        assert_eq!(r["size"], json!([4, 4])); // scale 1 keeps native size
-        let rep = &r["report"];
-        assert_eq!(rep["min"], json!(0)); // black luma
-        assert_eq!(rep["max"], json!(255)); // white luma
-        assert_eq!(rep["mean"], json!(128)); // (0+255)/2 rounded
-        assert_eq!(rep["contrast"], json!(1.0)); // full value range
-                                                 // unknown mode is an actionable error
+        assert_eq!(r["native_size"], json!([4, 4])); // scale 1 keeps native size
+        let v = &r["stats"]["value"];
+        assert_eq!(v["min"], json!(0)); // black luma
+        assert_eq!(v["max"], json!(255)); // white luma
+        assert_eq!(v["mean"], json!(128)); // (0+255)/2 rounded
+        assert_eq!(v["contrast"], json!(1.0)); // full value range
+                                               // unknown mode is an actionable error
         assert!(s
-            .doc_render_value("d", 0, "bogus", 4, 1, None, false)
+            .look(
+                "d",
+                0,
+                Some(1),
+                None,
+                "bogus",
+                4,
+                false,
+                false,
+                false,
+                None,
+                None,
+                None,
+            )
             .is_err());
     }
 
@@ -1713,16 +1666,16 @@ mod tests {
         assert_eq!(r["offsets"], json!([[4, 0], [8, 0]])); // linear: half then full
                                                            // frame 0 (source) is untouched
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 1, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 1, 1).unwrap()["rgba"],
             json!([200, 50, 50, 255])
         );
         // frame 2 has the block at (1+8, 1) = (9,1); the source rect is cleared
         assert_eq!(
-            s.doc_get_pixel("d", 0, 2, 9, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 2, 9, 1).unwrap()["rgba"],
             json!([200, 50, 50, 255])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 2, 1, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 2, 1, 1).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // to_frame must exist and be > from_frame

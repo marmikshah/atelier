@@ -125,6 +125,24 @@ fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
 }
 
+/// How `snap_to_palette` treats the partial-alpha pixels that continuous-tone FX
+/// (glow/blur/gradient/drop_shadow) and AA fringes leave behind — the difference
+/// between "snap the colour but keep 200 soft alphas off-palette" and "make it
+/// crisp pixel art again".
+#[derive(Clone, Copy, Debug)]
+pub enum AlphaSnap {
+    /// Keep each pixel's source alpha; only the RGB is snapped (legacy default,
+    /// preserves deliberate soft edges).
+    Preserve,
+    /// Binarise alpha at `cutoff`: a pixel with alpha ≥ cutoff becomes fully
+    /// opaque and snaps to the palette; below cutoff it is cleared. Collapses a
+    /// bloom/AA gradient into a single crisp on-palette silhouette.
+    Opaque(u8),
+    /// Composite each pixel over `bg` (straight-alpha source-over) and snap the
+    /// resulting opaque colour — flattens soft FX onto a known backdrop colour.
+    Flatten([u8; 4]),
+}
+
 /// New index of a layer after moving the element at `from` to `to` (the same
 /// remove-then-insert the `Vec` does). Used to keep cel keys in step with
 /// `move_layer`.
@@ -544,6 +562,7 @@ impl Document {
         palette: &[[u8; 4]],
         layer: Option<usize>,
         frame: Option<usize>,
+        alpha: AlphaSnap,
     ) -> u32 {
         if palette.is_empty() {
             return 0;
@@ -555,16 +574,29 @@ impl Document {
                 continue;
             }
             for p in img.pixels_mut() {
-                if p.0[3] == 0 {
+                let src = p.0;
+                if src[3] == 0 {
                     continue;
                 }
-                if let Some(i) = lab.nearest(p.0) {
+                // Decide the colour to snap and the alpha to keep, per policy.
+                // `Opaque` collapses a continuous-tone FX bloom into a crisp
+                // on-palette silhouette; `Flatten` melts it onto a known backdrop.
+                let (rgb_in, out_alpha, clear) = match alpha {
+                    AlphaSnap::Preserve => (src, src[3], false),
+                    AlphaSnap::Opaque(cut) => (src, 255u8, src[3] < cut),
+                    AlphaSnap::Flatten(bg) => (raster::over(bg, src), 255u8, false),
+                };
+                let new = if clear {
+                    [0, 0, 0, 0]
+                } else if let Some(i) = lab.nearest(rgb_in) {
                     let c = lab.color(i);
-                    let snapped = [c[0], c[1], c[2], p.0[3]];
-                    if snapped != p.0 {
-                        *p = Rgba(snapped);
-                        changed += 1;
-                    }
+                    [c[0], c[1], c[2], out_alpha]
+                } else {
+                    src
+                };
+                if new != src {
+                    *p = Rgba(new);
+                    changed += 1;
                 }
             }
         }
@@ -700,7 +732,9 @@ impl Document {
     }
 
     /// Move a region within one cel by (dx,dy): copy it, clear the source, paste
-    /// at the offset. Overwrite-paste so the moved block is exact.
+    /// at the offset. Source-over paste so transparent pixels in the moved block
+    /// do NOT punch a rectangular hole through the art already at the
+    /// destination (the limb-nudge footgun) — only opaque source pixels write.
     pub fn move_region(
         &mut self,
         layer: usize,
@@ -715,7 +749,7 @@ impl Document {
         let (rw, rh, buf) = self.copy_region(layer, frame, x0, y0, x1, y1)?;
         let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
         self.clear_region(layer, frame, x0, y0, x1, y1)?;
-        self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, false)
+        self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, true)
     }
 
     /// Affine-transform a cel (or a `region` of it) in place about its centre:
@@ -789,6 +823,12 @@ impl Document {
         let target = img.get_pixel(x as u32, y as u32).0;
         let de = tol as f32 / 255.0;
         let matches = |p: [u8; 4]| -> bool {
+            // Never flood across the opaque/transparent boundary: the perceptual
+            // ΔE ignores alpha, so without this a wand on a black fill would
+            // bleed into a transparent black background (ΔE 0).
+            if (p[3] == 0) != (target[3] == 0) {
+                return false;
+            }
             if perceptual {
                 raster::oklab_delta(p, target) <= de
             } else {
@@ -1211,7 +1251,7 @@ impl Document {
             }
             visited[i] = true;
             let p = img.get_pixel(px as u32, py as u32).0;
-            if !raster::close(p, target, tol) {
+            if !raster::close_rgb(p, target, tol) {
                 continue;
             }
             img.put_pixel(px as u32, py as u32, Rgba(color));
@@ -1233,7 +1273,9 @@ impl Document {
     ) -> Result<(), String> {
         let img = self.cel_canvas(layer, frame)?;
         for p in img.pixels_mut() {
-            if raster::close(p.0, from, tol) {
+            // RGB max-channel match (alpha ignored) so AA/semi-transparent edges
+            // of the target colour are recoloured too, not left as a halo.
+            if raster::close_rgb(p.0, from, tol) {
                 *p = Rgba(to);
             }
         }
@@ -1293,68 +1335,35 @@ impl Document {
     /// the extras — a curve that quietly ignored half its control points).
     /// Sampled into `steps` segments with brush `size`. Smooth organic
     /// strokes — tails, vines, hair.
-    pub fn bezier(
+    /// Draw a variable-width, anti-aliased stroke through `pts` (each
+    /// `(x, y, full_width)`) as the union of round-capped capsules — the
+    /// clean-by-construction stroke core. Connected (union, no gaps between
+    /// samples like stacked beziers leave), tapered (per-vertex width — `0` ends
+    /// give a 1px point), and smooth (analytic coverage, not a Bresenham
+    /// staircase). A two-point call is a tapered capsule limb. `aa=false` keeps a
+    /// crisp edge; with a palette locked and `snap`, the stroke's RGB is pulled
+    /// on-palette (alpha preserved, so soft AA stays soft but on-palette).
+    pub fn stroke(
         &mut self,
         layer: usize,
         frame: usize,
-        points: &[(i32, i32)],
+        pts: &[(i32, i32, i32)],
         color: [u8; 4],
-        size: i32,
-        steps: i32,
+        aa: bool,
+        snap: bool,
     ) -> Result<(), String> {
-        if points.len() > 4 {
-            return Err(format!(
-                "bezier supports at most 4 control points (got {}) — chain several bezier calls \
-                 to draw a longer curve",
-                points.len()
-            ));
+        if pts.is_empty() {
+            return Err("stroke needs at least one point".into());
         }
-        let s = size.max(1);
-        let steps = steps.max(2);
+        let pal = self.meta.palette.clone();
+        let f: Vec<(f32, f32, f32)> = pts
+            .iter()
+            .map(|&(x, y, w)| (x as f32, y as f32, w.max(0) as f32 / 2.0))
+            .collect();
         let img = self.cel_canvas(layer, frame)?;
-        if points.len() < 2 {
-            if let Some(p) = points.first() {
-                raster::brush(img, p.0, p.1, color, s);
-            }
-            return Ok(());
-        }
-        let p: Vec<(f32, f32)> = points.iter().map(|&(x, y)| (x as f32, y as f32)).collect();
-        let at = |t: f32| -> (f32, f32) {
-            let mt = 1.0 - t;
-            match p.len() {
-                2 => (
-                    raster::lerpf(p[0].0, p[1].0, t),
-                    raster::lerpf(p[0].1, p[1].1, t),
-                ),
-                3 => (
-                    mt * mt * p[0].0 + 2.0 * mt * t * p[1].0 + t * t * p[2].0,
-                    mt * mt * p[0].1 + 2.0 * mt * t * p[1].1 + t * t * p[2].1,
-                ),
-                _ => (
-                    mt * mt * mt * p[0].0
-                        + 3.0 * mt * mt * t * p[1].0
-                        + 3.0 * mt * t * t * p[2].0
-                        + t * t * t * p[3].0,
-                    mt * mt * mt * p[0].1
-                        + 3.0 * mt * mt * t * p[1].1
-                        + 3.0 * mt * t * t * p[2].1
-                        + t * t * t * p[3].1,
-                ),
-            }
-        };
-        let mut prev = at(0.0);
-        for i in 1..=steps {
-            let cur = at(i as f32 / steps as f32);
-            raster::draw_line(
-                img,
-                prev.0.round() as i32,
-                prev.1.round() as i32,
-                cur.0.round() as i32,
-                cur.1.round() as i32,
-                color,
-                s,
-            );
-            prev = cur;
+        raster::stroke_ribbon(img, &f, color, aa);
+        if snap && !pal.is_empty() {
+            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
         }
         Ok(())
     }
@@ -1405,7 +1414,7 @@ impl Document {
 
     /// Full-canvas (0,0-anchored) copy of a cel, transparent where absent.
     /// Also the before/after snapshot for the studio's mutation-diff acks.
-    pub(crate) fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
+    pub fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
         let mut img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
         if let Some((cx, cy, src)) = self.cels.get(&(layer, frame)) {
             for y in 0..src.height() as i32 {
@@ -1463,7 +1472,7 @@ impl Document {
     /// Render a frame into analysis space: each opaque pixel becomes a grey level
     /// derived from `mode` (transparency preserved). "grayscale" = luma; "bands" =
     /// luma posterised into `bands` even steps; "saturation"/"hue" = that HSL
-    /// channel scaled to 0..255 grey. The shared core behind doc_render_value.
+    /// channel scaled to 0..255 grey. The shared core behind doc_look's value modes.
     pub fn value_image(&self, frame: usize, mode: &str, bands: u32) -> Result<RgbaImage, String> {
         let src = self.analysis_image(None, frame)?;
         let bands = bands.max(1);
@@ -1641,7 +1650,14 @@ impl Document {
         let fg: Vec<bool> = (0..(w * h))
             .map(|i| before.as_raw()[i as usize * 4 + 3] > 0)
             .collect();
-        let dist = raster::interior_distance(&fg, w as usize, h as usize);
+        // Smooth the height field before differentiating to normals, so the
+        // medial-axis ridge doesn't read as facet creases (spheres go round).
+        let dist = raster::blur_field(
+            &raster::interior_distance(&fg, w as usize, h as usize),
+            w as usize,
+            h as usize,
+            2,
+        );
         let at = |x: i32, y: i32| -> f32 {
             if x < 0 || y < 0 || x >= w as i32 || y >= h as i32 {
                 0.0
@@ -2051,6 +2067,95 @@ impl Document {
         raster::composite(&mut out, &orig, 0, 0, 255, raster::Blend::Normal);
         *self.cel_canvas(layer, frame)? = out;
         Ok(())
+    }
+
+    /// Paint a RIM light along the silhouette edges that FACE the light — the
+    /// edge-relative move that was 100% manual (dump-region round-trips). For each
+    /// opaque pixel near the edge it estimates the outward surface normal from the
+    /// directions to nearby transparent pixels (radius `width`), and where that
+    /// normal faces the light (`az_deg`: 0=right, 90=down, 180=left, 270=up) it
+    /// stamps `color`, weighted by `falloff`. `dark=true` lights the AWAY-facing
+    /// edge instead (core/contact shadow). Topological, so it survives small
+    /// canvases where a Fresnel term washes out. Returns pixels painted.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rim_light(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        color: [u8; 4],
+        az_deg: f32,
+        width: i32,
+        falloff: f32,
+        dark: bool,
+        snap: bool,
+    ) -> Result<u32, String> {
+        let pal = self.meta.palette.clone();
+        let img = self.cel_canvas(layer, frame)?;
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let orig = img.clone();
+        let op = |x: i32, y: i32| {
+            x >= 0 && y >= 0 && x < w && y < h && orig.get_pixel(x as u32, y as u32).0[3] > 0
+        };
+        let r = width.clamp(1, w.max(h).max(1));
+        let az = az_deg.to_radians();
+        let (lx, ly) = (az.cos(), az.sin());
+        let sign = if dark { -1.0 } else { 1.0 };
+        let mut changed = 0u32;
+        for y in 0..h {
+            for x in 0..w {
+                if !op(x, y) {
+                    continue;
+                }
+                // Outward normal ≈ distance-weighted sum of vectors toward nearby
+                // EMPTY (in-canvas transparent) pixels. Out-of-bounds counts as
+                // solid, so the canvas border is not mistaken for a silhouette edge.
+                let (mut sx, mut sy) = (0f32, 0f32);
+                for dy in -r..=r {
+                    for dx in -r..=r {
+                        if dx == 0 && dy == 0 {
+                            continue;
+                        }
+                        let (nx, ny) = (x + dx, y + dy);
+                        let empty = nx >= 0
+                            && ny >= 0
+                            && nx < w
+                            && ny < h
+                            && orig.get_pixel(nx as u32, ny as u32).0[3] == 0;
+                        if !empty {
+                            continue;
+                        }
+                        let d2 = (dx * dx + dy * dy) as f32; // weight ~ 1/len (closer empties dominate)
+                        sx += dx as f32 / d2;
+                        sy += dy as f32 / d2;
+                    }
+                }
+                let mag = (sx * sx + sy * sy).sqrt();
+                if mag < 1e-4 {
+                    continue; // interior pixel, no edge nearby
+                }
+                let facing = sign * (sx / mag * lx + sy / mag * ly);
+                if facing <= 0.0 {
+                    continue;
+                }
+                // Composite by facing strength (a real falloff, never punches a
+                // hole) instead of a hard binary stamp.
+                let strength = facing.powf(falloff.max(0.1));
+                if strength < 0.06 {
+                    continue;
+                }
+                let base = orig.get_pixel(x as u32, y as u32).0;
+                let a = ((color[3] as f32 / 255.0) * strength * 255.0)
+                    .round()
+                    .clamp(0.0, 255.0) as u8;
+                let px = raster::over(base, [color[0], color[1], color[2], a]);
+                img.put_pixel(x as u32, y as u32, Rgba(px));
+                changed += 1;
+            }
+        }
+        if snap && !pal.is_empty() {
+            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
+        }
+        Ok(changed)
     }
 
     /// Bloom: blur a bright copy of the cel and composite it back through a
@@ -3548,12 +3653,46 @@ impl Document {
         use image::codecs::gif::{GifEncoder, Repeat};
         use image::{Delay, Frame};
         let seq = self.play_sequence(tag)?;
+        // Build ONE palette across every frame and snap each frame to it before
+        // encoding. The image crate quantizes each frame independently, so on
+        // multi-colour art it picks a different 256-subset per frame — the
+        // source of GIF inter-frame flicker. A shared palette (the locked one,
+        // else a median-cut over all frames) makes the colours identical
+        // frame-to-frame, so motion is the only thing that changes.
+        let global: Vec<[u8; 4]> = if !self.meta.palette.is_empty() {
+            self.meta.palette.clone()
+        } else {
+            let mut px: Vec<[u8; 3]> = Vec::new();
+            for &f in &seq {
+                for p in self.flatten(f).pixels() {
+                    if p.0[3] > 0 {
+                        px.push([p.0[0], p.0[1], p.0[2]]);
+                    }
+                }
+            }
+            if px.is_empty() {
+                Vec::new()
+            } else {
+                raster::median_cut(&px, 256)
+            }
+        };
+        let mut lab = raster::PaletteLab::new(&global);
         let file = std::fs::File::create(out).map_err(|e| e.to_string())?;
         let mut enc = GifEncoder::new(std::io::BufWriter::new(file));
         enc.set_repeat(Repeat::Infinite)
             .map_err(|e| e.to_string())?;
         for &f in &seq {
             let mut img = self.flatten(f);
+            if !global.is_empty() {
+                for p in img.pixels_mut() {
+                    if p.0[3] > 0 {
+                        if let Some(i) = lab.nearest(p.0) {
+                            let c = lab.color(i);
+                            *p = Rgba([c[0], c[1], c[2], p.0[3]]);
+                        }
+                    }
+                }
+            }
             if scale > 1 {
                 img = image::imageops::resize(
                     &img,
@@ -3711,6 +3850,14 @@ impl Document {
                 col("color"),
                 gb("fill", true),
             ),
+            "stroke" => self.stroke(
+                layer,
+                frame,
+                &points3_val(op.get("points"), gi("width", 2)),
+                col("color"),
+                gb("aa", true),
+                gb("snap", true),
+            ),
             "fill" | "bucket" => self.bucket_fill(
                 layer,
                 frame,
@@ -3757,20 +3904,29 @@ impl Document {
                 self.clear_cel(layer, frame);
                 Ok(())
             }
-            "gradient" => self.gradient(
-                layer,
-                frame,
-                op.get("kind").and_then(|v| v.as_str()).unwrap_or("linear"),
-                gi("x0", 0),
-                gi("y0", 0),
-                gi("x1", 0),
-                gi("y1", 0),
-                stops_val(op.get("stops")),
-                op.get("dither").and_then(|v| v.as_str()).unwrap_or("none"),
-                op.get("seed").and_then(|v| v.as_u64()).unwrap_or(0),
-                region_val(op.get("region")),
-                gb("blend", true),
-            ),
+            "gradient" => {
+                self.gradient(
+                    layer,
+                    frame,
+                    op.get("kind").and_then(|v| v.as_str()).unwrap_or("linear"),
+                    gi("x0", 0),
+                    gi("y0", 0),
+                    gi("x1", 0),
+                    gi("y1", 0),
+                    stops_val(op.get("stops")),
+                    op.get("dither").and_then(|v| v.as_str()).unwrap_or("none"),
+                    op.get("seed").and_then(|v| v.as_u64()).unwrap_or(0),
+                    region_val(op.get("region")),
+                    gb("blend", true),
+                )?;
+                // Parity with the standalone doc_gradient: re-snap on-palette by
+                // default when a palette is locked (the batch path used to skip it).
+                if gb("snap", true) && !self.meta.palette.is_empty() {
+                    let pal = self.meta.palette.clone();
+                    self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
+                }
+                Ok(())
+            }
             "scatter" => self.scatter(
                 layer,
                 frame,
@@ -3816,14 +3972,6 @@ impl Document {
                 op.get("seed").and_then(|v| v.as_u64()).unwrap_or(0),
                 stops_val(op.get("stops")),
                 gb("blend", false),
-            ),
-            "bezier" => self.bezier(
-                layer,
-                frame,
-                &points_val(op.get("points")),
-                col("color"),
-                gi("size", 1),
-                gi("steps", 24),
             ),
             "shade" => self.shade(
                 layer,
@@ -4035,6 +4183,24 @@ fn rgba_val(v: Option<&Value>) -> [u8; 4] {
     [0, 0, 0, 255]
 }
 
+/// Parse `[[x,y], ...]` or `[[x,y,width], ...]` into stroke vertices, filling
+/// the missing width with `default_w`. Points shorter than 2 are dropped.
+fn points3_val(v: Option<&Value>, default_w: i32) -> Vec<(i32, i32, i32)> {
+    v.and_then(|x| x.as_array())
+        .map(|a| {
+            a.iter()
+                .filter_map(|p| p.as_array())
+                .filter(|pt| pt.len() >= 2)
+                .map(|pt| {
+                    let g =
+                        |i: usize, d: i64| pt.get(i).and_then(|n| n.as_i64()).unwrap_or(d) as i32;
+                    (g(0, 0), g(1, 0), g(2, default_w as i64))
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 fn points_val(v: Option<&Value>) -> Vec<(i32, i32)> {
     v.and_then(|x| x.as_array())
         .map(|a| {
@@ -4093,7 +4259,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "ellipse" => (&["cx", "cy", "rx", "ry", "color"], &["fill"]),
         "polyline" => (&["points", "color"], &["size", "closed"]),
         "polygon" => (&["points", "color"], &["fill"]),
-        "bezier" => (&["points", "color"], &["size", "steps"]),
+        "stroke" => (&["points", "color"], &["width", "aa", "snap"]),
         "fill" | "bucket" => (&["x", "y", "color"], &["tolerance"]),
         "replace_color" => (&["from", "to"], &["tolerance"]),
         "flip" => (&[], &["horizontal"]),
@@ -4109,7 +4275,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "gradient" => (
             &["stops"],
             &[
-                "kind", "x0", "y0", "x1", "y1", "dither", "seed", "region", "blend",
+                "kind", "x0", "y0", "x1", "y1", "dither", "seed", "region", "blend", "snap",
             ],
         ),
         "scatter" => (
@@ -4363,20 +4529,6 @@ mod tests {
     }
 
     #[test]
-    fn bezier_rejects_more_than_four_control_points() {
-        let mut d = Document::new("t", 8, 8);
-        let c = [9, 9, 9, 255];
-        // 4 points (cubic) draws fine.
-        d.bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7)], c, 1, 8)
-            .unwrap();
-        // 5 points used to silently drop the 5th; now it's an actionable error.
-        let err = d
-            .bezier(0, 0, &[(0, 0), (2, 7), (5, 0), (7, 7), (3, 3)], c, 1, 8)
-            .unwrap_err();
-        assert!(err.contains("at most 4"), "got: {err}");
-    }
-
-    #[test]
     fn move_layer_reorders_and_cels_follow() {
         let mut d = Document::new("t", 4, 4);
         d.add_layer(None, 255, "normal".into()); // layer 1
@@ -4433,9 +4585,145 @@ mod tests {
     fn snap_to_palette_picks_perceptual_nearest() {
         let mut d = Document::new("t", 4, 4);
         d.pencil(0, 0, &[(0, 0)], [200, 10, 10, 255], 1).unwrap();
-        let changed = d.snap_to_palette(&[[255, 0, 0, 255], [0, 0, 255, 255]], None, None);
+        let changed = d.snap_to_palette(
+            &[[255, 0, 0, 255], [0, 0, 255, 255]],
+            None,
+            None,
+            AlphaSnap::Preserve,
+        );
         assert_eq!(changed, 1);
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
+    }
+
+    #[test]
+    fn replace_color_recolours_aa_edges() {
+        // A solid pixel and a same-RGB anti-aliased (low-alpha) edge: both should
+        // recolour at tol 0 now that the match ignores alpha (RGB max-channel).
+        let mut d = Document::new("t", 3, 1);
+        d.pencil(0, 0, &[(0, 0)], [200, 0, 0, 255], 1).unwrap();
+        d.pencil(0, 0, &[(1, 0)], [200, 0, 0, 80], 1).unwrap();
+        d.replace_color(0, 0, [200, 0, 0, 255], [0, 0, 255, 255], 0)
+            .unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 255, 255]);
+        assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 255, 255]); // AA edge too
+    }
+
+    #[test]
+    fn snap_opaque_collapses_bloom_to_crisp_palette() {
+        // A continuous-tone bloom: one bright core + one faint halo pixel, both
+        // off-palette tints. Opaque snap should make the core a solid palette
+        // colour and clear the faint halo — crisp, not soft.
+        let mut d = Document::new("t", 4, 4);
+        let pal = [[255, 0, 0, 255], [0, 0, 255, 255]];
+        d.pencil(0, 0, &[(0, 0)], [200, 12, 12, 200], 1).unwrap(); // bright core
+        d.pencil(0, 0, &[(1, 0)], [180, 30, 30, 30], 1).unwrap(); // faint halo
+        d.snap_to_palette(&pal, None, None, AlphaSnap::Opaque(128));
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]); // core → solid
+        assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]); // halo → cleared
+    }
+
+    #[test]
+    fn snap_flatten_melts_partial_alpha_onto_backdrop() {
+        // A faint bluish bloom over a dark backdrop should flatten to an opaque
+        // on-palette colour rather than staying semi-transparent off-palette.
+        let mut d = Document::new("t", 4, 4);
+        let pal = [[20, 20, 40, 255], [120, 140, 255, 255]];
+        d.pencil(0, 0, &[(0, 0)], [168, 207, 255, 60], 1).unwrap();
+        d.snap_to_palette(&pal, None, None, AlphaSnap::Flatten([20, 20, 40, 255]));
+        let p = d.get_pixel(0, 0, 0, 0).unwrap();
+        assert_eq!(p[3], 255); // fully opaque after flatten
+        assert!(pal.contains(&p)); // and on-palette
+    }
+
+    #[test]
+    fn stroke_is_gap_free_union() {
+        // A thin diagonal capsule: the union rasterizer must leave NO empty row
+        // across the span (the gap-free property stacked beziers lack).
+        let mut d = Document::new("t", 48, 48);
+        d.stroke(
+            0,
+            0,
+            &[(2, 2, 2), (45, 45, 2)],
+            [255, 255, 255, 255],
+            false,
+            false,
+        )
+        .unwrap();
+        for y in 4..44 {
+            let any = (0..48).any(|x| d.get_pixel(0, 0, x, y).unwrap()[3] > 0);
+            assert!(any, "row {y} had a gap");
+        }
+    }
+
+    #[test]
+    fn stroke_tapers_toward_zero_width_tip() {
+        let mut d = Document::new("t", 48, 16);
+        d.stroke(
+            0,
+            0,
+            &[(8, 8, 0), (40, 8, 10)],
+            [255, 255, 255, 255],
+            false,
+            false,
+        )
+        .unwrap();
+        let col = |x: i32| {
+            (0..16)
+                .filter(|&y| d.get_pixel(0, 0, x, y).unwrap()[3] > 0)
+                .count()
+        };
+        assert!(col(10) <= 2, "tip should be ~1px, got {}", col(10));
+        assert!(col(38) >= 7, "wide end should be ~10px, got {}", col(38));
+    }
+
+    #[test]
+    fn stroke_aa_emits_fractional_coverage() {
+        // Bresenham yields zero partial-alpha pixels; the analytic coverage core
+        // must produce a smooth AA edge.
+        let mut d = Document::new("t", 32, 32);
+        d.stroke(
+            0,
+            0,
+            &[(4, 4, 3), (28, 28, 3)],
+            [255, 255, 255, 255],
+            true,
+            false,
+        )
+        .unwrap();
+        let frac = (0..32)
+            .flat_map(|y| (0..32).map(move |x| (x, y)))
+            .filter(|&(x, y)| {
+                let a = d.get_pixel(0, 0, x, y).unwrap()[3];
+                a > 0 && a < 255
+            })
+            .count();
+        assert!(
+            frac >= 20,
+            "AA capsule should have ≥20 fractional pixels, got {frac}"
+        );
+    }
+
+    #[test]
+    fn rim_light_lights_only_the_facing_edge() {
+        let mut d = Document::new("t", 16, 16);
+        d.ellipse(0, 0, 8, 8, 6, 6, [80, 80, 80, 255], true)
+            .unwrap();
+        // Light from the right (az=0): the right edge lights, the left does not.
+        d.rim_light(0, 0, [255, 255, 255, 255], 0.0, 1, 1.5, false, false)
+            .unwrap();
+        let opaque = |x: i32| d.get_pixel(0, 0, x, 8).unwrap()[3] > 0;
+        let rmost = (0..16).rev().find(|&x| opaque(x)).unwrap();
+        let lmost = (0..16).find(|&x| opaque(x)).unwrap();
+        // Right (light-facing) edge lightens toward white; left edge untouched.
+        assert!(
+            d.get_pixel(0, 0, rmost, 8).unwrap()[0] > 80,
+            "right (light-facing) edge should be rim-lit (lighter than base 80)"
+        );
+        assert_eq!(
+            d.get_pixel(0, 0, lmost, 8).unwrap(),
+            [80, 80, 80, 255],
+            "left (away) edge should NOT be rim-lit"
+        );
     }
 
     #[test]
@@ -4789,6 +5077,19 @@ mod tests {
         d.move_region(0, 0, 1, 1, 1, 1, 3, 0).unwrap();
         assert_eq!(d.get_pixel(0, 0, 1, 1).unwrap(), [0, 0, 0, 0]); // source cleared
         assert_eq!(d.get_pixel(0, 0, 4, 1).unwrap(), [5, 5, 5, 255]); // moved here
+    }
+
+    #[test]
+    fn move_region_does_not_punch_a_hole_in_dest_art() {
+        // Move a 2x2 block that contains a transparent corner over existing art;
+        // the transparent corner must NOT erase the art already there.
+        let mut d = Document::new("t", 8, 8);
+        d.pencil(0, 0, &[(0, 0)], [9, 9, 9, 255], 1).unwrap(); // only opaque pixel of the 2x2 source
+        d.pencil(0, 0, &[(6, 2)], [7, 7, 7, 255], 1).unwrap(); // dest art, under the block's transparent corner
+                                                               // Move the 2x2 rect (0,0)-(1,1) by (+5,+1): source(0,0)->(5,1), source(1,1)->(6,2).
+        d.move_region(0, 0, 0, 0, 1, 1, 5, 1).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 5, 1).unwrap(), [9, 9, 9, 255]); // opaque pixel landed
+        assert_eq!(d.get_pixel(0, 0, 6, 2).unwrap(), [7, 7, 7, 255]); // dest art survived the transparent corner
     }
 
     #[test]
