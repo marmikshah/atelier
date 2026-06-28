@@ -407,6 +407,42 @@ impl Studio {
         self.commit(&dir, id, doc)
     }
 
+    /// One-tool dispatch over layer structure — `op`: `add` (new layer on top) |
+    /// `set` (visibility/opacity/blend of layer `index`) | `move` | `insert` |
+    /// `delete` | `rename` | `duplicate` | `merge_down`. Routes to the kept
+    /// `doc_add_layer` / `doc_set_layer` / `layer_ops` methods.
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_layer(
+        &self,
+        id: &str,
+        op: &str,
+        index: Option<usize>,
+        to_index: Option<usize>,
+        name: Option<String>,
+        visible: Option<bool>,
+        opacity: Option<u8>,
+        blend: Option<String>,
+    ) -> Result<Value, String> {
+        match op {
+            "add" => self.doc_add_layer(
+                id,
+                name,
+                opacity.unwrap_or(255),
+                blend.unwrap_or_else(|| "normal".into()),
+            ),
+            "set" => self.doc_set_layer(id, index.unwrap_or(0), visible, opacity, blend),
+            _ => self.layer_ops(
+                id,
+                op,
+                index.unwrap_or(0),
+                to_index,
+                name,
+                opacity.unwrap_or(255),
+                blend.unwrap_or_else(|| "normal".into()),
+            ),
+        }
+    }
+
     pub fn doc_add_frame(
         &self,
         id: &str,

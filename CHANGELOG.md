@@ -113,7 +113,10 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
     (`doc_wang_tiles`, `export_all`, `export_atlas` stay separate — generators /
     library-level.)
 
-  See `docs/CONSOLIDATION-ROUND3.md`. **74 tools.**
+  - **`doc_layer`**`(op, …)` — `doc_add_layer` + `doc_set_layer` + `doc_layer_ops`
+    folded into `add`/`set`/`move`/`insert`/`delete`/`rename`/`duplicate`/`merge_down`.
+
+  See `docs/CONSOLIDATION-ROUND3.md`. **72 tools.**
 
 ### Fixed
 
