@@ -118,8 +118,13 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
   - **`doc_frame`**`(op, …)` — `doc_add_frame` + `doc_set_frame_duration` +
     `doc_frame_ops` folded into `add`/`duration`/`insert`/`duplicate`/`delete`/`move`.
     (Pivots, boxes, tags and keyframe motion keep their own tools.)
+  - **`doc_region`**`(op, …)` — `doc_copy_region` + `doc_cut_region` + `doc_paste`
+    + `doc_move_region` + `doc_clear_region` folded into `copy`/`cut`/`paste`/`move`/`clear`.
+    (`doc_stamp_image` and `doc_extract_to_layer` keep their own tools — image
+    import and rigging; `doc_select`/`doc_select_wand` stay separate per round-2's
+    wand-tolerance trap.)
 
-  See `docs/CONSOLIDATION-ROUND3.md`. **70 tools.**
+  See `docs/CONSOLIDATION-ROUND3.md`. **66 tools.**
 
 ### Fixed
 

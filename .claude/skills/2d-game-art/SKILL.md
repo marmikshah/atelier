@@ -221,7 +221,7 @@ shoulder/hip, in document pixels) across the frame range in one eased call.
 The body layer never gets touched, so nothing wobbles or melts.
 
 Then per frame: `doc_frame op=add copy_from` the previous → repaint **only what
-still needs hand-work** (`doc_draw op=pencil`, `doc_move_region`, `doc_keyframe_move`
+still needs hand-work** (`doc_draw op=pencil`, `doc_region op=move`, `doc_keyframe_move`
 for eased translation) → `doc_look onion=true`, and `doc_contact_sheet
 onion=true` to judge the whole cycle's spacing from one image. Tag the range
 with `doc_add_tag` (`forward`/`reverse`/`pingpong`).
@@ -313,9 +313,9 @@ Then:
   cel. The *flattened* composite of any frame using `doc_glow` / `doc_draw op=gradient` FX
   shows soft AA tints from the bloom falloff — those are deliberate FX, not stray
   paint, so don't chase them. A cel that reports clean IS clean.
-- **`doc_clear_region` is a standalone tool, NOT a `doc_batch` op.** Inside a batch
+- **`doc_region op=clear` is a standalone tool, NOT a `doc_batch` op.** Inside a batch
   the clear op is `clear_cel` (whole cel) — there is no `clear_region` batch op, so
-  clear a sub-rect with a separate `doc_clear_region` call, not in the batch list.
+  clear a sub-rect with a separate `doc_region op=clear` call, not in the batch list.
 
 ## The designer ↔ reviewer polish loop
 

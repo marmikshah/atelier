@@ -288,41 +288,6 @@ pub struct DocSelect {
 
 /// A rectangular region of a cel (inclusive corners) + optional offset.
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRegion {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub x0: i32,
-    pub y0: i32,
-    pub x1: i32,
-    pub y1: i32,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocMoveRegion {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub x0: i32,
-    pub y0: i32,
-    pub x1: i32,
-    pub y1: i32,
-    pub dx: i32,
-    pub dy: i32,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPaste {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub x: i32,
-    pub y: i32,
-    /// true = source-over (keep dest under transparent source); false = overwrite.
-    pub blend: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocSetPivot {
     pub doc_id: String,
     pub frame: usize,
@@ -457,6 +422,28 @@ pub struct DocFrame {
     pub to_index: Option<usize>,
     /// Frame duration in ms (for add/insert/duration; default 100).
     pub duration_ms: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocRegion {
+    pub doc_id: String,
+    /// copy | cut | clear | move | paste.
+    pub op: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// Source rect for copy/cut/clear/move.
+    pub x0: Option<i32>,
+    pub y0: Option<i32>,
+    pub x1: Option<i32>,
+    pub y1: Option<i32>,
+    /// Offset for `move`.
+    pub dx: Option<i32>,
+    pub dy: Option<i32>,
+    /// Destination top-left for `paste`.
+    pub x: Option<i32>,
+    pub y: Option<i32>,
+    /// `paste`: true = source-over (default), false = overwrite.
+    pub blend: Option<bool>,
 }
 
 // --- canvas reader params --------------------------------------------------
@@ -1314,7 +1301,7 @@ const PROMPTS: &[PromptSpec] = &[
         tools: &[
             "doc_frame",
             "doc_draw",
-            "doc_move_region",
+            "doc_region",
             "doc_keyframe_move",
             "doc_look",
             "doc_contact_sheet",
@@ -1334,7 +1321,7 @@ const PROMPTS: &[PromptSpec] = &[
                  counter-swing the legs. NEVER doc_dissolve poses — it cross-fades (ghost frames), it does \
                  not move limbs.\n\
                  3. doc_frame op=add with copy_from the previous frame so each pose starts from the last.\n\
-                 4. Repaint ONLY what changes per pose (legs, arms) with doc_draw (op=pencil) / doc_move_region; \
+                 4. Repaint ONLY what changes per pose (legs, arms) with doc_draw (op=pencil) / doc_region op=move; \
                  doc_keyframe_move eases a region across several frames in one call.\n\
                  5. doc_look every frame (onion=true ghosts the neighbours); doc_contact_sheet shows \
                  the whole cycle in one inline grid.\n\
@@ -1596,6 +1583,16 @@ impl Atelier {
     #[tool(description = "Clear (empty) a layer×frame cel.")]
     async fn doc_clear_cel(&self, Parameters(p): Parameters<DocCel>) -> CallToolResult {
         res(self.studio().doc_clear_cel(&p.doc_id, p.layer, p.frame))
+    }
+
+    #[tool(
+        description = "Region + clipboard ops on a cel. `op`: copy (rect [x0,y0,x1,y1] → clipboard) · cut (copy + clear) · clear (erase the rect) · move (shift the rect by dx,dy in place) · paste (clipboard at x,y; `blend` source-over by default, false overwrites). Clipboard is cross-document. (External-image import is doc_stamp_image; lifting a part onto its own layer is doc_extract_to_layer.)"
+    )]
+    async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
+        res(self.studio().doc_region(
+            &p.doc_id, &p.op, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1, p.dx, p.dy, p.x, p.y,
+            p.blend,
+        ))
     }
 
     #[tool(
@@ -1903,52 +1900,6 @@ impl Atelier {
             p.dy,
             p.easing.as_deref().unwrap_or("linear"),
             p.clear_source.unwrap_or(true),
-        ))
-    }
-
-    #[tool(
-        description = "Move a rectangular region of a cel by (dx,dy): copies it, clears the source, stamps it at the offset. Key tool for limb/keyframe animation."
-    )]
-    async fn doc_move_region(&self, Parameters(p): Parameters<DocMoveRegion>) -> CallToolResult {
-        res(self.studio().doc_move_region(
-            &p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1, p.dx, p.dy,
-        ))
-    }
-
-    #[tool(description = "Erase a rectangular region of a cel (set transparent).")]
-    async fn doc_clear_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_clear_region(&p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1))
-    }
-
-    #[tool(
-        description = "Copy a rectangular region into the shared clipboard (does not modify the document). Paste with doc_paste — works across frames and documents."
-    )]
-    async fn doc_copy_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_copy_region(&p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1))
-    }
-
-    #[tool(description = "Cut a rectangular region: copy to clipboard, then clear the source.")]
-    async fn doc_cut_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_cut_region(&p.doc_id, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1))
-    }
-
-    #[tool(
-        description = "Paste the clipboard onto a cel at (x,y). blend=true keeps the destination under transparent source pixels; blend=false overwrites. Reuses art across frames/documents."
-    )]
-    async fn doc_paste(&self, Parameters(p): Parameters<DocPaste>) -> CallToolResult {
-        res(self.studio().doc_paste(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.x,
-            p.y,
-            p.blend.unwrap_or(true),
         ))
     }
 

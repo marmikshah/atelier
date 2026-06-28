@@ -58,8 +58,8 @@
       "note": "Frame 3, the fourth and last frame; four frames total now exist so the per-frame edits below have somewhere to land."
     },
     {
-      "tool": "doc_clear_region",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 1, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
+      "tool": "doc_region",
+      "args": { "op": "clear", "doc_id": "pong", "layer": 1, "frame": 1, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
       "note": "Frame 1: erase the copied ball from its frame-0 spot on the ball layer only — the field underneath is untouched, so no stale ball ghosts onto the court."
     },
     {
@@ -68,8 +68,8 @@
       "note": "Ball jumps from x4 to x18 — a big +14 step. This is mid-flight, away from both paddles, so it moves fastest here (the easing: long strides in the open court)."
     },
     {
-      "tool": "doc_clear_region",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 2, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
+      "tool": "doc_region",
+      "args": { "op": "clear", "doc_id": "pong", "layer": 1, "frame": 2, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
       "note": "Frame 2: clear the inherited ball — every frame was copied from frame 0, so the stale ball sits at x4-5 here, NOT at frame 1's x18. Clear the real source position before repainting, or two balls would linger."
     },
     {
@@ -78,8 +78,8 @@
       "note": "Ball reaches x26, a 1px gap from the right paddle (x29) — the bounce point. Only a +8 step this time: it decelerates as it nears the wall (ease-out into the paddle)."
     },
     {
-      "tool": "doc_clear_region",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 3, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
+      "tool": "doc_region",
+      "args": { "op": "clear", "doc_id": "pong", "layer": 1, "frame": 3, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
       "note": "Frame 3: same again — this frame was also copied from frame 0, so its stale ball is at x4-5. Clear there before repainting on the return leg."
     },
     {

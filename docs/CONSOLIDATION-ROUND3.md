@@ -24,8 +24,11 @@
 - **SHIPPED — `doc_frame`** (72 → 70). `doc_add_frame` + `doc_set_frame_duration`
   + `doc_frame_ops` → `doc_frame(op=add|duration|insert|duplicate|delete|move)`.
   Pivot/boxes/tags/keyframe motion kept separate (round-2's tri-state caution).
-- **NEXT (document-level, manual dispatch — not batch-routable):** `doc_region`,
-  `doc_palette`, `doc_ref`. Plus the
+- **SHIPPED — `doc_region`** (70 → 66). `copy`/`cut`/`paste`/`move`/`clear` folded
+  into `doc_region(op, …)`. `doc_stamp_image` (image import) and
+  `doc_extract_to_layer` (rigging) kept separate; `doc_select`/`doc_select_wand`
+  kept separate (round-2's wand-tolerance physics trap).
+- **NEXT:** `doc_palette`, `doc_ref`. Plus the
   non-batch cel effects (`relight`, `rim_light`, `material`, `panel`,
   `outline_selective`, `smooth_edges`, `dither_ramp`, `snap_palette`,
   `transform_cel`, `burst`) need the op vocabulary extended before they can join
