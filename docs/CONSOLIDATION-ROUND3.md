@@ -31,13 +31,20 @@
 - **SHIPPED — `doc_ref`** (66 → 65). `doc_set_reference` + `doc_import_clean` →
   `doc_ref(op=set|import)`. The reference readers (analyze/compare/diff_map) stay
   discrete.
-- **STOPPED HERE (65 tools).** `doc_palette` doesn't fold — the generator takes no
-  `doc_id` (different shape from set/swap). Further fusion would be count-chasing
-  over clarity. Remaining surface: the noun-dispatch writers + discrete readers.
-  Optional later: extend the batch vocabulary so the non-batch cel effects
-  (`relight`, `rim_light`, `material`, `panel`, `outline_selective`,
-  `smooth_edges`, `dither_ramp`, `snap_palette`, `transform_cel`, `burst`) can
-  join `doc_fx`. Plus the
+- **FUSION FLOOR (65 tools).** `doc_palette` doesn't fold — the generator takes no
+  `doc_id` (different shape from set/swap). The remaining ~10 non-batch effects
+  carry 5–16 typed params *each* (`relight` 16, `transform_cel` 12, `panel` 10…);
+  folding them would bury that schema in prose and make them *harder* to use, not
+  easier — the same reason readers stayed discrete. So fusion stops at 65.
+- **CONTEXT FLOOR — tool profiles (the real "all the way").** The actual goal —
+  fewer tools loaded into the model — is met without degrading any tool: a
+  hand-written `list_tools` advertises a **core** ~28-tool profile by default and
+  the full 65 with `ATELIER_PROFILE=full`. Discovery-only filter; `call_tool`
+  routes everything, so replay/recipes reach the tail. **The model sees ~28; zero
+  capability or schema lost.**
+- **Optional later:** extend the batch vocabulary so the non-batch cel effects can
+  join `doc_fx` — but only if their Studio wrappers are verified to add nothing
+  over the Document cores (the `doc_glow` snap lesson). Plus the
   non-batch cel effects (`relight`, `rim_light`, `material`, `panel`,
   `outline_selective`, `smooth_edges`, `dither_ramp`, `snap_palette`,
   `transform_cel`, `burst`) need the op vocabulary extended before they can join

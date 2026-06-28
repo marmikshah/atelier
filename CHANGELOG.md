@@ -12,6 +12,12 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
 
 ### Added
 
+- **Tool profiles** (`ATELIER_PROFILE`). The server advertises a **core** profile
+  of ~28 tools by default — the canonical sprite / animation / tile /
+  recreate-from-reference workflow — and the full 65 when `ATELIER_PROFILE=full`.
+  The profile filters `tools/list` (discovery) only; `call_tool` still routes
+  every tool, so `atelier replay` and recipes always reach the long tail. Cuts
+  the context the model loads without folding rich tools into worse shapes.
 - **`doc_stroke`** — clean stroke core: an SDF capsule-union ribbon, per-vertex
   width (taper to a 1px tip), anti-aliased and connected by construction.
   Replaces the old constant-square-brush Bresenham path for smooth curves/limbs.
