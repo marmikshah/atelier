@@ -110,8 +110,8 @@
       "note": "Loop-seam audit: it diffs the wrap the loop actually plays, last played frame -> first played frame. For tag 'flow' that is frame 4 -> frame 0. Because frame 4 is the +16==0 identity it is pixel-identical to frame 0, so changed == 0 and seam_score is 0.0 -- the shift cycle closes onto itself with no leftover offset and the loop restarts with no visible cut. Note the distinction from doc_frame_diff above: adjacent frames DIFFER (0->1 moved 256 px, the animation), yet the LOOP as a whole closes seamlessly because its endpoints coincide. (We made the closing frame explicit -- frame 4 -- rather than relying on an implicit wrap step, because this audit literally diffs the last and first frames of the played sequence; it has no knowledge of the per-frame shift, so the cycle must be closed by an actual frame whose pixels match frame 0.)"
     },
     {
-      "tool": "doc_export_anim",
-      "args": { "doc_id": "water", "out_path": "water-tile.gif", "tag": "flow", "scale": 8 },
+      "tool": "doc_export",
+      "args": { "op": "anim", "doc_id": "water", "out_path": "water-tile.gif", "tag": "flow", "scale": 8 },
       "note": "Export the 'flow' loop as an 8x GIF for the final visual check: the wave bands should visibly drift downward frame to frame and wrap smoothly. NOTE: out_path is relative to your working directory; point it somewhere outside the repo (or delete it after) so the example doesn't leave a build artifact behind."
     }
   ]

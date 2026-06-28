@@ -128,7 +128,7 @@ defaults and state them):
   reuse across every doc.
 - **Pivot convention** — usually feet-centre for characters, centre for props.
   Engines position sprites by the pivot (`doc_set_pivot`).
-- **Engine target** — informs export (`doc_export_sheet` / `export_atlas`;
+- **Engine target** — informs export (`doc_export op=sheet` / `export_atlas`;
   tilesets ship Tiled `.tsx` + JSON). Note it; presets per engine are roadmap.
 
 ## Asset playbooks
@@ -249,7 +249,7 @@ not done until it does); `doc_look tile=2` grid shows no visible repeat;
 ### Terrain / auto-tiling
 Author one source doc (layer 0 = inner material, layer 1 = outer), then
 `doc_wang_tiles` to generate the deterministic 16-tile blob/Wang set into a new
-`<id>-wang` doc. `doc_export_tileset` slices a grid and writes the engine-ready
+`<id>-wang` doc. `doc_export op=tileset` slices a grid and writes the engine-ready
 PNG + Tiled `.tsx` + JSON.
 **Gates:** corner tiles are pure material; adjacent set corners connect along
 shared edges (eyeball `doc_look`); canvas divides exactly by tile size.
@@ -294,12 +294,12 @@ Art only matters once an engine can slice it. atelier emits the gameplay metadat
 - **`doc_set_palette`** — the locked palette ships in the sidecar.
 
 Then:
-- **`doc_export_sheet`** — one sprite/animation → horizontal sheet PNG + JSON
+- **`doc_export op=sheet`** — one sprite/animation → horizontal sheet PNG + JSON
   (rects, durations, tags, pivots, boxes, palette).
-- **`doc_export_anim`** — preview/loop. `format="gif"` = 256 colours + 1-bit
+- **`doc_export op=anim`** — preview/loop. `format="gif"` = 256 colours + 1-bit
   alpha (smaller); `format="apng"` = lossless full alpha (pick by whether the art
   has soft/AA edges).
-- **`doc_export_tileset`** — tiles + Tiled `.tsx`/JSON.
+- **`doc_export op=tileset`** — tiles + Tiled `.tsx`/JSON.
 - **`export_all`** — one sheet per doc into a flat `assets/` dir.
 - **`export_atlas`** — every frame of every doc packed into one atlas PNG + master
   JSON (doc/frame/rect/duration/pivot/boxes) — a whole game's sprites from one

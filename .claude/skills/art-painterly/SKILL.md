@@ -38,7 +38,7 @@ consistent direction. Soft, warm, dimensional.
 6. **Polish:** `doc_smooth_edges` (on-palette ramp) for selout AA; one shared
    contact shadow; `doc_rim_light` a cool back-rim.
 7. `doc_look` after every pass; `doc_critique` + `doc_palette_report` at the end;
-   `doc_export_sheet` to export.
+   `doc_export op=sheet` to export.
 
 ## Done when
 Every mass reads as a 3-D form (≥3 tones, smooth ramp), one consistent light,
