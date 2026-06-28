@@ -1,0 +1,5 @@
+#!/bin/sh
+# Canonical pre-commit hook — the same gate locally and in CI, fast.
+# Enable once with: git config core.hooksPath .githooks  (or `make hooks`).
+# Bypass in an emergency with --no-verify.
+exec make pre-commit-checks
