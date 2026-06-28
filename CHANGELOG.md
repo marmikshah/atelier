@@ -78,10 +78,10 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
   `doc_form` / `doc_dither_ramp`.
 - **Alpha-aware palette snap** (`AlphaSnap` Preserve/Opaque/Flatten); `doc_figure`
   / `doc_walk` snap opaque for crisp edges.
-- **Shape tools reframed as blocking** — `doc_ellipse`/`doc_polygon` descriptions
-  and the 2d-game-art skill now state a stamped shape is a *base*, never a finished
-  sprite, and mandate the volume + pixel-detail + polish pass (the fix for clumsy
-  stamped art); ≥48px canvases for detailed characters.
+- **Shape tools reframed as blocking** — the shape-op descriptions now state a
+  stamped shape is a *base*, never a finished sprite, and mandate the volume +
+  pixel-detail + polish pass (the fix for clumsy stamped art); ≥48px canvases for
+  detailed characters.
 - Tighter input validation and correctness across the surface (perspective
   vanishing-point, `doc_move_region` source-over, `doc_select_wand` flood guards,
   `doc_create` dimension clamp, blend/direction/`copy_from` validation).
