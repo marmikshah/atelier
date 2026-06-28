@@ -30,7 +30,7 @@ Everything is soft, rounded, and pastel.
    kept small/cute), a tiny robe body, stubby arms, a little staff. Name them.
 2. **Block** the oversized head + tiny body with `doc_batch` (ellipses); `doc_look`
    and confirm the head dominates.
-3. **Soft volume:** gentle `doc_form` (low strength) so it's rounded but still
+3. **Soft volume:** gentle `doc_fx op=form` (low strength) so it's rounded but still
    soft/pastel, not dramatic.
 4. **The eyes (centerpiece):** `doc_paint_grid` two big eyes — iris colour, dark
    pupil, a 2×2 white highlight top-left, a 1px glint bottom-right. Place them

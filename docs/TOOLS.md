@@ -93,8 +93,7 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
     `cloud`(fBm)/`perlin`/`voronoi` through colour stops (terrain, clouds).
   - **text** `{x,y,text,color,size?}` — the built-in 3×5 pixel font (A-Z, 0-9 and
     common punctuation; lowercase maps to upper; returns the rendered `width`).
-- `doc_outline` (flat keyline; `aa` softens corners) · `doc_clear_cel` (wipe a
-  cel) — kept as their own tools.
+- `doc_clear_cel` — wipe a cel (kept as its own tool).
 - `doc_figure` — build a whole CONNECTED humanoid from named JOINT coordinates
   (`{"head":[x,y],"shoulder_l":[x,y],…,"foot_r":[x,y]}`): each bone is fleshed as
   a tapered `doc_draw` op=stroke capsule sharing its endpoints, so the body is one
@@ -115,9 +114,6 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   indices (palette-true by construction), `rows` are pixel-row strings
   (`.`/` ` leave the pixel untouched). The inverse of `doc_dump_region`;
   eliminates absolute-coordinate mistakes for detailed shapes.
-- `doc_symmetry` — mirror a cel across a vertical and/or horizontal axis (draw
-  half a sprite, mirror the rest); `doc_replace_color` (recolour) · `doc_flip` ·
-  `doc_shift` (`wrap` rolls edges for seamless tiles).
 - `doc_stamp_image` — place an external PNG into a cel with optional `scale` /
   `rotate`, drawn OVER existing content (`opacity` + `blend`) for sub-sprite
   reuse, or `replace` the whole cel. Import bridge for AI-gen / scanned / Figma.
@@ -130,37 +126,34 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
 
 ## Effects, colour & procedural
 
-- `doc_outline` (`aa` softens corners) · `doc_drop_shadow` (offset, blur) ·
-  `doc_glow` (bloom via blur + light blend; when a palette is locked it
-  re-snaps the bloom back ON-palette by default so it stays crisp pixel art
-  instead of hundreds of soft tints — `snap=false` keeps it soft) · `doc_bevel`
-  (raised top-left / shadowed bottom-right edges) — real lighting & finishing,
-  self-contained on one cel.
-- `doc_rim_light` — paint a RIM/edge light on the silhouette edges that FACE the
-  light (`az`: 0=right, 90=down, 180=left, 270=up): estimates each edge pixel's
-  outward normal and stamps `color` where it faces the light, `width` px thick,
-  `falloff` tightens it; `dark=true` lights the away-facing edge (core/contact
-  shadow). Topological, so it survives small canvases where a Fresnel rim washes
-  out — replaces hand-placing edge highlights pixel by pixel.
-- `doc_blur` — premultiplied box blur (soft shadows, depth-of-field, smoke).
-- `doc_adjust` — shift hue / saturation / lightness over a region (tint,
-  recolour, brighten).
-- `doc_quantize` — snap to a palette, or derive one of N colours by median cut
-  (posterise / down-palette imported art).
+- `doc_fx` — apply ONE op that REWORKS existing pixels (the complement of
+  `doc_draw`, which adds marks; `doc_batch` runs many). `op` + flattened params,
+  all honouring an active selection and accepting `opacity` / `blend_mode`:
+  - **effects** — `blur` `{radius,region?}` (box blur: shadows, depth-of-field) ·
+    `outline` `{color,aa?}` (flat keyline) · `drop_shadow` `{color,dx?,dy?,blur?}` ·
+    `bevel` `{light,dark,depth?}` (raised top-left / shadowed bottom-right) ·
+    `shade` `{light_dir?,steps?,mode?,ramp?,region?}` (on-ramp directional shading
+    — enforces ramp discipline, unlike a flat HSL shift) · `form`
+    `{form,light_dir?,ramp?,strength?,region?}` (sphere/cylinder/auto volume) ·
+    `dither` `{color_a,color_b,pattern?,density?,region?,only_existing?}`
+    (checker/bayer blend of two colours) · `pixel_perfect` `{region?,color?}`
+    (drops the doubled L-corner pixels rasterized lines leave).
+  - **transform** — `flip` `{horizontal?}` · `shift` `{dx?,dy?,wrap?}` (`wrap`
+    rolls edges for seamless tiles) · `symmetry`
+    `{vertical?,horizontal?,keep_left?,keep_top?}`.
+  - **colour** — `quantize` `{colors,max_colors?}` (snap to a palette or median-cut
+    to N) · `replace_color` `{from,to,tolerance?}` · `adjust` `{hue?,sat?,lum?,region?}`.
+- `doc_glow` — bloom via blur + light blend; with a palette locked it re-snaps the
+  bloom back ON-palette by default (`snap=false` keeps it soft). Its own tool
+  because the on-palette `snap` isn't a `doc_fx` / batch op.
+- `doc_rim_light` — paint a RIM/edge light on silhouette edges FACING the light
+  (`az`: 0=right, 90=down, 180=left, 270=up); `dark=true` lights the away-facing
+  edge (core/contact shadow). Topological — survives small canvases where a
+  Fresnel rim washes out.
 - `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
   colour to `to[i]` across every cel (exact match, all channels), updating the
-  stored palette too; optional `layer` / `frame` restrict scope. The
-  recolour-variant workflow — one sprite, many palettes.
-- `doc_shade` — on-ramp shading from a light direction: rim pixels facing the
-  light shift up the colour ramp, pixels facing away shift down (hue-shifted
-  when no explicit `ramp` is given). The agent supplies form and light; the
-  tool enforces ramp discipline — unlike `doc_adjust`'s flat HSL shift.
-- `doc_dither` — dithering as a brush: blend two chosen colours across a
-  region with `checker` / `bayer2/4/8` patterns at a `density`, optionally only
-  repainting pixels that already hold those colours.
-- `doc_pixel_perfect` — clean strokes to pixel-perfect form: removes the
-  doubled L-corner pixels rasterized lines leave behind (the Aseprite
-  convention). The agent draws the line; the tool enforces the discipline.
+  stored palette too; optional `layer` / `frame` restrict scope. One sprite, many
+  palettes.
 
 All painting / effect / procedural ops above honour an active `doc_select` and a
 layer's blend mode. `doc_batch` validates op fields strictly — a misspelled or

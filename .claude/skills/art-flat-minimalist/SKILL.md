@@ -21,7 +21,7 @@ what it is. No rendering, no fuss — shape and colour do all the work.
   single hard shadow shape (never a gradient).
 - **Outline:** none, OR one thin uniform outline — pick one and commit. Prefer
   letting adjacent flat colours separate the shapes (colour, not line).
-- **No** `doc_form`, `doc_relight`, `doc_dither`, gradients, or anti-aliasing.
+- **No** `doc_fx op=form`, `doc_relight`, `doc_fx op=dither`, gradients, or anti-aliasing.
   `doc_smooth_edges` is allowed only to clean a jagged geometric edge, sparingly.
 - Forms are geometric and simplified — circles, triangles, trapezoids. No small
   detail, no texture, no fur. Big shapes only.
