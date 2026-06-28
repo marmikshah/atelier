@@ -574,6 +574,41 @@ impl Studio {
         doc.export_sheet(Path::new(out_path), scale.max(1))
     }
 
+    /// One-tool dispatch over the per-document file exports — `op`: `sheet` |
+    /// `anim` | `tileset`. Shared `out_path`/`scale`; op-specific params come
+    /// flattened (anim: `format`,`tag`; tileset: `tile_w`,`tile_h`). Generators
+    /// (`wang`) and library-level exports (`export_all`/`export_atlas`) stay
+    /// their own tools.
+    pub fn doc_export(
+        &self,
+        id: &str,
+        op: &str,
+        out_path: &str,
+        scale: Option<u32>,
+        params: &serde_json::Map<String, Value>,
+    ) -> Result<Value, String> {
+        let geti = |k: &str| params.get(k).and_then(|v| v.as_u64()).map(|n| n as u32);
+        let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
+        match op {
+            "sheet" => self.doc_export_sheet(id, out_path, scale.unwrap_or(4)),
+            "anim" => match gets("format").unwrap_or("gif") {
+                "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(4), gets("tag")),
+                "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(4), gets("tag")),
+                other => Err(format!(
+                    "doc_export op=anim: unknown format '{other}' — use gif|apng"
+                )),
+            },
+            "tileset" => {
+                let tw = geti("tile_w").ok_or("doc_export op=tileset needs tile_w")?;
+                let th = geti("tile_h").ok_or("doc_export op=tileset needs tile_h")?;
+                self.export_tileset(id, tw, th, scale.unwrap_or(1), out_path)
+            }
+            other => Err(format!(
+                "doc_export: unknown op '{other}' — use sheet|anim|tileset (wang/atlas/all are their own tools)"
+            )),
+        }
+    }
+
     pub fn doc_export_gif(
         &self,
         id: &str,

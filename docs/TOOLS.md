@@ -14,7 +14,7 @@ stays crisp.
   addressed by `id`. No projects, no baked-in art style — the agent draws
   everything.
 - The loop: `doc_create` → paint (`doc_*`) → `doc_look` (flatten a frame to a
-  PNG you can SEE) → inspect → fix → `doc_export_sheet` / `doc_export_anim`.
+  PNG you can SEE) → inspect → fix → `doc_export` (op=sheet|anim).
 
 ## Library
 
@@ -108,7 +108,7 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   the body bobs — each frame drawn as the connected-capsule figure, range tagged
   `walk`. Generated from joints, not hand-painted, so limbs never wobble or
   detach. Tune `frames`/`stride`/`lift`/`bob`/`arm_swing`; export with
-  `doc_export_anim tag=walk`.
+  `doc_export op=anim tag=walk`.
 - `doc_paint_grid` — paint a whole region DECLARATIVELY from a character grid:
   `legend` maps single chars to `[r,g,b(,a)]` colours or integer palette
   indices (palette-true by construction), `rows` are pixel-row strings
@@ -218,20 +218,16 @@ The limb/keyframe-animation toolkit.
 > Looking at a frame is `doc_look` (under **See & measure** below — it's the one
 > SEE call, inline). This section is the file-writing export tools.
 
-- `doc_export_sheet` — horizontal spritesheet PNG + JSON meta (frame rects,
-  durations, tags, pivots, collision boxes, palette) so any engine can slice and
-  play it.
-- `doc_export_anim` — export an animation as `format=gif` or `format=apng`,
-  honouring per-frame durations. Pass a `tag` to play that animation in its
-  direction (`forward` / `reverse` / `pingpong`); omit it to play the whole
-  timeline forward. All frames are snapped to ONE shared palette (the locked one,
-  else a median-cut over every frame) before encoding, so colours don't shimmer
-  frame-to-frame — only the motion moves. GIF = 256 colours + 1-bit alpha
-  (smaller); APNG = lossless, full alpha. (replaces `doc_export_gif` / `doc_export_apng`)
-- `doc_export_tileset` — slice frame 0 into a `tile_w`×`tile_h` grid and write an
-  engine-ready tileset: the PNG plus two sidecars — `<name>.tsx` (Tiled XML) and
-  `<name>.json` (same fields: tilewidth / tileheight / tilecount / columns /
-  image). The canvas must divide exactly by the tile size; `scale` upscales both.
+- `doc_export` — write a document to a file; `op` + shared `out_path`/`scale`:
+  - **sheet** — horizontal spritesheet PNG + JSON meta (frame rects, durations,
+    tags, pivots, collision boxes, palette) so any engine can slice and play it.
+  - **anim** `{format?,tag?}` — animation as `format=gif` (256 colours + 1-bit
+    alpha, smaller) or `apng` (lossless, full alpha), honouring per-frame
+    durations. A `tag` plays that animation in its direction
+    (`forward`/`reverse`/`pingpong`); omit to play the whole timeline. All frames
+    snap to ONE shared palette before encoding, so colours don't shimmer.
+  - **tileset** `{tile_w,tile_h}` — slice frame 0 into a grid → PNG + `<name>.tsx`
+    (Tiled XML) + `<name>.json`. Canvas must divide exactly by the tile size.
 - `doc_wang_tiles` — generate the deterministic 16-tile Wang/blob terrain set
   from a source doc (layer 0 = inner material, layer 1 = outer; top-left N×N of
   each sampled) into a NEW `<id>-wang` document (4N×4N, the 16 corner
@@ -386,7 +382,7 @@ doc_look     doc_id="cat" frame=0 scale=8                  → PNG to LOOK at
 doc_add_frame doc_id="cat" copy_from=0                     → frame 1 (dupe)
 doc_batch    doc_id="cat" layer=0 frame=1 ops=[ …eyes… ]   → repaint as closed
 doc_add_tag  doc_id="cat" name="blink" from=0 to=1 direction="pingpong"
-doc_export_anim doc_id="cat" out_path="cat.gif" tag="blink" scale=8
+doc_export op=anim doc_id="cat" out_path="cat.gif" tag="blink" scale=8
 ```
 
 > An animation needs **two or more frames**: draw frame 0, `doc_add_frame`

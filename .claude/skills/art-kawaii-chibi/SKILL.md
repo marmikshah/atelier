@@ -38,7 +38,7 @@ Everything is soft, rounded, and pastel.
 5. **Face:** tiny nose/mouth, then **rosy blush** ovals under the eyes; a few hair
    wisps under the hat.
 6. **Polish:** `doc_smooth_edges` for soft AA; keep the palette pastel
-   (`doc_palette_report`). `doc_look` often; `doc_export_sheet` to export.
+   (`doc_palette_report`). `doc_look` often; `doc_export op=sheet` to export.
 
 ## Done when
 Head ≥ ~45% of height, eyes huge with double highlights, blush present, palette

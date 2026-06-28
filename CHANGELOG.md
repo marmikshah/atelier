@@ -108,7 +108,12 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
     `doc_quantize`, `doc_replace_color`, `doc_adjust`). `doc_glow` stays separate —
     its on-palette `snap` isn't a batch op.
 
-  See `docs/CONSOLIDATION-ROUND3.md`. **76 tools.**
+  - **`doc_export`**`(op, …)` — the 3 per-document file exports (`doc_export_sheet`,
+    `doc_export_anim`, `doc_export_tileset`) over a shared `out_path`/`scale` core.
+    (`doc_wang_tiles`, `export_all`, `export_atlas` stay separate — generators /
+    library-level.)
+
+  See `docs/CONSOLIDATION-ROUND3.md`. **74 tools.**
 
 ### Fixed
 

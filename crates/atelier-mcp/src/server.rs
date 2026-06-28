@@ -221,38 +221,6 @@ pub struct DocStampImage {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocExport {
-    pub doc_id: String,
-    pub out_path: String,
-    pub scale: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocExportAnim {
-    pub doc_id: String,
-    pub out_path: String,
-    /// "gif" (256 colours, 1-bit alpha, smaller) or "apng" (lossless, full
-    /// alpha). Default "gif".
-    pub format: Option<String>,
-    pub scale: Option<u32>,
-    /// Animation tag to play (honours its direction: forward/reverse/pingpong).
-    /// Omit to play the whole timeline forward.
-    pub tag: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocExportTileset {
-    pub doc_id: String,
-    /// Tile width in source pixels; the canvas width must divide by it exactly.
-    pub tile_w: u32,
-    /// Tile height in source pixels; the canvas height must divide by it exactly.
-    pub tile_h: u32,
-    /// Nearest-neighbour upscale of the PNG and tile size (default 1).
-    pub scale: Option<u32>,
-    pub out_path: String,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocWangTiles {
     pub doc_id: String,
     /// Tile size N in pixels; the source canvas must be at least N×N.
@@ -482,6 +450,21 @@ pub struct DocFx {
     pub op: String,
     /// The op's own params, flattened alongside. Every op also accepts `opacity`
     /// and `blend_mode`.
+    #[serde(flatten)]
+    pub params: serde_json::Map<String, serde_json::Value>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocExport {
+    pub doc_id: String,
+    /// What to export: sheet | anim | tileset.
+    pub op: String,
+    /// Output file path.
+    pub out_path: String,
+    /// Nearest-neighbour upscale (sheet/anim default 4, tileset default 1).
+    pub scale: Option<u32>,
+    /// Op-specific params, flattened: anim → format ("gif"|"apng"), tag;
+    /// tileset → tile_w, tile_h.
     #[serde(flatten)]
     pub params: serde_json::Map<String, serde_json::Value>,
 }
@@ -1316,7 +1299,7 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_silhouette",
             "doc_components",
             "doc_palette_report",
-            "doc_export_sheet",
+            "doc_export",
         ],
         build: |g| {
             let subject = g("subject").unwrap_or_else(|| "a sprite".into());
@@ -1333,7 +1316,7 @@ const PROMPTS: &[PromptSpec] = &[
                  7. Audit shape: doc_silhouette (readable bbox/fill) and doc_components (no stray specks).\n\
                  8. Audit colour: doc_palette_report (every colour in_palette, no near-dupes).\n\
                  9. doc_critique for the failure modes you can't see; fix what it flags, doc_look to confirm.\n\
-                 10. doc_export_sheet the finished sprite to a PNG.\n\
+                 10. doc_export op=sheet the finished sprite to a PNG.\n\
                  Iterate 3-9 until the sprite reads cleanly at 1x."
             )
         },
@@ -1361,7 +1344,7 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_anim_audit",
             "doc_set_frame_duration",
             "doc_add_tag",
-            "doc_export_anim",
+            "doc_export",
         ],
         build: |g| {
             let character = g("character").unwrap_or_else(|| "the character".into());
@@ -1383,7 +1366,7 @@ const PROMPTS: &[PromptSpec] = &[
                  8. doc_add_tag the range and doc_anim_audit mode=\"seam\" so the loop wrap is clean.\n\
                  9. doc_set_frame_duration ~120ms per frame, with contact poses held ~1.5x longer — \
                  uniform 100ms reads mechanical.\n\
-                 10. doc_export_anim the tagged loop and study it.\n\
+                 10. doc_export op=anim the tagged loop and study it.\n\
                  Iterate 4-9 until the walk reads smoothly."
             )
         },
@@ -1403,7 +1386,7 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_fx",
             "doc_seam_report",
             "doc_palette_report",
-            "doc_export_sheet",
+            "doc_export",
         ],
         build: |g| {
             let material = g("material").unwrap_or_else(|| "the material".into());
@@ -1419,7 +1402,7 @@ const PROMPTS: &[PromptSpec] = &[
                  7. doc_look tile=2 and eyeball the 2x2 grid for any visible repeat or seam.\n\
                  8. doc_palette_report to confirm the texture stayed on-palette.\n\
                  9. Repeat 4-7 until the seam report is clean and the grid looks continuous.\n\
-                 10. doc_export_sheet the tile to a PNG.\n\
+                 10. doc_export op=sheet the tile to a PNG.\n\
                  The tile is done only when doc_seam_report is zero."
             )
         },
@@ -1672,53 +1655,19 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Export the document as a horizontal spritesheet PNG + JSON meta (frames, durations, tags)."
-    )]
-    async fn doc_export_sheet(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_export_sheet(&p.doc_id, &p.out_path, p.scale.unwrap_or(4)))
-    }
-
-    #[tool(
-        description = "Export the document as an animated GIF or APNG honouring per-frame durations. `format`: gif (256 colours, 1-bit alpha, smaller) | apng (lossless, full alpha). Pass `tag` to play one animation tag in its direction (forward/reverse/pingpong); omit to play the whole timeline forward."
-    )]
-    async fn doc_export_anim(&self, Parameters(p): Parameters<DocExportAnim>) -> CallToolResult {
-        let studio = self.studio();
-        let (id, out, scale, tag) = (
-            &p.doc_id,
-            &p.out_path,
-            p.scale.unwrap_or(4),
-            p.tag.as_deref(),
-        );
-        let r = match p.format.as_deref().unwrap_or("gif") {
-            "apng" => studio.doc_export_apng(id, out, scale, tag),
-            _ => studio.doc_export_gif(id, out, scale, tag),
-        };
-        res(r)
-    }
-
-    #[tool(
-        description = "Slice frame 0 into a tile_w×tile_h grid and write an engine-ready tileset: the PNG plus TWO sidecars — <name>.tsx (Tiled XML: tilewidth/tileheight/tilecount/columns/image) and <name>.json (same fields). The canvas must divide exactly by the tile size. Nearest-neighbour `scale` (default 1) upscales the PNG and tile size. Returns {path,tsx,json,tilecount,columns,rows}."
-    )]
-    async fn doc_export_tileset(
-        &self,
-        Parameters(p): Parameters<DocExportTileset>,
-    ) -> CallToolResult {
-        res(self.studio().export_tileset(
-            &p.doc_id,
-            p.tile_w,
-            p.tile_h,
-            p.scale.unwrap_or(1),
-            &p.out_path,
-        ))
-    }
-
-    #[tool(
         description = "Generate the deterministic 16-tile Wang/blob terrain set from a source doc: frame 0's layer 0 holds the INNER material, layer 1 the OUTER (top-left N×N of each is sampled). Creates a NEW document <id>-wang (canvas 4N×4N) holding all 16 corner combinations in a 4×4 grid (tile index = NE,SE,SW,NW corner bits); each set bit fills a quarter-disc (radius N/2) at that corner, adjacent set corners connect along their shared edge. Returns the new doc's structure + id."
     )]
     async fn doc_wang_tiles(&self, Parameters(p): Parameters<DocWangTiles>) -> CallToolResult {
         res(self.studio().wang_tiles(&p.doc_id, p.n))
+    }
+
+    #[tool(
+        description = "Export a document to a file. `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Shared: out_path, scale (sheet/anim 4, tileset 1). For a whole-library dump use export_all/export_atlas; for the Wang set use doc_wang_tiles."
+    )]
+    async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
+        res(self
+            .studio()
+            .doc_export(&p.doc_id, &p.op, &p.out_path, p.scale, &p.params))
     }
 
     // -- per-pixel drawing on a cel (the editor; coords = document pixels) --
@@ -2693,7 +2642,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export_anim tag=burst."
+        description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export op=anim tag=burst."
     )]
     async fn doc_burst(&self, Parameters(p): Parameters<DocBurst>) -> CallToolResult {
         res(self.studio().burst(
@@ -2734,7 +2683,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export_anim tag=walk."
+        description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export op=anim tag=walk."
     )]
     async fn doc_walk(&self, Parameters(p): Parameters<DocWalk>) -> CallToolResult {
         let joints: std::collections::HashMap<String, (i32, i32)> = p
@@ -2899,7 +2848,7 @@ impl ServerHandler for Atelier {
              and editing what moves — doc_keyframe_move for eased motion; doc_dissolve is \
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
-             doc_export_sheet / doc_export_anim / export_all. list_docs browses the \
+             doc_export (op=sheet|anim|tileset) / export_all. list_docs browses the \
              library."
                 .into(),
         );
