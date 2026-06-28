@@ -1,0 +1,19 @@
+[package]
+name = "atelier"
+description = "MCP-native headless pixel-art editor: layered/animated documents, drawing primitives, PNG/sheet/GIF export."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "atelier"
+path = "src/main.rs"
+
+[dependencies]
+atelier-mcp.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true

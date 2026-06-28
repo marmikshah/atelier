@@ -35,13 +35,13 @@ showpiece end of pixel art — selout edges, rim light, gem glints, beard strand
 4. **Multi-light pass across all parts:** `doc_relight` (key+fill+rim) per
    material, region/selection-bound; `doc_form` for rounded sub-forms.
 5. **Texture pass:** `doc_material` (cloth on robe, etc.); hand-paint fold
-   shadows + highlights with `doc_paint_grid`/`doc_pencil`.
+   shadows + highlights with `doc_paint_grid`/`doc_draw op=pencil`.
 6. **Fine detail:** beard strands, eye catchlights, hat star, robe-hem trim,
    staff gem + `doc_glow` bloom.
 7. **Selout + rim:** `doc_smooth_edges`/`doc_outline_selective`; `doc_rim_light`
    a cool back-rim to pop the silhouette.
 8. `doc_look` each pass; `doc_critique` + `doc_palette_report` at the end;
-   `doc_render` to export.
+   `doc_export_sheet` to export.
 
 ## Done when
 ≥16 colours, ≥80px, every material textured with folds, multi-light with a rim,

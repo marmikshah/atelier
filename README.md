@@ -42,7 +42,7 @@ then sharpened by a reviewer-agent feedback loop.</em></p>
 ## What it is
 
 Agents are good at *describing* art and bad at *seeing* it. atelier closes the
-loop: every drawing op is a tool call, and `doc_render` hands back a PNG the
+loop: every drawing op is a tool call, and `doc_look` hands back a PNG the
 agent can actually look at, judge, and correct — the same look-and-fix loop a
 human uses in an editor. One static Rust binary; no API keys, no network, fully
 deterministic.
@@ -58,7 +58,7 @@ deterministic.
 - **Game-ready output** — spritesheets with rects/durations/tags/pivots,
   animated GIFs/APNGs, packed texture atlases, Tiled-ready tilesets and
   deterministic Wang-blob terrain sets. Any engine can slice it.
-- **More than pixels** — a built-in pixel font (`doc_text`), one-call palette
+- **More than pixels** — a built-in pixel font (`doc_draw op=text`), one-call palette
   swaps for recolour variants, and the procedural/critique leverage above.
 - **Built for agents** — MCP resources (browse documents + renders), packaged
   prompts (sprite / walk-cycle / tile workflows), a session recorder that turns a
@@ -66,7 +66,7 @@ deterministic.
   interactive `/playground` — run any tool from an auto-built form, or draw with
   the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-The full tool surface (103 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
+The full tool surface (89 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
 release notes live in [CHANGELOG.md](CHANGELOG.md).
 
 ## Quickstart
@@ -89,7 +89,7 @@ art — *"draw me a blinking cat sprite and export it as a GIF"*. The agent driv
 the loop:
 
 ```
-doc_create → paint → doc_render (look!) → fix → doc_export_anim
+doc_create → paint → doc_look (look!) → fix → doc_export_anim
 ```
 
 Documents live under `~/.atelier` (override with `ATELIER_HOME`).
@@ -125,6 +125,7 @@ integration tests and as documentation.
 ## More
 
 - [docs/TOOLS.md](docs/TOOLS.md) — the complete MCP tool reference.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — the crate layout and how it fits together.
 - [CHANGELOG.md](CHANGELOG.md) — release notes.
 - Everything in [docs/](docs/) is agent-made; the gallery pieces were each
   drawn, self-audited and reviewed entirely over MCP.

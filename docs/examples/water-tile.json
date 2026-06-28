@@ -8,8 +8,9 @@
       "note": "A 16x16 canvas. 16 is a multiple of the 4px-per-frame flow step, so the loop advances dy 0,4,8,12,16 in five even quarter-steps and the last one (12 + 4 = 16 == 0 by toroidal wrap) lands pixel-perfect back on the start. The cycle closes onto itself with no remainder."
     },
     {
-      "tool": "doc_gradient",
+      "tool": "doc_draw",
       "args": {
+        "op": "gradient",
         "doc_id": "water",
         "layer": 0,
         "frame": 0,
@@ -94,7 +95,7 @@
       "note": "The animation proof. doc_frame_diff reports `changed` = added + removed + recolored pixels between frame 0 and frame 1. It MUST be > 0: the +4px vertical shift moved the crest and ripple bands to new rows, so many pixels recolour. This is the test the old horizontal-shift version would FAIL -- there every row was identical so a horizontal roll produced pixel-identical frames (changed == 0) and the GIF was a still image. changed > 0 here is what guarantees the loop genuinely animates."
     },
     {
-      "tool": "doc_render",
+      "tool": "doc_look",
       "args": { "doc_id": "water", "frame": 0, "tile": 2, "scale": 8 },
       "note": "The eyeball check: render frame 0 repeated in a 2x2 grid. A horizontally-seamless tile reads as one continuous body of water across the left<->right join with no visible vertical grid line; the horizontal join between stacked copies is intentionally visible (this tile only repeats sideways)."
     },

@@ -1414,7 +1414,7 @@ impl Document {
 
     /// Full-canvas (0,0-anchored) copy of a cel, transparent where absent.
     /// Also the before/after snapshot for the studio's mutation-diff acks.
-    pub(crate) fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
+    pub fn cel_full(&self, layer: usize, frame: usize) -> RgbaImage {
         let mut img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
         if let Some((cx, cy, src)) = self.cels.get(&(layer, frame)) {
             for y in 0..src.height() as i32 {
@@ -1472,7 +1472,7 @@ impl Document {
     /// Render a frame into analysis space: each opaque pixel becomes a grey level
     /// derived from `mode` (transparency preserved). "grayscale" = luma; "bands" =
     /// luma posterised into `bands` even steps; "saturation"/"hue" = that HSL
-    /// channel scaled to 0..255 grey. The shared core behind doc_render_value.
+    /// channel scaled to 0..255 grey. The shared core behind doc_look's value modes.
     pub fn value_image(&self, frame: usize, mode: &str, bands: u32) -> Result<RgbaImage, String> {
         let src = self.analysis_image(None, frame)?;
         let bands = bands.max(1);
