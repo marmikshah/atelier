@@ -9,8 +9,8 @@ use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
 use super::{encode_png, preview_scale, Studio};
-use crate::document::Document;
-use crate::raster;
+use atelier_core::document::Document;
+use atelier_core::raster;
 
 /// OKLab ΔE used for corner-flood background detection on references.
 const BG_TOL: f32 = 0.08;
@@ -313,6 +313,149 @@ impl Studio {
             }),
         ))
     }
+
+    /// Per-PIXEL signed error map vs the reference (the see-and-repair eye the
+    /// scalar `ref_compare` can't be). For every pixel where both canvas and
+    /// reference are opaque it computes the OKLCh deltas — ΔL (value), ΔC
+    /// (chroma), ΔH (hue, degrees) — and returns: a HEAT png (red = canvas too
+    /// light, blue = too dark, green = wrong colour; brightness = ΔE) plus the
+    /// `top` worst INDIVIDUAL pixels, each with an actionable fix direction. This
+    /// converts the loop from "a number moved" to "this exact pixel is too dark —
+    /// lighten it", so the agent can converge the last 5%.
+    pub fn diff_map(&self, id: &str, frame: usize, top: usize) -> Result<(Vec<u8>, Value), String> {
+        let (dir, doc) = self.open(id)?;
+        let src = Self::ref_image(&dir, &doc)?;
+        let canvas = doc.analysis_image(None, frame)?;
+        let (cw, ch) = (canvas.width(), canvas.height());
+        let mut subject = src.clone();
+        raster::remove_background(&mut subject, BG_TOL);
+        let small = raster::downscale_area(&subject, cw, ch);
+        let mut heat = RgbaImage::from_pixel(cw, ch, Rgba([0, 0, 0, 0]));
+        // (ΔE, x, y, ΔL, ΔC, chroma-weighted ΔH magnitude)
+        let mut worst: Vec<(f32, u32, u32, f32, f32, f32)> = Vec::new();
+        let (mut sum, mut n, mut maxd) = (0f64, 0u64, 0f32);
+        let (mut inter, mut union) = (0u64, 0u64);
+        // One dominance rule drives BOTH the heat colour and the fix string, so
+        // they can never contradict; hue is chroma-weighted so it vanishes on
+        // near-gray pixels (where an OKLCh hue angle is meaningless).
+        let classify = |dl: f32, dc: f32, hue: f32| -> (bool, f32) {
+            let value_err = dl.abs();
+            let colour_err = dc.abs() + hue;
+            (value_err >= colour_err, value_err.max(colour_err))
+        };
+        for y in 0..ch {
+            for x in 0..cw {
+                let a = canvas.get_pixel(x, y).0;
+                let b = small.get_pixel(x, y).0;
+                let (ao, bo) = (a[3] >= 128, b[3] >= 128);
+                if ao && bo {
+                    inter += 1;
+                }
+                if ao || bo {
+                    union += 1;
+                }
+                if !(ao && bo) {
+                    continue;
+                }
+                let (la, ca, ha) = raster::oklab_to_oklch(raster::srgb_to_oklab(a));
+                let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(b));
+                let (dl, dc) = (la - lb, ca - cb);
+                let mut dd = ha - hb; // degrees, wrap to [-180, 180]
+                if dd > 180.0 {
+                    dd -= 360.0;
+                } else if dd < -180.0 {
+                    dd += 360.0;
+                }
+                // Chroma-weighted hue arc in OKLab units (comparable to ΔL/ΔC);
+                // ~0 when either colour is achromatic.
+                let hue = 2.0 * ca.min(cb) * (dd.to_radians() / 2.0).sin().abs();
+                let de = raster::oklab_delta(a, b);
+                sum += de as f64;
+                n += 1;
+                maxd = maxd.max(de);
+                let (value_dom, _) = classify(dl, dc, hue);
+                let i = ((de / 0.2).clamp(0.0, 1.0) * 255.0) as u8;
+                let px = if value_dom {
+                    if dl > 0.0 {
+                        [i, 0, 0, 255] // too light
+                    } else {
+                        [0, 0, i, 255] // too dark
+                    }
+                } else {
+                    [0, i, 0, 255] // wrong colour (chroma/hue)
+                };
+                heat.put_pixel(x, y, Rgba(px));
+                worst.push((de, x, y, dl, dc, hue));
+            }
+        }
+        let iou = if union == 0 {
+            0.0
+        } else {
+            inter as f64 / union as f64
+        };
+        worst.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+        let top = top.clamp(1, 64);
+        let worst_pixels: Vec<Value> = worst
+            .iter()
+            .take(top)
+            .filter(|w| w.0 > 0.02)
+            .map(|&(de, x, y, dl, dc, hue)| {
+                let (value_dom, _) = classify(dl, dc, hue);
+                let mut fix: Vec<&str> = Vec::new();
+                if value_dom {
+                    if dl.abs() > 0.02 {
+                        fix.push(if dl > 0.0 { "darken" } else { "lighten" });
+                    }
+                } else {
+                    if dc.abs() > 0.02 {
+                        fix.push(if dc > 0.0 { "desaturate" } else { "saturate" });
+                    }
+                    if hue > 0.02 {
+                        fix.push("shift hue toward reference");
+                    }
+                }
+                if fix.is_empty() && dl.abs() > 0.02 {
+                    fix.push(if dl > 0.0 { "darken" } else { "lighten" });
+                }
+                json!({
+                    "x": x, "y": y,
+                    "delta": (de * 1000.0).round() / 1000.0,
+                    "fix": if fix.is_empty() { "minor".into() } else { fix.join(" + ") },
+                })
+            })
+            .collect();
+        let sc = preview_scale(cw, ch);
+        let scaled = if sc > 1 {
+            image::imageops::resize(
+                &heat,
+                cw * sc,
+                ch * sc,
+                image::imageops::FilterType::Nearest,
+            )
+        } else {
+            heat
+        };
+        let mean = if n == 0 {
+            Value::Null
+        } else {
+            json!((sum / n as f64 * 1000.0).round() / 1000.0)
+        };
+        Ok((
+            encode_png(&scaled)?,
+            json!({
+                "doc_id": id, "frame": frame,
+                "mean_delta": mean,
+                "max_delta": (maxd * 1000.0).round() / 1000.0,
+                "compared_pixels": n,
+                "silhouette_iou": (iou * 1000.0).round() / 1000.0,
+                "worst_pixels": worst_pixels,
+                "canvas_size": [cw, ch],
+                "scale": sc,
+                "heat_legend": "PNG is canvas×scale; worst_pixels x,y are doc coords. brightness = ΔE; red = too light, blue = too dark, green = wrong colour",
+                "guide": "worst_pixels are only meaningful once silhouette_iou is high (≥0.8) — align the shape first, then fix the named pixels and re-run. delta ≤ 0.06 reads right.",
+            }),
+        ))
+    }
 }
 
 /// Resolve a stored reference filename inside the doc dir, rejecting anything
@@ -409,5 +552,30 @@ mod tests {
             .as_array()
             .unwrap()
             .is_empty());
+    }
+
+    #[test]
+    fn diff_map_flags_too_dark_pixels_to_lighten() {
+        let s = studio("diff");
+        s.doc_create("d", 16, 8).unwrap();
+        let p = sample_png("diff");
+        s.set_reference("d", p.to_str()).unwrap();
+        // Same silhouette as the reference's red block, but darker -> "lighten".
+        s.doc_rect("d", 0, 0, 4, 0, 11, 7, [120, 18, 18, 255], true, 1)
+            .unwrap();
+        let (png, r) = s.diff_map("d", 0, 10).unwrap();
+        assert!(!png.is_empty());
+        assert!(
+            r["mean_delta"].as_f64().unwrap() > 0.05,
+            "{}",
+            r["mean_delta"]
+        );
+        let worst = r["worst_pixels"].as_array().unwrap();
+        assert!(!worst.is_empty(), "expected worst pixels");
+        assert!(
+            worst[0]["fix"].as_str().unwrap().contains("lighten"),
+            "darker canvas should say lighten: {:?}",
+            worst[0]
+        );
     }
 }

@@ -1,8 +1,12 @@
 # MCP tool reference
 
-The complete tool surface, as advertised to MCP clients. Everything is drawn at
-native resolution and scaled up nearest-neighbour on export, so the pixel grid
-stays crisp.
+The complete tool surface. Everything is drawn at native resolution and scaled up
+nearest-neighbour on export, so the pixel grid stays crisp.
+
+> **Profiles.** By default the server advertises a **core** set of ~28 tools (the
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 65 below. The
+> profile filters discovery only — every tool still executes (recipes/`replay`
+> always work). Tools below that aren't in the core set are the *full*-only tail.
 
 ## The model
 
@@ -13,8 +17,8 @@ stays crisp.
   `~/.atelier/documents/<id>/` (override the root with `ATELIER_HOME`) and
   addressed by `id`. No projects, no baked-in art style — the agent draws
   everything.
-- The loop: `doc_create` → paint (`doc_*`) → `doc_render` (flatten a frame to a
-  PNG you can SEE) → inspect → fix → `doc_export_sheet` / `doc_export_gif`.
+- The loop: `doc_create` → paint (`doc_*`) → `doc_look` (flatten a frame to a
+  PNG you can SEE) → inspect → fix → `doc_export` (op=sheet|anim).
 
 ## Library
 
@@ -27,19 +31,20 @@ stays crisp.
 
 ## Structure & timeline
 
-- `doc_add_layer` / `doc_set_layer` — stack layers; toggle visibility / opacity /
-  blend mode: `normal` · `multiply` · `screen` · `add` · `overlay` · `soft-light`
-  · `hard-light` · `darken` · `lighten` · `color-dodge` · `color-burn` ·
-  `difference` · `subtract` · `exclusion`. Real lighting: `multiply` for
-  shadow/AO, `add`/`screen` for light/glow/bloom, `overlay`/`soft-light` to grade.
-- `doc_add_frame` (optionally `copy_from` an existing frame) /
-  `doc_set_frame_duration`.
-- `doc_tween` — insert N cross-faded DISSOLVE frames between two poses
+- `doc_layer` — layer structure in one tool. `op`: `add` (new layer on top) ·
+  `set` (toggle a layer's visibility / opacity / blend) · `move` · `insert` ·
+  `delete` · `rename` · `duplicate` · `merge_down`. Blend modes: `normal` ·
+  `multiply` · `screen` · `add` · `overlay` · `soft-light` · `hard-light` ·
+  `darken` · `lighten` · `color-dodge` · `color-burn` · `difference` · `subtract`
+  · `exclusion`. Real lighting: `multiply` for shadow/AO, `add`/`screen` for
+  light/glow/bloom, `overlay`/`soft-light` to grade.
+- `doc_frame` — frame lifecycle + timing in one tool. `op`: `add` (append,
+  optional `copy_from`) · `duration` (set a frame's ms) · `delete` (last frame
+  protected) · `insert` · `duplicate` · `move`, with cels reindexed and tag
+  ranges remapped. The recovery path for a bad tween or extra pose.
+- `doc_dissolve` — insert N cross-faded DISSOLVE frames between two poses
   (palette-snapped, tags remapped, pivot/boxes inherited). For fades and FX
   only — never pose motion (limbs ghost); auto-checkpoints first.
-- `doc_frame_ops` — timeline lifecycle: `delete` (last frame protected) /
-  `insert` / `duplicate` / `move`, with cels reindexed and tag ranges remapped.
-  The recovery path for a bad tween or extra pose.
 - `doc_add_tag` — named frame range (`forward` / `reverse` / `pingpong`).
 - `doc_set_pivot` — set a frame's anchor point `[x,y]` (feet, weapon mount); the
   engine reads it to position the sprite. Emitted (scaled) in sheet/atlas JSON.
@@ -70,73 +75,90 @@ stays crisp.
 
 Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
 
-- `doc_pencil` · `doc_line` · `doc_rect` · `doc_ellipse` (filled or clean closed
-  outline; `rx==ry` ⇒ circle) · `doc_fill` (bucket) · `doc_outline` ·
-  `doc_fill_cel` · `doc_clear_cel`
-- `doc_polygon` — vertices `[[x,y],...]`; `fill` scanline-fills the interior,
-  else draws the closed outline (organic canopies, ponds, bodies).
-- `doc_polyline` — connected segments through `[[x,y],...]` (`closed` loops it
-  back); square brush `size`.
-- `doc_bezier` — Bézier curve through control points (2 = line, 3 = quadratic,
-  4 = cubic; more than 4 errors — chain calls): smooth organic strokes — tails,
-  vines, hair.
+- `doc_draw` — apply ONE drawing op to a cel; `doc_batch` runs many in one call.
+  Both share the same op vocabulary (`op` + the op's own params), all honouring an
+  active selection and accepting `opacity` / `blend_mode`:
+  - **pencil** `{points,color,size?}` · **line** `{x0,y0,x1,y1,color,size?}` ·
+    **rect** `{x0,y0,x1,y1,color,fill?,size?}` · **ellipse** `{cx,cy,rx,ry,color,fill?}`
+    (filled or clean outline; `rx==ry` ⇒ circle) · **fill** `{x,y,color,tolerance?}`
+    (bucket) · **fill_cel** `{color}`.
+  - **polygon** `{points,color,fill?}` — `fill` scanline-fills the interior
+    (canopies, ponds, bodies); **polyline** `{points,color,size?,closed?}` —
+    connected segments through `[[x,y],...]`.
+  - **stroke** `{points,color,width?,aa?}` — a CLEAN tapered stroke: a union of
+    round-capped capsules, **connected** by construction (no gaps), **tapered**
+    (per-vertex `width`, or `[[x,y,w],...]`; `w=0` ⇒ a 1px point) and
+    **anti-aliased**, snapped on-palette. The fix for choppy curves and action
+    arcs; a 2-point call is a tapered capsule LIMB that stays attached when it
+    shares an endpoint with another.
+  - **gradient** `{stops,kind?,x0,y0,x1,y1,dither?,…}` — linear/radial from colour
+    stops with optional `bayer`/`noise` dithering (band-free skies, water).
+  - **scatter** `{colors,x0,y0,x1,y1,density?,seed?,size?}` — seeded speckles
+    (grass, foliage, dust, stars); **noise** `{stops,x0,y0,x1,y1,kind?,…}` —
+    `cloud`(fBm)/`perlin`/`voronoi` through colour stops (terrain, clouds).
+  - **text** `{x,y,text,color,size?}` — the built-in 3×5 pixel font (A-Z, 0-9 and
+    common punctuation; lowercase maps to upper; returns the rendered `width`).
+- `doc_clear_cel` — wipe a cel (kept as its own tool).
+- `doc_figure` — build a whole CONNECTED humanoid from named JOINT coordinates
+  (`{"head":[x,y],"shoulder_l":[x,y],…,"foot_r":[x,y]}`): each bone is fleshed as
+  a tapered `doc_draw` op=stroke capsule sharing its endpoints, so the body is one
+  connected silhouette by construction — no detached limbs, no rect stacks. You
+  reason in joint space (which you do well) instead of placing every silhouette
+  vertex (which you don't). Re-pose across frames by calling again with new
+  joints — the base for non-wobbly animation. `limb_w`/`torso_w`/`head_r` size
+  it to the sprite.
+- `doc_walk` — GENERATE a side-view walk cycle from a base standing pose (the
+  same 13 joints): feet stride along a gait path (one planted, one swinging, half
+  a cycle apart), knees/elbows solved by 2-bone IK, arms counter-swing the legs,
+  the body bobs — each frame drawn as the connected-capsule figure, range tagged
+  `walk`. Generated from joints, not hand-painted, so limbs never wobble or
+  detach. Tune `frames`/`stride`/`lift`/`bob`/`arm_swing`; export with
+  `doc_export op=anim tag=walk`.
 - `doc_paint_grid` — paint a whole region DECLARATIVELY from a character grid:
   `legend` maps single chars to `[r,g,b(,a)]` colours or integer palette
   indices (palette-true by construction), `rows` are pixel-row strings
   (`.`/` ` leave the pixel untouched). The inverse of `doc_dump_region`;
   eliminates absolute-coordinate mistakes for detailed shapes.
-- `doc_gradient` — linear / radial gradient from colour `stops`, with optional
-  `bayer` / `noise` ordered dithering (band-free skies, water, light falloff,
-  vignettes) and a clip `region`. Replaces hand-placed dither pixels.
-- `doc_scatter` — paint random `colors` across a region at a `density`, seeded &
-  deterministic (organic grass, foliage, dust, stars, noise) — no hand-listing
-  every speckle.
-- `doc_symmetry` — mirror a cel across a vertical and/or horizontal axis (draw
-  half a sprite, mirror the rest); `doc_replace_color` (recolour) · `doc_flip` ·
-  `doc_shift` (`wrap` rolls edges for seamless tiles).
 - `doc_stamp_image` — place an external PNG into a cel with optional `scale` /
   `rotate`, drawn OVER existing content (`opacity` + `blend`) for sub-sprite
   reuse, or `replace` the whole cel. Import bridge for AI-gen / scanned / Figma.
-- `doc_text` — stamp a string with the built-in 3×5 pixel font (top-left at
-  `(x,y)`, integer `size`): covers A-Z, 0-9 and `. , : ! ? - + / ( ) '` and
-  space; lowercase maps to uppercase, unknown chars render as a hollow box.
-  Returns the rendered `width` so you can lay out the next element — HUD mockups,
-  damage numbers, lettering.
-- `doc_batch` — apply many ordered ops to one cel in a single call (fast headless
-  editing). Each op is `{"op":"rect|line|ellipse|polyline|polygon|bezier|pencil|
-  fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|
-  noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|text", ...}`; add
-  per-op `opacity` / `blend_mode` to composite that op instead of overwriting.
+- `doc_batch` — apply many ordered ops to one cel in a single call (the multi-op
+  form of `doc_draw`; fast headless editing). Each op is `{"op":"rect|line|
+  ellipse|polyline|polygon|stroke|pencil|fill|fill_cel|clear_cel|gradient|scatter|
+  noise|text|replace_color|flip|shift|outline|adjust|blur|quantize|symmetry|
+  drop_shadow|glow|bevel", ...}`; add per-op `opacity` / `blend_mode` to composite
+  that op instead of overwriting.
 
 ## Effects, colour & procedural
 
-- `doc_outline` (`aa` softens corners) · `doc_drop_shadow` (offset, blur) ·
-  `doc_glow` (bloom via blur + light blend) · `doc_bevel` (raised top-left /
-  shadowed bottom-right edges) — real lighting & finishing, self-contained on
-  one cel.
-- `doc_noise` — `cloud` (fBm) / `perlin` / `voronoi` noise mapped through colour
-  stops: terrain, clouds, organic mottling.
-- `doc_blur` — premultiplied box blur (soft shadows, depth-of-field, smoke).
-- `doc_adjust` — shift hue / saturation / lightness over a region (tint,
-  recolour, brighten).
-- `doc_quantize` — snap to a palette, or derive one of N colours by median cut
-  (posterise / down-palette imported art).
-- `palette_ramp` — generate a hue-shifted shading ramp from a base colour (warm
-  highlights, cool shadows); optionally store it as a document's palette.
+- `doc_fx` — apply ONE op that REWORKS existing pixels (the complement of
+  `doc_draw`, which adds marks; `doc_batch` runs many). `op` + flattened params,
+  all honouring an active selection and accepting `opacity` / `blend_mode`:
+  - **effects** — `blur` `{radius,region?}` (box blur: shadows, depth-of-field) ·
+    `outline` `{color,aa?}` (flat keyline) · `drop_shadow` `{color,dx?,dy?,blur?}` ·
+    `bevel` `{light,dark,depth?}` (raised top-left / shadowed bottom-right) ·
+    `shade` `{light_dir?,steps?,mode?,ramp?,region?}` (on-ramp directional shading
+    — enforces ramp discipline, unlike a flat HSL shift) · `form`
+    `{form,light_dir?,ramp?,strength?,region?}` (sphere/cylinder/auto volume) ·
+    `dither` `{color_a,color_b,pattern?,density?,region?,only_existing?}`
+    (checker/bayer blend of two colours) · `pixel_perfect` `{region?,color?}`
+    (drops the doubled L-corner pixels rasterized lines leave).
+  - **transform** — `flip` `{horizontal?}` · `shift` `{dx?,dy?,wrap?}` (`wrap`
+    rolls edges for seamless tiles) · `symmetry`
+    `{vertical?,horizontal?,keep_left?,keep_top?}`.
+  - **colour** — `quantize` `{colors,max_colors?}` (snap to a palette or median-cut
+    to N) · `replace_color` `{from,to,tolerance?}` · `adjust` `{hue?,sat?,lum?,region?}`.
+- `doc_glow` — bloom via blur + light blend; with a palette locked it re-snaps the
+  bloom back ON-palette by default (`snap=false` keeps it soft). Its own tool
+  because the on-palette `snap` isn't a `doc_fx` / batch op.
+- `doc_rim_light` — paint a RIM/edge light on silhouette edges FACING the light
+  (`az`: 0=right, 90=down, 180=left, 270=up); `dark=true` lights the away-facing
+  edge (core/contact shadow). Topological — survives small canvases where a
+  Fresnel rim washes out.
 - `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
   colour to `to[i]` across every cel (exact match, all channels), updating the
-  stored palette too; optional `layer` / `frame` restrict scope. The
-  recolour-variant workflow — one sprite, many palettes.
-- `doc_shade` — on-ramp shading from a light direction: rim pixels facing the
-  light shift up the colour ramp, pixels facing away shift down (hue-shifted
-  when no explicit `ramp` is given). The agent supplies form and light; the
-  tool enforces ramp discipline — unlike `doc_adjust`'s flat HSL shift.
-- `doc_dither` — dithering as a brush: blend two chosen colours across a
-  region with `checker` / `bayer2/4/8` patterns at a `density`, optionally only
-  repainting pixels that already hold those colours.
-- `doc_pixel_perfect` — clean strokes to pixel-perfect form: removes the
-  doubled L-corner pixels rasterized lines leave behind (the Aseprite
-  convention). The agent draws the line; the tool enforces the discipline.
+  stored palette too; optional `layer` / `frame` restrict scope. One sprite, many
+  palettes.
 
 All painting / effect / procedural ops above honour an active `doc_select` and a
 layer's blend mode. `doc_batch` validates op fields strictly — a misspelled or
@@ -157,10 +179,6 @@ Read the canvas as *data* — the agent's other eye.
   floating pixels and detached limbs a thumbnail hides.
 - `doc_coverage_map` — coarse occupancy/value heatmap as numbers, plus content
   bbox and centring offset: composition balance without dictating it.
-- `doc_render_value` — render in analysis space: `grayscale` luma,
-  `bands` (posterize to N tonal steps), `saturation` or `hue` isolation, with
-  an optional numeric report (min/max/mean/contrast, per-band %). The squint
-  the agent can't do.
 - `doc_contrast_check` — WCAG contrast ratios: a region vs its surround, all
   palette pairs, or a `one-bit` black/white threshold render — readability as
   numbers.
@@ -174,7 +192,7 @@ Read the canvas as *data* — the agent's other eye.
   render. The flip-book the agent can't do.
 - `doc_seam_report` — exact wrap-mismatch pixels for tile work (horizontal /
   vertical), worst offenders with deltas, optional highlight render — replaces
-  eyeballing `doc_render tile=N`.
+  eyeballing `doc_look tile=N`.
 - `doc_anim_audit` — `seam`: pixel diff of the transition the loop actually
   plays (honours tag direction; pingpong has no seam) as a seam score, plus the
   change_bbox naming WHERE it pops. `spacing`: per-frame opaque-mass-centroid
@@ -191,35 +209,29 @@ The limb/keyframe-animation toolkit.
   / `subtract` / `intersect`). While set, every painting op (fill, gradient,
   scatter, rect, ellipse, polygon, pencil, line, batch…) is confined to it —
   e.g. select a pond shape, then gradient + scatter only inside it.
-- `doc_get_pixel` — read one pixel back as RGBA + `#rrggbbaa` (verify colours
-  while editing blind).
-- `doc_move_region` — copy a rectangle, clear the source, stamp it at `(dx,dy)`.
-  Draw a limb once, nudge it per frame.
-- `doc_copy_region` / `doc_cut_region` / `doc_paste` — a shared clipboard that
-  works across frames **and** documents (`blend` keeps the destination under
-  transparent pixels; overwrite stamps everything).
-- `doc_clear_region` — erase a rectangle.
+- `doc_region` — region + clipboard ops on a cel. `op`: `copy` · `cut` (copy +
+  clear) · `paste` (clipboard at `x,y`; `blend` keeps the destination under
+  transparent pixels, overwrite stamps everything) · `move` (shift the rect
+  `[x0,y0,x1,y1]` by `dx,dy` in place — draw a limb once, nudge it per frame) ·
+  `clear` (erase the rect). The clipboard works across frames **and** documents.
 - `doc_set_palette` — lock a cohesive list of swatches on the document; stored
   and emitted in exports so a whole sprite set stays on-palette.
 
 ## Render & export
 
-- `doc_render` — flatten a frame to a PNG preview (the agent's feedback channel).
-  Options: `region` crops, `onion` ghosts the neighbour frames, `tile` repeats
-  N×N to check seamlessness, `max_size` makes a cheap thumbnail.
-- `doc_export_sheet` — horizontal spritesheet PNG + JSON meta (frame rects,
-  durations, tags, pivots, collision boxes, palette) so any engine can slice and
-  play it.
-- `doc_export_gif` — animated GIF honouring per-frame durations. Pass a `tag` to
-  play that animation in its direction (`forward` / `reverse` / `pingpong`);
-  omit it to play the whole timeline forward.
-- `doc_export_apng` — the same animation as an APNG: lossless, full alpha (unlike
-  GIF's 256 colours and 1-bit alpha). Honours `tag` direction; omit it to play
-  the timeline forward.
-- `doc_export_tileset` — slice frame 0 into a `tile_w`×`tile_h` grid and write an
-  engine-ready tileset: the PNG plus two sidecars — `<name>.tsx` (Tiled XML) and
-  `<name>.json` (same fields: tilewidth / tileheight / tilecount / columns /
-  image). The canvas must divide exactly by the tile size; `scale` upscales both.
+> Looking at a frame is `doc_look` (under **See & measure** below — it's the one
+> SEE call, inline). This section is the file-writing export tools.
+
+- `doc_export` — write a document to a file; `op` + shared `out_path`/`scale`:
+  - **sheet** — horizontal spritesheet PNG + JSON meta (frame rects, durations,
+    tags, pivots, collision boxes, palette) so any engine can slice and play it.
+  - **anim** `{format?,tag?}` — animation as `format=gif` (256 colours + 1-bit
+    alpha, smaller) or `apng` (lossless, full alpha), honouring per-frame
+    durations. A `tag` plays that animation in its direction
+    (`forward`/`reverse`/`pingpong`); omit to play the whole timeline. All frames
+    snap to ONE shared palette before encoding, so colours don't shimmer.
+  - **tileset** `{tile_w,tile_h}` — slice frame 0 into a grid → PNG + `<name>.tsx`
+    (Tiled XML) + `<name>.json`. Canvas must divide exactly by the tile size.
 - `doc_wang_tiles` — generate the deterministic 16-tile Wang/blob terrain set
   from a source doc (layer 0 = inner material, layer 1 = outer; top-left N×N of
   each sampled) into a NEW `<id>-wang` document (4N×4N, the 16 corner
@@ -238,11 +250,14 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 
 **See & measure (the agent's eye).**
 
-- `doc_look` — the primary SEE call: a frame as an **inline PNG** (no separate
-  file read) plus measured stats, in one turn. `mode`: `render` · `value` ·
-  `bands` · `sat` · `hue` · `notan` (3-value squint). `grid`/`coords` burn a
-  pixel ruler into the upscale; `onion`, `region`, `max_size` as on `doc_render`.
-  Stats report value min/max/mean/contrast and shadow/mid/light mass %.
+- `doc_look` — the primary (and only) SEE call: a frame as an **inline PNG** (no
+  separate file read) plus measured stats, in one turn. `mode`: `render` ·
+  `value` · `bands` · `sat` · `hue` · `notan` (3-value squint). `grid`/`coords`
+  burn a pixel ruler into the upscale; `onion` ghosts neighbours; `region` crops;
+  `max_size` makes a thumbnail; `tile` repeats the result N×N to check
+  seamlessness; `out_path` also writes the PNG to a file. Stats report value
+  min/max/mean/contrast and shadow/mid/light mass % — plus per-band coverage in
+  `bands`/`notan` modes.
 - `doc_select_render` — the active selection as a quick-mask overlay (selected
   art shown, the rest dimmed + magenta-tinted) so you never paint through an
   unseen mask. Inline PNG + selected-pixel count/bbox.
@@ -262,8 +277,6 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
   document before a risky op and roll back, or diff regression deltas
   (pixel/colour/contrast change, added/removed/recoloured). Undo for a
   destructive editor.
-- `doc_layer_ops` — `move` · `insert` · `delete` · `rename` · `duplicate` ·
-  `merge_down` (bakes opacity+blend onto the layer below). Cels follow the layer.
 - `doc_transform_cel` — affine-transform a cel/region **in place**: rotate,
   scale, skew. `method` `rotsprite` (super-sampled, cluster-preserving) or
   `nearest`; `preserve_volume` (squash-and-stretch), `snap_palette`,
@@ -273,13 +286,16 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 
 **Perceptual colour (OKLab/OKLCh).**
 
-- `doc_make_perceptual_ramp` — perceptually-even ramp (fixes HSL's crushed
-  midtones): equal-lightness steps, hue shift, `sat_curve` flat/arc/sat-in-shadow,
-  midtone anchor; validates evenness; `set_doc` stores it as the palette.
-- `doc_harmony_palette` — a perceptual ramp per hue of a scheme
-  (complementary/triadic/analogous/split/tetradic/mono), shared lightness poles.
+- `doc_palette` — the OKLCh palette generator: `scheme=mono` for a single
+  perceptually-even shading ramp (equal-lightness steps, hue shift, `sat_curve`
+  flat/arc/sat-in-shadow, `anchor_midtone`, evenness validation) or
+  `complementary/triadic/analogous/split/tetradic` for a cohesive multi-hue set
+  sharing lightness poles. `count` per ramp; `set_doc` locks it. (replaces `palette_ramp` / `doc_make_perceptual_ramp` / `doc_harmony_palette`)
 - `doc_snap_palette` — snap a cel/document to its locked palette by perceptual
-  nearest colour, killing off-palette drift from blends/dithers/FX.
+  nearest colour, killing off-palette drift from blends/dithers/FX. `alpha`
+  governs FX bloom / AA fringe: `preserve` (default, RGB-only) · `opaque`
+  (binarise alpha at `cutoff`, default 128 — collapse a soft bloom into crisp
+  on-palette pixels) · `flatten` (composite over `bg`, then snap fully opaque).
 
 **Master finish & form.**
 
@@ -300,7 +316,7 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 - `doc_perspective_guide` — a faint, deletable guide layer (thirds/grid/iso/vp).
 - `doc_panel` — a HUD/UI panel (fill + border + bevel).
 - `doc_burst` — radial FX frames (ring/disc/rays) tagged `burst`.
-- `doc_import_clean` — external image (AI-gen/photo/scan) → clean pixel art:
+- `doc_ref op=import` — external image (AI-gen/photo/scan) → clean pixel art:
   TRUE area-average downscale (aspect-derived height when `target_h` omitted),
   optional corner-flood `remove_bg` BEFORE palette extraction, frequency-
   weighted median-cut palette with `pin`ned colours, optional Floyd–Steinberg
@@ -311,7 +327,7 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 The closed loop that turns "does my sprite match the character?" from memory
 recall into a measured, same-turn signal:
 
-- `doc_set_reference` — attach the ORIGINAL image to a document (copied into
+- `doc_ref op=set` — attach the ORIGINAL image to a document (copied into
   the doc dir, persists with it); returns aspect-true canvas-fit suggestions.
   Omit `path` to clear.
 - `doc_ref_analyze` — VIEW the reference inline and decompose it into drawing
@@ -322,6 +338,17 @@ recall into a measured, same-turn signal:
   inline side-by-side (or `mode="overlay"` ghost), silhouette IoU (≥0.80 =
   shape reads), per-cell OKLab ΔE with the worst cells named as canvas rects,
   and reference colours missing from the palette.
+- `doc_diff_map` — PER-PIXEL signed error map vs the reference (the see-and-repair
+  eye `ref_compare`'s aggregate ΔE can't be): a HEAT png (red = too light, blue =
+  too dark, green = wrong colour; brightness = ΔE) plus the `top` worst individual
+  pixels, each with x,y, ΔE and a fix direction (lighten/darken + saturate/
+  desaturate + shift hue). Fix the named pixels, re-run — converges the last 5%.
+- `doc_critique_vision` — the AI eye for FREE-FORM art (no reference). Renders the
+  frame and asks the MCP HOST to run its own vision model over it (atelier ships
+  no weights, makes no network call, holds no keys — the host samples). Returns a
+  structured critique: reads-as, silhouette/proportion, value/colour, top-3 fixes;
+  `focus` weights one axis. Requires a host advertising the `sampling` capability
+  — errors clearly if absent.
 
 ## Beyond the tools
 
@@ -353,13 +380,13 @@ The whole loop, as an agent would drive it over MCP:
 ```
 doc_create   name="cat" width=32 height=32                 → id "cat"
 doc_batch    doc_id="cat" layer=0 frame=0 ops=[ …shapes… ] → paint the body
-doc_render   doc_id="cat" frame=0 scale=8                  → PNG to LOOK at
-doc_add_frame doc_id="cat" copy_from=0                     → frame 1 (dupe)
+doc_look     doc_id="cat" frame=0 scale=8                  → PNG to LOOK at
+doc_frame    op=add doc_id="cat" copy_from=0                     → frame 1 (dupe)
 doc_batch    doc_id="cat" layer=0 frame=1 ops=[ …eyes… ]   → repaint as closed
 doc_add_tag  doc_id="cat" name="blink" from=0 to=1 direction="pingpong"
-doc_export_gif doc_id="cat" out_path="cat.gif" tag="blink" scale=8
+doc_export op=anim doc_id="cat" out_path="cat.gif" tag="blink" scale=8
 ```
 
-> An animation needs **two or more frames**: draw frame 0, `doc_add_frame`
+> An animation needs **two or more frames**: draw frame 0, `doc_frame op=add`
 > (`copy_from` it), repaint the difference, then tag and export. A single-frame
 > document exports a still PNG, not a moving GIF.

@@ -1,20 +1,37 @@
+# Canonical Rust CI — mirrors the local gate (make pre-commit-checks + make test).
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  check:
+  checks:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: No local machine paths
+        # Fail if a tracked file leaks an absolute local path (home dir, temp,
+        # build workspace). Generic test fixtures are fine; real per-machine
+        # paths are not.
+        run: |
+          if git grep -nI -E '/Users/|/private/(tmp|var)|[A-Za-z]:\\Users\\|/home/[a-z0-9_.-]+/Workspace' \
+              -- . ':!*.lock' ':!.github/workflows/ci.yml'; then
+            echo "::error::Local machine path found in a tracked file — scrub it before pushing."
+            exit 1
+          fi
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --all --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test
+      - run: make pre-commit-checks
+
+  tests:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: make test

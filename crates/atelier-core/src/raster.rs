@@ -58,6 +58,98 @@ pub fn draw_line(
     }
 }
 
+/// Distance from point (px,py) to the segment a→b, plus the projection
+/// parameter `t` clamped to [0,1] (0 at a, 1 at b). The geometric primitive the
+/// variable-width stroke core is built on.
+fn point_seg(px: f32, py: f32, ax: f32, ay: f32, bx: f32, by: f32) -> (f32, f32) {
+    let (vx, vy) = (bx - ax, by - ay);
+    let len2 = vx * vx + vy * vy;
+    let t = if len2 <= 1e-6 {
+        0.0
+    } else {
+        (((px - ax) * vx + (py - ay) * vy) / len2).clamp(0.0, 1.0)
+    };
+    let (cx, cy) = (ax + t * vx, ay + t * vy);
+    let (dx, dy) = (px - cx, py - cy);
+    ((dx * dx + dy * dy).sqrt(), t)
+}
+
+/// Rasterize a variable-width, anti-aliased stroke as the UNION of round-capped
+/// capsules through `pts` (each `x, y, half_width` in pixels). This is the
+/// "clean by construction" stroke core: the union makes the run connected with
+/// no gaps, the per-vertex half-width gives taper, and the analytic coverage
+/// (`clamp(half_width(t) + 0.5 − distance, 0, 1)`) gives a smooth edge instead of
+/// a Bresenham staircase. Each covered pixel blends `color` over the existing
+/// pixel weighted by coverage×alpha (so AA resolves against the real backdrop,
+/// staying contiguous along the contour rather than scattering as speckle).
+/// `aa=false` hard-thresholds coverage at 0.5 for a crisp — but still
+/// union-connected and tapered — edge.
+pub fn stroke_ribbon(img: &mut RgbaImage, pts: &[(f32, f32, f32)], color: [u8; 4], aa: bool) {
+    if pts.is_empty() {
+        return;
+    }
+    let (w, h) = (img.width() as i32, img.height() as i32);
+    let max_hw = pts.iter().fold(0.5f32, |m, p| m.max(p.2));
+    let (mut x0, mut y0, mut x1, mut y1) = (f32::MAX, f32::MAX, f32::MIN, f32::MIN);
+    for &(x, y, _) in pts {
+        x0 = x0.min(x);
+        y0 = y0.min(y);
+        x1 = x1.max(x);
+        y1 = y1.max(y);
+    }
+    let pad = max_hw + 1.0;
+    let bx0 = ((x0 + 0.5 - pad).floor() as i32).max(0);
+    let by0 = ((y0 + 0.5 - pad).floor() as i32).max(0);
+    let bx1 = ((x1 + 0.5 + pad).ceil() as i32).min(w - 1);
+    let by1 = ((y1 + 0.5 + pad).ceil() as i32).min(h - 1);
+    let single = pts.len() == 1;
+    for py in by0..=by1 {
+        for px in bx0..=bx1 {
+            let (sx, sy) = (px as f32 + 0.5, py as f32 + 0.5);
+            // Coverage is the union (max) over every capsule segment.
+            let mut cov = 0.0f32;
+            if single {
+                let (x, y, hw) = pts[0];
+                let d = ((sx - (x + 0.5)).powi(2) + (sy - (y + 0.5)).powi(2)).sqrt();
+                cov = (hw + 0.5 - d).clamp(0.0, 1.0);
+            } else {
+                for win in pts.windows(2) {
+                    let (ax, ay, aw) = win[0];
+                    let (bx, by, bw) = win[1];
+                    let (d, t) = point_seg(sx, sy, ax + 0.5, ay + 0.5, bx + 0.5, by + 0.5);
+                    let hw = aw + (bw - aw) * t;
+                    let c = (hw + 0.5 - d).clamp(0.0, 1.0);
+                    if c > cov {
+                        cov = c;
+                    }
+                }
+            }
+            let eff = if aa {
+                cov
+            } else if cov >= 0.5 {
+                1.0
+            } else {
+                0.0
+            };
+            if eff <= 0.0 {
+                continue;
+            }
+            let a = (color[3] as f32 / 255.0) * eff;
+            if a <= 0.0 {
+                continue;
+            }
+            let dst = img.get_pixel(px as u32, py as u32).0;
+            let src = [
+                color[0],
+                color[1],
+                color[2],
+                (a * 255.0).round().clamp(0.0, 255.0) as u8,
+            ];
+            img.put_pixel(px as u32, py as u32, Rgba(over(dst, src)));
+        }
+    }
+}
+
 // -- built-in 3×5 pixel font ------------------------------------------------
 
 /// Glyph cell dimensions for the built-in font (3 wide × 5 tall).
@@ -134,6 +226,14 @@ pub fn glyph(c: char) -> u16 {
 pub fn close(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
     let d: i32 = (0..4).map(|i| (a[i] as i32 - b[i] as i32).abs()).sum();
     d <= tol
+}
+
+/// Colour match by MAX channel distance over RGB only (alpha ignored) — the
+/// metric the fill/replace tools actually promise ("max channel distance"), and
+/// the one that lets an anti-aliased edge (same RGB, different alpha) still
+/// match instead of being left as a halo of the old colour.
+pub fn close_rgb(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
+    (0..3).all(|i| (a[i] as i32 - b[i] as i32).abs() <= tol)
 }
 
 /// Normalise a possibly-reversed rect and clamp it to a `w`×`h` canvas, returning
@@ -235,6 +335,16 @@ pub fn parse_blend(s: &str) -> Blend {
         "color-burn" | "color_burn" | "burn" => Blend::ColorBurn,
         _ => Blend::Normal,
     }
+}
+
+/// Human-readable list of accepted blend tokens (for validation error messages).
+pub const BLEND_NAMES: &str = "normal | multiply | screen | add | subtract | darken | \
+lighten | difference | exclusion | overlay | hard-light | soft-light | color-dodge | color-burn";
+
+/// Whether `s` is a blend token `parse_blend` recognizes (incl. "normal").
+/// Used to reject silent typos that would otherwise composite as Normal.
+pub fn valid_blend(s: &str) -> bool {
+    s == "normal" || !matches!(parse_blend(s), Blend::Normal)
 }
 
 /// `overlay(cb, cs)` — multiply on the dark half of the backdrop, screen on the
@@ -537,6 +647,42 @@ pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
     ]
 }
 
+/// Whether an OKLCh colour is inside the sRGB gamut (its linear RGB all in
+/// [0,1]) — so a ramp can reduce chroma to fit instead of letting the per-channel
+/// clamp in `oklab_to_srgb` shift its hue.
+#[allow(clippy::excessive_precision)]
+fn oklch_in_gamut(l: f32, c: f32, h: f32) -> bool {
+    let (_, a, b) = oklch_to_oklab((l, c, h));
+    let l_ = l + 0.396_337_78 * a + 0.215_803_76 * b;
+    let m_ = l - 0.105_561_346 * a - 0.063_854_17 * b;
+    let s_ = l - 0.089_484_18 * a - 1.291_485_5 * b;
+    let (l3, m3, s3) = (l_ * l_ * l_, m_ * m_ * m_, s_ * s_ * s_);
+    let r = 4.076_741_7 * l3 - 3.307_711_6 * m3 + 0.230_969_94 * s3;
+    let g = -1.268_438 * l3 + 2.609_757_4 * m3 - 0.341_319_38 * s3;
+    let bl = -0.004_196_086_3 * l3 - 0.703_418_6 * m3 + 1.707_614_7 * s3;
+    let eps = 0.001;
+    [r, g, bl].iter().all(|&v| v >= -eps && v <= 1.0 + eps)
+}
+
+/// OKLCh → sRGB with chroma binary-searched down until the colour is in gamut —
+/// a vivid step desaturates EVENLY (L and hue preserved) instead of being
+/// per-channel clamped, which shifts the hue (e.g. a bright red → orange).
+pub fn oklch_to_srgb_gamut(l: f32, c: f32, h: f32) -> [u8; 3] {
+    if oklch_in_gamut(l, c, h) {
+        return oklab_to_srgb(oklch_to_oklab((l, c, h)));
+    }
+    let (mut lo, mut hi) = (0.0f32, c);
+    for _ in 0..20 {
+        let mid = (lo + hi) * 0.5;
+        if oklch_in_gamut(l, mid, h) {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    oklab_to_srgb(oklch_to_oklab((l, lo, h)))
+}
+
 /// OKLab → OKLCh `(L, C, h°)`: chroma magnitude + hue angle in degrees.
 pub fn oklab_to_oklch(lab: (f32, f32, f32)) -> (f32, f32, f32) {
     let (l, a, b) = lab;
@@ -674,7 +820,9 @@ pub fn make_ramp_oklch(
                 _ => cb,
             }
             .max(0.0);
-            let rgb = oklab_to_srgb(oklch_to_oklab((l, c, h)));
+            // Gamut-map: a vivid step reduces chroma to fit sRGB (even
+            // desaturation) rather than clamping channels (which shifts hue).
+            let rgb = oklch_to_srgb_gamut(l, c, h);
             [rgb[0], rgb[1], rgb[2], base[3]]
         })
         .collect()
@@ -683,34 +831,77 @@ pub fn make_ramp_oklch(
 /// Rotate `src` by `deg` (clockwise) about its centre with nearest-neighbour
 /// sampling, returning a new image sized to the rotated bounding box.
 pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
-    let rad = deg.to_radians();
-    let (c, s) = (rad.cos(), rad.sin());
-    let (w, h) = (src.width() as f32, src.height() as f32);
-    let rot = |x: f32, y: f32| (x * c - y * s, x * s + y * c);
-    let corners = [rot(0.0, 0.0), rot(w, 0.0), rot(0.0, h), rot(w, h)];
-    let minx = corners.iter().map(|p| p.0).fold(f32::MAX, f32::min);
-    let maxx = corners.iter().map(|p| p.0).fold(f32::MIN, f32::max);
-    let miny = corners.iter().map(|p| p.1).fold(f32::MAX, f32::min);
-    let maxy = corners.iter().map(|p| p.1).fold(f32::MIN, f32::max);
-    let (nw, nh) = (
-        ((maxx - minx).ceil() as u32).max(1),
-        ((maxy - miny).ceil() as u32).max(1),
+    // Pure rotation is the no-scale, no-shear case of the affine RotSprite
+    // pipeline; routing through it (supersample 2×) keeps clusters from
+    // shattering and never mints off-palette fringe, vs the old raw NN rotate.
+    affine_nn(src, deg, 1.0, 1.0, 0.0, 0.0, 2)
+}
+
+/// EPX / Scale2x edge-preserving 2× upscale: each pixel becomes 2×2, and a
+/// sub-pixel only takes a neighbour's colour when two orthogonal neighbours
+/// agree and the diagonal disagrees (smooths a staircase without inventing
+/// colours). Emits ONLY colours already in `src` — the property that lets the
+/// RotSprite pipeline rotate without minting off-palette fringe.
+fn scale2x(src: &RgbaImage) -> RgbaImage {
+    let (w, h) = (src.width(), src.height());
+    let mut out = RgbaImage::new(w * 2, h * 2);
+    let get = |x: i32, y: i32| -> [u8; 4] {
+        let cx = x.clamp(0, w as i32 - 1) as u32;
+        let cy = y.clamp(0, h as i32 - 1) as u32;
+        src.get_pixel(cx, cy).0
+    };
+    for y in 0..h as i32 {
+        for x in 0..w as i32 {
+            let p = get(x, y);
+            let (a, b, c, d) = (get(x, y - 1), get(x + 1, y), get(x - 1, y), get(x, y + 1));
+            let e0 = if c == a && c != d && a != b { a } else { p };
+            let e1 = if a == b && a != c && b != d { b } else { p };
+            let e2 = if d == c && d != b && c != a { c } else { p };
+            let e3 = if b == d && b != a && d != c { d } else { p };
+            let (ox, oy) = (x as u32 * 2, y as u32 * 2);
+            out.put_pixel(ox, oy, Rgba(e0));
+            out.put_pixel(ox + 1, oy, Rgba(e1));
+            out.put_pixel(ox, oy + 1, Rgba(e2));
+            out.put_pixel(ox + 1, oy + 1, Rgba(e3));
+        }
+    }
+    out
+}
+
+/// Downscale by an integer `factor` by majority vote: each output pixel is the
+/// most common colour in its `factor×factor` source block (ties broken toward
+/// the more opaque colour, then deterministically by channel). Unlike a bilinear
+/// downscale this emits ONLY colours present in the source — no blended fringe,
+/// so a palette stays intact through a rotate/scale.
+fn majority_downscale(src: &RgbaImage, factor: u32) -> RgbaImage {
+    if factor <= 1 {
+        return src.clone();
+    }
+    let (w, h) = (
+        (src.width() / factor).max(1),
+        (src.height() / factor).max(1),
     );
-    let (cx, cy) = (w / 2.0, h / 2.0);
-    let (ncx, ncy) = (nw as f32 / 2.0, nh as f32 / 2.0);
-    let mut out = RgbaImage::from_pixel(nw, nh, Rgba([0, 0, 0, 0]));
-    for oy in 0..nh {
-        for ox in 0..nw {
-            let (dx, dy) = (ox as f32 - ncx, oy as f32 - ncy);
-            // inverse rotation (about centre)
-            let sx = dx * c + dy * s + cx;
-            let sy = -dx * s + dy * c + cy;
-            if sx >= 0.0 && sy >= 0.0 && (sx as u32) < src.width() && (sy as u32) < src.height() {
-                let p = *src.get_pixel(sx as u32, sy as u32);
-                if p.0[3] > 0 {
-                    out.put_pixel(ox, oy, p);
+    let mut out = RgbaImage::new(w, h);
+    for oy in 0..h {
+        for ox in 0..w {
+            let mut counts: std::collections::HashMap<[u8; 4], u32> =
+                std::collections::HashMap::new();
+            for dy in 0..factor {
+                for dx in 0..factor {
+                    let (sx, sy) = (ox * factor + dx, oy * factor + dy);
+                    if sx < src.width() && sy < src.height() {
+                        *counts.entry(src.get_pixel(sx, sy).0).or_insert(0) += 1;
+                    }
                 }
             }
+            // Total ordering so ties resolve deterministically: count, then
+            // alpha (opaque wins so silhouette edges survive), then channels.
+            let best = counts
+                .into_iter()
+                .max_by_key(|(c, n)| (*n, c[3], c[0], c[1], c[2]))
+                .map(|(c, _)| c)
+                .unwrap_or([0, 0, 0, 0]);
+            out.put_pixel(ox, oy, Rgba(best));
         }
     }
     out
@@ -720,8 +911,9 @@ pub fn rotate_nn(src: &RgbaImage, deg: f32) -> RgbaImage {
 /// non-uniform scale (`sx`,`sy`) and shear (`skew_x`,`skew_y` in degrees), in
 /// that compose order (scale → shear → rotate). Returns a new image sized to
 /// the transformed bounding box, sampled by nearest-neighbour. `supersample`
-/// (1..=4) renders at N× then area-downscales — the RotSprite trick that keeps
-/// rotated/scaled pixel clusters from shattering into jaggies.
+/// (1..=4) renders at N× with an edge-preserving Scale2x upscale, transforms,
+/// then majority-vote downscales — a RotSprite pipeline that keeps rotated /
+/// scaled pixel clusters from shattering AND never mints off-palette fringe.
 pub fn affine_nn(
     src: &RgbaImage,
     rot_deg: f32,
@@ -731,17 +923,22 @@ pub fn affine_nn(
     skew_y_deg: f32,
     supersample: u32,
 ) -> RgbaImage {
+    // Round the supersample up to a power of two (Scale2x doubles per pass):
+    // 1 -> none, 2 -> ×2, 3/4 -> ×4. `factor` is the true upscale used below.
     let ss = supersample.clamp(1, 4);
-    let work = if ss > 1 {
-        image::imageops::resize(
-            src,
-            (src.width() * ss).max(1),
-            (src.height() * ss).max(1),
-            image::imageops::FilterType::Nearest,
-        )
+    let factor: u32 = if ss <= 1 {
+        1
+    } else if ss <= 2 {
+        2
     } else {
-        src.clone()
+        4
     };
+    let mut work = src.clone();
+    let mut f = factor;
+    while f > 1 {
+        work = scale2x(&work);
+        f /= 2;
+    }
     let (w, h) = (work.width() as f32, work.height() as f32);
     let r = rot_deg.to_radians();
     let (cos, sin) = (r.cos(), r.sin());
@@ -768,13 +965,20 @@ pub fn affine_nn(
         ((maxx - minx).ceil() as u32).max(1),
         ((maxy - miny).ceil() as u32).max(1),
     );
+    // Refuse an absurd transform (e.g. scale_x=50000) before allocating — a
+    // giant buffer would abort the process. ~4M px (2048²) is the ceiling.
+    if (nw as u64) * (nh as u64) > 4_194_304 {
+        return RgbaImage::from_pixel(1, 1, Rgba([0, 0, 0, 0]));
+    }
     let mut out = RgbaImage::from_pixel(nw, nh, Rgba([0, 0, 0, 0]));
     for oy in 0..nh {
         for ox in 0..nw {
-            // dest coord (centred) → inverse map → source pixel
-            let (dx, dy) = (minx + ox as f32, miny + oy as f32);
-            let sxp = i00 * dx + i01 * dy + cx;
-            let syp = i10 * dx + i11 * dy + cy;
+            // Inverse-map the dest pixel CENTRE (not its corner) back to source,
+            // then take the source pixel that contains it — so a 90/180/270°
+            // rotation is a clean permutation, not a half-pixel-biased resample.
+            let (dx, dy) = (minx + ox as f32 + 0.5, miny + oy as f32 + 0.5);
+            let sxp = (i00 * dx + i01 * dy + cx).floor();
+            let syp = (i10 * dx + i11 * dy + cy).floor();
             if sxp >= 0.0
                 && syp >= 0.0
                 && (sxp as u32) < work.width()
@@ -787,16 +991,31 @@ pub fn affine_nn(
             }
         }
     }
-    if ss > 1 {
-        image::imageops::resize(
-            &out,
-            (out.width() / ss).max(1),
-            (out.height() / ss).max(1),
-            image::imageops::FilterType::Triangle,
-        )
+    if factor > 1 {
+        majority_downscale(&out, factor)
     } else {
         out
     }
+}
+
+/// Two-bone analytic inverse kinematics (law of cosines). Given a `root` joint
+/// (shoulder/hip), an end-effector `target` (hand/foot), and the two bone
+/// lengths `l1` (upper) and `l2` (lower), return the middle joint (elbow/knee)
+/// position. `bend` (+1 / -1) selects which side the joint bends. The target is
+/// clamped to the reachable annulus `[|l1-l2|, l1+l2]` so an out-of-reach foot
+/// just straightens the leg instead of producing NaNs.
+pub fn solve_ik2(root: (f32, f32), target: (f32, f32), l1: f32, l2: f32, bend: f32) -> (f32, f32) {
+    let (dx, dy) = (target.0 - root.0, target.1 - root.1);
+    let dist = (dx * dx + dy * dy).sqrt().max(1e-4);
+    let lo = (l1 - l2).abs() + 1e-3;
+    let hi = (l1 + l2) - 1e-3;
+    let d = dist.clamp(lo, hi);
+    let base = dy.atan2(dx);
+    // interior angle at the root between root->target and the upper bone
+    let cos_t = ((l1 * l1 + d * d - l2 * l2) / (2.0 * l1 * d)).clamp(-1.0, 1.0);
+    let theta = cos_t.acos();
+    let ang = base + bend.signum() * theta;
+    (root.0 + l1 * ang.cos(), root.1 + l1 * ang.sin())
 }
 
 /// Linear interpolation between `a` and `b` by `t`.
@@ -1302,6 +1521,47 @@ pub fn shade_hsl(p: [u8; 4], dir: i32, steps: i32) -> [u8; 4] {
 /// distance transform, divided by its max so the field is resolution- and
 /// shape-independent. Used by `Document::form` "auto" to give an arbitrary blob
 /// volume (bright core, dark edges) without assuming an elliptical outline.
+/// Separable box-blur of a scalar field. Used to smooth the interior-distance
+/// height field before it is differentiated into surface normals: the raw
+/// chamfer field has a sharp ridge along the medial axis, and central
+/// differences across that ridge read as facet creases. A light blur rounds the
+/// ridge so a blob lights as a smooth dome. `radius` is per-axis, one pass.
+pub fn blur_field(field: &[f32], w: usize, h: usize, radius: i32) -> Vec<f32> {
+    if radius <= 0 || w == 0 || h == 0 {
+        return field.to_vec();
+    }
+    let idx = |x: usize, y: usize| y * w + x;
+    let mut tmp = vec![0f32; w * h];
+    for y in 0..h {
+        for x in 0..w {
+            let (mut acc, mut n) = (0.0f32, 0.0f32);
+            for k in -radius..=radius {
+                let sx = x as i32 + k;
+                if sx >= 0 && (sx as usize) < w {
+                    acc += field[idx(sx as usize, y)];
+                    n += 1.0;
+                }
+            }
+            tmp[idx(x, y)] = acc / n;
+        }
+    }
+    let mut out = vec![0f32; w * h];
+    for y in 0..h {
+        for x in 0..w {
+            let (mut acc, mut n) = (0.0f32, 0.0f32);
+            for k in -radius..=radius {
+                let sy = y as i32 + k;
+                if sy >= 0 && (sy as usize) < h {
+                    acc += tmp[idx(x, sy as usize)];
+                    n += 1.0;
+                }
+            }
+            out[idx(x, y)] = acc / n;
+        }
+    }
+    out
+}
+
 pub fn interior_distance(fg: &[bool], w: usize, h: usize) -> Vec<f32> {
     let n = w * h;
     const BIG: f32 = 1.0e9;
@@ -1459,6 +1719,124 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn close_rgb_ignores_alpha_and_uses_max_channel() {
+        assert!(close_rgb([200, 0, 0, 255], [200, 0, 0, 10], 0)); // same RGB, diff alpha
+        assert!(close_rgb([200, 0, 0, 255], [205, 3, 0, 255], 5)); // within 5 per channel
+        assert!(!close_rgb([200, 0, 0, 255], [180, 0, 0, 255], 5)); // R off by 20 > 5
+    }
+
+    #[test]
+    fn ik2_keeps_bone_lengths_and_bends() {
+        let (root, target) = ((0.0, 0.0), (6.0, 0.0));
+        let mid = solve_ik2(root, target, 4.0, 4.0, 1.0);
+        let d1 = ((mid.0 - root.0).powi(2) + (mid.1 - root.1).powi(2)).sqrt();
+        let d2 = ((mid.0 - target.0).powi(2) + (mid.1 - target.1).powi(2)).sqrt();
+        assert!((d1 - 4.0).abs() < 0.05, "upper bone length {d1}");
+        assert!((d2 - 4.0).abs() < 0.05, "lower bone length {d2}");
+        assert!(
+            mid.1.abs() > 0.1,
+            "joint should bend off the root-target line"
+        );
+        // bend sign flips the joint to the other side
+        let mid2 = solve_ik2(root, target, 4.0, 4.0, -1.0);
+        assert!(mid.1 * mid2.1 < 0.0, "bend +/- should be on opposite sides");
+    }
+
+    #[test]
+    fn ramp_gamut_maps_without_hue_shift() {
+        // A vivid red at full chroma across the lightness range would, without
+        // gamut mapping, per-channel clamp on the bright steps and skew red→orange.
+        // With chroma reduced to fit, every chromatic step keeps the base hue.
+        let base = [220, 30, 40, 255];
+        let (_, _, base_h) = oklab_to_oklch(srgb_to_oklab(base));
+        let ramp = make_ramp_oklch(base, 6, 0.2, 0.92, 0.0, "flat", false);
+        for c in &ramp {
+            let (_, cc, hh) = oklab_to_oklch(srgb_to_oklab(*c));
+            if cc < 0.03 {
+                continue; // achromatic — hue is meaningless
+            }
+            let dh = ((hh - base_h + 540.0).rem_euclid(360.0) - 180.0).abs();
+            assert!(
+                dh < 12.0,
+                "step {c:?} hue {hh:.0}° drifted {dh:.0}° from base {base_h:.0}°"
+            );
+        }
+    }
+
+    #[test]
+    fn affine_90_rotation_is_a_clean_permutation() {
+        // 16 unique colours; a 90° rotate (raw ss=1 path) must keep every one —
+        // i.e. it's a permutation, not a half-pixel-biased lossy resample.
+        let mut img = RgbaImage::new(4, 4);
+        for y in 0..4u32 {
+            for x in 0..4u32 {
+                img.put_pixel(
+                    x,
+                    y,
+                    Rgba([(x * 60 + 10) as u8, (y * 60 + 10) as u8, 200, 255]),
+                );
+            }
+        }
+        let out = affine_nn(&img, 90.0, 1.0, 1.0, 0.0, 0.0, 1);
+        let mut src: std::collections::HashSet<[u8; 4]> = img.pixels().map(|p| p.0).collect();
+        for p in out.pixels() {
+            if p.0[3] > 0 {
+                src.remove(&p.0);
+            }
+        }
+        assert!(src.is_empty(), "90° rotate dropped source colours: {src:?}");
+    }
+
+    #[test]
+    fn affine_rotation_emits_no_off_palette_fringe() {
+        // Two opaque colours; rotate 30°. The RotSprite pipeline must emit ONLY
+        // those colours or full transparency — never a blended partial-alpha
+        // fringe (the bilinear-downscale bug that turned 3 colours into 66).
+        let mut img = RgbaImage::from_pixel(14, 14, Rgba([0, 0, 0, 0]));
+        for y in 3..11 {
+            for x in 3..11 {
+                let c = if x < 7 {
+                    [200, 30, 30, 255]
+                } else {
+                    [30, 30, 200, 255]
+                };
+                img.put_pixel(x, y, Rgba(c));
+            }
+        }
+        let out = affine_nn(&img, 30.0, 1.0, 1.0, 0.0, 0.0, 2);
+        let allowed = [[0, 0, 0, 0], [200, 30, 30, 255], [30, 30, 200, 255]];
+        for p in out.pixels() {
+            assert!(
+                p.0[3] == 0 || p.0[3] == 255,
+                "partial-alpha fringe {:?}",
+                p.0
+            );
+            assert!(allowed.contains(&p.0), "off-palette colour {:?}", p.0);
+        }
+    }
+
+    #[test]
+    fn blur_field_spreads_a_spike() {
+        // A single spike should spread to its neighbours and lose its peak —
+        // this is what rounds the relight height-field ridge.
+        let at = |x: usize, y: usize| y * 5 + x;
+        let mut f = vec![0.0f32; 5 * 5];
+        f[at(2, 2)] = 1.0;
+        let out = blur_field(&f, 5, 5, 1);
+        assert!(out[at(2, 2)] < 1.0, "peak should drop");
+        assert!(
+            out[at(1, 2)] > 0.0 && out[at(2, 1)] > 0.0,
+            "neighbours pick up signal"
+        );
+        // mass is roughly preserved (interior, no clipping)
+        let sum: f32 = out.iter().sum();
+        assert!(
+            (sum - 1.0).abs() < 0.2,
+            "blur should roughly conserve mass, got {sum}"
+        );
     }
 
     #[test]

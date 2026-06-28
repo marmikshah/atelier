@@ -6,3 +6,4 @@
 .venv/
 resume.sh
 docs/ART-QUALITY-REVIEW.md
+.env
