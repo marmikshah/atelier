@@ -1,8 +1,12 @@
 # MCP tool reference
 
-The complete tool surface, as advertised to MCP clients. Everything is drawn at
-native resolution and scaled up nearest-neighbour on export, so the pixel grid
-stays crisp.
+The complete tool surface. Everything is drawn at native resolution and scaled up
+nearest-neighbour on export, so the pixel grid stays crisp.
+
+> **Profiles.** By default the server advertises a **core** set of ~28 tools (the
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 65 below. The
+> profile filters discovery only — every tool still executes (recipes/`replay`
+> always work). Tools below that aren't in the core set are the *full*-only tail.
 
 ## The model
 

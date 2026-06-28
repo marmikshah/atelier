@@ -7,9 +7,9 @@ use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
     AnnotateAble, CallToolResult, Content, CreateMessageRequestParams, ListResourcesResult,
-    PaginatedRequestParams, RawImageContent, RawResource, ReadResourceRequestParams,
-    ReadResourceResult, Resource, ResourceContents, Role, SamplingMessage, SamplingMessageContent,
-    ServerCapabilities, ServerInfo,
+    ListToolsResult, PaginatedRequestParams, RawImageContent, RawResource,
+    ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents, Role,
+    SamplingMessage, SamplingMessageContent, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
 use rmcp::{tool, tool_handler, tool_router, ErrorData, RoleServer, ServerHandler, ServiceExt};
@@ -2591,8 +2591,74 @@ impl Atelier {
     }
 }
 
+/// The default ("core") tool profile — the ~28 tools the canonical sprite /
+/// animation / tile / recreate-from-reference workflows need. The full 65-tool
+/// surface (extra effects, rigging, audits, library exports) is advertised when
+/// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
+/// every tool still EXECUTES via call_tool (so `atelier replay` and a flag-flip
+/// both reach the long tail).
+const CORE_TOOLS: &[&str] = &[
+    // lifecycle + the eye
+    "doc_create",
+    "doc_info",
+    "list_docs",
+    "delete_doc",
+    "doc_look",
+    "doc_checkpoint",
+    // draw / transform
+    "doc_draw",
+    "doc_batch",
+    "doc_fx",
+    "doc_paint_grid",
+    // structure
+    "doc_layer",
+    "doc_frame",
+    "doc_region",
+    "doc_select",
+    "doc_add_tag",
+    // palette
+    "doc_palette",
+    "doc_set_palette",
+    "doc_palette_swap",
+    "doc_snap_palette",
+    // export
+    "doc_export",
+    // most-used audits (readers)
+    "doc_critique",
+    "doc_silhouette",
+    "doc_components",
+    "doc_palette_report",
+    "doc_contrast_check",
+    "doc_frame_diff",
+    // reference loop
+    "doc_ref",
+    "doc_ref_compare",
+];
+
+/// True when the full tool surface should be advertised (`ATELIER_PROFILE=full`).
+fn profile_full() -> bool {
+    std::env::var("ATELIER_PROFILE")
+        .map(|v| v.eq_ignore_ascii_case("full"))
+        .unwrap_or(false)
+}
+
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
+    /// Advertise the active tool profile: the ~28 `CORE_TOOLS` by default, or the
+    /// full surface when `ATELIER_PROFILE=full`. Discovery filter only — every
+    /// tool still executes via `call_tool`, so recipes/replay reach the tail.
+    async fn list_tools(
+        &self,
+        _request: Option<PaginatedRequestParams>,
+        _context: RequestContext<RoleServer>,
+    ) -> Result<ListToolsResult, ErrorData> {
+        let mut tools = self.tool_router.list_all();
+        if !profile_full() {
+            tools.retain(|t| CORE_TOOLS.contains(&t.name.as_ref()));
+        }
+        Ok(ListToolsResult::with_all_items(tools))
+    }
+
     /// Hand-written so we can record each call before delegating to the
     /// `#[tool_router]`-generated dispatcher. This replicates the body the
     /// `#[tool_handler]` macro would otherwise emit (build a `ToolCallContext`,
@@ -2729,7 +2795,10 @@ impl ServerHandler for Atelier {
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
              doc_export (op=sheet|anim|tileset) / export_all. list_docs browses the \
-             library."
+             library. This is the CORE tool profile (~28 tools); the full surface \
+             (extra effects like relight/material/rim_light, rigging, audits, \
+             perspective/wang/atlas) is available by restarting with \
+             ATELIER_PROFILE=full."
                 .into(),
         );
         info
@@ -3684,6 +3753,23 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn core_profile_names_are_all_real_tools() {
+        // A typo in CORE_TOOLS would silently drop a core tool from the default
+        // profile — guard it against the live tool list.
+        let names: std::collections::HashSet<String> = Atelier::new()
+            .tool_router
+            .list_all()
+            .into_iter()
+            .map(|t| t.name.to_string())
+            .collect();
+        for t in CORE_TOOLS {
+            assert!(names.contains(*t), "CORE_TOOLS names missing tool {t}");
+        }
+        // Core is a strict, smaller subset of the full surface.
+        assert!(CORE_TOOLS.len() < names.len());
     }
 
     #[test]
