@@ -51,7 +51,7 @@ deterministic.
   frames + tags, selections, cross-document clipboard, palettes, onion-skinning.
 - **Procedural leverage** — dithered gradients, fBm/perlin/voronoi noise,
   scatter, Bézier strokes, symmetry, shadow/glow/bevel, and one-call volume
-  shading (`doc_form`: sphere/cylinder/auto — a flat silhouette gains real
+  shading (`doc_fx op=form`: sphere/cylinder/auto — a flat silhouette gains real
   rounded-form lighting): compose effects instead of placing every pixel.
 - **An eye for critique** — silhouette, stray-pixel, palette, contrast, frame-diff
   and loop-seam reports turn "does it look right?" into numbers an agent can act on.
@@ -66,7 +66,7 @@ deterministic.
   interactive `/playground` — run any tool from an auto-built form, or draw with
   the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-The full tool surface (89 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
+The full tool surface (76 tools) is documented in [docs/TOOLS.md](docs/TOOLS.md);
 release notes live in [CHANGELOG.md](CHANGELOG.md).
 
 ## Quickstart

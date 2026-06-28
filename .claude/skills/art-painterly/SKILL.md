@@ -21,7 +21,7 @@ consistent direction. Soft, warm, dimensional.
   a rim. Consistency of light is everything.
 - **Outline:** soft — a dark desaturated colour, or selout (`doc_smooth_edges`),
   never harsh pure black. Anti-aliasing is encouraged.
-- Use `doc_form` / `doc_relight` heavily; every mass gets ≥3 tones.
+- Use `doc_fx op=form` / `doc_relight` heavily; every mass gets ≥3 tones.
 
 ## Method (decompose → block → volume → render → polish)
 
@@ -30,7 +30,7 @@ consistent direction. Soft, warm, dimensional.
 2. **Palette:** `doc_palette` ramps for skin, robe, hat, beard, wood. Lock with
    `doc_set_palette` (merge the ramps).
 3. **Block** each mass flat with `doc_batch` shapes; `doc_look` + fix proportion.
-4. **Volume pass — bring the WHOLE piece up together:** `doc_form` each mass
+4. **Volume pass — bring the WHOLE piece up together:** `doc_fx op=form` each mass
    (sphere/cylinder/auto) with its ramp, light_dir top-left; then `doc_relight`
    for key+fill+rim. Region-bound or select per material so colours don't bleed.
 5. **Detail pass:** the face (eyes with highlights via `doc_paint_grid`), beard

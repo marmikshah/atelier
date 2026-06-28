@@ -34,8 +34,8 @@ them: producing a *whole game's* coherent, engine-ready asset set.
    (orphans, jaggies, contrast, pillow-shading, value-soup, off-palette), then
    the targeted readers as gates. When unsure of a pixel, `doc_dump_region`
    reads the exact pixels back as a text grid.
-3. **Checkpoint before risk.** Before a high-variance op (`doc_form`,
-   `doc_relight`, `doc_quantize`, `doc_material`, a big fill) **`doc_checkpoint`
+3. **Checkpoint before risk.** Before a high-variance op (`doc_fx op=form`,
+   `doc_relight`, `doc_fx op=quantize`, `doc_material`, a big fill) **`doc_checkpoint`
    action="save"** — `restore` if it gets worse, `diff` to see the regression.
    It is the undo a destructive editor otherwise lacks.
 4. **Lock a perceptual palette first.** **`doc_palette`** (OKLCh, even steps —
@@ -48,7 +48,7 @@ them: producing a *whole game's* coherent, engine-ready asset set.
    Block the big masses with shapes (`doc_draw op=ellipse/rect/polygon`/
    `doc_box`) ONLY to rough the silhouette; confirm the pose reads with
    `doc_silhouette`. Then you MUST do the work that turns a blob into art:
-   **(1) volume** — `doc_form`/`doc_relight` so it isn't one flat tone;
+   **(1) volume** — `doc_fx op=form`/`doc_relight` so it isn't one flat tone;
    **(2) pixel detail** — `doc_paint_grid` / `doc_dump_region`→edit / `doc_draw op=pencil`
    for eyes, fur, features, markings, paw toes; **(3) polish** — `doc_smooth_edges`
    (selout the staircased outline), edge fur tufts, crisp cast shadows, eye
@@ -98,7 +98,7 @@ between a 3/100 blob and a real sprite. Do it every time:
 
 3. **Build in PASSES across all parts — never one corner to completion.** Bring
    the whole image up in layers: block every part → give every part volume
-   (`doc_form`/`doc_relight`) → detail every part (`doc_paint_grid` /
+   (`doc_fx op=form`/`doc_relight`) → detail every part (`doc_paint_grid` /
    `doc_dump_region`→edit / `doc_draw op=pencil`) → polish every part (edges, highlights,
    markings). Finishing the face while the body is still a flat blob makes them
    look pasted together.
@@ -160,7 +160,7 @@ memory of a chat attachment produces generic sprites that drift off-model.
    the imported cel to a SUBSET of the locked ramp (drop the in-between tones)
    — kills mottle in one call. Then clean per MATERIAL: `doc_select` rect
    zones (subtract the face/fists/other-material rects from the zone first)
-   and `doc_replace_color` tone→tone inside the selection. Cel-wide
+   and `doc_fx op=replace_color` tone→tone inside the selection. Cel-wide
    replace_color bleeds across materials; selection-confined doesn't.
 5. Detail pass: **`doc_paint_grid` the face** — eyes are identity; place clean
    pupils/mouth as a grid over the imported mush instead of nudging pixels.
@@ -187,12 +187,12 @@ with `doc_draw op=rect/ellipse/polygon` and **`doc_draw op=stroke` capsule limbs
 (share the joint endpoint so they stay attached and taper naturally, vs blocky
 rect stacks)
 → `doc_look` + `doc_silhouette` (pose reads?) → detail (`doc_draw op=pencil/line`/
-`doc_batch`) → volume with `doc_form` (sphere/cylinder/auto) and edge light with
+`doc_batch`) → volume with `doc_fx op=form` (sphere/cylinder/auto) and edge light with
 `doc_rim_light` (outward-normal rim from an azimuth; `dark=true` paints the
-away-facing contact shadow) → `doc_pixel_perfect` to clean doubled corners →
-`doc_outline` if the style wants it.
-**Watch out:** on a multi-material sprite, ALWAYS pass a `region` to `doc_shade` /
-`doc_form`. Unclipped, they push *every* opaque pixel they touch toward the given
+away-facing contact shadow) → `doc_fx op=pixel_perfect` to clean doubled corners →
+`doc_fx op=outline` if the style wants it.
+**Watch out:** on a multi-material sprite, ALWAYS pass a `region` to `doc_fx op=shade` /
+`doc_fx op=form`. Unclipped, they push *every* opaque pixel they touch toward the given
 ramp — skin, hair and cloth all snap into one material. Shade one material at a
 time, region-bounded.
 **Gates:** `doc_silhouette` reads at 1×; `doc_components` shows no stray 1–2px
@@ -239,9 +239,9 @@ for jumps/swings — arced, not a straight slide.
 
 ### Seamless tile / texture
 `doc_create` (size divides the tilesheet) → lock palette → `doc_draw op=fill_cel` base →
-texture with `doc_draw op=noise` (cloud/perlin/voronoi) and `op=scatter` → `doc_shift
+texture with `doc_draw op=noise` (cloud/perlin/voronoi) and `op=scatter` → `doc_fx op=shift
 wrap=true` to roll the seam into the middle and paint over the join → variants via
-more `doc_shift wrap=true`.
+more `doc_fx op=shift wrap=true`.
 **Gates:** `doc_seam_report` returns **zero** mismatches on both axes (the tile is
 not done until it does); `doc_look tile=2` grid shows no visible repeat;
 `doc_palette_report` stayed on-palette.
@@ -264,7 +264,7 @@ call with `doc_palette_swap` (one sprite, many palettes — e.g. potion colours)
 `doc_glow` (bloom — with a palette locked it auto-snaps the bloom back on-palette
 so it stays crisp; pass `snap=false` for a deliberately soft glow), `doc_draw op=stroke`
 (tapered energy arcs/beams/wisps — connected and smooth, not gappy beziers),
-`op=scatter` (sparks/dust), `op=gradient` (radial falloff, dithered), `doc_blur`
+`op=scatter` (sparks/dust), `op=gradient` (radial falloff, dithered), `doc_fx op=blur`
 (smoke/soft shadow), composited via layer blend modes (`add`/`screen` for light,
 `multiply` for shadow). After any soft FX on a locked palette, `doc_snap_palette
 alpha="opaque"` collapses leftover bloom into crisp on-palette pixels. Animate as
@@ -307,7 +307,7 @@ Then:
 
 ## Tool gotchas (learned the hard way)
 
-- **`doc_shade` / `doc_form` need a `region` on multi-material sprites** — see the
+- **`doc_fx op=shade` / `doc_fx op=form` need a `region` on multi-material sprites** — see the
   character recipe. Unclipped = everything snaps to one ramp.
 - **`doc_palette_report` is a *per-cel* gate, not a composite one.** Run it on each
   cel. The *flattened* composite of any frame using `doc_glow` / `doc_draw op=gradient` FX
@@ -361,7 +361,7 @@ work items, not noise.
 NAME THE PARTS → doc_create (≥48px if it needs detail) → doc_palette (lock)
    → block WHOLE silhouette + fix proportion → doc_look (LOOK) → doc_silhouette
    (reads?) → checkpoint save
-   → build in PASSES across ALL parts: volume (doc_form/doc_relight) → pixel
+   → build in PASSES across ALL parts: volume (doc_fx op=form/doc_relight) → pixel
      detail per component (doc_paint_grid / doc_dump_region→edit / doc_draw op=pencil /
      op=stroke for tapered limbs & organic arcs)
    → doc_material / doc_dither_ramp

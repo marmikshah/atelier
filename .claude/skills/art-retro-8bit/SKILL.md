@@ -19,8 +19,8 @@ DITHERED, never blended — that crunchy two-tone texture is the whole aesthetic
   highlight), all opaque. Think one NES sub-palette.
 - **NO anti-aliasing.** `doc_smooth_edges` is FORBIDDEN. Every edge is a hard
   pixel staircase — that's correct here.
-- **NO smooth shading.** `doc_form`/`doc_relight` smooth ramps are FORBIDDEN.
-  Shade with `doc_dither` / `doc_dither_ramp` (checker/bayer) between two of your
+- **NO smooth shading.** `doc_fx op=form`/`doc_relight` smooth ramps are FORBIDDEN.
+  Shade with `doc_fx op=dither` / `doc_dither_ramp` (checker/bayer) between two of your
   4 colours to fake gradients.
 - Detail is chunky (1–2px), readable, no sub-pixel fuss.
 - Hard dark outline (your darkest colour) is typical.
@@ -31,8 +31,8 @@ DITHERED, never blended — that crunchy two-tone texture is the whole aesthetic
    robe, staff. Keep them chunky.
 2. **Lock 4 colours** with `doc_set_palette`.
 3. **Block** the parts with `doc_batch` (`rect`/`polygon`/`pencil`); outline with
-   `doc_outline` (`aa:false`) in the dark colour.
-4. **Shade by dithering:** `doc_dither`/`doc_dither_ramp` a checker/bayer pattern
+   `doc_fx op=outline` (`aa:false`) in the dark colour.
+4. **Shade by dithering:** `doc_fx op=dither`/`doc_dither_ramp` a checker/bayer pattern
    between two of your colours on the robe/hat to suggest form — never a blend.
 5. **Hard pixel detail** with `doc_paint_grid` (face dots, beard rows, star on
    the hat).

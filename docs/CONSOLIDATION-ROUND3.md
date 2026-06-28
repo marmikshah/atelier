@@ -6,15 +6,21 @@
 
 ## Status
 
-- **SHIPPED — `doc_draw` (the pilot).** The 13 geometry/paint tools (pencil, line,
-  rect, ellipse, polyline, polygon, stroke, fill, fill_cel, gradient, scatter,
-  noise, text) are folded into one `doc_draw(op, …)` over the existing
-  `apply_op`/`batch_op_keys` dispatch — every op's params verified to match
-  exactly, zero capability lost. Studio methods kept as internal API; tool surface
-  **101 → 89**. Recipes, prompts, the `/playground` draw mode and TOOLS.md all
-  migrated; clippy/fmt/tests green.
-- **NEXT:** `doc_fx`, then `doc_region` / `doc_layer` / `doc_frame` / `doc_palette`
-  / `doc_export` / `doc_ref`, same recipe.
+- **SHIPPED — `doc_draw`** (101 → 89). The 13 *add-a-mark* tools folded into
+  `doc_draw(op, …)` over the existing `apply_op`/`batch_op_keys` dispatch; params
+  verified identical, studio methods kept as library API.
+- **SHIPPED — `doc_fx`** (89 → 76). The 14 *rework-existing-pixels* tools (blur,
+  outline, drop_shadow, bevel, shade, form, dither, pixel_perfect, flip, shift,
+  symmetry, quantize, replace_color, adjust) folded into `doc_fx(op, …)`, same
+  recipe. **`doc_glow` deliberately kept separate** — its on-palette `snap` is not
+  a batch op, so folding it would have regressed the bloom. The clean split is
+  `doc_draw` = add marks, `doc_fx` = transform existing pixels.
+- **NEXT (document-level, manual dispatch — not batch-routable):** `doc_region`,
+  `doc_layer`, `doc_frame`, `doc_palette`, `doc_export`, `doc_ref`. Plus the
+  non-batch cel effects (`relight`, `rim_light`, `material`, `panel`,
+  `outline_selective`, `smooth_edges`, `dither_ramp`, `snap_palette`,
+  `transform_cel`, `burst`) need the op vocabulary extended before they can join
+  `doc_fx`.
 
 ## The premise
 
