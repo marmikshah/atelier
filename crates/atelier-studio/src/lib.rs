@@ -477,6 +477,29 @@ impl Studio {
         self.commit(&dir, id, doc)
     }
 
+    /// One-tool dispatch over frame lifecycle + timing — `op`: `add` (append,
+    /// optional `copy_from`) | `duration` (set frame `frame`'s ms) | `delete` |
+    /// `insert` | `duplicate` | `move`. Routes to the kept `doc_add_frame` /
+    /// `doc_set_frame_duration` / `doc_frame_ops`. (Pivot, boxes, tags and
+    /// keyframe motion keep their own tools.)
+    pub fn doc_frame(
+        &self,
+        id: &str,
+        op: &str,
+        frame: Option<usize>,
+        copy_from: Option<usize>,
+        to_index: Option<usize>,
+        duration_ms: Option<u32>,
+    ) -> Result<Value, String> {
+        match op {
+            "add" => self.doc_add_frame(id, duration_ms.unwrap_or(100), copy_from),
+            "duration" => {
+                self.doc_set_frame_duration(id, frame.unwrap_or(0), duration_ms.unwrap_or(100))
+            }
+            _ => self.doc_frame_ops(id, op, frame.unwrap_or(0), to_index, duration_ms),
+        }
+    }
+
     pub fn doc_add_tag(
         &self,
         id: &str,

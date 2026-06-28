@@ -115,8 +115,11 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
 
   - **`doc_layer`**`(op, …)` — `doc_add_layer` + `doc_set_layer` + `doc_layer_ops`
     folded into `add`/`set`/`move`/`insert`/`delete`/`rename`/`duplicate`/`merge_down`.
+  - **`doc_frame`**`(op, …)` — `doc_add_frame` + `doc_set_frame_duration` +
+    `doc_frame_ops` folded into `add`/`duration`/`insert`/`duplicate`/`delete`/`move`.
+    (Pivots, boxes, tags and keyframe motion keep their own tools.)
 
-  See `docs/CONSOLIDATION-ROUND3.md`. **72 tools.**
+  See `docs/CONSOLIDATION-ROUND3.md`. **70 tools.**
 
 ### Fixed
 
