@@ -8,8 +8,8 @@
       "note": "32x24 court — wide enough that the ball's left-to-right travel reads as motion, short enough that 8x export stays a thumbnail-sized GIF."
     },
     {
-      "tool": "doc_add_layer",
-      "args": { "doc_id": "pong", "name": "ball" },
+      "tool": "doc_layer",
+      "args": { "op": "add", "doc_id": "pong", "name": "ball" },
       "note": "Ball gets its own layer (index 1) above the field (layer 0). Keeping it separate is the whole trick: doc_anim_audit can then read JUST the ball's silhouette centre per frame, instead of the full composite whose bbox the static paddles would pin in place."
     },
     {

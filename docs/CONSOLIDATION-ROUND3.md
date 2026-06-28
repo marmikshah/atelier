@@ -19,8 +19,10 @@
   anim, tileset) folded into `doc_export(op, …)` via manual dispatch over a shared
   `out_path`/`scale` core. `doc_wang_tiles`/`export_all`/`export_atlas` stay
   separate (generators / library-level). First of the document-level dispatchers.
+- **SHIPPED — `doc_layer`** (74 → 72). `doc_add_layer` + `doc_set_layer` +
+  `doc_layer_ops` folded into `doc_layer(op=add|set|move|insert|delete|rename|duplicate|merge_down)`.
 - **NEXT (document-level, manual dispatch — not batch-routable):** `doc_region`,
-  `doc_layer`, `doc_frame`, `doc_palette`, `doc_ref`. Plus the
+  `doc_frame`, `doc_palette`, `doc_ref`. Plus the
   non-batch cel effects (`relight`, `rim_light`, `material`, `panel`,
   `outline_selective`, `smooth_edges`, `dither_ramp`, `snap_palette`,
   `transform_cel`, `burst`) need the op vocabulary extended before they can join
