@@ -23,8 +23,8 @@ smaller image with every pixel earning its place beats a bigger careless one.
   each colour's JOB (base / shadow / core-shadow / highlight / outline / one
   accent). `doc_palette_report` near-dupes MUST be 0 — two colours doing one job
   is waste; merge them.
-- **Hand-placed:** build with `doc_paint_grid` and `doc_pencil` — YOU decide each
-  pixel. Procedural tools (`doc_form`, `doc_noise`, `doc_scatter`, `doc_gradient`,
+- **Hand-placed:** build with `doc_paint_grid` and `doc_draw op=pencil` — YOU decide
+  each pixel. Procedural tools (`doc_form`, `doc_draw op=noise/scatter/gradient`,
   blanket `doc_smooth_edges`) are NOT banned, but anything they emit you must then
   read back and justify pixel-by-pixel — so by default place by hand instead.
 - **Anti-alias only where it earns the read** — a deliberate single pixel at a

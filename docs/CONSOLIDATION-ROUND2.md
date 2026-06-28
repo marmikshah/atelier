@@ -33,12 +33,13 @@ for one release. These are public MCP tools; no hard breaks.
 `doc_harmony_palette`) and their studio methods/structs were REMOVED outright
 (not kept as aliases). Prompts, recipes, TOOLS.md updated to the new names.
 
-**Deferred to its own release (#4 `doc_look` fold):** add `tile`/`out_path` to
-`doc_look` and fix `look_stats` to report the analysis channel, then retire
-`doc_render`/`doc_render_value`. Deferred because the critic flagged the
-`look_stats` rework as the riskiest item (a silent wrong-answer regression if the
-sat/hue band stats aren't migrated correctly), and `doc_render`/`doc_render_value`
-still provide `tile`/`out_path`/band-stats meanwhile — no capability is lost.
+**SHIPPED (#4 `doc_look` fold):** `doc_look` gained `tile`/`out_path` (from
+`doc_render`) and `band_pcts` per-band coverage in `bands`/`notan` modes (the
+load-bearing `doc_render_value` stat); `doc_render` and `doc_render_value` were
+then removed outright (no aliases). The `look_stats` rework the critic flagged as
+riskiest was de-risked by porting `band_pcts` exactly and re-asserting it
+(`look_grayscale_writes_file_and_reports`, plus an end-to-end recipe check) — no
+capability lost. **105 tools.**
 
 ## REJECT (do NOT do — flagged traps / churn / discoverability loss)
 

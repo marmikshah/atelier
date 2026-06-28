@@ -5,8 +5,8 @@ draw the thing the OLD way (primitives that still exist) and the NEW way, then
 score both on objective atelier metrics. No agent, no randomness — fully
 reproducible, and it runs in CI as a regression guard.
 
-- **Source:** `quality_benchmark` test in `src/studio.rs` (asserts new > old on
-  every axis).
+- **Source:** `quality_benchmark` test in `crates/atelier-studio/src/lib.rs`
+  (asserts new > old on every axis).
 - **Run the table:** `cargo test --release quality_benchmark -- --nocapture`
 
 ## Result

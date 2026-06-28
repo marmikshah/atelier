@@ -9,8 +9,8 @@ use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
 use super::{encode_png, preview_scale, Studio};
-use crate::document::Document;
-use crate::raster;
+use atelier_core::document::Document;
+use atelier_core::raster;
 
 /// OKLab ΔE used for corner-flood background detection on references.
 const BG_TOL: f32 = 0.08;

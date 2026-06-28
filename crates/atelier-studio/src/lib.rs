@@ -5,12 +5,16 @@
 //! one PNG per cel under `cels/`. There is no project/grouping layer — a document
 //! is the unit, addressed by its `id` (a slug derived from its name).
 
+// Drawing/region ops are inherently coordinate-heavy (layer, frame, x0..y1,
+// colour, …); the argument-count lint fights the domain here.
+#![allow(clippy::too_many_arguments)]
+
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde_json::{json, Value};
 
-use crate::document::Document;
+use atelier_core::document::Document;
 
 mod analysis;
 mod craft;
@@ -93,10 +97,10 @@ impl Studio {
         }
     }
 
-    /// Test-only: build a studio rooted at an explicit directory (avoids the
-    /// process-global ATELIER_HOME env var, so tests stay parallel-safe).
-    #[cfg(test)]
-    pub(crate) fn with_docs_dir(docs_dir: PathBuf) -> Studio {
+    /// Build a studio rooted at an explicit documents directory, bypassing the
+    /// process-global `ATELIER_HOME` env var. Lets an embedder (or a test) point
+    /// a studio at an arbitrary location without mutating process state.
+    pub fn with_docs_dir(docs_dir: PathBuf) -> Studio {
         let _ = fs::create_dir_all(&docs_dir);
         Studio {
             docs_dir,
@@ -363,10 +367,10 @@ impl Studio {
         opacity: u8,
         blend: String,
     ) -> Result<Value, String> {
-        if !crate::raster::valid_blend(&blend) {
+        if !atelier_core::raster::valid_blend(&blend) {
             return Err(format!(
                 "unknown blend '{blend}' — valid: {}",
-                crate::raster::BLEND_NAMES
+                atelier_core::raster::BLEND_NAMES
             ));
         }
         let (dir, mut doc) = self.open(id)?;
@@ -391,10 +395,10 @@ impl Studio {
         blend: Option<String>,
     ) -> Result<Value, String> {
         if let Some(b) = &blend {
-            if !crate::raster::valid_blend(b) {
+            if !atelier_core::raster::valid_blend(b) {
                 return Err(format!(
                     "unknown blend '{b}' — valid: {}",
-                    crate::raster::BLEND_NAMES
+                    atelier_core::raster::BLEND_NAMES
                 ));
             }
         }
@@ -519,48 +523,6 @@ impl Studio {
     }
 
     // -- render / export ----------------------------------------------------
-
-    /// Render a frame preview: writes the PNG to disk (for file workflows) AND
-    /// returns the encoded bytes so the MCP layer can inline the image — the
-    /// agent sees the pixels in the same turn instead of needing a file read.
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_render(
-        &self,
-        id: &str,
-        frame: usize,
-        out_path: Option<&str>,
-        scale: Option<u32>,
-        region: Option<(i32, i32, i32, i32)>,
-        onion: bool,
-        tile: u32,
-        max_size: Option<u32>,
-    ) -> Result<(Vec<u8>, Value), String> {
-        let (dir, doc) = self.open(id)?;
-        // Adaptive default: big enough to judge a small sprite, clamped so a
-        // large canvas doesn't waste vision tokens.
-        let scale = scale.unwrap_or_else(|| preview_scale(doc.meta.w, doc.meta.h));
-        let out = match out_path {
-            Some(p) => PathBuf::from(p),
-            None => dir.join(format!("preview_f{}.png", frame)),
-        };
-        if frame >= doc.meta.frames.len() {
-            return Err(format!(
-                "no frame {} (frames={})",
-                frame,
-                doc.meta.frames.len()
-            ));
-        }
-        let img = doc.render_preview(frame, scale.max(1), region, onion, tile, max_size)?;
-        let (w, h) = (img.width(), img.height());
-        img.save(&out).map_err(|e| e.to_string())?;
-        let mut buf = std::io::Cursor::new(Vec::new());
-        img.write_to(&mut buf, image::ImageFormat::Png)
-            .map_err(|e| e.to_string())?;
-        Ok((
-            buf.into_inner(),
-            json!({"path": out.to_string_lossy(), "size": [w, h], "frame": frame}),
-        ))
-    }
 
     /// Encode one cel (`layer` Some) or the flattened frame (`layer` None) as an
     /// adaptively-scaled PNG for same-turn inline previews after a mutation.
@@ -1187,7 +1149,7 @@ impl Studio {
         radius: i32,
         intensity: u8,
         mode: &str,
-        snap: Option<crate::document::AlphaSnap>,
+        snap: Option<atelier_core::document::AlphaSnap>,
     ) -> Result<Value, String> {
         self.edit_masked(id, layer, frame, |d| {
             d.glow(layer, frame, color, radius, intensity, mode)?;
@@ -1331,7 +1293,7 @@ impl Studio {
                     &pal,
                     Some(layer),
                     Some(frame),
-                    crate::document::AlphaSnap::Preserve,
+                    atelier_core::document::AlphaSnap::Preserve,
                 );
             }
             Ok(())
@@ -1801,7 +1763,7 @@ impl Studio {
         &self,
         id: &str,
         frame: usize,
-        boxes: Vec<crate::document::BoxMeta>,
+        boxes: Vec<atelier_core::document::BoxMeta>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         doc.set_frame_boxes(frame, boxes)?;
@@ -1967,7 +1929,7 @@ impl Studio {
         // Strict pre-flight: reject typo'd / wrong-shape ops up front so the whole
         // batch fails cleanly instead of silently defaulting bad params.
         for (i, op) in ops.iter().enumerate() {
-            crate::document::validate_batch_op(i, op)?;
+            atelier_core::document::validate_batch_op(i, op)?;
         }
         let run = |doc: &mut Document| -> Result<(), String> {
             for (i, op) in ops.iter().enumerate() {
@@ -1986,6 +1948,33 @@ impl Studio {
         let mut ack = Self::change_ack(id, &before, &after);
         ack["ops"] = json!(ops.len());
         Ok(ack)
+    }
+
+    /// Apply ONE drawing op to a cel — the single-op form of [`doc_batch`],
+    /// scoped to the "add marks" vocabulary (geometry, fills, text, procedural).
+    /// `params` is the op's flattened args; the op name is injected and the call
+    /// routes through the same validate-and-apply path a one-element batch uses,
+    /// so there is one source of truth for the op schema and behaviour.
+    pub fn doc_draw(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        op: &str,
+        mut params: serde_json::Map<String, Value>,
+    ) -> Result<Value, String> {
+        const DRAW_OPS: &[&str] = &[
+            "pencil", "line", "rect", "ellipse", "polyline", "polygon", "stroke", "fill", "bucket",
+            "gradient", "scatter", "noise", "text", "fill_cel",
+        ];
+        if !DRAW_OPS.contains(&op) {
+            return Err(format!(
+                "doc_draw: '{op}' is not a draw op — use one of [{}] (filters and lighting live on their own tools)",
+                DRAW_OPS.join(", ")
+            ));
+        }
+        params.insert("op".into(), json!(op));
+        self.doc_batch(id, layer, frame, vec![Value::Object(params)])
     }
 }
 
@@ -2292,7 +2281,10 @@ mod tests {
             .collect();
         for (id, snap) in [
             ("b-glow-old", None),
-            ("b-glow-new", Some(crate::document::AlphaSnap::Opaque(64))),
+            (
+                "b-glow-new",
+                Some(atelier_core::document::AlphaSnap::Opaque(64)),
+            ),
         ] {
             s.doc_create(id, 24, 24).unwrap();
             s.doc_set_palette(id, pal8.clone()).unwrap();
@@ -2392,7 +2384,7 @@ mod tests {
         let l_spread = |ramp: &[[u8; 4]]| -> f32 {
             let ls: Vec<f32> = ramp
                 .iter()
-                .map(|c| crate::raster::srgb_to_oklab(*c).0)
+                .map(|c| atelier_core::raster::srgb_to_oklab(*c).0)
                 .collect();
             let steps: Vec<f32> = ls.windows(2).map(|w| w[1] - w[0]).collect();
             steps.iter().cloned().fold(f32::MIN, f32::max)
@@ -2558,15 +2550,19 @@ mod tests {
         )
         .unwrap();
         for f in [0usize, 2, 4, 6] {
-            s.doc_render(
+            s.look(
                 "stroll",
                 f,
-                Some(&format!("/tmp/atelier-walk-{f}.png")),
                 Some(6),
                 None,
+                "render",
+                4,
                 false,
-                1,
+                false,
+                false,
                 None,
+                None,
+                Some(&format!("/tmp/atelier-walk-{f}.png")),
             )
             .unwrap();
         }
@@ -2593,15 +2589,19 @@ mod tests {
             true,
         )
         .unwrap();
-        s.doc_render(
+        s.look(
             "hero",
             0,
-            Some("/tmp/atelier-demo-figure-hero.png"),
             Some(6),
             None,
+            "render",
+            4,
             false,
-            1,
+            false,
+            false,
             None,
+            None,
+            Some("/tmp/atelier-demo-figure-hero.png"),
         )
         .unwrap();
         println!("wrote /tmp/atelier-demo-figure-hero.png");
@@ -2636,30 +2636,38 @@ mod tests {
             None,
         )
         .unwrap();
-        s.doc_render(
+        s.look(
             "sphere",
             0,
-            Some("/tmp/atelier-demo-sphere.png"),
             Some(6),
             None,
+            "render",
+            4,
             false,
-            1,
+            false,
+            false,
             None,
+            None,
+            Some("/tmp/atelier-demo-sphere.png"),
         )
         .unwrap();
         // Burst — render a mid frame; should be a faint expanding ring.
         s.doc_create("shock", 32, 32).unwrap();
         s.burst("shock", 0, 16, 16, 5, 14, "ring", [255, 220, 90, 255], None)
             .unwrap();
-        s.doc_render(
+        s.look(
             "shock",
             3,
-            Some("/tmp/atelier-demo-burst.png"),
             Some(8),
             None,
+            "render",
+            4,
             false,
-            1,
+            false,
+            false,
             None,
+            None,
+            Some("/tmp/atelier-demo-burst.png"),
         )
         .unwrap();
         // RotSprite rotation — a 2-tone bar rotated 35° should stay crisp and
@@ -2686,15 +2694,19 @@ mod tests {
             true,
         )
         .unwrap();
-        s.doc_render(
+        s.look(
             "bar",
             0,
-            Some("/tmp/atelier-demo-rotate.png"),
             Some(7),
             None,
+            "render",
+            4,
             false,
-            1,
+            false,
+            false,
             None,
+            None,
+            Some("/tmp/atelier-demo-rotate.png"),
         )
         .unwrap();
         let (_d, doc) = s.open("bar").unwrap();
@@ -2716,7 +2728,7 @@ mod tests {
     #[test]
     #[ignore]
     fn quality_demo_renders() {
-        use crate::document::AlphaSnap;
+        use atelier_core::document::AlphaSnap;
         let s = studio("quality-demo");
 
         // --- A: a smooth tapered crescent SLASH ARC (was choppy stacked beziers)
@@ -2741,15 +2753,19 @@ mod tests {
         s.doc_stroke("arc", 0, 0, crescent, [120, 220, 255, 255], true, true)
             .unwrap();
         let (_b, _m) = s
-            .doc_render(
+            .look(
                 "arc",
                 0,
-                Some("/tmp/atelier-demo-arc.png"),
                 Some(8),
                 None,
+                "render",
+                4,
                 false,
-                1,
+                false,
+                false,
                 None,
+                None,
+                Some("/tmp/atelier-demo-arc.png"),
             )
             .unwrap();
 
@@ -2769,15 +2785,19 @@ mod tests {
             s.doc_stroke("figure", 0, 0, l, [30, 30, 40, 255], true, true)
                 .unwrap();
         }
-        s.doc_render(
+        s.look(
             "figure",
             0,
-            Some("/tmp/atelier-demo-figure.png"),
             Some(8),
             None,
+            "render",
+            4,
             false,
-            1,
+            false,
+            false,
             None,
+            None,
+            Some("/tmp/atelier-demo-figure.png"),
         )
         .unwrap();
 
@@ -2803,15 +2823,19 @@ mod tests {
             Some(AlphaSnap::Opaque(64)),
         )
         .unwrap();
-        s.doc_render(
+        s.look(
             "orb",
             0,
-            Some("/tmp/atelier-demo-orb.png"),
             Some(8),
             None,
+            "render",
+            4,
             false,
-            1,
+            false,
+            false,
             None,
+            None,
+            Some("/tmp/atelier-demo-orb.png"),
         )
         .unwrap();
 
@@ -2923,7 +2947,7 @@ mod tests {
 
     #[test]
     fn frame_boxes_persist_and_export_scaled() {
-        use crate::document::BoxMeta;
+        use atelier_core::document::BoxMeta;
         let s = studio("boxes");
         s.doc_create("b", 8, 8).unwrap();
         s.doc_set_frame_boxes(

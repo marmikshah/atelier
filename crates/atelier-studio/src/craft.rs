@@ -15,8 +15,8 @@ use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
 use super::{Selection, Studio};
-use crate::document::{Document, Light};
-use crate::raster;
+use atelier_core::document::{Document, Light};
+use atelier_core::raster;
 
 // -- shared raster helpers --------------------------------------------------
 
@@ -136,10 +136,14 @@ fn crop_region(
 
 /// Value-mass + colour stats over the opaque pixels of a native image — the
 /// numbers that go beside the inline preview so every look is also measured.
-fn look_stats(img: &RgbaImage) -> Value {
+fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
     let (mut min, mut max, mut sum, mut n) = (255u8, 0u8, 0u64, 0u64);
     let (mut shadow, mut mid, mut light) = (0u64, 0u64, 0u64);
     let mut distinct = std::collections::HashSet::new();
+    // Optional per-band value coverage (the structure read for `bands`/`notan`,
+    // carried over from the retired doc_render_value `band_pcts`).
+    let nb = bands.map(|b| b.max(2) as usize);
+    let mut band_counts = nb.map(|b| vec![0u64; b]);
     for p in img.pixels() {
         if p.0[3] == 0 {
             continue;
@@ -156,13 +160,16 @@ fn look_stats(img: &RgbaImage) -> Value {
         } else {
             light += 1;
         }
+        if let (Some(b), Some(counts)) = (nb, band_counts.as_mut()) {
+            counts[(v as usize * b / 256).min(b - 1)] += 1;
+        }
         distinct.insert([p.0[0], p.0[1], p.0[2], p.0[3]]);
     }
     if n == 0 {
         return json!({"opaque_pixels": 0, "note": "empty — nothing opaque in view"});
     }
     let pct = |c: u64| (c as f64 / n as f64 * 1000.0).round() / 10.0;
-    json!({
+    let mut out = json!({
         "opaque_pixels": n,
         "distinct_colors": distinct.len(),
         "value": {
@@ -173,7 +180,23 @@ fn look_stats(img: &RgbaImage) -> Value {
         // Value massing: a healthy read groups the canvas into a few clear
         // masses, not a soup. Even thirds is the soup-warning signal.
         "masses_pct": {"shadow": pct(shadow), "mid": pct(mid), "light": pct(light)},
-    })
+    });
+    if let Some(counts) = band_counts {
+        out["band_pcts"] = json!(counts.iter().map(|c| pct(*c)).collect::<Vec<f64>>());
+    }
+    out
+}
+
+/// Repeat an image N×N — the seamlessness eyeball test for `doc_look` `tile`.
+fn tile_image(img: &RgbaImage, n: u32) -> RgbaImage {
+    let (w, h) = (img.width(), img.height());
+    let mut out = RgbaImage::new(w * n, h * n);
+    for ty in 0..n {
+        for tx in 0..n {
+            image::imageops::replace(&mut out, img, (tx * w) as i64, (ty * h) as i64);
+        }
+    }
+    out
 }
 
 /// Recursively snapshot a document's files (doc.json + cels/) into `dst`.
@@ -213,6 +236,8 @@ impl Studio {
         coords: bool,
         onion: bool,
         max_size: Option<u32>,
+        tile: Option<u32>,
+        out_path: Option<&str>,
     ) -> Result<(Vec<u8>, Value), String> {
         let (_dir, doc) = self.open(id)?;
         if frame >= doc.meta.frames.len() {
@@ -224,7 +249,7 @@ impl Studio {
         }
         // Adaptive default: big enough to judge a small sprite, clamped so a
         // large canvas doesn't waste vision tokens.
-        let scale = scale.unwrap_or_else(|| crate::studio::preview_scale(doc.meta.w, doc.meta.h));
+        let scale = scale.unwrap_or_else(|| crate::preview_scale(doc.meta.w, doc.meta.h));
         // Native, full-canvas image for the requested mode.
         let native = match mode {
             "render" => {
@@ -248,7 +273,14 @@ impl Studio {
             }
         };
         let (view, ox, oy) = crop_region(&native, region)?;
-        let stats = look_stats(&view);
+        // Per-band coverage is the value-structure read; meaningful only for the
+        // posterised modes (carried over from the retired doc_render_value).
+        let band_arg = match mode {
+            "bands" => Some(bands.max(2)),
+            "notan" => Some(3),
+            _ => None,
+        };
+        let stats = look_stats(&view, band_arg);
         // Scale: explicit nearest upscale, or a max_size thumbnail (no grid).
         let mut out;
         let mut applied_scale = scale.max(1);
@@ -274,8 +306,28 @@ impl Studio {
             let step = (8).min((view.width().max(view.height()) as i32 / 2).max(1));
             overlay_grid(&mut out, ox, oy, applied_scale, step, coords);
         }
+        // Tile the result N×N to eyeball seamlessness (the retired doc_render's
+        // `tile`); applied after scale/grid so each cell shows the upscaled art.
+        if let Some(t) = tile {
+            if t > 1 {
+                out = tile_image(&out, t);
+            }
+        }
+        // Optional file write for export/file workflows (the retired doc_render's
+        // `out_path`). look stays inline-primary, so we only touch disk on request.
+        let saved_path = match out_path {
+            Some(p) => {
+                let pb = std::path::PathBuf::from(p);
+                if let Some(parent) = pb.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                out.save(&pb).map_err(|e| e.to_string())?;
+                Some(pb.to_string_lossy().into_owned())
+            }
+            None => None,
+        };
         let png = encode_png(&out)?;
-        let report = json!({
+        let mut report = json!({
             "doc_id": id, "frame": frame, "mode": mode,
             "native_size": [view.width(), view.height()],
             "render_size": [out.width(), out.height()],
@@ -283,6 +335,9 @@ impl Studio {
             "region_origin": [ox, oy],
             "stats": stats,
         });
+        if let Some(p) = saved_path {
+            report["path"] = json!(p);
+        }
         Ok((png, report))
     }
 
@@ -510,7 +565,7 @@ impl Studio {
         layer: Option<usize>,
         frame: Option<usize>,
         palette: Option<Vec<[u8; 4]>>,
-        alpha: crate::document::AlphaSnap,
+        alpha: atelier_core::document::AlphaSnap,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let pal = match palette {
@@ -649,7 +704,7 @@ impl Studio {
                 &pal,
                 Some(layer),
                 Some(frame),
-                crate::document::AlphaSnap::Preserve,
+                atelier_core::document::AlphaSnap::Preserve,
             );
         }
         doc.save(&dir)?;
@@ -1374,7 +1429,7 @@ impl Studio {
                 &pal,
                 Some(layer),
                 Some(frame),
-                crate::document::AlphaSnap::Opaque(128),
+                atelier_core::document::AlphaSnap::Opaque(128),
             );
         }
         doc.save(&dir)?;
@@ -1501,7 +1556,7 @@ impl Studio {
                     &pal,
                     Some(layer),
                     Some(f),
-                    crate::document::AlphaSnap::Opaque(128),
+                    atelier_core::document::AlphaSnap::Opaque(128),
                 );
             }
         }
@@ -1843,13 +1898,39 @@ mod tests {
         s.doc_create("c", 8, 8).unwrap();
         s.doc_fill_cel("c", 0, 0, [255, 0, 0, 255]).unwrap();
         let (png, report) = s
-            .look("c", 0, Some(6), None, "render", 4, true, true, false, None)
+            .look(
+                "c",
+                0,
+                Some(6),
+                None,
+                "render",
+                4,
+                true,
+                true,
+                false,
+                None,
+                None,
+                None,
+            )
             .unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(opaque(&report), 64);
         // value mode also works and reports masses
         let (_p, v) = s
-            .look("c", 0, Some(4), None, "value", 4, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(4),
+                None,
+                "value",
+                4,
+                false,
+                false,
+                false,
+                None,
+                None,
+                None,
+            )
             .unwrap();
         assert!(v["stats"]["masses_pct"].is_object());
     }
@@ -1874,6 +1955,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert_eq!(opaque(&after.1), 0);
@@ -1889,6 +1972,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -1925,7 +2010,13 @@ mod tests {
         s.doc_set_palette("c", vec![[255, 0, 0, 255], [0, 0, 255, 255]])
             .unwrap();
         let r = s
-            .snap_palette("c", None, None, None, crate::document::AlphaSnap::Preserve)
+            .snap_palette(
+                "c",
+                None,
+                None,
+                None,
+                atelier_core::document::AlphaSnap::Preserve,
+            )
             .unwrap();
         assert_eq!(r["pixels_changed"], 16);
     }
@@ -1953,6 +2044,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -2034,6 +2127,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert!(
@@ -2070,6 +2165,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert!(distinct(&look.1) >= 2);
@@ -2102,6 +2199,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert!(distinct(&look.1) >= 3, "three faces => three shades");
@@ -2126,6 +2225,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -2185,6 +2286,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -2268,6 +2371,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();

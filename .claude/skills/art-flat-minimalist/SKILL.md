@@ -38,7 +38,7 @@ what it is. No rendering, no fuss — shape and colour do all the work.
 4. **`doc_look`** — does it read as a wizard at 1× (squint test)? Fix proportion
    and shape silhouette; do NOT add detail to rescue a weak read.
 5. Optionally ONE accent shadow shape (a single flat darker polygon on the robe).
-6. `doc_render` to export; `doc_palette_report` to prove ≤5 colours.
+6. `doc_export_sheet` to export; `doc_palette_report` to prove ≤5 colours.
 
 ## Done when
 Reads instantly as the subject, ≤5 flat colours, zero gradients/AA, bold simple
