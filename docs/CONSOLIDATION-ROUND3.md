@@ -15,8 +15,12 @@
   recipe. **`doc_glow` deliberately kept separate** — its on-palette `snap` is not
   a batch op, so folding it would have regressed the bloom. The clean split is
   `doc_draw` = add marks, `doc_fx` = transform existing pixels.
+- **SHIPPED — `doc_export`** (76 → 74). The 3 per-document file exports (sheet,
+  anim, tileset) folded into `doc_export(op, …)` via manual dispatch over a shared
+  `out_path`/`scale` core. `doc_wang_tiles`/`export_all`/`export_atlas` stay
+  separate (generators / library-level). First of the document-level dispatchers.
 - **NEXT (document-level, manual dispatch — not batch-routable):** `doc_region`,
-  `doc_layer`, `doc_frame`, `doc_palette`, `doc_export`, `doc_ref`. Plus the
+  `doc_layer`, `doc_frame`, `doc_palette`, `doc_ref`. Plus the
   non-batch cel effects (`relight`, `rim_light`, `material`, `panel`,
   `outline_selective`, `smooth_edges`, `dither_ramp`, `snap_palette`,
   `transform_cel`, `burst`) need the op vocabulary extended before they can join

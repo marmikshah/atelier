@@ -37,7 +37,7 @@ DITHERED, never blended — that crunchy two-tone texture is the whole aesthetic
 5. **Hard pixel detail** with `doc_paint_grid` (face dots, beard rows, star on
    the hat).
 6. `doc_snap_palette` to force ≤4 colours; `doc_palette_report` to PROVE it;
-   `doc_look` (zero AA pixels expected); `doc_export_sheet` to export.
+   `doc_look` (zero AA pixels expected); `doc_export op=sheet` to export.
 
 ## Done when
 32×32, ≤4 colours, zero anti-aliased pixels, shading is visibly dithered. If it

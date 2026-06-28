@@ -41,7 +41,7 @@ showpiece end of pixel art — selout edges, rim light, gem glints, beard strand
 7. **Selout + rim:** `doc_smooth_edges`/`doc_outline_selective`; `doc_rim_light`
    a cool back-rim to pop the silhouette.
 8. `doc_look` each pass; `doc_critique` + `doc_palette_report` at the end;
-   `doc_export_sheet` to export.
+   `doc_export op=sheet` to export.
 
 ## Done when
 ≥16 colours, ≥80px, every material textured with folds, multi-light with a rim,

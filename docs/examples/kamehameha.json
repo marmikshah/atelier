@@ -645,8 +645,8 @@
       "note": "One forward tag over the whole timeline; the 150ms exhale at the end gives the loop a beat of rest before it restarts."
     },
     {
-      "tool": "doc_export_anim",
-      "args": { "doc_id": "kamehameha", "tag": "blast", "scale": 3, "out_path": "kamehameha.gif" },
+      "tool": "doc_export",
+      "args": { "op": "anim", "doc_id": "kamehameha", "tag": "blast", "scale": 3, "out_path": "kamehameha.gif" },
       "note": "288x288 looping GIF. Total cycle ~1.6s: 660ms charge, 260ms release, 440ms blast, 260ms recovery."
     }
   ]
