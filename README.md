@@ -31,14 +31,6 @@
 <p align="center"><em>Every pixel in this README — including the logo — was drawn
 by agents through the MCP tools. No hand-editing, no image imports.</em></p>
 
-<p align="center">
-  <img src="docs/style-bakeoff.png" width="860" alt="the same wizard drawn in six artist styles: minimal, 8-bit, deliberate, chibi, painterly, hi-bit">
-</p>
-
-<p align="center"><em>One subject, six artist styles — each a separate skill
-(<code>.claude/skills/art-*</code>) driving the same decompose-and-build method,
-then sharpened by a reviewer-agent feedback loop.</em></p>
-
 ## What it is
 
 Agents are good at *describing* art and bad at *seeing* it. atelier closes the
