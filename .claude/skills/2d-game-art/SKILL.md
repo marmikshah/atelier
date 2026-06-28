@@ -203,7 +203,7 @@ specks / detached limbs; `doc_palette_report` all colours in-palette, no near-du
 Finish frame 0 as a clean pose first. **Plan numbers before frames:** stride ≈
 1/3 of character height in px; body bobs 1px DOWN on contacts, UP on passing;
 arms counter-swing the legs; durations 110–140ms with contact poses held ~1.5×
-(`doc_set_frame_duration` — uniform 100ms reads mechanical).
+(`doc_frame op=duration` — uniform 100ms reads mechanical).
 
 **For a humanoid, pose from joints.** Author the base with **`doc_figure`**, then
 per frame call `doc_figure` again with the joints moved (a contact→passing→up
@@ -220,7 +220,7 @@ layer → **`doc_keyframe_transform`** swings it about the JOINT pivot (the
 shoulder/hip, in document pixels) across the frame range in one eased call.
 The body layer never gets touched, so nothing wobbles or melts.
 
-Then per frame: `doc_add_frame copy_from` the previous → repaint **only what
+Then per frame: `doc_frame op=add copy_from` the previous → repaint **only what
 still needs hand-work** (`doc_draw op=pencil`, `doc_move_region`, `doc_keyframe_move`
 for eased translation) → `doc_look onion=true`, and `doc_contact_sheet
 onion=true` to judge the whole cycle's spacing from one image. Tag the range
@@ -228,7 +228,7 @@ with `doc_add_tag` (`forward`/`reverse`/`pingpong`).
 
 **`doc_dissolve` is a DISSOLVE** — alpha cross-fade, never pose motion (limbs
 ghost instead of moving). Use it only for fades/FX. It auto-checkpoints, and a
-bad dissolve is recoverable: **`doc_frame_ops action="delete"`** removes frames
+bad dissolve is recoverable: **`doc_frame op=delete`** removes frames
 with tags remapped.
 
 **Gates:** `doc_frame_diff` between adjacent frames — only the moving limbs

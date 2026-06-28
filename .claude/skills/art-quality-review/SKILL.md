@@ -84,7 +84,7 @@ One line per finding, machine-followable:
   jaggies → `doc_smooth_edges`; flat/pillow → `doc_relight`; muddy ramp →
   `doc_palette`; stray pixels → `doc_draw op=pencil` erase; uneven motion
   → `doc_keyframe_transform` / re-pose; uniform timing →
-  `doc_set_frame_duration`.
+  `doc_frame op=duration`.
 - End with a verdict: **SHIP** (nothing above nit and nits are taste calls) or
   **FIX** (anything actionable remains) — plus the finding count by severity.
 
