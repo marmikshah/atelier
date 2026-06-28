@@ -142,16 +142,16 @@ memory of a chat attachment produces generic sprites that drift off-model.
 
 1. **Save the attachment to disk and CROP to the subject first** (`sips -c <h>
    <w> --cropOffset <y> <x>` on macOS) — references often carry huge empty
-   margins, and `doc_set_reference`'s aspect fit is computed from the FULL
+   margins, and `doc_ref op=set`'s aspect fit is computed from the FULL
    image: uncropped, a 48px-wide import leaves the character 25px tall. Then
-   **`doc_set_reference`** — the original now lives WITH the document, and the
+   **`doc_ref op=set`** — the original now lives WITH the document, and the
    compare loop unlocks. Heed the returned aspect-true fit (a wrong canvas
    ratio silently squashes the character).
 2. **`doc_ref_analyze`** — view the reference inline and take its decomposition:
    the subject palette (lock it with `doc_set_palette`), the silhouette grid
    (your blocking map), and the background coverage. A near-100% match between
    its silhouette grid and your canvas plan means the crop was right.
-3. Either **`doc_import_clean`** (set `remove_bg=true` for a subject on a
+3. Either **`doc_ref op=import`** (set `remove_bg=true` for a subject on a
    backdrop; `target_h` omitted derives aspect-true; dither stays off at sprite
    scale) for a one-call base to clean up, or import onto a hidden low-opacity
    **guide layer** and redraw over the ghost (flatten skips invisible layers, so
