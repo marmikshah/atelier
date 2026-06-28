@@ -63,7 +63,7 @@ entire library API; the MCP layer is a thin wrapper over it.
   `Studio::with_docs_dir(path)` roots a studio at an explicit directory (for
   embedding or tests, without touching process-global env).
 - **`craft.rs`** — drawing, procedural and constructive ops: shapes, fills,
-  gradients, noise/scatter, shadow/glow/bevel, the `doc_form` volume shader, and
+  gradients, noise/scatter, shadow/glow/bevel, the `doc_fx op=form` volume shader, and
   the `doc_figure`/`doc_walk` skeletal builders.
 - **`analysis.rs`** — the "eye": critique, silhouette, palette, contrast,
   frame-diff, loop-seam and per-pixel diff-map reports that turn "does it look
@@ -77,8 +77,8 @@ Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
-- **`server.rs`** — the rmcp `#[tool]` router: **89 tools** (mutations grouped
-  into op-dispatch tools like `doc_draw`/`doc_batch`), one or one-family per studio
+- **`server.rs`** — the rmcp `#[tool]` router: **76 tools** (mutations grouped
+  into op-dispatch tools like `doc_draw` / `doc_fx` / `doc_batch`), one or one-family per studio
   operation, plus MCP resources (browse documents + renders) and packaged
   prompts. Runs over two transports that share the router — stdio (`run`) and
   streamable HTTP (`run_http`) — and, on HTTP, serves the live `/gallery`,

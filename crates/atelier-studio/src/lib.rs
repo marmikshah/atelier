@@ -1976,6 +1976,45 @@ impl Studio {
         params.insert("op".into(), json!(op));
         self.doc_batch(id, layer, frame, vec![Value::Object(params)])
     }
+
+    /// Apply ONE transform/effect op to a cel — the single-op form of
+    /// [`doc_batch`](Self::doc_batch) for the ops that REWORK existing pixels
+    /// (filters, lighting, colour, geometry); the complement of
+    /// [`doc_draw`](Self::doc_draw), which adds new marks. Same validated dispatch.
+    /// (`glow` keeps its own tool — its on-palette `snap` is not a batch op.)
+    pub fn doc_fx(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        op: &str,
+        mut params: serde_json::Map<String, Value>,
+    ) -> Result<Value, String> {
+        const FX_OPS: &[&str] = &[
+            "blur",
+            "outline",
+            "drop_shadow",
+            "bevel",
+            "shade",
+            "form",
+            "dither",
+            "pixel_perfect",
+            "flip",
+            "shift",
+            "symmetry",
+            "quantize",
+            "replace_color",
+            "adjust",
+        ];
+        if !FX_OPS.contains(&op) {
+            return Err(format!(
+                "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow has its own tool)",
+                FX_OPS.join(", ")
+            ));
+        }
+        params.insert("op".into(), json!(op));
+        self.doc_batch(id, layer, frame, vec![Value::Object(params)])
+    }
 }
 
 /// Adaptive preview scale: aim for ~384px on the longest side (big enough for a

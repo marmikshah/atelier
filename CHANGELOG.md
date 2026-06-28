@@ -95,14 +95,20 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
   `bands`/`notan` modes from `doc_render_value` — so one SEE call covers render +
   every analysis channel, killing the three-way "show me the canvas" name clash.
   Hard removal, no aliases.
-- **Round-3 op-dispatch fusion (pilot):** the 13 geometry/paint tools
-  (`doc_pencil`, `doc_line`, `doc_rect`, `doc_ellipse`, `doc_polyline`,
-  `doc_polygon`, `doc_stroke`, `doc_fill`, `doc_fill_cel`, `doc_gradient`,
-  `doc_scatter`, `doc_noise`, `doc_text`) fold into one **`doc_draw`**`(op, …)` —
-  the single-op form of `doc_batch`, over the same validated `apply_op` dispatch,
-  with every op's params verified identical (no capability lost). The studio
-  methods stay as internal/library API. See `docs/CONSOLIDATION-ROUND3.md`.
-  **89 tools.**
+- **Round-3 op-dispatch fusion.** The cel-mutation tools fold into two op-dispatch
+  tools over the same validated `apply_op`/`batch_op_keys` path, every op's params
+  verified identical (no capability lost); the studio methods stay as library API.
+  - **`doc_draw`**`(op, …)` — the 13 *add-a-mark* tools (`doc_pencil`, `doc_line`,
+    `doc_rect`, `doc_ellipse`, `doc_polyline`, `doc_polygon`, `doc_stroke`,
+    `doc_fill`, `doc_fill_cel`, `doc_gradient`, `doc_scatter`, `doc_noise`,
+    `doc_text`).
+  - **`doc_fx`**`(op, …)` — 14 *rework-existing-pixels* tools (`doc_blur`,
+    `doc_outline`, `doc_drop_shadow`, `doc_bevel`, `doc_shade`, `doc_form`,
+    `doc_dither`, `doc_pixel_perfect`, `doc_flip`, `doc_shift`, `doc_symmetry`,
+    `doc_quantize`, `doc_replace_color`, `doc_adjust`). `doc_glow` stays separate —
+    its on-palette `snap` isn't a batch op.
+
+  See `docs/CONSOLIDATION-ROUND3.md`. **76 tools.**
 
 ### Fixed
 

@@ -24,7 +24,7 @@ smaller image with every pixel earning its place beats a bigger careless one.
   accent). `doc_palette_report` near-dupes MUST be 0 — two colours doing one job
   is waste; merge them.
 - **Hand-placed:** build with `doc_paint_grid` and `doc_draw op=pencil` — YOU decide
-  each pixel. Procedural tools (`doc_form`, `doc_draw op=noise/scatter/gradient`,
+  each pixel. Procedural tools (`doc_fx op=form`, `doc_draw op=noise/scatter/gradient`,
   blanket `doc_smooth_edges`) are NOT banned, but anything they emit you must then
   read back and justify pixel-by-pixel — so by default place by hand instead.
 - **Anti-alias only where it earns the read** — a deliberate single pixel at a
@@ -45,7 +45,7 @@ smaller image with every pixel earning its place beats a bigger careless one.
    detail directs the eye.
 6. **Cull pass:** `doc_dump_region` the whole sprite and walk it pixel by pixel —
    delete every pixel without a job, merge any near-duplicate colours.
-7. **Audit:** `doc_critique` (orphans = 0), `doc_pixel_perfect` (no doubled
+7. **Audit:** `doc_critique` (orphans = 0), `doc_fx op=pixel_perfect` (no doubled
    corners), `doc_palette_report` (every colour used + justified, near-dupes = 0).
 
 ## Done when

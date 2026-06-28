@@ -33,7 +33,7 @@ showpiece end of pixel art — selout edges, rim light, gem glints, beard strand
 2. **Palette:** several `doc_palette` ramps; lock the merged set.
 3. **Block** all masses; `doc_look` + fix proportion/anatomy.
 4. **Multi-light pass across all parts:** `doc_relight` (key+fill+rim) per
-   material, region/selection-bound; `doc_form` for rounded sub-forms.
+   material, region/selection-bound; `doc_fx op=form` for rounded sub-forms.
 5. **Texture pass:** `doc_material` (cloth on robe, etc.); hand-paint fold
    shadows + highlights with `doc_paint_grid`/`doc_draw op=pencil`.
 6. **Fine detail:** beard strands, eye catchlights, hat star, robe-hem trim,

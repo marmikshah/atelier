@@ -221,21 +221,6 @@ pub struct DocStampImage {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSymmetry {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Column to mirror left↔right across (omit to skip vertical mirroring).
-    pub vertical: Option<i32>,
-    /// Row to mirror top↔bottom across (omit to skip horizontal mirroring).
-    pub horizontal: Option<i32>,
-    /// For a vertical axis, reflect the left side onto the right (default true).
-    pub keep_left: Option<bool>,
-    /// For a horizontal axis, reflect the top onto the bottom (default true).
-    pub keep_top: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocExport {
     pub doc_id: String,
     pub out_path: String,
@@ -277,57 +262,6 @@ pub struct DocWangTiles {
 // --- drawing params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocReplace {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub from: Vec<i64>,
-    pub to: Vec<i64>,
-    pub tolerance: Option<i32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFlip {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub horizontal: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocShift {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub dx: i32,
-    pub dy: i32,
-    /// Roll pixels around the edges (toroidal) for seamless tiles. Default false.
-    pub wrap: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocBlur {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub radius: i32,
-    /// Optional region [x0,y0,x1,y1]; omit for the whole cel.
-    pub region: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocQuantize {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Target palette (each [r,g,b]/[r,g,b,a]). Empty ⇒ derive `max_colors` from
-    /// the cel by median cut.
-    pub colors: Option<Vec<Vec<i64>>>,
-    /// Colours to derive when `colors` is empty (default 16).
-    pub max_colors: Option<usize>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocTween {
     pub doc_id: String,
     pub from: usize,
@@ -352,31 +286,6 @@ pub struct DocFrameOps {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocOutline {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub color: Vec<i64>,
-    /// Soften diagonal corner pixels (anti-aliased outline). Default false.
-    pub aa: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocDropShadow {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Shadow offset (default 1,1).
-    pub dx: Option<i32>,
-    pub dy: Option<i32>,
-    pub color: Option<Vec<i64>>,
-    /// Shadow opacity 0..255 (default 160).
-    pub opacity: Option<u8>,
-    /// Blur radius in pixels (default 0).
-    pub blur: Option<i32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocGlow {
     pub doc_id: String,
     pub layer: usize,
@@ -397,19 +306,6 @@ pub struct DocGlow {
     /// Alpha cutoff for the post-glow snap (0..255, default 64 — keeps the
     /// brighter bloom core, drops the faint halo).
     pub snap_cutoff: Option<u8>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocBevel {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Top/left highlight colour (its alpha = strength). Default white ~50%.
-    pub light: Option<Vec<i64>>,
-    /// Bottom/right shadow colour (its alpha = strength). Default black ~50%.
-    pub dark: Option<Vec<i64>>,
-    /// Edge band thickness in pixels (default 1).
-    pub depth: Option<i32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -439,75 +335,6 @@ pub struct GradientStop {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocShade {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Light origin: "top-left" (default) | "top" | "top-right" | "left" |
-    /// "right" | "bottom-left" | "bottom" | "bottom-right".
-    pub light_dir: Option<String>,
-    /// How far to push lit/shadow pixels along the ramp or in lightness (def 1).
-    pub steps: Option<i32>,
-    /// Optional region [x0,y0,x1,y1] to confine shading; omit for the whole cel.
-    pub region: Option<Vec<i32>>,
-    /// "both" (default) | "highlight" | "shadow".
-    pub mode: Option<String>,
-    /// Optional shading ramp ordered dark→light (each [r,g,b]/[r,g,b,a]); when
-    /// given, touched pixels snap to it and move ±steps. Omit for an HSL shift
-    /// (warm highlights, cool shadows).
-    pub ramp: Option<Vec<Vec<i64>>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocForm {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Form model: "sphere" (default) | "cylinder-h" | "cylinder-v" | "auto".
-    /// "auto" derives volume from the silhouette's interior distance (any shape).
-    pub form: Option<String>,
-    /// Highlight origin — same 8 dirs as doc_shade (default "top-left").
-    pub light_dir: Option<String>,
-    /// Region [x0,y0,x1,y1] bounding the form; omit for the cel's opaque bbox.
-    pub region: Option<Vec<i32>>,
-    /// Shading ramp ordered dark→light (each [r,g,b]/[r,g,b,a]); omit to derive
-    /// one from the mean fill colour.
-    pub ramp: Option<Vec<Vec<i64>>>,
-    /// 0..1 — compress (low) or span the full ramp (1, default).
-    pub strength: Option<f32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocDither {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Region [x0,y0,x1,y1] (inclusive). Required unless a selection is active
-    /// (which then bounds the dither).
-    pub region: Option<Vec<i32>>,
-    pub color_a: Vec<i64>,
-    pub color_b: Vec<i64>,
-    /// "checker" | "bayer2" | "bayer4" (default) | "bayer8".
-    pub pattern: Option<String>,
-    /// 0..1 fraction biased toward color_b via the threshold matrix (default 0.5).
-    pub density: Option<f32>,
-    /// true repaints only pixels already equal to color_a or color_b (recolour
-    /// a flat fill into a dither without spilling). Default false.
-    pub only_existing: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPixelPerfect {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Optional region [x0,y0,x1,y1] to confine the cleanup; omit for whole cel.
-    pub region: Option<Vec<i32>>,
-    /// Restrict to strokes of this exact colour [r,g,b]/[r,g,b,a]; omit for any.
-    pub color: Option<Vec<i64>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocSelect {
     pub doc_id: String,
     /// "rect" | "ellipse" | "color" | "all" | "none". Default "rect".
@@ -533,21 +360,6 @@ pub struct DocSelect {
     pub x: Option<i32>,
     pub y: Option<i32>,
     pub tolerance: Option<i32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocAdjust {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Hue shift in degrees.
-    pub hue: Option<f32>,
-    /// Saturation delta -1..1.
-    pub sat: Option<f32>,
-    /// Lightness delta -1..1.
-    pub lum: Option<f32>,
-    /// Optional region [x0,y0,x1,y1]; omit for the whole cel.
-    pub region: Option<Vec<i32>>,
 }
 
 /// A rectangular region of a cel (inclusive corners) + optional offset.
@@ -655,6 +467,21 @@ pub struct DocDraw {
     pub op: String,
     /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,
     /// color, fill). Every op also accepts `opacity` and `blend_mode`.
+    #[serde(flatten)]
+    pub params: serde_json::Map<String, serde_json::Value>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocFx {
+    pub doc_id: String,
+    pub layer: usize,
+    pub frame: usize,
+    /// One transform/effect op: blur | outline | drop_shadow | bevel | shade |
+    /// form | dither | pixel_perfect | flip | shift | symmetry | quantize |
+    /// replace_color | adjust.
+    pub op: String,
+    /// The op's own params, flattened alongside. Every op also accepts `opacity`
+    /// and `blend_mode`.
     #[serde(flatten)]
     pub params: serde_json::Map<String, serde_json::Value>,
 }
@@ -1484,8 +1311,7 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_draw",
             "doc_batch",
             "doc_look",
-            "doc_shade",
-            "doc_pixel_perfect",
+            "doc_fx",
             "doc_critique",
             "doc_silhouette",
             "doc_components",
@@ -1503,7 +1329,7 @@ const PROMPTS: &[PromptSpec] = &[
                  3. Block the silhouette with doc_draw (op=rect/ellipse/polygon).\n\
                  4. Paint detail with doc_batch (many ops in one call) or doc_draw (op=pencil/line).\n\
                  5. doc_look after every burst — it returns the frame INLINE; study it before continuing.\n\
-                 6. Shade with doc_shade and clean strokes with doc_pixel_perfect.\n\
+                 6. Shade with doc_fx op=shade and clean strokes with doc_fx op=pixel_perfect.\n\
                  7. Audit shape: doc_silhouette (readable bbox/fill) and doc_components (no stray specks).\n\
                  8. Audit colour: doc_palette_report (every colour in_palette, no near-dupes).\n\
                  9. doc_critique for the failure modes you can't see; fix what it flags, doc_look to confirm.\n\
@@ -1574,7 +1400,7 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_set_palette",
             "doc_draw",
             "doc_look",
-            "doc_shift",
+            "doc_fx",
             "doc_seam_report",
             "doc_palette_report",
             "doc_export_sheet",
@@ -1587,8 +1413,8 @@ const PROMPTS: &[PromptSpec] = &[
                  1. doc_create a {size}x{size} document and doc_set_palette to lock the colours.\n\
                  2. Fill the base with doc_draw op=fill_cel, then texture with doc_draw op=noise / op=scatter.\n\
                  3. doc_look to study the raw tile inline.\n\
-                 4. doc_shift wrap=true to roll the seam into the middle, then paint over the join.\n\
-                 5. Use doc_shift wrap=true again to make detail variants without breaking edges.\n\
+                 4. doc_fx op=shift wrap=true to roll the seam into the middle, then paint over the join.\n\
+                 5. Use doc_fx op=shift wrap=true again to make detail variants without breaking edges.\n\
                  6. doc_seam_report MUST return zero mismatches on both axes — fix until it does.\n\
                  7. doc_look tile=2 and eyeball the 2x2 grid for any visible repeat or seam.\n\
                  8. doc_palette_report to confirm the texture stayed on-palette.\n\
@@ -1846,21 +1672,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Mirror a cel for instant symmetry: `vertical` (a column) reflects left↔right, `horizontal` (a row) reflects top↔bottom, both gives 4-way symmetry. keep_left/keep_top pick the source side. Draw half a sprite, mirror the rest."
-    )]
-    async fn doc_symmetry(&self, Parameters(p): Parameters<DocSymmetry>) -> CallToolResult {
-        res(self.studio().doc_symmetry(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.vertical,
-            p.horizontal,
-            p.keep_left.unwrap_or(true),
-            p.keep_top.unwrap_or(true),
-        ))
-    }
-
-    #[tool(
         description = "Export the document as a horizontal spritesheet PNG + JSON meta (frames, durations, tags)."
     )]
     async fn doc_export_sheet(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
@@ -1912,71 +1723,6 @@ impl Atelier {
 
     // -- per-pixel drawing on a cel (the editor; coords = document pixels) --
     #[tool(
-        description = "Replace every pixel near `from` with `to` across the cel (recolour). `tolerance` = max channel distance over RGB (alpha ignored), so anti-aliased / semi-transparent edges of the target colour are recoloured too instead of left as a halo. tolerance 0 = exact RGB match."
-    )]
-    async fn doc_replace_color(&self, Parameters(p): Parameters<DocReplace>) -> CallToolResult {
-        res(self.studio().doc_replace_color(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            rgba(&p.from),
-            rgba(&p.to),
-            p.tolerance.unwrap_or(0),
-        ))
-    }
-
-    #[tool(description = "Flip a cel horizontally (default) or vertically.")]
-    async fn doc_flip(&self, Parameters(p): Parameters<DocFlip>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_flip(&p.doc_id, p.layer, p.frame, p.horizontal.unwrap_or(true)))
-    }
-
-    #[tool(
-        description = "Shift a cel's contents by (dx,dy) pixels; exposed edges become transparent, or `wrap`=true rolls them around (toroidal) for making/checking seamless tiles."
-    )]
-    async fn doc_shift(&self, Parameters(p): Parameters<DocShift>) -> CallToolResult {
-        res(self.studio().doc_shift(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.dx,
-            p.dy,
-            p.wrap.unwrap_or(false),
-        ))
-    }
-
-    #[tool(
-        description = "Box-blur a cel by `radius` (premultiplied — no dark haloes), optionally limited to `region`. Soft shadows, depth-of-field, smoke. Honours an active selection."
-    )]
-    async fn doc_blur(&self, Parameters(p): Parameters<DocBlur>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_blur(&p.doc_id, p.layer, p.frame, p.radius, region(&p.region)))
-    }
-
-    #[tool(
-        description = "Snap every opaque pixel to the nearest colour in `colors`; with no `colors`, derive a `max_colors` palette from the cel by median cut. Returns the palette used plus an INLINE preview of the result. Posterise / down-palette imported or AI-gen art."
-    )]
-    async fn doc_quantize(&self, Parameters(p): Parameters<DocQuantize>) -> CallToolResult {
-        let palette: Vec<[u8; 4]> = p
-            .colors
-            .as_ref()
-            .map(|cs| cs.iter().map(|c| rgba(c)).collect())
-            .unwrap_or_default();
-        let studio = self.studio();
-        studio.auto_checkpoint(&p.doc_id, "quantize");
-        let r = studio.doc_quantize(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            palette,
-            p.max_colors.unwrap_or(16),
-        );
-        previewed(&studio, &p.doc_id, Some(p.layer), p.frame, r)
-    }
-
-    #[tool(
         description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame_ops delete. Reindexes later cels and remaps tags."
     )]
     async fn doc_dissolve(&self, Parameters(p): Parameters<DocTween>) -> CallToolResult {
@@ -2006,36 +1752,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw a 1px outline around the opaque pixels of a cel. `aa`=true softens diagonal corners (anti-aliased)."
-    )]
-    async fn doc_outline(&self, Parameters(p): Parameters<DocOutline>) -> CallToolResult {
-        res(self.studio().doc_outline(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            rgba(&p.color),
-            p.aa.unwrap_or(false),
-        ))
-    }
-
-    #[tool(
-        description = "Drop a coloured shadow of the cel's silhouette offset by (dx,dy), at `opacity`, optionally `blur`red, with the art composited back on top. Self-contained on one cel. Honours an active selection."
-    )]
-    async fn doc_drop_shadow(&self, Parameters(p): Parameters<DocDropShadow>) -> CallToolResult {
-        let color = p.color.as_ref().map(|c| rgba(c)).unwrap_or([0, 0, 0, 255]);
-        res(self.studio().doc_drop_shadow(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.dx.unwrap_or(1),
-            p.dy.unwrap_or(1),
-            color,
-            p.opacity.unwrap_or(160),
-            p.blur.unwrap_or(0),
-        ))
-    }
-
-    #[tool(
         description = "Bloom/glow: blur a bright copy of the cel and composite it back through a light blend (`mode` screen/add) at `intensity`. `color` tints the glow (omit = the art's own colours). Honours an active selection."
     )]
     async fn doc_glow(&self, Parameters(p): Parameters<DocGlow>) -> CallToolResult {
@@ -2061,26 +1777,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Fake-3D bevel: lighten the top/left edge band and darken the bottom/right band of the opaque shape (within `depth` px of an edge) for raised volume. `light`/`dark` alpha = strength. Honours an active selection."
-    )]
-    async fn doc_bevel(&self, Parameters(p): Parameters<DocBevel>) -> CallToolResult {
-        let light = p
-            .light
-            .as_ref()
-            .map(|c| rgba(c))
-            .unwrap_or([255, 255, 255, 128]);
-        let dark = p.dark.as_ref().map(|c| rgba(c)).unwrap_or([0, 0, 0, 128]);
-        res(self.studio().doc_bevel(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            light,
-            dark,
-            p.depth.unwrap_or(1),
-        ))
-    }
-
-    #[tool(
         description = "Paint a RIM/edge light along the silhouette edges that FACE the light (`az`: 0=right, 90=down, 180=left, 270=up) — the edge-relative highlight that was otherwise hand-placed pixel by pixel. Estimates each edge pixel's outward normal and stamps `color` where it faces the light, `width` px thick, `falloff` tightens it. `dark=true` lights the away-facing edge instead (core/contact shadow). Topological — survives small canvases where a Fresnel term washes out. Honours an active selection."
     )]
     async fn doc_rim_light(&self, Parameters(p): Parameters<DocRimLight>) -> CallToolResult {
@@ -2095,93 +1791,6 @@ impl Atelier {
             p.dark.unwrap_or(false),
             p.snap.unwrap_or(true),
         ))
-    }
-
-    #[tool(
-        description = "Shift hue/saturation/lightness of opaque pixels (optionally only within `region`). Tint, recolour or brighten part of a cel. Honours an active selection."
-    )]
-    async fn doc_adjust(&self, Parameters(p): Parameters<DocAdjust>) -> CallToolResult {
-        res(self.studio().doc_adjust(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            region(&p.region),
-            p.hue.unwrap_or(0.0),
-            p.sat.unwrap_or(0.0),
-            p.lum.unwrap_or(0.0),
-        ))
-    }
-
-    #[tool(
-        description = "Edge-lit shading: lit rims toward `light_dir`, core shadow away from it, pushed `steps` along a ramp (or HSL-shifted: warm highlights, cool shadows). `mode` 'highlight'/'shadow' limits which side. Pass `ramp` (dark→light) to keep shading palette-true. One-call form/volume on a flat silhouette. `region` clips; honours an active selection."
-    )]
-    async fn doc_shade(&self, Parameters(p): Parameters<DocShade>) -> CallToolResult {
-        let ramp = p
-            .ramp
-            .as_ref()
-            .map(|r| r.iter().map(|c| rgba(c)).collect::<Vec<_>>());
-        res(self.studio().doc_shade(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.light_dir.as_deref().unwrap_or("top-left"),
-            p.steps.unwrap_or(1),
-            region(&p.region),
-            p.mode.as_deref().unwrap_or("both"),
-            ramp,
-        ))
-    }
-
-    #[tool(
-        description = "Volume shading: lay a rounded-form light gradient across a shape's *interior* and snap it to a dark→light `ramp` — a flat-filled blob gains real volume in one call (where doc_shade only lights rims). `form` sphere (default) / cylinder-h / cylinder-v / auto; 'auto' uses the silhouette's interior-distance so any shape works, not just an ellipse. `light_dir` places the highlight. `region` bounds it (else the opaque bbox); `ramp` omitted is derived from the mean fill colour. `strength` 0..1 spans the ramp. Honours an active selection."
-    )]
-    async fn doc_form(&self, Parameters(p): Parameters<DocForm>) -> CallToolResult {
-        let ramp = p
-            .ramp
-            .as_ref()
-            .map(|r| r.iter().map(|c| rgba(c)).collect::<Vec<_>>());
-        let studio = self.studio();
-        studio.auto_checkpoint(&p.doc_id, "form");
-        res(studio.doc_form(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.light_dir.as_deref().unwrap_or("top-left"),
-            p.form.as_deref().unwrap_or("sphere"),
-            region(&p.region),
-            ramp,
-            p.strength.unwrap_or(1.0),
-        ))
-    }
-
-    #[tool(
-        description = "Fill a `region` with an ordered dither of `color_a`/`color_b` (`pattern` checker/bayer2/bayer4/bayer8). `density` 0..1 biases toward color_b. `only_existing`=true repaints just pixels already color_a/color_b (turn a flat fill into a gradient-dither without spilling). The pixel-art way to fake a mid-tone between two ramp colours. `region` required unless a selection is active."
-    )]
-    async fn doc_dither(&self, Parameters(p): Parameters<DocDither>) -> CallToolResult {
-        res(self.studio().doc_dither(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            region(&p.region),
-            rgba(&p.color_a),
-            rgba(&p.color_b),
-            p.pattern.as_deref().unwrap_or("bayer4"),
-            p.density.unwrap_or(0.5),
-            p.only_existing.unwrap_or(false),
-        ))
-    }
-
-    #[tool(
-        description = "Pixel-perfect cleanup: erase L-corner doubles from 1px strokes (the extra pixel that thickens an elbow), iterating to a fixpoint. `color` restricts to that exact stroke colour; `region` clips. Returns `removed`. Clean up jagged hand-drawn or line-tool strokes. Honours an active selection."
-    )]
-    async fn doc_pixel_perfect(
-        &self,
-        Parameters(p): Parameters<DocPixelPerfect>,
-    ) -> CallToolResult {
-        let color = p.color.as_ref().map(|c| rgba(c));
-        res(self
-            .studio()
-            .doc_pixel_perfect(&p.doc_id, p.layer, p.frame, region(&p.region), color))
     }
 
     #[tool(
@@ -2509,6 +2118,15 @@ impl Atelier {
         res(self
             .studio()
             .doc_draw(&p.doc_id, p.layer, p.frame, &p.op, p.params))
+    }
+
+    #[tool(
+        description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?}; **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?}. All also accept opacity/blend_mode and honour an active doc_select. (Bloom-with-snap stays on doc_glow.)"
+    )]
+    async fn doc_fx(&self, Parameters(p): Parameters<DocFx>) -> CallToolResult {
+        res(self
+            .studio()
+            .doc_fx(&p.doc_id, p.layer, p.frame, &p.op, p.params))
     }
 
     // -- world-class-art tools (the art-quality pass) --
