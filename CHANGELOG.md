@@ -123,8 +123,13 @@ can finally *see* its own error to repair it. 105 tools, 198 tests.
     (`doc_stamp_image` and `doc_extract_to_layer` keep their own tools — image
     import and rigging; `doc_select`/`doc_select_wand` stay separate per round-2's
     wand-tolerance trap.)
+  - **`doc_ref`**`(op, …)` — `doc_set_reference` + `doc_import_clean` folded into
+    `set` (attach the comparison reference) / `import` (trace a cleaned image onto
+    a guide layer). The reference *readers* (`doc_ref_analyze`, `doc_ref_compare`,
+    `doc_diff_map`) stay discrete.
 
-  See `docs/CONSOLIDATION-ROUND3.md`. **66 tools.**
+  See `docs/CONSOLIDATION-ROUND3.md`. **65 tools** (from 105 at the start of the
+  refactor — the writer surface fused into op-dispatch tools, readers kept discrete).
 
 ### Fixed
 
