@@ -5,12 +5,16 @@
 //! one PNG per cel under `cels/`. There is no project/grouping layer — a document
 //! is the unit, addressed by its `id` (a slug derived from its name).
 
+// Drawing/region ops are inherently coordinate-heavy (layer, frame, x0..y1,
+// colour, …); the argument-count lint fights the domain here.
+#![allow(clippy::too_many_arguments)]
+
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde_json::{json, Value};
 
-use crate::document::Document;
+use atelier_core::document::Document;
 
 mod analysis;
 mod craft;
@@ -93,10 +97,10 @@ impl Studio {
         }
     }
 
-    /// Test-only: build a studio rooted at an explicit directory (avoids the
-    /// process-global ATELIER_HOME env var, so tests stay parallel-safe).
-    #[cfg(test)]
-    pub(crate) fn with_docs_dir(docs_dir: PathBuf) -> Studio {
+    /// Build a studio rooted at an explicit documents directory, bypassing the
+    /// process-global `ATELIER_HOME` env var. Lets an embedder (or a test) point
+    /// a studio at an arbitrary location without mutating process state.
+    pub fn with_docs_dir(docs_dir: PathBuf) -> Studio {
         let _ = fs::create_dir_all(&docs_dir);
         Studio {
             docs_dir,
@@ -176,6 +180,11 @@ impl Studio {
     // -- library ------------------------------------------------------------
 
     pub fn doc_create(&self, name: &str, w: u32, h: u32) -> Result<Value, String> {
+        if w == 0 || h == 0 || w > 4096 || h > 4096 {
+            return Err(format!(
+                "canvas {w}x{h} out of range — width/height must be 1..=4096"
+            ));
+        }
         let id = self.unique_id(name);
         let dir = self.doc_dir(&id);
         fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
@@ -358,6 +367,12 @@ impl Studio {
         opacity: u8,
         blend: String,
     ) -> Result<Value, String> {
+        if !atelier_core::raster::valid_blend(&blend) {
+            return Err(format!(
+                "unknown blend '{blend}' — valid: {}",
+                atelier_core::raster::BLEND_NAMES
+            ));
+        }
         let (dir, mut doc) = self.open(id)?;
         let idx = doc.add_layer(name, opacity, blend);
         doc.save(&dir)?;
@@ -379,9 +394,53 @@ impl Studio {
         opacity: Option<u8>,
         blend: Option<String>,
     ) -> Result<Value, String> {
+        if let Some(b) = &blend {
+            if !atelier_core::raster::valid_blend(b) {
+                return Err(format!(
+                    "unknown blend '{b}' — valid: {}",
+                    atelier_core::raster::BLEND_NAMES
+                ));
+            }
+        }
         let (dir, mut doc) = self.open(id)?;
         doc.set_layer(layer, visible, opacity, blend)?;
         self.commit(&dir, id, doc)
+    }
+
+    /// One-tool dispatch over layer structure — `op`: `add` (new layer on top) |
+    /// `set` (visibility/opacity/blend of layer `index`) | `move` | `insert` |
+    /// `delete` | `rename` | `duplicate` | `merge_down`. Routes to the kept
+    /// `doc_add_layer` / `doc_set_layer` / `layer_ops` methods.
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_layer(
+        &self,
+        id: &str,
+        op: &str,
+        index: Option<usize>,
+        to_index: Option<usize>,
+        name: Option<String>,
+        visible: Option<bool>,
+        opacity: Option<u8>,
+        blend: Option<String>,
+    ) -> Result<Value, String> {
+        match op {
+            "add" => self.doc_add_layer(
+                id,
+                name,
+                opacity.unwrap_or(255),
+                blend.unwrap_or_else(|| "normal".into()),
+            ),
+            "set" => self.doc_set_layer(id, index.unwrap_or(0), visible, opacity, blend),
+            _ => self.layer_ops(
+                id,
+                op,
+                index.unwrap_or(0),
+                to_index,
+                name,
+                opacity.unwrap_or(255),
+                blend.unwrap_or_else(|| "normal".into()),
+            ),
+        }
     }
 
     pub fn doc_add_frame(
@@ -391,6 +450,15 @@ impl Studio {
         copy_from: Option<usize>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
+        if let Some(src) = copy_from {
+            if src >= doc.meta.frames.len() {
+                return Err(format!(
+                    "copy_from {src} out of range — document has {} frame(s) (0..={})",
+                    doc.meta.frames.len(),
+                    doc.meta.frames.len().saturating_sub(1)
+                ));
+            }
+        }
         let idx = doc.add_frame(duration_ms, copy_from);
         doc.save(&dir)?;
         // Slim ack — echoing the whole structure() grew O(layers×frames) per
@@ -409,6 +477,29 @@ impl Studio {
         self.commit(&dir, id, doc)
     }
 
+    /// One-tool dispatch over frame lifecycle + timing — `op`: `add` (append,
+    /// optional `copy_from`) | `duration` (set frame `frame`'s ms) | `delete` |
+    /// `insert` | `duplicate` | `move`. Routes to the kept `doc_add_frame` /
+    /// `doc_set_frame_duration` / `doc_frame_ops`. (Pivot, boxes, tags and
+    /// keyframe motion keep their own tools.)
+    pub fn doc_frame(
+        &self,
+        id: &str,
+        op: &str,
+        frame: Option<usize>,
+        copy_from: Option<usize>,
+        to_index: Option<usize>,
+        duration_ms: Option<u32>,
+    ) -> Result<Value, String> {
+        match op {
+            "add" => self.doc_add_frame(id, duration_ms.unwrap_or(100), copy_from),
+            "duration" => {
+                self.doc_set_frame_duration(id, frame.unwrap_or(0), duration_ms.unwrap_or(100))
+            }
+            _ => self.doc_frame_ops(id, op, frame.unwrap_or(0), to_index, duration_ms),
+        }
+    }
+
     pub fn doc_add_tag(
         &self,
         id: &str,
@@ -417,6 +508,11 @@ impl Studio {
         to: usize,
         direction: &str,
     ) -> Result<Value, String> {
+        if !matches!(direction, "forward" | "reverse" | "pingpong") {
+            return Err(format!(
+                "unknown tag direction '{direction}' — valid: forward | reverse | pingpong"
+            ));
+        }
         let (dir, mut doc) = self.open(id)?;
         doc.add_tag(name, from, to, direction)?;
         self.commit(&dir, id, doc)
@@ -487,48 +583,6 @@ impl Studio {
 
     // -- render / export ----------------------------------------------------
 
-    /// Render a frame preview: writes the PNG to disk (for file workflows) AND
-    /// returns the encoded bytes so the MCP layer can inline the image — the
-    /// agent sees the pixels in the same turn instead of needing a file read.
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_render(
-        &self,
-        id: &str,
-        frame: usize,
-        out_path: Option<&str>,
-        scale: Option<u32>,
-        region: Option<(i32, i32, i32, i32)>,
-        onion: bool,
-        tile: u32,
-        max_size: Option<u32>,
-    ) -> Result<(Vec<u8>, Value), String> {
-        let (dir, doc) = self.open(id)?;
-        // Adaptive default: big enough to judge a small sprite, clamped so a
-        // large canvas doesn't waste vision tokens.
-        let scale = scale.unwrap_or_else(|| preview_scale(doc.meta.w, doc.meta.h));
-        let out = match out_path {
-            Some(p) => PathBuf::from(p),
-            None => dir.join(format!("preview_f{}.png", frame)),
-        };
-        if frame >= doc.meta.frames.len() {
-            return Err(format!(
-                "no frame {} (frames={})",
-                frame,
-                doc.meta.frames.len()
-            ));
-        }
-        let img = doc.render_preview(frame, scale.max(1), region, onion, tile, max_size)?;
-        let (w, h) = (img.width(), img.height());
-        img.save(&out).map_err(|e| e.to_string())?;
-        let mut buf = std::io::Cursor::new(Vec::new());
-        img.write_to(&mut buf, image::ImageFormat::Png)
-            .map_err(|e| e.to_string())?;
-        Ok((
-            buf.into_inner(),
-            json!({"path": out.to_string_lossy(), "size": [w, h], "frame": frame}),
-        ))
-    }
-
     /// Encode one cel (`layer` Some) or the flattened frame (`layer` None) as an
     /// adaptively-scaled PNG for same-turn inline previews after a mutation.
     pub fn preview_png(
@@ -577,6 +631,41 @@ impl Studio {
             let _ = fs::create_dir_all(p);
         }
         doc.export_sheet(Path::new(out_path), scale.max(1))
+    }
+
+    /// One-tool dispatch over the per-document file exports — `op`: `sheet` |
+    /// `anim` | `tileset`. Shared `out_path`/`scale`; op-specific params come
+    /// flattened (anim: `format`,`tag`; tileset: `tile_w`,`tile_h`). Generators
+    /// (`wang`) and library-level exports (`export_all`/`export_atlas`) stay
+    /// their own tools.
+    pub fn doc_export(
+        &self,
+        id: &str,
+        op: &str,
+        out_path: &str,
+        scale: Option<u32>,
+        params: &serde_json::Map<String, Value>,
+    ) -> Result<Value, String> {
+        let geti = |k: &str| params.get(k).and_then(|v| v.as_u64()).map(|n| n as u32);
+        let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
+        match op {
+            "sheet" => self.doc_export_sheet(id, out_path, scale.unwrap_or(4)),
+            "anim" => match gets("format").unwrap_or("gif") {
+                "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(4), gets("tag")),
+                "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(4), gets("tag")),
+                other => Err(format!(
+                    "doc_export op=anim: unknown format '{other}' — use gif|apng"
+                )),
+            },
+            "tileset" => {
+                let tw = geti("tile_w").ok_or("doc_export op=tileset needs tile_w")?;
+                let th = geti("tile_h").ok_or("doc_export op=tileset needs tile_h")?;
+                self.export_tileset(id, tw, th, scale.unwrap_or(1), out_path)
+            }
+            other => Err(format!(
+                "doc_export: unknown op '{other}' — use sheet|anim|tileset (wang/atlas/all are their own tools)"
+            )),
+        }
     }
 
     pub fn doc_export_gif(
@@ -959,6 +1048,22 @@ impl Studio {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_stroke(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        points: Vec<(i32, i32, i32)>,
+        color: [u8; 4],
+        aa: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        self.edit_masked(id, layer, frame, |d| {
+            d.stroke(layer, frame, &points, color, aa, snap)
+        })
+    }
+
     pub fn doc_fill(
         &self,
         id: &str,
@@ -1128,6 +1233,7 @@ impl Studio {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn doc_glow(
         &self,
         id: &str,
@@ -1137,9 +1243,19 @@ impl Studio {
         radius: i32,
         intensity: u8,
         mode: &str,
+        snap: Option<atelier_core::document::AlphaSnap>,
     ) -> Result<Value, String> {
         self.edit_masked(id, layer, frame, |d| {
-            d.glow(layer, frame, color, radius, intensity, mode)
+            d.glow(layer, frame, color, radius, intensity, mode)?;
+            // Re-snap the continuous-tone bloom back onto the locked palette so
+            // it stays crisp pixel art (the FX-palette-blowup fix).
+            if let Some(a) = snap {
+                if !d.meta.palette.is_empty() {
+                    let pal = d.meta.palette.clone();
+                    d.snap_to_palette(&pal, Some(layer), Some(frame), a);
+                }
+            }
+            Ok(())
         })
     }
 
@@ -1154,6 +1270,25 @@ impl Studio {
     ) -> Result<Value, String> {
         self.edit_masked(id, layer, frame, |d| {
             d.bevel(layer, frame, light, dark, depth)
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_rim_light(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        color: [u8; 4],
+        az_deg: f32,
+        width: i32,
+        falloff: f32,
+        dark: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        self.edit_masked(id, layer, frame, |d| {
+            d.rim_light(layer, frame, color, az_deg, width, falloff, dark, snap)
+                .map(|_| ())
         })
     }
 
@@ -1196,21 +1331,6 @@ impl Studio {
         })
     }
 
-    pub fn doc_bezier(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        points: Vec<(i32, i32)>,
-        color: [u8; 4],
-        size: i32,
-        steps: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.bezier(layer, frame, &points, color, size, steps)
-        })
-    }
-
     /// Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at
     /// integer pixel `size`. Masked by the active selection. Returns the rendered
     /// `width` in document pixels so callers can lay out the next element.
@@ -1237,28 +1357,6 @@ impl Studio {
 
     /// Generate a hue-shifted shading ramp from a base colour. If `set_doc` is
     /// given, also store it as that document's palette. Returns the colours.
-    pub fn palette_ramp(
-        &self,
-        base: [u8; 4],
-        count: usize,
-        hue_shift: f32,
-        light_range: f32,
-        sat_shift: f32,
-        set_doc: Option<&str>,
-    ) -> Result<Value, String> {
-        let ramp = crate::raster::make_ramp(base, count, hue_shift, light_range, sat_shift);
-        if let Some(id) = set_doc {
-            let (dir, mut doc) = self.open(id)?;
-            doc.set_palette(ramp.clone());
-            doc.save(&dir)?;
-        }
-        let hex: Vec<String> = ramp
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]))
-            .collect();
-        Ok(json!({"count": ramp.len(), "colors": ramp, "hex": hex, "set_doc": set_doc}))
-    }
-
     #[allow(clippy::too_many_arguments)]
     pub fn doc_gradient(
         &self,
@@ -1275,11 +1373,24 @@ impl Studio {
         seed: u64,
         region: Option<(i32, i32, i32, i32)>,
         blend: bool,
+        snap: bool,
     ) -> Result<Value, String> {
         self.edit_masked(id, layer, frame, |d| {
             d.gradient(
                 layer, frame, kind, x0, y0, x1, y1, stops, dither, seed, region, blend,
-            )
+            )?;
+            // On-palette discipline: pull the interpolated gradient back to the
+            // locked palette (RGB only — soft falloff alpha is preserved).
+            if snap && !d.meta.palette.is_empty() {
+                let pal = d.meta.palette.clone();
+                d.snap_to_palette(
+                    &pal,
+                    Some(layer),
+                    Some(frame),
+                    atelier_core::document::AlphaSnap::Preserve,
+                );
+            }
+            Ok(())
         })
     }
 
@@ -1516,19 +1627,31 @@ impl Studio {
 
     // -- selection / region / clipboard -------------------------------------
 
-    /// Read one pixel — RGBA + a `#rrggbbaa` hex string for convenience.
+    /// Read one pixel — RGBA + a `#rrggbbaa` hex string. Test-only helper; the
+    /// `doc_get_pixel` tool was removed (use `doc_dump_region` in production).
+    #[cfg(test)]
     pub fn doc_get_pixel(
         &self,
         id: &str,
-        layer: usize,
+        layer: Option<usize>,
         frame: usize,
         x: i32,
         y: i32,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let p = doc.get_pixel(layer, frame, x, y)?;
+        let p = match layer {
+            Some(l) => doc.get_pixel(l, frame, x, y)?,
+            None => {
+                let img = doc.flatten(frame);
+                if x < 0 || y < 0 || x as u32 >= img.width() || y as u32 >= img.height() {
+                    [0, 0, 0, 0]
+                } else {
+                    img.get_pixel(x as u32, y as u32).0
+                }
+            }
+        };
         let hex = format!("#{:02x}{:02x}{:02x}{:02x}", p[0], p[1], p[2], p[3]);
-        Ok(json!({"x": x, "y": y, "rgba": p, "hex": hex}))
+        Ok(json!({"x": x, "y": y, "rgba": p, "hex": hex, "layer": layer}))
     }
 
     /// Copy a region into the shared clipboard (does not modify the document).
@@ -1717,6 +1840,43 @@ impl Studio {
         self.edit(id, |d| d.clear_region(layer, frame, x0, y0, x1, y1))
     }
 
+    /// One-tool dispatch over region + clipboard ops — `op`: `copy` | `cut` |
+    /// `clear` (the `[x0,y0,x1,y1]` rect) | `move` (rect by `dx,dy`) | `paste`
+    /// (the clipboard at `x,y`, `blend` source-over by default). Routes to the
+    /// kept region methods. (`stamp_image` and `extract_to_layer` keep their own
+    /// tools — image import and rigging, not region mobility.)
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_region(
+        &mut self,
+        id: &str,
+        op: &str,
+        layer: usize,
+        frame: usize,
+        x0: Option<i32>,
+        y0: Option<i32>,
+        x1: Option<i32>,
+        y1: Option<i32>,
+        dx: Option<i32>,
+        dy: Option<i32>,
+        x: Option<i32>,
+        y: Option<i32>,
+        blend: Option<bool>,
+    ) -> Result<Value, String> {
+        let v = |o: Option<i32>| o.unwrap_or(0);
+        match op {
+            "copy" => self.doc_copy_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
+            "cut" => self.doc_cut_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
+            "clear" => self.doc_clear_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
+            "move" => {
+                self.doc_move_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1), v(dx), v(dy))
+            }
+            "paste" => self.doc_paste(id, layer, frame, v(x), v(y), blend.unwrap_or(true)),
+            other => Err(format!(
+                "doc_region: unknown op '{other}' — use copy|cut|paste|move|clear"
+            )),
+        }
+    }
+
     // -- pivots / palette ---------------------------------------------------
 
     pub fn doc_set_pivot(
@@ -1734,7 +1894,7 @@ impl Studio {
         &self,
         id: &str,
         frame: usize,
-        boxes: Vec<crate::document::BoxMeta>,
+        boxes: Vec<atelier_core::document::BoxMeta>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         doc.set_frame_boxes(frame, boxes)?;
@@ -1900,7 +2060,7 @@ impl Studio {
         // Strict pre-flight: reject typo'd / wrong-shape ops up front so the whole
         // batch fails cleanly instead of silently defaulting bad params.
         for (i, op) in ops.iter().enumerate() {
-            crate::document::validate_batch_op(i, op)?;
+            atelier_core::document::validate_batch_op(i, op)?;
         }
         let run = |doc: &mut Document| -> Result<(), String> {
             for (i, op) in ops.iter().enumerate() {
@@ -1919,6 +2079,72 @@ impl Studio {
         let mut ack = Self::change_ack(id, &before, &after);
         ack["ops"] = json!(ops.len());
         Ok(ack)
+    }
+
+    /// Apply ONE drawing op to a cel — the single-op form of [`doc_batch`],
+    /// scoped to the "add marks" vocabulary (geometry, fills, text, procedural).
+    /// `params` is the op's flattened args; the op name is injected and the call
+    /// routes through the same validate-and-apply path a one-element batch uses,
+    /// so there is one source of truth for the op schema and behaviour.
+    pub fn doc_draw(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        op: &str,
+        mut params: serde_json::Map<String, Value>,
+    ) -> Result<Value, String> {
+        const DRAW_OPS: &[&str] = &[
+            "pencil", "line", "rect", "ellipse", "polyline", "polygon", "stroke", "fill", "bucket",
+            "gradient", "scatter", "noise", "text", "fill_cel",
+        ];
+        if !DRAW_OPS.contains(&op) {
+            return Err(format!(
+                "doc_draw: '{op}' is not a draw op — use one of [{}] (filters and lighting live on their own tools)",
+                DRAW_OPS.join(", ")
+            ));
+        }
+        params.insert("op".into(), json!(op));
+        self.doc_batch(id, layer, frame, vec![Value::Object(params)])
+    }
+
+    /// Apply ONE transform/effect op to a cel — the single-op form of
+    /// [`doc_batch`](Self::doc_batch) for the ops that REWORK existing pixels
+    /// (filters, lighting, colour, geometry); the complement of
+    /// [`doc_draw`](Self::doc_draw), which adds new marks. Same validated dispatch.
+    /// (`glow` keeps its own tool — its on-palette `snap` is not a batch op.)
+    pub fn doc_fx(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        op: &str,
+        mut params: serde_json::Map<String, Value>,
+    ) -> Result<Value, String> {
+        const FX_OPS: &[&str] = &[
+            "blur",
+            "outline",
+            "drop_shadow",
+            "bevel",
+            "shade",
+            "form",
+            "dither",
+            "pixel_perfect",
+            "flip",
+            "shift",
+            "symmetry",
+            "quantize",
+            "replace_color",
+            "adjust",
+        ];
+        if !FX_OPS.contains(&op) {
+            return Err(format!(
+                "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow has its own tool)",
+                FX_OPS.join(", ")
+            ));
+        }
+        params.insert("op".into(), json!(op));
+        self.doc_batch(id, layer, frame, vec![Value::Object(params)])
     }
 }
 
@@ -1944,6 +2170,868 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    #[test]
+    fn create_rejects_degenerate_and_huge_canvases() {
+        let s = studio("dims");
+        assert!(s.doc_create("zero", 0, 16).is_err());
+        assert!(s.doc_create("zero2", 16, 0).is_err());
+        assert!(s.doc_create("huge", 100000, 100000).is_err());
+        assert!(s.doc_create("ok", 32, 32).is_ok());
+    }
+
+    #[test]
+    fn add_layer_and_set_layer_reject_unknown_blend() {
+        let s = studio("blend");
+        s.doc_create("c", 8, 8).unwrap();
+        assert!(s.doc_add_layer("c", None, 255, "multiply".into()).is_ok());
+        assert!(s.doc_add_layer("c", None, 255, "mutiply".into()).is_err()); // typo
+        assert!(s
+            .doc_set_layer("c", 0, None, None, Some("glow".into()))
+            .is_err());
+    }
+
+    #[test]
+    fn add_tag_rejects_unknown_direction() {
+        let s = studio("dir");
+        s.doc_create("c", 8, 8).unwrap();
+        assert!(s.doc_add_tag("c", "walk", 0, 0, "pingpong").is_ok());
+        assert!(s.doc_add_tag("c", "bad", 0, 0, "ping-pong").is_err());
+    }
+
+    #[test]
+    fn add_frame_rejects_out_of_range_copy_from() {
+        let s = studio("cf");
+        s.doc_create("c", 8, 8).unwrap();
+        assert!(s.doc_add_frame("c", 100, Some(0)).is_ok());
+        assert!(s.doc_add_frame("c", 100, Some(9)).is_err());
+    }
+
+    #[test]
+    fn burst_dissipates_instead_of_staying_opaque() {
+        let s = studio("burst");
+        s.doc_create("b", 24, 24).unwrap();
+        s.burst("b", 0, 12, 12, 4, 10, "ring", [255, 220, 80, 255], None)
+            .unwrap();
+        let (_d, doc) = s.open("b").unwrap();
+        let max_alpha = |f: usize| {
+            (0..24)
+                .flat_map(|y| (0..24).map(move |x| (x, y)))
+                .map(|(x, y)| doc.get_pixel(0, f, x, y).unwrap()[3])
+                .max()
+                .unwrap()
+        };
+        let last = doc.meta.frames.len() - 1;
+        assert_eq!(max_alpha(0), 255, "flash frame should be solid");
+        assert!(
+            max_alpha(last) < 200,
+            "rim should have faded out, got {}",
+            max_alpha(last)
+        );
+    }
+
+    #[test]
+    fn gradient_snaps_on_palette_when_locked() {
+        let s = studio("grad");
+        s.doc_create("g", 16, 4).unwrap();
+        let pal = vec![[20, 20, 60, 255], [200, 220, 255, 255]];
+        s.doc_set_palette("g", pal.clone()).unwrap();
+        // smooth (none-dither) gradient between the two palette ends, snap default on
+        s.doc_gradient(
+            "g",
+            0,
+            0,
+            "linear",
+            0,
+            0,
+            15,
+            0,
+            vec![(0.0, pal[0]), (1.0, pal[1])],
+            "none",
+            0,
+            None,
+            false,
+            true,
+        )
+        .unwrap();
+        let (_d, doc) = s.open("g").unwrap();
+        let mut colors = std::collections::HashSet::new();
+        for x in 0..16 {
+            let p = doc.get_pixel(0, 0, x, 0).unwrap();
+            if p[3] > 0 {
+                colors.insert(p);
+            }
+        }
+        assert!(
+            colors.iter().all(|c| pal.contains(c)),
+            "off-palette: {colors:?}"
+        );
+    }
+
+    #[test]
+    fn batch_gradient_snaps_on_palette_like_standalone() {
+        // Parity fix: the batch gradient op used to skip the on-palette re-snap.
+        let s = studio("batchgrad");
+        s.doc_create("b", 16, 4).unwrap();
+        let pal = vec![[20, 20, 60, 255], [200, 220, 255, 255]];
+        s.doc_set_palette("b", pal.clone()).unwrap();
+        let op = json!({
+            "op": "gradient", "kind": "linear", "x0": 0, "y0": 0, "x1": 15, "y1": 0,
+            "stops": [{"pos": 0.0, "color": [20, 20, 60]}, {"pos": 1.0, "color": [200, 220, 255]}],
+            "dither": "none", "blend": false
+        });
+        s.doc_batch("b", 0, 0, vec![op]).unwrap();
+        let (_d, doc) = s.open("b").unwrap();
+        let mut cols = std::collections::HashSet::new();
+        for x in 0..16 {
+            let p = doc.get_pixel(0, 0, x, 0).unwrap();
+            if p[3] > 0 {
+                cols.insert(p);
+            }
+        }
+        assert!(
+            cols.iter().all(|c| pal.contains(c)),
+            "batch gradient left off-palette: {cols:?}"
+        );
+    }
+
+    #[test]
+    fn palette_mono_and_schemes() {
+        let s = studio("palette");
+        let mono = s
+            .palette(
+                [150, 90, 70, 255],
+                "mono",
+                5,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None,
+            )
+            .unwrap();
+        assert_eq!(mono["ramps"].as_array().unwrap().len(), 1);
+        assert_eq!(mono["count"], 5);
+        assert_eq!(mono["validation"]["monotonic_lightness"], true);
+        let tri = s
+            .palette(
+                [150, 90, 70, 255],
+                "triadic",
+                4,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None,
+            )
+            .unwrap();
+        assert_eq!(tri["ramps"].as_array().unwrap().len(), 3);
+        assert_eq!(tri["count"], 12);
+        assert!(s
+            .palette(
+                [1, 2, 3, 255],
+                "bogus",
+                5,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None
+            )
+            .is_err());
+        // set_doc stores the flattened palette on the document.
+        s.doc_create("pd", 4, 4).unwrap();
+        s.palette(
+            [120, 80, 60, 255],
+            "mono",
+            5,
+            None,
+            None,
+            20.0,
+            "arc",
+            true,
+            Some("pd"),
+        )
+        .unwrap();
+        assert_eq!(s.doc_info("pd").unwrap()["palette_len"], 5);
+    }
+
+    #[test]
+    fn get_pixel_none_reads_flattened_composite() {
+        let s = studio("getpix");
+        s.doc_create("g", 4, 4).unwrap();
+        s.doc_add_layer("g", None, 255, "normal".into()).unwrap();
+        s.doc_pencil("g", 1, 0, vec![(1, 1)], [10, 20, 30, 255], 1)
+            .unwrap();
+        // Reading layer 0 alone misses the pixel painted on layer 1.
+        assert_eq!(
+            s.doc_get_pixel("g", Some(0), 0, 1, 1).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+        // Omitting layer reads the visible (flattened) pixel.
+        assert_eq!(
+            s.doc_get_pixel("g", None, 0, 1, 1).unwrap()["rgba"],
+            json!([10, 20, 30, 255])
+        );
+    }
+
+    // Deterministic v1.1.0 -> v1.2.0 quality benchmark: the OLD way to make each
+    // thing (primitives that still exist) vs the NEW tool, scored on objective
+    // atelier metrics. No agent, no randomness — a reproducible regression guard.
+    // Run `cargo test --release quality_benchmark -- --nocapture` for the table.
+    #[test]
+    fn quality_benchmark() {
+        let s = studio("bench");
+        let distinct = |id: &str, w: u32, h: u32| -> usize {
+            let (_d, doc) = s.open(id).unwrap();
+            let mut set = std::collections::HashSet::new();
+            for y in 0..h as i32 {
+                for x in 0..w as i32 {
+                    let p = doc.get_pixel(0, 0, x, y).unwrap();
+                    if p[3] > 0 {
+                        set.insert(p);
+                    }
+                }
+            }
+            set.len()
+        };
+        let aa_count = |id: &str, w: u32, h: u32| -> usize {
+            let (_d, doc) = s.open(id).unwrap();
+            (0..h as i32)
+                .flat_map(|y| (0..w as i32).map(move |x| (x, y)))
+                .filter(|&(x, y)| {
+                    let a = doc.get_pixel(0, 0, x, y).unwrap()[3];
+                    a > 0 && a < 255
+                })
+                .count()
+        };
+        let col_h = |id: &str, x: i32, h: u32| -> usize {
+            let (_d, doc) = s.open(id).unwrap();
+            (0..h as i32)
+                .filter(|&y| doc.get_pixel(0, 0, x, y).unwrap()[3] > 0)
+                .count()
+        };
+
+        // 1+2 tapered stroke: tip width + AA — old uniform polyline vs doc_stroke.
+        s.doc_create("b-strk-old", 48, 16).unwrap();
+        s.doc_polyline(
+            "b-strk-old",
+            0,
+            0,
+            vec![(4, 8), (16, 4), (32, 4), (44, 8)],
+            [255, 255, 255, 255],
+            3,
+            false,
+        )
+        .unwrap();
+        s.doc_create("b-strk-new", 48, 16).unwrap();
+        s.doc_stroke(
+            "b-strk-new",
+            0,
+            0,
+            vec![(4, 8, 1), (16, 4, 6), (32, 4, 6), (44, 8, 1)],
+            [255, 255, 255, 255],
+            true,
+            false,
+        )
+        .unwrap();
+        let (tip_old, tip_new) = (col_h("b-strk-old", 44, 16), col_h("b-strk-new", 44, 16));
+        let (aa_old, aa_new) = (
+            aa_count("b-strk-old", 48, 16),
+            aa_count("b-strk-new", 48, 16),
+        );
+
+        // 3 FX glow palette discipline — snap off (old) vs on (new) on 8 colours.
+        let pal8: Vec<[u8; 4]> = (0..8)
+            .map(|i| [(i * 32) as u8, (224 - i * 24) as u8, 128, 255])
+            .collect();
+        for (id, snap) in [
+            ("b-glow-old", None),
+            (
+                "b-glow-new",
+                Some(atelier_core::document::AlphaSnap::Opaque(64)),
+            ),
+        ] {
+            s.doc_create(id, 24, 24).unwrap();
+            s.doc_set_palette(id, pal8.clone()).unwrap();
+            s.doc_ellipse(id, 0, 0, 12, 12, 6, 6, [255, 224, 128, 255], true)
+                .unwrap();
+            s.doc_glow(id, 0, 0, Some([128, 200, 255, 255]), 4, 200, "screen", snap)
+                .unwrap();
+        }
+        let (glow_old, glow_new) = (
+            distinct("b-glow-old", 24, 24),
+            distinct("b-glow-new", 24, 24),
+        );
+
+        // 4 lit form value steps — flat fill (old) vs doc_form + doc_rim_light (new).
+        let ramp5 = vec![
+            [20, 15, 50, 255],
+            [60, 45, 100, 255],
+            [110, 80, 160, 255],
+            [165, 135, 205, 255],
+            [210, 190, 230, 255],
+        ];
+        for id in ["b-form-old", "b-form-new"] {
+            s.doc_create(id, 32, 32).unwrap();
+            s.doc_set_palette(id, ramp5.clone()).unwrap();
+            s.doc_ellipse(id, 0, 0, 16, 16, 12, 12, [110, 80, 160, 255], true)
+                .unwrap();
+        }
+        s.doc_form(
+            "b-form-new",
+            0,
+            0,
+            "top-left",
+            "sphere",
+            None,
+            Some(ramp5.clone()),
+            1.0,
+        )
+        .unwrap();
+        s.doc_rim_light(
+            "b-form-new",
+            0,
+            0,
+            [210, 190, 230, 255],
+            315.0,
+            2,
+            1.5,
+            false,
+            true,
+        )
+        .unwrap();
+        let (form_old, form_new) = (
+            distinct("b-form-old", 32, 32),
+            distinct("b-form-new", 32, 32),
+        );
+
+        // 5 ramp perceptual evenness — naive RGB lerp (old) vs OKLCh doc_palette.
+        let lerp = |a: u8, b: u8, t: f32| (a as f32 + (b as f32 - a as f32) * t).round() as u8;
+        let (lo, hi) = ([18u8, 12, 43], [208u8, 187, 228]);
+        let old_ramp: Vec<[u8; 4]> = (0..5)
+            .map(|i| {
+                let t = i as f32 / 4.0;
+                [
+                    lerp(lo[0], hi[0], t),
+                    lerp(lo[1], hi[1], t),
+                    lerp(lo[2], hi[2], t),
+                    255,
+                ]
+            })
+            .collect();
+        let np = s
+            .palette(
+                [110, 80, 165, 255],
+                "mono",
+                5,
+                None,
+                None,
+                20.0,
+                "arc",
+                false,
+                None,
+            )
+            .unwrap();
+        let new_ramp: Vec<[u8; 4]> = np["ramps"][0]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|c| {
+                let a = c.as_array().unwrap();
+                [
+                    a[0].as_i64().unwrap() as u8,
+                    a[1].as_i64().unwrap() as u8,
+                    a[2].as_i64().unwrap() as u8,
+                    255,
+                ]
+            })
+            .collect();
+        let l_spread = |ramp: &[[u8; 4]]| -> f32 {
+            let ls: Vec<f32> = ramp
+                .iter()
+                .map(|c| atelier_core::raster::srgb_to_oklab(*c).0)
+                .collect();
+            let steps: Vec<f32> = ls.windows(2).map(|w| w[1] - w[0]).collect();
+            steps.iter().cloned().fold(f32::MIN, f32::max)
+                - steps.iter().cloned().fold(f32::MAX, f32::min)
+        };
+        let (ramp_old, ramp_new) = (l_spread(&old_ramp), l_spread(&new_ramp));
+
+        println!("\n=== atelier quality benchmark (old method -> new tool) ===");
+        println!("{:<34}{:>9}{:>9}", "capability / metric", "OLD", "NEW");
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "slash tip width px (lower=tapered)", tip_old, tip_new
+        );
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "stroke AA pixels (higher=smooth)", aa_old, aa_new
+        );
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "glow distinct colours (lower=crisp)", glow_old, glow_new
+        );
+        println!(
+            "{:<34}{:>9}{:>9}",
+            "lit-form value steps (higher=form)", form_old, form_new
+        );
+        println!(
+            "{:<34}{:>9.3}{:>9.3}",
+            "ramp L-step spread (lower=even)", ramp_old, ramp_new
+        );
+
+        // Regression guard: the new path must win on every axis.
+        assert!(
+            tip_new < tip_old,
+            "stroke should taper thinner: {tip_old} -> {tip_new}"
+        );
+        assert!(
+            aa_new > aa_old,
+            "stroke should add AA: {aa_old} -> {aa_new}"
+        );
+        assert!(
+            glow_new < glow_old && glow_new <= 8,
+            "glow should stay on-palette: {glow_old} -> {glow_new}"
+        );
+        assert!(
+            form_new > form_old,
+            "form+rim should add value steps: {form_old} -> {form_new}"
+        );
+        assert!(
+            ramp_new < ramp_old,
+            "OKLCh ramp should be more even than RGB lerp: {ramp_old} -> {ramp_new}"
+        );
+    }
+
+    fn humanoid_joints() -> std::collections::HashMap<String, (i32, i32)> {
+        [
+            ("head", (24, 8)),
+            ("shoulder_l", (20, 16)),
+            ("shoulder_r", (28, 16)),
+            ("elbow_l", (15, 22)),
+            ("elbow_r", (33, 22)),
+            ("hand_l", (12, 14)),
+            ("hand_r", (37, 28)),
+            ("hip_l", (21, 30)),
+            ("hip_r", (27, 30)),
+            ("knee_l", (17, 38)),
+            ("knee_r", (31, 38)),
+            ("foot_l", (14, 46)),
+            ("foot_r", (34, 46)),
+        ]
+        .iter()
+        .map(|(k, v)| (k.to_string(), *v))
+        .collect()
+    }
+
+    #[test]
+    fn figure_is_one_connected_component() {
+        let s = studio("figure");
+        s.doc_create("f", 48, 48).unwrap();
+        let j = humanoid_joints();
+        s.figure("f", 0, 0, &j, [70, 110, 200, 255], 3, 6, 4, false, false)
+            .unwrap();
+        // The capsules share joint endpoints, so the whole body is one blob.
+        let rep = s.doc_components("f", 0, Some(0), 8, None, 1).unwrap();
+        assert_eq!(
+            rep["count"], 1,
+            "figure should be a single connected silhouette: {rep}"
+        );
+    }
+
+    #[test]
+    fn figure_rejects_missing_joint() {
+        let s = studio("figure-bad");
+        s.doc_create("f", 48, 48).unwrap();
+        let mut j = humanoid_joints();
+        j.remove("hand_l");
+        assert!(s
+            .figure("f", 0, 0, &j, [70, 110, 200, 255], 3, 6, 4, false, false)
+            .is_err());
+    }
+
+    #[test]
+    fn walk_generates_tagged_frames_with_motion() {
+        let s = studio("walk");
+        s.doc_create("w", 48, 48).unwrap();
+        s.walk(
+            "w",
+            0,
+            &humanoid_joints(),
+            8,
+            12,
+            5,
+            1,
+            6,
+            [70, 110, 200, 255],
+            3,
+            6,
+            4,
+            false,
+            false,
+        )
+        .unwrap();
+        let (_d, doc) = s.open("w").unwrap();
+        assert_eq!(doc.meta.frames.len(), 8);
+        assert!(
+            doc.meta.tags.iter().any(|t| t.name == "walk"),
+            "walk tag missing"
+        );
+        // frame 0 vs the half-cycle frame 4 must differ (the legs have swapped).
+        let diff = (0..48)
+            .flat_map(|y| (0..48).map(move |x| (x, y)))
+            .filter(|&(x, y)| {
+                doc.get_pixel(0, 0, x, y).unwrap() != doc.get_pixel(0, 4, x, y).unwrap()
+            })
+            .count();
+        assert!(
+            diff > 20,
+            "walk should show motion across the cycle, diff={diff}"
+        );
+    }
+
+    #[test]
+    #[ignore]
+    fn walk_demo_renders() {
+        let s = studio("walk-demo");
+        s.doc_create("stroll", 48, 48).unwrap();
+        s.doc_set_palette("stroll", vec![[40, 60, 120, 255], [70, 110, 200, 255]])
+            .unwrap();
+        s.walk(
+            "stroll",
+            0,
+            &humanoid_joints(),
+            8,
+            13,
+            5,
+            1,
+            7,
+            [70, 110, 200, 255],
+            3,
+            7,
+            4,
+            true,
+            true,
+        )
+        .unwrap();
+        for f in [0usize, 2, 4, 6] {
+            s.look(
+                "stroll",
+                f,
+                Some(6),
+                None,
+                "render",
+                4,
+                false,
+                false,
+                false,
+                None,
+                None,
+                Some(&format!("/tmp/atelier-walk-{f}.png")),
+            )
+            .unwrap();
+        }
+        println!("wrote /tmp/atelier-walk-0/2/4/6.png");
+    }
+
+    #[test]
+    #[ignore]
+    fn figure_demo_renders() {
+        let s = studio("figure-demo");
+        s.doc_create("hero", 48, 48).unwrap();
+        s.doc_set_palette("hero", vec![[40, 60, 120, 255], [70, 110, 200, 255]])
+            .unwrap();
+        s.figure(
+            "hero",
+            0,
+            0,
+            &humanoid_joints(),
+            [70, 110, 200, 255],
+            3,
+            7,
+            4,
+            true,
+            true,
+        )
+        .unwrap();
+        s.look(
+            "hero",
+            0,
+            Some(6),
+            None,
+            "render",
+            4,
+            false,
+            false,
+            false,
+            None,
+            None,
+            Some("/tmp/atelier-demo-figure-hero.png"),
+        )
+        .unwrap();
+        println!("wrote /tmp/atelier-demo-figure-hero.png");
+    }
+
+    // Visual: relight rounding + burst dissipation. Ignored; run with
+    // cargo test --release quality_demo2 -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn quality_demo2_renders() {
+        let s = studio("quality-demo2");
+        // Relit sphere — should read as a smooth round dome, not faceted.
+        s.doc_create("sphere", 48, 48).unwrap();
+        s.doc_ellipse("sphere", 0, 0, 24, 24, 16, 16, [150, 90, 70, 255], true)
+            .unwrap();
+        s.relight(
+            "sphere",
+            0,
+            0,
+            None,
+            225.0,
+            45.0,
+            1.1,
+            [255, 240, 210],
+            0.35,
+            [120, 150, 200],
+            0.4,
+            [255, 255, 255],
+            0.25,
+            [80, 90, 120],
+            1.0,
+            None,
+        )
+        .unwrap();
+        s.look(
+            "sphere",
+            0,
+            Some(6),
+            None,
+            "render",
+            4,
+            false,
+            false,
+            false,
+            None,
+            None,
+            Some("/tmp/atelier-demo-sphere.png"),
+        )
+        .unwrap();
+        // Burst — render a mid frame; should be a faint expanding ring.
+        s.doc_create("shock", 32, 32).unwrap();
+        s.burst("shock", 0, 16, 16, 5, 14, "ring", [255, 220, 90, 255], None)
+            .unwrap();
+        s.look(
+            "shock",
+            3,
+            Some(8),
+            None,
+            "render",
+            4,
+            false,
+            false,
+            false,
+            None,
+            None,
+            Some("/tmp/atelier-demo-burst.png"),
+        )
+        .unwrap();
+        // RotSprite rotation — a 2-tone bar rotated 35° should stay crisp and
+        // on-palette (no blurred fringe), not shredded.
+        s.doc_create("bar", 40, 40).unwrap();
+        s.doc_set_palette("bar", vec![[210, 60, 50, 255], [240, 220, 120, 255]])
+            .unwrap();
+        s.doc_rect("bar", 0, 0, 8, 17, 31, 22, [210, 60, 50, 255], true, 1)
+            .unwrap();
+        s.doc_rect("bar", 0, 0, 8, 17, 31, 19, [240, 220, 120, 255], true, 1)
+            .unwrap();
+        s.transform_cel(
+            "bar",
+            0,
+            0,
+            None,
+            35.0,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            "rotsprite",
+            true,
+            true,
+        )
+        .unwrap();
+        s.look(
+            "bar",
+            0,
+            Some(7),
+            None,
+            "render",
+            4,
+            false,
+            false,
+            false,
+            None,
+            None,
+            Some("/tmp/atelier-demo-rotate.png"),
+        )
+        .unwrap();
+        let (_d, doc) = s.open("bar").unwrap();
+        let mut cols = std::collections::HashSet::new();
+        for y in 0..40 {
+            for x in 0..40 {
+                let p = doc.get_pixel(0, 0, x, y).unwrap();
+                if p[3] > 0 {
+                    cols.insert(p);
+                }
+            }
+        }
+        println!("ROTATED bar distinct colours: {} (palette 2)", cols.len());
+        println!("wrote /tmp/atelier-demo-sphere.png /tmp/atelier-demo-burst.png /tmp/atelier-demo-rotate.png");
+    }
+
+    // Visual demo of the F1 stroke core + F2 glow-snap. Ignored by default;
+    // run with: cargo test --release quality_demo -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn quality_demo_renders() {
+        use atelier_core::document::AlphaSnap;
+        let s = studio("quality-demo");
+
+        // --- A: a smooth tapered crescent SLASH ARC (was choppy stacked beziers)
+        s.doc_create("arc", 48, 48).unwrap();
+        s.doc_set_palette(
+            "arc",
+            vec![
+                [255, 255, 255, 255],
+                [120, 220, 255, 255],
+                [40, 130, 220, 255],
+            ],
+        )
+        .unwrap();
+        // fat in the middle, tapering to 1px points at both tips
+        let crescent = vec![
+            (41, 9, 0),
+            (44, 18, 5),
+            (41, 28, 7),
+            (33, 36, 5),
+            (23, 40, 0),
+        ];
+        s.doc_stroke("arc", 0, 0, crescent, [120, 220, 255, 255], true, true)
+            .unwrap();
+        let (_b, _m) = s
+            .look(
+                "arc",
+                0,
+                Some(8),
+                None,
+                "render",
+                4,
+                false,
+                false,
+                false,
+                None,
+                None,
+                Some("/tmp/atelier-demo-arc.png"),
+            )
+            .unwrap();
+
+        // --- B: a stick figure built from CAPSULE LIMBS (connected, tapered)
+        s.doc_create("figure", 48, 48).unwrap();
+        s.doc_set_palette("figure", vec![[30, 30, 40, 255], [90, 90, 110, 255]])
+            .unwrap();
+        let limbs: Vec<Vec<(i32, i32, i32)>> = vec![
+            vec![(24, 12, 7)],              // head (single round dot)
+            vec![(24, 16, 6), (24, 30, 6)], // torso
+            vec![(24, 19, 4), (36, 13, 3)], // sword arm, tapering
+            vec![(24, 20, 4), (13, 26, 3)], // off arm
+            vec![(24, 30, 5), (16, 44, 3)], // left leg
+            vec![(24, 30, 5), (33, 44, 3)], // right leg
+        ];
+        for l in limbs {
+            s.doc_stroke("figure", 0, 0, l, [30, 30, 40, 255], true, true)
+                .unwrap();
+        }
+        s.look(
+            "figure",
+            0,
+            Some(8),
+            None,
+            "render",
+            4,
+            false,
+            false,
+            false,
+            None,
+            None,
+            Some("/tmp/atelier-demo-figure.png"),
+        )
+        .unwrap();
+
+        // --- C: a glow orb — FX bloom auto-snapped back on-palette (F2)
+        s.doc_create("orb", 32, 32).unwrap();
+        let pal = vec![
+            [255, 255, 255, 255],
+            [180, 240, 255, 255],
+            [90, 200, 255, 255],
+            [30, 110, 210, 255],
+        ];
+        s.doc_set_palette("orb", pal.clone()).unwrap();
+        s.doc_ellipse("orb", 0, 0, 16, 16, 5, 5, [255, 255, 255, 255], true)
+            .unwrap();
+        s.doc_glow(
+            "orb",
+            0,
+            0,
+            Some([90, 200, 255, 255]),
+            5,
+            220,
+            "screen",
+            Some(AlphaSnap::Opaque(64)),
+        )
+        .unwrap();
+        s.look(
+            "orb",
+            0,
+            Some(8),
+            None,
+            "render",
+            4,
+            false,
+            false,
+            false,
+            None,
+            None,
+            Some("/tmp/atelier-demo-orb.png"),
+        )
+        .unwrap();
+
+        // Count distinct opaque colours in the orb cel — must stay on-palette.
+        let (_d, doc) = s.open("orb").unwrap();
+        let mut colors = std::collections::HashSet::new();
+        let (w, h) = (doc.meta.w, doc.meta.h);
+        for y in 0..h {
+            for x in 0..w {
+                let p = doc.get_pixel(0, 0, x as i32, y as i32).unwrap();
+                if p[3] > 0 {
+                    colors.insert(p);
+                }
+            }
+        }
+        println!(
+            "ORB distinct opaque colours after glow+snap: {}",
+            colors.len()
+        );
+        assert!(
+            colors.len() <= pal.len(),
+            "glow snap should hold the palette ({} colours), got {}",
+            pal.len(),
+            colors.len()
+        );
+        println!("wrote /tmp/atelier-demo-arc.png /tmp/atelier-demo-figure.png /tmp/atelier-demo-orb.png");
     }
 
     #[test]
@@ -2029,7 +3117,7 @@ mod tests {
 
     #[test]
     fn frame_boxes_persist_and_export_scaled() {
-        use crate::document::BoxMeta;
+        use atelier_core::document::BoxMeta;
         let s = studio("boxes");
         s.doc_create("b", 8, 8).unwrap();
         s.doc_set_frame_boxes(
@@ -2216,7 +3304,7 @@ mod tests {
             .unwrap();
         s.doc_copy_region("src", 0, 0, 2, 2, 2, 2).unwrap();
         s.doc_paste("dst", 0, 0, 5, 5, false).unwrap();
-        let px = s.doc_get_pixel("dst", 0, 0, 5, 5).unwrap();
+        let px = s.doc_get_pixel("dst", Some(0), 0, 5, 5).unwrap();
         assert_eq!(px["rgba"], json!([7, 8, 9, 255]));
         assert_eq!(px["hex"], "#070809ff");
     }
@@ -2237,11 +3325,11 @@ mod tests {
             .unwrap();
         s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 2, 2).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 2, 2).unwrap()["rgba"],
             json!([9, 9, 9, 255])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 6, 6).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // Clearing the selection lets a fill cover everything again.
@@ -2249,7 +3337,7 @@ mod tests {
             .unwrap();
         s.doc_fill("d", 0, 0, 0, 0, [1, 2, 3, 255], 0).unwrap();
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 6, 6).unwrap()["rgba"],
             json!([1, 2, 3, 255])
         );
     }
@@ -2267,7 +3355,7 @@ mod tests {
         assert!(err.contains("stale"), "got: {err}");
         // Nothing was painted — the op refused rather than running unmasked.
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 0, 0).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // Clearing the selection unblocks painting.
@@ -2298,16 +3386,16 @@ mod tests {
             .unwrap();
         assert_eq!(r["painted"], json!(3));
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 1, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 1, 0).unwrap()["rgba"],
             json!([10, 10, 10, 255])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 1, 1).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 1, 1).unwrap()["rgba"],
             json!([200, 50, 50, 255])
         );
         // '.' left the pixel untouched.
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 0, 0).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         // Unknown character is an actionable error; out-of-range index too.
@@ -2351,7 +3439,7 @@ mod tests {
         s.doc_fill("d", 0, 0, 4, 4, [101, 100, 100, 255], 16)
             .unwrap();
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 0, 0).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 0, 0).unwrap()["rgba"],
             json!([101, 100, 100, 255])
         );
     }
@@ -2377,11 +3465,11 @@ mod tests {
         .unwrap();
         // inside the selection a colour was painted; outside stays transparent.
         assert_ne!(
-            s.doc_get_pixel("d", 0, 0, 2, 2).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 2, 2).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
         assert_eq!(
-            s.doc_get_pixel("d", 0, 0, 6, 6).unwrap()["rgba"],
+            s.doc_get_pixel("d", Some(0), 0, 6, 6).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
     }

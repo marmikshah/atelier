@@ -18,51 +18,16 @@
 
 use std::process::Stdio;
 
-use serde::Deserialize;
 use serde_json::{json, Value};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 
+// The recipe format lives in the library crate (shared with the Recorder that
+// writes it); the runner below only consumes it.
+use atelier_mcp::recipe::{Recipe, Step};
+
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
 const USAGE: &str = "usage: atelier replay <recipe.json> [--home DIR]";
-
-/// A replay recipe: a named, described sequence of tool calls.
-#[derive(Debug, Deserialize)]
-pub(crate) struct Recipe {
-    pub(crate) name: String,
-    pub(crate) description: String,
-    pub(crate) steps: Vec<Step>,
-}
-
-/// One scripted tool call.
-#[derive(Debug, Deserialize)]
-pub(crate) struct Step {
-    pub(crate) tool: String,
-    #[serde(default = "empty_obj")]
-    pub(crate) args: Value,
-    /// Optional human note, echoed alongside the step for context.
-    #[serde(default)]
-    pub(crate) note: Option<String>,
-}
-
-fn empty_obj() -> Value {
-    json!({})
-}
-
-impl Recipe {
-    /// Parse a recipe from JSON text, with actionable errors.
-    pub(crate) fn parse(src: &str) -> Result<Recipe, String> {
-        let recipe: Recipe = serde_json::from_str(src).map_err(|e| {
-            format!(
-                "invalid recipe JSON: {e} — expected {{name, description, steps:[{{tool, args}}]}}"
-            )
-        })?;
-        if recipe.steps.is_empty() {
-            return Err("recipe has no steps — add at least one {tool, args} to `steps`".into());
-        }
-        Ok(recipe)
-    }
-}
 
 /// Entry point for the `replay` subcommand. Returns a process exit code.
 /// `args` is everything after `replay` on the command line. Async because it
@@ -256,7 +221,7 @@ fn print_step(idx: usize, step: &Step, summary: &str) {
 
 /// Condense a `tools/call` result into a single readable line. atelier returns
 /// its JSON payload in a text content block — but image-first results
-/// (doc_render, doc_look, diff overlays) put the PNG block before it, so find
+/// (doc_look, diff overlays) put the PNG block before it, so find
 /// the first TEXT block rather than dumping base64 from blocks[0]; fall back
 /// to a compact dump of whatever shape we get.
 fn summarize(result: &Value) -> String {

@@ -4,7 +4,7 @@
 //! let the near-blind agent actually SEE
 //! (`look`, `select_render`), work without fear (`checkpoint`), edit structure
 //! (`layer_ops`, `transform_cel`), and reach perceptual colour & master finish
-//! (`make_perceptual_ramp`, `snap_palette`, `smooth_edges`, `select_wand`,
+//! (`palette`, `snap_palette`, `smooth_edges`, `select_wand`,
 //! `critique`). Image-returning methods hand back raw PNG bytes; the server
 //! wraps them as inline MCP image content so the pixels arrive in the same turn.
 
@@ -15,8 +15,8 @@ use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
 use super::{Selection, Studio};
-use crate::document::{Document, Light};
-use crate::raster;
+use atelier_core::document::{Document, Light};
+use atelier_core::raster;
 
 // -- shared raster helpers --------------------------------------------------
 
@@ -136,10 +136,14 @@ fn crop_region(
 
 /// Value-mass + colour stats over the opaque pixels of a native image — the
 /// numbers that go beside the inline preview so every look is also measured.
-fn look_stats(img: &RgbaImage) -> Value {
+fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
     let (mut min, mut max, mut sum, mut n) = (255u8, 0u8, 0u64, 0u64);
     let (mut shadow, mut mid, mut light) = (0u64, 0u64, 0u64);
     let mut distinct = std::collections::HashSet::new();
+    // Optional per-band value coverage (the structure read for `bands`/`notan`,
+    // carried over from the retired doc_render_value `band_pcts`).
+    let nb = bands.map(|b| b.max(2) as usize);
+    let mut band_counts = nb.map(|b| vec![0u64; b]);
     for p in img.pixels() {
         if p.0[3] == 0 {
             continue;
@@ -156,13 +160,16 @@ fn look_stats(img: &RgbaImage) -> Value {
         } else {
             light += 1;
         }
+        if let (Some(b), Some(counts)) = (nb, band_counts.as_mut()) {
+            counts[(v as usize * b / 256).min(b - 1)] += 1;
+        }
         distinct.insert([p.0[0], p.0[1], p.0[2], p.0[3]]);
     }
     if n == 0 {
         return json!({"opaque_pixels": 0, "note": "empty — nothing opaque in view"});
     }
     let pct = |c: u64| (c as f64 / n as f64 * 1000.0).round() / 10.0;
-    json!({
+    let mut out = json!({
         "opaque_pixels": n,
         "distinct_colors": distinct.len(),
         "value": {
@@ -173,7 +180,23 @@ fn look_stats(img: &RgbaImage) -> Value {
         // Value massing: a healthy read groups the canvas into a few clear
         // masses, not a soup. Even thirds is the soup-warning signal.
         "masses_pct": {"shadow": pct(shadow), "mid": pct(mid), "light": pct(light)},
-    })
+    });
+    if let Some(counts) = band_counts {
+        out["band_pcts"] = json!(counts.iter().map(|c| pct(*c)).collect::<Vec<f64>>());
+    }
+    out
+}
+
+/// Repeat an image N×N — the seamlessness eyeball test for `doc_look` `tile`.
+fn tile_image(img: &RgbaImage, n: u32) -> RgbaImage {
+    let (w, h) = (img.width(), img.height());
+    let mut out = RgbaImage::new(w * n, h * n);
+    for ty in 0..n {
+        for tx in 0..n {
+            image::imageops::replace(&mut out, img, (tx * w) as i64, (ty * h) as i64);
+        }
+    }
+    out
 }
 
 /// Recursively snapshot a document's files (doc.json + cels/) into `dst`.
@@ -213,6 +236,8 @@ impl Studio {
         coords: bool,
         onion: bool,
         max_size: Option<u32>,
+        tile: Option<u32>,
+        out_path: Option<&str>,
     ) -> Result<(Vec<u8>, Value), String> {
         let (_dir, doc) = self.open(id)?;
         if frame >= doc.meta.frames.len() {
@@ -224,7 +249,7 @@ impl Studio {
         }
         // Adaptive default: big enough to judge a small sprite, clamped so a
         // large canvas doesn't waste vision tokens.
-        let scale = scale.unwrap_or_else(|| crate::studio::preview_scale(doc.meta.w, doc.meta.h));
+        let scale = scale.unwrap_or_else(|| crate::preview_scale(doc.meta.w, doc.meta.h));
         // Native, full-canvas image for the requested mode.
         let native = match mode {
             "render" => {
@@ -248,7 +273,14 @@ impl Studio {
             }
         };
         let (view, ox, oy) = crop_region(&native, region)?;
-        let stats = look_stats(&view);
+        // Per-band coverage is the value-structure read; meaningful only for the
+        // posterised modes (carried over from the retired doc_render_value).
+        let band_arg = match mode {
+            "bands" => Some(bands.max(2)),
+            "notan" => Some(3),
+            _ => None,
+        };
+        let stats = look_stats(&view, band_arg);
         // Scale: explicit nearest upscale, or a max_size thumbnail (no grid).
         let mut out;
         let mut applied_scale = scale.max(1);
@@ -274,8 +306,28 @@ impl Studio {
             let step = (8).min((view.width().max(view.height()) as i32 / 2).max(1));
             overlay_grid(&mut out, ox, oy, applied_scale, step, coords);
         }
+        // Tile the result N×N to eyeball seamlessness (the retired doc_render's
+        // `tile`); applied after scale/grid so each cell shows the upscaled art.
+        if let Some(t) = tile {
+            if t > 1 {
+                out = tile_image(&out, t);
+            }
+        }
+        // Optional file write for export/file workflows (the retired doc_render's
+        // `out_path`). look stays inline-primary, so we only touch disk on request.
+        let saved_path = match out_path {
+            Some(p) => {
+                let pb = std::path::PathBuf::from(p);
+                if let Some(parent) = pb.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                out.save(&pb).map_err(|e| e.to_string())?;
+                Some(pb.to_string_lossy().into_owned())
+            }
+            None => None,
+        };
         let png = encode_png(&out)?;
-        let report = json!({
+        let mut report = json!({
             "doc_id": id, "frame": frame, "mode": mode,
             "native_size": [view.width(), view.height()],
             "render_size": [out.width(), out.height()],
@@ -283,6 +335,9 @@ impl Studio {
             "region_origin": [ox, oy],
             "stats": stats,
         });
+        if let Some(p) = saved_path {
+            report["path"] = json!(p);
+        }
         Ok((png, report))
     }
 
@@ -500,69 +555,6 @@ impl Studio {
         )
     }
 
-    // -- doc_make_perceptual_ramp ------------------------------------------
-
-    /// Build a perceptually-even shading ramp in OKLCh (the fix for HSL's
-    /// crushed midtones). Optionally validate evenness and/or store it as a
-    /// document's palette.
-    #[allow(clippy::too_many_arguments)]
-    pub fn make_perceptual_ramp(
-        &self,
-        base: [u8; 4],
-        count: usize,
-        value_lo: Option<f32>,
-        value_hi: Option<f32>,
-        hue_shift: f32,
-        sat_curve: &str,
-        anchor_midtone: bool,
-        set_doc: Option<&str>,
-    ) -> Result<Value, String> {
-        let (lb, _, _) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
-        let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
-        let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
-        let ramp = raster::make_ramp_oklch(
-            base,
-            count.max(1),
-            lo,
-            hi,
-            hue_shift,
-            sat_curve,
-            anchor_midtone,
-        );
-        let hex: Vec<String> = ramp
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
-            .collect();
-        // Validate: perceptual lightness should rise monotonically in even steps.
-        let ls: Vec<f32> = ramp.iter().map(|c| raster::srgb_to_oklab(*c).0).collect();
-        let steps: Vec<f32> = ls.windows(2).map(|w| w[1] - w[0]).collect();
-        let monotonic = steps.iter().all(|d| *d > -0.001);
-        let (mean_step, max_dev) = if steps.is_empty() {
-            (0.0, 0.0)
-        } else {
-            let m = steps.iter().sum::<f32>() / steps.len() as f32;
-            let dev = steps.iter().map(|d| (d - m).abs()).fold(0.0_f32, f32::max);
-            (m, dev)
-        };
-        let mut out = json!({
-            "ramp": ramp, "hex": hex, "count": ramp.len(),
-            "validation": {
-                "monotonic_lightness": monotonic,
-                "mean_step": (mean_step * 1000.0).round() / 1000.0,
-                "max_step_deviation": (max_dev * 1000.0).round() / 1000.0,
-                "even": max_dev < mean_step.abs() * 0.5 + 0.01,
-            }
-        });
-        if let Some(did) = set_doc {
-            self.edit(did, |d| {
-                d.set_palette(ramp.clone());
-                Ok(())
-            })?;
-            out["set_doc"] = json!(did);
-        }
-        Ok(out)
-    }
-
     // -- doc_snap_palette ---------------------------------------------------
 
     /// Snap a cel (or the whole document) to its locked palette by perceptual
@@ -573,6 +565,7 @@ impl Studio {
         layer: Option<usize>,
         frame: Option<usize>,
         palette: Option<Vec<[u8; 4]>>,
+        alpha: atelier_core::document::AlphaSnap,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let pal = match palette {
@@ -584,7 +577,7 @@ impl Studio {
                 "no palette to snap to — pass `palette` or set one with doc_set_palette".into(),
             );
         }
-        let changed = doc.snap_to_palette(&pal, layer, frame);
+        let changed = doc.snap_to_palette(&pal, layer, frame, alpha);
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "pixels_changed": changed, "palette_len": pal.len()}))
     }
@@ -707,7 +700,12 @@ impl Studio {
         let mut snapped = 0;
         if snap_palette && !doc.meta.palette.is_empty() {
             let pal = doc.meta.palette.clone();
-            snapped = doc.snap_to_palette(&pal, Some(layer), Some(frame));
+            snapped = doc.snap_to_palette(
+                &pal,
+                Some(layer),
+                Some(frame),
+                atelier_core::document::AlphaSnap::Preserve,
+            );
         }
         doc.save(&dir)?;
         Ok(json!({
@@ -891,46 +889,61 @@ impl Studio {
         ))
     }
 
-    // -- doc_harmony_palette: cohesive multi-ramp palettes -----------------
+    // -- doc_palette: one OKLCh generator for mono + harmony schemes -------
 
-    /// Build a harmonious multi-ramp palette in OKLCh: a perceptual ramp per hue
-    /// of a colour scheme (complementary | triadic | analogous | split |
-    /// tetradic), sharing lightness poles so the set reads as one palette.
+    /// Unified palette generator: one OKLCh engine for a single shading ramp
+    /// (`scheme="mono"`) or a cohesive multi-hue scheme (complementary | triadic
+    /// | analogous | split | tetradic), folding in the sat_curve / midtone-anchor
+    /// / evenness-validation that the old `make_perceptual_ramp` had and the old
+    /// `harmony_palette` lacked. Supersedes `palette_ramp` / `make_perceptual_ramp`
+    /// / `harmony_palette`.
     #[allow(clippy::too_many_arguments)]
-    pub fn harmony_palette(
+    pub fn palette(
         &self,
         base: [u8; 4],
         scheme: &str,
-        per_ramp: usize,
+        count: usize,
         value_lo: Option<f32>,
         value_hi: Option<f32>,
         hue_shift: f32,
+        sat_curve: &str,
+        anchor_midtone: bool,
         set_doc: Option<&str>,
     ) -> Result<Value, String> {
         let offsets: Vec<f32> = match scheme {
+            "mono" => vec![0.0],
             "complementary" => vec![0.0, 180.0],
             "triadic" => vec![0.0, 120.0, 240.0],
             "analogous" => vec![0.0, 30.0, -30.0],
             "split" => vec![0.0, 150.0, 210.0],
             "tetradic" => vec![0.0, 90.0, 180.0, 270.0],
-            "mono" => vec![0.0],
             other => {
                 return Err(format!(
-                    "unknown scheme '{}' — use complementary|triadic|analogous|split|tetradic|mono",
-                    other
+                    "unknown scheme '{other}' — use mono|complementary|triadic|analogous|split|tetradic"
                 ))
             }
         };
         let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
         let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
         let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
-        let per_ramp = per_ramp.max(2);
+        // mono honours the exact count; a multi-hue scheme needs >=2 per ramp.
+        let per = if scheme == "mono" {
+            count.max(1)
+        } else {
+            count.max(2)
+        };
         let mut ramps: Vec<Vec<[u8; 4]>> = Vec::new();
         for off in &offsets {
             let rgb = raster::oklab_to_srgb(raster::oklch_to_oklab((lb, cb, hb + off)));
             let anchor = [rgb[0], rgb[1], rgb[2], 255];
             ramps.push(raster::make_ramp_oklch(
-                anchor, per_ramp, lo, hi, hue_shift, "arc", false,
+                anchor,
+                per,
+                lo,
+                hi,
+                hue_shift,
+                sat_curve,
+                anchor_midtone,
             ));
         }
         let flat: Vec<[u8; 4]> = ramps.iter().flatten().copied().collect();
@@ -938,7 +951,29 @@ impl Studio {
             .iter()
             .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
             .collect();
-        let mut out = json!({"scheme": scheme, "ramps": ramps, "palette": flat, "hex": hex, "count": flat.len()});
+        // Evenness validation on the primary ramp.
+        let ls: Vec<f32> = ramps[0]
+            .iter()
+            .map(|c| raster::srgb_to_oklab(*c).0)
+            .collect();
+        let steps: Vec<f32> = ls.windows(2).map(|w| w[1] - w[0]).collect();
+        let monotonic = steps.iter().all(|d| *d > -0.001);
+        let (mean_step, max_dev) = if steps.is_empty() {
+            (0.0, 0.0)
+        } else {
+            let m = steps.iter().sum::<f32>() / steps.len() as f32;
+            let dev = steps.iter().map(|d| (d - m).abs()).fold(0.0_f32, f32::max);
+            (m, dev)
+        };
+        let mut out = json!({
+            "scheme": scheme, "ramps": ramps, "palette": flat, "hex": hex, "count": flat.len(),
+            "validation": {
+                "monotonic_lightness": monotonic,
+                "mean_step": (mean_step * 1000.0).round() / 1000.0,
+                "max_step_deviation": (max_dev * 1000.0).round() / 1000.0,
+                "even": max_dev < mean_step.abs() * 0.5 + 0.01,
+            }
+        });
         if let Some(did) = set_doc {
             self.edit(did, |d| {
                 d.set_palette(flat.clone());
@@ -1057,7 +1092,7 @@ impl Studio {
                             let (ex, ey) = match t as i32 {
                                 0 => ((t.fract() * w as f32) as i32, 0),
                                 1 => (w - 1, (t.fract() * h as f32) as i32),
-                                2 => ((1.0 - t.fract()) as i32 * (w - 1), h - 1),
+                                2 => (((1.0 - t.fract()) * (w - 1) as f32) as i32, h - 1),
                                 _ => (0, ((1.0 - t.fract()) * h as f32) as i32),
                             };
                             d.line(li, f, vx, vy, ex, ey, color, 1)?;
@@ -1328,8 +1363,12 @@ impl Studio {
             let t = f as f32 / (frames - 1) as f32;
             let r = (t * max_radius as f32).round().max(1.0) as i32;
             doc.clear_cel(layer, f);
-            // brighter early, fading out late
-            let col = ramp[(((1.0 - t) * last as f32).round() as usize).min(last)];
+            // Expand-and-dissipate: bright and solid at the flash, thinning to a
+            // faint rim as it grows — the shockwave fades OUT, instead of
+            // darkening while staying fully opaque (which read as a solid ring).
+            let c = ramp[(((1.0 - t) * last as f32).round() as usize).min(last)];
+            let a = ((1.0 - 0.8 * t) * c[3] as f32).round().clamp(0.0, 255.0) as u8;
+            let col = [c[0], c[1], c[2], a];
             match kind {
                 "ring" => doc.ellipse(layer, f, cx, cy, r, r, col, false)?,
                 "disc" => doc.ellipse(layer, f, cx, cy, r, r, col, true)?,
@@ -1355,6 +1394,242 @@ impl Studio {
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "frames": frames, "kind": kind}))
     }
+
+    /// Build a connected humanoid figure from named JOINT coordinates — the
+    /// agent reasons in joint space (which it does well) instead of emitting
+    /// every silhouette vertex (which it does not). Each bone is fleshed as an
+    /// F1 capsule (`Document::stroke`) sharing its endpoints with its neighbours,
+    /// so the whole figure is ONE connected, tapered silhouette by construction —
+    /// no detached limbs, no blocky rect stacks. Re-pose by calling again with
+    /// new joints. Required joints: head, shoulder_l/r, elbow_l/r, hand_l/r,
+    /// hip_l/r, knee_l/r, foot_l/r (chest/pelvis are derived as the shoulder/hip
+    /// midpoints).
+    #[allow(clippy::too_many_arguments)]
+    pub fn figure(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        joints: &std::collections::HashMap<String, (i32, i32)>,
+        color: [u8; 4],
+        limb_w: i32,
+        torso_w: i32,
+        head_r: i32,
+        aa: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        let bones = humanoid_bones(joints, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+        let (dir, mut doc) = self.open(id)?;
+        for b in &bones {
+            doc.stroke(layer, frame, b, color, aa, false)?;
+        }
+        if snap && !doc.meta.palette.is_empty() {
+            let pal = doc.meta.palette.clone();
+            doc.snap_to_palette(
+                &pal,
+                Some(layer),
+                Some(frame),
+                atelier_core::document::AlphaSnap::Opaque(128),
+            );
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "bones": bones.len()}))
+    }
+
+    /// Generate a side-view WALK CYCLE: from a base standing pose (the 13
+    /// humanoid joints) plus gait parameters, compute each frame's joint table —
+    /// feet stride along a gait path (one planted, one swinging, half a cycle
+    /// apart), knees/elbows solved by 2-bone IK from the derived bone lengths,
+    /// arms counter-swing the legs, the body bobs — then draw each frame with the
+    /// connected-capsule figure and tag the range "walk". The walk is GENERATED
+    /// from joints, not hand-repainted, so limbs never wobble or detach.
+    #[allow(clippy::too_many_arguments)]
+    pub fn walk(
+        &self,
+        id: &str,
+        layer: usize,
+        base: &std::collections::HashMap<String, (i32, i32)>,
+        frames: usize,
+        stride: i32,
+        lift: i32,
+        bob: i32,
+        arm_swing: i32,
+        color: [u8; 4],
+        limb_w: i32,
+        torso_w: i32,
+        head_r: i32,
+        aa: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        // Validate up front (re-uses the figure joint contract).
+        humanoid_bones(base, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+        let frames = frames.clamp(2, 24);
+        let g = |k: &str| {
+            let v = base[k];
+            (v.0 as f32, v.1 as f32)
+        };
+        let dist =
+            |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
+        // Bone lengths from the base pose (assume left/right symmetric).
+        let l_thigh = dist(g("hip_l"), g("knee_l")).max(2.0);
+        let l_shin = dist(g("knee_l"), g("foot_l")).max(2.0);
+        let l_uarm = dist(g("shoulder_l"), g("elbow_l")).max(2.0);
+        let l_farm = dist(g("elbow_l"), g("hand_l")).max(2.0);
+        let tau = std::f32::consts::TAU;
+        // World-anchored IK: pick the bend that keeps the mid-joint on a
+        // consistent world side (knees AHEAD of the hip, elbows BEHIND the
+        // shoulder) no matter how the limb swings — otherwise solve_ik2's
+        // axis-relative bend flips the joint to the wrong side mid-stride.
+        let ik_world = |root: (f32, f32), tgt: (f32, f32), l1: f32, l2: f32, ahead: bool| {
+            let c = raster::solve_ik2(root, tgt, l1, l2, 1.0);
+            if (c.0 >= root.0) == ahead {
+                c
+            } else {
+                raster::solve_ik2(root, tgt, l1, l2, -1.0)
+            }
+        };
+        let (dir, mut doc) = self.open(id)?;
+        while doc.meta.frames.len() < frames {
+            doc.add_frame(120, None);
+        }
+        // Per-frame: build the posed joint table, flesh it, draw into frame f.
+        for f in 0..frames {
+            let t = f as f32 / frames as f32;
+            // Body bob: rises on the passing pose, twice per stride.
+            let body_dy = (bob as f32 * (tau * t * 2.0).sin()).round() as i32;
+            let shift = |p: (f32, f32)| (p.0.round() as i32, (p.1 + body_dy as f32).round() as i32);
+            let mut j: std::collections::HashMap<String, (i32, i32)> =
+                std::collections::HashMap::new();
+            // Body/girdle joints just bob.
+            for k in ["head", "shoulder_l", "shoulder_r", "hip_l", "hip_r"] {
+                j.insert(k.to_string(), shift(g(k)));
+            }
+            // Legs: foot strides front/back + lifts on the swing half; knee via IK.
+            for (side, phase) in [("l", t), ("r", t + 0.5)] {
+                let ph = phase.fract();
+                let hip = shift(g(&format!("hip_{side}")));
+                let base_foot = g(&format!("foot_{side}"));
+                let fx = base_foot.0 + (stride as f32 * 0.5) * (tau * ph).cos();
+                let fy = base_foot.1 - (lift as f32) * (tau * ph).sin().max(0.0);
+                let foot = (fx.round() as i32, fy.round() as i32);
+                let knee = ik_world(
+                    (hip.0 as f32, hip.1 as f32),
+                    (foot.0 as f32, foot.1 as f32),
+                    l_thigh,
+                    l_shin,
+                    true, // knee stays ahead of the hip (bends forward)
+                );
+                j.insert(
+                    format!("knee_{side}"),
+                    (knee.0.round() as i32, knee.1.round() as i32),
+                );
+                j.insert(format!("foot_{side}"), foot);
+            }
+            // Arms counter-swing the legs (half-cycle offset); elbow via IK.
+            for (side, phase) in [("l", t + 0.5), ("r", t)] {
+                let ph = phase.fract();
+                let sh = shift(g(&format!("shoulder_{side}")));
+                let base_hand = g(&format!("hand_{side}"));
+                let hx = base_hand.0 + (arm_swing as f32) * (tau * ph).cos();
+                let hand = (hx.round() as i32, base_hand.1.round() as i32 + body_dy);
+                let elbow = ik_world(
+                    (sh.0 as f32, sh.1 as f32),
+                    (hand.0 as f32, hand.1 as f32),
+                    l_uarm,
+                    l_farm,
+                    false, // elbow stays behind the shoulder (bends back)
+                );
+                j.insert(
+                    format!("elbow_{side}"),
+                    (elbow.0.round() as i32, elbow.1.round() as i32),
+                );
+                j.insert(format!("hand_{side}"), hand);
+            }
+            let bones = humanoid_bones(&j, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+            doc.clear_cel(layer, f);
+            for b in &bones {
+                doc.stroke(layer, f, b, color, aa, false)?;
+            }
+            if snap && !doc.meta.palette.is_empty() {
+                let pal = doc.meta.palette.clone();
+                doc.snap_to_palette(
+                    &pal,
+                    Some(layer),
+                    Some(f),
+                    atelier_core::document::AlphaSnap::Opaque(128),
+                );
+            }
+        }
+        if !doc.meta.tags.iter().any(|t| t.name == "walk") {
+            doc.add_tag("walk", 0, frames - 1, "forward")?;
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "frames": frames, "tag": "walk"}))
+    }
+}
+
+/// The humanoid capsule bone list for `figure`/`walk`: validates the 13 required
+/// joints and returns each bone as a width-profiled point chain (drawn via the
+/// `doc_stroke` core). Shared so a posed figure and an animated walk frame flesh
+/// identically.
+/// One bone as a width-profiled point chain `[(x,y,width), ...]` for the stroke core.
+type Bone = Vec<(i32, i32, i32)>;
+
+fn humanoid_bones(
+    joints: &std::collections::HashMap<String, (i32, i32)>,
+    lw: i32,
+    tw: i32,
+    hr: i32,
+) -> Result<Vec<Bone>, String> {
+    const NEED: [&str; 13] = [
+        "head",
+        "shoulder_l",
+        "shoulder_r",
+        "elbow_l",
+        "elbow_r",
+        "hand_l",
+        "hand_r",
+        "hip_l",
+        "hip_r",
+        "knee_l",
+        "knee_r",
+        "foot_l",
+        "foot_r",
+    ];
+    for k in NEED {
+        if !joints.contains_key(k) {
+            return Err(format!(
+                "missing joint '{k}' — required joints: {}",
+                NEED.join(", ")
+            ));
+        }
+    }
+    let j = |k: &str| joints[k];
+    let mid = |a: (i32, i32), b: (i32, i32)| ((a.0 + b.0) / 2, (a.1 + b.1) / 2);
+    let chest = mid(j("shoulder_l"), j("shoulder_r"));
+    let pelvis = mid(j("hip_l"), j("hip_r"));
+    let taper = |w: i32| (w * 7 / 10).max(1);
+    let cap = |a: (i32, i32), w0: i32, b: (i32, i32), w1: i32| vec![(a.0, a.1, w0), (b.0, b.1, w1)];
+    Ok(vec![
+        cap(chest, tw, pelvis, (tw * 85 / 100).max(1)), // spine
+        cap(j("shoulder_l"), lw, j("shoulder_r"), lw),  // clavicle
+        cap(
+            j("hip_l"),
+            (lw * 11 / 10).max(1),
+            j("hip_r"),
+            (lw * 11 / 10).max(1),
+        ), // hips
+        cap(j("shoulder_l"), lw, j("elbow_l"), lw),     // upper arm L
+        cap(j("elbow_l"), lw, j("hand_l"), taper(lw)),  // forearm L
+        cap(j("shoulder_r"), lw, j("elbow_r"), lw),     // upper arm R
+        cap(j("elbow_r"), lw, j("hand_r"), taper(lw)),  // forearm R
+        cap(j("hip_l"), (lw * 12 / 10).max(1), j("knee_l"), lw), // thigh L
+        cap(j("knee_l"), lw, j("foot_l"), taper(lw)),   // shin L
+        cap(j("hip_r"), (lw * 12 / 10).max(1), j("knee_r"), lw), // thigh R
+        cap(j("knee_r"), lw, j("foot_r"), taper(lw)),   // shin R
+        cap(chest, lw, j("head"), lw),                  // neck
+        vec![(j("head").0, j("head").1, hr * 2)],       // head disc
+    ])
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
@@ -1623,13 +1898,39 @@ mod tests {
         s.doc_create("c", 8, 8).unwrap();
         s.doc_fill_cel("c", 0, 0, [255, 0, 0, 255]).unwrap();
         let (png, report) = s
-            .look("c", 0, Some(6), None, "render", 4, true, true, false, None)
+            .look(
+                "c",
+                0,
+                Some(6),
+                None,
+                "render",
+                4,
+                true,
+                true,
+                false,
+                None,
+                None,
+                None,
+            )
             .unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(opaque(&report), 64);
         // value mode also works and reports masses
         let (_p, v) = s
-            .look("c", 0, Some(4), None, "value", 4, false, false, false, None)
+            .look(
+                "c",
+                0,
+                Some(4),
+                None,
+                "value",
+                4,
+                false,
+                false,
+                false,
+                None,
+                None,
+                None,
+            )
             .unwrap();
         assert!(v["stats"]["masses_pct"].is_object());
     }
@@ -1654,6 +1955,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert_eq!(opaque(&after.1), 0);
@@ -1669,6 +1972,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -1698,35 +2003,21 @@ mod tests {
     }
 
     #[test]
-    fn perceptual_ramp_validates_and_sets_palette() {
-        let s = studio("ramp");
-        s.doc_create("c", 4, 4).unwrap();
-        let r = s
-            .make_perceptual_ramp(
-                [120, 80, 60, 255],
-                5,
-                None,
-                None,
-                20.0,
-                "arc",
-                true,
-                Some("c"),
-            )
-            .unwrap();
-        assert_eq!(r["ramp"].as_array().unwrap().len(), 5);
-        assert_eq!(r["validation"]["monotonic_lightness"], true);
-        // stored on the doc
-        assert_eq!(s.doc_info("c").unwrap()["palette_len"], 5);
-    }
-
-    #[test]
     fn snap_palette_moves_off_palette_pixels() {
         let s = studio("snap");
         s.doc_create("c", 4, 4).unwrap();
         s.doc_fill_cel("c", 0, 0, [200, 12, 12, 255]).unwrap();
         s.doc_set_palette("c", vec![[255, 0, 0, 255], [0, 0, 255, 255]])
             .unwrap();
-        let r = s.snap_palette("c", None, None, None).unwrap();
+        let r = s
+            .snap_palette(
+                "c",
+                None,
+                None,
+                None,
+                atelier_core::document::AlphaSnap::Preserve,
+            )
+            .unwrap();
         assert_eq!(r["pixels_changed"], 16);
     }
 
@@ -1753,6 +2044,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -1834,6 +2127,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert!(
@@ -1870,6 +2165,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert!(distinct(&look.1) >= 2);
@@ -1882,15 +2179,6 @@ mod tests {
         let (png, report) = s.contact_sheet("c", 4, 8, false).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(report["frames"], 1);
-    }
-
-    #[test]
-    fn harmony_palette_triadic_has_three_ramps() {
-        let s = studio("harmony");
-        let r = s
-            .harmony_palette([200, 80, 60, 255], "triadic", 4, None, None, 20.0, None)
-            .unwrap();
-        assert_eq!(r["palette"].as_array().unwrap().len(), 12);
     }
 
     #[test]
@@ -1910,6 +2198,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -1935,6 +2225,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -1994,6 +2286,8 @@ mod tests {
                 false,
                 false,
                 false,
+                None,
+                None,
                 None,
             )
             .unwrap();
@@ -2078,6 +2372,8 @@ mod tests {
                 false,
                 false,
                 None,
+                None,
+                None,
             )
             .unwrap();
         assert_eq!(opaque(&look.1), 4);
@@ -2118,11 +2414,11 @@ mod tests {
         assert_eq!(r["bg_removed"], json!(true));
         // The backdrop corner became transparent; the subject survived.
         assert_eq!(
-            s.doc_get_pixel("c", 0, 0, 0, 0).unwrap()["rgba"][3],
+            s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap()["rgba"][3],
             json!(0)
         );
         assert!(
-            s.doc_get_pixel("c", 0, 0, 4, 2).unwrap()["rgba"][0]
+            s.doc_get_pixel("c", Some(0), 0, 4, 2).unwrap()["rgba"][0]
                 .as_i64()
                 .unwrap()
                 > 150

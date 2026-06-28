@@ -8,8 +8,8 @@
       "note": "32x24 court — wide enough that the ball's left-to-right travel reads as motion, short enough that 8x export stays a thumbnail-sized GIF."
     },
     {
-      "tool": "doc_add_layer",
-      "args": { "doc_id": "pong", "name": "ball" },
+      "tool": "doc_layer",
+      "args": { "op": "add", "doc_id": "pong", "name": "ball" },
       "note": "Ball gets its own layer (index 1) above the field (layer 0). Keeping it separate is the whole trick: doc_anim_audit can then read JUST the ball's silhouette centre per frame, instead of the full composite whose bbox the static paddles would pin in place."
     },
     {
@@ -43,48 +43,48 @@
       "note": "Frame 0: the bright-green 2x2 ball just off the left paddle (cols 4-5, centre row). This is the rally's start and end pose — its position is what the closed loop must return to."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "pong", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "pong", "copy_from": 0 },
       "note": "Frame 1, duplicated from frame 0 (copies BOTH layers, so the field comes along free). We only have to move the ball; the court is already correct."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "pong", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "pong", "copy_from": 0 },
       "note": "Frame 2, same duplicate-from-0 so it inherits the intact field."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "pong", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "pong", "copy_from": 0 },
       "note": "Frame 3, the fourth and last frame; four frames total now exist so the per-frame edits below have somewhere to land."
     },
     {
-      "tool": "doc_clear_region",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 1, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
+      "tool": "doc_region",
+      "args": { "op": "clear", "doc_id": "pong", "layer": 1, "frame": 1, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
       "note": "Frame 1: erase the copied ball from its frame-0 spot on the ball layer only — the field underneath is untouched, so no stale ball ghosts onto the court."
     },
     {
-      "tool": "doc_rect",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 1, "x0": 18, "y0": 11, "x1": 19, "y1": 12, "color": [120, 240, 140], "fill": true },
+      "tool": "doc_draw",
+      "args": { "op": "rect", "doc_id": "pong", "layer": 1, "frame": 1, "x0": 18, "y0": 11, "x1": 19, "y1": 12, "color": [120, 240, 140], "fill": true },
       "note": "Ball jumps from x4 to x18 — a big +14 step. This is mid-flight, away from both paddles, so it moves fastest here (the easing: long strides in the open court)."
     },
     {
-      "tool": "doc_clear_region",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 2, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
+      "tool": "doc_region",
+      "args": { "op": "clear", "doc_id": "pong", "layer": 1, "frame": 2, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
       "note": "Frame 2: clear the inherited ball — every frame was copied from frame 0, so the stale ball sits at x4-5 here, NOT at frame 1's x18. Clear the real source position before repainting, or two balls would linger."
     },
     {
-      "tool": "doc_rect",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 2, "x0": 26, "y0": 11, "x1": 27, "y1": 12, "color": [120, 240, 140], "fill": true },
+      "tool": "doc_draw",
+      "args": { "op": "rect", "doc_id": "pong", "layer": 1, "frame": 2, "x0": 26, "y0": 11, "x1": 27, "y1": 12, "color": [120, 240, 140], "fill": true },
       "note": "Ball reaches x26, a 1px gap from the right paddle (x29) — the bounce point. Only a +8 step this time: it decelerates as it nears the wall (ease-out into the paddle)."
     },
     {
-      "tool": "doc_clear_region",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 3, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
+      "tool": "doc_region",
+      "args": { "op": "clear", "doc_id": "pong", "layer": 1, "frame": 3, "x0": 4, "y0": 11, "x1": 5, "y1": 12 },
       "note": "Frame 3: same again — this frame was also copied from frame 0, so its stale ball is at x4-5. Clear there before repainting on the return leg."
     },
     {
-      "tool": "doc_rect",
-      "args": { "doc_id": "pong", "layer": 1, "frame": 3, "x0": 12, "y0": 11, "x1": 13, "y1": 12, "color": [120, 240, 140], "fill": true },
+      "tool": "doc_draw",
+      "args": { "op": "rect", "doc_id": "pong", "layer": 1, "frame": 3, "x0": 12, "y0": 11, "x1": 13, "y1": 12, "color": [120, 240, 140], "fill": true },
       "note": "Ball rebounds left to x12 — a -14 step, fast again in open court. This sets up the wrap: frame 3 (x12) back to frame 0 (x4) is a -8 step, decelerating into the LEFT paddle exactly mirroring the right-side ease-out, so the forward loop closes symmetrically."
     },
     {
@@ -103,8 +103,8 @@
       "note": "The animator's timing chart for the ball layer: per_frame_center marches x 4.5 -> 18.5 -> 26.5 -> 12.5, and per_frame_offset reads +14, +8, -14 along x (the closing wrap 12.5 -> 4.5 is -8). The non-zero evenness is the eased motion made measurable — long strides (14) in the open court, short ones (8) braking into a paddle."
     },
     {
-      "tool": "doc_export_gif",
-      "args": { "doc_id": "pong", "tag": "rally", "scale": 8, "out_path": "pong-loop.gif" },
+      "tool": "doc_export",
+      "args": { "op": "anim", "doc_id": "pong", "tag": "rally", "scale": 8, "out_path": "pong-loop.gif" },
       "note": "Render the rally tag to an 8x GIF so the 32x24 court is legible. This is the payoff: a crisp Pong loop built from nothing but rectangles moved on a timeline."
     }
   ]

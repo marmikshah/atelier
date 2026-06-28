@@ -8,7 +8,7 @@ BIND ?= 127.0.0.1:8765
 HOME_DIR ?= $(HOME)/.atelier
 
 .DEFAULT_GOAL := run
-.PHONY: help run serve stdio build release test fmt lint check clean install daemon daemon-status daemon-uninstall
+.PHONY: help run serve stdio build release test fmt lint check pre-commit-checks branding hooks clean install daemon daemon-status daemon-uninstall
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -38,7 +38,18 @@ fmt: ## Format all sources
 lint: ## Clippy with warnings denied
 	cargo clippy --all-targets -- -D warnings
 
-check: fmt lint test ## Pre-commit gate: format + clippy + tests
+check: fmt lint test ## Format + clippy + tests (use before committing)
+
+pre-commit-checks: ## Format-check + clippy gate — exactly what the git hooks run.
+	cargo fmt --all -- --check
+	cargo clippy --all-targets -- -D warnings
+
+branding: ## Regenerate the brand art (the gallery is entirely recipe-made).
+	@echo "atelier's README art is agent-made; replay docs/examples/*.json to regenerate."
+
+hooks: ## Point git at the canonical .githooks (pre-commit + pre-push).
+	git config core.hooksPath .githooks
+	@echo "✓ core.hooksPath → .githooks"
 
 clean: ## Remove build artifacts
 	cargo clean
