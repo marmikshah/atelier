@@ -7,3 +7,7 @@
 resume.sh
 docs/ART-QUALITY-REVIEW.md
 .env
+
+# recipe-output art lands at repo root on replay; never commit it (docs/ art is tracked)
+/*.gif
+/*.png
