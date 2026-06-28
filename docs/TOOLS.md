@@ -34,14 +34,13 @@ stays crisp.
   `darken` · `lighten` · `color-dodge` · `color-burn` · `difference` · `subtract`
   · `exclusion`. Real lighting: `multiply` for shadow/AO, `add`/`screen` for
   light/glow/bloom, `overlay`/`soft-light` to grade.
-- `doc_add_frame` (optionally `copy_from` an existing frame) /
-  `doc_set_frame_duration`.
+- `doc_frame` — frame lifecycle + timing in one tool. `op`: `add` (append,
+  optional `copy_from`) · `duration` (set a frame's ms) · `delete` (last frame
+  protected) · `insert` · `duplicate` · `move`, with cels reindexed and tag
+  ranges remapped. The recovery path for a bad tween or extra pose.
 - `doc_dissolve` — insert N cross-faded DISSOLVE frames between two poses
   (palette-snapped, tags remapped, pivot/boxes inherited). For fades and FX
   only — never pose motion (limbs ghost); auto-checkpoints first.
-- `doc_frame_ops` — timeline lifecycle: `delete` (last frame protected) /
-  `insert` / `duplicate` / `move`, with cels reindexed and tag ranges remapped.
-  The recovery path for a bad tween or extra pose.
 - `doc_add_tag` — named frame range (`forward` / `reverse` / `pingpong`).
 - `doc_set_pivot` — set a frame's anchor point `[x,y]` (feet, weapon mount); the
   engine reads it to position the sprite. Emitted (scaled) in sheet/atlas JSON.
@@ -379,12 +378,12 @@ The whole loop, as an agent would drive it over MCP:
 doc_create   name="cat" width=32 height=32                 → id "cat"
 doc_batch    doc_id="cat" layer=0 frame=0 ops=[ …shapes… ] → paint the body
 doc_look     doc_id="cat" frame=0 scale=8                  → PNG to LOOK at
-doc_add_frame doc_id="cat" copy_from=0                     → frame 1 (dupe)
+doc_frame    op=add doc_id="cat" copy_from=0                     → frame 1 (dupe)
 doc_batch    doc_id="cat" layer=0 frame=1 ops=[ …eyes… ]   → repaint as closed
 doc_add_tag  doc_id="cat" name="blink" from=0 to=1 direction="pingpong"
 doc_export op=anim doc_id="cat" out_path="cat.gif" tag="blink" scale=8
 ```
 
-> An animation needs **two or more frames**: draw frame 0, `doc_add_frame`
+> An animation needs **two or more frames**: draw frame 0, `doc_frame op=add`
 > (`copy_from` it), repaint the difference, then tag and export. A single-frame
 > document exports a still PNG, not a moving GIF.

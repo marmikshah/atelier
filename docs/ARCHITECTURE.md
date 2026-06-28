@@ -77,7 +77,7 @@ Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
-- **`server.rs`** — the rmcp `#[tool]` router: **72 tools** (mutations grouped
+- **`server.rs`** — the rmcp `#[tool]` router: **70 tools** (mutations grouped
   into op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`), one or one-family per studio
   operation, plus MCP resources (browse documents + renders) and packaged
   prompts. Runs over two transports that share the router — stdio (`run`) and

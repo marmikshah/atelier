@@ -45,8 +45,8 @@
       "note": "Audit the finished base tile on the axis that matters. HORIZONTAL must report 0 mismatches: the gradient and bands are uniform in x, so column 15 == column 0 on every row -- side-by-side tiling is seamless by construction. We deliberately do NOT assert anything about the VERTICAL seam: this is a horizontal water strip (it repeats sideways only), so a top<->bottom join is irrelevant here -- the bright crest at the top is meant to abut the deep floor at the bottom, and tiling it vertically is simply not a thing we do. We test exactly the axis the tile is built to satisfy."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "water", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "water", "copy_from": 0 },
       "note": "Frame 1 is an exact copy of frame 0, so the vertical wrap-shift below is the frame's only delta."
     },
     {
@@ -55,8 +55,8 @@
       "note": "Roll frame 1 four pixels DOWN with wrap=true (dx=0). Because the content actually differs row-to-row (the crest and ripple bands), shifting along y genuinely relocates pixels -- frame 1 is NOT identical to frame 0, so the GIF will visibly animate. And shifting purely along y can never touch the horizontal seam: each row is still uniform across x after the shift (a row moved wholesale to a new y is still constant in x), so column 15 == column 0 everywhere and the left<->right tiling stays seamless. Vertical is the seamless-and-animatable axis for this strip."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "water", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "water", "copy_from": 0 },
       "note": "Frame 2 also branches from the pristine frame 0 (not from frame 1), so its offset is absolute: a single +8px vertical shift instead of two stacked +4px shifts. Keeps the math exact and avoids compounding."
     },
     {
@@ -65,8 +65,8 @@
       "note": "Frame 2 = +8px down. Twice the per-frame step keeps the apparent downward flow speed constant across the loop. The bands now sit half a tile lower than frame 0."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "water", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "water", "copy_from": 0 },
       "note": "Frame 3 from frame 0 again, same absolute-offset reasoning."
     },
     {
@@ -75,8 +75,8 @@
       "note": "Frame 3 = +12px down, the third quarter step. Frames 0..3 advance dy 0,4,8,12, so the crest and ripple bands sweep smoothly downward a quarter-tile each frame."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "water", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "water", "copy_from": 0 },
       "note": "Frame 4, the explicit closing frame, also branches from pristine frame 0."
     },
     {

@@ -43,18 +43,18 @@
       "note": "Frame 0: the bright-green 2x2 ball just off the left paddle (cols 4-5, centre row). This is the rally's start and end pose — its position is what the closed loop must return to."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "pong", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "pong", "copy_from": 0 },
       "note": "Frame 1, duplicated from frame 0 (copies BOTH layers, so the field comes along free). We only have to move the ball; the court is already correct."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "pong", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "pong", "copy_from": 0 },
       "note": "Frame 2, same duplicate-from-0 so it inherits the intact field."
     },
     {
-      "tool": "doc_add_frame",
-      "args": { "doc_id": "pong", "copy_from": 0 },
+      "tool": "doc_frame",
+      "args": { "op": "add", "doc_id": "pong", "copy_from": 0 },
       "note": "Frame 3, the fourth and last frame; four frames total now exist so the per-frame edits below have somewhere to land."
     },
     {

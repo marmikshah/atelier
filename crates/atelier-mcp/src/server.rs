@@ -150,20 +150,6 @@ pub struct ExportAtlas {
 // --- document params -------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocAddFrame {
-    pub doc_id: String,
-    pub duration_ms: Option<u32>,
-    pub copy_from: Option<usize>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFrameDuration {
-    pub doc_id: String,
-    pub frame: usize,
-    pub duration_ms: u32,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocAddTag {
     pub doc_id: String,
     pub name: String,
@@ -220,19 +206,6 @@ pub struct DocTween {
     /// In-between frames to insert (default 1).
     pub steps: Option<usize>,
     /// Duration of each inserted frame in ms (default 100).
-    pub duration_ms: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFrameOps {
-    pub doc_id: String,
-    /// delete | insert | duplicate | move.
-    pub action: String,
-    /// The frame to act on (for insert: the index the new frame takes).
-    pub frame: usize,
-    /// Destination index for `move`.
-    pub to_index: Option<usize>,
-    /// Duration for `insert` (default 100ms).
     pub duration_ms: Option<u32>,
 }
 
@@ -468,6 +441,22 @@ pub struct DocLayer {
     pub visible: Option<bool>,
     pub opacity: Option<u8>,
     pub blend: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocFrame {
+    pub doc_id: String,
+    /// add (append) | duration (set frame timing) | delete | insert | duplicate |
+    /// move.
+    pub op: String,
+    /// Target frame index (for duration/delete/insert/duplicate/move).
+    pub frame: Option<usize>,
+    /// For `add`: duplicate this frame's cels into the new frame.
+    pub copy_from: Option<usize>,
+    /// Destination index for `move`.
+    pub to_index: Option<usize>,
+    /// Frame duration in ms (for add/insert/duration; default 100).
+    pub duration_ms: Option<u32>,
 }
 
 // --- canvas reader params --------------------------------------------------
@@ -1323,7 +1312,7 @@ const PROMPTS: &[PromptSpec] = &[
             ),
         ],
         tools: &[
-            "doc_add_frame",
+            "doc_frame",
             "doc_draw",
             "doc_move_region",
             "doc_keyframe_move",
@@ -1331,7 +1320,6 @@ const PROMPTS: &[PromptSpec] = &[
             "doc_contact_sheet",
             "doc_frame_diff",
             "doc_anim_audit",
-            "doc_set_frame_duration",
             "doc_add_tag",
             "doc_export",
         ],
@@ -1345,7 +1333,7 @@ const PROMPTS: &[PromptSpec] = &[
                  the character's height in px, body bobs 1px DOWN on contact and UP on passing, arms \
                  counter-swing the legs. NEVER doc_dissolve poses — it cross-fades (ghost frames), it does \
                  not move limbs.\n\
-                 3. doc_add_frame with copy_from the previous frame so each pose starts from the last.\n\
+                 3. doc_frame op=add with copy_from the previous frame so each pose starts from the last.\n\
                  4. Repaint ONLY what changes per pose (legs, arms) with doc_draw (op=pencil) / doc_move_region; \
                  doc_keyframe_move eases a region across several frames in one call.\n\
                  5. doc_look every frame (onion=true ghosts the neighbours); doc_contact_sheet shows \
@@ -1353,7 +1341,7 @@ const PROMPTS: &[PromptSpec] = &[
                  6. Verify each adjacent pair with doc_frame_diff (only the limbs should change).\n\
                  7. doc_anim_audit mode=\"spacing\" — the per-frame motion must be even, low drift.\n\
                  8. doc_add_tag the range and doc_anim_audit mode=\"seam\" so the loop wrap is clean.\n\
-                 9. doc_set_frame_duration ~120ms per frame, with contact poses held ~1.5x longer — \
+                 9. doc_frame op=duration ~120ms per frame, with contact poses held ~1.5x longer — \
                  uniform 100ms reads mechanical.\n\
                  10. doc_export op=anim the tagged loop and study it.\n\
                  Iterate 4-9 until the walk reads smoothly."
@@ -1573,22 +1561,23 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Append a frame to the timeline. duration_ms default 100; copy_from duplicates that frame's cels."
+        description = "Frame lifecycle + timing in one tool. `op`: add (append a frame; `copy_from` duplicates that frame's cels, `duration_ms` default 100) · duration (set frame `frame`'s `duration_ms`) · insert (new frame at `frame`) · duplicate (`frame`) · delete (`frame`; last frame protected) · move (`frame`→`to_index`). Cels reindex and tag ranges remap. (Pivots, collision boxes, tags and keyframe motion have their own tools.)"
     )]
-    async fn doc_add_frame(&self, Parameters(p): Parameters<DocAddFrame>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_add_frame(&p.doc_id, p.duration_ms.unwrap_or(100), p.copy_from))
-    }
-
-    #[tool(description = "Set a frame's duration in milliseconds.")]
-    async fn doc_set_frame_duration(
-        &self,
-        Parameters(p): Parameters<DocFrameDuration>,
-    ) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_set_frame_duration(&p.doc_id, p.frame, p.duration_ms))
+    async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
+        let studio = self.studio();
+        // delete destroys cels and move can scramble tags — auto-checkpoint the
+        // destructive ops, mirroring the old doc_frame_ops behaviour.
+        if p.op == "delete" || p.op == "move" {
+            studio.auto_checkpoint(&p.doc_id, "doc_frame");
+        }
+        res(studio.doc_frame(
+            &p.doc_id,
+            &p.op,
+            p.frame,
+            p.copy_from,
+            p.to_index,
+            p.duration_ms,
+        ))
     }
 
     #[tool(
@@ -1649,7 +1638,7 @@ impl Atelier {
 
     // -- per-pixel drawing on a cel (the editor; coords = document pixels) --
     #[tool(
-        description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame_ops delete. Reindexes later cels and remaps tags."
+        description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame op=delete. Reindexes later cels and remaps tags."
     )]
     async fn doc_dissolve(&self, Parameters(p): Parameters<DocTween>) -> CallToolResult {
         let studio = self.studio();
@@ -1661,20 +1650,6 @@ impl Atelier {
             p.steps.unwrap_or(1),
             p.duration_ms.unwrap_or(100),
         ))
-    }
-
-    #[tool(
-        description = "Timeline lifecycle: action=\"delete\" removes a frame (cels reindex, tags remap, tags covering only that frame are dropped; the last frame is protected), \"insert\" adds an empty frame at `frame`, \"duplicate\" copies a frame to frame+1, \"move\" relocates `frame` to `to_index`. The recovery path for a bad tween or extra pose — pair with doc_checkpoint for whole-doc rollback."
-    )]
-    async fn doc_frame_ops(&self, Parameters(p): Parameters<DocFrameOps>) -> CallToolResult {
-        let studio = self.studio();
-        // delete destroys cels and move can scramble tags — same pre-op net
-        // as the other destructive tools. insert/duplicate are additive;
-        // don't churn the 5-slot auto-checkpoint ring for them.
-        if p.action == "delete" || p.action == "move" {
-            studio.auto_checkpoint(&p.doc_id, "frame_ops");
-        }
-        res(studio.doc_frame_ops(&p.doc_id, &p.action, p.frame, p.to_index, p.duration_ms))
     }
 
     #[tool(
@@ -1908,7 +1883,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Eased multi-frame region motion. Reads the `region` [x0,y0,x1,y1] content from `from_frame` and stamps it (source-over) into every frame in (from_frame, to_frame] at an eased fraction of the total (dx,dy); to_frame gets the full offset. easing: linear/ease-in/ease-out/ease-in-out (cubic), bounce, overshoot (shoots past then settles), elastic (decaying oscillation). clear_source=true (default) clears the original rect in each destination frame so a moving limb leaves no stale copy. Frames must already exist (else error — doc_add_frame first). Returns frames_touched + per-frame offsets."
+        description = "Eased multi-frame region motion. Reads the `region` [x0,y0,x1,y1] content from `from_frame` and stamps it (source-over) into every frame in (from_frame, to_frame] at an eased fraction of the total (dx,dy); to_frame gets the full offset. easing: linear/ease-in/ease-out/ease-in-out (cubic), bounce, overshoot (shoots past then settles), elastic (decaying oscillation). clear_source=true (default) clears the original rect in each destination frame so a moving limb leaves no stale copy. Frames must already exist (else error — doc_frame op=add first). Returns frames_touched + per-frame offsets."
     )]
     async fn doc_keyframe_move(
         &self,
@@ -2806,7 +2781,7 @@ impl ServerHandler for Atelier {
              IoU and per-cell colour ΔE against the reference so likeness is measured, \
              not remembered. \
              Audit before exporting: doc_critique (failure modes), doc_palette_report, \
-             doc_silhouette. Animate by duplicating frames (doc_add_frame copy_from) \
+             doc_silhouette. Animate by duplicating frames (doc_frame op=add copy_from) \
              and editing what moves — doc_keyframe_move for eased motion; doc_dissolve is \
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
