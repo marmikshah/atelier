@@ -4,11 +4,14 @@ All notable changes to atelier are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/).
 
-## [1.2.0] — 2026-06-20
+## [1.2.0] — 2026-06-28
 
-The drawing-quality release: the engine that was choppy and palette-blowing now
-draws connected, tapered, perceptually-shaded, palette-true art — and the agent
-can finally *see* its own error to repair it. 105 tools, 198 tests.
+The drawing-quality + consolidation release. The engine that was choppy and
+palette-blowing now draws connected, tapered, perceptually-shaded, palette-true
+art — and the agent can finally *see* its own error to repair it. The tool surface
+was also restructured into op-dispatch tools (`doc_draw` / `doc_fx` / `doc_region`
+/ …) and the codebase split into a 4-crate workspace. 65 tools — advertised as a
+~28-tool **core** profile by default (`ATELIER_PROFILE=full` for the rest), 198 tests.
 
 ### Added
 
