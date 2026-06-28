@@ -312,7 +312,7 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 - `doc_perspective_guide` — a faint, deletable guide layer (thirds/grid/iso/vp).
 - `doc_panel` — a HUD/UI panel (fill + border + bevel).
 - `doc_burst` — radial FX frames (ring/disc/rays) tagged `burst`.
-- `doc_import_clean` — external image (AI-gen/photo/scan) → clean pixel art:
+- `doc_ref op=import` — external image (AI-gen/photo/scan) → clean pixel art:
   TRUE area-average downscale (aspect-derived height when `target_h` omitted),
   optional corner-flood `remove_bg` BEFORE palette extraction, frequency-
   weighted median-cut palette with `pin`ned colours, optional Floyd–Steinberg
@@ -323,7 +323,7 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 The closed loop that turns "does my sprite match the character?" from memory
 recall into a measured, same-turn signal:
 
-- `doc_set_reference` — attach the ORIGINAL image to a document (copied into
+- `doc_ref op=set` — attach the ORIGINAL image to a document (copied into
   the doc dir, persists with it); returns aspect-true canvas-fit suggestions.
   Omit `path` to clear.
 - `doc_ref_analyze` — VIEW the reference inline and decompose it into drawing

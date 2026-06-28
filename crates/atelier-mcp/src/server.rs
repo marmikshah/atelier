@@ -446,6 +446,31 @@ pub struct DocRegion {
     pub blend: Option<bool>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocRefOp {
+    pub doc_id: String,
+    /// set (attach/clear the comparison reference) | import (trace an external
+    /// image cleaned onto a guide layer).
+    pub op: String,
+    /// `set`: reference image path (omit to clear). `import`: source image path.
+    pub path: Option<String>,
+    // -- import params --
+    pub layer: Option<usize>,
+    pub frame: Option<usize>,
+    /// `import`: target width in px (required for import).
+    pub target_w: Option<u32>,
+    /// `import`: omit to derive an aspect-true height.
+    pub target_h: Option<u32>,
+    pub colors: Option<usize>,
+    pub dither: Option<bool>,
+    pub defringe: Option<bool>,
+    pub to_doc_palette: Option<bool>,
+    /// `import`: corner-seeded background removal before palette extraction.
+    pub remove_bg: Option<bool>,
+    /// `import`: colours the derived palette must keep (e.g. a black outline).
+    pub pin: Option<Vec<Vec<i64>>>,
+}
+
 // --- canvas reader params --------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -962,31 +987,6 @@ pub struct DocPanel {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocImportClean {
-    pub doc_id: String,
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    pub path: String,
-    pub target_w: u32,
-    /// Omit to derive an aspect-true height from the source (recommended —
-    /// a wrong guess silently squashes the subject).
-    pub target_h: Option<u32>,
-    pub colors: Option<usize>,
-    /// Default: true only when the target's longest side is > 64px — at sprite
-    /// scale error-diffusion reads as single-pixel speckle.
-    pub dither: Option<bool>,
-    pub defringe: Option<bool>,
-    pub to_doc_palette: Option<bool>,
-    /// Corner-seeded background removal (OKLab flood) BEFORE palette
-    /// extraction. Set true for a subject on a backdrop; leave false for
-    /// full-bleed art like textures.
-    pub remove_bg: Option<bool>,
-    /// Colours ([r,g,b] or [r,g,b,a]) the derived palette must keep —
-    /// e.g. a pure-black outline.
-    pub pin: Option<Vec<Vec<i64>>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub struct DocPaintGrid {
     pub doc_id: String,
     pub layer: usize,
@@ -1038,13 +1038,6 @@ pub struct DocKeyframeTransform {
     pub easing: Option<String>,
     /// Snap resampled pixels back to the locked palette (default true).
     pub snap_palette: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSetReference {
-    pub doc_id: String,
-    /// Path to the reference image. Omit to clear the stored reference.
-    pub path: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -2298,34 +2291,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Import an external image (reference photo / AI-gen / scan) as CLEAN pixel art, with an INLINE preview of the result: true area-average downscale to target_w (height derived aspect-true when target_h omitted), quantised to a palette — the document's locked one (to_doc_palette) or a frequency-weighted median-cut of `colors`, `pin`ning colours you must keep. remove_bg=true corner-floods the backdrop away BEFORE palette extraction (use for characters/objects on a background). Dithering defaults OFF at sprite scale (≤64px) where it reads as speckle. Returns the derived palette — doc_set_palette it to lock. The reference-onboarding pipeline; follow with doc_critique / doc_smooth_edges."
-    )]
-    async fn doc_import_clean(&self, Parameters(p): Parameters<DocImportClean>) -> CallToolResult {
-        let studio = self.studio();
-        let r = studio.import_clean(
-            &p.doc_id,
-            p.layer.unwrap_or(0),
-            p.frame.unwrap_or(0),
-            &p.path,
-            p.target_w,
-            p.target_h,
-            p.colors.unwrap_or(16),
-            p.dither,
-            p.defringe.unwrap_or(false),
-            p.to_doc_palette.unwrap_or(false),
-            p.remove_bg.unwrap_or(false),
-            p.pin.as_ref().map(|v| palette_list(v)).unwrap_or_default(),
-        );
-        previewed(
-            &studio,
-            &p.doc_id,
-            Some(p.layer.unwrap_or(0)),
-            p.frame.unwrap_or(0),
-            r,
-        )
-    }
-
-    #[tool(
         description = "Paint a whole region DECLARATIVELY from a character grid (the inverse of doc_dump_region): `legend` maps single characters to [r,g,b(,a)] colours or integer PALETTE INDICES, `rows` are pixel-row strings ('.'/' ' leave the pixel untouched). Emitting a sprite as a grid eliminates the absolute-coordinate failure class — prefer this over long pencil/rect sequences for detailed shapes. Verify by diffing against doc_dump_region. Returns painted/clipped counts plus an INLINE preview. Honours an active selection."
     )]
     async fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
@@ -2391,13 +2356,40 @@ impl Atelier {
 
     // -- reference subsystem: recreate-from-sample as a measurable loop --
     #[tool(
-        description = "Attach the ORIGINAL reference image (the sample being recreated) to a document — copied into the doc dir, persists with it. Do this FIRST when recreating a character from an image: it unlocks doc_ref_analyze (plan) and doc_ref_compare (score likeness every iteration). Returns aspect-true fit suggestions so the canvas can't silently squash the subject. Omit `path` to clear."
+        description = "Bring an external image into the reference workflow. `op`: set — attach the ORIGINAL reference (the sample being recreated; `path`, omit to clear) so doc_ref_analyze/doc_ref_compare can score likeness; returns aspect-true fit suggestions. import — trace a source image cleaned onto a guide layer: `path`, `target_w` (required), optional `target_h` (omit = aspect-true), `colors`, `dither`, `defringe`, `to_doc_palette`, `remove_bg` (corner-seeded bg flood), `pin` (colours to keep). Returns an inline preview."
     )]
-    async fn doc_set_reference(
-        &self,
-        Parameters(p): Parameters<DocSetReference>,
-    ) -> CallToolResult {
-        res(self.studio().set_reference(&p.doc_id, p.path.as_deref()))
+    async fn doc_ref(&self, Parameters(p): Parameters<DocRefOp>) -> CallToolResult {
+        let studio = self.studio();
+        match p.op.as_str() {
+            "set" => res(studio.set_reference(&p.doc_id, p.path.as_deref())),
+            "import" => {
+                let Some(path) = p.path.as_deref() else {
+                    return res(Err("doc_ref op=import needs `path`".to_string()));
+                };
+                let Some(target_w) = p.target_w else {
+                    return res(Err("doc_ref op=import needs `target_w`".to_string()));
+                };
+                let (layer, frame) = (p.layer.unwrap_or(0), p.frame.unwrap_or(0));
+                let r = studio.import_clean(
+                    &p.doc_id,
+                    layer,
+                    frame,
+                    path,
+                    target_w,
+                    p.target_h,
+                    p.colors.unwrap_or(16),
+                    p.dither,
+                    p.defringe.unwrap_or(false),
+                    p.to_doc_palette.unwrap_or(false),
+                    p.remove_bg.unwrap_or(false),
+                    p.pin.as_ref().map(|v| palette_list(v)).unwrap_or_default(),
+                );
+                previewed(&studio, &p.doc_id, Some(layer), frame, r)
+            }
+            other => res(Err(format!(
+                "doc_ref: unknown op '{other}' — use set|import"
+            ))),
+        }
     }
 
     #[tool(
@@ -2726,8 +2718,8 @@ impl ServerHandler for Atelier {
              line/rect/ellipse/fill/stroke/text/…) or doc_batch (many ops in one call). LOOK with doc_look \
              after every burst of edits — it returns the frame as an INLINE image plus \
              value stats (pass doc_look out_path when you also need the PNG written to a file). \
-             Recreating from a reference image? doc_set_reference FIRST, doc_ref_analyze \
-             to plan (subject palette + silhouette), optionally doc_import_clean onto a \
+             Recreating from a reference image? doc_ref op=set FIRST, doc_ref_analyze \
+             to plan (subject palette + silhouette), optionally doc_ref op=import onto a \
              guide layer, then doc_ref_compare after EVERY pass — it scores silhouette \
              IoU and per-cell colour ΔE against the reference so likeness is measured, \
              not remembered. \

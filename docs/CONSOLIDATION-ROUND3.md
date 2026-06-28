@@ -28,7 +28,16 @@
   into `doc_region(op, …)`. `doc_stamp_image` (image import) and
   `doc_extract_to_layer` (rigging) kept separate; `doc_select`/`doc_select_wand`
   kept separate (round-2's wand-tolerance physics trap).
-- **NEXT:** `doc_palette`, `doc_ref`. Plus the
+- **SHIPPED — `doc_ref`** (66 → 65). `doc_set_reference` + `doc_import_clean` →
+  `doc_ref(op=set|import)`. The reference readers (analyze/compare/diff_map) stay
+  discrete.
+- **STOPPED HERE (65 tools).** `doc_palette` doesn't fold — the generator takes no
+  `doc_id` (different shape from set/swap). Further fusion would be count-chasing
+  over clarity. Remaining surface: the noun-dispatch writers + discrete readers.
+  Optional later: extend the batch vocabulary so the non-batch cel effects
+  (`relight`, `rim_light`, `material`, `panel`, `outline_selective`,
+  `smooth_edges`, `dither_ramp`, `snap_palette`, `transform_cel`, `burst`) can
+  join `doc_fx`. Plus the
   non-batch cel effects (`relight`, `rim_light`, `material`, `panel`,
   `outline_selective`, `smooth_edges`, `dither_ramp`, `snap_palette`,
   `transform_cel`, `burst`) need the op vocabulary extended before they can join
