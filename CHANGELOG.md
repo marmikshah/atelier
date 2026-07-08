@@ -22,6 +22,9 @@ keep sub-pixel precision so walk cycles glide instead of stepping. Adds
   (`dominant_light_azimuth_deg` / `light_spread_deg`). Deterministic, reuses the
   existing component + interior-distance + OKLab machinery. The see-and-critique
   eye for the beginner tell the scalar reports structurally couldn't surface.
+  Also wired into `doc_critique`, which now reports per-form pillow-shading and a
+  mixed-light-direction check in its scorecard (replacing the old whole-image
+  radial pillow guess) — so the see-and-fix loop catches it without a separate call.
 
 ### Changed
 

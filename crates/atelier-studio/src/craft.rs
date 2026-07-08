@@ -1658,7 +1658,6 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
     // -- value stats + masses --
     let (mut min, mut max, mut sum, mut n) = (255u8, 0u8, 0f64, 0u64);
     let (mut shadow, mut mid, mut light) = (0u64, 0u64, 0u64);
-    let (mut cxs, mut cys) = (0f64, 0f64);
     for y in 0..h {
         for x in 0..w {
             if let Some(p) = op(x, y) {
@@ -1667,8 +1666,6 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
                 max = max.max(v);
                 sum += v as f64;
                 n += 1;
-                cxs += x as f64;
-                cys += y as f64;
                 if v < 85 {
                     shadow += 1;
                 } else if v < 170 {
@@ -1762,32 +1759,12 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
         }
     }
 
-    // -- pillow-shading: luma falling radially from the centroid --
-    let (mcx, mcy) = (cxs / nf, cys / nf);
-    let (mut sr, mut sv, mut srr, mut svv, mut srv) = (0f64, 0f64, 0f64, 0f64, 0f64);
-    for y in 0..h {
-        for x in 0..w {
-            if let Some(p) = op(x, y) {
-                let r = (((x as f64 - mcx).powi(2)) + ((y as f64 - mcy).powi(2))).sqrt();
-                let v = raster::luma(p) as f64;
-                sr += r;
-                sv += v;
-                srr += r * r;
-                svv += v * v;
-                srv += r * v;
-            }
-        }
-    }
-    let cov = srv / nf - (sr / nf) * (sv / nf);
-    let vr = (srr / nf - (sr / nf).powi(2)).max(0.0).sqrt();
-    let vv = (svv / nf - (sv / nf).powi(2)).max(0.0).sqrt();
-    let corr = if vr > 1e-6 && vv > 1e-6 {
-        cov / (vr * vv)
-    } else {
-        0.0
-    };
-    // negative correlation (bright centre, dark edges, no direction) => pillow
-    let pillow = (-corr).max(0.0);
+    // -- form lighting: per-form light direction + pillow-shading (the precise
+    // per-component eye, superseding a whole-image radial guess) --
+    let fa = crate::analysis::form_audit_image(img, 12);
+    let pillow_forms = fa["pillow_forms"].as_u64().unwrap_or(0);
+    let light_spread = fa["light_spread_deg"].as_f64();
+    let light_inconsistent = light_spread.map(|s| s > 45.0).unwrap_or(false);
 
     // -- palette adherence --
     let palette_check = if palette.is_empty() {
@@ -1821,8 +1798,12 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
             "orphans": {"count": orphans, "verdict": if orphans > 0 { "warn" } else { "ok" }, "cells": orphan_cells},
             "jaggies": {"count": jaggies, "verdict": if jaggies > (n / 12).max(6) as u32 { "warn" } else { "info" },
                         "cells": jag_cells, "note": "outer step corners; run doc_smooth_edges to selout them"},
-            "pillow_shading": {"score": round(pillow), "verdict": if pillow > 0.55 { "warn" } else { "ok" },
-                               "note": "high = light pooled at the centre with no direction; shade from a light source instead"},
+            "pillow_shading": {"forms": pillow_forms, "verdict": if pillow_forms > 0 { "warn" } else { "ok" },
+                               "note": "forms lit brightest at the centre with no light direction; shade from a light source (doc_form_audit has the per-form breakdown)"},
+            "form_lighting": {"dominant_azimuth_deg": fa["dominant_light_azimuth_deg"].clone(),
+                              "spread_deg": fa["light_spread_deg"].clone(),
+                              "verdict": if light_inconsistent { "warn" } else { "ok" },
+                              "note": "lit forms should agree on one light; wide spread = mixed light directions"},
             "palette_adherence": palette_check,
         }
     })
@@ -2084,6 +2065,25 @@ mod tests {
             .unwrap();
         let r = s.critique("c", 0, None, None).unwrap();
         assert_eq!(r["checks"]["orphans"]["count"], 1);
+    }
+
+    #[test]
+    fn critique_flags_pillow_shading_via_form_audit() {
+        let s = studio("critpillow");
+        s.doc_create("p", 16, 16).unwrap();
+        // Concentric squares: bright centre, dark all edges — pillow-shaded, no
+        // light direction. The form-audit-backed check should warn.
+        s.doc_rect("p", 0, 0, 2, 2, 13, 13, [50, 50, 60, 255], true, 1)
+            .unwrap();
+        s.doc_rect("p", 0, 0, 4, 4, 11, 11, [90, 90, 105, 255], true, 1)
+            .unwrap();
+        s.doc_rect("p", 0, 0, 6, 6, 9, 9, [140, 140, 160, 255], true, 1)
+            .unwrap();
+        s.doc_rect("p", 0, 0, 7, 7, 8, 8, [200, 200, 225, 255], true, 1)
+            .unwrap();
+        let r = s.critique("p", 0, None, None).unwrap();
+        assert_eq!(r["checks"]["pillow_shading"]["verdict"], "warn");
+        assert!(r["checks"]["pillow_shading"]["forms"].as_u64().unwrap() >= 1);
     }
 
     fn distinct(stats: &Value) -> u64 {
