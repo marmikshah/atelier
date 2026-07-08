@@ -3796,7 +3796,7 @@ impl Document {
         let gi = |k: &str, d: i64| op.get(k).and_then(|v| v.as_i64()).unwrap_or(d) as i32;
         let gb = |k: &str, d: bool| op.get(k).and_then(|v| v.as_bool()).unwrap_or(d);
         let col = |k: &str| rgba_val(op.get(k));
-        match name {
+        let outcome = match name {
             "pencil" => self.pencil(
                 layer,
                 frame,
@@ -4034,7 +4034,20 @@ impl Document {
                 )
                 .map(|_| ()),
             other => Err(format!("unknown batch op '{}'", other)),
+        };
+        outcome?;
+        // Continuous-tone FX push a locked palette into hundreds of colours; re-snap
+        // onto it by default (parity with gradient/glow) so the result stays crisp
+        // pixel art. Opt out per op with `snap:false`. Hard-edged / already-on-palette
+        // ops (outline, dither, pixel_perfect, quantize, adjust) are excluded.
+        if matches!(name, "blur" | "drop_shadow" | "bevel" | "form" | "shade")
+            && gb("snap", true)
+            && !self.meta.palette.is_empty()
+        {
+            let pal = self.meta.palette.clone();
+            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
         }
+        Ok(())
     }
 
     // -- animation & tiling feedback (read-only diff/seam primitives) --------
@@ -4264,12 +4277,12 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "replace_color" => (&["from", "to"], &["tolerance"]),
         "flip" => (&[], &["horizontal"]),
         "shift" => (&[], &["dx", "dy", "wrap"]),
-        "blur" => (&["radius"], &["region"]),
+        "blur" => (&["radius"], &["region", "snap"]),
         "quantize" => (&["colors"], &["max_colors"]),
         "outline" => (&["color"], &["aa"]),
-        "drop_shadow" => (&["color"], &["dx", "dy", "blur"]),
+        "drop_shadow" => (&["color"], &["dx", "dy", "blur", "snap"]),
         "glow" => (&[], &["color", "radius", "intensity", "mode"]),
-        "bevel" => (&["light", "dark"], &["depth"]),
+        "bevel" => (&["light", "dark"], &["depth", "snap"]),
         "fill_cel" => (&["color"], &[]),
         "clear_cel" => (&[], &[]),
         "gradient" => (
@@ -4288,8 +4301,14 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
             &["stops", "x0", "y0", "x1", "y1"],
             &["kind", "scale", "octaves", "seed", "blend"],
         ),
-        "shade" => (&[], &["light_dir", "steps", "region", "mode", "ramp"]),
-        "form" => (&[], &["form", "light_dir", "region", "ramp", "strength"]),
+        "shade" => (
+            &[],
+            &["light_dir", "steps", "region", "mode", "ramp", "snap"],
+        ),
+        "form" => (
+            &[],
+            &["form", "light_dir", "region", "ramp", "strength", "snap"],
+        ),
         "dither" => (
             &["color_a", "color_b"],
             &["region", "pattern", "density", "only_existing"],
@@ -4620,6 +4639,66 @@ mod tests {
         d.snap_to_palette(&pal, None, None, AlphaSnap::Opaque(128));
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]); // core → solid
         assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]); // halo → cleared
+    }
+
+    #[test]
+    fn fx_resnaps_to_locked_palette_by_default() {
+        // A blur across two flat palette blocks averages the boundary into
+        // off-palette mud. With a palette locked, the continuous-tone FX path
+        // must re-snap by default so every pixel stays on-palette.
+        let mut d = Document::new("t", 4, 4);
+        let pal = vec![[220, 30, 30, 255], [30, 30, 220, 255]];
+        d.set_palette(pal.clone());
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "fill_cel", "color": [220, 30, 30, 255]}),
+        )
+        .unwrap();
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "rect", "x0": 2, "y0": 0, "x1": 3, "y1": 3, "color": [30, 30, 220, 255], "fill": true}),
+        )
+        .unwrap();
+        d.apply_op(0, 0, &json!({"op": "blur", "radius": 1}))
+            .unwrap();
+        for y in 0..4 {
+            for x in 0..4 {
+                let p = d.get_pixel(0, 0, x, y).unwrap();
+                assert!(pal.contains(&p), "pixel {p:?} at {x},{y} off-palette");
+            }
+        }
+    }
+
+    #[test]
+    fn fx_snap_false_keeps_continuous_tone() {
+        // The same blur with `snap:false` opts out — the blended boundary is
+        // allowed to stay off-palette.
+        let mut d = Document::new("t", 4, 4);
+        let pal = vec![[220, 30, 30, 255], [30, 30, 220, 255]];
+        d.set_palette(pal.clone());
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "fill_cel", "color": [220, 30, 30, 255]}),
+        )
+        .unwrap();
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "rect", "x0": 2, "y0": 0, "x1": 3, "y1": 3, "color": [30, 30, 220, 255], "fill": true}),
+        )
+        .unwrap();
+        d.apply_op(0, 0, &json!({"op": "blur", "radius": 1, "snap": false}))
+            .unwrap();
+        let has_off = (0..4)
+            .flat_map(|y| (0..4).map(move |x| (x, y)))
+            .any(|(x, y)| !pal.contains(&d.get_pixel(0, 0, x, y).unwrap()));
+        assert!(
+            has_off,
+            "snap:false should leave off-palette blended pixels"
+        );
     }
 
     #[test]
