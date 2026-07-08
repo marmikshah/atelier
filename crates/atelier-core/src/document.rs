@@ -1,4 +1,4 @@
-//! The editable document model — atelier's Aseprite-class core.
+//! The editable document model — atelier's layered, animated core.
 //!
 //! A `Document` is a canvas of ordered **layers** (opacity / visibility / blend)
 //! over a timeline of **frames** (each with a duration). A **cel** is one
@@ -2895,8 +2895,8 @@ impl Document {
         Ok(())
     }
 
-    /// Remove L-corner doubles from 1px strokes (Aseprite "pixel-perfect"
-    /// cleanup). A pixel P is erased when it matches the target colour(s), two
+    /// Remove L-corner doubles from 1px strokes (the "pixel-perfect" cleanup
+    /// technique). A pixel P is erased when it matches the target colour(s), two
     /// orthogonally-adjacent neighbours forming an L (left+top, top+right,
     /// right+bottom or bottom+left) also match, AND the diagonal cell between
     /// that pair does NOT match — i.e. P only exists to thicken an elbow.

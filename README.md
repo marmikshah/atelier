@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<p align="center"><strong>A headless pixel-art studio for AI agents — Aseprite-as-API, over MCP.</strong></p>
+<p align="center"><strong>The pixel-art studio agents can see — headless, over MCP.</strong></p>
 
 <p align="center">
   <img src="docs/platformer-scene.gif" width="640" alt="dusk side-scroller scene: cloaked lantern-bearer, owl on a ledge, crystal cave, fireflies">

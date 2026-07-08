@@ -1530,7 +1530,7 @@ impl Atelier {
         ))
     }
 
-    // -- documents: editable layered/timeline sprites (Aseprite-style) --
+    // -- documents: editable layered/timeline sprites --
     #[tool(
         description = "Layer structure in one tool. `op`: add (new layer on top — name/opacity/blend) · set (change layer `index`'s visible/opacity/blend; omit a field to leave it) · move (`index`→`to_index`) · insert (new layer at `index`) · delete · rename · duplicate · merge_down (`index` onto the layer below). Blend ∈ normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion."
     )]
@@ -2779,7 +2779,8 @@ impl ServerHandler for Atelier {
             .enable_prompts()
             .build();
         info.instructions = Some(
-            "atelier: a headless pixel-art editor (Aseprite-as-API). doc_create a \
+            "atelier: the pixel-art studio you can see — a headless editor where every \
+             mark is a tool call and doc_look hands the frame back as an image. doc_create a \
              layered/animated document, then paint cels with doc_draw (one op: \
              line/rect/ellipse/fill/stroke/text/…) or doc_batch (many ops in one call). LOOK with doc_look \
              after every burst of edits — it returns the frame as an INLINE image plus \

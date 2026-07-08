@@ -1493,7 +1493,7 @@ impl Studio {
         })
     }
 
-    /// Remove L-corner doubles from 1px strokes (Aseprite pixel-perfect cleanup).
+    /// Remove L-corner doubles from 1px strokes (the pixel-perfect cleanup technique).
     /// `color` (optional) restricts to strokes of that exact colour. Masked by
     /// the active selection. Returns the erased-pixel `removed` count.
     pub fn doc_pixel_perfect(
