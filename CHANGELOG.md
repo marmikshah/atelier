@@ -10,9 +10,19 @@ The identity + polish release. atelier stands on its own name — **the pixel-ar
 studio agents can see** — with the last two structural quality gaps closed:
 continuous-tone effects can no longer blow the locked palette, and stroke poses
 keep sub-pixel precision so walk cycles glide instead of stepping. Adds
-`doc_form_audit`, a new eye for the #1 shading failure. 66 tools, 204 tests.
+`doc_form_audit` (an eye for the #1 shading failure) and `doc_cast_shadow` (a
+projected ground shadow). 67 tools, 207 tests.
 
 ### Added
+
+- **`doc_cast_shadow`** — a projected ground shadow (full profile). Unlike
+  `doc_drop_shadow` (a flat offset copy), it flattens the caster silhouette onto
+  its contact row and shears it away from the light (`az` — the vector
+  `doc_form_audit` infers), stretched by `length` and foreshortened by `squash`,
+  so a tall shape throws a long shadow anchored at its feet. With a
+  `receiver_layer` the shadow is painted onto that layer and clipped to its
+  opaque pixels (it only lands on the ground); otherwise it is drawn behind the
+  caster. Completes the lighting story: form → rim → cast.
 
 - **`doc_form_audit`** — per-form shading audit (full profile). For each
   connected opaque form it infers the light direction from a least-squares fit

@@ -4,7 +4,7 @@ The complete tool surface. Everything is drawn at native resolution and scaled u
 nearest-neighbour on export, so the pixel grid stays crisp.
 
 > **Profiles.** By default the server advertises a **core** set of ~28 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 66 below. The
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 67 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
@@ -155,6 +155,12 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   (`az`: 0=right, 90=down, 180=left, 270=up); `dark=true` lights the away-facing
   edge (core/contact shadow). Topological — survives small canvases where a
   Fresnel rim washes out.
+- `doc_cast_shadow` — a projected GROUND shadow (not a flat offset copy like
+  `drop_shadow`): the caster silhouette flattened onto its contact row and
+  sheared AWAY from the light (`az`), stretched by `length` and foreshortened by
+  `squash`. With `receiver_layer` it lands on that layer clipped to its opaque
+  pixels (the ground); else it sits behind the caster. Pairs with the light
+  vector `doc_form_audit` infers.
 - `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
   colour to `to[i]` across every cel (exact match, all channels), updating the
   stored palette too; optional `layer` / `frame` restrict scope. One sprite, many

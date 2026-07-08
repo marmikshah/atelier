@@ -251,6 +251,30 @@ pub struct DocRimLight {
     pub snap: Option<bool>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocCastShadow {
+    pub doc_id: String,
+    /// The caster layer (its silhouette throws the shadow).
+    pub layer: usize,
+    pub frame: usize,
+    /// Shadow colour [r,g,b(,a)].
+    pub color: Vec<i64>,
+    /// Light azimuth in degrees: 0=right, 90=down, 180=left, 270=up (pairs with
+    /// the vector doc_form_audit infers). The shadow falls opposite. Default 135.
+    pub az: Option<f32>,
+    /// Ground stretch — how far the shadow projects (default 1.0).
+    pub length: Option<f32>,
+    /// How much height survives, 0..1 (0 = flat on the ground; default 0.2).
+    pub squash: Option<f32>,
+    /// Shadow strength 0..255 (default 140).
+    pub opacity: Option<u8>,
+    /// Paint the shadow onto this layer and clip it to that layer's opaque
+    /// pixels (the ground surface). Omit = draw behind the caster on its own cel.
+    pub receiver_layer: Option<usize>,
+    /// Snap on-palette afterwards when a palette is locked (default true).
+    pub snap: Option<bool>,
+}
+
 /// One gradient colour stop: position along the axis (0..1) + RGBA colour.
 #[derive(Deserialize, JsonSchema)]
 pub struct GradientStop {
@@ -1694,6 +1718,24 @@ impl Atelier {
     }
 
     #[tool(
+        description = "Cast a projected GROUND shadow from a caster silhouette — not a flat offset copy (that's doc_drop_shadow) but the caster flattened onto its contact row and sheared AWAY from the light, so a tall shape throws a long foreshortened shadow anchored at its feet. `az` = light azimuth (0=right, 90=down, 180=left, 270=up; pairs with doc_form_audit); `length` stretches it along the ground, `squash` 0..1 is how much height survives (0 = flat). With `receiver_layer` the shadow is painted onto that layer and clipped to its opaque pixels (lands on the ground only); omit to draw behind the caster on its own cel. `snap` keeps it on-palette."
+    )]
+    async fn doc_cast_shadow(&self, Parameters(p): Parameters<DocCastShadow>) -> CallToolResult {
+        res(self.studio().doc_cast_shadow(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.az.unwrap_or(135.0),
+            p.length.unwrap_or(1.0),
+            p.squash.unwrap_or(0.2),
+            rgba(&p.color),
+            p.opacity.unwrap_or(140),
+            p.receiver_layer,
+            p.snap.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
         description = "Set/modify the active pixel selection so subsequent painting ops (fill/gradient/scatter/rect/ellipse/polygon/pencil/line/batch) are confined to it. shape: rect (x0,y0,x1,y1) | ellipse (cx,cy,rx,ry) | color (layer,frame + `color` or sample x,y + tolerance) | all | none (clear). mode: replace (default) | add | subtract | intersect."
     )]
     async fn doc_select(&self, Parameters(p): Parameters<DocSelect>) -> CallToolResult {
@@ -2613,7 +2655,7 @@ impl Atelier {
 }
 
 /// The default ("core") tool profile — the ~28 tools the canonical sprite /
-/// animation / tile / recreate-from-reference workflows need. The full 66-tool
+/// animation / tile / recreate-from-reference workflows need. The full 67-tool
 /// surface (extra effects, rigging, audits, library exports) is advertised when
 /// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
 /// every tool still EXECUTES via call_tool (so `atelier replay` and a flag-flip

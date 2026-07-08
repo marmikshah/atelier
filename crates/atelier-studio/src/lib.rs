@@ -1292,6 +1292,36 @@ impl Studio {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_cast_shadow(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        az_deg: f32,
+        length: f32,
+        squash: f32,
+        color: [u8; 4],
+        opacity: u8,
+        receiver_layer: Option<usize>,
+        snap: bool,
+    ) -> Result<Value, String> {
+        self.edit(id, |d| {
+            d.cast_shadow(
+                layer,
+                frame,
+                az_deg,
+                length,
+                squash,
+                color,
+                opacity,
+                receiver_layer,
+                snap,
+            )
+            .map(|_| ())
+        })
+    }
+
     pub fn doc_adjust(
         &self,
         id: &str,

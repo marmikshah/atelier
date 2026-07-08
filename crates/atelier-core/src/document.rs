@@ -2091,6 +2091,112 @@ impl Document {
         Ok(())
     }
 
+    /// Cast a projected ground shadow from a caster silhouette. Unlike
+    /// `drop_shadow` (a flat offset copy), this lays the caster down onto the
+    /// ground from its contact row and shears it AWAY from the light, so a tall
+    /// shape throws a long foreshortened shadow stretching across the floor from
+    /// its feet. `az_deg` is the light azimuth (0=right, 90=down, 180=left,
+    /// 270=up — pairs with the vector `doc_form_audit` infers); `length`
+    /// stretches the shadow along the ground, `squash` (0..1) is how far down the
+    /// floor it reaches (0 = a flat smear at the contact row). With
+    /// `receiver_layer` the shadow is painted onto that layer and clipped to its
+    /// opaque pixels (it only lands on the ground), else it is drawn behind the
+    /// caster on its own cel. Returns the shadow pixel count.
+    #[allow(clippy::too_many_arguments)]
+    pub fn cast_shadow(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        az_deg: f32,
+        length: f32,
+        squash: f32,
+        color: [u8; 4],
+        opacity: u8,
+        receiver_layer: Option<usize>,
+        snap: bool,
+    ) -> Result<u32, String> {
+        let pal = self.meta.palette.clone();
+        let caster = self.cel_canvas(layer, frame)?.clone();
+        let (w, h) = (caster.width() as i32, caster.height() as i32);
+        // Contact row: the lowest opaque pixel of the caster is where it meets
+        // the ground and where the shadow is anchored.
+        let mut anchor_y = None;
+        for y in (0..h).rev() {
+            if (0..w).any(|x| caster.get_pixel(x as u32, y as u32).0[3] > 0) {
+                anchor_y = Some(y);
+                break;
+            }
+        }
+        let Some(anchor_y) = anchor_y else {
+            return Ok(0); // nothing to cast
+        };
+        // Project each caster pixel onto the ground: shear along the light's
+        // opposite horizontal, foreshorten by `squash`. Accumulate max coverage.
+        let az = az_deg.to_radians();
+        let shear = -az.cos() * length.max(0.0);
+        let squash = squash.clamp(0.0, 1.0);
+        let scale = (opacity as f32 / 255.0) * (color[3] as f32 / 255.0);
+        let mut mask = vec![0f32; (w * h) as usize];
+        for y in 0..=anchor_y {
+            for x in 0..w {
+                let a = caster.get_pixel(x as u32, y as u32).0[3];
+                if a == 0 {
+                    continue;
+                }
+                let hgt = (anchor_y - y) as f32;
+                // Taller pixels project further along the ground (shear) and
+                // further down the floor from the contact row (foreshortened).
+                let sx = (x as f32 + shear * hgt).round() as i32;
+                let sy = (anchor_y as f32 + hgt * squash).round() as i32;
+                if sx < 0 || sy < 0 || sx >= w || sy >= h {
+                    continue;
+                }
+                let cov = a as f32 / 255.0 * scale;
+                let idx = (sy * w + sx) as usize;
+                if cov > mask[idx] {
+                    mask[idx] = cov;
+                }
+            }
+        }
+        let target = receiver_layer.unwrap_or(layer);
+        let orig_target = self.cel_canvas(target, frame)?.clone();
+        let mut out = orig_target.clone();
+        let mut painted = 0u32;
+        for y in 0..h {
+            for x in 0..w {
+                let idx = (y * w + x) as usize;
+                let cov = mask[idx];
+                if cov <= 0.0 {
+                    continue;
+                }
+                // Clip to the receiver's opaque pixels (shadow lands on ground
+                // only); with no receiver, don't paint over the caster itself.
+                let target_a = orig_target.get_pixel(x as u32, y as u32).0[3];
+                if receiver_layer.is_some() {
+                    if target_a == 0 {
+                        continue;
+                    }
+                } else if caster.get_pixel(x as u32, y as u32).0[3] > 0 {
+                    continue;
+                }
+                let a = (cov * 255.0).round().clamp(0.0, 255.0) as u8;
+                let base = out.get_pixel(x as u32, y as u32).0;
+                let px = raster::over(base, [color[0], color[1], color[2], a]);
+                out.put_pixel(x as u32, y as u32, Rgba(px));
+                painted += 1;
+            }
+        }
+        // With no receiver, the caster must sit ON TOP of its own shadow.
+        if receiver_layer.is_none() {
+            raster::composite(&mut out, &caster, 0, 0, 255, raster::Blend::Normal);
+        }
+        *self.cel_canvas(target, frame)? = out;
+        if snap && !pal.is_empty() {
+            self.snap_to_palette(&pal, Some(target), Some(frame), AlphaSnap::Preserve);
+        }
+        Ok(painted)
+    }
+
     /// Paint a RIM light along the silhouette edges that FACE the light — the
     /// edge-relative move that was 100% manual (dump-region round-trips). For each
     /// opaque pixel near the edge it estimates the outward surface normal from the
@@ -4729,6 +4835,77 @@ mod tests {
         assert!(
             has_off,
             "snap:false should leave off-palette blended pixels"
+        );
+    }
+
+    #[test]
+    fn cast_shadow_projects_behind_caster() {
+        let mut d = Document::new("t", 24, 24);
+        // A vertical bar caster resting on row 15.
+        d.rect(0, 0, 10, 4, 12, 15, [255, 255, 255, 255], true, 1)
+            .unwrap();
+        let painted = d
+            .cast_shadow(0, 0, 135.0, 1.5, 0.2, [20, 20, 30, 255], 180, None, false)
+            .unwrap();
+        assert!(painted > 0, "shadow should paint pixels");
+        // The caster still sits on top (unchanged white).
+        assert_eq!(d.get_pixel(0, 0, 11, 5).unwrap(), [255, 255, 255, 255]);
+        // A shadow-coloured pixel exists off the caster.
+        let mut found = false;
+        for y in 0..24 {
+            for x in 0..24 {
+                let p = d.get_pixel(0, 0, x, y).unwrap();
+                if p[3] > 0 && p[0] == 20 && p[1] == 20 && p[2] == 30 {
+                    found = true;
+                }
+            }
+        }
+        assert!(found, "expected shadow-coloured pixels");
+    }
+
+    #[test]
+    fn cast_shadow_clips_to_receiver() {
+        let mut d = Document::new("t", 24, 24);
+        let ground = d.add_layer(Some("ground".into()), 255, "normal".into());
+        let caster = d.add_layer(Some("caster".into()), 255, "normal".into());
+        d.rect(ground, 0, 0, 10, 23, 19, [40, 120, 40, 255], true, 1)
+            .unwrap();
+        d.rect(caster, 0, 8, 6, 10, 15, [255, 255, 255, 255], true, 1)
+            .unwrap();
+        let painted = d
+            .cast_shadow(
+                caster,
+                0,
+                180.0,
+                1.0,
+                0.3,
+                [10, 10, 20, 255],
+                200,
+                Some(ground),
+                false,
+            )
+            .unwrap();
+        assert!(painted > 0, "shadow should land on the ground");
+        // The caster layer is untouched.
+        assert_eq!(d.get_pixel(caster, 0, 9, 7).unwrap(), [255, 255, 255, 255]);
+        // The ground is partly darkened (shadow) and partly its own colour.
+        let (mut blended, mut pure) = (0u32, 0u32);
+        for y in 0..24 {
+            for x in 0..24 {
+                let p = d.get_pixel(ground, 0, x, y).unwrap();
+                if p[3] == 0 {
+                    continue;
+                }
+                if p == [40, 120, 40, 255] {
+                    pure += 1;
+                } else {
+                    blended += 1;
+                }
+            }
+        }
+        assert!(
+            blended > 0 && pure > 0,
+            "ground should be part-shadowed (blended={blended}, pure={pure})"
         );
     }
 
