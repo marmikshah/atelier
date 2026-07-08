@@ -36,7 +36,7 @@ dependencies = [
 
 [[package]]
 name = "atelier"
-version = "1.2.0"
+version = "1.3.0"
 dependencies = [
  "atelier-mcp",
  "serde",
@@ -46,7 +46,7 @@ dependencies = [
 
 [[package]]
 name = "atelier-core"
-version = "1.2.0"
+version = "1.3.0"
 dependencies = [
  "image",
  "png",
@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "atelier-mcp"
-version = "1.2.0"
+version = "1.3.0"
 dependencies = [
  "atelier-core",
  "atelier-studio",
@@ -71,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "atelier-studio"
-version = "1.2.0"
+version = "1.3.0"
 dependencies = [
  "atelier-core",
  "dirs",

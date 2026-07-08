@@ -4,6 +4,37 @@ All notable changes to atelier are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/).
 
+## [1.3.0] — 2026-07-08
+
+The identity + polish release. atelier stands on its own name — **the pixel-art
+studio agents can see** — with the last two structural quality gaps closed:
+continuous-tone effects can no longer blow the locked palette, and stroke poses
+keep sub-pixel precision so walk cycles glide instead of stepping. 201 tests.
+
+### Changed
+
+- **Own identity.** Retired the "Aseprite-as-API" framing across every
+  user-facing surface (README, CLI help, the MCP instructions blurb agents read,
+  crate docs). atelier is positioned by what it *is* — the see-and-correct loop
+  (`doc_look` + critique) and authored-by-construction determinism — not by
+  comparison to another editor.
+- **Continuous-tone FX re-snap to the locked palette by default.** `blur`,
+  `drop_shadow`, `bevel`, `form` and `shade` used to leave blended tone
+  off-palette, blowing an N-colour palette into hundreds (`doc_glow` and
+  `gradient` already re-snapped; these did not). They now snap on the
+  `doc_draw` / `doc_fx` / `doc_batch` path by default — opt out per op with
+  `snap:false` — so effect output stays crisp on-palette pixel art.
+
+### Fixed
+
+- **Stroke pose double-quantize.** The coverage stroke core is sub-pixel, but
+  `Document::stroke` took integer points, so `f32` curve / IK-pose samples were
+  rounded to whole pixels and re-floated — collapsing sub-pixel motion. A new
+  sub-pixel `stroke_f` feeds the core directly (`stroke` is now its integer
+  wrapper), `doc_figure` / `doc_walk` posing is carried in `f32` end to end, and
+  batch stroke points parse as `f32`. Walk cycles and IK-solved limbs move
+  smoothly frame to frame instead of stepping.
+
 ## [1.2.0] — 2026-06-28
 
 The drawing-quality + consolidation release. The engine that was choppy and
