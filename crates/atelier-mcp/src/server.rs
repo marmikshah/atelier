@@ -508,6 +508,15 @@ pub struct DocComponents {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocFormAudit {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    pub layer: Option<usize>,
+    /// Forms smaller than this many pixels are skipped (default 12).
+    pub min_area: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocCoverageMap {
     pub doc_id: String,
     pub frame: Option<usize>,
@@ -1760,6 +1769,18 @@ impl Atelier {
     }
 
     #[tool(
+        description = "Per-form shading audit — sees the #1 beginner failure the scalar reports can't. For each connected opaque form it infers the light direction (least-squares fit of perceptual lightness → `light_azimuth_deg`, `plane_fit_r2`) and flags PILLOW-SHADING (`pillow_corr`: brightness hugging the silhouette centre instead of a light direction). The summary reports `pillow_forms`, the shared `dominant_light_azimuth_deg` / `light_spread_deg`, and a verdict (ok | pillow-shading detected | inconsistent light direction). `min_area` skips specks (default 12). Deterministic; run before relight/form or before export."
+    )]
+    async fn doc_form_audit(&self, Parameters(p): Parameters<DocFormAudit>) -> CallToolResult {
+        res(self.studio().doc_form_audit(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.layer,
+            p.min_area.unwrap_or(12),
+        ))
+    }
+
+    #[tool(
         description = "Coarse coverage/composition heatmap: split the flattened frame into rows×cols cells (default 8×8), each reporting opaque fill 0..1 and mean luma (null if empty), plus the content bbox and its centre offset from the canvas centre. Check balance/placement/negative space."
     )]
     async fn doc_coverage_map(&self, Parameters(p): Parameters<DocCoverageMap>) -> CallToolResult {
@@ -2592,7 +2613,7 @@ impl Atelier {
 }
 
 /// The default ("core") tool profile — the ~28 tools the canonical sprite /
-/// animation / tile / recreate-from-reference workflows need. The full 65-tool
+/// animation / tile / recreate-from-reference workflows need. The full 66-tool
 /// surface (extra effects, rigging, audits, library exports) is advertised when
 /// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
 /// every tool still EXECUTES via call_tool (so `atelier replay` and a flag-flip

@@ -307,6 +307,24 @@ impl Studio {
         }))
     }
 
+    /// Per-form shading audit — the eye for the #1 beginner failure the scalar
+    /// suite could not see. For each connected opaque component (a "form") it
+    /// infers the light direction from a least-squares fit of perceptual
+    /// lightness across the form, and flags **pillow-shading** (brightness that
+    /// hugs the silhouette centre instead of a light direction) plus whether the
+    /// forms agree on one light. `min_area` skips specks (default 12).
+    pub fn doc_form_audit(
+        &self,
+        id: &str,
+        frame: usize,
+        layer: Option<usize>,
+        min_area: u32,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let img = doc.analysis_image(layer, frame)?;
+        Ok(form_audit_image(&img, min_area))
+    }
+
     /// Coarse coverage heatmap: split the canvas into `rows`×`cols` cells, each
     /// reporting opaque fill 0..1 and mean luma (null if the cell is empty), plus
     /// the content bbox and its centre offset from the canvas centre.
@@ -1303,9 +1321,195 @@ impl Studio {
     }
 }
 
+/// Mean angle and max angular spread (degrees) of a set of directions, handling
+/// the 0/360 wrap via unit-vector summation. Empty → `(None, None)`.
+fn circular_summary(deg: &[f64]) -> (Option<f64>, Option<f64>) {
+    if deg.is_empty() {
+        return (None, None);
+    }
+    let (mut sx, mut sy) = (0.0, 0.0);
+    for &d in deg {
+        let r = d.to_radians();
+        sx += r.cos();
+        sy += r.sin();
+    }
+    let mean = sy.atan2(sx).to_degrees();
+    let spread = deg
+        .iter()
+        .map(|&d| {
+            let mut diff = (d - mean).rem_euclid(360.0);
+            if diff > 180.0 {
+                diff -= 360.0;
+            }
+            diff.abs()
+        })
+        .fold(0.0f64, f64::max);
+    (Some(mean), Some(spread))
+}
+
+/// The guts of `doc_form_audit`, factored out so it can be unit-tested without a
+/// Studio/disk. For each connected opaque component it fits a lightness plane
+/// (the inferred light direction), correlates lightness with interior distance
+/// (the pillow-shading tell), and reports whether the forms share one light.
+pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
+    use atelier_core::raster;
+    let (w, h) = (img.width() as usize, img.height() as usize);
+    let fg: Vec<bool> = img.pixels().map(|p| p.0[3] > 0).collect();
+    let idist = raster::interior_distance(&fg, w, h);
+    let idx = |x: usize, y: usize| y * w + x;
+    let neigh: [(i32, i32); 8] = [
+        (-1, 0),
+        (1, 0),
+        (0, -1),
+        (0, 1),
+        (-1, -1),
+        (1, -1),
+        (-1, 1),
+        (1, 1),
+    ];
+    let mut seen = vec![false; w * h];
+    let mut forms: Vec<Value> = Vec::new();
+    let mut azimuths: Vec<f64> = Vec::new();
+    let mut pillow_count = 0u32;
+    for sy in 0..h {
+        for sx in 0..w {
+            let si = idx(sx, sy);
+            if seen[si] || !fg[si] {
+                continue;
+            }
+            // BFS the component, gathering (x, y, lightness, interior-distance).
+            let mut stack = vec![(sx, sy)];
+            seen[si] = true;
+            let mut px: Vec<(f64, f64, f64, f64)> = Vec::new();
+            let mut bbox = [sx as i32, sy as i32, sx as i32, sy as i32];
+            while let Some((x, y)) = stack.pop() {
+                let l = raster::srgb_to_oklab(img.get_pixel(x as u32, y as u32).0).0 as f64;
+                px.push((x as f64, y as f64, l, idist[idx(x, y)] as f64));
+                bbox[0] = bbox[0].min(x as i32);
+                bbox[1] = bbox[1].min(y as i32);
+                bbox[2] = bbox[2].max(x as i32);
+                bbox[3] = bbox[3].max(y as i32);
+                for (ox, oy) in neigh {
+                    let (nx, ny) = (x as i32 + ox, y as i32 + oy);
+                    if nx < 0 || ny < 0 || nx >= w as i32 || ny >= h as i32 {
+                        continue;
+                    }
+                    let ni = idx(nx as usize, ny as usize);
+                    if !seen[ni] && fg[ni] {
+                        seen[ni] = true;
+                        stack.push((nx as usize, ny as usize));
+                    }
+                }
+            }
+            let area = px.len() as u32;
+            if area < min_area.max(4) {
+                continue;
+            }
+            let n = px.len() as f64;
+            let (mx, my, ml) = (
+                px.iter().map(|p| p.0).sum::<f64>() / n,
+                px.iter().map(|p| p.1).sum::<f64>() / n,
+                px.iter().map(|p| p.2).sum::<f64>() / n,
+            );
+            // Least-squares plane L ≈ a·x + b·y + c on centred coords: (a, b) is
+            // the lightness gradient, pointing toward the light.
+            let (mut sxx, mut syy, mut sxy, mut sxl, mut syl) = (0.0, 0.0, 0.0, 0.0, 0.0);
+            for &(x, y, l, _) in &px {
+                let (dx, dy, dl) = (x - mx, y - my, l - ml);
+                sxx += dx * dx;
+                syy += dy * dy;
+                sxy += dx * dy;
+                sxl += dx * dl;
+                syl += dy * dl;
+            }
+            let det = sxx * syy - sxy * sxy;
+            let (a, b) = if det.abs() > 1e-6 {
+                ((sxl * syy - syl * sxy) / det, (syl * sxx - sxl * sxy) / det)
+            } else {
+                (0.0, 0.0)
+            };
+            let sll: f64 = px.iter().map(|&(_, _, l, _)| (l - ml).powi(2)).sum();
+            let ss_res: f64 = px
+                .iter()
+                .map(|&(x, y, l, _)| (l - (a * (x - mx) + b * (y - my) + ml)).powi(2))
+                .sum();
+            let plane_r2 = if sll > 1e-9 {
+                (1.0 - ss_res / sll).max(0.0)
+            } else {
+                0.0
+            };
+            // Pillow tell: lightness correlated with distance-to-edge (bright
+            // centre, dark all round) rather than a direction.
+            let md = px.iter().map(|p| p.3).sum::<f64>() / n;
+            let (mut cov, mut vl, mut vd) = (0.0, 0.0, 0.0);
+            for &(_, _, l, d) in &px {
+                let (dl, dd) = (l - ml, d - md);
+                cov += dl * dd;
+                vl += dl * dl;
+                vd += dd * dd;
+            }
+            let pillow_corr = if vl > 1e-9 && vd > 1e-9 {
+                cov / (vl.sqrt() * vd.sqrt())
+            } else {
+                0.0
+            };
+            let mag = (a * a + b * b).sqrt();
+            // Image y is down; negate it so azimuth reads maths-standard
+            // (0° = right, 90° = up).
+            let azimuth = if mag > 1e-6 {
+                (-b).atan2(a).to_degrees()
+            } else {
+                f64::NAN
+            };
+            let directional = plane_r2 >= 0.4 && mag > 1e-4;
+            let is_pillow = pillow_corr > 0.5 && plane_r2 < 0.35;
+            if is_pillow {
+                pillow_count += 1;
+            }
+            if directional && !azimuth.is_nan() {
+                azimuths.push(azimuth);
+            }
+            let verdict = if is_pillow {
+                "pillow"
+            } else if directional {
+                "directional"
+            } else {
+                "flat"
+            };
+            forms.push(json!({
+                "bbox": bbox,
+                "area": area,
+                "light_azimuth_deg": if azimuth.is_nan() { Value::Null } else { json!(azimuth.round()) },
+                "plane_fit_r2": (plane_r2 * 100.0).round() / 100.0,
+                "pillow_corr": (pillow_corr * 100.0).round() / 100.0,
+                "verdict": verdict,
+            }));
+        }
+    }
+    let (dominant, spread) = circular_summary(&azimuths);
+    let inconsistent = azimuths.len() >= 2 && spread.map(|s| s > 45.0).unwrap_or(false);
+    let summary_verdict = if pillow_count > 0 {
+        "pillow-shading detected"
+    } else if inconsistent {
+        "inconsistent light direction"
+    } else if forms.is_empty() {
+        "no forms"
+    } else {
+        "ok"
+    };
+    json!({
+        "forms": forms,
+        "pillow_forms": pillow_count,
+        "dominant_light_azimuth_deg": dominant.map(|d| json!(d.round())).unwrap_or(Value::Null),
+        "light_spread_deg": spread.map(|s| json!((s * 10.0).round() / 10.0)).unwrap_or(Value::Null),
+        "verdict": summary_verdict,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::Studio;
+    use super::{circular_summary, form_audit_image};
     use serde_json::{json, Value};
 
     fn studio(tag: &str) -> Studio {
@@ -1348,6 +1552,53 @@ mod tests {
         assert_eq!(r["fill_ratio"], json!(0.25)); // 4 of 16 opaque
         assert_eq!(r["grid"][0], "...."); // empty top row
         assert_eq!(r["grid"][1], ".##."); // the block's first row
+    }
+
+    #[test]
+    fn form_audit_flags_directional_light() {
+        // A padded 12x12 block whose lightness ramps along +x reads as a clean
+        // directional fit, not pillow.
+        let mut img = image::RgbaImage::new(16, 16);
+        for y in 2..14u32 {
+            for x in 2..14u32 {
+                let v = (40 + (x - 2) * 16).min(255) as u8;
+                img.put_pixel(x, y, image::Rgba([v, v, v, 255]));
+            }
+        }
+        let r = form_audit_image(&img, 12);
+        assert_eq!(r["forms"][0]["verdict"], "directional");
+        assert_eq!(r["pillow_forms"], 0);
+        assert_eq!(r["verdict"], "ok");
+    }
+
+    #[test]
+    fn form_audit_flags_pillow_shading() {
+        // A padded 12x12 block lit concentrically (bright centre, dark all
+        // edges) — the classic pillow-shading tell.
+        let mut img = image::RgbaImage::new(16, 16);
+        for y in 2..14i32 {
+            for x in 2..14i32 {
+                let (lx, ly) = (x - 2, y - 2);
+                let edge = lx.min(ly).min(11 - lx).min(11 - ly); // dist to block edge
+                let v = (40 + edge * 26).min(255) as u8;
+                img.put_pixel(x as u32, y as u32, image::Rgba([v, v, v, 255]));
+            }
+        }
+        let r = form_audit_image(&img, 12);
+        assert_eq!(r["forms"][0]["verdict"], "pillow");
+        assert_eq!(r["pillow_forms"], 1);
+        assert_eq!(r["verdict"], "pillow-shading detected");
+    }
+
+    #[test]
+    fn circular_summary_wraps_across_zero() {
+        let (mean, spread) = circular_summary(&[350.0, 10.0]);
+        let m = mean.unwrap().rem_euclid(360.0);
+        assert!(
+            !(1.0..=359.0).contains(&m),
+            "mean {m} should sit near 0/360"
+        );
+        assert!((spread.unwrap() - 10.0).abs() < 0.5);
     }
 
     #[test]

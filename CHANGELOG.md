@@ -9,7 +9,19 @@ All notable changes to atelier are documented here. Format follows
 The identity + polish release. atelier stands on its own name — **the pixel-art
 studio agents can see** — with the last two structural quality gaps closed:
 continuous-tone effects can no longer blow the locked palette, and stroke poses
-keep sub-pixel precision so walk cycles glide instead of stepping. 201 tests.
+keep sub-pixel precision so walk cycles glide instead of stepping. Adds
+`doc_form_audit`, a new eye for the #1 shading failure. 66 tools, 204 tests.
+
+### Added
+
+- **`doc_form_audit`** — per-form shading audit (full profile). For each
+  connected opaque form it infers the light direction from a least-squares fit
+  of perceptual lightness (`light_azimuth_deg`, `plane_fit_r2`) and flags
+  **pillow-shading** — brightness that hugs the silhouette centre instead of a
+  light direction (`pillow_corr`) — plus whether the forms share one light
+  (`dominant_light_azimuth_deg` / `light_spread_deg`). Deterministic, reuses the
+  existing component + interior-distance + OKLab machinery. The see-and-critique
+  eye for the beginner tell the scalar reports structurally couldn't surface.
 
 ### Changed
 

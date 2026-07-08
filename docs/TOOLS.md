@@ -4,7 +4,7 @@ The complete tool surface. Everything is drawn at native resolution and scaled u
 nearest-neighbour on export, so the pixel grid stays crisp.
 
 > **Profiles.** By default the server advertises a **core** set of ~28 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 65 below. The
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 66 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
@@ -177,6 +177,10 @@ Read the canvas as *data* — the agent's other eye.
 - `doc_components` — connected-component report (bbox, centroid, area,
   dominant colour per blob, stray 1–2px specks listed separately): catches
   floating pixels and detached limbs a thumbnail hides.
+- `doc_form_audit` — per-form shading audit: infers each form's light direction
+  (lightness-plane fit) and flags pillow-shading (brightness hugging the centre
+  instead of a light) plus whether the forms agree on one light. Sees the #1
+  beginner failure the scalar reports can't.
 - `doc_coverage_map` — coarse occupancy/value heatmap as numbers, plus content
   bbox and centring offset: composition balance without dictating it.
 - `doc_contrast_check` — WCAG contrast ratios: a region vs its surround, all
