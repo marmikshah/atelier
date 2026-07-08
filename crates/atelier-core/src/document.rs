@@ -1352,13 +1352,35 @@ impl Document {
         aa: bool,
         snap: bool,
     ) -> Result<(), String> {
+        let f: Vec<(f32, f32, f32)> = pts
+            .iter()
+            .map(|&(x, y, w)| (x as f32, y as f32, w.max(0) as f32))
+            .collect();
+        self.stroke_f(layer, frame, &f, color, aa, snap)
+    }
+
+    /// Sub-pixel variant of [`Self::stroke`]: each point is `(x, y, full_width)`
+    /// in continuous coordinates, fed straight to the coverage core with no
+    /// integer round trip. Curves and poses sampled in `f32` (arcs, IK-solved
+    /// limbs, eased motion) keep their sub-pixel precision instead of collapsing
+    /// to whole pixels — the fix for choppy staircased curves. `stroke` is the
+    /// integer-point wrapper over this.
+    pub fn stroke_f(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        pts: &[(f32, f32, f32)],
+        color: [u8; 4],
+        aa: bool,
+        snap: bool,
+    ) -> Result<(), String> {
         if pts.is_empty() {
             return Err("stroke needs at least one point".into());
         }
         let pal = self.meta.palette.clone();
         let f: Vec<(f32, f32, f32)> = pts
             .iter()
-            .map(|&(x, y, w)| (x as f32, y as f32, w.max(0) as f32 / 2.0))
+            .map(|&(x, y, w)| (x, y, w.max(0.0) / 2.0))
             .collect();
         let img = self.cel_canvas(layer, frame)?;
         raster::stroke_ribbon(img, &f, color, aa);
@@ -3850,14 +3872,17 @@ impl Document {
                 col("color"),
                 gb("fill", true),
             ),
-            "stroke" => self.stroke(
-                layer,
-                frame,
-                &points3_val(op.get("points"), gi("width", 2)),
-                col("color"),
-                gb("aa", true),
-                gb("snap", true),
-            ),
+            "stroke" => {
+                let w = op.get("width").and_then(|v| v.as_f64()).unwrap_or(2.0) as f32;
+                self.stroke_f(
+                    layer,
+                    frame,
+                    &points3f_val(op.get("points"), w),
+                    col("color"),
+                    gb("aa", true),
+                    gb("snap", true),
+                )
+            }
             "fill" | "bucket" => self.bucket_fill(
                 layer,
                 frame,
@@ -4198,16 +4223,22 @@ fn rgba_val(v: Option<&Value>) -> [u8; 4] {
 
 /// Parse `[[x,y], ...]` or `[[x,y,width], ...]` into stroke vertices, filling
 /// the missing width with `default_w`. Points shorter than 2 are dropped.
-fn points3_val(v: Option<&Value>, default_w: i32) -> Vec<(i32, i32, i32)> {
+fn points3f_val(v: Option<&Value>, default_w: f32) -> Vec<(f32, f32, f32)> {
     v.and_then(|x| x.as_array())
         .map(|a| {
             a.iter()
                 .filter_map(|p| p.as_array())
                 .filter(|pt| pt.len() >= 2)
                 .map(|pt| {
-                    let g =
-                        |i: usize, d: i64| pt.get(i).and_then(|n| n.as_i64()).unwrap_or(d) as i32;
-                    (g(0, 0), g(1, 0), g(2, default_w as i64))
+                    // Parse as f64 so fractional stroke points survive to the
+                    // sub-pixel coverage core instead of truncating to integers.
+                    let g = |i: usize, d: f32| {
+                        pt.get(i)
+                            .and_then(|n| n.as_f64())
+                            .map(|n| n as f32)
+                            .unwrap_or(d)
+                    };
+                    (g(0, 0.0), g(1, 0.0), g(2, default_w))
                 })
                 .collect()
         })
@@ -4698,6 +4729,33 @@ mod tests {
         assert!(
             has_off,
             "snap:false should leave off-palette blended pixels"
+        );
+    }
+
+    #[test]
+    fn stroke_f_keeps_subpixel_position() {
+        // A 1px AA stroke centred on row 3 lights that row nearly solid; nudging
+        // it half a pixel down splits its coverage between rows 3 and 4, so the
+        // row-3 alpha must drop. If the point were rounded to an integer first
+        // (the old double-quantize) both cases would be identical.
+        let on_row = |y: f32| {
+            let mut d = Document::new("t", 12, 8);
+            d.stroke_f(
+                0,
+                0,
+                &[(2.0, y, 1.0), (8.0, y, 1.0)],
+                [255, 255, 255, 255],
+                true,
+                false,
+            )
+            .unwrap();
+            d.get_pixel(0, 0, 5, 3).unwrap()[3]
+        };
+        let centred = on_row(3.0);
+        let nudged = on_row(3.5);
+        assert!(
+            centred > nudged + 40,
+            "sub-pixel nudge should lower row-3 coverage (centred={centred}, nudged={nudged})"
         );
     }
 

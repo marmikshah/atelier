@@ -1418,10 +1418,14 @@ impl Studio {
         aa: bool,
         snap: bool,
     ) -> Result<Value, String> {
-        let bones = humanoid_bones(joints, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+        let jf: std::collections::HashMap<String, (f32, f32)> = joints
+            .iter()
+            .map(|(k, &(x, y))| (k.clone(), (x as f32, y as f32)))
+            .collect();
+        let bones = humanoid_bones(&jf, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
         let (dir, mut doc) = self.open(id)?;
         for b in &bones {
-            doc.stroke(layer, frame, b, color, aa, false)?;
+            doc.stroke_f(layer, frame, b, color, aa, false)?;
         }
         if snap && !doc.meta.palette.is_empty() {
             let pal = doc.meta.palette.clone();
@@ -1461,13 +1465,17 @@ impl Studio {
         aa: bool,
         snap: bool,
     ) -> Result<Value, String> {
-        // Validate up front (re-uses the figure joint contract).
-        humanoid_bones(base, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
-        let frames = frames.clamp(2, 24);
         let g = |k: &str| {
             let v = base[k];
             (v.0 as f32, v.1 as f32)
         };
+        // Validate up front (re-uses the figure joint contract).
+        let base_f: std::collections::HashMap<String, (f32, f32)> = base
+            .iter()
+            .map(|(k, &(x, y))| (k.clone(), (x as f32, y as f32)))
+            .collect();
+        humanoid_bones(&base_f, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+        let frames = frames.clamp(2, 24);
         let dist =
             |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
         // Bone lengths from the base pose (assume left/right symmetric).
@@ -1495,10 +1503,11 @@ impl Studio {
         // Per-frame: build the posed joint table, flesh it, draw into frame f.
         for f in 0..frames {
             let t = f as f32 / frames as f32;
-            // Body bob: rises on the passing pose, twice per stride.
-            let body_dy = (bob as f32 * (tau * t * 2.0).sin()).round() as i32;
-            let shift = |p: (f32, f32)| (p.0.round() as i32, (p.1 + body_dy as f32).round() as i32);
-            let mut j: std::collections::HashMap<String, (i32, i32)> =
+            // Body bob: rises on the passing pose, twice per stride. Kept in f32
+            // through to the sub-pixel stroke so the cycle glides, not steps.
+            let body_dy = bob as f32 * (tau * t * 2.0).sin();
+            let shift = |p: (f32, f32)| (p.0, p.1 + body_dy);
+            let mut j: std::collections::HashMap<String, (f32, f32)> =
                 std::collections::HashMap::new();
             // Body/girdle joints just bob.
             for k in ["head", "shoulder_l", "shoulder_r", "hip_l", "hip_r"] {
@@ -1511,18 +1520,12 @@ impl Studio {
                 let base_foot = g(&format!("foot_{side}"));
                 let fx = base_foot.0 + (stride as f32 * 0.5) * (tau * ph).cos();
                 let fy = base_foot.1 - (lift as f32) * (tau * ph).sin().max(0.0);
-                let foot = (fx.round() as i32, fy.round() as i32);
+                let foot = (fx, fy);
                 let knee = ik_world(
-                    (hip.0 as f32, hip.1 as f32),
-                    (foot.0 as f32, foot.1 as f32),
-                    l_thigh,
-                    l_shin,
+                    hip, foot, l_thigh, l_shin,
                     true, // knee stays ahead of the hip (bends forward)
                 );
-                j.insert(
-                    format!("knee_{side}"),
-                    (knee.0.round() as i32, knee.1.round() as i32),
-                );
+                j.insert(format!("knee_{side}"), knee);
                 j.insert(format!("foot_{side}"), foot);
             }
             // Arms counter-swing the legs (half-cycle offset); elbow via IK.
@@ -1531,24 +1534,18 @@ impl Studio {
                 let sh = shift(g(&format!("shoulder_{side}")));
                 let base_hand = g(&format!("hand_{side}"));
                 let hx = base_hand.0 + (arm_swing as f32) * (tau * ph).cos();
-                let hand = (hx.round() as i32, base_hand.1.round() as i32 + body_dy);
+                let hand = (hx, base_hand.1 + body_dy);
                 let elbow = ik_world(
-                    (sh.0 as f32, sh.1 as f32),
-                    (hand.0 as f32, hand.1 as f32),
-                    l_uarm,
-                    l_farm,
+                    sh, hand, l_uarm, l_farm,
                     false, // elbow stays behind the shoulder (bends back)
                 );
-                j.insert(
-                    format!("elbow_{side}"),
-                    (elbow.0.round() as i32, elbow.1.round() as i32),
-                );
+                j.insert(format!("elbow_{side}"), elbow);
                 j.insert(format!("hand_{side}"), hand);
             }
             let bones = humanoid_bones(&j, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
             doc.clear_cel(layer, f);
             for b in &bones {
-                doc.stroke(layer, f, b, color, aa, false)?;
+                doc.stroke_f(layer, f, b, color, aa, false)?;
             }
             if snap && !doc.meta.palette.is_empty() {
                 let pal = doc.meta.palette.clone();
@@ -1573,10 +1570,10 @@ impl Studio {
 /// `doc_stroke` core). Shared so a posed figure and an animated walk frame flesh
 /// identically.
 /// One bone as a width-profiled point chain `[(x,y,width), ...]` for the stroke core.
-type Bone = Vec<(i32, i32, i32)>;
+type Bone = Vec<(f32, f32, f32)>;
 
 fn humanoid_bones(
-    joints: &std::collections::HashMap<String, (i32, i32)>,
+    joints: &std::collections::HashMap<String, (f32, f32)>,
     lw: i32,
     tw: i32,
     hr: i32,
@@ -1605,11 +1602,13 @@ fn humanoid_bones(
         }
     }
     let j = |k: &str| joints[k];
-    let mid = |a: (i32, i32), b: (i32, i32)| ((a.0 + b.0) / 2, (a.1 + b.1) / 2);
+    let mid = |a: (f32, f32), b: (f32, f32)| ((a.0 + b.0) * 0.5, (a.1 + b.1) * 0.5);
     let chest = mid(j("shoulder_l"), j("shoulder_r"));
     let pelvis = mid(j("hip_l"), j("hip_r"));
     let taper = |w: i32| (w * 7 / 10).max(1);
-    let cap = |a: (i32, i32), w0: i32, b: (i32, i32), w1: i32| vec![(a.0, a.1, w0), (b.0, b.1, w1)];
+    let cap = |a: (f32, f32), w0: i32, b: (f32, f32), w1: i32| {
+        vec![(a.0, a.1, w0 as f32), (b.0, b.1, w1 as f32)]
+    };
     Ok(vec![
         cap(chest, tw, pelvis, (tw * 85 / 100).max(1)), // spine
         cap(j("shoulder_l"), lw, j("shoulder_r"), lw),  // clavicle
@@ -1628,7 +1627,7 @@ fn humanoid_bones(
         cap(j("hip_r"), (lw * 12 / 10).max(1), j("knee_r"), lw), // thigh R
         cap(j("knee_r"), lw, j("foot_r"), taper(lw)),   // shin R
         cap(chest, lw, j("head"), lw),                  // neck
-        vec![(j("head").0, j("head").1, hr * 2)],       // head disc
+        vec![(j("head").0, j("head").1, (hr * 2) as f32)], // head disc
     ])
 }
 
