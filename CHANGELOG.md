@@ -12,11 +12,20 @@ continuous-tone effects can no longer blow the locked palette, and stroke poses
 keep sub-pixel precision so walk cycles glide instead of stepping. Adds
 the game layer (`doc_set_audit` / `doc_set_palette_sync` — a game is a SET of
 documents), `doc_form_audit` (an eye for the #1 shading failure),
-`doc_cast_shadow` (a projected ground shadow), engine-standard sheet JSON, and
-`list_docs` family filters. 69 tools, 213 tests.
+`doc_cast_shadow` (a projected ground shadow), engine-standard sheet JSON,
+`list_docs` family filters, and the `doc_pose_cycle` moveset generator.
+70 tools, 215 tests.
 
 ### Added
 
+- **`doc_pose_cycle`** — the moveset generator (full profile). One standing pose
+  (the 13 `doc_figure` joints) in, a full tagged animation cycle out, per gait:
+  `idle` (breathing bob), `run` (airborne stride, pumping arms, forward lean),
+  `jump` (crouch → rise+tuck → fall → landing absorb), `attack` (lead-arm sweep
+  with a lunge), `hurt` (recoil and recover). Same 2-bone-IK, connected-capsule
+  machinery as `doc_walk`; amplitudes derive from the figure's own leg length ×
+  `intensity`, so every preset fits any sprite size. One call per gait = a whole
+  character moveset from the same pose.
 - **The game layer.** A game is not one sprite but a set of documents that must
   read as one work — and nothing could see that set until now.
   - **`doc_set_audit`** (core profile) — audit N documents (explicit ids and/or

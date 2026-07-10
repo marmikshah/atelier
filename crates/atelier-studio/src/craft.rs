@@ -1563,6 +1563,245 @@ impl Studio {
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "frames": frames, "tag": "walk"}))
     }
+
+    /// Generate a full animation cycle for a named GAIT from one standing pose —
+    /// the moveset generator. Same 13-joint contract and IK machinery as `walk`,
+    /// with per-gait joint paths: `idle` (breathing bob), `run` (airborne
+    /// stride, pumping arms, forward lean), `jump` (crouch → rise+tuck → fall →
+    /// landing absorb), `attack` (lead-arm sweep with a lunge), `hurt` (recoil
+    /// and recover). Amplitudes derive from the figure's own leg length scaled
+    /// by `intensity`, so every preset fits any sprite size. Frames are tagged
+    /// with the gait name; `frames=0` picks the gait's natural count.
+    #[allow(clippy::too_many_arguments)]
+    pub fn pose_cycle(
+        &self,
+        id: &str,
+        layer: usize,
+        base: &std::collections::HashMap<String, (i32, i32)>,
+        gait: &str,
+        frames: usize,
+        intensity: f32,
+        color: [u8; 4],
+        limb_w: i32,
+        torso_w: i32,
+        head_r: i32,
+        aa: bool,
+        snap: bool,
+    ) -> Result<Value, String> {
+        const GAITS: &[(&str, usize)] = &[
+            ("idle", 4),
+            ("run", 6),
+            ("jump", 8),
+            ("attack", 4),
+            ("hurt", 3),
+        ];
+        let Some(&(_, default_frames)) = GAITS.iter().find(|(g, _)| *g == gait) else {
+            return Err(format!(
+                "unknown gait '{gait}' — use one of [{}] (walk has its own tool)",
+                GAITS.iter().map(|(g, _)| *g).collect::<Vec<_>>().join(", ")
+            ));
+        };
+        let frames = if frames == 0 { default_frames } else { frames }.clamp(2, 24);
+        let i = intensity.clamp(0.1, 3.0);
+        let g = |k: &str| {
+            let v = base[k];
+            (v.0 as f32, v.1 as f32)
+        };
+        let base_f: std::collections::HashMap<String, (f32, f32)> = base
+            .iter()
+            .map(|(k, &(x, y))| (k.clone(), (x as f32, y as f32)))
+            .collect();
+        humanoid_bones(&base_f, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+        let dist =
+            |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
+        let l_thigh = dist(g("hip_l"), g("knee_l")).max(2.0);
+        let l_shin = dist(g("knee_l"), g("foot_l")).max(2.0);
+        let l_uarm = dist(g("shoulder_l"), g("elbow_l")).max(2.0);
+        let l_farm = dist(g("elbow_l"), g("hand_l")).max(2.0);
+        // The figure's own leg is the amplitude unit — presets scale with the sprite.
+        let leg = l_thigh + l_shin;
+        let tau = std::f32::consts::TAU;
+        let pi = std::f32::consts::PI;
+        let ik_world = |root: (f32, f32), tgt: (f32, f32), l1: f32, l2: f32, ahead: bool| {
+            let c = raster::solve_ik2(root, tgt, l1, l2, 1.0);
+            if (c.0 >= root.0) == ahead {
+                c
+            } else {
+                raster::solve_ik2(root, tgt, l1, l2, -1.0)
+            }
+        };
+        let (dir, mut doc) = self.open(id)?;
+        while doc.meta.frames.len() < frames {
+            doc.add_frame(100, None);
+        }
+        for f in 0..frames {
+            // Loop gaits sample the open interval (frame N would repeat frame 0);
+            // one-shot gaits (jump/attack/hurt) sample the closed interval so the
+            // last frame IS the recovery pose.
+            let one_shot = matches!(gait, "jump" | "attack" | "hurt");
+            let t = if one_shot {
+                f as f32 / (frames - 1).max(1) as f32
+            } else {
+                f as f32 / frames as f32
+            };
+            // Per-gait offsets, all in leg-length units scaled by intensity.
+            // (body_dx, body_dy): whole-figure shift. lean: extra upper-body x.
+            // arm/foot overrides fill in below.
+            // Per-side offset / position closures a gait may override.
+            type SideOffset = Box<dyn Fn(&str) -> (f32, f32)>;
+            type HandPos = Box<dyn Fn(&str, (f32, f32)) -> (f32, f32)>;
+            let (body_dx, body_dy, lean): (f32, f32, f32);
+            let mut foot_off: SideOffset = Box::new(|_| (0.0, 0.0));
+            let mut hand_pos: Option<HandPos> = None;
+            match gait {
+                "idle" => {
+                    body_dx = 0.0;
+                    body_dy = 0.06 * leg * i * (tau * t).sin();
+                    lean = 0.0;
+                }
+                "run" => {
+                    body_dx = 0.0;
+                    body_dy = 0.12 * leg * i * (tau * t * 2.0).sin();
+                    lean = 0.15 * leg * i;
+                    let (stride, lift) = (0.45 * leg * i, 0.35 * leg * i);
+                    foot_off = Box::new(move |side: &str| {
+                        let ph = (t + if side == "l" { 0.0 } else { 0.5 }).fract();
+                        (stride * (tau * ph).cos(), -lift * (tau * ph).sin().max(0.0))
+                    });
+                    let swing = 0.5 * leg * i;
+                    hand_pos = Some(Box::new(move |side: &str, base_hand: (f32, f32)| {
+                        // Arms counter-swing the legs and pump upward mid-swing.
+                        let ph = (t + if side == "l" { 0.5 } else { 0.0 }).fract();
+                        (
+                            base_hand.0 + swing * (tau * ph).cos(),
+                            base_hand.1 - 0.15 * leg * (tau * ph).sin().abs(),
+                        )
+                    }));
+                }
+                "jump" => {
+                    let (crouch, height, tuck) = (0.22 * leg * i, 0.55 * leg * i, 0.45 * leg * i);
+                    // Piecewise: crouch → rise → fall → land, eased per phase.
+                    let (dy, air_tuck) = if t < 0.3 {
+                        let p = t / 0.3;
+                        (crouch * (pi * p * 0.5).sin(), 0.0)
+                    } else if t < 0.6 {
+                        let p = (t - 0.3) / 0.3;
+                        (-height * (pi * p * 0.5).sin(), tuck * p)
+                    } else if t < 0.85 {
+                        let p = (t - 0.6) / 0.25;
+                        (-height * (1.0 - p * 0.85), tuck * (1.0 - p))
+                    } else {
+                        let p = (t - 0.85) / 0.15;
+                        (crouch * 0.6 * (1.0 - p), 0.0)
+                    };
+                    body_dx = 0.0;
+                    body_dy = dy;
+                    lean = 0.0;
+                    let airborne = (0.3..0.85).contains(&t);
+                    foot_off = Box::new(move |_side: &str| {
+                        if airborne {
+                            // Feet ride with the body and tuck toward the hips.
+                            (0.0, dy - air_tuck * 0.4)
+                        } else {
+                            (0.0, 0.0) // planted through crouch and landing
+                        }
+                    });
+                    hand_pos = Some(Box::new(move |side: &str, base_hand: (f32, f32)| {
+                        // Arms drive back in the crouch, throw up in the air.
+                        let up = if airborne { -0.35 * leg } else { 0.12 * leg };
+                        let back = if airborne { 0.0 } else { -0.15 * leg };
+                        let _ = side;
+                        (base_hand.0 + back, base_hand.1 + dy + up)
+                    }));
+                }
+                "attack" => {
+                    body_dx = 0.2 * leg * i * (pi * t).sin(); // lunge in, settle back
+                    body_dy = 0.04 * leg * i * (pi * t).sin();
+                    lean = 0.1 * leg * i * (pi * t).sin();
+                    let reach = (l_uarm + l_farm) * 0.95;
+                    hand_pos = Some(Box::new(move |side: &str, base_hand: (f32, f32)| {
+                        if side == "r" {
+                            // Lead hand sweeps an arc raised-behind → extended-front,
+                            // SHOULDER-relative (resolved at the call site).
+                            let a = (240.0 - 250.0 * t) * pi / 180.0;
+                            let _ = base_hand;
+                            (a.cos() * reach, a.sin() * reach)
+                        } else {
+                            // Guard hand pulls toward the chest.
+                            (base_hand.0 - 0.1 * leg, base_hand.1 - 0.2 * leg)
+                        }
+                    }));
+                }
+                "hurt" => {
+                    let r = 1.0 - t; // impact at t=0, recover by the end
+                    body_dx = -0.25 * leg * i * r;
+                    body_dy = 0.08 * leg * i * r;
+                    lean = -0.2 * leg * i * r; // head/shoulders whip further back
+                    hand_pos = Some(Box::new(move |_side: &str, base_hand: (f32, f32)| {
+                        // Arms flail forward against the recoil.
+                        (base_hand.0 + 0.3 * leg * r, base_hand.1 - 0.1 * leg * r)
+                    }));
+                }
+                _ => unreachable!(),
+            }
+            let mut j: std::collections::HashMap<String, (f32, f32)> =
+                std::collections::HashMap::new();
+            for k in ["hip_l", "hip_r"] {
+                let p = g(k);
+                j.insert(k.to_string(), (p.0 + body_dx, p.1 + body_dy));
+            }
+            for k in ["head", "shoulder_l", "shoulder_r"] {
+                let p = g(k);
+                j.insert(k.to_string(), (p.0 + body_dx + lean, p.1 + body_dy));
+            }
+            // Legs: feet from the gait's offset (planted = base), knees by IK.
+            for side in ["l", "r"] {
+                let hip = j[&format!("hip_{side}")];
+                let bf = g(&format!("foot_{side}"));
+                let (fdx, fdy) = foot_off(side);
+                let foot = (bf.0 + fdx, bf.1 + fdy);
+                let knee = ik_world(hip, foot, l_thigh, l_shin, true);
+                j.insert(format!("knee_{side}"), knee);
+                j.insert(format!("foot_{side}"), foot);
+            }
+            // Arms: gait hand position (or hang with the body), elbows by IK.
+            for side in ["l", "r"] {
+                let sh = j[&format!("shoulder_{side}")];
+                let bh = g(&format!("hand_{side}"));
+                let hand = match &hand_pos {
+                    Some(hp) if gait == "attack" && side == "r" => {
+                        // Attack lead hand is shoulder-relative (an arc), not an offset.
+                        let (ax, ay) = hp(side, bh);
+                        (sh.0 + ax, sh.1 + ay)
+                    }
+                    Some(hp) => hp(side, bh),
+                    None => (bh.0 + body_dx, bh.1 + body_dy),
+                };
+                let elbow = ik_world(sh, hand, l_uarm, l_farm, false);
+                j.insert(format!("elbow_{side}"), elbow);
+                j.insert(format!("hand_{side}"), hand);
+            }
+            let bones = humanoid_bones(&j, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+            doc.clear_cel(layer, f);
+            for b in &bones {
+                doc.stroke_f(layer, f, b, color, aa, false)?;
+            }
+            if snap && !doc.meta.palette.is_empty() {
+                let pal = doc.meta.palette.clone();
+                doc.snap_to_palette(
+                    &pal,
+                    Some(layer),
+                    Some(f),
+                    atelier_core::document::AlphaSnap::Opaque(128),
+                );
+            }
+        }
+        if !doc.meta.tags.iter().any(|t| t.name == gait) {
+            doc.add_tag(gait, 0, frames - 1, "forward")?;
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "frames": frames, "tag": gait}))
+    }
 }
 
 /// The humanoid capsule bone list for `figure`/`walk`: validates the 13 required
@@ -1870,6 +2109,120 @@ mod tests {
 
     fn opaque(stats: &Value) -> u64 {
         stats["stats"]["opaque_pixels"].as_u64().unwrap_or(0)
+    }
+
+    fn standing_pose() -> std::collections::HashMap<String, (i32, i32)> {
+        [
+            ("head", (24, 9)),
+            ("shoulder_l", (20, 15)),
+            ("shoulder_r", (28, 15)),
+            ("elbow_l", (18, 21)),
+            ("elbow_r", (30, 21)),
+            ("hand_l", (17, 27)),
+            ("hand_r", (31, 27)),
+            ("hip_l", (21, 27)),
+            ("hip_r", (27, 27)),
+            ("knee_l", (21, 35)),
+            ("knee_r", (27, 35)),
+            ("foot_l", (21, 43)),
+            ("foot_r", (27, 43)),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect()
+    }
+
+    #[test]
+    fn pose_cycle_generates_every_gait_with_motion() {
+        let s = studio("gaits");
+        let pose = standing_pose();
+        for gait in ["idle", "run", "jump", "attack", "hurt"] {
+            let doc = format!("g-{gait}");
+            s.doc_create(&doc, 48, 48).unwrap();
+            let r = s
+                .pose_cycle(
+                    &doc,
+                    0,
+                    &pose,
+                    gait,
+                    0,
+                    1.0,
+                    [30, 30, 40, 255],
+                    3,
+                    5,
+                    4,
+                    true,
+                    false,
+                )
+                .unwrap();
+            assert_eq!(r["tag"], gait, "gait tag");
+            let n = r["frames"].as_u64().unwrap() as usize;
+            assert!(n >= 2);
+            // Every frame drew something, and the cycle actually moves:
+            // some frame differs from frame 0.
+            let mut moved = false;
+            for f in 1..n {
+                let (_png, d) = s
+                    .doc_frame_diff(&doc, 0, f, None, None, false, "none", None, 1)
+                    .unwrap();
+                if d["changed"].as_u64().unwrap_or(0) > 0 {
+                    moved = true;
+                }
+            }
+            assert!(moved, "{gait}: frames never changed — no motion generated");
+        }
+        // Unknown gait errors instead of guessing.
+        s.doc_create("g-bad", 48, 48).unwrap();
+        assert!(s
+            .pose_cycle(
+                "g-bad",
+                0,
+                &pose,
+                "moonwalk",
+                0,
+                1.0,
+                [0, 0, 0, 255],
+                3,
+                5,
+                4,
+                true,
+                false
+            )
+            .is_err());
+    }
+
+    #[test]
+    fn pose_cycle_jump_rises_above_standing() {
+        let s = studio("jump");
+        let pose = standing_pose();
+        s.doc_create("j", 48, 48).unwrap();
+        s.pose_cycle(
+            "j",
+            0,
+            &pose,
+            "jump",
+            8,
+            1.0,
+            [30, 30, 40, 255],
+            3,
+            5,
+            4,
+            true,
+            false,
+        )
+        .unwrap();
+        // Silhouette top at mid-air (frame ~4) must be higher (smaller y)
+        // than at frame 0 (crouch start), proving the body actually leaves.
+        let top = |f: usize| {
+            let r = s.doc_silhouette("j", f, None, 1).unwrap();
+            r["bbox"][1].as_i64().unwrap()
+        };
+        assert!(
+            top(4) < top(0) - 2,
+            "airborne top {} should sit above standing top {}",
+            top(4),
+            top(0)
+        );
     }
 
     #[test]

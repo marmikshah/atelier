@@ -4,7 +4,7 @@ The complete tool surface. Everything is drawn at native resolution and scaled u
 nearest-neighbour on export, so the pixel grid stays crisp.
 
 > **Profiles.** By default the server advertises a **core** set of ~30 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 69 below. The
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 70 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
@@ -121,6 +121,14 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   vertex (which you don't). Re-pose across frames by calling again with new
   joints — the base for non-wobbly animation. `limb_w`/`torso_w`/`head_r` size
   it to the sprite.
+- `doc_pose_cycle` — GENERATE a full animation cycle for a named GAIT from one
+  standing pose (the same 13 joints) — the moveset generator. `gait`: `idle`
+  (breathing bob) · `run` (airborne stride, pumping arms, forward lean) · `jump`
+  (crouch → rise+tuck → fall → landing absorb) · `attack` (lead-arm sweep with a
+  lunge) · `hurt` (recoil and recover). Knees/elbows solved by 2-bone IK, every
+  frame the connected-capsule figure; amplitudes scale from the figure's own leg
+  length × `intensity`, so presets fit any sprite size. Frames tagged with the
+  gait — one call per gait builds a whole character moveset from the SAME pose.
 - `doc_walk` — GENERATE a side-view walk cycle from a base standing pose (the
   same 13 joints): feet stride along a gait path (one planted, one swinging, half
   a cycle apart), knees/elbows solved by 2-bone IK, arms counter-swing the legs,

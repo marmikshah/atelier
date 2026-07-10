@@ -60,7 +60,7 @@ deterministic.
 
 By default the server advertises a **core profile** of ~30 tools — everything the
 sprite / animation / tile / recreate-from-reference loops need. Set
-`ATELIER_PROFILE=full` for the complete 69-tool surface (extra effects, rigging,
+`ATELIER_PROFILE=full` for the complete 70-tool surface (extra effects, rigging,
 audits, library exports). The profile filters *discovery* only — every tool still
 executes, so recipes and `atelier replay` always reach the long tail. The full
 surface is documented in [docs/TOOLS.md](docs/TOOLS.md); release notes live in

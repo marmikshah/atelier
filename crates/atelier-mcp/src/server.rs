@@ -1179,6 +1179,26 @@ pub struct DocFigure {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocPoseCycle {
+    pub doc_id: String,
+    pub layer: usize,
+    /// The base STANDING pose: the same 13 named joints as doc_figure.
+    pub joints: std::collections::HashMap<String, Vec<i64>>,
+    /// Which cycle to generate: idle | run | jump | attack | hurt.
+    pub gait: String,
+    /// Frame count (omit or 0 = the gait's natural count; clamped 2..=24).
+    pub frames: Option<usize>,
+    /// Amplitude multiplier on the gait's motion (default 1.0, clamped 0.1..=3).
+    pub intensity: Option<f32>,
+    pub color: Vec<i64>,
+    pub limb_w: Option<i64>,
+    pub torso_w: Option<i64>,
+    pub head_r: Option<i64>,
+    pub aa: Option<bool>,
+    pub snap: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocWalk {
     pub doc_id: String,
     pub layer: usize,
@@ -2705,6 +2725,32 @@ impl Atelier {
             p.lift.unwrap_or(4) as i32,
             p.bob.unwrap_or(1) as i32,
             p.arm_swing.unwrap_or(6) as i32,
+            rgba(&p.color),
+            p.limb_w.unwrap_or(3) as i32,
+            p.torso_w.unwrap_or(6) as i32,
+            p.head_r.unwrap_or(4) as i32,
+            p.aa.unwrap_or(true),
+            p.snap.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
+        description = "GENERATE a full animation cycle for a named GAIT from one standing pose (the same 13 joints as doc_figure) — the moveset generator. `gait`: idle (breathing bob) | run (airborne stride, pumping arms, forward lean) | jump (crouch → rise+tuck → fall → landing absorb) | attack (lead-arm sweep with a lunge) | hurt (recoil and recover). Knees/elbows are solved by 2-bone IK and every frame is the connected-capsule figure, so limbs never wobble or detach. Amplitudes scale from the figure's own leg length × `intensity`, so presets fit any sprite size. Frames are tagged with the gait — one call per gait builds a whole character moveset from the SAME pose (walk has its own tool). Export each with doc_export op=anim tag=<gait>."
+    )]
+    async fn doc_pose_cycle(&self, Parameters(p): Parameters<DocPoseCycle>) -> CallToolResult {
+        let joints: std::collections::HashMap<String, (i32, i32)> = p
+            .joints
+            .iter()
+            .filter(|(_, v)| v.len() >= 2)
+            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
+            .collect();
+        res(self.studio().pose_cycle(
+            &p.doc_id,
+            p.layer,
+            &joints,
+            &p.gait,
+            p.frames.unwrap_or(0),
+            p.intensity.unwrap_or(1.0),
             rgba(&p.color),
             p.limb_w.unwrap_or(3) as i32,
             p.torso_w.unwrap_or(6) as i32,
