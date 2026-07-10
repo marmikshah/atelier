@@ -121,9 +121,8 @@ integration tests and as documentation.
 
 ## More
 
-- [docs/MODEL-COMPARISON.md](docs/MODEL-COMPARISON.md) — four models, one
-  byte-identical drawing brief: what the see-and-fix loop guarantees no matter
-  who's driving, and what it can't.
+- [docs/SHOWCASE.md](docs/SHOWCASE.md) — four models, one verbatim brief:
+  the same studio in different hands.
 - [docs/TOOLS.md](docs/TOOLS.md) — the complete MCP tool reference.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — the crate layout and how it fits together.
 - [CHANGELOG.md](CHANGELOG.md) — release notes.
