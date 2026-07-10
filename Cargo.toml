@@ -9,11 +9,11 @@ members = [
 
 # Shared package metadata — each crate inherits with `field.workspace = true`.
 [workspace.package]
-version = "1.2.0"
+version = "1.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/marmikshah/atelier"
-keywords = ["mcp", "pixel-art", "aseprite", "sprite", "gamedev"]
+keywords = ["mcp", "pixel-art", "sprite", "gamedev", "animation"]
 categories = ["command-line-utilities", "multimedia::images", "game-development"]
 
 # Single source of truth for dependency versions across the workspace.
@@ -32,6 +32,6 @@ tokio-stream = { version = "0.1", features = ["sync"] }
 axum = "0.8"
 
 # Internal crates — path for local builds, version for crates.io publish.
-atelier-core = { version = "1.2.0", path = "crates/atelier-core" }
-atelier-studio = { version = "1.2.0", path = "crates/atelier-studio" }
-atelier-mcp = { version = "1.2.0", path = "crates/atelier-mcp" }
+atelier-core = { version = "1.3.0", path = "crates/atelier-core" }
+atelier-studio = { version = "1.3.0", path = "crates/atelier-studio" }
+atelier-mcp = { version = "1.3.0", path = "crates/atelier-mcp" }

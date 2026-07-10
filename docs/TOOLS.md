@@ -3,14 +3,14 @@
 The complete tool surface. Everything is drawn at native resolution and scaled up
 nearest-neighbour on export, so the pixel grid stays crisp.
 
-> **Profiles.** By default the server advertises a **core** set of ~28 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 65 below. The
+> **Profiles.** By default the server advertises a **core** set of ~30 tools (the
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 75 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
 ## The model
 
-- A **document** is the unit (think one `.ase` file): a canvas of ordered
+- A **document** is the unit — one sprite, one animation, one tileset: a canvas of ordered
   **layers** (opacity / visibility / blend, source-over composite) over a
   timeline of **frames** (each with a duration), plus animation **tags** (named
   frame ranges). A **cel** is one layer×frame image. Documents are stored under
@@ -23,11 +23,25 @@ nearest-neighbour on export, so the pixel grid stays crisp.
 ## Library
 
 - `doc_create` — new layered/animated document (name, width, height) → `id`.
-- `list_docs` — all documents (id, name, size, frame/layer counts).
+- `list_docs` — documents (id, name, size, frame/layer counts); `prefix` selects
+  a family by id start (`hero-`), `contains` filters by substring.
 - `doc_info` — a document's full structure (layers, frames, cels, tags).
 - `delete_doc` — remove a document and its files.
 - `export_all` — export every document as a spritesheet PNG (+ JSON meta) into a
   flat target dir for a game's `assets/`.
+
+## The game layer — sets of documents
+
+A game is not one sprite but a SET of documents that must read as one work.
+
+- `doc_set_audit` — audit N documents (by `ids` and/or id `prefix`) as ONE game:
+  per-doc palette/value/scale/pivot stats plus set cohesion — palette union size,
+  unlocked docs, cross-doc near-duplicate colours (OKLab ΔE), silhouette-height
+  scale outliers vs the set median, the set value range, missing pivots. Verdict
+  is `cohesive` or a list of actionable warnings.
+- `doc_set_palette_sync` — broadcast ONE palette across a set: lock it on every
+  member and perceptually snap every cel onto it (explicit `palette` colours or
+  `from_doc` to copy another document's). The fix for set-audit palette warnings.
 
 ## Structure & timeline
 
@@ -107,6 +121,14 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   vertex (which you don't). Re-pose across frames by calling again with new
   joints — the base for non-wobbly animation. `limb_w`/`torso_w`/`head_r` size
   it to the sprite.
+- `doc_pose_cycle` — GENERATE a full animation cycle for a named GAIT from one
+  standing pose (the same 13 joints) — the moveset generator. `gait`: `idle`
+  (breathing bob) · `run` (airborne stride, pumping arms, forward lean) · `jump`
+  (crouch → rise+tuck → fall → landing absorb) · `attack` (lead-arm sweep with a
+  lunge) · `hurt` (recoil and recover). Knees/elbows solved by 2-bone IK, every
+  frame the connected-capsule figure; amplitudes scale from the figure's own leg
+  length × `intensity`, so presets fit any sprite size. Frames tagged with the
+  gait — one call per gait builds a whole character moveset from the SAME pose.
 - `doc_walk` — GENERATE a side-view walk cycle from a base standing pose (the
   same 13 joints): feet stride along a gait path (one planted, one swinging, half
   a cycle apart), knees/elbows solved by 2-bone IK, arms counter-swing the legs,
@@ -155,6 +177,12 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   (`az`: 0=right, 90=down, 180=left, 270=up); `dark=true` lights the away-facing
   edge (core/contact shadow). Topological — survives small canvases where a
   Fresnel rim washes out.
+- `doc_cast_shadow` — a projected GROUND shadow (not a flat offset copy like
+  `drop_shadow`): the caster silhouette flattened onto its contact row and
+  sheared AWAY from the light (`az`), stretched by `length` and foreshortened by
+  `squash`. With `receiver_layer` it lands on that layer clipped to its opaque
+  pixels (the ground); else it sits behind the caster. Pairs with the light
+  vector `doc_form_audit` infers.
 - `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
   colour to `to[i]` across every cel (exact match, all channels), updating the
   stored palette too; optional `layer` / `frame` restrict scope. One sprite, many
@@ -177,6 +205,10 @@ Read the canvas as *data* — the agent's other eye.
 - `doc_components` — connected-component report (bbox, centroid, area,
   dominant colour per blob, stray 1–2px specks listed separately): catches
   floating pixels and detached limbs a thumbnail hides.
+- `doc_form_audit` — per-form shading audit: infers each form's light direction
+  (lightness-plane fit) and flags pillow-shading (brightness hugging the centre
+  instead of a light) plus whether the forms agree on one light. Sees the #1
+  beginner failure the scalar reports can't.
 - `doc_coverage_map` — coarse occupancy/value heatmap as numbers, plus content
   bbox and centring offset: composition balance without dictating it.
 - `doc_contrast_check` — WCAG contrast ratios: a region vs its surround, all
@@ -225,6 +257,11 @@ The limb/keyframe-animation toolkit.
 - `doc_export` — write a document to a file; `op` + shared `out_path`/`scale`:
   - **sheet** — horizontal spritesheet PNG + JSON meta (frame rects, durations,
     tags, pivots, collision boxes, palette) so any engine can slice and play it.
+    `meta=standard` writes the industry-standard hash sprite-JSON instead —
+    `frames` keyed by name with `frame`/`sourceSize`/`duration` and
+    `meta.frameTags` — the shape engines' existing sheet importers already
+    parse. That shape has no slot for pivots/boxes; use the native meta when the
+    engine should read those.
   - **anim** `{format?,tag?}` — animation as `format=gif` (256 colours + 1-bit
     alpha, smaller) or `apng` (lossless, full alpha), honouring per-frame
     durations. A `tag` plays that animation in its direction
@@ -232,11 +269,40 @@ The limb/keyframe-animation toolkit.
     snap to ONE shared palette before encoding, so colours don't shimmer.
   - **tileset** `{tile_w,tile_h}` — slice frame 0 into a grid → PNG + `<name>.tsx`
     (Tiled XML) + `<name>.json`. Canvas must divide exactly by the tile size.
+- `doc_nine_slice` — TRUE 9-slice: author a panel once (bevels, rounded
+  corners, ornate borders), then emit it at ANY size — `src` rect cut 3×3 by
+  `inset`, corners verbatim, edges/centre tiled or stretched into `dst`.
+  Transparent source pixels skip, so rounded panels keep their shape. The
+  dialog / button / HUD-frame workhorse.
+- `doc_emit` — seeded PARTICLE EMITTER rendered to frames: sparks, embers,
+  smoke, rain, motes. Particles spawn in `region`, fly `angle ± spread` at
+  `speed` under `gravity`, fade + shrink over `life`, coloured along the ramp.
+  Deterministic in `seed`, phase-staggered so the clip LOOPS cleanly; tags the
+  range `emit`.
+- `doc_colorblind_check` — CVD audit: simulate protanopia / deuteranopia /
+  tritanopia and report which colour pairs — readable to typical vision —
+  collapse under each (OKLab ΔE below the readable floor). Returns an inline
+  normal·protan·deutan·tritan strip. Run before shipping UI/state colours.
+- `doc_fx op=gradient_map` — remap every opaque pixel's luminance through
+  colour `stops` (alpha preserved): the one-call mood/recolour move
+  (sunset-ify, poison-ify, night-palette) that keeps drawn shading structure
+  and swaps only the colour story.
 - `doc_wang_tiles` — generate the deterministic 16-tile Wang/blob terrain set
   from a source doc (layer 0 = inner material, layer 1 = outer; top-left N×N of
   each sampled) into a NEW `<id>-wang` document (4N×4N, the 16 corner
   combinations in a 4×4 grid). Each set corner bit fills a quarter-disc; adjacent
   set corners connect along their shared edge.
+- `doc_autotile_set` — the deterministic **47-tile BLOB** autotile set (the full
+  edge+corner bitmask family, the modern superset of the Wang 16). Same source
+  contract; output is a NEW `<id>-blob` document (7N×7N) plus `masks` — the
+  canonical 8-bit neighbour mask per grid index — so an engine autotiler maps
+  straight onto the sheet.
+- `doc_tilemap_assemble` — the in-situ test of a tileset, and the only real one:
+  `rows` strings (`#`/`1`/`x` = filled) become a map; every filled cell computes
+  its 8-neighbour mask and renders straight from the source materials with the
+  same blob rules, into a NEW `<id>-map` document. `doc_look` it to judge how
+  the terrain actually reads, then export. `outside` = filled|empty controls the
+  map border.
 - `export_all` — one spritesheet per document into a flat dir.
 - `export_atlas` — pack **every frame of every document** into a single atlas PNG
   + master JSON (`doc`, `frame`, `rect`, `duration_ms`, `pivot`, `boxes`) so a

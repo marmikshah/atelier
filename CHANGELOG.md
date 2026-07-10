@@ -4,6 +4,126 @@ All notable changes to atelier are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/).
 
+## [1.3.0] — 2026-07-08
+
+The identity + polish release. atelier stands on its own name — **the pixel-art
+studio agents can see** — with the last two structural quality gaps closed:
+continuous-tone effects can no longer blow the locked palette, and stroke poses
+keep sub-pixel precision so walk cycles glide instead of stepping. Adds
+the game layer (`doc_set_audit` / `doc_set_palette_sync` — a game is a SET of
+documents), `doc_form_audit` (an eye for the #1 shading failure),
+`doc_cast_shadow` (a projected ground shadow), engine-standard sheet JSON,
+`list_docs` family filters, the `doc_pose_cycle` moveset generator, the 47-blob
+autotile family (`doc_autotile_set` + `doc_tilemap_assemble`), and the
+UI/FX/accessibility kit (9-slice, particle emitter, CVD audit, gradient map,
+the `game-asset-set` prompt). 75 tools, 222 tests.
+
+### Added
+
+- **`doc_pose_cycle`** — the moveset generator (full profile). One standing pose
+  (the 13 `doc_figure` joints) in, a full tagged animation cycle out, per gait:
+  `idle` (breathing bob), `run` (airborne stride, pumping arms, forward lean),
+  `jump` (crouch → rise+tuck → fall → landing absorb), `attack` (lead-arm sweep
+  with a lunge), `hurt` (recoil and recover). Same 2-bone-IK, connected-capsule
+  machinery as `doc_walk`; amplitudes derive from the figure's own leg length ×
+  `intensity`, so every preset fits any sprite size. One call per gait = a whole
+  character moveset from the same pose.
+- **The UI / FX / accessibility kit** (full profile):
+  - **`doc_nine_slice`** — true 9-slice: author a panel once, emit it at any
+    size (corners verbatim, edges/centre tiled or stretched, transparent
+    pixels skipped so rounded panels keep their shape). The dialog / button /
+    HUD-frame workhorse.
+  - **`doc_emit`** — seeded particle emitter rendered to frames (sparks,
+    embers, smoke, rain): spawn region, angle ± spread, speed, gravity, life;
+    fades and shrinks along a ramp. Deterministic in `seed` and phase-staggered
+    so the clip loops cleanly.
+  - **`doc_colorblind_check`** — CVD audit: simulates protanopia /
+    deuteranopia / tritanopia, reports colour pairs that collapse under each,
+    and returns an inline normal·protan·deutan·tritan strip.
+  - **`doc_fx op=gradient_map`** — remap a cel's luminance through colour
+    stops (alpha preserved): one-call mood/recolour that keeps the drawn
+    shading structure.
+  - **`game-asset-set` prompt** — the packaged whole-game workflow: one
+    palette, a hero moveset (figure → walk + pose_cycle), autotiled terrain
+    seen assembled, a 9-sliced HUD, then the doc_set_audit cohesion gate and
+    colorblind check before export.
+- **The 47-blob autotile family** (full profile) — terrain the agent can
+  finally see assembled.
+  - **`doc_autotile_set`** — the deterministic 47-tile blob set (full
+    edge+corner bitmask family, the modern superset of the Wang 16) from the
+    same inner/outer material contract, into a NEW `<id>-blob` document plus
+    `masks` (the canonical neighbour mask per grid index) so engine autotilers
+    map straight onto the sheet.
+  - **`doc_tilemap_assemble`** — the in-situ test of a tileset: a terrain mask
+    (`rows` strings) in, every filled cell rendered from its 8-neighbour mask
+    with the same blob rules, out as a NEW `<id>-map` document to `doc_look`
+    and export. Closes the last see-and-critique gap: the MAP, not just the
+    tile.
+- **The game layer.** A game is not one sprite but a set of documents that must
+  read as one work — and nothing could see that set until now.
+  - **`doc_set_audit`** (core profile) — audit N documents (explicit ids and/or
+    an id prefix like `hero-`) as ONE game: per-doc palette/value/scale/pivot
+    stats plus set-level cohesion — palette union size, unlocked docs, cross-doc
+    near-duplicate colours (OKLab ΔE), silhouette-height scale outliers vs the
+    set median, the set value range, and missing pivots. Verdict is `cohesive`
+    or a list of actionable warnings.
+  - **`doc_set_palette_sync`** (core profile) — broadcast one palette across a
+    set: lock it on every member and perceptually snap every cel onto it
+    (explicit colours or copied `from_doc`). The one-call fix for set-audit
+    palette warnings.
+  - **`list_docs` filters** — `prefix` selects a family by id start, `contains`
+    filters by substring; a 300-document store becomes navigable.
+- **Engine-standard sheet JSON.** `doc_export op=sheet meta=standard` writes the
+  industry-standard hash sprite-JSON sidecar (`frames` keyed by name with
+  `frame`/`sourceSize`/`duration`, `meta.frameTags`) that game engines' existing
+  sheet importers already parse. The richer native meta (pivots, collision
+  boxes, palette) stays the default.
+
+- **`doc_cast_shadow`** — a projected ground shadow (full profile). Unlike
+  `doc_drop_shadow` (a flat offset copy), it flattens the caster silhouette onto
+  its contact row and shears it away from the light (`az` — the vector
+  `doc_form_audit` infers), stretched by `length` and foreshortened by `squash`,
+  so a tall shape throws a long shadow anchored at its feet. With a
+  `receiver_layer` the shadow is painted onto that layer and clipped to its
+  opaque pixels (it only lands on the ground); otherwise it is drawn behind the
+  caster. Completes the lighting story: form → rim → cast.
+
+- **`doc_form_audit`** — per-form shading audit (full profile). For each
+  connected opaque form it infers the light direction from a least-squares fit
+  of perceptual lightness (`light_azimuth_deg`, `plane_fit_r2`) and flags
+  **pillow-shading** — brightness that hugs the silhouette centre instead of a
+  light direction (`pillow_corr`) — plus whether the forms share one light
+  (`dominant_light_azimuth_deg` / `light_spread_deg`). Deterministic, reuses the
+  existing component + interior-distance + OKLab machinery. The see-and-critique
+  eye for the beginner tell the scalar reports structurally couldn't surface.
+  Also wired into `doc_critique`, which now reports per-form pillow-shading and a
+  mixed-light-direction check in its scorecard (replacing the old whole-image
+  radial pillow guess) — so the see-and-fix loop catches it without a separate call.
+
+### Changed
+
+- **Own identity.** Retired the tool-comparison framing across every
+  user-facing surface (README, CLI help, the MCP instructions blurb agents read,
+  crate docs). atelier is positioned by what it *is* — the see-and-correct loop
+  (`doc_look` + critique) and authored-by-construction determinism — not by
+  comparison to another editor.
+- **Continuous-tone FX re-snap to the locked palette by default.** `blur`,
+  `drop_shadow`, `bevel`, `form` and `shade` used to leave blended tone
+  off-palette, blowing an N-colour palette into hundreds (`doc_glow` and
+  `gradient` already re-snapped; these did not). They now snap on the
+  `doc_draw` / `doc_fx` / `doc_batch` path by default — opt out per op with
+  `snap:false` — so effect output stays crisp on-palette pixel art.
+
+### Fixed
+
+- **Stroke pose double-quantize.** The coverage stroke core is sub-pixel, but
+  `Document::stroke` took integer points, so `f32` curve / IK-pose samples were
+  rounded to whole pixels and re-floated — collapsing sub-pixel motion. A new
+  sub-pixel `stroke_f` feeds the core directly (`stroke` is now its integer
+  wrapper), `doc_figure` / `doc_walk` posing is carried in `f32` end to end, and
+  batch stroke points parse as `f32`. Walk cycles and IK-solved limbs move
+  smoothly frame to frame instead of stepping.
+
 ## [1.2.0] — 2026-06-28
 
 The drawing-quality + consolidation release. The engine that was choppy and

@@ -1,4 +1,4 @@
-//! The editable document model — atelier's Aseprite-class core.
+//! The editable document model — atelier's layered, animated core.
 //!
 //! A `Document` is a canvas of ordered **layers** (opacity / visibility / blend)
 //! over a timeline of **frames** (each with a duration). A **cel** is one
@@ -1352,13 +1352,35 @@ impl Document {
         aa: bool,
         snap: bool,
     ) -> Result<(), String> {
+        let f: Vec<(f32, f32, f32)> = pts
+            .iter()
+            .map(|&(x, y, w)| (x as f32, y as f32, w.max(0) as f32))
+            .collect();
+        self.stroke_f(layer, frame, &f, color, aa, snap)
+    }
+
+    /// Sub-pixel variant of [`Self::stroke`]: each point is `(x, y, full_width)`
+    /// in continuous coordinates, fed straight to the coverage core with no
+    /// integer round trip. Curves and poses sampled in `f32` (arcs, IK-solved
+    /// limbs, eased motion) keep their sub-pixel precision instead of collapsing
+    /// to whole pixels — the fix for choppy staircased curves. `stroke` is the
+    /// integer-point wrapper over this.
+    pub fn stroke_f(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        pts: &[(f32, f32, f32)],
+        color: [u8; 4],
+        aa: bool,
+        snap: bool,
+    ) -> Result<(), String> {
         if pts.is_empty() {
             return Err("stroke needs at least one point".into());
         }
         let pal = self.meta.palette.clone();
         let f: Vec<(f32, f32, f32)> = pts
             .iter()
-            .map(|&(x, y, w)| (x as f32, y as f32, w.max(0) as f32 / 2.0))
+            .map(|&(x, y, w)| (x, y, w.max(0.0) / 2.0))
             .collect();
         let img = self.cel_canvas(layer, frame)?;
         raster::stroke_ribbon(img, &f, color, aa);
@@ -2067,6 +2089,112 @@ impl Document {
         raster::composite(&mut out, &orig, 0, 0, 255, raster::Blend::Normal);
         *self.cel_canvas(layer, frame)? = out;
         Ok(())
+    }
+
+    /// Cast a projected ground shadow from a caster silhouette. Unlike
+    /// `drop_shadow` (a flat offset copy), this lays the caster down onto the
+    /// ground from its contact row and shears it AWAY from the light, so a tall
+    /// shape throws a long foreshortened shadow stretching across the floor from
+    /// its feet. `az_deg` is the light azimuth (0=right, 90=down, 180=left,
+    /// 270=up — pairs with the vector `doc_form_audit` infers); `length`
+    /// stretches the shadow along the ground, `squash` (0..1) is how far down the
+    /// floor it reaches (0 = a flat smear at the contact row). With
+    /// `receiver_layer` the shadow is painted onto that layer and clipped to its
+    /// opaque pixels (it only lands on the ground), else it is drawn behind the
+    /// caster on its own cel. Returns the shadow pixel count.
+    #[allow(clippy::too_many_arguments)]
+    pub fn cast_shadow(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        az_deg: f32,
+        length: f32,
+        squash: f32,
+        color: [u8; 4],
+        opacity: u8,
+        receiver_layer: Option<usize>,
+        snap: bool,
+    ) -> Result<u32, String> {
+        let pal = self.meta.palette.clone();
+        let caster = self.cel_canvas(layer, frame)?.clone();
+        let (w, h) = (caster.width() as i32, caster.height() as i32);
+        // Contact row: the lowest opaque pixel of the caster is where it meets
+        // the ground and where the shadow is anchored.
+        let mut anchor_y = None;
+        for y in (0..h).rev() {
+            if (0..w).any(|x| caster.get_pixel(x as u32, y as u32).0[3] > 0) {
+                anchor_y = Some(y);
+                break;
+            }
+        }
+        let Some(anchor_y) = anchor_y else {
+            return Ok(0); // nothing to cast
+        };
+        // Project each caster pixel onto the ground: shear along the light's
+        // opposite horizontal, foreshorten by `squash`. Accumulate max coverage.
+        let az = az_deg.to_radians();
+        let shear = -az.cos() * length.max(0.0);
+        let squash = squash.clamp(0.0, 1.0);
+        let scale = (opacity as f32 / 255.0) * (color[3] as f32 / 255.0);
+        let mut mask = vec![0f32; (w * h) as usize];
+        for y in 0..=anchor_y {
+            for x in 0..w {
+                let a = caster.get_pixel(x as u32, y as u32).0[3];
+                if a == 0 {
+                    continue;
+                }
+                let hgt = (anchor_y - y) as f32;
+                // Taller pixels project further along the ground (shear) and
+                // further down the floor from the contact row (foreshortened).
+                let sx = (x as f32 + shear * hgt).round() as i32;
+                let sy = (anchor_y as f32 + hgt * squash).round() as i32;
+                if sx < 0 || sy < 0 || sx >= w || sy >= h {
+                    continue;
+                }
+                let cov = a as f32 / 255.0 * scale;
+                let idx = (sy * w + sx) as usize;
+                if cov > mask[idx] {
+                    mask[idx] = cov;
+                }
+            }
+        }
+        let target = receiver_layer.unwrap_or(layer);
+        let orig_target = self.cel_canvas(target, frame)?.clone();
+        let mut out = orig_target.clone();
+        let mut painted = 0u32;
+        for y in 0..h {
+            for x in 0..w {
+                let idx = (y * w + x) as usize;
+                let cov = mask[idx];
+                if cov <= 0.0 {
+                    continue;
+                }
+                // Clip to the receiver's opaque pixels (shadow lands on ground
+                // only); with no receiver, don't paint over the caster itself.
+                let target_a = orig_target.get_pixel(x as u32, y as u32).0[3];
+                if receiver_layer.is_some() {
+                    if target_a == 0 {
+                        continue;
+                    }
+                } else if caster.get_pixel(x as u32, y as u32).0[3] > 0 {
+                    continue;
+                }
+                let a = (cov * 255.0).round().clamp(0.0, 255.0) as u8;
+                let base = out.get_pixel(x as u32, y as u32).0;
+                let px = raster::over(base, [color[0], color[1], color[2], a]);
+                out.put_pixel(x as u32, y as u32, Rgba(px));
+                painted += 1;
+            }
+        }
+        // With no receiver, the caster must sit ON TOP of its own shadow.
+        if receiver_layer.is_none() {
+            raster::composite(&mut out, &caster, 0, 0, 255, raster::Blend::Normal);
+        }
+        *self.cel_canvas(target, frame)? = out;
+        if snap && !pal.is_empty() {
+            self.snap_to_palette(&pal, Some(target), Some(frame), AlphaSnap::Preserve);
+        }
+        Ok(painted)
     }
 
     /// Paint a RIM light along the silhouette edges that FACE the light — the
@@ -2895,8 +3023,8 @@ impl Document {
         Ok(())
     }
 
-    /// Remove L-corner doubles from 1px strokes (Aseprite "pixel-perfect"
-    /// cleanup). A pixel P is erased when it matches the target colour(s), two
+    /// Remove L-corner doubles from 1px strokes (the "pixel-perfect" cleanup
+    /// technique). A pixel P is erased when it matches the target colour(s), two
     /// orthogonally-adjacent neighbours forming an L (left+top, top+right,
     /// right+bottom or bottom+left) also match, AND the diagonal cell between
     /// that pair does NOT match — i.e. P only exists to thicken an elbow.
@@ -3601,7 +3729,9 @@ impl Document {
         Ok(placed)
     }
 
-    pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
+    /// Render the horizontal spritesheet image (every frame side by side,
+    /// nearest-neighbour scaled). Returns `(sheet, frame_w, frame_h)`.
+    fn sheet_image(&self, scale: u32) -> (RgbaImage, u32, u32) {
         let n = self.meta.frames.len() as u32;
         let fw = self.meta.w * scale;
         let fh = self.meta.h * scale;
@@ -3613,6 +3743,12 @@ impl Document {
             }
             image::imageops::replace(&mut sheet, &img, (f as u32 * fw) as i64, 0);
         }
+        (sheet, fw, fh)
+    }
+
+    pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
+        let n = self.meta.frames.len() as u32;
+        let (sheet, fw, fh) = self.sheet_image(scale);
         sheet.save(out).map_err(|e| e.to_string())?;
         let frames: Vec<Value> = self
             .meta
@@ -3644,6 +3780,68 @@ impl Document {
         std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
             .map_err(|e| e.to_string())?;
         Ok(meta)
+    }
+
+    /// Export the spritesheet with the industry-standard hash sprite-JSON
+    /// sidecar instead of atelier's richer native shape — the layout that game
+    /// engines' existing sheet importers already parse (`frames` keyed by name
+    /// with `frame`/`sourceSize`/`duration`, `meta.frameTags`). Pivots and
+    /// collision boxes have no slot in this shape; use the native JSON
+    /// (`export_sheet`) when the engine should read those.
+    pub fn export_sheet_std(&self, out: &Path, scale: u32) -> Result<Value, String> {
+        let (sheet, fw, fh) = self.sheet_image(scale);
+        sheet.save(out).map_err(|e| e.to_string())?;
+        let stem = out
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| self.meta.name.clone());
+        let image_name = out
+            .file_name()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| format!("{stem}.png"));
+        let mut frames = serde_json::Map::new();
+        for (i, fr) in self.meta.frames.iter().enumerate() {
+            frames.insert(
+                format!("{stem} {i}"),
+                json!({
+                    "frame": {"x": i as u32 * fw, "y": 0, "w": fw, "h": fh},
+                    "rotated": false,
+                    "trimmed": false,
+                    "spriteSourceSize": {"x": 0, "y": 0, "w": fw, "h": fh},
+                    "sourceSize": {"w": fw, "h": fh},
+                    "duration": fr.duration_ms,
+                }),
+            );
+        }
+        let frame_tags: Vec<Value> = self
+            .meta
+            .tags
+            .iter()
+            .map(|t| json!({"name": t.name, "from": t.from, "to": t.to, "direction": t.direction}))
+            .collect();
+        let meta = json!({
+            "frames": frames,
+            "meta": {
+                "app": "atelier",
+                "version": env!("CARGO_PKG_VERSION"),
+                "image": image_name,
+                "format": "RGBA8888",
+                "size": {"w": sheet.width(), "h": sheet.height()},
+                "scale": "1",
+                "frameTags": frame_tags,
+            },
+        });
+        let mp = out.with_extension("json");
+        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
+            .map_err(|e| e.to_string())?;
+        Ok(json!({
+            "path": out.to_string_lossy(),
+            "meta_path": mp.to_string_lossy(),
+            "meta_format": "standard",
+            "count": self.meta.frames.len(),
+            "frame_w": fw,
+            "frame_h": fh,
+        }))
     }
 
     /// Export an animated GIF. Plays `tag`'s sequence (honouring direction) or
@@ -3752,6 +3950,48 @@ impl Document {
         Ok(seq.len())
     }
 
+    /// GRADIENT MAP: remap every opaque pixel's LUMINANCE through colour
+    /// `stops` (0 = darkest, 1 = lightest), preserving alpha — the one-call
+    /// mood/recolour move (sunset-ify, poison-ify, night-palette a sprite)
+    /// that keeps all the drawn shading structure and swaps only its colour
+    /// story. Region-scopable.
+    pub fn gradient_map(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        mut stops: Vec<(f32, [u8; 4])>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<(), String> {
+        if stops.is_empty() {
+            return Err("gradient_map needs at least one colour stop".into());
+        }
+        stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
+        stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => (
+                x0.min(x1).max(0),
+                y0.min(y1).max(0),
+                x0.max(x1).min(w - 1),
+                y0.max(y1).min(h - 1),
+            ),
+            None => (0, 0, w - 1, h - 1),
+        };
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let p = img.get_pixel(x as u32, y as u32).0;
+                if p[3] == 0 {
+                    continue;
+                }
+                let t = raster::luma(p) as f32 / 255.0;
+                let c = raster::sample_gradient(&stops, t, "none", x, y, 0);
+                img.put_pixel(x as u32, y as u32, Rgba([c[0], c[1], c[2], p[3]]));
+            }
+        }
+        Ok(())
+    }
+
     /// Apply one batched drawing op described by a JSON object `{"op": "...", ...}`.
     /// Lets a headless client send many ordered edits in a single tool call.
     ///
@@ -3796,7 +4036,7 @@ impl Document {
         let gi = |k: &str, d: i64| op.get(k).and_then(|v| v.as_i64()).unwrap_or(d) as i32;
         let gb = |k: &str, d: bool| op.get(k).and_then(|v| v.as_bool()).unwrap_or(d);
         let col = |k: &str| rgba_val(op.get(k));
-        match name {
+        let outcome = match name {
             "pencil" => self.pencil(
                 layer,
                 frame,
@@ -3850,14 +4090,17 @@ impl Document {
                 col("color"),
                 gb("fill", true),
             ),
-            "stroke" => self.stroke(
-                layer,
-                frame,
-                &points3_val(op.get("points"), gi("width", 2)),
-                col("color"),
-                gb("aa", true),
-                gb("snap", true),
-            ),
+            "stroke" => {
+                let w = op.get("width").and_then(|v| v.as_f64()).unwrap_or(2.0) as f32;
+                self.stroke_f(
+                    layer,
+                    frame,
+                    &points3f_val(op.get("points"), w),
+                    col("color"),
+                    gb("aa", true),
+                    gb("snap", true),
+                )
+            }
             "fill" | "bucket" => self.bucket_fill(
                 layer,
                 frame,
@@ -4014,6 +4257,12 @@ impl Document {
                 op.get("density").and_then(|v| v.as_f64()).unwrap_or(0.5) as f32,
                 gb("only_existing", false),
             ),
+            "gradient_map" => self.gradient_map(
+                layer,
+                frame,
+                stops_val(op.get("stops")),
+                region_val(op.get("region")),
+            ),
             "pixel_perfect" => self
                 .pixel_perfect(
                     layer,
@@ -4034,7 +4283,20 @@ impl Document {
                 )
                 .map(|_| ()),
             other => Err(format!("unknown batch op '{}'", other)),
+        };
+        outcome?;
+        // Continuous-tone FX push a locked palette into hundreds of colours; re-snap
+        // onto it by default (parity with gradient/glow) so the result stays crisp
+        // pixel art. Opt out per op with `snap:false`. Hard-edged / already-on-palette
+        // ops (outline, dither, pixel_perfect, quantize, adjust) are excluded.
+        if matches!(name, "blur" | "drop_shadow" | "bevel" | "form" | "shade")
+            && gb("snap", true)
+            && !self.meta.palette.is_empty()
+        {
+            let pal = self.meta.palette.clone();
+            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
         }
+        Ok(())
     }
 
     // -- animation & tiling feedback (read-only diff/seam primitives) --------
@@ -4185,16 +4447,22 @@ fn rgba_val(v: Option<&Value>) -> [u8; 4] {
 
 /// Parse `[[x,y], ...]` or `[[x,y,width], ...]` into stroke vertices, filling
 /// the missing width with `default_w`. Points shorter than 2 are dropped.
-fn points3_val(v: Option<&Value>, default_w: i32) -> Vec<(i32, i32, i32)> {
+fn points3f_val(v: Option<&Value>, default_w: f32) -> Vec<(f32, f32, f32)> {
     v.and_then(|x| x.as_array())
         .map(|a| {
             a.iter()
                 .filter_map(|p| p.as_array())
                 .filter(|pt| pt.len() >= 2)
                 .map(|pt| {
-                    let g =
-                        |i: usize, d: i64| pt.get(i).and_then(|n| n.as_i64()).unwrap_or(d) as i32;
-                    (g(0, 0), g(1, 0), g(2, default_w as i64))
+                    // Parse as f64 so fractional stroke points survive to the
+                    // sub-pixel coverage core instead of truncating to integers.
+                    let g = |i: usize, d: f32| {
+                        pt.get(i)
+                            .and_then(|n| n.as_f64())
+                            .map(|n| n as f32)
+                            .unwrap_or(d)
+                    };
+                    (g(0, 0.0), g(1, 0.0), g(2, default_w))
                 })
                 .collect()
         })
@@ -4264,12 +4532,12 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "replace_color" => (&["from", "to"], &["tolerance"]),
         "flip" => (&[], &["horizontal"]),
         "shift" => (&[], &["dx", "dy", "wrap"]),
-        "blur" => (&["radius"], &["region"]),
+        "blur" => (&["radius"], &["region", "snap"]),
         "quantize" => (&["colors"], &["max_colors"]),
         "outline" => (&["color"], &["aa"]),
-        "drop_shadow" => (&["color"], &["dx", "dy", "blur"]),
+        "drop_shadow" => (&["color"], &["dx", "dy", "blur", "snap"]),
         "glow" => (&[], &["color", "radius", "intensity", "mode"]),
-        "bevel" => (&["light", "dark"], &["depth"]),
+        "bevel" => (&["light", "dark"], &["depth", "snap"]),
         "fill_cel" => (&["color"], &[]),
         "clear_cel" => (&[], &[]),
         "gradient" => (
@@ -4284,12 +4552,19 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         ),
         "symmetry" => (&[], &["vertical", "horizontal", "keep_left", "keep_top"]),
         "adjust" => (&[], &["region", "hue", "sat", "lum"]),
+        "gradient_map" => (&["stops"], &["region"]),
         "noise" => (
             &["stops", "x0", "y0", "x1", "y1"],
             &["kind", "scale", "octaves", "seed", "blend"],
         ),
-        "shade" => (&[], &["light_dir", "steps", "region", "mode", "ramp"]),
-        "form" => (&[], &["form", "light_dir", "region", "ramp", "strength"]),
+        "shade" => (
+            &[],
+            &["light_dir", "steps", "region", "mode", "ramp", "snap"],
+        ),
+        "form" => (
+            &[],
+            &["form", "light_dir", "region", "ramp", "strength", "snap"],
+        ),
         "dither" => (
             &["color_a", "color_b"],
             &["region", "pattern", "density", "only_existing"],
@@ -4350,6 +4625,30 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
             kind,
             missing.join(",")
         ));
+    }
+    // Colour-typed keys must be well-formed [r,g,b(,a)] arrays. Without this
+    // check a colour given as "#5e2a6e" or {"r":..} silently fell back to
+    // BLACK — a wrong-but-plausible result an agent then burns calls
+    // repainting around. Malformed input errors loudly instead.
+    const COLOR_KEYS: [&str; 7] = ["color", "light", "dark", "color_a", "color_b", "from", "to"];
+    let is_color = |v: &Value| {
+        v.as_array().is_some_and(|a| {
+            (3..=4).contains(&a.len()) && a.iter().all(|n| n.as_u64().is_some_and(|n| n <= 255))
+        })
+    };
+    for k in COLOR_KEYS {
+        // `from`/`to` are colours only where the op's key table says so.
+        if !(required.contains(&k) || optional.contains(&k)) {
+            continue;
+        }
+        if let Some(v) = obj.get(k) {
+            if !is_color(v) {
+                return Err(format!(
+                    "op[{}] ({}): '{}' must be a colour array [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
+                    idx, kind, k, v
+                ));
+            }
+        }
     }
     Ok(())
 }
@@ -4620,6 +4919,240 @@ mod tests {
         d.snap_to_palette(&pal, None, None, AlphaSnap::Opaque(128));
         assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]); // core → solid
         assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]); // halo → cleared
+    }
+
+    #[test]
+    fn fx_resnaps_to_locked_palette_by_default() {
+        // A blur across two flat palette blocks averages the boundary into
+        // off-palette mud. With a palette locked, the continuous-tone FX path
+        // must re-snap by default so every pixel stays on-palette.
+        let mut d = Document::new("t", 4, 4);
+        let pal = vec![[220, 30, 30, 255], [30, 30, 220, 255]];
+        d.set_palette(pal.clone());
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "fill_cel", "color": [220, 30, 30, 255]}),
+        )
+        .unwrap();
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "rect", "x0": 2, "y0": 0, "x1": 3, "y1": 3, "color": [30, 30, 220, 255], "fill": true}),
+        )
+        .unwrap();
+        d.apply_op(0, 0, &json!({"op": "blur", "radius": 1}))
+            .unwrap();
+        for y in 0..4 {
+            for x in 0..4 {
+                let p = d.get_pixel(0, 0, x, y).unwrap();
+                assert!(pal.contains(&p), "pixel {p:?} at {x},{y} off-palette");
+            }
+        }
+    }
+
+    #[test]
+    fn fx_snap_false_keeps_continuous_tone() {
+        // The same blur with `snap:false` opts out — the blended boundary is
+        // allowed to stay off-palette.
+        let mut d = Document::new("t", 4, 4);
+        let pal = vec![[220, 30, 30, 255], [30, 30, 220, 255]];
+        d.set_palette(pal.clone());
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "fill_cel", "color": [220, 30, 30, 255]}),
+        )
+        .unwrap();
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "rect", "x0": 2, "y0": 0, "x1": 3, "y1": 3, "color": [30, 30, 220, 255], "fill": true}),
+        )
+        .unwrap();
+        d.apply_op(0, 0, &json!({"op": "blur", "radius": 1, "snap": false}))
+            .unwrap();
+        let has_off = (0..4)
+            .flat_map(|y| (0..4).map(move |x| (x, y)))
+            .any(|(x, y)| !pal.contains(&d.get_pixel(0, 0, x, y).unwrap()));
+        assert!(
+            has_off,
+            "snap:false should leave off-palette blended pixels"
+        );
+    }
+
+    #[test]
+    fn malformed_colour_errors_instead_of_black_fallback() {
+        // A hex-string colour used to silently become BLACK — the footgun the
+        // model benchmark surfaced (one run burned 13 calls repainting around
+        // it). It must reject loudly at validation time now.
+        for bad in [
+            json!("#ff00ff"),
+            json!({"r": 255, "g": 0, "b": 255}),
+            json!([255, 0]),
+            json!([255, 0, 300]),
+        ] {
+            let e = validate_batch_op(0, &json!({"op": "outline", "color": bad}))
+                .expect_err("malformed colour must be rejected");
+            assert!(e.contains("colour array"), "unhelpful error: {e}");
+        }
+        // Well-formed colours still pass, 3 or 4 channels.
+        validate_batch_op(0, &json!({"op": "outline", "color": [255, 0, 255]})).unwrap();
+        validate_batch_op(0, &json!({"op": "outline", "color": [255, 0, 255, 128]})).unwrap();
+    }
+
+    #[test]
+    fn gradient_map_remaps_luminance_keeps_alpha() {
+        let mut d = Document::new("t", 4, 1);
+        d.pencil(0, 0, &[(0, 0)], [20, 20, 20, 255], 1).unwrap(); // dark
+        d.pencil(0, 0, &[(1, 0)], [240, 240, 240, 200], 1).unwrap(); // light, soft alpha
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "gradient_map", "stops": [
+                {"pos": 0.0, "color": [10, 0, 40, 255]},
+                {"pos": 1.0, "color": [255, 200, 80, 255]}
+            ]}),
+        )
+        .unwrap();
+        let dark = d.get_pixel(0, 0, 0, 0).unwrap();
+        let light = d.get_pixel(0, 0, 1, 0).unwrap();
+        // Dark maps near the first stop, light near the last; alpha preserved.
+        assert!(
+            dark[0] < 40 && dark[2] > 20,
+            "dark → deep stop, got {dark:?}"
+        );
+        assert!(
+            light[0] > 200 && light[1] > 150,
+            "light → warm stop, got {light:?}"
+        );
+        assert_eq!(light[3], 200);
+        // Transparent pixels untouched.
+        assert_eq!(d.get_pixel(0, 0, 3, 0).unwrap(), [0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn export_sheet_std_writes_engine_parsable_json() {
+        let mut d = Document::new("runner", 8, 8);
+        d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
+        d.add_frame(80, Some(0));
+        d.add_tag("run", 0, 1, "forward").unwrap();
+        let dir = std::env::temp_dir().join("atelier-std-json-test");
+        let _ = std::fs::create_dir_all(&dir);
+        let out = dir.join("runner.png");
+        let r = d.export_sheet_std(&out, 2).unwrap();
+        assert_eq!(r["meta_format"], "standard");
+        let meta: Value =
+            serde_json::from_str(&std::fs::read_to_string(out.with_extension("json")).unwrap())
+                .unwrap();
+        // The hash layout engines parse: frames keyed by name, rect under
+        // "frame", per-frame "duration", tags under meta.frameTags.
+        let f0 = &meta["frames"]["runner 0"];
+        assert_eq!(f0["frame"]["w"], 16); // 8px * scale 2
+        assert_eq!(f0["frame"]["x"], 0);
+        assert_eq!(meta["frames"]["runner 1"]["frame"]["x"], 16);
+        assert_eq!(meta["frames"]["runner 1"]["duration"], 80);
+        assert_eq!(meta["meta"]["image"], "runner.png");
+        assert_eq!(meta["meta"]["frameTags"][0]["name"], "run");
+        assert_eq!(meta["meta"]["size"]["w"], 32);
+    }
+
+    #[test]
+    fn cast_shadow_projects_behind_caster() {
+        let mut d = Document::new("t", 24, 24);
+        // A vertical bar caster resting on row 15.
+        d.rect(0, 0, 10, 4, 12, 15, [255, 255, 255, 255], true, 1)
+            .unwrap();
+        let painted = d
+            .cast_shadow(0, 0, 135.0, 1.5, 0.2, [20, 20, 30, 255], 180, None, false)
+            .unwrap();
+        assert!(painted > 0, "shadow should paint pixels");
+        // The caster still sits on top (unchanged white).
+        assert_eq!(d.get_pixel(0, 0, 11, 5).unwrap(), [255, 255, 255, 255]);
+        // A shadow-coloured pixel exists off the caster.
+        let mut found = false;
+        for y in 0..24 {
+            for x in 0..24 {
+                let p = d.get_pixel(0, 0, x, y).unwrap();
+                if p[3] > 0 && p[0] == 20 && p[1] == 20 && p[2] == 30 {
+                    found = true;
+                }
+            }
+        }
+        assert!(found, "expected shadow-coloured pixels");
+    }
+
+    #[test]
+    fn cast_shadow_clips_to_receiver() {
+        let mut d = Document::new("t", 24, 24);
+        let ground = d.add_layer(Some("ground".into()), 255, "normal".into());
+        let caster = d.add_layer(Some("caster".into()), 255, "normal".into());
+        d.rect(ground, 0, 0, 10, 23, 19, [40, 120, 40, 255], true, 1)
+            .unwrap();
+        d.rect(caster, 0, 8, 6, 10, 15, [255, 255, 255, 255], true, 1)
+            .unwrap();
+        let painted = d
+            .cast_shadow(
+                caster,
+                0,
+                180.0,
+                1.0,
+                0.3,
+                [10, 10, 20, 255],
+                200,
+                Some(ground),
+                false,
+            )
+            .unwrap();
+        assert!(painted > 0, "shadow should land on the ground");
+        // The caster layer is untouched.
+        assert_eq!(d.get_pixel(caster, 0, 9, 7).unwrap(), [255, 255, 255, 255]);
+        // The ground is partly darkened (shadow) and partly its own colour.
+        let (mut blended, mut pure) = (0u32, 0u32);
+        for y in 0..24 {
+            for x in 0..24 {
+                let p = d.get_pixel(ground, 0, x, y).unwrap();
+                if p[3] == 0 {
+                    continue;
+                }
+                if p == [40, 120, 40, 255] {
+                    pure += 1;
+                } else {
+                    blended += 1;
+                }
+            }
+        }
+        assert!(
+            blended > 0 && pure > 0,
+            "ground should be part-shadowed (blended={blended}, pure={pure})"
+        );
+    }
+
+    #[test]
+    fn stroke_f_keeps_subpixel_position() {
+        // A 1px AA stroke centred on row 3 lights that row nearly solid; nudging
+        // it half a pixel down splits its coverage between rows 3 and 4, so the
+        // row-3 alpha must drop. If the point were rounded to an integer first
+        // (the old double-quantize) both cases would be identical.
+        let on_row = |y: f32| {
+            let mut d = Document::new("t", 12, 8);
+            d.stroke_f(
+                0,
+                0,
+                &[(2.0, y, 1.0), (8.0, y, 1.0)],
+                [255, 255, 255, 255],
+                true,
+                false,
+            )
+            .unwrap();
+            d.get_pixel(0, 0, 5, 3).unwrap()[3]
+        };
+        let centred = on_row(3.0);
+        let nudged = on_row(3.5);
+        assert!(
+            centred > nudged + 40,
+            "sub-pixel nudge should lower row-3 coverage (centred={centred}, nudged={nudged})"
+        );
     }
 
     #[test]
