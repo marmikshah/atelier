@@ -1321,6 +1321,140 @@ impl Studio {
     }
 }
 
+impl Studio {
+    /// Colour-vision-deficiency audit: simulate protanopia / deuteranopia /
+    /// tritanopia over the flattened frame (Machado 2009 severity-1.0 matrices
+    /// in linear RGB) and report which of the art's distinct colour pairs —
+    /// distinguishable to typical vision — COLLAPSE under each simulation
+    /// (OKLab ΔE drops below the readable floor). Returns a side-by-side strip
+    /// (normal · protan · deutan · tritan) plus the collapsing pairs, so
+    /// "is my health bar readable to 8% of players?" becomes a tool call.
+    pub fn doc_colorblind_check(
+        &self,
+        id: &str,
+        frame: usize,
+        scale: u32,
+    ) -> Result<(Vec<u8>, Value), String> {
+        const KINDS: [(&str, [[f32; 3]; 3]); 3] = [
+            (
+                "protanopia",
+                [
+                    [0.152286, 1.052583, -0.204868],
+                    [0.114503, 0.786281, 0.099216],
+                    [-0.003882, -0.048116, 1.051998],
+                ],
+            ),
+            (
+                "deuteranopia",
+                [
+                    [0.367322, 0.860646, -0.227968],
+                    [0.280085, 0.672501, 0.047413],
+                    [-0.011820, 0.042940, 0.968881],
+                ],
+            ),
+            (
+                "tritanopia",
+                [
+                    [1.255528, -0.076749, -0.178779],
+                    [-0.078411, 0.930809, 0.147602],
+                    [0.004733, 0.691367, 0.303900],
+                ],
+            ),
+        ];
+        let lin = |c: u8| {
+            let v = c as f32 / 255.0;
+            if v <= 0.04045 {
+                v / 12.92
+            } else {
+                ((v + 0.055) / 1.055).powf(2.4)
+            }
+        };
+        let unlin = |v: f32| {
+            let v = v.clamp(0.0, 1.0);
+            let s = if v <= 0.0031308 {
+                v * 12.92
+            } else {
+                1.055 * v.powf(1.0 / 2.4) - 0.055
+            };
+            (s * 255.0).round().clamp(0.0, 255.0) as u8
+        };
+        let simulate = |p: [u8; 4], m: &[[f32; 3]; 3]| -> [u8; 4] {
+            let (r, g, b) = (lin(p[0]), lin(p[1]), lin(p[2]));
+            [
+                unlin(m[0][0] * r + m[0][1] * g + m[0][2] * b),
+                unlin(m[1][0] * r + m[1][1] * g + m[1][2] * b),
+                unlin(m[2][0] * r + m[2][1] * g + m[2][2] * b),
+                p[3],
+            ]
+        };
+        let (_dir, doc) = self.open(id)?;
+        let img = doc.analysis_image(None, frame)?;
+        let (w, h) = (img.width(), img.height());
+        // Distinct colours by frequency (capped: pair analysis is quadratic).
+        let mut freq: std::collections::HashMap<[u8; 4], u64> = std::collections::HashMap::new();
+        for p in img.pixels() {
+            if p.0[3] > 0 {
+                *freq.entry(p.0).or_insert(0) += 1;
+            }
+        }
+        let mut colors: Vec<[u8; 4]> = freq.keys().copied().collect();
+        colors.sort_by_key(|c| std::cmp::Reverse(freq[c]));
+        colors.truncate(24);
+        let de = |a: [u8; 4], b: [u8; 4]| {
+            let (l1, a1, b1) = atelier_core::raster::srgb_to_oklab(a);
+            let (l2, a2, b2) = atelier_core::raster::srgb_to_oklab(b);
+            ((l1 - l2).powi(2) + (a1 - a2).powi(2) + (b1 - b2).powi(2)).sqrt()
+        };
+        let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+        let mut report: Vec<Value> = Vec::new();
+        let mut total_collapsed = 0usize;
+        // The strip: normal + the three simulations, side by side, 1px gutter.
+        let gut = 1u32;
+        let mut strip = image::RgbaImage::from_pixel(w * 4 + gut * 3, h, image::Rgba([0, 0, 0, 0]));
+        image::imageops::replace(&mut strip, &img, 0, 0);
+        for (k, (name, m)) in KINDS.iter().enumerate() {
+            let mut sim = image::RgbaImage::new(w, h);
+            for (x, y, p) in img.enumerate_pixels() {
+                sim.put_pixel(x, y, image::Rgba(simulate(p.0, m)));
+            }
+            image::imageops::replace(&mut strip, &sim, ((k as u32 + 1) * (w + gut)) as i64, 0);
+            let mut collapsed: Vec<Value> = Vec::new();
+            for i in 0..colors.len() {
+                for j in (i + 1)..colors.len() {
+                    let (a, b) = (colors[i], colors[j]);
+                    // Readable apart normally, unreadable under the simulation.
+                    if de(a, b) >= 0.08 && de(simulate(a, m), simulate(b, m)) < 0.05 {
+                        collapsed.push(json!({"a": hex(a), "b": hex(b)}));
+                    }
+                }
+            }
+            total_collapsed += collapsed.len();
+            report.push(json!({"kind": name, "collapsing_pairs": collapsed}));
+        }
+        let sc = scale.clamp(1, 8);
+        let out = if sc > 1 {
+            image::imageops::resize(
+                &strip,
+                strip.width() * sc,
+                strip.height() * sc,
+                image::imageops::FilterType::Nearest,
+            )
+        } else {
+            strip
+        };
+        let png = super::encode_png(&out)?;
+        let value = json!({
+            "doc_id": id,
+            "frame": frame,
+            "colors_checked": colors.len(),
+            "simulations": report,
+            "strip": "normal · protanopia · deuteranopia · tritanopia",
+            "verdict": if total_collapsed == 0 { "ok" } else { "warn" },
+        });
+        Ok((png, value))
+    }
+}
+
 /// Mean angle and max angular spread (degrees) of a set of directions, handling
 /// the 0/360 wrap via unit-vector summation. Empty → `(None, None)`.
 fn circular_summary(deg: &[f64]) -> (Option<f64>, Option<f64>) {
@@ -1552,6 +1686,33 @@ mod tests {
         assert_eq!(r["fill_ratio"], json!(0.25)); // 4 of 16 opaque
         assert_eq!(r["grid"][0], "...."); // empty top row
         assert_eq!(r["grid"][1], ".##."); // the block's first row
+    }
+
+    #[test]
+    fn colorblind_check_flags_red_green_collapse() {
+        let s = studio("cvd");
+        s.doc_create("ui", 8, 4).unwrap();
+        // Same-lightness red and green blocks: readable normally, classic
+        // protan/deutan collapse.
+        s.doc_rect("ui", 0, 0, 0, 0, 3, 3, [200, 60, 60, 255], true, 1)
+            .unwrap();
+        s.doc_rect("ui", 0, 0, 4, 0, 7, 3, [80, 150, 60, 255], true, 1)
+            .unwrap();
+        let (png, r) = s.doc_colorblind_check("ui", 0, 1).unwrap();
+        assert!(!png.is_empty());
+        assert_eq!(r["verdict"], "warn");
+        let sims = r["simulations"].as_array().unwrap();
+        let collapsed: usize = sims
+            .iter()
+            .filter(|k| {
+                (k["kind"] == "protanopia" || k["kind"] == "deuteranopia")
+                    && !k["collapsing_pairs"].as_array().unwrap().is_empty()
+            })
+            .count();
+        assert!(
+            collapsed >= 1,
+            "red/green should collapse under protan or deutan"
+        );
     }
 
     #[test]

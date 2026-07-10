@@ -31,7 +31,7 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 - `atelier-core` — document model + raster ops (no async, no MCP).
 - `atelier-studio` — the `Studio` facade: one method per editor operation (the library API).
 - `atelier-mcp` — the rmcp `#[tool]` server (stdio + HTTP); advertises a ~30-tool
-  **core** profile by default, the full 72 with `ATELIER_PROFILE=full`.
+  **core** profile by default, the full 75 with `ATELIER_PROFILE=full`.
 - `atelier` — the binary: arg parsing, the daemon installer, the `replay` runner.
 
 ## Hard constraints

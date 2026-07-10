@@ -1193,6 +1193,89 @@ impl Studio {
         })
     }
 
+    /// TRUE 9-slice: author a panel once, emit it at ANY size. The `src`
+    /// region (on `src_layer`/`src_frame`) is cut into a 3×3 grid by `inset`:
+    /// corners copy verbatim, edges and the centre tile (`mode="tile"`) or
+    /// stretch (`"stretch"`) to fill the `dst` rect on `layer`/`frame`.
+    /// Transparent source pixels are skipped, so a rounded panel keeps its
+    /// shape over existing art.
+    #[allow(clippy::too_many_arguments)]
+    pub fn nine_slice(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        src_layer: usize,
+        src_frame: usize,
+        src: (i32, i32, i32, i32),
+        inset: i32,
+        dst: (i32, i32, i32, i32),
+        mode: &str,
+    ) -> Result<Value, String> {
+        let (sx, sy, sw, sh) = src;
+        let (dx, dy, dw, dh) = dst;
+        let b = inset.max(1);
+        if sw < 2 * b + 1 || sh < 2 * b + 1 {
+            return Err(format!(
+                "source {}x{} too small for inset {} — needs at least {0}x{0} of {}",
+                sw,
+                sh,
+                b,
+                2 * b + 1
+            ));
+        }
+        if dw < 2 * b || dh < 2 * b {
+            return Err(format!(
+                "dest {}x{} smaller than the corners (2×inset {})",
+                dw,
+                dh,
+                2 * b
+            ));
+        }
+        if !matches!(mode, "tile" | "stretch") {
+            return Err(format!("unknown mode '{mode}' — use tile|stretch"));
+        }
+        let (dir, mut doc) = self.open(id)?;
+        let src_img = doc.analysis_image(Some(src_layer), src_frame)?;
+        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+        // Map one dest axis offset to a source axis offset.
+        let map_axis = |d: i32, dlen: i32, slen: i32| -> i32 {
+            if d < b {
+                d // leading corner: verbatim
+            } else if d >= dlen - b {
+                slen - (dlen - d) // trailing corner: verbatim from the far side
+            } else {
+                let span_s = slen - 2 * b;
+                let span_d = dlen - 2 * b;
+                match mode {
+                    "tile" => b + (d - b) % span_s,
+                    _ => b + ((d - b) as i64 * span_s as i64 / span_d.max(1) as i64) as i32,
+                }
+            }
+        };
+        // Build the whole panel as a patch, then stamp it over the target cel.
+        let mut patch = RgbaImage::from_pixel(dw as u32, dh as u32, image::Rgba([0, 0, 0, 0]));
+        let mut placed = 0u32;
+        for oy in 0..dh {
+            for ox in 0..dw {
+                let (mx, my) = (map_axis(ox, dw, sw), map_axis(oy, dh, sh));
+                let (gx, gy) = (sx + mx, sy + my);
+                if gx < 0 || gy < 0 || gx >= cw || gy >= ch {
+                    continue;
+                }
+                let p = src_img.get_pixel(gx as u32, gy as u32).0;
+                if p[3] == 0 {
+                    continue;
+                }
+                patch.put_pixel(ox as u32, oy as u32, image::Rgba(p));
+                placed += 1;
+            }
+        }
+        doc.stamp_image(layer, frame, dx, dy, patch, 1.0, 0.0, 255, "normal", false)?;
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "pixels_placed": placed}))
+    }
+
     // -- doc_import_clean: reference -> clean pixel art --------------------
 
     /// Import an external image as clean pixel art: optional corner-seeded
@@ -1393,6 +1476,100 @@ impl Studio {
         }
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "frames": frames, "kind": kind}))
+    }
+
+    /// Seeded PARTICLE EMITTER rendered to frames — sparks, embers, smoke,
+    /// rain, magic motes. Every particle's whole trajectory is a pure function
+    /// of (seed, particle index): spawned inside the emitter rect with a
+    /// direction in `angle ± spread`, advanced by `speed` and `gravity`, faded
+    /// and shrunk along its `life`, coloured along the ramp — so the animation
+    /// is deterministic and loops cleanly when `loop_seam` (particles respawn
+    /// with staggered phase). Draws onto `layer` across `frames`, clearing each
+    /// cel, and tags the range `emit`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn emit(
+        &self,
+        id: &str,
+        layer: usize,
+        region: (i32, i32, i32, i32),
+        frames: usize,
+        count: usize,
+        angle_deg: f32,
+        spread_deg: f32,
+        speed: f32,
+        gravity: f32,
+        life: f32,
+        size: i32,
+        seed: u64,
+        base: [u8; 4],
+        ramp: Option<Vec<[u8; 4]>>,
+    ) -> Result<Value, String> {
+        let frames = frames.clamp(2, 24);
+        let count = count.clamp(1, 512);
+        let (ex, ey, ew, eh) = region;
+        if ew < 1 || eh < 1 {
+            return Err("emitter region must be at least 1x1".into());
+        }
+        let (dir, mut doc) = self.open(id)?;
+        if layer >= doc.meta.layers.len() {
+            return Err(format!("no layer {}", layer));
+        }
+        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, 5));
+        while doc.meta.frames.len() < frames {
+            doc.add_frame(80, None);
+        }
+        let life = life.clamp(0.2, 4.0); // in cycle units: 1.0 = one full loop
+        let last = ramp.len() - 1;
+        // A unit random in [0,1) that is pure in (seed, particle, channel).
+        let rnd = |p: usize, ch: i32| raster::hash2(p as i32, ch, seed) as f32 / u32::MAX as f32;
+        for f in 0..frames {
+            doc.clear_cel(layer, f);
+            let ft = f as f32 / frames as f32;
+            for p in 0..count {
+                // Staggered phase: each particle is somewhere along its own
+                // life when the clip starts, so the loop has no "big bang".
+                let phase = (ft / life + rnd(p, 0)).fract();
+                let age = phase * life; // 0..life, in cycle units
+                let a0 = (angle_deg + spread_deg * (rnd(p, 1) * 2.0 - 1.0)).to_radians();
+                let v = speed * (0.6 + 0.4 * rnd(p, 2));
+                let sx = ex as f32 + rnd(p, 3) * ew as f32;
+                let sy = ey as f32 + rnd(p, 4) * eh as f32;
+                // Analytic ballistic position at this age (frames of travel).
+                let tt = age * frames as f32;
+                let px = sx + a0.cos() * v * tt;
+                let py = sy + a0.sin() * v * tt + 0.5 * gravity * tt * tt;
+                let lt = phase; // 0 = just born, 1 = dying
+                let c = ramp[((lt * last as f32).round() as usize).min(last)];
+                let alpha = ((1.0 - lt) * c[3] as f32).round().clamp(0.0, 255.0) as u8;
+                if alpha == 0 {
+                    continue;
+                }
+                // Particles shrink as they die.
+                let r = ((size as f32) * (1.0 - 0.6 * lt)).max(0.5) / 2.0;
+                doc.stroke_f(
+                    layer,
+                    f,
+                    &[(px, py, r * 2.0)],
+                    [c[0], c[1], c[2], alpha],
+                    true,
+                    false,
+                )?;
+            }
+            if !doc.meta.palette.is_empty() {
+                let pal = doc.meta.palette.clone();
+                doc.snap_to_palette(
+                    &pal,
+                    Some(layer),
+                    Some(f),
+                    atelier_core::document::AlphaSnap::Preserve,
+                );
+            }
+        }
+        if !doc.meta.tags.iter().any(|t| t.name == "emit") {
+            doc.add_tag("emit", 0, frames - 1, "forward")?;
+        }
+        doc.save(&dir)?;
+        Ok(json!({"ok": true, "doc_id": id, "frames": frames, "particles": count}))
     }
 
     /// Build a connected humanoid figure from named JOINT coordinates — the
@@ -2130,6 +2307,84 @@ mod tests {
         .into_iter()
         .map(|(k, v)| (k.to_string(), v))
         .collect()
+    }
+
+    #[test]
+    fn nine_slice_keeps_corners_and_fills_centre() {
+        let s = studio("nine");
+        s.doc_create("ui", 48, 48).unwrap();
+        // Author a 9×9 panel: red border, blue fill, at (0,0).
+        s.panel(
+            "ui",
+            0,
+            0,
+            0,
+            0,
+            9,
+            9,
+            [40, 60, 220, 255],
+            [220, 40, 40, 255],
+            false,
+        )
+        .unwrap();
+        // Emit it at 24×12 lower on the canvas.
+        let r = s
+            .nine_slice("ui", 0, 0, 0, 0, (0, 0, 9, 9), 3, (4, 20, 24, 12), "tile")
+            .unwrap();
+        assert!(r["pixels_placed"].as_u64().unwrap() > 0);
+        let px = |x: i32, y: i32| s.doc_get_pixel("ui", Some(0), 0, x, y).unwrap()["rgba"].clone();
+        // All four dest corners carry the border colour...
+        for (x, y) in [(4, 20), (27, 20), (4, 31), (27, 31)] {
+            assert_eq!(px(x, y), json!([220, 40, 40, 255]), "corner {x},{y}");
+        }
+        // ...edges too (top mid), and the centre is fill.
+        assert_eq!(px(16, 20), json!([220, 40, 40, 255]));
+        assert_eq!(px(16, 26), json!([40, 60, 220, 255]));
+        // Too-small dest errors.
+        assert!(s
+            .nine_slice("ui", 0, 0, 0, 0, (0, 0, 9, 9), 3, (0, 0, 5, 5), "tile")
+            .is_err());
+    }
+
+    #[test]
+    fn emit_is_deterministic_and_loops() {
+        let s = studio("emit");
+        for d in ["fx-a", "fx-b"] {
+            s.doc_create(d, 32, 32).unwrap();
+            s.emit(
+                d,
+                0,
+                (12, 24, 8, 4),
+                6,
+                16,
+                270.0,
+                25.0,
+                1.5,
+                0.0,
+                1.0,
+                2,
+                7,
+                [255, 180, 60, 255],
+                None,
+            )
+            .unwrap();
+        }
+        // Same seed ⇒ byte-identical frames across separate runs (sampled grid
+        // keeps the test fast; determinism failures are not localized anyway).
+        let mut any_opaque = false;
+        for f in 0..6 {
+            for y in (0..32).step_by(3) {
+                for x in (0..32).step_by(3) {
+                    let a = s.doc_get_pixel("fx-a", Some(0), f, x, y).unwrap()["rgba"].clone();
+                    let b = s.doc_get_pixel("fx-b", Some(0), f, x, y).unwrap()["rgba"].clone();
+                    assert_eq!(a, b, "frame {f} pixel {x},{y}");
+                    if a[3] != json!(0) {
+                        any_opaque = true;
+                    }
+                }
+            }
+        }
+        assert!(any_opaque, "emitter drew nothing in the sampled grid");
     }
 
     #[test]

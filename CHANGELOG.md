@@ -13,9 +13,10 @@ keep sub-pixel precision so walk cycles glide instead of stepping. Adds
 the game layer (`doc_set_audit` / `doc_set_palette_sync` — a game is a SET of
 documents), `doc_form_audit` (an eye for the #1 shading failure),
 `doc_cast_shadow` (a projected ground shadow), engine-standard sheet JSON,
-`list_docs` family filters, the `doc_pose_cycle` moveset generator, and the
-47-blob autotile family (`doc_autotile_set` + `doc_tilemap_assemble`).
-72 tools, 218 tests.
+`list_docs` family filters, the `doc_pose_cycle` moveset generator, the 47-blob
+autotile family (`doc_autotile_set` + `doc_tilemap_assemble`), and the
+UI/FX/accessibility kit (9-slice, particle emitter, CVD audit, gradient map,
+the `game-asset-set` prompt). 75 tools, 222 tests.
 
 ### Added
 
@@ -27,6 +28,25 @@ documents), `doc_form_audit` (an eye for the #1 shading failure),
   machinery as `doc_walk`; amplitudes derive from the figure's own leg length ×
   `intensity`, so every preset fits any sprite size. One call per gait = a whole
   character moveset from the same pose.
+- **The UI / FX / accessibility kit** (full profile):
+  - **`doc_nine_slice`** — true 9-slice: author a panel once, emit it at any
+    size (corners verbatim, edges/centre tiled or stretched, transparent
+    pixels skipped so rounded panels keep their shape). The dialog / button /
+    HUD-frame workhorse.
+  - **`doc_emit`** — seeded particle emitter rendered to frames (sparks,
+    embers, smoke, rain): spawn region, angle ± spread, speed, gravity, life;
+    fades and shrinks along a ramp. Deterministic in `seed` and phase-staggered
+    so the clip loops cleanly.
+  - **`doc_colorblind_check`** — CVD audit: simulates protanopia /
+    deuteranopia / tritanopia, reports colour pairs that collapse under each,
+    and returns an inline normal·protan·deutan·tritan strip.
+  - **`doc_fx op=gradient_map`** — remap a cel's luminance through colour
+    stops (alpha preserved): one-call mood/recolour that keeps the drawn
+    shading structure.
+  - **`game-asset-set` prompt** — the packaged whole-game workflow: one
+    palette, a hero moveset (figure → walk + pose_cycle), autotiled terrain
+    seen assembled, a 9-sliced HUD, then the doc_set_audit cohesion gate and
+    colorblind check before export.
 - **The 47-blob autotile family** (full profile) — terrain the agent can
   finally see assembled.
   - **`doc_autotile_set`** — the deterministic 47-tile blob set (full

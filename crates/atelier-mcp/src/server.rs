@@ -225,6 +225,63 @@ pub struct DocWangTiles {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocNineSlice {
+    pub doc_id: String,
+    /// Destination layer / frame.
+    pub layer: usize,
+    pub frame: usize,
+    /// Source panel layer / frame (defaults: same layer, frame 0).
+    pub src_layer: Option<usize>,
+    pub src_frame: Option<usize>,
+    /// Source panel rect [x, y, w, h] — the panel authored once.
+    pub src: Vec<i64>,
+    /// Corner thickness in px (the 3×3 cut; default 3).
+    pub inset: Option<i64>,
+    /// Destination rect [x, y, w, h] — any size ≥ the corners.
+    pub dst: Vec<i64>,
+    /// How edges/centre fill: "tile" (default) or "stretch".
+    pub mode: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocEmit {
+    pub doc_id: String,
+    pub layer: usize,
+    /// Emitter rect [x, y, w, h] particles spawn inside.
+    pub region: Vec<i64>,
+    /// Frame count (default 8, clamped 2..=24).
+    pub frames: Option<usize>,
+    /// Particle count (default 24, clamped 1..=512).
+    pub count: Option<usize>,
+    /// Emission direction in degrees (0=right, 90=down, 270=up; default 270).
+    pub angle: Option<f32>,
+    /// Half-cone spread around `angle` in degrees (default 30).
+    pub spread: Option<f32>,
+    /// Initial speed in px/frame (default 1.5).
+    pub speed: Option<f32>,
+    /// Downward acceleration in px/frame² (negative = rises; default 0).
+    pub gravity: Option<f32>,
+    /// Particle lifetime in loop units — 1.0 = lives one full cycle (default 1).
+    pub life: Option<f32>,
+    /// Particle size in px at birth (shrinks as it dies; default 2).
+    pub size: Option<i64>,
+    /// Deterministic seed (default 1).
+    pub seed: Option<u64>,
+    /// Base colour [r,g,b(,a)] — auto-ramped unless `ramp` given.
+    pub color: Vec<i64>,
+    /// Explicit birth→death colour ramp [[r,g,b,a],...].
+    pub ramp: Option<Vec<Vec<i64>>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocColorblindCheck {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    /// Nearest-neighbour upscale of the returned strip (default 2, clamped 1..=8).
+    pub scale: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocAutotileSet {
     pub doc_id: String,
     /// Tile size N in pixels; the source canvas must be at least N×N.
@@ -1465,6 +1522,64 @@ const PROMPTS: &[PromptSpec] = &[
             )
         },
     },
+    PromptSpec {
+        name: "game-asset-set",
+        description:
+            "Build a coherent game's asset set — hero moveset, terrain, HUD — audited as ONE work.",
+        args: &[
+            (
+                "theme",
+                "The game's look, e.g. \"forest ruins, dusk\".",
+                true,
+            ),
+            (
+                "hero",
+                "The playable character, e.g. \"a cloaked ranger\".",
+                true,
+            ),
+            (
+                "size",
+                "Character canvas size in pixels (default 48).",
+                false,
+            ),
+        ],
+        tools: &[
+            "doc_create",
+            "doc_palette",
+            "doc_set_palette",
+            "doc_figure",
+            "doc_pose_cycle",
+            "doc_walk",
+            "doc_look",
+            "doc_autotile_set",
+            "doc_tilemap_assemble",
+            "doc_panel",
+            "doc_nine_slice",
+            "doc_set_audit",
+            "doc_set_palette_sync",
+            "doc_colorblind_check",
+            "doc_export",
+            "export_atlas",
+        ],
+        build: |g| {
+            let theme = g("theme").unwrap_or_else(|| "the game's theme".into());
+            let hero = g("hero").unwrap_or_else(|| "the hero".into());
+            let size = g("size").unwrap_or_else(|| "48".into());
+            format!(
+                "Build a coherent asset SET for a game: theme {theme}, hero {hero}. \
+                 Name every document with one family prefix (e.g. game-hero-idle, game-tile-grass) so the set tools can find them.\n\
+                 1. ONE palette first: doc_palette a scheme fitting {theme}; you will lock this exact ramp on every document.\n\
+                 2. Hero: doc_create a {size}x{size} doc per animation; doc_set_palette; pose {hero} once as 13 joints (doc_figure to preview), then doc_walk for the walk and doc_pose_cycle for idle, run, jump, attack, hurt — the same joints every time.\n\
+                 3. doc_look each cycle inline; re-run a gait with different intensity/frames until the motion reads.\n\
+                 4. Terrain: doc_create a tile-sized doc, layer 0 inner material, layer 1 outer; doc_autotile_set for the 47-tile family, then doc_tilemap_assemble a test mask and doc_look the MAP — terrain is judged assembled, never as lone tiles.\n\
+                 5. HUD: doc_create a UI doc; author ONE panel (doc_panel), then doc_nine_slice it to every dialog/button size.\n\
+                 6. Cohesion gate: doc_set_audit on the family prefix — fix every warning; doc_set_palette_sync from the hero doc if palettes drifted.\n\
+                 7. doc_colorblind_check the HUD and any state-colour art; recolour pairs that collapse.\n\
+                 8. Ship: doc_export op=anim per gait tag, doc_export op=tileset for terrain, export_atlas for the whole set.\n\
+                 The set is done only when doc_set_audit says cohesive."
+            )
+        },
+    },
 ];
 
 /// Build the advertised [`Prompt`] descriptors from [`PROMPTS`].
@@ -1749,6 +1864,81 @@ impl Atelier {
     )]
     async fn doc_wang_tiles(&self, Parameters(p): Parameters<DocWangTiles>) -> CallToolResult {
         res(self.studio().wang_tiles(&p.doc_id, p.n))
+    }
+
+    #[tool(
+        description = "TRUE 9-slice: author a panel ONCE (any style — bevels, rounded corners, ornate borders), then emit it at ANY size. The `src` rect is cut into a 3×3 grid by `inset`: corners copy verbatim, edges and centre tile (default) or stretch to fill `dst`. Transparent source pixels are skipped, so rounded panels keep their shape. The dialog-box / button / HUD-frame workhorse: draw one 12×12 panel, stamp every UI size from it."
+    )]
+    async fn doc_nine_slice(&self, Parameters(p): Parameters<DocNineSlice>) -> CallToolResult {
+        let rect = |v: &Vec<i64>| -> Result<(i32, i32, i32, i32), String> {
+            if v.len() != 4 {
+                return Err("rect must be [x, y, w, h]".into());
+            }
+            Ok((v[0] as i32, v[1] as i32, v[2] as i32, v[3] as i32))
+        };
+        let (src, dst) = match (rect(&p.src), rect(&p.dst)) {
+            (Ok(s), Ok(d)) => (s, d),
+            (Err(e), _) | (_, Err(e)) => return res(Err(e)),
+        };
+        res(self.studio().nine_slice(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.src_layer.unwrap_or(p.layer),
+            p.src_frame.unwrap_or(0),
+            src,
+            p.inset.unwrap_or(3) as i32,
+            dst,
+            p.mode.as_deref().unwrap_or("tile"),
+        ))
+    }
+
+    #[tool(
+        description = "Seeded PARTICLE EMITTER rendered to frames — sparks, embers, smoke, rain, magic motes. Particles spawn inside `region`, fly along `angle ± spread` at `speed` under `gravity`, fade + shrink over `life`, coloured birth→death along the ramp (auto-ramped from `color` if omitted). Fully deterministic in `seed` and phase-staggered so the animation LOOPS cleanly. Draws onto `layer` across `frames` (clearing each cel) and tags the range `emit` — put it on its own layer over the art. Export with doc_export op=anim tag=emit."
+    )]
+    async fn doc_emit(&self, Parameters(p): Parameters<DocEmit>) -> CallToolResult {
+        if p.region.len() != 4 {
+            return res(Err("region must be [x, y, w, h]".into()));
+        }
+        let ramp = p
+            .ramp
+            .as_ref()
+            .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
+        res(self.studio().emit(
+            &p.doc_id,
+            p.layer,
+            (
+                p.region[0] as i32,
+                p.region[1] as i32,
+                p.region[2] as i32,
+                p.region[3] as i32,
+            ),
+            p.frames.unwrap_or(8),
+            p.count.unwrap_or(24),
+            p.angle.unwrap_or(270.0),
+            p.spread.unwrap_or(30.0),
+            p.speed.unwrap_or(1.5),
+            p.gravity.unwrap_or(0.0),
+            p.life.unwrap_or(1.0),
+            p.size.unwrap_or(2) as i32,
+            p.seed.unwrap_or(1),
+            rgba(&p.color),
+            ramp,
+        ))
+    }
+
+    #[tool(
+        description = "Colour-vision-deficiency audit: simulate protanopia / deuteranopia / tritanopia over the flattened frame and report which of the art's distinct colour pairs — readable to typical vision — COLLAPSE under each simulation (OKLab ΔE falls below the readable floor). Returns an INLINE side-by-side strip (normal · protan · deutan · tritan) plus the collapsing pairs, so 'is my health bar readable to 8% of players?' is one call. Run before shipping UI/state colours."
+    )]
+    async fn doc_colorblind_check(
+        &self,
+        Parameters(p): Parameters<DocColorblindCheck>,
+    ) -> CallToolResult {
+        img_result(self.studio().doc_colorblind_check(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.scale.unwrap_or(2),
+        ))
     }
 
     #[tool(

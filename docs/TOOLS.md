@@ -4,7 +4,7 @@ The complete tool surface. Everything is drawn at native resolution and scaled u
 nearest-neighbour on export, so the pixel grid stays crisp.
 
 > **Profiles.** By default the server advertises a **core** set of ~30 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 72 below. The
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 75 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
@@ -269,6 +269,24 @@ The limb/keyframe-animation toolkit.
     snap to ONE shared palette before encoding, so colours don't shimmer.
   - **tileset** `{tile_w,tile_h}` — slice frame 0 into a grid → PNG + `<name>.tsx`
     (Tiled XML) + `<name>.json`. Canvas must divide exactly by the tile size.
+- `doc_nine_slice` — TRUE 9-slice: author a panel once (bevels, rounded
+  corners, ornate borders), then emit it at ANY size — `src` rect cut 3×3 by
+  `inset`, corners verbatim, edges/centre tiled or stretched into `dst`.
+  Transparent source pixels skip, so rounded panels keep their shape. The
+  dialog / button / HUD-frame workhorse.
+- `doc_emit` — seeded PARTICLE EMITTER rendered to frames: sparks, embers,
+  smoke, rain, motes. Particles spawn in `region`, fly `angle ± spread` at
+  `speed` under `gravity`, fade + shrink over `life`, coloured along the ramp.
+  Deterministic in `seed`, phase-staggered so the clip LOOPS cleanly; tags the
+  range `emit`.
+- `doc_colorblind_check` — CVD audit: simulate protanopia / deuteranopia /
+  tritanopia and report which colour pairs — readable to typical vision —
+  collapse under each (OKLab ΔE below the readable floor). Returns an inline
+  normal·protan·deutan·tritan strip. Run before shipping UI/state colours.
+- `doc_fx op=gradient_map` — remap every opaque pixel's luminance through
+  colour `stops` (alpha preserved): the one-call mood/recolour move
+  (sunset-ify, poison-ify, night-palette) that keeps drawn shading structure
+  and swaps only the colour story.
 - `doc_wang_tiles` — generate the deterministic 16-tile Wang/blob terrain set
   from a source doc (layer 0 = inner material, layer 1 = outer; top-left N×N of
   each sampled) into a NEW `<id>-wang` document (4N×4N, the 16 corner

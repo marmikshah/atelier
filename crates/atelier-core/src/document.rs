@@ -3950,6 +3950,48 @@ impl Document {
         Ok(seq.len())
     }
 
+    /// GRADIENT MAP: remap every opaque pixel's LUMINANCE through colour
+    /// `stops` (0 = darkest, 1 = lightest), preserving alpha — the one-call
+    /// mood/recolour move (sunset-ify, poison-ify, night-palette a sprite)
+    /// that keeps all the drawn shading structure and swaps only its colour
+    /// story. Region-scopable.
+    pub fn gradient_map(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        mut stops: Vec<(f32, [u8; 4])>,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<(), String> {
+        if stops.is_empty() {
+            return Err("gradient_map needs at least one colour stop".into());
+        }
+        stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
+        stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        let (ax, ay, bx, by) = match region {
+            Some((x0, y0, x1, y1)) => (
+                x0.min(x1).max(0),
+                y0.min(y1).max(0),
+                x0.max(x1).min(w - 1),
+                y0.max(y1).min(h - 1),
+            ),
+            None => (0, 0, w - 1, h - 1),
+        };
+        let img = self.cel_canvas(layer, frame)?;
+        for y in ay..=by {
+            for x in ax..=bx {
+                let p = img.get_pixel(x as u32, y as u32).0;
+                if p[3] == 0 {
+                    continue;
+                }
+                let t = raster::luma(p) as f32 / 255.0;
+                let c = raster::sample_gradient(&stops, t, "none", x, y, 0);
+                img.put_pixel(x as u32, y as u32, Rgba([c[0], c[1], c[2], p[3]]));
+            }
+        }
+        Ok(())
+    }
+
     /// Apply one batched drawing op described by a JSON object `{"op": "...", ...}`.
     /// Lets a headless client send many ordered edits in a single tool call.
     ///
@@ -4214,6 +4256,12 @@ impl Document {
                     .unwrap_or("bayer4"),
                 op.get("density").and_then(|v| v.as_f64()).unwrap_or(0.5) as f32,
                 gb("only_existing", false),
+            ),
+            "gradient_map" => self.gradient_map(
+                layer,
+                frame,
+                stops_val(op.get("stops")),
+                region_val(op.get("region")),
             ),
             "pixel_perfect" => self
                 .pixel_perfect(
@@ -4504,6 +4552,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         ),
         "symmetry" => (&[], &["vertical", "horizontal", "keep_left", "keep_top"]),
         "adjust" => (&[], &["region", "hue", "sat", "lum"]),
+        "gradient_map" => (&["stops"], &["region"]),
         "noise" => (
             &["stops", "x0", "y0", "x1", "y1"],
             &["kind", "scale", "octaves", "seed", "blend"],
@@ -4906,6 +4955,36 @@ mod tests {
             has_off,
             "snap:false should leave off-palette blended pixels"
         );
+    }
+
+    #[test]
+    fn gradient_map_remaps_luminance_keeps_alpha() {
+        let mut d = Document::new("t", 4, 1);
+        d.pencil(0, 0, &[(0, 0)], [20, 20, 20, 255], 1).unwrap(); // dark
+        d.pencil(0, 0, &[(1, 0)], [240, 240, 240, 200], 1).unwrap(); // light, soft alpha
+        d.apply_op(
+            0,
+            0,
+            &json!({"op": "gradient_map", "stops": [
+                {"pos": 0.0, "color": [10, 0, 40, 255]},
+                {"pos": 1.0, "color": [255, 200, 80, 255]}
+            ]}),
+        )
+        .unwrap();
+        let dark = d.get_pixel(0, 0, 0, 0).unwrap();
+        let light = d.get_pixel(0, 0, 1, 0).unwrap();
+        // Dark maps near the first stop, light near the last; alpha preserved.
+        assert!(
+            dark[0] < 40 && dark[2] > 20,
+            "dark → deep stop, got {dark:?}"
+        );
+        assert!(
+            light[0] > 200 && light[1] > 150,
+            "light → warm stop, got {light:?}"
+        );
+        assert_eq!(light[3], 200);
+        // Transparent pixels untouched.
+        assert_eq!(d.get_pixel(0, 0, 3, 0).unwrap(), [0, 0, 0, 0]);
     }
 
     #[test]

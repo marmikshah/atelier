@@ -2410,6 +2410,7 @@ impl Studio {
             "quantize",
             "replace_color",
             "adjust",
+            "gradient_map",
         ];
         if !FX_OPS.contains(&op) {
             return Err(format!(
