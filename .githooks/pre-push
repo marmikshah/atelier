@@ -1,7 +1,14 @@
 #!/bin/sh
-# Canonical pre-push hook — mirrors CI: checks + tests.
+# Canonical pre-push hook — mirrors CI: checks + tests, and refuses direct
+# pushes to master (master moves only by PR merge).
 # Enable once with: git config core.hooksPath .githooks  (or `make hooks`).
 # Bypass in an emergency with --no-verify.
 set -e
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  if [ "$remote_ref" = "refs/heads/master" ]; then
+    echo "pre-push: refusing direct push to master — open a PR" >&2
+    exit 1
+  fi
+done
 make pre-commit-checks
 make test

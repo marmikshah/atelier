@@ -11,3 +11,6 @@ docs/ART-QUALITY-REVIEW.md
 # recipe-output art lands at repo root on replay; never commit it (docs/ art is tracked)
 /*.gif
 /*.png
+
+# Libraries don't commit lockfiles — the consumer resolves.
+Cargo.lock
