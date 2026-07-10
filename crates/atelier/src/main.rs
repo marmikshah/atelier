@@ -1,4 +1,4 @@
-//! atelier: an MCP-native headless pixel-art editor (Aseprite-as-API).
+//! atelier: the pixel-art studio agents can see — an MCP-native, headless editor.
 //!
 //! Agents create layered/animated documents, paint them with drawing primitives,
 //! render PNG previews to inspect, and iterate. Documents live in a flat,
@@ -22,7 +22,7 @@ use atelier_mcp::server;
 mod replay;
 mod service;
 
-const HELP: &str = "atelier — an MCP-native headless pixel-art editor (Aseprite-as-API).
+const HELP: &str = "atelier — the pixel-art studio agents can see (MCP-native, headless).
 
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)

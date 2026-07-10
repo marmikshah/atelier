@@ -133,6 +133,34 @@ pub struct DocRef {
     pub doc_id: String,
 }
 
+#[derive(Deserialize, JsonSchema, Default)]
+pub struct ListDocs {
+    /// Keep documents whose id starts with this (family selector, e.g. "hero-").
+    pub prefix: Option<String>,
+    /// Keep documents whose id contains this substring.
+    pub contains: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema, Default)]
+pub struct DocSetAudit {
+    /// Explicit member document ids (combined with `prefix` as a union).
+    pub ids: Option<Vec<String>>,
+    /// Select every document whose id starts with this (e.g. "hero-").
+    pub prefix: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocSetPaletteSync {
+    /// Explicit target document ids (combined with `prefix` as a union).
+    pub ids: Option<Vec<String>>,
+    /// Select every document whose id starts with this (e.g. "hero-").
+    pub prefix: Option<String>,
+    /// The palette to broadcast, as [[r,g,b(,a)],...]. Or use `from_doc`.
+    pub palette: Option<Vec<Vec<i64>>>,
+    /// Copy the locked palette from this document instead of passing colours.
+    pub from_doc: Option<String>,
+}
+
 #[derive(Deserialize, JsonSchema)]
 pub struct ExportAll {
     pub target_dir: String,
@@ -196,6 +224,83 @@ pub struct DocWangTiles {
     pub n: u32,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocNineSlice {
+    pub doc_id: String,
+    /// Destination layer / frame.
+    pub layer: usize,
+    pub frame: usize,
+    /// Source panel layer / frame (defaults: same layer, frame 0).
+    pub src_layer: Option<usize>,
+    pub src_frame: Option<usize>,
+    /// Source panel rect [x, y, w, h] — the panel authored once.
+    pub src: Vec<i64>,
+    /// Corner thickness in px (the 3×3 cut; default 3).
+    pub inset: Option<i64>,
+    /// Destination rect [x, y, w, h] — any size ≥ the corners.
+    pub dst: Vec<i64>,
+    /// How edges/centre fill: "tile" (default) or "stretch".
+    pub mode: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocEmit {
+    pub doc_id: String,
+    pub layer: usize,
+    /// Emitter rect [x, y, w, h] particles spawn inside.
+    pub region: Vec<i64>,
+    /// Frame count (default 8, clamped 2..=24).
+    pub frames: Option<usize>,
+    /// Particle count (default 24, clamped 1..=512).
+    pub count: Option<usize>,
+    /// Emission direction in degrees (0=right, 90=down, 270=up; default 270).
+    pub angle: Option<f32>,
+    /// Half-cone spread around `angle` in degrees (default 30).
+    pub spread: Option<f32>,
+    /// Initial speed in px/frame (default 1.5).
+    pub speed: Option<f32>,
+    /// Downward acceleration in px/frame² (negative = rises; default 0).
+    pub gravity: Option<f32>,
+    /// Particle lifetime in loop units — 1.0 = lives one full cycle (default 1).
+    pub life: Option<f32>,
+    /// Particle size in px at birth (shrinks as it dies; default 2).
+    pub size: Option<i64>,
+    /// Deterministic seed (default 1).
+    pub seed: Option<u64>,
+    /// Base colour [r,g,b(,a)] — auto-ramped unless `ramp` given.
+    pub color: Vec<i64>,
+    /// Explicit birth→death colour ramp [[r,g,b,a],...].
+    pub ramp: Option<Vec<Vec<i64>>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocColorblindCheck {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    /// Nearest-neighbour upscale of the returned strip (default 2, clamped 1..=8).
+    pub scale: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocAutotileSet {
+    pub doc_id: String,
+    /// Tile size N in pixels; the source canvas must be at least N×N.
+    pub n: u32,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocTilemapAssemble {
+    pub doc_id: String,
+    /// Tile size N in pixels; the source canvas must be at least N×N.
+    pub n: u32,
+    /// The terrain mask, one string per map row: `#`/`1`/`x` = filled cell,
+    /// anything else = empty. Short rows pad with empty.
+    pub rows: Vec<String>,
+    /// How off-map cells read: "filled" (terrain continues past the edge,
+    /// default) or "empty" (map borders get outlines).
+    pub outside: Option<String>,
+}
+
 // --- drawing params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -247,6 +352,30 @@ pub struct DocRimLight {
     pub falloff: Option<f32>,
     /// Light the AWAY-facing edge instead (core/contact shadow). Default false.
     pub dark: Option<bool>,
+    /// Snap on-palette afterwards when a palette is locked (default true).
+    pub snap: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocCastShadow {
+    pub doc_id: String,
+    /// The caster layer (its silhouette throws the shadow).
+    pub layer: usize,
+    pub frame: usize,
+    /// Shadow colour [r,g,b(,a)].
+    pub color: Vec<i64>,
+    /// Light azimuth in degrees: 0=right, 90=down, 180=left, 270=up (pairs with
+    /// the vector doc_form_audit infers). The shadow falls opposite. Default 135.
+    pub az: Option<f32>,
+    /// Ground stretch — how far the shadow projects (default 1.0).
+    pub length: Option<f32>,
+    /// How much height survives, 0..1 (0 = flat on the ground; default 0.2).
+    pub squash: Option<f32>,
+    /// Shadow strength 0..255 (default 140).
+    pub opacity: Option<u8>,
+    /// Paint the shadow onto this layer and clip it to that layer's opaque
+    /// pixels (the ground surface). Omit = draw behind the caster on its own cel.
+    pub receiver_layer: Option<usize>,
     /// Snap on-palette afterwards when a palette is locked (default true).
     pub snap: Option<bool>,
 }
@@ -504,6 +633,15 @@ pub struct DocComponents {
     /// Only components of this exact [r,g,b]/[r,g,b,a]; omit = any opaque pixel.
     pub color: Option<Vec<i64>>,
     /// Components smaller than this are dropped from the list (default 1).
+    pub min_area: Option<u32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocFormAudit {
+    pub doc_id: String,
+    pub frame: Option<usize>,
+    pub layer: Option<usize>,
+    /// Forms smaller than this many pixels are skipped (default 12).
     pub min_area: Option<u32>,
 }
 
@@ -1118,6 +1256,26 @@ pub struct DocFigure {
 }
 
 #[derive(Deserialize, JsonSchema)]
+pub struct DocPoseCycle {
+    pub doc_id: String,
+    pub layer: usize,
+    /// The base STANDING pose: the same 13 named joints as doc_figure.
+    pub joints: std::collections::HashMap<String, Vec<i64>>,
+    /// Which cycle to generate: idle | run | jump | attack | hurt.
+    pub gait: String,
+    /// Frame count (omit or 0 = the gait's natural count; clamped 2..=24).
+    pub frames: Option<usize>,
+    /// Amplitude multiplier on the gait's motion (default 1.0, clamped 0.1..=3).
+    pub intensity: Option<f32>,
+    pub color: Vec<i64>,
+    pub limb_w: Option<i64>,
+    pub torso_w: Option<i64>,
+    pub head_r: Option<i64>,
+    pub aa: Option<bool>,
+    pub snap: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 pub struct DocWalk {
     pub doc_id: String,
     pub layer: usize,
@@ -1364,6 +1522,64 @@ const PROMPTS: &[PromptSpec] = &[
             )
         },
     },
+    PromptSpec {
+        name: "game-asset-set",
+        description:
+            "Build a coherent game's asset set — hero moveset, terrain, HUD — audited as ONE work.",
+        args: &[
+            (
+                "theme",
+                "The game's look, e.g. \"forest ruins, dusk\".",
+                true,
+            ),
+            (
+                "hero",
+                "The playable character, e.g. \"a cloaked ranger\".",
+                true,
+            ),
+            (
+                "size",
+                "Character canvas size in pixels (default 48).",
+                false,
+            ),
+        ],
+        tools: &[
+            "doc_create",
+            "doc_palette",
+            "doc_set_palette",
+            "doc_figure",
+            "doc_pose_cycle",
+            "doc_walk",
+            "doc_look",
+            "doc_autotile_set",
+            "doc_tilemap_assemble",
+            "doc_panel",
+            "doc_nine_slice",
+            "doc_set_audit",
+            "doc_set_palette_sync",
+            "doc_colorblind_check",
+            "doc_export",
+            "export_atlas",
+        ],
+        build: |g| {
+            let theme = g("theme").unwrap_or_else(|| "the game's theme".into());
+            let hero = g("hero").unwrap_or_else(|| "the hero".into());
+            let size = g("size").unwrap_or_else(|| "48".into());
+            format!(
+                "Build a coherent asset SET for a game: theme {theme}, hero {hero}. \
+                 Name every document with one family prefix (e.g. game-hero-idle, game-tile-grass) so the set tools can find them.\n\
+                 1. ONE palette first: doc_palette a scheme fitting {theme}; you will lock this exact ramp on every document.\n\
+                 2. Hero: doc_create a {size}x{size} doc per animation; doc_set_palette; pose {hero} once as 13 joints (doc_figure to preview), then doc_walk for the walk and doc_pose_cycle for idle, run, jump, attack, hurt — the same joints every time.\n\
+                 3. doc_look each cycle inline; re-run a gait with different intensity/frames until the motion reads.\n\
+                 4. Terrain: doc_create a tile-sized doc, layer 0 inner material, layer 1 outer; doc_autotile_set for the 47-tile family, then doc_tilemap_assemble a test mask and doc_look the MAP — terrain is judged assembled, never as lone tiles.\n\
+                 5. HUD: doc_create a UI doc; author ONE panel (doc_panel), then doc_nine_slice it to every dialog/button size.\n\
+                 6. Cohesion gate: doc_set_audit on the family prefix — fix every warning; doc_set_palette_sync from the hero doc if palettes drifted.\n\
+                 7. doc_colorblind_check the HUD and any state-colour art; recolour pairs that collapse.\n\
+                 8. Ship: doc_export op=anim per gait tag, doc_export op=tileset for terrain, export_atlas for the whole set.\n\
+                 The set is done only when doc_set_audit says cohesive."
+            )
+        },
+    },
 ];
 
 /// Build the advertised [`Prompt`] descriptors from [`PROMPTS`].
@@ -1495,14 +1711,47 @@ impl Atelier {
         res(self.studio().doc_create(&p.name, p.width, p.height))
     }
 
-    #[tool(description = "List all documents (id, name, size, frame/layer counts).")]
-    async fn list_docs(&self) -> CallToolResult {
-        res(Ok(self.studio().list_docs()))
+    #[tool(
+        description = "List documents (id, name, size, frame/layer counts). Optional `prefix` selects a family by id start (`hero-` matches hero-idle, hero-run); `contains` filters by substring; both = AND. Omit both to list everything."
+    )]
+    async fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
+        res(Ok(self.studio().list_docs_filtered(
+            p.prefix.as_deref(),
+            p.contains.as_deref(),
+        )))
     }
 
     #[tool(description = "Get a document's structure: layers, frames, cels, tags.")]
     async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().doc_info(&p.doc_id))
+    }
+
+    #[tool(
+        description = "Audit N documents as ONE game — the set-level doc_critique. Resolve members by `ids` and/or id `prefix` (union), then report per-doc palette/value/scale/pivot stats plus set cohesion: palette union size + unlocked docs + cross-doc near-duplicate colours (OKLab ΔE), silhouette-height scale outliers vs the set median, the set value range, and docs missing pivots. Verdict is 'cohesive' or a list of actionable warnings (e.g. run doc_set_palette_sync). This is how a pile of sprites becomes one game."
+    )]
+    async fn doc_set_audit(&self, Parameters(p): Parameters<DocSetAudit>) -> CallToolResult {
+        res(self
+            .studio()
+            .doc_set_audit(p.ids.as_deref(), p.prefix.as_deref()))
+    }
+
+    #[tool(
+        description = "Broadcast ONE palette across a document set: lock it on every member (`ids` and/or id `prefix`) and perceptually snap every cel onto it (OKLab nearest, alpha preserved). Palette = explicit `palette` colours or `from_doc` to copy another document's locked palette. Returns per-doc moved-pixel counts. The fix for doc_set_audit palette warnings."
+    )]
+    async fn doc_set_palette_sync(
+        &self,
+        Parameters(p): Parameters<DocSetPaletteSync>,
+    ) -> CallToolResult {
+        let palette = p
+            .palette
+            .as_ref()
+            .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
+        res(self.studio().doc_set_palette_sync(
+            p.ids.as_deref(),
+            p.prefix.as_deref(),
+            palette,
+            p.from_doc.as_deref(),
+        ))
     }
 
     #[tool(description = "Delete a document and all its files.")]
@@ -1530,7 +1779,7 @@ impl Atelier {
         ))
     }
 
-    // -- documents: editable layered/timeline sprites (Aseprite-style) --
+    // -- documents: editable layered/timeline sprites --
     #[tool(
         description = "Layer structure in one tool. `op`: add (new layer on top — name/opacity/blend) · set (change layer `index`'s visible/opacity/blend; omit a field to leave it) · move (`index`→`to_index`) · insert (new layer at `index`) · delete · rename · duplicate · merge_down (`index` onto the layer below). Blend ∈ normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion."
     )]
@@ -1618,7 +1867,102 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Export a document to a file. `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Shared: out_path, scale (sheet/anim 4, tileset 1). For a whole-library dump use export_all/export_atlas; for the Wang set use doc_wang_tiles."
+        description = "TRUE 9-slice: author a panel ONCE (any style — bevels, rounded corners, ornate borders), then emit it at ANY size. The `src` rect is cut into a 3×3 grid by `inset`: corners copy verbatim, edges and centre tile (default) or stretch to fill `dst`. Transparent source pixels are skipped, so rounded panels keep their shape. The dialog-box / button / HUD-frame workhorse: draw one 12×12 panel, stamp every UI size from it."
+    )]
+    async fn doc_nine_slice(&self, Parameters(p): Parameters<DocNineSlice>) -> CallToolResult {
+        let rect = |v: &Vec<i64>| -> Result<(i32, i32, i32, i32), String> {
+            if v.len() != 4 {
+                return Err("rect must be [x, y, w, h]".into());
+            }
+            Ok((v[0] as i32, v[1] as i32, v[2] as i32, v[3] as i32))
+        };
+        let (src, dst) = match (rect(&p.src), rect(&p.dst)) {
+            (Ok(s), Ok(d)) => (s, d),
+            (Err(e), _) | (_, Err(e)) => return res(Err(e)),
+        };
+        res(self.studio().nine_slice(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.src_layer.unwrap_or(p.layer),
+            p.src_frame.unwrap_or(0),
+            src,
+            p.inset.unwrap_or(3) as i32,
+            dst,
+            p.mode.as_deref().unwrap_or("tile"),
+        ))
+    }
+
+    #[tool(
+        description = "Seeded PARTICLE EMITTER rendered to frames — sparks, embers, smoke, rain, magic motes. Particles spawn inside `region`, fly along `angle ± spread` at `speed` under `gravity`, fade + shrink over `life`, coloured birth→death along the ramp (auto-ramped from `color` if omitted). Fully deterministic in `seed` and phase-staggered so the animation LOOPS cleanly. Draws onto `layer` across `frames` (clearing each cel) and tags the range `emit` — put it on its own layer over the art. Export with doc_export op=anim tag=emit."
+    )]
+    async fn doc_emit(&self, Parameters(p): Parameters<DocEmit>) -> CallToolResult {
+        if p.region.len() != 4 {
+            return res(Err("region must be [x, y, w, h]".into()));
+        }
+        let ramp = p
+            .ramp
+            .as_ref()
+            .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
+        res(self.studio().emit(
+            &p.doc_id,
+            p.layer,
+            (
+                p.region[0] as i32,
+                p.region[1] as i32,
+                p.region[2] as i32,
+                p.region[3] as i32,
+            ),
+            p.frames.unwrap_or(8),
+            p.count.unwrap_or(24),
+            p.angle.unwrap_or(270.0),
+            p.spread.unwrap_or(30.0),
+            p.speed.unwrap_or(1.5),
+            p.gravity.unwrap_or(0.0),
+            p.life.unwrap_or(1.0),
+            p.size.unwrap_or(2) as i32,
+            p.seed.unwrap_or(1),
+            rgba(&p.color),
+            ramp,
+        ))
+    }
+
+    #[tool(
+        description = "Colour-vision-deficiency audit: simulate protanopia / deuteranopia / tritanopia over the flattened frame and report which of the art's distinct colour pairs — readable to typical vision — COLLAPSE under each simulation (OKLab ΔE falls below the readable floor). Returns an INLINE side-by-side strip (normal · protan · deutan · tritan) plus the collapsing pairs, so 'is my health bar readable to 8% of players?' is one call. Run before shipping UI/state colours."
+    )]
+    async fn doc_colorblind_check(
+        &self,
+        Parameters(p): Parameters<DocColorblindCheck>,
+    ) -> CallToolResult {
+        img_result(self.studio().doc_colorblind_check(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.scale.unwrap_or(2),
+        ))
+    }
+
+    #[tool(
+        description = "Generate the deterministic 47-tile BLOB autotile set — the full edge+corner bitmask family (the modern superset of the 16-corner Wang set). Same source contract as doc_wang_tiles: frame 0, layer 0 = INNER material, layer 1 = OUTER, top-left N×N sampled. Creates a NEW document <id>-blob (7N×7N, the 47 canonical neighbour masks in a 7×7 grid) and returns `masks` — the 8-bit neighbour mask per grid index (N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128) — so an engine autotiler maps straight onto the sheet. Export with doc_export op=tileset. See it in situ FIRST with doc_tilemap_assemble."
+    )]
+    async fn doc_autotile_set(&self, Parameters(p): Parameters<DocAutotileSet>) -> CallToolResult {
+        res(self.studio().autotile_set(&p.doc_id, p.n))
+    }
+
+    #[tool(
+        description = "Assemble a TILEMAP from a terrain mask — the in-situ test of an autotile set, and the only real one. `rows` = the map as strings (`#`/`1`/`x` = filled); every filled cell computes its 8-neighbour mask and renders straight from the source materials (layer 0 inner / layer 1 outer) with the same blob rules as doc_autotile_set, so what you see IS what the tile family produces in a real map. `outside` = filled (default: terrain continues past the map edge) | empty (borders get outlines). Creates a NEW document <id>-map — doc_look it to judge the terrain reads, then export."
+    )]
+    async fn doc_tilemap_assemble(
+        &self,
+        Parameters(p): Parameters<DocTilemapAssemble>,
+    ) -> CallToolResult {
+        let outside_filled = p.outside.as_deref().unwrap_or("filled") == "filled";
+        res(self
+            .studio()
+            .tilemap_assemble(&p.doc_id, p.n, &p.rows, outside_filled))
+    }
+
+    #[tool(
+        description = "Export a document to a file. `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette; `meta`=standard writes the industry-standard hash sprite-JSON engines' existing importers parse instead — no pivots/boxes in that shape) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Shared: out_path, scale (sheet/anim 4, tileset 1). For a whole-library dump use export_all/export_atlas; for the Wang set use doc_wang_tiles."
     )]
     async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
         res(self
@@ -1680,6 +2024,24 @@ impl Atelier {
             p.width.unwrap_or(1),
             p.falloff.unwrap_or(1.5),
             p.dark.unwrap_or(false),
+            p.snap.unwrap_or(true),
+        ))
+    }
+
+    #[tool(
+        description = "Cast a projected GROUND shadow from a caster silhouette — not a flat offset copy (that's doc_drop_shadow) but the caster flattened onto its contact row and sheared AWAY from the light, so a tall shape throws a long foreshortened shadow anchored at its feet. `az` = light azimuth (0=right, 90=down, 180=left, 270=up; pairs with doc_form_audit); `length` stretches it along the ground, `squash` 0..1 is how much height survives (0 = flat). With `receiver_layer` the shadow is painted onto that layer and clipped to its opaque pixels (lands on the ground only); omit to draw behind the caster on its own cel. `snap` keeps it on-palette."
+    )]
+    async fn doc_cast_shadow(&self, Parameters(p): Parameters<DocCastShadow>) -> CallToolResult {
+        res(self.studio().doc_cast_shadow(
+            &p.doc_id,
+            p.layer,
+            p.frame,
+            p.az.unwrap_or(135.0),
+            p.length.unwrap_or(1.0),
+            p.squash.unwrap_or(0.2),
+            rgba(&p.color),
+            p.opacity.unwrap_or(140),
+            p.receiver_layer,
             p.snap.unwrap_or(true),
         ))
     }
@@ -1756,6 +2118,18 @@ impl Atelier {
             p.connectivity.unwrap_or(8),
             color,
             p.min_area.unwrap_or(1),
+        ))
+    }
+
+    #[tool(
+        description = "Per-form shading audit — sees the #1 beginner failure the scalar reports can't. For each connected opaque form it infers the light direction (least-squares fit of perceptual lightness → `light_azimuth_deg`, `plane_fit_r2`) and flags PILLOW-SHADING (`pillow_corr`: brightness hugging the silhouette centre instead of a light direction). The summary reports `pillow_forms`, the shared `dominant_light_azimuth_deg` / `light_spread_deg`, and a verdict (ok | pillow-shading detected | inconsistent light direction). `min_area` skips specks (default 12). Deterministic; run before relight/form or before export."
+    )]
+    async fn doc_form_audit(&self, Parameters(p): Parameters<DocFormAudit>) -> CallToolResult {
+        res(self.studio().doc_form_audit(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.layer,
+            p.min_area.unwrap_or(12),
         ))
     }
 
@@ -2102,7 +2476,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, pillow-shading (light pooled at the centre with no direction), value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
+        description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, per-form pillow-shading and mixed light direction (via the doc_form_audit engine), value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
     )]
     async fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> CallToolResult {
         res(self
@@ -2589,11 +2963,37 @@ impl Atelier {
             p.snap.unwrap_or(true),
         ))
     }
+
+    #[tool(
+        description = "GENERATE a full animation cycle for a named GAIT from one standing pose (the same 13 joints as doc_figure) — the moveset generator. `gait`: idle (breathing bob) | run (airborne stride, pumping arms, forward lean) | jump (crouch → rise+tuck → fall → landing absorb) | attack (lead-arm sweep with a lunge) | hurt (recoil and recover). Knees/elbows are solved by 2-bone IK and every frame is the connected-capsule figure, so limbs never wobble or detach. Amplitudes scale from the figure's own leg length × `intensity`, so presets fit any sprite size. Frames are tagged with the gait — one call per gait builds a whole character moveset from the SAME pose (walk has its own tool). Export each with doc_export op=anim tag=<gait>."
+    )]
+    async fn doc_pose_cycle(&self, Parameters(p): Parameters<DocPoseCycle>) -> CallToolResult {
+        let joints: std::collections::HashMap<String, (i32, i32)> = p
+            .joints
+            .iter()
+            .filter(|(_, v)| v.len() >= 2)
+            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
+            .collect();
+        res(self.studio().pose_cycle(
+            &p.doc_id,
+            p.layer,
+            &joints,
+            &p.gait,
+            p.frames.unwrap_or(0),
+            p.intensity.unwrap_or(1.0),
+            rgba(&p.color),
+            p.limb_w.unwrap_or(3) as i32,
+            p.torso_w.unwrap_or(6) as i32,
+            p.head_r.unwrap_or(4) as i32,
+            p.aa.unwrap_or(true),
+            p.snap.unwrap_or(true),
+        ))
+    }
 }
 
-/// The default ("core") tool profile — the ~28 tools the canonical sprite /
-/// animation / tile / recreate-from-reference workflows need. The full 65-tool
-/// surface (extra effects, rigging, audits, library exports) is advertised when
+/// The default ("core") tool profile — the ~30 tools the canonical sprite /
+/// animation / tile / game-set / recreate-from-reference workflows need. The
+/// full surface (extra effects, rigging, audits, library exports) is advertised when
 /// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
 /// every tool still EXECUTES via call_tool (so `atelier replay` and a flag-flip
 /// both reach the long tail).
@@ -2633,6 +3033,9 @@ const CORE_TOOLS: &[&str] = &[
     // reference loop
     "doc_ref",
     "doc_ref_compare",
+    // the game layer — a game is a SET of documents, not one
+    "doc_set_audit",
+    "doc_set_palette_sync",
 ];
 
 /// True when the full tool surface should be advertised (`ATELIER_PROFILE=full`).
@@ -2779,7 +3182,8 @@ impl ServerHandler for Atelier {
             .enable_prompts()
             .build();
         info.instructions = Some(
-            "atelier: a headless pixel-art editor (Aseprite-as-API). doc_create a \
+            "atelier: the pixel-art studio you can see — a headless editor where every \
+             mark is a tool call and doc_look hands the frame back as an image. doc_create a \
              layered/animated document, then paint cels with doc_draw (one op: \
              line/rect/ellipse/fill/stroke/text/…) or doc_batch (many ops in one call). LOOK with doc_look \
              after every burst of edits — it returns the frame as an INLINE image plus \

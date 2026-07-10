@@ -19,6 +19,7 @@ use atelier_core::document::Document;
 mod analysis;
 mod craft;
 mod reference;
+mod set;
 
 fn slugify(name: &str) -> String {
     let mut out = String::new();
@@ -203,8 +204,25 @@ impl Studio {
     }
 
     pub fn list_docs(&self) -> Value {
+        self.list_docs_filtered(None, None)
+    }
+
+    /// `prefix` keeps ids starting with it (family selector: `hero-` matches
+    /// `hero-idle`, `hero-run`); `contains` keeps ids with the substring. Both
+    /// case-sensitive on the slug; combined = AND.
+    pub fn list_docs_filtered(&self, prefix: Option<&str>, contains: Option<&str>) -> Value {
         let mut items = Vec::new();
         for id in self.doc_ids() {
+            if let Some(p) = prefix {
+                if !id.starts_with(p) {
+                    continue;
+                }
+            }
+            if let Some(c) = contains {
+                if !id.contains(c) {
+                    continue;
+                }
+            }
             // Read doc.json directly (don't load cel images just to list).
             let meta = fs::read_to_string(self.doc_dir(&id).join("doc.json"))
                 .ok()
@@ -649,7 +667,19 @@ impl Studio {
         let geti = |k: &str| params.get(k).and_then(|v| v.as_u64()).map(|n| n as u32);
         let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
         match op {
-            "sheet" => self.doc_export_sheet(id, out_path, scale.unwrap_or(4)),
+            "sheet" => match gets("meta").unwrap_or("atelier") {
+                "atelier" => self.doc_export_sheet(id, out_path, scale.unwrap_or(4)),
+                "standard" => {
+                    let (_dir, doc) = self.open(id)?;
+                    if let Some(p) = Path::new(out_path).parent() {
+                        let _ = fs::create_dir_all(p);
+                    }
+                    doc.export_sheet_std(Path::new(out_path), scale.unwrap_or(4).max(1))
+                }
+                other => Err(format!(
+                    "doc_export op=sheet: unknown meta '{other}' — use atelier|standard"
+                )),
+            },
             "anim" => match gets("format").unwrap_or("gif") {
                 "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(4), gets("tag")),
                 "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(4), gets("tag")),
@@ -869,6 +899,220 @@ impl Studio {
             return true;
         }
         false
+    }
+
+    /// Generate the deterministic 47-tile BLOB autotile set (the full
+    /// edge+corner bitmask family — the modern superset of the 16-corner Wang
+    /// set). Source contract matches `wang_tiles`: frame 0, layer 0 = inner
+    /// material, layer 1 = outer, top-left N×N sampled. Output is a NEW
+    /// document `<id>-blob` laid out as a 7×7 grid of the 47 canonical
+    /// neighbour masks (a corner bit only counts when both adjacent edges are
+    /// set). Returns the new doc's structure plus `masks` — the canonical
+    /// 8-bit neighbour mask per grid index (N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64
+    /// NW=128) — so an engine autotiler can map straight onto it.
+    pub fn autotile_set(&self, id: &str, n: u32) -> Result<Value, String> {
+        use image::{Rgba, RgbaImage};
+        let (_dir, src) = self.open(id)?;
+        if src.meta.layers.len() < 2 {
+            return Err(
+                "autotile_set needs two layers: layer 0 = inner material, layer 1 = outer material"
+                    .into(),
+            );
+        }
+        let n = n.max(2);
+        if src.meta.w < n || src.meta.h < n {
+            return Err(format!(
+                "source canvas {}x{} smaller than tile size {}",
+                src.meta.w, src.meta.h, n
+            ));
+        }
+        let inner = src.analysis_image(Some(0), 0)?;
+        let outer = src.analysis_image(Some(1), 0)?;
+        let masks = Self::blob_masks();
+        let mut canvas = RgbaImage::from_pixel(7 * n, 7 * n, Rgba([0, 0, 0, 0]));
+        for (idx, &mask) in masks.iter().enumerate() {
+            let (gx, gy) = ((idx as u32) % 7, (idx as u32) / 7);
+            for ty in 0..n {
+                for tx in 0..n {
+                    let p = if Self::blob_inside(tx, ty, n, mask) {
+                        *inner.get_pixel(tx, ty)
+                    } else {
+                        *outer.get_pixel(tx, ty)
+                    };
+                    canvas.put_pixel(gx * n + tx, gy * n + ty, p);
+                }
+            }
+        }
+        let new_id = self.unique_id(&format!("{}-blob", id));
+        let dir = self.doc_dir(&new_id);
+        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        let mut doc = Document::new(&format!("{}-blob", id), 7 * n, 7 * n);
+        doc.set_cel(0, 0, 0, 0, canvas)?;
+        doc.save(&dir)?;
+        let mut out = doc.structure();
+        out["id"] = json!(new_id);
+        out["tile_size"] = json!(n);
+        out["masks"] = json!(masks);
+        Ok(out)
+    }
+
+    /// Assemble a TILEMAP from a terrain mask — the in-situ test of a tileset,
+    /// and the only real one. `rows` is the map as strings (`#`/`1`/`x` =
+    /// filled); each filled cell computes its 8-neighbour mask and renders
+    /// directly from the same materials + blob rules as `autotile_set` (no
+    /// intermediate sheet needed), so what you see IS what the autotile family
+    /// produces. `outside` says how off-map reads: `filled` (terrain continues,
+    /// default) or `empty` (map edges get borders). Output is a NEW document
+    /// `<id>-map` the agent can doc_look / doc_export.
+    pub fn tilemap_assemble(
+        &self,
+        id: &str,
+        n: u32,
+        rows: &[String],
+        outside_filled: bool,
+    ) -> Result<Value, String> {
+        use image::{Rgba, RgbaImage};
+        let (_dir, src) = self.open(id)?;
+        if src.meta.layers.len() < 2 {
+            return Err(
+                "tilemap_assemble needs two layers: layer 0 = inner material, layer 1 = outer material"
+                    .into(),
+            );
+        }
+        let n = n.max(2);
+        if src.meta.w < n || src.meta.h < n {
+            return Err(format!(
+                "source canvas {}x{} smaller than tile size {}",
+                src.meta.w, src.meta.h, n
+            ));
+        }
+        if rows.is_empty() || rows.iter().any(|r| r.is_empty()) {
+            return Err("mask rows must be non-empty strings".into());
+        }
+        let h = rows.len() as i32;
+        let w = rows.iter().map(|r| r.chars().count()).max().unwrap_or(0) as i32;
+        let grid: Vec<Vec<bool>> = rows
+            .iter()
+            .map(|r| {
+                let mut v: Vec<bool> = r.chars().map(|c| matches!(c, '#' | '1' | 'x')).collect();
+                v.resize(w as usize, false);
+                v
+            })
+            .collect();
+        let filled = |x: i32, y: i32| -> bool {
+            if x < 0 || y < 0 || x >= w || y >= h {
+                outside_filled
+            } else {
+                grid[y as usize][x as usize]
+            }
+        };
+        let inner = src.analysis_image(Some(0), 0)?;
+        let outer = src.analysis_image(Some(1), 0)?;
+        let mut canvas = RgbaImage::from_pixel(w as u32 * n, h as u32 * n, Rgba([0, 0, 0, 0]));
+        let mut cells = 0u32;
+        for cy in 0..h {
+            for cx in 0..w {
+                if !filled(cx, cy) {
+                    continue;
+                }
+                cells += 1;
+                // 8-neighbour mask: N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128.
+                let dirs = [
+                    (0, -1),
+                    (1, -1),
+                    (1, 0),
+                    (1, 1),
+                    (0, 1),
+                    (-1, 1),
+                    (-1, 0),
+                    (-1, -1),
+                ];
+                let mut mask = 0u8;
+                for (bit, (dx, dy)) in dirs.iter().enumerate() {
+                    if filled(cx + dx, cy + dy) {
+                        mask |= 1 << bit;
+                    }
+                }
+                for ty in 0..n {
+                    for tx in 0..n {
+                        let p = if Self::blob_inside(tx, ty, n, mask) {
+                            *inner.get_pixel(tx, ty)
+                        } else {
+                            *outer.get_pixel(tx, ty)
+                        };
+                        canvas.put_pixel(cx as u32 * n + tx, cy as u32 * n + ty, p);
+                    }
+                }
+            }
+        }
+        let new_id = self.unique_id(&format!("{}-map", id));
+        let dir = self.doc_dir(&new_id);
+        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        let mut doc = Document::new(&format!("{}-map", id), w as u32 * n, h as u32 * n);
+        doc.set_cel(0, 0, 0, 0, canvas)?;
+        doc.save(&dir)?;
+        let mut out = doc.structure();
+        out["id"] = json!(new_id);
+        out["tile_size"] = json!(n);
+        out["cells_filled"] = json!(cells);
+        Ok(out)
+    }
+
+    /// The 47 canonical blob neighbour masks: every 8-bit mask with each corner
+    /// bit zeroed unless BOTH its adjacent edge bits are set, deduplicated.
+    /// Bit order: N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128.
+    fn blob_masks() -> Vec<u8> {
+        let mut out: Vec<u8> = Vec::new();
+        for m in 0u16..256 {
+            let m = m as u8;
+            let e = |b: u8| m & b != 0;
+            let mut c = m;
+            // NE needs N+E, SE needs E+S, SW needs S+W, NW needs W+N.
+            if !(e(1) && e(4)) {
+                c &= !2;
+            }
+            if !(e(4) && e(16)) {
+                c &= !8;
+            }
+            if !(e(16) && e(64)) {
+                c &= !32;
+            }
+            if !(e(64) && e(1)) {
+                c &= !128;
+            }
+            if !out.contains(&c) {
+                out.push(c);
+            }
+        }
+        out
+    }
+
+    /// True when pixel (tx,ty) of an N×N blob tile is INNER material for the
+    /// canonical neighbour `mask`. Border band width = N/4: an empty edge
+    /// neighbour paints its band outer; a filled-edges/empty-diagonal corner
+    /// gets an outer notch — the full 47-appearance family from one predicate.
+    fn blob_inside(tx: u32, ty: u32, n: u32, mask: u8) -> bool {
+        let b = (n / 4).max(1);
+        let e = |bit: u8| mask & bit != 0;
+        let (left, right, top, bottom) = (tx < b, tx >= n - b, ty < b, ty >= n - b);
+        // Edge bands toward empty neighbours.
+        if (top && !e(1)) || (right && !e(4)) || (bottom && !e(16)) || (left && !e(64)) {
+            return false;
+        }
+        // Inner-corner notches: both edges filled, diagonal empty.
+        if top && right && e(1) && e(4) && !e(2) {
+            return false;
+        }
+        if bottom && right && e(4) && e(16) && !e(8) {
+            return false;
+        }
+        if bottom && left && e(16) && e(64) && !e(32) {
+            return false;
+        }
+        if top && left && e(64) && e(1) && !e(128) {
+            return false;
+        }
+        true
     }
 
     // -- per-cel drawing ----------------------------------------------------
@@ -1292,6 +1536,36 @@ impl Studio {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_cast_shadow(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        az_deg: f32,
+        length: f32,
+        squash: f32,
+        color: [u8; 4],
+        opacity: u8,
+        receiver_layer: Option<usize>,
+        snap: bool,
+    ) -> Result<Value, String> {
+        self.edit(id, |d| {
+            d.cast_shadow(
+                layer,
+                frame,
+                az_deg,
+                length,
+                squash,
+                color,
+                opacity,
+                receiver_layer,
+                snap,
+            )
+            .map(|_| ())
+        })
+    }
+
     pub fn doc_adjust(
         &self,
         id: &str,
@@ -1493,7 +1767,7 @@ impl Studio {
         })
     }
 
-    /// Remove L-corner doubles from 1px strokes (Aseprite pixel-perfect cleanup).
+    /// Remove L-corner doubles from 1px strokes (the pixel-perfect cleanup technique).
     /// `color` (optional) restricts to strokes of that exact colour. Masked by
     /// the active selection. Returns the erased-pixel `removed` count.
     pub fn doc_pixel_perfect(
@@ -2136,6 +2410,7 @@ impl Studio {
             "quantize",
             "replace_color",
             "adjust",
+            "gradient_map",
         ];
         if !FX_OPS.contains(&op) {
             return Err(format!(
@@ -2170,6 +2445,75 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    fn terrain_source(s: &Studio, id: &str) {
+        // Layer 0 = solid green inner, layer 1 = solid brown outer.
+        s.doc_create(id, 8, 8).unwrap();
+        s.doc_fill_cel(id, 0, 0, [60, 140, 60, 255]).unwrap();
+        s.doc_add_layer(id, Some("outer".into()), 255, "normal".into())
+            .unwrap();
+        s.doc_fill_cel(id, 1, 0, [110, 80, 50, 255]).unwrap();
+    }
+
+    #[test]
+    fn blob_masks_are_exactly_the_canonical_47() {
+        let masks = Studio::blob_masks();
+        assert_eq!(masks.len(), 47);
+        // Every mask is canonical: corner bits only with both adjacent edges.
+        for &m in &masks {
+            let e = |b: u8| m & b != 0;
+            assert!(!e(2) || (e(1) && e(4)), "NE needs N+E in {m:#010b}");
+            assert!(!e(8) || (e(4) && e(16)), "SE needs E+S in {m:#010b}");
+            assert!(!e(32) || (e(16) && e(64)), "SW needs S+W in {m:#010b}");
+            assert!(!e(128) || (e(64) && e(1)), "NW needs W+N in {m:#010b}");
+        }
+    }
+
+    #[test]
+    fn autotile_set_builds_the_7x7_sheet() {
+        let s = studio("blobset");
+        terrain_source(&s, "terra");
+        let r = s.autotile_set("terra", 8).unwrap();
+        assert_eq!(r["w"], 56); // 7 × 8
+        assert_eq!(r["h"], 56);
+        assert_eq!(r["masks"].as_array().unwrap().len(), 47);
+        // The all-neighbours tile (mask 255) is pure inner everywhere; find its
+        // grid slot and probe its centre and corner.
+        let masks = r["masks"].as_array().unwrap();
+        let idx = masks.iter().position(|m| m == 255).unwrap() as u32;
+        let (gx, gy) = (idx % 7 * 8, idx / 7 * 8);
+        let id = r["id"].as_str().unwrap();
+        for (px, py) in [(gx + 4, gy + 4), (gx, gy), (gx + 7, gy + 7)] {
+            let p = s
+                .doc_get_pixel(id, Some(0), 0, px as i32, py as i32)
+                .unwrap();
+            assert_eq!(p["rgba"], json!([60, 140, 60, 255]), "at {px},{py}");
+        }
+    }
+
+    #[test]
+    fn tilemap_assemble_renders_interior_and_edges() {
+        let s = studio("blobmap");
+        terrain_source(&s, "terra");
+        // A 3×3 plus shape with empty outside: the centre cell has all four
+        // edge neighbours, so its edge bands stay inner; the top cell's top
+        // edge faces empty and must render outer.
+        let rows = vec!["·#·".into(), "###".into(), "·#·".into()];
+        let r = s.tilemap_assemble("terra", 8, &rows, false).unwrap();
+        assert_eq!(r["w"], 24);
+        assert_eq!(r["cells_filled"], 5);
+        let id = r["id"].as_str().unwrap();
+        let px = |x: i32, y: i32| s.doc_get_pixel(id, Some(0), 0, x, y).unwrap()["rgba"].clone();
+        // Centre cell (8..16, 8..16): its top band (y=8) borders a filled cell → inner.
+        assert_eq!(px(12, 8), json!([60, 140, 60, 255]));
+        // Top cell's top edge (y=0) faces empty → outer band.
+        assert_eq!(px(12, 0), json!([110, 80, 50, 255]));
+        // Centre-cell corner notch: centre's NE diagonal is empty while N and E
+        // are filled → the notch pixel at the cell's top-right goes outer.
+        assert_eq!(px(15, 8), json!([110, 80, 50, 255]));
+        // Empty cells stay transparent.
+        assert_eq!(px(0, 0), json!([0, 0, 0, 0]));
     }
 
     #[test]
