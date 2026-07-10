@@ -2863,6 +2863,10 @@ impl Atelier {
         params.system_prompt = Some(system);
         params.max_tokens = 1024;
 
+        // Sampling is deprecated upstream (SEP-2577) but is still the only
+        // no-network way to borrow the HOST's vision model; keep using it
+        // until rmcp removes it, then revisit doc_critique_vision's transport.
+        #[allow(deprecated)]
         match peer.create_message(params).await {
             Ok(result) => {
                 let critique = result
