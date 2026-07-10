@@ -13,7 +13,7 @@ version = "1.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/marmikshah/atelier"
-keywords = ["mcp", "pixel-art", "aseprite", "sprite", "gamedev"]
+keywords = ["mcp", "pixel-art", "sprite", "gamedev", "animation"]
 categories = ["command-line-utilities", "multimedia::images", "game-development"]
 
 # Single source of truth for dependency versions across the workspace.

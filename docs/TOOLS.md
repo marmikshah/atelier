@@ -10,7 +10,7 @@ nearest-neighbour on export, so the pixel grid stays crisp.
 
 ## The model
 
-- A **document** is the unit (think one `.ase` file): a canvas of ordered
+- A **document** is the unit — one sprite, one animation, one tileset: a canvas of ordered
   **layers** (opacity / visibility / blend, source-over composite) over a
   timeline of **frames** (each with a duration), plus animation **tags** (named
   frame ranges). A **cel** is one layer×frame image. Documents are stored under

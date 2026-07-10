@@ -102,7 +102,7 @@ the `game-asset-set` prompt). 75 tools, 222 tests.
 
 ### Changed
 
-- **Own identity.** Retired the "Aseprite-as-API" framing across every
+- **Own identity.** Retired the tool-comparison framing across every
   user-facing surface (README, CLI help, the MCP instructions blurb agents read,
   crate docs). atelier is positioned by what it *is* — the see-and-correct loop
   (`doc_look` + critique) and authored-by-construction determinism — not by
