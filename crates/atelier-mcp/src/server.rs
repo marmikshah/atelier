@@ -224,6 +224,26 @@ pub struct DocWangTiles {
     pub n: u32,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct DocAutotileSet {
+    pub doc_id: String,
+    /// Tile size N in pixels; the source canvas must be at least N×N.
+    pub n: u32,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocTilemapAssemble {
+    pub doc_id: String,
+    /// Tile size N in pixels; the source canvas must be at least N×N.
+    pub n: u32,
+    /// The terrain mask, one string per map row: `#`/`1`/`x` = filled cell,
+    /// anything else = empty. Short rows pad with empty.
+    pub rows: Vec<String>,
+    /// How off-map cells read: "filled" (terrain continues past the edge,
+    /// default) or "empty" (map borders get outlines).
+    pub outside: Option<String>,
+}
+
 // --- drawing params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -1729,6 +1749,26 @@ impl Atelier {
     )]
     async fn doc_wang_tiles(&self, Parameters(p): Parameters<DocWangTiles>) -> CallToolResult {
         res(self.studio().wang_tiles(&p.doc_id, p.n))
+    }
+
+    #[tool(
+        description = "Generate the deterministic 47-tile BLOB autotile set — the full edge+corner bitmask family (the modern superset of the 16-corner Wang set). Same source contract as doc_wang_tiles: frame 0, layer 0 = INNER material, layer 1 = OUTER, top-left N×N sampled. Creates a NEW document <id>-blob (7N×7N, the 47 canonical neighbour masks in a 7×7 grid) and returns `masks` — the 8-bit neighbour mask per grid index (N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128) — so an engine autotiler maps straight onto the sheet. Export with doc_export op=tileset. See it in situ FIRST with doc_tilemap_assemble."
+    )]
+    async fn doc_autotile_set(&self, Parameters(p): Parameters<DocAutotileSet>) -> CallToolResult {
+        res(self.studio().autotile_set(&p.doc_id, p.n))
+    }
+
+    #[tool(
+        description = "Assemble a TILEMAP from a terrain mask — the in-situ test of an autotile set, and the only real one. `rows` = the map as strings (`#`/`1`/`x` = filled); every filled cell computes its 8-neighbour mask and renders straight from the source materials (layer 0 inner / layer 1 outer) with the same blob rules as doc_autotile_set, so what you see IS what the tile family produces in a real map. `outside` = filled (default: terrain continues past the map edge) | empty (borders get outlines). Creates a NEW document <id>-map — doc_look it to judge the terrain reads, then export."
+    )]
+    async fn doc_tilemap_assemble(
+        &self,
+        Parameters(p): Parameters<DocTilemapAssemble>,
+    ) -> CallToolResult {
+        let outside_filled = p.outside.as_deref().unwrap_or("filled") == "filled";
+        res(self
+            .studio()
+            .tilemap_assemble(&p.doc_id, p.n, &p.rows, outside_filled))
     }
 
     #[tool(

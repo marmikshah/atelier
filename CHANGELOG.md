@@ -13,8 +13,9 @@ keep sub-pixel precision so walk cycles glide instead of stepping. Adds
 the game layer (`doc_set_audit` / `doc_set_palette_sync` — a game is a SET of
 documents), `doc_form_audit` (an eye for the #1 shading failure),
 `doc_cast_shadow` (a projected ground shadow), engine-standard sheet JSON,
-`list_docs` family filters, and the `doc_pose_cycle` moveset generator.
-70 tools, 215 tests.
+`list_docs` family filters, the `doc_pose_cycle` moveset generator, and the
+47-blob autotile family (`doc_autotile_set` + `doc_tilemap_assemble`).
+72 tools, 218 tests.
 
 ### Added
 
@@ -26,6 +27,18 @@ documents), `doc_form_audit` (an eye for the #1 shading failure),
   machinery as `doc_walk`; amplitudes derive from the figure's own leg length ×
   `intensity`, so every preset fits any sprite size. One call per gait = a whole
   character moveset from the same pose.
+- **The 47-blob autotile family** (full profile) — terrain the agent can
+  finally see assembled.
+  - **`doc_autotile_set`** — the deterministic 47-tile blob set (full
+    edge+corner bitmask family, the modern superset of the Wang 16) from the
+    same inner/outer material contract, into a NEW `<id>-blob` document plus
+    `masks` (the canonical neighbour mask per grid index) so engine autotilers
+    map straight onto the sheet.
+  - **`doc_tilemap_assemble`** — the in-situ test of a tileset: a terrain mask
+    (`rows` strings) in, every filled cell rendered from its 8-neighbour mask
+    with the same blob rules, out as a NEW `<id>-map` document to `doc_look`
+    and export. Closes the last see-and-critique gap: the MAP, not just the
+    tile.
 - **The game layer.** A game is not one sprite but a set of documents that must
   read as one work — and nothing could see that set until now.
   - **`doc_set_audit`** (core profile) — audit N documents (explicit ids and/or

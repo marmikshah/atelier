@@ -4,7 +4,7 @@ The complete tool surface. Everything is drawn at native resolution and scaled u
 nearest-neighbour on export, so the pixel grid stays crisp.
 
 > **Profiles.** By default the server advertises a **core** set of ~30 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 70 below. The
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 72 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
@@ -274,6 +274,17 @@ The limb/keyframe-animation toolkit.
   each sampled) into a NEW `<id>-wang` document (4N×4N, the 16 corner
   combinations in a 4×4 grid). Each set corner bit fills a quarter-disc; adjacent
   set corners connect along their shared edge.
+- `doc_autotile_set` — the deterministic **47-tile BLOB** autotile set (the full
+  edge+corner bitmask family, the modern superset of the Wang 16). Same source
+  contract; output is a NEW `<id>-blob` document (7N×7N) plus `masks` — the
+  canonical 8-bit neighbour mask per grid index — so an engine autotiler maps
+  straight onto the sheet.
+- `doc_tilemap_assemble` — the in-situ test of a tileset, and the only real one:
+  `rows` strings (`#`/`1`/`x` = filled) become a map; every filled cell computes
+  its 8-neighbour mask and renders straight from the source materials with the
+  same blob rules, into a NEW `<id>-map` document. `doc_look` it to judge how
+  the terrain actually reads, then export. `outside` = filled|empty controls the
+  map border.
 - `export_all` — one spritesheet per document into a flat dir.
 - `export_atlas` — pack **every frame of every document** into a single atlas PNG
   + master JSON (`doc`, `frame`, `rect`, `duration_ms`, `pivot`, `boxes`) so a
