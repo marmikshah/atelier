@@ -1,43 +1,37 @@
-# Showcase — four models, one brief
+# Showcase — different models, one studio
 
-Every piece below was drawn through atelier's MCP tools by a different model
-given the **same instruction set, verbatim** — no retries, no cherry-picking,
-no human touch-ups. Different hands, same studio.
+Everything here was drawn through atelier's MCP tools by the model named on
+it, from a fixed text brief — no retries, no cherry-picking, no human
+touch-ups. The studio carries the discipline (lock a palette → draw → *look*
+→ audit → fix), so every run ships on-palette, orphan-free, looping art;
+what changes between models is the hand. New models slot straight in: give
+one the same brief and add a column.
 
-## The bounce
+## The pieces
 
-*"Animate a 4-frame bouncing slime with squash and stretch: rest → squash →
-airborne stretch → descend. Lock 4 colours. Look after every burst; fix what
-reads wrong."*
+| Campfire — Haiku 4.5 | Coin — Sonnet 5 | Invader — Opus 4.8 | Slime — Fable 5 |
+|:---:|:---:|:---:|:---:|
+| ![campfire](showcase/campfire-haiku.gif) | ![coin](showcase/coin-sonnet.gif) | ![invader](showcase/invader-opus.gif) | ![slime](showcase/bounce-fable.gif) |
+| flame flicker, drifting embers | spin about the vertical axis | march with a blink | squash-and-stretch bounce |
+
+## Same brief, every model
+
+One instruction set, verbatim, to each model — the bounce:
 
 | Haiku 4.5 | Sonnet 5 | Opus 4.8 | Fable 5 |
 |:---:|:---:|:---:|:---:|
-| ![bounce by haiku](benchmark/bounce-haiku.gif) | ![bounce by sonnet](benchmark/bounce-sonnet.gif) | ![bounce by opus](benchmark/bounce-opus.gif) | ![bounce by fable](benchmark/bounce-fable.gif) |
+| ![bounce by haiku](showcase/bounce-haiku.gif) | ![bounce by sonnet](showcase/bounce-sonnet.gif) | ![bounce by opus](showcase/bounce-opus.gif) | ![bounce by fable](showcase/bounce-fable.gif) |
 
-The frames, side by side:
-
-![haiku bounce frames](benchmark/bounce-haiku.png)
-![sonnet bounce frames](benchmark/bounce-sonnet.png)
-![opus bounce frames](benchmark/bounce-opus.png)
-![fable bounce frames](benchmark/bounce-fable.png)
-
-## The potion
-
-*"Draw a potion bottle: rounded flask, cork, liquid two-thirds with a meniscus
-and a glass highlight, light top-left, 1px outline. Lock 6 colours."*
+…and the potion:
 
 | Haiku 4.5 | Sonnet 5 | Opus 4.8 | Fable 5 |
 |:---:|:---:|:---:|:---:|
-| ![potion by haiku](benchmark/potion-haiku.png) | ![potion by sonnet](benchmark/potion-sonnet.png) | ![potion by opus](benchmark/potion-opus.png) | ![potion by fable](benchmark/potion-fable.png) |
+| ![potion by haiku](showcase/potion-haiku.png) | ![potion by sonnet](showcase/potion-sonnet.png) | ![potion by opus](showcase/potion-opus.png) | ![potion by fable](showcase/potion-fable.png) |
 
-## Why it works on every model
+## Reproduce it
 
-The studio carries the discipline, so any model ships clean art: every run —
-smallest to largest — landed **zero off-palette pixels, zero stray pixels, a
-closed silhouette, and a looping tag**, because the loop makes it hard not to:
-lock a palette → draw → *look* → audit → fix. Along the way one run recovered
-a wrecked shape with `doc_checkpoint restore`, and another verified its jump
-arc with onion-skinning — the tools doing exactly what they're for.
-
-Reproduce it: the briefs above are the whole instruction set. Point any
-MCP-capable model at atelier and hand it the text.
+The briefs are plain text (e.g. *"Animate a 4-frame bouncing slime with
+squash and stretch: rest → squash → airborne stretch → descend. Lock 4
+colours. Look after every burst; fix what reads wrong."*). Point any
+MCP-capable model at atelier, hand it the brief, and it draws with the same
+tools — `doc_look` to see, the audits to verify, `doc_export` to ship.
