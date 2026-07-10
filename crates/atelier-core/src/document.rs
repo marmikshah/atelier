@@ -4626,6 +4626,30 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
             missing.join(",")
         ));
     }
+    // Colour-typed keys must be well-formed [r,g,b(,a)] arrays. Without this
+    // check a colour given as "#5e2a6e" or {"r":..} silently fell back to
+    // BLACK — a wrong-but-plausible result an agent then burns calls
+    // repainting around. Malformed input errors loudly instead.
+    const COLOR_KEYS: [&str; 7] = ["color", "light", "dark", "color_a", "color_b", "from", "to"];
+    let is_color = |v: &Value| {
+        v.as_array().is_some_and(|a| {
+            (3..=4).contains(&a.len()) && a.iter().all(|n| n.as_u64().is_some_and(|n| n <= 255))
+        })
+    };
+    for k in COLOR_KEYS {
+        // `from`/`to` are colours only where the op's key table says so.
+        if !(required.contains(&k) || optional.contains(&k)) {
+            continue;
+        }
+        if let Some(v) = obj.get(k) {
+            if !is_color(v) {
+                return Err(format!(
+                    "op[{}] ({}): '{}' must be a colour array [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
+                    idx, kind, k, v
+                ));
+            }
+        }
+    }
     Ok(())
 }
 
@@ -4955,6 +4979,26 @@ mod tests {
             has_off,
             "snap:false should leave off-palette blended pixels"
         );
+    }
+
+    #[test]
+    fn malformed_colour_errors_instead_of_black_fallback() {
+        // A hex-string colour used to silently become BLACK — the footgun the
+        // model benchmark surfaced (one run burned 13 calls repainting around
+        // it). It must reject loudly at validation time now.
+        for bad in [
+            json!("#ff00ff"),
+            json!({"r": 255, "g": 0, "b": 255}),
+            json!([255, 0]),
+            json!([255, 0, 300]),
+        ] {
+            let e = validate_batch_op(0, &json!({"op": "outline", "color": bad}))
+                .expect_err("malformed colour must be rejected");
+            assert!(e.contains("colour array"), "unhelpful error: {e}");
+        }
+        // Well-formed colours still pass, 3 or 4 channels.
+        validate_batch_op(0, &json!({"op": "outline", "color": [255, 0, 255]})).unwrap();
+        validate_batch_op(0, &json!({"op": "outline", "color": [255, 0, 255, 128]})).unwrap();
     }
 
     #[test]
