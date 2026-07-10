@@ -16,7 +16,16 @@ one the same brief and add a column.
 
 ## Same brief, every model
 
-One instruction set, verbatim, to each model — the bounce:
+One instruction set, verbatim, to each model. The hardest first — a side-view
+warrior swinging a sword in six frames (idle → anticipation → overhead →
+strike with a motion smear → follow-through → recover), body one connected
+silhouette in every frame:
+
+| Haiku 4.5 | Sonnet 5 | Opus 4.8 | Fable 5 |
+|:---:|:---:|:---:|:---:|
+| ![swing by haiku](showcase/sword-haiku.gif) | ![swing by sonnet](showcase/sword-sonnet.gif) | ![swing by opus](showcase/sword-opus.gif) | ![swing by fable](showcase/sword-fable.gif) |
+
+…the bounce:
 
 | Haiku 4.5 | Sonnet 5 | Opus 4.8 | Fable 5 |
 |:---:|:---:|:---:|:---:|
