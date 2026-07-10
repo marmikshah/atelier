@@ -58,9 +58,9 @@ deterministic.
   interactive `/playground` — run any tool from an auto-built form, or draw with
   the mouse where every gesture (pencil/line/rect/ellipse/fill) is a tool call.
 
-By default the server advertises a **core profile** of ~28 tools — everything the
+By default the server advertises a **core profile** of ~30 tools — everything the
 sprite / animation / tile / recreate-from-reference loops need. Set
-`ATELIER_PROFILE=full` for the complete 67-tool surface (extra effects, rigging,
+`ATELIER_PROFILE=full` for the complete 69-tool surface (extra effects, rigging,
 audits, library exports). The profile filters *discovery* only — every tool still
 executes, so recipes and `atelier replay` always reach the long tail. The full
 surface is documented in [docs/TOOLS.md](docs/TOOLS.md); release notes live in

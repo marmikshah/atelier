@@ -3729,7 +3729,9 @@ impl Document {
         Ok(placed)
     }
 
-    pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
+    /// Render the horizontal spritesheet image (every frame side by side,
+    /// nearest-neighbour scaled). Returns `(sheet, frame_w, frame_h)`.
+    fn sheet_image(&self, scale: u32) -> (RgbaImage, u32, u32) {
         let n = self.meta.frames.len() as u32;
         let fw = self.meta.w * scale;
         let fh = self.meta.h * scale;
@@ -3741,6 +3743,12 @@ impl Document {
             }
             image::imageops::replace(&mut sheet, &img, (f as u32 * fw) as i64, 0);
         }
+        (sheet, fw, fh)
+    }
+
+    pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
+        let n = self.meta.frames.len() as u32;
+        let (sheet, fw, fh) = self.sheet_image(scale);
         sheet.save(out).map_err(|e| e.to_string())?;
         let frames: Vec<Value> = self
             .meta
@@ -3772,6 +3780,68 @@ impl Document {
         std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
             .map_err(|e| e.to_string())?;
         Ok(meta)
+    }
+
+    /// Export the spritesheet with the industry-standard hash sprite-JSON
+    /// sidecar instead of atelier's richer native shape — the layout that game
+    /// engines' existing sheet importers already parse (`frames` keyed by name
+    /// with `frame`/`sourceSize`/`duration`, `meta.frameTags`). Pivots and
+    /// collision boxes have no slot in this shape; use the native JSON
+    /// (`export_sheet`) when the engine should read those.
+    pub fn export_sheet_std(&self, out: &Path, scale: u32) -> Result<Value, String> {
+        let (sheet, fw, fh) = self.sheet_image(scale);
+        sheet.save(out).map_err(|e| e.to_string())?;
+        let stem = out
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| self.meta.name.clone());
+        let image_name = out
+            .file_name()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| format!("{stem}.png"));
+        let mut frames = serde_json::Map::new();
+        for (i, fr) in self.meta.frames.iter().enumerate() {
+            frames.insert(
+                format!("{stem} {i}"),
+                json!({
+                    "frame": {"x": i as u32 * fw, "y": 0, "w": fw, "h": fh},
+                    "rotated": false,
+                    "trimmed": false,
+                    "spriteSourceSize": {"x": 0, "y": 0, "w": fw, "h": fh},
+                    "sourceSize": {"w": fw, "h": fh},
+                    "duration": fr.duration_ms,
+                }),
+            );
+        }
+        let frame_tags: Vec<Value> = self
+            .meta
+            .tags
+            .iter()
+            .map(|t| json!({"name": t.name, "from": t.from, "to": t.to, "direction": t.direction}))
+            .collect();
+        let meta = json!({
+            "frames": frames,
+            "meta": {
+                "app": "atelier",
+                "version": env!("CARGO_PKG_VERSION"),
+                "image": image_name,
+                "format": "RGBA8888",
+                "size": {"w": sheet.width(), "h": sheet.height()},
+                "scale": "1",
+                "frameTags": frame_tags,
+            },
+        });
+        let mp = out.with_extension("json");
+        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
+            .map_err(|e| e.to_string())?;
+        Ok(json!({
+            "path": out.to_string_lossy(),
+            "meta_path": mp.to_string_lossy(),
+            "meta_format": "standard",
+            "count": self.meta.frames.len(),
+            "frame_w": fw,
+            "frame_h": fh,
+        }))
     }
 
     /// Export an animated GIF. Plays `tag`'s sequence (honouring direction) or
@@ -4836,6 +4906,32 @@ mod tests {
             has_off,
             "snap:false should leave off-palette blended pixels"
         );
+    }
+
+    #[test]
+    fn export_sheet_std_writes_engine_parsable_json() {
+        let mut d = Document::new("runner", 8, 8);
+        d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
+        d.add_frame(80, Some(0));
+        d.add_tag("run", 0, 1, "forward").unwrap();
+        let dir = std::env::temp_dir().join("atelier-std-json-test");
+        let _ = std::fs::create_dir_all(&dir);
+        let out = dir.join("runner.png");
+        let r = d.export_sheet_std(&out, 2).unwrap();
+        assert_eq!(r["meta_format"], "standard");
+        let meta: Value =
+            serde_json::from_str(&std::fs::read_to_string(out.with_extension("json")).unwrap())
+                .unwrap();
+        // The hash layout engines parse: frames keyed by name, rect under
+        // "frame", per-frame "duration", tags under meta.frameTags.
+        let f0 = &meta["frames"]["runner 0"];
+        assert_eq!(f0["frame"]["w"], 16); // 8px * scale 2
+        assert_eq!(f0["frame"]["x"], 0);
+        assert_eq!(meta["frames"]["runner 1"]["frame"]["x"], 16);
+        assert_eq!(meta["frames"]["runner 1"]["duration"], 80);
+        assert_eq!(meta["meta"]["image"], "runner.png");
+        assert_eq!(meta["meta"]["frameTags"][0]["name"], "run");
+        assert_eq!(meta["meta"]["size"]["w"], 32);
     }
 
     #[test]

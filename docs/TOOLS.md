@@ -3,8 +3,8 @@
 The complete tool surface. Everything is drawn at native resolution and scaled up
 nearest-neighbour on export, so the pixel grid stays crisp.
 
-> **Profiles.** By default the server advertises a **core** set of ~28 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 67 below. The
+> **Profiles.** By default the server advertises a **core** set of ~30 tools (the
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 69 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
@@ -23,11 +23,25 @@ nearest-neighbour on export, so the pixel grid stays crisp.
 ## Library
 
 - `doc_create` — new layered/animated document (name, width, height) → `id`.
-- `list_docs` — all documents (id, name, size, frame/layer counts).
+- `list_docs` — documents (id, name, size, frame/layer counts); `prefix` selects
+  a family by id start (`hero-`), `contains` filters by substring.
 - `doc_info` — a document's full structure (layers, frames, cels, tags).
 - `delete_doc` — remove a document and its files.
 - `export_all` — export every document as a spritesheet PNG (+ JSON meta) into a
   flat target dir for a game's `assets/`.
+
+## The game layer — sets of documents
+
+A game is not one sprite but a SET of documents that must read as one work.
+
+- `doc_set_audit` — audit N documents (by `ids` and/or id `prefix`) as ONE game:
+  per-doc palette/value/scale/pivot stats plus set cohesion — palette union size,
+  unlocked docs, cross-doc near-duplicate colours (OKLab ΔE), silhouette-height
+  scale outliers vs the set median, the set value range, missing pivots. Verdict
+  is `cohesive` or a list of actionable warnings.
+- `doc_set_palette_sync` — broadcast ONE palette across a set: lock it on every
+  member and perceptually snap every cel onto it (explicit `palette` colours or
+  `from_doc` to copy another document's). The fix for set-audit palette warnings.
 
 ## Structure & timeline
 
@@ -235,6 +249,11 @@ The limb/keyframe-animation toolkit.
 - `doc_export` — write a document to a file; `op` + shared `out_path`/`scale`:
   - **sheet** — horizontal spritesheet PNG + JSON meta (frame rects, durations,
     tags, pivots, collision boxes, palette) so any engine can slice and play it.
+    `meta=standard` writes the industry-standard hash sprite-JSON instead —
+    `frames` keyed by name with `frame`/`sourceSize`/`duration` and
+    `meta.frameTags` — the shape engines' existing sheet importers already
+    parse. That shape has no slot for pivots/boxes; use the native meta when the
+    engine should read those.
   - **anim** `{format?,tag?}` — animation as `format=gif` (256 colours + 1-bit
     alpha, smaller) or `apng` (lossless, full alpha), honouring per-frame
     durations. A `tag` plays that animation in its direction

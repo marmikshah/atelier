@@ -19,6 +19,7 @@ use atelier_core::document::Document;
 mod analysis;
 mod craft;
 mod reference;
+mod set;
 
 fn slugify(name: &str) -> String {
     let mut out = String::new();
@@ -203,8 +204,25 @@ impl Studio {
     }
 
     pub fn list_docs(&self) -> Value {
+        self.list_docs_filtered(None, None)
+    }
+
+    /// `prefix` keeps ids starting with it (family selector: `hero-` matches
+    /// `hero-idle`, `hero-run`); `contains` keeps ids with the substring. Both
+    /// case-sensitive on the slug; combined = AND.
+    pub fn list_docs_filtered(&self, prefix: Option<&str>, contains: Option<&str>) -> Value {
         let mut items = Vec::new();
         for id in self.doc_ids() {
+            if let Some(p) = prefix {
+                if !id.starts_with(p) {
+                    continue;
+                }
+            }
+            if let Some(c) = contains {
+                if !id.contains(c) {
+                    continue;
+                }
+            }
             // Read doc.json directly (don't load cel images just to list).
             let meta = fs::read_to_string(self.doc_dir(&id).join("doc.json"))
                 .ok()
@@ -649,7 +667,19 @@ impl Studio {
         let geti = |k: &str| params.get(k).and_then(|v| v.as_u64()).map(|n| n as u32);
         let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
         match op {
-            "sheet" => self.doc_export_sheet(id, out_path, scale.unwrap_or(4)),
+            "sheet" => match gets("meta").unwrap_or("atelier") {
+                "atelier" => self.doc_export_sheet(id, out_path, scale.unwrap_or(4)),
+                "standard" => {
+                    let (_dir, doc) = self.open(id)?;
+                    if let Some(p) = Path::new(out_path).parent() {
+                        let _ = fs::create_dir_all(p);
+                    }
+                    doc.export_sheet_std(Path::new(out_path), scale.unwrap_or(4).max(1))
+                }
+                other => Err(format!(
+                    "doc_export op=sheet: unknown meta '{other}' — use atelier|standard"
+                )),
+            },
             "anim" => match gets("format").unwrap_or("gif") {
                 "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(4), gets("tag")),
                 "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(4), gets("tag")),

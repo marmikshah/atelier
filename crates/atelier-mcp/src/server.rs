@@ -133,6 +133,34 @@ pub struct DocRef {
     pub doc_id: String,
 }
 
+#[derive(Deserialize, JsonSchema, Default)]
+pub struct ListDocs {
+    /// Keep documents whose id starts with this (family selector, e.g. "hero-").
+    pub prefix: Option<String>,
+    /// Keep documents whose id contains this substring.
+    pub contains: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema, Default)]
+pub struct DocSetAudit {
+    /// Explicit member document ids (combined with `prefix` as a union).
+    pub ids: Option<Vec<String>>,
+    /// Select every document whose id starts with this (e.g. "hero-").
+    pub prefix: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct DocSetPaletteSync {
+    /// Explicit target document ids (combined with `prefix` as a union).
+    pub ids: Option<Vec<String>>,
+    /// Select every document whose id starts with this (e.g. "hero-").
+    pub prefix: Option<String>,
+    /// The palette to broadcast, as [[r,g,b(,a)],...]. Or use `from_doc`.
+    pub palette: Option<Vec<Vec<i64>>>,
+    /// Copy the locked palette from this document instead of passing colours.
+    pub from_doc: Option<String>,
+}
+
 #[derive(Deserialize, JsonSchema)]
 pub struct ExportAll {
     pub target_dir: String,
@@ -1528,14 +1556,47 @@ impl Atelier {
         res(self.studio().doc_create(&p.name, p.width, p.height))
     }
 
-    #[tool(description = "List all documents (id, name, size, frame/layer counts).")]
-    async fn list_docs(&self) -> CallToolResult {
-        res(Ok(self.studio().list_docs()))
+    #[tool(
+        description = "List documents (id, name, size, frame/layer counts). Optional `prefix` selects a family by id start (`hero-` matches hero-idle, hero-run); `contains` filters by substring; both = AND. Omit both to list everything."
+    )]
+    async fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
+        res(Ok(self.studio().list_docs_filtered(
+            p.prefix.as_deref(),
+            p.contains.as_deref(),
+        )))
     }
 
     #[tool(description = "Get a document's structure: layers, frames, cels, tags.")]
     async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().doc_info(&p.doc_id))
+    }
+
+    #[tool(
+        description = "Audit N documents as ONE game — the set-level doc_critique. Resolve members by `ids` and/or id `prefix` (union), then report per-doc palette/value/scale/pivot stats plus set cohesion: palette union size + unlocked docs + cross-doc near-duplicate colours (OKLab ΔE), silhouette-height scale outliers vs the set median, the set value range, and docs missing pivots. Verdict is 'cohesive' or a list of actionable warnings (e.g. run doc_set_palette_sync). This is how a pile of sprites becomes one game."
+    )]
+    async fn doc_set_audit(&self, Parameters(p): Parameters<DocSetAudit>) -> CallToolResult {
+        res(self
+            .studio()
+            .doc_set_audit(p.ids.as_deref(), p.prefix.as_deref()))
+    }
+
+    #[tool(
+        description = "Broadcast ONE palette across a document set: lock it on every member (`ids` and/or id `prefix`) and perceptually snap every cel onto it (OKLab nearest, alpha preserved). Palette = explicit `palette` colours or `from_doc` to copy another document's locked palette. Returns per-doc moved-pixel counts. The fix for doc_set_audit palette warnings."
+    )]
+    async fn doc_set_palette_sync(
+        &self,
+        Parameters(p): Parameters<DocSetPaletteSync>,
+    ) -> CallToolResult {
+        let palette = p
+            .palette
+            .as_ref()
+            .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
+        res(self.studio().doc_set_palette_sync(
+            p.ids.as_deref(),
+            p.prefix.as_deref(),
+            palette,
+            p.from_doc.as_deref(),
+        ))
     }
 
     #[tool(description = "Delete a document and all its files.")]
@@ -1651,7 +1712,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Export a document to a file. `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Shared: out_path, scale (sheet/anim 4, tileset 1). For a whole-library dump use export_all/export_atlas; for the Wang set use doc_wang_tiles."
+        description = "Export a document to a file. `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette; `meta`=standard writes the industry-standard hash sprite-JSON engines' existing importers parse instead — no pivots/boxes in that shape) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Shared: out_path, scale (sheet/anim 4, tileset 1). For a whole-library dump use export_all/export_atlas; for the Wang set use doc_wang_tiles."
     )]
     async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
         res(self
@@ -2654,9 +2715,9 @@ impl Atelier {
     }
 }
 
-/// The default ("core") tool profile — the ~28 tools the canonical sprite /
-/// animation / tile / recreate-from-reference workflows need. The full 67-tool
-/// surface (extra effects, rigging, audits, library exports) is advertised when
+/// The default ("core") tool profile — the ~30 tools the canonical sprite /
+/// animation / tile / game-set / recreate-from-reference workflows need. The
+/// full surface (extra effects, rigging, audits, library exports) is advertised when
 /// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
 /// every tool still EXECUTES via call_tool (so `atelier replay` and a flag-flip
 /// both reach the long tail).
@@ -2696,6 +2757,9 @@ const CORE_TOOLS: &[&str] = &[
     // reference loop
     "doc_ref",
     "doc_ref_compare",
+    // the game layer — a game is a SET of documents, not one
+    "doc_set_audit",
+    "doc_set_palette_sync",
 ];
 
 /// True when the full tool surface should be advertised (`ATELIER_PROFILE=full`).

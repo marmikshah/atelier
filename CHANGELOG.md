@@ -10,10 +10,32 @@ The identity + polish release. atelier stands on its own name — **the pixel-ar
 studio agents can see** — with the last two structural quality gaps closed:
 continuous-tone effects can no longer blow the locked palette, and stroke poses
 keep sub-pixel precision so walk cycles glide instead of stepping. Adds
-`doc_form_audit` (an eye for the #1 shading failure) and `doc_cast_shadow` (a
-projected ground shadow). 67 tools, 207 tests.
+the game layer (`doc_set_audit` / `doc_set_palette_sync` — a game is a SET of
+documents), `doc_form_audit` (an eye for the #1 shading failure),
+`doc_cast_shadow` (a projected ground shadow), engine-standard sheet JSON, and
+`list_docs` family filters. 69 tools, 213 tests.
 
 ### Added
+
+- **The game layer.** A game is not one sprite but a set of documents that must
+  read as one work — and nothing could see that set until now.
+  - **`doc_set_audit`** (core profile) — audit N documents (explicit ids and/or
+    an id prefix like `hero-`) as ONE game: per-doc palette/value/scale/pivot
+    stats plus set-level cohesion — palette union size, unlocked docs, cross-doc
+    near-duplicate colours (OKLab ΔE), silhouette-height scale outliers vs the
+    set median, the set value range, and missing pivots. Verdict is `cohesive`
+    or a list of actionable warnings.
+  - **`doc_set_palette_sync`** (core profile) — broadcast one palette across a
+    set: lock it on every member and perceptually snap every cel onto it
+    (explicit colours or copied `from_doc`). The one-call fix for set-audit
+    palette warnings.
+  - **`list_docs` filters** — `prefix` selects a family by id start, `contains`
+    filters by substring; a 300-document store becomes navigable.
+- **Engine-standard sheet JSON.** `doc_export op=sheet meta=standard` writes the
+  industry-standard hash sprite-JSON sidecar (`frames` keyed by name with
+  `frame`/`sourceSize`/`duration`, `meta.frameTags`) that game engines' existing
+  sheet importers already parse. The richer native meta (pivots, collision
+  boxes, palette) stays the default.
 
 - **`doc_cast_shadow`** — a projected ground shadow (full profile). Unlike
   `doc_drop_shadow` (a flat offset copy), it flattens the caster silhouette onto
