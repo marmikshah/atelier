@@ -1702,9 +1702,12 @@ impl Studio {
                         .sum::<i32>()
                         <= c.tol
                 };
+                // One cel read for the whole scan — get_pixel would re-probe
+                // the cel map per pixel.
+                let img = doc.analysis_image(Some(c.layer), c.frame)?;
                 for y in 0..h as i32 {
                     for x in 0..w as i32 {
-                        if near(doc.get_pixel(c.layer, c.frame, x, y)?, target) {
+                        if near(img.get_pixel(x as u32, y as u32).0, target) {
                             shape_mask[idx(x, y)] = true;
                         }
                     }
@@ -1812,10 +1815,10 @@ impl Studio {
     ) -> Result<Value, String> {
         let (w, h, buf) = self
             .clipboard
-            .clone()
+            .as_ref()
             .ok_or("clipboard is empty — copy or cut a region first")?;
         let (dir, mut doc) = self.open(id)?;
-        doc.paste_region(layer, frame, x, y, w, h, &buf, blend)?;
+        doc.paste_region(layer, frame, x, y, *w, *h, buf, blend)?;
         doc.save(&dir)?;
         Ok(json!({"pasted": {"w": w, "h": h, "at": [x, y]}, "doc_id": id}))
     }
@@ -2076,6 +2079,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let palette = doc.meta.palette.clone();
+        let (dw, dh) = (doc.meta.w, doc.meta.h);
         drop(doc);
         let mut map = std::collections::HashMap::new();
         for (k, v) in &legend {
@@ -2136,9 +2140,8 @@ impl Studio {
         let (mut painted, clipped) = counts.get();
         // Under an active selection, edit_masked reverts cells the mask
         // excludes AFTER paint_grid counted them — recount so `painted`
-        // reports what actually landed.
-        if let Ok((_, doc2)) = self.open(id) {
-            let (dw, dh) = (doc2.meta.w, doc2.meta.h);
+        // reports what actually landed (dims captured above; no third load).
+        {
             if let Some(mask) = self.selection_mask_for(id, dw, dh)? {
                 let (dwi, dhi) = (dw as i32, dh as i32);
                 let (mut kept, mut masked) = (0u64, 0u64);

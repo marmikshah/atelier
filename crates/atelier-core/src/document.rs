@@ -712,11 +712,19 @@ impl Document {
             .ok_or("region is empty after clamping to the canvas")?;
         let (rw, rh) = ((bx - ax + 1) as u32, (by - ay + 1) as u32);
         let mut buf = vec![0u8; (rw * rh * 4) as usize];
-        for ry in 0..rh as i32 {
-            for rx in 0..rw as i32 {
-                let p = self.get_pixel(layer, frame, ax + rx, ay + ry)?;
-                let i = ((ry as u32 * rw + rx as u32) * 4) as usize;
-                buf[i..i + 4].copy_from_slice(&p);
+        // One cel lookup for the whole rect — get_pixel would re-probe the cel
+        // map (and re-check the cel) for every pixel.
+        if let Some((cx, cy, img)) = self.cels.get(&(layer, frame)) {
+            for ry in 0..rh as i32 {
+                for rx in 0..rw as i32 {
+                    let (lx, ly) = (ax + rx - cx, ay + ry - cy);
+                    if lx < 0 || ly < 0 || lx as u32 >= img.width() || ly as u32 >= img.height() {
+                        continue;
+                    }
+                    let p = img.get_pixel(lx as u32, ly as u32).0;
+                    let i = ((ry as u32 * rw + rx as u32) * 4) as usize;
+                    buf[i..i + 4].copy_from_slice(&p);
+                }
             }
         }
         Ok((rw, rh, buf))

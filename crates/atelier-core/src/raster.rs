@@ -102,28 +102,44 @@ pub fn stroke_ribbon(img: &mut RgbaImage, pts: &[(f32, f32, f32)], color: [u8; 4
     let by0 = ((y0 + 0.5 - pad).floor() as i32).max(0);
     let bx1 = ((x1 + 0.5 + pad).ceil() as i32).min(w - 1);
     let by1 = ((y1 + 0.5 + pad).ceil() as i32).min(h - 1);
-    let single = pts.len() == 1;
-    for py in by0..=by1 {
-        for px in bx0..=bx1 {
-            let (sx, sy) = (px as f32 + 0.5, py as f32 + 0.5);
-            // Coverage is the union (max) over every capsule segment.
-            let mut cov = 0.0f32;
-            if single {
-                let (x, y, hw) = pts[0];
-                let d = ((sx - (x + 0.5)).powi(2) + (sy - (y + 0.5)).powi(2)).sqrt();
-                cov = (hw + 0.5 - d).clamp(0.0, 1.0);
-            } else {
-                for win in pts.windows(2) {
-                    let (ax, ay, aw) = win[0];
-                    let (bx, by, bw) = win[1];
-                    let (d, t) = point_seg(sx, sy, ax + 0.5, ay + 0.5, bx + 0.5, by + 0.5);
-                    let hw = aw + (bw - aw) * t;
-                    let c = (hw + 0.5 - d).clamp(0.0, 1.0);
-                    if c > cov {
-                        cov = c;
-                    }
+    // Union (max) coverage accumulated per segment over its OWN padded bbox —
+    // the whole-polyline bbox × every-segment scan made a long diagonal stroke
+    // cost bbox-area × segments. The buffer is composited once at the end.
+    let (bw_, bh_) = ((bx1 - bx0 + 1) as usize, (by1 - by0 + 1) as usize);
+    let mut cov = vec![0.0f32; bw_ * bh_];
+    let at = |px: i32, py: i32| ((py - by0) as usize) * bw_ + ((px - bx0) as usize);
+    let splat = |ax: f32, ay: f32, aw: f32, bx: f32, by: f32, bw: f32, cov: &mut Vec<f32>| {
+        let pad = aw.max(bw) + 1.0;
+        let sx0 = (((ax.min(bx)) + 0.5 - pad).floor() as i32).clamp(bx0, bx1);
+        let sy0 = (((ay.min(by)) + 0.5 - pad).floor() as i32).clamp(by0, by1);
+        let sx1 = (((ax.max(bx)) + 0.5 + pad).ceil() as i32).clamp(bx0, bx1);
+        let sy1 = (((ay.max(by)) + 0.5 + pad).ceil() as i32).clamp(by0, by1);
+        for py in sy0..=sy1 {
+            for px in sx0..=sx1 {
+                let (sx, sy) = (px as f32 + 0.5, py as f32 + 0.5);
+                let (d, t) = point_seg(sx, sy, ax + 0.5, ay + 0.5, bx + 0.5, by + 0.5);
+                let hw = aw + (bw - aw) * t;
+                let c = (hw + 0.5 - d).clamp(0.0, 1.0);
+                let slot = &mut cov[at(px, py)];
+                if c > *slot {
+                    *slot = c;
                 }
             }
+        }
+    };
+    if pts.len() == 1 {
+        let (x, y, hw) = pts[0];
+        splat(x, y, hw, x, y, hw, &mut cov);
+    } else {
+        for win in pts.windows(2) {
+            let (ax, ay, aw) = win[0];
+            let (bx, by, bw) = win[1];
+            splat(ax, ay, aw, bx, by, bw, &mut cov);
+        }
+    }
+    for py in by0..=by1 {
+        for px in bx0..=bx1 {
+            let cov = cov[at(px, py)];
             let eff = if aa {
                 cov
             } else if cov >= 0.5 {
@@ -492,19 +508,29 @@ pub fn box_blur(src: &RgbaImage, r: i32) -> RgbaImage {
             pa[i] = a;
         }
     }
+    // Sliding-window pass: O(w·h) per axis regardless of radius (the naive
+    // per-pixel window made glow/shadow cost scale linearly with r).
     let blur1 = |buf: &[f32], horizontal: bool| -> Vec<f32> {
         let mut out = vec![0f32; n];
         let win = (2 * r + 1) as f32;
-        for y in 0..h {
-            for x in 0..w {
-                let mut acc = 0.0;
-                for k in -r..=r {
-                    let (sx, sy) = if horizontal { (x + k, y) } else { (x, y + k) };
-                    let cx = sx.clamp(0, w - 1);
-                    let cy = sy.clamp(0, h - 1);
-                    acc += buf[(cy * w + cx) as usize];
-                }
-                out[(y * w + x) as usize] = acc / win;
+        let (lines, len) = if horizontal { (h, w) } else { (w, h) };
+        let at = |line: i32, i: i32| -> usize {
+            let i = i.clamp(0, len - 1);
+            if horizontal {
+                (line * w + i) as usize
+            } else {
+                (i * w + line) as usize
+            }
+        };
+        for line in 0..lines {
+            let mut acc = 0.0;
+            for k in -r..=r {
+                acc += buf[at(line, k)];
+            }
+            out[at(line, 0)] = acc / win;
+            for i in 1..len {
+                acc += buf[at(line, i + r)] - buf[at(line, i - r - 1)];
+                out[at(line, i)] = acc / win;
             }
         }
         out
@@ -898,22 +924,29 @@ fn majority_downscale(src: &RgbaImage, factor: u32) -> RgbaImage {
         (src.height() / factor).max(1),
     );
     let mut out = RgbaImage::new(w, h);
+    // A block holds ≤ factor² distinct colours (≤16 on the RotSprite path) —
+    // a stack array beats allocating a HashMap per output pixel.
+    let mut counts: Vec<([u8; 4], u32)> = Vec::with_capacity((factor * factor) as usize);
     for oy in 0..h {
         for ox in 0..w {
-            let mut counts: std::collections::HashMap<[u8; 4], u32> =
-                std::collections::HashMap::new();
+            counts.clear();
             for dy in 0..factor {
                 for dx in 0..factor {
                     let (sx, sy) = (ox * factor + dx, oy * factor + dy);
                     if sx < src.width() && sy < src.height() {
-                        *counts.entry(src.get_pixel(sx, sy).0).or_insert(0) += 1;
+                        let px = src.get_pixel(sx, sy).0;
+                        match counts.iter_mut().find(|(c, _)| *c == px) {
+                            Some((_, n)) => *n += 1,
+                            None => counts.push((px, 1)),
+                        }
                     }
                 }
             }
             // Total ordering so ties resolve deterministically: count, then
             // alpha (opaque wins so silhouette edges survive), then channels.
             let best = counts
-                .into_iter()
+                .iter()
+                .copied()
                 .max_by_key(|(c, n)| (*n, c[3], c[0], c[1], c[2]))
                 .map(|(c, _)| c)
                 .unwrap_or([0, 0, 0, 0]);

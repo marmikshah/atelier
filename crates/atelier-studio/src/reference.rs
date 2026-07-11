@@ -363,7 +363,9 @@ impl Studio {
                     [0, i, 0, 255] // wrong colour (chroma/hue)
                 };
                 heat.put_pixel(x, y, Rgba(px));
-                worst.push((de, x, y, dl, dc, hue));
+                if de > 0.02 {
+                    worst.push((de, x, y, dl, dc, hue));
+                }
             }
         }
         let iou = if union == 0 {
@@ -376,7 +378,6 @@ impl Studio {
         let worst_pixels: Vec<Value> = worst
             .iter()
             .take(top)
-            .filter(|w| w.0 > 0.02)
             .map(|&(de, x, y, dl, dc, hue)| {
                 let value_dom = classify(dl, dc, hue);
                 let mut fix: Vec<&str> = Vec::new();

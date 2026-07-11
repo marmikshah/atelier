@@ -339,6 +339,13 @@ impl Studio {
         };
         let mut out = RgbaImage::from_pixel(w, h, Rgba([24, 24, 32, 255]));
         let (mut selected, mut bbox): (u64, Option<[i32; 4]>) = (0, None);
+        // Constant per call — hoisted out of the per-pixel loop.
+        let wash = raster::composite_px(
+            [40, 12, 40, 255],
+            [255, 0, 255, 40],
+            40.0 / 255.0,
+            raster::Blend::Normal,
+        );
         for y in 0..h as i32 {
             for x in 0..w as i32 {
                 let i = (y as u32 * w + x as u32) as usize;
@@ -352,13 +359,7 @@ impl Studio {
                         None => [x, y, x, y],
                         Some([a, b, c, d]) => [a.min(x), b.min(y), c.max(x), d.max(y)],
                     });
-                    // selected: art over a faint magenta wash
-                    let wash = raster::composite_px(
-                        [40, 12, 40, 255],
-                        [255, 0, 255, 40],
-                        40.0 / 255.0,
-                        raster::Blend::Normal,
-                    );
+                    // selected: art over the faint magenta wash
                     raster::composite_px(wash, art, art[3] as f32 / 255.0, raster::Blend::Normal)
                 } else {
                     // unselected: dim the art heavily (rubylith feel)
