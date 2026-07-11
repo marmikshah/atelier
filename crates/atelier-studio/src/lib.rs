@@ -667,21 +667,6 @@ impl Studio {
         })
     }
 
-    pub fn doc_symmetry(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        vertical: Option<i32>,
-        horizontal: Option<i32>,
-        keep_left: bool,
-        keep_top: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.symmetry(layer, frame, vertical, horizontal, keep_left, keep_top)
-        })
-    }
-
     // -- render / export ----------------------------------------------------
 
     /// Encode one cel (`layer` Some) or the flattened frame (`layer` None) as an
@@ -1294,23 +1279,6 @@ impl Studio {
         })
     }
 
-    pub fn doc_line(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        color: [u8; 4],
-        size: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.line(layer, frame, x0, y0, x1, y1, color, size)
-        })
-    }
-
     pub fn doc_rect(
         &self,
         id: &str,
@@ -1343,20 +1311,6 @@ impl Studio {
     ) -> Result<Value, String> {
         self.edit_masked(id, layer, frame, |d| {
             d.ellipse(layer, frame, cx, cy, rx, ry, color, fill)
-        })
-    }
-
-    pub fn doc_polygon(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        points: Vec<(i32, i32)>,
-        color: [u8; 4],
-        fill: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.polygon(layer, frame, &points, color, fill)
         })
     }
 
@@ -1403,68 +1357,6 @@ impl Studio {
         self.edit_masked(id, layer, frame, |d| {
             d.bucket_fill(layer, frame, x, y, color, tol)
         })
-    }
-
-    pub fn doc_replace_color(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        from: [u8; 4],
-        to: [u8; 4],
-        tol: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.replace_color(layer, frame, from, to, tol)
-        })
-    }
-
-    pub fn doc_flip(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        horizontal: bool,
-    ) -> Result<Value, String> {
-        self.edit(id, |d| d.flip(layer, frame, horizontal))
-    }
-
-    pub fn doc_shift(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        dx: i32,
-        dy: i32,
-        wrap: bool,
-    ) -> Result<Value, String> {
-        self.edit(id, |d| d.shift(layer, frame, dx, dy, wrap))
-    }
-
-    pub fn doc_blur(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        radius: i32,
-        region: Option<(i32, i32, i32, i32)>,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| d.blur(layer, frame, radius, region))
-    }
-
-    pub fn doc_quantize(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        palette: Vec<[u8; 4]>,
-        max_colors: usize,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let pal = doc.quantize(layer, frame, palette, max_colors)?;
-        doc.save(&dir)?;
-        let hex: Vec<String> = pal.iter().map(|c| crate::hex_rgba(c)).collect();
-        Ok(json!({"doc_id": id, "count": pal.len(), "palette": pal, "hex": hex}))
     }
 
     pub fn doc_tween(
@@ -1529,33 +1421,6 @@ impl Studio {
         }
     }
 
-    pub fn doc_outline(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        color: [u8; 4],
-        aa: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| d.outline_cel(layer, frame, color, aa))
-    }
-
-    pub fn doc_drop_shadow(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        dx: i32,
-        dy: i32,
-        color: [u8; 4],
-        opacity: u8,
-        blur: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.drop_shadow(layer, frame, dx, dy, color, opacity, blur)
-        })
-    }
-
     pub fn doc_glow(
         &self,
         id: &str,
@@ -1575,20 +1440,6 @@ impl Studio {
                 d.snap_cel_to_own_palette(layer, frame, a);
             }
             Ok(())
-        })
-    }
-
-    pub fn doc_bevel(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        light: [u8; 4],
-        dark: [u8; 4],
-        depth: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.bevel(layer, frame, light, dark, depth)
         })
     }
 
@@ -1639,68 +1490,6 @@ impl Studio {
         })
     }
 
-    pub fn doc_adjust(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        hue: f32,
-        sat: f32,
-        lum: f32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.adjust(layer, frame, region, hue, sat, lum)
-        })
-    }
-
-    pub fn doc_noise(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        kind: &str,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        scale: f32,
-        octaves: u32,
-        seed: u64,
-        stops: Vec<(f32, [u8; 4])>,
-        blend: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.noise(
-                layer, frame, kind, x0, y0, x1, y1, scale, octaves, seed, stops, blend,
-            )
-        })
-    }
-
-    /// Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at
-    /// integer pixel `size`. Masked by the active selection. Returns the rendered
-    /// `width` in document pixels so callers can lay out the next element.
-    pub fn doc_text(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x: i32,
-        y: i32,
-        text: &str,
-        color: [u8; 4],
-        size: i32,
-    ) -> Result<Value, String> {
-        // text returns the rendered width, so thread it out via a cell rather
-        // than the unit-returning edit_masked closure.
-        let width = std::cell::Cell::new(0i32);
-        self.edit_masked(id, layer, frame, |d| {
-            width.set(d.text(layer, frame, x, y, text, color, size)?);
-            Ok(())
-        })?;
-        Ok(json!({"ok": true, "doc_id": id, "width": width.get()}))
-    }
-
     /// Generate a hue-shifted shading ramp from a base colour. If `set_doc` is
     /// given, also store it as that document's palette. Returns the colours.
     pub fn doc_gradient(
@@ -1734,25 +1523,6 @@ impl Studio {
                 );
             }
             Ok(())
-        })
-    }
-
-    pub fn doc_scatter(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        colors: Vec<[u8; 4]>,
-        density: f32,
-        seed: u64,
-        size: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.scatter(layer, frame, x0, y0, x1, y1, &colors, density, seed, size)
         })
     }
 
