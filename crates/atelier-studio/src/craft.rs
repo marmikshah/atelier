@@ -1591,37 +1591,10 @@ impl Studio {
         aa: bool,
         snap: bool,
     ) -> Result<Value, String> {
-        let g = |k: &str| {
-            let v = base[k];
-            (v.0 as f32, v.1 as f32)
-        };
-        // Validate up front (re-uses the figure joint contract).
-        let base_f: std::collections::HashMap<String, (f32, f32)> = base
-            .iter()
-            .map(|(k, &(x, y))| (k.clone(), (x as f32, y as f32)))
-            .collect();
-        humanoid_bones(&base_f, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+        let g = |k: &str| joint_f(base, k);
         let frames = frames.clamp(2, 24);
-        let dist =
-            |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
-        // Bone lengths from the base pose (assume left/right symmetric).
-        let l_thigh = dist(g("hip_l"), g("knee_l")).max(2.0);
-        let l_shin = dist(g("knee_l"), g("foot_l")).max(2.0);
-        let l_uarm = dist(g("shoulder_l"), g("elbow_l")).max(2.0);
-        let l_farm = dist(g("elbow_l"), g("hand_l")).max(2.0);
+        let (l_thigh, l_shin, l_uarm, l_farm) = rig_setup(base, limb_w, torso_w, head_r)?;
         let tau = std::f32::consts::TAU;
-        // World-anchored IK: pick the bend that keeps the mid-joint on a
-        // consistent world side (knees AHEAD of the hip, elbows BEHIND the
-        // shoulder) no matter how the limb swings — otherwise solve_ik2's
-        // axis-relative bend flips the joint to the wrong side mid-stride.
-        let ik_world = |root: (f32, f32), tgt: (f32, f32), l1: f32, l2: f32, ahead: bool| {
-            let c = raster::solve_ik2(root, tgt, l1, l2, 1.0);
-            if (c.0 >= root.0) == ahead {
-                c
-            } else {
-                raster::solve_ik2(root, tgt, l1, l2, -1.0)
-            }
-        };
         let (dir, mut doc) = self.open(id)?;
         while doc.meta.frames.len() < frames {
             doc.add_frame(120, None);
@@ -1726,33 +1699,12 @@ impl Studio {
         };
         let frames = if frames == 0 { default_frames } else { frames }.clamp(2, 24);
         let i = intensity.clamp(0.1, 3.0);
-        let g = |k: &str| {
-            let v = base[k];
-            (v.0 as f32, v.1 as f32)
-        };
-        let base_f: std::collections::HashMap<String, (f32, f32)> = base
-            .iter()
-            .map(|(k, &(x, y))| (k.clone(), (x as f32, y as f32)))
-            .collect();
-        humanoid_bones(&base_f, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
-        let dist =
-            |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
-        let l_thigh = dist(g("hip_l"), g("knee_l")).max(2.0);
-        let l_shin = dist(g("knee_l"), g("foot_l")).max(2.0);
-        let l_uarm = dist(g("shoulder_l"), g("elbow_l")).max(2.0);
-        let l_farm = dist(g("elbow_l"), g("hand_l")).max(2.0);
+        let g = |k: &str| joint_f(base, k);
+        let (l_thigh, l_shin, l_uarm, l_farm) = rig_setup(base, limb_w, torso_w, head_r)?;
         // The figure's own leg is the amplitude unit — presets scale with the sprite.
         let leg = l_thigh + l_shin;
         let tau = std::f32::consts::TAU;
         let pi = std::f32::consts::PI;
-        let ik_world = |root: (f32, f32), tgt: (f32, f32), l1: f32, l2: f32, ahead: bool| {
-            let c = raster::solve_ik2(root, tgt, l1, l2, 1.0);
-            if (c.0 >= root.0) == ahead {
-                c
-            } else {
-                raster::solve_ik2(root, tgt, l1, l2, -1.0)
-            }
-        };
         let (dir, mut doc) = self.open(id)?;
         while doc.meta.frames.len() < frames {
             doc.add_frame(100, None);
@@ -1923,6 +1875,49 @@ impl Studio {
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "frames": frames, "tag": gait}))
     }
+}
+
+/// Joint lookup as f32 — the walk/pose_cycle pose tables are drawn sub-pixel.
+fn joint_f(base: &std::collections::HashMap<String, (i32, i32)>, k: &str) -> (f32, f32) {
+    let v = base[k];
+    (v.0 as f32, v.1 as f32)
+}
+
+/// World-anchored IK: pick the bend that keeps the mid-joint on a consistent
+/// world side (knees AHEAD of the hip, elbows BEHIND the shoulder) no matter
+/// how the limb swings — otherwise solve_ik2's axis-relative bend flips the
+/// joint to the wrong side mid-stride.
+fn ik_world(root: (f32, f32), tgt: (f32, f32), l1: f32, l2: f32, ahead: bool) -> (f32, f32) {
+    let c = raster::solve_ik2(root, tgt, l1, l2, 1.0);
+    if (c.0 >= root.0) == ahead {
+        c
+    } else {
+        raster::solve_ik2(root, tgt, l1, l2, -1.0)
+    }
+}
+
+/// Shared walk/pose_cycle scaffolding: validate the joint contract, then read
+/// the four bone lengths off the base pose (assumed left/right symmetric).
+/// Returns (thigh, shin, upper-arm, forearm).
+fn rig_setup(
+    base: &std::collections::HashMap<String, (i32, i32)>,
+    limb_w: i32,
+    torso_w: i32,
+    head_r: i32,
+) -> Result<(f32, f32, f32, f32), String> {
+    let base_f: std::collections::HashMap<String, (f32, f32)> = base
+        .iter()
+        .map(|(k, &(x, y))| (k.clone(), (x as f32, y as f32)))
+        .collect();
+    humanoid_bones(&base_f, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
+    let g = |k: &str| joint_f(base, k);
+    let dist = |a: (f32, f32), b: (f32, f32)| ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt();
+    Ok((
+        dist(g("hip_l"), g("knee_l")).max(2.0),
+        dist(g("knee_l"), g("foot_l")).max(2.0),
+        dist(g("shoulder_l"), g("elbow_l")).max(2.0),
+        dist(g("elbow_l"), g("hand_l")).max(2.0),
+    ))
 }
 
 /// The humanoid capsule bone list for `figure`/`walk`: validates the 13 required
