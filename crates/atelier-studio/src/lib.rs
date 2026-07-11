@@ -753,7 +753,7 @@ impl Studio {
         let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
         match op {
             "sheet" => match gets("meta").unwrap_or("atelier") {
-                "atelier" => self.doc_export_sheet(id, out_path, export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE))),
+                "atelier" => self.doc_export_sheet(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE)),
                 "standard" => {
                     let (_dir, doc) = self.open(id)?;
                     if let Some(p) = Path::new(out_path).parent() {

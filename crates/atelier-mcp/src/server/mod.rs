@@ -140,11 +140,28 @@ fn alpha_snap(
     }
 }
 
-/// Optional [x0,y0,x1,y1] -> (x0,y0,x1,y1); drops anything shorter than 4.
-fn region(r: &Option<Vec<i32>>) -> Option<(i32, i32, i32, i32)> {
-    r.as_ref()
-        .filter(|r| r.len() >= 4)
-        .map(|r| (r[0], r[1], r[2], r[3]))
+/// Optional [x0,y0,x1,y1] -> (x0,y0,x1,y1). A region that is present but
+/// shorter than 4 numbers is an agent mistake — error loudly instead of
+/// silently acting on the whole canvas.
+fn region(r: &Option<Vec<i32>>) -> Result<Option<(i32, i32, i32, i32)>, String> {
+    match r {
+        None => Ok(None),
+        Some(v) if v.len() >= 4 => Ok(Some((v[0], v[1], v[2], v[3]))),
+        Some(v) => Err(format!(
+            "region needs 4 numbers [x0,y0,x1,y1], got {} — omit it to act on the whole canvas",
+            v.len()
+        )),
+    }
+}
+
+/// Unwrap a parse result inside a tool method, or return it as the tool error.
+macro_rules! try_res {
+    ($e:expr) => {
+        match $e {
+            Ok(v) => v,
+            Err(e) => return res(Err(e)),
+        }
+    };
 }
 
 fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
@@ -654,7 +671,7 @@ impl Atelier {
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.mode.as_deref().unwrap_or("symbol"),
         ))
     }
@@ -718,11 +735,11 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocContrastCheck>,
     ) -> CallToolResult {
-        res(self.studio().doc_contrast_check(
+        opt_img_result(self.studio().doc_contrast_check(
             &p.doc_id,
             p.frame.unwrap_or(0),
             &p.mode,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.min_ratio.unwrap_or(1.5),
             p.threshold.unwrap_or(128),
             p.out_path.as_deref(),
@@ -740,7 +757,7 @@ impl Atelier {
             &p.doc_id,
             p.frame,
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.dupe_threshold.unwrap_or(8),
         ))
     }
@@ -776,7 +793,7 @@ impl Atelier {
             p.frame_a,
             p.frame_b,
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.grid.unwrap_or(false),
             p.render.as_deref().unwrap_or("none"),
             p.out_path.as_deref(),
@@ -807,7 +824,7 @@ impl Atelier {
             p.tag.as_deref(),
             p.layer,
             &p.mode,
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -922,7 +939,7 @@ impl Atelier {
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.scale,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.mode.as_deref().unwrap_or("render"),
             p.bands.unwrap_or(4),
             p.grid.unwrap_or(false),
@@ -941,7 +958,11 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocSelectRender>,
     ) -> CallToolResult {
-        img_result(self.studio().select_render(&p.doc_id, p.scale.unwrap_or(6)))
+        img_result(self.studio().select_render(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.scale.unwrap_or(6),
+        ))
     }
 
     #[tool(
@@ -1004,7 +1025,7 @@ impl Atelier {
             p.max_run.unwrap_or(2),
             p.keep_square.unwrap_or(true),
             p.only_color.as_deref().map(rgba),
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -1024,7 +1045,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.rotate.unwrap_or(0.0),
             sx,
             sy,
@@ -1040,9 +1061,12 @@ impl Atelier {
         description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, per-form pillow-shading and mixed light direction (via the doc_form_audit engine), value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
     )]
     async fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> CallToolResult {
-        res(self
-            .studio()
-            .critique(&p.doc_id, p.frame.unwrap_or(0), p.layer, region(&p.region)))
+        res(self.studio().critique(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.layer,
+            try_res!(region(&p.region)),
+        ))
     }
 
     #[tool(
@@ -1055,7 +1079,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.key_azimuth.unwrap_or(315.0),
             p.key_elevation.unwrap_or(50.0),
             p.key_intensity.unwrap_or(1.0),
@@ -1082,7 +1106,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             palette_list(&p.ramp),
             p.axis.as_deref().unwrap_or("v"),
             p.pattern.as_deref().unwrap_or("bayer4"),
@@ -1170,7 +1194,7 @@ impl Atelier {
             p.mode.as_deref().unwrap_or("from_fill"),
             p.ramp.map(|v| palette_list(&v)),
             p.steps.unwrap_or(2),
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -1184,7 +1208,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             &p.material,
             rgba(&p.color),
             p.seed.unwrap_or(1),
@@ -1203,7 +1227,7 @@ impl Atelier {
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -1254,7 +1278,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame.unwrap_or(0),
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.use_selection.unwrap_or(false),
             p.name,
             p.frames.as_deref() == Some("all"),

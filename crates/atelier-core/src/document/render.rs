@@ -233,6 +233,18 @@ impl Document {
         threshold: i32,
     ) -> Result<(u32, i32, Vec<[i32; 3]>), String> {
         let img = self.analysis_image(layer, frame)?;
+        Ok(seam_axis_img(&img, horizontal, threshold))
+    }
+}
+
+/// [`Document::seam_axis`] over an already-flattened frame — callers testing
+/// several axes (or also rendering an overlay) flatten once and reuse it.
+pub fn seam_axis_img(
+    img: &RgbaImage,
+    horizontal: bool,
+    threshold: i32,
+) -> (u32, i32, Vec<[i32; 3]>) {
+    {
         let (w, h) = (img.width() as i32, img.height() as i32);
         let mut mismatches = 0u32;
         let mut max_delta = 0i32;
@@ -258,9 +270,11 @@ impl Document {
         }
         all.sort_by(|a, b| b[2].cmp(&a[2]));
         all.truncate(10);
-        Ok((mismatches, max_delta, all))
+        (mismatches, max_delta, all)
     }
+}
 
+impl Document {
     /// Opaque-mass CENTROID of a frame's silhouette (mean of opaque pixel
     /// coordinates), optionally clipped to `region`. A mass centroid, unlike
     /// the old bbox-corner midpoint, actually moves when a limb swings over a

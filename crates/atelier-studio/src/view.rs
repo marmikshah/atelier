@@ -277,10 +277,22 @@ impl Studio {
     /// Render the active selection mask as a quick-mask overlay (selected art
     /// shown, the rest dimmed + tinted) so the agent never paints through an
     /// unseen mask. Returns `(png_bytes, report)`.
-    pub fn select_render(&self, id: &str, scale: u32) -> Result<(Vec<u8>, Value), String> {
+    pub fn select_render(
+        &self,
+        id: &str,
+        frame: usize,
+        scale: u32,
+    ) -> Result<(Vec<u8>, Value), String> {
         let (_dir, doc) = self.open(id)?;
+        if frame >= doc.meta.frames.len() {
+            return Err(format!(
+                "no frame {} (frames={})",
+                frame,
+                doc.meta.frames.len()
+            ));
+        }
         let (w, h) = (doc.meta.w, doc.meta.h);
-        let base = doc.flatten(0);
+        let base = doc.flatten(frame);
         let mask = match &self.selection {
             Some(s) if s.doc_id == id && s.w == w && s.h == h => Some(&s.mask),
             _ => None,

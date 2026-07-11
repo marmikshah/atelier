@@ -669,6 +669,8 @@ pub(crate) struct DocLook {
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocSelectRender {
     pub(crate) doc_id: String,
+    /// Frame whose art backs the mask preview (default 0).
+    pub(crate) frame: Option<usize>,
     pub(crate) scale: Option<u32>,
 }
 

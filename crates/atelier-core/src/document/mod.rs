@@ -32,6 +32,7 @@ mod timeline;
 mod tests;
 
 pub use batch::{validate_batch_op, DRAW_OPS, FX_OPS};
+pub use render::seam_axis_img;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LayerMeta {
@@ -522,17 +523,12 @@ impl Document {
     /// JSON snapshot of the document structure (layers, frames, tags, cels,
     /// palette) for inspection — no pixel data.
     pub fn structure(&self) -> Value {
-        let mut cels: Vec<Value> = self
-            .cels
-            .keys()
+        let mut keys: Vec<(usize, usize)> = self.cels.keys().copied().collect();
+        keys.sort_unstable();
+        let cels: Vec<Value> = keys
+            .into_iter()
             .map(|(l, f)| json!({"layer": l, "frame": f}))
             .collect();
-        cels.sort_by_key(|x| {
-            (
-                x["layer"].as_u64().unwrap_or(0),
-                x["frame"].as_u64().unwrap_or(0),
-            )
-        });
         json!({
             "name": self.meta.name, "w": self.meta.w, "h": self.meta.h,
             "layers": self.meta.layers.iter().enumerate().map(|(i, l)| json!({

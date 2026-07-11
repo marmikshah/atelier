@@ -206,11 +206,13 @@ impl Studio {
         };
         let mut seen = vec![false; (w * h) as usize];
         struct Comp {
-            bbox: [i32; 4],                                  // tight [x0,y0,x1,y1]
-            area: u32,                                       // opaque pixel count
-            sx: u64,                                         // Σx (for the centroid)
-            sy: u64,                                         // Σy (for the centroid)
-            colors: std::collections::HashMap<[u8; 4], u32>, // colour → count (dominant)
+            bbox: [i32; 4], // tight [x0,y0,x1,y1]
+            area: u32,      // opaque pixel count
+            sx: u64,        // Σx (for the centroid)
+            sy: u64,        // Σy (for the centroid)
+            // colour → count for the dominant readout; a small Vec beats a
+            // HashMap per component (specks allocate nothing).
+            colors: Vec<([u8; 4], u32)>,
         }
         let mut comps: Vec<Comp> = Vec::new();
         for sy in 0..h {
@@ -227,7 +229,7 @@ impl Studio {
                     area: 0,
                     sx: 0,
                     sy: 0,
-                    colors: std::collections::HashMap::new(),
+                    colors: Vec::new(),
                 };
                 while let Some((x, y)) = stack.pop() {
                     c.area += 1;
@@ -238,7 +240,10 @@ impl Studio {
                     c.bbox[2] = c.bbox[2].max(x);
                     c.bbox[3] = c.bbox[3].max(y);
                     let p = img.get_pixel(x as u32, y as u32).0;
-                    *c.colors.entry(p).or_insert(0) += 1;
+                    match c.colors.iter_mut().find(|(col, _)| *col == p) {
+                        Some((_, n)) => *n += 1,
+                        None => c.colors.push((p, 1)),
+                    }
                     for (ox, oy) in neigh {
                         let (nx, ny) = (x + ox, y + oy);
                         if nx < 0 || ny < 0 || nx >= w || ny >= h {
@@ -269,7 +274,7 @@ impl Studio {
                 let dom = c
                     .colors
                     .iter()
-                    .max_by_key(|(_, n)| **n)
+                    .max_by_key(|(_, n)| *n)
                     .map(|(c, _)| *c)
                     .unwrap_or([0, 0, 0, 0]);
                 json!({
@@ -397,7 +402,7 @@ impl Studio {
         min_ratio: f32,
         threshold: u8,
         out_path: Option<&str>,
-    ) -> Result<Value, String> {
+    ) -> Result<(Option<Vec<u8>>, Value), String> {
         let (dir, doc) = self.open(id)?;
         let img = doc.analysis_image(None, frame)?;
         let (w, h) = (img.width() as i32, img.height() as i32);
@@ -462,13 +467,16 @@ impl Studio {
                 };
                 let (a, b) = (mean(inside, n_in), mean(band, n_band));
                 let ratio = atelier_core::raster::wcag_ratio(a, b);
-                Ok(json!({
-                    "mode": "region",
-                    "inside": crate::hex_rgb(&a),
-                    "surround": crate::hex_rgb(&b),
-                    "ratio": round2(ratio),
-                    "pass": ratio >= min_ratio,
-                }))
+                Ok((
+                    None,
+                    json!({
+                        "mode": "region",
+                        "inside": crate::hex_rgb(&a),
+                        "surround": crate::hex_rgb(&b),
+                        "ratio": round2(ratio),
+                        "pass": ratio >= min_ratio,
+                    }),
+                ))
             }
             "palette" => {
                 // Distinct opaque colours of the frame (first-seen order).
@@ -504,12 +512,15 @@ impl Studio {
                         pairs.push(entry);
                     }
                 }
-                Ok(json!({
-                    "mode": "palette",
-                    "colors": colors.len(),
-                    "pairs": pairs,
-                    "failures": failures,
-                }))
+                Ok((
+                    None,
+                    json!({
+                        "mode": "palette",
+                        "colors": colors.len(),
+                        "pairs": pairs,
+                        "failures": failures,
+                    }),
+                ))
             }
             "one-bit" => {
                 use image::{Rgba, RgbaImage};
@@ -536,14 +547,21 @@ impl Studio {
                     }
                 }
                 bw.save(&out).map_err(|e| e.to_string())?;
+                // Inline the B/W render like frame_diff/seam_report do, so the
+                // agent sees the notan without a second call.
+                let sc = crate::preview_scale(bw.width(), bw.height());
+                let png = crate::encode_png(&crate::scale_nn(&bw, sc))?;
                 let total = (black + white).max(1) as f64;
-                Ok(json!({
-                    "mode": "one-bit",
-                    "path": out.to_string_lossy(),
-                    "threshold": threshold,
-                    "black_pct": (black as f64 / total * 1000.0).round() / 1000.0,
-                    "white_pct": (white as f64 / total * 1000.0).round() / 1000.0,
-                }))
+                Ok((
+                    Some(png),
+                    json!({
+                        "mode": "one-bit",
+                        "path": out.to_string_lossy(),
+                        "threshold": threshold,
+                        "black_pct": (black as f64 / total * 1000.0).round() / 1000.0,
+                        "white_pct": (white as f64 / total * 1000.0).round() / 1000.0,
+                    }),
+                ))
             }
             other => Err(format!(
                 "unknown contrast mode '{}' — use region|palette|one-bit",
@@ -600,16 +618,17 @@ impl Studio {
         let truncated = count > PALETTE_LIST_CAP;
         let listed: Vec<&([u8; 4], u64)> = entries.iter().take(PALETTE_LIST_CAP).collect();
         let others_pixels: u64 = entries.iter().skip(PALETTE_LIST_CAP).map(|(_, n)| n).sum();
-        let mut off_palette_count = 0u32;
+        // Off-palette tally covers EVERY distinct colour, not just the listed top.
+        let off_palette_count = if has_palette {
+            entries.iter().filter(|(c, _)| !in_pal(*c)).count() as u32
+        } else {
+            0
+        };
         let colors: Vec<Value> = listed
             .iter()
             .map(|(c, n)| {
                 let inp = if has_palette {
-                    let v = in_pal(*c);
-                    if !v {
-                        off_palette_count += 1;
-                    }
-                    json!(v)
+                    json!(in_pal(*c))
                 } else {
                     Value::Null
                 };
@@ -639,14 +658,6 @@ impl Studio {
                     near_dupes.push(json!([hex(a), hex(b), dist]));
                 }
             }
-        }
-        // Off-palette tally covers EVERY distinct colour, not just the listed top.
-        if has_palette {
-            off_palette_count += entries
-                .iter()
-                .skip(PALETTE_LIST_CAP)
-                .filter(|(c, _)| !in_pal(*c))
-                .count() as u32;
         }
         let mut out = json!({
             "count": count,
@@ -947,30 +958,31 @@ impl Studio {
                 ))
             }
         };
-        let report = |horizontal: bool| -> Result<(Value, Vec<[i32; 3]>), String> {
+        // One flatten serves both axes AND the overlay below.
+        let img = doc.analysis_image(layer, frame)?;
+        let report = |horizontal: bool| -> (Value, Vec<[i32; 3]>) {
             let (mismatches, max_delta, worst) =
-                doc.seam_axis(layer, frame, horizontal, threshold)?;
+                atelier_core::document::seam_axis_img(&img, horizontal, threshold);
             let worst_json: Vec<Value> = worst.iter().map(|w| json!(w)).collect();
-            Ok((
+            (
                 json!({"mismatches": mismatches, "max_delta": max_delta, "worst": worst_json}),
                 worst,
-            ))
+            )
         };
         let mut out = json!({});
         let mut flagged: Vec<[i32; 3]> = Vec::new();
         if want_h {
-            let (j, w) = report(true)?;
+            let (j, w) = report(true);
             out["horizontal"] = j;
             flagged.extend(w);
         }
         if want_v {
-            let (j, w) = report(false)?;
+            let (j, w) = report(false);
             out["vertical"] = j;
             flagged.extend(w);
         }
         let mut png = None;
         if out_path.is_some() || !flagged.is_empty() {
-            let img = doc.analysis_image(layer, frame)?;
             // Dim the art to 40%, then paint the (capped) worst edge cells red.
             let mut canvas = RgbaImage::from_pixel(img.width(), img.height(), Rgba([0, 0, 0, 0]));
             for (x, y, px) in img.enumerate_pixels() {
@@ -1823,7 +1835,8 @@ mod tests {
             .unwrap();
         let region = s
             .doc_contrast_check("d", 0, "region", Some((3, 3, 4, 4)), 1.5, 128, None)
-            .unwrap();
+            .unwrap()
+            .1;
         assert_eq!(region["pass"], json!(true));
         assert!(region["ratio"].as_f64().unwrap() > 10.0); // black/white ≈ 21
                                                            // region mode without a region errors
@@ -1833,14 +1846,16 @@ mod tests {
         // palette mode: two distinct colours, one pair
         let pal = s
             .doc_contrast_check("d", 0, "palette", None, 1.5, 128, None)
-            .unwrap();
+            .unwrap()
+            .1;
         assert_eq!(pal["colors"], json!(2));
         assert_eq!(pal["pairs"].as_array().unwrap().len(), 1);
         // one-bit renders a B/W png and splits coverage
         let out = s.docs_dir.join("onebit.png");
         let ob = s
             .doc_contrast_check("d", 0, "one-bit", None, 1.5, 128, out.to_str())
-            .unwrap();
+            .unwrap()
+            .1;
         assert!(out.exists());
         assert!(ob["white_pct"].as_f64().unwrap() > 0.0);
         assert!(ob["black_pct"].as_f64().unwrap() > 0.0);
