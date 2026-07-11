@@ -260,12 +260,17 @@ impl Studio {
 #[cfg(test)]
 mod tests {
     use super::Studio;
-    use serde_json::Value;
+    use serde_json::{json, Value};
 
     fn studio(name: &str) -> Studio {
         let dir = std::env::temp_dir().join(format!("atelier-set-{}", name));
         let _ = std::fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    /// Single draw-op shorthand: `params` is the op's JSON object (as `json!`).
+    fn draw(s: &Studio, id: &str, op: &str, params: Value) -> Result<Value, String> {
+        s.doc_draw(id, 0, 0, op, params.as_object().unwrap().clone())
     }
 
     fn ids(v: &[&str]) -> Vec<String> {
@@ -282,7 +287,13 @@ mod tests {
             ("hero-boss", 30, [40, 40, 210, 255]),
         ] {
             s.doc_create(name, 32, 32).unwrap();
-            s.doc_rect(name, 0, 0, 4, 1, 8, h, color, true, 1).unwrap();
+            draw(
+                &s,
+                name,
+                "rect",
+                json!({"x0": 4, "y0": 1, "x1": 8, "y1": h, "color": color, "fill": true}),
+            )
+            .unwrap();
         }
         s.doc_set_palette("hero-idle", vec![[200, 40, 40, 255]])
             .unwrap();
@@ -305,8 +316,13 @@ mod tests {
         let s = studio("cohesive");
         for name in ["orc-a", "orc-b"] {
             s.doc_create(name, 16, 16).unwrap();
-            s.doc_rect(name, 0, 0, 4, 4, 10, 12, [90, 140, 80, 255], true, 1)
-                .unwrap();
+            draw(
+                &s,
+                name,
+                "rect",
+                json!({"x0": 4, "y0": 4, "x1": 10, "y1": 12, "color": [90, 140, 80, 255], "fill": true}),
+            )
+            .unwrap();
             s.doc_set_palette(name, vec![[90, 140, 80, 255]]).unwrap();
             s.doc_set_pivot(name, 0, Some([8, 12])).unwrap();
         }
@@ -325,8 +341,13 @@ mod tests {
             .unwrap();
         s.doc_create("tgt", 8, 8).unwrap();
         // Off-palette reddish pixel that must snap to pure red.
-        s.doc_pencil("tgt", 0, 0, vec![(1, 1)], [220, 30, 30, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "tgt",
+            "pencil",
+            json!({"points": [[1, 1]], "color": [220, 30, 30, 255]}),
+        )
+        .unwrap();
         let r = s
             .doc_set_palette_sync(Some(&ids(&["tgt"])), None, None, Some("src"))
             .unwrap();

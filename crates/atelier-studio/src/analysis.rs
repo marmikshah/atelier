@@ -1646,15 +1646,31 @@ mod tests {
         Studio::with_docs_dir(dir)
     }
 
+    /// Single draw-op shorthand: `params` is the op's JSON object (as `json!`).
+    fn draw(s: &Studio, id: &str, frame: usize, op: &str, params: Value) -> Value {
+        s.doc_draw(id, 0, frame, op, params.as_object().unwrap().clone())
+            .unwrap()
+    }
+
     #[test]
     fn dump_region_symbol_and_hex() {
         let s = studio("dump");
         s.doc_create("d", 4, 4).unwrap();
         // two distinct opaque pixels, rest transparent
-        s.doc_pencil("d", 0, 0, vec![(0, 0)], [10, 20, 30, 255], 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(1, 0)], [40, 50, 60, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [10, 20, 30, 255]}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[1, 0]], "color": [40, 50, 60, 255]}),
+        );
         let sym = s
             .doc_dump_region("d", 0, None, Some((0, 0, 1, 0)), "symbol")
             .unwrap();
@@ -1673,8 +1689,13 @@ mod tests {
     fn silhouette_reports_bbox_and_fill() {
         let s = studio("silo");
         s.doc_create("d", 4, 4).unwrap();
-        s.doc_rect("d", 0, 0, 1, 1, 2, 2, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 1, "y0": 1, "x1": 2, "y1": 2, "color": [9, 9, 9, 255], "fill": true}),
+        );
         let r = s.doc_silhouette("d", 0, None, 1).unwrap();
         assert_eq!(r["bbox"], json!([1, 1, 2, 2])); // 2x2 block
         assert_eq!(r["fill_ratio"], json!(0.25)); // 4 of 16 opaque
@@ -1688,10 +1709,20 @@ mod tests {
         s.doc_create("ui", 8, 4).unwrap();
         // Same-lightness red and green blocks: readable normally, classic
         // protan/deutan collapse.
-        s.doc_rect("ui", 0, 0, 0, 0, 3, 3, [200, 60, 60, 255], true, 1)
-            .unwrap();
-        s.doc_rect("ui", 0, 0, 4, 0, 7, 3, [80, 150, 60, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "ui",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 3, "y1": 3, "color": [200, 60, 60, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "ui",
+            0,
+            "rect",
+            json!({"x0": 4, "y0": 0, "x1": 7, "y1": 3, "color": [80, 150, 60, 255], "fill": true}),
+        );
         let (png, r) = s.doc_colorblind_check("ui", 0, 1).unwrap();
         assert!(!png.is_empty());
         assert_eq!(r["verdict"], "warn");
@@ -1761,10 +1792,20 @@ mod tests {
         let s = studio("comp");
         s.doc_create("d", 8, 8).unwrap();
         // a 3x3 blob and a single stray speck, well separated
-        s.doc_rect("d", 0, 0, 0, 0, 2, 2, [255, 0, 0, 255], true, 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(7, 7)], [0, 255, 0, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 2, "y1": 2, "color": [255, 0, 0, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[7, 7]], "color": [0, 255, 0, 255]}),
+        );
         let r = s.doc_components("d", 0, None, 8, None, 1).unwrap();
         assert_eq!(r["count"], 2);
         assert_eq!(r["components"][0]["area"], 9); // biggest first
@@ -1782,8 +1823,13 @@ mod tests {
         let s = studio("cov");
         s.doc_create("d", 8, 8).unwrap();
         // fill the top-left quadrant solid white
-        s.doc_rect("d", 0, 0, 0, 0, 3, 3, [255, 255, 255, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 3, "y1": 3, "color": [255, 255, 255, 255], "fill": true}),
+        );
         let r = s.doc_coverage_map("d", 0, 2, 2).unwrap();
         assert_eq!(r["grid"][0][0]["fill"], json!(1.0)); // full cell
         assert_eq!(r["grid"][0][0]["value"], json!(255)); // white luma
@@ -1799,10 +1845,20 @@ mod tests {
         let s = studio("renderval");
         s.doc_create("d", 4, 4).unwrap();
         // one black-ish and one white pixel; rest transparent
-        s.doc_pencil("d", 0, 0, vec![(0, 0)], [0, 0, 0, 255], 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(1, 0)], [255, 255, 255, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [0, 0, 0, 255]}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[1, 0]], "color": [255, 255, 255, 255]}),
+        );
         let out = s.docs_dir.join("val.png");
         let (png, r) = s
             .look(
@@ -1844,8 +1900,13 @@ mod tests {
         s.doc_create("d", 8, 8).unwrap();
         // white inner block on a black surround → very high contrast
         s.doc_fill_cel("d", 0, 0, [0, 0, 0, 255]).unwrap();
-        s.doc_rect("d", 0, 0, 3, 3, 4, 4, [255, 255, 255, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 3, "y0": 3, "x1": 4, "y1": 4, "color": [255, 255, 255, 255], "fill": true}),
+        );
         let region = s
             .doc_contrast_check("d", 0, "region", Some((3, 3, 4, 4)), 1.5, 128, None)
             .unwrap()
@@ -1880,10 +1941,20 @@ mod tests {
         s.doc_create("d", 4, 4).unwrap();
         s.doc_set_palette("d", vec![[255, 0, 0, 255]]).unwrap();
         // 3 red (in palette) + 1 near-red green-stray (off palette)
-        s.doc_rect("d", 0, 0, 0, 0, 2, 0, [255, 0, 0, 255], true, 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(0, 1)], [250, 4, 0, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 2, "y1": 0, "color": [255, 0, 0, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 1]], "color": [250, 4, 0, 255]}),
+        );
         let r = s.doc_palette_report("d", Some(0), None, None, 8).unwrap();
         assert_eq!(r["count"], 2);
         assert_eq!(r["colors"][0]["hex"], "#ff0000ff"); // most-used first
@@ -1893,8 +1964,13 @@ mod tests {
         assert_eq!(r["near_dupes"].as_array().unwrap().len(), 1);
         // no-palette doc → in_palette null
         s.doc_create("e", 2, 2).unwrap();
-        s.doc_pencil("e", 0, 0, vec![(0, 0)], [1, 2, 3, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "e",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [1, 2, 3, 255]}),
+        );
         let r2 = s.doc_palette_report("e", Some(0), None, None, 8).unwrap();
         assert_eq!(r2["colors"][0]["in_palette"], Value::Null);
         assert_eq!(r2["off_palette_count"], Value::Null);
@@ -1957,10 +2033,20 @@ mod tests {
         s.doc_create("d", 4, 4).unwrap();
         s.doc_add_frame("d", 100, Some(0)).unwrap(); // frame 1 copies frame 0
                                                      // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
-        s.doc_pencil("d", 0, 0, vec![(0, 0)], [255, 0, 0, 255], 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 1, vec![(1, 1)], [0, 255, 0, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [255, 0, 0, 255]}),
+        );
+        draw(
+            &s,
+            "d",
+            1,
+            "pencil",
+            json!({"points": [[1, 1]], "color": [0, 255, 0, 255]}),
+        );
         let (png, r) = s
             .doc_frame_diff("d", 0, 1, None, None, true, "none", None, 1)
             .unwrap();
@@ -1992,8 +2078,13 @@ mod tests {
         let s = studio("seam");
         s.doc_create("d", 4, 4).unwrap();
         // A left column that does not match the right column → horizontal seam.
-        s.doc_rect("d", 0, 0, 0, 0, 0, 3, [255, 0, 0, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 0, "y1": 3, "color": [255, 0, 0, 255], "fill": true}),
+        );
         let (png, r) = s.doc_seam_report("d", None, 0, "both", 0, None).unwrap();
         assert!(png.is_some()); // mismatches → inline overlay
         assert!(r["horizontal"]["mismatches"].as_u64().unwrap() > 0);
@@ -2021,14 +2112,29 @@ mod tests {
         let s = studio("animaudit");
         s.doc_create("d", 8, 8).unwrap();
         // 3 frames: a 2x2 block stepping right by 2 each frame (even spacing).
-        s.doc_rect("d", 0, 0, 0, 0, 1, 1, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 1, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
+        );
         s.doc_add_frame("d", 100, None).unwrap();
-        s.doc_rect("d", 0, 1, 2, 0, 3, 1, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            1,
+            "rect",
+            json!({"x0": 2, "y0": 0, "x1": 3, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
+        );
         s.doc_add_frame("d", 100, None).unwrap();
-        s.doc_rect("d", 0, 2, 4, 0, 5, 1, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            2,
+            "rect",
+            json!({"x0": 4, "y0": 0, "x1": 5, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
+        );
         // spacing: even rightward drift → low evenness, positive total drift.
         let sp = s.doc_anim_audit("d", None, None, "spacing", None).unwrap();
         assert_eq!(sp["per_frame_center"].as_array().unwrap().len(), 3);
@@ -2055,8 +2161,13 @@ mod tests {
         let s = studio("keyframe");
         s.doc_create("d", 16, 16).unwrap();
         // a 2x2 block at (1,1) on frame 0; two empty frames to animate into.
-        s.doc_rect("d", 0, 0, 1, 1, 2, 2, [200, 50, 50, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 1, "y0": 1, "x1": 2, "y1": 2, "color": [200, 50, 50, 255], "fill": true}),
+        );
         s.doc_add_frame("d", 100, None).unwrap();
         s.doc_add_frame("d", 100, None).unwrap();
         let r = s

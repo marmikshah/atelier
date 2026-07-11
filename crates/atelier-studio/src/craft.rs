@@ -1383,6 +1383,12 @@ mod tests {
         Studio::with_docs_dir(dir)
     }
 
+    /// Single draw-op shorthand: `params` is the op's JSON object (as `json!`).
+    fn draw(s: &Studio, id: &str, frame: usize, op: &str, params: Value) -> Value {
+        s.doc_draw(id, 0, frame, op, params.as_object().unwrap().clone())
+            .unwrap()
+    }
+
     fn opaque(stats: &Value) -> u64 {
         stats["stats"]["opaque_pixels"].as_u64().unwrap_or(0)
     }
@@ -1543,8 +1549,13 @@ mod tests {
     fn transform_cel_rotate_moves_the_pixel() {
         let s = studio("xform");
         s.doc_create("c", 5, 5).unwrap();
-        s.doc_pencil("c", 0, 0, vec![(4, 2)], [255, 255, 255, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "c",
+            0,
+            "pencil",
+            json!({"points": [[4, 2]], "color": [255, 255, 255, 255]}),
+        );
         let r = s
             .transform_cel(
                 "c", 0, 0, None, 90.0, 1.0, 1.0, 0.0, 0.0, "nearest", false, true,
@@ -1569,8 +1580,13 @@ mod tests {
         let s = studio("aa");
         s.doc_create("c", 6, 6).unwrap();
         for (x, y) in [(0, 0), (1, 0), (1, 1), (2, 1)] {
-            s.doc_pencil("c", 0, 0, vec![(x, y)], [0, 0, 0, 255], 1)
-                .unwrap();
+            draw(
+                &s,
+                "c",
+                0,
+                "pencil",
+                json!({"points": [[x, y]], "color": [0, 0, 0, 255]}),
+            );
         }
         let r = s
             .smooth_edges("c", 0, 0, None, 2, true, None, None)
@@ -1593,8 +1609,13 @@ mod tests {
     fn critique_flags_an_orphan_speck() {
         let s = studio("crit");
         s.doc_create("c", 8, 8).unwrap();
-        s.doc_pencil("c", 0, 0, vec![(1, 1)], [255, 255, 255, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "c",
+            0,
+            "pencil",
+            json!({"points": [[1, 1]], "color": [255, 255, 255, 255]}),
+        );
         let r = s.critique("c", 0, None, None).unwrap();
         assert_eq!(r["checks"]["orphans"]["count"], 1);
     }
@@ -1605,14 +1626,34 @@ mod tests {
         s.doc_create("p", 16, 16).unwrap();
         // Concentric squares: bright centre, dark all edges — pillow-shaded, no
         // light direction. The form-audit-backed check should warn.
-        s.doc_rect("p", 0, 0, 2, 2, 13, 13, [50, 50, 60, 255], true, 1)
-            .unwrap();
-        s.doc_rect("p", 0, 0, 4, 4, 11, 11, [90, 90, 105, 255], true, 1)
-            .unwrap();
-        s.doc_rect("p", 0, 0, 6, 6, 9, 9, [140, 140, 160, 255], true, 1)
-            .unwrap();
-        s.doc_rect("p", 0, 0, 7, 7, 8, 8, [200, 200, 225, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "p",
+            0,
+            "rect",
+            json!({"x0": 2, "y0": 2, "x1": 13, "y1": 13, "color": [50, 50, 60, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "p",
+            0,
+            "rect",
+            json!({"x0": 4, "y0": 4, "x1": 11, "y1": 11, "color": [90, 90, 105, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "p",
+            0,
+            "rect",
+            json!({"x0": 6, "y0": 6, "x1": 9, "y1": 9, "color": [140, 140, 160, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "p",
+            0,
+            "rect",
+            json!({"x0": 7, "y0": 7, "x1": 8, "y1": 8, "color": [200, 200, 225, 255], "fill": true}),
+        );
         let r = s.critique("p", 0, None, None).unwrap();
         assert_eq!(r["checks"]["pillow_shading"]["verdict"], "warn");
         assert!(r["checks"]["pillow_shading"]["forms"].as_u64().unwrap() >= 1);
@@ -1717,8 +1758,13 @@ mod tests {
     fn material_paints_only_opaque_pixels() {
         let s = studio("material");
         s.doc_create("c", 16, 16).unwrap();
-        s.doc_pencil("c", 0, 0, vec![(4, 4)], [120, 120, 120, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "c",
+            0,
+            "pencil",
+            json!({"points": [[4, 4]], "color": [120, 120, 120, 255]}),
+        );
         s.material("c", 0, 0, None, "metal", [120, 120, 130, 255], 1, None)
             .unwrap();
         let look = s
@@ -1740,8 +1786,13 @@ mod tests {
     fn outline_selective_rings_a_shape() {
         let s = studio("outsel");
         s.doc_create("c", 8, 8).unwrap();
-        s.doc_rect("c", 0, 0, 2, 2, 5, 5, [200, 60, 60, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "c",
+            0,
+            "rect",
+            json!({"x0": 2, "y0": 2, "x1": 5, "y1": 5, "color": [200, 60, 60, 255], "fill": true}),
+        );
         let r = s
             .outline_selective("c", 0, 0, "from_fill", None, 2, None)
             .unwrap();
@@ -1859,12 +1910,27 @@ mod tests {
         s.doc_create("c", 16, 16).unwrap();
         s.doc_add_frame("c", 100, None).unwrap();
         s.doc_add_frame("c", 100, None).unwrap();
-        s.doc_pencil("c", 0, 0, vec![(2, 8)], [255, 255, 255, 255], 1)
-            .unwrap();
-        s.doc_pencil("c", 0, 1, vec![(8, 2)], [255, 255, 255, 255], 1)
-            .unwrap();
-        s.doc_pencil("c", 0, 2, vec![(14, 8)], [255, 255, 255, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "c",
+            0,
+            "pencil",
+            json!({"points": [[2, 8]], "color": [255, 255, 255, 255]}),
+        );
+        draw(
+            &s,
+            "c",
+            1,
+            "pencil",
+            json!({"points": [[8, 2]], "color": [255, 255, 255, 255]}),
+        );
+        draw(
+            &s,
+            "c",
+            2,
+            "pencil",
+            json!({"points": [[14, 8]], "color": [255, 255, 255, 255]}),
+        );
         let r = s.doc_anim_audit("c", None, None, "arc", None).unwrap();
         assert!(r["arc_residual"].as_f64().unwrap() > 0.0);
         assert_eq!(r["shape"], "arced");

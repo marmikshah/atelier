@@ -406,7 +406,7 @@ fn rig_setup(
 
 /// The humanoid capsule bone list for `figure`/`walk`: validates the 13 required
 /// joints and returns each bone as a width-profiled point chain (drawn via the
-/// `doc_stroke` core). Shared so a posed figure and an animated walk frame flesh
+/// stroke coverage core). Shared so a posed figure and an animated walk frame flesh
 /// identically.
 /// One bone as a width-profiled point chain `[(x,y,width), ...]` for the stroke core.
 type Bone = Vec<(f32, f32, f32)>;

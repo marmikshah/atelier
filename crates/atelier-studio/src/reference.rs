@@ -482,6 +482,21 @@ mod tests {
         Studio::with_docs_dir(dir)
     }
 
+    /// Paint the reference's 8x8 block footprint (x 4..=11) in `color`.
+    fn block(s: &Studio, color: [u8; 4]) {
+        s.doc_draw(
+            "d",
+            0,
+            0,
+            "rect",
+            json!({"x0": 4, "y0": 0, "x1": 11, "y1": 7, "color": color, "fill": true})
+                .as_object()
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
+    }
+
     /// 16x8 source: flat grey backdrop with a red 8x8 block in the middle.
     fn sample_png(tag: &str) -> std::path::PathBuf {
         let mut src = RgbaImage::from_pixel(16, 8, Rgba([90, 90, 90, 255]));
@@ -522,15 +537,13 @@ mod tests {
         let p = sample_png("cmp");
         s.set_reference("d", p.to_str()).unwrap();
         // Faithful recreation: the same red block, backdrop left transparent.
-        s.doc_rect("d", 0, 0, 4, 0, 11, 7, [200, 30, 30, 255], true, 1)
-            .unwrap();
+        block(&s, [200, 30, 30, 255]);
         let (png, good) = s.ref_compare("d", 0, "side_by_side", 4).unwrap();
         assert!(!png.is_empty());
         let iou = good["silhouette_iou"].as_f64().unwrap();
         assert!(iou > 0.9, "faithful copy should score high, got {iou}");
         // A wrong-colour copy keeps the silhouette but raises the colour delta.
-        s.doc_rect("d", 0, 0, 4, 0, 11, 7, [30, 30, 200, 255], true, 1)
-            .unwrap();
+        block(&s, [30, 30, 200, 255]);
         let (_png, bad) = s.ref_compare("d", 0, "overlay", 4).unwrap();
         assert!(bad["mean_delta"].as_f64().unwrap() > 0.1);
         assert!(!bad["missing_reference_colors"]
@@ -546,8 +559,7 @@ mod tests {
         let p = sample_png("diff");
         s.set_reference("d", p.to_str()).unwrap();
         // Same silhouette as the reference's red block, but darker -> "lighten".
-        s.doc_rect("d", 0, 0, 4, 0, 11, 7, [120, 18, 18, 255], true, 1)
-            .unwrap();
+        block(&s, [120, 18, 18, 255]);
         let (png, r) = s.diff_map("d", 0, 10).unwrap();
         assert!(!png.is_empty());
         assert!(
