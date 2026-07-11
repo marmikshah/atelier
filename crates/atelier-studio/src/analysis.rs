@@ -60,9 +60,9 @@ impl Studio {
                             if p[3] == 0 {
                                 ".".to_string()
                             } else if p[3] == 255 {
-                                format!("#{:02x}{:02x}{:02x}", p[0], p[1], p[2])
+                                crate::hex_rgb(&p)
                             } else {
-                                format!("#{:02x}{:02x}{:02x}{:02x}", p[0], p[1], p[2], p[3])
+                                crate::hex_rgba(&p)
                             }
                         })
                         .collect::<Vec<_>>()
@@ -103,12 +103,7 @@ impl Studio {
         let legend: serde_json::Map<String, Value> = order
             .iter()
             .enumerate()
-            .map(|(i, c)| {
-                (
-                    (GLYPHS[i] as char).to_string(),
-                    json!(format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3])),
-                )
-            })
+            .map(|(i, c)| ((GLYPHS[i] as char).to_string(), json!(crate::hex_rgba(c))))
             .collect();
         Ok(
             json!({"w": w, "h": h, "origin": [x0, y0], "mode": "symbol", "legend": legend, "rows": rows}),
@@ -284,7 +279,7 @@ impl Studio {
                         (c.sy / c.area as u64) as i32,
                     ],
                     "area": c.area,
-                    "dominant": format!("#{:02x}{:02x}{:02x}", dom[0], dom[1], dom[2]),
+                    "dominant": crate::hex_rgb(&dom),
                 })
             })
             .collect();
@@ -469,8 +464,8 @@ impl Studio {
                 let ratio = atelier_core::raster::wcag_ratio(a, b);
                 Ok(json!({
                     "mode": "region",
-                    "inside": format!("#{:02x}{:02x}{:02x}", a[0], a[1], a[2]),
-                    "surround": format!("#{:02x}{:02x}{:02x}", b[0], b[1], b[2]),
+                    "inside": crate::hex_rgb(&a),
+                    "surround": crate::hex_rgb(&b),
                     "ratio": round2(ratio),
                     "pass": ratio >= min_ratio,
                 }))
@@ -496,7 +491,7 @@ impl Studio {
                     for j in (i + 1)..colors.len() {
                         let ratio = atelier_core::raster::wcag_ratio(colors[i], colors[j]);
                         let pass = ratio >= min_ratio;
-                        let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+                        let hex = |c: [u8; 4]| crate::hex_rgb(&c);
                         let entry = json!({
                             "a": hex(colors[i]),
                             "b": hex(colors[j]),
@@ -595,7 +590,7 @@ impl Studio {
         entries.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
         let has_palette = !doc.meta.palette.is_empty();
         let in_pal = |c: [u8; 4]| -> bool { doc.meta.palette.contains(&c) };
-        let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]);
+        let hex = |c: [u8; 4]| crate::hex_rgba(&c);
         let count = entries.len();
         // Top-48 with an "others" rollup: an unquantized import has hundreds
         // of distinct colours, and 256 JSON objects of them helps nobody.
@@ -1364,7 +1359,7 @@ impl Studio {
             let (l2, a2, b2) = atelier_core::raster::srgb_to_oklab(b);
             ((l1 - l2).powi(2) + (a1 - a2).powi(2) + (b1 - b2).powi(2)).sqrt()
         };
-        let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+        let hex = |c: [u8; 4]| crate::hex_rgb(&c);
         let mut report: Vec<Value> = Vec::new();
         let mut total_collapsed = 0usize;
         // The strip: normal + the three simulations, side by side, 1px gutter.

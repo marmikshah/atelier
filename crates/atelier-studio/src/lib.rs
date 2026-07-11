@@ -1463,10 +1463,7 @@ impl Studio {
         let (dir, mut doc) = self.open(id)?;
         let pal = doc.quantize(layer, frame, palette, max_colors)?;
         doc.save(&dir)?;
-        let hex: Vec<String> = pal
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]))
-            .collect();
+        let hex: Vec<String> = pal.iter().map(|c| crate::hex_rgba(c)).collect();
         Ok(json!({"doc_id": id, "count": pal.len(), "palette": pal, "hex": hex}))
     }
 
@@ -1997,7 +1994,7 @@ impl Studio {
                 }
             }
         };
-        let hex = format!("#{:02x}{:02x}{:02x}{:02x}", p[0], p[1], p[2], p[3]);
+        let hex = crate::hex_rgba(&p);
         Ok(json!({"x": x, "y": y, "rgba": p, "hex": hex, "layer": layer}))
     }
 
@@ -2521,6 +2518,29 @@ impl Studio {
 /// vision model to judge sprite-scale detail), clamped to 1..=16.
 pub fn preview_scale(w: u32, h: u32) -> u32 {
     (384 / w.max(h).max(1)).clamp(1, 16)
+}
+
+/// `#rrggbb` — the one place the report hex format lives.
+pub(crate) fn hex_rgb(c: &[u8]) -> String {
+    format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2])
+}
+
+/// `#rrggbbaa` — hex with alpha, for translucency-aware reports.
+pub(crate) fn hex_rgba(c: &[u8]) -> String {
+    format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3])
+}
+
+/// Nearest-neighbour upscale (keeps the pixel grid crisp).
+pub(crate) fn scale_nn(img: &image::RgbaImage, scale: u32) -> image::RgbaImage {
+    if scale <= 1 {
+        return img.clone();
+    }
+    image::imageops::resize(
+        img,
+        img.width() * scale,
+        img.height() * scale,
+        image::imageops::FilterType::Nearest,
+    )
 }
 
 /// Encode an RGBA image to in-memory PNG bytes.

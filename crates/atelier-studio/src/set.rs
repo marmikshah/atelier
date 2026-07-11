@@ -126,8 +126,8 @@ impl Studio {
                 let de = ((l1 - l2).powi(2) + (a1 - a2).powi(2) + (b1 - b2).powi(2)).sqrt();
                 if de < 0.04 && near_dupes.len() < 16 {
                     near_dupes.push(json!({
-                        "a": format!("#{:02x}{:02x}{:02x}", a[0], a[1], a[2]),
-                        "b": format!("#{:02x}{:02x}{:02x}", b[0], b[1], b[2]),
+                        "a": crate::hex_rgb(&a),
+                        "b": crate::hex_rgb(&b),
                         "delta_e": (de * 1000.0).round() / 1000.0,
                     }));
                 }

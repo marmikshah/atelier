@@ -63,6 +63,23 @@ impl Studio {
         crate::open_bounded(&ref_path(dir, name)?).map_err(|e| format!("reference unreadable: {e}"))
     }
 
+    /// The shared compare prelude: flatten frame `frame`, load the stored
+    /// reference, strip its backdrop and area-downscale it to canvas size —
+    /// the (canvas, reference-at-canvas-size, doc) every scorer starts from.
+    fn ref_vs_canvas(
+        &self,
+        id: &str,
+        frame: usize,
+    ) -> Result<(RgbaImage, RgbaImage, Document), String> {
+        let (dir, doc) = self.open(id)?;
+        let src = Self::ref_image(&dir, &doc)?;
+        let canvas = doc.analysis_image(None, frame)?;
+        let mut subject = src.clone();
+        raster::remove_background(&mut subject, BG_TOL);
+        let small = raster::downscale_area(&subject, canvas.width(), canvas.height());
+        Ok((canvas, small, doc))
+    }
+
     /// Analyze the reference (or an external `path`) as drawing scaffolding:
     /// view it inline, plus background coverage, a frequency-weighted subject
     /// palette, and a silhouette grid at the target size — what an agent needs
@@ -98,16 +115,7 @@ impl Studio {
         }
         let small = raster::downscale_area(&subject, tw, th);
         // Frequency-weighted subject palette of the downscaled art.
-        let mut counts: std::collections::HashMap<[u8; 3], u64> = std::collections::HashMap::new();
-        for p in small.pixels().filter(|p| p.0[3] >= 128) {
-            *counts.entry([p.0[0], p.0[1], p.0[2]]).or_insert(0) += 1;
-        }
-        let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
-        let palette = if pairs.is_empty() {
-            Vec::new()
-        } else {
-            raster::median_cut_weighted(&pairs, colors.max(2), &[])
-        };
+        let palette = subject_palette(&small, colors.max(2));
         let pal_json: Vec<Value> = palette.iter().map(|c| json!(c)).collect();
         // Silhouette grid at target size (capped so the text stays readable).
         let silhouette: Value = if ((tw * th) as u64) <= crate::GRID_AREA_CAP {
@@ -157,13 +165,8 @@ impl Studio {
         mode: &str,
         cells: u32,
     ) -> Result<(Vec<u8>, Value), String> {
-        let (dir, doc) = self.open(id)?;
-        let src = Self::ref_image(&dir, &doc)?;
-        let canvas = doc.analysis_image(None, frame)?;
+        let (canvas, small, doc) = self.ref_vs_canvas(id, frame)?;
         let (cw, ch) = (canvas.width(), canvas.height());
-        let mut subject = src.clone();
-        raster::remove_background(&mut subject, BG_TOL);
-        let small = raster::downscale_area(&subject, cw, ch);
         // Silhouette IoU over alpha masks.
         let (mut inter, mut union) = (0u64, 0u64);
         for (a, b) in canvas.pixels().zip(small.pixels()) {
@@ -218,16 +221,7 @@ impl Studio {
             .map(|(d, r)| json!({"rect": r, "mean_delta": (d * 1000.0).round() / 1000.0}))
             .collect();
         // Reference colours the doc palette can't reach.
-        let mut counts: std::collections::HashMap<[u8; 3], u64> = std::collections::HashMap::new();
-        for p in small.pixels().filter(|p| p.0[3] >= 128) {
-            *counts.entry([p.0[0], p.0[1], p.0[2]]).or_insert(0) += 1;
-        }
-        let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
-        let ref_pal = if pairs.is_empty() {
-            Vec::new()
-        } else {
-            raster::median_cut_weighted(&pairs, 8, &[])
-        };
+        let ref_pal = subject_palette(&small, 8);
         let doc_pal: Vec<[u8; 4]> = if doc.meta.palette.is_empty() {
             canvas
                 .pixels()
@@ -284,16 +278,7 @@ impl Studio {
                 out
             }
         };
-        let scaled = if sc > 1 {
-            image::imageops::resize(
-                &img,
-                img.width() * sc,
-                img.height() * sc,
-                image::imageops::FilterType::Nearest,
-            )
-        } else {
-            img
-        };
+        let scaled = super::scale_nn(&img, sc);
         let mean_delta = if total_n == 0 {
             Value::Null
         } else {
@@ -321,13 +306,8 @@ impl Studio {
     /// converts the loop from "a number moved" to "this exact pixel is too dark —
     /// lighten it", so the agent can converge the last 5%.
     pub fn diff_map(&self, id: &str, frame: usize, top: usize) -> Result<(Vec<u8>, Value), String> {
-        let (dir, doc) = self.open(id)?;
-        let src = Self::ref_image(&dir, &doc)?;
-        let canvas = doc.analysis_image(None, frame)?;
+        let (canvas, small, _doc) = self.ref_vs_canvas(id, frame)?;
         let (cw, ch) = (canvas.width(), canvas.height());
-        let mut subject = src.clone();
-        raster::remove_background(&mut subject, BG_TOL);
-        let small = raster::downscale_area(&subject, cw, ch);
         let mut heat = RgbaImage::from_pixel(cw, ch, Rgba([0, 0, 0, 0]));
         // (ΔE, x, y, ΔL, ΔC, chroma-weighted ΔH magnitude)
         let mut worst: Vec<(f32, u32, u32, f32, f32, f32)> = Vec::new();
@@ -423,16 +403,7 @@ impl Studio {
             })
             .collect();
         let sc = preview_scale(cw, ch);
-        let scaled = if sc > 1 {
-            image::imageops::resize(
-                &heat,
-                cw * sc,
-                ch * sc,
-                image::imageops::FilterType::Nearest,
-            )
-        } else {
-            heat
-        };
+        let scaled = super::scale_nn(&heat, sc);
         let mean = if n == 0 {
             Value::Null
         } else {
@@ -473,6 +444,21 @@ fn ref_path(dir: &Path, name: &str) -> Result<std::path::PathBuf, String> {
 }
 
 /// Downscale (area-average) so the longest side fits under `max`; smaller
+/// Frequency-weighted subject palette: count the (half-)opaque colours and
+/// median-cut them, so the subject owns every slot. Empty subject = empty palette.
+fn subject_palette(img: &RgbaImage, colors: usize) -> Vec<[u8; 4]> {
+    let mut counts: std::collections::HashMap<[u8; 3], u64> = std::collections::HashMap::new();
+    for p in img.pixels().filter(|p| p.0[3] >= 128) {
+        *counts.entry([p.0[0], p.0[1], p.0[2]]).or_insert(0) += 1;
+    }
+    let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
+    if pairs.is_empty() {
+        Vec::new()
+    } else {
+        raster::median_cut_weighted(&pairs, colors, &[])
+    }
+}
+
 /// images pass through untouched.
 fn fit_under(img: &RgbaImage, max: u32) -> RgbaImage {
     let longest = img.width().max(img.height());

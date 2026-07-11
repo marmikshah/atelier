@@ -14,24 +14,11 @@ use std::path::Path;
 use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
-use super::{encode_png, Selection, Studio};
+use super::{encode_png, scale_nn, Selection, Studio};
 use atelier_core::document::{Document, Light};
 use atelier_core::raster;
 
 // -- shared raster helpers --------------------------------------------------
-
-/// Nearest-neighbour upscale (keeps the pixel grid crisp).
-fn scale_nn(img: &RgbaImage, scale: u32) -> RgbaImage {
-    if scale <= 1 {
-        return img.clone();
-    }
-    image::imageops::resize(
-        img,
-        img.width() * scale,
-        img.height() * scale,
-        image::imageops::FilterType::Nearest,
-    )
-}
 
 /// Alpha-composite one pixel onto `img` (source-over) — for overlays that must
 /// not erase the art underneath.
@@ -931,10 +918,7 @@ impl Studio {
             ));
         }
         let flat: Vec<[u8; 4]> = ramps.iter().flatten().copied().collect();
-        let hex: Vec<String> = flat
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]))
-            .collect();
+        let hex: Vec<String> = flat.iter().map(|c| crate::hex_rgb(c)).collect();
         // Evenness validation on the primary ramp.
         let ls: Vec<f32> = ramps[0]
             .iter()
