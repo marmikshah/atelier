@@ -66,3 +66,4 @@ daemon-uninstall: ## Stop + remove the daemon
 install: release ## Print the command to register with Claude Code over HTTP
 	@echo "1) start the server:  make serve   (or 'make daemon' for background)"
 	@echo "2) register client:   claude mcp add --transport http atelier http://$(BIND)/mcp"
+

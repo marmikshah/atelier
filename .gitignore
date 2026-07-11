@@ -14,3 +14,6 @@ docs/ART-QUALITY-REVIEW.md
 
 # Libraries don't commit lockfiles — the consumer resolves.
 Cargo.lock
+
+# pixel-sheet export sidecars (page reads only runs.json)
+docs/showcase/*-*-*.json

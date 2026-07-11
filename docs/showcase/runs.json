@@ -1,0 +1,231 @@
+{
+  "briefs": [
+    "ball",
+    "slash",
+    "alien",
+    "potion",
+    "cat"
+  ],
+  "runs": [
+    {
+      "brief": "ball",
+      "model": "Haiku 4.5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/ball-haiku-4-5",
+      "anim": true,
+      "tool_calls": 40,
+      "look_iterations": 3,
+      "total_tokens": 41225,
+      "duration_ms": 197366
+    },
+    {
+      "brief": "ball",
+      "model": "Sonnet 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/ball-sonnet-5",
+      "anim": true,
+      "tool_calls": 69,
+      "look_iterations": 3,
+      "total_tokens": 88053,
+      "duration_ms": 542344
+    },
+    {
+      "brief": "ball",
+      "model": "Opus 4.8",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/ball-opus-4-8",
+      "anim": true,
+      "tool_calls": 40,
+      "look_iterations": 3,
+      "total_tokens": 50238,
+      "duration_ms": 275604
+    },
+    {
+      "brief": "ball",
+      "model": "Fable 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/ball-fable-5",
+      "anim": true,
+      "tool_calls": 65,
+      "look_iterations": 4,
+      "total_tokens": 66410,
+      "duration_ms": 493997
+    },
+    {
+      "brief": "slash",
+      "model": "Haiku 4.5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/slash-haiku-4-5",
+      "anim": true,
+      "tool_calls": 49,
+      "look_iterations": 5,
+      "total_tokens": 48127,
+      "duration_ms": 242851
+    },
+    {
+      "brief": "slash",
+      "model": "Sonnet 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/slash-sonnet-5",
+      "anim": true,
+      "tool_calls": 81,
+      "look_iterations": 10,
+      "total_tokens": 104940,
+      "duration_ms": 674093
+    },
+    {
+      "brief": "slash",
+      "model": "Opus 4.8",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/slash-opus-4-8",
+      "anim": true,
+      "tool_calls": 63,
+      "look_iterations": 4,
+      "total_tokens": 73567,
+      "duration_ms": 636793
+    },
+    {
+      "brief": "slash",
+      "model": "Fable 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/slash-fable-5",
+      "anim": true,
+      "tool_calls": 75,
+      "look_iterations": 10,
+      "total_tokens": 96446,
+      "duration_ms": 990330
+    },
+    {
+      "brief": "alien",
+      "model": "Haiku 4.5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/alien-haiku-4-5",
+      "anim": true,
+      "tool_calls": 39,
+      "look_iterations": 3,
+      "total_tokens": 41916,
+      "duration_ms": 222526
+    },
+    {
+      "brief": "alien",
+      "model": "Sonnet 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/alien-sonnet-5",
+      "anim": true,
+      "tool_calls": 57,
+      "look_iterations": 6,
+      "total_tokens": 80679,
+      "duration_ms": 446873
+    },
+    {
+      "brief": "alien",
+      "model": "Opus 4.8",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/alien-opus-4-8",
+      "anim": true,
+      "tool_calls": 41,
+      "look_iterations": 3,
+      "total_tokens": 70088,
+      "duration_ms": 499645
+    },
+    {
+      "brief": "alien",
+      "model": "Fable 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/alien-fable-5",
+      "anim": true,
+      "tool_calls": 42,
+      "look_iterations": 6,
+      "total_tokens": 62872,
+      "duration_ms": 519470
+    },
+    {
+      "brief": "potion",
+      "model": "Haiku 4.5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/potion-haiku-4-5",
+      "anim": true,
+      "tool_calls": 42,
+      "look_iterations": 3,
+      "total_tokens": 46172,
+      "duration_ms": 232745
+    },
+    {
+      "brief": "potion",
+      "model": "Sonnet 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/potion-sonnet-5",
+      "anim": true,
+      "tool_calls": 61,
+      "look_iterations": 4,
+      "total_tokens": 117024,
+      "duration_ms": 777936
+    },
+    {
+      "brief": "potion",
+      "model": "Opus 4.8",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/potion-opus-4-8",
+      "anim": true,
+      "tool_calls": 66,
+      "look_iterations": 5,
+      "total_tokens": 86418,
+      "duration_ms": 697544
+    },
+    {
+      "brief": "potion",
+      "model": "Fable 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/potion-fable-5",
+      "anim": true,
+      "tool_calls": 41,
+      "look_iterations": 4,
+      "total_tokens": 69643,
+      "duration_ms": 630077
+    },
+    {
+      "brief": "cat",
+      "model": "Haiku 4.5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/cat-haiku-4-5",
+      "anim": true,
+      "tool_calls": 57,
+      "look_iterations": 3,
+      "total_tokens": 46877,
+      "duration_ms": 270905
+    },
+    {
+      "brief": "cat",
+      "model": "Sonnet 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/cat-sonnet-5",
+      "anim": true,
+      "tool_calls": 47,
+      "look_iterations": 4,
+      "total_tokens": 99295,
+      "duration_ms": 683284
+    },
+    {
+      "brief": "cat",
+      "model": "Opus 4.8",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/cat-opus-4-8",
+      "anim": true,
+      "tool_calls": 60,
+      "look_iterations": 6,
+      "total_tokens": 86029,
+      "duration_ms": 770697
+    },
+    {
+      "brief": "cat",
+      "model": "Fable 5",
+      "vendor": "Anthropic",
+      "base": "docs/showcase/cat-fable-5",
+      "anim": true,
+      "tool_calls": 45,
+      "look_iterations": 7,
+      "total_tokens": 71275,
+      "duration_ms": 723599
+    }
+  ]
+}
