@@ -76,6 +76,21 @@ atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — crate layout.
 - [CHANGELOG.md](CHANGELOG.md) — release notes.
 
+## A personal note
+
+atelier started as an experiment with one question behind it: can AI agents
+build art that is genuinely good enough to ship in a game?
+
+Every line of code here was written by AI — Claude Opus 4.8 and Fable 5 did
+the heavy lifting, with Kimi 2.6 and Minimax 2.7 pitching in. I didn't write a
+single line myself. My part was direction: holding the project to the same
+practices and standards I use in the projects where I *do* still write the
+code.
+
+If atelier helps you in any way — as a tool, a reference, or just a kick-start
+on your own game-design journey — that makes me genuinely happy. The tokens
+are already spent; the least they can do is be useful to you too.
+
 ## License
 
 [MIT](LICENSE).
