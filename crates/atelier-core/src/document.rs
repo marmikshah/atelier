@@ -157,6 +157,9 @@ fn remap_move(old: usize, from: usize, to: usize) -> usize {
     i
 }
 
+/// Default per-frame duration for a freshly created frame (milliseconds).
+pub const DEFAULT_FRAME_MS: u32 = 100;
+
 impl Document {
     pub fn new(name: &str, w: u32, h: u32) -> Document {
         let meta = DocMeta {
@@ -171,7 +174,7 @@ impl Document {
                 blend: "normal".into(),
             }],
             frames: vec![FrameMeta {
-                duration_ms: 100,
+                duration_ms: DEFAULT_FRAME_MS,
                 pivot: None,
                 boxes: Vec::new(),
             }],
@@ -190,7 +193,21 @@ impl Document {
         let meta: DocMeta = serde_json::from_str(&s).map_err(|e| e.to_string())?;
         let mut cels = HashMap::new();
         for c in &meta.cels {
-            let img = image::open(dir.join(&c.file))
+            // `c.file` comes from doc.json; a synced/hand-crafted doc could point
+            // it at `../…` or an absolute path to read arbitrary files. `save`
+            // only ever writes the `cels/L{}_F{}.png` shape, so require exactly
+            // that: a two-component, `cels/`-rooted relative path.
+            let rel = Path::new(&c.file);
+            let ok = c.file == format!("cels/L{}_F{}.png", c.layer, c.frame)
+                || (rel.components().count() == 2
+                    && rel.starts_with("cels")
+                    && rel
+                        .components()
+                        .all(|comp| matches!(comp, std::path::Component::Normal(_))));
+            if !ok {
+                return Err(format!("refusing suspicious cel path '{}'", c.file));
+            }
+            let img = image::open(dir.join(rel))
                 .map_err(|e| e.to_string())?
                 .to_rgba8();
             cels.insert((c.layer, c.frame), (c.x, c.y, img));
@@ -3730,12 +3747,28 @@ impl Document {
     }
 
     /// Render the horizontal spritesheet image (every frame side by side,
-    /// nearest-neighbour scaled). Returns `(sheet, frame_w, frame_h)`.
-    fn sheet_image(&self, scale: u32) -> (RgbaImage, u32, u32) {
+    /// nearest-neighbour scaled). Returns `(sheet, frame_w, frame_h)`, or an
+    /// error if the strip's dimensions overflow `u32` — a many-frames × high
+    /// scale sheet can otherwise wrap to a garbage-sized buffer.
+    fn sheet_image(&self, scale: u32) -> Result<(RgbaImage, u32, u32), String> {
         let n = self.meta.frames.len() as u32;
-        let fw = self.meta.w * scale;
-        let fh = self.meta.h * scale;
-        let mut sheet = RgbaImage::from_pixel(fw * n, fh, Rgba([0, 0, 0, 0]));
+        let fw = self
+            .meta
+            .w
+            .checked_mul(scale)
+            .ok_or("sheet scale overflow")?;
+        let fh = self
+            .meta
+            .h
+            .checked_mul(scale)
+            .ok_or("sheet scale overflow")?;
+        let strip_w = fw.checked_mul(n).ok_or_else(|| {
+            format!(
+                "spritesheet is too large: {n} frames × {fw}px wide overflows — \
+                 export fewer frames or a lower scale"
+            )
+        })?;
+        let mut sheet = RgbaImage::from_pixel(strip_w, fh, Rgba([0, 0, 0, 0]));
         for f in 0..self.meta.frames.len() {
             let mut img = self.flatten(f);
             if scale > 1 {
@@ -3743,12 +3776,12 @@ impl Document {
             }
             image::imageops::replace(&mut sheet, &img, (f as u32 * fw) as i64, 0);
         }
-        (sheet, fw, fh)
+        Ok((sheet, fw, fh))
     }
 
     pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
         let n = self.meta.frames.len() as u32;
-        let (sheet, fw, fh) = self.sheet_image(scale);
+        let (sheet, fw, fh) = self.sheet_image(scale)?;
         sheet.save(out).map_err(|e| e.to_string())?;
         let frames: Vec<Value> = self
             .meta
@@ -3789,7 +3822,7 @@ impl Document {
     /// collision boxes have no slot in this shape; use the native JSON
     /// (`export_sheet`) when the engine should read those.
     pub fn export_sheet_std(&self, out: &Path, scale: u32) -> Result<Value, String> {
-        let (sheet, fw, fh) = self.sheet_image(scale);
+        let (sheet, fw, fh) = self.sheet_image(scale)?;
         sheet.save(out).map_err(|e| e.to_string())?;
         let stem = out
             .file_stem()
@@ -4659,6 +4692,66 @@ mod tests {
     use image::Rgba;
 
     #[test]
+    fn every_validated_op_has_an_executor() {
+        // `batch_op_keys` (validation) and `apply_op_raw`'s match (execution) are
+        // hand-synced; this guards against one table gaining an op the other
+        // lacks. Keep this list in step when adding a batch op.
+        let ops = [
+            "pencil",
+            "line",
+            "rect",
+            "ellipse",
+            "polyline",
+            "polygon",
+            "stroke",
+            "fill",
+            "bucket",
+            "replace_color",
+            "flip",
+            "shift",
+            "blur",
+            "quantize",
+            "outline",
+            "drop_shadow",
+            "glow",
+            "bevel",
+            "fill_cel",
+            "clear_cel",
+            "gradient",
+            "scatter",
+            "symmetry",
+            "adjust",
+            "gradient_map",
+            "noise",
+            "shade",
+            "form",
+            "dither",
+            "pixel_perfect",
+            "text",
+        ];
+        for name in ops {
+            assert!(
+                batch_op_keys(name).is_some(),
+                "{name} missing from batch_op_keys"
+            );
+            let mut d = Document::new("t", 8, 8);
+            // A missing-required-arg op may Err or panic; either proves the arm
+            // exists. The only forbidden outcome is "unknown batch op".
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                d.apply_op_raw(0, 0, &json!({"op": name}))
+            }));
+            if let Ok(Err(e)) = r {
+                assert!(!e.contains("unknown batch op"), "{name}: {e}");
+            }
+        }
+        // And the reverse: an unknown op IS reported (the guard isn't vacuous).
+        let mut d = Document::new("t", 8, 8);
+        assert!(batch_op_keys("nope").is_none());
+        let e = d.apply_op_raw(0, 0, &json!({"op": "nope"})).unwrap_err();
+        assert!(e.contains("unknown batch op"));
+    }
+
+    #[test]
     fn palette_set_and_index() {
         let mut d = Document::new("t", 4, 4);
         d.set_palette(vec![[1, 1, 1, 255], [2, 2, 2, 255]]);
@@ -5029,6 +5122,36 @@ mod tests {
         assert_eq!(light[3], 200);
         // Transparent pixels untouched.
         assert_eq!(d.get_pixel(0, 0, 3, 0).unwrap(), [0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn load_rejects_traversal_cel_paths() {
+        let dir = std::env::temp_dir().join("atelier-cel-traversal-test");
+        let _ = std::fs::remove_dir_all(&dir);
+        let mut d = Document::new("t", 8, 8);
+        d.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
+        d.save(&dir).unwrap();
+        assert!(Document::load(&dir).is_ok()); // the well-formed doc loads
+
+        // Rewrite doc.json to point a cel at an escaping path.
+        let jp = dir.join("doc.json");
+        let s = std::fs::read_to_string(&jp).unwrap();
+        let poisoned = s.replace("cels/L0_F0.png", "../../../../etc/passwd");
+        assert_ne!(poisoned, s, "expected a cel path to rewrite");
+        std::fs::write(&jp, poisoned).unwrap();
+        match Document::load(&dir) {
+            Err(e) => assert!(e.contains("suspicious cel path"), "unexpected error: {e}"),
+            Ok(_) => panic!("traversal path must be refused"),
+        }
+    }
+
+    #[test]
+    fn sheet_image_errors_on_dimension_overflow() {
+        // Built directly, past the studio's 4096 cap; a wild scale overflows the
+        // frame-width u32 and must error instead of wrapping to a garbage buffer.
+        let mut d = Document::new("t", 100_000, 4);
+        d.fill_cel(0, 0, [1, 1, 1, 255]).unwrap();
+        assert!(d.sheet_image(50_000).is_err()); // 100000 * 50000 overflows u32
     }
 
     #[test]

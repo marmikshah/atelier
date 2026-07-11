@@ -1302,7 +1302,7 @@ impl Studio {
         pin: Vec<[u8; 4]>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        let mut src = image::open(path).map_err(|e| e.to_string())?.to_rgba8();
+        let mut src = crate::open_bounded(std::path::Path::new(path))?;
         // Background removal runs at SOURCE resolution, before any pixel of
         // backdrop can be averaged into the subject's edges or its palette.
         if remove_bg {
