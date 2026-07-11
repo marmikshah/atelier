@@ -1132,7 +1132,9 @@ impl Studio {
         seed: u64,
         ramp: Option<Vec<[u8; 4]>>,
     ) -> Result<Value, String> {
-        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, 6));
+        let ramp = ramp
+            .filter(|r| !r.is_empty())
+            .unwrap_or_else(|| auto_ramp(base, 6));
         self.edit_masked(id, layer, frame, |d| {
             d.material(layer, frame, region, material, &ramp, seed)
                 .map(|_| ())
@@ -1195,12 +1197,9 @@ impl Studio {
         let (dx, dy, dw, dh) = dst;
         let b = inset.max(1);
         if sw < 2 * b + 1 || sh < 2 * b + 1 {
+            let min = 2 * b + 1;
             return Err(format!(
-                "source {}x{} too small for inset {} — needs at least {0}x{0} of {}",
-                sw,
-                sh,
-                b,
-                2 * b + 1
+                "source {sw}x{sh} too small for inset {b} — needs at least {min}x{min}"
             ));
         }
         if dw < 2 * b || dh < 2 * b {
@@ -1414,7 +1413,9 @@ impl Studio {
         if layer >= doc.meta.layers.len() {
             return Err(format!("no layer {}", layer));
         }
-        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, frames.clamp(2, 8)));
+        let ramp = ramp
+            .filter(|r| !r.is_empty())
+            .unwrap_or_else(|| auto_ramp(base, frames.clamp(2, 8)));
         while doc.meta.frames.len() < frames {
             doc.add_frame(80, None);
         }
@@ -1490,7 +1491,9 @@ impl Studio {
         if layer >= doc.meta.layers.len() {
             return Err(format!("no layer {}", layer));
         }
-        let ramp = ramp.unwrap_or_else(|| auto_ramp(base, 5));
+        let ramp = ramp
+            .filter(|r| !r.is_empty())
+            .unwrap_or_else(|| auto_ramp(base, 5));
         while doc.meta.frames.len() < frames {
             doc.add_frame(80, None);
         }
@@ -2887,6 +2890,44 @@ mod tests {
             .unwrap()
             .iter()
             .any(|t| t["name"] == "burst"));
+    }
+
+    #[test]
+    fn empty_ramp_falls_back_to_auto_ramp_instead_of_panicking() {
+        let s = studio("emptyramp");
+        s.doc_create("c", 16, 16).unwrap();
+        s.burst(
+            "c",
+            0,
+            8,
+            8,
+            5,
+            7,
+            "ring",
+            [255, 200, 60, 255],
+            Some(vec![]),
+        )
+        .unwrap();
+        s.emit(
+            "c",
+            0,
+            (4, 4, 8, 8),
+            4,
+            8,
+            90.0,
+            30.0,
+            1.0,
+            0.0,
+            1.0,
+            1,
+            7,
+            [200, 220, 255, 255],
+            Some(vec![]),
+        )
+        .unwrap();
+        s.doc_fill_cel("c", 0, 0, [90, 90, 90, 255]).unwrap();
+        s.material("c", 0, 0, None, "stone", [90, 90, 90, 255], 7, Some(vec![]))
+            .unwrap();
     }
 
     #[test]

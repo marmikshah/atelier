@@ -482,6 +482,12 @@ impl Studio {
     /// `set` (visibility/opacity/blend of layer `index`) | `move` | `insert` |
     /// `delete` | `rename` | `duplicate` | `merge_down`. Routes to the kept
     /// `doc_add_layer` / `doc_set_layer` / `layer_ops` methods.
+    /// Destructive dispatch ops must say WHICH target they hit — a defaulted
+    /// index 0 silently deletes/mutates the first layer/frame.
+    fn required_index(op: &str, index: Option<usize>) -> Result<usize, String> {
+        index.ok_or_else(|| format!("op '{op}' needs an explicit index"))
+    }
+
     pub fn doc_layer(
         &self,
         id: &str,
@@ -500,11 +506,17 @@ impl Studio {
                 opacity.unwrap_or(255),
                 blend.unwrap_or_else(|| "normal".into()),
             ),
-            "set" => self.doc_set_layer(id, index.unwrap_or(0), visible, opacity, blend),
+            "set" => self.doc_set_layer(
+                id,
+                Self::required_index(op, index)?,
+                visible,
+                opacity,
+                blend,
+            ),
             _ => self.layer_ops(
                 id,
                 op,
-                index.unwrap_or(0),
+                Self::required_index(op, index)?,
                 to_index,
                 name,
                 opacity.unwrap_or(255),
@@ -563,10 +575,18 @@ impl Studio {
     ) -> Result<Value, String> {
         match op {
             "add" => self.doc_add_frame(id, duration_ms.unwrap_or(100), copy_from),
-            "duration" => {
-                self.doc_set_frame_duration(id, frame.unwrap_or(0), duration_ms.unwrap_or(100))
-            }
-            _ => self.doc_frame_ops(id, op, frame.unwrap_or(0), to_index, duration_ms),
+            "duration" => self.doc_set_frame_duration(
+                id,
+                Self::required_index(op, frame)?,
+                duration_ms.unwrap_or(100),
+            ),
+            _ => self.doc_frame_ops(
+                id,
+                op,
+                Self::required_index(op, frame)?,
+                to_index,
+                duration_ms,
+            ),
         }
     }
 
@@ -2172,15 +2192,40 @@ impl Studio {
         y: Option<i32>,
         blend: Option<bool>,
     ) -> Result<Value, String> {
-        let v = |o: Option<i32>| o.unwrap_or(0);
-        match op {
-            "copy" => self.doc_copy_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
-            "cut" => self.doc_cut_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
-            "clear" => self.doc_clear_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
-            "move" => {
-                self.doc_move_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1), v(dx), v(dy))
+        // The rect ops act on whatever region they are given — a defaulted 0
+        // would silently target the top-left corner, so the corners are required.
+        let rect = |name: &str| -> Result<(i32, i32, i32, i32), String> {
+            match (x0, y0, x1, y1) {
+                (Some(x0), Some(y0), Some(x1), Some(y1)) => Ok((x0, y0, x1, y1)),
+                _ => Err(format!("doc_region op '{name}' needs x0/y0/x1/y1")),
             }
-            "paste" => self.doc_paste(id, layer, frame, v(x), v(y), blend.unwrap_or(true)),
+        };
+        match op {
+            "copy" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                self.doc_copy_region(id, layer, frame, x0, y0, x1, y1)
+            }
+            "cut" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                self.doc_cut_region(id, layer, frame, x0, y0, x1, y1)
+            }
+            "clear" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                self.doc_clear_region(id, layer, frame, x0, y0, x1, y1)
+            }
+            "move" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                let (dx, dy) = dx.zip(dy).ok_or("doc_region op 'move' needs dx/dy")?;
+                self.doc_move_region(id, layer, frame, x0, y0, x1, y1, dx, dy)
+            }
+            "paste" => self.doc_paste(
+                id,
+                layer,
+                frame,
+                x.unwrap_or(0),
+                y.unwrap_or(0),
+                blend.unwrap_or(true),
+            ),
             other => Err(format!(
                 "doc_region: unknown op '{other}' — use copy|cut|paste|move|clear"
             )),
@@ -3702,6 +3747,44 @@ mod tests {
         let px = s.doc_get_pixel("dst", Some(0), 0, 5, 5).unwrap();
         assert_eq!(px["rgba"], json!([7, 8, 9, 255]));
         assert_eq!(px["hex"], "#070809ff");
+    }
+
+    #[test]
+    fn destructive_dispatch_requires_explicit_target() {
+        let mut s = studio("explicit-target");
+        s.doc_create("d", 8, 8).unwrap();
+        let e = s
+            .doc_layer("d", "delete", None, None, None, None, None, None)
+            .unwrap_err();
+        assert!(e.contains("needs an explicit index"), "{e}");
+        let e = s
+            .doc_frame("d", "delete", None, None, None, None)
+            .unwrap_err();
+        assert!(e.contains("needs an explicit index"), "{e}");
+        let e = s
+            .doc_region(
+                "d", "copy", 0, 0, None, None, None, None, None, None, None, None, None,
+            )
+            .unwrap_err();
+        assert!(e.contains("needs x0/y0/x1/y1"), "{e}");
+        let e = s
+            .doc_region(
+                "d",
+                "move",
+                0,
+                0,
+                Some(0),
+                Some(0),
+                Some(3),
+                Some(3),
+                None,
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap_err();
+        assert!(e.contains("needs dx/dy"), "{e}");
     }
 
     #[test]
