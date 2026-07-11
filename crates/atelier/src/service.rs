@@ -20,6 +20,19 @@ pub fn run(args: &[String]) -> i32 {
     let home_dir = flag_value(args, "--home")
         .map(PathBuf::from)
         .unwrap_or_else(default_home);
+    // These values are interpolated into a launchd plist / systemd unit; a
+    // control char (esp. a newline) could inject an extra directive. Reject
+    // them before writing any manifest. XML metacharacters in the plist are
+    // handled by escaping at format time.
+    for (name, val) in [
+        ("--bind", bind.as_str()),
+        ("--home", &home_dir.to_string_lossy()),
+    ] {
+        if val.chars().any(|c| c.is_control()) {
+            eprintln!("atelier service: {name} may not contain control characters");
+            return 2;
+        }
+    }
     match cmd {
         Some("install") => install(&bind, &home_dir),
         Some("uninstall") => uninstall(),
@@ -76,7 +89,23 @@ fn current_uid() -> String {
 }
 
 /// The launchd LaunchAgent plist (macOS).
+/// Escape the five XML metacharacters so a path/address containing `&` or `<`
+/// can't break the plist (a malformed plist fails to load silently).
+fn xml_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&apos;")
+}
+
 fn launchd_plist(bin: &str, bind: &str, home_dir: &str, logs: &str) -> String {
+    let (bin, bind, home_dir, logs) = (
+        xml_escape(bin),
+        xml_escape(bind),
+        xml_escape(home_dir),
+        xml_escape(logs),
+    );
     format!(
         r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
