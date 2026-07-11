@@ -1808,16 +1808,12 @@ mod tests {
             .look(
                 "d",
                 0,
-                Some(1),
-                None,
-                "grayscale",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                out.to_str(),
+                &crate::LookOptions {
+                    scale: Some(1),
+                    mode: "grayscale".into(),
+                    out_path: out.to_str().map(|s| s.to_string()),
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert!(out.exists()); // out_path written
@@ -1833,16 +1829,11 @@ mod tests {
             .look(
                 "d",
                 0,
-                Some(1),
-                None,
-                "bogus",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    mode: "bogus".into(),
+                    ..Default::default()
+                }
             )
             .is_err());
     }

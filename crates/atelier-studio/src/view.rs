@@ -147,6 +147,32 @@ fn tile_image(img: &RgbaImage, n: u32) -> RgbaImage {
     out
 }
 
+/// Options for [`Studio::look`] — every knob has a sane default, so callers
+/// name only what they change instead of threading twelve positionals.
+#[derive(Clone, Default)]
+pub struct LookOptions {
+    /// Upscale factor; None = adaptive (~384px longest side).
+    pub scale: Option<u32>,
+    /// Crop region [x0,y0,x1,y1] in document pixels.
+    pub region: Option<(i32, i32, i32, i32)>,
+    /// render | value/grayscale | bands | sat | hue | notan. Empty = render.
+    pub mode: String,
+    /// Band count for bands mode (0 = default 4).
+    pub bands: u32,
+    /// Burn a pixel ruler into the upscale.
+    pub grid: bool,
+    /// Label the ruler with coordinates.
+    pub coords: bool,
+    /// Ghost neighbouring frames.
+    pub onion: bool,
+    /// Thumbnail bound for the longest side.
+    pub max_size: Option<u32>,
+    /// Repeat the result N×N (seam check).
+    pub tile: Option<u32>,
+    /// Also write the PNG here.
+    pub out_path: Option<String>,
+}
+
 impl Studio {
     // -- doc_look: the single SEE call -------------------------------------
 
@@ -158,17 +184,29 @@ impl Studio {
         &self,
         id: &str,
         frame: usize,
-        scale: Option<u32>,
-        region: Option<(i32, i32, i32, i32)>,
-        mode: &str,
-        bands: u32,
-        grid: bool,
-        coords: bool,
-        onion: bool,
-        max_size: Option<u32>,
-        tile: Option<u32>,
-        out_path: Option<&str>,
+        opts: &LookOptions,
     ) -> Result<(Vec<u8>, Value), String> {
+        let LookOptions {
+            scale,
+            region,
+            mode,
+            bands,
+            grid,
+            coords,
+            onion,
+            max_size,
+            tile,
+            out_path,
+        } = opts;
+        let (scale, region, max_size, tile) = (*scale, *region, *max_size, *tile);
+        let (grid, coords, onion) = (*grid, *coords, *onion);
+        let mode = if mode.is_empty() {
+            "render"
+        } else {
+            mode.as_str()
+        };
+        let bands = if *bands == 0 { 4 } else { *bands };
+        let out_path = out_path.as_deref();
         let (_dir, doc) = self.open(id)?;
         if frame >= doc.meta.frames.len() {
             return Err(format!(
@@ -450,16 +488,12 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(6),
-                None,
-                "render",
-                4,
-                true,
-                true,
-                false,
-                None,
-                None,
-                None,
+                &LookOptions {
+                    scale: Some(6),
+                    grid: true,
+                    coords: true,
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
@@ -469,16 +503,11 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(4),
-                None,
-                "value",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &LookOptions {
+                    scale: Some(4),
+                    mode: "value".into(),
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert!(v["stats"]["masses_pct"].is_object());

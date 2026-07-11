@@ -1477,16 +1477,10 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert_eq!(opaque(&after.1), 0);
@@ -1495,16 +1489,10 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert_eq!(opaque(&restored.1), 64);
@@ -1567,16 +1555,10 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert_eq!(opaque(&look.1), 1); // cleared source, one pixel placed elsewhere
@@ -1668,16 +1650,11 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                1,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    bands: 1,
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert!(
@@ -1706,16 +1683,11 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                1,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    bands: 1,
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert!(distinct(&look.1) >= 2);
@@ -1731,16 +1703,11 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                1,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    bands: 1,
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert!(distinct(&look.1) >= 3, "three faces => three shades");
@@ -1758,16 +1725,11 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                1,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    bands: 1,
+                    ..Default::default()
+                },
             )
             .unwrap();
         // still exactly one opaque pixel — material clings to the shape
@@ -1819,16 +1781,11 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                1,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    bands: 1,
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert!(distinct(&look.1) >= 2);
@@ -1942,16 +1899,11 @@ mod tests {
             .look(
                 "c",
                 0,
-                Some(1),
-                None,
-                "render",
-                1,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    bands: 1,
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert_eq!(opaque(&look.1), 4);

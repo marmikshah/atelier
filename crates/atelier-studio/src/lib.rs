@@ -23,6 +23,7 @@ mod rig;
 mod set;
 mod tiles;
 mod view;
+pub use view::LookOptions;
 
 /// Hard cap on the pixel count (w×h) of an external source image. ~64 MP covers
 /// any real reference/photo; the point is that a tiny-on-disk "decompression
@@ -2581,16 +2582,11 @@ mod tests {
             s.look(
                 "stroll",
                 f,
-                Some(6),
-                None,
-                "render",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                Some(&format!("/tmp/atelier-walk-{f}.png")),
+                &crate::LookOptions {
+                    scale: Some(6),
+                    out_path: Some(&format!("/tmp/atelier-walk-{f}.png")).map(|s| s.to_string()),
+                    ..Default::default()
+                },
             )
             .unwrap();
         }
@@ -2620,16 +2616,11 @@ mod tests {
         s.look(
             "hero",
             0,
-            Some(6),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-figure-hero.png"),
+            &crate::LookOptions {
+                scale: Some(6),
+                out_path: Some("/tmp/atelier-demo-figure-hero.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         println!("wrote /tmp/atelier-demo-figure-hero.png");
@@ -2667,16 +2658,11 @@ mod tests {
         s.look(
             "sphere",
             0,
-            Some(6),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-sphere.png"),
+            &crate::LookOptions {
+                scale: Some(6),
+                out_path: Some("/tmp/atelier-demo-sphere.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         // Burst — render a mid frame; should be a faint expanding ring.
@@ -2686,16 +2672,11 @@ mod tests {
         s.look(
             "shock",
             3,
-            Some(8),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-burst.png"),
+            &crate::LookOptions {
+                scale: Some(8),
+                out_path: Some("/tmp/atelier-demo-burst.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         // RotSprite rotation — a 2-tone bar rotated 35° should stay crisp and
@@ -2725,16 +2706,11 @@ mod tests {
         s.look(
             "bar",
             0,
-            Some(7),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-rotate.png"),
+            &crate::LookOptions {
+                scale: Some(7),
+                out_path: Some("/tmp/atelier-demo-rotate.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         let (_d, doc) = s.open("bar").unwrap();
@@ -2784,16 +2760,11 @@ mod tests {
             .look(
                 "arc",
                 0,
-                Some(8),
-                None,
-                "render",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                Some("/tmp/atelier-demo-arc.png"),
+                &crate::LookOptions {
+                    scale: Some(8),
+                    out_path: Some("/tmp/atelier-demo-arc.png".to_string()),
+                    ..Default::default()
+                },
             )
             .unwrap();
 
@@ -2816,16 +2787,11 @@ mod tests {
         s.look(
             "figure",
             0,
-            Some(8),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-figure.png"),
+            &crate::LookOptions {
+                scale: Some(8),
+                out_path: Some("/tmp/atelier-demo-figure.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
 
@@ -2854,16 +2820,11 @@ mod tests {
         s.look(
             "orb",
             0,
-            Some(8),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-orb.png"),
+            &crate::LookOptions {
+                scale: Some(8),
+                out_path: Some("/tmp/atelier-demo-orb.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
 

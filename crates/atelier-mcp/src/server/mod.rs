@@ -935,20 +935,19 @@ impl Atelier {
         description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N to check seamlessness; out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
     )]
     async fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
-        img_result(self.studio().look(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.scale,
-            try_res!(region(&p.region)),
-            p.mode.as_deref().unwrap_or("render"),
-            p.bands.unwrap_or(4),
-            p.grid.unwrap_or(false),
-            p.coords.unwrap_or(false),
-            p.onion.unwrap_or(false),
-            p.max_size,
-            p.tile,
-            p.out_path.as_deref(),
-        ))
+        let opts = atelier_studio::LookOptions {
+            scale: p.scale,
+            region: try_res!(region(&p.region)),
+            mode: p.mode.clone().unwrap_or_default(),
+            bands: p.bands.unwrap_or(0),
+            grid: p.grid.unwrap_or(false),
+            coords: p.coords.unwrap_or(false),
+            onion: p.onion.unwrap_or(false),
+            max_size: p.max_size,
+            tile: p.tile,
+            out_path: p.out_path.clone(),
+        };
+        img_result(self.studio().look(&p.doc_id, p.frame.unwrap_or(0), &opts))
     }
 
     #[tool(
