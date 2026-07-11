@@ -44,7 +44,7 @@ pre-commit-checks: ## Format-check + clippy gate — exactly what the git hooks 
 	cargo fmt --all -- --check
 	cargo clippy --all-targets -- -D warnings
 
-branding: ## Regenerate the brand art (the gallery is entirely recipe-made).
+branding: ## Regenerate the brand art (every piece is recipe-made).
 	@echo "atelier's README art is agent-made; replay docs/examples/*.json to regenerate."
 
 hooks: ## Point git at the canonical .githooks (pre-commit + pre-push).

@@ -330,7 +330,8 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 - `doc_contact_sheet` — every frame in one labelled inline grid (the flip-test);
   `onion=true` ghosts each cell's previous frame under it — per-pair onion skin.
 - `doc_critique` — the art-director scorecard: orphan specks, un-AA'd jaggies,
-  low contrast, pillow-shading, value-soup massing and off-palette drift, with
+  low contrast, per-form pillow-shading and mixed-light-direction (driven by the
+  `doc_form_audit` engine), value-soup massing and off-palette drift, with
   worst-offending cells. Conservative verdicts (ok/warn/info).
 - `doc_translucency_report` — glass/glow alpha as data: opaque/partial/
   transparent counts, mean alpha, partial-alpha band histogram + bbox.
@@ -434,10 +435,6 @@ recorder and a web view.
   `ATELIER_RECORD=<path>`) writes every tool call of a live session into a
   replayable recipe — a real session becomes a deterministic `atelier replay`
   fixture. Works with stdio and `--http`.
-- **Live gallery** — the `--http` server also serves a read-only web view at
-  `/gallery`: a self-contained page that polls `/gallery/docs` and renders each
-  document live via `/gallery/<id>/render.png?frame=&scale=` (scale clamped
-  1..=16). Open it in a browser to watch art appear as the agent draws.
 
 ## Example: a blinking sprite
 

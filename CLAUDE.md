@@ -19,7 +19,7 @@ fully deterministic. See [README.md](README.md) and [docs/](docs/).
 | `make stdio` | run the stdio MCP server |
 | `make test` | test suite |
 | `make pre-commit-checks` | format-check + clippy gate (what the hooks run) |
-| `make branding` | brand art (the gallery is recipe-made) |
+| `make branding` | brand art (every piece is recipe-made) |
 | `make hooks` | install the `.githooks` (pre-commit + pre-push) |
 | `make release` | optimized binary at `target/release/atelier` |
 | `make clean` | wipe build artifacts |
