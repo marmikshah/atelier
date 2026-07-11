@@ -12,13 +12,13 @@
 </p>
 
 <p align="center">
-  <img src="docs/showcase/campfire-haiku.gif" width="96" alt="campfire flicker, drawn by Haiku 4.5">
-  <img src="docs/showcase/coin-sonnet.gif" width="96" alt="spinning coin, drawn by Sonnet 5">
-  <img src="docs/showcase/invader-opus.gif" width="96" alt="marching invader, drawn by Opus 4.8">
-  <img src="docs/showcase/bounce-fable.gif" width="96" alt="bouncing slime, drawn by Fable 5">
+  <img src="docs/showcase/alien-haiku-4-5.gif" width="96" alt="idle space alien, drawn by Haiku 4.5">
+  <img src="docs/showcase/potion-sonnet-5.gif" width="96" alt="bubbling potion, drawn by Sonnet 5">
+  <img src="docs/showcase/cat-opus-4-8.gif" width="96" alt="wizard cat casting, drawn by Opus 4.8">
+  <img src="docs/showcase/ball-fable-5.gif" width="96" alt="bouncing ball, drawn by Fable 5">
 </p>
-<p align="center"><em>Campfire by Haiku 4.5 · coin by Sonnet 5 · invader by Opus 4.8 ·
-slime by Fable 5 — different models, one studio, zero hand-editing.
+<p align="center"><em>Alien by Haiku 4.5 · potion by Sonnet 5 · wizard cat by Opus 4.8 ·
+ball by Fable 5 — same briefs, four models, zero hand-editing.
 Full benchmark with compare views: <a href="https://marmikshah.github.io/atelier/">marmikshah.github.io/atelier</a>.</em></p>
 
 ## What it is
@@ -68,8 +68,9 @@ atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 
 ## More
 
-- [docs/SHOWCASE.md](docs/SHOWCASE.md) — different models, identical briefs:
-  the same studio in different hands.
+- [marmikshah.github.io/atelier](https://marmikshah.github.io/atelier/) —
+  the benchmark: different models, identical briefs, the same studio in
+  different hands.
 - [docs/TOOLS.md](docs/TOOLS.md) — the complete tool reference (30-tool core
   profile by default; `ATELIER_PROFILE=full` for all 75).
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — crate layout.
