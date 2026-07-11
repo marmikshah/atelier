@@ -8,7 +8,7 @@ BIND ?= 127.0.0.1:8765
 HOME_DIR ?= $(HOME)/.atelier
 
 .DEFAULT_GOAL := run
-.PHONY: help run serve stdio build release test fmt lint check pre-commit-checks branding hooks clean install daemon daemon-status daemon-uninstall benchmark
+.PHONY: help run serve stdio build release test fmt lint check pre-commit-checks branding hooks clean install daemon daemon-status daemon-uninstall
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -67,6 +67,3 @@ install: release ## Print the command to register with Claude Code over HTTP
 	@echo "1) start the server:  make serve   (or 'make daemon' for background)"
 	@echo "2) register client:   claude mcp add --transport http atelier http://$(BIND)/mcp"
 
-benchmark: release ## Run the model benchmark for one model. Usage: make benchmark MODEL=<id> LABEL="<name>" VENDOR=<vendor> [BRIEFS=ball,slash]
-	@test -n "$(MODEL)" || { echo "set MODEL=<provider-id> (see: tools/benchmark/modelbench.py list-models)"; exit 2; }
-	python3 tools/benchmark/modelbench.py run --model "$(MODEL)" --label "$(LABEL)" --vendor "$(VENDOR)" $(if $(BRIEFS),--briefs $(BRIEFS),)

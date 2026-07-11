@@ -151,13 +151,10 @@ const BRIEF = {
   cat:    {label:"Wizard cat",      blurb:"A cat in a wizard hat with a glowing staff orb that pulses and casts light, tail swaying, sparkles drifting up. 8 frames, ~1s, 6 colours."},
 };
 const COLS = [
-  ["duration_ms", "time",   v => (v/1000).toFixed(1)+"s"],
-  ["tool_calls",  "calls",  v => v],
+  ["duration_ms", "time",   v => (v/1000).toFixed(0)+"s"],
+  ["tool_calls",  "tool calls", v => v],
   ["look_iterations", "looks", v => v],
-  ["api_calls",   "api",    v => v],
   ["total_tokens","tokens", v => v.toLocaleString()],
-  ["prompt_tokens","prompt", v => v.toLocaleString()],
-  ["completion_tokens","output", v => v.toLocaleString()],
 ];
 
 const state = {view:"gallery", brief:null, models:new Set(), sort:{key:"total_tokens", dir:1}, DATA:null};
