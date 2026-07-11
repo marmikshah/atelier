@@ -27,6 +27,15 @@ mod set;
 /// its pixels are ever allocated. Shared by every `open_bounded` caller.
 pub(crate) const MAX_IMPORT_PIXELS: u64 = 64 * 1024 * 1024;
 
+/// Hard canvas ceiling: width/height a document may have (also the bound the
+/// import/reference paths assume when sizing buffers).
+pub(crate) const MAX_CANVAS: u32 = 4096;
+/// Text grids (silhouette/dump/diff) stay readable only so long — shared area
+/// cap for every grid-emitting reader.
+pub(crate) const GRID_AREA_CAP: u64 = 4096;
+/// Import/reference targets above this allocate unbounded images in one call.
+pub(crate) const MAX_TARGET_PIXELS: usize = 1_048_576;
+
 /// Upper bound on an export scale factor. Canvases are already capped at 4096²
 /// (`doc_create`); without a scale ceiling a `scale=64` export of that targets a
 /// ~256 GB buffer. 16 matches the render/preview clamp.
@@ -234,9 +243,9 @@ impl Studio {
     // -- library ------------------------------------------------------------
 
     pub fn doc_create(&self, name: &str, w: u32, h: u32) -> Result<Value, String> {
-        if w == 0 || h == 0 || w > 4096 || h > 4096 {
+        if w == 0 || h == 0 || w > MAX_CANVAS || h > MAX_CANVAS {
             return Err(format!(
-                "canvas {w}x{h} out of range — width/height must be 1..=4096"
+                "canvas {w}x{h} out of range — width/height must be 1..={MAX_CANVAS}"
             ));
         }
         let id = self.unique_id(name);
@@ -574,11 +583,15 @@ impl Studio {
         duration_ms: Option<u32>,
     ) -> Result<Value, String> {
         match op {
-            "add" => self.doc_add_frame(id, duration_ms.unwrap_or(100), copy_from),
+            "add" => self.doc_add_frame(
+                id,
+                duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
+                copy_from,
+            ),
             "duration" => self.doc_set_frame_duration(
                 id,
                 Self::required_index(op, frame)?,
-                duration_ms.unwrap_or(100),
+                duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
             ),
             _ => self.doc_frame_ops(
                 id,

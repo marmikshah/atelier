@@ -238,6 +238,22 @@ pub fn close_rgb(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
 
 /// Normalise a possibly-reversed rect and clamp it to a `w`×`h` canvas, returning
 /// `(x0,y0,x1,y1)` (inclusive) or `None` when it lies fully outside the canvas.
+/// Resolve an optional inclusive region against a w×h canvas: clamp to
+/// bounds (normalising reversed corners), default to the full canvas. A
+/// region left empty by clamping is a caller mistake and errors loudly —
+/// the one policy every region-taking op shares.
+pub fn resolve_region(
+    region: Option<(i32, i32, i32, i32)>,
+    w: u32,
+    h: u32,
+) -> Result<(i32, i32, i32, i32), String> {
+    match region {
+        Some((x0, y0, x1, y1)) => clamp_region(x0, y0, x1, y1, w, h)
+            .ok_or_else(|| "region is empty after clamping to the canvas".to_string()),
+        None => Ok((0, 0, w as i32 - 1, h as i32 - 1)),
+    }
+}
+
 pub fn clamp_region(
     x0: i32,
     y0: i32,

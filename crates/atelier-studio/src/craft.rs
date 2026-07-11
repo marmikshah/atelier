@@ -1291,7 +1291,7 @@ impl Studio {
             // subject. Round to nearest, floor 1.
             ((src.height() as f64 * tw as f64 / src.width().max(1) as f64).round() as u32).max(1)
         });
-        if th as usize * tw as usize > 1_048_576 {
+        if th as usize * tw as usize > crate::MAX_TARGET_PIXELS {
             return Err(format!(
                 "target {}x{} is over the 1M-pixel cap — import at a smaller size",
                 tw, th

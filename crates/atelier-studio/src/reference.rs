@@ -90,7 +90,7 @@ impl Studio {
         let th = ((rh as f64 * tw as f64 / rw.max(1) as f64).round() as u32).max(1);
         // Same 1M-pixel cap as import_clean — an oversized target_w would
         // otherwise allocate an unbounded image in one call.
-        if tw as usize * th as usize > 1_048_576 {
+        if tw as usize * th as usize > crate::MAX_TARGET_PIXELS {
             return Err(format!(
                 "target {}x{} is over the 1M-pixel cap — pass a smaller target_w",
                 tw, th
@@ -110,7 +110,7 @@ impl Studio {
         };
         let pal_json: Vec<Value> = palette.iter().map(|c| json!(c)).collect();
         // Silhouette grid at target size (capped so the text stays readable).
-        let silhouette: Value = if (tw * th) <= 4096 {
+        let silhouette: Value = if ((tw * th) as u64) <= crate::GRID_AREA_CAP {
             let rows: Vec<String> = (0..th)
                 .map(|y| {
                     (0..tw)

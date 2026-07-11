@@ -160,21 +160,7 @@ fn remap_move(old: usize, from: usize, to: usize) -> usize {
 /// Default per-frame duration for a freshly created frame (milliseconds).
 pub const DEFAULT_FRAME_MS: u32 = 100;
 
-/// Resolve an optional inclusive region against a w×h canvas: clamp to bounds
-/// (normalising reversed corners), default to the full canvas. A region left
-/// empty by clamping is a caller mistake and errors loudly — the one policy
-/// every region-taking op shares, replacing a mix of errors and silent no-ops.
-fn resolve_region(
-    region: Option<(i32, i32, i32, i32)>,
-    w: u32,
-    h: u32,
-) -> Result<(i32, i32, i32, i32), String> {
-    match region {
-        Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
-            .ok_or_else(|| "region is empty after clamping to the canvas".to_string()),
-        None => Ok((0, 0, w as i32 - 1, h as i32 - 1)),
-    }
-}
+use raster::resolve_region;
 
 impl Document {
     pub fn new(name: &str, w: u32, h: u32) -> Document {
@@ -3265,7 +3251,7 @@ impl Document {
                 self.meta.frames.insert(
                     frame,
                     FrameMeta {
-                        duration_ms: duration_ms.unwrap_or(100),
+                        duration_ms: duration_ms.unwrap_or(DEFAULT_FRAME_MS),
                         pivot: None,
                         boxes: Vec::new(),
                     },

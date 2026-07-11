@@ -15,7 +15,7 @@ use super::Studio;
 /// `doc_frame_diff` both gate on it so their grids stay readable.
 pub(super) fn area_cap_check(label: &str, w: u64, h: u64, advice: &str) -> Result<(), String> {
     let area = w * h;
-    if area > 4096 {
+    if area > crate::GRID_AREA_CAP {
         return Err(format!(
             "{} is {}x{}={} px (>4096) — {}",
             label, w, h, area, advice
@@ -42,18 +42,7 @@ impl Studio {
         let (_dir, doc) = self.open(id)?;
         let img = doc.analysis_image(layer, frame)?;
         let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-        let (x0, y0, x1, y1) = match region {
-            Some((a, b, c, d)) => (
-                a.min(c).max(0),
-                b.min(d).max(0),
-                a.max(c).min(cw - 1),
-                b.max(d).min(ch - 1),
-            ),
-            None => (0, 0, cw - 1, ch - 1),
-        };
-        if x0 > x1 || y0 > y1 {
-            return Err("region is empty after clamping to the canvas".into());
-        }
+        let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         let (w, h) = ((x1 - x0 + 1) as u32, (y1 - y0 + 1) as u32);
         area_cap_check(
             "region",
@@ -153,7 +142,7 @@ impl Studio {
         }
         // The text grid is capped like doc_dump_region's — an uncapped
         // 128x128 grid is ~4K tokens of mostly dots.
-        let grid: Value = if (w as u64) * (h as u64) <= 4096 {
+        let grid: Value = if (w as u64) * (h as u64) <= crate::GRID_AREA_CAP {
             let rows: Vec<String> = (0..h)
                 .map(|y| {
                     (0..w)
@@ -422,11 +411,11 @@ impl Studio {
             "region" => {
                 let (rx0, ry0, rx1, ry1) =
                     region.ok_or("region mode needs `region` [x0,y0,x1,y1]")?;
-                let (x0, x1) = (rx0.min(rx1).max(0), rx0.max(rx1).min(w - 1));
-                let (y0, y1) = (ry0.min(ry1).max(0), ry0.max(ry1).min(h - 1));
-                if x0 > x1 || y0 > y1 {
-                    return Err("region is empty after clamping to the canvas".into());
-                }
+                let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(
+                    Some((rx0, ry0, rx1, ry1)),
+                    w as u32,
+                    h as u32,
+                )?;
                 // Mean opaque colour inside the region.
                 let mut inside = [0u64; 3];
                 let mut n_in = 0u64;
@@ -588,20 +577,9 @@ impl Studio {
         let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
         let mut counts: HashMap<[u8; 4], u64> = HashMap::new();
         let mut total = 0u64;
+        let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         for f in frames {
             let img = doc.analysis_image(layer, f)?;
-            let (x0, y0, x1, y1) = match region {
-                Some((a, b, c, d)) => (
-                    a.min(c).max(0),
-                    b.min(d).max(0),
-                    a.max(c).min(cw - 1),
-                    b.max(d).min(ch - 1),
-                ),
-                None => (0, 0, cw - 1, ch - 1),
-            };
-            if x0 > x1 || y0 > y1 {
-                return Err("region is empty after clamping to the canvas".into());
-            }
             for y in y0..=y1 {
                 for x in x0..=x1 {
                     let p = img.get_pixel(x as u32, y as u32).0;
@@ -847,18 +825,7 @@ impl Studio {
         use image::{Rgba, RgbaImage};
         let (dir, doc) = self.open(id)?;
         let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-        let (x0, y0, x1, y1) = match region {
-            Some((a, b, c, d)) => (
-                a.min(c).max(0),
-                b.min(d).max(0),
-                a.max(c).min(cw - 1),
-                b.max(d).min(ch - 1),
-            ),
-            None => (0, 0, cw - 1, ch - 1),
-        };
-        if x0 > x1 || y0 > y1 {
-            return Err("region is empty after clamping to the canvas".into());
-        }
+        let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         let (added, removed, recolored, bbox, ia, ib) =
             doc.frame_diff_region(frame_a, frame_b, layer, (x0, y0, x1, y1))?;
         let changed = added + removed + recolored;
@@ -1274,13 +1241,7 @@ impl Studio {
         let (_dir, doc) = self.open(id)?;
         let img = doc.analysis_image(layer, frame)?;
         let (w, h) = (img.width() as i32, img.height() as i32);
-        let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => {
-                atelier_core::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
-                    .ok_or("region is empty after clamping to the canvas")?
-            }
-            None => (0, 0, w - 1, h - 1),
-        };
+        let (ax, ay, bx, by) = atelier_core::raster::resolve_region(region, w as u32, h as u32)?;
         let (mut opaque, mut partial, mut transparent) = (0u64, 0u64, 0u64);
         let (mut sum_a, mut nz) = (0u64, 0u64);
         let mut bands = [0u64; 4]; // 1-64, 65-128, 129-192, 193-254
