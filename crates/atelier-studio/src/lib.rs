@@ -376,13 +376,13 @@ impl Studio {
         let mut items: Vec<Item> = Vec::new();
         for id in &ids {
             let (_dir, doc) = self.open(id)?;
-            for f in 0..doc.meta.frames.len() {
+            for f in 0..doc.meta().frames.len() {
                 let mut img = doc.flatten(f);
                 if scale > 1 {
                     img = image::imageops::resize(
                         &img,
-                        doc.meta.w * scale,
-                        doc.meta.h * scale,
+                        doc.meta().w * scale,
+                        doc.meta().h * scale,
                         image::imageops::FilterType::Nearest,
                     );
                 }
@@ -390,11 +390,11 @@ impl Studio {
                     doc: id.clone(),
                     frame: f,
                     img,
-                    duration_ms: doc.meta.frames[f].duration_ms,
-                    pivot: doc.meta.frames[f]
+                    duration_ms: doc.meta().frames[f].duration_ms,
+                    pivot: doc.meta().frames[f]
                         .pivot
                         .map(|[x, y]| [x * scale as i32, y * scale as i32]),
-                    boxes: doc.meta.frames[f]
+                    boxes: doc.meta().frames[f]
                         .boxes
                         .iter()
                         .map(|b| b.to_json(scale))
@@ -480,7 +480,7 @@ impl Studio {
             "ok": true,
             "doc_id": id,
             "added_layer": idx,
-            "layers": doc.meta.layers.len(),
+            "layers": doc.meta().layers.len(),
         }))
     }
 
@@ -560,11 +560,11 @@ impl Studio {
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         if let Some(src) = copy_from {
-            if src >= doc.meta.frames.len() {
+            if src >= doc.meta().frames.len() {
                 return Err(format!(
                     "copy_from {src} out of range — document has {} frame(s) (0..={})",
-                    doc.meta.frames.len(),
-                    doc.meta.frames.len().saturating_sub(1)
+                    doc.meta().frames.len(),
+                    doc.meta().frames.len().saturating_sub(1)
                 ));
             }
         }
@@ -576,7 +576,7 @@ impl Studio {
             "ok": true,
             "doc_id": id,
             "added_frame": idx,
-            "frames": doc.meta.frames.len(),
+            "frames": doc.meta().frames.len(),
         }))
     }
 
@@ -715,11 +715,11 @@ impl Studio {
     /// Backs the MCP `render` resource, which serves the bytes as a blob.
     pub fn render_png_bytes(&self, id: &str, frame: usize, scale: u32) -> Result<Vec<u8>, String> {
         let (_dir, doc) = self.open(id)?;
-        if frame >= doc.meta.frames.len() {
+        if frame >= doc.meta().frames.len() {
             return Err(format!(
                 "no frame {} (frames={})",
                 frame,
-                doc.meta.frames.len()
+                doc.meta().frames.len()
             ));
         }
         let img = doc.render_preview(frame, scale.max(1), None, false, 1, None)?;
@@ -828,7 +828,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let (tile_w, tile_h, scale) = (tile_w.max(1), tile_h.max(1), export_scale(scale));
-        let (cw, ch) = (doc.meta.w, doc.meta.h);
+        let (cw, ch) = (doc.meta().w, doc.meta().h);
         if cw % tile_w != 0 || ch % tile_h != 0 {
             return Err(format!(
                 "canvas {}x{} not divisible by tile {}x{}",
@@ -962,7 +962,7 @@ impl Studio {
     {
         let (dir, mut doc) = self.open(id)?;
         let before = doc.cel_full(layer, frame);
-        match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+        match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
             Some(mask) => doc.apply_masked(layer, frame, mask, f)?,
             None => f(&mut doc)?,
         }
@@ -1116,7 +1116,7 @@ impl Studio {
         color_at: Option<ColorSelect>,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let (w, h) = (doc.meta.w, doc.meta.h);
+        let (w, h) = (doc.meta().w, doc.meta().h);
         let n = (w * h) as usize;
         if shape == "none" {
             self.selection = None;
@@ -1336,7 +1336,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let mask = if use_selection {
-            match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+            match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
                 Some(m) => Some(m.to_vec()),
                 None => return Err("use_selection=true but no active selection on this doc".into()),
             }
@@ -1350,7 +1350,7 @@ impl Studio {
             "doc_id": id,
             "new_layer": new_layer,
             "pixels_moved": moved,
-            "layers": doc.meta.layers.iter().map(|l| l.name.clone()).collect::<Vec<_>>(),
+            "layers": doc.meta().layers.iter().map(|l| l.name.clone()).collect::<Vec<_>>(),
         }))
     }
 
@@ -1539,8 +1539,8 @@ impl Studio {
         rows: Vec<String>,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let palette = doc.meta.palette.clone();
-        let (dw, dh) = (doc.meta.w, doc.meta.h);
+        let palette = doc.meta().palette.clone();
+        let (dw, dh) = (doc.meta().w, doc.meta().h);
         drop(doc);
         let mut map = std::collections::HashMap::new();
         for (k, v) in &legend {
@@ -1664,7 +1664,7 @@ impl Studio {
             Ok(())
         };
         let before = doc.cel_full(layer, frame);
-        match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+        match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
             Some(mask) => doc.apply_masked(layer, frame, mask, run)?,
             None => run(&mut doc)?,
         }
@@ -1860,7 +1860,7 @@ mod tests {
                 .max()
                 .unwrap()
         };
-        let last = doc.meta.frames.len() - 1;
+        let last = doc.meta().frames.len() - 1;
         assert_eq!(max_alpha(0), 255, "flash frame should be solid");
         assert!(
             max_alpha(last) < 200,
@@ -2336,9 +2336,9 @@ mod tests {
         )
         .unwrap();
         let (_d, doc) = s.open("w").unwrap();
-        assert_eq!(doc.meta.frames.len(), 8);
+        assert_eq!(doc.meta().frames.len(), 8);
         assert!(
-            doc.meta.tags.iter().any(|t| t.name == "walk"),
+            doc.meta().tags.iter().any(|t| t.name == "walk"),
             "walk tag missing"
         );
         // frame 0 vs the half-cycle frame 4 must differ (the legs have swapped).
@@ -2673,7 +2673,7 @@ mod tests {
         // Count distinct opaque colours in the orb cel — must stay on-palette.
         let (_d, doc) = s.open("orb").unwrap();
         let mut colors = std::collections::HashSet::new();
-        let (w, h) = (doc.meta.w, doc.meta.h);
+        let (w, h) = (doc.meta().w, doc.meta().h);
         for y in 0..h {
             for x in 0..w {
                 let p = doc.get_pixel(0, 0, x as i32, y as i32).unwrap();

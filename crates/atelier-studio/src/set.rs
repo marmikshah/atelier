@@ -69,7 +69,7 @@ impl Studio {
         for id in &members {
             let (_dir, doc) = self.open(id)?;
             let img = doc.analysis_image(None, 0)?;
-            let pal = doc.meta.palette.clone();
+            let pal = doc.meta().palette.clone();
             let inset: std::collections::HashSet<[u8; 4]> = pal.iter().copied().collect();
             let (mut vmin, mut vmax, mut opaque, mut off) = (255u8, 0u8, 0u64, 0u64);
             let (mut y0, mut y1) = (i64::MAX, i64::MIN);
@@ -88,7 +88,7 @@ impl Studio {
                 }
             }
             let height = if y1 >= y0 { (y1 - y0 + 1) as u32 } else { 0 };
-            let has_pivot = doc.meta.frames.iter().any(|f| f.pivot.is_some());
+            let has_pivot = doc.meta().frames.iter().any(|f| f.pivot.is_some());
             stats.push(DocStat {
                 id: id.clone(),
                 palette: pal,
@@ -234,10 +234,10 @@ impl Studio {
             (Some(p), _) if !p.is_empty() => p,
             (_, Some(src)) => {
                 let (_d, doc) = self.open(src)?;
-                if doc.meta.palette.is_empty() {
+                if doc.meta().palette.is_empty() {
                     return Err(format!("source doc '{}' has no locked palette", src));
                 }
-                doc.meta.palette.clone()
+                doc.meta().palette.clone()
             }
             _ => return Err("pass `palette` colours or `from_doc` to copy from".into()),
         };

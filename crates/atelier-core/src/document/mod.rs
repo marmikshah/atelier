@@ -118,7 +118,7 @@ pub struct DocMeta {
 
 /// A loaded document: structure + the cel images in memory.
 pub struct Document {
-    pub meta: DocMeta,
+    pub(crate) meta: DocMeta,
     /// (layer, frame) -> (x, y, image)
     cels: HashMap<(usize, usize), (i32, i32, RgbaImage)>,
 }
@@ -176,6 +176,21 @@ fn remap_move(old: usize, from: usize, to: usize) -> usize {
 pub const DEFAULT_FRAME_MS: u32 = 100;
 
 impl Document {
+    /// Read-only view of the document metadata. The field itself is
+    /// crate-private: meta and the cel map move in lock-step (layer/frame
+    /// reindexing), so outside the crate every mutation goes through a method
+    /// that preserves that invariant.
+    pub fn meta(&self) -> &DocMeta {
+        &self.meta
+    }
+
+    /// Set or clear the stored reference-image file name, returning the
+    /// previous one (so a caller can delete the replaced file). The one
+    /// meta field external callers may write — it has no cel coupling.
+    pub fn set_reference_file(&mut self, name: Option<String>) -> Option<String> {
+        std::mem::replace(&mut self.meta.reference, name)
+    }
+
     pub fn new(name: &str, w: u32, h: u32) -> Document {
         let meta = DocMeta {
             name: name.to_string(),

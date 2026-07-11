@@ -41,7 +41,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let img = doc.analysis_image(layer, frame)?;
-        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
         let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         let (w, h) = ((x1 - x0 + 1) as u32, (y1 - y0 + 1) as u32);
         area_cap_check(
@@ -586,9 +586,9 @@ impl Studio {
         let (_dir, doc) = self.open(id)?;
         let frames: Vec<usize> = match frame {
             Some(f) => vec![f],
-            None => (0..doc.meta.frames.len()).collect(),
+            None => (0..doc.meta().frames.len()).collect(),
         };
-        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
         let mut counts: HashMap<[u8; 4], u64> = HashMap::new();
         let mut total = 0u64;
         let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
@@ -607,8 +607,8 @@ impl Studio {
         // Sort by pixel count desc (ties broken by colour for stable output).
         let mut entries: Vec<([u8; 4], u64)> = counts.into_iter().collect();
         entries.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
-        let has_palette = !doc.meta.palette.is_empty();
-        let in_pal = |c: [u8; 4]| -> bool { doc.meta.palette.contains(&c) };
+        let has_palette = !doc.meta().palette.is_empty();
+        let in_pal = |c: [u8; 4]| -> bool { doc.meta().palette.contains(&c) };
         let hex = |c: [u8; 4]| crate::hex_rgba(&c);
         let count = entries.len();
         // Top-48 with an "others" rollup: an unquantized import has hundreds
@@ -689,7 +689,7 @@ impl Studio {
             (Some(c), _) => c,
             (None, Some(doc_id)) => {
                 let (_dir, doc) = self.open(doc_id)?;
-                let pal = doc.meta.palette.clone();
+                let pal = doc.meta().palette.clone();
                 if pal.is_empty() {
                     return Err(format!(
                         "document '{}' has no locked palette — set one with doc_set_palette \
@@ -836,7 +836,7 @@ impl Studio {
     ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
         let (dir, doc) = self.open(id)?;
-        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
         let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         let (added, removed, recolored, bbox, ia, ib) =
             doc.frame_diff_region(frame_a, frame_b, layer, (x0, y0, x1, y1))?;
@@ -1044,7 +1044,7 @@ impl Studio {
                 // Pingpong reverses at the ends, so the loop never hard-cuts.
                 let dir = match tag {
                     Some(name) => doc
-                        .meta
+                        .meta()
                         .tags
                         .iter()
                         .find(|t| t.name == name)
@@ -1059,7 +1059,7 @@ impl Studio {
                     }));
                 }
                 let (last, first) = (*seq.last().unwrap(), seq[0]);
-                let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+                let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
                 let (added, removed, recolored, bbox, ia, _ib) =
                     doc.frame_diff_region(last, first, layer, (0, 0, cw - 1, ch - 1))?;
                 let changed = added + removed + recolored;
@@ -1217,7 +1217,7 @@ impl Studio {
             "timing" => {
                 let durs: Vec<u32> = seq
                     .iter()
-                    .map(|&f| doc.meta.frames[f].duration_ms)
+                    .map(|&f| doc.meta().frames[f].duration_ms)
                     .collect();
                 let total: u32 = durs.iter().sum();
                 let uniform = durs.windows(2).all(|w| w[0] == w[1]);

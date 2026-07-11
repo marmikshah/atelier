@@ -22,17 +22,19 @@ impl Studio {
     pub fn wang_tiles(&self, id: &str, n: u32) -> Result<Value, String> {
         use image::{Rgba, RgbaImage};
         let (_dir, src) = self.open(id)?;
-        if src.meta.layers.len() < 2 {
+        if src.meta().layers.len() < 2 {
             return Err(
                 "wang_tiles needs two layers: layer 0 = inner material, layer 1 = outer material"
                     .into(),
             );
         }
         let n = n.max(1);
-        if src.meta.w < n || src.meta.h < n {
+        if src.meta().w < n || src.meta().h < n {
             return Err(format!(
                 "source canvas {}x{} smaller than tile size {}",
-                src.meta.w, src.meta.h, n
+                src.meta().w,
+                src.meta().h,
+                n
             ));
         }
         // Sample the top-left N×N of each layer's full-canvas image.
@@ -124,17 +126,19 @@ impl Studio {
     pub fn autotile_set(&self, id: &str, n: u32) -> Result<Value, String> {
         use image::{Rgba, RgbaImage};
         let (_dir, src) = self.open(id)?;
-        if src.meta.layers.len() < 2 {
+        if src.meta().layers.len() < 2 {
             return Err(
                 "autotile_set needs two layers: layer 0 = inner material, layer 1 = outer material"
                     .into(),
             );
         }
         let n = n.max(2);
-        if src.meta.w < n || src.meta.h < n {
+        if src.meta().w < n || src.meta().h < n {
             return Err(format!(
                 "source canvas {}x{} smaller than tile size {}",
-                src.meta.w, src.meta.h, n
+                src.meta().w,
+                src.meta().h,
+                n
             ));
         }
         let inner = src.analysis_image(Some(0), 0)?;
@@ -184,17 +188,19 @@ impl Studio {
     ) -> Result<Value, String> {
         use image::{Rgba, RgbaImage};
         let (_dir, src) = self.open(id)?;
-        if src.meta.layers.len() < 2 {
+        if src.meta().layers.len() < 2 {
             return Err(
                 "tilemap_assemble needs two layers: layer 0 = inner material, layer 1 = outer material"
                     .into(),
             );
         }
         let n = n.max(2);
-        if src.meta.w < n || src.meta.h < n {
+        if src.meta().w < n || src.meta().h < n {
             return Err(format!(
                 "source canvas {}x{} smaller than tile size {}",
-                src.meta.w, src.meta.h, n
+                src.meta().w,
+                src.meta().h,
+                n
             ));
         }
         if rows.is_empty() || rows.iter().any(|r| r.is_empty()) {

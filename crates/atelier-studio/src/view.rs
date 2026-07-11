@@ -208,16 +208,16 @@ impl Studio {
         let bands = if *bands == 0 { 4 } else { *bands };
         let out_path = out_path.as_deref();
         let (_dir, doc) = self.open(id)?;
-        if frame >= doc.meta.frames.len() {
+        if frame >= doc.meta().frames.len() {
             return Err(format!(
                 "no frame {} (frames={})",
                 frame,
-                doc.meta.frames.len()
+                doc.meta().frames.len()
             ));
         }
         // Adaptive default: big enough to judge a small sprite, clamped so a
         // large canvas doesn't waste vision tokens.
-        let scale = scale.unwrap_or_else(|| crate::preview_scale(doc.meta.w, doc.meta.h));
+        let scale = scale.unwrap_or_else(|| crate::preview_scale(doc.meta().w, doc.meta().h));
         // Native, full-canvas image for the requested mode.
         let native = match mode {
             "render" => {
@@ -322,14 +322,14 @@ impl Studio {
         scale: u32,
     ) -> Result<(Vec<u8>, Value), String> {
         let (_dir, doc) = self.open(id)?;
-        if frame >= doc.meta.frames.len() {
+        if frame >= doc.meta().frames.len() {
             return Err(format!(
                 "no frame {} (frames={})",
                 frame,
-                doc.meta.frames.len()
+                doc.meta().frames.len()
             ));
         }
-        let (w, h) = (doc.meta.w, doc.meta.h);
+        let (w, h) = (doc.meta().w, doc.meta().h);
         let base = doc.flatten(frame);
         let mask = match &self.selection {
             Some(s) if s.doc_id == id && s.w == w && s.h == h => Some(&s.mask),
@@ -405,10 +405,10 @@ impl Studio {
         onion: bool,
     ) -> Result<(Vec<u8>, Value), String> {
         let (_dir, doc) = self.open(id)?;
-        let n = doc.meta.frames.len();
+        let n = doc.meta().frames.len();
         let cols = cols.max(1).min(n.max(1));
         let rows = n.div_ceil(cols);
-        let (w, h) = (doc.meta.w, doc.meta.h);
+        let (w, h) = (doc.meta().w, doc.meta().h);
         let s = scale.max(1);
         let (pad, label_h) = (3u32, raster::GLYPH_H as u32 + 1);
         let cellw = w * s;
@@ -448,7 +448,7 @@ impl Studio {
             if onion {
                 prev_scaled = Some(scaled);
             }
-            let dur = doc.meta.frames[f].duration_ms;
+            let dur = doc.meta().frames[f].duration_ms;
             draw_label(
                 &mut sheet,
                 ox as i32,

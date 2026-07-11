@@ -80,7 +80,7 @@ impl Studio {
         let (l_thigh, l_shin, l_uarm, l_farm) = rig_setup(base, limb_w, torso_w, head_r)?;
         let tau = std::f32::consts::TAU;
         let (dir, mut doc) = self.open(id)?;
-        while doc.meta.frames.len() < frames {
+        while doc.meta().frames.len() < frames {
             doc.add_frame(120, None);
         }
         // Per-frame: build the posed joint table, flesh it, draw into frame f.
@@ -138,7 +138,7 @@ impl Studio {
                 );
             }
         }
-        if !doc.meta.tags.iter().any(|t| t.name == "walk") {
+        if !doc.meta().tags.iter().any(|t| t.name == "walk") {
             doc.add_tag("walk", 0, frames - 1, "forward")?;
         }
         doc.save(&dir)?;
@@ -190,7 +190,7 @@ impl Studio {
         let tau = std::f32::consts::TAU;
         let pi = std::f32::consts::PI;
         let (dir, mut doc) = self.open(id)?;
-        while doc.meta.frames.len() < frames {
+        while doc.meta().frames.len() < frames {
             doc.add_frame(100, None);
         }
         for f in 0..frames {
@@ -353,7 +353,7 @@ impl Studio {
                 );
             }
         }
-        if !doc.meta.tags.iter().any(|t| t.name == gait) {
+        if !doc.meta().tags.iter().any(|t| t.name == gait) {
             doc.add_tag(gait, 0, frames - 1, "forward")?;
         }
         doc.save(&dir)?;

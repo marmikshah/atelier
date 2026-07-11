@@ -24,7 +24,7 @@ impl Studio {
     pub fn set_reference(&self, id: &str, path: Option<&str>) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let Some(path) = path else {
-            if let Some(name) = doc.meta.reference.take() {
+            if let Some(name) = doc.set_reference_file(None) {
                 if let Ok(p) = ref_path(&dir, &name) {
                     let _ = std::fs::remove_file(p);
                 }
@@ -36,9 +36,9 @@ impl Studio {
         let (rw, rh) = (img.width(), img.height());
         img.save(dir.join("reference.png"))
             .map_err(|e| e.to_string())?;
-        doc.meta.reference = Some("reference.png".into());
+        doc.set_reference_file(Some("reference.png".into()));
         doc.save(&dir)?;
-        let (cw, ch) = (doc.meta.w, doc.meta.h);
+        let (cw, ch) = (doc.meta().w, doc.meta().h);
         // Aspect-true size suggestions at the canvas dims, so the agent sees a
         // mismatch BEFORE drawing into it.
         let fit_w = ((rw as f64 * ch as f64 / rh as f64).round() as u32).max(1);
@@ -56,7 +56,7 @@ impl Studio {
     /// Load a document's stored reference image.
     fn ref_image(dir: &Path, doc: &Document) -> Result<RgbaImage, String> {
         let name = doc
-            .meta
+            .meta()
             .reference
             .as_ref()
             .ok_or("document has no reference image — doc_set_reference first")?;
@@ -103,7 +103,7 @@ impl Studio {
         let total = (rw * rh) as u64;
         let cleared = subject.pixels().filter(|p| p.0[3] == 0).count() as u64
             - src.pixels().filter(|p| p.0[3] == 0).count() as u64;
-        let tw = target_w.unwrap_or(doc.meta.w).max(1);
+        let tw = target_w.unwrap_or(doc.meta().w).max(1);
         let th = ((rh as f64 * tw as f64 / rw.max(1) as f64).round() as u32).max(1);
         // Same 1M-pixel cap as import_clean — an oversized target_w would
         // otherwise allocate an unbounded image in one call.
@@ -222,7 +222,7 @@ impl Studio {
             .collect();
         // Reference colours the doc palette can't reach.
         let ref_pal = subject_palette(&small, 8);
-        let doc_pal: Vec<[u8; 4]> = if doc.meta.palette.is_empty() {
+        let doc_pal: Vec<[u8; 4]> = if doc.meta().palette.is_empty() {
             canvas
                 .pixels()
                 .filter(|p| p.0[3] > 0)
@@ -231,7 +231,7 @@ impl Studio {
                 .into_iter()
                 .collect()
         } else {
-            doc.meta.palette.clone()
+            doc.meta().palette.clone()
         };
         let missing: Vec<Value> = ref_pal
             .iter()

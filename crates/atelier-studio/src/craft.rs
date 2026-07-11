@@ -209,7 +209,7 @@ impl Studio {
         }
         doc.save(&dir)?;
         let layers: Vec<Value> = doc
-            .meta
+            .meta()
             .layers
             .iter()
             .enumerate()
@@ -235,7 +235,7 @@ impl Studio {
         let (dir, mut doc) = self.open(id)?;
         let pal = match palette {
             Some(p) => p,
-            None => doc.meta.palette.clone(),
+            None => doc.meta().palette.clone(),
         };
         if pal.is_empty() {
             return Err(
@@ -266,7 +266,7 @@ impl Studio {
         mode: &str,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let (w, h) = (doc.meta.w, doc.meta.h);
+        let (w, h) = (doc.meta().w, doc.meta().h);
         let new = doc.flood_mask(layer, frame, x, y, tol, conn8, perceptual)?;
         let base = match &self.selection {
             Some(s) if s.doc_id == id && s.w == w && s.h == h => s.mask.clone(),
@@ -390,7 +390,7 @@ impl Studio {
         let (_dir, doc) = self.open(id)?;
         let full = doc.analysis_image(layer, frame)?;
         let (img, _ox, _oy) = crop_region(&full, region)?;
-        let palette = doc.meta.palette.clone();
+        let palette = doc.meta().palette.clone();
         Ok(critique_image(id, frame, &img, &palette))
     }
 
@@ -637,8 +637,8 @@ impl Studio {
         let sp = spacing.max(2);
         self.edit(id, |d| {
             let li = d.add_layer(Some("guides".into()), 160, "normal".into());
-            let (w, h) = (d.meta.w as i32, d.meta.h as i32);
-            for f in 0..d.meta.frames.len() {
+            let (w, h) = (d.meta().w as i32, d.meta().h as i32);
+            for f in 0..d.meta().frames.len() {
                 match kind {
                     "thirds" => {
                         for k in 1..3 {
@@ -817,7 +817,7 @@ impl Studio {
         }
         let (dir, mut doc) = self.open(id)?;
         let src_img = doc.analysis_image(Some(src_layer), src_frame)?;
-        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
         // Map one dest axis offset to a source axis offset.
         let map_axis = |d: i32, dlen: i32, slen: i32| -> i32 {
             if d < b {
@@ -915,8 +915,8 @@ impl Studio {
         }
         // Palette: the doc's locked one, or a frequency-weighted median cut of
         // the (post-bg-removal) opaque pixels so the subject owns every slot.
-        let palette: Vec<[u8; 4]> = if to_doc_palette && !doc.meta.palette.is_empty() {
-            doc.meta.palette.clone()
+        let palette: Vec<[u8; 4]> = if to_doc_palette && !doc.meta().palette.is_empty() {
+            doc.meta().palette.clone()
         } else {
             let mut counts: std::collections::HashMap<[u8; 3], u64> =
                 std::collections::HashMap::new();
@@ -978,7 +978,7 @@ impl Studio {
             }
         }
         doc.set_cel(layer, frame, 0, 0, out)?;
-        if to_doc_palette && doc.meta.palette.is_empty() {
+        if to_doc_palette && doc.meta().palette.is_empty() {
             doc.set_palette(palette.clone());
         }
         doc.save(&dir)?;
@@ -1012,13 +1012,13 @@ impl Studio {
     ) -> Result<Value, String> {
         let frames = frames.max(2);
         let (dir, mut doc) = self.open(id)?;
-        if layer >= doc.meta.layers.len() {
+        if layer >= doc.meta().layers.len() {
             return Err(format!("no layer {}", layer));
         }
         let ramp = ramp
             .filter(|r| !r.is_empty())
             .unwrap_or_else(|| auto_ramp(base, frames.clamp(2, 8)));
-        while doc.meta.frames.len() < frames {
+        while doc.meta().frames.len() < frames {
             doc.add_frame(80, None);
         }
         let last = ramp.len() - 1;
@@ -1051,7 +1051,7 @@ impl Studio {
                 }
             }
         }
-        if !doc.meta.tags.iter().any(|t| t.name == "burst") {
+        if !doc.meta().tags.iter().any(|t| t.name == "burst") {
             doc.add_tag("burst", 0, frames - 1, "forward")?;
         }
         doc.save(&dir)?;
@@ -1090,13 +1090,13 @@ impl Studio {
             return Err("emitter region must be at least 1x1".into());
         }
         let (dir, mut doc) = self.open(id)?;
-        if layer >= doc.meta.layers.len() {
+        if layer >= doc.meta().layers.len() {
             return Err(format!("no layer {}", layer));
         }
         let ramp = ramp
             .filter(|r| !r.is_empty())
             .unwrap_or_else(|| auto_ramp(base, 5));
-        while doc.meta.frames.len() < frames {
+        while doc.meta().frames.len() < frames {
             doc.add_frame(80, None);
         }
         let life = life.clamp(0.2, 4.0); // in cycle units: 1.0 = one full loop
@@ -1138,7 +1138,7 @@ impl Studio {
             }
             doc.snap_cel_to_own_palette(layer, f, atelier_core::document::AlphaSnap::Preserve);
         }
-        if !doc.meta.tags.iter().any(|t| t.name == "emit") {
+        if !doc.meta().tags.iter().any(|t| t.name == "emit") {
             doc.add_tag("emit", 0, frames - 1, "forward")?;
         }
         doc.save(&dir)?;
@@ -1347,7 +1347,7 @@ fn checkpoint_diff(cpid: &str, was: &Document, now: &Document) -> Value {
     let (bn, bc, bmin, bmax) = stat(&ib);
     // Per-pixel change tally where the canvases line up.
     let (mut added, mut removed, mut changed) = (0u64, 0u64, 0u64);
-    if was.meta.w == now.meta.w && was.meta.h == now.meta.h {
+    if was.meta().w == now.meta().w && was.meta().h == now.meta().h {
         for (pa, pb) in ia.pixels().zip(ib.pixels()) {
             match (pa.0[3] == 0, pb.0[3] == 0) {
                 (true, false) => added += 1,
