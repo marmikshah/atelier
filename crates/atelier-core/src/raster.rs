@@ -645,17 +645,25 @@ pub fn srgb_to_oklab(c: [u8; 4]) -> (f32, f32, f32) {
     )
 }
 
-/// OKLab `(L, a, b)` → sRGB (0..255), gamut-clamped. Alpha is the caller's job.
+/// OKLab `(L, a, b)` → linear RGB (unclamped) — the one copy of the OKLab
+/// matrix, shared by the sRGB encoder and the gamut check.
 #[allow(clippy::excessive_precision)]
-pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
+fn oklab_to_linear_rgb(lab: (f32, f32, f32)) -> (f32, f32, f32) {
     let (l, a, b) = lab;
     let l_ = l + 0.396_337_78 * a + 0.215_803_76 * b;
     let m_ = l - 0.105_561_346 * a - 0.063_854_17 * b;
     let s_ = l - 0.089_484_18 * a - 1.291_485_5 * b;
     let (l3, m3, s3) = (l_ * l_ * l_, m_ * m_ * m_, s_ * s_ * s_);
-    let r = 4.076_741_7 * l3 - 3.307_711_6 * m3 + 0.230_969_94 * s3;
-    let g = -1.268_438 * l3 + 2.609_757_4 * m3 - 0.341_319_38 * s3;
-    let bl = -0.004_196_086_3 * l3 - 0.703_418_6 * m3 + 1.707_614_7 * s3;
+    (
+        4.076_741_7 * l3 - 3.307_711_6 * m3 + 0.230_969_94 * s3,
+        -1.268_438 * l3 + 2.609_757_4 * m3 - 0.341_319_38 * s3,
+        -0.004_196_086_3 * l3 - 0.703_418_6 * m3 + 1.707_614_7 * s3,
+    )
+}
+
+/// OKLab `(L, a, b)` → sRGB (0..255), gamut-clamped. Alpha is the caller's job.
+pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
+    let (r, g, bl) = oklab_to_linear_rgb(lab);
     [
         (linear_to_srgb(r) * 255.0).round().clamp(0.0, 255.0) as u8,
         (linear_to_srgb(g) * 255.0).round().clamp(0.0, 255.0) as u8,
@@ -666,16 +674,8 @@ pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
 /// Whether an OKLCh colour is inside the sRGB gamut (its linear RGB all in
 /// [0,1]) — so a ramp can reduce chroma to fit instead of letting the per-channel
 /// clamp in `oklab_to_srgb` shift its hue.
-#[allow(clippy::excessive_precision)]
 fn oklch_in_gamut(l: f32, c: f32, h: f32) -> bool {
-    let (_, a, b) = oklch_to_oklab((l, c, h));
-    let l_ = l + 0.396_337_78 * a + 0.215_803_76 * b;
-    let m_ = l - 0.105_561_346 * a - 0.063_854_17 * b;
-    let s_ = l - 0.089_484_18 * a - 1.291_485_5 * b;
-    let (l3, m3, s3) = (l_ * l_ * l_, m_ * m_ * m_, s_ * s_ * s_);
-    let r = 4.076_741_7 * l3 - 3.307_711_6 * m3 + 0.230_969_94 * s3;
-    let g = -1.268_438 * l3 + 2.609_757_4 * m3 - 0.341_319_38 * s3;
-    let bl = -0.004_196_086_3 * l3 - 0.703_418_6 * m3 + 1.707_614_7 * s3;
+    let (r, g, bl) = oklab_to_linear_rgb(oklch_to_oklab((l, c, h)));
     let eps = 0.001;
     [r, g, bl].iter().all(|&v| v >= -eps && v <= 1.0 + eps)
 }
@@ -683,7 +683,7 @@ fn oklch_in_gamut(l: f32, c: f32, h: f32) -> bool {
 /// OKLCh → sRGB with chroma binary-searched down until the colour is in gamut —
 /// a vivid step desaturates EVENLY (L and hue preserved) instead of being
 /// per-channel clamped, which shifts the hue (e.g. a bright red → orange).
-pub fn oklch_to_srgb_gamut(l: f32, c: f32, h: f32) -> [u8; 3] {
+fn oklch_to_srgb_gamut(l: f32, c: f32, h: f32) -> [u8; 3] {
     if oklch_in_gamut(l, c, h) {
         return oklab_to_srgb(oklch_to_oklab((l, c, h)));
     }
@@ -730,17 +730,25 @@ pub fn nearest_oklab(p: [u8; 4], palette: &[[u8; 4]]) -> Option<usize> {
     if palette.is_empty() {
         return None;
     }
-    let (l, a, b) = srgb_to_oklab(p);
+    Some(nearest_lab(
+        srgb_to_oklab(p),
+        palette.iter().map(|c| srgb_to_oklab(*c)),
+    ))
+}
+
+/// Index of the nearest lab entry to `probe` by squared ΔE — the one copy of
+/// the nearest-colour scan shared by `nearest_oklab` and `PaletteLab`.
+fn nearest_lab<I: Iterator<Item = (f32, f32, f32)>>(probe: (f32, f32, f32), labs: I) -> usize {
+    let (l, a, b) = probe;
     let (mut best, mut bd) = (0usize, f32::MAX);
-    for (i, c) in palette.iter().enumerate() {
-        let (l2, a2, b2) = srgb_to_oklab(*c);
+    for (i, (l2, a2, b2)) in labs.enumerate() {
         let d = (l - l2).powi(2) + (a - a2).powi(2) + (b - b2).powi(2);
         if d < bd {
             bd = d;
             best = i;
         }
     }
-    Some(best)
+    best
 }
 
 /// Precomputed OKLab palette for per-pixel nearest-colour loops: the palette
@@ -780,15 +788,7 @@ impl PaletteLab {
         if let Some(&i) = self.memo.get(&key) {
             return Some(i);
         }
-        let (l, a, b) = srgb_to_oklab(p);
-        let (mut best, mut bd) = (0usize, f32::MAX);
-        for (i, (l2, a2, b2)) in self.labs.iter().enumerate() {
-            let d = (l - l2).powi(2) + (a - a2).powi(2) + (b - b2).powi(2);
-            if d < bd {
-                bd = d;
-                best = i;
-            }
-        }
+        let best = nearest_lab(srgb_to_oklab(p), self.labs.iter().copied());
         self.memo.insert(key, best);
         Some(best)
     }
@@ -1035,7 +1035,7 @@ pub fn solve_ik2(root: (f32, f32), target: (f32, f32), l1: f32, l2: f32, bend: f
 }
 
 /// Linear interpolation between `a` and `b` by `t`.
-pub fn lerpf(a: f32, b: f32, t: f32) -> f32 {
+fn lerpf(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 
@@ -1187,53 +1187,10 @@ pub fn median_cut(pixels: &[[u8; 3]], n: usize) -> Vec<[u8; 4]> {
     if pixels.is_empty() {
         return vec![[0, 0, 0, 255]];
     }
-    let n = n.max(1);
-    let mut boxes: Vec<Vec<[u8; 3]>> = vec![pixels.to_vec()];
-    while boxes.len() < n {
-        // Pick the splittable box with the widest channel range.
-        let pick = boxes
-            .iter()
-            .enumerate()
-            .filter(|(_, b)| b.len() > 1)
-            .max_by_key(|(_, b)| {
-                (0..3)
-                    .map(|c| {
-                        let (mn, mx) = b
-                            .iter()
-                            .fold((255u8, 0u8), |(mn, mx), p| (mn.min(p[c]), mx.max(p[c])));
-                        mx - mn
-                    })
-                    .max()
-                    .unwrap_or(0)
-            });
-        let Some((bi, _)) = pick else { break };
-        // Longest axis of that box.
-        let axis = (0..3)
-            .max_by_key(|&c| {
-                let (mn, mx) = boxes[bi]
-                    .iter()
-                    .fold((255u8, 0u8), |(mn, mx), p| (mn.min(p[c]), mx.max(p[c])));
-                mx - mn
-            })
-            .unwrap();
-        boxes[bi].sort_by_key(|p| p[axis]);
-        let mid = boxes[bi].len() / 2;
-        let hi = boxes[bi].split_off(mid);
-        boxes.push(hi);
-    }
-    boxes
-        .iter()
-        .map(|b| {
-            let (mut r, mut g, mut bl) = (0u64, 0u64, 0u64);
-            for p in b {
-                r += p[0] as u64;
-                g += p[1] as u64;
-                bl += p[2] as u64;
-            }
-            let len = b.len().max(1) as u64;
-            [(r / len) as u8, (g / len) as u8, (bl / len) as u8, 255]
-        })
-        .collect()
+    // Weight-1 pairs make the weighted median the plain median — one
+    // implementation of the split loop instead of two.
+    let pairs: Vec<([u8; 3], u64)> = pixels.iter().map(|p| (*p, 1u64)).collect();
+    median_cut_weighted(&pairs, n.max(1), &[])
 }
 
 /// Frequency-weighted median-cut quantisation over `(colour, count)` pairs:
