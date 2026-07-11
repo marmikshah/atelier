@@ -2262,7 +2262,7 @@ impl Studio {
 
 /// Adaptive preview scale: aim for ~384px on the longest side (big enough for a
 /// vision model to judge sprite-scale detail), clamped to 1..=16.
-pub fn preview_scale(w: u32, h: u32) -> u32 {
+pub(crate) fn preview_scale(w: u32, h: u32) -> u32 {
     (384 / w.max(h).max(1)).clamp(1, 16)
 }
 
@@ -2290,7 +2290,7 @@ pub(crate) fn scale_nn(img: &image::RgbaImage, scale: u32) -> image::RgbaImage {
 }
 
 /// Encode an RGBA image to in-memory PNG bytes.
-pub fn encode_png(img: &image::RgbaImage) -> Result<Vec<u8>, String> {
+pub(crate) fn encode_png(img: &image::RgbaImage) -> Result<Vec<u8>, String> {
     let mut buf = std::io::Cursor::new(Vec::new());
     img.write_to(&mut buf, image::ImageFormat::Png)
         .map_err(|e| e.to_string())?;

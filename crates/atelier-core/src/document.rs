@@ -52,7 +52,7 @@ impl BoxMeta {
 }
 
 /// The accepted box kinds, in declaration order — the error message lists them.
-pub const BOX_KINDS: [&str; 3] = ["body", "hit", "hurt"];
+const BOX_KINDS: [&str; 3] = ["body", "hit", "hurt"];
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FrameMeta {

@@ -122,646 +122,639 @@ fn region(r: &Option<Vec<i32>>) -> Option<(i32, i32, i32, i32)> {
 // --- library params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocCreate {
-    pub name: String,
-    pub width: u32,
-    pub height: u32,
+pub(crate) struct DocCreate {
+    pub(crate) name: String,
+    pub(crate) width: u32,
+    pub(crate) height: u32,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRef {
-    pub doc_id: String,
+pub(crate) struct DocRef {
+    pub(crate) doc_id: String,
 }
 
 #[derive(Deserialize, JsonSchema, Default)]
-pub struct ListDocs {
+pub(crate) struct ListDocs {
     /// Keep documents whose id starts with this (family selector, e.g. "hero-").
-    pub prefix: Option<String>,
+    pub(crate) prefix: Option<String>,
     /// Keep documents whose id contains this substring.
-    pub contains: Option<String>,
+    pub(crate) contains: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema, Default)]
-pub struct DocSetAudit {
+pub(crate) struct DocSetAudit {
     /// Explicit member document ids (combined with `prefix` as a union).
-    pub ids: Option<Vec<String>>,
+    pub(crate) ids: Option<Vec<String>>,
     /// Select every document whose id starts with this (e.g. "hero-").
-    pub prefix: Option<String>,
+    pub(crate) prefix: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSetPaletteSync {
+pub(crate) struct DocSetPaletteSync {
     /// Explicit target document ids (combined with `prefix` as a union).
-    pub ids: Option<Vec<String>>,
+    pub(crate) ids: Option<Vec<String>>,
     /// Select every document whose id starts with this (e.g. "hero-").
-    pub prefix: Option<String>,
+    pub(crate) prefix: Option<String>,
     /// The palette to broadcast, as [[r,g,b(,a)],...]. Or use `from_doc`.
-    pub palette: Option<Vec<Vec<i64>>>,
+    pub(crate) palette: Option<Vec<Vec<i64>>>,
     /// Copy the locked palette from this document instead of passing colours.
-    pub from_doc: Option<String>,
+    pub(crate) from_doc: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct ExportAll {
-    pub target_dir: String,
-    pub scale: Option<u32>,
+pub(crate) struct ExportAll {
+    pub(crate) target_dir: String,
+    pub(crate) scale: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct ExportAtlas {
-    pub out_path: String,
-    pub scale: Option<u32>,
+pub(crate) struct ExportAtlas {
+    pub(crate) out_path: String,
+    pub(crate) scale: Option<u32>,
     /// Max atlas width in pixels before the shelf packer wraps to a new row.
-    pub max_width: Option<u32>,
+    pub(crate) max_width: Option<u32>,
 }
 
 // --- document params -------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocAddTag {
-    pub doc_id: String,
-    pub name: String,
-    pub from: usize,
-    pub to: usize,
-    pub direction: Option<String>,
+pub(crate) struct DocAddTag {
+    pub(crate) doc_id: String,
+    pub(crate) name: String,
+    pub(crate) from: usize,
+    pub(crate) to: usize,
+    pub(crate) direction: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocCel {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocCel {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocStampImage {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub x: Option<i32>,
-    pub y: Option<i32>,
-    pub png_path: String,
+pub(crate) struct DocStampImage {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
+    pub(crate) x: Option<i32>,
+    pub(crate) y: Option<i32>,
+    pub(crate) png_path: String,
     /// Scale factor (default 1.0). Shrinking uses area-average (features
     /// survive); growing uses nearest (stays crisp).
-    pub scale: Option<f32>,
+    pub(crate) scale: Option<f32>,
     /// Scale to this width in pixels instead (wins over `scale`) — e.g. stamp
     /// a 1024px reference at 32px wide without computing the factor.
-    pub target_w: Option<u32>,
+    pub(crate) target_w: Option<u32>,
     /// Rotation in degrees, clockwise (default 0).
-    pub rotate: Option<f32>,
+    pub(crate) rotate: Option<f32>,
     /// Opacity 0..255 when compositing (default 255).
-    pub opacity: Option<u8>,
+    pub(crate) opacity: Option<u8>,
     /// Blend mode when compositing (default "normal").
-    pub blend: Option<String>,
+    pub(crate) blend: Option<String>,
     /// true overwrites the whole cel; false (default) composites OVER it.
-    pub replace: Option<bool>,
+    pub(crate) replace: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocWangTiles {
-    pub doc_id: String,
+pub(crate) struct DocWangTiles {
+    pub(crate) doc_id: String,
     /// Tile size N in pixels; the source canvas must be at least N×N.
-    pub n: u32,
+    pub(crate) n: u32,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocNineSlice {
-    pub doc_id: String,
+pub(crate) struct DocNineSlice {
+    pub(crate) doc_id: String,
     /// Destination layer / frame.
-    pub layer: usize,
-    pub frame: usize,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Source panel layer / frame (defaults: same layer, frame 0).
-    pub src_layer: Option<usize>,
-    pub src_frame: Option<usize>,
+    pub(crate) src_layer: Option<usize>,
+    pub(crate) src_frame: Option<usize>,
     /// Source panel rect [x, y, w, h] — the panel authored once.
-    pub src: Vec<i64>,
+    pub(crate) src: Vec<i64>,
     /// Corner thickness in px (the 3×3 cut; default 3).
-    pub inset: Option<i64>,
+    pub(crate) inset: Option<i64>,
     /// Destination rect [x, y, w, h] — any size ≥ the corners.
-    pub dst: Vec<i64>,
+    pub(crate) dst: Vec<i64>,
     /// How edges/centre fill: "tile" (default) or "stretch".
-    pub mode: Option<String>,
+    pub(crate) mode: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocEmit {
-    pub doc_id: String,
-    pub layer: usize,
+pub(crate) struct DocEmit {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
     /// Emitter rect [x, y, w, h] particles spawn inside.
-    pub region: Vec<i64>,
+    pub(crate) region: Vec<i64>,
     /// Frame count (default 8, clamped 2..=24).
-    pub frames: Option<usize>,
+    pub(crate) frames: Option<usize>,
     /// Particle count (default 24, clamped 1..=512).
-    pub count: Option<usize>,
+    pub(crate) count: Option<usize>,
     /// Emission direction in degrees (0=right, 90=down, 270=up; default 270).
-    pub angle: Option<f32>,
+    pub(crate) angle: Option<f32>,
     /// Half-cone spread around `angle` in degrees (default 30).
-    pub spread: Option<f32>,
+    pub(crate) spread: Option<f32>,
     /// Initial speed in px/frame (default 1.5).
-    pub speed: Option<f32>,
+    pub(crate) speed: Option<f32>,
     /// Downward acceleration in px/frame² (negative = rises; default 0).
-    pub gravity: Option<f32>,
+    pub(crate) gravity: Option<f32>,
     /// Particle lifetime in loop units — 1.0 = lives one full cycle (default 1).
-    pub life: Option<f32>,
+    pub(crate) life: Option<f32>,
     /// Particle size in px at birth (shrinks as it dies; default 2).
-    pub size: Option<i64>,
+    pub(crate) size: Option<i64>,
     /// Deterministic seed (default 1).
-    pub seed: Option<u64>,
+    pub(crate) seed: Option<u64>,
     /// Base colour [r,g,b(,a)] — auto-ramped unless `ramp` given.
-    pub color: Vec<i64>,
+    pub(crate) color: Vec<i64>,
     /// Explicit birth→death colour ramp [[r,g,b,a],...].
-    pub ramp: Option<Vec<Vec<i64>>>,
+    pub(crate) ramp: Option<Vec<Vec<i64>>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocColorblindCheck {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocColorblindCheck {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// Nearest-neighbour upscale of the returned strip (default 2, clamped 1..=8).
-    pub scale: Option<u32>,
+    pub(crate) scale: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocAutotileSet {
-    pub doc_id: String,
+pub(crate) struct DocAutotileSet {
+    pub(crate) doc_id: String,
     /// Tile size N in pixels; the source canvas must be at least N×N.
-    pub n: u32,
+    pub(crate) n: u32,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocTilemapAssemble {
-    pub doc_id: String,
+pub(crate) struct DocTilemapAssemble {
+    pub(crate) doc_id: String,
     /// Tile size N in pixels; the source canvas must be at least N×N.
-    pub n: u32,
+    pub(crate) n: u32,
     /// The terrain mask, one string per map row: `#`/`1`/`x` = filled cell,
     /// anything else = empty. Short rows pad with empty.
-    pub rows: Vec<String>,
+    pub(crate) rows: Vec<String>,
     /// How off-map cells read: "filled" (terrain continues past the edge,
     /// default) or "empty" (map borders get outlines).
-    pub outside: Option<String>,
+    pub(crate) outside: Option<String>,
 }
 
 // --- drawing params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocTween {
-    pub doc_id: String,
-    pub from: usize,
-    pub to: usize,
+pub(crate) struct DocTween {
+    pub(crate) doc_id: String,
+    pub(crate) from: usize,
+    pub(crate) to: usize,
     /// In-between frames to insert (default 1).
-    pub steps: Option<usize>,
+    pub(crate) steps: Option<usize>,
     /// Duration of each inserted frame in ms (default 100).
-    pub duration_ms: Option<u32>,
+    pub(crate) duration_ms: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocGlow {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocGlow {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Glow tint; omit to bloom the art's own colours.
-    pub color: Option<Vec<i64>>,
+    pub(crate) color: Option<Vec<i64>>,
     /// Blur radius (default 2).
-    pub radius: Option<i32>,
+    pub(crate) radius: Option<i32>,
     /// Glow strength 0..255 (default 180).
-    pub intensity: Option<u8>,
+    pub(crate) intensity: Option<u8>,
     /// Blend mode for the bloom (default "screen"; "add" for hotter).
-    pub mode: Option<String>,
+    pub(crate) mode: Option<String>,
     /// When a palette is locked, re-snap the bloom back ON-palette afterwards so
     /// it stays crisp pixel art instead of hundreds of soft off-palette tints
     /// (the bloom is binarised at `snap_cutoff`). Default true when a palette is
     /// set; pass false to keep a deliberately soft bloom.
-    pub snap: Option<bool>,
+    pub(crate) snap: Option<bool>,
     /// Alpha cutoff for the post-glow snap (0..255, default 64 — keeps the
     /// brighter bloom core, drops the faint halo).
-    pub snap_cutoff: Option<u8>,
+    pub(crate) snap_cutoff: Option<u8>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRimLight {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocRimLight {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Rim colour [r,g,b(,a)].
-    pub color: Vec<i64>,
+    pub(crate) color: Vec<i64>,
     /// Light azimuth in degrees: 0=right, 90=down, 180=left, 270=up.
-    pub az: f32,
+    pub(crate) az: f32,
     /// Rim band thickness in pixels (default 1).
-    pub width: Option<i32>,
+    pub(crate) width: Option<i32>,
     /// Facing falloff exponent — higher = tighter rim (default 1.5).
-    pub falloff: Option<f32>,
+    pub(crate) falloff: Option<f32>,
     /// Light the AWAY-facing edge instead (core/contact shadow). Default false.
-    pub dark: Option<bool>,
+    pub(crate) dark: Option<bool>,
     /// Snap on-palette afterwards when a palette is locked (default true).
-    pub snap: Option<bool>,
+    pub(crate) snap: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocCastShadow {
-    pub doc_id: String,
+pub(crate) struct DocCastShadow {
+    pub(crate) doc_id: String,
     /// The caster layer (its silhouette throws the shadow).
-    pub layer: usize,
-    pub frame: usize,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Shadow colour [r,g,b(,a)].
-    pub color: Vec<i64>,
+    pub(crate) color: Vec<i64>,
     /// Light azimuth in degrees: 0=right, 90=down, 180=left, 270=up (pairs with
     /// the vector doc_form_audit infers). The shadow falls opposite. Default 135.
-    pub az: Option<f32>,
+    pub(crate) az: Option<f32>,
     /// Ground stretch — how far the shadow projects (default 1.0).
-    pub length: Option<f32>,
+    pub(crate) length: Option<f32>,
     /// How much height survives, 0..1 (0 = flat on the ground; default 0.2).
-    pub squash: Option<f32>,
+    pub(crate) squash: Option<f32>,
     /// Shadow strength 0..255 (default 140).
-    pub opacity: Option<u8>,
+    pub(crate) opacity: Option<u8>,
     /// Paint the shadow onto this layer and clip it to that layer's opaque
     /// pixels (the ground surface). Omit = draw behind the caster on its own cel.
-    pub receiver_layer: Option<usize>,
+    pub(crate) receiver_layer: Option<usize>,
     /// Snap on-palette afterwards when a palette is locked (default true).
-    pub snap: Option<bool>,
-}
-
-/// One gradient colour stop: position along the axis (0..1) + RGBA colour.
-#[derive(Deserialize, JsonSchema)]
-pub struct GradientStop {
-    pub pos: f32,
-    pub color: Vec<i64>,
+    pub(crate) snap: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSelect {
-    pub doc_id: String,
+pub(crate) struct DocSelect {
+    pub(crate) doc_id: String,
     /// "rect" | "ellipse" | "color" | "all" | "none". Default "rect".
-    pub shape: Option<String>,
+    pub(crate) shape: Option<String>,
     /// Combine with the current selection: "replace" (default) | "add" |
     /// "subtract" | "intersect".
-    pub mode: Option<String>,
+    pub(crate) mode: Option<String>,
     /// rect shape:
-    pub x0: Option<i32>,
-    pub y0: Option<i32>,
-    pub x1: Option<i32>,
-    pub y1: Option<i32>,
+    pub(crate) x0: Option<i32>,
+    pub(crate) y0: Option<i32>,
+    pub(crate) x1: Option<i32>,
+    pub(crate) y1: Option<i32>,
     /// ellipse shape:
-    pub cx: Option<i32>,
-    pub cy: Option<i32>,
-    pub rx: Option<i32>,
-    pub ry: Option<i32>,
+    pub(crate) cx: Option<i32>,
+    pub(crate) cy: Option<i32>,
+    pub(crate) rx: Option<i32>,
+    pub(crate) ry: Option<i32>,
     /// color shape — which cel to test, and either an explicit `color` or a
     /// sample point (`x`,`y`) plus `tolerance` (max channel distance).
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    pub color: Option<Vec<i64>>,
-    pub x: Option<i32>,
-    pub y: Option<i32>,
-    pub tolerance: Option<i32>,
+    pub(crate) layer: Option<usize>,
+    pub(crate) frame: Option<usize>,
+    pub(crate) color: Option<Vec<i64>>,
+    pub(crate) x: Option<i32>,
+    pub(crate) y: Option<i32>,
+    pub(crate) tolerance: Option<i32>,
 }
 
 /// A rectangular region of a cel (inclusive corners) + optional offset.
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSetPivot {
-    pub doc_id: String,
-    pub frame: usize,
+pub(crate) struct DocSetPivot {
+    pub(crate) doc_id: String,
+    pub(crate) frame: usize,
     /// Anchor point [x,y] in document pixels; omit to clear the pivot.
-    pub pivot: Option<Vec<i32>>,
+    pub(crate) pivot: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct BoxInput {
+pub(crate) struct BoxInput {
     /// Label for this box (e.g. "torso", "sword", "feet").
-    pub name: String,
+    pub(crate) name: String,
     /// `body` (collision), `hit` (deals damage) or `hurt` (takes damage).
-    pub kind: String,
+    pub(crate) kind: String,
     /// `[x, y, w, h]` in document pixels.
-    pub rect: Vec<i32>,
+    pub(crate) rect: Vec<i32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSetFrameBoxes {
-    pub doc_id: String,
-    pub frame: usize,
+pub(crate) struct DocSetFrameBoxes {
+    pub(crate) doc_id: String,
+    pub(crate) frame: usize,
     /// The frame's full box list; pass `[]` to clear. Replaces any existing set.
-    pub boxes: Vec<BoxInput>,
+    pub(crate) boxes: Vec<BoxInput>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSetPalette {
-    pub doc_id: String,
+pub(crate) struct DocSetPalette {
+    pub(crate) doc_id: String,
     /// Palette swatches, each [r,g,b] or [r,g,b,a].
-    pub colors: Vec<Vec<i64>>,
+    pub(crate) colors: Vec<Vec<i64>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPaletteSwap {
-    pub doc_id: String,
+pub(crate) struct DocPaletteSwap {
+    pub(crate) doc_id: String,
     /// Source colours to recolour, each [r,g,b]/[r,g,b,a]. Matched exactly
     /// (all channels). Same length as `to` — `from[i]` becomes `to[i]`.
-    pub from: Vec<Vec<i64>>,
+    pub(crate) from: Vec<Vec<i64>>,
     /// Replacement colours, each [r,g,b]/[r,g,b,a]. Same length as `from`.
-    pub to: Vec<Vec<i64>>,
+    pub(crate) to: Vec<Vec<i64>>,
     /// Restrict to one layer's cels; omit for every layer.
-    pub layer: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// Restrict to one frame's cels; omit for every frame.
-    pub frame: Option<usize>,
+    pub(crate) frame: Option<usize>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocBatch {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocBatch {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Ordered ops, each like {"op":"rect","x0":1,"y0":1,"x1":8,"y1":8,"color":[r,g,b],"fill":true}.
     /// Ops: pencil/line/rect/ellipse/polyline/polygon/fill/replace_color/
     /// flip/shift/outline/fill_cel/clear_cel/gradient/scatter/noise/adjust/blur/
     /// quantize/symmetry/drop_shadow/glow/bevel/shade/dither/pixel_perfect.
-    pub ops: Vec<serde_json::Value>,
+    pub(crate) ops: Vec<serde_json::Value>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocDraw {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocDraw {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
     /// | fill | gradient | scatter | noise | text | fill_cel.
-    pub op: String,
+    pub(crate) op: String,
     /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,
     /// color, fill). Every op also accepts `opacity` and `blend_mode`.
     #[serde(flatten)]
-    pub params: serde_json::Map<String, serde_json::Value>,
+    pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocFx {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocFx {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// One transform/effect op: blur | outline | drop_shadow | bevel | shade |
     /// form | dither | pixel_perfect | flip | shift | symmetry | quantize |
     /// replace_color | adjust.
-    pub op: String,
+    pub(crate) op: String,
     /// The op's own params, flattened alongside. Every op also accepts `opacity`
     /// and `blend_mode`.
     #[serde(flatten)]
-    pub params: serde_json::Map<String, serde_json::Value>,
+    pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocExport {
-    pub doc_id: String,
+pub(crate) struct DocExport {
+    pub(crate) doc_id: String,
     /// What to export: sheet | anim | tileset.
-    pub op: String,
+    pub(crate) op: String,
     /// Output file path.
-    pub out_path: String,
+    pub(crate) out_path: String,
     /// Nearest-neighbour upscale (sheet/anim default 4, tileset default 1).
-    pub scale: Option<u32>,
+    pub(crate) scale: Option<u32>,
     /// Op-specific params, flattened: anim → format ("gif"|"apng"), tag;
     /// tileset → tile_w, tile_h.
     #[serde(flatten)]
-    pub params: serde_json::Map<String, serde_json::Value>,
+    pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocLayer {
-    pub doc_id: String,
+pub(crate) struct DocLayer {
+    pub(crate) doc_id: String,
     /// add (new layer on top) | set (visibility/opacity/blend of layer `index`) |
     /// move | insert | delete | rename | duplicate | merge_down.
-    pub op: String,
+    pub(crate) op: String,
     /// Target layer index (the layer for `set`/`move`/`delete`/…).
-    pub index: Option<usize>,
+    pub(crate) index: Option<usize>,
     /// Destination index for `move`.
-    pub to_index: Option<usize>,
+    pub(crate) to_index: Option<usize>,
     /// Layer name for `add`/`insert`/`rename`.
-    pub name: Option<String>,
+    pub(crate) name: Option<String>,
     /// Visibility for `set`.
-    pub visible: Option<bool>,
-    pub opacity: Option<u8>,
-    pub blend: Option<String>,
+    pub(crate) visible: Option<bool>,
+    pub(crate) opacity: Option<u8>,
+    pub(crate) blend: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocFrame {
-    pub doc_id: String,
+pub(crate) struct DocFrame {
+    pub(crate) doc_id: String,
     /// add (append) | duration (set frame timing) | delete | insert | duplicate |
     /// move.
-    pub op: String,
+    pub(crate) op: String,
     /// Target frame index (for duration/delete/insert/duplicate/move).
-    pub frame: Option<usize>,
+    pub(crate) frame: Option<usize>,
     /// For `add`: duplicate this frame's cels into the new frame.
-    pub copy_from: Option<usize>,
+    pub(crate) copy_from: Option<usize>,
     /// Destination index for `move`.
-    pub to_index: Option<usize>,
+    pub(crate) to_index: Option<usize>,
     /// Frame duration in ms (for add/insert/duration; default 100).
-    pub duration_ms: Option<u32>,
+    pub(crate) duration_ms: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRegion {
-    pub doc_id: String,
+pub(crate) struct DocRegion {
+    pub(crate) doc_id: String,
     /// copy | cut | clear | move | paste.
-    pub op: String,
-    pub layer: usize,
-    pub frame: usize,
+    pub(crate) op: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Source rect for copy/cut/clear/move.
-    pub x0: Option<i32>,
-    pub y0: Option<i32>,
-    pub x1: Option<i32>,
-    pub y1: Option<i32>,
+    pub(crate) x0: Option<i32>,
+    pub(crate) y0: Option<i32>,
+    pub(crate) x1: Option<i32>,
+    pub(crate) y1: Option<i32>,
     /// Offset for `move`.
-    pub dx: Option<i32>,
-    pub dy: Option<i32>,
+    pub(crate) dx: Option<i32>,
+    pub(crate) dy: Option<i32>,
     /// Destination top-left for `paste`.
-    pub x: Option<i32>,
-    pub y: Option<i32>,
+    pub(crate) x: Option<i32>,
+    pub(crate) y: Option<i32>,
     /// `paste`: true = source-over (default), false = overwrite.
-    pub blend: Option<bool>,
+    pub(crate) blend: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRefOp {
-    pub doc_id: String,
+pub(crate) struct DocRefOp {
+    pub(crate) doc_id: String,
     /// set (attach/clear the comparison reference) | import (trace an external
     /// image cleaned onto a guide layer).
-    pub op: String,
+    pub(crate) op: String,
     /// `set`: reference image path (omit to clear). `import`: source image path.
-    pub path: Option<String>,
+    pub(crate) path: Option<String>,
     // -- import params --
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
+    pub(crate) layer: Option<usize>,
+    pub(crate) frame: Option<usize>,
     /// `import`: target width in px (required for import).
-    pub target_w: Option<u32>,
+    pub(crate) target_w: Option<u32>,
     /// `import`: omit to derive an aspect-true height.
-    pub target_h: Option<u32>,
-    pub colors: Option<usize>,
-    pub dither: Option<bool>,
-    pub defringe: Option<bool>,
-    pub to_doc_palette: Option<bool>,
+    pub(crate) target_h: Option<u32>,
+    pub(crate) colors: Option<usize>,
+    pub(crate) dither: Option<bool>,
+    pub(crate) defringe: Option<bool>,
+    pub(crate) to_doc_palette: Option<bool>,
     /// `import`: corner-seeded background removal before palette extraction.
-    pub remove_bg: Option<bool>,
+    pub(crate) remove_bg: Option<bool>,
     /// `import`: colours the derived palette must keep (e.g. a black outline).
-    pub pin: Option<Vec<Vec<i64>>>,
+    pub(crate) pin: Option<Vec<Vec<i64>>>,
 }
 
 // --- canvas reader params --------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocDumpRegion {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocDumpRegion {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// Dump this layer's cel; omit to dump the flattened composite.
-    pub layer: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// [x0,y0,x1,y1] document pixels (inclusive). Omit = whole canvas. Area capped at 4096 px.
-    pub region: Option<Vec<i32>>,
+    pub(crate) region: Option<Vec<i32>>,
     /// "symbol" (A..Z a..z 0..9 per colour, `.`=transparent) or "hex".
-    pub mode: Option<String>,
+    pub(crate) mode: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSilhouette {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
+pub(crate) struct DocSilhouette {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// Minimum alpha counted as opaque (default 1).
-    pub alpha_threshold: Option<u8>,
+    pub(crate) alpha_threshold: Option<u8>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocComponents {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
+pub(crate) struct DocComponents {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// Pixel adjacency: 4 or 8 (default 8).
-    pub connectivity: Option<u8>,
+    pub(crate) connectivity: Option<u8>,
     /// Only components of this exact [r,g,b]/[r,g,b,a]; omit = any opaque pixel.
-    pub color: Option<Vec<i64>>,
+    pub(crate) color: Option<Vec<i64>>,
     /// Components smaller than this are dropped from the list (default 1).
-    pub min_area: Option<u32>,
+    pub(crate) min_area: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocFormAudit {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
+pub(crate) struct DocFormAudit {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// Forms smaller than this many pixels are skipped (default 12).
-    pub min_area: Option<u32>,
+    pub(crate) min_area: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocCoverageMap {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocCoverageMap {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// Grid columns (default 8).
-    pub cols: Option<u32>,
+    pub(crate) cols: Option<u32>,
     /// Grid rows (default 8).
-    pub rows: Option<u32>,
+    pub(crate) rows: Option<u32>,
 }
 
 // --- value & colour feedback params ----------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocContrastCheck {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocContrastCheck {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// "region" (inside vs 4px surround), "palette" (all colour pairs) or "one-bit".
-    pub mode: String,
+    pub(crate) mode: String,
     /// [x0,y0,x1,y1] document pixels — required for mode="region".
-    pub region: Option<Vec<i32>>,
+    pub(crate) region: Option<Vec<i32>>,
     /// WCAG ratio at/above which a pair passes (default 1.5).
-    pub min_ratio: Option<f32>,
+    pub(crate) min_ratio: Option<f32>,
     /// Luma cutoff for mode="one-bit" (default 128).
-    pub threshold: Option<u8>,
+    pub(crate) threshold: Option<u8>,
     /// Where to write the B/W PNG for mode="one-bit".
-    pub out_path: Option<String>,
+    pub(crate) out_path: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPaletteReport {
-    pub doc_id: String,
+pub(crate) struct DocPaletteReport {
+    pub(crate) doc_id: String,
     /// One frame; omit to tally every frame.
-    pub frame: Option<usize>,
+    pub(crate) frame: Option<usize>,
     /// One layer's cel; omit for the flattened composite per frame.
-    pub layer: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// [x0,y0,x1,y1] document pixels to restrict the tally; omit = whole canvas.
-    pub region: Option<Vec<i32>>,
+    pub(crate) region: Option<Vec<i32>>,
     /// Max channel distance counting two colours as near-duplicates (default 8).
-    pub dupe_threshold: Option<i32>,
+    pub(crate) dupe_threshold: Option<i32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRampValidate {
+pub(crate) struct DocRampValidate {
     /// Explicit ramp [[r,g,b],...] (≥2). Provide this OR `doc_id`.
-    pub colors: Option<Vec<Vec<i64>>>,
+    pub(crate) colors: Option<Vec<Vec<i64>>>,
     /// Validate this document's locked palette instead of explicit colours.
-    pub doc_id: Option<String>,
+    pub(crate) doc_id: Option<String>,
     /// [start,end) slice of the palette to validate (with `doc_id`).
-    pub slice: Option<Vec<usize>>,
+    pub(crate) slice: Option<Vec<usize>>,
 }
 
 // --- animation & tiling feedback params ------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocFrameDiff {
-    pub doc_id: String,
-    pub frame_a: usize,
-    pub frame_b: usize,
+pub(crate) struct DocFrameDiff {
+    pub(crate) doc_id: String,
+    pub(crate) frame_a: usize,
+    pub(crate) frame_b: usize,
     /// Diff this layer's cel; omit for the flattened composite.
-    pub layer: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// [x0,y0,x1,y1] document pixels; omit = whole canvas.
-    pub region: Option<Vec<i32>>,
+    pub(crate) region: Option<Vec<i32>>,
     /// Add a text grid (`.`unchanged `+`added `-`removed `~`recolored); area capped 4096 px.
-    pub grid: Option<bool>,
+    pub(crate) grid: Option<bool>,
     /// "none" or "overlay" (frame_b dimmed with changed pixels flagged).
-    pub render: Option<String>,
-    pub out_path: Option<String>,
-    pub scale: Option<u32>,
+    pub(crate) render: Option<String>,
+    pub(crate) out_path: Option<String>,
+    pub(crate) scale: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSeamReport {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocSeamReport {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// Test this layer's cel; omit for the flattened composite.
-    pub layer: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// "both", "horizontal" (left↔right) or "vertical" (top↔bottom).
-    pub axis: Option<String>,
+    pub(crate) axis: Option<String>,
     /// Max per-channel delta still counted as a matching edge (default 0).
-    pub threshold: Option<i32>,
+    pub(crate) threshold: Option<i32>,
     /// Render a PNG with mismatched edge pixels highlighted red; returns its path.
-    pub out_path: Option<String>,
+    pub(crate) out_path: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocAnimAudit {
-    pub doc_id: String,
+pub(crate) struct DocAnimAudit {
+    pub(crate) doc_id: String,
     /// Audit this tag's loop; omit to audit the whole timeline.
-    pub tag: Option<String>,
+    pub(crate) tag: Option<String>,
     /// Use this layer's cel; omit for the flattened composite.
-    pub layer: Option<usize>,
+    pub(crate) layer: Option<usize>,
     /// "seam" (loop wrap diff), "spacing" (per-frame motion evenness),
     /// "arc" (trajectory shape) or "timing" (per-frame durations).
-    pub mode: String,
+    pub(crate) mode: String,
     /// [x0,y0,x1,y1] clips spacing/arc to one part (e.g. a swinging arm) so
     /// its motion is measurable over a static body.
-    pub region: Option<Vec<i32>>,
+    pub(crate) region: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocKeyframeMove {
-    pub doc_id: String,
-    pub layer: usize,
+pub(crate) struct DocKeyframeMove {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
     /// Source rect [x0,y0,x1,y1] (document pixels) read from `from_frame`.
-    pub region: Vec<i32>,
-    pub from_frame: usize,
+    pub(crate) region: Vec<i32>,
+    pub(crate) from_frame: usize,
     /// Destination keyframe (> from_frame); all frames between move too.
-    pub to_frame: usize,
+    pub(crate) to_frame: usize,
     /// Total displacement applied at to_frame; intermediates are eased fractions.
-    pub dx: i32,
-    pub dy: i32,
+    pub(crate) dx: i32,
+    pub(crate) dy: i32,
     /// "linear", "ease-in", "ease-out", "ease-in-out" (cubic), "bounce"
     /// (ease-out bounce), "overshoot" (back ease-out — shoots past the offset
     /// then settles) or "elastic" (decaying oscillation). Default "linear".
-    pub easing: Option<String>,
+    pub(crate) easing: Option<String>,
     /// Clear the original rect in each destination frame first (default true).
-    pub clear_source: Option<bool>,
+    pub(crate) clear_source: Option<bool>,
 }
 
 fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
@@ -863,429 +856,429 @@ fn iso_date() -> String {
 // --- world-class-art tool params (the art-quality pass) --------------------
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocLook {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub scale: Option<u32>,
+pub(crate) struct DocLook {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
+    pub(crate) scale: Option<u32>,
     /// Inclusive crop corners [x0,y0,x1,y1].
-    pub region: Option<Vec<i32>>,
+    pub(crate) region: Option<Vec<i32>>,
     /// render | value | bands | sat | hue | notan.
-    pub mode: Option<String>,
+    pub(crate) mode: Option<String>,
     /// Band count for mode=bands.
-    pub bands: Option<u32>,
-    pub grid: Option<bool>,
-    pub coords: Option<bool>,
-    pub onion: Option<bool>,
-    pub max_size: Option<u32>,
+    pub(crate) bands: Option<u32>,
+    pub(crate) grid: Option<bool>,
+    pub(crate) coords: Option<bool>,
+    pub(crate) onion: Option<bool>,
+    pub(crate) max_size: Option<u32>,
     /// Repeat the result N×N to eyeball seamlessness (tileability check).
-    pub tile: Option<u32>,
+    pub(crate) tile: Option<u32>,
     /// Also write the PNG to this path, for file/export workflows.
-    pub out_path: Option<String>,
+    pub(crate) out_path: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSelectRender {
-    pub doc_id: String,
-    pub scale: Option<u32>,
+pub(crate) struct DocSelectRender {
+    pub(crate) doc_id: String,
+    pub(crate) scale: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocCheckpoint {
-    pub doc_id: String,
+pub(crate) struct DocCheckpoint {
+    pub(crate) doc_id: String,
     /// save | list | restore | diff | prune.
-    pub action: String,
-    pub label: Option<String>,
-    pub checkpoint_id: Option<String>,
+    pub(crate) action: String,
+    pub(crate) label: Option<String>,
+    pub(crate) checkpoint_id: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSnapPalette {
-    pub doc_id: String,
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
+pub(crate) struct DocSnapPalette {
+    pub(crate) doc_id: String,
+    pub(crate) layer: Option<usize>,
+    pub(crate) frame: Option<usize>,
     /// Override palette as a list of [r,g,b(,a)]; defaults to the doc's palette.
-    pub palette: Option<Vec<Vec<i64>>>,
+    pub(crate) palette: Option<Vec<Vec<i64>>>,
     /// Partial-alpha policy for FX bloom / AA fringe: `preserve` (default — keep
     /// soft alpha, snap RGB only) | `opaque` (binarise alpha at `cutoff`,
     /// default 128 — collapse a bloom into a crisp on-palette silhouette) |
     /// `flatten` (composite over `bg` then snap fully opaque).
-    pub alpha: Option<String>,
+    pub(crate) alpha: Option<String>,
     /// Alpha cutoff for `alpha="opaque"` (0..255, default 128).
-    pub cutoff: Option<u8>,
+    pub(crate) cutoff: Option<u8>,
     /// Backdrop `[r,g,b]` for `alpha="flatten"` (default opaque black).
-    pub bg: Option<Vec<i64>>,
+    pub(crate) bg: Option<Vec<i64>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSelectWand {
-    pub doc_id: String,
+pub(crate) struct DocSelectWand {
+    pub(crate) doc_id: String,
     /// Layer to sample; omit to sample the flattened composite.
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    pub x: i32,
-    pub y: i32,
-    pub tol: Option<i32>,
-    pub conn8: Option<bool>,
-    pub perceptual: Option<bool>,
+    pub(crate) layer: Option<usize>,
+    pub(crate) frame: Option<usize>,
+    pub(crate) x: i32,
+    pub(crate) y: i32,
+    pub(crate) tol: Option<i32>,
+    pub(crate) conn8: Option<bool>,
+    pub(crate) perceptual: Option<bool>,
     /// replace | add | subtract | intersect.
-    pub mode: Option<String>,
+    pub(crate) mode: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocSmoothEdges {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocSmoothEdges {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Optional ramp [[r,g,b],...] to keep AA pixels on-palette.
-    pub ramp: Option<Vec<Vec<i64>>>,
+    pub(crate) ramp: Option<Vec<Vec<i64>>>,
     /// With keep_square, edges flat-straight for longer than this stay crisp.
-    pub max_run: Option<i32>,
+    pub(crate) max_run: Option<i32>,
     /// Preserve deliberate right-angle corners (default true).
-    pub keep_square: Option<bool>,
-    pub only_color: Option<Vec<i64>>,
-    pub region: Option<Vec<i32>>,
+    pub(crate) keep_square: Option<bool>,
+    pub(crate) only_color: Option<Vec<i64>>,
+    pub(crate) region: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocTransformCel {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub region: Option<Vec<i32>>,
-    pub rotate: Option<f32>,
-    pub scale_x: Option<f32>,
-    pub scale_y: Option<f32>,
-    pub skew_x: Option<f32>,
-    pub skew_y: Option<f32>,
+pub(crate) struct DocTransformCel {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
+    pub(crate) region: Option<Vec<i32>>,
+    pub(crate) rotate: Option<f32>,
+    pub(crate) scale_x: Option<f32>,
+    pub(crate) scale_y: Option<f32>,
+    pub(crate) skew_x: Option<f32>,
+    pub(crate) skew_y: Option<f32>,
     /// rotsprite (cluster-preserving) | nearest.
-    pub method: Option<String>,
+    pub(crate) method: Option<String>,
     /// With scale_x set and scale_y omitted, derive scale_y = 1/scale_x.
-    pub preserve_volume: Option<bool>,
+    pub(crate) preserve_volume: Option<bool>,
     /// Snap the resample fringe back to the locked palette (default true; only
     /// acts when a palette is set).
-    pub snap_palette: Option<bool>,
-    pub clear_source: Option<bool>,
+    pub(crate) snap_palette: Option<bool>,
+    pub(crate) clear_source: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocCritique {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
-    pub region: Option<Vec<i32>>,
+pub(crate) struct DocCritique {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
+    pub(crate) layer: Option<usize>,
+    pub(crate) region: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRelight {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub region: Option<Vec<i32>>,
+pub(crate) struct DocRelight {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
+    pub(crate) region: Option<Vec<i32>>,
     /// Key light: azimuth (0=right,90=down,180=left,270=up) + elevation (0..90).
-    pub key_azimuth: Option<f32>,
-    pub key_elevation: Option<f32>,
-    pub key_intensity: Option<f32>,
-    pub key_color: Option<Vec<i64>>,
-    pub fill_intensity: Option<f32>,
-    pub fill_color: Option<Vec<i64>>,
-    pub rim_intensity: Option<f32>,
-    pub rim_color: Option<Vec<i64>>,
-    pub ambient: Option<f32>,
-    pub ambient_color: Option<Vec<i64>>,
+    pub(crate) key_azimuth: Option<f32>,
+    pub(crate) key_elevation: Option<f32>,
+    pub(crate) key_intensity: Option<f32>,
+    pub(crate) key_color: Option<Vec<i64>>,
+    pub(crate) fill_intensity: Option<f32>,
+    pub(crate) fill_color: Option<Vec<i64>>,
+    pub(crate) rim_intensity: Option<f32>,
+    pub(crate) rim_color: Option<Vec<i64>>,
+    pub(crate) ambient: Option<f32>,
+    pub(crate) ambient_color: Option<Vec<i64>>,
     /// How domed the silhouette reads as a form (higher = flatter).
-    pub bulge: Option<f32>,
-    pub ramp: Option<Vec<Vec<i64>>>,
+    pub(crate) bulge: Option<f32>,
+    pub(crate) ramp: Option<Vec<Vec<i64>>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocDitherRamp {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocDitherRamp {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// The ramp to dither across (>= 2 colours), as [[r,g,b],...].
-    pub ramp: Vec<Vec<i64>>,
-    pub region: Option<Vec<i32>>,
+    pub(crate) ramp: Vec<Vec<i64>>,
+    pub(crate) region: Option<Vec<i32>>,
     /// h | v | radial.
-    pub axis: Option<String>,
+    pub(crate) axis: Option<String>,
     /// bayer2 | bayer4 | bayer8 | checker | ign.
-    pub pattern: Option<String>,
-    pub only_existing: Option<bool>,
+    pub(crate) pattern: Option<String>,
+    pub(crate) only_existing: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocContactSheet {
-    pub doc_id: String,
-    pub scale: Option<u32>,
-    pub cols: Option<usize>,
+pub(crate) struct DocContactSheet {
+    pub(crate) doc_id: String,
+    pub(crate) scale: Option<u32>,
+    pub(crate) cols: Option<usize>,
     /// Ghost each cell's PREVIOUS frame under it at 35% alpha — per-pair
     /// onion skinning, the closest a still image gets to showing motion.
-    pub onion: Option<bool>,
+    pub(crate) onion: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPalette {
-    pub base: Vec<i64>,
+pub(crate) struct DocPalette {
+    pub(crate) base: Vec<i64>,
     /// mono | complementary | triadic | analogous | split | tetradic. Default mono.
-    pub scheme: Option<String>,
+    pub(crate) scheme: Option<String>,
     /// Colours per ramp (default 5).
-    pub count: Option<usize>,
-    pub value_lo: Option<f32>,
-    pub value_hi: Option<f32>,
-    pub hue_shift: Option<f32>,
+    pub(crate) count: Option<usize>,
+    pub(crate) value_lo: Option<f32>,
+    pub(crate) value_hi: Option<f32>,
+    pub(crate) hue_shift: Option<f32>,
     /// flat | arc | sat-in-shadow (default arc).
-    pub sat_curve: Option<String>,
-    pub anchor_midtone: Option<bool>,
+    pub(crate) sat_curve: Option<String>,
+    pub(crate) anchor_midtone: Option<bool>,
     /// Store the flattened palette on this document id.
-    pub set_doc: Option<String>,
+    pub(crate) set_doc: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocBox {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocBox {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Centre of the top diamond.
-    pub cx: i32,
-    pub cy: i32,
+    pub(crate) cx: i32,
+    pub(crate) cy: i32,
     /// Half-width of the top diamond.
-    pub s: i32,
+    pub(crate) s: i32,
     /// Body height.
-    pub ht: i32,
-    pub color: Vec<i64>,
-    pub light_right: Option<bool>,
+    pub(crate) ht: i32,
+    pub(crate) color: Vec<i64>,
+    pub(crate) light_right: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPerspectiveGuide {
-    pub doc_id: String,
+pub(crate) struct DocPerspectiveGuide {
+    pub(crate) doc_id: String,
     /// thirds | grid | iso | vp.
-    pub kind: Option<String>,
-    pub color: Option<Vec<i64>>,
-    pub spacing: Option<i32>,
+    pub(crate) kind: Option<String>,
+    pub(crate) color: Option<Vec<i64>>,
+    pub(crate) spacing: Option<i32>,
     /// Vanishing point [x,y] for kind=vp.
-    pub vp: Option<Vec<i32>>,
+    pub(crate) vp: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocOutlineSelective {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocOutlineSelective {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// from_fill | light | dark.
-    pub mode: Option<String>,
-    pub ramp: Option<Vec<Vec<i64>>>,
-    pub steps: Option<i32>,
-    pub region: Option<Vec<i32>>,
+    pub(crate) mode: Option<String>,
+    pub(crate) ramp: Option<Vec<Vec<i64>>>,
+    pub(crate) steps: Option<i32>,
+    pub(crate) region: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocMaterial {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub region: Option<Vec<i32>>,
+pub(crate) struct DocMaterial {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
+    pub(crate) region: Option<Vec<i32>>,
     /// metal | wood | stone | water | cloth | skin | glass.
-    pub material: String,
-    pub color: Vec<i64>,
-    pub seed: Option<u64>,
-    pub ramp: Option<Vec<Vec<i64>>>,
+    pub(crate) material: String,
+    pub(crate) color: Vec<i64>,
+    pub(crate) seed: Option<u64>,
+    pub(crate) ramp: Option<Vec<Vec<i64>>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocTranslucency {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
-    pub region: Option<Vec<i32>>,
+pub(crate) struct DocTranslucency {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
+    pub(crate) layer: Option<usize>,
+    pub(crate) region: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPanel {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub x: i32,
-    pub y: i32,
-    pub w: i32,
-    pub h: i32,
-    pub fill: Vec<i64>,
-    pub border: Option<Vec<i64>>,
-    pub bevel: Option<bool>,
+pub(crate) struct DocPanel {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
+    pub(crate) x: i32,
+    pub(crate) y: i32,
+    pub(crate) w: i32,
+    pub(crate) h: i32,
+    pub(crate) fill: Vec<i64>,
+    pub(crate) border: Option<Vec<i64>>,
+    pub(crate) bevel: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPaintGrid {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocPaintGrid {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Top-left of the grid in document pixels (default 0,0).
-    pub x: Option<i32>,
-    pub y: Option<i32>,
+    pub(crate) x: Option<i32>,
+    pub(crate) y: Option<i32>,
     /// Single-character keys -> [r,g,b(,a)] colour OR an integer palette index
     /// (palette-true by construction). '.' and ' ' are reserved: untouched.
-    pub legend: serde_json::Map<String, Value>,
+    pub(crate) legend: serde_json::Map<String, Value>,
     /// One string per pixel row, e.g. ["..kk..", ".koook."].
-    pub rows: Vec<String>,
+    pub(crate) rows: Vec<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocExtractToLayer {
-    pub doc_id: String,
+pub(crate) struct DocExtractToLayer {
+    pub(crate) doc_id: String,
     /// Source layer holding the flat sprite.
-    pub layer: usize,
+    pub(crate) layer: usize,
     /// Frame to read when frames="one" (default 0).
-    pub frame: Option<usize>,
+    pub(crate) frame: Option<usize>,
     /// Rect [x0,y0,x1,y1] of the part to cut. Omit to use the active selection.
-    pub region: Option<Vec<i32>>,
+    pub(crate) region: Option<Vec<i32>>,
     /// Use the active selection mask (set with doc_select / doc_select_wand).
-    pub use_selection: Option<bool>,
+    pub(crate) use_selection: Option<bool>,
     /// Name for the new part layer, e.g. "arm-front".
-    pub name: Option<String>,
+    pub(crate) name: Option<String>,
     /// "one" (default) cuts just `frame`; "all" cuts every frame's cel.
-    pub frames: Option<String>,
+    pub(crate) frames: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocKeyframeTransform {
-    pub doc_id: String,
-    pub layer: usize,
+pub(crate) struct DocKeyframeTransform {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
     /// Rect [x0,y0,x1,y1] of the part to rotate (document pixels), read from from_frame.
-    pub region: Vec<i32>,
+    pub(crate) region: Vec<i32>,
     /// The JOINT the part rotates about, [x,y] in document pixels (e.g. the shoulder).
-    pub pivot: Vec<f32>,
-    pub from_frame: usize,
+    pub(crate) pivot: Vec<f32>,
+    pub(crate) from_frame: usize,
     /// Last frame of the motion (> from_frame); frames must already exist.
-    pub to_frame: usize,
+    pub(crate) to_frame: usize,
     /// Total rotation in degrees at to_frame (clockwise positive); intermediates eased.
-    pub rot_deg: Option<f32>,
+    pub(crate) rot_deg: Option<f32>,
     /// Total translation applied at to_frame; intermediates eased.
-    pub dx: Option<i32>,
-    pub dy: Option<i32>,
+    pub(crate) dx: Option<i32>,
+    pub(crate) dy: Option<i32>,
     /// linear | ease-in | ease-out | ease-in-out | bounce | overshoot | elastic.
-    pub easing: Option<String>,
+    pub(crate) easing: Option<String>,
     /// Snap resampled pixels back to the locked palette (default true).
-    pub snap_palette: Option<bool>,
+    pub(crate) snap_palette: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRefAnalyze {
-    pub doc_id: String,
+pub(crate) struct DocRefAnalyze {
+    pub(crate) doc_id: String,
     /// Analyze this file instead of the doc's stored reference.
-    pub path: Option<String>,
+    pub(crate) path: Option<String>,
     /// Width to plan at (default: the canvas width); height derives aspect-true.
-    pub target_w: Option<u32>,
+    pub(crate) target_w: Option<u32>,
     /// Subject palette size to extract (default 8).
-    pub colors: Option<usize>,
+    pub(crate) colors: Option<usize>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocRefCompare {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocRefCompare {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// "side_by_side" (default) or "overlay" (reference ghosted under the art).
-    pub mode: Option<String>,
+    pub(crate) mode: Option<String>,
     /// Grid divisions per axis for the ΔE cells (default 8, clamped 2..=16).
-    pub cells: Option<u32>,
+    pub(crate) cells: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocDiffMap {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocDiffMap {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// How many worst individual pixels to list (default 20, clamped 1..=64).
-    pub top: Option<usize>,
+    pub(crate) top: Option<usize>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocCritiqueVision {
-    pub doc_id: String,
-    pub frame: Option<usize>,
+pub(crate) struct DocCritiqueVision {
+    pub(crate) doc_id: String,
+    pub(crate) frame: Option<usize>,
     /// What to weight the critique toward — e.g. "anatomy", "readability",
     /// "colour", "appeal". Omit for a balanced pass.
-    pub focus: Option<String>,
+    pub(crate) focus: Option<String>,
     /// Render scale handed to the host's vision model (default 8, clamped
     /// 1..=16). Bigger = more pixel detail for the model to read.
-    pub scale: Option<u32>,
+    pub(crate) scale: Option<u32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocBurst {
-    pub doc_id: String,
-    pub layer: Option<usize>,
-    pub cx: i32,
-    pub cy: i32,
-    pub frames: Option<usize>,
-    pub max_radius: i32,
+pub(crate) struct DocBurst {
+    pub(crate) doc_id: String,
+    pub(crate) layer: Option<usize>,
+    pub(crate) cx: i32,
+    pub(crate) cy: i32,
+    pub(crate) frames: Option<usize>,
+    pub(crate) max_radius: i32,
     /// ring | disc | rays.
-    pub kind: Option<String>,
-    pub color: Vec<i64>,
-    pub ramp: Option<Vec<Vec<i64>>>,
+    pub(crate) kind: Option<String>,
+    pub(crate) color: Vec<i64>,
+    pub(crate) ramp: Option<Vec<Vec<i64>>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocFigure {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
+pub(crate) struct DocFigure {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
     /// Named joint coordinates as `{"head":[x,y], "shoulder_l":[x,y], ...}`.
     /// Required: head, shoulder_l/r, elbow_l/r, hand_l/r, hip_l/r, knee_l/r,
     /// foot_l/r. chest and pelvis are derived from the shoulder/hip midpoints.
-    pub joints: std::collections::HashMap<String, Vec<i64>>,
-    pub color: Vec<i64>,
+    pub(crate) joints: std::collections::HashMap<String, Vec<i64>>,
+    pub(crate) color: Vec<i64>,
     /// Arm/leg capsule width (default 3).
-    pub limb_w: Option<i64>,
+    pub(crate) limb_w: Option<i64>,
     /// Torso capsule width (default 6).
-    pub torso_w: Option<i64>,
+    pub(crate) torso_w: Option<i64>,
     /// Head radius (default 4).
-    pub head_r: Option<i64>,
+    pub(crate) head_r: Option<i64>,
     /// Anti-alias the capsule edges (default true).
-    pub aa: Option<bool>,
+    pub(crate) aa: Option<bool>,
     /// Snap on-palette afterwards when a palette is locked (default true).
-    pub snap: Option<bool>,
+    pub(crate) snap: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocPoseCycle {
-    pub doc_id: String,
-    pub layer: usize,
+pub(crate) struct DocPoseCycle {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
     /// The base STANDING pose: the same 13 named joints as doc_figure.
-    pub joints: std::collections::HashMap<String, Vec<i64>>,
+    pub(crate) joints: std::collections::HashMap<String, Vec<i64>>,
     /// Which cycle to generate: idle | run | jump | attack | hurt.
-    pub gait: String,
+    pub(crate) gait: String,
     /// Frame count (omit or 0 = the gait's natural count; clamped 2..=24).
-    pub frames: Option<usize>,
+    pub(crate) frames: Option<usize>,
     /// Amplitude multiplier on the gait's motion (default 1.0, clamped 0.1..=3).
-    pub intensity: Option<f32>,
-    pub color: Vec<i64>,
-    pub limb_w: Option<i64>,
-    pub torso_w: Option<i64>,
-    pub head_r: Option<i64>,
-    pub aa: Option<bool>,
-    pub snap: Option<bool>,
+    pub(crate) intensity: Option<f32>,
+    pub(crate) color: Vec<i64>,
+    pub(crate) limb_w: Option<i64>,
+    pub(crate) torso_w: Option<i64>,
+    pub(crate) head_r: Option<i64>,
+    pub(crate) aa: Option<bool>,
+    pub(crate) snap: Option<bool>,
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct DocWalk {
-    pub doc_id: String,
-    pub layer: usize,
+pub(crate) struct DocWalk {
+    pub(crate) doc_id: String,
+    pub(crate) layer: usize,
     /// The base STANDING pose: the same 13 named joints as doc_figure.
-    pub joints: std::collections::HashMap<String, Vec<i64>>,
-    pub color: Vec<i64>,
+    pub(crate) joints: std::collections::HashMap<String, Vec<i64>>,
+    pub(crate) color: Vec<i64>,
     /// Number of frames in the cycle (default 8, clamped 2..=24).
-    pub frames: Option<usize>,
+    pub(crate) frames: Option<usize>,
     /// Foot front-to-back travel in px (default 10).
-    pub stride: Option<i64>,
+    pub(crate) stride: Option<i64>,
     /// Foot lift height on the swing in px (default 4).
-    pub lift: Option<i64>,
+    pub(crate) lift: Option<i64>,
     /// Body bob amplitude in px (default 1).
-    pub bob: Option<i64>,
+    pub(crate) bob: Option<i64>,
     /// Hand front-to-back swing in px (default 6).
-    pub arm_swing: Option<i64>,
-    pub limb_w: Option<i64>,
-    pub torso_w: Option<i64>,
-    pub head_r: Option<i64>,
-    pub aa: Option<bool>,
-    pub snap: Option<bool>,
+    pub(crate) arm_swing: Option<i64>,
+    pub(crate) limb_w: Option<i64>,
+    pub(crate) torso_w: Option<i64>,
+    pub(crate) head_r: Option<i64>,
+    pub(crate) aa: Option<bool>,
+    pub(crate) snap: Option<bool>,
 }
 
 // --- resources -------------------------------------------------------------
