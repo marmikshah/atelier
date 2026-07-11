@@ -336,10 +336,10 @@ impl Studio {
         // One dominance rule drives BOTH the heat colour and the fix string, so
         // they can never contradict; hue is chroma-weighted so it vanishes on
         // near-gray pixels (where an OKLCh hue angle is meaningless).
-        let classify = |dl: f32, dc: f32, hue: f32| -> (bool, f32) {
+        let classify = |dl: f32, dc: f32, hue: f32| -> bool {
             let value_err = dl.abs();
             let colour_err = dc.abs() + hue;
-            (value_err >= colour_err, value_err.max(colour_err))
+            value_err >= colour_err
         };
         for y in 0..ch {
             for x in 0..cw {
@@ -371,7 +371,7 @@ impl Studio {
                 sum += de as f64;
                 n += 1;
                 maxd = maxd.max(de);
-                let (value_dom, _) = classify(dl, dc, hue);
+                let value_dom = classify(dl, dc, hue);
                 let i = ((de / 0.2).clamp(0.0, 1.0) * 255.0) as u8;
                 let px = if value_dom {
                     if dl > 0.0 {
@@ -398,7 +398,7 @@ impl Studio {
             .take(top)
             .filter(|w| w.0 > 0.02)
             .map(|&(de, x, y, dl, dc, hue)| {
-                let (value_dom, _) = classify(dl, dc, hue);
+                let value_dom = classify(dl, dc, hue);
                 let mut fix: Vec<&str> = Vec::new();
                 if value_dom {
                     if dl.abs() > 0.02 {
