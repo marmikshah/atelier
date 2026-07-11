@@ -206,9 +206,11 @@ def sanitize(node):
 # OpenAI-compatible chat
 # --------------------------------------------------------------------------- #
 def api_key(args):
+    # An explicit --key-file wins over the environment (so a stale exported
+    # key can't shadow the one you just passed).
+    if args.key_file:
+        return Path(args.key_file).read_text().strip()
     key = os.environ.get(args.key_env)
-    if not key and args.key_file:
-        key = Path(args.key_file).read_text().strip()
     if not key:
         sys.exit(f"no API key — set ${args.key_env} or pass --key-file")
     return key
@@ -385,6 +387,7 @@ def ensure_binary(path):
 def cmd_run(args):
     key = api_key(args)
     binary = ensure_binary(args.binary)
+    TRACES.mkdir(parents=True, exist_ok=True)
     briefs = args.briefs.split(",") if args.briefs else list(BRIEFS)
     for b in briefs:
         if b not in BRIEFS:
