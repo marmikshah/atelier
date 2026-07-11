@@ -302,7 +302,8 @@ impl Studio {
             Some(p) => {
                 let pb = std::path::PathBuf::from(p);
                 if let Some(parent) = pb.parent() {
-                    let _ = std::fs::create_dir_all(parent);
+                    fs::create_dir_all(parent)
+                        .map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
                 }
                 out.save(&pb).map_err(|e| e.to_string())?;
                 Some(pb.to_string_lossy().into_owned())

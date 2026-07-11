@@ -103,7 +103,8 @@ fn slugify(name: &str) -> String {
     }
 }
 
-/// Escape the five XML metacharacters so attribute values stay well-formed.
+/// Escape the four XML metacharacters double-quoted attribute values need
+/// (apostrophes are legal there) so values stay well-formed.
 fn xml_escape(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
@@ -425,7 +426,7 @@ impl Studio {
             }));
         }
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         atlas.save(out_path).map_err(|e| e.to_string())?;
         let meta = json!({
@@ -433,8 +434,11 @@ impl Studio {
             "count": frames_meta.len(), "frames": frames_meta,
         });
         let mp = Path::new(out_path).with_extension("json");
-        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
-            .map_err(|e| e.to_string())?;
+        std::fs::write(
+            &mp,
+            serde_json::to_string_pretty(&meta).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
         Ok(meta)
     }
 
@@ -721,7 +725,7 @@ impl Studio {
     pub fn doc_export_sheet(&self, id: &str, out_path: &str, scale: u32) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         doc.export_sheet(Path::new(out_path), export_scale(scale))
     }
@@ -747,7 +751,7 @@ impl Studio {
                 "standard" => {
                     let (_dir, doc) = self.open(id)?;
                     if let Some(p) = Path::new(out_path).parent() {
-                        let _ = fs::create_dir_all(p);
+                        fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
                     }
                     doc.export_sheet_std(Path::new(out_path), export_scale(scale.unwrap_or(4)))
                 }
@@ -782,7 +786,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         let frames = doc.export_gif(Path::new(out_path), export_scale(scale), tag)?;
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
@@ -797,7 +801,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         let frames = doc.export_apng(Path::new(out_path), export_scale(scale), tag)?;
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
@@ -833,7 +837,7 @@ impl Studio {
         }
         let out = Path::new(out_path);
         if let Some(p) = out.parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         img.save(out).map_err(|e| e.to_string())?;
         // Scaled tile size — what an engine slices against the emitted PNG.
@@ -865,8 +869,11 @@ impl Studio {
             "tilecount": tilecount, "columns": columns, "rows": rows,
         });
         let json_path = out.with_extension("json");
-        fs::write(&json_path, serde_json::to_string_pretty(&meta).unwrap())
-            .map_err(|e| e.to_string())?;
+        fs::write(
+            &json_path,
+            serde_json::to_string_pretty(&meta).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
         Ok(json!({
             "path": out.to_string_lossy(), "tsx": tsx_path.to_string_lossy(),
             "json": json_path.to_string_lossy(),

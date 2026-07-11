@@ -1534,26 +1534,27 @@ pub fn shade_ramp(p: [u8; 4], ramp: &[[u8; 4]], delta: i32) -> [u8; 4] {
 /// Ramp-free HSL shade: `dir` +1 lights (+12%/step lightness, hue warms toward
 /// 50°), −1 shadows (−12%/step, hue cools toward 250°). Alpha is preserved.
 pub fn shade_hsl(p: [u8; 4], dir: i32, steps: i32) -> [u8; 4] {
+    /// Lightness moved per step.
+    const LIGHT_STEP: f32 = 0.12;
+    /// Hue targets: highlights warm toward orange, shadows cool toward blue.
+    const WARM_HUE: f32 = 50.0;
+    const COOL_HUE: f32 = 250.0;
+    /// Fraction of the hue gap closed per step.
+    const HUE_PULL: f32 = 0.2;
     let (h, s, l) = rgb_to_hsl(p[0], p[1], p[2]);
-    let amt = 0.12 * steps as f32;
-    let target = if dir > 0 { 50.0 } else { 250.0 };
+    let amt = LIGHT_STEP * steps as f32;
+    let target = if dir > 0 { WARM_HUE } else { COOL_HUE };
     // Shortest-arc nudge of the hue toward the warm/cool target.
     let mut diff = (target - h).rem_euclid(360.0);
     if diff > 180.0 {
         diff -= 360.0;
     }
-    let hue = h + diff * (0.2 * steps as f32).min(1.0);
+    let hue = h + diff * (HUE_PULL * steps as f32).min(1.0);
     let nl = (l + dir as f32 * amt).clamp(0.0, 1.0);
     let rgb = hsl_to_rgb(hue, s, nl);
     [rgb[0], rgb[1], rgb[2], p[3]]
 }
 
-/// Normalised interior distance for each cell of a `w`×`h` boolean foreground
-/// mask `fg`: 0 on background (and the outermost foreground rim), rising toward
-/// 1 at the most-interior foreground pixel. A two-pass 3/4-weight chamfer
-/// distance transform, divided by its max so the field is resolution- and
-/// shape-independent. Used by `Document::form` "auto" to give an arbitrary blob
-/// volume (bright core, dark edges) without assuming an elliptical outline.
 /// Separable box-blur of a scalar field. Used to smooth the interior-distance
 /// height field before it is differentiated into surface normals: the raw
 /// chamfer field has a sharp ridge along the medial axis, and central
@@ -1595,6 +1596,12 @@ pub fn blur_field(field: &[f32], w: usize, h: usize, radius: i32) -> Vec<f32> {
     out
 }
 
+/// Normalised interior distance for each cell of a `w`×`h` boolean foreground
+/// mask `fg`: 0 on background (and the outermost foreground rim), rising toward
+/// 1 at the most-interior foreground pixel. A two-pass 1/√2-weight chamfer
+/// distance transform, divided by its max so the field is resolution- and
+/// shape-independent. Used by `Document::form` "auto" to give an arbitrary blob
+/// volume (bright core, dark edges) without assuming an elliptical outline.
 pub fn interior_distance(fg: &[bool], w: usize, h: usize) -> Vec<f32> {
     let n = w * h;
     const BIG: f32 = 1.0e9;

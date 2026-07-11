@@ -13,7 +13,7 @@ use super::Studio;
 /// Shared >4096-px area cap for the grid-emitting readers. Builds the error from
 /// a `label` ("region" / "diff region") and tail `advice`; `doc_dump_region` and
 /// `doc_frame_diff` both gate on it so their grids stay readable.
-pub(super) fn area_cap_check(label: &str, w: u64, h: u64, advice: &str) -> Result<(), String> {
+fn area_cap_check(label: &str, w: u64, h: u64, advice: &str) -> Result<(), String> {
     let area = w * h;
     if area > crate::GRID_AREA_CAP {
         return Err(format!(
@@ -219,7 +219,7 @@ impl Studio {
                 if seen[si] || !member(sx, sy) {
                     continue;
                 }
-                // BFS the component.
+                // DFS the component (Vec-as-stack).
                 let mut stack = vec![(sx, sy)];
                 seen[si] = true;
                 let mut c = Comp {
@@ -518,7 +518,8 @@ impl Studio {
                     None => dir.join(format!("onebit_f{}.png", frame)),
                 };
                 if let Some(p) = out.parent() {
-                    let _ = fs::create_dir_all(p);
+                    fs::create_dir_all(p)
+                        .map_err(|e| format!("cannot create {}: {e}", p.display()))?;
                 }
                 let mut bw = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
                 let (mut black, mut white) = (0u64, 0u64);
@@ -594,9 +595,11 @@ impl Studio {
         let count = entries.len();
         // Top-48 with an "others" rollup: an unquantized import has hundreds
         // of distinct colours, and 256 JSON objects of them helps nobody.
-        let truncated = count > 48;
-        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(48).collect();
-        let others_pixels: u64 = entries.iter().skip(48).map(|(_, n)| n).sum();
+        /// The report lists at most this many colours; the tail is summarised.
+        const PALETTE_LIST_CAP: usize = 48;
+        let truncated = count > PALETTE_LIST_CAP;
+        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(PALETTE_LIST_CAP).collect();
+        let others_pixels: u64 = entries.iter().skip(PALETTE_LIST_CAP).map(|(_, n)| n).sum();
         let mut off_palette_count = 0u32;
         let colors: Vec<Value> = listed
             .iter()
@@ -639,8 +642,11 @@ impl Studio {
         }
         // Off-palette tally covers EVERY distinct colour, not just the listed top.
         if has_palette {
-            off_palette_count +=
-                entries.iter().skip(48).filter(|(c, _)| !in_pal(*c)).count() as u32;
+            off_palette_count += entries
+                .iter()
+                .skip(PALETTE_LIST_CAP)
+                .filter(|(c, _)| !in_pal(*c))
+                .count() as u32;
         }
         let mut out = json!({
             "count": count,
@@ -651,7 +657,7 @@ impl Studio {
         });
         if truncated {
             out["others"] = json!({
-                "colors": count - 48,
+                "colors": count - PALETTE_LIST_CAP,
                 "pixels": others_pixels,
                 "note": "rolled up — quantize/snap_palette first for a readable report",
             });
@@ -868,7 +874,7 @@ impl Studio {
                 None => dir.join(format!("diff_{}_{}.png", frame_a, frame_b)),
             };
             if let Some(p) = out.parent() {
-                let _ = fs::create_dir_all(p);
+                fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
             }
             // frame_b dimmed to 40%, then changed pixels in the region flagged.
             let mut img = RgbaImage::from_pixel(cw as u32, ch as u32, Rgba([0, 0, 0, 0]));
@@ -991,7 +997,8 @@ impl Studio {
             if let Some(p) = out_path {
                 let out_p = PathBuf::from(p);
                 if let Some(parent) = out_p.parent() {
-                    let _ = fs::create_dir_all(parent);
+                    fs::create_dir_all(parent)
+                        .map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
                 }
                 scaled.save(&out_p).map_err(|e| e.to_string())?;
                 out["path"] = json!(out_p.to_string_lossy());
@@ -1273,9 +1280,7 @@ impl Studio {
             "note": "partial pixels are soft/AA/glow edges; many over a glass shape = readable translucency, scattered specks = stray AA",
         }))
     }
-}
 
-impl Studio {
     /// Colour-vision-deficiency audit: simulate protanopia / deuteranopia /
     /// tritanopia over the flattened frame (Machado 2009 severity-1.0 matrices
     /// in linear RGB) and report which of the art's distinct colour pairs —
@@ -1465,7 +1470,7 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
             if seen[si] || !fg[si] {
                 continue;
             }
-            // BFS the component, gathering (x, y, lightness, interior-distance).
+            // DFS the component (Vec-as-stack), gathering (x, y, lightness, interior-distance).
             let mut stack = vec![(sx, sy)];
             seen[si] = true;
             let mut px: Vec<(f64, f64, f64, f64)> = Vec::new();

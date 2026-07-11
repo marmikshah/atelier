@@ -235,7 +235,7 @@ impl Document {
         self.meta.cels = cel_metas;
         std::fs::write(
             dir.join("doc.json"),
-            serde_json::to_string_pretty(&self.meta).unwrap(),
+            serde_json::to_string_pretty(&self.meta).map_err(|e| e.to_string())?,
         )
         .map_err(|e| e.to_string())?;
         Ok(())
@@ -3766,8 +3766,11 @@ impl Document {
             "count": n, "frames": frames, "tags": tags, "palette": self.meta.palette,
         });
         let mp = out.with_extension("json");
-        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
-            .map_err(|e| e.to_string())?;
+        std::fs::write(
+            &mp,
+            serde_json::to_string_pretty(&meta).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
         Ok(meta)
     }
 
@@ -3821,8 +3824,11 @@ impl Document {
             },
         });
         let mp = out.with_extension("json");
-        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
-            .map_err(|e| e.to_string())?;
+        std::fs::write(
+            &mp,
+            serde_json::to_string_pretty(&meta).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
         Ok(json!({
             "path": out.to_string_lossy(),
             "meta_path": mp.to_string_lossy(),

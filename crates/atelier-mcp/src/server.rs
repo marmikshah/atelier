@@ -425,7 +425,7 @@ pub(crate) struct DocSelect {
     pub(crate) tolerance: Option<i32>,
 }
 
-/// A rectangular region of a cel (inclusive corners) + optional offset.
+/// A frame's anchor point (pivot) — set or clear it.
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocSetPivot {
     pub(crate) doc_id: String,
@@ -1996,7 +1996,6 @@ impl Atelier {
             .doc_export(&p.doc_id, &p.op, &p.out_path, p.scale, &p.params))
     }
 
-    // -- per-pixel drawing on a cel (the editor; coords = document pixels) --
     #[tool(
         description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame op=delete. Reindexes later cels and remaps tags."
     )]
@@ -2105,7 +2104,6 @@ impl Atelier {
             .doc_select(&p.doc_id, shape, mode, rect, ell, color_at))
     }
 
-    // -- selection / region / clipboard (move limbs, reuse art) --
     // -- canvas readers (read-only analysis to SEE the canvas as data) --
     #[tool(
         description = "Dump a region of a frame as a text grid so you can read exact pixels blind. mode=\"symbol\" maps each distinct colour to a glyph (A..Z a..z 0..9) with a legend, `.`=transparent; mode=\"hex\" emits #rrggbb(aa)/`.` tokens. `layer` dumps one cel (omit = flattened). `region` [x0,y0,x1,y1] caps at 4096 px — crop large canvases."
