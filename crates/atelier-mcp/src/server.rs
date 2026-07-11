@@ -764,17 +764,6 @@ pub struct DocKeyframeMove {
     pub clear_source: Option<bool>,
 }
 
-/// True when a tool result is a failure: either `is_error` is set, or its first
-/// text content is a `{"error": ...}` payload (how `res` reports app errors).
-/// The document id named in a tool result's top-level `id` field (doc_create
-/// returns the new doc this way — its id isn't in the args). None for the common
-/// case where the result carries no `id`.
-fn result_doc_id(result: &rmcp::model::CallToolResult) -> Option<String> {
-    let text = &result.content.first()?.as_text()?.text;
-    let v: Value = serde_json::from_str(text).ok()?;
-    v.get("id").and_then(|x| x.as_str()).map(|s| s.to_string())
-}
-
 fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
     if result.is_error == Some(true) {
         return true;
@@ -1621,10 +1610,6 @@ pub struct Atelier {
     tool_router: ToolRouter<Self>,
     /// Optional session recorder; when set, each tool call is logged to a recipe.
     recorder: Option<Recorder>,
-    /// Optional doc-change notifier (HTTP only): after a successful tool call its
-    /// `doc_id` is broadcast so the live `/gallery/events` SSE stream can push a
-    /// "this doc changed" event and the browser re-renders without polling.
-    change_tx: Option<tokio::sync::broadcast::Sender<String>>,
 }
 
 impl Atelier {
@@ -1638,7 +1623,6 @@ impl Atelier {
             studio,
             tool_router: Self::tool_router(),
             recorder: None,
-            change_tx: None,
         }
     }
 
@@ -3088,40 +3072,11 @@ impl ServerHandler for Atelier {
                 .unwrap_or_else(|| json!({}));
             (r.clone(), request.name.to_string(), args)
         });
-        // Snapshot the live-feed pieces before the request moves: tool name,
-        // compact (length-capped) args, and the args doc_id if present. The doc id
-        // may instead come from the RESULT (doc_create names the new doc) — that's
-        // resolved after the call, so freshly created docs still show in the feed.
-        let feed = self.change_tx.as_ref().map(|_| {
-            let m = request.arguments.as_ref();
-            let args_doc = m
-                .and_then(|m| m.get("doc_id"))
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            // Compact, length-capped args so a fat call (point lists, base64)
-            // can't bloat the SSE frame fanned out to every browser.
-            let mut args = m
-                .map(|m| serde_json::to_string(&Value::Object(m.clone())).unwrap_or_default())
-                .unwrap_or_default();
-            const MAX: usize = 280;
-            if args.chars().count() > MAX {
-                args = args.chars().take(MAX).collect::<String>();
-                args.push('…');
-            }
-            (request.name.to_string(), args, args_doc)
-        });
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
         let result = self.tool_router.call(tcc).await?;
         if let Some((recorder, tool, args)) = recording {
             if !is_error_result(&result) {
                 recorder.record(&tool, args);
-            }
-        }
-        if let (Some(tx), Some((tool, args, args_doc))) = (&self.change_tx, &feed) {
-            if !is_error_result(&result) {
-                if let Some(doc) = args_doc.clone().or_else(|| result_doc_id(&result)) {
-                    let _ = tx.send(json!({ "doc": doc, "tool": tool, "args": args }).to_string());
-                }
             }
         }
         Ok(result)
@@ -3225,562 +3180,6 @@ pub async fn run(record: Option<std::path::PathBuf>) -> Result<(), Box<dyn std::
     Ok(())
 }
 
-/// Clamp a render scale to the 1..=16 the gallery serves (0/absent -> default 4).
-fn gallery_scale(scale: Option<u32>) -> u32 {
-    scale.unwrap_or(4).clamp(1, 16)
-}
-
-/// The whole live gallery page, self-contained (no external assets). Cards are
-/// filled and refreshed by the inline script from `/gallery` + the render route.
-const GALLERY_HTML: &str = r#"<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>atelier gallery</title>
-<style>
-  :root { color-scheme: dark; }
-  body { margin: 0; padding: 1.5rem; background: #14161a; color: #e6e8ec;
-         font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
-  h1 { font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem; }
-  #grid { display: grid; gap: 1rem;
-          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
-  .card { background: #1d2026; border: 1px solid #2a2e36; border-radius: 8px;
-          padding: .75rem; }
-  .card img { width: 100%; height: auto; display: block; border-radius: 4px;
-              background: #0c0d10; image-rendering: pixelated; }
-  .name { margin: .5rem 0 .15rem; font-weight: 600; word-break: break-all; }
-  .meta { color: #8b919c; font-size: 12px; }
-  #empty { color: #8b919c; }
-</style>
-</head>
-<body>
-<h1>atelier &middot; live gallery</h1>
-<div id="grid"></div>
-<p id="empty" hidden>No documents yet. Create one and it will appear here.</p>
-<script>
-const grid = document.getElementById('grid');
-const empty = document.getElementById('empty');
-function imgUrl(id) { return `/gallery/${encodeURIComponent(id)}/render.png?frame=0&scale=4&t=${Date.now()}`; }
-async function load() {
-  let data;
-  try { data = await (await fetch('/gallery/docs')).json(); } catch (e) { return; }
-  const docs = data.documents || [];
-  empty.hidden = docs.length > 0;
-  const seen = new Set();
-  for (const d of docs) {
-    seen.add(d.id);
-    let card = document.getElementById('c-' + d.id);
-    if (!card) {
-      card = document.createElement('div');
-      card.className = 'card';
-      card.id = 'c-' + d.id;
-      card.innerHTML = '<img alt=""><div class="name"></div><div class="meta"></div>';
-      grid.appendChild(card);
-    }
-    card.querySelector('.name').textContent = d.name;
-    card.querySelector('.meta').textContent =
-      `${d.w}x${d.h} · ${d.frames}f · ${d.layers}L`;
-    if (!card.querySelector('img').src) card.querySelector('img').src = imgUrl(d.id);
-  }
-  for (const card of [...grid.children]) {
-    if (!seen.has(card.id.slice(2))) card.remove();
-  }
-}
-function refreshImages() {
-  for (const card of grid.children) card.querySelector('img').src = imgUrl(card.id.slice(2));
-}
-function refreshOne(id) {
-  const card = document.getElementById('d-' + id);
-  if (card) card.querySelector('img').src = imgUrl(id); else load();
-}
-load();
-// Live: the server pushes the changed doc_id on each successful tool call —
-// re-render just that card instantly. Polls stay as a fallback.
-try {
-  const es = new EventSource('/gallery/events');
-  es.onmessage = (e) => { try { refreshOne(JSON.parse(e.data).doc); } catch (_) {} };
-} catch (err) {}
-setInterval(refreshImages, 5000);
-setInterval(load, 10000);
-</script>
-</body>
-</html>"#;
-
-/// The native interactive playground: a self-contained page that speaks MCP to
-/// `/mcp` (the same endpoint clients use) — auto-builds a form per tool from its
-/// JSON schema, runs it, shows the inline image + JSON result, and renders the
-/// live canvas. No Node, no external assets.
-const PLAYGROUND_HTML: &str = r##"<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>atelier playground</title>
-<style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body { margin: 0; height: 100vh; display: grid; grid-template-columns: 240px 1fr 1fr;
-         background: #14161a; color: #e6e8ec; overflow: hidden;
-         font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
-  .col { height: 100vh; overflow-y: auto; padding: .75rem; border-right: 1px solid #2a2e36; }
-  h1 { font-size: 1rem; margin: 0 0 .5rem; }
-  h2 { font-size: .85rem; color: #8b919c; margin: 0 0 .5rem; text-transform: uppercase; letter-spacing: .05em; }
-  input, textarea, select, button { font: inherit; }
-  #filter { width: 100%; padding: .4rem; margin-bottom: .5rem; background: #0c0d10;
-            border: 1px solid #2a2e36; border-radius: 5px; color: #e6e8ec; }
-  .tool { display: block; width: 100%; text-align: left; padding: .35rem .5rem; margin: 1px 0;
-          background: none; border: none; border-radius: 5px; color: #c9cdd4; cursor: pointer; word-break: break-all; }
-  .tool:hover { background: #1d2026; }
-  .tool.sel { background: #2a3550; color: #fff; }
-  .field { margin: .5rem 0; }
-  .field label { display: block; color: #aeb3bd; margin-bottom: .15rem; }
-  .field .req { color: #e0a0a0; }
-  .field .desc { color: #6f7681; font-size: 11px; margin-bottom: .2rem; }
-  .field input[type=text], .field input[type=number], .field textarea, .field select {
-    width: 100%; padding: .35rem; background: #0c0d10; border: 1px solid #2a2e36;
-    border-radius: 5px; color: #e6e8ec; }
-  .field textarea { min-height: 3rem; resize: vertical; }
-  #run { margin-top: .6rem; padding: .5rem 1rem; background: #2f6f4f; color: #fff;
-         border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-  #run:hover { background: #3a8a62; }
-  #status { margin-left: .6rem; color: #8b919c; }
-  #result img, #canvas { max-width: 100%; image-rendering: pixelated; background: #0c0d10;
-                         border: 1px solid #2a2e36; border-radius: 6px; display: block; }
-  pre { white-space: pre-wrap; word-break: break-word; background: #0c0d10; border: 1px solid #2a2e36;
-        border-radius: 6px; padding: .5rem; max-height: 40vh; overflow: auto; color: #c9cdd4; }
-  .err { color: #e0a0a0; }
-  #stage { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
-  #overlay { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair;
-             touch-action: none; image-rendering: pixelated; }
-  #drawbar { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin: .25rem 0 .5rem; }
-  #drawbar button { padding: .3rem .5rem; background: #1d2026; color: #c9cdd4; border: 1px solid #2a2e36;
-                    border-radius: 5px; cursor: pointer; }
-  #drawbar button.sel { background: #2a3550; color: #fff; border-color: #3a4a72; }
-  #drawbar label { color: #aeb3bd; display: flex; align-items: center; gap: .25rem; }
-  #drawbar input[type=number] { width: 3.4rem; padding: .25rem; background: #0c0d10;
-                                border: 1px solid #2a2e36; border-radius: 5px; color: #e6e8ec; }
-  #drawbar input[type=color] { width: 2rem; height: 1.7rem; padding: 0; background: none;
-                               border: 1px solid #2a2e36; border-radius: 5px; }
-</style>
-</head>
-<body>
-<div class="col" id="left">
-  <h1>atelier</h1>
-  <input id="filter" placeholder="filter tools...">
-  <div id="tools"></div>
-</div>
-<div class="col" id="mid">
-  <h2 id="toolName">pick a tool</h2>
-  <div id="toolDesc" class="desc" style="color:#8b919c;margin-bottom:.5rem"></div>
-  <form id="form" onsubmit="return false"></form>
-  <button id="run" hidden>Run</button><span id="status"></span>
-</div>
-<div class="col" id="right" style="border-right:none">
-  <h2>canvas — draw = tool calls</h2>
-  <select id="docsel" style="width:100%;padding:.35rem;background:#0c0d10;border:1px solid #2a2e36;border-radius:5px;color:#e6e8ec;margin-bottom:.5rem"></select>
-  <div id="drawbar">
-    <button data-dt="pencil" class="sel">pencil</button>
-    <button data-dt="line">line</button>
-    <button data-dt="rect">rect</button>
-    <button data-dt="ellipse">ellipse</button>
-    <button data-dt="fill">fill</button>
-    <button data-dt="eraser">eraser</button>
-    <label title="rect/ellipse filled"><input type="checkbox" id="fillchk">fill</label>
-    <label>col<input type="color" id="col" value="#ffffff"></label>
-    <label>size<input type="number" id="brush" value="1" min="1"></label>
-    <label>L<input type="number" id="dlayer" value="0" min="0"></label>
-    <label>F<input type="number" id="dframe" value="0" min="0"></label>
-  </div>
-  <div id="stage"><img id="canvas" alt=""><canvas id="overlay"></canvas></div>
-  <div id="drawmsg" class="desc" style="color:#6f7681;margin-top:.25rem"></div>
-  <h2 style="margin-top:1rem">result</h2>
-  <div id="result"></div>
-</div>
-<script>
-let sessionId = null, rpcId = 0, tools = [], current = null;
-let dims = {}, curId = "", curW = 0, curH = 0, drawTool = "pencil", drawing = false, pts = [], startPt = null;
-async function rpc(method, params, notify) {
-  const body = notify ? {jsonrpc:"2.0",method,params} : {jsonrpc:"2.0",id:++rpcId,method,params};
-  const headers = {"Content-Type":"application/json","Accept":"application/json, text/event-stream"};
-  if (sessionId) headers["Mcp-Session-Id"] = sessionId;
-  const res = await fetch("/mcp", {method:"POST",headers,body:JSON.stringify(body)});
-  const sid = res.headers.get("mcp-session-id"); if (sid) sessionId = sid;
-  if (notify) return null;
-  const ct = res.headers.get("content-type") || "";
-  const text = await res.text();
-  let msg;
-  if (ct.includes("text/event-stream")) {
-    for (const line of text.split(/\r?\n/)) {
-      if (line.startsWith("data:")) { try { const o = JSON.parse(line.slice(5).trim()); if (o.result || o.error) msg = o; } catch(e){} }
-    }
-  } else { try { msg = JSON.parse(text); } catch(e){} }
-  if (!msg) throw new Error("no MCP response");
-  if (msg.error) throw new Error(msg.error.message || JSON.stringify(msg.error));
-  return msg.result;
-}
-function schemaType(p) { let t = p.type; if (Array.isArray(t)) t = t.find(x => x !== "null") || "string"; return t; }
-function renderTools(filter) {
-  const box = document.getElementById("tools"); box.innerHTML = "";
-  for (const t of tools) {
-    if (filter && !t.name.includes(filter)) continue;
-    const b = document.createElement("button");
-    b.className = "tool" + (current && current.name === t.name ? " sel" : "");
-    b.textContent = t.name;
-    b.onclick = () => selectTool(t);
-    box.appendChild(b);
-  }
-}
-function selectTool(t) {
-  current = t;
-  document.getElementById("toolName").textContent = t.name;
-  document.getElementById("toolDesc").textContent = t.description || "";
-  const form = document.getElementById("form"); form.innerHTML = "";
-  const props = (t.inputSchema && t.inputSchema.properties) || {};
-  const req = (t.inputSchema && t.inputSchema.required) || [];
-  for (const [name, p] of Object.entries(props)) {
-    const ty = schemaType(p);
-    const wrap = document.createElement("div"); wrap.className = "field";
-    const isReq = req.includes(name);
-    wrap.innerHTML = `<label>${name}${isReq?' <span class="req">*</span>':''} <span style="color:#6f7681">(${ty})</span></label>` +
-      (p.description?`<div class="desc">${p.description.replace(/</g,'&lt;')}</div>`:'');
-    let inp;
-    if (ty === "boolean") { inp = document.createElement("input"); inp.type = "checkbox"; }
-    else if (ty === "integer" || ty === "number") { inp = document.createElement("input"); inp.type = "number"; if (ty==="number") inp.step="any"; }
-    else if (ty === "array" || ty === "object") { inp = document.createElement("textarea"); inp.placeholder = ty==="array"?'[ ... ] JSON':'{ ... } JSON'; }
-    else { inp = document.createElement("input"); inp.type = "text"; }
-    inp.dataset.name = name; inp.dataset.ty = ty; inp.dataset.req = isReq;
-    if (name === "doc_id") { const sel = document.getElementById("docsel"); if (sel.value) inp.value = sel.value; }
-    wrap.appendChild(inp); form.appendChild(wrap);
-  }
-  renderTools(document.getElementById("filter").value);
-  document.getElementById("run").hidden = false;
-}
-function collectArgs() {
-  const args = {};
-  for (const inp of document.querySelectorAll("#form [data-name]")) {
-    const { name, ty, req } = inp.dataset;
-    if (ty === "boolean") { if (inp.checked) args[name] = true; continue; }
-    const v = inp.value.trim();
-    if (v === "") { if (req === "true") throw new Error("missing required: " + name); continue; }
-    if (ty === "integer") args[name] = parseInt(v, 10);
-    else if (ty === "number") args[name] = parseFloat(v);
-    else if (ty === "array" || ty === "object") args[name] = JSON.parse(v);
-    else args[name] = v;
-  }
-  return args;
-}
-async function runTool() {
-  if (!current) return;
-  const status = document.getElementById("status"); const out = document.getElementById("result");
-  status.textContent = "running..."; status.className = "";
-  let args;
-  try { args = collectArgs(); } catch (e) { status.textContent = e.message; status.className = "err"; return; }
-  try {
-    const r = await rpc("tools/call", {name: current.name, arguments: args});
-    out.innerHTML = "";
-    for (const c of (r.content || [])) {
-      if (c.type === "image" && c.data) { const im = document.createElement("img"); im.src = `data:${c.mimeType||'image/png'};base64,${c.data}`; out.appendChild(im); }
-      else if (c.type === "text") { const pre = document.createElement("pre"); pre.textContent = c.text; if (r.isError) pre.className="err"; out.appendChild(pre); }
-    }
-    status.textContent = r.isError ? "error" : "ok"; status.className = r.isError ? "err" : "";
-    await loadDocs(); if (args.doc_id) showDoc(args.doc_id);
-  } catch (e) { status.textContent = e.message; status.className = "err"; }
-}
-function showDoc(id) {
-  const sel = document.getElementById("docsel"); if (id) sel.value = id;
-  const cur = sel.value; if (!cur) return;
-  curId = cur;
-  const d = dims[cur]; const ov = document.getElementById("overlay");
-  if (d) { curW = d[0]; curH = d[1]; if (ov.width !== curW || ov.height !== curH) { ov.width = curW; ov.height = curH; } }
-  document.getElementById("canvas").src = `/gallery/${encodeURIComponent(cur)}/render.png?scale=8&t=${Date.now()}`;
-}
-async function loadDocs() {
-  let data; try { data = await (await fetch("/gallery/docs")).json(); } catch(e){ return; }
-  const sel = document.getElementById("docsel"); const keep = sel.value;
-  sel.innerHTML = "<option value=''>(pick a doc)</option>";
-  for (const d of (data.documents||[])) { dims[d.id] = [d.w, d.h]; const o = document.createElement("option"); o.value = d.id; o.textContent = `${d.id} (${d.w}x${d.h})`; sel.appendChild(o); }
-  if (keep) sel.value = keep;
-}
-const overlay = document.getElementById("overlay"), octx = overlay.getContext("2d");
-function hex2rgba(h){ return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16), 255]; }
-function brushSize(){ return Math.max(1, parseInt(document.getElementById("brush").value,10)||1); }
-function drawColor(){ return drawTool==="eraser" ? [0,0,0,0] : hex2rgba(document.getElementById("col").value); }
-function isFill(){ return document.getElementById("fillchk").checked; }
-function previewCss(){ return drawTool==="eraser" ? "rgba(255,80,80,.5)" : document.getElementById("col").value; }
-function docPt(e){
-  const r = overlay.getBoundingClientRect();
-  const x = Math.floor((e.clientX-r.left)/r.width*curW), y = Math.floor((e.clientY-r.top)/r.height*curH);
-  return [Math.max(0,Math.min(curW-1,x)), Math.max(0,Math.min(curH-1,y))];
-}
-function clearPrev(){ octx.clearRect(0,0,overlay.width,overlay.height); }
-function stampPrev(x,y){ octx.fillStyle = previewCss(); const s = brushSize(), o = (s-1)>>1; octx.fillRect(x-o,y-o,s,s); }
-async function emit(name, args){
-  const msg = document.getElementById("drawmsg");
-  if(!curId){ msg.textContent = "pick a doc first"; return; }
-  args.doc_id = curId; args.layer = parseInt(document.getElementById("dlayer").value,10)||0; args.frame = parseInt(document.getElementById("dframe").value,10)||0;
-  try {
-    const r = await rpc("tools/call", {name, arguments: args});
-    const t = (r.content||[]).find(c => c.type==="text");
-    msg.textContent = (r.isError ? "err: " : name + " ✓  ") + (t ? t.text : ""); msg.className = r.isError ? "err" : "desc";
-  } catch(e){ msg.textContent = "err: " + e.message; msg.className = "err"; }
-  showDoc(curId); loadDocs();
-}
-overlay.addEventListener("pointerdown", e => {
-  if(!curId || !curW){ document.getElementById("drawmsg").textContent = "pick a doc first"; return; }
-  e.preventDefault(); overlay.setPointerCapture(e.pointerId);
-  const p = docPt(e);
-  if(drawTool==="fill"){ emit("doc_draw", {op:"fill", x:p[0], y:p[1], color:drawColor()}); return; }
-  drawing = true; startPt = p; pts = [p]; clearPrev();
-  if(drawTool==="pencil" || drawTool==="eraser") stampPrev(p[0], p[1]);
-});
-overlay.addEventListener("pointermove", e => {
-  if(!drawing) return;
-  const p = docPt(e);
-  if(drawTool==="pencil" || drawTool==="eraser"){
-    const last = pts[pts.length-1];
-    if(p[0]!==last[0] || p[1]!==last[1]){ pts.push(p); stampPrev(p[0], p[1]); }
-    return;
-  }
-  clearPrev(); octx.strokeStyle = previewCss(); octx.fillStyle = previewCss(); octx.lineWidth = 1;
-  const x0=startPt[0], y0=startPt[1], x1=p[0], y1=p[1];
-  if(drawTool==="line"){ octx.beginPath(); octx.moveTo(x0+.5,y0+.5); octx.lineTo(x1+.5,y1+.5); octx.stroke(); }
-  else if(drawTool==="rect"){ const x=Math.min(x0,x1), y=Math.min(y0,y1), w=Math.abs(x1-x0)+1, h=Math.abs(y1-y0)+1; isFill()?octx.fillRect(x,y,w,h):octx.strokeRect(x+.5,y+.5,Math.max(w-1,0),Math.max(h-1,0)); }
-  else if(drawTool==="ellipse"){ const cx=(x0+x1)/2, cy=(y0+y1)/2, rx=Math.max(Math.abs(x1-x0)/2,.5), ry=Math.max(Math.abs(y1-y0)/2,.5); octx.beginPath(); octx.ellipse(cx+.5,cy+.5,rx,ry,0,0,7); isFill()?octx.fill():octx.stroke(); }
-});
-overlay.addEventListener("pointerup", e => {
-  if(!drawing) return; drawing = false;
-  const p = docPt(e), col = drawColor(), sz = brushSize(), fill = isFill();
-  const x0=startPt[0], y0=startPt[1], x1=p[0], y1=p[1];
-  clearPrev();
-  if(drawTool==="pencil" || drawTool==="eraser"){ if(pts.length) emit("doc_draw", {op:"pencil", points:pts, color:col, size:sz}); }
-  else if(drawTool==="line"){ emit("doc_draw", {op:"line", x0,y0,x1,y1, color:col, size:sz}); }
-  else if(drawTool==="rect"){ emit("doc_draw", {op:"rect", x0,y0,x1,y1, color:col, fill, size:sz}); }
-  else if(drawTool==="ellipse"){ const cx=Math.round((x0+x1)/2), cy=Math.round((y0+y1)/2), rx=Math.round(Math.abs(x1-x0)/2), ry=Math.round(Math.abs(y1-y0)/2); if(rx>0||ry>0) emit("doc_draw", {op:"ellipse", cx,cy, rx:Math.max(rx,1), ry:Math.max(ry,1), color:col, fill}); }
-  pts = []; startPt = null;
-});
-for(const b of document.querySelectorAll("#drawbar [data-dt]")){
-  b.onclick = () => { drawTool = b.dataset.dt; for(const x of document.querySelectorAll("#drawbar [data-dt]")) x.classList.toggle("sel", x===b); };
-}
-document.getElementById("filter").oninput = e => renderTools(e.target.value);
-document.getElementById("run").onclick = runTool;
-document.getElementById("docsel").onchange = () => showDoc();
-(async () => {
-  try {
-    await rpc("initialize", {protocolVersion:"2025-06-18", capabilities:{}, clientInfo:{name:"atelier-playground",version:"1"}});
-    await rpc("notifications/initialized", {}, true);
-    tools = ((await rpc("tools/list", {})).tools || []).sort((a,b)=>a.name.localeCompare(b.name));
-    renderTools("");
-    await loadDocs();
-    // Live render: the server pushes a changed doc_id on every successful tool
-    // call (agent or this page) — re-render instantly. Poll stays as a fallback.
-    try {
-      const es = new EventSource("/gallery/events");
-      es.onmessage = (e) => { try { const m = JSON.parse(e.data); if (!drawing && m.doc === curId) showDoc(curId); } catch (_) {} };
-    } catch (err) {}
-    setInterval(() => { if (!drawing) showDoc(); }, 2500);
-  } catch (e) { document.getElementById("tools").innerHTML = `<span class="err">connect failed: ${e.message}</span>`; }
-})();
-</script>
-</body>
-</html>"##;
-
-/// A focused, read-only LIVE view of ONE document: pick a doc, then watch the
-/// canvas re-render and a feed of the tool calls hitting it stream in real time
-/// (driven by the same `/gallery/events` SSE the gallery uses). For watching an
-/// agent draw — no tool forms, no editing.
-const LIVE_HTML: &str = r##"<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>atelier live</title>
-<style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body { margin: 0; height: 100vh; display: flex; flex-direction: column;
-         background: #14161a; color: #e6e8ec; overflow: hidden;
-         font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
-  header { display: flex; align-items: center; gap: .75rem; padding: .6rem .9rem;
-           border-bottom: 1px solid #2a2e36; }
-  header h1 { font-size: 1rem; margin: 0; }
-  header .live { font-size: 11px; color: #6f7681; }
-  header .dot { color: #3a8a62; }
-  select { padding: .35rem; background: #0c0d10; border: 1px solid #2a2e36;
-           border-radius: 5px; color: #e6e8ec; min-width: 16rem; }
-  main { flex: 1; display: grid; grid-template-columns: 1fr 26rem; min-height: 0; }
-  #stage { display: flex; align-items: center; justify-content: center; padding: 1rem;
-           overflow: auto; background:
-             repeating-conic-gradient(#1a1d22 0% 25%, #16181d 0% 50%) 50% / 24px 24px; }
-  #canvas { max-width: 100%; max-height: 100%; image-rendering: pixelated;
-            border: 1px solid #2a2e36; border-radius: 6px; background: #0c0d10; }
-  #side { border-left: 1px solid #2a2e36; display: flex; flex-direction: column; min-height: 0; }
-  #side h2 { font-size: .8rem; color: #8b919c; margin: 0; padding: .6rem .8rem;
-             border-bottom: 1px solid #2a2e36; text-transform: uppercase; letter-spacing: .05em;
-             display: flex; justify-content: space-between; }
-  #feed { flex: 1; overflow-y: auto; padding: .4rem; }
-  .row { padding: .35rem .5rem; border-radius: 5px; margin: 1px 0; background: #1a1d22;
-         animation: in .25s ease; }
-  @keyframes in { from { background: #2a4a38; } to { background: #1a1d22; } }
-  .row .tool { color: #9ad5b0; font-weight: 600; }
-  .row .args { color: #7d8590; word-break: break-all; }
-  .row .t { color: #565c66; float: right; font-size: 11px; }
-  #empty { color: #6f7681; padding: 1rem; }
-</style>
-</head>
-<body>
-<header>
-  <h1>atelier <span class="live"><span class="dot">●</span> live</span></h1>
-  <select id="docsel"></select>
-  <span class="live" id="dims"></span>
-</header>
-<main>
-  <div id="stage"><img id="canvas" alt=""></div>
-  <div id="side">
-    <h2><span>tool calls</span><span id="count">0</span></h2>
-    <div id="feed"><div id="empty">pick a document, then watch the agent work…</div></div>
-  </div>
-</main>
-<script>
-let curId = "", dims = {}, count = 0;
-function showDoc(id) {
-  const sel = document.getElementById("docsel"); if (id) sel.value = id;
-  curId = sel.value; if (!curId) return;
-  const d = dims[curId];
-  document.getElementById("dims").textContent = d ? `${curId} · ${d[0]}×${d[1]}` : curId;
-  document.getElementById("canvas").src = `/gallery/${encodeURIComponent(curId)}/render.png?scale=8&t=${Date.now()}`;
-}
-async function loadDocs() {
-  let data; try { data = await (await fetch("/gallery/docs")).json(); } catch (e) { return; }
-  const sel = document.getElementById("docsel"); const keep = sel.value;
-  sel.innerHTML = "<option value=''>(pick a document)</option>";
-  for (const d of (data.documents || [])) { dims[d.id] = [d.w, d.h];
-    const o = document.createElement("option"); o.value = d.id; o.textContent = `${d.id} (${d.w}×${d.h})`; sel.appendChild(o); }
-  if (keep) sel.value = keep;
-}
-function logCall(m) {
-  const feed = document.getElementById("feed");
-  const empty = document.getElementById("empty"); if (empty) empty.remove();
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2,"0"), mm = String(now.getMinutes()).padStart(2,"0"), ss = String(now.getSeconds()).padStart(2,"0");
-  const row = document.createElement("div"); row.className = "row";
-  row.innerHTML = `<span class="t">${hh}:${mm}:${ss}</span><span class="tool"></span> <span class="args"></span>`;
-  row.querySelector(".tool").textContent = m.tool || "?";
-  row.querySelector(".args").textContent = m.args || "";
-  feed.insertBefore(row, feed.firstChild);
-  while (feed.children.length > 250) feed.removeChild(feed.lastChild);
-  document.getElementById("count").textContent = ++count;
-}
-document.getElementById("docsel").onchange = () => {
-  count = 0; document.getElementById("count").textContent = 0;
-  document.getElementById("feed").innerHTML = "";
-  showDoc();
-};
-(async () => {
-  await loadDocs();
-  try {
-    const es = new EventSource("/gallery/events");
-    es.onmessage = async (e) => {
-      let m; try { m = JSON.parse(e.data); } catch (_) { return; }
-      // New doc the dropdown hasn't seen (e.g. doc_create) — refresh the list so
-      // it's selectable, and auto-attach if we're not already watching one.
-      if (!(m.doc in dims)) await loadDocs();
-      if (!curId) showDoc(m.doc);
-      if (m.doc !== curId) return;
-      logCall(m);
-      showDoc(curId);
-    };
-  } catch (err) {}
-  setInterval(loadDocs, 5000);
-})();
-</script>
-</body>
-</html>"##;
-
-/// Query params for the gallery render route (`?frame=0&scale=4`).
-#[derive(Deserialize)]
-struct GalleryRender {
-    frame: Option<usize>,
-    scale: Option<u32>,
-}
-
-/// GET /gallery/docs — the live document list the page polls (same shape as the
-/// `list_docs` tool). Locks the studio only to read the index.
-async fn gallery_docs(
-    axum::extract::State(studio): axum::extract::State<std::sync::Arc<std::sync::Mutex<Studio>>>,
-) -> axum::response::Json<Value> {
-    let docs = studio.lock().expect("studio lock poisoned").list_docs();
-    axum::response::Json(docs)
-}
-
-/// GET /gallery/:id/render.png — one frame as PNG bytes (scale clamped 1..=16).
-/// Unknown ids 404; the lock is held only around the render itself.
-async fn gallery_render(
-    axum::extract::State(studio): axum::extract::State<std::sync::Arc<std::sync::Mutex<Studio>>>,
-    axum::extract::Path(id): axum::extract::Path<String>,
-    axum::extract::Query(q): axum::extract::Query<GalleryRender>,
-) -> axum::response::Response {
-    use axum::response::IntoResponse;
-    let bytes = {
-        let studio = studio.lock().expect("studio lock poisoned");
-        studio.render_png_bytes(&id, q.frame.unwrap_or(0), gallery_scale(q.scale))
-    };
-    match bytes {
-        Ok(png) => ([(axum::http::header::CONTENT_TYPE, "image/png")], png).into_response(),
-        // Generic body — don't leak the studio error that enumerates all doc ids.
-        Err(_) => (axum::http::StatusCode::NOT_FOUND, "not found").into_response(),
-    }
-}
-
-/// GET /gallery/events — a Server-Sent Events stream of changed document ids.
-/// Every successful mutating tool call broadcasts its `doc_id`; the live gallery
-/// and playground subscribe and re-render that document instantly (push, not the
-/// 2.5s poll). `KeepAlive` holds the connection open through idle periods.
-async fn gallery_events(
-    change_tx: tokio::sync::broadcast::Sender<String>,
-) -> axum::response::sse::Sse<
-    impl tokio_stream::Stream<Item = Result<axum::response::sse::Event, std::convert::Infallible>>,
-> {
-    use axum::response::sse::{Event, KeepAlive, Sse};
-    use tokio_stream::wrappers::BroadcastStream;
-    use tokio_stream::StreamExt;
-    let stream = BroadcastStream::new(change_tx.subscribe())
-        .filter_map(|r| r.ok().map(|id| Ok(Event::default().data(id))));
-    Sse::new(stream).keep_alive(KeepAlive::default())
-}
-
-/// True when `host` (a raw `Host` header) matches one of `allowed`. Each entry
-/// is a bare host or `host:port`; a portless entry matches any port (mirrors
-/// rmcp's host validation). An empty allowlist allows all (rmcp's convention).
-fn host_allowed(host: &str, allowed: &[String]) -> bool {
-    if allowed.is_empty() {
-        return true;
-    }
-    let host_only = host.rsplit_once(':').map_or(host, |(h, _)| h);
-    allowed.iter().any(|a| match a.rsplit_once(':') {
-        Some(_) => a == host,   // host:port entry — match the full authority
-        None => a == host_only, // bare host entry — match any port
-    })
-}
-
-/// Reject gallery requests whose `Host` header is not in the allowlist (403),
-/// closing the DNS-rebinding hole the rmcp `/mcp` route is already protected from.
-async fn gallery_host_guard(
-    allowed: std::sync::Arc<Vec<String>>,
-    req: axum::extract::Request,
-    next: axum::middleware::Next,
-) -> axum::response::Response {
-    use axum::response::IntoResponse;
-    let host = req
-        .headers()
-        .get(axum::http::header::HOST)
-        .and_then(|h| h.to_str().ok());
-    match host {
-        Some(h) if host_allowed(h, &allowed) => next.run(req).await,
-        _ => (axum::http::StatusCode::FORBIDDEN, "forbidden host").into_response(),
-    }
-}
-
 /// Run as a networked MCP server over Streamable HTTP at `addr`, mounted at
 /// `/mcp`. One shared studio backs all sessions (writes serialised by its Mutex).
 /// `allowed_hosts` extends the loopback default for LAN/remote `Host` validation
@@ -3798,76 +3197,28 @@ pub async fn run_http(
     let studio = std::sync::Arc::new(std::sync::Mutex::new(Studio::new()));
     // One recorder shared across sessions so every call lands in one recipe.
     let recorder = record.map(Recorder::new);
-    // Doc-change bus: every session's Atelier sends the touched doc_id here, the
-    // live `/gallery/events` SSE stream fans it out to browsers. Lagging/closed
-    // receivers are dropped silently (send errors ignored).
-    let (change_tx, _) = tokio::sync::broadcast::channel::<String>(256);
-
     let mut config = StreamableHttpServerConfig::default();
     for h in allowed_hosts {
         if !config.allowed_hosts.contains(&h) {
             config.allowed_hosts.push(h);
         }
     }
-    // Snapshot the same allowlist for the gallery guard before `config` is moved.
-    let allowed = std::sync::Arc::new(config.allowed_hosts.clone());
-
     let factory = {
         let studio = studio.clone();
         let recorder = recorder.clone();
-        let change_tx = change_tx.clone();
         move || {
             let mut atelier = Atelier::with_studio(studio.clone());
             atelier.recorder = recorder.clone();
-            atelier.change_tx = Some(change_tx.clone());
             Ok(atelier)
         }
     };
     let service: StreamableHttpService<Atelier, LocalSessionManager> =
         StreamableHttpService::new(factory, Default::default(), config);
 
-    // The read-only gallery rides the same studio Arc; its handlers carry it as
-    // router state and lock only around each render. It is merged outside rmcp's
-    // host validation, so guard it with the same allowlist (DNS-rebind defence).
-    let gallery = axum::Router::new()
-        .route(
-            "/gallery",
-            axum::routing::get(|| async { axum::response::Html(GALLERY_HTML) }),
-        )
-        .route(
-            "/playground",
-            axum::routing::get(|| async { axum::response::Html(PLAYGROUND_HTML) }),
-        )
-        .route(
-            "/live",
-            axum::routing::get(|| async { axum::response::Html(LIVE_HTML) }),
-        )
-        .route("/gallery/docs", axum::routing::get(gallery_docs))
-        .route(
-            "/gallery/{id}/render.png",
-            axum::routing::get(gallery_render),
-        )
-        .route(
-            "/gallery/events",
-            axum::routing::get({
-                let change_tx = change_tx.clone();
-                move || gallery_events(change_tx.clone())
-            }),
-        )
-        .with_state(studio.clone())
-        .layer(axum::middleware::from_fn(move |req, next| {
-            let allowed = allowed.clone();
-            async move { gallery_host_guard(allowed, req, next).await }
-        }));
-    let router = axum::Router::new()
-        .nest_service("/mcp", service)
-        .merge(gallery);
+    let router = axum::Router::new().nest_service("/mcp", service);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     let local = listener.local_addr()?;
     eprintln!("atelier MCP listening on http://{local}/mcp");
-    eprintln!("atelier gallery at http://{local}/gallery");
-    eprintln!("atelier playground (try the tools in a window) at http://{local}/playground");
-    eprintln!("atelier live (watch the agent draw one doc) at http://{local}/live");
     axum::serve(listener, router)
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;
@@ -3966,27 +3317,6 @@ mod tests {
         assert_eq!(parse_resource_uri("atelier://doc//render"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/extra"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/render/x"), None);
-    }
-
-    #[test]
-    fn gallery_host_guard_matches_allowlist() {
-        let allowed = vec!["localhost".to_string(), "example.com:9000".to_string()];
-        // Bare-host entry matches any port; full authority must match exactly.
-        assert!(host_allowed("localhost", &allowed));
-        assert!(host_allowed("localhost:8765", &allowed));
-        assert!(host_allowed("example.com:9000", &allowed));
-        assert!(!host_allowed("example.com:1", &allowed)); // wrong port
-        assert!(!host_allowed("evil.example", &allowed));
-        // Empty allowlist allows all (rmcp's convention).
-        assert!(host_allowed("anything", &[]));
-    }
-
-    #[test]
-    fn gallery_scale_clamps_and_defaults() {
-        assert_eq!(gallery_scale(None), 4); // absent -> doc_look default
-        assert_eq!(gallery_scale(Some(0)), 1); // 0 floors to 1
-        assert_eq!(gallery_scale(Some(8)), 8); // in range passes through
-        assert_eq!(gallery_scale(Some(999)), 16); // caps at 16
     }
 
     #[test]

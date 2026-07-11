@@ -114,6 +114,15 @@ the `game-asset-set` prompt). 75 tools, 223 tests.
   `doc_draw` / `doc_fx` / `doc_batch` path by default — opt out per op with
   `snap:false` — so effect output stays crisp on-palette pixel art.
 
+### Removed
+
+- **The `/gallery`, `/playground` and `/live` web views.** The HTTP transport
+  now serves exactly one thing: the MCP endpoint at `/mcp`. The in-browser
+  viewers (and their Server-Sent-Events change feed) were a maintenance surface
+  the product story no longer needs — renders live in `doc_look`, exports and
+  the site. Roughly 500 lines of embedded HTML/JS gone; `tokio-stream`
+  dependency dropped.
+
 ### Fixed
 
 - **Stroke pose double-quantize.** The coverage stroke core is sub-pixel, but
