@@ -8,6 +8,12 @@
 <p align="center"><strong>The pixel-art studio agents can see — headless, over MCP.</strong></p>
 
 <p align="center">
+  <a href="https://github.com/marmikshah/atelier/actions/workflows/ci.yml"><img src="https://github.com/marmikshah/atelier/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/marmikshah/atelier/releases/latest"><img src="https://img.shields.io/github/v/release/marmikshah/atelier" alt="latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+</p>
+
+<p align="center">
   <img src="docs/platformer-scene.gif" width="640" alt="dusk side-scroller scene: cloaked lantern-bearer, owl on a ledge, crystal cave, fireflies">
 </p>
 
@@ -45,17 +51,19 @@ curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
 The installer registers atelier with your MCP client (stdio or a background
-HTTP daemon). Restart your session,
-then ask your agent for art — *"draw me a blinking cat sprite and export it
-as a GIF"*:
+HTTP daemon). Restart your session, then ask your agent for art — *"draw me a
+blinking cat sprite and export it as a GIF"*. Under the hood that becomes:
 
 ```
 doc_create → paint → doc_look (look!) → fix → doc_export op=anim
 ```
 
-Prebuilt binaries: macOS (Apple Silicon), Linux x86_64, Windows
-([releases](https://github.com/marmikshah/atelier/releases/latest));
-anything else: `cargo install --path .`. Documents live under `~/.atelier`.
+| | |
+|---|---|
+| **Prebuilt binaries** | macOS (Apple Silicon), Linux x86_64, Windows — [latest release](https://github.com/marmikshah/atelier/releases/latest) |
+| **From source** | `cargo install --path .` |
+| **Documents live in** | `~/.atelier` (override with `ATELIER_HOME`) |
+| **Tool profile** | 30-tool core by default; `ATELIER_PROFILE=full` for all 75 |
 
 ## Recipes
 
@@ -66,15 +74,29 @@ a JSON file that replays byte-identically and doubles as an integration test:
 atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 ```
 
-## More
+The recipes under [docs/examples](docs/examples) are both the brand art and
+the test suite — run `make branding` to watch all of them draw.
 
-- [marmikshah.github.io/atelier](https://marmikshah.github.io/atelier/) —
-  the benchmark: different models, identical briefs, the same studio in
-  different hands.
-- [docs/TOOLS.md](docs/TOOLS.md) — the complete tool reference (30-tool core
-  profile by default; `ATELIER_PROFILE=full` for all 75).
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — crate layout.
-- [CHANGELOG.md](CHANGELOG.md) — release notes.
+## How it's built
+
+A strict four-crate tower — functional core, imperative shell. `atelier-core`
+(document model + raster math) knows nothing about MCP; `atelier-studio` is
+the one-method-per-tool facade; `atelier-mcp` is the thin tool router over
+stdio and HTTP; the `atelier` binary adds the installer and the replay runner.
+
+Start with the illustrated tour — the smallest units (cel + op), the
+composition ladder, and the life of a tool call:
+**[marmikshah.github.io/atelier/architecture.html](https://marmikshah.github.io/atelier/architecture.html)**
+
+## Documentation
+
+| Where | What |
+|---|---|
+| [Benchmark gallery](https://marmikshah.github.io/atelier/) | Different models, identical briefs, the same studio in different hands |
+| [Architecture tour](https://marmikshah.github.io/atelier/architecture.html) | The crate tower, the life of a tool call, onboarding paths |
+| [docs/TOOLS.md](docs/TOOLS.md) | Complete reference for all 75 tools |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Crate and module layout, in the repo |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes |
 
 ## A personal note
 
@@ -97,20 +119,21 @@ If atelier helps you in any way — as a tool, a reference, or just a kick-start
 on your own game-design journey — that makes me genuinely happy. The tokens
 are already spent; the least they can do is be useful to you too.
 
-### ⚠️ Notice — versions below 2.0.0
+## Notice — versions below 2.0.0
 
-I intend to follow [SemVer](https://semver.org), but be realistic about what
-this project is: AI-generated code. Diffs are large, and every release below
-2.0.0 will likely contain breaking changes despite my best intentions.
-
-Once I'm confident the tool has proven itself, I will cut a **2.0.0** release —
-that is the point where I start reviewing the code in detail and contributing
-to it directly. 2.0.0 will be tagged by me, by hand — it is the one release an
-AI agent is not allowed to cut. Until then, assume that anything below 2.0.0
-has **not** been fully reviewed by me and may contain bugs or security issues
-I haven't caught.
-
-**Use at your own risk.**
+> [!WARNING]
+> I intend to follow [SemVer](https://semver.org), but be realistic about what
+> this project is: AI-generated code. Diffs are large, and every release below
+> 2.0.0 will likely contain breaking changes despite my best intentions.
+>
+> Once I'm confident the tool has proven itself, I will cut a **2.0.0**
+> release — that is the point where I start reviewing the code in detail and
+> contributing to it directly. 2.0.0 will be tagged by me, by hand — it is the
+> one release an AI agent is not allowed to cut. Until then, assume that
+> anything below 2.0.0 has **not** been fully reviewed by me and may contain
+> bugs or security issues I haven't caught.
+>
+> **Use at your own risk.**
 
 ## License
 
