@@ -13,9 +13,9 @@ use super::Studio;
 /// Shared >4096-px area cap for the grid-emitting readers. Builds the error from
 /// a `label` ("region" / "diff region") and tail `advice`; `doc_dump_region` and
 /// `doc_frame_diff` both gate on it so their grids stay readable.
-pub(super) fn area_cap_check(label: &str, w: u64, h: u64, advice: &str) -> Result<(), String> {
+fn area_cap_check(label: &str, w: u64, h: u64, advice: &str) -> Result<(), String> {
     let area = w * h;
-    if area > 4096 {
+    if area > crate::GRID_AREA_CAP {
         return Err(format!(
             "{} is {}x{}={} px (>4096) — {}",
             label, w, h, area, advice
@@ -41,19 +41,8 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let img = doc.analysis_image(layer, frame)?;
-        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-        let (x0, y0, x1, y1) = match region {
-            Some((a, b, c, d)) => (
-                a.min(c).max(0),
-                b.min(d).max(0),
-                a.max(c).min(cw - 1),
-                b.max(d).min(ch - 1),
-            ),
-            None => (0, 0, cw - 1, ch - 1),
-        };
-        if x0 > x1 || y0 > y1 {
-            return Err("region is empty after clamping to the canvas".into());
-        }
+        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
+        let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         let (w, h) = ((x1 - x0 + 1) as u32, (y1 - y0 + 1) as u32);
         area_cap_check(
             "region",
@@ -71,9 +60,9 @@ impl Studio {
                             if p[3] == 0 {
                                 ".".to_string()
                             } else if p[3] == 255 {
-                                format!("#{:02x}{:02x}{:02x}", p[0], p[1], p[2])
+                                crate::hex_rgb(&p)
                             } else {
-                                format!("#{:02x}{:02x}{:02x}{:02x}", p[0], p[1], p[2], p[3])
+                                crate::hex_rgba(&p)
                             }
                         })
                         .collect::<Vec<_>>()
@@ -114,12 +103,7 @@ impl Studio {
         let legend: serde_json::Map<String, Value> = order
             .iter()
             .enumerate()
-            .map(|(i, c)| {
-                (
-                    (GLYPHS[i] as char).to_string(),
-                    json!(format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3])),
-                )
-            })
+            .map(|(i, c)| ((GLYPHS[i] as char).to_string(), json!(crate::hex_rgba(c))))
             .collect();
         Ok(
             json!({"w": w, "h": h, "origin": [x0, y0], "mode": "symbol", "legend": legend, "rows": rows}),
@@ -153,7 +137,7 @@ impl Studio {
         }
         // The text grid is capped like doc_dump_region's — an uncapped
         // 128x128 grid is ~4K tokens of mostly dots.
-        let grid: Value = if (w as u64) * (h as u64) <= 4096 {
+        let grid: Value = if (w as u64) * (h as u64) <= crate::GRID_AREA_CAP {
             let rows: Vec<String> = (0..h)
                 .map(|y| {
                     (0..w)
@@ -222,11 +206,13 @@ impl Studio {
         };
         let mut seen = vec![false; (w * h) as usize];
         struct Comp {
-            bbox: [i32; 4],                                  // tight [x0,y0,x1,y1]
-            area: u32,                                       // opaque pixel count
-            sx: u64,                                         // Σx (for the centroid)
-            sy: u64,                                         // Σy (for the centroid)
-            colors: std::collections::HashMap<[u8; 4], u32>, // colour → count (dominant)
+            bbox: [i32; 4], // tight [x0,y0,x1,y1]
+            area: u32,      // opaque pixel count
+            sx: u64,        // Σx (for the centroid)
+            sy: u64,        // Σy (for the centroid)
+            // colour → count for the dominant readout; a small Vec beats a
+            // HashMap per component (specks allocate nothing).
+            colors: Vec<([u8; 4], u32)>,
         }
         let mut comps: Vec<Comp> = Vec::new();
         for sy in 0..h {
@@ -235,7 +221,7 @@ impl Studio {
                 if seen[si] || !member(sx, sy) {
                     continue;
                 }
-                // BFS the component.
+                // DFS the component (Vec-as-stack).
                 let mut stack = vec![(sx, sy)];
                 seen[si] = true;
                 let mut c = Comp {
@@ -243,7 +229,7 @@ impl Studio {
                     area: 0,
                     sx: 0,
                     sy: 0,
-                    colors: std::collections::HashMap::new(),
+                    colors: Vec::new(),
                 };
                 while let Some((x, y)) = stack.pop() {
                     c.area += 1;
@@ -254,7 +240,10 @@ impl Studio {
                     c.bbox[2] = c.bbox[2].max(x);
                     c.bbox[3] = c.bbox[3].max(y);
                     let p = img.get_pixel(x as u32, y as u32).0;
-                    *c.colors.entry(p).or_insert(0) += 1;
+                    match c.colors.iter_mut().find(|(col, _)| *col == p) {
+                        Some((_, n)) => *n += 1,
+                        None => c.colors.push((p, 1)),
+                    }
                     for (ox, oy) in neigh {
                         let (nx, ny) = (x + ox, y + oy);
                         if nx < 0 || ny < 0 || nx >= w || ny >= h {
@@ -285,7 +274,7 @@ impl Studio {
                 let dom = c
                     .colors
                     .iter()
-                    .max_by_key(|(_, n)| **n)
+                    .max_by_key(|(_, n)| *n)
                     .map(|(c, _)| *c)
                     .unwrap_or([0, 0, 0, 0]);
                 json!({
@@ -295,7 +284,7 @@ impl Studio {
                         (c.sy / c.area as u64) as i32,
                     ],
                     "area": c.area,
-                    "dominant": format!("#{:02x}{:02x}{:02x}", dom[0], dom[1], dom[2]),
+                    "dominant": crate::hex_rgb(&dom),
                 })
             })
             .collect();
@@ -404,7 +393,6 @@ impl Studio {
     /// a 4px surrounding band. `palette`: every pair of the frame's distinct
     /// opaque colours (capped 16). `one-bit`: threshold luma to a pure B/W PNG and
     /// report black/white coverage. `pass` = ratio ≥ `min_ratio`.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_contrast_check(
         &self,
         id: &str,
@@ -414,7 +402,7 @@ impl Studio {
         min_ratio: f32,
         threshold: u8,
         out_path: Option<&str>,
-    ) -> Result<Value, String> {
+    ) -> Result<(Option<Vec<u8>>, Value), String> {
         let (dir, doc) = self.open(id)?;
         let img = doc.analysis_image(None, frame)?;
         let (w, h) = (img.width() as i32, img.height() as i32);
@@ -423,11 +411,11 @@ impl Studio {
             "region" => {
                 let (rx0, ry0, rx1, ry1) =
                     region.ok_or("region mode needs `region` [x0,y0,x1,y1]")?;
-                let (x0, x1) = (rx0.min(rx1).max(0), rx0.max(rx1).min(w - 1));
-                let (y0, y1) = (ry0.min(ry1).max(0), ry0.max(ry1).min(h - 1));
-                if x0 > x1 || y0 > y1 {
-                    return Err("region is empty after clamping to the canvas".into());
-                }
+                let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(
+                    Some((rx0, ry0, rx1, ry1)),
+                    w as u32,
+                    h as u32,
+                )?;
                 // Mean opaque colour inside the region.
                 let mut inside = [0u64; 3];
                 let mut n_in = 0u64;
@@ -479,13 +467,16 @@ impl Studio {
                 };
                 let (a, b) = (mean(inside, n_in), mean(band, n_band));
                 let ratio = atelier_core::raster::wcag_ratio(a, b);
-                Ok(json!({
-                    "mode": "region",
-                    "inside": format!("#{:02x}{:02x}{:02x}", a[0], a[1], a[2]),
-                    "surround": format!("#{:02x}{:02x}{:02x}", b[0], b[1], b[2]),
-                    "ratio": round2(ratio),
-                    "pass": ratio >= min_ratio,
-                }))
+                Ok((
+                    None,
+                    json!({
+                        "mode": "region",
+                        "inside": crate::hex_rgb(&a),
+                        "surround": crate::hex_rgb(&b),
+                        "ratio": round2(ratio),
+                        "pass": ratio >= min_ratio,
+                    }),
+                ))
             }
             "palette" => {
                 // Distinct opaque colours of the frame (first-seen order).
@@ -508,7 +499,7 @@ impl Studio {
                     for j in (i + 1)..colors.len() {
                         let ratio = atelier_core::raster::wcag_ratio(colors[i], colors[j]);
                         let pass = ratio >= min_ratio;
-                        let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+                        let hex = |c: [u8; 4]| crate::hex_rgb(&c);
                         let entry = json!({
                             "a": hex(colors[i]),
                             "b": hex(colors[j]),
@@ -521,12 +512,15 @@ impl Studio {
                         pairs.push(entry);
                     }
                 }
-                Ok(json!({
-                    "mode": "palette",
-                    "colors": colors.len(),
-                    "pairs": pairs,
-                    "failures": failures,
-                }))
+                Ok((
+                    None,
+                    json!({
+                        "mode": "palette",
+                        "colors": colors.len(),
+                        "pairs": pairs,
+                        "failures": failures,
+                    }),
+                ))
             }
             "one-bit" => {
                 use image::{Rgba, RgbaImage};
@@ -535,7 +529,8 @@ impl Studio {
                     None => dir.join(format!("onebit_f{}.png", frame)),
                 };
                 if let Some(p) = out.parent() {
-                    let _ = fs::create_dir_all(p);
+                    fs::create_dir_all(p)
+                        .map_err(|e| format!("cannot create {}: {e}", p.display()))?;
                 }
                 let mut bw = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
                 let (mut black, mut white) = (0u64, 0u64);
@@ -552,14 +547,21 @@ impl Studio {
                     }
                 }
                 bw.save(&out).map_err(|e| e.to_string())?;
+                // Inline the B/W render like frame_diff/seam_report do, so the
+                // agent sees the notan without a second call.
+                let sc = crate::preview_scale(bw.width(), bw.height());
+                let png = crate::encode_png(&crate::scale_nn(&bw, sc))?;
                 let total = (black + white).max(1) as f64;
-                Ok(json!({
-                    "mode": "one-bit",
-                    "path": out.to_string_lossy(),
-                    "threshold": threshold,
-                    "black_pct": (black as f64 / total * 1000.0).round() / 1000.0,
-                    "white_pct": (white as f64 / total * 1000.0).round() / 1000.0,
-                }))
+                Ok((
+                    Some(png),
+                    json!({
+                        "mode": "one-bit",
+                        "path": out.to_string_lossy(),
+                        "threshold": threshold,
+                        "black_pct": (black as f64 / total * 1000.0).round() / 1000.0,
+                        "white_pct": (white as f64 / total * 1000.0).round() / 1000.0,
+                    }),
+                ))
             }
             other => Err(format!(
                 "unknown contrast mode '{}' — use region|palette|one-bit",
@@ -584,25 +586,14 @@ impl Studio {
         let (_dir, doc) = self.open(id)?;
         let frames: Vec<usize> = match frame {
             Some(f) => vec![f],
-            None => (0..doc.meta.frames.len()).collect(),
+            None => (0..doc.meta().frames.len()).collect(),
         };
-        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
+        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
         let mut counts: HashMap<[u8; 4], u64> = HashMap::new();
         let mut total = 0u64;
+        let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         for f in frames {
             let img = doc.analysis_image(layer, f)?;
-            let (x0, y0, x1, y1) = match region {
-                Some((a, b, c, d)) => (
-                    a.min(c).max(0),
-                    b.min(d).max(0),
-                    a.max(c).min(cw - 1),
-                    b.max(d).min(ch - 1),
-                ),
-                None => (0, 0, cw - 1, ch - 1),
-            };
-            if x0 > x1 || y0 > y1 {
-                return Err("region is empty after clamping to the canvas".into());
-            }
             for y in y0..=y1 {
                 for x in x0..=x1 {
                     let p = img.get_pixel(x as u32, y as u32).0;
@@ -616,25 +607,28 @@ impl Studio {
         // Sort by pixel count desc (ties broken by colour for stable output).
         let mut entries: Vec<([u8; 4], u64)> = counts.into_iter().collect();
         entries.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
-        let has_palette = !doc.meta.palette.is_empty();
-        let in_pal = |c: [u8; 4]| -> bool { doc.meta.palette.contains(&c) };
-        let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]);
+        let has_palette = !doc.meta().palette.is_empty();
+        let in_pal = |c: [u8; 4]| -> bool { doc.meta().palette.contains(&c) };
+        let hex = |c: [u8; 4]| crate::hex_rgba(&c);
         let count = entries.len();
         // Top-48 with an "others" rollup: an unquantized import has hundreds
         // of distinct colours, and 256 JSON objects of them helps nobody.
-        let truncated = count > 48;
-        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(48).collect();
-        let others_pixels: u64 = entries.iter().skip(48).map(|(_, n)| n).sum();
-        let mut off_palette_count = 0u32;
+        /// The report lists at most this many colours; the tail is summarised.
+        const PALETTE_LIST_CAP: usize = 48;
+        let truncated = count > PALETTE_LIST_CAP;
+        let listed: Vec<&([u8; 4], u64)> = entries.iter().take(PALETTE_LIST_CAP).collect();
+        let others_pixels: u64 = entries.iter().skip(PALETTE_LIST_CAP).map(|(_, n)| n).sum();
+        // Off-palette tally covers EVERY distinct colour, not just the listed top.
+        let off_palette_count = if has_palette {
+            entries.iter().filter(|(c, _)| !in_pal(*c)).count() as u32
+        } else {
+            0
+        };
         let colors: Vec<Value> = listed
             .iter()
             .map(|(c, n)| {
                 let inp = if has_palette {
-                    let v = in_pal(*c);
-                    if !v {
-                        off_palette_count += 1;
-                    }
-                    json!(v)
+                    json!(in_pal(*c))
                 } else {
                     Value::Null
                 };
@@ -665,11 +659,6 @@ impl Studio {
                 }
             }
         }
-        // Off-palette tally covers EVERY distinct colour, not just the listed top.
-        if has_palette {
-            off_palette_count +=
-                entries.iter().skip(48).filter(|(c, _)| !in_pal(*c)).count() as u32;
-        }
         let mut out = json!({
             "count": count,
             "colors": colors,
@@ -679,7 +668,7 @@ impl Studio {
         });
         if truncated {
             out["others"] = json!({
-                "colors": count - 48,
+                "colors": count - PALETTE_LIST_CAP,
                 "pixels": others_pixels,
                 "note": "rolled up — quantize/snap_palette first for a readable report",
             });
@@ -700,7 +689,7 @@ impl Studio {
             (Some(c), _) => c,
             (None, Some(doc_id)) => {
                 let (_dir, doc) = self.open(doc_id)?;
-                let pal = doc.meta.palette.clone();
+                let pal = doc.meta().palette.clone();
                 if pal.is_empty() {
                     return Err(format!(
                         "document '{}' has no locked palette — set one with doc_set_palette \
@@ -833,7 +822,6 @@ impl Studio {
     /// pixels flagged (green=added, red=removed, yellow=recoloured) — returned as
     /// bytes for the MCP layer to inline, and written to `out_path` when given.
     /// Returns the change tallies and the bbox of all changed pixels.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_frame_diff(
         &self,
         id: &str,
@@ -848,19 +836,8 @@ impl Studio {
     ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
         let (dir, doc) = self.open(id)?;
-        let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-        let (x0, y0, x1, y1) = match region {
-            Some((a, b, c, d)) => (
-                a.min(c).max(0),
-                b.min(d).max(0),
-                a.max(c).min(cw - 1),
-                b.max(d).min(ch - 1),
-            ),
-            None => (0, 0, cw - 1, ch - 1),
-        };
-        if x0 > x1 || y0 > y1 {
-            return Err("region is empty after clamping to the canvas".into());
-        }
+        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
+        let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         let (added, removed, recolored, bbox, ia, ib) =
             doc.frame_diff_region(frame_a, frame_b, layer, (x0, y0, x1, y1))?;
         let changed = added + removed + recolored;
@@ -908,7 +885,7 @@ impl Studio {
                 None => dir.join(format!("diff_{}_{}.png", frame_a, frame_b)),
             };
             if let Some(p) = out.parent() {
-                let _ = fs::create_dir_all(p);
+                fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
             }
             // frame_b dimmed to 40%, then changed pixels in the region flagged.
             let mut img = RgbaImage::from_pixel(cw as u32, ch as u32, Rgba([0, 0, 0, 0]));
@@ -981,30 +958,31 @@ impl Studio {
                 ))
             }
         };
-        let report = |horizontal: bool| -> Result<(Value, Vec<[i32; 3]>), String> {
+        // One flatten serves both axes AND the overlay below.
+        let img = doc.analysis_image(layer, frame)?;
+        let report = |horizontal: bool| -> (Value, Vec<[i32; 3]>) {
             let (mismatches, max_delta, worst) =
-                doc.seam_axis(layer, frame, horizontal, threshold)?;
+                atelier_core::document::seam_axis_img(&img, horizontal, threshold);
             let worst_json: Vec<Value> = worst.iter().map(|w| json!(w)).collect();
-            Ok((
+            (
                 json!({"mismatches": mismatches, "max_delta": max_delta, "worst": worst_json}),
                 worst,
-            ))
+            )
         };
         let mut out = json!({});
         let mut flagged: Vec<[i32; 3]> = Vec::new();
         if want_h {
-            let (j, w) = report(true)?;
+            let (j, w) = report(true);
             out["horizontal"] = j;
             flagged.extend(w);
         }
         if want_v {
-            let (j, w) = report(false)?;
+            let (j, w) = report(false);
             out["vertical"] = j;
             flagged.extend(w);
         }
         let mut png = None;
         if out_path.is_some() || !flagged.is_empty() {
-            let img = doc.analysis_image(layer, frame)?;
             // Dim the art to 40%, then paint the (capped) worst edge cells red.
             let mut canvas = RgbaImage::from_pixel(img.width(), img.height(), Rgba([0, 0, 0, 0]));
             for (x, y, px) in img.enumerate_pixels() {
@@ -1031,7 +1009,8 @@ impl Studio {
             if let Some(p) = out_path {
                 let out_p = PathBuf::from(p);
                 if let Some(parent) = out_p.parent() {
-                    let _ = fs::create_dir_all(parent);
+                    fs::create_dir_all(parent)
+                        .map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
                 }
                 scaled.save(&out_p).map_err(|e| e.to_string())?;
                 out["path"] = json!(out_p.to_string_lossy());
@@ -1065,7 +1044,7 @@ impl Studio {
                 // Pingpong reverses at the ends, so the loop never hard-cuts.
                 let dir = match tag {
                     Some(name) => doc
-                        .meta
+                        .meta()
                         .tags
                         .iter()
                         .find(|t| t.name == name)
@@ -1080,12 +1059,13 @@ impl Studio {
                     }));
                 }
                 let (last, first) = (*seq.last().unwrap(), seq[0]);
-                let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-                let (added, removed, recolored, bbox, _ia, _ib) =
+                let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
+                let (added, removed, recolored, bbox, ia, _ib) =
                     doc.frame_diff_region(last, first, layer, (0, 0, cw - 1, ch - 1))?;
                 let changed = added + removed + recolored;
-                // Denominator: opaque pixels of the played last frame (motion base).
-                let opaque = doc.opaque_count(layer, last)?.max(1);
+                // Denominator: opaque pixels of the played last frame (motion
+                // base), counted from the flatten the diff already produced.
+                let opaque = ia.pixels().filter(|p| p.0[3] > 0).count().max(1) as u64;
                 let seam_score = (changed as f64 / opaque as f64 * 1000.0).round() / 1000.0;
                 Ok(json!({
                     "seam_score": seam_score,
@@ -1182,10 +1162,10 @@ impl Studio {
                 let mut areas: Vec<f64> = Vec::with_capacity(seq.len());
                 let mut skipped: Vec<usize> = Vec::new();
                 for &f in &seq {
-                    match doc.silhouette_center(layer, f, region)? {
-                        Some(c) => {
+                    match doc.silhouette_stats(layer, f, region)? {
+                        Some((c, opaque)) => {
                             centers.push(c);
-                            areas.push(doc.opaque_count(layer, f)? as f64);
+                            areas.push(opaque as f64);
                         }
                         None => skipped.push(f),
                     }
@@ -1237,7 +1217,7 @@ impl Studio {
             "timing" => {
                 let durs: Vec<u32> = seq
                     .iter()
-                    .map(|&f| doc.meta.frames[f].duration_ms)
+                    .map(|&f| doc.meta().frames[f].duration_ms)
                     .collect();
                 let total: u32 = durs.iter().sum();
                 let uniform = durs.windows(2).all(|w| w[0] == w[1]);
@@ -1276,13 +1256,7 @@ impl Studio {
         let (_dir, doc) = self.open(id)?;
         let img = doc.analysis_image(layer, frame)?;
         let (w, h) = (img.width() as i32, img.height() as i32);
-        let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => {
-                atelier_core::raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
-                    .ok_or("region is empty after clamping to the canvas")?
-            }
-            None => (0, 0, w - 1, h - 1),
-        };
+        let (ax, ay, bx, by) = atelier_core::raster::resolve_region(region, w as u32, h as u32)?;
         let (mut opaque, mut partial, mut transparent) = (0u64, 0u64, 0u64);
         let (mut sum_a, mut nz) = (0u64, 0u64);
         let mut bands = [0u64; 4]; // 1-64, 65-128, 129-192, 193-254
@@ -1319,9 +1293,7 @@ impl Studio {
             "note": "partial pixels are soft/AA/glow edges; many over a glass shape = readable translucency, scattered specks = stray AA",
         }))
     }
-}
 
-impl Studio {
     /// Colour-vision-deficiency audit: simulate protanopia / deuteranopia /
     /// tritanopia over the flattened frame (Machado 2009 severity-1.0 matrices
     /// in linear RGB) and report which of the art's distinct colour pairs —
@@ -1405,7 +1377,7 @@ impl Studio {
             let (l2, a2, b2) = atelier_core::raster::srgb_to_oklab(b);
             ((l1 - l2).powi(2) + (a1 - a2).powi(2) + (b1 - b2).powi(2)).sqrt()
         };
-        let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+        let hex = |c: [u8; 4]| crate::hex_rgb(&c);
         let mut report: Vec<Value> = Vec::new();
         let mut total_collapsed = 0usize;
         // The strip: normal + the three simulations, side by side, 1px gutter.
@@ -1423,7 +1395,15 @@ impl Studio {
                 for j in (i + 1)..colors.len() {
                     let (a, b) = (colors[i], colors[j]);
                     // Readable apart normally, unreadable under the simulation.
-                    if de(a, b) >= 0.08 && de(simulate(a, m), simulate(b, m)) < 0.05 {
+                    // The gap between the two floors is deliberate hysteresis:
+                    // borderline pairs (ΔE 0.05..0.08) count as neither, so a
+                    // hair of quantisation noise can't flip the verdict.
+                    /// Pairs at or above this ΔE read as distinct to typical vision.
+                    const READABLE_DE: f32 = 0.08;
+                    /// Below this ΔE a simulated pair has collapsed.
+                    const COLLAPSED_DE: f32 = 0.05;
+                    if de(a, b) >= READABLE_DE && de(simulate(a, m), simulate(b, m)) < COLLAPSED_DE
+                    {
                         collapsed.push(json!({"a": hex(a), "b": hex(b)}));
                     }
                 }
@@ -1511,7 +1491,7 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
             if seen[si] || !fg[si] {
                 continue;
             }
-            // BFS the component, gathering (x, y, lightness, interior-distance).
+            // DFS the component (Vec-as-stack), gathering (x, y, lightness, interior-distance).
             let mut stack = vec![(sx, sy)];
             seen[si] = true;
             let mut px: Vec<(f64, f64, f64, f64)> = Vec::new();
@@ -1536,7 +1516,10 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
                 }
             }
             let area = px.len() as u32;
-            if area < min_area.max(4) {
+            // Hard floor under the caller's min_area: the least-squares plane
+            // fit below needs more points than unknowns to mean anything.
+            const MIN_FIT_AREA: u32 = 4;
+            if area < min_area.max(MIN_FIT_AREA) {
                 continue;
             }
             let n = px.len() as f64;
@@ -1595,8 +1578,17 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
             } else {
                 f64::NAN
             };
-            let directional = plane_r2 >= 0.4 && mag > 1e-4;
-            let is_pillow = pillow_corr > 0.5 && plane_r2 < 0.35;
+            // Verdict thresholds. The R² gap (0.35..0.4) is hysteresis: a form
+            // in between is neither confidently directional nor eligible for
+            // the pillow call, so it lands on "flat" instead of flapping.
+            /// Plane fit explaining at least this much lightness variance = one light.
+            const DIRECTIONAL_R2: f64 = 0.4;
+            /// Below this the fit is weak enough for a pillow verdict to stand.
+            const PILLOW_MAX_R2: f64 = 0.35;
+            /// Centre-distance correlation above this reads as pillow shading.
+            const PILLOW_CORR: f64 = 0.5;
+            let directional = plane_r2 >= DIRECTIONAL_R2 && mag > 1e-4;
+            let is_pillow = pillow_corr > PILLOW_CORR && plane_r2 < PILLOW_MAX_R2;
             if is_pillow {
                 pillow_count += 1;
             }
@@ -1621,7 +1613,9 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
         }
     }
     let (dominant, spread) = circular_summary(&azimuths);
-    let inconsistent = azimuths.len() >= 2 && spread.map(|s| s > 45.0).unwrap_or(false);
+    /// Azimuth spread beyond this many degrees = the forms disagree on the light.
+    const LIGHT_SPREAD_DEG: f64 = 45.0;
+    let inconsistent = azimuths.len() >= 2 && spread.map(|s| s > LIGHT_SPREAD_DEG).unwrap_or(false);
     let summary_verdict = if pillow_count > 0 {
         "pillow-shading detected"
     } else if inconsistent {
@@ -1652,15 +1646,31 @@ mod tests {
         Studio::with_docs_dir(dir)
     }
 
+    /// Single draw-op shorthand: `params` is the op's JSON object (as `json!`).
+    fn draw(s: &Studio, id: &str, frame: usize, op: &str, params: Value) -> Value {
+        s.doc_draw(id, 0, frame, op, params.as_object().unwrap().clone())
+            .unwrap()
+    }
+
     #[test]
     fn dump_region_symbol_and_hex() {
         let s = studio("dump");
         s.doc_create("d", 4, 4).unwrap();
         // two distinct opaque pixels, rest transparent
-        s.doc_pencil("d", 0, 0, vec![(0, 0)], [10, 20, 30, 255], 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(1, 0)], [40, 50, 60, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [10, 20, 30, 255]}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[1, 0]], "color": [40, 50, 60, 255]}),
+        );
         let sym = s
             .doc_dump_region("d", 0, None, Some((0, 0, 1, 0)), "symbol")
             .unwrap();
@@ -1679,8 +1689,13 @@ mod tests {
     fn silhouette_reports_bbox_and_fill() {
         let s = studio("silo");
         s.doc_create("d", 4, 4).unwrap();
-        s.doc_rect("d", 0, 0, 1, 1, 2, 2, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 1, "y0": 1, "x1": 2, "y1": 2, "color": [9, 9, 9, 255], "fill": true}),
+        );
         let r = s.doc_silhouette("d", 0, None, 1).unwrap();
         assert_eq!(r["bbox"], json!([1, 1, 2, 2])); // 2x2 block
         assert_eq!(r["fill_ratio"], json!(0.25)); // 4 of 16 opaque
@@ -1694,10 +1709,20 @@ mod tests {
         s.doc_create("ui", 8, 4).unwrap();
         // Same-lightness red and green blocks: readable normally, classic
         // protan/deutan collapse.
-        s.doc_rect("ui", 0, 0, 0, 0, 3, 3, [200, 60, 60, 255], true, 1)
-            .unwrap();
-        s.doc_rect("ui", 0, 0, 4, 0, 7, 3, [80, 150, 60, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "ui",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 3, "y1": 3, "color": [200, 60, 60, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "ui",
+            0,
+            "rect",
+            json!({"x0": 4, "y0": 0, "x1": 7, "y1": 3, "color": [80, 150, 60, 255], "fill": true}),
+        );
         let (png, r) = s.doc_colorblind_check("ui", 0, 1).unwrap();
         assert!(!png.is_empty());
         assert_eq!(r["verdict"], "warn");
@@ -1767,10 +1792,20 @@ mod tests {
         let s = studio("comp");
         s.doc_create("d", 8, 8).unwrap();
         // a 3x3 blob and a single stray speck, well separated
-        s.doc_rect("d", 0, 0, 0, 0, 2, 2, [255, 0, 0, 255], true, 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(7, 7)], [0, 255, 0, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 2, "y1": 2, "color": [255, 0, 0, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[7, 7]], "color": [0, 255, 0, 255]}),
+        );
         let r = s.doc_components("d", 0, None, 8, None, 1).unwrap();
         assert_eq!(r["count"], 2);
         assert_eq!(r["components"][0]["area"], 9); // biggest first
@@ -1788,8 +1823,13 @@ mod tests {
         let s = studio("cov");
         s.doc_create("d", 8, 8).unwrap();
         // fill the top-left quadrant solid white
-        s.doc_rect("d", 0, 0, 0, 0, 3, 3, [255, 255, 255, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 3, "y1": 3, "color": [255, 255, 255, 255], "fill": true}),
+        );
         let r = s.doc_coverage_map("d", 0, 2, 2).unwrap();
         assert_eq!(r["grid"][0][0]["fill"], json!(1.0)); // full cell
         assert_eq!(r["grid"][0][0]["value"], json!(255)); // white luma
@@ -1805,25 +1845,31 @@ mod tests {
         let s = studio("renderval");
         s.doc_create("d", 4, 4).unwrap();
         // one black-ish and one white pixel; rest transparent
-        s.doc_pencil("d", 0, 0, vec![(0, 0)], [0, 0, 0, 255], 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(1, 0)], [255, 255, 255, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [0, 0, 0, 255]}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[1, 0]], "color": [255, 255, 255, 255]}),
+        );
         let out = s.docs_dir.join("val.png");
         let (png, r) = s
             .look(
                 "d",
                 0,
-                Some(1),
-                None,
-                "grayscale",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                out.to_str(),
+                &crate::LookOptions {
+                    scale: Some(1),
+                    mode: "grayscale".into(),
+                    out_path: out.to_str().map(|s| s.to_string()),
+                    ..Default::default()
+                },
             )
             .unwrap();
         assert!(out.exists()); // out_path written
@@ -1839,16 +1885,11 @@ mod tests {
             .look(
                 "d",
                 0,
-                Some(1),
-                None,
-                "bogus",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                None,
+                &crate::LookOptions {
+                    scale: Some(1),
+                    mode: "bogus".into(),
+                    ..Default::default()
+                }
             )
             .is_err());
     }
@@ -1859,11 +1900,17 @@ mod tests {
         s.doc_create("d", 8, 8).unwrap();
         // white inner block on a black surround → very high contrast
         s.doc_fill_cel("d", 0, 0, [0, 0, 0, 255]).unwrap();
-        s.doc_rect("d", 0, 0, 3, 3, 4, 4, [255, 255, 255, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 3, "y0": 3, "x1": 4, "y1": 4, "color": [255, 255, 255, 255], "fill": true}),
+        );
         let region = s
             .doc_contrast_check("d", 0, "region", Some((3, 3, 4, 4)), 1.5, 128, None)
-            .unwrap();
+            .unwrap()
+            .1;
         assert_eq!(region["pass"], json!(true));
         assert!(region["ratio"].as_f64().unwrap() > 10.0); // black/white ≈ 21
                                                            // region mode without a region errors
@@ -1873,14 +1920,16 @@ mod tests {
         // palette mode: two distinct colours, one pair
         let pal = s
             .doc_contrast_check("d", 0, "palette", None, 1.5, 128, None)
-            .unwrap();
+            .unwrap()
+            .1;
         assert_eq!(pal["colors"], json!(2));
         assert_eq!(pal["pairs"].as_array().unwrap().len(), 1);
         // one-bit renders a B/W png and splits coverage
         let out = s.docs_dir.join("onebit.png");
         let ob = s
             .doc_contrast_check("d", 0, "one-bit", None, 1.5, 128, out.to_str())
-            .unwrap();
+            .unwrap()
+            .1;
         assert!(out.exists());
         assert!(ob["white_pct"].as_f64().unwrap() > 0.0);
         assert!(ob["black_pct"].as_f64().unwrap() > 0.0);
@@ -1892,10 +1941,20 @@ mod tests {
         s.doc_create("d", 4, 4).unwrap();
         s.doc_set_palette("d", vec![[255, 0, 0, 255]]).unwrap();
         // 3 red (in palette) + 1 near-red green-stray (off palette)
-        s.doc_rect("d", 0, 0, 0, 0, 2, 0, [255, 0, 0, 255], true, 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 0, vec![(0, 1)], [250, 4, 0, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 2, "y1": 0, "color": [255, 0, 0, 255], "fill": true}),
+        );
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 1]], "color": [250, 4, 0, 255]}),
+        );
         let r = s.doc_palette_report("d", Some(0), None, None, 8).unwrap();
         assert_eq!(r["count"], 2);
         assert_eq!(r["colors"][0]["hex"], "#ff0000ff"); // most-used first
@@ -1905,8 +1964,13 @@ mod tests {
         assert_eq!(r["near_dupes"].as_array().unwrap().len(), 1);
         // no-palette doc → in_palette null
         s.doc_create("e", 2, 2).unwrap();
-        s.doc_pencil("e", 0, 0, vec![(0, 0)], [1, 2, 3, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "e",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [1, 2, 3, 255]}),
+        );
         let r2 = s.doc_palette_report("e", Some(0), None, None, 8).unwrap();
         assert_eq!(r2["colors"][0]["in_palette"], Value::Null);
         assert_eq!(r2["off_palette_count"], Value::Null);
@@ -1969,10 +2033,20 @@ mod tests {
         s.doc_create("d", 4, 4).unwrap();
         s.doc_add_frame("d", 100, Some(0)).unwrap(); // frame 1 copies frame 0
                                                      // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
-        s.doc_pencil("d", 0, 0, vec![(0, 0)], [255, 0, 0, 255], 1)
-            .unwrap();
-        s.doc_pencil("d", 0, 1, vec![(1, 1)], [0, 255, 0, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [255, 0, 0, 255]}),
+        );
+        draw(
+            &s,
+            "d",
+            1,
+            "pencil",
+            json!({"points": [[1, 1]], "color": [0, 255, 0, 255]}),
+        );
         let (png, r) = s
             .doc_frame_diff("d", 0, 1, None, None, true, "none", None, 1)
             .unwrap();
@@ -2004,8 +2078,13 @@ mod tests {
         let s = studio("seam");
         s.doc_create("d", 4, 4).unwrap();
         // A left column that does not match the right column → horizontal seam.
-        s.doc_rect("d", 0, 0, 0, 0, 0, 3, [255, 0, 0, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 0, "y1": 3, "color": [255, 0, 0, 255], "fill": true}),
+        );
         let (png, r) = s.doc_seam_report("d", None, 0, "both", 0, None).unwrap();
         assert!(png.is_some()); // mismatches → inline overlay
         assert!(r["horizontal"]["mismatches"].as_u64().unwrap() > 0);
@@ -2033,14 +2112,29 @@ mod tests {
         let s = studio("animaudit");
         s.doc_create("d", 8, 8).unwrap();
         // 3 frames: a 2x2 block stepping right by 2 each frame (even spacing).
-        s.doc_rect("d", 0, 0, 0, 0, 1, 1, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 1, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
+        );
         s.doc_add_frame("d", 100, None).unwrap();
-        s.doc_rect("d", 0, 1, 2, 0, 3, 1, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            1,
+            "rect",
+            json!({"x0": 2, "y0": 0, "x1": 3, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
+        );
         s.doc_add_frame("d", 100, None).unwrap();
-        s.doc_rect("d", 0, 2, 4, 0, 5, 1, [9, 9, 9, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            2,
+            "rect",
+            json!({"x0": 4, "y0": 0, "x1": 5, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
+        );
         // spacing: even rightward drift → low evenness, positive total drift.
         let sp = s.doc_anim_audit("d", None, None, "spacing", None).unwrap();
         assert_eq!(sp["per_frame_center"].as_array().unwrap().len(), 3);
@@ -2067,8 +2161,13 @@ mod tests {
         let s = studio("keyframe");
         s.doc_create("d", 16, 16).unwrap();
         // a 2x2 block at (1,1) on frame 0; two empty frames to animate into.
-        s.doc_rect("d", 0, 0, 1, 1, 2, 2, [200, 50, 50, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            "rect",
+            json!({"x0": 1, "y0": 1, "x1": 2, "y1": 2, "color": [200, 50, 50, 255], "fill": true}),
+        );
         s.doc_add_frame("d", 100, None).unwrap();
         s.doc_add_frame("d", 100, None).unwrap();
         let r = s

@@ -19,7 +19,11 @@ use atelier_core::document::Document;
 mod analysis;
 mod craft;
 mod reference;
+mod rig;
 mod set;
+mod tiles;
+mod view;
+pub use view::LookOptions;
 
 /// Hard cap on the pixel count (w×h) of an external source image. ~64 MP covers
 /// any real reference/photo; the point is that a tiny-on-disk "decompression
@@ -27,10 +31,22 @@ mod set;
 /// its pixels are ever allocated. Shared by every `open_bounded` caller.
 pub(crate) const MAX_IMPORT_PIXELS: u64 = 64 * 1024 * 1024;
 
+/// Hard canvas ceiling: width/height a document may have (also the bound the
+/// import/reference paths assume when sizing buffers).
+pub(crate) const MAX_CANVAS: u32 = 4096;
+/// Text grids (silhouette/dump/diff) stay readable only so long — shared area
+/// cap for every grid-emitting reader.
+pub(crate) const GRID_AREA_CAP: u64 = 4096;
+/// Import/reference targets above this allocate unbounded images in one call.
+pub(crate) const MAX_TARGET_PIXELS: usize = 1_048_576;
+
 /// Upper bound on an export scale factor. Canvases are already capped at 4096²
 /// (`doc_create`); without a scale ceiling a `scale=64` export of that targets a
 /// ~256 GB buffer. 16 matches the render/preview clamp.
 pub(crate) const MAX_EXPORT_SCALE: u32 = 16;
+
+/// Export scale when the caller leaves it unset.
+pub(crate) const DEFAULT_EXPORT_SCALE: u32 = 4;
 
 /// Clamp an export scale into `1..=MAX_EXPORT_SCALE`.
 fn export_scale(scale: u32) -> u32 {
@@ -94,7 +110,8 @@ fn slugify(name: &str) -> String {
     }
 }
 
-/// Escape the five XML metacharacters so attribute values stay well-formed.
+/// Escape the four XML metacharacters double-quoted attribute values need
+/// (apostrophes are legal there) so values stay well-formed.
 fn xml_escape(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
@@ -141,7 +158,14 @@ impl Studio {
     pub fn new() -> Studio {
         let home = std::env::var("ATELIER_HOME")
             .map(PathBuf::from)
-            .unwrap_or_else(|_| dirs::home_dir().unwrap_or_default().join(".atelier"));
+            .unwrap_or_else(|_| {
+                // No resolvable home = a deliberate, visible choice of the temp
+                // dir — not a silent relative "./.atelier" wherever the process
+                // happens to run (matches the binary's service::default_home).
+                dirs::home_dir()
+                    .map(|h| h.join(".atelier"))
+                    .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
+            });
         let docs_dir = home.join("documents");
         let _ = fs::create_dir_all(&docs_dir);
         Studio {
@@ -234,9 +258,9 @@ impl Studio {
     // -- library ------------------------------------------------------------
 
     pub fn doc_create(&self, name: &str, w: u32, h: u32) -> Result<Value, String> {
-        if w == 0 || h == 0 || w > 4096 || h > 4096 {
+        if w == 0 || h == 0 || w > MAX_CANVAS || h > MAX_CANVAS {
             return Err(format!(
-                "canvas {w}x{h} out of range — width/height must be 1..=4096"
+                "canvas {w}x{h} out of range — width/height must be 1..={MAX_CANVAS}"
             ));
         }
         let id = self.unique_id(name);
@@ -352,13 +376,13 @@ impl Studio {
         let mut items: Vec<Item> = Vec::new();
         for id in &ids {
             let (_dir, doc) = self.open(id)?;
-            for f in 0..doc.meta.frames.len() {
+            for f in 0..doc.meta().frames.len() {
                 let mut img = doc.flatten(f);
                 if scale > 1 {
                     img = image::imageops::resize(
                         &img,
-                        doc.meta.w * scale,
-                        doc.meta.h * scale,
+                        doc.meta().w * scale,
+                        doc.meta().h * scale,
                         image::imageops::FilterType::Nearest,
                     );
                 }
@@ -366,11 +390,11 @@ impl Studio {
                     doc: id.clone(),
                     frame: f,
                     img,
-                    duration_ms: doc.meta.frames[f].duration_ms,
-                    pivot: doc.meta.frames[f]
+                    duration_ms: doc.meta().frames[f].duration_ms,
+                    pivot: doc.meta().frames[f]
                         .pivot
                         .map(|[x, y]| [x * scale as i32, y * scale as i32]),
-                    boxes: doc.meta.frames[f]
+                    boxes: doc.meta().frames[f]
                         .boxes
                         .iter()
                         .map(|b| b.to_json(scale))
@@ -409,7 +433,7 @@ impl Studio {
             }));
         }
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         atlas.save(out_path).map_err(|e| e.to_string())?;
         let meta = json!({
@@ -417,8 +441,11 @@ impl Studio {
             "count": frames_meta.len(), "frames": frames_meta,
         });
         let mp = Path::new(out_path).with_extension("json");
-        std::fs::write(&mp, serde_json::to_string_pretty(&meta).unwrap())
-            .map_err(|e| e.to_string())?;
+        std::fs::write(
+            &mp,
+            serde_json::to_string_pretty(&meta).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
         Ok(meta)
     }
 
@@ -453,7 +480,7 @@ impl Studio {
             "ok": true,
             "doc_id": id,
             "added_layer": idx,
-            "layers": doc.meta.layers.len(),
+            "layers": doc.meta().layers.len(),
         }))
     }
 
@@ -482,7 +509,12 @@ impl Studio {
     /// `set` (visibility/opacity/blend of layer `index`) | `move` | `insert` |
     /// `delete` | `rename` | `duplicate` | `merge_down`. Routes to the kept
     /// `doc_add_layer` / `doc_set_layer` / `layer_ops` methods.
-    #[allow(clippy::too_many_arguments)]
+    /// Destructive dispatch ops must say WHICH target they hit — a defaulted
+    /// index 0 silently deletes/mutates the first layer/frame.
+    fn required_index(op: &str, index: Option<usize>) -> Result<usize, String> {
+        index.ok_or_else(|| format!("op '{op}' needs an explicit index"))
+    }
+
     pub fn doc_layer(
         &self,
         id: &str,
@@ -501,11 +533,17 @@ impl Studio {
                 opacity.unwrap_or(255),
                 blend.unwrap_or_else(|| "normal".into()),
             ),
-            "set" => self.doc_set_layer(id, index.unwrap_or(0), visible, opacity, blend),
+            "set" => self.doc_set_layer(
+                id,
+                Self::required_index(op, index)?,
+                visible,
+                opacity,
+                blend,
+            ),
             _ => self.layer_ops(
                 id,
                 op,
-                index.unwrap_or(0),
+                Self::required_index(op, index)?,
                 to_index,
                 name,
                 opacity.unwrap_or(255),
@@ -522,11 +560,11 @@ impl Studio {
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         if let Some(src) = copy_from {
-            if src >= doc.meta.frames.len() {
+            if src >= doc.meta().frames.len() {
                 return Err(format!(
                     "copy_from {src} out of range — document has {} frame(s) (0..={})",
-                    doc.meta.frames.len(),
-                    doc.meta.frames.len().saturating_sub(1)
+                    doc.meta().frames.len(),
+                    doc.meta().frames.len().saturating_sub(1)
                 ));
             }
         }
@@ -538,7 +576,7 @@ impl Studio {
             "ok": true,
             "doc_id": id,
             "added_frame": idx,
-            "frames": doc.meta.frames.len(),
+            "frames": doc.meta().frames.len(),
         }))
     }
 
@@ -563,11 +601,23 @@ impl Studio {
         duration_ms: Option<u32>,
     ) -> Result<Value, String> {
         match op {
-            "add" => self.doc_add_frame(id, duration_ms.unwrap_or(100), copy_from),
-            "duration" => {
-                self.doc_set_frame_duration(id, frame.unwrap_or(0), duration_ms.unwrap_or(100))
-            }
-            _ => self.doc_frame_ops(id, op, frame.unwrap_or(0), to_index, duration_ms),
+            "add" => self.doc_add_frame(
+                id,
+                duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
+                copy_from,
+            ),
+            "duration" => self.doc_set_frame_duration(
+                id,
+                Self::required_index(op, frame)?,
+                duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
+            ),
+            _ => self.doc_frame_ops(
+                id,
+                op,
+                Self::required_index(op, frame)?,
+                to_index,
+                duration_ms,
+            ),
         }
     }
 
@@ -606,8 +656,6 @@ impl Studio {
         self.commit(&dir, id, doc)
     }
 
-    #[allow(clippy::too_many_arguments)]
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_stamp_image(
         &self,
         id: &str,
@@ -634,21 +682,6 @@ impl Studio {
             d.stamp_image(
                 layer, frame, x, y, img, scale, rotate, opacity, blend, replace,
             )
-        })
-    }
-
-    pub fn doc_symmetry(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        vertical: Option<i32>,
-        horizontal: Option<i32>,
-        keep_left: bool,
-        keep_top: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.symmetry(layer, frame, vertical, horizontal, keep_left, keep_top)
         })
     }
 
@@ -682,11 +715,11 @@ impl Studio {
     /// Backs the MCP `render` resource, which serves the bytes as a blob.
     pub fn render_png_bytes(&self, id: &str, frame: usize, scale: u32) -> Result<Vec<u8>, String> {
         let (_dir, doc) = self.open(id)?;
-        if frame >= doc.meta.frames.len() {
+        if frame >= doc.meta().frames.len() {
             return Err(format!(
                 "no frame {} (frames={})",
                 frame,
-                doc.meta.frames.len()
+                doc.meta().frames.len()
             ));
         }
         let img = doc.render_preview(frame, scale.max(1), None, false, 1, None)?;
@@ -699,7 +732,7 @@ impl Studio {
     pub fn doc_export_sheet(&self, id: &str, out_path: &str, scale: u32) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         doc.export_sheet(Path::new(out_path), export_scale(scale))
     }
@@ -721,21 +754,21 @@ impl Studio {
         let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
         match op {
             "sheet" => match gets("meta").unwrap_or("atelier") {
-                "atelier" => self.doc_export_sheet(id, out_path, export_scale(scale.unwrap_or(4))),
+                "atelier" => self.doc_export_sheet(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE)),
                 "standard" => {
                     let (_dir, doc) = self.open(id)?;
                     if let Some(p) = Path::new(out_path).parent() {
-                        let _ = fs::create_dir_all(p);
+                        fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
                     }
-                    doc.export_sheet_std(Path::new(out_path), export_scale(scale.unwrap_or(4)))
+                    doc.export_sheet_std(Path::new(out_path), export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE)))
                 }
                 other => Err(format!(
                     "doc_export op=sheet: unknown meta '{other}' — use atelier|standard"
                 )),
             },
             "anim" => match gets("format").unwrap_or("gif") {
-                "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(4), gets("tag")),
-                "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(4), gets("tag")),
+                "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE), gets("tag")),
+                "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE), gets("tag")),
                 other => Err(format!(
                     "doc_export op=anim: unknown format '{other}' — use gif|apng"
                 )),
@@ -760,7 +793,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         let frames = doc.export_gif(Path::new(out_path), export_scale(scale), tag)?;
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
@@ -775,7 +808,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         if let Some(p) = Path::new(out_path).parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         let frames = doc.export_apng(Path::new(out_path), export_scale(scale), tag)?;
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
@@ -795,7 +828,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let (tile_w, tile_h, scale) = (tile_w.max(1), tile_h.max(1), export_scale(scale));
-        let (cw, ch) = (doc.meta.w, doc.meta.h);
+        let (cw, ch) = (doc.meta().w, doc.meta().h);
         if cw % tile_w != 0 || ch % tile_h != 0 {
             return Err(format!(
                 "canvas {}x{} not divisible by tile {}x{}",
@@ -811,7 +844,7 @@ impl Studio {
         }
         let out = Path::new(out_path);
         if let Some(p) = out.parent() {
-            let _ = fs::create_dir_all(p);
+            fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
         }
         img.save(out).map_err(|e| e.to_string())?;
         // Scaled tile size — what an engine slices against the emitted PNG.
@@ -843,329 +876,17 @@ impl Studio {
             "tilecount": tilecount, "columns": columns, "rows": rows,
         });
         let json_path = out.with_extension("json");
-        fs::write(&json_path, serde_json::to_string_pretty(&meta).unwrap())
-            .map_err(|e| e.to_string())?;
+        fs::write(
+            &json_path,
+            serde_json::to_string_pretty(&meta).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
         Ok(json!({
             "path": out.to_string_lossy(), "tsx": tsx_path.to_string_lossy(),
             "json": json_path.to_string_lossy(),
             "tilecount": tilecount, "columns": columns, "rows": rows,
             "tilewidth": stw, "tileheight": sth,
         }))
-    }
-
-    /// Generate the deterministic 16-tile Wang/blob set from a terrain source: its
-    /// frame 0 carries the INNER material on layer 0 and the OUTER material on
-    /// layer 1 (top-left N×N of each layer is sampled). Output is a NEW document
-    /// `<id>-wang`, canvas 4N×4N, laid out as a 4×4 grid of every corner
-    /// combination (tile index = bits NE,SE,SW,NW). Each set corner bit fills a
-    /// quarter-disc (radius N/2) at that tile corner with the inner material;
-    /// adjacent set corners connect via the shared half-edge. Returns the new
-    /// document's structure + id.
-    pub fn wang_tiles(&self, id: &str, n: u32) -> Result<Value, String> {
-        use image::{Rgba, RgbaImage};
-        let (_dir, src) = self.open(id)?;
-        if src.meta.layers.len() < 2 {
-            return Err(
-                "wang_tiles needs two layers: layer 0 = inner material, layer 1 = outer material"
-                    .into(),
-            );
-        }
-        let n = n.max(1);
-        if src.meta.w < n || src.meta.h < n {
-            return Err(format!(
-                "source canvas {}x{} smaller than tile size {}",
-                src.meta.w, src.meta.h, n
-            ));
-        }
-        // Sample the top-left N×N of each layer's full-canvas image.
-        let inner = src.analysis_image(Some(0), 0)?;
-        let outer = src.analysis_image(Some(1), 0)?;
-        let r = n as f32 / 2.0; // corner quarter-disc radius
-                                // The four corners of a tile, in bit order NE,SE,SW,NW (bit 0 = NE).
-        let corners: [(u32, u32); 4] = [
-            (n, 0), // NE (top-right)
-            (n, n), // SE (bottom-right)
-            (0, n), // SW (bottom-left)
-            (0, 0), // NW (top-left)
-        ];
-        let mut canvas = RgbaImage::from_pixel(4 * n, 4 * n, Rgba([0, 0, 0, 0]));
-        for tile in 0..16u32 {
-            let (gx, gy) = (tile % 4, tile / 4); // 4×4 grid placement
-            let (ox, oy) = (gx * n, gy * n);
-            for ty in 0..n {
-                for tx in 0..n {
-                    let inside = Self::wang_inside(tx, ty, n, r, &corners, tile);
-                    let mat = if inside { &inner } else { &outer };
-                    let p = *mat.get_pixel(tx, ty);
-                    canvas.put_pixel(ox + tx, oy + ty, p);
-                }
-            }
-        }
-        // Materialise the new document and place the grid as its single cel.
-        let new_id = self.unique_id(&format!("{}-wang", id));
-        let dir = self.doc_dir(&new_id);
-        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-        let mut doc = Document::new(&format!("{}-wang", id), 4 * n, 4 * n);
-        doc.set_cel(0, 0, 0, 0, canvas)?;
-        doc.save(&dir)?;
-        let mut out = doc.structure();
-        out["id"] = json!(new_id);
-        out["tile_size"] = json!(n);
-        Ok(out)
-    }
-
-    /// True when pixel (tx,ty) inside an N×N tile is INNER material for `tile`'s
-    /// corner bitmask: it lies within a set corner's quarter-disc (radius `r`), or
-    /// in the half-edge rectangle joining two adjacent set corners. `corners` is
-    /// the (corner_x, corner_y) of each bit in order NE,SE,SW,NW.
-    fn wang_inside(tx: u32, ty: u32, n: u32, r: f32, corners: &[(u32, u32); 4], tile: u32) -> bool {
-        let (px, py) = (tx as f32 + 0.5, ty as f32 + 0.5);
-        // Quarter-disc per set corner.
-        for (bit, &(cx, cy)) in corners.iter().enumerate() {
-            if tile & (1 << bit) == 0 {
-                continue;
-            }
-            let (dx, dy) = (px - cx as f32, py - cy as f32);
-            if dx * dx + dy * dy <= r * r {
-                return true;
-            }
-        }
-        // Half-edge rectangles when both corners on an edge are set. Bits are
-        // NE=0, SE=1, SW=2, NW=3; edges connect adjacent corners by filling the
-        // half-depth band along their shared edge.
-        let bit = |b: u32| tile & (1 << b) != 0;
-        let half = n as f32 / 2.0;
-        // Top edge: NW(3) + NE(0).
-        if bit(3) && bit(0) && (py <= half) {
-            return true;
-        }
-        // Right edge: NE(0) + SE(1).
-        if bit(0) && bit(1) && (px >= half) {
-            return true;
-        }
-        // Bottom edge: SE(1) + SW(2).
-        if bit(1) && bit(2) && (py >= half) {
-            return true;
-        }
-        // Left edge: SW(2) + NW(3).
-        if bit(2) && bit(3) && (px <= half) {
-            return true;
-        }
-        false
-    }
-
-    /// Generate the deterministic 47-tile BLOB autotile set (the full
-    /// edge+corner bitmask family — the modern superset of the 16-corner Wang
-    /// set). Source contract matches `wang_tiles`: frame 0, layer 0 = inner
-    /// material, layer 1 = outer, top-left N×N sampled. Output is a NEW
-    /// document `<id>-blob` laid out as a 7×7 grid of the 47 canonical
-    /// neighbour masks (a corner bit only counts when both adjacent edges are
-    /// set). Returns the new doc's structure plus `masks` — the canonical
-    /// 8-bit neighbour mask per grid index (N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64
-    /// NW=128) — so an engine autotiler can map straight onto it.
-    pub fn autotile_set(&self, id: &str, n: u32) -> Result<Value, String> {
-        use image::{Rgba, RgbaImage};
-        let (_dir, src) = self.open(id)?;
-        if src.meta.layers.len() < 2 {
-            return Err(
-                "autotile_set needs two layers: layer 0 = inner material, layer 1 = outer material"
-                    .into(),
-            );
-        }
-        let n = n.max(2);
-        if src.meta.w < n || src.meta.h < n {
-            return Err(format!(
-                "source canvas {}x{} smaller than tile size {}",
-                src.meta.w, src.meta.h, n
-            ));
-        }
-        let inner = src.analysis_image(Some(0), 0)?;
-        let outer = src.analysis_image(Some(1), 0)?;
-        let masks = Self::blob_masks();
-        let mut canvas = RgbaImage::from_pixel(7 * n, 7 * n, Rgba([0, 0, 0, 0]));
-        for (idx, &mask) in masks.iter().enumerate() {
-            let (gx, gy) = ((idx as u32) % 7, (idx as u32) / 7);
-            for ty in 0..n {
-                for tx in 0..n {
-                    let p = if Self::blob_inside(tx, ty, n, mask) {
-                        *inner.get_pixel(tx, ty)
-                    } else {
-                        *outer.get_pixel(tx, ty)
-                    };
-                    canvas.put_pixel(gx * n + tx, gy * n + ty, p);
-                }
-            }
-        }
-        let new_id = self.unique_id(&format!("{}-blob", id));
-        let dir = self.doc_dir(&new_id);
-        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-        let mut doc = Document::new(&format!("{}-blob", id), 7 * n, 7 * n);
-        doc.set_cel(0, 0, 0, 0, canvas)?;
-        doc.save(&dir)?;
-        let mut out = doc.structure();
-        out["id"] = json!(new_id);
-        out["tile_size"] = json!(n);
-        out["masks"] = json!(masks);
-        Ok(out)
-    }
-
-    /// Assemble a TILEMAP from a terrain mask — the in-situ test of a tileset,
-    /// and the only real one. `rows` is the map as strings (`#`/`1`/`x` =
-    /// filled); each filled cell computes its 8-neighbour mask and renders
-    /// directly from the same materials + blob rules as `autotile_set` (no
-    /// intermediate sheet needed), so what you see IS what the autotile family
-    /// produces. `outside` says how off-map reads: `filled` (terrain continues,
-    /// default) or `empty` (map edges get borders). Output is a NEW document
-    /// `<id>-map` the agent can doc_look / doc_export.
-    pub fn tilemap_assemble(
-        &self,
-        id: &str,
-        n: u32,
-        rows: &[String],
-        outside_filled: bool,
-    ) -> Result<Value, String> {
-        use image::{Rgba, RgbaImage};
-        let (_dir, src) = self.open(id)?;
-        if src.meta.layers.len() < 2 {
-            return Err(
-                "tilemap_assemble needs two layers: layer 0 = inner material, layer 1 = outer material"
-                    .into(),
-            );
-        }
-        let n = n.max(2);
-        if src.meta.w < n || src.meta.h < n {
-            return Err(format!(
-                "source canvas {}x{} smaller than tile size {}",
-                src.meta.w, src.meta.h, n
-            ));
-        }
-        if rows.is_empty() || rows.iter().any(|r| r.is_empty()) {
-            return Err("mask rows must be non-empty strings".into());
-        }
-        let h = rows.len() as i32;
-        let w = rows.iter().map(|r| r.chars().count()).max().unwrap_or(0) as i32;
-        let grid: Vec<Vec<bool>> = rows
-            .iter()
-            .map(|r| {
-                let mut v: Vec<bool> = r.chars().map(|c| matches!(c, '#' | '1' | 'x')).collect();
-                v.resize(w as usize, false);
-                v
-            })
-            .collect();
-        let filled = |x: i32, y: i32| -> bool {
-            if x < 0 || y < 0 || x >= w || y >= h {
-                outside_filled
-            } else {
-                grid[y as usize][x as usize]
-            }
-        };
-        let inner = src.analysis_image(Some(0), 0)?;
-        let outer = src.analysis_image(Some(1), 0)?;
-        let mut canvas = RgbaImage::from_pixel(w as u32 * n, h as u32 * n, Rgba([0, 0, 0, 0]));
-        let mut cells = 0u32;
-        for cy in 0..h {
-            for cx in 0..w {
-                if !filled(cx, cy) {
-                    continue;
-                }
-                cells += 1;
-                // 8-neighbour mask: N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128.
-                let dirs = [
-                    (0, -1),
-                    (1, -1),
-                    (1, 0),
-                    (1, 1),
-                    (0, 1),
-                    (-1, 1),
-                    (-1, 0),
-                    (-1, -1),
-                ];
-                let mut mask = 0u8;
-                for (bit, (dx, dy)) in dirs.iter().enumerate() {
-                    if filled(cx + dx, cy + dy) {
-                        mask |= 1 << bit;
-                    }
-                }
-                for ty in 0..n {
-                    for tx in 0..n {
-                        let p = if Self::blob_inside(tx, ty, n, mask) {
-                            *inner.get_pixel(tx, ty)
-                        } else {
-                            *outer.get_pixel(tx, ty)
-                        };
-                        canvas.put_pixel(cx as u32 * n + tx, cy as u32 * n + ty, p);
-                    }
-                }
-            }
-        }
-        let new_id = self.unique_id(&format!("{}-map", id));
-        let dir = self.doc_dir(&new_id);
-        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-        let mut doc = Document::new(&format!("{}-map", id), w as u32 * n, h as u32 * n);
-        doc.set_cel(0, 0, 0, 0, canvas)?;
-        doc.save(&dir)?;
-        let mut out = doc.structure();
-        out["id"] = json!(new_id);
-        out["tile_size"] = json!(n);
-        out["cells_filled"] = json!(cells);
-        Ok(out)
-    }
-
-    /// The 47 canonical blob neighbour masks: every 8-bit mask with each corner
-    /// bit zeroed unless BOTH its adjacent edge bits are set, deduplicated.
-    /// Bit order: N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128.
-    fn blob_masks() -> Vec<u8> {
-        let mut out: Vec<u8> = Vec::new();
-        for m in 0u16..256 {
-            let m = m as u8;
-            let e = |b: u8| m & b != 0;
-            let mut c = m;
-            // NE needs N+E, SE needs E+S, SW needs S+W, NW needs W+N.
-            if !(e(1) && e(4)) {
-                c &= !2;
-            }
-            if !(e(4) && e(16)) {
-                c &= !8;
-            }
-            if !(e(16) && e(64)) {
-                c &= !32;
-            }
-            if !(e(64) && e(1)) {
-                c &= !128;
-            }
-            if !out.contains(&c) {
-                out.push(c);
-            }
-        }
-        out
-    }
-
-    /// True when pixel (tx,ty) of an N×N blob tile is INNER material for the
-    /// canonical neighbour `mask`. Border band width = N/4: an empty edge
-    /// neighbour paints its band outer; a filled-edges/empty-diagonal corner
-    /// gets an outer notch — the full 47-appearance family from one predicate.
-    fn blob_inside(tx: u32, ty: u32, n: u32, mask: u8) -> bool {
-        let b = (n / 4).max(1);
-        let e = |bit: u8| mask & bit != 0;
-        let (left, right, top, bottom) = (tx < b, tx >= n - b, ty < b, ty >= n - b);
-        // Edge bands toward empty neighbours.
-        if (top && !e(1)) || (right && !e(4)) || (bottom && !e(16)) || (left && !e(64)) {
-            return false;
-        }
-        // Inner-corner notches: both edges filled, diagonal empty.
-        if top && right && e(1) && e(4) && !e(2) {
-            return false;
-        }
-        if bottom && right && e(4) && e(16) && !e(8) {
-            return false;
-        }
-        if bottom && left && e(16) && e(64) && !e(32) {
-            return false;
-        }
-        if top && left && e(64) && e(1) && !e(128) {
-            return false;
-        }
-        true
     }
 
     // -- per-cel drawing ----------------------------------------------------
@@ -1241,204 +962,13 @@ impl Studio {
     {
         let (dir, mut doc) = self.open(id)?;
         let before = doc.cel_full(layer, frame);
-        match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+        match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
             Some(mask) => doc.apply_masked(layer, frame, mask, f)?,
             None => f(&mut doc)?,
         }
         let after = doc.cel_full(layer, frame);
         doc.save(&dir)?;
         Ok(Self::change_ack(id, &before, &after))
-    }
-
-    pub fn doc_pencil(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        points: Vec<(i32, i32)>,
-        color: [u8; 4],
-        size: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.pencil(layer, frame, &points, color, size)
-        })
-    }
-
-    pub fn doc_line(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        color: [u8; 4],
-        size: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.line(layer, frame, x0, y0, x1, y1, color, size)
-        })
-    }
-
-    pub fn doc_rect(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        color: [u8; 4],
-        fill: bool,
-        size: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.rect(layer, frame, x0, y0, x1, y1, color, fill, size)
-        })
-    }
-
-    pub fn doc_ellipse(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        cx: i32,
-        cy: i32,
-        rx: i32,
-        ry: i32,
-        color: [u8; 4],
-        fill: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.ellipse(layer, frame, cx, cy, rx, ry, color, fill)
-        })
-    }
-
-    pub fn doc_polygon(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        points: Vec<(i32, i32)>,
-        color: [u8; 4],
-        fill: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.polygon(layer, frame, &points, color, fill)
-        })
-    }
-
-    pub fn doc_polyline(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        points: Vec<(i32, i32)>,
-        color: [u8; 4],
-        size: i32,
-        closed: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.polyline(layer, frame, &points, color, size, closed)
-        })
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_stroke(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        points: Vec<(i32, i32, i32)>,
-        color: [u8; 4],
-        aa: bool,
-        snap: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.stroke(layer, frame, &points, color, aa, snap)
-        })
-    }
-
-    pub fn doc_fill(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x: i32,
-        y: i32,
-        color: [u8; 4],
-        tol: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.bucket_fill(layer, frame, x, y, color, tol)
-        })
-    }
-
-    pub fn doc_replace_color(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        from: [u8; 4],
-        to: [u8; 4],
-        tol: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.replace_color(layer, frame, from, to, tol)
-        })
-    }
-
-    pub fn doc_flip(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        horizontal: bool,
-    ) -> Result<Value, String> {
-        self.edit(id, |d| d.flip(layer, frame, horizontal))
-    }
-
-    pub fn doc_shift(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        dx: i32,
-        dy: i32,
-        wrap: bool,
-    ) -> Result<Value, String> {
-        self.edit(id, |d| d.shift(layer, frame, dx, dy, wrap))
-    }
-
-    pub fn doc_blur(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        radius: i32,
-        region: Option<(i32, i32, i32, i32)>,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| d.blur(layer, frame, radius, region))
-    }
-
-    pub fn doc_quantize(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        palette: Vec<[u8; 4]>,
-        max_colors: usize,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let pal = doc.quantize(layer, frame, palette, max_colors)?;
-        doc.save(&dir)?;
-        let hex: Vec<String> = pal
-            .iter()
-            .map(|c| format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3]))
-            .collect();
-        Ok(json!({"doc_id": id, "count": pal.len(), "palette": pal, "hex": hex}))
     }
 
     pub fn doc_tween(
@@ -1503,34 +1033,6 @@ impl Studio {
         }
     }
 
-    pub fn doc_outline(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        color: [u8; 4],
-        aa: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| d.outline_cel(layer, frame, color, aa))
-    }
-
-    pub fn doc_drop_shadow(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        dx: i32,
-        dy: i32,
-        color: [u8; 4],
-        opacity: u8,
-        blur: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.drop_shadow(layer, frame, dx, dy, color, opacity, blur)
-        })
-    }
-
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_glow(
         &self,
         id: &str,
@@ -1547,30 +1049,12 @@ impl Studio {
             // Re-snap the continuous-tone bloom back onto the locked palette so
             // it stays crisp pixel art (the FX-palette-blowup fix).
             if let Some(a) = snap {
-                if !d.meta.palette.is_empty() {
-                    let pal = d.meta.palette.clone();
-                    d.snap_to_palette(&pal, Some(layer), Some(frame), a);
-                }
+                d.snap_cel_to_own_palette(layer, frame, a);
             }
             Ok(())
         })
     }
 
-    pub fn doc_bevel(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        light: [u8; 4],
-        dark: [u8; 4],
-        depth: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.bevel(layer, frame, light, dark, depth)
-        })
-    }
-
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_rim_light(
         &self,
         id: &str,
@@ -1589,7 +1073,6 @@ impl Studio {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_cast_shadow(
         &self,
         id: &str,
@@ -1619,246 +1102,6 @@ impl Studio {
         })
     }
 
-    pub fn doc_adjust(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        hue: f32,
-        sat: f32,
-        lum: f32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.adjust(layer, frame, region, hue, sat, lum)
-        })
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_noise(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        kind: &str,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        scale: f32,
-        octaves: u32,
-        seed: u64,
-        stops: Vec<(f32, [u8; 4])>,
-        blend: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.noise(
-                layer, frame, kind, x0, y0, x1, y1, scale, octaves, seed, stops, blend,
-            )
-        })
-    }
-
-    /// Stamp `text` with the built-in 3×5 pixel font, top-left at (x,y), at
-    /// integer pixel `size`. Masked by the active selection. Returns the rendered
-    /// `width` in document pixels so callers can lay out the next element.
-    pub fn doc_text(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x: i32,
-        y: i32,
-        text: &str,
-        color: [u8; 4],
-        size: i32,
-    ) -> Result<Value, String> {
-        // text returns the rendered width, so thread it out via a cell rather
-        // than the unit-returning edit_masked closure.
-        let width = std::cell::Cell::new(0i32);
-        self.edit_masked(id, layer, frame, |d| {
-            width.set(d.text(layer, frame, x, y, text, color, size)?);
-            Ok(())
-        })?;
-        Ok(json!({"ok": true, "doc_id": id, "width": width.get()}))
-    }
-
-    /// Generate a hue-shifted shading ramp from a base colour. If `set_doc` is
-    /// given, also store it as that document's palette. Returns the colours.
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_gradient(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        kind: &str,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        stops: Vec<(f32, [u8; 4])>,
-        dither: &str,
-        seed: u64,
-        region: Option<(i32, i32, i32, i32)>,
-        blend: bool,
-        snap: bool,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.gradient(
-                layer, frame, kind, x0, y0, x1, y1, stops, dither, seed, region, blend,
-            )?;
-            // On-palette discipline: pull the interpolated gradient back to the
-            // locked palette (RGB only — soft falloff alpha is preserved).
-            if snap && !d.meta.palette.is_empty() {
-                let pal = d.meta.palette.clone();
-                d.snap_to_palette(
-                    &pal,
-                    Some(layer),
-                    Some(frame),
-                    atelier_core::document::AlphaSnap::Preserve,
-                );
-            }
-            Ok(())
-        })
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_scatter(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
-        colors: Vec<[u8; 4]>,
-        density: f32,
-        seed: u64,
-        size: i32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.scatter(layer, frame, x0, y0, x1, y1, &colors, density, seed, size)
-        })
-    }
-
-    /// Edge-lit on-ramp shading: lit rims toward the light, core shadow away.
-    /// `ramp` (dark→light) snaps each touched pixel and steps along it; without
-    /// one we HSL-shift (warm highlights, cool shadows). Masked by the active
-    /// selection, like the other painting ops.
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_shade(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        light_dir: &str,
-        steps: i32,
-        region: Option<(i32, i32, i32, i32)>,
-        mode: &str,
-        ramp: Option<Vec<[u8; 4]>>,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.shade(layer, frame, light_dir, steps, region, mode, ramp)
-        })
-    }
-
-    /// Volume/form shading — fill a shape's interior with a rounded light
-    /// gradient snapped to a ramp (sphere/cylinder/auto). Masked by the active
-    /// selection, like the other painting ops.
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_form(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        light_dir: &str,
-        form: &str,
-        region: Option<(i32, i32, i32, i32)>,
-        ramp: Option<Vec<[u8; 4]>>,
-        strength: f32,
-    ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
-            d.form(layer, frame, light_dir, form, region, ramp, strength)
-        })
-    }
-
-    /// Two-colour ordered dither over a region. `region` is required unless an
-    /// active selection covers this document (the selection then bounds it).
-    /// Masked by the active selection, like the other painting ops.
-    #[allow(clippy::too_many_arguments)]
-    pub fn doc_dither(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        color_a: [u8; 4],
-        color_b: [u8; 4],
-        pattern: &str,
-        density: f32,
-        only_existing: bool,
-    ) -> Result<Value, String> {
-        // The region defaults to the selection's bounding box when omitted; if
-        // there's neither a region nor a selection it's an error (no target).
-        let region = match region {
-            Some(r) => r,
-            None => self
-                .selection_bbox(id)
-                .ok_or("dither needs a `region` [x0,y0,x1,y1] unless a selection is active")?,
-        };
-        self.edit_masked(id, layer, frame, |d| {
-            d.dither(
-                layer,
-                frame,
-                region,
-                color_a,
-                color_b,
-                pattern,
-                density,
-                only_existing,
-            )
-        })
-    }
-
-    /// Remove L-corner doubles from 1px strokes (the pixel-perfect cleanup technique).
-    /// `color` (optional) restricts to strokes of that exact colour. Masked by
-    /// the active selection. Returns the erased-pixel `removed` count.
-    pub fn doc_pixel_perfect(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        color: Option<[u8; 4]>,
-    ) -> Result<Value, String> {
-        // pixel_perfect returns a count, so we thread it out via a cell rather
-        // than the unit-returning edit_masked closure.
-        let removed = std::cell::Cell::new(0u32);
-        self.edit_masked(id, layer, frame, |d| {
-            removed.set(d.pixel_perfect(layer, frame, region, color)?);
-            Ok(())
-        })?;
-        Ok(json!({"ok": true, "doc_id": id, "removed": removed.get()}))
-    }
-
-    /// The bounding box [x0,y0,x1,y1] of the active selection on document `id`,
-    /// or None when there is no matching selection (or it's empty). Lets the
-    /// dither op fall back to the selected area when no explicit region.
-    fn selection_bbox(&self, id: &str) -> Option<(i32, i32, i32, i32)> {
-        let s = self.selection.as_ref().filter(|s| s.doc_id == id)?;
-        let (mut x0, mut y0, mut x1, mut y1) = (i32::MAX, i32::MAX, i32::MIN, i32::MIN);
-        for (i, on) in s.mask.iter().enumerate() {
-            if *on {
-                let (x, y) = ((i as u32 % s.w) as i32, (i as u32 / s.w) as i32);
-                x0 = x0.min(x);
-                y0 = y0.min(y);
-                x1 = x1.max(x);
-                y1 = y1.max(y);
-            }
-        }
-        (x0 <= x1).then_some((x0, y0, x1, y1))
-    }
-
     /// Set/modify the active selection mask. `shape`: rect / ellipse / color /
     /// all / none. `mode` combines with the current selection: replace / add /
     /// subtract / intersect. Painting ops then confine to the `true` pixels
@@ -1873,7 +1116,7 @@ impl Studio {
         color_at: Option<ColorSelect>,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let (w, h) = (doc.meta.w, doc.meta.h);
+        let (w, h) = (doc.meta().w, doc.meta().h);
         let n = (w * h) as usize;
         if shape == "none" {
             self.selection = None;
@@ -1920,9 +1163,12 @@ impl Studio {
                         .sum::<i32>()
                         <= c.tol
                 };
+                // One cel read for the whole scan — get_pixel would re-probe
+                // the cel map per pixel.
+                let img = doc.analysis_image(Some(c.layer), c.frame)?;
                 for y in 0..h as i32 {
                     for x in 0..w as i32 {
-                        if near(doc.get_pixel(c.layer, c.frame, x, y)?, target) {
+                        if near(img.get_pixel(x as u32, y as u32).0, target) {
                             shape_mask[idx(x, y)] = true;
                         }
                     }
@@ -1977,7 +1223,7 @@ impl Studio {
                 }
             }
         };
-        let hex = format!("#{:02x}{:02x}{:02x}{:02x}", p[0], p[1], p[2], p[3]);
+        let hex = crate::hex_rgba(&p);
         Ok(json!({"x": x, "y": y, "rgba": p, "hex": hex, "layer": layer}))
     }
 
@@ -2030,10 +1276,10 @@ impl Studio {
     ) -> Result<Value, String> {
         let (w, h, buf) = self
             .clipboard
-            .clone()
+            .as_ref()
             .ok_or("clipboard is empty — copy or cut a region first")?;
         let (dir, mut doc) = self.open(id)?;
-        doc.paste_region(layer, frame, x, y, w, h, &buf, blend)?;
+        doc.paste_region(layer, frame, x, y, *w, *h, buf, blend)?;
         doc.save(&dir)?;
         Ok(json!({"pasted": {"w": w, "h": h, "at": [x, y]}, "doc_id": id}))
     }
@@ -2044,7 +1290,6 @@ impl Studio {
     /// content at `from_frame` is stamped (source-over) into every frame in
     /// (from, to] at the eased offset; `clear_source` first clears the original
     /// rect in each destination frame. Reuses the region copy/clear/paste paths.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_keyframe_move(
         &self,
         id: &str,
@@ -2079,7 +1324,6 @@ impl Studio {
 
     /// Cut a region/selection of a layer onto its own part layer (above it),
     /// optionally across all frames — the rig step before keyframe_transform.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_extract_to_layer(
         &self,
         id: &str,
@@ -2092,7 +1336,7 @@ impl Studio {
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let mask = if use_selection {
-            match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+            match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
                 Some(m) => Some(m.to_vec()),
                 None => return Err("use_selection=true but no active selection on this doc".into()),
             }
@@ -2106,13 +1350,12 @@ impl Studio {
             "doc_id": id,
             "new_layer": new_layer,
             "pixels_moved": moved,
-            "layers": doc.meta.layers.iter().map(|l| l.name.clone()).collect::<Vec<_>>(),
+            "layers": doc.meta().layers.iter().map(|l| l.name.clone()).collect::<Vec<_>>(),
         }))
     }
 
     /// Eased pivot rotation + translation of a region across frames — the
     /// joint-swing primitive.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_keyframe_transform(
         &self,
         id: &str,
@@ -2172,7 +1415,6 @@ impl Studio {
     /// (the clipboard at `x,y`, `blend` source-over by default). Routes to the
     /// kept region methods. (`stamp_image` and `extract_to_layer` keep their own
     /// tools — image import and rigging, not region mobility.)
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_region(
         &mut self,
         id: &str,
@@ -2189,15 +1431,40 @@ impl Studio {
         y: Option<i32>,
         blend: Option<bool>,
     ) -> Result<Value, String> {
-        let v = |o: Option<i32>| o.unwrap_or(0);
-        match op {
-            "copy" => self.doc_copy_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
-            "cut" => self.doc_cut_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
-            "clear" => self.doc_clear_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1)),
-            "move" => {
-                self.doc_move_region(id, layer, frame, v(x0), v(y0), v(x1), v(y1), v(dx), v(dy))
+        // The rect ops act on whatever region they are given — a defaulted 0
+        // would silently target the top-left corner, so the corners are required.
+        let rect = |name: &str| -> Result<(i32, i32, i32, i32), String> {
+            match (x0, y0, x1, y1) {
+                (Some(x0), Some(y0), Some(x1), Some(y1)) => Ok((x0, y0, x1, y1)),
+                _ => Err(format!("doc_region op '{name}' needs x0/y0/x1/y1")),
             }
-            "paste" => self.doc_paste(id, layer, frame, v(x), v(y), blend.unwrap_or(true)),
+        };
+        match op {
+            "copy" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                self.doc_copy_region(id, layer, frame, x0, y0, x1, y1)
+            }
+            "cut" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                self.doc_cut_region(id, layer, frame, x0, y0, x1, y1)
+            }
+            "clear" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                self.doc_clear_region(id, layer, frame, x0, y0, x1, y1)
+            }
+            "move" => {
+                let (x0, y0, x1, y1) = rect(op)?;
+                let (dx, dy) = dx.zip(dy).ok_or("doc_region op 'move' needs dx/dy")?;
+                self.doc_move_region(id, layer, frame, x0, y0, x1, y1, dx, dy)
+            }
+            "paste" => self.doc_paste(
+                id,
+                layer,
+                frame,
+                x.unwrap_or(0),
+                y.unwrap_or(0),
+                blend.unwrap_or(true),
+            ),
             other => Err(format!(
                 "doc_region: unknown op '{other}' — use copy|cut|paste|move|clear"
             )),
@@ -2272,7 +1539,8 @@ impl Studio {
         rows: Vec<String>,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let palette = doc.meta.palette.clone();
+        let palette = doc.meta().palette.clone();
+        let (dw, dh) = (doc.meta().w, doc.meta().h);
         drop(doc);
         let mut map = std::collections::HashMap::new();
         for (k, v) in &legend {
@@ -2333,9 +1601,8 @@ impl Studio {
         let (mut painted, clipped) = counts.get();
         // Under an active selection, edit_masked reverts cells the mask
         // excludes AFTER paint_grid counted them — recount so `painted`
-        // reports what actually landed.
-        if let Ok((_, doc2)) = self.open(id) {
-            let (dw, dh) = (doc2.meta.w, doc2.meta.h);
+        // reports what actually landed (dims captured above; no third load).
+        {
             if let Some(mask) = self.selection_mask_for(id, dw, dh)? {
                 let (dwi, dhi) = (dw as i32, dh as i32);
                 let (mut kept, mut masked) = (0u64, 0u64);
@@ -2397,7 +1664,7 @@ impl Studio {
             Ok(())
         };
         let before = doc.cel_full(layer, frame);
-        match self.selection_mask_for(id, doc.meta.w, doc.meta.h)? {
+        match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
             Some(mask) => doc.apply_masked(layer, frame, mask, run)?,
             None => run(&mut doc)?,
         }
@@ -2421,10 +1688,7 @@ impl Studio {
         op: &str,
         mut params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
-        const DRAW_OPS: &[&str] = &[
-            "pencil", "line", "rect", "ellipse", "polyline", "polygon", "stroke", "fill", "bucket",
-            "gradient", "scatter", "noise", "text", "fill_cel",
-        ];
+        use atelier_core::document::DRAW_OPS;
         if !DRAW_OPS.contains(&op) {
             return Err(format!(
                 "doc_draw: '{op}' is not a draw op — use one of [{}] (filters and lighting live on their own tools)",
@@ -2448,23 +1712,7 @@ impl Studio {
         op: &str,
         mut params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
-        const FX_OPS: &[&str] = &[
-            "blur",
-            "outline",
-            "drop_shadow",
-            "bevel",
-            "shade",
-            "form",
-            "dither",
-            "pixel_perfect",
-            "flip",
-            "shift",
-            "symmetry",
-            "quantize",
-            "replace_color",
-            "adjust",
-            "gradient_map",
-        ];
+        use atelier_core::document::FX_OPS;
         if !FX_OPS.contains(&op) {
             return Err(format!(
                 "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow has its own tool)",
@@ -2478,12 +1726,35 @@ impl Studio {
 
 /// Adaptive preview scale: aim for ~384px on the longest side (big enough for a
 /// vision model to judge sprite-scale detail), clamped to 1..=16.
-pub fn preview_scale(w: u32, h: u32) -> u32 {
+pub(crate) fn preview_scale(w: u32, h: u32) -> u32 {
     (384 / w.max(h).max(1)).clamp(1, 16)
 }
 
+/// `#rrggbb` — the one place the report hex format lives.
+pub(crate) fn hex_rgb(c: &[u8]) -> String {
+    format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2])
+}
+
+/// `#rrggbbaa` — hex with alpha, for translucency-aware reports.
+pub(crate) fn hex_rgba(c: &[u8]) -> String {
+    format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3])
+}
+
+/// Nearest-neighbour upscale (keeps the pixel grid crisp).
+pub(crate) fn scale_nn(img: &image::RgbaImage, scale: u32) -> image::RgbaImage {
+    if scale <= 1 {
+        return img.clone();
+    }
+    image::imageops::resize(
+        img,
+        img.width() * scale,
+        img.height() * scale,
+        image::imageops::FilterType::Nearest,
+    )
+}
+
 /// Encode an RGBA image to in-memory PNG bytes.
-pub fn encode_png(img: &image::RgbaImage) -> Result<Vec<u8>, String> {
+pub(crate) fn encode_png(img: &image::RgbaImage) -> Result<Vec<u8>, String> {
     let mut buf = std::io::Cursor::new(Vec::new());
     img.write_to(&mut buf, image::ImageFormat::Png)
         .map_err(|e| e.to_string())?;
@@ -2500,73 +1771,28 @@ mod tests {
         Studio::with_docs_dir(dir)
     }
 
-    fn terrain_source(s: &Studio, id: &str) {
-        // Layer 0 = solid green inner, layer 1 = solid brown outer.
-        s.doc_create(id, 8, 8).unwrap();
-        s.doc_fill_cel(id, 0, 0, [60, 140, 60, 255]).unwrap();
-        s.doc_add_layer(id, Some("outer".into()), 255, "normal".into())
-            .unwrap();
-        s.doc_fill_cel(id, 1, 0, [110, 80, 50, 255]).unwrap();
+    /// Single draw-op shorthand: `params` is the op's JSON object (as `json!`).
+    fn draw(
+        s: &Studio,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        op: &str,
+        params: Value,
+    ) -> Result<Value, String> {
+        s.doc_draw(id, layer, frame, op, params.as_object().unwrap().clone())
     }
 
-    #[test]
-    fn blob_masks_are_exactly_the_canonical_47() {
-        let masks = Studio::blob_masks();
-        assert_eq!(masks.len(), 47);
-        // Every mask is canonical: corner bits only with both adjacent edges.
-        for &m in &masks {
-            let e = |b: u8| m & b != 0;
-            assert!(!e(2) || (e(1) && e(4)), "NE needs N+E in {m:#010b}");
-            assert!(!e(8) || (e(4) && e(16)), "SE needs E+S in {m:#010b}");
-            assert!(!e(32) || (e(16) && e(64)), "SW needs S+W in {m:#010b}");
-            assert!(!e(128) || (e(64) && e(1)), "NW needs W+N in {m:#010b}");
-        }
-    }
-
-    #[test]
-    fn autotile_set_builds_the_7x7_sheet() {
-        let s = studio("blobset");
-        terrain_source(&s, "terra");
-        let r = s.autotile_set("terra", 8).unwrap();
-        assert_eq!(r["w"], 56); // 7 × 8
-        assert_eq!(r["h"], 56);
-        assert_eq!(r["masks"].as_array().unwrap().len(), 47);
-        // The all-neighbours tile (mask 255) is pure inner everywhere; find its
-        // grid slot and probe its centre and corner.
-        let masks = r["masks"].as_array().unwrap();
-        let idx = masks.iter().position(|m| m == 255).unwrap() as u32;
-        let (gx, gy) = (idx % 7 * 8, idx / 7 * 8);
-        let id = r["id"].as_str().unwrap();
-        for (px, py) in [(gx + 4, gy + 4), (gx, gy), (gx + 7, gy + 7)] {
-            let p = s
-                .doc_get_pixel(id, Some(0), 0, px as i32, py as i32)
-                .unwrap();
-            assert_eq!(p["rgba"], json!([60, 140, 60, 255]), "at {px},{py}");
-        }
-    }
-
-    #[test]
-    fn tilemap_assemble_renders_interior_and_edges() {
-        let s = studio("blobmap");
-        terrain_source(&s, "terra");
-        // A 3×3 plus shape with empty outside: the centre cell has all four
-        // edge neighbours, so its edge bands stay inner; the top cell's top
-        // edge faces empty and must render outer.
-        let rows = vec!["·#·".into(), "###".into(), "·#·".into()];
-        let r = s.tilemap_assemble("terra", 8, &rows, false).unwrap();
-        assert_eq!(r["w"], 24);
-        assert_eq!(r["cells_filled"], 5);
-        let id = r["id"].as_str().unwrap();
-        let px = |x: i32, y: i32| s.doc_get_pixel(id, Some(0), 0, x, y).unwrap()["rgba"].clone();
-        // Centre cell (8..16, 8..16): its top band (y=8) borders a filled cell → inner.
-        assert_eq!(px(12, 8), json!([60, 140, 60, 255]));
-        // Top cell's top edge (y=0) faces empty → outer band.
-        assert_eq!(px(12, 0), json!([110, 80, 50, 255]));
-        // Centre-cell corner notch: centre's NE diagonal is empty while N and E
-        // are filled → the notch pixel at the cell's top-right goes outer.
-        assert_eq!(px(15, 8), json!([110, 80, 50, 255]));
-        // Empty cells stay transparent.
-        assert_eq!(px(0, 0), json!([0, 0, 0, 0]));
+    /// Single fx-op shorthand: `params` is the op's JSON object (as `json!`).
+    fn fx(
+        s: &Studio,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        op: &str,
+        params: Value,
+    ) -> Result<Value, String> {
+        s.doc_fx(id, layer, frame, op, params.as_object().unwrap().clone())
     }
 
     #[test]
@@ -2634,7 +1860,7 @@ mod tests {
                 .max()
                 .unwrap()
         };
-        let last = doc.meta.frames.len() - 1;
+        let last = doc.meta().frames.len() - 1;
         assert_eq!(max_alpha(0), 255, "flash frame should be solid");
         assert!(
             max_alpha(last) < 200,
@@ -2650,21 +1876,17 @@ mod tests {
         let pal = vec![[20, 20, 60, 255], [200, 220, 255, 255]];
         s.doc_set_palette("g", pal.clone()).unwrap();
         // smooth (none-dither) gradient between the two palette ends, snap default on
-        s.doc_gradient(
+        draw(
+            &s,
             "g",
             0,
             0,
-            "linear",
-            0,
-            0,
-            15,
-            0,
-            vec![(0.0, pal[0]), (1.0, pal[1])],
-            "none",
-            0,
-            None,
-            false,
-            true,
+            "gradient",
+            json!({
+                "kind": "linear", "x0": 0, "y0": 0, "x1": 15, "y1": 0,
+                "stops": [{"pos": 0.0, "color": pal[0]}, {"pos": 1.0, "color": pal[1]}],
+                "dither": "none", "blend": false,
+            }),
         )
         .unwrap();
         let (_d, doc) = s.open("g").unwrap();
@@ -2777,8 +1999,15 @@ mod tests {
         let s = studio("getpix");
         s.doc_create("g", 4, 4).unwrap();
         s.doc_add_layer("g", None, 255, "normal".into()).unwrap();
-        s.doc_pencil("g", 1, 0, vec![(1, 1)], [10, 20, 30, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "g",
+            1,
+            0,
+            "pencil",
+            json!({"points": [[1, 1]], "color": [10, 20, 30, 255]}),
+        )
+        .unwrap();
         // Reading layer 0 alone misses the pixel painted on layer 1.
         assert_eq!(
             s.doc_get_pixel("g", Some(0), 0, 1, 1).unwrap()["rgba"],
@@ -2828,27 +2057,31 @@ mod tests {
                 .count()
         };
 
-        // 1+2 tapered stroke: tip width + AA — old uniform polyline vs doc_stroke.
+        // 1+2 tapered stroke: tip width + AA — old uniform polyline vs the stroke op.
         s.doc_create("b-strk-old", 48, 16).unwrap();
-        s.doc_polyline(
+        draw(
+            &s,
             "b-strk-old",
             0,
             0,
-            vec![(4, 8), (16, 4), (32, 4), (44, 8)],
-            [255, 255, 255, 255],
-            3,
-            false,
+            "polyline",
+            json!({
+                "points": [[4, 8], [16, 4], [32, 4], [44, 8]],
+                "color": [255, 255, 255, 255], "size": 3,
+            }),
         )
         .unwrap();
         s.doc_create("b-strk-new", 48, 16).unwrap();
-        s.doc_stroke(
+        draw(
+            &s,
             "b-strk-new",
             0,
             0,
-            vec![(4, 8, 1), (16, 4, 6), (32, 4, 6), (44, 8, 1)],
-            [255, 255, 255, 255],
-            true,
-            false,
+            "stroke",
+            json!({
+                "points": [[4, 8, 1], [16, 4, 6], [32, 4, 6], [44, 8, 1]],
+                "color": [255, 255, 255, 255], "aa": true, "snap": false,
+            }),
         )
         .unwrap();
         let (tip_old, tip_new) = (col_h("b-strk-old", 44, 16), col_h("b-strk-new", 44, 16));
@@ -2870,8 +2103,15 @@ mod tests {
         ] {
             s.doc_create(id, 24, 24).unwrap();
             s.doc_set_palette(id, pal8.clone()).unwrap();
-            s.doc_ellipse(id, 0, 0, 12, 12, 6, 6, [255, 224, 128, 255], true)
-                .unwrap();
+            draw(
+                &s,
+                id,
+                0,
+                0,
+                "ellipse",
+                json!({"cx": 12, "cy": 12, "rx": 6, "ry": 6, "color": [255, 224, 128, 255], "fill": true}),
+            )
+            .unwrap();
             s.doc_glow(id, 0, 0, Some([128, 200, 255, 255]), 4, 200, "screen", snap)
                 .unwrap();
         }
@@ -2880,7 +2120,7 @@ mod tests {
             distinct("b-glow-new", 24, 24),
         );
 
-        // 4 lit form value steps — flat fill (old) vs doc_form + doc_rim_light (new).
+        // 4 lit form value steps — flat fill (old) vs the form fx + doc_rim_light (new).
         let ramp5 = vec![
             [20, 15, 50, 255],
             [60, 45, 100, 255],
@@ -2891,18 +2131,25 @@ mod tests {
         for id in ["b-form-old", "b-form-new"] {
             s.doc_create(id, 32, 32).unwrap();
             s.doc_set_palette(id, ramp5.clone()).unwrap();
-            s.doc_ellipse(id, 0, 0, 16, 16, 12, 12, [110, 80, 160, 255], true)
-                .unwrap();
+            draw(
+                &s,
+                id,
+                0,
+                0,
+                "ellipse",
+                json!({"cx": 16, "cy": 16, "rx": 12, "ry": 12, "color": [110, 80, 160, 255], "fill": true}),
+            )
+            .unwrap();
         }
-        s.doc_form(
+        // snap:false — the deleted doc_form wrapper never post-snapped to the
+        // document palette (the ramp itself keeps the result on-palette).
+        fx(
+            &s,
             "b-form-new",
             0,
             0,
-            "top-left",
-            "sphere",
-            None,
-            Some(ramp5.clone()),
-            1.0,
+            "form",
+            json!({"light_dir": "top-left", "form": "sphere", "ramp": ramp5, "snap": false}),
         )
         .unwrap();
         s.doc_rim_light(
@@ -3089,9 +2336,9 @@ mod tests {
         )
         .unwrap();
         let (_d, doc) = s.open("w").unwrap();
-        assert_eq!(doc.meta.frames.len(), 8);
+        assert_eq!(doc.meta().frames.len(), 8);
         assert!(
-            doc.meta.tags.iter().any(|t| t.name == "walk"),
+            doc.meta().tags.iter().any(|t| t.name == "walk"),
             "walk tag missing"
         );
         // frame 0 vs the half-cycle frame 4 must differ (the legs have swapped).
@@ -3135,16 +2382,11 @@ mod tests {
             s.look(
                 "stroll",
                 f,
-                Some(6),
-                None,
-                "render",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                Some(&format!("/tmp/atelier-walk-{f}.png")),
+                &crate::LookOptions {
+                    scale: Some(6),
+                    out_path: Some(&format!("/tmp/atelier-walk-{f}.png")).map(|s| s.to_string()),
+                    ..Default::default()
+                },
             )
             .unwrap();
         }
@@ -3174,16 +2416,11 @@ mod tests {
         s.look(
             "hero",
             0,
-            Some(6),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-figure-hero.png"),
+            &crate::LookOptions {
+                scale: Some(6),
+                out_path: Some("/tmp/atelier-demo-figure-hero.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         println!("wrote /tmp/atelier-demo-figure-hero.png");
@@ -3197,8 +2434,15 @@ mod tests {
         let s = studio("quality-demo2");
         // Relit sphere — should read as a smooth round dome, not faceted.
         s.doc_create("sphere", 48, 48).unwrap();
-        s.doc_ellipse("sphere", 0, 0, 24, 24, 16, 16, [150, 90, 70, 255], true)
-            .unwrap();
+        draw(
+            &s,
+            "sphere",
+            0,
+            0,
+            "ellipse",
+            json!({"cx": 24, "cy": 24, "rx": 16, "ry": 16, "color": [150, 90, 70, 255], "fill": true}),
+        )
+        .unwrap();
         s.relight(
             "sphere",
             0,
@@ -3221,16 +2465,11 @@ mod tests {
         s.look(
             "sphere",
             0,
-            Some(6),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-sphere.png"),
+            &crate::LookOptions {
+                scale: Some(6),
+                out_path: Some("/tmp/atelier-demo-sphere.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         // Burst — render a mid frame; should be a faint expanding ring.
@@ -3240,16 +2479,11 @@ mod tests {
         s.look(
             "shock",
             3,
-            Some(8),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-burst.png"),
+            &crate::LookOptions {
+                scale: Some(8),
+                out_path: Some("/tmp/atelier-demo-burst.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         // RotSprite rotation — a 2-tone bar rotated 35° should stay crisp and
@@ -3257,10 +2491,24 @@ mod tests {
         s.doc_create("bar", 40, 40).unwrap();
         s.doc_set_palette("bar", vec![[210, 60, 50, 255], [240, 220, 120, 255]])
             .unwrap();
-        s.doc_rect("bar", 0, 0, 8, 17, 31, 22, [210, 60, 50, 255], true, 1)
-            .unwrap();
-        s.doc_rect("bar", 0, 0, 8, 17, 31, 19, [240, 220, 120, 255], true, 1)
-            .unwrap();
+        draw(
+            &s,
+            "bar",
+            0,
+            0,
+            "rect",
+            json!({"x0": 8, "y0": 17, "x1": 31, "y1": 22, "color": [210, 60, 50, 255], "fill": true}),
+        )
+        .unwrap();
+        draw(
+            &s,
+            "bar",
+            0,
+            0,
+            "rect",
+            json!({"x0": 8, "y0": 17, "x1": 31, "y1": 19, "color": [240, 220, 120, 255], "fill": true}),
+        )
+        .unwrap();
         s.transform_cel(
             "bar",
             0,
@@ -3279,16 +2527,11 @@ mod tests {
         s.look(
             "bar",
             0,
-            Some(7),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-rotate.png"),
+            &crate::LookOptions {
+                scale: Some(7),
+                out_path: Some("/tmp/atelier-demo-rotate.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
         let (_d, doc) = s.open("bar").unwrap();
@@ -3325,29 +2568,31 @@ mod tests {
         )
         .unwrap();
         // fat in the middle, tapering to 1px points at both tips
-        let crescent = vec![
-            (41, 9, 0),
-            (44, 18, 5),
-            (41, 28, 7),
-            (33, 36, 5),
-            (23, 40, 0),
-        ];
-        s.doc_stroke("arc", 0, 0, crescent, [120, 220, 255, 255], true, true)
-            .unwrap();
+        let crescent = json!([
+            [41, 9, 0],
+            [44, 18, 5],
+            [41, 28, 7],
+            [33, 36, 5],
+            [23, 40, 0]
+        ]);
+        draw(
+            &s,
+            "arc",
+            0,
+            0,
+            "stroke",
+            json!({"points": crescent, "color": [120, 220, 255, 255], "aa": true, "snap": true}),
+        )
+        .unwrap();
         let (_b, _m) = s
             .look(
                 "arc",
                 0,
-                Some(8),
-                None,
-                "render",
-                4,
-                false,
-                false,
-                false,
-                None,
-                None,
-                Some("/tmp/atelier-demo-arc.png"),
+                &crate::LookOptions {
+                    scale: Some(8),
+                    out_path: Some("/tmp/atelier-demo-arc.png".to_string()),
+                    ..Default::default()
+                },
             )
             .unwrap();
 
@@ -3355,31 +2600,33 @@ mod tests {
         s.doc_create("figure", 48, 48).unwrap();
         s.doc_set_palette("figure", vec![[30, 30, 40, 255], [90, 90, 110, 255]])
             .unwrap();
-        let limbs: Vec<Vec<(i32, i32, i32)>> = vec![
-            vec![(24, 12, 7)],              // head (single round dot)
-            vec![(24, 16, 6), (24, 30, 6)], // torso
-            vec![(24, 19, 4), (36, 13, 3)], // sword arm, tapering
-            vec![(24, 20, 4), (13, 26, 3)], // off arm
-            vec![(24, 30, 5), (16, 44, 3)], // left leg
-            vec![(24, 30, 5), (33, 44, 3)], // right leg
+        let limbs = vec![
+            json!([[24, 12, 7]]),              // head (single round dot)
+            json!([[24, 16, 6], [24, 30, 6]]), // torso
+            json!([[24, 19, 4], [36, 13, 3]]), // sword arm, tapering
+            json!([[24, 20, 4], [13, 26, 3]]), // off arm
+            json!([[24, 30, 5], [16, 44, 3]]), // left leg
+            json!([[24, 30, 5], [33, 44, 3]]), // right leg
         ];
         for l in limbs {
-            s.doc_stroke("figure", 0, 0, l, [30, 30, 40, 255], true, true)
-                .unwrap();
+            draw(
+                &s,
+                "figure",
+                0,
+                0,
+                "stroke",
+                json!({"points": l, "color": [30, 30, 40, 255], "aa": true, "snap": true}),
+            )
+            .unwrap();
         }
         s.look(
             "figure",
             0,
-            Some(8),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-figure.png"),
+            &crate::LookOptions {
+                scale: Some(8),
+                out_path: Some("/tmp/atelier-demo-figure.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
 
@@ -3392,8 +2639,15 @@ mod tests {
             [30, 110, 210, 255],
         ];
         s.doc_set_palette("orb", pal.clone()).unwrap();
-        s.doc_ellipse("orb", 0, 0, 16, 16, 5, 5, [255, 255, 255, 255], true)
-            .unwrap();
+        draw(
+            &s,
+            "orb",
+            0,
+            0,
+            "ellipse",
+            json!({"cx": 16, "cy": 16, "rx": 5, "ry": 5, "color": [255, 255, 255, 255], "fill": true}),
+        )
+        .unwrap();
         s.doc_glow(
             "orb",
             0,
@@ -3408,23 +2662,18 @@ mod tests {
         s.look(
             "orb",
             0,
-            Some(8),
-            None,
-            "render",
-            4,
-            false,
-            false,
-            false,
-            None,
-            None,
-            Some("/tmp/atelier-demo-orb.png"),
+            &crate::LookOptions {
+                scale: Some(8),
+                out_path: Some("/tmp/atelier-demo-orb.png".to_string()),
+                ..Default::default()
+            },
         )
         .unwrap();
 
         // Count distinct opaque colours in the orb cel — must stay on-palette.
         let (_d, doc) = s.open("orb").unwrap();
         let mut colors = std::collections::HashSet::new();
-        let (w, h) = (doc.meta.w, doc.meta.h);
+        let (w, h) = (doc.meta().w, doc.meta().h);
         for y in 0..h {
             for x in 0..w {
                 let p = doc.get_pixel(0, 0, x as i32, y as i32).unwrap();
@@ -3588,24 +2837,56 @@ mod tests {
         let a = [10, 10, 10, 255];
         let b = [200, 200, 200, 255];
         // checker over the whole cel: both colours appear, alternating.
-        s.doc_dither("d", 0, 0, Some((0, 0, 7, 7)), a, b, "checker", 0.5, false)
-            .unwrap();
+        fx(
+            &s,
+            "d",
+            0,
+            0,
+            "dither",
+            json!({"region": [0, 0, 7, 7], "color_a": a, "color_b": b, "pattern": "checker", "density": 0.5}),
+        )
+        .unwrap();
         let p00 = px(&s, "d", 0, 0, 0, 0);
         let p10 = px(&s, "d", 0, 0, 1, 0);
         assert_ne!(p00, p10); // chequerboard flips each step
         assert!(p00 == a || p00 == b);
         // density 1.0 floods color_b; only_existing keeps untouched art intact.
-        s.doc_pencil("d", 0, 0, vec![(0, 0)], [7, 7, 7, 255], 1)
-            .unwrap(); // a stray colour, neither a nor b
-        s.doc_dither("d", 0, 0, Some((0, 0, 7, 7)), a, b, "bayer4", 1.0, true)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "pencil",
+            json!({"points": [[0, 0]], "color": [7, 7, 7, 255]}),
+        )
+        .unwrap(); // a stray colour, neither a nor b
+        fx(
+            &s,
+            "d",
+            0,
+            0,
+            "dither",
+            json!({"region": [0, 0, 7, 7], "color_a": a, "color_b": b, "pattern": "bayer4", "density": 1.0, "only_existing": true}),
+        )
+        .unwrap();
         // the stray pixel is left alone (not a or b), the rest become b
         assert_eq!(px(&s, "d", 0, 0, 0, 0), [7, 7, 7, 255]);
         assert_eq!(px(&s, "d", 0, 0, 3, 3), b);
-        // no region and no selection → actionable error
-        assert!(s
-            .doc_dither("d", 0, 0, None, a, b, "checker", 0.5, false)
-            .is_err());
+        // no region and no selection → the whole canvas is the target
+        fx(
+            &s,
+            "d",
+            0,
+            0,
+            "dither",
+            json!({"color_a": a, "color_b": b, "pattern": "checker", "density": 0.5}),
+        )
+        .unwrap();
+        let stray = px(&s, "d", 0, 0, 0, 0);
+        assert!(
+            stray == a || stray == b,
+            "whole-canvas dither overwrote the stray"
+        );
     }
 
     #[test]
@@ -3616,16 +2897,22 @@ mod tests {
         let dark = [40, 40, 40, 255];
         let mid = [120, 120, 120, 255];
         let light = [220, 220, 220, 255];
-        s.doc_rect("d", 0, 0, 1, 1, 4, 4, mid, true, 1).unwrap();
-        s.doc_shade(
+        draw(
+            &s,
             "d",
             0,
             0,
-            "top-left",
-            1,
-            None,
-            "both",
-            Some(vec![dark, mid, light]),
+            "rect",
+            json!({"x0": 1, "y0": 1, "x1": 4, "y1": 4, "color": mid, "fill": true}),
+        )
+        .unwrap();
+        fx(
+            &s,
+            "d",
+            0,
+            0,
+            "shade",
+            json!({"light_dir": "top-left", "steps": 1, "mode": "both", "ramp": [dark, mid, light]}),
         )
         .unwrap();
         // top-left rim pixel: neighbour toward the light (-1,-1) is empty → lit.
@@ -3637,9 +2924,7 @@ mod tests {
         // an interior pixel (all neighbours opaque) is untouched.
         assert_eq!(px(&s, "d", 0, 0, 2, 2), mid);
         // bad light_dir is an actionable error
-        assert!(s
-            .doc_shade("d", 0, 0, "nowhere", 1, None, "both", None)
-            .is_err());
+        assert!(fx(&s, "d", 0, 0, "shade", json!({"light_dir": "nowhere"})).is_err());
     }
 
     #[test]
@@ -3650,21 +2935,34 @@ mod tests {
         // an L: (1,1),(1,2),(2,2). The elbow (1,2) has left+? — build the classic
         // staircase elbow: horizontal then down, with the corner doubled.
         // pixels: (1,1) top, (1,2) corner, (2,2) right of corner.
-        s.doc_pencil("d", 0, 0, vec![(1, 1), (1, 2), (2, 2)], c, 1)
-            .unwrap();
-        let r = s.doc_pixel_perfect("d", 0, 0, None, None).unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "pencil",
+            json!({"points": [[1, 1], [1, 2], [2, 2]], "color": c}),
+        )
+        .unwrap();
+        let r = fx(&s, "d", 0, 0, "pixel_perfect", json!({})).unwrap();
         // the corner pixel (1,2) is an L-double (top (1,1) + right (2,2) set,
         // diagonal (2,1) clear) → removed.
-        assert_eq!(r["removed"], json!(1));
+        assert_eq!(r["pixels_changed"], json!(1));
         assert_eq!(px(&s, "d", 0, 0, 1, 2), [0, 0, 0, 0]);
         // the two endpoints survive
         assert_eq!(px(&s, "d", 0, 0, 1, 1), c);
         assert_eq!(px(&s, "d", 0, 0, 2, 2), c);
         // colour filter ignores strokes of other colours
-        let r2 = s
-            .doc_pixel_perfect("d", 0, 0, None, Some([0, 255, 0, 255]))
-            .unwrap();
-        assert_eq!(r2["removed"], json!(0));
+        let r2 = fx(
+            &s,
+            "d",
+            0,
+            0,
+            "pixel_perfect",
+            json!({"color": [0, 255, 0, 255]}),
+        )
+        .unwrap();
+        assert_eq!(r2["pixels_changed"], json!(0));
     }
 
     #[test]
@@ -3712,13 +3010,58 @@ mod tests {
         s.doc_create("src", 8, 8).unwrap();
         s.doc_create("dst", 8, 8).unwrap();
         // paint a pixel in src, copy a 1x1 region, paste into dst
-        s.doc_pencil("src", 0, 0, vec![(2, 2)], [7, 8, 9, 255], 1)
-            .unwrap();
+        draw(
+            &s,
+            "src",
+            0,
+            0,
+            "pencil",
+            json!({"points": [[2, 2]], "color": [7, 8, 9, 255]}),
+        )
+        .unwrap();
         s.doc_copy_region("src", 0, 0, 2, 2, 2, 2).unwrap();
         s.doc_paste("dst", 0, 0, 5, 5, false).unwrap();
         let px = s.doc_get_pixel("dst", Some(0), 0, 5, 5).unwrap();
         assert_eq!(px["rgba"], json!([7, 8, 9, 255]));
         assert_eq!(px["hex"], "#070809ff");
+    }
+
+    #[test]
+    fn destructive_dispatch_requires_explicit_target() {
+        let mut s = studio("explicit-target");
+        s.doc_create("d", 8, 8).unwrap();
+        let e = s
+            .doc_layer("d", "delete", None, None, None, None, None, None)
+            .unwrap_err();
+        assert!(e.contains("needs an explicit index"), "{e}");
+        let e = s
+            .doc_frame("d", "delete", None, None, None, None)
+            .unwrap_err();
+        assert!(e.contains("needs an explicit index"), "{e}");
+        let e = s
+            .doc_region(
+                "d", "copy", 0, 0, None, None, None, None, None, None, None, None, None,
+            )
+            .unwrap_err();
+        assert!(e.contains("needs x0/y0/x1/y1"), "{e}");
+        let e = s
+            .doc_region(
+                "d",
+                "move",
+                0,
+                0,
+                Some(0),
+                Some(0),
+                Some(3),
+                Some(3),
+                None,
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap_err();
+        assert!(e.contains("needs dx/dy"), "{e}");
     }
 
     #[test]
@@ -3735,7 +3078,15 @@ mod tests {
         // Select a 3x3 box, then flood the whole cel: only the box fills.
         s.doc_select("d", "rect", "replace", Some((1, 1, 3, 3)), None, None)
             .unwrap();
-        s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "fill",
+            json!({"x": 0, "y": 0, "color": [9, 9, 9, 255]}),
+        )
+        .unwrap();
         assert_eq!(
             s.doc_get_pixel("d", Some(0), 0, 2, 2).unwrap()["rgba"],
             json!([9, 9, 9, 255])
@@ -3747,7 +3098,15 @@ mod tests {
         // Clearing the selection lets a fill cover everything again.
         s.doc_select("d", "none", "replace", None, None, None)
             .unwrap();
-        s.doc_fill("d", 0, 0, 0, 0, [1, 2, 3, 255], 0).unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "fill",
+            json!({"x": 0, "y": 0, "color": [1, 2, 3, 255]}),
+        )
+        .unwrap();
         assert_eq!(
             s.doc_get_pixel("d", Some(0), 0, 6, 6).unwrap()["rgba"],
             json!([1, 2, 3, 255])
@@ -3763,7 +3122,15 @@ mod tests {
         // Recreate the doc at different dims: the selection is now stale.
         s.delete_doc("d").unwrap();
         s.doc_create("d", 4, 4).unwrap();
-        let err = s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap_err();
+        let err = draw(
+            &s,
+            "d",
+            0,
+            0,
+            "fill",
+            json!({"x": 0, "y": 0, "color": [9, 9, 9, 255]}),
+        )
+        .unwrap_err();
         assert!(err.contains("stale"), "got: {err}");
         // Nothing was painted — the op refused rather than running unmasked.
         assert_eq!(
@@ -3773,7 +3140,15 @@ mod tests {
         // Clearing the selection unblocks painting.
         s.doc_select("d", "none", "replace", None, None, None)
             .unwrap();
-        s.doc_fill("d", 0, 0, 0, 0, [9, 9, 9, 255], 0).unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "fill",
+            json!({"x": 0, "y": 0, "color": [9, 9, 9, 255]}),
+        )
+        .unwrap();
     }
 
     #[test]
@@ -3827,16 +3202,28 @@ mod tests {
     fn paint_acks_report_changed_pixels_and_warn_on_noop() {
         let s = studio("ack");
         s.doc_create("d", 8, 8).unwrap();
-        let r = s
-            .doc_pencil("d", 0, 0, vec![(2, 3)], [9, 9, 9, 255], 1)
-            .unwrap();
+        let r = draw(
+            &s,
+            "d",
+            0,
+            0,
+            "pencil",
+            json!({"points": [[2, 3]], "color": [9, 9, 9, 255]}),
+        )
+        .unwrap();
         assert_eq!(r["pixels_changed"], json!(1));
         assert_eq!(r["change_bbox"], json!([2, 3, 2, 3]));
         assert!(r.get("warning").is_none());
         // Entirely off-canvas: zero changes + an explicit warning.
-        let miss = s
-            .doc_pencil("d", 0, 0, vec![(50, 50)], [9, 9, 9, 255], 1)
-            .unwrap();
+        let miss = draw(
+            &s,
+            "d",
+            0,
+            0,
+            "pencil",
+            json!({"points": [[50, 50]], "color": [9, 9, 9, 255]}),
+        )
+        .unwrap();
         assert_eq!(miss["pixels_changed"], json!(0));
         assert!(miss["warning"].as_str().unwrap().contains("off-canvas"));
     }
@@ -3848,8 +3235,15 @@ mod tests {
         s.doc_fill_cel("d", 0, 0, [100, 100, 100, 255]).unwrap();
         // Replacement within tol of the target: the old scan re-matched its own
         // paint and looped forever; the visited mask must terminate it.
-        s.doc_fill("d", 0, 0, 4, 4, [101, 100, 100, 255], 16)
-            .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "fill",
+            json!({"x": 4, "y": 4, "color": [101, 100, 100, 255], "tolerance": 16}),
+        )
+        .unwrap();
         assert_eq!(
             s.doc_get_pixel("d", Some(0), 0, 0, 0).unwrap()["rgba"],
             json!([101, 100, 100, 255])
@@ -3863,16 +3257,13 @@ mod tests {
         // select a 3x3 box; dither with no region falls back to the selection.
         s.doc_select("d", "rect", "replace", Some((1, 1, 3, 3)), None, None)
             .unwrap();
-        s.doc_dither(
+        fx(
+            &s,
             "d",
             0,
             0,
-            None,
-            [10, 10, 10, 255],
-            [200, 200, 200, 255],
-            "checker",
-            0.5,
-            false,
+            "dither",
+            json!({"color_a": [10, 10, 10, 255], "color_b": [200, 200, 200, 255], "pattern": "checker", "density": 0.5}),
         )
         .unwrap();
         // inside the selection a colour was painted; outside stays transparent.
@@ -3939,47 +3330,6 @@ mod tests {
     }
 
     #[test]
-    fn wang_tiles_single_layer_errors_with_actionable_message() {
-        let s = studio("wang-onelayer");
-        s.doc_create("terrain", 8, 8).unwrap(); // only layer 0
-        let err = s.wang_tiles("terrain", 8).unwrap_err();
-        assert!(err.contains("needs two layers") && err.contains("layer 1 = outer material"));
-    }
-
-    #[test]
-    fn wang_doc_is_4n_and_corner_tiles_are_pure() {
-        let s = studio("wang");
-        let n = 8u32;
-        s.doc_create("terrain", n, n).unwrap();
-        s.doc_add_layer("terrain", None, 255, "normal".into())
-            .unwrap(); // layer 1 = outer
-        let inner = [200, 50, 50, 255];
-        let outer = [30, 60, 120, 255];
-        s.doc_fill_cel("terrain", 0, 0, inner).unwrap(); // layer 0 inner
-        s.doc_fill_cel("terrain", 1, 0, outer).unwrap(); // layer 1 outer
-        let out = s.wang_tiles("terrain", n).unwrap();
-        let wid = out["id"].as_str().unwrap().to_string();
-        // The new doc is 4N×4N.
-        assert_eq!(out["w"], 4 * n);
-        assert_eq!(out["h"], 4 * n);
-        // Tile 0 (no corner bits) sits at grid (0,0) and is all-outer.
-        assert_eq!(px(&s, &wid, 0, 0, 0, 0), outer);
-        assert_eq!(px(&s, &wid, 0, 0, (n - 1) as i32, (n - 1) as i32), outer);
-        // Tile 15 (all corners) sits at grid (3,3) and is all-inner.
-        let (b15x, b15y) = (3 * n, 3 * n);
-        assert_eq!(px(&s, &wid, 0, 0, b15x as i32, b15y as i32), inner);
-        assert_eq!(
-            px(&s, &wid, 0, 0, (b15x + n - 1) as i32, (b15y + n - 1) as i32),
-            inner
-        );
-        // Tile 1 = NE corner only (bit 0); grid (1,0). The top-right pixel is
-        // inner (in the NE quarter-disc); the bottom-left pixel is outer.
-        let (b1x, b1y) = (n, 0u32);
-        assert_eq!(px(&s, &wid, 0, 0, (b1x + n - 1) as i32, b1y as i32), inner);
-        assert_eq!(px(&s, &wid, 0, 0, b1x as i32, (b1y + n - 1) as i32), outer);
-    }
-
-    #[test]
     fn palette_swap_recolours_across_frames_and_updates_palette() {
         let s = studio("palswap");
         s.doc_create("d", 8, 8).unwrap();
@@ -3987,8 +3337,24 @@ mod tests {
         let red = [200, 0, 0, 255];
         let blue = [0, 0, 200, 255];
         // paint the same source colour into both frames, plus lock it as palette
-        s.doc_pencil("d", 0, 0, vec![(1, 1)], red, 1).unwrap();
-        s.doc_pencil("d", 0, 1, vec![(2, 2)], red, 1).unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "pencil",
+            json!({"points": [[1, 1]], "color": red}),
+        )
+        .unwrap();
+        draw(
+            &s,
+            "d",
+            0,
+            1,
+            "pencil",
+            json!({"points": [[2, 2]], "color": red}),
+        )
+        .unwrap();
         s.doc_set_palette("d", vec![red]).unwrap();
         let out = s
             .doc_palette_swap("d", vec![red], vec![blue], None, None)
@@ -4007,8 +3373,24 @@ mod tests {
         s.doc_add_layer("d", None, 255, "normal".into()).unwrap(); // layer 1
         let red = [200, 0, 0, 255];
         let blue = [0, 0, 200, 255];
-        s.doc_pencil("d", 0, 0, vec![(1, 1)], red, 1).unwrap(); // layer 0
-        s.doc_pencil("d", 1, 0, vec![(2, 2)], red, 1).unwrap(); // layer 1
+        draw(
+            &s,
+            "d",
+            0,
+            0,
+            "pencil",
+            json!({"points": [[1, 1]], "color": red}),
+        )
+        .unwrap(); // layer 0
+        draw(
+            &s,
+            "d",
+            1,
+            0,
+            "pencil",
+            json!({"points": [[2, 2]], "color": red}),
+        )
+        .unwrap(); // layer 1
         let out = s
             .doc_palette_swap("d", vec![red], vec![blue], Some(0), None)
             .unwrap();

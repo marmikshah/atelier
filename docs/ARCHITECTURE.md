@@ -37,16 +37,21 @@ async, networking, and protocol surface lives in `atelier-mcp` and the binary.
 
 The functional core. Has no knowledge of MCP, tokio, or the network.
 
-- **`document.rs`** — `Document`: an ordered stack of layers over a timeline of
-  frames. A *cel* is the RGBA image for one (layer, frame). Holds the palette,
-  tags, per-frame durations/pivots/boxes, blend modes, and the batch-op
-  validator. Persists as a directory: `doc.json` (structure + cel file refs) plus
-  one PNG per cel under `cels/L<layer>_F<frame>.png`.
-- **`raster.rs`** — the pixel-level primitives the layers above compose: point/
-  brush/line plotting and the anti-aliased `stroke_ribbon`; the 14 blend modes
-  and `composite`; colour-space conversions (sRGB ⇄ OKLab/OKLCh/HSL) and ΔE; the
-  pixel font glyphs; easing curves, fBm/perlin noise, 2-bone IK, and nearest-
-  neighbour rotate/affine.
+- **`document/`** — `Document`: an ordered stack of layers over a timeline of
+  frames. A *cel* is the RGBA image for one (layer, frame). `mod.rs` holds the
+  types, persistence and layer/frame structure; siblings split the operations by
+  responsibility — `draw` (primitives), `region` (clipboard/transform), `fx`
+  (effects), `timeline` (tween/keyframes), `palette`, `render` (flatten +
+  read-only analysis), `export` (sheet/GIF/APNG writers) and `batch` (the op
+  registry, `DRAW_OPS`/`FX_OPS` partition and validator). Persists as a
+  directory: `doc.json` (structure + cel file refs) plus one PNG per cel under
+  `cels/L<layer>_F<frame>.png`.
+- **`raster/`** — the pixel-level primitives the layers above compose. `mod.rs`:
+  point/brush/line plotting, the anti-aliased `stroke_ribbon`, the 14 blend
+  modes and `composite`, the pixel font glyphs; `colour`: sRGB ⇄ OKLab/OKLCh/HSL
+  conversions, ΔE, ramps and median-cut quantisation; `noise`: easing curves,
+  fBm/perlin/voronoi and dither patterns; `transform`: scale2x, affine/rotate,
+  majority downscale, 2-bone IK and distance fields.
 
 Dependencies: `image`, `serde`, `serde_json`, `png` (APNG encode).
 
@@ -62,10 +67,12 @@ entire library API; the MCP layer is a thin wrapper over it.
   small drawing entrypoints. `Studio::new()` reads `ATELIER_HOME`;
   `Studio::with_docs_dir(path)` roots a studio at an explicit directory (for
   embedding or tests, without touching process-global env).
-- **`craft.rs`** — drawing, procedural and constructive ops: shapes, fills,
-  gradients, noise/scatter, shadow/glow/bevel, the `doc_fx op=form` volume shader,
-  the `doc_figure`/`doc_walk`/`doc_pose_cycle` skeletal builders, the 9-slice
-  panel emitter and the seeded particle emitter.
+- **`craft.rs`** — constructive ops: checkpoints, layer/colour ops, import, the
+  9-slice panel emitter and the seeded particle emitter.
+- **`rig.rs`** — the `doc_figure`/`doc_walk`/`doc_pose_cycle` skeletal builders.
+- **`view.rs`** — the see-tools: `doc_look`, the selection render and the
+  contact sheet.
+- **`tiles.rs`** — the wang/blob autotile generators and `doc_tilemap_assemble`.
 - **`analysis.rs`** — the "eye": critique, silhouette, palette, contrast,
   frame-diff, loop-seam, per-pixel diff-map, per-form lighting and
   colour-vision-deficiency reports that turn "does it look right?" into numbers.
@@ -81,15 +88,17 @@ Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
-- **`server.rs`** — the rmcp `#[tool]` router: **75 tools** (mutations grouped
+- **`server/`** — the rmcp `#[tool]` router (`mod.rs`), with the param structs
+  (`params.rs`), session `Recorder` (`recorder.rs`), MCP resources
+  (`resources.rs`) and packaged prompts (`prompts.rs`) as siblings: **75 tools**
+  (mutations grouped
   into op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
   one or one-family per studio operation. A hand-written `list_tools` advertises
   only the 30-tool **core profile** by default (the full 75 with
   `ATELIER_PROFILE=full`); `call_tool` routes them all, so the filter is
-  discovery-only. Plus MCP resources (browse documents + renders) and packaged
-  prompts. Runs over two transports that share the router — stdio (`run`) and
-  streamable HTTP (`run_http`). Also houses the `Recorder` that turns a live
-  session into a replayable recipe.
+  discovery-only. Runs over two transports that share the router — stdio
+  (`run`) and streamable HTTP (`run_http`); the `Recorder` turns a live session
+  into a replayable recipe.
 - **`recipe.rs`** — the `Recipe`/`Step` format: the on-disk contract shared by the
   `Recorder` (writer) and the `atelier replay` runner (reader). Lives here, in the
   library crate, so anything embedding atelier can read/write recipes without the
