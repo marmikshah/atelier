@@ -14,19 +14,11 @@ use std::path::Path;
 use image::{Rgba, RgbaImage};
 use serde_json::{json, Value};
 
-use super::{Selection, Studio};
+use super::{encode_png, Selection, Studio};
 use atelier_core::document::{Document, Light};
 use atelier_core::raster;
 
 // -- shared raster helpers --------------------------------------------------
-
-/// Encode an image to in-memory PNG bytes.
-fn encode_png(img: &RgbaImage) -> Result<Vec<u8>, String> {
-    let mut buf = std::io::Cursor::new(Vec::new());
-    img.write_to(&mut buf, image::ImageFormat::Png)
-        .map_err(|e| e.to_string())?;
-    Ok(buf.into_inner())
-}
 
 /// Nearest-neighbour upscale (keeps the pixel grid crisp).
 fn scale_nn(img: &RgbaImage, scale: u32) -> RgbaImage {
