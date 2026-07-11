@@ -36,6 +36,9 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 
 ## Hard constraints
 
+- **Never cut 2.0.0.** That version is the human-review milestone: no agent may
+  bump the workspace to 2.0.0, tag v2.0.0, or publish a 2.0.0 release. It is
+  tagged by the maintainer, by hand, after a full manual review. Stay on 1.x.
 - Functional core decoupled from the MCP shell; `Result` over `panic!`; clippy clean.
 - Tests live next to the code as inline `#[cfg(test)]` modules; keep them green.
 - Every document is an ordered sequence of tool calls, so art is a replayable
