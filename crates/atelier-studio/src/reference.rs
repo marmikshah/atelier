@@ -32,7 +32,7 @@ impl Studio {
             doc.save(&dir)?;
             return Ok(json!({"ok": true, "doc_id": id, "reference": Value::Null}));
         };
-        let img = image::open(path).map_err(|e| e.to_string())?.to_rgba8();
+        let img = crate::open_bounded(Path::new(path))?;
         let (rw, rh) = (img.width(), img.height());
         img.save(dir.join("reference.png"))
             .map_err(|e| e.to_string())?;
@@ -60,9 +60,7 @@ impl Studio {
             .reference
             .as_ref()
             .ok_or("document has no reference image — doc_set_reference first")?;
-        Ok(image::open(ref_path(dir, name)?)
-            .map_err(|e| format!("reference unreadable: {e}"))?
-            .to_rgba8())
+        crate::open_bounded(&ref_path(dir, name)?).map_err(|e| format!("reference unreadable: {e}"))
     }
 
     /// Analyze the reference (or an external `path`) as drawing scaffolding:
@@ -78,7 +76,7 @@ impl Studio {
     ) -> Result<(Vec<u8>, Value), String> {
         let (dir, doc) = self.open(id)?;
         let src = match path {
-            Some(p) => image::open(p).map_err(|e| e.to_string())?.to_rgba8(),
+            Some(p) => crate::open_bounded(Path::new(p))?,
             None => Self::ref_image(&dir, &doc)?,
         };
         let (rw, rh) = (src.width(), src.height());

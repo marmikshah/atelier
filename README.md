@@ -70,7 +70,7 @@ atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 
 - [docs/SHOWCASE.md](docs/SHOWCASE.md) — different models, identical briefs:
   the same studio in different hands.
-- [docs/TOOLS.md](docs/TOOLS.md) — the complete tool reference (~30-tool core
+- [docs/TOOLS.md](docs/TOOLS.md) — the complete tool reference (30-tool core
   profile by default; `ATELIER_PROFILE=full` for all 75).
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — crate layout.
 - [CHANGELOG.md](CHANGELOG.md) — release notes.

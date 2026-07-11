@@ -33,7 +33,7 @@ async, networking, and protocol surface lives in `atelier-mcp` and the binary.
 
 ## The crates
 
-### `atelier-core` — the document model (~7.5k LOC, no async/MCP)
+### `atelier-core` — the document model (~8k LOC, no async/MCP)
 
 The functional core. Has no knowledge of MCP, tokio, or the network.
 
@@ -50,7 +50,7 @@ The functional core. Has no knowledge of MCP, tokio, or the network.
 
 Dependencies: `image`, `serde`, `serde_json`, `png` (APNG encode).
 
-### `atelier-studio` — the operations (~8k LOC)
+### `atelier-studio` — the operations (~10k LOC)
 
 The `Studio` facade: a flat document store rooted at `ATELIER_HOME` (default
 `~/.atelier`), exposing **one public method per editor operation** — each takes
@@ -77,14 +77,14 @@ entire library API; the MCP layer is a thin wrapper over it.
 
 Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
-### `atelier-mcp` — the MCP server (~4.8k LOC)
+### `atelier-mcp` — the MCP server (~3.6k LOC)
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
 - **`server.rs`** — the rmcp `#[tool]` router: **75 tools** (mutations grouped
   into op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
   one or one-family per studio operation. A hand-written `list_tools` advertises
-  only the ~30-tool **core profile** by default (the full 75 with
+  only the 30-tool **core profile** by default (the full 75 with
   `ATELIER_PROFILE=full`); `call_tool` routes them all, so the filter is
   discovery-only. Plus MCP resources (browse documents + renders) and packaged
   prompts. Runs over two transports that share the router — stdio (`run`) and

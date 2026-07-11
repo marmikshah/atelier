@@ -21,6 +21,59 @@ mod craft;
 mod reference;
 mod set;
 
+/// Hard cap on the pixel count (w×h) of an external source image. ~64 MP covers
+/// any real reference/photo; the point is that a tiny-on-disk "decompression
+/// bomb" (a 30000×30000 PNG is a few KB) is rejected at the header probe, before
+/// its pixels are ever allocated. Shared by every `open_bounded` caller.
+pub(crate) const MAX_IMPORT_PIXELS: u64 = 64 * 1024 * 1024;
+
+/// Upper bound on an export scale factor. Canvases are already capped at 4096²
+/// (`doc_create`); without a scale ceiling a `scale=64` export of that targets a
+/// ~256 GB buffer. 16 matches the render/preview clamp.
+pub(crate) const MAX_EXPORT_SCALE: u32 = 16;
+
+/// Clamp an export scale into `1..=MAX_EXPORT_SCALE`.
+fn export_scale(scale: u32) -> u32 {
+    scale.clamp(1, MAX_EXPORT_SCALE)
+}
+
+/// Open an external image with a size cap. The header dimensions are read first
+/// and anything over [`MAX_IMPORT_PIXELS`] is rejected *before* decoding, and
+/// the decoder is then bounded to those dimensions so a lying header can't
+/// allocate past them either — an OOM / decompression-bomb guard for every
+/// path that ingests a caller-supplied image (import, references, stamp).
+/// Reject source dimensions whose pixel count exceeds [`MAX_IMPORT_PIXELS`].
+/// Extracted so the cap is unit-testable without materialising a huge file.
+fn check_import_dims(w: u32, h: u32) -> Result<(), String> {
+    let px = w as u64 * h as u64;
+    if px > MAX_IMPORT_PIXELS {
+        return Err(format!(
+            "source image is {w}x{h} = {px} px, over the {MAX_IMPORT_PIXELS}-px import cap"
+        ));
+    }
+    Ok(())
+}
+
+pub(crate) fn open_bounded(path: &Path) -> Result<image::RgbaImage, String> {
+    let dims = image::ImageReader::open(path)
+        .map_err(|e| e.to_string())?
+        .with_guessed_format()
+        .map_err(|e| e.to_string())?
+        .into_dimensions()
+        .map_err(|e| e.to_string())?;
+    let (w, h) = dims;
+    check_import_dims(w, h)?;
+    let mut reader = image::ImageReader::open(path)
+        .map_err(|e| e.to_string())?
+        .with_guessed_format()
+        .map_err(|e| e.to_string())?;
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(w.max(1));
+    limits.max_image_height = Some(h.max(1));
+    reader.limits(limits);
+    Ok(reader.decode().map_err(|e| e.to_string())?.to_rgba8())
+}
+
 fn slugify(name: &str) -> String {
     let mut out = String::new();
     let mut prev_dash = false;
@@ -264,7 +317,7 @@ impl Studio {
         for id in self.doc_ids() {
             let (_dir, doc) = self.open(&id)?;
             let out = target.join(format!("{}.png", id));
-            doc.export_sheet(&out, scale.max(1))?;
+            doc.export_sheet(&out, export_scale(scale))?;
             exported.push(out.to_string_lossy().to_string());
         }
         Ok(json!({"target": target.to_string_lossy(), "exported": exported}))
@@ -282,7 +335,7 @@ impl Studio {
         max_width: u32,
     ) -> Result<Value, String> {
         use image::{Rgba, RgbaImage};
-        let scale = scale.max(1);
+        let scale = export_scale(scale);
         let ids = self.doc_ids();
         if ids.is_empty() {
             return Err("no documents to pack".into());
@@ -570,7 +623,7 @@ impl Studio {
         blend: &str,
         replace: bool,
     ) -> Result<Value, String> {
-        let img = image::open(png_path).map_err(|e| e.to_string())?.to_rgba8();
+        let img = open_bounded(Path::new(png_path))?;
         // target_w wins over scale: derive the factor from the source width so
         // "stamp this at 32px wide" needs no mental math.
         let scale = match target_w {
@@ -648,7 +701,7 @@ impl Studio {
         if let Some(p) = Path::new(out_path).parent() {
             let _ = fs::create_dir_all(p);
         }
-        doc.export_sheet(Path::new(out_path), scale.max(1))
+        doc.export_sheet(Path::new(out_path), export_scale(scale))
     }
 
     /// One-tool dispatch over the per-document file exports — `op`: `sheet` |
@@ -668,13 +721,13 @@ impl Studio {
         let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
         match op {
             "sheet" => match gets("meta").unwrap_or("atelier") {
-                "atelier" => self.doc_export_sheet(id, out_path, scale.unwrap_or(4)),
+                "atelier" => self.doc_export_sheet(id, out_path, export_scale(scale.unwrap_or(4))),
                 "standard" => {
                     let (_dir, doc) = self.open(id)?;
                     if let Some(p) = Path::new(out_path).parent() {
                         let _ = fs::create_dir_all(p);
                     }
-                    doc.export_sheet_std(Path::new(out_path), scale.unwrap_or(4).max(1))
+                    doc.export_sheet_std(Path::new(out_path), export_scale(scale.unwrap_or(4)))
                 }
                 other => Err(format!(
                     "doc_export op=sheet: unknown meta '{other}' — use atelier|standard"
@@ -709,7 +762,7 @@ impl Studio {
         if let Some(p) = Path::new(out_path).parent() {
             let _ = fs::create_dir_all(p);
         }
-        let frames = doc.export_gif(Path::new(out_path), scale.max(1), tag)?;
+        let frames = doc.export_gif(Path::new(out_path), export_scale(scale), tag)?;
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
     }
 
@@ -724,7 +777,7 @@ impl Studio {
         if let Some(p) = Path::new(out_path).parent() {
             let _ = fs::create_dir_all(p);
         }
-        let frames = doc.export_apng(Path::new(out_path), scale.max(1), tag)?;
+        let frames = doc.export_apng(Path::new(out_path), export_scale(scale), tag)?;
         Ok(json!({"path": out_path, "frames": frames, "tag": tag}))
     }
 
@@ -741,7 +794,7 @@ impl Studio {
         out_path: &str,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
-        let (tile_w, tile_h, scale) = (tile_w.max(1), tile_h.max(1), scale.max(1));
+        let (tile_w, tile_h, scale) = (tile_w.max(1), tile_h.max(1), export_scale(scale));
         let (cw, ch) = (doc.meta.w, doc.meta.h);
         if cw % tile_w != 0 || ch % tile_h != 0 {
             return Err(format!(
@@ -2514,6 +2567,21 @@ mod tests {
         assert_eq!(px(15, 8), json!([110, 80, 50, 255]));
         // Empty cells stay transparent.
         assert_eq!(px(0, 0), json!([0, 0, 0, 0]));
+    }
+
+    #[test]
+    fn import_dims_cap_rejects_bombs() {
+        assert!(check_import_dims(4096, 4096).is_ok()); // 16 MP, fine
+        assert!(check_import_dims(8192, 8192).is_ok()); // 64 MP, at the cap
+        assert!(check_import_dims(30000, 30000).is_err()); // classic bomb
+        assert!(check_import_dims(u32::MAX, u32::MAX).is_err()); // no overflow, still rejected
+    }
+
+    #[test]
+    fn export_scale_is_clamped() {
+        assert_eq!(export_scale(0), 1);
+        assert_eq!(export_scale(8), 8);
+        assert_eq!(export_scale(64), MAX_EXPORT_SCALE);
     }
 
     #[test]
