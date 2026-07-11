@@ -114,9 +114,31 @@ if [ -z "$MODE" ]; then
   esac
 fi
 
+# -- tool profile -----------------------------------------------------------------
+# core (30 tools) is the default: everything the sprite / animation / tile /
+# game-set loops need, with a small context footprint. full (all 75) adds the
+# long tail (extra effects, audits, rigging). MORE TOOLS DO NOT MEAN BETTER ART —
+# every tool still runs via `atelier replay` and recipes regardless; the profile
+# only changes what's ADVERTISED to the model, and a bigger surface costs context
+# and invites wrong-tool picks. Leave it on core unless you know you want the tail.
+PROFILE="${ATELIER_PROFILE:-}"
+if [ -z "$PROFILE" ]; then
+  say ""
+  say "Tool profile — core advertises 30 tools, full advertises all 75."
+  say "  (More tools ≠ better graphics: the extra surface only costs the model"
+  say "   context and risks wrong-tool picks. Every tool still executes either way.)"
+  case "$(ask "Advertise the [C]ore profile or the [f]ull surface?")" in
+    f|F) PROFILE=full ;;
+    *)   PROFILE=core ;;
+  esac
+fi
+
 if [ "$MODE" = "http" ]; then
+  # The daemon reads ATELIER_PROFILE at launch; export it so `service install`
+  # bakes it into the launchd/systemd manifest.
+  [ "$PROFILE" = "full" ] && export ATELIER_PROFILE=full
   if "$BIN" service install; then
-    say "Daemon running at $MCP_URL"
+    say "Daemon running at $MCP_URL (profile: $PROFILE)"
   else
     say "Daemon install failed — register over stdio instead."
     MODE=stdio
@@ -127,8 +149,13 @@ fi
 say ""
 say "Register with your MCP client (then restart its session):"
 if [ "$MODE" = "http" ]; then
+  # The profile is baked into the daemon (above); the client just connects.
   say "  claude mcp add --scope user --transport http atelier $MCP_URL   # Claude Code / Kimi Code"
   say "  Cursor: ~/.cursor/mcp.json -> \"atelier\": { \"url\": \"$MCP_URL\" }"
+elif [ "$PROFILE" = "full" ]; then
+  # stdio: the client spawns atelier, so the profile rides as a spawn-time env var.
+  say "  claude mcp add --scope user --env ATELIER_PROFILE=full atelier -- $BIN   # Claude Code / Kimi Code"
+  say "  Cursor: ~/.cursor/mcp.json -> \"atelier\": { \"command\": \"$BIN\", \"env\": { \"ATELIER_PROFILE\": \"full\" } }"
 else
   say "  claude mcp add --scope user atelier -- $BIN     # Claude Code / Kimi Code: same shape"
   say "  Cursor: ~/.cursor/mcp.json -> \"atelier\": { \"command\": \"$BIN\" }"

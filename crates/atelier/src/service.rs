@@ -99,6 +99,17 @@ fn xml_escape(s: &str) -> String {
         .replace('\'', "&apos;")
 }
 
+/// If `ATELIER_PROFILE=full` is set in the installer's environment, bake it into
+/// the daemon manifest so the background server advertises the full tool surface
+/// (the manifest does NOT inherit the caller's shell env). Only the known-safe
+/// `full` value is propagated; anything else means the default core profile and
+/// is omitted.
+fn profile_full() -> bool {
+    std::env::var("ATELIER_PROFILE")
+        .map(|v| v.eq_ignore_ascii_case("full"))
+        .unwrap_or(false)
+}
+
 fn launchd_plist(bin: &str, bind: &str, home_dir: &str, logs: &str) -> String {
     let (bin, bind, home_dir, logs) = (
         xml_escape(bin),
@@ -106,6 +117,11 @@ fn launchd_plist(bin: &str, bind: &str, home_dir: &str, logs: &str) -> String {
         xml_escape(home_dir),
         xml_escape(logs),
     );
+    let profile = if profile_full() {
+        "\n        <key>ATELIER_PROFILE</key><string>full</string>"
+    } else {
+        ""
+    };
     format!(
         r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -120,7 +136,7 @@ fn launchd_plist(bin: &str, bind: &str, home_dir: &str, logs: &str) -> String {
     </array>
     <key>EnvironmentVariables</key>
     <dict>
-        <key>ATELIER_HOME</key><string>{home_dir}</string>
+        <key>ATELIER_HOME</key><string>{home_dir}</string>{profile}
     </dict>
     <key>RunAtLoad</key><true/>
     <key>KeepAlive</key><true/>
@@ -134,6 +150,11 @@ fn launchd_plist(bin: &str, bind: &str, home_dir: &str, logs: &str) -> String {
 
 /// The systemd --user unit (Linux).
 fn systemd_unit(bin: &str, bind: &str, home_dir: &str) -> String {
+    let profile = if profile_full() {
+        "Environment=ATELIER_PROFILE=full\n         "
+    } else {
+        ""
+    };
     format!(
         "[Unit]\n\
          Description=atelier MCP pixel-art server\n\
@@ -142,7 +163,7 @@ fn systemd_unit(bin: &str, bind: &str, home_dir: &str) -> String {
          [Service]\n\
          ExecStart={bin} --http {bind}\n\
          Environment=ATELIER_HOME={home_dir}\n\
-         Restart=on-failure\n\
+         {profile}Restart=on-failure\n\
          RestartSec=2\n\
          \n\
          [Install]\n\
