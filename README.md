@@ -19,7 +19,7 @@
 </p>
 <p align="center"><em>Campfire by Haiku 4.5 · coin by Sonnet 5 · invader by Opus 4.8 ·
 slime by Fable 5 — different models, one studio, zero hand-editing.
-More in the <a href="docs/SHOWCASE.md">showcase</a>.</em></p>
+Full benchmark with compare views: <a href="https://marmikshah.github.io/atelier/">marmikshah.github.io/atelier</a>.</em></p>
 
 ## What it is
 

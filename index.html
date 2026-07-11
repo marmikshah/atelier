@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>atelier — the pixel-art studio agents can see</title>
+<meta name="description" content="A live benchmark: different models drawing and animating through atelier's MCP tools from identical plain-text briefs.">
+<style>
+  :root{
+    --bg:#14161d; --panel:#1b1e28; --panel2:#232735;
+    --ink:#e8e9f0; --ink2:#a7abbb; --ink3:#6f7486;
+    --line:#2c3040; --acc:#e0a33c; --acc2:#57b4c4;
+    --good:#5fb27a; --warn:#d3a743; --bad:#d0654f;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f0f1ec; --panel:#e7e8e1; --panel2:#dcded4;
+      --ink:#191b14; --ink2:#4c4f43; --ink3:#7d8071;
+      --line:#c9cbbd; --acc:#a8741a; --acc2:#2f7f8e;
+      --good:#3f7d53; --warn:#96771f; --bad:#b04a3a;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--acc2)}
+  .wrap{max-width:72rem;margin:0 auto;padding:0 1.2rem}
+  img.px{image-rendering:pixelated}
+  .mono{font-family:var(--mono)}
+
+  header{padding:2.6rem 0 1rem;text-align:center}
+  header img.logo{width:min(300px,66vw)}
+  .tag{color:var(--ink2);margin:.5rem 0 0}
+  .hero{display:block;margin:1.4rem auto 0;width:min(560px,94vw);border:1px solid var(--line);border-radius:6px}
+  .bar{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;padding:1.2rem 0}
+  .btn{font-family:var(--mono);font-size:.76rem;letter-spacing:.03em;color:var(--ink);background:var(--panel);
+    border:1px solid var(--line);border-radius:4px;padding:.48rem .85rem;cursor:pointer;text-decoration:none}
+  .btn:hover{border-color:var(--acc)}
+  .btn.copyok{border-color:var(--acc);color:var(--acc)}
+
+  /* controls */
+  .controls{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:.8rem 0}
+  .controls .wrap{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center}
+  .seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+  .seg button{font-family:var(--mono);font-size:.74rem;padding:.45rem .9rem;border:0;background:var(--panel);color:var(--ink2);cursor:pointer}
+  .seg button.on{background:var(--acc);color:#14161d;font-weight:700}
+  .chips{display:flex;gap:.35rem;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:.68rem;padding:.32rem .6rem;border:1px solid var(--line);border-radius:999px;
+    background:var(--panel);color:var(--ink2);cursor:pointer;user-select:none}
+  .chip.on{border-color:var(--acc);color:var(--acc)}
+  .lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+
+  main{padding:1.6rem 0 2rem;min-height:50vh}
+
+  /* gallery */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1rem}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:.9rem;text-align:center;cursor:pointer;transition:border-color .15s}
+  .cell:hover{border-color:var(--acc)}
+  .cell img{width:100%;max-width:170px;border-radius:3px}
+  .cell .m{font-family:var(--mono);font-size:.74rem;margin-top:.55rem}
+  .cell .v{font-family:var(--mono);font-size:.6rem;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase}
+  .badge{display:inline-block;font-family:var(--mono);font-size:.58rem;letter-spacing:.05em;padding:.1rem .4rem;border-radius:3px;margin-top:.35rem}
+  .badge.clean{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+  .badge.warned{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+  .badge.reworked{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+
+  /* compare */
+  .compare{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .cmp{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem;text-align:center}
+  .cmp img{width:100%;max-width:260px;border-radius:4px}
+  .cmp h3{font-family:var(--mono);font-size:.85rem;margin:.6rem 0 .3rem}
+  .cmp dl{display:grid;grid-template-columns:auto 1fr;gap:.15rem .8rem;text-align:left;margin:.6rem 0 0;font-size:.78rem}
+  .cmp dt{font-family:var(--mono);color:var(--ink3);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;align-self:center}
+  .cmp dd{margin:0;color:var(--ink2)}
+  .hint{color:var(--ink3);font-family:var(--mono);font-size:.74rem;padding:2rem 0;text-align:center}
+
+  /* table */
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:56rem}
+  th{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);
+    text-align:left;padding:.6rem .7rem;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;background:var(--panel2)}
+  th:hover{color:var(--acc)}
+  td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:middle}
+  td.mono{font-variant-numeric:tabular-nums}
+  tr:hover td{background:var(--panel)}
+  td img{width:40px;vertical-align:middle;border-radius:2px;cursor:pointer}
+  td:first-child{color:var(--ink)}
+
+  /* brief + lightbox */
+  .brief{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem 1.1rem;
+    font-family:var(--mono);font-size:.78rem;line-height:1.65;color:var(--ink2);white-space:pre-wrap;position:relative;margin-top:1.2rem}
+  .brief .copy{position:absolute;top:.65rem;right:.65rem}
+  dialog{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);max-width:min(92vw,900px);padding:1.1rem}
+  dialog::backdrop{background:rgba(0,0,0,.72)}
+  dialog img{width:100%;border-radius:4px}
+  dialog .row{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.7rem}
+  dialog h3{margin:0;font-size:.95rem;font-family:var(--mono)}
+
+  footer{border-top:1px solid var(--line);padding:2rem 0 3rem;color:var(--ink3);font-family:var(--mono);font-size:.72rem;text-align:center;line-height:1.8}
+  @media (max-width:640px){ .controls .wrap{gap:.5rem} }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="docs/logo-wordmark.png">
+    <img class="logo px" src="docs/logo-wordmark-dark.png" alt="atelier">
+  </picture>
+  <p class="tag">The pixel-art studio agents can see — headless, over MCP.</p>
+  <img class="hero px" src="docs/platformer-scene.gif" alt="dusk side-scroller scene, drawn and animated entirely by agents">
+  <div class="bar">
+    <a class="btn" href="https://github.com/marmikshah/atelier">GitHub</a>
+    <button class="btn" id="install" type="button">copy install one-liner</button>
+    <a class="btn" href="https://github.com/marmikshah/atelier/blob/master/docs/TOOLS.md">tool reference</a>
+  </div>
+  <p class="tag" style="max-width:46rem;margin:0 auto">Below: a live benchmark. Each model gets the <em>same plain-text brief</em>
+  and draws through the same tools — no retries, no cherry-picking, no human touch-ups. The studio carries the
+  discipline (lock a palette → draw → <em>look</em> → audit → fix); the hands differ.</p>
+</header>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="seg" id="viewseg">
+      <button data-view="gallery" class="on">gallery</button>
+      <button data-view="compare">compare</button>
+      <button data-view="table">table</button>
+    </div>
+    <span class="lbl">brief</span>
+    <div class="chips" id="briefchips"></div>
+    <span class="lbl">models</span>
+    <div class="chips" id="modelchips"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="view"></div>
+  <div class="brief" id="briefbox"><button class="btn copy" id="copybrief" type="button">copy brief</button><span id="brieftext"></span></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    every pixel on this page — including the logo — was drawn by agents through the MCP tools<br>
+    add a model: run the brief over MCP, export, add one line of data ·
+    <a href="https://github.com/marmikshah/atelier">github.com/marmikshah/atelier</a> · MIT
+  </div>
+</footer>
+
+<dialog id="box">
+  <div class="row"><h3 id="boxtitle"></h3><button class="btn" id="boxclose" type="button">close</button></div>
+  <img class="px" id="boximg" alt="">
+  <div class="bar"><button class="btn" id="boxtoggle" type="button">show frames</button></div>
+</dialog>
+
+<script>
+/* ============ DATA ============
+   One object per run. To add a model: run the brief over MCP, drop the
+   exports into docs/showcase/, append a run. All stats come from the run's
+   own tool traffic and atelier's audits.
+   verdict: clean = shipped first pass, all audits ok
+            warned = audits left info/warn the run consciously accepted
+            reworked = needed an art-direction round trip before shipping */
+const RUNS = [
+  // --- the swing (six frames, connected silhouette per frame) ---
+  {brief:"swing", model:"Haiku 4.5",     vendor:"Anthropic", base:"docs/showcase/sword-haiku",  anim:true,  calls:109, looks:3, verdict:"reworked", note:"first pass shipped a floating blade + 15% off-palette; fixed on rework"},
+  {brief:"swing", model:"Sonnet 5",      vendor:"Anthropic", base:"docs/showcase/sword-sonnet", anim:true,  calls:95,  looks:3, verdict:"clean",    note:"recovered a bad shade experiment by rebuilding the frame"},
+  {brief:"swing", model:"Opus 4.8",      vendor:"Anthropic", base:"docs/showcase/sword-opus",   anim:true,  calls:61,  looks:3, verdict:"warned",   note:"kept 2 structural warns (flat-palette value thirds)"},
+  {brief:"swing", model:"Fable 5",       vendor:"Anthropic", base:"docs/showcase/sword-fable",  anim:true,  calls:63,  looks:4, verdict:"clean",    note:"zero warnings; timed the strike (70ms) vs anticipation (140ms)"},
+  // --- the bounce (4-frame squash & stretch) ---
+  {brief:"bounce", model:"Haiku 4.5",    vendor:"Anthropic", base:"docs/showcase/bounce-haiku",  anim:true, calls:28, looks:2, verdict:"clean",  note:"volume swings ±16%; barely leaves the ground (4px)"},
+  {brief:"bounce", model:"Sonnet 5",     vendor:"Anthropic", base:"docs/showcase/bounce-sonnet", anim:true, calls:32, looks:2, verdict:"clean",  note:"pixel_perfect wrecked the shape; recovered via checkpoint restore"},
+  {brief:"bounce", model:"Opus 4.8",     vendor:"Anthropic", base:"docs/showcase/bounce-opus",   anim:true, calls:23, looks:2, verdict:"clean",  note:"verified travel with onion-skin; loses 18% volume airborne"},
+  {brief:"bounce", model:"Fable 5",      vendor:"Anthropic", base:"docs/showcase/bounce-fable",  anim:true, calls:30, looks:4, verdict:"clean",  note:"tightest volume constancy (±2%), 8px lift"},
+  // --- the potion (still) ---
+  {brief:"potion", model:"Haiku 4.5",    vendor:"Anthropic", base:"docs/showcase/potion-haiku",  anim:false, calls:21, looks:2, verdict:"warned", note:"every audit passed but the flask shape doesn't quite read"},
+  {brief:"potion", model:"Sonnet 5",     vendor:"Anthropic", base:"docs/showcase/potion-sonnet", anim:false, calls:30, looks:8, verdict:"clean",  note:"roundest silhouette; 3 extra zoomed looks"},
+  {brief:"potion", model:"Opus 4.8",     vendor:"Anthropic", base:"docs/showcase/potion-opus",   anim:false, calls:43, looks:5, verdict:"warned", note:"liquid reads as a rim band; surfaced a real engine footgun"},
+  {brief:"potion", model:"Fable 5",      vendor:"Anthropic", base:"docs/showcase/potion-fable",  anim:false, calls:20, looks:5, verdict:"clean",  note:"fixed 5 orphan pixels mid-run"},
+  // --- external models, driven over Poe's OpenAI-compatible API by the
+  //     modelbench harness (same briefs, same tool allow-lists, verbatim) ---
+  {brief:"swing", model:"GLM-5.2",       vendor:"Zhipu",   base:"docs/showcase/sword-glm",     anim:true,  calls:87, looks:24, verdict:"warned",   note:"hardest worker of the board; the motion smear flooded into a black mass"},
+  {brief:"swing", model:"Gemini 3.5 Flash", vendor:"Google", base:"docs/showcase/sword-gemini", anim:true, calls:53, looks:0,  verdict:"warned",   note:"consistent character, thin sword; drew without ever looking"},
+  {brief:"swing", model:"Grok 4.3",      vendor:"xAI",     base:"docs/showcase/sword-grok",    anim:true,  calls:7,  looks:1,  verdict:"reworked", note:"reported six frames of diffs and clean silhouettes; the exported document has ONE frame"},
+  {brief:"bounce", model:"GLM-5.2",      vendor:"Zhipu",   base:"docs/showcase/bounce-glm",    anim:true,  calls:47, looks:17, verdict:"warned",   note:"real squash & stretch, but painted the background green on 3 of 4 frames"},
+  {brief:"bounce", model:"Gemini 3.5 Flash", vendor:"Google", base:"docs/showcase/bounce-gemini", anim:true, calls:27, looks:4, verdict:"clean",  note:"clean arc and volume"},
+  {brief:"bounce", model:"Grok 4.3",     vendor:"xAI",     base:"docs/showcase/bounce-grok",   anim:true,  calls:31, looks:8,  verdict:"clean",    note:"solid squash & stretch"},
+  {brief:"potion", model:"GLM-5.2",      vendor:"Zhipu",   base:"docs/showcase/potion-glm",    anim:false, calls:37, looks:11, verdict:"warned",   note:"reads as an upside-down teardrop in a frame"},
+  {brief:"potion", model:"Gemini 3.5 Flash", vendor:"Google", base:"docs/showcase/potion-gemini", anim:false, calls:14, looks:4, verdict:"clean", note:"the strongest external potion — flask, meniscus, highlight all read"},
+  {brief:"potion", model:"Grok 4.3",     vendor:"xAI",     base:"docs/showcase/potion-grok",   anim:false, calls:15, looks:4,  verdict:"warned",   note:"painted a purple background over the whole canvas"},
+];
+// Queued models render as pending columns until their runs land.
+const PENDING = ["GPT-5.6 (Sol · Terra · Luna)"];
+
+const BRIEFS = {
+  swing:  {label:"the swing",  text:`ANIMATE a small SIDE-VIEW WARRIOR SWINGING A SWORD, six frames:\nidle → anticipation (sword back over the shoulder) → overhead → strike\n(horizontal, motion smear) → follow-through → recover. Lock exactly 6\ncolours. Feet stay on the ground line; the body must be ONE connected\nsilhouette in every frame. Look after every burst; at least three\nlook-and-fix passes; export the tagged animation.`},
+  bounce: {label:"the bounce", text:`ANIMATE a 4-frame bouncing SLIME with squash and stretch: rest →\nsquashed (wider, flatter) → airborne stretched (taller, narrower,\nlifted) → descending. Lock exactly 4 colours; keep apparent volume\nconstant. Look after every burst; every consecutive frame_diff must be\nnonzero; export the tagged animation.`},
+  potion: {label:"the potion", text:`Draw a pixel-art POTION BOTTLE: rounded flask with a narrower neck, a\ncork stopper, liquid two-thirds full with a lighter meniscus and a\nglass highlight, light from the top-left, 1px darker outline. Lock\nexactly 6 colours. Look after every burst; run the critique, palette\nand silhouette audits; fix warnings and export.`},
+};
+
+/* ============ STATE ============ */
+const state = {
+  view: "gallery",
+  brief: "swing",
+  models: new Set(RUNS.map(r => r.model)),   // all on by default
+  sort: {key: "model", dir: 1},
+};
+const MODELS = [...new Set(RUNS.map(r => r.model))];
+
+/* ============ CONTROLS ============ */
+const viewseg = document.getElementById("viewseg");
+viewseg.onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.view = b.dataset.view;
+  [...viewseg.children].forEach(x => x.classList.toggle("on", x === b));
+  render();
+};
+function chipbar(el, items, isOn, toggle){
+  el.innerHTML = "";
+  for (const it of items){
+    const c = document.createElement("span");
+    c.className = "chip" + (isOn(it) ? " on" : "");
+    c.textContent = it;
+    c.onclick = () => { toggle(it); render(); };
+    el.appendChild(c);
+  }
+}
+function renderChips(){
+  chipbar(document.getElementById("briefchips"),
+    Object.keys(BRIEFS).map(k => BRIEFS[k].label),
+    l => BRIEFS[state.brief].label === l,
+    l => { state.brief = Object.keys(BRIEFS).find(k => BRIEFS[k].label === l); });
+  chipbar(document.getElementById("modelchips"), MODELS,
+    m => state.models.has(m),
+    m => { state.models.has(m) ? state.models.delete(m) : state.models.add(m);
+           if (!state.models.size) MODELS.forEach(x => state.models.add(x)); });
+}
+
+/* ============ VIEWS ============ */
+const view = document.getElementById("view");
+const active = () => RUNS.filter(r => r.brief === state.brief && state.models.has(r.model));
+
+function gallery(){
+  const g = document.createElement("div"); g.className = "grid";
+  for (const r of active()){
+    const cell = document.createElement("div"); cell.className = "cell";
+    const src = r.anim ? r.base + ".gif" : r.base + ".png";
+    cell.innerHTML = `<img class="px" loading="lazy" src="${src}" alt="${BRIEFS[r.brief].label} by ${r.model}">
+      <div class="m">${r.model}</div><div class="v">${r.vendor} · ${r.anim ? "loop" : "still"}</div>
+      <span class="badge ${r.verdict}">${r.verdict}</span>`;
+    cell.onclick = () => openBox(r);
+    g.appendChild(cell);
+  }
+  for (const m of PENDING){
+    const cell = document.createElement("div"); cell.className = "cell pending";
+    cell.style.opacity = .55; cell.style.cursor = "default";
+    cell.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;aspect-ratio:1;border:1px dashed var(--line);border-radius:3px;color:var(--ink3);font-family:var(--mono);font-size:.68rem">queued</div>
+      <div class="m">${m}</div><div class="v">pending</div>`;
+    g.appendChild(cell);
+  }
+  view.replaceChildren(g);
+}
+
+function compare(){
+  const rs = active();
+  if (rs.length < 2){
+    view.innerHTML = `<div class="hint">select at least two models (chips above) to compare</div>`;
+    return;
+  }
+  const g = document.createElement("div"); g.className = "compare";
+  for (const r of rs){
+    const d = document.createElement("div"); d.className = "cmp";
+    const src = r.anim ? r.base + ".gif" : r.base + ".png";
+    d.innerHTML = `<img class="px" src="${src}" alt="${BRIEFS[r.brief].label} by ${r.model}">
+      <h3>${r.model}</h3><span class="badge ${r.verdict}">${r.verdict}</span>
+      <dl>
+        <dt>tool calls</dt><dd class="mono">${r.calls}</dd>
+        <dt>look passes</dt><dd class="mono">${r.looks}</dd>
+        <dt>vendor</dt><dd>${r.vendor}</dd>
+        <dt>notes</dt><dd>${r.note}</dd>
+      </dl>
+      <div class="bar"><button class="btn" data-frames="${r.base}" ${r.anim ? "" : "disabled"}>frames</button></div>`;
+    g.appendChild(d);
+  }
+  g.onclick = e => {
+    const b = e.target.closest("[data-frames]"); if (!b || b.disabled) return;
+    const img = b.closest(".cmp").querySelector("img");
+    const showingFrames = img.src.endsWith(".png");
+    img.src = b.dataset.frames + (showingFrames ? ".gif" : ".png");
+    b.textContent = showingFrames ? "frames" : "play";
+  };
+  view.replaceChildren(g);
+}
+
+function table(){
+  const rows = RUNS.filter(r => state.models.has(r.model));
+  const cols = [
+    ["brief",   r => BRIEFS[r.brief].label],
+    ["model",   r => r.model],
+    ["vendor",  r => r.vendor],
+    ["result",  r => r.verdict],
+    ["calls",   r => r.calls],
+    ["looks",   r => r.looks],
+    ["notes",   r => r.note],
+  ];
+  rows.sort((a,b) => {
+    const k = state.sort.key;
+    const get = cols.find(c => c[0] === k)[1];
+    const [x, y] = [get(a), get(b)];
+    return (typeof x === "number" ? x - y : String(x).localeCompare(String(y))) * state.sort.dir;
+  });
+  const wrap = document.createElement("div"); wrap.className = "tblwrap";
+  const t = document.createElement("table");
+  t.innerHTML = `<thead><tr><th></th>${cols.map(c =>
+    `<th data-k="${c[0]}">${c[0]}${state.sort.key === c[0] ? (state.sort.dir > 0 ? " ↑" : " ↓") : ""}</th>`).join("")}</tr></thead>`;
+  const tb = document.createElement("tbody");
+  for (const r of rows){
+    const tr = document.createElement("tr");
+    const src = r.anim ? r.base + ".gif" : r.base + ".png";
+    tr.innerHTML = `<td><img class="px" loading="lazy" src="${src}" alt=""></td>` + cols.map(c => {
+      const v = c[1](r);
+      if (c[0] === "result") return `<td><span class="badge ${r.verdict}">${v}</span></td>`;
+      return `<td class="${typeof v === "number" ? "mono" : ""}">${v}</td>`;
+    }).join("");
+    tr.querySelector("img").onclick = () => openBox(r);
+    tb.appendChild(tr);
+  }
+  t.appendChild(tb);
+  t.querySelector("thead").onclick = e => {
+    const th = e.target.closest("th[data-k]"); if (!th) return;
+    const k = th.dataset.k;
+    state.sort = {key: k, dir: state.sort.key === k ? -state.sort.dir : 1};
+    render();
+  };
+  wrap.appendChild(t);
+  view.replaceChildren(wrap);
+}
+
+function render(){
+  renderChips();
+  ({gallery, compare, table})[state.view]();
+  document.getElementById("brieftext").textContent = BRIEFS[state.brief].text;
+}
+render();
+
+/* ============ LIGHTBOX / COPY ============ */
+const box = document.getElementById("box"), boximg = document.getElementById("boximg"),
+      boxtitle = document.getElementById("boxtitle"), boxtoggle = document.getElementById("boxtoggle");
+let boxBase = "", boxAnim = true;
+function openBox(r){
+  boxBase = r.base; boxAnim = r.anim;
+  boxtitle.textContent = `${BRIEFS[r.brief].label} — ${r.model}`;
+  boximg.src = r.anim ? r.base + ".gif" : r.base + ".png";
+  boxtoggle.style.display = r.anim ? "" : "none";
+  boxtoggle.textContent = "show frames";
+  box.showModal();
+}
+boxtoggle.onclick = () => {
+  boxAnim = !boxAnim;
+  boximg.src = boxAnim ? boxBase + ".gif" : boxBase + ".png";
+  boxtoggle.textContent = boxAnim ? "show frames" : "play loop";
+};
+document.getElementById("boxclose").onclick = () => box.close();
+box.onclick = e => { if (e.target === box) box.close(); };
+
+function flash(btn){ btn.classList.add("copyok"); const old = btn.textContent;
+  btn.textContent = "copied"; setTimeout(() => { btn.classList.remove("copyok"); btn.textContent = old; }, 1200); }
+document.getElementById("install").onclick = e => {
+  navigator.clipboard.writeText("curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh"); flash(e.target); };
+document.getElementById("copybrief").onclick = e => {
+  navigator.clipboard.writeText(BRIEFS[state.brief].text); flash(e.target); };
+</script>
+</body>
+</html>
