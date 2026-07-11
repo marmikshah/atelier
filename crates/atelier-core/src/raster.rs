@@ -1078,9 +1078,34 @@ fn lerpf(a: f32, b: f32, t: f32) -> f32 {
 /// (decaying oscillation ease-out); anything else linear. Every curve satisfies
 /// f(0)=0 and f(1)=1 exactly. Used by keyframe motion so a tween shapes its
 /// acceleration. The non-monotone curves (overshoot/elastic) can exceed [0,1].
+/// The recognised easing names, hyphenated (`ease` also accepts underscore
+/// spellings). The guard callers run so a typo errors instead of silently
+/// falling back to linear — the mistake class `valid_blend` exists to catch.
+pub const EASE_NAMES: [&str; 7] = [
+    "linear",
+    "ease-in",
+    "ease-out",
+    "ease-in-out",
+    "bounce",
+    "overshoot",
+    "elastic",
+];
+
+/// Error unless `kind` names a real easing (either separator spelling).
+pub fn validate_ease(kind: &str) -> Result<(), String> {
+    if EASE_NAMES.contains(&kind.replace('_', "-").as_str()) {
+        Ok(())
+    } else {
+        Err(format!(
+            "unknown easing '{kind}' — use one of [{}]",
+            EASE_NAMES.join(", ")
+        ))
+    }
+}
+
 pub fn ease(t: f32, kind: &str) -> f32 {
     let t = t.clamp(0.0, 1.0);
-    match kind {
+    match kind.replace('_', "-").as_str() {
         "ease-in" => t * t * t,
         "ease-out" => {
             let u = 1.0 - t;
@@ -1111,7 +1136,9 @@ pub fn ease(t: f32, kind: &str) -> f32 {
                 2f32.powf(-10.0 * t) * ((t * 10.0 - 0.75) * P).sin() + 1.0
             }
         }
-        _ => t, // "linear" and any unknown easing
+        // "linear"; unknowns are screened by `validate_ease` at the API edge,
+        // and an unscreened caller still degrades to linear rather than panic.
+        _ => t,
     }
 }
 

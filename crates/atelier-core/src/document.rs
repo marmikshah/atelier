@@ -829,7 +829,11 @@ impl Document {
         // Lift the source rect to a standalone image.
         let full = self.cel_image(layer, frame)?;
         let sub = image::imageops::crop_imm(&full, ax as u32, ay as u32, rw, rh).to_image();
-        let ss = if method == "rotsprite" { 4 } else { 1 };
+        let ss = match method {
+            "rotsprite" => 4,
+            "nearest" => 1,
+            other => return Err(format!("unknown method '{other}' — use rotsprite|nearest")),
+        };
         let out = raster::affine_nn(&sub, rot, sx, sy, skew_x, skew_y, ss);
         let (tw, th) = (out.width(), out.height());
         if clear_source {
@@ -1828,6 +1832,9 @@ impl Document {
         let rmax = ((span_x / 2.0).powi(2) + (span_y / 2.0).powi(2))
             .sqrt()
             .max(1.0);
+        if !matches!(axis, "h" | "v" | "radial") {
+            return Err(format!("unknown axis '{axis}' — use h|v|radial"));
+        }
         let last = ramp.len() - 1;
         let img = self.cel_canvas(layer, frame)?;
         let mut changed = 0;
@@ -1893,8 +1900,13 @@ impl Document {
                 Some(p)
             }
         };
-        // Darken/lighten a fill colour for the contour.
-        let dir = if mode == "light" { 1 } else { -1 };
+        // Darken/lighten a fill colour for the contour. "from_fill" and "dark"
+        // share the darkening path - both derive from the donor fill.
+        let dir = match mode {
+            "light" => 1,
+            "from_fill" | "dark" => -1,
+            other => return Err(format!("unknown mode '{other}' - use from_fill|light|dark")),
+        };
         let shade = |fill: [u8; 4]| -> [u8; 4] {
             match ramp {
                 Some(r) if !r.is_empty() => raster::shade_ramp(fill, r, dir * steps.abs()),
@@ -3440,6 +3452,7 @@ impl Document {
         if to_frame <= from_frame {
             return Err("keyframe_move needs to_frame > from_frame".into());
         }
+        raster::validate_ease(easing)?;
         let n = self.meta.frames.len();
         if to_frame >= n {
             return Err(format!(
@@ -3610,6 +3623,7 @@ impl Document {
         if to_frame <= from_frame {
             return Err("keyframe_transform needs to_frame > from_frame".into());
         }
+        raster::validate_ease(easing)?;
         let n = self.meta.frames.len();
         if to_frame >= n {
             return Err(format!(

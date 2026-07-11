@@ -111,16 +111,21 @@ fn rgba(v: &[i64]) -> [u8; 4] {
 }
 
 /// Parse the `doc_snap_palette` / FX alpha policy string into an `AlphaSnap`.
+/// The one place the mode strings are known — an unknown mode errors here
+/// instead of silently mapping to Preserve.
 fn alpha_snap(
     mode: Option<&str>,
     cutoff: Option<u8>,
     bg: Option<&[i64]>,
-) -> atelier_core::document::AlphaSnap {
+) -> Result<atelier_core::document::AlphaSnap, String> {
     use atelier_core::document::AlphaSnap;
     match mode.unwrap_or("preserve") {
-        "opaque" => AlphaSnap::Opaque(cutoff.unwrap_or(128)),
-        "flatten" => AlphaSnap::Flatten(bg.map(rgba).unwrap_or([0, 0, 0, 255])),
-        _ => AlphaSnap::Preserve,
+        "preserve" => Ok(AlphaSnap::Preserve),
+        "opaque" => Ok(AlphaSnap::Opaque(cutoff.unwrap_or(128))),
+        "flatten" => Ok(AlphaSnap::Flatten(bg.map(rgba).unwrap_or([0, 0, 0, 255]))),
+        m => Err(format!(
+            "unknown alpha mode '{m}' — use preserve | opaque | flatten"
+        )),
     }
 }
 
@@ -1622,6 +1627,10 @@ pub struct Atelier {
     tool_router: ToolRouter<Self>,
     /// Optional session recorder; when set, each tool call is logged to a recipe.
     recorder: Option<Recorder>,
+    /// Advertise the full 75-tool surface instead of the core profile. Read
+    /// from ATELIER_PROFILE once at construction (env is process-stable), and
+    /// injectable so both profiles are unit-testable.
+    full_profile: bool,
 }
 
 impl Atelier {
@@ -1635,7 +1644,26 @@ impl Atelier {
             studio,
             tool_router: Self::tool_router(),
             recorder: None,
+            full_profile: profile_full(),
         }
+    }
+
+    /// Override the advertised profile (tests exercise both without env).
+    #[cfg(test)]
+    fn with_profile(mut self, full: bool) -> Self {
+        self.full_profile = full;
+        self
+    }
+
+    /// The tools the active profile advertises: `CORE_TOOLS` by default, the
+    /// full router with `full_profile`. Discovery filter only — `call_tool`
+    /// still dispatches every tool, so recipes/replay reach the tail.
+    fn advertised_tools(&self) -> Vec<rmcp::model::Tool> {
+        let mut tools = self.tool_router.list_all();
+        if !self.full_profile {
+            tools.retain(|t| CORE_TOOLS.contains(&t.name.as_ref()));
+        }
+        tools
     }
 
     /// Enable session recording: every tool call is appended to a recipe at `path`.
@@ -2394,14 +2422,10 @@ impl Atelier {
     )]
     async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
         let studio = self.studio();
-        if let Some(m) = p.alpha.as_deref() {
-            if !matches!(m, "preserve" | "opaque" | "flatten") {
-                return res(Err(format!(
-                    "unknown alpha mode '{m}' — use preserve | opaque | flatten"
-                )));
-            }
-        }
-        let alpha = alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref());
+        let alpha = match alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref()) {
+            Ok(a) => a,
+            Err(e) => return res(Err(e)),
+        };
         let r = studio.snap_palette(
             &p.doc_id,
             p.layer,
@@ -3044,11 +3068,7 @@ impl ServerHandler for Atelier {
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListToolsResult, ErrorData> {
-        let mut tools = self.tool_router.list_all();
-        if !profile_full() {
-            tools.retain(|t| CORE_TOOLS.contains(&t.name.as_ref()));
-        }
-        Ok(ListToolsResult::with_all_items(tools))
+        Ok(ListToolsResult::with_all_items(self.advertised_tools()))
     }
 
     /// Hand-written so we can record each call before delegating to the
@@ -3521,6 +3541,26 @@ mod tests {
             names.len(),
             75,
             "total tool count changed — update the docs"
+        );
+        // Both profiles, exercised without touching env.
+        assert_eq!(
+            Atelier::new().with_profile(false).advertised_tools().len(),
+            30
+        );
+        assert_eq!(
+            Atelier::new().with_profile(true).advertised_tools().len(),
+            75
+        );
+        // The nearest doc surface is the in-file get_info instructions string —
+        // it has drifted before; pin its counts too.
+        let instructions = Atelier::new().get_info().instructions.unwrap_or_default();
+        assert!(
+            instructions.contains("30 tools"),
+            "get_info instructions drifted from the core count"
+        );
+        assert!(
+            instructions.contains("75-tool"),
+            "get_info instructions drifted from the full count"
         );
     }
 
