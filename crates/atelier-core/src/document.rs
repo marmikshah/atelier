@@ -4110,13 +4110,18 @@ impl Document {
                 )
                 .map(|_| ()),
             "outline" => self.outline_cel(layer, frame, col("color"), gb("aa", false)),
+            // `shadow_opacity`, not `opacity`: the plain key is the batch-wide
+            // compositing wrapper (consumed by apply_op), and one value must
+            // not silently drive both.
             "drop_shadow" => self.drop_shadow(
                 layer,
                 frame,
                 gi("dx", 1),
                 gi("dy", 1),
                 col("color"),
-                op.get("opacity").and_then(|v| v.as_u64()).unwrap_or(160) as u8,
+                op.get("shadow_opacity")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(160) as u8,
                 gi("blur", 0),
             ),
             "glow" => self.glow(
@@ -4518,7 +4523,7 @@ fn batch_op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'sta
         "blur" => (&["radius"], &["region", "snap"]),
         "quantize" => (&["colors"], &["max_colors"]),
         "outline" => (&["color"], &["aa"]),
-        "drop_shadow" => (&["color"], &["dx", "dy", "blur", "snap"]),
+        "drop_shadow" => (&["color"], &["dx", "dy", "blur", "snap", "shadow_opacity"]),
         "glow" => (&[], &["color", "radius", "intensity", "mode"]),
         "bevel" => (&["light", "dark"], &["depth", "snap"]),
         "fill_cel" => (&["color"], &[]),
