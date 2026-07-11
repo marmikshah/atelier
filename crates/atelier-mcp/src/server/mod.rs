@@ -6,18 +6,29 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    AnnotateAble, CallToolResult, Content, CreateMessageRequestParams, ListResourcesResult,
-    ListToolsResult, PaginatedRequestParams, RawImageContent, RawResource,
+    AnnotateAble, CallToolResult, Content, CreateMessageRequestParams, GetPromptRequestParams,
+    GetPromptResult, ListPromptsResult, ListResourcesResult, ListToolsResult,
+    PaginatedRequestParams, PromptMessage, PromptMessageRole, RawImageContent, RawResource,
     ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents, Role,
     SamplingMessage, SamplingMessageContent, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
 use rmcp::{tool, tool_handler, tool_router, ErrorData, RoleServer, ServerHandler, ServiceExt};
-use schemars::JsonSchema;
-use serde::Deserialize;
 use serde_json::{json, Value};
 
 use atelier_studio::Studio;
+
+mod params;
+mod prompts;
+mod recorder;
+mod resources;
+
+use params::*;
+use prompts::{build_prompt, prompt_specs};
+use recorder::Recorder;
+use resources::{
+    base64, parse_resource_uri, ResourceTarget, RESOURCE_RENDER_SCALE, VISION_CRITIQUE_MAX_TOKENS,
+};
 
 fn j(v: Value) -> String {
     serde_json::to_string(&v).unwrap_or_else(|_| "{}".into())
@@ -88,6 +99,18 @@ fn rgb3(v: &[i64]) -> [u8; 3] {
     ]
 }
 
+/// {"head":[x,y],...} joint params -> the (x,y) map the rig tools take
+/// (entries shorter than 2 are dropped; the rig validates the contract).
+fn joints_map(
+    joints: &std::collections::HashMap<String, Vec<i64>>,
+) -> std::collections::HashMap<String, (i32, i32)> {
+    joints
+        .iter()
+        .filter(|(_, v)| v.len() >= 2)
+        .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
+        .collect()
+}
+
 /// [r,g,b] or [r,g,b,a] -> RGBA (alpha defaults to 255).
 fn rgba(v: &[i64]) -> [u8; 4] {
     [
@@ -99,669 +122,46 @@ fn rgba(v: &[i64]) -> [u8; 4] {
 }
 
 /// Parse the `doc_snap_palette` / FX alpha policy string into an `AlphaSnap`.
+/// The one place the mode strings are known — an unknown mode errors here
+/// instead of silently mapping to Preserve.
 fn alpha_snap(
     mode: Option<&str>,
     cutoff: Option<u8>,
     bg: Option<&[i64]>,
-) -> atelier_core::document::AlphaSnap {
+) -> Result<atelier_core::document::AlphaSnap, String> {
     use atelier_core::document::AlphaSnap;
     match mode.unwrap_or("preserve") {
-        "opaque" => AlphaSnap::Opaque(cutoff.unwrap_or(128)),
-        "flatten" => AlphaSnap::Flatten(bg.map(rgba).unwrap_or([0, 0, 0, 255])),
-        _ => AlphaSnap::Preserve,
+        "preserve" => Ok(AlphaSnap::Preserve),
+        "opaque" => Ok(AlphaSnap::Opaque(cutoff.unwrap_or(128))),
+        "flatten" => Ok(AlphaSnap::Flatten(bg.map(rgba).unwrap_or([0, 0, 0, 255]))),
+        m => Err(format!(
+            "unknown alpha mode '{m}' — use preserve | opaque | flatten"
+        )),
     }
 }
 
-/// Optional [x0,y0,x1,y1] -> (x0,y0,x1,y1); drops anything shorter than 4.
-fn region(r: &Option<Vec<i32>>) -> Option<(i32, i32, i32, i32)> {
-    r.as_ref()
-        .filter(|r| r.len() >= 4)
-        .map(|r| (r[0], r[1], r[2], r[3]))
+/// Optional [x0,y0,x1,y1] -> (x0,y0,x1,y1). A region that is present but
+/// shorter than 4 numbers is an agent mistake — error loudly instead of
+/// silently acting on the whole canvas.
+fn region(r: &Option<Vec<i32>>) -> Result<Option<(i32, i32, i32, i32)>, String> {
+    match r {
+        None => Ok(None),
+        Some(v) if v.len() >= 4 => Ok(Some((v[0], v[1], v[2], v[3]))),
+        Some(v) => Err(format!(
+            "region needs 4 numbers [x0,y0,x1,y1], got {} — omit it to act on the whole canvas",
+            v.len()
+        )),
+    }
 }
 
-// --- library params --------------------------------------------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocCreate {
-    pub name: String,
-    pub width: u32,
-    pub height: u32,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRef {
-    pub doc_id: String,
-}
-
-#[derive(Deserialize, JsonSchema, Default)]
-pub struct ListDocs {
-    /// Keep documents whose id starts with this (family selector, e.g. "hero-").
-    pub prefix: Option<String>,
-    /// Keep documents whose id contains this substring.
-    pub contains: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema, Default)]
-pub struct DocSetAudit {
-    /// Explicit member document ids (combined with `prefix` as a union).
-    pub ids: Option<Vec<String>>,
-    /// Select every document whose id starts with this (e.g. "hero-").
-    pub prefix: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSetPaletteSync {
-    /// Explicit target document ids (combined with `prefix` as a union).
-    pub ids: Option<Vec<String>>,
-    /// Select every document whose id starts with this (e.g. "hero-").
-    pub prefix: Option<String>,
-    /// The palette to broadcast, as [[r,g,b(,a)],...]. Or use `from_doc`.
-    pub palette: Option<Vec<Vec<i64>>>,
-    /// Copy the locked palette from this document instead of passing colours.
-    pub from_doc: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct ExportAll {
-    pub target_dir: String,
-    pub scale: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct ExportAtlas {
-    pub out_path: String,
-    pub scale: Option<u32>,
-    /// Max atlas width in pixels before the shelf packer wraps to a new row.
-    pub max_width: Option<u32>,
-}
-
-// --- document params -------------------------------------------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocAddTag {
-    pub doc_id: String,
-    pub name: String,
-    pub from: usize,
-    pub to: usize,
-    pub direction: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocCel {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocStampImage {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub x: Option<i32>,
-    pub y: Option<i32>,
-    pub png_path: String,
-    /// Scale factor (default 1.0). Shrinking uses area-average (features
-    /// survive); growing uses nearest (stays crisp).
-    pub scale: Option<f32>,
-    /// Scale to this width in pixels instead (wins over `scale`) — e.g. stamp
-    /// a 1024px reference at 32px wide without computing the factor.
-    pub target_w: Option<u32>,
-    /// Rotation in degrees, clockwise (default 0).
-    pub rotate: Option<f32>,
-    /// Opacity 0..255 when compositing (default 255).
-    pub opacity: Option<u8>,
-    /// Blend mode when compositing (default "normal").
-    pub blend: Option<String>,
-    /// true overwrites the whole cel; false (default) composites OVER it.
-    pub replace: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocWangTiles {
-    pub doc_id: String,
-    /// Tile size N in pixels; the source canvas must be at least N×N.
-    pub n: u32,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocNineSlice {
-    pub doc_id: String,
-    /// Destination layer / frame.
-    pub layer: usize,
-    pub frame: usize,
-    /// Source panel layer / frame (defaults: same layer, frame 0).
-    pub src_layer: Option<usize>,
-    pub src_frame: Option<usize>,
-    /// Source panel rect [x, y, w, h] — the panel authored once.
-    pub src: Vec<i64>,
-    /// Corner thickness in px (the 3×3 cut; default 3).
-    pub inset: Option<i64>,
-    /// Destination rect [x, y, w, h] — any size ≥ the corners.
-    pub dst: Vec<i64>,
-    /// How edges/centre fill: "tile" (default) or "stretch".
-    pub mode: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocEmit {
-    pub doc_id: String,
-    pub layer: usize,
-    /// Emitter rect [x, y, w, h] particles spawn inside.
-    pub region: Vec<i64>,
-    /// Frame count (default 8, clamped 2..=24).
-    pub frames: Option<usize>,
-    /// Particle count (default 24, clamped 1..=512).
-    pub count: Option<usize>,
-    /// Emission direction in degrees (0=right, 90=down, 270=up; default 270).
-    pub angle: Option<f32>,
-    /// Half-cone spread around `angle` in degrees (default 30).
-    pub spread: Option<f32>,
-    /// Initial speed in px/frame (default 1.5).
-    pub speed: Option<f32>,
-    /// Downward acceleration in px/frame² (negative = rises; default 0).
-    pub gravity: Option<f32>,
-    /// Particle lifetime in loop units — 1.0 = lives one full cycle (default 1).
-    pub life: Option<f32>,
-    /// Particle size in px at birth (shrinks as it dies; default 2).
-    pub size: Option<i64>,
-    /// Deterministic seed (default 1).
-    pub seed: Option<u64>,
-    /// Base colour [r,g,b(,a)] — auto-ramped unless `ramp` given.
-    pub color: Vec<i64>,
-    /// Explicit birth→death colour ramp [[r,g,b,a],...].
-    pub ramp: Option<Vec<Vec<i64>>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocColorblindCheck {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// Nearest-neighbour upscale of the returned strip (default 2, clamped 1..=8).
-    pub scale: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocAutotileSet {
-    pub doc_id: String,
-    /// Tile size N in pixels; the source canvas must be at least N×N.
-    pub n: u32,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocTilemapAssemble {
-    pub doc_id: String,
-    /// Tile size N in pixels; the source canvas must be at least N×N.
-    pub n: u32,
-    /// The terrain mask, one string per map row: `#`/`1`/`x` = filled cell,
-    /// anything else = empty. Short rows pad with empty.
-    pub rows: Vec<String>,
-    /// How off-map cells read: "filled" (terrain continues past the edge,
-    /// default) or "empty" (map borders get outlines).
-    pub outside: Option<String>,
-}
-
-// --- drawing params --------------------------------------------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocTween {
-    pub doc_id: String,
-    pub from: usize,
-    pub to: usize,
-    /// In-between frames to insert (default 1).
-    pub steps: Option<usize>,
-    /// Duration of each inserted frame in ms (default 100).
-    pub duration_ms: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocGlow {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Glow tint; omit to bloom the art's own colours.
-    pub color: Option<Vec<i64>>,
-    /// Blur radius (default 2).
-    pub radius: Option<i32>,
-    /// Glow strength 0..255 (default 180).
-    pub intensity: Option<u8>,
-    /// Blend mode for the bloom (default "screen"; "add" for hotter).
-    pub mode: Option<String>,
-    /// When a palette is locked, re-snap the bloom back ON-palette afterwards so
-    /// it stays crisp pixel art instead of hundreds of soft off-palette tints
-    /// (the bloom is binarised at `snap_cutoff`). Default true when a palette is
-    /// set; pass false to keep a deliberately soft bloom.
-    pub snap: Option<bool>,
-    /// Alpha cutoff for the post-glow snap (0..255, default 64 — keeps the
-    /// brighter bloom core, drops the faint halo).
-    pub snap_cutoff: Option<u8>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRimLight {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Rim colour [r,g,b(,a)].
-    pub color: Vec<i64>,
-    /// Light azimuth in degrees: 0=right, 90=down, 180=left, 270=up.
-    pub az: f32,
-    /// Rim band thickness in pixels (default 1).
-    pub width: Option<i32>,
-    /// Facing falloff exponent — higher = tighter rim (default 1.5).
-    pub falloff: Option<f32>,
-    /// Light the AWAY-facing edge instead (core/contact shadow). Default false.
-    pub dark: Option<bool>,
-    /// Snap on-palette afterwards when a palette is locked (default true).
-    pub snap: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocCastShadow {
-    pub doc_id: String,
-    /// The caster layer (its silhouette throws the shadow).
-    pub layer: usize,
-    pub frame: usize,
-    /// Shadow colour [r,g,b(,a)].
-    pub color: Vec<i64>,
-    /// Light azimuth in degrees: 0=right, 90=down, 180=left, 270=up (pairs with
-    /// the vector doc_form_audit infers). The shadow falls opposite. Default 135.
-    pub az: Option<f32>,
-    /// Ground stretch — how far the shadow projects (default 1.0).
-    pub length: Option<f32>,
-    /// How much height survives, 0..1 (0 = flat on the ground; default 0.2).
-    pub squash: Option<f32>,
-    /// Shadow strength 0..255 (default 140).
-    pub opacity: Option<u8>,
-    /// Paint the shadow onto this layer and clip it to that layer's opaque
-    /// pixels (the ground surface). Omit = draw behind the caster on its own cel.
-    pub receiver_layer: Option<usize>,
-    /// Snap on-palette afterwards when a palette is locked (default true).
-    pub snap: Option<bool>,
-}
-
-/// One gradient colour stop: position along the axis (0..1) + RGBA colour.
-#[derive(Deserialize, JsonSchema)]
-pub struct GradientStop {
-    pub pos: f32,
-    pub color: Vec<i64>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSelect {
-    pub doc_id: String,
-    /// "rect" | "ellipse" | "color" | "all" | "none". Default "rect".
-    pub shape: Option<String>,
-    /// Combine with the current selection: "replace" (default) | "add" |
-    /// "subtract" | "intersect".
-    pub mode: Option<String>,
-    /// rect shape:
-    pub x0: Option<i32>,
-    pub y0: Option<i32>,
-    pub x1: Option<i32>,
-    pub y1: Option<i32>,
-    /// ellipse shape:
-    pub cx: Option<i32>,
-    pub cy: Option<i32>,
-    pub rx: Option<i32>,
-    pub ry: Option<i32>,
-    /// color shape — which cel to test, and either an explicit `color` or a
-    /// sample point (`x`,`y`) plus `tolerance` (max channel distance).
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    pub color: Option<Vec<i64>>,
-    pub x: Option<i32>,
-    pub y: Option<i32>,
-    pub tolerance: Option<i32>,
-}
-
-/// A rectangular region of a cel (inclusive corners) + optional offset.
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSetPivot {
-    pub doc_id: String,
-    pub frame: usize,
-    /// Anchor point [x,y] in document pixels; omit to clear the pivot.
-    pub pivot: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct BoxInput {
-    /// Label for this box (e.g. "torso", "sword", "feet").
-    pub name: String,
-    /// `body` (collision), `hit` (deals damage) or `hurt` (takes damage).
-    pub kind: String,
-    /// `[x, y, w, h]` in document pixels.
-    pub rect: Vec<i32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSetFrameBoxes {
-    pub doc_id: String,
-    pub frame: usize,
-    /// The frame's full box list; pass `[]` to clear. Replaces any existing set.
-    pub boxes: Vec<BoxInput>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSetPalette {
-    pub doc_id: String,
-    /// Palette swatches, each [r,g,b] or [r,g,b,a].
-    pub colors: Vec<Vec<i64>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPaletteSwap {
-    pub doc_id: String,
-    /// Source colours to recolour, each [r,g,b]/[r,g,b,a]. Matched exactly
-    /// (all channels). Same length as `to` — `from[i]` becomes `to[i]`.
-    pub from: Vec<Vec<i64>>,
-    /// Replacement colours, each [r,g,b]/[r,g,b,a]. Same length as `from`.
-    pub to: Vec<Vec<i64>>,
-    /// Restrict to one layer's cels; omit for every layer.
-    pub layer: Option<usize>,
-    /// Restrict to one frame's cels; omit for every frame.
-    pub frame: Option<usize>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocBatch {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Ordered ops, each like {"op":"rect","x0":1,"y0":1,"x1":8,"y1":8,"color":[r,g,b],"fill":true}.
-    /// Ops: pencil/line/rect/ellipse/polyline/polygon/bezier/fill/replace_color/
-    /// flip/shift/outline/fill_cel/clear_cel/gradient/scatter/noise/adjust/blur/
-    /// quantize/symmetry/drop_shadow/glow/bevel/shade/dither/pixel_perfect.
-    pub ops: Vec<serde_json::Value>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocDraw {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
-    /// | fill | gradient | scatter | noise | text | fill_cel.
-    pub op: String,
-    /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,
-    /// color, fill). Every op also accepts `opacity` and `blend_mode`.
-    #[serde(flatten)]
-    pub params: serde_json::Map<String, serde_json::Value>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFx {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// One transform/effect op: blur | outline | drop_shadow | bevel | shade |
-    /// form | dither | pixel_perfect | flip | shift | symmetry | quantize |
-    /// replace_color | adjust.
-    pub op: String,
-    /// The op's own params, flattened alongside. Every op also accepts `opacity`
-    /// and `blend_mode`.
-    #[serde(flatten)]
-    pub params: serde_json::Map<String, serde_json::Value>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocExport {
-    pub doc_id: String,
-    /// What to export: sheet | anim | tileset.
-    pub op: String,
-    /// Output file path.
-    pub out_path: String,
-    /// Nearest-neighbour upscale (sheet/anim default 4, tileset default 1).
-    pub scale: Option<u32>,
-    /// Op-specific params, flattened: anim → format ("gif"|"apng"), tag;
-    /// tileset → tile_w, tile_h.
-    #[serde(flatten)]
-    pub params: serde_json::Map<String, serde_json::Value>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocLayer {
-    pub doc_id: String,
-    /// add (new layer on top) | set (visibility/opacity/blend of layer `index`) |
-    /// move | insert | delete | rename | duplicate | merge_down.
-    pub op: String,
-    /// Target layer index (the layer for `set`/`move`/`delete`/…).
-    pub index: Option<usize>,
-    /// Destination index for `move`.
-    pub to_index: Option<usize>,
-    /// Layer name for `add`/`insert`/`rename`.
-    pub name: Option<String>,
-    /// Visibility for `set`.
-    pub visible: Option<bool>,
-    pub opacity: Option<u8>,
-    pub blend: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFrame {
-    pub doc_id: String,
-    /// add (append) | duration (set frame timing) | delete | insert | duplicate |
-    /// move.
-    pub op: String,
-    /// Target frame index (for duration/delete/insert/duplicate/move).
-    pub frame: Option<usize>,
-    /// For `add`: duplicate this frame's cels into the new frame.
-    pub copy_from: Option<usize>,
-    /// Destination index for `move`.
-    pub to_index: Option<usize>,
-    /// Frame duration in ms (for add/insert/duration; default 100).
-    pub duration_ms: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRegion {
-    pub doc_id: String,
-    /// copy | cut | clear | move | paste.
-    pub op: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Source rect for copy/cut/clear/move.
-    pub x0: Option<i32>,
-    pub y0: Option<i32>,
-    pub x1: Option<i32>,
-    pub y1: Option<i32>,
-    /// Offset for `move`.
-    pub dx: Option<i32>,
-    pub dy: Option<i32>,
-    /// Destination top-left for `paste`.
-    pub x: Option<i32>,
-    pub y: Option<i32>,
-    /// `paste`: true = source-over (default), false = overwrite.
-    pub blend: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRefOp {
-    pub doc_id: String,
-    /// set (attach/clear the comparison reference) | import (trace an external
-    /// image cleaned onto a guide layer).
-    pub op: String,
-    /// `set`: reference image path (omit to clear). `import`: source image path.
-    pub path: Option<String>,
-    // -- import params --
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    /// `import`: target width in px (required for import).
-    pub target_w: Option<u32>,
-    /// `import`: omit to derive an aspect-true height.
-    pub target_h: Option<u32>,
-    pub colors: Option<usize>,
-    pub dither: Option<bool>,
-    pub defringe: Option<bool>,
-    pub to_doc_palette: Option<bool>,
-    /// `import`: corner-seeded background removal before palette extraction.
-    pub remove_bg: Option<bool>,
-    /// `import`: colours the derived palette must keep (e.g. a black outline).
-    pub pin: Option<Vec<Vec<i64>>>,
-}
-
-// --- canvas reader params --------------------------------------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocDumpRegion {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// Dump this layer's cel; omit to dump the flattened composite.
-    pub layer: Option<usize>,
-    /// [x0,y0,x1,y1] document pixels (inclusive). Omit = whole canvas. Area capped at 4096 px.
-    pub region: Option<Vec<i32>>,
-    /// "symbol" (A..Z a..z 0..9 per colour, `.`=transparent) or "hex".
-    pub mode: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSilhouette {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
-    /// Minimum alpha counted as opaque (default 1).
-    pub alpha_threshold: Option<u8>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocComponents {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
-    /// Pixel adjacency: 4 or 8 (default 8).
-    pub connectivity: Option<u8>,
-    /// Only components of this exact [r,g,b]/[r,g,b,a]; omit = any opaque pixel.
-    pub color: Option<Vec<i64>>,
-    /// Components smaller than this are dropped from the list (default 1).
-    pub min_area: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFormAudit {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
-    /// Forms smaller than this many pixels are skipped (default 12).
-    pub min_area: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocCoverageMap {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// Grid columns (default 8).
-    pub cols: Option<u32>,
-    /// Grid rows (default 8).
-    pub rows: Option<u32>,
-}
-
-// --- value & colour feedback params ----------------------------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocContrastCheck {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// "region" (inside vs 4px surround), "palette" (all colour pairs) or "one-bit".
-    pub mode: String,
-    /// [x0,y0,x1,y1] document pixels — required for mode="region".
-    pub region: Option<Vec<i32>>,
-    /// WCAG ratio at/above which a pair passes (default 1.5).
-    pub min_ratio: Option<f32>,
-    /// Luma cutoff for mode="one-bit" (default 128).
-    pub threshold: Option<u8>,
-    /// Where to write the B/W PNG for mode="one-bit".
-    pub out_path: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPaletteReport {
-    pub doc_id: String,
-    /// One frame; omit to tally every frame.
-    pub frame: Option<usize>,
-    /// One layer's cel; omit for the flattened composite per frame.
-    pub layer: Option<usize>,
-    /// [x0,y0,x1,y1] document pixels to restrict the tally; omit = whole canvas.
-    pub region: Option<Vec<i32>>,
-    /// Max channel distance counting two colours as near-duplicates (default 8).
-    pub dupe_threshold: Option<i32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRampValidate {
-    /// Explicit ramp [[r,g,b],...] (≥2). Provide this OR `doc_id`.
-    pub colors: Option<Vec<Vec<i64>>>,
-    /// Validate this document's locked palette instead of explicit colours.
-    pub doc_id: Option<String>,
-    /// [start,end) slice of the palette to validate (with `doc_id`).
-    pub slice: Option<Vec<usize>>,
-}
-
-// --- animation & tiling feedback params ------------------------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFrameDiff {
-    pub doc_id: String,
-    pub frame_a: usize,
-    pub frame_b: usize,
-    /// Diff this layer's cel; omit for the flattened composite.
-    pub layer: Option<usize>,
-    /// [x0,y0,x1,y1] document pixels; omit = whole canvas.
-    pub region: Option<Vec<i32>>,
-    /// Add a text grid (`.`unchanged `+`added `-`removed `~`recolored); area capped 4096 px.
-    pub grid: Option<bool>,
-    /// "none" or "overlay" (frame_b dimmed with changed pixels flagged).
-    pub render: Option<String>,
-    pub out_path: Option<String>,
-    pub scale: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSeamReport {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// Test this layer's cel; omit for the flattened composite.
-    pub layer: Option<usize>,
-    /// "both", "horizontal" (left↔right) or "vertical" (top↔bottom).
-    pub axis: Option<String>,
-    /// Max per-channel delta still counted as a matching edge (default 0).
-    pub threshold: Option<i32>,
-    /// Render a PNG with mismatched edge pixels highlighted red; returns its path.
-    pub out_path: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocAnimAudit {
-    pub doc_id: String,
-    /// Audit this tag's loop; omit to audit the whole timeline.
-    pub tag: Option<String>,
-    /// Use this layer's cel; omit for the flattened composite.
-    pub layer: Option<usize>,
-    /// "seam" (loop wrap diff), "spacing" (per-frame motion evenness),
-    /// "arc" (trajectory shape) or "timing" (per-frame durations).
-    pub mode: String,
-    /// [x0,y0,x1,y1] clips spacing/arc to one part (e.g. a swinging arm) so
-    /// its motion is measurable over a static body.
-    pub region: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocKeyframeMove {
-    pub doc_id: String,
-    pub layer: usize,
-    /// Source rect [x0,y0,x1,y1] (document pixels) read from `from_frame`.
-    pub region: Vec<i32>,
-    pub from_frame: usize,
-    /// Destination keyframe (> from_frame); all frames between move too.
-    pub to_frame: usize,
-    /// Total displacement applied at to_frame; intermediates are eased fractions.
-    pub dx: i32,
-    pub dy: i32,
-    /// "linear", "ease-in", "ease-out", "ease-in-out" (cubic), "bounce"
-    /// (ease-out bounce), "overshoot" (back ease-out — shoots past the offset
-    /// then settles) or "elastic" (decaying oscillation). Default "linear".
-    pub easing: Option<String>,
-    /// Clear the original rect in each destination frame first (default true).
-    pub clear_source: Option<bool>,
+/// Unwrap a parse result inside a tool method, or return it as the tool error.
+macro_rules! try_res {
+    ($e:expr) => {
+        match $e {
+            Ok(v) => v,
+            Err(e) => return res(Err(e)),
+        }
+    };
 }
 
 fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
@@ -776,834 +176,6 @@ fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
         .is_some_and(|v| v.get("error").is_some())
 }
 
-// --- session recorder ------------------------------------------------------
-
-/// Records every tool call into a replayable recipe file (the inverse of
-/// `atelier replay`): a good live session becomes a recipe for free. The shape
-/// it writes matches `replay::Recipe` — `{name, description, steps:[{tool,args}]}`.
-///
-/// After each call it rewrites the whole file atomically (write `.tmp`, rename)
-/// so a killed session still leaves a valid recipe up to the last completed step.
-#[derive(Clone)]
-struct Recorder {
-    path: std::sync::Arc<std::path::PathBuf>,
-    /// Accumulated steps, guarded so concurrent HTTP sessions append in order.
-    steps: std::sync::Arc<std::sync::Mutex<Vec<Value>>>,
-}
-
-impl Recorder {
-    fn new(path: std::path::PathBuf) -> Self {
-        // Create the recipe's parent dir once so `--record nested/dir/recipe.json`
-        // works instead of every atomic write silently failing.
-        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
-            if let Err(e) = std::fs::create_dir_all(parent) {
-                eprintln!(
-                    "atelier: failed to create recording dir {}: {e}",
-                    parent.display()
-                );
-            }
-        }
-        Self {
-            path: std::sync::Arc::new(path),
-            steps: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
-        }
-    }
-
-    /// Append one `{tool, args}` step and rewrite the recipe file atomically. Only
-    /// the caller's successful steps reach here (see `call_tool`), so the recipe
-    /// stays replayable. Best-effort: a write failure is logged, never fails the call.
-    fn record(&self, tool: &str, args: Value) {
-        let mut steps = self.steps.lock().expect("recorder lock poisoned");
-        steps.push(json!({"tool": tool, "args": args}));
-        let name = self
-            .path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("session");
-        let recipe = json!({
-            "name": name,
-            "description": format!("recorded session {}", iso_date()),
-            "steps": &*steps,
-        });
-        // Pretty so the recipe stays hand-editable, like the shipped examples.
-        let body = serde_json::to_string_pretty(&recipe).unwrap_or_else(|_| "{}".into());
-        let tmp = self.path.with_extension("json.tmp");
-        if let Err(e) = std::fs::write(&tmp, body).and_then(|()| std::fs::rename(&tmp, &*self.path))
-        {
-            eprintln!(
-                "atelier: failed to write recording {}: {e}",
-                self.path.display()
-            );
-        }
-    }
-}
-
-/// UTC calendar date as `YYYY-MM-DD`, computed from the wall clock without a
-/// date-library dependency (civil-from-days, proleptic Gregorian).
-fn iso_date() -> String {
-    let secs = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
-    let days = (secs / 86_400) as i64;
-    // Howard Hinnant's civil_from_days.
-    let z = days + 719_468;
-    let era = z.div_euclid(146_097);
-    let doe = z - era * 146_097; // [0, 146096]
-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365; // [0, 399]
-    let y = yoe + era * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100); // [0, 365]
-    let mp = (5 * doy + 2) / 153; // [0, 11]
-    let d = doy - (153 * mp + 2) / 5 + 1; // [1, 31]
-    let m = if mp < 10 { mp + 3 } else { mp - 9 }; // [1, 12]
-    let y = if m <= 2 { y + 1 } else { y };
-    format!("{y:04}-{m:02}-{d:02}")
-}
-
-// --- world-class-art tool params (the art-quality pass) --------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocLook {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub scale: Option<u32>,
-    /// Inclusive crop corners [x0,y0,x1,y1].
-    pub region: Option<Vec<i32>>,
-    /// render | value | bands | sat | hue | notan.
-    pub mode: Option<String>,
-    /// Band count for mode=bands.
-    pub bands: Option<u32>,
-    pub grid: Option<bool>,
-    pub coords: Option<bool>,
-    pub onion: Option<bool>,
-    pub max_size: Option<u32>,
-    /// Repeat the result N×N to eyeball seamlessness (tileability check).
-    pub tile: Option<u32>,
-    /// Also write the PNG to this path, for file/export workflows.
-    pub out_path: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSelectRender {
-    pub doc_id: String,
-    pub scale: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocCheckpoint {
-    pub doc_id: String,
-    /// save | list | restore | diff | prune.
-    pub action: String,
-    pub label: Option<String>,
-    pub checkpoint_id: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSnapPalette {
-    pub doc_id: String,
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    /// Override palette as a list of [r,g,b(,a)]; defaults to the doc's palette.
-    pub palette: Option<Vec<Vec<i64>>>,
-    /// Partial-alpha policy for FX bloom / AA fringe: `preserve` (default — keep
-    /// soft alpha, snap RGB only) | `opaque` (binarise alpha at `cutoff`,
-    /// default 128 — collapse a bloom into a crisp on-palette silhouette) |
-    /// `flatten` (composite over `bg` then snap fully opaque).
-    pub alpha: Option<String>,
-    /// Alpha cutoff for `alpha="opaque"` (0..255, default 128).
-    pub cutoff: Option<u8>,
-    /// Backdrop `[r,g,b]` for `alpha="flatten"` (default opaque black).
-    pub bg: Option<Vec<i64>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSelectWand {
-    pub doc_id: String,
-    /// Layer to sample; omit to sample the flattened composite.
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-    pub x: i32,
-    pub y: i32,
-    pub tol: Option<i32>,
-    pub conn8: Option<bool>,
-    pub perceptual: Option<bool>,
-    /// replace | add | subtract | intersect.
-    pub mode: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocSmoothEdges {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Optional ramp [[r,g,b],...] to keep AA pixels on-palette.
-    pub ramp: Option<Vec<Vec<i64>>>,
-    /// With keep_square, edges flat-straight for longer than this stay crisp.
-    pub max_run: Option<i32>,
-    /// Preserve deliberate right-angle corners (default true).
-    pub keep_square: Option<bool>,
-    pub only_color: Option<Vec<i64>>,
-    pub region: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocTransformCel {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub region: Option<Vec<i32>>,
-    pub rotate: Option<f32>,
-    pub scale_x: Option<f32>,
-    pub scale_y: Option<f32>,
-    pub skew_x: Option<f32>,
-    pub skew_y: Option<f32>,
-    /// rotsprite (cluster-preserving) | nearest.
-    pub method: Option<String>,
-    /// With scale_x set and scale_y omitted, derive scale_y = 1/scale_x.
-    pub preserve_volume: Option<bool>,
-    /// Snap the resample fringe back to the locked palette (default true; only
-    /// acts when a palette is set).
-    pub snap_palette: Option<bool>,
-    pub clear_source: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocCritique {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
-    pub region: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRelight {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub region: Option<Vec<i32>>,
-    /// Key light: azimuth (0=right,90=down,180=left,270=up) + elevation (0..90).
-    pub key_azimuth: Option<f32>,
-    pub key_elevation: Option<f32>,
-    pub key_intensity: Option<f32>,
-    pub key_color: Option<Vec<i64>>,
-    pub fill_intensity: Option<f32>,
-    pub fill_color: Option<Vec<i64>>,
-    pub rim_intensity: Option<f32>,
-    pub rim_color: Option<Vec<i64>>,
-    pub ambient: Option<f32>,
-    pub ambient_color: Option<Vec<i64>>,
-    /// How domed the silhouette reads as a form (higher = flatter).
-    pub bulge: Option<f32>,
-    pub ramp: Option<Vec<Vec<i64>>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocDitherRamp {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// The ramp to dither across (>= 2 colours), as [[r,g,b],...].
-    pub ramp: Vec<Vec<i64>>,
-    pub region: Option<Vec<i32>>,
-    /// h | v | radial.
-    pub axis: Option<String>,
-    /// bayer2 | bayer4 | bayer8 | checker | ign.
-    pub pattern: Option<String>,
-    pub only_existing: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocContactSheet {
-    pub doc_id: String,
-    pub scale: Option<u32>,
-    pub cols: Option<usize>,
-    /// Ghost each cell's PREVIOUS frame under it at 35% alpha — per-pair
-    /// onion skinning, the closest a still image gets to showing motion.
-    pub onion: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPalette {
-    pub base: Vec<i64>,
-    /// mono | complementary | triadic | analogous | split | tetradic. Default mono.
-    pub scheme: Option<String>,
-    /// Colours per ramp (default 5).
-    pub count: Option<usize>,
-    pub value_lo: Option<f32>,
-    pub value_hi: Option<f32>,
-    pub hue_shift: Option<f32>,
-    /// flat | arc | sat-in-shadow (default arc).
-    pub sat_curve: Option<String>,
-    pub anchor_midtone: Option<bool>,
-    /// Store the flattened palette on this document id.
-    pub set_doc: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocBox {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Centre of the top diamond.
-    pub cx: i32,
-    pub cy: i32,
-    /// Half-width of the top diamond.
-    pub s: i32,
-    /// Body height.
-    pub ht: i32,
-    pub color: Vec<i64>,
-    pub light_right: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPerspectiveGuide {
-    pub doc_id: String,
-    /// thirds | grid | iso | vp.
-    pub kind: Option<String>,
-    pub color: Option<Vec<i64>>,
-    pub spacing: Option<i32>,
-    /// Vanishing point [x,y] for kind=vp.
-    pub vp: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocOutlineSelective {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// from_fill | light | dark.
-    pub mode: Option<String>,
-    pub ramp: Option<Vec<Vec<i64>>>,
-    pub steps: Option<i32>,
-    pub region: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocMaterial {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub region: Option<Vec<i32>>,
-    /// metal | wood | stone | water | cloth | skin | glass.
-    pub material: String,
-    pub color: Vec<i64>,
-    pub seed: Option<u64>,
-    pub ramp: Option<Vec<Vec<i64>>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocTranslucency {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    pub layer: Option<usize>,
-    pub region: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPanel {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    pub x: i32,
-    pub y: i32,
-    pub w: i32,
-    pub h: i32,
-    pub fill: Vec<i64>,
-    pub border: Option<Vec<i64>>,
-    pub bevel: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPaintGrid {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Top-left of the grid in document pixels (default 0,0).
-    pub x: Option<i32>,
-    pub y: Option<i32>,
-    /// Single-character keys -> [r,g,b(,a)] colour OR an integer palette index
-    /// (palette-true by construction). '.' and ' ' are reserved: untouched.
-    pub legend: serde_json::Map<String, Value>,
-    /// One string per pixel row, e.g. ["..kk..", ".koook."].
-    pub rows: Vec<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocExtractToLayer {
-    pub doc_id: String,
-    /// Source layer holding the flat sprite.
-    pub layer: usize,
-    /// Frame to read when frames="one" (default 0).
-    pub frame: Option<usize>,
-    /// Rect [x0,y0,x1,y1] of the part to cut. Omit to use the active selection.
-    pub region: Option<Vec<i32>>,
-    /// Use the active selection mask (set with doc_select / doc_select_wand).
-    pub use_selection: Option<bool>,
-    /// Name for the new part layer, e.g. "arm-front".
-    pub name: Option<String>,
-    /// "one" (default) cuts just `frame`; "all" cuts every frame's cel.
-    pub frames: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocKeyframeTransform {
-    pub doc_id: String,
-    pub layer: usize,
-    /// Rect [x0,y0,x1,y1] of the part to rotate (document pixels), read from from_frame.
-    pub region: Vec<i32>,
-    /// The JOINT the part rotates about, [x,y] in document pixels (e.g. the shoulder).
-    pub pivot: Vec<f32>,
-    pub from_frame: usize,
-    /// Last frame of the motion (> from_frame); frames must already exist.
-    pub to_frame: usize,
-    /// Total rotation in degrees at to_frame (clockwise positive); intermediates eased.
-    pub rot_deg: Option<f32>,
-    /// Total translation applied at to_frame; intermediates eased.
-    pub dx: Option<i32>,
-    pub dy: Option<i32>,
-    /// linear | ease-in | ease-out | ease-in-out | bounce | overshoot | elastic.
-    pub easing: Option<String>,
-    /// Snap resampled pixels back to the locked palette (default true).
-    pub snap_palette: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRefAnalyze {
-    pub doc_id: String,
-    /// Analyze this file instead of the doc's stored reference.
-    pub path: Option<String>,
-    /// Width to plan at (default: the canvas width); height derives aspect-true.
-    pub target_w: Option<u32>,
-    /// Subject palette size to extract (default 8).
-    pub colors: Option<usize>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocRefCompare {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// "side_by_side" (default) or "overlay" (reference ghosted under the art).
-    pub mode: Option<String>,
-    /// Grid divisions per axis for the ΔE cells (default 8, clamped 2..=16).
-    pub cells: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocDiffMap {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// How many worst individual pixels to list (default 20, clamped 1..=64).
-    pub top: Option<usize>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocCritiqueVision {
-    pub doc_id: String,
-    pub frame: Option<usize>,
-    /// What to weight the critique toward — e.g. "anatomy", "readability",
-    /// "colour", "appeal". Omit for a balanced pass.
-    pub focus: Option<String>,
-    /// Render scale handed to the host's vision model (default 8, clamped
-    /// 1..=16). Bigger = more pixel detail for the model to read.
-    pub scale: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocBurst {
-    pub doc_id: String,
-    pub layer: Option<usize>,
-    pub cx: i32,
-    pub cy: i32,
-    pub frames: Option<usize>,
-    pub max_radius: i32,
-    /// ring | disc | rays.
-    pub kind: Option<String>,
-    pub color: Vec<i64>,
-    pub ramp: Option<Vec<Vec<i64>>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocFigure {
-    pub doc_id: String,
-    pub layer: usize,
-    pub frame: usize,
-    /// Named joint coordinates as `{"head":[x,y], "shoulder_l":[x,y], ...}`.
-    /// Required: head, shoulder_l/r, elbow_l/r, hand_l/r, hip_l/r, knee_l/r,
-    /// foot_l/r. chest and pelvis are derived from the shoulder/hip midpoints.
-    pub joints: std::collections::HashMap<String, Vec<i64>>,
-    pub color: Vec<i64>,
-    /// Arm/leg capsule width (default 3).
-    pub limb_w: Option<i64>,
-    /// Torso capsule width (default 6).
-    pub torso_w: Option<i64>,
-    /// Head radius (default 4).
-    pub head_r: Option<i64>,
-    /// Anti-alias the capsule edges (default true).
-    pub aa: Option<bool>,
-    /// Snap on-palette afterwards when a palette is locked (default true).
-    pub snap: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocPoseCycle {
-    pub doc_id: String,
-    pub layer: usize,
-    /// The base STANDING pose: the same 13 named joints as doc_figure.
-    pub joints: std::collections::HashMap<String, Vec<i64>>,
-    /// Which cycle to generate: idle | run | jump | attack | hurt.
-    pub gait: String,
-    /// Frame count (omit or 0 = the gait's natural count; clamped 2..=24).
-    pub frames: Option<usize>,
-    /// Amplitude multiplier on the gait's motion (default 1.0, clamped 0.1..=3).
-    pub intensity: Option<f32>,
-    pub color: Vec<i64>,
-    pub limb_w: Option<i64>,
-    pub torso_w: Option<i64>,
-    pub head_r: Option<i64>,
-    pub aa: Option<bool>,
-    pub snap: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct DocWalk {
-    pub doc_id: String,
-    pub layer: usize,
-    /// The base STANDING pose: the same 13 named joints as doc_figure.
-    pub joints: std::collections::HashMap<String, Vec<i64>>,
-    pub color: Vec<i64>,
-    /// Number of frames in the cycle (default 8, clamped 2..=24).
-    pub frames: Option<usize>,
-    /// Foot front-to-back travel in px (default 10).
-    pub stride: Option<i64>,
-    /// Foot lift height on the swing in px (default 4).
-    pub lift: Option<i64>,
-    /// Body bob amplitude in px (default 1).
-    pub bob: Option<i64>,
-    /// Hand front-to-back swing in px (default 6).
-    pub arm_swing: Option<i64>,
-    pub limb_w: Option<i64>,
-    pub torso_w: Option<i64>,
-    pub head_r: Option<i64>,
-    pub aa: Option<bool>,
-    pub snap: Option<bool>,
-}
-
-// --- resources -------------------------------------------------------------
-
-/// Scale used when rendering the `render` resource (matches the doc_look default).
-const RESOURCE_RENDER_SCALE: u32 = 4;
-
-/// Token ceiling for the host-sampled `doc_critique_vision` response.
-const VISION_CRITIQUE_MAX_TOKENS: u32 = 1024;
-
-/// A parsed `atelier://` resource URI: which document, and which view of it.
-#[derive(Debug, PartialEq, Eq)]
-enum ResourceTarget {
-    /// `atelier://doc/<id>` — the document structure JSON.
-    Structure(String),
-    /// `atelier://doc/<id>/render` — frame 0 PNG render (blob).
-    Render(String),
-}
-
-/// Parse an `atelier://doc/<id>` or `.../render` URI into a [`ResourceTarget`].
-/// Returns None for any other scheme/shape (the caller maps that to an error).
-fn parse_resource_uri(uri: &str) -> Option<ResourceTarget> {
-    let rest = uri.strip_prefix("atelier://doc/")?;
-    match rest.strip_suffix("/render") {
-        Some(id) if !id.is_empty() => Some(ResourceTarget::Render(id.to_string())),
-        Some(_) => None, // "atelier://doc//render"
-        None if !rest.is_empty() && !rest.contains('/') => {
-            Some(ResourceTarget::Structure(rest.to_string()))
-        }
-        None => None, // empty id, or extra path segments
-    }
-}
-
-/// Standard base64 (no line wrapping) — the blob field wants pre-encoded text and
-/// we'd rather not pull in a crate for ~15 lines.
-fn base64(bytes: &[u8]) -> String {
-    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
-    for chunk in bytes.chunks(3) {
-        let b = [
-            chunk[0],
-            *chunk.get(1).unwrap_or(&0),
-            *chunk.get(2).unwrap_or(&0),
-        ];
-        let n = (b[0] as u32) << 16 | (b[1] as u32) << 8 | b[2] as u32;
-        out.push(T[(n >> 18 & 63) as usize] as char);
-        out.push(T[(n >> 12 & 63) as usize] as char);
-        out.push(if chunk.len() > 1 {
-            T[(n >> 6 & 63) as usize] as char
-        } else {
-            '='
-        });
-        out.push(if chunk.len() > 2 {
-            T[(n & 63) as usize] as char
-        } else {
-            '='
-        });
-    }
-    out
-}
-
-// --- prompts ---------------------------------------------------------------
-
-use rmcp::model::{
-    GetPromptRequestParams, GetPromptResult, ListPromptsResult, Prompt, PromptArgument,
-    PromptMessage, PromptMessageRole,
-};
-
-/// Looks up an argument value by name (None when absent — the builder defaults).
-type ArgLookup<'a> = dyn Fn(&str) -> Option<String> + 'a;
-
-/// One packaged workflow: its name, what it does, the args it takes (name +
-/// whether required), and a builder that fills the template from those args.
-struct PromptSpec {
-    name: &'static str,
-    description: &'static str,
-    /// (arg name, description, required) — advertised verbatim as the schema.
-    args: &'static [(&'static str, &'static str, bool)],
-    /// Tool names the rendered text names verbatim; the drift test asserts each
-    /// appears in the text AND in the live tool list.
-    #[cfg_attr(not(test), allow(dead_code))]
-    tools: &'static [&'static str],
-    /// Render the prompt text from the looked-up argument values.
-    build: fn(&ArgLookup) -> String,
-}
-
-/// Look up an argument from the request's object, defaulting when absent so an
-/// optional arg still substitutes cleanly into the template.
-fn arg<'a>(args: &'a Option<serde_json::Map<String, Value>>, key: &str) -> Option<&'a str> {
-    args.as_ref()?.get(key)?.as_str()
-}
-
-/// The three shipped workflows. Each `build` emits ordered, numbered steps with
-/// tool names written verbatim — the get_prompt drift test checks every name
-/// here against the live tool list.
-const PROMPTS: &[PromptSpec] = &[
-    PromptSpec {
-        name: "pixel-sprite",
-        description:
-            "Draw a single pixel-art sprite the right way: lock a ramp, paint, LOOK, audit.",
-        args: &[
-            ("subject", "What to draw, e.g. \"a knight\".", true),
-            ("size", "Canvas size in pixels (default 32).", false),
-            (
-                "palette_hint",
-                "Colour direction, e.g. \"cool steel\".",
-                false,
-            ),
-        ],
-        tools: &[
-            "doc_create",
-            "doc_palette",
-            "doc_set_palette",
-            "doc_draw",
-            "doc_batch",
-            "doc_look",
-            "doc_fx",
-            "doc_critique",
-            "doc_silhouette",
-            "doc_components",
-            "doc_palette_report",
-            "doc_export",
-        ],
-        build: |g| {
-            let subject = g("subject").unwrap_or_else(|| "a sprite".into());
-            let size = g("size").unwrap_or_else(|| "32".into());
-            let palette = g("palette_hint").unwrap_or_else(|| "your choice".into());
-            format!(
-                "Draw a pixel-art sprite of {subject} on a {size}x{size} canvas (palette: {palette}).\n\
-                 1. doc_create a {size}x{size} document.\n\
-                 2. doc_palette (scheme=mono) a base colour into shades, then doc_set_palette to LOCK the ramp.\n\
-                 3. Block the silhouette with doc_draw (op=rect/ellipse/polygon).\n\
-                 4. Paint detail with doc_batch (many ops in one call) or doc_draw (op=pencil/line).\n\
-                 5. doc_look after every burst — it returns the frame INLINE; study it before continuing.\n\
-                 6. Shade with doc_fx op=shade and clean strokes with doc_fx op=pixel_perfect.\n\
-                 7. Audit shape: doc_silhouette (readable bbox/fill) and doc_components (no stray specks).\n\
-                 8. Audit colour: doc_palette_report (every colour in_palette, no near-dupes).\n\
-                 9. doc_critique for the failure modes you can't see; fix what it flags, doc_look to confirm.\n\
-                 10. doc_export op=sheet the finished sprite to a PNG.\n\
-                 Iterate 3-9 until the sprite reads cleanly at 1x."
-            )
-        },
-    },
-    PromptSpec {
-        name: "walk-cycle",
-        description:
-            "Animate a 4-pose walk cycle: reuse frames, change only what moves, verify spacing.",
-        args: &[
-            ("character", "Who walks, e.g. \"the knight\".", true),
-            (
-                "frames",
-                "Total frames (default 4: contact/down/passing/up).",
-                false,
-            ),
-        ],
-        tools: &[
-            "doc_frame",
-            "doc_draw",
-            "doc_region",
-            "doc_keyframe_move",
-            "doc_look",
-            "doc_contact_sheet",
-            "doc_frame_diff",
-            "doc_anim_audit",
-            "doc_add_tag",
-            "doc_export",
-        ],
-        build: |g| {
-            let character = g("character").unwrap_or_else(|| "the character".into());
-            let frames = g("frames").unwrap_or_else(|| "4".into());
-            format!(
-                "Animate a {frames}-frame walk cycle for {character}.\n\
-                 1. Start from a finished standing pose on frame 0 (use the pixel-sprite flow first).\n\
-                 2. The cycle is contact -> down -> passing -> up. Plan numbers FIRST: stride ~1/3 of \
-                 the character's height in px, body bobs 1px DOWN on contact and UP on passing, arms \
-                 counter-swing the legs. NEVER doc_dissolve poses — it cross-fades (ghost frames), it does \
-                 not move limbs.\n\
-                 3. doc_frame op=add with copy_from the previous frame so each pose starts from the last.\n\
-                 4. Repaint ONLY what changes per pose (legs, arms) with doc_draw (op=pencil) / doc_region op=move; \
-                 doc_keyframe_move eases a region across several frames in one call.\n\
-                 5. doc_look every frame (onion=true ghosts the neighbours); doc_contact_sheet shows \
-                 the whole cycle in one inline grid.\n\
-                 6. Verify each adjacent pair with doc_frame_diff (only the limbs should change).\n\
-                 7. doc_anim_audit mode=\"spacing\" — the per-frame motion must be even, low drift.\n\
-                 8. doc_add_tag the range and doc_anim_audit mode=\"seam\" so the loop wrap is clean.\n\
-                 9. doc_frame op=duration ~120ms per frame, with contact poses held ~1.5x longer — \
-                 uniform 100ms reads mechanical.\n\
-                 10. doc_export op=anim the tagged loop and study it.\n\
-                 Iterate 4-9 until the walk reads smoothly."
-            )
-        },
-    },
-    PromptSpec {
-        name: "seamless-tile",
-        description: "Paint a seamless tile: wrap edges, prove the seam is zero, eyeball the grid.",
-        args: &[
-            ("material", "What to tile, e.g. \"grass\".", true),
-            ("size", "Tile size in pixels (default 32).", false),
-        ],
-        tools: &[
-            "doc_create",
-            "doc_set_palette",
-            "doc_draw",
-            "doc_look",
-            "doc_fx",
-            "doc_seam_report",
-            "doc_palette_report",
-            "doc_export",
-        ],
-        build: |g| {
-            let material = g("material").unwrap_or_else(|| "the material".into());
-            let size = g("size").unwrap_or_else(|| "32".into());
-            format!(
-                "Paint a seamless {size}x{size} {material} tile.\n\
-                 1. doc_create a {size}x{size} document and doc_set_palette to lock the colours.\n\
-                 2. Fill the base with doc_draw op=fill_cel, then texture with doc_draw op=noise / op=scatter.\n\
-                 3. doc_look to study the raw tile inline.\n\
-                 4. doc_fx op=shift wrap=true to roll the seam into the middle, then paint over the join.\n\
-                 5. Use doc_fx op=shift wrap=true again to make detail variants without breaking edges.\n\
-                 6. doc_seam_report MUST return zero mismatches on both axes — fix until it does.\n\
-                 7. doc_look tile=2 and eyeball the 2x2 grid for any visible repeat or seam.\n\
-                 8. doc_palette_report to confirm the texture stayed on-palette.\n\
-                 9. Repeat 4-7 until the seam report is clean and the grid looks continuous.\n\
-                 10. doc_export op=sheet the tile to a PNG.\n\
-                 The tile is done only when doc_seam_report is zero."
-            )
-        },
-    },
-    PromptSpec {
-        name: "game-asset-set",
-        description:
-            "Build a coherent game's asset set — hero moveset, terrain, HUD — audited as ONE work.",
-        args: &[
-            (
-                "theme",
-                "The game's look, e.g. \"forest ruins, dusk\".",
-                true,
-            ),
-            (
-                "hero",
-                "The playable character, e.g. \"a cloaked ranger\".",
-                true,
-            ),
-            (
-                "size",
-                "Character canvas size in pixels (default 48).",
-                false,
-            ),
-        ],
-        tools: &[
-            "doc_create",
-            "doc_palette",
-            "doc_set_palette",
-            "doc_figure",
-            "doc_pose_cycle",
-            "doc_walk",
-            "doc_look",
-            "doc_autotile_set",
-            "doc_tilemap_assemble",
-            "doc_panel",
-            "doc_nine_slice",
-            "doc_set_audit",
-            "doc_set_palette_sync",
-            "doc_colorblind_check",
-            "doc_export",
-            "export_atlas",
-        ],
-        build: |g| {
-            let theme = g("theme").unwrap_or_else(|| "the game's theme".into());
-            let hero = g("hero").unwrap_or_else(|| "the hero".into());
-            let size = g("size").unwrap_or_else(|| "48".into());
-            format!(
-                "Build a coherent asset SET for a game: theme {theme}, hero {hero}. \
-                 Name every document with one family prefix (e.g. game-hero-idle, game-tile-grass) so the set tools can find them.\n\
-                 1. ONE palette first: doc_palette a scheme fitting {theme}; you will lock this exact ramp on every document.\n\
-                 2. Hero: doc_create a {size}x{size} doc per animation; doc_set_palette; pose {hero} once as 13 joints (doc_figure to preview), then doc_walk for the walk and doc_pose_cycle for idle, run, jump, attack, hurt — the same joints every time.\n\
-                 3. doc_look each cycle inline; re-run a gait with different intensity/frames until the motion reads.\n\
-                 4. Terrain: doc_create a tile-sized doc, layer 0 inner material, layer 1 outer; doc_autotile_set for the 47-tile family, then doc_tilemap_assemble a test mask and doc_look the MAP — terrain is judged assembled, never as lone tiles.\n\
-                 5. HUD: doc_create a UI doc; author ONE panel (doc_panel), then doc_nine_slice it to every dialog/button size.\n\
-                 6. Cohesion gate: doc_set_audit on the family prefix — fix every warning; doc_set_palette_sync from the hero doc if palettes drifted.\n\
-                 7. doc_colorblind_check the HUD and any state-colour art; recolour pairs that collapse.\n\
-                 8. Ship: doc_export op=anim per gait tag, doc_export op=tileset for terrain, export_atlas for the whole set.\n\
-                 The set is done only when doc_set_audit says cohesive."
-            )
-        },
-    },
-];
-
-/// Build the advertised [`Prompt`] descriptors from [`PROMPTS`].
-fn prompt_specs() -> Vec<Prompt> {
-    PROMPTS
-        .iter()
-        .map(|p| {
-            let args = p
-                .args
-                .iter()
-                .map(|(name, desc, required)| {
-                    PromptArgument::new(*name)
-                        .with_description(*desc)
-                        .with_required(*required)
-                })
-                .collect();
-            Prompt::new(p.name, Some(p.description), Some(args))
-        })
-        .collect()
-}
-
-/// Render one prompt's filled text + description from request arguments, or None
-/// if the name is unknown (the caller maps that to an error).
-fn build_prompt(
-    name: &str,
-    args: &Option<serde_json::Map<String, Value>>,
-) -> Option<(String, String)> {
-    let spec = PROMPTS.iter().find(|p| p.name == name)?;
-    let get = |k: &str| arg(args, k).map(str::to_string);
-    Some(((spec.build)(&get), spec.description.to_string()))
-}
-
 // --- server ----------------------------------------------------------------
 
 #[derive(Clone)]
@@ -1613,6 +185,10 @@ pub struct Atelier {
     tool_router: ToolRouter<Self>,
     /// Optional session recorder; when set, each tool call is logged to a recipe.
     recorder: Option<Recorder>,
+    /// Advertise the full 75-tool surface instead of the core profile. Read
+    /// from ATELIER_PROFILE once at construction (env is process-stable), and
+    /// injectable so both profiles are unit-testable.
+    full_profile: bool,
 }
 
 impl Atelier {
@@ -1626,7 +202,26 @@ impl Atelier {
             studio,
             tool_router: Self::tool_router(),
             recorder: None,
+            full_profile: profile_full(),
         }
+    }
+
+    /// Override the advertised profile (tests exercise both without env).
+    #[cfg(test)]
+    fn with_profile(mut self, full: bool) -> Self {
+        self.full_profile = full;
+        self
+    }
+
+    /// The tools the active profile advertises: `CORE_TOOLS` by default, the
+    /// full router with `full_profile`. Discovery filter only — `call_tool`
+    /// still dispatches every tool, so recipes/replay reach the tail.
+    fn advertised_tools(&self) -> Vec<rmcp::model::Tool> {
+        let mut tools = self.tool_router.list_all();
+        if !self.full_profile {
+            tools.retain(|t| CORE_TOOLS.contains(&t.name.as_ref()));
+        }
+        tools
     }
 
     /// Enable session recording: every tool call is appended to a recipe at `path`.
@@ -1959,7 +554,6 @@ impl Atelier {
             .doc_export(&p.doc_id, &p.op, &p.out_path, p.scale, &p.params))
     }
 
-    // -- per-pixel drawing on a cel (the editor; coords = document pixels) --
     #[tool(
         description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame op=delete. Reindexes later cels and remaps tags."
     )]
@@ -2068,7 +662,6 @@ impl Atelier {
             .doc_select(&p.doc_id, shape, mode, rect, ell, color_at))
     }
 
-    // -- selection / region / clipboard (move limbs, reuse art) --
     // -- canvas readers (read-only analysis to SEE the canvas as data) --
     #[tool(
         description = "Dump a region of a frame as a text grid so you can read exact pixels blind. mode=\"symbol\" maps each distinct colour to a glyph (A..Z a..z 0..9) with a legend, `.`=transparent; mode=\"hex\" emits #rrggbb(aa)/`.` tokens. `layer` dumps one cel (omit = flattened). `region` [x0,y0,x1,y1] caps at 4096 px — crop large canvases."
@@ -2078,7 +671,7 @@ impl Atelier {
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.mode.as_deref().unwrap_or("symbol"),
         ))
     }
@@ -2142,11 +735,11 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocContrastCheck>,
     ) -> CallToolResult {
-        res(self.studio().doc_contrast_check(
+        opt_img_result(self.studio().doc_contrast_check(
             &p.doc_id,
             p.frame.unwrap_or(0),
             &p.mode,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.min_ratio.unwrap_or(1.5),
             p.threshold.unwrap_or(128),
             p.out_path.as_deref(),
@@ -2164,7 +757,7 @@ impl Atelier {
             &p.doc_id,
             p.frame,
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.dupe_threshold.unwrap_or(8),
         ))
     }
@@ -2200,7 +793,7 @@ impl Atelier {
             p.frame_a,
             p.frame_b,
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.grid.unwrap_or(false),
             p.render.as_deref().unwrap_or("none"),
             p.out_path.as_deref(),
@@ -2231,7 +824,7 @@ impl Atelier {
             p.tag.as_deref(),
             p.layer,
             &p.mode,
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -2313,7 +906,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|stroke|bezier|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
+        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|stroke|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
     )]
     async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> CallToolResult {
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
@@ -2329,7 +922,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?}; **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?}. All also accept opacity/blend_mode and honour an active doc_select. (Bloom-with-snap stays on doc_glow.)"
+        description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?,shadow_opacity?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?}; **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?}. All also accept opacity/blend_mode and honour an active doc_select. (Bloom-with-snap stays on doc_glow.)"
     )]
     async fn doc_fx(&self, Parameters(p): Parameters<DocFx>) -> CallToolResult {
         res(self
@@ -2342,20 +935,19 @@ impl Atelier {
         description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N to check seamlessness; out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
     )]
     async fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
-        img_result(self.studio().look(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.scale,
-            region(&p.region),
-            p.mode.as_deref().unwrap_or("render"),
-            p.bands.unwrap_or(4),
-            p.grid.unwrap_or(false),
-            p.coords.unwrap_or(false),
-            p.onion.unwrap_or(false),
-            p.max_size,
-            p.tile,
-            p.out_path.as_deref(),
-        ))
+        let opts = atelier_studio::LookOptions {
+            scale: p.scale,
+            region: try_res!(region(&p.region)),
+            mode: p.mode.clone().unwrap_or_default(),
+            bands: p.bands.unwrap_or(0),
+            grid: p.grid.unwrap_or(false),
+            coords: p.coords.unwrap_or(false),
+            onion: p.onion.unwrap_or(false),
+            max_size: p.max_size,
+            tile: p.tile,
+            out_path: p.out_path.clone(),
+        };
+        img_result(self.studio().look(&p.doc_id, p.frame.unwrap_or(0), &opts))
     }
 
     #[tool(
@@ -2365,7 +957,11 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocSelectRender>,
     ) -> CallToolResult {
-        img_result(self.studio().select_render(&p.doc_id, p.scale.unwrap_or(6)))
+        img_result(self.studio().select_render(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.scale.unwrap_or(6),
+        ))
     }
 
     #[tool(
@@ -2385,14 +981,10 @@ impl Atelier {
     )]
     async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
         let studio = self.studio();
-        if let Some(m) = p.alpha.as_deref() {
-            if !matches!(m, "preserve" | "opaque" | "flatten") {
-                return res(Err(format!(
-                    "unknown alpha mode '{m}' — use preserve | opaque | flatten"
-                )));
-            }
-        }
-        let alpha = alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref());
+        let alpha = match alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref()) {
+            Ok(a) => a,
+            Err(e) => return res(Err(e)),
+        };
         let r = studio.snap_palette(
             &p.doc_id,
             p.layer,
@@ -2432,7 +1024,7 @@ impl Atelier {
             p.max_run.unwrap_or(2),
             p.keep_square.unwrap_or(true),
             p.only_color.as_deref().map(rgba),
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -2452,7 +1044,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.rotate.unwrap_or(0.0),
             sx,
             sy,
@@ -2468,9 +1060,12 @@ impl Atelier {
         description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, per-form pillow-shading and mixed light direction (via the doc_form_audit engine), value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
     )]
     async fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> CallToolResult {
-        res(self
-            .studio()
-            .critique(&p.doc_id, p.frame.unwrap_or(0), p.layer, region(&p.region)))
+        res(self.studio().critique(
+            &p.doc_id,
+            p.frame.unwrap_or(0),
+            p.layer,
+            try_res!(region(&p.region)),
+        ))
     }
 
     #[tool(
@@ -2483,7 +1078,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.key_azimuth.unwrap_or(315.0),
             p.key_elevation.unwrap_or(50.0),
             p.key_intensity.unwrap_or(1.0),
@@ -2510,7 +1105,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             palette_list(&p.ramp),
             p.axis.as_deref().unwrap_or("v"),
             p.pattern.as_deref().unwrap_or("bayer4"),
@@ -2598,7 +1193,7 @@ impl Atelier {
             p.mode.as_deref().unwrap_or("from_fill"),
             p.ramp.map(|v| palette_list(&v)),
             p.steps.unwrap_or(2),
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -2612,7 +1207,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            region(&p.region),
+            try_res!(region(&p.region)),
             &p.material,
             rgba(&p.color),
             p.seed.unwrap_or(1),
@@ -2631,7 +1226,7 @@ impl Atelier {
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.layer,
-            region(&p.region),
+            try_res!(region(&p.region)),
         ))
     }
 
@@ -2682,7 +1277,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame.unwrap_or(0),
-            region(&p.region),
+            try_res!(region(&p.region)),
             p.use_selection.unwrap_or(false),
             p.name,
             p.frames.as_deref() == Some("all"),
@@ -2911,12 +1506,7 @@ impl Atelier {
         description = "Build a CONNECTED humanoid figure from named JOINT coordinates — reason in joint space (which you do well) instead of placing every silhouette vertex (which you don't). Each bone is drawn as a tapered capsule (a doc_draw op=stroke ribbon) sharing its endpoints, so the whole body is ONE connected silhouette by construction: no detached limbs, no blocky rect stacks. joints = {\"head\":[x,y],\"shoulder_l\":[x,y],\"shoulder_r\":[x,y],\"elbow_l\":...,\"elbow_r\":...,\"hand_l\":...,\"hand_r\":...,\"hip_l\":...,\"hip_r\":...,\"knee_l\":...,\"knee_r\":...,\"foot_l\":...,\"foot_r\":...} (chest/pelvis derived from the midpoints). Re-pose across frames by calling again with new joints — the base for non-wobbly animation. Tune limb_w/torso_w/head_r to the sprite size."
     )]
     async fn doc_figure(&self, Parameters(p): Parameters<DocFigure>) -> CallToolResult {
-        let joints: std::collections::HashMap<String, (i32, i32)> = p
-            .joints
-            .iter()
-            .filter(|(_, v)| v.len() >= 2)
-            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
-            .collect();
+        let joints = joints_map(&p.joints);
         res(self.studio().figure(
             &p.doc_id,
             p.layer,
@@ -2935,12 +1525,7 @@ impl Atelier {
         description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export op=anim tag=walk."
     )]
     async fn doc_walk(&self, Parameters(p): Parameters<DocWalk>) -> CallToolResult {
-        let joints: std::collections::HashMap<String, (i32, i32)> = p
-            .joints
-            .iter()
-            .filter(|(_, v)| v.len() >= 2)
-            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
-            .collect();
+        let joints = joints_map(&p.joints);
         res(self.studio().walk(
             &p.doc_id,
             p.layer,
@@ -2963,12 +1548,7 @@ impl Atelier {
         description = "GENERATE a full animation cycle for a named GAIT from one standing pose (the same 13 joints as doc_figure) — the moveset generator. `gait`: idle (breathing bob) | run (airborne stride, pumping arms, forward lean) | jump (crouch → rise+tuck → fall → landing absorb) | attack (lead-arm sweep with a lunge) | hurt (recoil and recover). Knees/elbows are solved by 2-bone IK and every frame is the connected-capsule figure, so limbs never wobble or detach. Amplitudes scale from the figure's own leg length × `intensity`, so presets fit any sprite size. Frames are tagged with the gait — one call per gait builds a whole character moveset from the SAME pose (walk has its own tool). Export each with doc_export op=anim tag=<gait>."
     )]
     async fn doc_pose_cycle(&self, Parameters(p): Parameters<DocPoseCycle>) -> CallToolResult {
-        let joints: std::collections::HashMap<String, (i32, i32)> = p
-            .joints
-            .iter()
-            .filter(|(_, v)| v.len() >= 2)
-            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
-            .collect();
+        let joints = joints_map(&p.joints);
         res(self.studio().pose_cycle(
             &p.doc_id,
             p.layer,
@@ -3050,11 +1630,7 @@ impl ServerHandler for Atelier {
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListToolsResult, ErrorData> {
-        let mut tools = self.tool_router.list_all();
-        if !profile_full() {
-            tools.retain(|t| CORE_TOOLS.contains(&t.name.as_ref()));
-        }
-        Ok(ListToolsResult::with_all_items(tools))
+        Ok(ListToolsResult::with_all_items(self.advertised_tools()))
     }
 
     /// Hand-written so we can record each call before delegating to the
@@ -3236,6 +1812,8 @@ pub async fn run_http(
 
 #[cfg(test)]
 mod tests {
+    use super::prompts::PROMPTS;
+    use super::recorder::iso_date;
     use super::*;
 
     #[test]
@@ -3527,6 +2105,26 @@ mod tests {
             names.len(),
             75,
             "total tool count changed — update the docs"
+        );
+        // Both profiles, exercised without touching env.
+        assert_eq!(
+            Atelier::new().with_profile(false).advertised_tools().len(),
+            30
+        );
+        assert_eq!(
+            Atelier::new().with_profile(true).advertised_tools().len(),
+            75
+        );
+        // The nearest doc surface is the in-file get_info instructions string —
+        // it has drifted before; pin its counts too.
+        let instructions = Atelier::new().get_info().instructions.unwrap_or_default();
+        assert!(
+            instructions.contains("30 tools"),
+            "get_info instructions drifted from the core count"
+        );
+        assert!(
+            instructions.contains("75-tool"),
+            "get_info instructions drifted from the full count"
         );
     }
 

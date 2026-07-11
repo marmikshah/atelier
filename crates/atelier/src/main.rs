@@ -41,7 +41,8 @@ ENVIRONMENT:
     ATELIER_HOME             where documents/exports live (default ~/.atelier)
     ATELIER_HTTP             HTTP bind address (alternative to --http)
     ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use
-    ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)";
+    ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)
+    ATELIER_PROFILE          tool profile: core (30 tools, default) or full (all 75)";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -59,6 +60,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("--help") | Some("-h") => {
             println!("{HELP}");
             return Ok(());
+        }
+        // Any other first token that isn't a known server flag is a mistake —
+        // erroring beats silently starting the stdio server (which then blocks
+        // on stdin) under a typo like `atelier serve`.
+        Some(other) if !matches!(other, "--http" | "--record") => {
+            eprintln!("atelier: unknown argument '{other}'\n\n{HELP}");
+            std::process::exit(2);
         }
         _ => {}
     }

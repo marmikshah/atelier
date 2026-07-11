@@ -24,7 +24,7 @@ impl Studio {
     pub fn set_reference(&self, id: &str, path: Option<&str>) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let Some(path) = path else {
-            if let Some(name) = doc.meta.reference.take() {
+            if let Some(name) = doc.set_reference_file(None) {
                 if let Ok(p) = ref_path(&dir, &name) {
                     let _ = std::fs::remove_file(p);
                 }
@@ -36,9 +36,9 @@ impl Studio {
         let (rw, rh) = (img.width(), img.height());
         img.save(dir.join("reference.png"))
             .map_err(|e| e.to_string())?;
-        doc.meta.reference = Some("reference.png".into());
+        doc.set_reference_file(Some("reference.png".into()));
         doc.save(&dir)?;
-        let (cw, ch) = (doc.meta.w, doc.meta.h);
+        let (cw, ch) = (doc.meta().w, doc.meta().h);
         // Aspect-true size suggestions at the canvas dims, so the agent sees a
         // mismatch BEFORE drawing into it.
         let fit_w = ((rw as f64 * ch as f64 / rh as f64).round() as u32).max(1);
@@ -56,11 +56,28 @@ impl Studio {
     /// Load a document's stored reference image.
     fn ref_image(dir: &Path, doc: &Document) -> Result<RgbaImage, String> {
         let name = doc
-            .meta
+            .meta()
             .reference
             .as_ref()
             .ok_or("document has no reference image — doc_set_reference first")?;
         crate::open_bounded(&ref_path(dir, name)?).map_err(|e| format!("reference unreadable: {e}"))
+    }
+
+    /// The shared compare prelude: flatten frame `frame`, load the stored
+    /// reference, strip its backdrop and area-downscale it to canvas size —
+    /// the (canvas, reference-at-canvas-size, doc) every scorer starts from.
+    fn ref_vs_canvas(
+        &self,
+        id: &str,
+        frame: usize,
+    ) -> Result<(RgbaImage, RgbaImage, Document), String> {
+        let (dir, doc) = self.open(id)?;
+        let src = Self::ref_image(&dir, &doc)?;
+        let canvas = doc.analysis_image(None, frame)?;
+        let mut subject = src.clone();
+        raster::remove_background(&mut subject, BG_TOL);
+        let small = raster::downscale_area(&subject, canvas.width(), canvas.height());
+        Ok((canvas, small, doc))
     }
 
     /// Analyze the reference (or an external `path`) as drawing scaffolding:
@@ -86,11 +103,11 @@ impl Studio {
         let total = (rw * rh) as u64;
         let cleared = subject.pixels().filter(|p| p.0[3] == 0).count() as u64
             - src.pixels().filter(|p| p.0[3] == 0).count() as u64;
-        let tw = target_w.unwrap_or(doc.meta.w).max(1);
+        let tw = target_w.unwrap_or(doc.meta().w).max(1);
         let th = ((rh as f64 * tw as f64 / rw.max(1) as f64).round() as u32).max(1);
         // Same 1M-pixel cap as import_clean — an oversized target_w would
         // otherwise allocate an unbounded image in one call.
-        if tw as usize * th as usize > 1_048_576 {
+        if tw as usize * th as usize > crate::MAX_TARGET_PIXELS {
             return Err(format!(
                 "target {}x{} is over the 1M-pixel cap — pass a smaller target_w",
                 tw, th
@@ -98,19 +115,10 @@ impl Studio {
         }
         let small = raster::downscale_area(&subject, tw, th);
         // Frequency-weighted subject palette of the downscaled art.
-        let mut counts: std::collections::HashMap<[u8; 3], u64> = std::collections::HashMap::new();
-        for p in small.pixels().filter(|p| p.0[3] >= 128) {
-            *counts.entry([p.0[0], p.0[1], p.0[2]]).or_insert(0) += 1;
-        }
-        let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
-        let palette = if pairs.is_empty() {
-            Vec::new()
-        } else {
-            raster::median_cut_weighted(&pairs, colors.max(2), &[])
-        };
+        let palette = subject_palette(&small, colors.max(2));
         let pal_json: Vec<Value> = palette.iter().map(|c| json!(c)).collect();
         // Silhouette grid at target size (capped so the text stays readable).
-        let silhouette: Value = if (tw * th) <= 4096 {
+        let silhouette: Value = if ((tw * th) as u64) <= crate::GRID_AREA_CAP {
             let rows: Vec<String> = (0..th)
                 .map(|y| {
                     (0..tw)
@@ -157,13 +165,8 @@ impl Studio {
         mode: &str,
         cells: u32,
     ) -> Result<(Vec<u8>, Value), String> {
-        let (dir, doc) = self.open(id)?;
-        let src = Self::ref_image(&dir, &doc)?;
-        let canvas = doc.analysis_image(None, frame)?;
+        let (canvas, small, doc) = self.ref_vs_canvas(id, frame)?;
         let (cw, ch) = (canvas.width(), canvas.height());
-        let mut subject = src.clone();
-        raster::remove_background(&mut subject, BG_TOL);
-        let small = raster::downscale_area(&subject, cw, ch);
         // Silhouette IoU over alpha masks.
         let (mut inter, mut union) = (0u64, 0u64);
         for (a, b) in canvas.pixels().zip(small.pixels()) {
@@ -218,17 +221,8 @@ impl Studio {
             .map(|(d, r)| json!({"rect": r, "mean_delta": (d * 1000.0).round() / 1000.0}))
             .collect();
         // Reference colours the doc palette can't reach.
-        let mut counts: std::collections::HashMap<[u8; 3], u64> = std::collections::HashMap::new();
-        for p in small.pixels().filter(|p| p.0[3] >= 128) {
-            *counts.entry([p.0[0], p.0[1], p.0[2]]).or_insert(0) += 1;
-        }
-        let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
-        let ref_pal = if pairs.is_empty() {
-            Vec::new()
-        } else {
-            raster::median_cut_weighted(&pairs, 8, &[])
-        };
-        let doc_pal: Vec<[u8; 4]> = if doc.meta.palette.is_empty() {
+        let ref_pal = subject_palette(&small, 8);
+        let doc_pal: Vec<[u8; 4]> = if doc.meta().palette.is_empty() {
             canvas
                 .pixels()
                 .filter(|p| p.0[3] > 0)
@@ -237,7 +231,7 @@ impl Studio {
                 .into_iter()
                 .collect()
         } else {
-            doc.meta.palette.clone()
+            doc.meta().palette.clone()
         };
         let missing: Vec<Value> = ref_pal
             .iter()
@@ -284,16 +278,7 @@ impl Studio {
                 out
             }
         };
-        let scaled = if sc > 1 {
-            image::imageops::resize(
-                &img,
-                img.width() * sc,
-                img.height() * sc,
-                image::imageops::FilterType::Nearest,
-            )
-        } else {
-            img
-        };
+        let scaled = super::scale_nn(&img, sc);
         let mean_delta = if total_n == 0 {
             Value::Null
         } else {
@@ -321,13 +306,8 @@ impl Studio {
     /// converts the loop from "a number moved" to "this exact pixel is too dark —
     /// lighten it", so the agent can converge the last 5%.
     pub fn diff_map(&self, id: &str, frame: usize, top: usize) -> Result<(Vec<u8>, Value), String> {
-        let (dir, doc) = self.open(id)?;
-        let src = Self::ref_image(&dir, &doc)?;
-        let canvas = doc.analysis_image(None, frame)?;
+        let (canvas, small, _doc) = self.ref_vs_canvas(id, frame)?;
         let (cw, ch) = (canvas.width(), canvas.height());
-        let mut subject = src.clone();
-        raster::remove_background(&mut subject, BG_TOL);
-        let small = raster::downscale_area(&subject, cw, ch);
         let mut heat = RgbaImage::from_pixel(cw, ch, Rgba([0, 0, 0, 0]));
         // (ΔE, x, y, ΔL, ΔC, chroma-weighted ΔH magnitude)
         let mut worst: Vec<(f32, u32, u32, f32, f32, f32)> = Vec::new();
@@ -336,10 +316,10 @@ impl Studio {
         // One dominance rule drives BOTH the heat colour and the fix string, so
         // they can never contradict; hue is chroma-weighted so it vanishes on
         // near-gray pixels (where an OKLCh hue angle is meaningless).
-        let classify = |dl: f32, dc: f32, hue: f32| -> (bool, f32) {
+        let classify = |dl: f32, dc: f32, hue: f32| -> bool {
             let value_err = dl.abs();
             let colour_err = dc.abs() + hue;
-            (value_err >= colour_err, value_err.max(colour_err))
+            value_err >= colour_err
         };
         for y in 0..ch {
             for x in 0..cw {
@@ -371,7 +351,7 @@ impl Studio {
                 sum += de as f64;
                 n += 1;
                 maxd = maxd.max(de);
-                let (value_dom, _) = classify(dl, dc, hue);
+                let value_dom = classify(dl, dc, hue);
                 let i = ((de / 0.2).clamp(0.0, 1.0) * 255.0) as u8;
                 let px = if value_dom {
                     if dl > 0.0 {
@@ -383,7 +363,9 @@ impl Studio {
                     [0, i, 0, 255] // wrong colour (chroma/hue)
                 };
                 heat.put_pixel(x, y, Rgba(px));
-                worst.push((de, x, y, dl, dc, hue));
+                if de > 0.02 {
+                    worst.push((de, x, y, dl, dc, hue));
+                }
             }
         }
         let iou = if union == 0 {
@@ -396,9 +378,8 @@ impl Studio {
         let worst_pixels: Vec<Value> = worst
             .iter()
             .take(top)
-            .filter(|w| w.0 > 0.02)
             .map(|&(de, x, y, dl, dc, hue)| {
-                let (value_dom, _) = classify(dl, dc, hue);
+                let value_dom = classify(dl, dc, hue);
                 let mut fix: Vec<&str> = Vec::new();
                 if value_dom {
                     if dl.abs() > 0.02 {
@@ -423,16 +404,7 @@ impl Studio {
             })
             .collect();
         let sc = preview_scale(cw, ch);
-        let scaled = if sc > 1 {
-            image::imageops::resize(
-                &heat,
-                cw * sc,
-                ch * sc,
-                image::imageops::FilterType::Nearest,
-            )
-        } else {
-            heat
-        };
+        let scaled = super::scale_nn(&heat, sc);
         let mean = if n == 0 {
             Value::Null
         } else {
@@ -473,6 +445,21 @@ fn ref_path(dir: &Path, name: &str) -> Result<std::path::PathBuf, String> {
 }
 
 /// Downscale (area-average) so the longest side fits under `max`; smaller
+/// Frequency-weighted subject palette: count the (half-)opaque colours and
+/// median-cut them, so the subject owns every slot. Empty subject = empty palette.
+fn subject_palette(img: &RgbaImage, colors: usize) -> Vec<[u8; 4]> {
+    let mut counts: std::collections::HashMap<[u8; 3], u64> = std::collections::HashMap::new();
+    for p in img.pixels().filter(|p| p.0[3] >= 128) {
+        *counts.entry([p.0[0], p.0[1], p.0[2]]).or_insert(0) += 1;
+    }
+    let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
+    if pairs.is_empty() {
+        Vec::new()
+    } else {
+        raster::median_cut_weighted(&pairs, colors, &[])
+    }
+}
+
 /// images pass through untouched.
 fn fit_under(img: &RgbaImage, max: u32) -> RgbaImage {
     let longest = img.width().max(img.height());
@@ -493,6 +480,21 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-ref-test-{tag}"));
         let _ = std::fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    /// Paint the reference's 8x8 block footprint (x 4..=11) in `color`.
+    fn block(s: &Studio, color: [u8; 4]) {
+        s.doc_draw(
+            "d",
+            0,
+            0,
+            "rect",
+            json!({"x0": 4, "y0": 0, "x1": 11, "y1": 7, "color": color, "fill": true})
+                .as_object()
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
     }
 
     /// 16x8 source: flat grey backdrop with a red 8x8 block in the middle.
@@ -535,15 +537,13 @@ mod tests {
         let p = sample_png("cmp");
         s.set_reference("d", p.to_str()).unwrap();
         // Faithful recreation: the same red block, backdrop left transparent.
-        s.doc_rect("d", 0, 0, 4, 0, 11, 7, [200, 30, 30, 255], true, 1)
-            .unwrap();
+        block(&s, [200, 30, 30, 255]);
         let (png, good) = s.ref_compare("d", 0, "side_by_side", 4).unwrap();
         assert!(!png.is_empty());
         let iou = good["silhouette_iou"].as_f64().unwrap();
         assert!(iou > 0.9, "faithful copy should score high, got {iou}");
         // A wrong-colour copy keeps the silhouette but raises the colour delta.
-        s.doc_rect("d", 0, 0, 4, 0, 11, 7, [30, 30, 200, 255], true, 1)
-            .unwrap();
+        block(&s, [30, 30, 200, 255]);
         let (_png, bad) = s.ref_compare("d", 0, "overlay", 4).unwrap();
         assert!(bad["mean_delta"].as_f64().unwrap() > 0.1);
         assert!(!bad["missing_reference_colors"]
@@ -559,8 +559,7 @@ mod tests {
         let p = sample_png("diff");
         s.set_reference("d", p.to_str()).unwrap();
         // Same silhouette as the reference's red block, but darker -> "lighten".
-        s.doc_rect("d", 0, 0, 4, 0, 11, 7, [120, 18, 18, 255], true, 1)
-            .unwrap();
+        block(&s, [120, 18, 18, 255]);
         let (png, r) = s.diff_map("d", 0, 10).unwrap();
         assert!(!png.is_empty());
         assert!(
