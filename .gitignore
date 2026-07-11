@@ -14,3 +14,6 @@ docs/ART-QUALITY-REVIEW.md
 
 # Libraries don't commit lockfiles — the consumer resolves.
 Cargo.lock
+
+# Benchmark tool-call traces are cached locally, not committed.
+docs/showcase/traces/

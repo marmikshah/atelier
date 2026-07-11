@@ -7,10 +7,11 @@ back as vision input, so the model sees and corrects its own work. Each brief is
 a ~1-second pixel-art animation loop.
 
 The run records OBJECTIVE metrics only — wall-clock time, tool calls, look
-iterations, API round-trips, and prompt/completion/total tokens — plus the full
-tool-call trace. No quality judgement is made; the exported art and the numbers
-are published for the reader to judge. Results are written to
-docs/showcase/runs.json, which the benchmark page (index.html) reads.
+iterations, API round-trips, and prompt/completion/total tokens. No quality
+judgement is made; the exported art and the numbers are published for the reader
+to judge. Results are written to docs/showcase/runs.json, which the benchmark
+page reads; a compact tool-call trace is cached locally under
+docs/showcase/traces/ (gitignored) for debugging.
 
   # one model, every brief, into the live benchmark
   POE_API_KEY=... tools/benchmark/modelbench.py run \\
@@ -319,8 +320,15 @@ def run_brief(args, key, binary, kind):
                 except Exception as e:
                     text, images = f"error: {e}", []
                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": text[:6000]})
-                trace.append({"n": metrics["tool_calls"], "tool": name, "args": a,
-                              "ok": not text.startswith("error:")})
+                # Compact trace: tool name + op (for the dispatch tools) + an
+                # error flag. Full args (point lists, paint grids) would bloat
+                # the file into thousands of lines for no added transparency.
+                entry = {"n": metrics["tool_calls"], "tool": name}
+                if isinstance(a, dict) and a.get("op"):
+                    entry["op"] = a["op"]
+                if text.startswith("error:"):
+                    entry["error"] = True
+                trace.append(entry)
                 pending += images
                 print(f"  [{step}] {name}", file=sys.stderr)
             for b64 in pending[-2:]:
@@ -346,15 +354,15 @@ def _record(args, kind, out, spec, metrics, final, trace):
     if anim:
         (SHOWCASE / f"{name}.gif").write_bytes(gif_src.read_bytes())
     (TRACES / f"{name}.trace.json").write_text(json.dumps(
-        {"model": args.label, "brief": kind, **metrics, "final": final, "trace": trace}, indent=1))
+        {"model": args.label, "brief": kind, **metrics, "final": final[:600], "trace": trace},
+        separators=(",", ":")))
     for f in (png_src, gif_src):
         f.unlink(missing_ok=True)
     print(f"== {args.label} / {kind}: {metrics['tool_calls']} calls, "
           f"{metrics['look_iterations']} looks, {metrics['total_tokens']} tokens, "
           f"{metrics['duration_ms']}ms", file=sys.stderr)
     return {"brief": kind, "model": args.label, "vendor": args.vendor,
-            "base": f"docs/showcase/{name}", "anim": anim,
-            "trace": f"docs/showcase/traces/{name}.trace.json", **metrics}
+            "base": f"docs/showcase/{name}", "anim": anim, **metrics}
 
 
 # --------------------------------------------------------------------------- #
