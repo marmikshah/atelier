@@ -39,27 +39,3 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: atelier-${{ github.ref_name }}-${{ matrix.target }}.*
-
-  # Silently skips when CARGO_REGISTRY_TOKEN is unset (secrets can't be read in
-  # `if:` directly, so route it through env — the documented indirection).
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    env:
-      HAS_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
-    if: ${{ needs.build.result == 'success' }}
-    steps:
-      - uses: actions/checkout@v5
-        if: env.HAS_TOKEN == 'true'
-      - uses: dtolnay/rust-toolchain@stable
-        if: env.HAS_TOKEN == 'true'
-      # Workspace crates must publish in dependency order; crates.io needs a
-      # moment to index each before its dependents can resolve it.
-      - run: |
-          for crate in atelier-core atelier-studio atelier-mcp atelier; do
-            cargo publish -p "$crate"
-            sleep 45
-          done
-        if: env.HAS_TOKEN == 'true'
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
