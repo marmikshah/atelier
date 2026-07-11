@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>atelier — architecture & getting started</title>
+<meta name="description" content="How atelier is built — the four-crate dependency tower, the life of a tool call, and a fifteen-minute onboarding path.">
+<style>
+  :root{
+    --bg:#14161d; --card:#1b1e28; --card2:#232735;
+    --ink:#e8e9f0; --muted:#a7abbb; --faint:#6f7486;
+    --line:#2c3040; --accent:#e0a33c; --accent-soft:#e0a33c24;
+    --teal:#57b4c4; --teal-soft:#57b4c41f; --amber:#e0a33c;
+    --code-bg:#101219; --code-ink:#c9ccd9;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f0f1ec; --card:#e7e8e1; --card2:#dcded4;
+      --ink:#191b14; --muted:#4c4f43; --faint:#7d8071;
+      --line:#c9cbbd; --accent:#a8741a; --accent-soft:#a8741a1a;
+      --teal:#2f7f8e; --teal-soft:#2f7f8e1a; --amber:#a8741a;
+      --code-bg:#191b14; --code-ink:#e7e8e1;
+    }
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans);margin:0;padding:0 20px 96px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto}
+  .prose{max-width:68ch}
+  h1,h2,h3,.eyebrow,.chip,th,.steplabel{font-family:var(--mono)}
+  h1{font-size:2rem;line-height:1.15;margin:.4rem 0 .6rem;letter-spacing:-.01em;text-wrap:balance}
+  h2{font-size:1.15rem;text-transform:uppercase;letter-spacing:.08em;margin:0 0 1rem}
+  h3{font-size:.95rem;margin:1.6rem 0 .5rem}
+  section{margin-top:4.5rem}
+  p{margin:.7rem 0}
+  .eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);font-weight:600}
+  .muted{color:var(--muted)}
+  .px-rule{height:6px;margin:2.2rem 0 0;border:0;width:180px;opacity:.85;background:repeating-linear-gradient(90deg,var(--accent) 0 6px,transparent 6px 12px,var(--teal) 12px 18px,transparent 18px 30px)}
+  header.page{padding-top:56px;display:flex;gap:28px;align-items:flex-start}
+  .home{font-family:var(--mono);font-size:.76rem;text-decoration:none;color:var(--muted);border:1px solid var(--line);background:var(--card);padding:5px 12px;border-radius:3px;display:inline-block;margin-top:28px}
+  .home:hover{border-color:var(--accent);color:var(--accent)}
+  .sprite{width:72px;height:72px;position:relative;flex:none;margin-top:10px}
+  .sprite i{position:absolute;width:9px;height:9px;left:0;top:0;display:block}
+  nav.toc{margin-top:2.6rem;display:flex;flex-wrap:wrap;gap:8px}
+  nav.toc a{font-family:var(--mono);font-size:.78rem;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--card);padding:5px 12px;border-radius:3px}
+  nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+  code{font-family:var(--mono);font-size:.86em;background:var(--card2);padding:.1em .35em;border-radius:3px}
+  pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:4px;overflow-x:auto;font-size:.83rem;line-height:1.6;border-left:3px solid var(--accent)}
+  pre code{background:none;padding:0;font-size:inherit}
+  pre .c{opacity:.55}
+  .tower{display:flex;flex-direction:column;margin-top:1.4rem}
+  .crate{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:16px 20px}
+  .crate .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .crate .name{font-family:var(--mono);font-weight:700;font-size:1rem}
+  .crate .role{color:var(--muted);font-size:.88rem}
+  .crate.shell{border-left:4px solid var(--accent)}
+  .crate.facade{border-left:4px solid var(--teal)}
+  .crate.core{border-left:4px solid var(--faint)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:.72rem;padding:3px 9px;border-radius:3px;background:var(--card2);color:var(--ink);border:1px solid var(--line)}
+  .chip.hot{background:var(--accent-soft);border-color:transparent;color:var(--accent);font-weight:600}
+  .chip.cool{background:var(--teal-soft);border-color:transparent;color:var(--teal);font-weight:600}
+  .dep{align-self:center;text-align:center;color:var(--faint);font-family:var(--mono);font-size:.72rem;padding:6px 0;letter-spacing:.08em}
+  .dep::before{content:"▼ ";color:var(--accent)}
+  ol.flow{list-style:none;margin:1.4rem 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ol.flow li{display:grid;grid-template-columns:44px 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:13px 16px}
+  .steplabel{color:var(--accent);font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums;padding-top:1px}
+  ol.flow .where{display:block;font-size:.78rem;color:var(--faint);font-family:var(--mono);margin-top:3px}
+  .tablewrap{overflow-x:auto;margin-top:1rem}
+  table{border-collapse:collapse;width:100%;font-size:.9rem}
+  th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);font-weight:600;padding:8px 14px 8px 0;border-bottom:2px solid var(--line)}
+  td{padding:8px 14px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  td:first-child code{white-space:nowrap}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:1.2rem}
+  @media (max-width:700px){.two{grid-template-columns:1fr}header.page{flex-direction:column;gap:8px}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:16px 18px}
+  .card h3{margin-top:0}
+  .card ul{margin:.4rem 0 0;padding-left:1.1rem}
+  .card li{margin:.3rem 0}
+  a{color:var(--teal)}
+  footer{border-top:1px solid var(--line);margin-top:5rem;padding:2rem 0 0;color:var(--faint);font-family:var(--mono);font-size:.72rem;text-align:center;line-height:1.8}
+  footer a{color:var(--teal)}
+
+  .ladder{display:flex;flex-direction:column;gap:0;margin-top:.8rem}
+  .rung{display:grid;grid-template-columns:110px 1fr;gap:14px;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:4px;position:relative;margin-top:10px}
+  .rung:first-child{margin-top:0}
+  .rung::before{content:"";position:absolute;left:24px;top:-11px;width:2px;height:11px;background:var(--accent);opacity:.6}
+  .rung:first-child::before{display:none}
+  .rt{font-family:var(--mono, ui-monospace, Menlo, Consolas, monospace);font-weight:700;font-size:.82rem;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+  .rd{font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="home" href="./">&larr; atelier</a>
+<header class="page">
+  <div class="sprite" id="sprite" aria-hidden="true"></div>
+  <div>
+    <span class="eyebrow">architecture &amp; onboarding</span>
+    <h1>atelier: a pixel-art editor with no screen</h1>
+    <p class="prose muted">Aseprite-as-an-API. One static Rust binary that speaks MCP; an agent creates layered, animated documents, draws into them, <em>looks</em> at the result, and exports engine-ready art. No network, no keys, fully deterministic.</p>
+    <hr class="px-rule">
+  </div>
+</header>
+
+<nav class="toc" aria-label="sections">
+  <a href="#unit">the atom</a>
+  <a href="#idea">the idea</a>
+  <a href="#tower">the four crates</a>
+  <a href="#flow">life of a tool call</a>
+  <a href="#start">start here</a>
+  <a href="#reading">reading order</a>
+  <a href="#change">where to change what</a>
+</nav>
+
+<section id="unit">
+  <h2>The smallest unit — two atoms, one system</h2>
+  <p class="prose">Understand these two and every file in the repo reads itself. Atelier has a <strong>data atom</strong> and a <strong>behavior atom</strong>; the whole product is the two of them composed upward.</p>
+
+  <div class="two">
+    <div class="card">
+      <h3>The data atom: the cel</h3>
+      <p class="muted" style="margin-top:0">One RGBA image at one <code>(layer, frame)</code> coordinate.</p>
+      <ul>
+        <li>A <code>Document</code> is just metadata plus a map: <code>cels: HashMap&lt;(layer, frame), (x, y, RgbaImage)&gt;</code> — <span class="muted">document/mod.rs</span></li>
+        <li>Everything you ever <em>see</em> is a fold over that map: <code>flatten(frame)</code> composites the visible layers&rsquo; cels; exports walk frames of flattens; <code>frame_diff</code> compares two flattens</li>
+        <li>On disk a cel is literally one PNG: <code>documents/&lt;id&gt;/cels/L&lt;layer&gt;_F&lt;frame&gt;.png</code></li>
+        <li>The one invariant: when layers/frames reorder, the cel map must move in lock-step — guarded by exactly two choke points, <code>remap_cel_layers</code> and <code>shift_cel_frames</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>The behavior atom: the op</h3>
+      <p class="muted" style="margin-top:0">One JSON object describing one edit to one cel.</p>
+      <ul>
+        <li><code>{"op":"rect","x0":1,"y0":1,"x1":8,"y1":8,"color":[r,g,b]}</code> — that shape is the entire mutation language</li>
+        <li>The registry says what each op takes (<code>batch_op_keys</code>), <code>validate_batch_op</code> rejects unknown keys and malformed colours loudly, <code>apply_op</code> executes — <span class="muted">document/batch.rs</span></li>
+        <li>Every mutating tool bottoms out here: <code>doc_draw</code> and <code>doc_fx</code> are one op, <code>doc_batch</code> is many, and even the fancy generators (rigs, tiles, particles) are Rust that emits the same primitive edits</li>
+        <li>Because an op is data, it is recordable — which is what makes the next rung possible</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2rem">The composition ladder</h3>
+  <div class="ladder">
+    <div class="rung"><span class="rt">pixel</span><span class="rd">an RGBA value in a cel&rsquo;s grid — all math on it lives in <code>raster/</code></span></div>
+    <div class="rung"><span class="rt">cel</span><span class="rd">a grid of pixels at <code>(layer, frame)</code> — the unit ops edit and PNGs store</span></div>
+    <div class="rung"><span class="rt">document</span><span class="rd">meta + the cel map — layers stack per frame, frames sequence into animation</span></div>
+    <div class="rung"><span class="rt">op</span><span class="rd">one validated JSON edit applied to one cel — the mutation language</span></div>
+    <div class="rung"><span class="rt">tool call</span><span class="rd">parse params &rarr; Studio method &rarr; ops (+ a <em>look</em> back: inline PNG, stats, critique)</span></div>
+    <div class="rung"><span class="rt">recipe</span><span class="rd">the ordered tool calls of a session — recorded by the server, replayable by <code>atelier replay</code>; a document <em>is</em> the product of its recipe</span></div>
+  </div>
+  <p class="prose muted">So the full flow is not a separate design — it is this ladder read top to bottom. The see-and-critique loop (<code>doc_look</code>, <code>doc_critique</code>, <code>doc_ref_compare</code>) exists because the agent driving the ops is nearly blind: draw &rarr; look &rarr; fix, measured instead of remembered.</p>
+</section>
+
+
+<section id="idea" class="prose">
+  <h2>What that buys: replayable art</h2>
+  <p><strong>Every document is an ordered sequence of tool calls.</strong> Draw a sprite through the API and the session can be recorded as a <em>recipe</em> — a JSON list of steps — and replayed byte-for-byte later. The files in <code>docs/examples/*.json</code> are exactly that: they are the brand art <em>and</em> the integration tests (<code>atelier replay</code> runs them against a real server).</p>
+  <p>The second idea is the <strong>see-and-critique loop</strong>. The model drawing the art is nearly blind, so the API is full of eyes: <code>doc_look</code> returns the frame as an inline PNG plus value statistics, <code>doc_critique</code> names failure modes, <code>doc_ref_compare</code> scores the canvas against a reference image. Draw → look → fix, measured instead of remembered.</p>
+  <p>State lives on disk under <code>~/.atelier</code> (override: <code>ATELIER_HOME</code>): one directory per document holding <code>doc.json</code> (structure) plus one PNG per <em>cel</em> — the image at one (layer, frame) coordinate.</p>
+</section>
+
+<section id="tower">
+  <h2>The four crates — a strict dependency tower</h2>
+  <p class="prose">Functional core, imperative shell. Everything below <code>atelier-mcp</code> is synchronous, deterministic, and knows nothing about MCP or tokio. Dependencies point one way only.</p>
+
+  <div class="tower">
+    <div class="crate shell">
+      <div class="head"><span class="name">atelier</span><span class="role">the binary — arg parsing, daemon installer, replay runner</span></div>
+      <div class="chips">
+        <span class="chip">main.rs · flags &amp; transports</span>
+        <span class="chip">service.rs · launchd / systemd install</span>
+        <span class="chip">replay.rs · runs recipes against a child server</span>
+      </div>
+    </div>
+    <div class="dep">depends on</div>
+    <div class="crate shell">
+      <div class="head"><span class="name">atelier-mcp</span><span class="role">the imperative shell — rmcp <code>#[tool]</code> router over stdio + HTTP</span></div>
+      <div class="chips">
+        <span class="chip hot">server/mod.rs · 75 tools, parse → Studio → format</span>
+        <span class="chip">server/params.rs · request schemas</span>
+        <span class="chip">server/recorder.rs · session → recipe</span>
+        <span class="chip">server/resources.rs · browse docs/renders</span>
+        <span class="chip">server/prompts.rs · packaged prompts</span>
+        <span class="chip">recipe.rs · the Recipe/Step contract</span>
+      </div>
+    </div>
+    <div class="dep">depends on</div>
+    <div class="crate facade">
+      <div class="head"><span class="name">atelier-studio</span><span class="role">the <code>Studio</code> facade — the library API, one method per tool</span></div>
+      <div class="chips">
+        <span class="chip cool">lib.rs · store, exports, draw/fx dispatch, selection</span>
+        <span class="chip">craft.rs · checkpoints, import, generators</span>
+        <span class="chip">view.rs · look / select_render / contact sheet</span>
+        <span class="chip">rig.rs · figure / walk / pose_cycle</span>
+        <span class="chip">tiles.rs · wang &amp; blob autotiles</span>
+        <span class="chip">analysis.rs · critique, audits, reports</span>
+        <span class="chip">reference.rs · ref compare loop</span>
+        <span class="chip">set.rs · multi-document families</span>
+      </div>
+    </div>
+    <div class="dep">depends on</div>
+    <div class="crate core">
+      <div class="head"><span class="name">atelier-core</span><span class="role">the functional core — document model + raster math, no I/O beyond its own files</span></div>
+      <div class="chips">
+        <span class="chip">document/mod.rs · types, persistence, layers/frames</span>
+        <span class="chip">document/draw · primitives</span>
+        <span class="chip">document/fx · effects</span>
+        <span class="chip">document/timeline · tween, keyframes</span>
+        <span class="chip">document/region · clipboard, transform</span>
+        <span class="chip">document/render · flatten + read-only analysis</span>
+        <span class="chip">document/export · sheet / GIF / APNG</span>
+        <span class="chip hot">document/batch · the op registry (DRAW_OPS / FX_OPS)</span>
+        <span class="chip">raster/ · colour · noise · transform · blend</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="prose muted" style="margin-top:1rem">By default the server <em>advertises</em> a 30-tool core profile (<code>ATELIER_PROFILE=full</code> advertises all 75). That filter is discovery-only — every tool always executes, so replay always works. Both counts are pinned by tests; the docs cannot silently drift.</p>
+</section>
+
+<section id="flow">
+  <h2>Life of one tool call</h2>
+  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 75 tools:</p>
+  <ol class="flow">
+    <li><span class="steplabel">1</span><div>Transport receives the call — stdio or streamable HTTP at <code>/mcp</code>, one shared router.<span class="where">atelier-mcp/src/server/mod.rs · run / run_http</span></div></li>
+    <li><span class="steplabel">2</span><div><code>call_tool</code> dispatches; if recording is on, the successful step is appended to the recipe file.<span class="where">server/mod.rs + server/recorder.rs</span></div></li>
+    <li><span class="steplabel">3</span><div>The tool method parses params and calls exactly one <code>Studio</code> method. No business logic lives here.<span class="where">server/mod.rs · async fn doc_draw</span></div></li>
+    <li><span class="steplabel">4</span><div><code>Studio::doc_draw</code> checks the op against core's <code>DRAW_OPS</code> partition and routes into the batch pipeline, honouring any active selection mask.<span class="where">atelier-studio/src/lib.rs · doc_draw → doc_batch → edit_masked</span></div></li>
+    <li><span class="steplabel">5</span><div>The document loads from disk, <code>validate_batch_op</code> rejects unknown keys/malformed colours loudly, then <code>apply_op</code> runs the edit.<span class="where">atelier-core/src/document/{mod,batch}.rs</span></div></li>
+    <li><span class="steplabel">6</span><div>The op body is pixel math on the cel — lines, fills, blends, colour spaces.<span class="where">atelier-core/src/document/draw.rs → raster/</span></div></li>
+    <li><span class="steplabel">7</span><div>The document saves (<code>doc.json</code> + cel PNGs) and a change ack — pixel count + bbox, often an inline PNG — travels back up unchanged.<span class="where">document/mod.rs · save → back through Studio → JSON out</span></div></li>
+  </ol>
+</section>
+
+<section id="start">
+  <h2>Start here — fifteen minutes</h2>
+  <p class="prose"><strong>Everything is a <code>make</code> target; never run ad-hoc scripts.</strong> <code>make help</code> lists them all.</p>
+
+<pre><code><span class="c"># 1 · clone, wire the git hooks once, prove the tree is green</span>
+make hooks
+make pre-commit-checks && make test
+
+<span class="c"># 2 · watch it draw — replay a shipped recipe into an isolated home</span>
+make release
+./target/release/atelier replay docs/examples/water-tile.json --home /tmp/atelier-demo
+
+<span class="c"># 3 · run it as a real MCP server</span>
+make stdio            <span class="c"># stdio transport (what clients spawn)</span>
+make run              <span class="c"># or HTTP at 127.0.0.1:8765/mcp</span>
+claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
+
+<span class="c"># 4 · first session, from the client side</span>
+<span class="c">#     doc_create → doc_draw / doc_batch → doc_look → doc_export</span>
+<span class="c">#     look after every burst of edits; export op=sheet|anim|tileset</span></code></pre>
+
+  <div class="two">
+    <div class="card">
+      <h3>make targets</h3>
+      <div class="tablewrap"><table>
+        <tr><td><code>run</code> / <code>stdio</code></td><td>HTTP / stdio server</td></tr>
+        <tr><td><code>test</code></td><td>the full suite (229 tests)</td></tr>
+        <tr><td><code>pre-commit-checks</code></td><td>fmt + clippy gate (hooks run this)</td></tr>
+        <tr><td><code>branding</code></td><td>replay every example recipe</td></tr>
+        <tr><td><code>release</code> / <code>clean</code></td><td>optimized binary / wipe</td></tr>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>env vars (all optional, all in .env.example)</h3>
+      <div class="tablewrap"><table>
+        <tr><td><code>ATELIER_HOME</code></td><td>where documents live (default <code>~/.atelier</code>)</td></tr>
+        <tr><td><code>ATELIER_PROFILE</code></td><td><code>full</code> advertises all 75 tools</td></tr>
+        <tr><td><code>ATELIER_HTTP</code></td><td>HTTP bind address</td></tr>
+        <tr><td><code>ATELIER_RECORD</code></td><td>record the session into a recipe</td></tr>
+        <tr><td><code>ATELIER_ALLOWED_HOSTS</code></td><td>extra Host headers for LAN use</td></tr>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section id="reading" class="prose">
+  <h2>Reading order</h2>
+  <p>Shortest path to a working mental model — top-down, following one call:</p>
+  <p><strong>1.</strong> A recipe in <code>docs/examples/</code> (pick <code>water-tile.json</code>, 18 steps) — it reads as a narrated session and shows what the tools <em>feel</em> like.<br>
+  <strong>2.</strong> <code>atelier-mcp/src/server/mod.rs</code> — skim the <code>#[tool]</code> descriptions; they are the product spec.<br>
+  <strong>3.</strong> <code>atelier-studio/src/lib.rs</code> — the <code>Studio</code> struct, <code>open</code>/<code>edit_masked</code>/<code>change_ack</code>: the shape every operation shares.<br>
+  <strong>4.</strong> <code>atelier-core/src/document/mod.rs</code> — <code>Document</code>, <code>DocMeta</code>, the cel map, and the two invariant choke points (<code>remap_cel_layers</code>, <code>shift_cel_frames</code>).<br>
+  <strong>5.</strong> <code>docs/ARCHITECTURE.md</code> last — it will now read as confirmation, not introduction.</p>
+</section>
+
+<section id="change">
+  <h2>Where to change what</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Add a drawing / fx op</h3>
+      <ul>
+        <li><code>document/batch.rs</code> — key table in <code>batch_op_keys</code>, arm in <code>apply_op_raw</code>, add to <code>DRAW_OPS</code> or <code>FX_OPS</code></li>
+        <li>op body beside its kin in <code>document/draw.rs</code> or <code>fx.rs</code></li>
+        <li>mention it in the <code>doc_draw</code>/<code>doc_fx</code>/<code>doc_batch</code> description strings</li>
+        <li>a drift test already asserts the partition names real ops</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Add a whole tool</h3>
+      <ul>
+        <li>Studio method first (pick the right studio module), tests beside it</li>
+        <li>param struct in <code>server/params.rs</code>, thin <code>#[tool]</code> method in <code>server/mod.rs</code></li>
+        <li>decide: core profile? add to <code>CORE_TOOLS</code></li>
+        <li>the count-pin test fails until README / TOOLS.md / .env.example counts are updated — on purpose</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Pixel math</h3>
+      <ul>
+        <li><code>raster/colour.rs</code> — OKLab/HSL, ΔE, ramps, quantisation</li>
+        <li><code>raster/noise.rs</code> — easing, fBm/perlin, dither patterns</li>
+        <li><code>raster/transform.rs</code> — affine, scale2x, IK, distance fields</li>
+        <li>pure functions, no Document — test them directly</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>House rules</h3>
+      <ul>
+        <li><code>Result</code> over panic; unknown strings error loudly, never default silently</li>
+        <li>tests inline as <code>#[cfg(test)]</code>, next to the code</li>
+        <li>master only; PRs born draft; <code>make pre-commit-checks && make test</code> before <code>gh pr ready</code></li>
+        <li>if it can be a deletion, it is the best change</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</div>
+
+
+<footer>
+  <div>drawn from the source on <a href="https://github.com/marmikshah/atelier">github.com/marmikshah/atelier</a> · MIT ·
+  <a href="https://github.com/marmikshah/atelier/blob/master/docs/ARCHITECTURE.md">ARCHITECTURE.md</a> ·
+  <a href="https://github.com/marmikshah/atelier/blob/master/docs/TOOLS.md">TOOLS.md</a></div>
+</footer>
+
+<script>
+  // 8×8 brush sprite, drawn as pixels — the subject drawing itself.
+  (function () {
+    const grid = [
+      "......mm",
+      "....mMMm",
+      "...mMMm.",
+      "..tTTm..",
+      ".tTTt...",
+      ".tTt....",
+      "tTt.....",
+      "tt......",
+    ];
+    const colors = {
+      m: "var(--accent-soft)", M: "var(--accent)",
+      t: "var(--teal-soft)",   T: "var(--teal)",
+    };
+    const holder = document.getElementById("sprite");
+    const px = 9;
+    grid.forEach((row, y) => {
+      [...row].forEach((ch, x) => {
+        if (ch === ".") return;
+        const dot = document.createElement("i");
+        dot.style.transform = `translate(${x * px}px, ${y * px}px)`;
+        dot.style.background = colors[ch];
+        holder.appendChild(dot);
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
