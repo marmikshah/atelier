@@ -160,6 +160,22 @@ fn remap_move(old: usize, from: usize, to: usize) -> usize {
 /// Default per-frame duration for a freshly created frame (milliseconds).
 pub const DEFAULT_FRAME_MS: u32 = 100;
 
+/// Resolve an optional inclusive region against a w×h canvas: clamp to bounds
+/// (normalising reversed corners), default to the full canvas. A region left
+/// empty by clamping is a caller mistake and errors loudly — the one policy
+/// every region-taking op shares, replacing a mix of errors and silent no-ops.
+fn resolve_region(
+    region: Option<(i32, i32, i32, i32)>,
+    w: u32,
+    h: u32,
+) -> Result<(i32, i32, i32, i32), String> {
+    match region {
+        Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
+            .ok_or_else(|| "region is empty after clamping to the canvas".to_string()),
+        None => Ok((0, 0, w as i32 - 1, h as i32 - 1)),
+    }
+}
+
 impl Document {
     pub fn new(name: &str, w: u32, h: u32) -> Document {
         let meta = DocMeta {
@@ -415,6 +431,20 @@ impl Document {
     }
 
     /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
+    /// Shift cel frame indices: every cel on a frame `>= from` moves by
+    /// `delta` frames. The frame-axis twin of `remap_cel_layers` — the single
+    /// choke point for keeping the cel map in lock-step with frame inserts,
+    /// deletes and tween expansion.
+    fn shift_cel_frames(&mut self, from: usize, delta: isize) {
+        let keys: Vec<(usize, usize)> = self.cels.keys().filter(|k| k.1 >= from).cloned().collect();
+        let mut moved = Vec::new();
+        for k in keys {
+            let v = self.cels.remove(&k).unwrap();
+            moved.push(((k.0, (k.1 as isize + delta) as usize), v));
+        }
+        self.cels.extend(moved);
+    }
+
     pub fn add_frame(&mut self, duration_ms: u32, copy_from: Option<usize>) -> usize {
         let idx = self.meta.frames.len();
         self.meta.frames.push(FrameMeta {
@@ -790,11 +820,7 @@ impl Document {
     ) -> Result<([i32; 4], u32), String> {
         self.check_cel(layer, frame)?;
         let (w, h) = (self.meta.w, self.meta.h);
-        let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
-                .ok_or("region is empty after clamping to the canvas")?,
-            None => (0, 0, w as i32 - 1, h as i32 - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w, h)?;
         let (rw, rh) = ((bx - ax + 1) as u32, (by - ay + 1) as u32);
         // Lift the source rect to a standalone image.
         let full = self.cel_image(layer, frame)?;
@@ -900,11 +926,7 @@ impl Document {
         self.check_cel(layer, frame)?;
         let src = self.cel_image(layer, frame)?;
         let (w, h) = (src.width() as i32, src.height() as i32);
-        let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
-                .ok_or("region is empty after clamping to the canvas")?,
-            None => (0, 0, w - 1, h - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w as u32, h as u32)?;
         let op = |x: i32, y: i32| -> Option<[u8; 4]> {
             if x < 0 || y < 0 || x >= w || y >= h {
                 return None;
@@ -1697,10 +1719,7 @@ impl Document {
             }
         };
         let (ax, ay, bx, by) = match region {
-            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
-                Some(r) => r,
-                None => return Ok(()),
-            },
+            Some(r) => resolve_region(Some(r), w, h)?,
             None => {
                 let (mut x0, mut y0, mut x1, mut y1) = (w as i32, h as i32, -1i32, -1i32);
                 for (i, on) in fg.iter().enumerate() {
@@ -1798,11 +1817,7 @@ impl Document {
             return Err("dither_ramp needs a ramp of >= 2 colours".into());
         }
         let (w, h) = (self.meta.w, self.meta.h);
-        let (ax, ay, bx, by) = match region {
-            Some((a, b, c, d)) => raster::clamp_region(a, b, c, d, w, h)
-                .ok_or("region is empty after clamping to the canvas")?,
-            None => (0, 0, w as i32 - 1, h as i32 - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w, h)?;
         let span_x = (bx - ax).max(1) as f32;
         let span_y = (by - ay).max(1) as f32;
         let (cx, cy) = ((ax + bx) as f32 / 2.0, (ay + by) as f32 / 2.0);
@@ -1862,11 +1877,7 @@ impl Document {
         self.check_cel(layer, frame)?;
         let src = self.cel_image(layer, frame)?;
         let (w, h) = (src.width() as i32, src.height() as i32);
-        let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w as u32, h as u32)
-                .ok_or("region is empty after clamping to the canvas")?,
-            None => (0, 0, w - 1, h - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w as u32, h as u32)?;
         let op = |x: i32, y: i32| -> Option<[u8; 4]> {
             if x < 0 || y < 0 || x >= w || y >= h {
                 return None;
@@ -1932,11 +1943,7 @@ impl Document {
         }
         self.check_cel(layer, frame)?;
         let (w, h) = (self.meta.w, self.meta.h);
-        let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => raster::clamp_region(x0, y0, x1, y1, w, h)
-                .ok_or("region is empty after clamping to the canvas")?,
-            None => (0, 0, w as i32 - 1, h as i32 - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w, h)?;
         let (spanx, spany) = ((bx - ax).max(1) as f32, (by - ay).max(1) as f32);
         let n = ramp.len();
         let hash = |x: i32, y: i32| -> f32 {
@@ -2690,13 +2697,7 @@ impl Document {
         dl: f32,
     ) -> Result<(), String> {
         let (w, h) = (self.meta.w, self.meta.h);
-        let (ax, ay, bx, by) = match region {
-            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
-                Some(r) => r,
-                None => return Ok(()),
-            },
-            None => (0, 0, w as i32 - 1, h as i32 - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w, h)?;
         let img = self.cel_canvas(layer, frame)?;
         for y in ay..=by {
             for x in ax..=bx {
@@ -2767,13 +2768,7 @@ impl Document {
         };
         let steps = steps.max(1);
         let (w, h) = (self.meta.w, self.meta.h);
-        let (ax, ay, bx, by) = match region {
-            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
-                Some(r) => r,
-                None => return Ok(()),
-            },
-            None => (0, 0, w as i32 - 1, h as i32 - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w, h)?;
         let (w, h) = (w as i32, h as i32);
         // Snapshot so neighbour opacity/colour reads are all pre-op.
         let before = self.cel_canvas(layer, frame)?.clone();
@@ -2861,10 +2856,7 @@ impl Document {
         // Snapshot so every read is pre-op; resolve the working region.
         let before = self.cel_canvas(layer, frame)?.clone();
         let (ax, ay, bx, by) = match region {
-            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
-                Some(r) => r,
-                None => return Ok(()),
-            },
+            Some(r) => resolve_region(Some(r), w, h)?,
             None => {
                 let (mut x0, mut y0, mut x1, mut y1) = (w as i32, h as i32, -1i32, -1i32);
                 for y in 0..h as i32 {
@@ -3040,13 +3032,7 @@ impl Document {
         color: Option<[u8; 4]>,
     ) -> Result<u32, String> {
         let (w, h) = (self.meta.w, self.meta.h);
-        let (ax, ay, bx, by) = match region {
-            Some((a, b, c, d)) => match raster::clamp_region(a, b, c, d, w, h) {
-                Some(r) => r,
-                None => return Ok(0),
-            },
-            None => (0, 0, w as i32 - 1, h as i32 - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, w, h)?;
         let (w, h) = (w as i32, h as i32);
         let img = self.cel_canvas(layer, frame)?;
         // A cell "matches" the stroke when opaque (and == color, if restricted).
@@ -3163,18 +3149,7 @@ impl Document {
             .map(|l| (self.cel_full(l, from), self.cel_full(l, to)))
             .collect();
         // Shift cels at/after the insertion point up by `steps`.
-        let keys: Vec<(usize, usize)> = self
-            .cels
-            .keys()
-            .filter(|k| k.1 >= insert_at)
-            .cloned()
-            .collect();
-        let mut moved = Vec::new();
-        for k in keys {
-            let v = self.cels.remove(&k).unwrap();
-            moved.push(((k.0, k.1 + steps), v));
-        }
-        self.cels.extend(moved);
+        self.shift_cel_frames(insert_at, steps as isize);
         // Insert frame metadata, inheriting the source frame's pivot/boxes so
         // in-betweens don't arrive with no anchor and no collision data.
         let src_meta = self.meta.frames[from].clone();
@@ -3267,14 +3242,7 @@ impl Document {
                 }
                 self.meta.frames.remove(frame);
                 self.cels.retain(|k, _| k.1 != frame);
-                let keys: Vec<(usize, usize)> =
-                    self.cels.keys().filter(|k| k.1 > frame).cloned().collect();
-                let mut moved = Vec::new();
-                for k in keys {
-                    let v = self.cels.remove(&k).unwrap();
-                    moved.push(((k.0, k.1 - 1), v));
-                }
-                self.cels.extend(moved);
+                self.shift_cel_frames(frame + 1, -1);
                 self.meta
                     .tags
                     .retain(|t| !(t.from == frame && t.to == frame));
@@ -3302,14 +3270,7 @@ impl Document {
                         boxes: Vec::new(),
                     },
                 );
-                let keys: Vec<(usize, usize)> =
-                    self.cels.keys().filter(|k| k.1 >= frame).cloned().collect();
-                let mut moved = Vec::new();
-                for k in keys {
-                    let v = self.cels.remove(&k).unwrap();
-                    moved.push(((k.0, k.1 + 1), v));
-                }
-                self.cels.extend(moved);
+                self.shift_cel_frames(frame, 1);
                 for t in &mut self.meta.tags {
                     if t.from >= frame {
                         t.from += 1;
@@ -3325,14 +3286,7 @@ impl Document {
                 }
                 let meta = self.meta.frames[frame].clone();
                 self.meta.frames.insert(frame + 1, meta);
-                let keys: Vec<(usize, usize)> =
-                    self.cels.keys().filter(|k| k.1 > frame).cloned().collect();
-                let mut moved = Vec::new();
-                for k in keys {
-                    let v = self.cels.remove(&k).unwrap();
-                    moved.push(((k.0, k.1 + 1), v));
-                }
-                self.cels.extend(moved);
+                self.shift_cel_frames(frame + 1, 1);
                 let to_copy: Vec<(usize, (i32, i32, RgbaImage))> = self
                     .cels
                     .iter()
@@ -3984,16 +3938,7 @@ impl Document {
         }
         stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
         stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
-        let (w, h) = (self.meta.w as i32, self.meta.h as i32);
-        let (ax, ay, bx, by) = match region {
-            Some((x0, y0, x1, y1)) => (
-                x0.min(x1).max(0),
-                y0.min(y1).max(0),
-                x0.max(x1).min(w - 1),
-                y0.max(y1).min(h - 1),
-            ),
-            None => (0, 0, w - 1, h - 1),
-        };
+        let (ax, ay, bx, by) = resolve_region(region, self.meta.w, self.meta.h)?;
         let img = self.cel_canvas(layer, frame)?;
         for y in ay..=by {
             for x in ax..=bx {
