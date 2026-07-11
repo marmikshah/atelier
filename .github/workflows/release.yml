@@ -27,7 +27,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - run: cargo build --release --locked --target ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }}
 
       - name: Archive (unix)
         if: runner.os != 'Windows'
@@ -53,7 +53,13 @@ jobs:
         if: env.HAS_TOKEN == 'true'
       - uses: dtolnay/rust-toolchain@stable
         if: env.HAS_TOKEN == 'true'
-      - run: cargo publish --locked
+      # Workspace crates must publish in dependency order; crates.io needs a
+      # moment to index each before its dependents can resolve it.
+      - run: |
+          for crate in atelier-core atelier-studio atelier-mcp atelier; do
+            cargo publish -p "$crate"
+            sleep 45
+          done
         if: env.HAS_TOKEN == 'true'
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
