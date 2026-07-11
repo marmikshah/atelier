@@ -78,8 +78,9 @@ atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 
 ## A personal note
 
-atelier started as an experiment with one question behind it: can AI agents
-build art that is genuinely good enough to ship in a game?
+atelier started as an experiment with one question behind it: can AI agents,
+using only tool calls, build art that is genuinely good enough to ship in a
+game?
 
 Every line of code here was written by AI — Claude Opus 4.8 and Fable 5 did
 the heavy lifting, with Kimi 2.6 and Minimax 2.7 pitching in. I didn't write a
