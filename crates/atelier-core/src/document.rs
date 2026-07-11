@@ -588,6 +588,16 @@ impl Document {
 
     /// Snap every opaque pixel to its perceptually nearest palette swatch
     /// (OKLab ΔE), preserving alpha. Scope to a `layer`/`frame` or the whole
+    /// Snap one cel back to the document's own locked palette — the
+    /// post-generator discipline pass every craft tool runs. No palette = no-op.
+    pub fn snap_cel_to_own_palette(&mut self, layer: usize, frame: usize, alpha: AlphaSnap) -> u32 {
+        if self.meta.palette.is_empty() {
+            return 0;
+        }
+        let pal = self.meta.palette.clone();
+        self.snap_to_palette(&pal, Some(layer), Some(frame), alpha)
+    }
+
     /// document. Kills the off-palette drift that blends/dithers/effects leave
     /// behind. Returns the number of pixels moved to a different colour.
     pub fn snap_to_palette(

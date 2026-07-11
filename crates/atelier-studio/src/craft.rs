@@ -672,12 +672,10 @@ impl Studio {
             clear_source,
         )?;
         let mut snapped = 0;
-        if snap_palette && !doc.meta.palette.is_empty() {
-            let pal = doc.meta.palette.clone();
-            snapped = doc.snap_to_palette(
-                &pal,
-                Some(layer),
-                Some(frame),
+        if snap_palette {
+            snapped = doc.snap_cel_to_own_palette(
+                layer,
+                frame,
                 atelier_core::document::AlphaSnap::Preserve,
             );
         }
@@ -1518,15 +1516,7 @@ impl Studio {
                     false,
                 )?;
             }
-            if !doc.meta.palette.is_empty() {
-                let pal = doc.meta.palette.clone();
-                doc.snap_to_palette(
-                    &pal,
-                    Some(layer),
-                    Some(f),
-                    atelier_core::document::AlphaSnap::Preserve,
-                );
-            }
+            doc.snap_cel_to_own_palette(layer, f, atelier_core::document::AlphaSnap::Preserve);
         }
         if !doc.meta.tags.iter().any(|t| t.name == "emit") {
             doc.add_tag("emit", 0, frames - 1, "forward")?;
@@ -1566,12 +1556,10 @@ impl Studio {
         for b in &bones {
             doc.stroke_f(layer, frame, b, color, aa, false)?;
         }
-        if snap && !doc.meta.palette.is_empty() {
-            let pal = doc.meta.palette.clone();
-            doc.snap_to_palette(
-                &pal,
-                Some(layer),
-                Some(frame),
+        if snap {
+            doc.snap_cel_to_own_palette(
+                layer,
+                frame,
                 atelier_core::document::AlphaSnap::Opaque(128),
             );
         }
@@ -1685,12 +1673,10 @@ impl Studio {
             for b in &bones {
                 doc.stroke_f(layer, f, b, color, aa, false)?;
             }
-            if snap && !doc.meta.palette.is_empty() {
-                let pal = doc.meta.palette.clone();
-                doc.snap_to_palette(
-                    &pal,
-                    Some(layer),
-                    Some(f),
+            if snap {
+                doc.snap_cel_to_own_palette(
+                    layer,
+                    f,
                     atelier_core::document::AlphaSnap::Opaque(128),
                 );
             }
@@ -1923,12 +1909,10 @@ impl Studio {
             for b in &bones {
                 doc.stroke_f(layer, f, b, color, aa, false)?;
             }
-            if snap && !doc.meta.palette.is_empty() {
-                let pal = doc.meta.palette.clone();
-                doc.snap_to_palette(
-                    &pal,
-                    Some(layer),
-                    Some(f),
+            if snap {
+                doc.snap_cel_to_own_palette(
+                    layer,
+                    f,
                     atelier_core::document::AlphaSnap::Opaque(128),
                 );
             }

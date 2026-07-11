@@ -1572,10 +1572,7 @@ impl Studio {
             // Re-snap the continuous-tone bloom back onto the locked palette so
             // it stays crisp pixel art (the FX-palette-blowup fix).
             if let Some(a) = snap {
-                if !d.meta.palette.is_empty() {
-                    let pal = d.meta.palette.clone();
-                    d.snap_to_palette(&pal, Some(layer), Some(frame), a);
-                }
+                d.snap_cel_to_own_palette(layer, frame, a);
             }
             Ok(())
         })
@@ -1729,12 +1726,10 @@ impl Studio {
             )?;
             // On-palette discipline: pull the interpolated gradient back to the
             // locked palette (RGB only — soft falloff alpha is preserved).
-            if snap && !d.meta.palette.is_empty() {
-                let pal = d.meta.palette.clone();
-                d.snap_to_palette(
-                    &pal,
-                    Some(layer),
-                    Some(frame),
+            if snap {
+                d.snap_cel_to_own_palette(
+                    layer,
+                    frame,
                     atelier_core::document::AlphaSnap::Preserve,
                 );
             }
