@@ -469,7 +469,7 @@ pub struct DocBatch {
     pub layer: usize,
     pub frame: usize,
     /// Ordered ops, each like {"op":"rect","x0":1,"y0":1,"x1":8,"y1":8,"color":[r,g,b],"fill":true}.
-    /// Ops: pencil/line/rect/ellipse/polyline/polygon/bezier/fill/replace_color/
+    /// Ops: pencil/line/rect/ellipse/polyline/polygon/fill/replace_color/
     /// flip/shift/outline/fill_cel/clear_cel/gradient/scatter/noise/adjust/blur/
     /// quantize/symmetry/drop_shadow/glow/bevel/shade/dither/pixel_perfect.
     pub ops: Vec<serde_json::Value>,
@@ -2313,7 +2313,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|stroke|bezier|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
+        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|stroke|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
     )]
     async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> CallToolResult {
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))

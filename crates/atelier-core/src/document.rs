@@ -1347,11 +1347,6 @@ impl Document {
         Ok(())
     }
 
-    /// Draw a Bézier curve through control `points`: 2 = line, 3 = quadratic,
-    /// 4 = cubic. More than 4 is an error (the old behaviour silently dropped
-    /// the extras — a curve that quietly ignored half its control points).
-    /// Sampled into `steps` segments with brush `size`. Smooth organic
-    /// strokes — tails, vines, hair.
     /// Draw a variable-width, anti-aliased stroke through `pts` (each
     /// `(x, y, full_width)`) as the union of round-capped capsules — the
     /// clean-by-construction stroke core. Connected (union, no gaps between
