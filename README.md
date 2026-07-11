@@ -96,15 +96,16 @@ If atelier helps you in any way — as a tool, a reference, or just a kick-start
 on your own game-design journey — that makes me genuinely happy. The tokens
 are already spent; the least they can do is be useful to you too.
 
-### ⚠️ Notice — versions below 2.0.0
+### ⚠️ Notice — versions below 1.0.0
 
 I intend to follow [SemVer](https://semver.org), but be realistic about what
-this project is: AI-generated code. Diffs are large, and every release below
-2.0.0 will likely contain breaking changes despite my best intentions.
+this project is: AI-generated code. Diffs are large, and every 0.x release
+will likely contain breaking changes despite my best intentions — which is
+exactly what 0.x means.
 
-Once I'm confident the tool has proven itself, I will cut a **2.0.0** release —
+Once I'm confident the tool has proven itself, I will cut a **1.0.0** release —
 that is the point where I start reviewing the code in detail and contributing
-to it directly. Until then, assume that anything below 2.0.0 has **not** been
+to it directly. Until then, assume that anything below 1.0.0 has **not** been
 fully reviewed by me and may contain bugs or security issues I haven't caught.
 
 **Use at your own risk.**
