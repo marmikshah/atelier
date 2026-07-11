@@ -1395,7 +1395,15 @@ impl Studio {
                 for j in (i + 1)..colors.len() {
                     let (a, b) = (colors[i], colors[j]);
                     // Readable apart normally, unreadable under the simulation.
-                    if de(a, b) >= 0.08 && de(simulate(a, m), simulate(b, m)) < 0.05 {
+                    // The gap between the two floors is deliberate hysteresis:
+                    // borderline pairs (ΔE 0.05..0.08) count as neither, so a
+                    // hair of quantisation noise can't flip the verdict.
+                    /// Pairs at or above this ΔE read as distinct to typical vision.
+                    const READABLE_DE: f32 = 0.08;
+                    /// Below this ΔE a simulated pair has collapsed.
+                    const COLLAPSED_DE: f32 = 0.05;
+                    if de(a, b) >= READABLE_DE && de(simulate(a, m), simulate(b, m)) < COLLAPSED_DE
+                    {
                         collapsed.push(json!({"a": hex(a), "b": hex(b)}));
                     }
                 }
@@ -1508,7 +1516,10 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
                 }
             }
             let area = px.len() as u32;
-            if area < min_area.max(4) {
+            // Hard floor under the caller's min_area: the least-squares plane
+            // fit below needs more points than unknowns to mean anything.
+            const MIN_FIT_AREA: u32 = 4;
+            if area < min_area.max(MIN_FIT_AREA) {
                 continue;
             }
             let n = px.len() as f64;
@@ -1567,8 +1578,17 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
             } else {
                 f64::NAN
             };
-            let directional = plane_r2 >= 0.4 && mag > 1e-4;
-            let is_pillow = pillow_corr > 0.5 && plane_r2 < 0.35;
+            // Verdict thresholds. The R² gap (0.35..0.4) is hysteresis: a form
+            // in between is neither confidently directional nor eligible for
+            // the pillow call, so it lands on "flat" instead of flapping.
+            /// Plane fit explaining at least this much lightness variance = one light.
+            const DIRECTIONAL_R2: f64 = 0.4;
+            /// Below this the fit is weak enough for a pillow verdict to stand.
+            const PILLOW_MAX_R2: f64 = 0.35;
+            /// Centre-distance correlation above this reads as pillow shading.
+            const PILLOW_CORR: f64 = 0.5;
+            let directional = plane_r2 >= DIRECTIONAL_R2 && mag > 1e-4;
+            let is_pillow = pillow_corr > PILLOW_CORR && plane_r2 < PILLOW_MAX_R2;
             if is_pillow {
                 pillow_count += 1;
             }
@@ -1593,7 +1613,9 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
         }
     }
     let (dominant, spread) = circular_summary(&azimuths);
-    let inconsistent = azimuths.len() >= 2 && spread.map(|s| s > 45.0).unwrap_or(false);
+    /// Azimuth spread beyond this many degrees = the forms disagree on the light.
+    const LIGHT_SPREAD_DEG: f64 = 45.0;
+    let inconsistent = azimuths.len() >= 2 && spread.map(|s| s > LIGHT_SPREAD_DEG).unwrap_or(false);
     let summary_verdict = if pillow_count > 0 {
         "pillow-shading detected"
     } else if inconsistent {
