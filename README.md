@@ -87,9 +87,27 @@ single line myself. My part was direction: holding the project to the same
 practices and standards I use in the projects where I *do* still write the
 code.
 
+This is an ongoing experiment. As time allows, I'll keep running the
+benchmark against other model families — GPT, Gemini, and whatever else looks
+promising — and trying different designs to see how each of them holds a
+brush.
+
 If atelier helps you in any way — as a tool, a reference, or just a kick-start
 on your own game-design journey — that makes me genuinely happy. The tokens
 are already spent; the least they can do is be useful to you too.
+
+### ⚠️ Notice — versions below 2.0.0
+
+I intend to follow [SemVer](https://semver.org), but be realistic about what
+this project is: AI-generated code. Diffs are large, and every release below
+2.0.0 will likely contain breaking changes despite my best intentions.
+
+Once I'm confident the tool has proven itself, I will cut a **2.0.0** release —
+that is the point where I start reviewing the code in detail and contributing
+to it directly. Until then, assume that anything below 2.0.0 has **not** been
+fully reviewed by me and may contain bugs or security issues I haven't caught.
+
+**Use at your own risk.**
 
 ## License
 
