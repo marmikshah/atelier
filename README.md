@@ -45,7 +45,7 @@ curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
 The installer registers atelier with your MCP client (stdio or a background
-HTTP daemon with a live `/gallery` + `/playground`). Restart your session,
+HTTP daemon). Restart your session,
 then ask your agent for art — *"draw me a blinking cat sprite and export it
 as a GIF"*:
 

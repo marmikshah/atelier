@@ -435,10 +435,6 @@ recorder and a web view.
   `ATELIER_RECORD=<path>`) writes every tool call of a live session into a
   replayable recipe — a real session becomes a deterministic `atelier replay`
   fixture. Works with stdio and `--http`.
-- **Live gallery** — the `--http` server also serves a read-only web view at
-  `/gallery`: a self-contained page that polls `/gallery/docs` and renders each
-  document live via `/gallery/<id>/render.png?frame=&scale=` (scale clamped
-  1..=16). Open it in a browser to watch art appear as the agent draws.
 
 ## Example: a blinking sprite
 

@@ -179,15 +179,9 @@ const RUNS = [
   {brief:"potion", model:"Fable 5",      vendor:"Anthropic", base:"docs/showcase/potion-fable",  anim:false, calls:20, looks:5, verdict:"clean",  note:"fixed 5 orphan pixels mid-run"},
   // --- external models, driven over Poe's OpenAI-compatible API by the
   //     modelbench harness (same briefs, same tool allow-lists, verbatim) ---
-  {brief:"swing", model:"GLM-5.2",       vendor:"Zhipu",   base:"docs/showcase/sword-glm",     anim:true,  calls:87, looks:24, verdict:"warned",   note:"hardest worker of the board; the motion smear flooded into a black mass"},
   {brief:"swing", model:"Gemini 3.5 Flash", vendor:"Google", base:"docs/showcase/sword-gemini", anim:true, calls:53, looks:0,  verdict:"warned",   note:"consistent character, thin sword; drew without ever looking"},
-  {brief:"swing", model:"Grok 4.3",      vendor:"xAI",     base:"docs/showcase/sword-grok",    anim:true,  calls:7,  looks:1,  verdict:"reworked", note:"reported six frames of diffs and clean silhouettes; the exported document has ONE frame"},
-  {brief:"bounce", model:"GLM-5.2",      vendor:"Zhipu",   base:"docs/showcase/bounce-glm",    anim:true,  calls:47, looks:17, verdict:"warned",   note:"real squash & stretch, but painted the background green on 3 of 4 frames"},
   {brief:"bounce", model:"Gemini 3.5 Flash", vendor:"Google", base:"docs/showcase/bounce-gemini", anim:true, calls:27, looks:4, verdict:"clean",  note:"clean arc and volume"},
-  {brief:"bounce", model:"Grok 4.3",     vendor:"xAI",     base:"docs/showcase/bounce-grok",   anim:true,  calls:31, looks:8,  verdict:"clean",    note:"solid squash & stretch"},
-  {brief:"potion", model:"GLM-5.2",      vendor:"Zhipu",   base:"docs/showcase/potion-glm",    anim:false, calls:37, looks:11, verdict:"warned",   note:"reads as an upside-down teardrop in a frame"},
   {brief:"potion", model:"Gemini 3.5 Flash", vendor:"Google", base:"docs/showcase/potion-gemini", anim:false, calls:14, looks:4, verdict:"clean", note:"the strongest external potion — flask, meniscus, highlight all read"},
-  {brief:"potion", model:"Grok 4.3",     vendor:"xAI",     base:"docs/showcase/potion-grok",   anim:false, calls:15, looks:4,  verdict:"warned",   note:"painted a purple background over the whole canvas"},
 ];
 // Queued models render as pending columns until their runs land.
 const PENDING = ["GPT-5.6 (Sol · Terra · Luna)"];

@@ -88,9 +88,7 @@ The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
   `ATELIER_PROFILE=full`); `call_tool` routes them all, so the filter is
   discovery-only. Plus MCP resources (browse documents + renders) and packaged
   prompts. Runs over two transports that share the router — stdio (`run`) and
-  streamable HTTP (`run_http`) — and, on HTTP, serves the live `/gallery`,
-  `/playground` and `/live` web views with a Server-Sent-Events stream that
-  pushes every mutating tool call. Also houses the `Recorder` that turns a live
+  streamable HTTP (`run_http`). Also houses the `Recorder` that turns a live
   session into a replayable recipe.
 - **`recipe.rs`** — the `Recipe`/`Step` format: the on-disk contract shared by the
   `Recorder` (writer) and the `atelier replay` runner (reader). Lives here, in the
