@@ -16,7 +16,11 @@ documents), `doc_form_audit` (an eye for the #1 shading failure),
 `list_docs` family filters, the `doc_pose_cycle` moveset generator, the 47-blob
 autotile family (`doc_autotile_set` + `doc_tilemap_assemble`), and the
 UI/FX/accessibility kit (9-slice, particle emitter, CVD audit, gradient map,
-the `game-asset-set` prompt). 75 tools, 223 tests.
+the `game-asset-set` prompt). Ships with the full **mlab-review pass**: a
+five-lens quality review of the entire codebase, executed to the last finding —
+dead code deleted, duplication folded into single copies, silent fallbacks made
+loud, hot paths tightened, and the four god-files split into responsibility
+modules. 75 tools, 233 tests.
 
 ### Added
 
@@ -109,6 +113,43 @@ the `game-asset-set` prompt). 75 tools, 223 tests.
   `Document::load` refuses `../`/absolute cel paths from a crafted `doc.json`;
   and the daemon installer rejects control characters in `--bind`/`--home` and
   XML-escapes the launchd plist.
+
+### Changed — the review pass
+
+- **Errors are loud everywhere.** Destructive `doc_layer`/`doc_frame`/`doc_region`
+  ops now require an explicit index/rect instead of silently targeting layer 0,
+  frame 0 or the top-left corner. Unknown easing/method/axis/mode/alpha strings,
+  unknown CLI arguments, `--bind`/`--home` without a value, and present-but-short
+  `region` arrays all error instead of silently defaulting.
+- **Batch `drop_shadow` strength key renamed to `shadow_opacity`** — it collided
+  with the batch-wide `opacity` compositing key, so one value silently drove both.
+- **`doc_select_render` takes an optional `frame`** — the mask preview shows the
+  frame being edited, not always frame 0. **`doc_contrast_check` one-bit mode**
+  returns its B/W render inline like sibling reports. Checkpoint lists sort
+  numerically (`cp10` no longer precedes `cp2`).
+- **Library API (breaking, per the pre-2.0 notice):** the single-op `Studio`
+  wrappers are gone — `doc_draw`/`doc_fx`/`doc_batch` over the core op registry
+  are the mutation API; `look` takes a `LookOptions` struct instead of twelve
+  positionals; `Document::meta` is crate-private behind `meta()` +
+  `set_reference_file`. The MCP tool surface is unchanged apart from the
+  additions above.
+- **Structure:** `document.rs` (6.1k lines), `raster.rs`, `server.rs` and the
+  studio god-files split into responsibility modules — pure moves, verified
+  item-for-item. `DRAW_OPS`/`FX_OPS` live in core beside the op registry with a
+  drift test; the tool profile is read once and test-pinned for both profiles.
+- **Performance:** radius-independent sliding-window `box_blur`; per-segment
+  bbox splatting in `stroke_ribbon`; `majority_downscale` without a per-pixel
+  HashMap; single cel reads in `copy_region`/`doc_select`; one less full
+  document decode in `doc_paint_grid`; animation/seam audits reuse one flatten.
+
+### Fixed — the review pass
+
+- **Client-reachable panic:** `burst`/`emit`/`material` with an empty `ramp`
+  array underflowed `len()-1`; an empty ramp now falls back to the auto ramp
+  (regression-tested).
+- `nine_slice`'s garbled too-small error message; the no-home fallback rooting
+  the store at a relative `./.atelier`; `current_uid` guessing `501`; swallowed
+  `create_dir_all` failures on install/export paths.
 
 ### Changed
 
