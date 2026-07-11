@@ -113,6 +113,11 @@ fn crop_region(
     }
 }
 
+/// Luma value-band edges: below SHADOW_MAX reads as shadow, below MID_MAX as
+/// midtone, else light — the thirds look stats and critique both bin against.
+const SHADOW_MAX: u8 = 85;
+const MID_MAX: u8 = 170;
+
 /// Value-mass + colour stats over the opaque pixels of a native image — the
 /// numbers that go beside the inline preview so every look is also measured.
 fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
@@ -132,9 +137,9 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
         max = max.max(v);
         sum += v as u64;
         n += 1;
-        if v < 85 {
+        if v < SHADOW_MAX {
             shadow += 1;
-        } else if v < 170 {
+        } else if v < MID_MAX {
             mid += 1;
         } else {
             light += 1;
@@ -2021,9 +2026,9 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
                 max = max.max(v);
                 sum += v as f64;
                 n += 1;
-                if v < 85 {
+                if v < SHADOW_MAX {
                     shadow += 1;
-                } else if v < 170 {
+                } else if v < MID_MAX {
                     mid += 1;
                 } else {
                     light += 1;

@@ -2454,10 +2454,7 @@ impl Studio {
         op: &str,
         mut params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
-        const DRAW_OPS: &[&str] = &[
-            "pencil", "line", "rect", "ellipse", "polyline", "polygon", "stroke", "fill", "bucket",
-            "gradient", "scatter", "noise", "text", "fill_cel",
-        ];
+        use atelier_core::document::DRAW_OPS;
         if !DRAW_OPS.contains(&op) {
             return Err(format!(
                 "doc_draw: '{op}' is not a draw op — use one of [{}] (filters and lighting live on their own tools)",
@@ -2481,23 +2478,7 @@ impl Studio {
         op: &str,
         mut params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
-        const FX_OPS: &[&str] = &[
-            "blur",
-            "outline",
-            "drop_shadow",
-            "bevel",
-            "shade",
-            "form",
-            "dither",
-            "pixel_perfect",
-            "flip",
-            "shift",
-            "symmetry",
-            "quantize",
-            "replace_color",
-            "adjust",
-            "gradient_map",
-        ];
+        use atelier_core::document::FX_OPS;
         if !FX_OPS.contains(&op) {
             return Err(format!(
                 "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow has its own tool)",
