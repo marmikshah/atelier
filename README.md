@@ -77,5 +77,4 @@ atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 
 ## License
 
-Dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at
-your option.
+[MIT](LICENSE).
