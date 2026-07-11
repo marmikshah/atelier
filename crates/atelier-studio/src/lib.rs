@@ -44,6 +44,9 @@ pub(crate) const MAX_TARGET_PIXELS: usize = 1_048_576;
 /// ~256 GB buffer. 16 matches the render/preview clamp.
 pub(crate) const MAX_EXPORT_SCALE: u32 = 16;
 
+/// Export scale when the caller leaves it unset.
+pub(crate) const DEFAULT_EXPORT_SCALE: u32 = 4;
+
 /// Clamp an export scale into `1..=MAX_EXPORT_SCALE`.
 fn export_scale(scale: u32) -> u32 {
     scale.clamp(1, MAX_EXPORT_SCALE)
@@ -750,21 +753,21 @@ impl Studio {
         let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
         match op {
             "sheet" => match gets("meta").unwrap_or("atelier") {
-                "atelier" => self.doc_export_sheet(id, out_path, export_scale(scale.unwrap_or(4))),
+                "atelier" => self.doc_export_sheet(id, out_path, export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE))),
                 "standard" => {
                     let (_dir, doc) = self.open(id)?;
                     if let Some(p) = Path::new(out_path).parent() {
                         fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
                     }
-                    doc.export_sheet_std(Path::new(out_path), export_scale(scale.unwrap_or(4)))
+                    doc.export_sheet_std(Path::new(out_path), export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE)))
                 }
                 other => Err(format!(
                     "doc_export op=sheet: unknown meta '{other}' — use atelier|standard"
                 )),
             },
             "anim" => match gets("format").unwrap_or("gif") {
-                "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(4), gets("tag")),
-                "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(4), gets("tag")),
+                "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE), gets("tag")),
+                "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE), gets("tag")),
                 other => Err(format!(
                     "doc_export op=anim: unknown format '{other}' — use gif|apng"
                 )),

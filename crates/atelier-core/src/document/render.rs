@@ -272,12 +272,26 @@ impl Document {
         frame: usize,
         region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Option<[f64; 2]>, String> {
+        Ok(self.silhouette_stats(layer, frame, region)?.map(|(c, _)| c))
+    }
+
+    /// One-flatten combination of `silhouette_center` and the full-frame
+    /// opaque count — the per-frame pair the animation audits read, without
+    /// flattening the same frame twice. The count is whole-frame (matching
+    /// `opaque_count`); only the centroid is clipped to `region`.
+    pub fn silhouette_stats(
+        &self,
+        layer: Option<usize>,
+        frame: usize,
+        region: Option<(i32, i32, i32, i32)>,
+    ) -> Result<Option<([f64; 2], u64)>, String> {
         let img = self.analysis_image(layer, frame)?;
-        let (mut sx, mut sy, mut n) = (0f64, 0f64, 0u64);
+        let (mut sx, mut sy, mut n, mut opaque) = (0f64, 0f64, 0u64, 0u64);
         for (x, y, p) in img.enumerate_pixels() {
             if p.0[3] == 0 {
                 continue;
             }
+            opaque += 1;
             if let Some((x0, y0, x1, y1)) = region {
                 let (xi, yi) = (x as i32, y as i32);
                 if xi < x0.min(x1) || xi > x0.max(x1) || yi < y0.min(y1) || yi > y0.max(y1) {
@@ -288,7 +302,7 @@ impl Document {
             sy += y as f64;
             n += 1;
         }
-        Ok((n > 0).then(|| [sx / n as f64, sy / n as f64]))
+        Ok((n > 0).then(|| ([sx / n as f64, sy / n as f64], opaque)))
     }
 
     /// Count opaque pixels in a frame (denominator for the seam loop score).

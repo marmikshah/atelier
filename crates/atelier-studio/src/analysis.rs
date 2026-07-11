@@ -1048,11 +1048,12 @@ impl Studio {
                 }
                 let (last, first) = (*seq.last().unwrap(), seq[0]);
                 let (cw, ch) = (doc.meta.w as i32, doc.meta.h as i32);
-                let (added, removed, recolored, bbox, _ia, _ib) =
+                let (added, removed, recolored, bbox, ia, _ib) =
                     doc.frame_diff_region(last, first, layer, (0, 0, cw - 1, ch - 1))?;
                 let changed = added + removed + recolored;
-                // Denominator: opaque pixels of the played last frame (motion base).
-                let opaque = doc.opaque_count(layer, last)?.max(1);
+                // Denominator: opaque pixels of the played last frame (motion
+                // base), counted from the flatten the diff already produced.
+                let opaque = ia.pixels().filter(|p| p.0[3] > 0).count().max(1) as u64;
                 let seam_score = (changed as f64 / opaque as f64 * 1000.0).round() / 1000.0;
                 Ok(json!({
                     "seam_score": seam_score,
@@ -1149,10 +1150,10 @@ impl Studio {
                 let mut areas: Vec<f64> = Vec::with_capacity(seq.len());
                 let mut skipped: Vec<usize> = Vec::new();
                 for &f in &seq {
-                    match doc.silhouette_center(layer, f, region)? {
-                        Some(c) => {
+                    match doc.silhouette_stats(layer, f, region)? {
+                        Some((c, opaque)) => {
                             centers.push(c);
-                            areas.push(doc.opaque_count(layer, f)? as f64);
+                            areas.push(opaque as f64);
                         }
                         None => skipped.push(f),
                     }
