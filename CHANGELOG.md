@@ -4,7 +4,7 @@ All notable changes to atelier are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/).
 
-## [1.3.0] — 2026-07-08
+## [1.3.0] — 2026-07-11
 
 The identity + polish release. atelier stands on its own name — **the pixel-art
 studio agents can see** — with the last two structural quality gaps closed:
@@ -16,7 +16,7 @@ documents), `doc_form_audit` (an eye for the #1 shading failure),
 `list_docs` family filters, the `doc_pose_cycle` moveset generator, the 47-blob
 autotile family (`doc_autotile_set` + `doc_tilemap_assemble`), and the
 UI/FX/accessibility kit (9-slice, particle emitter, CVD audit, gradient map,
-the `game-asset-set` prompt). 75 tools, 222 tests.
+the `game-asset-set` prompt). 75 tools, 223 tests.
 
 ### Added
 
