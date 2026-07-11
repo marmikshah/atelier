@@ -1304,6 +1304,9 @@ pub struct DocWalk {
 /// Scale used when rendering the `render` resource (matches the doc_look default).
 const RESOURCE_RENDER_SCALE: u32 = 4;
 
+/// Token ceiling for the host-sampled `doc_critique_vision` response.
+const VISION_CRITIQUE_MAX_TOKENS: u32 = 1024;
+
 /// A parsed `atelier://` resource URI: which document, and which view of it.
 #[derive(Debug, PartialEq, Eq)]
 enum ResourceTarget {
@@ -1671,7 +1674,9 @@ impl Atelier {
                     format!("atelier://doc/{id}/render"),
                     format!("{name} (render)"),
                 )
-                .with_description("Frame 0 flattened to a PNG at scale 4.")
+                .with_description(format!(
+                    "Frame 0 flattened to a PNG at scale {RESOURCE_RENDER_SCALE}."
+                ))
                 .with_mime_type("image/png")
                 .no_annotation(),
             );
@@ -2861,7 +2866,9 @@ impl Atelier {
         let mut params = CreateMessageRequestParams::default();
         params.messages = vec![SamplingMessage::new_multiple(Role::User, vec![image, text])];
         params.system_prompt = Some(system);
-        params.max_tokens = 1024;
+        // Enough for a tight structured critique (reads-as, silhouette, value,
+        // top-3 fixes); the host model is asked to be terse.
+        params.max_tokens = VISION_CRITIQUE_MAX_TOKENS;
 
         // Sampling is deprecated upstream (SEP-2577) but is still the only
         // no-network way to borrow the HOST's vision model; keep using it
@@ -3051,7 +3058,7 @@ fn profile_full() -> bool {
 
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
-    /// Advertise the active tool profile: the ~28 `CORE_TOOLS` by default, or the
+    /// Advertise the active tool profile: the ~30 `CORE_TOOLS` by default, or the
     /// full surface when `ATELIER_PROFILE=full`. Discovery filter only — every
     /// tool still executes via `call_tool`, so recipes/replay reach the tail.
     async fn list_tools(
@@ -3203,7 +3210,7 @@ impl ServerHandler for Atelier {
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
              doc_export (op=sheet|anim|tileset) / export_all. list_docs browses the \
-             library. This is the CORE tool profile (~28 tools); the full surface \
+             library. This is the CORE tool profile (~30 tools); the full surface \
              (extra effects like relight/material/rim_light, rigging, audits, \
              perspective/wang/atlas) is available by restarting with \
              ATELIER_PROFILE=full."

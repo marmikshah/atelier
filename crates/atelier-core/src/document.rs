@@ -157,6 +157,9 @@ fn remap_move(old: usize, from: usize, to: usize) -> usize {
     i
 }
 
+/// Default per-frame duration for a freshly created frame (milliseconds).
+pub const DEFAULT_FRAME_MS: u32 = 100;
+
 impl Document {
     pub fn new(name: &str, w: u32, h: u32) -> Document {
         let meta = DocMeta {
@@ -171,7 +174,7 @@ impl Document {
                 blend: "normal".into(),
             }],
             frames: vec![FrameMeta {
-                duration_ms: 100,
+                duration_ms: DEFAULT_FRAME_MS,
                 pivot: None,
                 boxes: Vec::new(),
             }],
@@ -4657,6 +4660,66 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
 mod tests {
     use super::*;
     use image::Rgba;
+
+    #[test]
+    fn every_validated_op_has_an_executor() {
+        // `batch_op_keys` (validation) and `apply_op_raw`'s match (execution) are
+        // hand-synced; this guards against one table gaining an op the other
+        // lacks. Keep this list in step when adding a batch op.
+        let ops = [
+            "pencil",
+            "line",
+            "rect",
+            "ellipse",
+            "polyline",
+            "polygon",
+            "stroke",
+            "fill",
+            "bucket",
+            "replace_color",
+            "flip",
+            "shift",
+            "blur",
+            "quantize",
+            "outline",
+            "drop_shadow",
+            "glow",
+            "bevel",
+            "fill_cel",
+            "clear_cel",
+            "gradient",
+            "scatter",
+            "symmetry",
+            "adjust",
+            "gradient_map",
+            "noise",
+            "shade",
+            "form",
+            "dither",
+            "pixel_perfect",
+            "text",
+        ];
+        for name in ops {
+            assert!(
+                batch_op_keys(name).is_some(),
+                "{name} missing from batch_op_keys"
+            );
+            let mut d = Document::new("t", 8, 8);
+            // A missing-required-arg op may Err or panic; either proves the arm
+            // exists. The only forbidden outcome is "unknown batch op".
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                d.apply_op_raw(0, 0, &json!({"op": name}))
+            }));
+            if let Ok(Err(e)) = r {
+                assert!(!e.contains("unknown batch op"), "{name}: {e}");
+            }
+        }
+        // And the reverse: an unknown op IS reported (the guard isn't vacuous).
+        let mut d = Document::new("t", 8, 8);
+        assert!(batch_op_keys("nope").is_none());
+        let e = d.apply_op_raw(0, 0, &json!({"op": "nope"})).unwrap_err();
+        assert!(e.contains("unknown batch op"));
+    }
 
     #[test]
     fn palette_set_and_index() {
