@@ -63,11 +63,15 @@ entire library API; the MCP layer is a thin wrapper over it.
   `Studio::with_docs_dir(path)` roots a studio at an explicit directory (for
   embedding or tests, without touching process-global env).
 - **`craft.rs`** — drawing, procedural and constructive ops: shapes, fills,
-  gradients, noise/scatter, shadow/glow/bevel, the `doc_fx op=form` volume shader, and
-  the `doc_figure`/`doc_walk` skeletal builders.
+  gradients, noise/scatter, shadow/glow/bevel, the `doc_fx op=form` volume shader,
+  the `doc_figure`/`doc_walk`/`doc_pose_cycle` skeletal builders, the 9-slice
+  panel emitter and the seeded particle emitter.
 - **`analysis.rs`** — the "eye": critique, silhouette, palette, contrast,
-  frame-diff, loop-seam and per-pixel diff-map reports that turn "does it look
-  right?" into numbers.
+  frame-diff, loop-seam, per-pixel diff-map, per-form lighting and
+  colour-vision-deficiency reports that turn "does it look right?" into numbers.
+- **`set.rs`** — the game layer: resolve a document family (ids/prefix), audit
+  it as ONE work (`doc_set_audit`) and broadcast a palette across it
+  (`doc_set_palette_sync`).
 - **`reference.rs`** — reference-image workflow: set/analyse a reference and score
   silhouette IoU + per-cell ΔE against it (`doc_ref_compare`).
 
@@ -77,10 +81,10 @@ Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
-- **`server.rs`** — the rmcp `#[tool]` router: **65 tools** (mutations grouped
+- **`server.rs`** — the rmcp `#[tool]` router: **75 tools** (mutations grouped
   into op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
   one or one-family per studio operation. A hand-written `list_tools` advertises
-  only the ~28-tool **core profile** by default (the full 65 with
+  only the ~30-tool **core profile** by default (the full 75 with
   `ATELIER_PROFILE=full`); `call_tool` routes them all, so the filter is
   discovery-only. Plus MCP resources (browse documents + renders) and packaged
   prompts. Runs over two transports that share the router — stdio (`run`) and
