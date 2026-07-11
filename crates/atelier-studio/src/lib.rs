@@ -150,7 +150,14 @@ impl Studio {
     pub fn new() -> Studio {
         let home = std::env::var("ATELIER_HOME")
             .map(PathBuf::from)
-            .unwrap_or_else(|_| dirs::home_dir().unwrap_or_default().join(".atelier"));
+            .unwrap_or_else(|_| {
+                // No resolvable home = a deliberate, visible choice of the temp
+                // dir — not a silent relative "./.atelier" wherever the process
+                // happens to run (matches the binary's service::default_home).
+                dirs::home_dir()
+                    .map(|h| h.join(".atelier"))
+                    .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
+            });
         let docs_dir = home.join("documents");
         let _ = fs::create_dir_all(&docs_dir);
         Studio {

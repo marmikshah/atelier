@@ -16,10 +16,16 @@ const DEFAULT_BIND: &str = "127.0.0.1:8765";
 /// [--home DIR]`. Returns a process exit code.
 pub fn run(args: &[String]) -> i32 {
     let cmd = args.first().map(|s| s.as_str());
-    let bind = flag_value(args, "--bind").unwrap_or_else(|| DEFAULT_BIND.to_string());
-    let home_dir = flag_value(args, "--home")
-        .map(PathBuf::from)
-        .unwrap_or_else(default_home);
+    let (bind, home_dir) = match (flag_value(args, "--bind"), flag_value(args, "--home")) {
+        (Ok(bind), Ok(home)) => (
+            bind.unwrap_or_else(|| DEFAULT_BIND.to_string()),
+            home.map(PathBuf::from).unwrap_or_else(default_home),
+        ),
+        (Err(e), _) | (_, Err(e)) => {
+            eprintln!("atelier service: {e}");
+            return 2;
+        }
+    };
     // These values are interpolated into a launchd plist / systemd unit; a
     // control char (esp. a newline) could inject an extra directive. Reject
     // them before writing any manifest. XML metacharacters in the plist are
@@ -50,11 +56,17 @@ pub fn run(args: &[String]) -> i32 {
     }
 }
 
-fn flag_value(args: &[String], flag: &str) -> Option<String> {
-    args.iter()
-        .position(|a| a == flag)
-        .and_then(|i| args.get(i + 1))
-        .cloned()
+/// Value of `flag`, if present. A flag given without a usable value (end of
+/// args, or the next token is another flag) is an error — `--bind --home X`
+/// silently binding the default was how a typo installed the wrong service.
+fn flag_value(args: &[String], flag: &str) -> Result<Option<String>, String> {
+    match args.iter().position(|a| a == flag) {
+        None => Ok(None),
+        Some(i) => match args.get(i + 1).filter(|a| !a.starts_with("--")) {
+            Some(v) => Ok(Some(v.clone())),
+            None => Err(format!("{flag} needs a value")),
+        },
+    }
 }
 
 fn home() -> Option<PathBuf> {
@@ -78,14 +90,18 @@ fn log_dir() -> PathBuf {
     default_home().join("logs")
 }
 
-fn current_uid() -> String {
-    Command::new("id")
+/// The current numeric UID (needed for the launchd gui domain). Errors loud —
+/// guessing a UID would bootstrap another user's domain without a word.
+fn current_uid() -> Result<String, String> {
+    let out = Command::new("id")
         .arg("-u")
         .output()
-        .ok()
-        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-        // '501' is the typical first-user UID on macOS.
-        .unwrap_or_else(|| "501".to_string())
+        .map_err(|e| format!("cannot run `id -u`: {e}"))?;
+    let uid = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    if uid.is_empty() {
+        return Err("`id -u` returned nothing".into());
+    }
+    Ok(uid)
 }
 
 /// The launchd LaunchAgent plist (macOS).
@@ -151,7 +167,7 @@ fn launchd_plist(bin: &str, bind: &str, home_dir: &str, logs: &str) -> String {
 /// The systemd --user unit (Linux).
 fn systemd_unit(bin: &str, bind: &str, home_dir: &str) -> String {
     let profile = if profile_full() {
-        "Environment=ATELIER_PROFILE=full\n         "
+        "Environment=ATELIER_PROFILE=full\n"
     } else {
         ""
     };
@@ -180,8 +196,14 @@ fn install(bind: &str, home_dir: &std::path::Path) -> i32 {
     };
     let bin = bin.to_string_lossy().into_owned();
     let logs = log_dir();
-    let _ = std::fs::create_dir_all(&logs);
-    let _ = std::fs::create_dir_all(home_dir);
+    // The comment below says install fails loud — creating the dirs it
+    // depends on is part of that contract.
+    for d in [&logs, &home_dir.to_path_buf()] {
+        if let Err(e) = std::fs::create_dir_all(d) {
+            eprintln!("cannot create {}: {e}", d.display());
+            return 1;
+        }
+    }
     let hd = home_dir.to_string_lossy();
 
     match std::env::consts::OS {
@@ -198,7 +220,13 @@ fn install(bind: &str, home_dir: &std::path::Path) -> i32 {
                 eprintln!("failed to write {}: {e}", plist_path.display());
                 return 1;
             }
-            let uid = current_uid();
+            let uid = match current_uid() {
+                Ok(u) => u,
+                Err(e) => {
+                    eprintln!("atelier service: {e}");
+                    return 1;
+                }
+            };
             // Clear any stale registration, then bootstrap (fall back to the
             // legacy `load -w` on older macOS).
             let _ = Command::new("launchctl")
@@ -281,10 +309,16 @@ fn uninstall() -> i32 {
                 .join("Library")
                 .join("LaunchAgents")
                 .join(format!("{LABEL}.plist"));
-            let uid = current_uid();
-            let _ = Command::new("launchctl")
-                .args(["bootout", &format!("gui/{uid}/{LABEL}")])
-                .output();
+            // Best-effort teardown: an unknown uid skips the bootout (with a
+            // note) but never blocks removing the plist.
+            match current_uid() {
+                Ok(uid) => {
+                    let _ = Command::new("launchctl")
+                        .args(["bootout", &format!("gui/{uid}/{LABEL}")])
+                        .output();
+                }
+                Err(e) => eprintln!("atelier service: {e} — skipping launchctl bootout"),
+            }
             let _ = std::fs::remove_file(&plist_path);
             println!(
                 "✓ launchd service stopped and removed ({})",
@@ -326,7 +360,13 @@ fn status() -> i32 {
     let logs = log_dir();
     match std::env::consts::OS {
         "macos" => {
-            let uid = current_uid();
+            let uid = match current_uid() {
+                Ok(u) => u,
+                Err(e) => {
+                    eprintln!("atelier service: {e}");
+                    return 1;
+                }
+            };
             let out = Command::new("launchctl")
                 .args(["print", &format!("gui/{uid}/{LABEL}")])
                 .output();
