@@ -10,6 +10,7 @@ members = [
 # Shared package metadata — each crate inherits with `field.workspace = true`.
 [workspace.package]
 version = "1.3.0"
+description = "The pixel-art studio agents can see — layered, animated, game-ready art over MCP."
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/marmikshah/atelier"
