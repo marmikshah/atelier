@@ -4410,9 +4410,6 @@ impl Document {
         Ok((mismatches, max_delta, all))
     }
 
-    /// The silhouette bbox-centre (mean of the bbox corners) of a frame's opaque
-    /// pixels, or None when the frame is empty. `layer` None flattens. Used by
-    /// the spacing audit to track motion frame-to-frame.
     /// Opaque-mass CENTROID of a frame's silhouette (mean of opaque pixel
     /// coordinates), optionally clipped to `region`. A mass centroid, unlike
     /// the old bbox-corner midpoint, actually moves when a limb swings over a
