@@ -2986,7 +2986,7 @@ impl Atelier {
     }
 }
 
-/// The default ("core") tool profile — the ~30 tools the canonical sprite /
+/// The default ("core") tool profile — the 30 tools the canonical sprite /
 /// animation / tile / game-set / recreate-from-reference workflows need. The
 /// full surface (extra effects, rigging, audits, library exports) is advertised when
 /// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
@@ -3042,7 +3042,7 @@ fn profile_full() -> bool {
 
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
-    /// Advertise the active tool profile: the ~30 `CORE_TOOLS` by default, or the
+    /// Advertise the active tool profile: the 30 `CORE_TOOLS` by default, or the
     /// full surface when `ATELIER_PROFILE=full`. Discovery filter only — every
     /// tool still executes via `call_tool`, so recipes/replay reach the tail.
     async fn list_tools(
@@ -3165,7 +3165,7 @@ impl ServerHandler for Atelier {
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
              doc_export (op=sheet|anim|tileset) / export_all. list_docs browses the \
-             library. This is the CORE tool profile (~30 tools); the full surface \
+             library. This is the CORE tool profile (30 tools); the full 75-tool surface \
              (extra effects like relight/material/rim_light, rigging, audits, \
              perspective/wang/atlas) is available by restarting with \
              ATELIER_PROFILE=full."
@@ -3515,6 +3515,19 @@ mod tests {
         }
         // Core is a strict, smaller subset of the full surface.
         assert!(CORE_TOOLS.len() < names.len());
+        // The advertised counts are exact and documented (README / TOOLS.md /
+        // ARCHITECTURE / .env.example / install.sh). If either changes, update
+        // those surfaces in the same commit — this assertion is the reminder.
+        assert_eq!(
+            CORE_TOOLS.len(),
+            30,
+            "core profile size changed — update the docs"
+        );
+        assert_eq!(
+            names.len(),
+            75,
+            "total tool count changed — update the docs"
+        );
     }
 
     #[test]

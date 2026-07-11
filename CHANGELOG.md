@@ -100,8 +100,23 @@ the `game-asset-set` prompt). 75 tools, 223 tests.
   mixed-light-direction check in its scorecard (replacing the old whole-image
   radial pillow guess) — so the see-and-fix loop catches it without a separate call.
 
+### Security
+
+- **Hardened the untrusted-input boundary.** External images are decoded
+  through a shared bounded reader that rejects sources over 64 MP at the header
+  probe (decompression-bomb / OOM guard); export scale is clamped to 1..=16 and
+  the spritesheet strip uses `checked_mul` (no gigapixel / u32-overflow buffers);
+  `Document::load` refuses `../`/absolute cel paths from a crafted `doc.json`;
+  and the daemon installer rejects control characters in `--bind`/`--home` and
+  XML-escapes the launchd plist.
+
 ### Changed
 
+- **Install-time tool profile.** `install.sh` now asks core (30 tools, default)
+  vs full (all 75), with the disclaimer that more tools is not better art — the
+  profile only changes what's advertised to the model, and every tool still
+  executes. The choice threads into the stdio registration line and is baked
+  into the launchd/systemd daemon manifest.
 - **Own identity.** Retired the tool-comparison framing across every
   user-facing surface (README, CLI help, the MCP instructions blurb agents read,
   crate docs). atelier is positioned by what it *is* — the see-and-correct loop
