@@ -404,7 +404,6 @@ impl Studio {
     /// a 4px surrounding band. `palette`: every pair of the frame's distinct
     /// opaque colours (capped 16). `one-bit`: threshold luma to a pure B/W PNG and
     /// report black/white coverage. `pass` = ratio ≥ `min_ratio`.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_contrast_check(
         &self,
         id: &str,
@@ -833,7 +832,6 @@ impl Studio {
     /// pixels flagged (green=added, red=removed, yellow=recoloured) — returned as
     /// bytes for the MCP layer to inline, and written to `out_path` when given.
     /// Returns the change tallies and the bbox of all changed pixels.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_frame_diff(
         &self,
         id: &str,

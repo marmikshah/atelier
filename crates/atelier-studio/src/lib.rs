@@ -482,7 +482,6 @@ impl Studio {
     /// `set` (visibility/opacity/blend of layer `index`) | `move` | `insert` |
     /// `delete` | `rename` | `duplicate` | `merge_down`. Routes to the kept
     /// `doc_add_layer` / `doc_set_layer` / `layer_ops` methods.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_layer(
         &self,
         id: &str,
@@ -606,8 +605,6 @@ impl Studio {
         self.commit(&dir, id, doc)
     }
 
-    #[allow(clippy::too_many_arguments)]
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_stamp_image(
         &self,
         id: &str,
@@ -1345,7 +1342,6 @@ impl Studio {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_stroke(
         &self,
         id: &str,
@@ -1530,7 +1526,6 @@ impl Studio {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_glow(
         &self,
         id: &str,
@@ -1570,7 +1565,6 @@ impl Studio {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_rim_light(
         &self,
         id: &str,
@@ -1589,7 +1583,6 @@ impl Studio {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_cast_shadow(
         &self,
         id: &str,
@@ -1634,7 +1627,6 @@ impl Studio {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_noise(
         &self,
         id: &str,
@@ -1684,7 +1676,6 @@ impl Studio {
 
     /// Generate a hue-shifted shading ramp from a base colour. If `set_doc` is
     /// given, also store it as that document's palette. Returns the colours.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_gradient(
         &self,
         id: &str,
@@ -1721,7 +1712,6 @@ impl Studio {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_scatter(
         &self,
         id: &str,
@@ -1745,7 +1735,6 @@ impl Studio {
     /// `ramp` (dark→light) snaps each touched pixel and steps along it; without
     /// one we HSL-shift (warm highlights, cool shadows). Masked by the active
     /// selection, like the other painting ops.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_shade(
         &self,
         id: &str,
@@ -1765,7 +1754,6 @@ impl Studio {
     /// Volume/form shading — fill a shape's interior with a rounded light
     /// gradient snapped to a ramp (sphere/cylinder/auto). Masked by the active
     /// selection, like the other painting ops.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_form(
         &self,
         id: &str,
@@ -1785,7 +1773,6 @@ impl Studio {
     /// Two-colour ordered dither over a region. `region` is required unless an
     /// active selection covers this document (the selection then bounds it).
     /// Masked by the active selection, like the other painting ops.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_dither(
         &self,
         id: &str,
@@ -2044,7 +2031,6 @@ impl Studio {
     /// content at `from_frame` is stamped (source-over) into every frame in
     /// (from, to] at the eased offset; `clear_source` first clears the original
     /// rect in each destination frame. Reuses the region copy/clear/paste paths.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_keyframe_move(
         &self,
         id: &str,
@@ -2079,7 +2065,6 @@ impl Studio {
 
     /// Cut a region/selection of a layer onto its own part layer (above it),
     /// optionally across all frames — the rig step before keyframe_transform.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_extract_to_layer(
         &self,
         id: &str,
@@ -2112,7 +2097,6 @@ impl Studio {
 
     /// Eased pivot rotation + translation of a region across frames — the
     /// joint-swing primitive.
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_keyframe_transform(
         &self,
         id: &str,
@@ -2172,7 +2156,6 @@ impl Studio {
     /// (the clipboard at `x,y`, `blend` source-over by default). Routes to the
     /// kept region methods. (`stamp_image` and `extract_to_layer` keep their own
     /// tools — image import and rigging, not region mobility.)
-    #[allow(clippy::too_many_arguments)]
     pub fn doc_region(
         &mut self,
         id: &str,

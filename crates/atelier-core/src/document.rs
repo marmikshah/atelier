@@ -775,7 +775,6 @@ impl Document {
     /// `"nearest"` is the raw grid transform. `clear_source` empties the source
     /// rect first (a true move rather than an overlay). Returns
     /// `(placed_bbox [x,y,w,h], placed_opaque_px)`.
-    #[allow(clippy::too_many_arguments)]
     pub fn transform_cel(
         &mut self,
         layer: usize,
@@ -888,7 +887,6 @@ impl Document {
     /// while diagonal staircases — whose perpendicular run is 1px — are always
     /// smoothed. `only_color` restricts to corners of that fill colour; `region`
     /// clips. Returns the number of AA pixels added.
-    #[allow(clippy::too_many_arguments)]
     pub fn smooth_edges(
         &mut self,
         layer: usize,
@@ -1664,7 +1662,6 @@ impl Document {
     /// colour by the accumulated light (so hue is preserved and light colour
     /// tints it); if `ramp` is given the lit value snaps to the ramp instead,
     /// keeping the result on-palette. Region defaults to the silhouette bbox.
-    #[allow(clippy::too_many_arguments)]
     pub fn relight(
         &mut self,
         layer: usize,
@@ -1787,7 +1784,6 @@ impl Document {
     /// or blue-noise (`ign`) threshold dithers between them. `only_existing`
     /// repaints just the opaque pixels (shade existing art) and keeps their
     /// alpha. Returns the pixel count changed.
-    #[allow(clippy::too_many_arguments)]
     pub fn dither_ramp(
         &mut self,
         layer: usize,
@@ -2114,7 +2110,6 @@ impl Document {
     /// `receiver_layer` the shadow is painted onto that layer and clipped to its
     /// opaque pixels (it only lands on the ground), else it is drawn behind the
     /// caster on its own cel. Returns the shadow pixel count.
-    #[allow(clippy::too_many_arguments)]
     pub fn cast_shadow(
         &mut self,
         layer: usize,
@@ -2217,7 +2212,6 @@ impl Document {
     /// stamps `color`, weighted by `falloff`. `dark=true` lights the AWAY-facing
     /// edge instead (core/contact shadow). Topological, so it survives small
     /// canvases where a Fresnel term washes out. Returns pixels painted.
-    #[allow(clippy::too_many_arguments)]
     pub fn rim_light(
         &mut self,
         layer: usize,
@@ -2636,7 +2630,6 @@ impl Document {
     /// "cloud" (fBm value noise, `octaves`), "perlin" (gradient) or "voronoi"
     /// (cellular). `scale` is the feature size in pixels; `blend` composites over
     /// existing pixels. Textures, terrain, organic mottling.
-    #[allow(clippy::too_many_arguments)]
     pub fn noise(
         &mut self,
         layer: usize,
@@ -2735,7 +2728,6 @@ impl Document {
     /// hue toward 50°; shadow pixels lose 12%/`steps` and cool toward 250°.
     /// Reads the pre-op cel for neighbour tests so all writes are simultaneous
     /// (a rim pixel never re-reads an already-shaded neighbour mid-pass).
-    #[allow(clippy::too_many_arguments)]
     pub fn shade(
         &mut self,
         layer: usize,
@@ -2831,7 +2823,6 @@ impl Document {
     /// `region` sets the form's bounds/centre; omitted, it's the opaque bbox.
     /// `ramp` ordered dark→light; omitted, one is derived from the mean colour.
     /// `strength` 0..1 compresses (low) or spans the full ramp (1, default).
-    #[allow(clippy::too_many_arguments)]
     pub fn form(
         &mut self,
         layer: usize,
@@ -2991,7 +2982,6 @@ impl Document {
     /// repainted — recolour an existing flat region into a dither without
     /// spilling onto neighbouring art. Honours an active selection via the
     /// studio mask. Reuses the shared Bayer thresholds (bayer8).
-    #[allow(clippy::too_many_arguments)]
     pub fn dither(
         &mut self,
         layer: usize,
@@ -3646,7 +3636,6 @@ impl Document {
     /// eased (dx,dy) about `pivot` (document coords), with the original region
     /// cleared first so no stale copy remains. `snap` re-snaps the resampled
     /// pixels to the locked palette.
-    #[allow(clippy::too_many_arguments)]
     pub fn keyframe_transform(
         &mut self,
         layer: usize,
@@ -6048,7 +6037,6 @@ mod tests {
 
     /// `acTL` frame count from APNG bytes: scan for the chunk type marker, read
     /// the following 4-byte big-endian `num_frames` field (start of its data).
-    #[cfg(test)]
     fn apng_frame_count(bytes: &[u8]) -> Option<u32> {
         let pos = bytes.windows(4).position(|w| w == b"acTL")?;
         let n = &bytes[pos + 4..pos + 8];
@@ -6057,7 +6045,6 @@ mod tests {
 
     /// First `fcTL`'s `(delay_num, delay_den)` from APNG bytes: the two big-endian
     /// u16 fields at offsets 20 and 22 into the chunk data (after the marker).
-    #[cfg(test)]
     fn apng_first_frame_delay(bytes: &[u8]) -> Option<(u16, u16)> {
         let pos = bytes.windows(4).position(|w| w == b"fcTL")? + 4;
         let num = u16::from_be_bytes([bytes[pos + 20], bytes[pos + 21]]);

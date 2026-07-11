@@ -223,7 +223,6 @@ impl Studio {
     /// plus measured stats — the agent's primary eye. `mode`: `render` |
     /// `value`/`grayscale` | `bands` | `sat` | `hue` | `notan`. `grid`/`coords`
     /// burn a pixel ruler into the upscale. Returns `(png_bytes, stats)`.
-    #[allow(clippy::too_many_arguments)]
     pub fn look(
         &self,
         id: &str,
@@ -588,7 +587,6 @@ impl Studio {
     /// the roadmap promised). `layer` None samples the flattened composite.
     /// `mode` combines with any current selection: `replace`|`add`|`subtract`|
     /// `intersect`. Perceptual (OKLab) tolerance by default.
-    #[allow(clippy::too_many_arguments)]
     pub fn select_wand(
         &mut self,
         id: &str,
@@ -635,8 +633,6 @@ impl Studio {
 
     /// Selout anti-aliasing of the silhouette's staircase corners (master-grade
     /// smooth diagonals vs Bresenham stairs). `ramp` keeps the AA on-palette.
-    #[allow(clippy::too_many_arguments)]
-    #[allow(clippy::too_many_arguments)]
     pub fn smooth_edges(
         &self,
         id: &str,
@@ -668,7 +664,6 @@ impl Studio {
     /// `method` `rotsprite` (cluster-preserving) | `nearest`. `snap_palette`
     /// re-snaps the transform fringe to the locked palette; `clear_source`
     /// makes it a move rather than an overlay.
-    #[allow(clippy::too_many_arguments)]
     pub fn transform_cel(
         &self,
         id: &str,
@@ -741,7 +736,6 @@ impl Studio {
     /// azimuth (0=right, 90=down, 180=left, 270=up) and elevation (0=grazing,
     /// 90=head-on). Fill is auto-placed opposite the key at low elevation. RGB
     /// colours are 0..255. Honours an active selection; `ramp` keeps it on-palette.
-    #[allow(clippy::too_many_arguments)]
     pub fn relight(
         &self,
         id: &str,
@@ -805,7 +799,6 @@ impl Studio {
     /// Graduated dithering across a whole ramp along an axis (h|v|radial) with
     /// an ordered or `ign` blue-noise pattern — master gradient shading.
     /// Honours an active selection.
-    #[allow(clippy::too_many_arguments)]
     pub fn dither_ramp(
         &self,
         id: &str,
@@ -897,7 +890,6 @@ impl Studio {
     /// / evenness-validation that the old `make_perceptual_ramp` had and the old
     /// `harmony_palette` lacked. Supersedes `palette_ramp` / `make_perceptual_ramp`
     /// / `harmony_palette`.
-    #[allow(clippy::too_many_arguments)]
     pub fn palette(
         &self,
         base: [u8; 4],
@@ -991,7 +983,6 @@ impl Studio {
     /// primitive `form` can't make. `(cx,cy)` is the centre of the top diamond,
     /// `s` its half-width, `ht` the body height; `light_right` brightens the
     /// right face (else the left).
-    #[allow(clippy::too_many_arguments)]
     pub fn box_iso(
         &self,
         id: &str,
@@ -1116,7 +1107,6 @@ impl Studio {
     /// Form-following selective outline (vs a flat black keyline). `mode`
     /// `from_fill` colours each edge from the fill it borders; `light`/`dark`
     /// bias it. `ramp` keeps it on-palette.
-    #[allow(clippy::too_many_arguments)]
     pub fn outline_selective(
         &self,
         id: &str,
@@ -1139,7 +1129,6 @@ impl Studio {
     /// wood, stone, water, cloth, skin, glass — derived from one base colour (or
     /// an explicit `ramp`). Honours an active selection so it clings to a
     /// selected shape. Snap afterwards if it drifts.
-    #[allow(clippy::too_many_arguments)]
     pub fn material(
         &self,
         id: &str,
@@ -1163,7 +1152,6 @@ impl Studio {
     /// Draw a UI panel: filled body, border, and an optional inner bevel
     /// (top/left lit, bottom/right shadowed) — a ready HUD panel/dialog box vs
     /// hand-placing every edge pixel.
-    #[allow(clippy::too_many_arguments)]
     pub fn panel(
         &self,
         id: &str,
@@ -1199,7 +1187,6 @@ impl Studio {
     /// stretch (`"stretch"`) to fill the `dst` rect on `layer`/`frame`.
     /// Transparent source pixels are skipped, so a rounded panel keeps its
     /// shape over existing art.
-    #[allow(clippy::too_many_arguments)]
     pub fn nine_slice(
         &self,
         id: &str,
@@ -1285,7 +1272,6 @@ impl Studio {
     /// frequency-weighted median-cut of the SUBJECT's colours, with `pin`ned
     /// colours always kept), with optional alpha defringe. The reference-
     /// onboarding pipeline for characters and AI/photo art.
-    #[allow(clippy::too_many_arguments)]
     pub fn import_clean(
         &self,
         id: &str,
@@ -1419,7 +1405,6 @@ impl Studio {
     /// Generate a radial FX animation (ring | disc | rays) expanding from a
     /// centre across `frames`, fading along the ramp, tagged `burst`. VFX-as-
     /// frames: impacts, shockwaves, explosions. Clears the target layer's cels.
-    #[allow(clippy::too_many_arguments)]
     pub fn burst(
         &self,
         id: &str,
@@ -1486,7 +1471,6 @@ impl Studio {
     /// is deterministic and loops cleanly when `loop_seam` (particles respawn
     /// with staggered phase). Draws onto `layer` across `frames`, clearing each
     /// cel, and tags the range `emit`.
-    #[allow(clippy::too_many_arguments)]
     pub fn emit(
         &self,
         id: &str,
@@ -1581,7 +1565,6 @@ impl Studio {
     /// new joints. Required joints: head, shoulder_l/r, elbow_l/r, hand_l/r,
     /// hip_l/r, knee_l/r, foot_l/r (chest/pelvis are derived as the shoulder/hip
     /// midpoints).
-    #[allow(clippy::too_many_arguments)]
     pub fn figure(
         &self,
         id: &str,
@@ -1624,7 +1607,6 @@ impl Studio {
     /// arms counter-swing the legs, the body bobs — then draw each frame with the
     /// connected-capsule figure and tag the range "walk". The walk is GENERATED
     /// from joints, not hand-repainted, so limbs never wobble or detach.
-    #[allow(clippy::too_many_arguments)]
     pub fn walk(
         &self,
         id: &str,
@@ -1749,7 +1731,6 @@ impl Studio {
     /// and recover). Amplitudes derive from the figure's own leg length scaled
     /// by `intensity`, so every preset fits any sprite size. Frames are tagged
     /// with the gait name; `frames=0` picks the gait's natural count.
-    #[allow(clippy::too_many_arguments)]
     pub fn pose_cycle(
         &self,
         id: &str,
