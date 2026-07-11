@@ -421,7 +421,13 @@ impl Studio {
                     }
                 }
             }
-            v.sort();
+            // Numeric order: lexicographic put cp10 before cp2 past nine
+            // checkpoints.
+            v.sort_by_key(|id| {
+                id.strip_prefix("cp")
+                    .and_then(|n| n.parse::<u64>().ok())
+                    .unwrap_or(u64::MAX)
+            });
             v
         };
         match action {
@@ -825,13 +831,18 @@ impl Studio {
         let sheetw = cols as u32 * (cellw + pad) + pad;
         let sheeth = rows as u32 * (cellh + pad) + pad;
         let mut sheet = RgbaImage::from_pixel(sheetw, sheeth, Rgba([20, 20, 26, 255]));
+        // Carry each frame's scaled render into the next iteration — the onion
+        // ghost is the previous cell, not a second flatten+scale.
+        let mut prev_scaled: Option<RgbaImage> = None;
         for f in 0..n {
             let scaled = scale_nn(&doc.flatten(f), s);
             let (col, row) = ((f % cols) as u32, (f / cols) as u32);
             let ox = pad + col * (cellw + pad);
             let oy = pad + row * (cellh + pad) + label_h;
             if onion && f > 0 {
-                let ghost = scale_nn(&doc.flatten(f - 1), s);
+                let ghost = prev_scaled
+                    .take()
+                    .unwrap_or_else(|| scale_nn(&doc.flatten(f - 1), s));
                 for (x, y, p) in ghost.enumerate_pixels() {
                     if p.0[3] > 0 {
                         let a = (p.0[3] as u32 * 35 / 100) as u8;
@@ -848,6 +859,9 @@ impl Studio {
                 if p.0[3] > 0 {
                     blend_put(&mut sheet, (ox + x) as i32, (oy + y) as i32, p.0);
                 }
+            }
+            if onion {
+                prev_scaled = Some(scaled);
             }
             let dur = doc.meta.frames[f].duration_ms;
             draw_label(
@@ -1020,7 +1034,7 @@ impl Studio {
         vp: Option<(i32, i32)>,
     ) -> Result<Value, String> {
         let sp = spacing.max(2);
-        let res = self.edit(id, |d| {
+        self.edit(id, |d| {
             let li = d.add_layer(Some("guides".into()), 160, "normal".into());
             let (w, h) = (d.meta.w as i32, d.meta.h as i32);
             for f in 0..d.meta.frames.len() {
@@ -1078,8 +1092,7 @@ impl Studio {
                 }
             }
             Ok(())
-        })?;
-        Ok(res)
+        })
     }
 
     // -- doc_outline_selective: form-following contour ---------------------
@@ -2172,8 +2185,7 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
 
 /// Cross-snapshot diff: structural + per-pixel change tallies on frame 0.
 fn checkpoint_diff(cpid: &str, was: &Document, now: &Document) -> Value {
-    let stat = |d: &Document| -> (u64, usize, u8, u8) {
-        let img = d.flatten(0);
+    let stat = |img: &RgbaImage| -> (u64, usize, u8, u8) {
         let (mut n, mut min, mut max) = (0u64, 255u8, 0u8);
         let mut distinct = std::collections::HashSet::new();
         for p in img.pixels() {
@@ -2188,12 +2200,13 @@ fn checkpoint_diff(cpid: &str, was: &Document, now: &Document) -> Value {
         }
         (n, distinct.len(), min, max)
     };
-    let (an, ac, amin, amax) = stat(was);
-    let (bn, bc, bmin, bmax) = stat(now);
+    // One flatten per document — stat and the pixel tally share it.
+    let (ia, ib) = (was.flatten(0), now.flatten(0));
+    let (an, ac, amin, amax) = stat(&ia);
+    let (bn, bc, bmin, bmax) = stat(&ib);
     // Per-pixel change tally where the canvases line up.
     let (mut added, mut removed, mut changed) = (0u64, 0u64, 0u64);
     if was.meta.w == now.meta.w && was.meta.h == now.meta.h {
-        let (ia, ib) = (was.flatten(0), now.flatten(0));
         for (pa, pb) in ia.pixels().zip(ib.pixels()) {
             match (pa.0[3] == 0, pb.0[3] == 0) {
                 (true, false) => added += 1,

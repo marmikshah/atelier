@@ -88,6 +88,18 @@ fn rgb3(v: &[i64]) -> [u8; 3] {
     ]
 }
 
+/// {"head":[x,y],...} joint params -> the (x,y) map the rig tools take
+/// (entries shorter than 2 are dropped; the rig validates the contract).
+fn joints_map(
+    joints: &std::collections::HashMap<String, Vec<i64>>,
+) -> std::collections::HashMap<String, (i32, i32)> {
+    joints
+        .iter()
+        .filter(|(_, v)| v.len() >= 2)
+        .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
+        .collect()
+}
+
 /// [r,g,b] or [r,g,b,a] -> RGBA (alpha defaults to 255).
 fn rgba(v: &[i64]) -> [u8; 4] {
     [
@@ -806,18 +818,22 @@ impl Recorder {
     /// the caller's successful steps reach here (see `call_tool`), so the recipe
     /// stays replayable. Best-effort: a write failure is logged, never fails the call.
     fn record(&self, tool: &str, args: Value) {
-        let mut steps = self.steps.lock().expect("recorder lock poisoned");
-        steps.push(json!({"tool": tool, "args": args}));
-        let name = self
-            .path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("session");
-        let recipe = json!({
-            "name": name,
-            "description": format!("recorded session {}", iso_date()),
-            "steps": &*steps,
-        });
+        let recipe = {
+            // Serialize under the lock, write after dropping it — concurrent
+            // HTTP tool calls should queue behind the Vec push, not disk I/O.
+            let mut steps = self.steps.lock().expect("recorder lock poisoned");
+            steps.push(json!({"tool": tool, "args": args}));
+            let name = self
+                .path
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("session");
+            json!({
+                "name": name,
+                "description": format!("recorded session {}", iso_date()),
+                "steps": &*steps,
+            })
+        };
         // Pretty so the recipe stays hand-editable, like the shipped examples.
         let body = serde_json::to_string_pretty(&recipe).unwrap_or_else(|_| "{}".into());
         let tmp = self.path.with_extension("json.tmp");
@@ -2904,12 +2920,7 @@ impl Atelier {
         description = "Build a CONNECTED humanoid figure from named JOINT coordinates — reason in joint space (which you do well) instead of placing every silhouette vertex (which you don't). Each bone is drawn as a tapered capsule (a doc_draw op=stroke ribbon) sharing its endpoints, so the whole body is ONE connected silhouette by construction: no detached limbs, no blocky rect stacks. joints = {\"head\":[x,y],\"shoulder_l\":[x,y],\"shoulder_r\":[x,y],\"elbow_l\":...,\"elbow_r\":...,\"hand_l\":...,\"hand_r\":...,\"hip_l\":...,\"hip_r\":...,\"knee_l\":...,\"knee_r\":...,\"foot_l\":...,\"foot_r\":...} (chest/pelvis derived from the midpoints). Re-pose across frames by calling again with new joints — the base for non-wobbly animation. Tune limb_w/torso_w/head_r to the sprite size."
     )]
     async fn doc_figure(&self, Parameters(p): Parameters<DocFigure>) -> CallToolResult {
-        let joints: std::collections::HashMap<String, (i32, i32)> = p
-            .joints
-            .iter()
-            .filter(|(_, v)| v.len() >= 2)
-            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
-            .collect();
+        let joints = joints_map(&p.joints);
         res(self.studio().figure(
             &p.doc_id,
             p.layer,
@@ -2928,12 +2939,7 @@ impl Atelier {
         description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export op=anim tag=walk."
     )]
     async fn doc_walk(&self, Parameters(p): Parameters<DocWalk>) -> CallToolResult {
-        let joints: std::collections::HashMap<String, (i32, i32)> = p
-            .joints
-            .iter()
-            .filter(|(_, v)| v.len() >= 2)
-            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
-            .collect();
+        let joints = joints_map(&p.joints);
         res(self.studio().walk(
             &p.doc_id,
             p.layer,
@@ -2956,12 +2962,7 @@ impl Atelier {
         description = "GENERATE a full animation cycle for a named GAIT from one standing pose (the same 13 joints as doc_figure) — the moveset generator. `gait`: idle (breathing bob) | run (airborne stride, pumping arms, forward lean) | jump (crouch → rise+tuck → fall → landing absorb) | attack (lead-arm sweep with a lunge) | hurt (recoil and recover). Knees/elbows are solved by 2-bone IK and every frame is the connected-capsule figure, so limbs never wobble or detach. Amplitudes scale from the figure's own leg length × `intensity`, so presets fit any sprite size. Frames are tagged with the gait — one call per gait builds a whole character moveset from the SAME pose (walk has its own tool). Export each with doc_export op=anim tag=<gait>."
     )]
     async fn doc_pose_cycle(&self, Parameters(p): Parameters<DocPoseCycle>) -> CallToolResult {
-        let joints: std::collections::HashMap<String, (i32, i32)> = p
-            .joints
-            .iter()
-            .filter(|(_, v)| v.len() >= 2)
-            .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
-            .collect();
+        let joints = joints_map(&p.joints);
         res(self.studio().pose_cycle(
             &p.doc_id,
             p.layer,
