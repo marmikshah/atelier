@@ -1,0 +1,2 @@
+Space alien. A big-headed green alien idling: hovers, antennae sway, one blink.
+Symmetric, centered. 8 frames, ~1s, 4 colours.
