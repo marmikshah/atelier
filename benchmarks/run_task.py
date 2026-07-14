@@ -134,6 +134,19 @@ def _strip_images(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
+def _demote_stale_images(messages: list[dict[str, Any]]) -> None:
+    """Replace inline image data-URIs already in the live context with a text
+    placeholder, so only the newest doc_look frame is ever sent as a real image.
+    Old frames are stale after edits and cost tens of thousands of tokens each on
+    every resend — this bounds image cost to O(1) per request instead of O(looks)."""
+    for m in messages:
+        c = m.get("content")
+        if isinstance(c, list):
+            for p in c:
+                if isinstance(p, dict) and p.get("type") == "image_url":
+                    p["image_url"] = {"url": "[earlier look — outdated, call doc_look again to see]"}
+
+
 def render_tool_result(result: Any) -> tuple[str, list[dict[str, Any]]]:
     """Split an MCP tool result into a text blob and any inline images.
 
@@ -335,6 +348,12 @@ async def run(args: argparse.Namespace) -> int:
                         pending_images.extend(imgs)
 
                 if pending_images:
+                    # Only the newest doc_look frame stays a live image. Earlier
+                    # looks are STALE — the art changed after each edit — so
+                    # re-sending them on every request is pure token waste (an
+                    # upscaled frame is tens of thousands of tokens). Demote them
+                    # to a placeholder; the model looks again when it needs to see.
+                    _demote_stale_images(messages)
                     messages.append({"role": "user", "content": pending_images})
 
     duration_ms = round((time.monotonic() - clock) * 1000)
