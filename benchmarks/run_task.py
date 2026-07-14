@@ -25,15 +25,15 @@ Endpoint + key resolve from flags first, then env:
 Examples:
   # Poe (default endpoint)
   OPENAI_API_KEY=$POE_API_KEY python tools/run_task.py \
-      --model "Claude-Opus-4.1" --task docs/showcase/briefs/alien.txt
+      --model "Claude-Opus-4.1" --task benchmarks/briefs/alien.txt
   # OpenAI
   python tools/run_task.py --base-url https://api.openai.com/v1 \
-      --api-key $OPENAI_API_KEY --model gpt-4o --task docs/showcase/briefs/ball.txt
+      --api-key $OPENAI_API_KEY --model gpt-4o --task benchmarks/briefs/ball.txt
   # any local/self-hosted server (Ollama, vLLM, LM Studio, …)
   python tools/run_task.py --base-url http://localhost:11434/v1 \
-      --api-key dummy --model qwen2.5 --task docs/showcase/briefs/cat.txt
+      --api-key dummy --model qwen2.5 --task benchmarks/briefs/cat.txt
 
-Transcript auto-saved to runs/<model>/<task>.json — no --out needed. Model names
+Transcript auto-saved to benchmarks/runs/<model>/<task>.json — no --out needed. Model names
 are whatever the chosen endpoint expects (Poe display names, OpenAI ids, etc.).
 """
 
@@ -41,7 +41,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import base64
 import json
 import os
 import re
@@ -58,6 +57,7 @@ from openai import AsyncOpenAI
 DEFAULT_BASE_URL = "https://api.poe.com/v1"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_BINARY = REPO_ROOT / "target" / "release" / "atelier"
+RUNS_DIR = Path(__file__).resolve().parent / "runs"  # benchmarks/runs/
 
 # The animation requirement, appended to whatever framing the server supplies so
 # every run ends in a comparable artifact.
@@ -262,7 +262,7 @@ async def run(args: argparse.Namespace) -> int:
     task_is_file = Path(args.task).exists()
     task = Path(args.task).read_text() if task_is_file else args.task
     task_name = Path(args.task).stem if task_is_file else "inline"
-    out = Path(args.out) if args.out else Path("runs") / _slug(args.model) / f"{task_name}.json"
+    out = Path(args.out) if args.out else RUNS_DIR / _slug(args.model) / f"{task_name}.json"
 
     # Isolated, freshly-wiped document store per run — no cross-run contamination,
     # so a run's inputs are exactly (model, endpoint, task, prompt, tools).
@@ -477,7 +477,7 @@ def main() -> None:
     p.add_argument(
         "--out",
         default=None,
-        help="Transcript path (default: runs/<model>/<task>.json, derived automatically)",
+        help="Transcript path (default: benchmarks/runs/<model>/<task>.json, derived automatically)",
     )
     p.add_argument("--binary", default=str(DEFAULT_BINARY), help="Path to the atelier binary")
     p.add_argument(

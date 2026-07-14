@@ -20,3 +20,6 @@ docs/showcase/*-*-*.json
 
 # benchmark run transcripts (tools/run_task.py output)
 runs/
+
+benchmarks/runs/
+__pycache__/

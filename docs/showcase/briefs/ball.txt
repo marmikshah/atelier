@@ -1,2 +1,0 @@
-Bouncing ball. A rubber ball falls, squashes flat on contact, rebounds tall, and
-rises — squash & stretch with a scaling cast shadow. 8 frames, ~1s, 4 colours.

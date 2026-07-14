@@ -1,0 +1,3 @@
+Effect — a side-view armored hero: wind-up over the shoulder, overhead, downward
+diagonal slash with a motion smear, follow-through, recover. One connected
+silhouette. 10 frames, 1 second at 10 FPS. 6 colours, transparent background.
