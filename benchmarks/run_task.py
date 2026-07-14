@@ -19,22 +19,22 @@ via `atelier replay`); the harness makes the *inputs* fixed and *audited*.
 Deps: pip install "mcp>=1.0" "openai>=1.40"
 
 Endpoint + key resolve from flags first, then env:
-  --base-url  | OPENAI_BASE_URL  (default: https://api.poe.com/v1)
-  --api-key   | OPENAI_API_KEY, else POE_API_KEY
+  --base-url  | OPENAI_BASE_URL  (default: https://api.openai.com/v1)
+  --api-key   | OPENAI_API_KEY
 
 Examples:
-  # Poe (default endpoint)
-  OPENAI_API_KEY=$POE_API_KEY python tools/run_task.py \
-      --model "Claude-Opus-4.1" --task benchmarks/briefs/alien.txt
-  # OpenAI
-  python tools/run_task.py --base-url https://api.openai.com/v1 \
-      --api-key $OPENAI_API_KEY --model gpt-4o --task benchmarks/briefs/ball.txt
+  # OpenAI (default endpoint)
+  OPENAI_API_KEY=... python benchmarks/run_task.py \
+      --model gpt-4o --task benchmarks/briefs/alien.txt
+  # any other OpenAI-compatible endpoint
+  OPENAI_BASE_URL=https://host/v1 OPENAI_API_KEY=... \
+      python benchmarks/run_task.py --model <id> --task benchmarks/briefs/ball.txt
   # any local/self-hosted server (Ollama, vLLM, LM Studio, …)
-  python tools/run_task.py --base-url http://localhost:11434/v1 \
+  python benchmarks/run_task.py --base-url http://localhost:11434/v1 \
       --api-key dummy --model qwen2.5 --task benchmarks/briefs/cat.txt
 
-Transcript auto-saved to benchmarks/runs/<model>/<task>.json — no --out needed. Model names
-are whatever the chosen endpoint expects (Poe display names, OpenAI ids, etc.).
+Transcript auto-saved to benchmarks/runs/<model>/<task>.json — no --out needed.
+Model names are whatever the chosen endpoint expects.
 """
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import AsyncOpenAI
 
-DEFAULT_BASE_URL = "https://api.poe.com/v1"
+DEFAULT_BASE_URL = "https://api.openai.com/v1"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_BINARY = REPO_ROOT / "target" / "release" / "atelier"
 RUNS_DIR = Path(__file__).resolve().parent / "runs"  # benchmarks/runs/
@@ -247,11 +247,11 @@ def render_tool_result(result: Any) -> tuple[str, list[dict[str, Any]]]:
 
 
 async def run(args: argparse.Namespace) -> int:
-    base_url = args.base_url or os.environ.get("OPENAI_BASE_URL") or DEFAULT_BASE_URL
-    api_key = args.api_key or os.environ.get("OPENAI_API_KEY") or os.environ.get("POE_API_KEY")
+    base_url = args.base_url or os.environ.get("OPENAI_BASE_URL") or os.environ.get("OPENAI_API_URL") or DEFAULT_BASE_URL
+    api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
     if not api_key:
         sys.exit(
-            "No API key. Pass --api-key, or set OPENAI_API_KEY (or POE_API_KEY). "
+            "No API key. Pass --api-key or set OPENAI_API_KEY. "
             f"Endpoint: {base_url}"
         )
 
@@ -472,7 +472,7 @@ def main() -> None:
     p.add_argument(
         "--api-key",
         default=None,
-        help="API key (default: $OPENAI_API_KEY, else $POE_API_KEY)",
+        help="API key (default: $OPENAI_API_KEY)",
     )
     p.add_argument(
         "--out",

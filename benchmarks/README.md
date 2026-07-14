@@ -28,8 +28,8 @@ The brief text is the exact input; keep it fixed so runs stay comparable.
 make release                                   # build the atelier binary once
 pip install "mcp>=1.0" "openai>=1.40"
 
-# any OpenAI-compatible endpoint (Poe by default)
-export OPENAI_API_KEY=...                       # or POE_API_KEY
+# any OpenAI-compatible endpoint (OpenAI by default)
+export OPENAI_API_KEY=...
 python benchmarks/run_task.py --model gpt-4o --task benchmarks/briefs/car.txt
 ```
 
