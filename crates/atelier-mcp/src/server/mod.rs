@@ -121,7 +121,7 @@ fn rgba(v: &[i64]) -> [u8; 4] {
     ]
 }
 
-/// Parse the `doc_snap_palette` / FX alpha policy string into an `AlphaSnap`.
+/// Parse the `doc_palette op=snap` / FX alpha policy string into an `AlphaSnap`.
 /// The one place the mode strings are known — an unknown mode errors here
 /// instead of silently mapping to Preserve.
 fn alpha_snap(
@@ -152,6 +152,18 @@ fn region(r: &Option<Vec<i32>>) -> Result<Option<(i32, i32, i32, i32)>, String> 
             v.len()
         )),
     }
+}
+
+/// Re-deserialize `doc_draw`'s flattened op params (plus the shared doc_id/
+/// layer/frame) into a composite draw op's own typed struct (box_iso → DocBox,
+/// panel → DocPanel), so those primitives ride the single `doc_draw` surface.
+fn draw_op_params<T: serde::de::DeserializeOwned>(p: &DocDraw) -> Result<T, String> {
+    let mut m = p.params.clone();
+    m.insert("doc_id".to_string(), Value::String(p.doc_id.clone()));
+    m.insert("layer".to_string(), Value::from(p.layer as u64));
+    m.insert("frame".to_string(), Value::from(p.frame as u64));
+    serde_json::from_value(Value::Object(m))
+        .map_err(|e| format!("doc_draw op={}: bad params — {e}", p.op))
 }
 
 /// Unwrap a parse result inside a tool method, or return it as the tool error.
@@ -185,7 +197,7 @@ pub struct Atelier {
     tool_router: ToolRouter<Self>,
     /// Optional session recorder; when set, each tool call is logged to a recipe.
     recorder: Option<Recorder>,
-    /// Advertise the full 75-tool surface instead of the core profile. Read
+    /// Advertise the full 63-tool surface instead of the core profile. Read
     /// from ATELIER_PROFILE once at construction (env is process-stable), and
     /// injectable so both profiles are unit-testable.
     full_profile: bool,
@@ -311,7 +323,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Audit N documents as ONE game — the set-level doc_critique. Resolve members by `ids` and/or id `prefix` (union), then report per-doc palette/value/scale/pivot stats plus set cohesion: palette union size + unlocked docs + cross-doc near-duplicate colours (OKLab ΔE), silhouette-height scale outliers vs the set median, the set value range, and docs missing pivots. Verdict is 'cohesive' or a list of actionable warnings (e.g. run doc_set_palette_sync). This is how a pile of sprites becomes one game."
+        description = "Audit N documents as ONE game — the set-level doc_critique. Resolve members by `ids` and/or id `prefix` (union), then report per-doc palette/value/scale/pivot stats plus set cohesion: palette union size + unlocked docs + cross-doc near-duplicate colours (OKLab ΔE), silhouette-height scale outliers vs the set median, the set value range, and docs missing pivots. Verdict is 'cohesive' or a list of actionable warnings (e.g. run doc_palette op=sync). This is how a pile of sprites becomes one game."
     )]
     async fn doc_set_audit(&self, Parameters(p): Parameters<DocSetAudit>) -> CallToolResult {
         res(self
@@ -319,48 +331,9 @@ impl Atelier {
             .doc_set_audit(p.ids.as_deref(), p.prefix.as_deref()))
     }
 
-    #[tool(
-        description = "Broadcast ONE palette across a document set: lock it on every member (`ids` and/or id `prefix`) and perceptually snap every cel onto it (OKLab nearest, alpha preserved). Palette = explicit `palette` colours or `from_doc` to copy another document's locked palette. Returns per-doc moved-pixel counts. The fix for doc_set_audit palette warnings."
-    )]
-    async fn doc_set_palette_sync(
-        &self,
-        Parameters(p): Parameters<DocSetPaletteSync>,
-    ) -> CallToolResult {
-        let palette = p
-            .palette
-            .as_ref()
-            .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
-        res(self.studio().doc_set_palette_sync(
-            p.ids.as_deref(),
-            p.prefix.as_deref(),
-            palette,
-            p.from_doc.as_deref(),
-        ))
-    }
-
     #[tool(description = "Delete a document and all its files.")]
     async fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().delete_doc(&p.doc_id))
-    }
-
-    #[tool(
-        description = "Export every document as a spritesheet PNG (+ JSON meta) into a flat target dir."
-    )]
-    async fn export_all(&self, Parameters(p): Parameters<ExportAll>) -> CallToolResult {
-        res(self
-            .studio()
-            .export_all(&p.target_dir, p.scale.unwrap_or(4)))
-    }
-
-    #[tool(
-        description = "Pack EVERY frame of EVERY document into one atlas PNG + master JSON map (doc/frame/rect/duration/pivot) for slicing a whole game's sprites from a single texture. max_width wraps the shelf packer."
-    )]
-    async fn export_atlas(&self, Parameters(p): Parameters<ExportAtlas>) -> CallToolResult {
-        res(self.studio().export_atlas(
-            &p.out_path,
-            p.scale.unwrap_or(4),
-            p.max_width.unwrap_or(512),
-        ))
     }
 
     // -- documents: editable layered/timeline sprites --
@@ -546,12 +519,31 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Export a document to a file. `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette; `meta`=standard writes the industry-standard hash sprite-JSON engines' existing importers parse instead — no pivots/boxes in that shape) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Shared: out_path, scale (sheet/anim 4, tileset 1). For a whole-library dump use export_all/export_atlas; for the Wang set use doc_wang_tiles."
+        description = "Export to a file. Per-document `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette; `meta`=standard writes the industry-standard hash sprite-JSON engines' existing importers parse instead — no pivots/boxes in that shape) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Library-wide `op` (omit doc_id): all (one spritesheet PNG + JSON per document into `out_path` as a DIRECTORY) · atlas (pack EVERY frame of EVERY document into one atlas PNG + master JSON map — doc/frame/rect/duration/pivot — for slicing a whole game from one texture; `max_width` wraps the shelf packer, default 512). Shared: out_path, scale (sheet/anim/all/atlas 4, tileset 1). For the Wang set use doc_wang_tiles."
     )]
     async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_export(&p.doc_id, &p.op, &p.out_path, p.scale, &p.params))
+        let studio = self.studio();
+        match p.op.as_str() {
+            "all" => res(studio.export_all(&p.out_path, p.scale.unwrap_or(4))),
+            "atlas" => {
+                let max_width = p
+                    .params
+                    .get("max_width")
+                    .and_then(|v| v.as_u64())
+                    .map(|n| n as u32)
+                    .unwrap_or(512);
+                res(studio.export_atlas(&p.out_path, p.scale.unwrap_or(4), max_width))
+            }
+            _ => {
+                let Some(doc_id) = p.doc_id.as_deref() else {
+                    return res(Err(format!(
+                        "doc_export op={} needs `doc_id` (only op=all|atlas span the library)",
+                        p.op
+                    )));
+                };
+                res(studio.doc_export(doc_id, &p.op, &p.out_path, p.scale, &p.params))
+            }
+        }
     }
 
     #[tool(
@@ -747,22 +739,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Colour-usage report for a frame (or all frames): every distinct opaque colour with pixel count, percent, and in_palette (null when the doc has no locked palette), sorted by usage. Flags off-palette colours and near-duplicate pairs (max channel distance ≤ dupe_threshold, default 8). `layer` reads one cel; `region` restricts the tally. Audit colour discipline / find stray shades."
-    )]
-    async fn doc_palette_report(
-        &self,
-        Parameters(p): Parameters<DocPaletteReport>,
-    ) -> CallToolResult {
-        res(self.studio().doc_palette_report(
-            &p.doc_id,
-            p.frame,
-            p.layer,
-            try_res!(region(&p.region)),
-            p.dupe_threshold.unwrap_or(8),
-        ))
-    }
-
-    #[tool(
         description = "Validate a colour ramp's craft from explicit `colors` [[r,g,b],...] (≥2) OR a `doc_id`'s locked palette (optional [start,end) `slice`). Returns monotonic_value, value_deltas, even_spacing (max step deviation ≤25% of mean), per-step hue_shift_deg (signed shortest-arc), hue_direction (warm-to-cool|cool-to-warm|mixed|none), sat_arc, and warnings (e.g. value reversals). Doc-independent."
     )]
     async fn doc_ramp_validate(
@@ -887,25 +863,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Set the document's palette: a list of [r,g,b]/[r,g,b,a] swatches. Stored on the doc and emitted in exports — lock a cohesive N-colour set across sprites."
-    )]
-    async fn doc_set_palette(&self, Parameters(p): Parameters<DocSetPalette>) -> CallToolResult {
-        let colors: Vec<[u8; 4]> = p.colors.iter().map(|c| rgba(c)).collect();
-        res(self.studio().doc_set_palette(&p.doc_id, colors))
-    }
-
-    #[tool(
-        description = "Recolour a whole document in one call: swap each `from[i]` colour to `to[i]` across every cel (exact match, all channels), updating the stored palette too. `from`/`to` are equal-length lists of [r,g,b]/[r,g,b,a]. Optional `layer`/`frame` restrict scope. The recolour-variant workflow (one sprite, many palettes). Returns {changed}."
-    )]
-    async fn doc_palette_swap(&self, Parameters(p): Parameters<DocPaletteSwap>) -> CallToolResult {
-        let from: Vec<[u8; 4]> = p.from.iter().map(|c| rgba(c)).collect();
-        let to: Vec<[u8; 4]> = p.to.iter().map(|c| rgba(c)).collect();
-        res(self
-            .studio()
-            .doc_palette_swap(&p.doc_id, from, to, p.layer, p.frame))
-    }
-
-    #[tool(
         description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"rect|line|ellipse|polyline|polygon|stroke|pencil|text|fill|replace_color|flip|shift|outline|fill_cel|clear_cel|gradient|scatter|noise|adjust|blur|quantize|symmetry|drop_shadow|glow|bevel|shade|dither|pixel_perfect\", ...} taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
     )]
     async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> CallToolResult {
@@ -913,12 +870,42 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw ONE shape/mark on a cel — the single-op form of doc_batch (use doc_batch for many ops at once). `op` plus its flattened params: pencil{points,color,size?} · line{x0,y0,x1,y1,color,size?} · rect{x0,y0,x1,y1,color,fill?,size?} · ellipse{cx,cy,rx,ry,color,fill?} · polyline{points,color,size?,closed?} · polygon{points,color,fill?} · stroke{points,color,width?,aa?,snap?} · fill{x,y,color,tolerance?} · gradient{stops,kind?,x0,y0,x1,y1,…} · scatter{colors,x0,y0,x1,y1,density?,seed?,size?} · noise{stops,x0,y0,x1,y1,kind?,scale?,…} · text{x,y,text,color,size?} · fill_cel{color}. All also accept opacity and blend_mode. Honours an active doc_select."
+        description = "Draw ONE shape/mark on a cel — the single-op form of doc_batch (use doc_batch for many ops at once). `op` plus its flattened params: pencil{points,color,size?} · line{x0,y0,x1,y1,color,size?} · rect{x0,y0,x1,y1,color,fill?,size?} · ellipse{cx,cy,rx,ry,color,fill?} · polyline{points,color,size?,closed?} · polygon{points,color,fill?} · stroke{points,color,width?,aa?,snap?} · fill{x,y,color,tolerance?} · gradient{stops,kind?,x0,y0,x1,y1,…} · scatter{colors,x0,y0,x1,y1,density?,seed?,size?} · noise{stops,x0,y0,x1,y1,kind?,scale?,…} · text{x,y,text,color,size?} · fill_cel{color} · box_iso{cx,cy,s,ht,color,light_right?} (shaded isometric cuboid — the hard-surface form primitive: crates, blocks, dice) · panel{x,y,w,h,fill,border?,bevel?} (HUD/UI box: filled body + border + inner bevel; pair with op=text for labels). All also accept opacity and blend_mode. Honours an active doc_select."
     )]
     async fn doc_draw(&self, Parameters(p): Parameters<DocDraw>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_draw(&p.doc_id, p.layer, p.frame, &p.op, p.params))
+        let studio = self.studio();
+        match p.op.as_str() {
+            "box_iso" => {
+                let b: DocBox = try_res!(draw_op_params(&p));
+                res(studio.box_iso(
+                    &b.doc_id,
+                    b.layer,
+                    b.frame,
+                    b.cx,
+                    b.cy,
+                    b.s,
+                    b.ht,
+                    rgba(&b.color),
+                    b.light_right.unwrap_or(true),
+                ))
+            }
+            "panel" => {
+                let pn: DocPanel = try_res!(draw_op_params(&p));
+                res(studio.panel(
+                    &pn.doc_id,
+                    pn.layer,
+                    pn.frame,
+                    pn.x,
+                    pn.y,
+                    pn.w,
+                    pn.h,
+                    rgba(&pn.fill),
+                    pn.border.as_deref().map(rgba).unwrap_or([20, 20, 28, 255]),
+                    pn.bevel.unwrap_or(true),
+                ))
+            }
+            _ => res(studio.doc_draw(&p.doc_id, p.layer, p.frame, &p.op, p.params)),
+        }
     }
 
     #[tool(
@@ -974,25 +961,6 @@ impl Atelier {
             p.label.as_deref(),
             p.checkpoint_id.as_deref(),
         ))
-    }
-
-    #[tool(
-        description = "Snap a cel (or the whole document, if layer/frame omitted) to its locked palette by PERCEPTUALLY nearest colour (OKLab ΔE) — kills the off-palette drift that blends/dithers/glow/gradient leave behind. `palette` overrides the stored one. `alpha` controls FX bloom / AA fringe: preserve (default, RGB-only) | opaque (binarise alpha at `cutoff`, default 128 — turn a soft bloom into crisp on-palette pixels) | flatten (composite over `bg` then snap opaque). Returns the pixel count moved plus an INLINE preview of the result."
-    )]
-    async fn doc_snap_palette(&self, Parameters(p): Parameters<DocSnapPalette>) -> CallToolResult {
-        let studio = self.studio();
-        let alpha = match alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref()) {
-            Ok(a) => a,
-            Err(e) => return res(Err(e)),
-        };
-        let r = studio.snap_palette(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.palette.map(|v| palette_list(&v)),
-            alpha,
-        );
-        previewed(&studio, &p.doc_id, p.layer, p.frame.unwrap_or(0), r)
     }
 
     #[tool(
@@ -1098,7 +1066,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Graduated multi-tone dithering across a whole RAMP along an axis (h|v|radial) — master gradient shading, vs the two-colour `dither`. pattern bayer2/4/8 | checker | ign (blue-noise, no visible matrix grid). only_existing repaints just opaque pixels (shade existing art, keep alpha). Honours an active selection. Snap afterwards with doc_snap_palette if it drifts."
+        description = "Graduated multi-tone dithering across a whole RAMP along an axis (h|v|radial) — master gradient shading, vs the two-colour `dither`. pattern bayer2/4/8 | checker | ign (blue-noise, no visible matrix grid). only_existing repaints just opaque pixels (shade existing art, keep alpha). Honours an active selection. Snap afterwards with doc_palette op=snap if it drifts."
     )]
     async fn doc_dither_ramp(&self, Parameters(p): Parameters<DocDitherRamp>) -> CallToolResult {
         res(self.studio().dither_ramp(
@@ -1129,37 +1097,93 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Generate a cohesive palette in OKLCh — ONE generator for a single shading ramp (scheme=\"mono\") or a multi-hue scheme (complementary|triadic|analogous|split|tetradic). `count` colours per ramp, `hue_shift` warms light / cools shadow across each ramp, `sat_curve` (flat|arc|sat-in-shadow), `anchor_midtone` pins the base at the mid step. Returns ramps + flat palette + hex + evenness validation; `set_doc` locks it on a document. Supersedes palette_ramp / doc_make_perceptual_ramp / doc_harmony_palette."
+        description = "The palette hub. `op`: generate (default) — synthesize a cohesive palette in OKLCh: a single shading ramp (scheme=\"mono\") or a multi-hue scheme (complementary|triadic|analogous|split|tetradic); `count` colours per ramp, `hue_shift` warms light/cools shadow, `sat_curve` (flat|arc|sat-in-shadow), `anchor_midtone` pins the base; returns ramps + flat palette + hex + evenness validation; `set_doc` locks it on a doc. set — lock explicit `colors` [[r,g,b(,a)]] on `doc_id`. snap — snap `doc_id`'s cel (or whole doc if layer/frame omitted) to its palette by perceptual nearest; `alpha` policy preserve|opaque|flatten (`cutoff`,`bg`), `palette` overrides. swap — recolour `from`→`to` across `doc_id` (optional layer/frame), updating the stored palette. report — colour-usage tally for `doc_id` (frame/layer/region, `dupe_threshold`). sync — broadcast one `palette` (or `from_doc`'s) across a document set (`ids` and/or `prefix`)."
     )]
     async fn doc_palette(&self, Parameters(p): Parameters<DocPalette>) -> CallToolResult {
-        res(self.studio().palette(
-            rgba(&p.base),
-            p.scheme.as_deref().unwrap_or("mono"),
-            p.count.unwrap_or(5),
-            p.value_lo,
-            p.value_hi,
-            p.hue_shift.unwrap_or(20.0),
-            p.sat_curve.as_deref().unwrap_or("arc"),
-            p.anchor_midtone.unwrap_or(false),
-            p.set_doc.as_deref(),
-        ))
-    }
-
-    #[tool(
-        description = "Draw a shaded isometric cuboid (top + two side faces) from one base colour, auto-shaded along a perceptual ramp — the hard-surface form primitive `form` can't make (crates, blocks, buildings, dice). (cx,cy) = centre of the top diamond, s = its half-width, ht = body height; light_right brightens the right face."
-    )]
-    async fn doc_box(&self, Parameters(p): Parameters<DocBox>) -> CallToolResult {
-        res(self.studio().box_iso(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.cx,
-            p.cy,
-            p.s,
-            p.ht,
-            rgba(&p.color),
-            p.light_right.unwrap_or(true),
-        ))
+        let studio = self.studio();
+        match p.op.as_deref().unwrap_or("generate") {
+            "generate" => {
+                let Some(base) = p.base.as_deref() else {
+                    return res(Err("doc_palette op=generate needs `base`".to_string()));
+                };
+                res(studio.palette(
+                    rgba(base),
+                    p.scheme.as_deref().unwrap_or("mono"),
+                    p.count.unwrap_or(5),
+                    p.value_lo,
+                    p.value_hi,
+                    p.hue_shift.unwrap_or(20.0),
+                    p.sat_curve.as_deref().unwrap_or("arc"),
+                    p.anchor_midtone.unwrap_or(false),
+                    p.set_doc.as_deref(),
+                ))
+            }
+            "set" => {
+                let Some(doc_id) = p.doc_id.as_deref() else {
+                    return res(Err("doc_palette op=set needs `doc_id`".to_string()));
+                };
+                let Some(colors) = p.colors.as_ref() else {
+                    return res(Err("doc_palette op=set needs `colors`".to_string()));
+                };
+                let colors: Vec<[u8; 4]> = colors.iter().map(|c| rgba(c)).collect();
+                res(studio.doc_set_palette(doc_id, colors))
+            }
+            "swap" => {
+                let Some(doc_id) = p.doc_id.as_deref() else {
+                    return res(Err("doc_palette op=swap needs `doc_id`".to_string()));
+                };
+                let (Some(from), Some(to)) = (p.from.as_ref(), p.to.as_ref()) else {
+                    return res(Err("doc_palette op=swap needs `from` and `to`".to_string()));
+                };
+                let from: Vec<[u8; 4]> = from.iter().map(|c| rgba(c)).collect();
+                let to: Vec<[u8; 4]> = to.iter().map(|c| rgba(c)).collect();
+                res(studio.doc_palette_swap(doc_id, from, to, p.layer, p.frame))
+            }
+            "report" => {
+                let Some(doc_id) = p.doc_id.as_deref() else {
+                    return res(Err("doc_palette op=report needs `doc_id`".to_string()));
+                };
+                res(studio.doc_palette_report(
+                    doc_id,
+                    p.frame,
+                    p.layer,
+                    try_res!(region(&p.region)),
+                    p.dupe_threshold.unwrap_or(8),
+                ))
+            }
+            "snap" => {
+                let Some(doc_id) = p.doc_id.as_deref() else {
+                    return res(Err("doc_palette op=snap needs `doc_id`".to_string()));
+                };
+                let alpha = match alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref()) {
+                    Ok(a) => a,
+                    Err(e) => return res(Err(e)),
+                };
+                let r = studio.snap_palette(
+                    doc_id,
+                    p.layer,
+                    p.frame,
+                    p.palette.as_ref().map(|v| palette_list(v)),
+                    alpha,
+                );
+                previewed(&studio, doc_id, p.layer, p.frame.unwrap_or(0), r)
+            }
+            "sync" => {
+                let palette = p
+                    .palette
+                    .as_ref()
+                    .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
+                res(studio.doc_set_palette_sync(
+                    p.ids.as_deref(),
+                    p.prefix.as_deref(),
+                    palette,
+                    p.from_doc.as_deref(),
+                ))
+            }
+            other => res(Err(format!(
+                "doc_palette: unknown op '{other}' — use generate|set|snap|swap|report|sync"
+            ))),
+        }
     }
 
     #[tool(
@@ -1231,24 +1255,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw a HUD/UI panel: filled body + border + optional inner bevel (top/left lit, bottom/right shadowed) — a ready dialog/HUD box. Pairs with doc_draw op=text for labels."
-    )]
-    async fn doc_panel(&self, Parameters(p): Parameters<DocPanel>) -> CallToolResult {
-        res(self.studio().panel(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.x,
-            p.y,
-            p.w,
-            p.h,
-            rgba(&p.fill),
-            p.border.as_deref().map(rgba).unwrap_or([20, 20, 28, 255]),
-            p.bevel.unwrap_or(true),
-        ))
-    }
-
-    #[tool(
         description = "Paint a whole region DECLARATIVELY from a character grid (the inverse of doc_dump_region): `legend` maps single characters to [r,g,b(,a)] colours or integer PALETTE INDICES, `rows` are pixel-row strings ('.'/' ' leave the pixel untouched). Emitting a sprite as a grid eliminates the absolute-coordinate failure class — prefer this over long pencil/rect sequences for detailed shapes. Verify by diffing against doc_dump_region. Returns painted/clipped counts plus an INLINE preview. Honours an active selection."
     )]
     async fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
@@ -1314,7 +1320,7 @@ impl Atelier {
 
     // -- reference subsystem: recreate-from-sample as a measurable loop --
     #[tool(
-        description = "Bring an external image into the reference workflow. `op`: set — attach the ORIGINAL reference (the sample being recreated; `path`, omit to clear) so doc_ref_analyze/doc_ref_compare can score likeness; returns aspect-true fit suggestions. import — trace a source image cleaned onto a guide layer: `path`, `target_w` (required), optional `target_h` (omit = aspect-true), `colors`, `dither`, `defringe`, `to_doc_palette`, `remove_bg` (corner-seeded bg flood), `pin` (colours to keep). Returns an inline preview."
+        description = "Reference workflow — recreate-from-sample as a measurable loop. `op`: set — attach the ORIGINAL reference (`path`, omit to clear) so compare/diff can score likeness; returns aspect-true fit suggestions. import — trace a source image cleaned onto a guide layer: `path`, `target_w` (required), optional `target_h`, `colors`, `dither`, `defringe`, `to_doc_palette`, `remove_bg`, `pin`; returns an inline preview. analyze — decompose the reference (inline PNG): background coverage, a frequency-weighted SUBJECT palette to lock with doc_palette op=set, and the silhouette as a text grid; `path` analyzes an external file, `target_w` plans at a size. compare — SCORE a `frame` (run after every pass): inline side-by-side (mode=\"overlay\" ghosts the reference), silhouette IoU (≥0.80 reads), per-cell OKLab ΔE with worst cells as rects, and missing palette colours; `cells` sets the grid. diff — PER-PIXEL signed error map (heat PNG: red=too light, blue=too dark, green=wrong hue) plus the `top` worst pixels each with a fix direction."
     )]
     async fn doc_ref(&self, Parameters(p): Parameters<DocRefOp>) -> CallToolResult {
         let studio = self.studio();
@@ -1344,44 +1350,25 @@ impl Atelier {
                 );
                 previewed(&studio, &p.doc_id, Some(layer), frame, r)
             }
+            "analyze" => img_result(studio.ref_analyze(
+                &p.doc_id,
+                p.path.as_deref(),
+                p.target_w,
+                p.colors.unwrap_or(8),
+            )),
+            "compare" => img_result(studio.ref_compare(
+                &p.doc_id,
+                p.frame.unwrap_or(0),
+                p.mode.as_deref().unwrap_or("side_by_side"),
+                p.cells.unwrap_or(8),
+            )),
+            "diff" => {
+                img_result(studio.diff_map(&p.doc_id, p.frame.unwrap_or(0), p.top.unwrap_or(20)))
+            }
             other => res(Err(format!(
-                "doc_ref: unknown op '{other}' — use set|import"
+                "doc_ref: unknown op '{other}' — use set|import|analyze|compare|diff"
             ))),
         }
-    }
-
-    #[tool(
-        description = "VIEW and decompose the document's reference image (inline PNG): background coverage, a frequency-weighted SUBJECT palette to lock with doc_set_palette, and the subject's silhouette as a text grid at target size — the scaffolding to redraw deliberately instead of freehanding from memory. `path` analyzes an external file instead; `target_w` plans at a different size."
-    )]
-    async fn doc_ref_analyze(&self, Parameters(p): Parameters<DocRefAnalyze>) -> CallToolResult {
-        img_result(self.studio().ref_analyze(
-            &p.doc_id,
-            p.path.as_deref(),
-            p.target_w,
-            p.colors.unwrap_or(8),
-        ))
-    }
-
-    #[tool(
-        description = "SCORE a frame against the stored reference — run this after every drawing pass when recreating from a sample. Returns an inline side-by-side (mode=\"overlay\" ghosts the reference under the art for proportion checks), silhouette IoU (≥0.80 = shape reads), per-cell OKLab ΔE with the worst cells as canvas rects (fix those first), and reference colours missing from the palette. Iterate until iou/mean_delta stop improving."
-    )]
-    async fn doc_ref_compare(&self, Parameters(p): Parameters<DocRefCompare>) -> CallToolResult {
-        img_result(self.studio().ref_compare(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.mode.as_deref().unwrap_or("side_by_side"),
-            p.cells.unwrap_or(8),
-        ))
-    }
-
-    #[tool(
-        description = "PER-PIXEL signed error map vs the stored reference — the see-and-repair eye for the last 5% that ref_compare's aggregate ΔE can't show. Returns a HEAT png (red = canvas too light, blue = too dark, green = wrong colour; brightness = ΔE) plus the `top` worst INDIVIDUAL pixels, each with x,y, ΔE, and a fix direction (lighten/darken + saturate/desaturate + shift hue). Run after a pass, fix the named pixels, re-run."
-    )]
-    async fn doc_diff_map(&self, Parameters(p): Parameters<DocDiffMap>) -> CallToolResult {
-        img_result(
-            self.studio()
-                .diff_map(&p.doc_id, p.frame.unwrap_or(0), p.top.unwrap_or(20)),
-        )
     }
 
     #[tool(
@@ -1566,7 +1553,7 @@ impl Atelier {
     }
 }
 
-/// The default ("core") tool profile — the 30 tools the canonical sprite /
+/// The default ("core") tool profile — the 24 tools the canonical sprite /
 /// animation / tile / game-set / recreate-from-reference workflows need. The
 /// full surface (extra effects, rigging, audits, library exports) is advertised when
 /// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
@@ -1591,26 +1578,20 @@ const CORE_TOOLS: &[&str] = &[
     "doc_region",
     "doc_select",
     "doc_add_tag",
-    // palette
+    // palette (op-dispatched: generate|set|snap|swap|report|sync)
     "doc_palette",
-    "doc_set_palette",
-    "doc_palette_swap",
-    "doc_snap_palette",
     // export
     "doc_export",
     // most-used audits (readers)
     "doc_critique",
     "doc_silhouette",
     "doc_components",
-    "doc_palette_report",
     "doc_contrast_check",
     "doc_frame_diff",
-    // reference loop
+    // reference loop (op-dispatched: set|import|analyze|compare|diff)
     "doc_ref",
-    "doc_ref_compare",
     // the game layer — a game is a SET of documents, not one
     "doc_set_audit",
-    "doc_set_palette_sync",
 ];
 
 /// True when the full tool surface should be advertised (`ATELIER_PROFILE=full`).
@@ -1622,7 +1603,7 @@ fn profile_full() -> bool {
 
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
-    /// Advertise the active tool profile: the 30 `CORE_TOOLS` by default, or the
+    /// Advertise the active tool profile: the 24 `CORE_TOOLS` by default, or the
     /// full surface when `ATELIER_PROFILE=full`. Discovery filter only — every
     /// tool still executes via `call_tool`, so recipes/replay reach the tail.
     async fn list_tools(
@@ -1730,18 +1711,18 @@ impl ServerHandler for Atelier {
              line/rect/ellipse/fill/stroke/text/…) or doc_batch (many ops in one call). LOOK with doc_look \
              after every burst of edits — it returns the frame as an INLINE image plus \
              value stats (pass doc_look out_path when you also need the PNG written to a file). \
-             Recreating from a reference image? doc_ref op=set FIRST, doc_ref_analyze \
+             Recreating from a reference image? doc_ref op=set FIRST, doc_ref op=analyze \
              to plan (subject palette + silhouette), optionally doc_ref op=import onto a \
-             guide layer, then doc_ref_compare after EVERY pass — it scores silhouette \
+             guide layer, then doc_ref op=compare after EVERY pass — it scores silhouette \
              IoU and per-cell colour ΔE against the reference so likeness is measured, \
              not remembered. \
-             Audit before exporting: doc_critique (failure modes), doc_palette_report, \
+             Audit before exporting: doc_critique (failure modes), doc_palette op=report, \
              doc_silhouette. Animate by duplicating frames (doc_frame op=add copy_from) \
              and editing what moves — doc_keyframe_move for eased motion; doc_dissolve is \
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
-             doc_export (op=sheet|anim|tileset) / export_all. list_docs browses the \
-             library. This is the CORE tool profile (30 tools); the full 75-tool surface \
+             doc_export (op=sheet|anim|tileset) / op=all. list_docs browses the \
+             library. This is the CORE tool profile (24 tools); the full 63-tool surface \
              (extra effects like relight/material/rim_light, rigging, audits, \
              perspective/wang/atlas) is available by restarting with \
              ATELIER_PROFILE=full."
@@ -2098,32 +2079,32 @@ mod tests {
         // those surfaces in the same commit — this assertion is the reminder.
         assert_eq!(
             CORE_TOOLS.len(),
-            30,
+            24,
             "core profile size changed — update the docs"
         );
         assert_eq!(
             names.len(),
-            75,
+            63,
             "total tool count changed — update the docs"
         );
         // Both profiles, exercised without touching env.
         assert_eq!(
             Atelier::new().with_profile(false).advertised_tools().len(),
-            30
+            24
         );
         assert_eq!(
             Atelier::new().with_profile(true).advertised_tools().len(),
-            75
+            63
         );
         // The nearest doc surface is the in-file get_info instructions string —
         // it has drifted before; pin its counts too.
         let instructions = Atelier::new().get_info().instructions.unwrap_or_default();
         assert!(
-            instructions.contains("30 tools"),
+            instructions.contains("24 tools"),
             "get_info instructions drifted from the core count"
         );
         assert!(
-            instructions.contains("75-tool"),
+            instructions.contains("63-tool"),
             "get_info instructions drifted from the full count"
         );
     }

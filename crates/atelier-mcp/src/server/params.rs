@@ -35,32 +35,6 @@ pub(crate) struct DocSetAudit {
     pub(crate) prefix: Option<String>,
 }
 
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocSetPaletteSync {
-    /// Explicit target document ids (combined with `prefix` as a union).
-    pub(crate) ids: Option<Vec<String>>,
-    /// Select every document whose id starts with this (e.g. "hero-").
-    pub(crate) prefix: Option<String>,
-    /// The palette to broadcast, as [[r,g,b(,a)],...]. Or use `from_doc`.
-    pub(crate) palette: Option<Vec<Vec<i64>>>,
-    /// Copy the locked palette from this document instead of passing colours.
-    pub(crate) from_doc: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct ExportAll {
-    pub(crate) target_dir: String,
-    pub(crate) scale: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct ExportAtlas {
-    pub(crate) out_path: String,
-    pub(crate) scale: Option<u32>,
-    /// Max atlas width in pixels before the shelf packer wraps to a new row.
-    pub(crate) max_width: Option<u32>,
-}
-
 // --- document params -------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -322,27 +296,6 @@ pub(crate) struct DocSetFrameBoxes {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocSetPalette {
-    pub(crate) doc_id: String,
-    /// Palette swatches, each [r,g,b] or [r,g,b,a].
-    pub(crate) colors: Vec<Vec<i64>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocPaletteSwap {
-    pub(crate) doc_id: String,
-    /// Source colours to recolour, each [r,g,b]/[r,g,b,a]. Matched exactly
-    /// (all channels). Same length as `to` — `from[i]` becomes `to[i]`.
-    pub(crate) from: Vec<Vec<i64>>,
-    /// Replacement colours, each [r,g,b]/[r,g,b,a]. Same length as `from`.
-    pub(crate) to: Vec<Vec<i64>>,
-    /// Restrict to one layer's cels; omit for every layer.
-    pub(crate) layer: Option<usize>,
-    /// Restrict to one frame's cels; omit for every frame.
-    pub(crate) frame: Option<usize>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocBatch {
     pub(crate) doc_id: String,
     pub(crate) layer: usize,
@@ -396,15 +349,20 @@ pub(crate) struct DocFx {
 
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocExport {
-    pub(crate) doc_id: String,
-    /// What to export: sheet | anim | tileset.
+    /// Required for per-document ops (sheet | anim | tileset); omit for the
+    /// library-wide ops (all | atlas), which span every document.
+    pub(crate) doc_id: Option<String>,
+    /// Per-document: sheet | anim | tileset. Library-wide: all (one spritesheet
+    /// per document into a dir) | atlas (every frame of every document packed
+    /// into one atlas PNG + master JSON map).
     pub(crate) op: String,
-    /// Output file path.
+    /// Output path: a file for sheet/anim/tileset/atlas, a target DIRECTORY for
+    /// op=all.
     pub(crate) out_path: String,
-    /// Nearest-neighbour upscale (sheet/anim default 4, tileset default 1).
+    /// Nearest-neighbour upscale (sheet/anim/all/atlas default 4, tileset 1).
     pub(crate) scale: Option<u32>,
     /// Op-specific params, flattened: anim → format ("gif"|"apng"), tag;
-    /// tileset → tile_w, tile_h.
+    /// tileset → tile_w, tile_h; atlas → max_width (shelf-packer wrap, default 512).
     #[serde(flatten)]
     pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
@@ -469,17 +427,22 @@ pub(crate) struct DocRegion {
 pub(crate) struct DocRefOp {
     pub(crate) doc_id: String,
     /// set (attach/clear the comparison reference) | import (trace an external
-    /// image cleaned onto a guide layer).
+    /// image cleaned onto a guide layer) | analyze (decompose the reference:
+    /// background coverage, subject palette, silhouette grid) | compare (score a
+    /// frame against the reference: silhouette IoU + per-cell ΔE) | diff
+    /// (per-pixel signed error map vs the reference + worst pixels).
     pub(crate) op: String,
-    /// `set`: reference image path (omit to clear). `import`: source image path.
+    /// `set`/`analyze`: reference image path (set: omit to clear; analyze: an
+    /// external file instead of the stored reference). `import`: source path.
     pub(crate) path: Option<String>,
     // -- import params --
     pub(crate) layer: Option<usize>,
     pub(crate) frame: Option<usize>,
-    /// `import`: target width in px (required for import).
+    /// `import`: target width in px (required for import). `analyze`: plan width.
     pub(crate) target_w: Option<u32>,
     /// `import`: omit to derive an aspect-true height.
     pub(crate) target_h: Option<u32>,
+    /// `import`/`analyze`: palette size (import default 16, analyze default 8).
     pub(crate) colors: Option<usize>,
     pub(crate) dither: Option<bool>,
     pub(crate) defringe: Option<bool>,
@@ -488,6 +451,14 @@ pub(crate) struct DocRefOp {
     pub(crate) remove_bg: Option<bool>,
     /// `import`: colours the derived palette must keep (e.g. a black outline).
     pub(crate) pin: Option<Vec<Vec<i64>>>,
+    // -- compare params --
+    /// `compare`: "side_by_side" (default) or "overlay" (reference ghosted under).
+    pub(crate) mode: Option<String>,
+    /// `compare`: ΔE grid divisions per axis (default 8, clamped 2..=16).
+    pub(crate) cells: Option<u32>,
+    // -- diff params --
+    /// `diff`: worst individual pixels to list (default 20, clamped 1..=64).
+    pub(crate) top: Option<usize>,
 }
 
 // --- canvas reader params --------------------------------------------------
@@ -561,19 +532,6 @@ pub(crate) struct DocContrastCheck {
     pub(crate) threshold: Option<u8>,
     /// Where to write the B/W PNG for mode="one-bit".
     pub(crate) out_path: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocPaletteReport {
-    pub(crate) doc_id: String,
-    /// One frame; omit to tally every frame.
-    pub(crate) frame: Option<usize>,
-    /// One layer's cel; omit for the flattened composite per frame.
-    pub(crate) layer: Option<usize>,
-    /// [x0,y0,x1,y1] document pixels to restrict the tally; omit = whole canvas.
-    pub(crate) region: Option<Vec<i32>>,
-    /// Max channel distance counting two colours as near-duplicates (default 8).
-    pub(crate) dupe_threshold: Option<i32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -695,24 +653,6 @@ pub(crate) struct DocCheckpoint {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocSnapPalette {
-    pub(crate) doc_id: String,
-    pub(crate) layer: Option<usize>,
-    pub(crate) frame: Option<usize>,
-    /// Override palette as a list of [r,g,b(,a)]; defaults to the doc's palette.
-    pub(crate) palette: Option<Vec<Vec<i64>>>,
-    /// Partial-alpha policy for FX bloom / AA fringe: `preserve` (default — keep
-    /// soft alpha, snap RGB only) | `opaque` (binarise alpha at `cutoff`,
-    /// default 128 — collapse a bloom into a crisp on-palette silhouette) |
-    /// `flatten` (composite over `bg` then snap fully opaque).
-    pub(crate) alpha: Option<String>,
-    /// Alpha cutoff for `alpha="opaque"` (0..255, default 128).
-    pub(crate) cutoff: Option<u8>,
-    /// Backdrop `[r,g,b]` for `alpha="flatten"` (default opaque black).
-    pub(crate) bg: Option<Vec<i64>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocSelectWand {
     pub(crate) doc_id: String,
     /// Layer to sample; omit to sample the flattened composite.
@@ -820,19 +760,55 @@ pub(crate) struct DocContactSheet {
 
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocPalette {
-    pub(crate) base: Vec<i64>,
-    /// mono | complementary | triadic | analogous | split | tetradic. Default mono.
+    /// generate (default) — synthesize a ramp/scheme · set — lock explicit
+    /// `colors` on a doc · snap — snap a cel/doc to its palette · swap — recolour
+    /// `from`→`to` · report — colour-usage tally · sync — broadcast one palette
+    /// across a document set.
+    pub(crate) op: Option<String>,
+    // -- generate --
+    /// `generate`: base colour [r,g,b(,a)] the ramp is built from (required).
+    pub(crate) base: Option<Vec<i64>>,
+    /// `generate`: mono | complementary | triadic | analogous | split | tetradic.
     pub(crate) scheme: Option<String>,
-    /// Colours per ramp (default 5).
+    /// `generate`: colours per ramp (default 5).
     pub(crate) count: Option<usize>,
     pub(crate) value_lo: Option<f32>,
     pub(crate) value_hi: Option<f32>,
     pub(crate) hue_shift: Option<f32>,
-    /// flat | arc | sat-in-shadow (default arc).
+    /// `generate`: flat | arc | sat-in-shadow (default arc).
     pub(crate) sat_curve: Option<String>,
     pub(crate) anchor_midtone: Option<bool>,
-    /// Store the flattened palette on this document id.
+    /// `generate`: store the flattened palette on this document id.
     pub(crate) set_doc: Option<String>,
+    // -- doc-targeted ops (set/snap/swap/report) --
+    /// Required for op=set|snap|swap|report (the document to act on).
+    pub(crate) doc_id: Option<String>,
+    pub(crate) layer: Option<usize>,
+    pub(crate) frame: Option<usize>,
+    /// `report`: [x0,y0,x1,y1] to restrict the tally; omit = whole canvas.
+    pub(crate) region: Option<Vec<i32>>,
+    /// `set`: palette swatches, each [r,g,b]/[r,g,b,a].
+    pub(crate) colors: Option<Vec<Vec<i64>>>,
+    /// `swap`: source colours to recolour (same length as `to`).
+    pub(crate) from: Option<Vec<Vec<i64>>>,
+    /// `swap`: replacement colours (same length as `from`).
+    pub(crate) to: Option<Vec<Vec<i64>>>,
+    /// `report`: max channel distance counting near-duplicates (default 8).
+    pub(crate) dupe_threshold: Option<i32>,
+    /// `snap`: override palette; `sync`: palette to broadcast. List of [r,g,b(,a)].
+    pub(crate) palette: Option<Vec<Vec<i64>>>,
+    /// `snap`: partial-alpha policy — preserve (default) | opaque | flatten.
+    pub(crate) alpha: Option<String>,
+    /// `snap`: alpha cutoff for alpha="opaque" (0..255, default 128).
+    pub(crate) cutoff: Option<u8>,
+    /// `snap`: backdrop [r,g,b] for alpha="flatten" (default opaque black).
+    pub(crate) bg: Option<Vec<i64>>,
+    /// `sync`: explicit target document ids (unioned with `prefix`).
+    pub(crate) ids: Option<Vec<String>>,
+    /// `sync`: select every document whose id starts with this.
+    pub(crate) prefix: Option<String>,
+    /// `sync`: copy the locked palette from this doc instead of passing `palette`.
+    pub(crate) from_doc: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -961,35 +937,6 @@ pub(crate) struct DocKeyframeTransform {
     pub(crate) easing: Option<String>,
     /// Snap resampled pixels back to the locked palette (default true).
     pub(crate) snap_palette: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocRefAnalyze {
-    pub(crate) doc_id: String,
-    /// Analyze this file instead of the doc's stored reference.
-    pub(crate) path: Option<String>,
-    /// Width to plan at (default: the canvas width); height derives aspect-true.
-    pub(crate) target_w: Option<u32>,
-    /// Subject palette size to extract (default 8).
-    pub(crate) colors: Option<usize>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocRefCompare {
-    pub(crate) doc_id: String,
-    pub(crate) frame: Option<usize>,
-    /// "side_by_side" (default) or "overlay" (reference ghosted under the art).
-    pub(crate) mode: Option<String>,
-    /// Grid divisions per axis for the ΔE cells (default 8, clamped 2..=16).
-    pub(crate) cells: Option<u32>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocDiffMap {
-    pub(crate) doc_id: String,
-    pub(crate) frame: Option<usize>,
-    /// How many worst individual pixels to list (default 20, clamped 1..=64).
-    pub(crate) top: Option<usize>,
 }
 
 #[derive(Deserialize, JsonSchema)]

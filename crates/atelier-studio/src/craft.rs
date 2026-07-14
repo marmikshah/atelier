@@ -1298,7 +1298,7 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
         }
         let off_pct = (off as f64 / nf * 1000.0).round() / 10.0;
         json!({"off_palette_pct": off_pct, "verdict": if off_pct > 5.0 { "warn" } else { "ok" },
-               "note": "exact-match check; soft FX bloom counts as off-palette — snap with doc_snap_palette if undeliberate"})
+               "note": "exact-match check; soft FX bloom counts as off-palette — snap with doc_palette op=snap if undeliberate"})
     };
 
     let round = |x: f64| (x * 1000.0).round() / 1000.0;

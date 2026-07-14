@@ -3,8 +3,8 @@
 The complete tool surface. Everything is drawn at native resolution and scaled up
 nearest-neighbour on export, so the pixel grid stays crisp.
 
-> **Profiles.** By default the server advertises a **core** set of 30 tools (the
-> canonical workflows); `ATELIER_PROFILE=full` advertises all 75 below. The
+> **Profiles.** By default the server advertises a **core** set of 24 tools (the
+> canonical workflows); `ATELIER_PROFILE=full` advertises all 63 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.
 
@@ -27,8 +27,6 @@ nearest-neighbour on export, so the pixel grid stays crisp.
   a family by id start (`hero-`), `contains` filters by substring.
 - `doc_info` — a document's full structure (layers, frames, cels, tags).
 - `delete_doc` — remove a document and its files.
-- `export_all` — export every document as a spritesheet PNG (+ JSON meta) into a
-  flat target dir for a game's `assets/`.
 
 ## The game layer — sets of documents
 
@@ -38,10 +36,8 @@ A game is not one sprite but a SET of documents that must read as one work.
   per-doc palette/value/scale/pivot stats plus set cohesion — palette union size,
   unlocked docs, cross-doc near-duplicate colours (OKLab ΔE), silhouette-height
   scale outliers vs the set median, the set value range, missing pivots. Verdict
-  is `cohesive` or a list of actionable warnings.
-- `doc_set_palette_sync` — broadcast ONE palette across a set: lock it on every
-  member and perceptually snap every cel onto it (explicit `palette` colours or
-  `from_doc` to copy another document's). The fix for set-audit palette warnings.
+  is `cohesive` or a list of actionable warnings. (broadcast one palette across
+  the set with `doc_palette op=sync`.)
 
 ## Structure & timeline
 
@@ -112,6 +108,9 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
     `cloud`(fBm)/`perlin`/`voronoi` through colour stops (terrain, clouds).
   - **text** `{x,y,text,color,size?}` — the built-in 3×5 pixel font (A-Z, 0-9 and
     common punctuation; lowercase maps to upper; returns the rendered `width`).
+  - **box_iso** `{cx,cy,s,ht,color,light_right?}` — a 3-face shaded isometric
+    cuboid (hard-surface form `form` can't make).
+  - **panel** `{x,y,w,h,fill,border?,bevel?}` — a HUD/UI box (fill + border + bevel).
 - `doc_clear_cel` — wipe a cel (kept as its own tool).
 - `doc_figure` — build a whole CONNECTED humanoid from named JOINT coordinates
   (`{"head":[x,y],"shoulder_l":[x,y],…,"foot_r":[x,y]}`): each bone is fleshed as
@@ -183,11 +182,6 @@ Coords are document pixels; color is `[r,g,b]` or `[r,g,b,a]`, alpha `0` erases.
   `squash`. With `receiver_layer` it lands on that layer clipped to its opaque
   pixels (the ground); else it sits behind the caster. Pairs with the light
   vector `doc_form_audit` infers.
-- `doc_palette_swap` — recolour a whole document in one call: swap each `from[i]`
-  colour to `to[i]` across every cel (exact match, all channels), updating the
-  stored palette too; optional `layer` / `frame` restrict scope. One sprite, many
-  palettes.
-
 All painting / effect / procedural ops above honour an active `doc_select` and a
 layer's blend mode. `doc_batch` validates op fields strictly — a misspelled or
 misplaced key fails fast with the expected key list instead of silently
@@ -214,9 +208,6 @@ Read the canvas as *data* — the agent's other eye.
 - `doc_contrast_check` — WCAG contrast ratios: a region vs its surround, all
   palette pairs, or a `one-bit` black/white threshold render — readability as
   numbers.
-- `doc_palette_report` — every distinct colour with pixel counts, % coverage,
-  in-locked-palette flags, and near-duplicate pairs: the real colour budget,
-  including the stray AA tints.
 - `doc_ramp_validate` — critique a shading ramp: monotonic value? even
   spacing? hue-shift direction and size per step? Warnings name the bad steps.
 - `doc_frame_diff` — what actually changed between two frames: counts by kind
@@ -246,8 +237,6 @@ The limb/keyframe-animation toolkit.
   transparent pixels, overwrite stamps everything) · `move` (shift the rect
   `[x0,y0,x1,y1]` by `dx,dy` in place — draw a limb once, nudge it per frame) ·
   `clear` (erase the rect). The clipboard works across frames **and** documents.
-- `doc_set_palette` — lock a cohesive list of swatches on the document; stored
-  and emitted in exports so a whole sprite set stays on-palette.
 
 ## Render & export
 
@@ -269,6 +258,13 @@ The limb/keyframe-animation toolkit.
     snap to ONE shared palette before encoding, so colours don't shimmer.
   - **tileset** `{tile_w,tile_h}` — slice frame 0 into a grid → PNG + `<name>.tsx`
     (Tiled XML) + `<name>.json`. Canvas must divide exactly by the tile size.
+  - **all** (library-wide — omit `doc_id`) — export every document as a
+    spritesheet PNG (+ JSON meta); `out_path` is a target DIRECTORY (one
+    spritesheet PNG + JSON per document) for a game's `assets/`.
+  - **atlas** (library-wide — omit `doc_id`) — pack every frame of every document
+    into a single atlas PNG + master JSON map (`doc`, `frame`, `rect`,
+    `duration_ms`, `pivot`, `boxes`) so a whole game's sprites slice from one
+    texture; `max_width` wraps the shelf packer (default 512).
 - `doc_nine_slice` — TRUE 9-slice: author a panel once (bevels, rounded
   corners, ornate borders), then emit it at ANY size — `src` rect cut 3×3 by
   `inset`, corners verbatim, edges/centre tiled or stretched into `dst`.
@@ -303,10 +299,6 @@ The limb/keyframe-animation toolkit.
   same blob rules, into a NEW `<id>-map` document. `doc_look` it to judge how
   the terrain actually reads, then export. `outside` = filled|empty controls the
   map border.
-- `export_all` — one spritesheet per document into a flat dir.
-- `export_atlas` — pack **every frame of every document** into a single atlas PNG
-  + master JSON (`doc`, `frame`, `rect`, `duration_ms`, `pivot`, `boxes`) so a
-  whole game's sprites slice from one texture.
 
 ## World-class craft (the art-quality pass)
 
@@ -353,16 +345,31 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
 
 **Perceptual colour (OKLab/OKLCh).**
 
-- `doc_palette` — the OKLCh palette generator: `scheme=mono` for a single
-  perceptually-even shading ramp (equal-lightness steps, hue shift, `sat_curve`
-  flat/arc/sat-in-shadow, `anchor_midtone`, evenness validation) or
-  `complementary/triadic/analogous/split/tetradic` for a cohesive multi-hue set
-  sharing lightness poles. `count` per ramp; `set_doc` locks it. (replaces `palette_ramp` / `doc_make_perceptual_ramp` / `doc_harmony_palette`)
-- `doc_snap_palette` — snap a cel/document to its locked palette by perceptual
-  nearest colour, killing off-palette drift from blends/dithers/FX. `alpha`
-  governs FX bloom / AA fringe: `preserve` (default, RGB-only) · `opaque`
-  (binarise alpha at `cutoff`, default 128 — collapse a soft bloom into crisp
-  on-palette pixels) · `flatten` (composite over `bg`, then snap fully opaque).
+- `doc_palette` — the palette tool; `op` picks the action:
+  - **generate** (default) — the OKLCh palette generator: `scheme=mono` for a
+    single perceptually-even shading ramp (equal-lightness steps, hue shift,
+    `sat_curve` flat/arc/sat-in-shadow, `anchor_midtone`, evenness validation) or
+    `complementary/triadic/analogous/split/tetradic` for a cohesive multi-hue set
+    sharing lightness poles. `count` per ramp; `set_doc` locks it. (replaces
+    `palette_ramp` / `doc_make_perceptual_ramp` / `doc_harmony_palette`)
+  - **set** — lock an explicit list of `colors` swatches on `doc_id`; stored and
+    emitted in exports so a whole sprite set stays on-palette.
+  - **snap** — snap a cel/document to its locked palette by perceptual nearest
+    colour, killing off-palette drift from blends/dithers/FX (`palette` overrides
+    the locked one). `alpha` governs FX bloom / AA fringe: `preserve` (default,
+    RGB-only) · `opaque` (binarise alpha at `cutoff`, default 128 — collapse a
+    soft bloom into crisp on-palette pixels) · `flatten` (composite over `bg`,
+    then snap fully opaque).
+  - **swap** — recolour a whole document: swap each `from[i]` colour to `to[i]`
+    across every cel (exact match, all channels), updating the stored palette too;
+    optional `layer` / `frame` restrict scope. One sprite, many palettes.
+  - **report** — every distinct colour with pixel counts, % coverage,
+    in-locked-palette flags, and near-duplicate pairs (`dupe_threshold`); scope by
+    `frame` / `layer` / `region`. The real colour budget, including stray AA tints.
+  - **sync** — broadcast ONE palette across a document set (`ids` / `prefix`):
+    lock it on every member and perceptually snap every cel onto it (explicit
+    `palette` colours or `from_doc` to copy another document's). The fix for
+    set-audit palette warnings.
 
 **Master finish & form.**
 
@@ -378,10 +385,7 @@ and *measure*, edit *structurally* and *non-destructively*, and reach
   borders (vs a flat black keyline).
 - `doc_material` — procedural material recipes: metal/wood/stone/water/cloth/
   skin/glass, from one base colour, deterministic in `seed`, on the opaque pixels.
-- `doc_box` — a 3-face shaded isometric cuboid (hard-surface form `form` can't
-  make).
 - `doc_perspective_guide` — a faint, deletable guide layer (thirds/grid/iso/vp).
-- `doc_panel` — a HUD/UI panel (fill + border + bevel).
 - `doc_burst` — radial FX frames (ring/disc/rays) tagged `burst`.
 - `doc_ref op=import` — external image (AI-gen/photo/scan) → clean pixel art:
   TRUE area-average downscale (aspect-derived height when `target_h` omitted),
@@ -397,19 +401,20 @@ recall into a measured, same-turn signal:
 - `doc_ref op=set` — attach the ORIGINAL image to a document (copied into
   the doc dir, persists with it); returns aspect-true canvas-fit suggestions.
   Omit `path` to clear.
-- `doc_ref_analyze` — VIEW the reference inline and decompose it into drawing
+- `doc_ref op=analyze` — VIEW the reference inline and decompose it into drawing
   scaffolding: background coverage, a frequency-weighted subject palette to
-  lock with `doc_set_palette`, and the subject's silhouette as a text grid at
+  lock with `doc_palette op=set`, and the subject's silhouette as a text grid at
   target size.
-- `doc_ref_compare` — SCORE a frame against the reference after every pass:
-  inline side-by-side (or `mode="overlay"` ghost), silhouette IoU (≥0.80 =
-  shape reads), per-cell OKLab ΔE with the worst cells named as canvas rects,
-  and reference colours missing from the palette.
-- `doc_diff_map` — PER-PIXEL signed error map vs the reference (the see-and-repair
-  eye `ref_compare`'s aggregate ΔE can't be): a HEAT png (red = too light, blue =
-  too dark, green = wrong colour; brightness = ΔE) plus the `top` worst individual
-  pixels, each with x,y, ΔE and a fix direction (lighten/darken + saturate/
-  desaturate + shift hue). Fix the named pixels, re-run — converges the last 5%.
+- `doc_ref op=compare` — SCORE a frame against the reference after every pass:
+  inline side-by-side (or `mode="overlay"` ghost; `mode="side_by_side"` default),
+  silhouette IoU (≥0.80 = shape reads), per-cell OKLab ΔE (`cells` grid) with the
+  worst cells named as canvas rects, and reference colours missing from the palette.
+- `doc_ref op=diff` — PER-PIXEL signed error map vs the reference (the see-and-repair
+  eye `doc_ref op=compare`'s aggregate ΔE can't be): a HEAT png (red = too light,
+  blue = too dark, green = wrong colour; brightness = ΔE) plus the `top` worst
+  individual pixels, each with x,y, ΔE and a fix direction (lighten/darken +
+  saturate/desaturate + shift hue). Fix the named pixels, re-run — converges the
+  last 5%.
 - `doc_critique_vision` — the AI eye for FREE-FORM art (no reference). Renders the
   frame and asks the MCP HOST to run its own vision model over it (atelier ships
   no weights, makes no network call, holds no keys — the host samples). Returns a
