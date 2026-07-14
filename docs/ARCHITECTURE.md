@@ -94,7 +94,7 @@ The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
   (mutations grouped
   into op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
   one or one-family per studio operation. A hand-written `list_tools` advertises
-  only the 24-tool **core profile** by default (the full 75 with
+  only the 20-tool **core profile** by default (the full 63 with
   `ATELIER_PROFILE=full`); `call_tool` routes them all, so the filter is
   discovery-only. Runs over two transports that share the router — stdio
   (`run`) and streamable HTTP (`run_http`); the `Recorder` turns a live session

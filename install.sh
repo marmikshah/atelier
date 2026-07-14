@@ -115,7 +115,7 @@ if [ -z "$MODE" ]; then
 fi
 
 # -- tool profile -----------------------------------------------------------------
-# core (24 tools) is the default: everything the sprite / animation / tile /
+# core (20 tools) is the default: everything the sprite / animation / tile /
 # game-set loops need, with a small context footprint. full (all 63) adds the
 # long tail (extra effects, audits, rigging). MORE TOOLS DO NOT MEAN BETTER ART —
 # every tool still runs via `atelier replay` and recipes regardless; the profile
@@ -124,7 +124,7 @@ fi
 PROFILE="${ATELIER_PROFILE:-}"
 if [ -z "$PROFILE" ]; then
   say ""
-  say "Tool profile — core advertises 24 tools, full advertises all 63."
+  say "Tool profile — core advertises 20 tools, full advertises all 63."
   say "  (More tools ≠ better graphics: the extra surface only costs the model"
   say "   context and risks wrong-tool picks. Every tool still executes either way.)"
   case "$(ask "Advertise the [C]ore profile or the [f]ull surface?")" in

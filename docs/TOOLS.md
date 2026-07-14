@@ -3,7 +3,7 @@
 The complete tool surface. Everything is drawn at native resolution and scaled up
 nearest-neighbour on export, so the pixel grid stays crisp.
 
-> **Profiles.** By default the server advertises a **core** set of 24 tools (the
+> **Profiles.** By default the server advertises a **core** set of 20 tools (the
 > canonical workflows); `ATELIER_PROFILE=full` advertises all 63 below. The
 > profile filters discovery only — every tool still executes (recipes/`replay`
 > always work). Tools below that aren't in the core set are the *full*-only tail.

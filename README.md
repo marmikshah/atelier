@@ -63,7 +63,7 @@ doc_create → paint → doc_look (look!) → fix → doc_export op=anim
 | **Prebuilt binaries** | macOS (Apple Silicon), Linux x86_64, Windows — [latest release](https://github.com/marmikshah/atelier/releases/latest) |
 | **From source** | `cargo install --path .` |
 | **Documents live in** | `~/.atelier` (override with `ATELIER_HOME`) |
-| **Tool profile** | 24-tool core by default; `ATELIER_PROFILE=full` for all 63 |
+| **Tool profile** | 20-tool core by default; `ATELIER_PROFILE=full` for all 63 |
 
 ## Recipes
 

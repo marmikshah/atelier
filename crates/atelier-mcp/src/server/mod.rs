@@ -1553,12 +1553,15 @@ impl Atelier {
     }
 }
 
-/// The default ("core") tool profile — the 24 tools the canonical sprite /
-/// animation / tile / game-set / recreate-from-reference workflows need. The
-/// full surface (extra effects, rigging, audits, library exports) is advertised when
-/// `ATELIER_PROFILE=full`. The profile filters only what `tools/list` ADVERTISES;
-/// every tool still EXECUTES via call_tool (so `atelier replay` and a flag-flip
-/// both reach the long tail).
+/// The default ("core") tool profile — the 20 tools an agent actually reaches
+/// for on a typical sprite / animation / recreate-from-reference task, chosen by
+/// usage probability (the canonical workflows + the create→draw→animate→audit→
+/// export spine). Everything else — heavy effects, the rig/tile/particle
+/// subsystems, the niche audits, multi-doc set tools — stays behind
+/// `ATELIER_PROFILE=full`. The profile filters only what `tools/list`
+/// ADVERTISES; every tool still EXECUTES via call_tool (so `atelier replay` and
+/// a flag-flip both reach the long tail). Keep it small: every advertised tool
+/// taxes the model's attention on every call.
 const CORE_TOOLS: &[&str] = &[
     // lifecycle + the eye
     "doc_create",
@@ -1576,22 +1579,17 @@ const CORE_TOOLS: &[&str] = &[
     "doc_layer",
     "doc_frame",
     "doc_region",
-    "doc_select",
     "doc_add_tag",
     // palette (op-dispatched: generate|set|snap|swap|report|sync)
     "doc_palette",
     // export
     "doc_export",
-    // most-used audits (readers)
+    // the light audit set the see-and-fix loop leans on
     "doc_critique",
     "doc_silhouette",
     "doc_components",
-    "doc_contrast_check",
-    "doc_frame_diff",
     // reference loop (op-dispatched: set|import|analyze|compare|diff)
     "doc_ref",
-    // the game layer — a game is a SET of documents, not one
-    "doc_set_audit",
 ];
 
 /// True when the full tool surface should be advertised (`ATELIER_PROFILE=full`).
@@ -1603,7 +1601,7 @@ fn profile_full() -> bool {
 
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
-    /// Advertise the active tool profile: the 24 `CORE_TOOLS` by default, or the
+    /// Advertise the active tool profile: the 20 `CORE_TOOLS` by default, or the
     /// full surface when `ATELIER_PROFILE=full`. Discovery filter only — every
     /// tool still executes via `call_tool`, so recipes/replay reach the tail.
     async fn list_tools(
@@ -1722,7 +1720,7 @@ impl ServerHandler for Atelier {
              a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
              (tween/form/quantize/relight) — restore rolls back. Export with \
              doc_export (op=sheet|anim|tileset) / op=all. list_docs browses the \
-             library. This is the CORE tool profile (24 tools); the full 63-tool surface \
+             library. This is the CORE tool profile (20 tools); the full 63-tool surface \
              (extra effects like relight/material/rim_light, rigging, audits, \
              perspective/wang/atlas) is available by restarting with \
              ATELIER_PROFILE=full."
@@ -2079,7 +2077,7 @@ mod tests {
         // those surfaces in the same commit — this assertion is the reminder.
         assert_eq!(
             CORE_TOOLS.len(),
-            24,
+            20,
             "core profile size changed — update the docs"
         );
         assert_eq!(
@@ -2090,7 +2088,7 @@ mod tests {
         // Both profiles, exercised without touching env.
         assert_eq!(
             Atelier::new().with_profile(false).advertised_tools().len(),
-            24
+            20
         );
         assert_eq!(
             Atelier::new().with_profile(true).advertised_tools().len(),
@@ -2100,7 +2098,7 @@ mod tests {
         // it has drifted before; pin its counts too.
         let instructions = Atelier::new().get_info().instructions.unwrap_or_default();
         assert!(
-            instructions.contains("24 tools"),
+            instructions.contains("20 tools"),
             "get_info instructions drifted from the core count"
         );
         assert!(
