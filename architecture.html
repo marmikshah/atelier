@@ -150,14 +150,14 @@
     <div class="rung"><span class="rt">tool call</span><span class="rd">parse params &rarr; Studio method &rarr; ops (+ a <em>look</em> back: inline PNG, stats, critique)</span></div>
     <div class="rung"><span class="rt">recipe</span><span class="rd">the ordered tool calls of a session — recorded by the server, replayable by <code>atelier replay</code>; a document <em>is</em> the product of its recipe</span></div>
   </div>
-  <p class="prose muted">So the full flow is not a separate design — it is this ladder read top to bottom. The see-and-critique loop (<code>doc_look</code>, <code>doc_critique</code>, <code>doc_ref_compare</code>) exists because the agent driving the ops is nearly blind: draw &rarr; look &rarr; fix, measured instead of remembered.</p>
+  <p class="prose muted">So the full flow is not a separate design — it is this ladder read top to bottom. The see-and-critique loop (<code>doc_look</code>, <code>doc_critique</code>, <code>doc_ref op=compare</code>) exists because the agent driving the ops is nearly blind: draw &rarr; look &rarr; fix, measured instead of remembered.</p>
 </section>
 
 
 <section id="idea" class="prose">
   <h2>What that buys: replayable art</h2>
   <p><strong>Every document is an ordered sequence of tool calls.</strong> Draw a sprite through the API and the session can be recorded as a <em>recipe</em> — a JSON list of steps — and replayed byte-for-byte later. The files in <code>docs/examples/*.json</code> are exactly that: they are the brand art <em>and</em> the integration tests (<code>atelier replay</code> runs them against a real server).</p>
-  <p>The second idea is the <strong>see-and-critique loop</strong>. The model drawing the art is nearly blind, so the API is full of eyes: <code>doc_look</code> returns the frame as an inline PNG plus value statistics, <code>doc_critique</code> names failure modes, <code>doc_ref_compare</code> scores the canvas against a reference image. Draw → look → fix, measured instead of remembered.</p>
+  <p>The second idea is the <strong>see-and-critique loop</strong>. The model drawing the art is nearly blind, so the API is full of eyes: <code>doc_look</code> returns the frame as an inline PNG plus value statistics, <code>doc_critique</code> names failure modes, <code>doc_ref op=compare</code> scores the canvas against a reference image. Draw → look → fix, measured instead of remembered.</p>
   <p>State lives on disk under <code>~/.atelier</code> (override: <code>ATELIER_HOME</code>): one directory per document holding <code>doc.json</code> (structure) plus one PNG per <em>cel</em> — the image at one (layer, frame) coordinate.</p>
 </section>
 
@@ -178,7 +178,7 @@
     <div class="crate shell">
       <div class="head"><span class="name">atelier-mcp</span><span class="role">the imperative shell — rmcp <code>#[tool]</code> router over stdio + HTTP</span></div>
       <div class="chips">
-        <span class="chip hot">server/mod.rs · 75 tools, parse → Studio → format</span>
+        <span class="chip hot">server/mod.rs · 63 tools, parse → Studio → format</span>
         <span class="chip">server/params.rs · request schemas</span>
         <span class="chip">server/recorder.rs · session → recipe</span>
         <span class="chip">server/resources.rs · browse docs/renders</span>
@@ -217,12 +217,12 @@
     </div>
   </div>
 
-  <p class="prose muted" style="margin-top:1rem">By default the server <em>advertises</em> a 30-tool core profile (<code>ATELIER_PROFILE=full</code> advertises all 75). That filter is discovery-only — every tool always executes, so replay always works. Both counts are pinned by tests; the docs cannot silently drift.</p>
+  <p class="prose muted" style="margin-top:1rem">By default the server <em>advertises</em> a 20-tool core profile (<code>ATELIER_PROFILE=full</code> advertises all 63). That filter is discovery-only — every tool always executes, so replay always works. Both counts are pinned by tests; the docs cannot silently drift.</p>
 </section>
 
 <section id="flow">
   <h2>Life of one tool call</h2>
-  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 75 tools:</p>
+  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 63 tools:</p>
   <ol class="flow">
     <li><span class="steplabel">1</span><div>Transport receives the call — stdio or streamable HTTP at <code>/mcp</code>, one shared router.<span class="where">atelier-mcp/src/server/mod.rs · run / run_http</span></div></li>
     <li><span class="steplabel">2</span><div><code>call_tool</code> dispatches; if recording is on, the successful step is appended to the recipe file.<span class="where">server/mod.rs + server/recorder.rs</span></div></li>
@@ -270,7 +270,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
       <h3>env vars (all optional, all in .env.example)</h3>
       <div class="tablewrap"><table>
         <tr><td><code>ATELIER_HOME</code></td><td>where documents live (default <code>~/.atelier</code>)</td></tr>
-        <tr><td><code>ATELIER_PROFILE</code></td><td><code>full</code> advertises all 75 tools</td></tr>
+        <tr><td><code>ATELIER_PROFILE</code></td><td><code>full</code> advertises all 63 tools</td></tr>
         <tr><td><code>ATELIER_HTTP</code></td><td>HTTP bind address</td></tr>
         <tr><td><code>ATELIER_RECORD</code></td><td>record the session into a recipe</td></tr>
         <tr><td><code>ATELIER_ALLOWED_HOSTS</code></td><td>extra Host headers for LAN use</td></tr>
@@ -307,7 +307,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
         <li>Studio method first (pick the right studio module), tests beside it</li>
         <li>param struct in <code>server/params.rs</code>, thin <code>#[tool]</code> method in <code>server/mod.rs</code></li>
         <li>decide: core profile? add to <code>CORE_TOOLS</code></li>
-        <li>the count-pin test fails until README / TOOLS.md / .env.example counts are updated — on purpose</li>
+        <li>the count-pin test fails until README / .env.example counts are updated — on purpose</li>
       </ul>
     </div>
     <div class="card">
@@ -336,7 +336,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
 <footer>
   <div>drawn from the source on <a href="https://github.com/marmikshah/atelier">github.com/marmikshah/atelier</a> · MIT ·
   <a href="https://github.com/marmikshah/atelier/blob/master/docs/ARCHITECTURE.md">ARCHITECTURE.md</a> ·
-  <a href="https://github.com/marmikshah/atelier/blob/master/docs/TOOLS.md">TOOLS.md</a></div>
+  <a href="https://marmikshah.github.io/atelier/tools.html">tool reference</a></div>
 </footer>
 
 <script>

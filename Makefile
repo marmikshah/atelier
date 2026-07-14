@@ -8,11 +8,19 @@ BIND ?= 127.0.0.1:8765
 HOME_DIR ?= $(HOME)/.atelier
 
 .DEFAULT_GOAL := run
-.PHONY: help run serve stdio build release test fmt lint check pre-commit-checks branding hooks clean install daemon daemon-status daemon-uninstall
+.PHONY: help run serve stdio build release test fmt lint check pre-commit-checks branding hooks clean install daemon daemon-status daemon-uninstall docs docs-check
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
+
+docs: release ## Regenerate the HTML tool reference (tools.html) from the live registry
+	$(BIN) tools --html > tools.html
+	@echo "wrote tools.html"
+
+docs-check: release ## Fail if tools.html is stale (CI drift guard)
+	@$(BIN) tools --html | diff -q - tools.html >/dev/null || { \
+		echo "tools.html is stale — run 'make docs' and commit"; exit 1; }
 
 run: serve ## Default: release build, then run the HTTP MCP server
 

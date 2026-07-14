@@ -4,6 +4,27 @@ All notable changes to atelier are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+Tool-surface fusion, tier 1 (breaking). Twelve near-sibling tools fold into four
+op-dispatched hubs — the same `op=`/`kind=` pattern the surface already used —
+cutting the full profile from 75 to 63 and the core profile from 30 to 24 with
+no capability lost. Old tool names are removed, not aliased.
+
+### Changed (breaking)
+
+- **`doc_palette`** absorbs the palette family as ops: `op=set`
+  (was `doc_set_palette`), `op=snap` (`doc_snap_palette`), `op=swap`
+  (`doc_palette_swap`), `op=report` (`doc_palette_report`), `op=sync`
+  (`doc_set_palette_sync`); `op=generate` stays the default.
+- **`doc_ref`** absorbs the reference analysis as ops: `op=analyze`
+  (was `doc_ref_analyze`), `op=compare` (`doc_ref_compare`), `op=diff`
+  (`doc_diff_map`).
+- **`doc_export`** absorbs the library-wide exporters as ops: `op=all`
+  (was `export_all`), `op=atlas` (`export_atlas`); omit `doc_id` for these.
+- **`doc_draw`** absorbs the shape primitives as ops: `op=box_iso`
+  (was `doc_box`), `op=panel` (`doc_panel`).
+
 ## [1.3.0] — 2026-07-11
 
 The identity + polish release. atelier stands on its own name — **the pixel-art
