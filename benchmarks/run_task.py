@@ -147,9 +147,10 @@ def render_tool_result(result: Any) -> tuple[str, list[dict[str, Any]]]:
         if kind == "text":
             texts.append(block.text)
         elif kind == "image":
+            # Extracted here, but only forwarded to the model for doc_look (see
+            # the loop). No text note — a dropped preview must not claim a frame.
             data_uri = f"data:{block.mimeType};base64,{block.data}"
             images.append({"type": "image_url", "image_url": {"url": data_uri}})
-            texts.append("[inline image returned — see attached frame]")
         else:
             texts.append(json.dumps(getattr(block, "__dict__", str(block)), default=str))
     text = "\n".join(texts) if texts else "(no content)"
@@ -326,7 +327,12 @@ async def run(args: argparse.Namespace) -> int:
                             "images": len(imgs),
                         }
                     )
-                    pending_images.extend(imgs)
+                    # The agent is BLIND unless it looks: only doc_look's frame is
+                    # fed back as an image. Other tools (paint_grid, ref, snap…)
+                    # return inline previews for convenience, but forwarding those
+                    # defeats the see-and-fix loop and explodes image-token cost.
+                    if name == "doc_look":
+                        pending_images.extend(imgs)
 
                 if pending_images:
                     messages.append({"role": "user", "content": pending_images})
