@@ -49,14 +49,29 @@ DEFAULT_BASE_URL = "https://api.poe.com/v1"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_BINARY = REPO_ROOT / "target" / "release" / "atelier"
 
-SYSTEM_PROMPT = (
-    "You are an expert pixel artist driving the atelier editor through its MCP "
-    "tools. Create the requested art by calling tools. After each burst of edits "
-    "call doc_look to see the frame, then keep refining. The task is ANIMATED: you "
-    "MUST end by exporting an animated GIF — call doc_export with op=\"anim\", "
-    'format="gif", and an out_path ending in ".gif". Only stop once that GIF is '
-    "written. Then reply with a short final summary. Do not ask the user questions."
+# The animation requirement, appended to whatever framing the server supplies so
+# every run ends in a comparable artifact.
+GIF_REQUIREMENT = (
+    "This task is ANIMATED. You MUST finish by exporting an animated GIF: call "
+    'doc_export with op="anim", format="gif", and an out_path ending in ".gif". '
+    "Only stop once that GIF is written, then reply with a short final summary. "
+    "Do not ask the user questions."
 )
+
+# Fallback framing if the server advertises no `instructions` (kept neutral and
+# identical across models — the comparison stays fair).
+FALLBACK_FRAMING = (
+    "You are an expert pixel artist driving the atelier editor through its MCP "
+    "tools. Create the requested art by calling tools, calling doc_look to see the "
+    "frame and refining after each burst of edits."
+)
+
+
+def build_system_prompt(server_instructions: str | None) -> str:
+    """Use atelier's own server `instructions` as the framing (how real MCP
+    clients see it), plus the GIF requirement. Fall back to neutral wording."""
+    framing = (server_instructions or "").strip() or FALLBACK_FRAMING
+    return f"{framing}\n\n{GIF_REQUIREMENT}"
 
 
 def _is_gif_export(name: str, call_args: dict[str, Any]) -> bool:
@@ -254,10 +269,12 @@ async def run(args: argparse.Namespace) -> int:
     tokens = {"prompt": 0, "completion": 0, "total": 0}
     gif_exported = False
     stop_reason = "unknown"
+    system_prompt = ""
 
     async with stdio_client(server) as (read, write):
         async with ClientSession(read, write) as session:
-            await session.initialize()
+            init = await session.initialize()
+            system_prompt = build_system_prompt(getattr(init, "instructions", None))
             mcp_tools = (await session.list_tools()).tools
             tools = mcp_tools_to_openai(mcp_tools)
             print(
@@ -267,7 +284,7 @@ async def run(args: argparse.Namespace) -> int:
             )
 
             messages: list[dict[str, Any]] = [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": task},
             ]
 
@@ -372,7 +389,7 @@ async def run(args: argparse.Namespace) -> int:
         "profile": args.profile,
         "task_name": task_name,
         "task": task,
-        "system_prompt": SYSTEM_PROMPT,
+        "system_prompt": system_prompt,
         "metrics": {
             "stop_reason": stop_reason,
             "steps": events[-1]["step"] if events else 0,
