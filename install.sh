@@ -1,13 +1,23 @@
 #!/bin/sh
-# atelier installer — downloads the latest release binary for this machine.
+# atelier installer — installs the binary and sets up the background daemon.
+# By default it downloads the latest release; --source builds the current
+# checkout instead. Registers with your MCP client at the end.
 #
 #   curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
+#   curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh -s -- --yes
 #   curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh -s -- uninstall
+#   ./install.sh --source          # build this branch and install it
+#
+# Flags:
+#   --yes, -y            non-interactive; take every default (daemon + defaults)
+#   --source, --build    build the current checkout instead of downloading
+#   uninstall            remove the binary and the daemon
 #
 # Options (environment variables):
+#   ATELIER_YES=1        same as --yes (non-interactive)
 #   ATELIER_VERSION      install a specific tag (e.g. v1.0.1); default: latest
 #   ATELIER_INSTALL_DIR  where the binary goes; default: ~/.local/bin
-#   ATELIER_MODE         "stdio" (default) or "http" (background daemon)
+#   ATELIER_MODE         "http" (background daemon, default) or "stdio" (client spawns it)
 set -eu
 
 REPO="marmikshah/atelier"
@@ -15,12 +25,23 @@ INSTALL_DIR="${ATELIER_INSTALL_DIR:-$HOME/.local/bin}"
 BIN="$INSTALL_DIR/atelier"
 MCP_URL="http://127.0.0.1:8765/mcp"
 
+# --source / --build builds the current checkout instead of downloading a release.
+# --yes / -y (or ATELIER_YES=1) runs fully non-interactively, taking every
+# default: reinstall, the background daemon, the default tool profile.
+FROM_SOURCE=""
+YES="${ATELIER_YES:-}"
+for a in "$@"; do case "$a" in
+  --source|--build) FROM_SOURCE=1 ;;
+  --yes|-y) YES=1 ;;
+esac; done
+
 say()  { printf '%s\n' "$*"; }
 fail() { printf 'install: %s\n' "$*" >&2; exit 1; }
 
-# Interactive prompts read /dev/tty (stdin is the pipe under `curl | sh`);
-# without a usable terminal every prompt falls back to its default.
-ask() { # ask <question> -> stdout: the answer ("" when no terminal)
+# Interactive prompts read /dev/tty (stdin is the pipe under `curl | sh`).
+# --yes, or no usable terminal, makes every prompt fall back to its default.
+ask() { # ask <question> -> stdout: the answer ("" when non-interactive)
+  [ -n "$YES" ] && { printf ''; return; }
   { true < /dev/tty; } 2>/dev/null || { printf ''; return; }
   printf '%s ' "$1" > /dev/tty
   read -r ans < /dev/tty || ans=""
@@ -30,7 +51,7 @@ ask() { # ask <question> -> stdout: the answer ("" when no terminal)
 # -- uninstall ------------------------------------------------------------------
 do_uninstall() {
   [ -x "$BIN" ] || fail "nothing to uninstall at $BIN"
-  "$BIN" service uninstall >/dev/null 2>&1 || true # stop the daemon if present
+  "$BIN" uninstall >/dev/null 2>&1 || true # stop the daemon if present
   rm -f "$BIN"
   say "Removed $BIN (and stopped the background daemon, if one was installed)."
   say "Documents in ~/.atelier are untouched. If registered with an MCP client,"
@@ -47,6 +68,16 @@ if [ -x "$BIN" ]; then
     *)   say "Updating existing installation." ;;
   esac
 fi
+
+if [ -n "$FROM_SOURCE" ]; then
+  command -v cargo >/dev/null 2>&1 || fail "--source needs cargo (https://rustup.rs)"
+  [ -f Cargo.toml ] || fail "--source must run from inside an atelier checkout"
+  say "Building atelier from source (this can take a minute)..."
+  cargo build --release || fail "cargo build failed"
+  mkdir -p "$INSTALL_DIR"
+  install -m 755 target/release/atelier "$BIN"
+  say "Installed: $BIN ($("$BIN" --version)) — built from source"
+else
 
 command -v curl >/dev/null 2>&1 || fail "curl is required"
 command -v tar  >/dev/null 2>&1 || fail "tar is required"
@@ -92,6 +123,7 @@ mkdir -p "$INSTALL_DIR"
 install -m 755 "$TMP/atelier" "$BIN"
 
 say "Installed: $BIN ($("$BIN" --version))"
+fi
 
 # -- PATH hint --------------------------------------------------------------------
 case ":$PATH:" in
@@ -108,9 +140,10 @@ esac
 MODE="${ATELIER_MODE:-}"
 if [ -z "$MODE" ]; then
   say ""
-  case "$(ask "Run mode — [S]tdio (client spawns it) or [h]ttp (shared background daemon)?")" in
-    h|H) MODE=http ;;
-    *)   MODE=stdio ;;
+  # Daemon is the default (Enter, or a non-interactive `curl | sh`); stdio is opt-in.
+  case "$(ask "Run mode — [D]aemon (shared background HTTP, default) or [s]tdio (client spawns it)?")" in
+    s|S) MODE=stdio ;;
+    *)   MODE=http ;;
   esac
 fi
 
@@ -134,10 +167,10 @@ if [ -z "$PROFILE" ]; then
 fi
 
 if [ "$MODE" = "http" ]; then
-  # The daemon reads ATELIER_PROFILE at launch; export it so `service install`
+  # The daemon reads ATELIER_PROFILE at launch; export it so `atelier install`
   # bakes it into the launchd/systemd manifest.
   [ "$PROFILE" = "full" ] && export ATELIER_PROFILE=full
-  if "$BIN" service install; then
+  if "$BIN" install; then
     say "Daemon running at $MCP_URL (profile: $PROFILE)"
   else
     say "Daemon install failed — register over stdio instead."
