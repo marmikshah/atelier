@@ -36,11 +36,11 @@ pre-commit-checks: ## Format-check + clippy gate — exactly what the git hooks 
 	cargo clippy --all-targets -- -D warnings
 
 docs: release ## Regenerate the HTML tool reference (tools.html) from the live registry
-	$(BIN) tools --html > tools.html
+	$(BIN) tools --html > site/tools.html
 	@echo "wrote tools.html"
 
 docs-check: release ## Fail if tools.html is stale (CI drift guard)
-	@$(BIN) tools --html | diff -q - tools.html >/dev/null || { \
+	@$(BIN) tools --html | diff -q - site/tools.html >/dev/null || { \
 		echo "tools.html is stale — run 'make docs' and commit"; exit 1; }
 
 clean: ## Remove build artifacts
