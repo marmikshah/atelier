@@ -12,7 +12,7 @@ use std::process::Command;
 const LABEL: &str = "com.atelier.server";
 const DEFAULT_BIND: &str = "127.0.0.1:8765";
 
-/// Entry point for `atelier service <install|uninstall|status> [--bind ADDR]
+/// Entry point for `atelier <install|uninstall|status> [--bind ADDR]
 /// [--home DIR]`. Returns a process exit code.
 pub fn run(args: &[String]) -> i32 {
     let cmd = args.first().map(|s| s.as_str());
@@ -22,7 +22,7 @@ pub fn run(args: &[String]) -> i32 {
             home.map(PathBuf::from).unwrap_or_else(default_home),
         ),
         (Err(e), _) | (_, Err(e)) => {
-            eprintln!("atelier service: {e}");
+            eprintln!("atelier: {e}");
             return 2;
         }
     };
@@ -35,7 +35,7 @@ pub fn run(args: &[String]) -> i32 {
         ("--home", &home_dir.to_string_lossy()),
     ] {
         if val.chars().any(|c| c.is_control()) {
-            eprintln!("atelier service: {name} may not contain control characters");
+            eprintln!("atelier: {name} may not contain control characters");
             return 2;
         }
     }
@@ -45,11 +45,11 @@ pub fn run(args: &[String]) -> i32 {
         Some("status") => status(),
         _ => {
             eprintln!(
-                "usage: atelier service <install|uninstall|status> [--bind ADDR] [--home DIR]\n\
+                "usage: atelier <install|uninstall|status> [--bind ADDR] [--home DIR]\n\
                  \n\
-                 install    set up + start the background service (launchd / systemd --user)\n\
-                 uninstall  stop + remove the service\n\
-                 status     show whether the service is running and where logs live"
+                 install    set up + start the background daemon (launchd / systemd --user)\n\
+                 uninstall  stop + remove the daemon\n\
+                 status     show whether the daemon is running and where logs live"
             );
             2
         }
@@ -223,7 +223,7 @@ fn install(bind: &str, home_dir: &std::path::Path) -> i32 {
             let uid = match current_uid() {
                 Ok(u) => u,
                 Err(e) => {
-                    eprintln!("atelier service: {e}");
+                    eprintln!("atelier: {e}");
                     return 1;
                 }
             };
@@ -317,7 +317,7 @@ fn uninstall() -> i32 {
                         .args(["bootout", &format!("gui/{uid}/{LABEL}")])
                         .output();
                 }
-                Err(e) => eprintln!("atelier service: {e} — skipping launchctl bootout"),
+                Err(e) => eprintln!("atelier: {e} — skipping launchctl bootout"),
             }
             let _ = std::fs::remove_file(&plist_path);
             println!(
@@ -363,7 +363,7 @@ fn status() -> i32 {
             let uid = match current_uid() {
                 Ok(u) => u,
                 Err(e) => {
-                    eprintln!("atelier service: {e}");
+                    eprintln!("atelier: {e}");
                     return 1;
                 }
             };
@@ -385,7 +385,7 @@ fn status() -> i32 {
                     0
                 }
                 _ => {
-                    println!("○ {LABEL}: not installed (run `atelier service install`)");
+                    println!("○ {LABEL}: not installed (run `atelier install`)");
                     1
                 }
             }

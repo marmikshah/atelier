@@ -13,9 +13,9 @@
 //!   ATELIER_ALLOWED_HOSTS="my-workstation.local,192.168.1.20:8765"
 //!
 //! Daemon (background HTTP server, survives logout/reboot):
-//!   atelier service install      # launchd (macOS) / systemd --user (Linux)
-//!   atelier service status
-//!   atelier service uninstall
+//!   atelier install      # launchd (macOS) / systemd --user (Linux)
+//!   atelier status
+//!   atelier uninstall
 
 use atelier_mcp::server;
 
@@ -29,10 +29,10 @@ USAGE:
     atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
     atelier --record <recipe.json>  record this session's tool calls into a replayable recipe
             (works with stdio and --http; also ATELIER_RECORD=<path>)
-    atelier service install       install + start the background daemon (launchd / systemd --user)
+    atelier install               install + start the background daemon (launchd / systemd --user)
             [--bind ADDR] [--home DIR]
-    atelier service status        show daemon state and log locations
-    atelier service uninstall     stop + remove the daemon
+    atelier status                show daemon state and log locations
+    atelier uninstall             stop + remove the daemon
     atelier replay <recipe.json>  replay a scripted sequence of tool calls (MCP client)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier tools [--html]        list the tools (plain text; --html emits the reference page)
@@ -51,7 +51,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Subcommands / flags that don't start the server.
     match args.get(1).map(|s| s.as_str()) {
-        Some("service") => std::process::exit(service::run(&args[2..])),
+        // Background daemon management (launchd / systemd --user). The verb is
+        // args[1], which service::run dispatches on directly.
+        Some("install") | Some("uninstall") | Some("status") => {
+            std::process::exit(service::run(&args[1..]))
+        }
         // Runs inside this runtime (it drives a child MCP server over stdio).
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         Some("--version") | Some("-V") => {

@@ -50,9 +50,11 @@ deterministic.
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
-The installer registers atelier with your MCP client (stdio or a background
-HTTP daemon). Restart your session, then ask your agent for art — *"draw me a
-blinking cat sprite and export it as a GIF"*. Under the hood that becomes:
+The installer sets up the background daemon by default and prints the one-line
+command to register it with your MCP client (pass `--stdio` for the
+client-spawns-it mode instead). Restart your session, then ask your agent for
+art — *"draw me a blinking cat sprite and export it as a GIF"*. Under the hood
+that becomes:
 
 ```
 doc_create → paint → doc_look (look!) → fix → doc_export op=anim
@@ -61,7 +63,7 @@ doc_create → paint → doc_look (look!) → fix → doc_export op=anim
 | | |
 |---|---|
 | **Prebuilt binaries** | macOS (Apple Silicon), Linux x86_64, Windows — [latest release](https://github.com/marmikshah/atelier/releases/latest) |
-| **From source** | `cargo install --path .` |
+| **From source** | `cargo install --path .`, or `./install.sh --source` to build this checkout and set up the daemon |
 | **Docker** | `ghcr.io/marmikshah/atelier` (see below) |
 | **Documents live in** | `~/.atelier` (override with `ATELIER_HOME`) |
 | **Tool profile** | 20-tool core by default; `ATELIER_PROFILE=full` for all 63 |
@@ -98,7 +100,7 @@ atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
 ```
 
 The recipes under [docs/examples](docs/examples) are both the brand art and
-the test suite — run `make branding` to watch all of them draw.
+the test suite — replay any of them with `atelier replay docs/examples/<name>.json`.
 
 ## How it's built
 
