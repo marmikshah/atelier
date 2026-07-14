@@ -38,9 +38,6 @@
 
   .controls{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:.8rem 0}
   .controls .wrap{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center}
-  .seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}
-  .seg button{font-family:var(--mono);font-size:.74rem;padding:.45rem .9rem;border:0;background:var(--panel);color:var(--ink2);cursor:pointer}
-  .seg button.on{background:var(--acc);color:#14161d;font-weight:700}
   .chips{display:flex;gap:.35rem;flex-wrap:wrap}
   .chip{font-family:var(--mono);font-size:.68rem;padding:.32rem .6rem;border:1px solid var(--line);border-radius:999px;
     background:var(--panel);color:var(--ink2);cursor:pointer;user-select:none}
@@ -110,11 +107,6 @@
 
 <div class="controls">
   <div class="wrap">
-    <div class="seg" id="viewseg">
-      <button data-view="gallery" class="on">gallery</button>
-      <button data-view="compare">compare</button>
-      <button data-view="table">table</button>
-    </div>
     <span class="lbl">brief</span>
     <div class="chips" id="briefchips"></div>
     <span class="lbl">models</span>
@@ -157,7 +149,7 @@ const COLS = [
   ["total_tokens","tokens", v => v.toLocaleString()],
 ];
 
-const state = {view:"gallery", brief:null, models:new Set(), sort:{key:"total_tokens", dir:1}, DATA:null};
+const state = {brief:null, models:new Set(), DATA:null};
 const view = document.getElementById("view");
 
 fetch("docs/showcase/runs.json").then(r => r.json()).then(data => {
@@ -172,12 +164,6 @@ const runs = () => state.DATA.runs;
 const models = () => [...new Set(runs().map(r => r.model))].sort();
 const active = () => runs().filter(r => r.brief === state.brief && state.models.has(r.model));
 
-document.getElementById("viewseg").onclick = e => {
-  const b = e.target.closest("button"); if (!b) return;
-  state.view = b.dataset.view;
-  [...e.currentTarget.children].forEach(x => x.classList.toggle("on", x === b));
-  render();
-};
 function chipbar(el, items, isOn, toggle){
   el.innerHTML = "";
   for (const it of items){
@@ -199,22 +185,6 @@ function renderChips(){
            if (!state.models.size) models().forEach(x => state.models.add(x)); });
 }
 
-function gallery(){
-  const rs = active();
-  if (!rs.length){ view.innerHTML = '<p class="hint">no runs for this brief yet.</p>'; return; }
-  const g = document.createElement("div"); g.className = "grid";
-  for (const r of rs){
-    const cell = document.createElement("div"); cell.className = "cell";
-    const src = r.anim ? r.base + ".gif" : r.base + ".png";
-    cell.innerHTML = `<img class="px" loading="lazy" src="${src}" alt="${(BRIEF[r.brief]||{}).label} by ${r.model}">
-      <div class="m">${r.model}</div><div class="v">${r.vendor}</div>
-      <div class="st"><span>${(r.duration_ms/1000).toFixed(1)}s</span><span>${r.tool_calls} calls</span><span>${(r.total_tokens/1000).toFixed(0)}k tok</span></div>`;
-    cell.onclick = () => openBox(r);
-    g.appendChild(cell);
-  }
-  view.replaceChildren(g);
-}
-
 function compare(){
   const rs = active();
   if (rs.length < 2){ view.innerHTML = '<p class="hint">select at least two models to compare.</p>'; return; }
@@ -226,51 +196,16 @@ function compare(){
       <h3>${r.model}</h3>
       <dl>${COLS.map(c => `<dt>${c[1]}</dt><dd>${c[2](r[c[0]])}</dd>`).join("")}</dl>
 `;
+    d.querySelector("img").onclick = () => openBox(r);
     g.appendChild(d);
   }
   view.replaceChildren(g);
 }
 
-function table(){
-  const rows = runs().filter(r => state.models.has(r.model));
-  const cols = [["", null], ["model", r => r.model], ["brief", r => (BRIEF[r.brief]||{}).label || r.brief]]
-    .concat(COLS.map(c => [c[1], r => r[c[0]]]));
-  const sortKey = state.sort.key;
-  rows.sort((a,b) => {
-    const field = (COLS.find(c => c[1] === sortKey) || [])[0];
-    if (!field) return String(a.model).localeCompare(b.model) || a.brief.localeCompare(b.brief);
-    return (a[field] - b[field]) * state.sort.dir;
-  });
-  const wrap = document.createElement("div"); wrap.className = "tblwrap";
-  const t = document.createElement("table");
-  t.innerHTML = `<thead><tr>${cols.map(c =>
-    `<th data-k="${c[0]}">${c[0]}${state.sort.key === c[0] ? (state.sort.dir>0?" ↑":" ↓") : ""}</th>`).join("")}</tr></thead>`;
-  const tb = document.createElement("tbody");
-  for (const r of rows){
-    const tr = document.createElement("tr");
-    const src = r.anim ? r.base + ".gif" : r.base + ".png";
-    tr.innerHTML = `<td><img class="px" loading="lazy" src="${src}" alt=""></td>`
-      + `<td class="txt">${r.model}</td><td class="txt">${(BRIEF[r.brief]||{}).label||r.brief}</td>`
-      + COLS.map(c => `<td>${c[2](r[c[0]])}</td>`).join("");
-    tr.querySelector("img").onclick = () => openBox(r);
-    tb.appendChild(tr);
-  }
-  t.appendChild(tb);
-  t.querySelector("thead").onclick = e => {
-    const th = e.target.closest("th[data-k]"); if (!th) return;
-    const k = th.dataset.k;
-    if (!COLS.some(c => c[1] === k)) return;
-    state.sort = {key:k, dir: state.sort.key === k ? -state.sort.dir : 1};
-    render();
-  };
-  wrap.appendChild(t);
-  view.replaceChildren(wrap);
-}
-
 function render(){
   if (!state.DATA) return;
   renderChips();
-  ({gallery, compare, table})[state.view]();
+  compare();
   document.getElementById("briefbox").hidden = false;
   document.getElementById("brieftext").textContent = (BRIEF[state.brief]||{}).blurb || "";
 }
