@@ -223,7 +223,11 @@ async def run(args: argparse.Namespace) -> int:
     events: list[dict[str, Any]] = []
     exports: list[dict[str, Any]] = []
     tool_calls = look_iterations = step = nudges = 0
-    tokens = {"prompt": 0, "completion": 0, "total": 0}
+    # cumulative = raw sum across every request (inflated by resending the static
+    # prefix each turn); peak_context = the largest single request (comparable to
+    # what an MCP client like Claude Code reports); cached = prefix tokens the
+    # endpoint served from cache (0 if it doesn't support prompt caching).
+    tokens = {"prompt": 0, "completion": 0, "total": 0, "peak_context": 0, "cached": 0}
     gif_exported = False
     stop_reason = "unknown"
     system_prompt = ""
@@ -267,9 +271,13 @@ async def run(args: argparse.Namespace) -> int:
                     **sampling,
                 )
                 if resp.usage:
-                    tokens["prompt"] += resp.usage.prompt_tokens or 0
+                    pt = resp.usage.prompt_tokens or 0
+                    tokens["prompt"] += pt
                     tokens["completion"] += resp.usage.completion_tokens or 0
                     tokens["total"] += resp.usage.total_tokens or 0
+                    tokens["peak_context"] = max(tokens["peak_context"], pt)
+                    details = getattr(resp.usage, "prompt_tokens_details", None)
+                    tokens["cached"] += getattr(details, "cached_tokens", 0) or 0
 
                 msg = resp.choices[0].message
                 messages.append(msg.model_dump(exclude_none=True))
@@ -393,7 +401,8 @@ async def run(args: argparse.Namespace) -> int:
     out.write_text(json.dumps(record, indent=2, default=str))
     print(
         f"[saved] {out}  ({tool_calls} tool calls · {look_iterations} looks · "
-        f"{tokens['total']} tokens · {stop_reason})",
+        f"peak {tokens['peak_context']} ctx · {tokens['total']} cumulative · "
+        f"{tokens['cached']} cached · {stop_reason})",
         file=sys.stderr,
     )
     return 0
