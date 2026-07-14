@@ -347,11 +347,22 @@ pub(crate) struct DocBatch {
     pub(crate) doc_id: String,
     pub(crate) layer: usize,
     pub(crate) frame: usize,
-    /// Ordered ops, each like {"op":"rect","x0":1,"y0":1,"x1":8,"y1":8,"color":[r,g,b],"fill":true}.
-    /// Ops: pencil/line/rect/ellipse/polyline/polygon/fill/replace_color/
-    /// flip/shift/outline/fill_cel/clear_cel/gradient/scatter/noise/adjust/blur/
-    /// quantize/symmetry/drop_shadow/glow/bevel/shade/dither/pixel_perfect.
+    /// Ordered ops, each an object; the derived item schema would be `true`
+    /// (any), which strict tool-call parsers (e.g. Gemini) reject — so pin it to
+    /// `{"type":"object"}` while keeping the free-form op payload.
+    #[schemars(schema_with = "op_list_schema")]
     pub(crate) ops: Vec<serde_json::Value>,
+}
+
+/// Array-of-object schema for a free-form op list. Emitting a concrete `items`
+/// object keeps `doc_batch` callable by tool parsers that refuse a boolean
+/// (`items: true`) array schema.
+fn op_list_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    schemars::json_schema!({
+        "type": "array",
+        "items": { "type": "object" },
+        "description": "Ordered ops, each like {\"op\":\"rect\",\"x0\":1,\"y0\":1,\"x1\":8,\"y1\":8,\"color\":[r,g,b],\"fill\":true}. Ops: pencil/line/rect/ellipse/polyline/polygon/fill/replace_color/flip/shift/outline/fill_cel/clear_cel/gradient/scatter/noise/adjust/blur/quantize/symmetry/drop_shadow/glow/bevel/shade/dither/pixel_perfect."
+    })
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -1071,4 +1082,21 @@ pub(crate) struct DocWalk {
     pub(crate) head_r: Option<i64>,
     pub(crate) aa: Option<bool>,
     pub(crate) snap: Option<bool>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn doc_batch_ops_items_is_a_concrete_object_not_any() {
+        // Regression: `Vec<serde_json::Value>` derives `items: true` (any),
+        // which strict tool-call parsers (Gemini) reject. Pin it to an object.
+        let schema = schemars::schema_for!(DocBatch);
+        let items = &schema.as_value()["properties"]["ops"]["items"];
+        assert_eq!(
+            items["type"], "object",
+            "ops items must be an object schema, got {items}"
+        );
+    }
 }
