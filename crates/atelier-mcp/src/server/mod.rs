@@ -75,17 +75,13 @@ fn opt_img_result(r: Result<(Option<Vec<u8>>, Value), String>) -> CallToolResult
 /// report plus a PNG of the touched cel (or flattened frame), so the agent SEES
 /// the result of an import/stamp/quantize in the same turn. A preview failure
 /// never fails the call — the op already landed.
-fn previewed(
-    studio: &Studio,
-    id: &str,
-    layer: Option<usize>,
-    frame: usize,
-    r: Result<Value, String>,
-) -> CallToolResult {
-    match r {
-        Ok(report) => opt_img_result(Ok((studio.preview_png(id, layer, frame).ok(), report))),
-        Err(e) => res(Err(e)),
-    }
+/// Acknowledge an edit op with its TEXT report only — no inline preview image.
+/// doc_look is the agent's only eye: returning a preview PNG from every edit
+/// tool taxed every LLM client with image tokens (an upscaled frame is tens of
+/// thousands of tokens) and undercut the deliberate see-and-fix loop. If the
+/// agent needs to see the result, it calls doc_look.
+fn edited(r: Result<Value, String>) -> CallToolResult {
+    res(r)
 }
 
 /// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
@@ -416,7 +412,7 @@ impl Atelier {
             p.blend.as_deref().unwrap_or("normal"),
             p.replace.unwrap_or(false),
         );
-        previewed(&studio, &p.doc_id, Some(p.layer), p.frame, r)
+        edited(r)
     }
 
     #[tool(
@@ -1169,7 +1165,7 @@ impl Atelier {
                     p.palette.as_ref().map(|v| palette_list(v)),
                     alpha,
                 );
-                previewed(&studio, doc_id, p.layer, p.frame.unwrap_or(0), r)
+                edited(r)
             }
             "sync" => {
                 let palette = p
@@ -1271,7 +1267,7 @@ impl Atelier {
             p.legend,
             p.rows,
         );
-        previewed(&studio, &p.doc_id, Some(p.layer), p.frame, r)
+        edited(r)
     }
 
     // -- part-layer rig: limb animation as transforms, not repaints --
@@ -1351,7 +1347,7 @@ impl Atelier {
                     p.remove_bg.unwrap_or(false),
                     p.pin.as_ref().map(|v| palette_list(v)).unwrap_or_default(),
                 );
-                previewed(&studio, &p.doc_id, Some(layer), frame, r)
+                edited(r)
             }
             "analyze" => img_result(studio.ref_analyze(
                 &p.doc_id,
