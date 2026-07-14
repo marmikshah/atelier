@@ -5,6 +5,38 @@
 
 use super::{Atelier, CORE_TOOLS};
 
+/// Render the full tool surface as a plain-text listing for the terminal:
+/// core tools first, then full-only, each `name — first sentence`.
+pub fn tools_text() -> String {
+    let mut tools = Atelier::new().with_profile(true).advertised_tools();
+    tools.sort_by(|a, b| a.name.cmp(&b.name));
+    let width = tools.iter().map(|t| t.name.len()).max().unwrap_or(0);
+
+    let mut core = String::new();
+    let mut full = String::new();
+    for t in &tools {
+        let summary = summarize(t.description.as_deref().unwrap_or(""));
+        let line = format!("  {:width$}  {}\n", t.name, summary, width = width);
+        if CORE_TOOLS.contains(&t.name.as_ref()) {
+            core.push_str(&line);
+        } else {
+            full.push_str(&line);
+        }
+    }
+
+    format!(
+        "atelier tools — {} total ({} core, {} full-only)\n\n\
+         CORE (default profile):\n{}\n\
+         FULL-ONLY (ATELIER_PROFILE=full):\n{}\n\
+         HTML reference: atelier tools --html  (or `make docs`)\n",
+        tools.len(),
+        CORE_TOOLS.len(),
+        tools.len() - CORE_TOOLS.len(),
+        core,
+        full,
+    )
+}
+
 /// Render the full tool surface as one static HTML page.
 pub fn tools_html() -> String {
     let mut tools = Atelier::new().with_profile(true).advertised_tools();
@@ -119,6 +151,28 @@ pub fn tools_html() -> String {
 </html>
 "##
     )
+}
+
+/// First clause of a tool description for the terminal listing: cut at the first
+/// sentence/clause break (". ", "·", newline), then cap the length so the list
+/// stays scannable. Avoids cutting on periods inside `[r,g,b]` or `#/`.
+fn summarize(desc: &str) -> String {
+    const CAP: usize = 96;
+    let mut end = desc.len();
+    for (i, _) in desc.char_indices() {
+        let rest = &desc[i..];
+        if rest.starts_with(". ") || rest.starts_with('·') || rest.starts_with('\n') {
+            end = i;
+            break;
+        }
+    }
+    let clause = desc[..end].trim();
+    if clause.chars().count() > CAP {
+        let cut: String = clause.chars().take(CAP).collect();
+        format!("{}…", cut.trim_end())
+    } else {
+        clause.to_string()
+    }
 }
 
 /// Minimal HTML escaping for tool text embedded in the page.

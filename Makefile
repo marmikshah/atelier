@@ -15,11 +15,11 @@ help: ## List available targets
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
 docs: release ## Regenerate the HTML tool reference (tools.html) from the live registry
-	$(BIN) tools > tools.html
-	@echo "wrote tools.html ($(shell $(BIN) tools | grep -oc 'class=\"tool'  ) tools)"
+	$(BIN) tools --html > tools.html
+	@echo "wrote tools.html"
 
 docs-check: release ## Fail if tools.html is stale (CI drift guard)
-	@$(BIN) tools | diff -q - tools.html >/dev/null || { \
+	@$(BIN) tools --html | diff -q - tools.html >/dev/null || { \
 		echo "tools.html is stale — run 'make docs' and commit"; exit 1; }
 
 run: serve ## Default: release build, then run the HTTP MCP server

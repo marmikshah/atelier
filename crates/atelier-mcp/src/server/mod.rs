@@ -24,7 +24,7 @@ mod recorder;
 mod resources;
 mod toolsdoc;
 
-pub use toolsdoc::tools_html;
+pub use toolsdoc::{tools_html, tools_text};
 
 use params::*;
 use prompts::{build_prompt, prompt_specs};

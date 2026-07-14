@@ -35,7 +35,7 @@ USAGE:
     atelier service uninstall     stop + remove the daemon
     atelier replay <recipe.json>  replay a scripted sequence of tool calls (MCP client)
             [--home DIR]          run against an isolated ATELIER_HOME
-    atelier tools                 print the HTML tool reference to stdout (see `make docs`)
+    atelier tools [--html]        list the tools (plain text; --html emits the reference page)
     atelier --version             print the version
 
 ENVIRONMENT:
@@ -58,10 +58,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
             return Ok(());
         }
-        // Emit the HTML tool reference (generated from the live registry) to
-        // stdout — `make docs` writes it to the Pages site.
+        // List the tools (generated from the live registry). Plain text by
+        // default; `--html` emits the reference page `make docs` publishes.
         Some("tools") => {
-            print!("{}", server::tools_html());
+            if args[2..].iter().any(|a| a == "--html") {
+                print!("{}", server::tools_html());
+            } else {
+                print!("{}", server::tools_text());
+            }
             return Ok(());
         }
         Some("--help") | Some("-h") => {
