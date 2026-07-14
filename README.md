@@ -94,7 +94,7 @@ composition ladder, and the life of a tool call:
 |---|---|
 | [Benchmark gallery](https://marmikshah.github.io/atelier/) | Different models, identical briefs, the same studio in different hands |
 | [Architecture tour](https://marmikshah.github.io/atelier/architecture.html) | The crate tower, the life of a tool call, onboarding paths |
-| [docs/TOOLS.md](docs/TOOLS.md) | Complete reference for all 63 tools |
+| [Tool reference](https://marmikshah.github.io/atelier/tools.html) | All 63 tools, generated from the live registry |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Crate and module layout, in the repo |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes |
 

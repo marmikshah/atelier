@@ -1,0 +1,129 @@
+//! Self-contained HTML tool reference, generated from the live tool registry so
+//! it can never drift from the actual `#[tool]` descriptions. Emitted by the
+//! `atelier tools` subcommand and published to the GitHub Pages site
+//! (`make docs`). No hand-maintained tool list to keep in sync.
+
+use super::{Atelier, CORE_TOOLS};
+
+/// Render the full tool surface as one static HTML page.
+pub fn tools_html() -> String {
+    let mut tools = Atelier::new().with_profile(true).advertised_tools();
+    tools.sort_by(|a, b| a.name.cmp(&b.name));
+
+    let total = tools.len();
+    let core = CORE_TOOLS.len();
+
+    let mut cards = String::new();
+    for t in &tools {
+        let is_core = CORE_TOOLS.contains(&t.name.as_ref());
+        let badge = if is_core {
+            r#"<span class="badge core">core</span>"#
+        } else {
+            r#"<span class="badge full">full</span>"#
+        };
+        let desc = esc(t.description.as_deref().unwrap_or(""));
+        let params: Vec<String> = t
+            .input_schema
+            .get("properties")
+            .and_then(|v| v.as_object())
+            .map(|m| {
+                m.keys()
+                    .map(|k| format!("<code>{}</code>", esc(k)))
+                    .collect()
+            })
+            .unwrap_or_default();
+        let params = if params.is_empty() {
+            String::new()
+        } else {
+            format!(r#"<div class="params">{}</div>"#, params.join(" "))
+        };
+        let cls = if is_core { "tool core" } else { "tool full" };
+        cards.push_str(&format!(
+            r#"<div class="{cls}" id="{name}"><h3>{name} {badge}</h3><p>{desc}</p>{params}</div>"#,
+            name = t.name,
+        ));
+    }
+
+    format!(
+        r##"<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>atelier — tool reference</title>
+<meta name="description" content="The complete atelier MCP tool surface, generated from the live server registry.">
+<style>
+  :root{{--bg:#14161d;--card:#1b1e28;--ink:#e8e9f0;--muted:#a7abbb;--line:#2c3040;
+    --accent:#e0a33c;--teal:#57b4c4;--code-bg:#101219;--code-ink:#c9ccd9;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}}
+  @media (prefers-color-scheme:light){{:root{{--bg:#f0f1ec;--card:#e7e8e1;--ink:#191b14;
+    --muted:#4c4f43;--line:#c9cbbd;--accent:#a8741a;--teal:#2f7f8e;--code-bg:#191b14;--code-ink:#e7e8e1;}}}}
+  *{{box-sizing:border-box}}
+  body{{background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);margin:0;padding:0 20px 96px;-webkit-font-smoothing:antialiased}}
+  .wrap{{max-width:900px;margin:0 auto}}
+  h1{{font-family:var(--mono);font-size:1.9rem;margin:2.5rem 0 .3rem}}
+  .sub{{color:var(--muted);margin:0 0 1.5rem}}
+  .controls{{position:sticky;top:0;background:var(--bg);padding:1rem 0;border-bottom:1px solid var(--line);display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;z-index:2}}
+  input[type=search]{{flex:1;min-width:200px;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:.5rem .8rem;font:14px var(--sans)}}
+  .filter{{font-family:var(--mono);font-size:.8rem;background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:.4rem .9rem;cursor:pointer}}
+  .filter.on{{color:var(--ink);border-color:var(--accent)}}
+  .tool{{border:1px solid var(--line);border-radius:10px;padding:1rem 1.2rem;margin:.8rem 0;background:var(--card)}}
+  .tool h3{{font-family:var(--mono);font-size:1rem;margin:0 0 .5rem;display:flex;gap:.6rem;align-items:center}}
+  .tool p{{margin:.3rem 0;color:var(--ink)}}
+  .badge{{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;padding:.15rem .5rem;border-radius:20px}}
+  .badge.core{{background:var(--accent);color:#14161d}}
+  .badge.full{{background:transparent;border:1px solid var(--line);color:var(--muted)}}
+  .params{{margin-top:.6rem}}
+  code{{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);font-size:.78rem;padding:.1rem .4rem;border-radius:4px;margin:.1rem}}
+  .hide{{display:none}}
+  footer{{color:var(--muted);font-size:.8rem;margin-top:3rem;border-top:1px solid var(--line);padding-top:1rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>atelier tool reference</h1>
+  <p class="sub"><strong>{total}</strong> tools — <strong>{core}</strong> in the default <code>core</code> profile,
+     the rest behind <code>ATELIER_PROFILE=full</code>. Generated from the live registry; do not edit by hand.</p>
+  <div class="controls">
+    <input type="search" id="q" placeholder="filter tools…" autocomplete="off">
+    <button class="filter on" data-f="all">all</button>
+    <button class="filter" data-f="core">core</button>
+    <button class="filter" data-f="full">full-only</button>
+  </div>
+  <div id="list">
+    {cards}
+  </div>
+  <footer>Generated by <code>atelier tools</code> · regenerate with <code>make docs</code>.</footer>
+</div>
+<script>
+  const q=document.getElementById('q'),tools=[...document.querySelectorAll('.tool')];
+  let f='all';
+  function apply(){{
+    const s=q.value.toLowerCase();
+    for(const t of tools){{
+      const okF=f==='all'||t.classList.contains(f);
+      const okS=!s||t.textContent.toLowerCase().includes(s);
+      t.classList.toggle('hide',!(okF&&okS));
+    }}
+  }}
+  q.addEventListener('input',apply);
+  for(const b of document.querySelectorAll('.filter')){{
+    b.addEventListener('click',()=>{{
+      f=b.dataset.f;
+      document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('on',x===b));
+      apply();
+    }});
+  }}
+</script>
+</body>
+</html>
+"##
+    )
+}
+
+/// Minimal HTML escaping for tool text embedded in the page.
+fn esc(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+}

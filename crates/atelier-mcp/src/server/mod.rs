@@ -22,6 +22,9 @@ mod params;
 mod prompts;
 mod recorder;
 mod resources;
+mod toolsdoc;
+
+pub use toolsdoc::tools_html;
 
 use params::*;
 use prompts::{build_prompt, prompt_specs};
@@ -218,9 +221,9 @@ impl Atelier {
         }
     }
 
-    /// Override the advertised profile (tests exercise both without env).
-    #[cfg(test)]
-    fn with_profile(mut self, full: bool) -> Self {
+    /// Override the advertised profile (tests exercise both without env; the
+    /// `tools` HTML generator forces the full surface).
+    pub(crate) fn with_profile(mut self, full: bool) -> Self {
         self.full_profile = full;
         self
     }
@@ -2072,7 +2075,7 @@ mod tests {
         }
         // Core is a strict, smaller subset of the full surface.
         assert!(CORE_TOOLS.len() < names.len());
-        // The advertised counts are exact and documented (README / TOOLS.md /
+        // The advertised counts are exact and documented (README / tools.html (regen: make docs) /
         // ARCHITECTURE / .env.example / install.sh). If either changes, update
         // those surfaces in the same commit — this assertion is the reminder.
         assert_eq!(
