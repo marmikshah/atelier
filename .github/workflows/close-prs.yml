@@ -1,0 +1,34 @@
+name: Close external PRs
+
+# Enforces the "no external contributions until v2.0.0" policy: PRs opened from a
+# fork are commented and closed automatically. Internal branches (the
+# maintainer's own work) are not from a fork, so they're left alone.
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  close:
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const number = context.payload.pull_request.number;
+            const body = [
+              "Thanks for your interest in atelier! 🙏",
+              "",
+              "atelier is **not accepting external contributions until v2.0.0** — the",
+              "maintainer's manual-review milestone. This PR is being closed",
+              "automatically, not ignored.",
+              "",
+              "Bug reports and ideas are very welcome as **issues**. See",
+              "[CONTRIBUTING.md](https://github.com/marmikshah/atelier/blob/master/.github/CONTRIBUTING.md).",
+            ].join("\n");
+            await github.rest.issues.createComment({ owner, repo, issue_number: number, body });
+            await github.rest.pulls.update({ owner, repo, pull_number: number, state: "closed" });

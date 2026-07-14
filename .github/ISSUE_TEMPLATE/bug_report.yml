@@ -1,0 +1,58 @@
+name: Bug report
+description: Something's broken — help me reproduce it.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. atelier below v2.0.0 is AI-generated and not fully
+        reviewed, so bug reports are genuinely valuable. A clean repro helps most.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, and what went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands / tool calls. A recipe JSON or a minimal sequence is ideal.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: atelier version
+      description: Output of `atelier --version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport
+      options:
+        - stdio
+        - HTTP (foreground)
+        - HTTP (background daemon)
+        - Docker
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      description: e.g. Claude Code, Cursor, Cline, Gemini CLI…
+  - type: input
+    id: os
+    attributes:
+      label: OS / arch
+      description: e.g. macOS 15 arm64, Ubuntu 24.04 x86_64.

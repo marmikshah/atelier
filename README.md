@@ -144,6 +144,15 @@ If atelier helps you in any way — as a tool, a reference, or just a kick-start
 on your own game-design journey — that makes me genuinely happy. The tokens
 are already spent; the least they can do is be useful to you too.
 
+## Contributing
+
+atelier is **not accepting external code contributions until v2.0.0** — the
+manual-review milestone below. Bug reports and ideas are very welcome as
+[issues](https://github.com/marmikshah/atelier/issues); pull requests are closed
+automatically until then. See [CONTRIBUTING.md](.github/CONTRIBUTING.md), the
+[Code of Conduct](.github/CODE_OF_CONDUCT.md), and the
+[security policy](.github/SECURITY.md).
+
 ## Notice — versions below 2.0.0
 
 > [!WARNING]
