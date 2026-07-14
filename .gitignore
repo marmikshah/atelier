@@ -17,3 +17,6 @@ Cargo.lock
 
 # pixel-sheet export sidecars (page reads only runs.json)
 docs/showcase/*-*-*.json
+
+# benchmark run transcripts (tools/run_task.py output)
+runs/
