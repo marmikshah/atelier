@@ -6,6 +6,12 @@ All notable changes to atelier are documented here. Format follows
 
 ## [Unreleased]
 
+Edit tools no longer return an inline preview image. `doc_paint_grid`,
+`doc_ref op=import`, `doc_palette op=snap` and `doc_stamp_image` now return their
+text report only — `doc_look` is the agent's single eye. Returning a preview PNG
+from every edit taxed LLM clients with tens of thousands of image tokens per call
+and undercut the deliberate see-and-fix loop; call `doc_look` to see the result.
+
 Tool-surface fusion, tier 1 (breaking). Twelve near-sibling tools fold into four
 op-dispatched hubs — the same `op=`/`kind=` pattern the surface already used —
 cutting the full profile from 75 to 63 and the core profile from 30 to 24 with
