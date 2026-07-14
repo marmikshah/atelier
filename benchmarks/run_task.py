@@ -25,13 +25,13 @@ Endpoint + key resolve from flags first, then env:
 Examples:
   # OpenAI (default endpoint)
   OPENAI_API_KEY=... python benchmarks/run_task.py \
-      --model gpt-4o --task benchmarks/briefs/alien.txt
+      --model gpt-4o --task benchmarks/tasks/alien.txt
   # any other OpenAI-compatible endpoint
   OPENAI_BASE_URL=https://host/v1 OPENAI_API_KEY=... \
-      python benchmarks/run_task.py --model <id> --task benchmarks/briefs/ball.txt
+      python benchmarks/run_task.py --model <id> --task benchmarks/tasks/ball.txt
   # any local/self-hosted server (Ollama, vLLM, LM Studio, …)
   python benchmarks/run_task.py --base-url http://localhost:11434/v1 \
-      --api-key dummy --model qwen2.5 --task benchmarks/briefs/cat.txt
+      --api-key dummy --model qwen2.5 --task benchmarks/tasks/cat.txt
 
 Transcript auto-saved to benchmarks/runs/<model>/<task>.json — no --out needed.
 Model names are whatever the chosen endpoint expects.
@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import copy
 import json
 import os
 import re
@@ -93,109 +94,20 @@ def _is_gif_export(name: str, call_args: dict[str, Any]) -> bool:
     return fmt == "gif" or out.endswith(".gif")
 
 
-# Gemini's function-declaration parser accepts only a small OpenAPI subset, so we
-# ALLOWLIST the keys it understands and drop everything else (minimum/maximum,
-# default, format, additionalProperties, $schema, …) — those trip its parser.
-# type / enum / properties / items / required / description are the safe set.
-_KEEP_KEYS = {"type", "description", "enum", "properties", "required", "items"}
-
-
-def _sanitize(node: Any, defs: dict[str, Any], seen: frozenset[str]) -> Any:
-    """Return a schema Gemini's tool parser accepts.
-
-    Inlines $ref (cycle-guarded), resolves anyOf/oneOf/allOf, collapses
-    `type: [T, "null"]` unions to T, and keeps only allowlisted keys.
-    """
-    if isinstance(node, list):
-        return [_sanitize(v, defs, seen) for v in node]
-    if not isinstance(node, dict):
-        return node
-
-    ref = node.get("$ref")
-    if isinstance(ref, str) and ref.startswith("#/"):
-        name = ref.split("/")[-1]
-        if name in seen:  # cycle — degrade to an untyped object
-            return {"type": "object"}
-        target = defs.get(name)
-        if target is not None:
-            return _sanitize(target, defs, seen | {name})
-
-    # Composition keywords Gemini can't parse: flatten to a single schema.
-    for comp in ("allOf", "anyOf", "oneOf"):
-        branches = node.get(comp)
-        if isinstance(branches, list):
-            merged: dict[str, Any] = {k: v for k, v in node.items() if k != comp}
-            picks = branches if comp == "allOf" else branches[:1]
-            for b in picks:
-                if isinstance(b, dict) and b.get("type") != "null":
-                    merged = {**b, **merged}
-            return _sanitize(merged, defs, seen)
-
-    out: dict[str, Any] = {}
-    for key, val in node.items():
-        if key not in _KEEP_KEYS:
-            continue
-        if key == "type":
-            if isinstance(val, list):
-                non_null = [t for t in val if t != "null"]
-                out[key] = non_null[0] if non_null else "string"
-            else:
-                out[key] = val
-        elif key == "properties" and isinstance(val, dict):
-            # name → schema map: sanitize each VALUE, never the map itself.
-            out[key] = {name: _sanitize(sub, defs, seen) for name, sub in val.items()}
-        elif key == "items":
-            out[key] = _sanitize(val, defs, seen)  # schema (or list of schemas)
-        else:  # enum, required, description — leaf data, keep verbatim
-            out[key] = val
-    return out
-
-
-def sanitize_schema(schema: dict[str, Any] | None) -> dict[str, Any]:
-    """Top-level entry: pull $defs, sanitize, guarantee an object schema."""
-    schema = schema or {}
-    defs = {**schema.get("$defs", {}), **schema.get("definitions", {})}
-    clean = _sanitize(schema, defs, frozenset())
-    if not isinstance(clean, dict):
-        clean = {}
-    clean.setdefault("type", "object")
-    clean.setdefault("properties", {})
-    _fix_arrays(clean)
-    return clean
-
-
-def _fix_arrays(node: Any) -> None:
-    """Gemini requires every array's `items` to be a single schema OBJECT.
-
-    Backfill when missing, and coerce a boolean `items` (JSON-Schema "any", e.g.
-    doc_batch's `ops`) or a tuple `items` list into a generic object schema —
-    Gemini's parser rejects both forms.
-    """
-    if isinstance(node, dict):
-        if node.get("type") == "array" and not isinstance(node.get("items"), dict):
-            node["items"] = {"type": "object"}
-        for v in node.values():
-            _fix_arrays(v)
-    elif isinstance(node, list):
-        for v in node:
-            _fix_arrays(v)
-
-
 def mcp_tools_to_openai(tools: list[Any]) -> list[dict[str, Any]]:
-    """Translate an MCP tool list into OpenAI function-tool schemas."""
-    out = []
-    for t in tools:
-        out.append(
-            {
-                "type": "function",
-                "function": {
-                    "name": t.name,
-                    "description": (t.description or "")[:1024],
-                    "parameters": sanitize_schema(t.inputSchema),
-                },
-            }
-        )
-    return out
+    """Translate an MCP tool list into OpenAI function-tool schemas. atelier emits
+    schemas that strict tool-call parsers accept as-is, so this is a pass-through."""
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": t.name,
+                "description": (t.description or "")[:1024],
+                "parameters": t.inputSchema or {"type": "object", "properties": {}},
+            },
+        }
+        for t in tools
+    ]
 
 
 def _slug(text: str) -> str:
@@ -247,13 +159,15 @@ def render_tool_result(result: Any) -> tuple[str, list[dict[str, Any]]]:
 
 
 async def run(args: argparse.Namespace) -> int:
-    base_url = args.base_url or os.environ.get("OPENAI_BASE_URL") or os.environ.get("OPENAI_API_URL") or DEFAULT_BASE_URL
+    base_url = (
+        args.base_url
+        or os.environ.get("OPENAI_BASE_URL")
+        or os.environ.get("OPENAI_API_URL")
+        or DEFAULT_BASE_URL
+    )
     api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        sys.exit(
-            "No API key. Pass --api-key or set OPENAI_API_KEY. "
-            f"Endpoint: {base_url}"
-        )
+        sys.exit(f"No API key. Pass --api-key or set OPENAI_API_KEY. Endpoint: {base_url}")
 
     binary = Path(args.binary)
     if not binary.exists():
@@ -460,10 +374,62 @@ async def run(args: argparse.Namespace) -> int:
     return 0
 
 
+TASKS_DIR = Path(__file__).resolve().parent / "tasks"
+
+
+async def run_full(args: argparse.Namespace) -> int:
+    """Run EVERY task in benchmarks/tasks/ against one model, in parallel.
+    Warns and asks for confirmation first — it is a lot of tokens."""
+    tasks = sorted(TASKS_DIR.glob("*.txt"))
+    if not tasks:
+        sys.exit(f"no tasks found in {TASKS_DIR}")
+    n = len(tasks)
+
+    if not args.yes:
+        sys.stderr.write(
+            f"\n  ⚠️  --full runs ALL {n} tasks against '{args.model}' IN PARALLEL.\n"
+            f"      Each is an uncapped agentic loop that can spend tens of thousands\n"
+            f"      of tokens; {n} at once multiplies the cost and the rate-limit\n"
+            f"      pressure. This can be expensive.\n\n"
+            f"      Tasks: {', '.join(b.stem for b in tasks)}\n\n"
+        )
+        try:
+            ans = input(f"  Run all {n} tasks in parallel? [y/N] ").strip().lower()
+        except EOFError:
+            ans = ""
+        if ans not in ("y", "yes"):
+            sys.exit("aborted.")
+
+    async def one(task_path: Path) -> int:
+        a = copy.copy(args)
+        a.task = str(task_path)
+        try:
+            return await run(a)
+        except Exception as e:  # one task failing must not sink the rest
+            print(f"[{task_path.stem}] FAILED: {e}", file=sys.stderr)
+            return 1
+
+    results = await asyncio.gather(*(one(b) for b in tasks))
+    ok = sum(r == 0 for r in results)
+    print(f"\n[full] {ok}/{n} tasks completed for {args.model}", file=sys.stderr)
+    return 0 if ok == n else 1
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--model", required=True, help="Model id/name the endpoint expects, e.g. gpt-4o")
-    p.add_argument("--task", required=True, help="Task prompt string, or path to a .txt file")
+    p.add_argument("--task", help="Task prompt string, or path to a .txt file (omit with --full)")
+    p.add_argument(
+        "--full",
+        action="store_true",
+        help="Run EVERY task in benchmarks/tasks/ in parallel (prompts for confirmation first)",
+    )
+    p.add_argument(
+        "-y",
+        "--yes",
+        action="store_true",
+        help="Skip the --full confirmation prompt (non-interactive)",
+    )
     p.add_argument(
         "--base-url",
         default=None,
@@ -525,6 +491,10 @@ def main() -> None:
         help="SDK retries with backoff on 429/5xx/timeout (default 4)",
     )
     args = p.parse_args()
+    if args.full:
+        sys.exit(asyncio.run(run_full(args)))
+    if not args.task:
+        p.error("--task is required (or pass --full to run every task)")
     sys.exit(asyncio.run(run(args)))
 
 

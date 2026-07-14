@@ -1,15 +1,15 @@
 # atelier benchmark
 
-Run the same animation brief against different models and record what each does —
+Run the same animation task against different models and record what each does —
 tool calls, tokens, wall-clock, and the exported GIF. Everything the model needs
 is atelier's MCP tools; the only variable is the model.
 
 ## Tasks
 
-Eight briefs, one per game-object category, each a **1-second loop at 10 FPS
+Eight tasks, one per game-object category, each a **1-second loop at 10 FPS
 (10 frames)** on a transparent background:
 
-| brief | category |
+| task | category |
 |-------|----------|
 | `person`  | character |
 | `cat`     | animal |
@@ -20,7 +20,7 @@ Eight briefs, one per game-object category, each a **1-second loop at 10 FPS
 | `slash`   | effect / VFX |
 | `torch`   | environment |
 
-The brief text is the exact input; keep it fixed so runs stay comparable.
+The task text is the exact input; keep it fixed so runs stay comparable.
 
 ## Run
 
@@ -30,11 +30,11 @@ pip install "mcp>=1.0" "openai>=1.40"
 
 # any OpenAI-compatible endpoint (OpenAI by default)
 export OPENAI_API_KEY=...
-python benchmarks/run_task.py --model gpt-4o --task benchmarks/briefs/car.txt
+python benchmarks/run_task.py --model gpt-4o --task benchmarks/tasks/car.txt
 ```
 
 Transcript is written to `benchmarks/runs/<model>/<task>.json` (gitignored).
-Swap `--model` / `--base-url` to compare models on an identical brief.
+Swap `--model` / `--base-url` to compare models on an identical task.
 
 ## Reproducibility
 
