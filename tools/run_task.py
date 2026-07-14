@@ -8,6 +8,14 @@ loop until the model stops (or the step budget runs out). Swap `--model` /
 `--base-url` to compare models on an identical task; every run is a
 self-contained transcript.
 
+Robust + reproducible: each run gets an isolated, freshly-wiped ATELIER_HOME;
+requests use temperature 0 + a fixed seed by default and retry with backoff on
+429/5xx/timeouts. The record pins every input (model, endpoint, prompt, tools,
+temperature, seed) plus tokens and wall-clock duration. Note: endpoints do not
+guarantee bit-identical LLM outputs even at temp 0 + seed — the ART is what's
+truly deterministic (the recorded tool-call sequence replays byte-identically
+via `atelier replay`); the harness makes the *inputs* fixed and *audited*.
+
 Deps: pip install "mcp>=1.0" "openai>=1.40"
 
 Endpoint + key resolve from flags first, then env:
@@ -37,7 +45,9 @@ import base64
 import json
 import os
 import re
+import shutil
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -254,13 +264,32 @@ async def run(args: argparse.Namespace) -> int:
     task_name = Path(args.task).stem if task_is_file else "inline"
     out = Path(args.out) if args.out else Path("runs") / _slug(args.model) / f"{task_name}.json"
 
-    client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+    # Isolated, freshly-wiped document store per run — no cross-run contamination,
+    # so a run's inputs are exactly (model, endpoint, task, prompt, tools).
+    home = Path(args.home) if args.home else out.parent / f"{task_name}-home"
+    shutil.rmtree(home, ignore_errors=True)
+    home.mkdir(parents=True, exist_ok=True)
+
+    # Built-in retries with backoff on transient errors (429/5xx/timeouts); a
+    # per-request timeout keeps a hung endpoint from stalling the whole run.
+    client = AsyncOpenAI(
+        api_key=api_key,
+        base_url=base_url,
+        timeout=args.timeout,
+        max_retries=args.max_retries,
+    )
 
     server = StdioServerParameters(
         command=str(binary),
         args=[],
-        env={**os.environ, "ATELIER_PROFILE": args.profile},
+        env={**os.environ, "ATELIER_PROFILE": args.profile, "ATELIER_HOME": str(home)},
     )
+
+    # Determinism knobs sent on every completion; seed omitted when < 0 (endpoints
+    # that don't support it would otherwise reject the request).
+    sampling: dict[str, Any] = {"temperature": args.temperature}
+    if args.seed >= 0:
+        sampling["seed"] = args.seed
 
     # Every LLM turn and every tool call+result, in order — the replayable record.
     events: list[dict[str, Any]] = []
@@ -277,9 +306,11 @@ async def run(args: argparse.Namespace) -> int:
             system_prompt = build_system_prompt(getattr(init, "instructions", None))
             mcp_tools = (await session.list_tools()).tools
             tools = mcp_tools_to_openai(mcp_tools)
+            seed_str = args.seed if args.seed >= 0 else "off"
             print(
                 f"[atelier] {len(tools)} tools · profile={args.profile} · "
-                f"{args.model} @ {base_url}",
+                f"{args.model} @ {base_url} · temp={args.temperature} seed={seed_str} · "
+                f"home={home}",
                 file=sys.stderr,
             )
 
@@ -287,6 +318,9 @@ async def run(args: argparse.Namespace) -> int:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": task},
             ]
+
+            started = time.time()
+            clock = time.monotonic()
 
             # Uncapped by default: run until the model stops AND a GIF exists.
             # --max-steps > 0 is an optional safety valve, off (0) by default.
@@ -302,7 +336,7 @@ async def run(args: argparse.Namespace) -> int:
                     messages=messages,
                     tools=tools,
                     tool_choice="auto",
-                    temperature=args.temperature,
+                    **sampling,
                 )
                 if resp.usage:
                     tokens["prompt"] += resp.usage.prompt_tokens or 0
@@ -383,6 +417,7 @@ async def run(args: argparse.Namespace) -> int:
                 if pending_images:
                     messages.append({"role": "user", "content": pending_images})
 
+    duration_ms = round((time.monotonic() - clock) * 1000)
     record = {
         "model": args.model,
         "base_url": base_url,
@@ -390,6 +425,15 @@ async def run(args: argparse.Namespace) -> int:
         "task_name": task_name,
         "task": task,
         "system_prompt": system_prompt,
+        # Everything needed to reproduce the run's inputs.
+        "determinism": {
+            "temperature": args.temperature,
+            "seed": args.seed if args.seed >= 0 else None,
+            "timeout_s": args.timeout,
+            "max_retries": args.max_retries,
+            "home": str(home),
+            "started_unix": round(started),
+        },
         "metrics": {
             "stop_reason": stop_reason,
             "steps": events[-1]["step"] if events else 0,
@@ -399,6 +443,7 @@ async def run(args: argparse.Namespace) -> int:
             "exports": len(exports),
             "gif_exported": gif_exported,
             "nudges": nudges,
+            "duration_ms": duration_ms,
         },
         "exports": exports,
         "events": events,
@@ -435,6 +480,11 @@ def main() -> None:
         help="Transcript path (default: runs/<model>/<task>.json, derived automatically)",
     )
     p.add_argument("--binary", default=str(DEFAULT_BINARY), help="Path to the atelier binary")
+    p.add_argument(
+        "--home",
+        default=None,
+        help="ATELIER_HOME for this run (default: an isolated, wiped dir next to --out)",
+    )
     p.add_argument("--profile", default="full", choices=["core", "full"], help="ATELIER_PROFILE tool set")
     p.add_argument(
         "--max-steps",
@@ -449,7 +499,31 @@ def main() -> None:
         help="Times to re-prompt the model to export a GIF if it stops without one",
     )
     p.add_argument("--max-tool-chars", type=int, default=6000, help="Truncate each tool result to N chars")
-    p.add_argument("--temperature", type=float, default=0.7)
+    # Determinism / robustness knobs.
+    p.add_argument(
+        "--temperature",
+        type=float,
+        default=0.0,
+        help="Sampling temperature (default 0.0 for the most repeatable runs)",
+    )
+    p.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Sampling seed sent to the endpoint (default 0); pass -1 to omit it",
+    )
+    p.add_argument(
+        "--timeout",
+        type=float,
+        default=120.0,
+        help="Per-request timeout in seconds (default 120)",
+    )
+    p.add_argument(
+        "--max-retries",
+        type=int,
+        default=4,
+        help="SDK retries with backoff on 429/5xx/timeout (default 4)",
+    )
     args = p.parse_args()
     sys.exit(asyncio.run(run(args)))
 
