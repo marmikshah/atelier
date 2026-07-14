@@ -1,0 +1,15 @@
+# Keep the build context small — only Cargo manifests + crate sources are needed.
+target
+.git
+.github
+.githooks
+runs
+tools
+docs
+*.html
+*.gif
+*.png
+*.tar.gz
+*.zip
+.env
+.DS_Store
