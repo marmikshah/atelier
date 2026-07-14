@@ -62,8 +62,31 @@ doc_create → paint → doc_look (look!) → fix → doc_export op=anim
 |---|---|
 | **Prebuilt binaries** | macOS (Apple Silicon), Linux x86_64, Windows — [latest release](https://github.com/marmikshah/atelier/releases/latest) |
 | **From source** | `cargo install --path .` |
+| **Docker** | `ghcr.io/marmikshah/atelier` (see below) |
 | **Documents live in** | `~/.atelier` (override with `ATELIER_HOME`) |
 | **Tool profile** | 20-tool core by default; `ATELIER_PROFILE=full` for all 63 |
+
+## Docker
+
+A public multi-arch image (amd64 + arm64) runs the HTTP MCP server — no local
+toolchain needed:
+
+```sh
+docker run -d --name atelier -p 8765:8765 -v atelier-data:/data \
+  ghcr.io/marmikshah/atelier:latest
+```
+
+Then point any MCP client at the HTTP endpoint:
+
+```sh
+claude mcp add --scope user --transport http atelier http://127.0.0.1:8765/mcp
+# Cursor: ~/.cursor/mcp.json -> "atelier": { "url": "http://127.0.0.1:8765/mcp" }
+```
+
+Documents persist in the `atelier-data` volume. `docker compose up -d` works too
+(see [docker-compose.yml](docker-compose.yml)). Set `-e ATELIER_PROFILE=core` for
+the lean tool set; to reach the server from another host set
+`-e ATELIER_ALLOWED_HOSTS=<host[:port]>`.
 
 ## Recipes
 
