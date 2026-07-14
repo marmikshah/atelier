@@ -11,18 +11,30 @@ fully deterministic. See [README.md](README.md) and [docs/](docs/).
 
 ## Entry point
 
-**Everything is a `make` target — never run ad-hoc scripts.** `make help` lists them.
+The **Makefile builds/tests/lints only**. Running the server, installing the
+daemon, generating art, and building the image are **direct commands** — the
+binary's own subcommands are the interface (an installed user has no Makefile).
+
+**Build/test (`make help` lists them):**
 
 | target | use |
 |--------|-----|
-| `make run` | release build, then run the HTTP MCP server |
-| `make stdio` | run the stdio MCP server |
+| `make release` | optimized binary at `target/release/atelier` |
+| `make build` | debug build |
 | `make test` | test suite |
 | `make pre-commit-checks` | format-check + clippy gate (what the hooks run) |
-| `make branding` | brand art (every piece is recipe-made) |
-| `make hooks` | install the `.githooks` (pre-commit + pre-push) |
-| `make release` | optimized binary at `target/release/atelier` |
+| `make check` | fmt + clippy + tests |
 | `make clean` | wipe build artifacts |
+
+**Run / operate (direct):**
+
+| command | use |
+|---------|-----|
+| `target/release/atelier` | stdio MCP server (a client spawns it) |
+| `target/release/atelier --http 127.0.0.1:8765` | HTTP MCP server |
+| `atelier install` / `status` / `uninstall` | background daemon (launchd / systemd) |
+| `atelier replay docs/examples/<r>.json` | replay a recipe (brand art / integration test) |
+| `git config core.hooksPath .githooks` | wire the format/lint/test git hooks (once) |
 
 ## Architecture
 
@@ -47,4 +59,4 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 ## Dev notes
 
 - Config is via `ATELIER_*` env vars (see `.env.example`); the tool holds no secrets.
-- Run `make hooks` once to wire the format/lint/test gate into git.
+- Wire the format/lint/test gate into git once: `git config core.hooksPath .githooks`.

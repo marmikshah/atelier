@@ -1,7 +1,7 @@
 #!/bin/sh
 # Canonical pre-push hook — mirrors CI: checks + tests, and refuses direct
 # pushes to master (master moves only by PR merge).
-# Enable once with: git config core.hooksPath .githooks  (or `make hooks`).
+# Enable once with: git config core.hooksPath .githooks .
 # Bypass in an emergency with --no-verify.
 set -e
 while read -r _local_ref _local_sha remote_ref _remote_sha; do

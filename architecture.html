@@ -236,10 +236,10 @@
 
 <section id="start">
   <h2>Start here — fifteen minutes</h2>
-  <p class="prose"><strong>Everything is a <code>make</code> target; never run ad-hoc scripts.</strong> <code>make help</code> lists them all.</p>
+  <p class="prose">The <code>make</code> targets build, test and lint. Running the server and installing the daemon are direct commands — the binary's own subcommands are the interface.</p>
 
 <pre><code><span class="c"># 1 · clone, wire the git hooks once, prove the tree is green</span>
-make hooks
+git config core.hooksPath .githooks
 make pre-commit-checks && make test
 
 <span class="c"># 2 · watch it draw — replay a shipped recipe into an isolated home</span>
@@ -247,8 +247,8 @@ make release
 ./target/release/atelier replay docs/examples/water-tile.json --home /tmp/atelier-demo
 
 <span class="c"># 3 · run it as a real MCP server</span>
-make stdio            <span class="c"># stdio transport (what clients spawn)</span>
-make run              <span class="c"># or HTTP at 127.0.0.1:8765/mcp</span>
+./target/release/atelier                          <span class="c"># stdio transport (what clients spawn)</span>
+./target/release/atelier --http 127.0.0.1:8765    <span class="c"># or HTTP at /mcp</span>
 claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
 
 <span class="c"># 4 · first session, from the client side</span>
@@ -257,14 +257,15 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
 
   <div class="two">
     <div class="card">
-      <h3>make targets</h3>
+      <h3>make targets (build/test/lint only)</h3>
       <div class="tablewrap"><table>
-        <tr><td><code>run</code> / <code>stdio</code></td><td>HTTP / stdio server</td></tr>
+        <tr><td><code>release</code> / <code>build</code></td><td>optimized / debug binary</td></tr>
         <tr><td><code>test</code></td><td>the full suite (229 tests)</td></tr>
         <tr><td><code>pre-commit-checks</code></td><td>fmt + clippy gate (hooks run this)</td></tr>
-        <tr><td><code>branding</code></td><td>replay every example recipe</td></tr>
-        <tr><td><code>release</code> / <code>clean</code></td><td>optimized binary / wipe</td></tr>
+        <tr><td><code>check</code></td><td>fmt + clippy + tests</td></tr>
+        <tr><td><code>clean</code></td><td>wipe build artifacts</td></tr>
       </table></div>
+      <p class="prose muted" style="margin-top:.6rem">Run/install are direct: <code>atelier --http …</code>, <code>atelier install</code>, <code>atelier replay …</code>.</p>
     </div>
     <div class="card">
       <h3>env vars (all optional, all in .env.example)</h3>
