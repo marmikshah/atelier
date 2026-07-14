@@ -181,7 +181,7 @@ impl Studio {
         }
         if union.len() > 32 {
             warnings.push(format!(
-                "palette union is {} colours — a cohesive set usually shares far fewer; run doc_set_palette_sync",
+                "palette union is {} colours — a cohesive set usually shares far fewer; run doc_palette op=sync",
                 union.len()
             ));
         }
@@ -198,7 +198,7 @@ impl Studio {
             ));
         }
         if stats.iter().any(|s| s.off_palette > 0) {
-            warnings.push("off-palette pixels present — doc_snap_palette the offenders".into());
+            warnings.push("off-palette pixels present — doc_palette op=snap the offenders".into());
         }
         Ok(json!({
             "members": members,

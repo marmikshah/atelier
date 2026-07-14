@@ -35,6 +35,7 @@ USAGE:
     atelier service uninstall     stop + remove the daemon
     atelier replay <recipe.json>  replay a scripted sequence of tool calls (MCP client)
             [--home DIR]          run against an isolated ATELIER_HOME
+    atelier tools [--html]        list the tools (plain text; --html emits the reference page)
     atelier --version             print the version
 
 ENVIRONMENT:
@@ -42,7 +43,7 @@ ENVIRONMENT:
     ATELIER_HTTP             HTTP bind address (alternative to --http)
     ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use
     ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)
-    ATELIER_PROFILE          tool profile: core (30 tools, default) or full (all 75)";
+    ATELIER_PROFILE          tool profile: core (20 tools, default) or full (all 63)";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -55,6 +56,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
+            return Ok(());
+        }
+        // List the tools (generated from the live registry). Plain text by
+        // default; `--html` emits the reference page `make docs` publishes.
+        Some("tools") => {
+            if args[2..].iter().any(|a| a == "--html") {
+                print!("{}", server::tools_html());
+            } else {
+                print!("{}", server::tools_text());
+            }
             return Ok(());
         }
         Some("--help") | Some("-h") => {

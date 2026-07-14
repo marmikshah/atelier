@@ -63,7 +63,7 @@ doc_create → paint → doc_look (look!) → fix → doc_export op=anim
 | **Prebuilt binaries** | macOS (Apple Silicon), Linux x86_64, Windows — [latest release](https://github.com/marmikshah/atelier/releases/latest) |
 | **From source** | `cargo install --path .` |
 | **Documents live in** | `~/.atelier` (override with `ATELIER_HOME`) |
-| **Tool profile** | 30-tool core by default; `ATELIER_PROFILE=full` for all 75 |
+| **Tool profile** | 20-tool core by default; `ATELIER_PROFILE=full` for all 63 |
 
 ## Recipes
 
@@ -94,7 +94,7 @@ composition ladder, and the life of a tool call:
 |---|---|
 | [Benchmark gallery](https://marmikshah.github.io/atelier/) | Different models, identical briefs, the same studio in different hands |
 | [Architecture tour](https://marmikshah.github.io/atelier/architecture.html) | The crate tower, the life of a tool call, onboarding paths |
-| [docs/TOOLS.md](docs/TOOLS.md) | Complete reference for all 75 tools |
+| [Tool reference](https://marmikshah.github.io/atelier/tools.html) | All 63 tools, generated from the live registry |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Crate and module layout, in the repo |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes |
 
