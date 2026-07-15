@@ -18,9 +18,9 @@
   @media (prefers-color-scheme: light){
     :root{
       --bg:#f0f1ec; --card:#e7e8e1; --card2:#dcded4;
-      --ink:#191b14; --muted:#4c4f43; --faint:#7d8071;
-      --line:#c9cbbd; --accent:#a8741a; --accent-soft:#a8741a1a;
-      --teal:#2f7f8e; --teal-soft:#2f7f8e1a; --amber:#a8741a;
+      --ink:#191b14; --muted:#4c4f43; --faint:#5d6054;
+      --line:#c9cbbd; --accent:#7d550e; --accent-soft:#7d550e1a;
+      --teal:#256875; --teal-soft:#2568751a; --amber:#7d550e;
       --code-bg:#191b14; --code-ink:#e7e8e1;
     }
   }
@@ -116,7 +116,7 @@
 
 <section id="unit">
   <h2>The smallest unit — two atoms, one system</h2>
-  <p class="prose">Understand these two and every file in the repo reads itself. Atelier has a <strong>data atom</strong> and a <strong>behavior atom</strong>; the whole product is the two of them composed upward.</p>
+  <p class="prose">Understand these two and every file in the repo reads itself. Atelier has a <strong>data atom</strong> and a <strong>behaviour atom</strong>; the whole product is the two of them composed upward.</p>
 
   <div class="two">
     <div class="card">
@@ -130,7 +130,7 @@
       </ul>
     </div>
     <div class="card">
-      <h3>The behavior atom: the op</h3>
+      <h3>The behaviour atom: the op</h3>
       <p class="muted" style="margin-top:0">One JSON object describing one edit to one cel.</p>
       <ul>
         <li><code>{"op":"rect","x0":1,"y0":1,"x1":8,"y1":8,"color":[r,g,b]}</code> — that shape is the entire mutation language</li>
@@ -217,7 +217,7 @@
     </div>
   </div>
 
-  <p class="prose muted" style="margin-top:1rem">By default the server <em>advertises</em> a 20-tool core profile (<code>ATELIER_PROFILE=full</code> advertises all 63). That filter is discovery-only — every tool always executes, so replay always works. Both counts are pinned by tests; the docs cannot silently drift.</p>
+  <p class="prose muted" style="margin-top:1rem">By default the server <em>advertises</em> a 20-tool core profile (<code>ATELIER_PROFILE=full</code> advertises all 63). That filter is discovery-only — every tool always executes, so replay always works. Both counts are pinned by a test, so a tool added or moved between profiles fails the suite until the counts written here are updated too.</p>
 </section>
 
 <section id="flow">
@@ -260,7 +260,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
       <h3>make targets (build/test/lint only)</h3>
       <div class="tablewrap"><table>
         <tr><td><code>release</code> / <code>build</code></td><td>optimized / debug binary</td></tr>
-        <tr><td><code>test</code></td><td>the full suite (229 tests)</td></tr>
+        <tr><td><code>test</code></td><td>the full suite</td></tr>
         <tr><td><code>pre-commit-checks</code></td><td>fmt + clippy gate (hooks run this)</td></tr>
         <tr><td><code>check</code></td><td>fmt + clippy + tests</td></tr>
         <tr><td><code>clean</code></td><td>wipe build artifacts</td></tr>
@@ -308,7 +308,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
         <li>Studio method first (pick the right studio module), tests beside it</li>
         <li>param struct in <code>server/params.rs</code>, thin <code>#[tool]</code> method in <code>server/mod.rs</code></li>
         <li>decide: core profile? add to <code>CORE_TOOLS</code></li>
-        <li>the count-pin test fails until README / .env.example counts are updated — on purpose</li>
+        <li>the count-pin test fails the moment either profile changes size — on purpose: it is the reminder to update the counts written into README / .env.example / these pages</li>
       </ul>
     </div>
     <div class="card">

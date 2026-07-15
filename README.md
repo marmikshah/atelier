@@ -51,7 +51,7 @@ MCP client. Restart the client, then just ask:
 <table>
 <tr><td><b>Docker</b></td><td><code>docker run -d -p 8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier</code></td></tr>
 <tr><td><b>Binaries</b></td><td>macOS&nbsp;(ARM), Linux&nbsp;x86_64, Windows — <a href="https://github.com/marmikshah/atelier/releases/latest">latest release</a></td></tr>
-<tr><td><b>Source</b></td><td><code>cargo install --path .</code> · or <code>./install.sh --source</code></td></tr>
+<tr><td><b>Source</b></td><td><code>cargo install --path crates/atelier</code> · or <code>site/install.sh --source</code> to build this checkout and install the daemon</td></tr>
 </table>
 
 ## Why it's different
@@ -61,8 +61,9 @@ is drawn blind — the model guesses, never looks, and ships the guess.
 
 **atelier gives the agent an eye.** `doc_look` hands back the actual frame as an
 image, plus measured stats. The agent looks at its own work, judges it, and fixes
-it — the same loop a human uses in an editor. Every other tool returns text only,
-so looking is a deliberate act, not an accident.
+it — the same loop a human uses in an editor. Nothing sends pixels back unless the
+agent asks to see them: every drawing tool answers in text, so looking is a
+deliberate act, and the context stays small enough to look often.
 
 |  |  |
 |---|---|

@@ -1,43 +1,353 @@
 {
   "method": "Claude Code subagents driving the atelier MCP server (63-tool full profile). One agent per task; each read the task spec verbatim and worked only through atelier's tools. Stats are Claude Code's own (tool_uses, subagent tokens) plus the doc_look count each agent self-reported. Durations are omitted: eight agents ran concurrently, so wall-clock reflects queueing, not work.",
   "verified": "Every GIF was parsed from disk: all 32 are 10 frames x 100ms = exactly 1000ms.",
-  "tasks": ["alien", "ball", "car", "cat", "person", "potion", "slash", "torch"],
-  "models": ["haiku-4.5", "sonnet-5", "opus-4.8", "fable-5"],
+  "tasks": [
+    "alien",
+    "ball",
+    "car",
+    "cat",
+    "person",
+    "potion",
+    "slash",
+    "torch"
+  ],
+  "task_text": {
+    "alien": "Creature — a big-headed green alien idling: it hovers, antennae sway, one blink.\nSymmetric and centered. Loops seamlessly. 10 frames, 1 second at 10 FPS. 32x32 canvas.\n4 colours, transparent background.",
+    "ball": "Prop — a rubber ball: falls, squashes flat on contact, rebounds tall, and rises —\nsquash & stretch with a scaling cast shadow. Loops seamlessly. 10 frames, 1 second\nat 10 FPS. 32x32 canvas. 4 colours, transparent background.",
+    "car": "Vehicle — a side-view car driving in place: wheels spin, the body bobs on its\nsuspension, a small exhaust puff, speed lines streak past. Loops seamlessly.\n10 frames, 1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "cat": "Animal — a cat in a wizard hat with a glowing staff orb that pulses and casts\nlight, tail swaying, sparkles drifting up. Loops seamlessly. 10 frames, 1 second\nat 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "person": "Character — a side-view human adventurer idling: weight settles, chest breathes,\narms sway slightly, one blink; feet planted. Reads clearly at small size. Loops\nseamlessly. 10 frames, 1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "potion": "Item — a corked flask, two-thirds full: bubbles rise through the liquid and pop at\na wobbling surface while the bottle stays still. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "slash": "Effect — a side-view armored hero: wind-up over the shoulder, overhead, downward\ndiagonal slash with a motion smear, follow-through, recover. One connected\nsilhouette. 10 frames, 1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "torch": "Environment — a wall-mounted torch: the flame flickers and licks upward, embers\ndrift up and fade, a soft light pulse on the bracket. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 5 colours, transparent background."
+  },
+  "models": [
+    "haiku-4.5",
+    "sonnet-5",
+    "opus-4.8",
+    "fable-5"
+  ],
   "runs": [
-    {"task": "alien",  "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/alien.gif",  "tool_calls": 27, "looks": 2, "tokens": 63040, "frames": 10},
-    {"task": "ball",   "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/ball.gif",   "tool_calls": 32, "looks": 3, "tokens": 35933, "frames": 10},
-    {"task": "car",    "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/car.gif",    "tool_calls": 30, "looks": 4, "tokens": 55498, "frames": 10},
-    {"task": "cat",    "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/cat.gif",    "tool_calls": 42, "looks": 3, "tokens": 50598, "frames": 10},
-    {"task": "person", "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/person.gif", "tool_calls": 42, "looks": 1, "tokens": 62267, "frames": 10},
-    {"task": "potion", "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/potion.gif", "tool_calls": 54, "looks": 6, "tokens": 42550, "frames": 10},
-    {"task": "slash",  "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/slash.gif",  "tool_calls": 32, "looks": 2, "tokens": 47714, "frames": 10},
-    {"task": "torch",  "model": "haiku-4.5", "vendor": "Anthropic", "gif": "benchmarks/runs/haiku-4.5/torch.gif",  "tool_calls": 28, "looks": 1, "tokens": 36017, "frames": 10},
-
-    {"task": "alien",  "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/alien.gif",  "tool_calls": 43, "looks": 4, "tokens": 72014,  "frames": 10},
-    {"task": "ball",   "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/ball.gif",   "tool_calls": 32, "looks": 6, "tokens": 61755,  "frames": 10},
-    {"task": "car",    "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/car.gif",    "tool_calls": 62, "looks": 6, "tokens": 118918, "frames": 10},
-    {"task": "cat",    "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/cat.gif",    "tool_calls": 53, "looks": 6, "tokens": 100734, "frames": 10},
-    {"task": "person", "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/person.gif", "tool_calls": 33, "looks": 6, "tokens": 86716,  "frames": 10},
-    {"task": "potion", "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/potion.gif", "tool_calls": 42, "looks": 4, "tokens": 89072,  "frames": 10, "note": "first attempt died on an API error; re-run clean"},
-    {"task": "slash",  "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/slash.gif",  "tool_calls": 60, "looks": 8, "tokens": 97112,  "frames": 10},
-    {"task": "torch",  "model": "sonnet-5", "vendor": "Anthropic", "gif": "benchmarks/runs/sonnet-5/torch.gif",  "tool_calls": 33, "looks": 4, "tokens": 88723,  "frames": 10},
-
-    {"task": "alien",  "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/alien.gif",  "tool_calls": 50, "looks": 4, "tokens": 76697, "frames": 10},
-    {"task": "ball",   "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/ball.gif",   "tool_calls": 44, "looks": 5, "tokens": 54288, "frames": 10},
-    {"task": "car",    "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/car.gif",    "tool_calls": 34, "looks": 4, "tokens": 74875, "frames": 10},
-    {"task": "cat",    "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/cat.gif",    "tool_calls": 59, "looks": 4, "tokens": 95072, "frames": 10},
-    {"task": "person", "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/person.gif", "tool_calls": 52, "looks": 4, "tokens": 68656, "frames": 10},
-    {"task": "potion", "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/potion.gif", "tool_calls": 39, "looks": 4, "tokens": 68807, "frames": 10},
-    {"task": "slash",  "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/slash.gif",  "tool_calls": 61, "looks": 9, "tokens": 76374, "frames": 10},
-    {"task": "torch",  "model": "opus-4.8", "vendor": "Anthropic", "gif": "benchmarks/runs/opus-4.8/torch.gif",  "tool_calls": 47, "looks": 5, "tokens": 88406, "frames": 10},
-
-    {"task": "alien",  "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/alien.gif",  "tool_calls": 28, "looks": 5,  "tokens": 55446, "frames": 10},
-    {"task": "ball",   "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/ball.gif",   "tool_calls": 30, "looks": 5,  "tokens": 49963, "frames": 10},
-    {"task": "car",    "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/car.gif",    "tool_calls": 43, "looks": 4,  "tokens": 66300, "frames": 10},
-    {"task": "cat",    "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/cat.gif",    "tool_calls": 36, "looks": 6,  "tokens": 67360, "frames": 10},
-    {"task": "person", "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/person.gif", "tool_calls": 33, "looks": 5,  "tokens": 62795, "frames": 10},
-    {"task": "potion", "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/potion.gif", "tool_calls": 29, "looks": 4,  "tokens": 52139, "frames": 10},
-    {"task": "slash",  "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/slash.gif",  "tool_calls": 48, "looks": 10, "tokens": 62434, "frames": 10},
-    {"task": "torch",  "model": "fable-5", "vendor": "Anthropic", "gif": "benchmarks/runs/fable-5/torch.gif",  "tool_calls": 46, "looks": 7,  "tokens": 61450, "frames": 10}
+    {
+      "task": "alien",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/alien.gif",
+      "tool_calls": 27,
+      "looks": 2,
+      "tokens": 63040,
+      "frames": 10
+    },
+    {
+      "task": "ball",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/ball.gif",
+      "tool_calls": 32,
+      "looks": 3,
+      "tokens": 35933,
+      "frames": 10
+    },
+    {
+      "task": "car",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/car.gif",
+      "tool_calls": 30,
+      "looks": 4,
+      "tokens": 55498,
+      "frames": 10
+    },
+    {
+      "task": "cat",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/cat.gif",
+      "tool_calls": 42,
+      "looks": 3,
+      "tokens": 50598,
+      "frames": 10
+    },
+    {
+      "task": "person",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/person.gif",
+      "tool_calls": 42,
+      "looks": 1,
+      "tokens": 62267,
+      "frames": 10
+    },
+    {
+      "task": "potion",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/potion.gif",
+      "tool_calls": 54,
+      "looks": 6,
+      "tokens": 42550,
+      "frames": 10
+    },
+    {
+      "task": "slash",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/slash.gif",
+      "tool_calls": 32,
+      "looks": 2,
+      "tokens": 47714,
+      "frames": 10
+    },
+    {
+      "task": "torch",
+      "model": "haiku-4.5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/haiku-4.5/torch.gif",
+      "tool_calls": 28,
+      "looks": 1,
+      "tokens": 36017,
+      "frames": 10
+    },
+    {
+      "task": "alien",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/alien.gif",
+      "tool_calls": 43,
+      "looks": 4,
+      "tokens": 72014,
+      "frames": 10
+    },
+    {
+      "task": "ball",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/ball.gif",
+      "tool_calls": 32,
+      "looks": 6,
+      "tokens": 61755,
+      "frames": 10
+    },
+    {
+      "task": "car",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/car.gif",
+      "tool_calls": 62,
+      "looks": 6,
+      "tokens": 118918,
+      "frames": 10
+    },
+    {
+      "task": "cat",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/cat.gif",
+      "tool_calls": 53,
+      "looks": 6,
+      "tokens": 100734,
+      "frames": 10
+    },
+    {
+      "task": "person",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/person.gif",
+      "tool_calls": 33,
+      "looks": 6,
+      "tokens": 86716,
+      "frames": 10
+    },
+    {
+      "task": "potion",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/potion.gif",
+      "tool_calls": 42,
+      "looks": 4,
+      "tokens": 89072,
+      "frames": 10,
+      "note": "first attempt died on an API error; re-run clean"
+    },
+    {
+      "task": "slash",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/slash.gif",
+      "tool_calls": 60,
+      "looks": 8,
+      "tokens": 97112,
+      "frames": 10
+    },
+    {
+      "task": "torch",
+      "model": "sonnet-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/sonnet-5/torch.gif",
+      "tool_calls": 33,
+      "looks": 4,
+      "tokens": 88723,
+      "frames": 10
+    },
+    {
+      "task": "alien",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/alien.gif",
+      "tool_calls": 50,
+      "looks": 4,
+      "tokens": 76697,
+      "frames": 10
+    },
+    {
+      "task": "ball",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/ball.gif",
+      "tool_calls": 44,
+      "looks": 5,
+      "tokens": 54288,
+      "frames": 10
+    },
+    {
+      "task": "car",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/car.gif",
+      "tool_calls": 34,
+      "looks": 4,
+      "tokens": 74875,
+      "frames": 10
+    },
+    {
+      "task": "cat",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/cat.gif",
+      "tool_calls": 59,
+      "looks": 4,
+      "tokens": 95072,
+      "frames": 10
+    },
+    {
+      "task": "person",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/person.gif",
+      "tool_calls": 52,
+      "looks": 4,
+      "tokens": 68656,
+      "frames": 10
+    },
+    {
+      "task": "potion",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/potion.gif",
+      "tool_calls": 39,
+      "looks": 4,
+      "tokens": 68807,
+      "frames": 10
+    },
+    {
+      "task": "slash",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/slash.gif",
+      "tool_calls": 61,
+      "looks": 9,
+      "tokens": 76374,
+      "frames": 10
+    },
+    {
+      "task": "torch",
+      "model": "opus-4.8",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8/torch.gif",
+      "tool_calls": 47,
+      "looks": 5,
+      "tokens": 88406,
+      "frames": 10
+    },
+    {
+      "task": "alien",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/alien.gif",
+      "tool_calls": 28,
+      "looks": 5,
+      "tokens": 55446,
+      "frames": 10
+    },
+    {
+      "task": "ball",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/ball.gif",
+      "tool_calls": 30,
+      "looks": 5,
+      "tokens": 49963,
+      "frames": 10
+    },
+    {
+      "task": "car",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/car.gif",
+      "tool_calls": 43,
+      "looks": 4,
+      "tokens": 66300,
+      "frames": 10
+    },
+    {
+      "task": "cat",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/cat.gif",
+      "tool_calls": 36,
+      "looks": 6,
+      "tokens": 67360,
+      "frames": 10
+    },
+    {
+      "task": "person",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/person.gif",
+      "tool_calls": 33,
+      "looks": 5,
+      "tokens": 62795,
+      "frames": 10
+    },
+    {
+      "task": "potion",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/potion.gif",
+      "tool_calls": 29,
+      "looks": 4,
+      "tokens": 52139,
+      "frames": 10
+    },
+    {
+      "task": "slash",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/slash.gif",
+      "tool_calls": 48,
+      "looks": 10,
+      "tokens": 62434,
+      "frames": 10
+    },
+    {
+      "task": "torch",
+      "model": "fable-5",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/fable-5/torch.gif",
+      "tool_calls": 46,
+      "looks": 7,
+      "tokens": 61450,
+      "frames": 10
+    }
   ]
 }
