@@ -16,7 +16,6 @@ docs/ART-QUALITY-REVIEW.md
 Cargo.lock
 
 # pixel-sheet export sidecars (page reads only runs.json)
-docs/showcase/*-*-*.json
 
 # benchmark run artifacts (transcripts, isolated homes, exported art)
 benchmarks/runs/

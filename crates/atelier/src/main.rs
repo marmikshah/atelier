@@ -6,16 +6,25 @@
 //! PNG/sheet/GIF output.
 //!
 //! Transports:
-//!   atelier                      # stdio (default)
-//!   atelier --http [ADDR]        # Streamable HTTP, default 127.0.0.1:8765
-//!   ATELIER_HTTP=0.0.0.0:8765 atelier
-//! Extra allowed Host headers for LAN/remote use (DNS-rebind guard):
-//!   ATELIER_ALLOWED_HOSTS="my-workstation.local,192.168.1.20:8765"
 //!
-//! Daemon (background HTTP server, survives logout/reboot):
-//!   atelier install      # launchd (macOS) / systemd --user (Linux)
-//!   atelier status
-//!   atelier uninstall
+//! ```text
+//! atelier                        # stdio (default)
+//! atelier --http [ADDR]          # Streamable HTTP, default 127.0.0.1:8765
+//! ATELIER_HTTP=0.0.0.0:8765 atelier
+//!
+//! # Extra allowed Host headers for LAN/remote use (DNS-rebind guard):
+//! ATELIER_ALLOWED_HOSTS="my-workstation.local,192.168.1.20:8765"
+//! ```
+//!
+//! Daemon (background HTTP server, survives logout/reboot), and the store:
+//!
+//! ```text
+//! atelier install                # launchd (macOS) / systemd --user (Linux)
+//! atelier status
+//! atelier uninstall
+//! atelier tools [--html]         # the tool surface / the reference page
+//! atelier library [rm ...]       # inspect or prune the document store
+//! ```
 
 use atelier_mcp::server;
 
@@ -27,7 +36,7 @@ const HELP: &str = "atelier — the pixel-art studio agents can see (MCP-native,
 
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
-    atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
+    atelier --http `[ADDR]`         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
     atelier --record <recipe.json>  record this session's tool calls into a replayable recipe
             (works with stdio and --http; also ATELIER_RECORD=<path>)
     atelier install               install + start the background daemon (launchd / systemd --user)

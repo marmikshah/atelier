@@ -1,174 +1,147 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-wordmark-dark.png">
-    <img src="docs/logo-wordmark.png" width="384" alt="atelier">
+    <source media="(prefers-color-scheme: dark)" srcset="site/assets/logo-wordmark-dark.png">
+    <img src="site/assets/logo-wordmark.png" width="384" alt="atelier">
   </picture>
 </p>
 
-<p align="center"><strong>The pixel-art studio agents can see — headless, over MCP.</strong></p>
+<p align="center"><strong>The pixel-art studio agents can see.</strong><br>
+Layered, animated, game-ready art — over MCP.</p>
 
 <p align="center">
   <a href="https://github.com/marmikshah/atelier/actions/workflows/ci.yml"><img src="https://github.com/marmikshah/atelier/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/marmikshah/atelier/releases/latest"><img src="https://img.shields.io/github/v/release/marmikshah/atelier" alt="latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/code-100%25%20AI--written-e0a33c" alt="100% AI-written">
 </p>
 
 <p align="center">
-  <img src="docs/platformer-scene.gif" width="640" alt="dusk side-scroller scene: cloaked lantern-bearer, owl on a ledge, crystal cave, fireflies">
+  <img src="site/assets/platformer-scene.gif" width="640" alt="dusk side-scroller scene: cloaked lantern-bearer, owl on a ledge, crystal cave, fireflies — drawn and animated entirely by agents">
 </p>
 
 <p align="center">
-  <img src="docs/showcase/alien-haiku-4-5.gif" width="96" alt="idle space alien, drawn by Haiku 4.5">
-  <img src="docs/showcase/potion-sonnet-5.gif" width="96" alt="bubbling potion, drawn by Sonnet 5">
-  <img src="docs/showcase/cat-opus-4-8.gif" width="96" alt="wizard cat casting, drawn by Opus 4.8">
-  <img src="docs/showcase/ball-fable-5.gif" width="96" alt="bouncing ball, drawn by Fable 5">
+  <img src="site/showcase/opus-4.8/slash.gif" width="88" alt="armored hero slashing">
+  <img src="site/showcase/sonnet-5/cat.gif" width="88" alt="wizard cat casting">
+  <img src="site/showcase/fable-5/torch.gif" width="88" alt="flickering wall torch">
+  <img src="site/showcase/opus-4.8/potion.gif" width="88" alt="bubbling potion">
+  <img src="site/showcase/haiku-4.5/car.gif" width="88" alt="driving car">
+  <img src="site/showcase/fable-5/ball.gif" width="88" alt="bouncing ball">
 </p>
-<p align="center"><em>Alien by Haiku 4.5 · potion by Sonnet 5 · wizard cat by Opus 4.8 ·
-ball by Fable 5 — same briefs, four models, zero hand-editing.
-Full benchmark with compare views: <a href="https://marmikshah.github.io/atelier/">marmikshah.github.io/atelier</a>.</em></p>
 
-## What it is
+<p align="center"><em>Not one pixel was hand-placed. Every frame is a tool call.<br>
+<a href="https://marmikshah.github.io/atelier/">See all four models draw the same eight tasks →</a></em></p>
 
-Agents are good at *describing* art and bad at *seeing* it. atelier closes the
-loop: every drawing op is a tool call, and `doc_look` hands back a PNG the
-agent can actually look at, judge, and correct — the same look-and-fix loop a
-human uses in an editor. One static Rust binary; no API keys, no network, fully
-deterministic.
+---
 
-- **A real editor, headless** — layers, frames, tags, selections, locked
-  palettes; generators for figures, walk/pose cycles, autotile terrain,
-  9-slice panels and particle FX.
-- **An eye, not just a hand** — critique, palette, silhouette, animation and
-  colour-blindness audits turn "does it look right?" into numbers an agent
-  acts on; `doc_set_audit` judges a whole asset set as one game.
-- **Game-ready out of the box** — spritesheets with pivots/hitboxes/tags,
-  GIF/APNG, texture atlases, Tiled tilesets, engine-standard JSON.
-
-## Quickstart
+## Install
 
 ```sh
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
-The installer sets up the background daemon by default and prints the one-line
-command to register it with your MCP client (pass `--stdio` for the
-client-spawns-it mode instead). Restart your session, then ask your agent for
-art — *"draw me a blinking cat sprite and export it as a GIF"*. Under the hood
-that becomes:
+Sets up the background daemon and prints the one line that registers it with your
+MCP client. Restart the client, then just ask:
 
-```
-doc_create → paint → doc_look (look!) → fix → doc_export op=anim
-```
+> *"draw me a blinking cat sprite and export it as a GIF"*
 
-| | |
+<p align="center">
+  <code>doc_create</code> → <code>paint</code> → <b><code>doc_look</code></b> → <i>fix</i> → <code>doc_export</code>
+</p>
+
+<table>
+<tr><td><b>Docker</b></td><td><code>docker run -d -p 8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier</code></td></tr>
+<tr><td><b>Binaries</b></td><td>macOS&nbsp;(ARM), Linux&nbsp;x86_64, Windows — <a href="https://github.com/marmikshah/atelier/releases/latest">latest release</a></td></tr>
+<tr><td><b>Source</b></td><td><code>cargo install --path .</code> · or <code>./install.sh --source</code></td></tr>
+</table>
+
+## Why it's different
+
+Agents are good at *describing* art and bad at *seeing* it. So most AI pixel art
+is drawn blind — the model guesses, never looks, and ships the guess.
+
+**atelier gives the agent an eye.** `doc_look` hands back the actual frame as an
+image, plus measured stats. The agent looks at its own work, judges it, and fixes
+it — the same loop a human uses in an editor. Every other tool returns text only,
+so looking is a deliberate act, not an accident.
+
+|  |  |
 |---|---|
-| **Prebuilt binaries** | macOS (Apple Silicon), Linux x86_64, Windows — [latest release](https://github.com/marmikshah/atelier/releases/latest) |
-| **From source** | `cargo install --path .`, or `./install.sh --source` to build this checkout and set up the daemon |
-| **Docker** | `ghcr.io/marmikshah/atelier` (see below) |
-| **Documents live in** | `~/.atelier` (override with `ATELIER_HOME`) |
-| **Tool profile** | 20-tool core by default; `ATELIER_PROFILE=full` for all 63 |
+| 🎨 **A real editor, headless** | Layers, frames, tags, selections, locked palettes. Generators for figures, walk cycles, autotile terrain, 9-slice panels, particle FX. |
+| 👁 **An eye, not just a hand** | Critique, palette, silhouette, animation and colour-blindness audits turn *"does it look right?"* into numbers an agent can act on. |
+| 🎮 **Game-ready out of the box** | Spritesheets with pivots/hitboxes/tags, GIF/APNG, texture atlases, Tiled tilesets, engine-standard JSON. |
+| 🔒 **Yours, offline** | One static Rust binary. No API keys, no network, no telemetry. Fully deterministic. |
 
-## Docker
-
-A public multi-arch image (amd64 + arm64) runs the HTTP MCP server — no local
-toolchain needed:
+## The CLI
 
 ```sh
-docker run -d --name atelier -p 8765:8765 -v atelier-data:/data \
-  ghcr.io/marmikshah/atelier:latest
+atelier                    # stdio MCP server (your client spawns it)
+atelier --http             # HTTP server at 127.0.0.1:8765/mcp
+atelier install            # background daemon (launchd / systemd)
+atelier tools              # list the tool surface
+atelier library            # what's in your document store
+atelier replay recipe.json # replay a recorded session, byte-identically
 ```
 
-Then point any MCP client at the HTTP endpoint:
+**Tool profile** — 20 tools by default, the set an agent actually reaches for.
+`ATELIER_PROFILE=full` opens all 63. Every tool executes either way; the profile
+only changes what's advertised.
+
+## Art is a recipe
+
+Every document is an ordered sequence of tool calls, so a piece of art *is* a
+replayable program — one that renders byte-identically anywhere:
 
 ```sh
-claude mcp add --scope user --transport http atelier http://127.0.0.1:8765/mcp
-# Cursor: ~/.cursor/mcp.json -> "atelier": { "url": "http://127.0.0.1:8765/mcp" }
+atelier replay docs/examples/invader-march.json --home /tmp/demo
 ```
 
-Documents persist in the `atelier-data` volume. `docker compose up -d` works too
-(see [docker-compose.yml](docker-compose.yml)). Set `-e ATELIER_PROFILE=core` for
-the lean tool set; to reach the server from another host set
-`-e ATELIER_ALLOWED_HOSTS=<host[:port]>`.
-
-## Recipes
-
-Every document is an ordered sequence of tool calls, so art is a **recipe** —
-a JSON file that replays byte-identically and doubles as an integration test:
-
-```sh
-atelier replay docs/examples/invader-march.json --home /tmp/atelier-demo
-```
-
-The recipes under [docs/examples](docs/examples) are both the brand art and
-the test suite — replay any of them with `atelier replay docs/examples/<name>.json`.
-
-## How it's built
-
-A strict four-crate tower — functional core, imperative shell. `atelier-core`
-(document model + raster math) knows nothing about MCP; `atelier-studio` is
-the one-method-per-tool facade; `atelier-mcp` is the thin tool router over
-stdio and HTTP; the `atelier` binary adds the installer and the replay runner.
-
-Start with the illustrated tour — the smallest units (cel + op), the
-composition ladder, and the life of a tool call:
-**[marmikshah.github.io/atelier/architecture.html](https://marmikshah.github.io/atelier/architecture.html)**
+The recipes in [docs/examples](docs/examples) are both the brand art and the
+integration tests.
 
 ## Documentation
 
-| Where | What |
+| | |
 |---|---|
-| [Benchmark gallery](https://marmikshah.github.io/atelier/) | Different models, identical briefs, the same studio in different hands |
-| [Architecture tour](https://marmikshah.github.io/atelier/architecture.html) | The crate tower, the life of a tool call, onboarding paths |
-| [Tool reference](https://marmikshah.github.io/atelier/tools.html) | All 63 tools, generated from the live registry |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Crate and module layout, in the repo |
-| [CHANGELOG.md](CHANGELOG.md) | Release notes |
+| 🖼 **[Benchmark gallery](https://marmikshah.github.io/atelier/)** | Four models, eight tasks, identical prompts — compared side by side |
+| 🧭 **[Architecture tour](https://marmikshah.github.io/atelier/architecture.html)** | The crate tower and the life of a tool call, illustrated |
+| 🔧 **[Tool reference](https://marmikshah.github.io/atelier/tools.html)** | All 63 tools, generated from the live registry |
+| 📓 **[CHANGELOG](CHANGELOG.md)** | What changed, and what broke |
 
 ## A personal note
 
-atelier started as an experiment with one question behind it: can AI agents,
-using only tool calls, build art that is genuinely good enough to ship in a
-game?
+atelier began as one question: can AI agents, using only tool calls, make art
+that's genuinely good enough to ship in a game?
 
-Every line of code here was written by AI — Claude Opus 4.8 and Fable 5 did
-the heavy lifting, with Kimi 2.6 and Minimax 2.7 pitching in. I didn't write a
-single line myself. My part was direction: holding the project to the same
-practices and standards I use in the projects where I *do* still write the
-code.
+**100% of this code was written by AI.** Not assisted — written. Claude Opus 4.8
+and Fable 5 did the heavy lifting, with Kimi 2.6 and Minimax 2.7 pitching in. I
+have not written a single line. My part was direction: holding the project to the
+same standards I use where I *do* still write the code.
 
-This is an ongoing experiment. As time allows, I'll keep running the
-benchmark against other model families — GPT, Gemini, and whatever else looks
-promising — and trying different designs to see how each of them holds a
-brush.
+It's an ongoing experiment. I'll keep running the benchmark against other model
+families and trying designs to see how each one holds a brush.
 
-If atelier helps you in any way — as a tool, a reference, or just a kick-start
-on your own game-design journey — that makes me genuinely happy. The tokens
-are already spent; the least they can do is be useful to you too.
+If atelier helps you — as a tool, a reference, or a kick-start on your own game —
+that makes me genuinely happy. The tokens are already spent; the least they can do
+is be useful to you too.
+
+> [!WARNING]
+> **Below 2.0.0, this code has not been reviewed by a human.** It's AI-generated,
+> diffs are large, and every release below 2.0.0 will likely contain breaking
+> changes despite my best intentions — assume bugs and security issues I haven't
+> caught. **Use at your own risk.**
+>
+> **2.0.0 is the milestone where I start reviewing the code in detail** and
+> contributing directly. It will be tagged by hand — the one release an AI agent
+> is not allowed to cut.
 
 ## Contributing
 
-atelier is **not accepting external code contributions until v2.0.0** — the
-manual-review milestone below. Bug reports and ideas are very welcome as
-[issues](https://github.com/marmikshah/atelier/issues); pull requests are closed
-automatically until then. See [CONTRIBUTING.md](.github/CONTRIBUTING.md), the
-[Code of Conduct](.github/CODE_OF_CONDUCT.md), and the
-[security policy](.github/SECURITY.md).
+Not accepting external code contributions until **v2.0.0** — pull requests are
+closed automatically until then. Bug reports and ideas are very welcome as
+[issues](https://github.com/marmikshah/atelier/issues).
 
-## Notice — versions below 2.0.0
-
-> [!WARNING]
-> I intend to follow [SemVer](https://semver.org), but be realistic about what
-> this project is: AI-generated code. Diffs are large, and every release below
-> 2.0.0 will likely contain breaking changes despite my best intentions.
->
-> Once I'm confident the tool has proven itself, I will cut a **2.0.0**
-> release — that is the point where I start reviewing the code in detail and
-> contributing to it directly. 2.0.0 will be tagged by me, by hand — it is the
-> one release an AI agent is not allowed to cut. Until then, assume that
-> anything below 2.0.0 has **not** been fully reviewed by me and may contain
-> bugs or security issues I haven't caught.
->
-> **Use at your own risk.**
+[Contributing](.github/CONTRIBUTING.md) · [Code of Conduct](.github/CODE_OF_CONDUCT.md) · [Security](.github/SECURITY.md)
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE) © Marmik Shah
