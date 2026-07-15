@@ -316,6 +316,20 @@ fn cel_wide_ops_are_reachable_from_their_single_op_tool() {
 }
 
 #[test]
+fn clear_cel_rejects_a_target_that_does_not_exist() {
+    let mut d = Document::new("t", 4, 4);
+    assert!(
+        d.clear_cel(99, 0).is_err(),
+        "clearing a nonexistent layer reported success"
+    );
+    assert!(
+        d.clear_cel(0, 99).is_err(),
+        "clearing a nonexistent frame reported success"
+    );
+    assert!(d.clear_cel(0, 0).is_ok(), "clearing a real cel must work");
+}
+
+#[test]
 fn snap_to_palette_picks_perceptual_nearest() {
     let mut d = Document::new("t", 4, 4);
     d.pencil(0, 0, &[(0, 0)], [200, 10, 10, 255], 1).unwrap();
@@ -340,6 +354,71 @@ fn replace_color_recolours_aa_edges() {
         .unwrap();
     assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 255, 255]);
     assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 255, 255]); // AA edge too
+}
+
+/// Transparent is [0,0,0,0], so an RGB-only match made a black outline on an
+/// empty canvas indistinguishable from the background: a fill OUTSIDE the shape
+/// ate the outline, and a fill inside escaped to the whole canvas. The most
+/// ordinary pixel-art setup there is.
+#[test]
+fn bucket_fill_does_not_cross_the_transparent_boundary() {
+    let mut d = Document::new("t", 12, 12);
+    d.rect(0, 0, 3, 3, 8, 8, [0, 0, 0, 255], false, 1).unwrap();
+    // Click outside the ring, tol 0.
+    d.bucket_fill(0, 0, 0, 0, [255, 0, 0, 255], 0).unwrap();
+    assert_eq!(
+        d.get_pixel(0, 0, 3, 3).unwrap(),
+        [0, 0, 0, 255],
+        "the fill ate the black outline"
+    );
+    assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
+    // The interior is fenced off by the ring, so it stays empty.
+    assert_eq!(d.get_pixel(0, 0, 5, 5).unwrap(), [0, 0, 0, 0]);
+
+    // The inverse: filling a black shape must not escape into the background.
+    let mut d = Document::new("t", 12, 12);
+    d.rect(0, 0, 3, 3, 8, 8, [0, 0, 0, 255], true, 1).unwrap();
+    d.bucket_fill(0, 0, 5, 5, [0, 255, 0, 255], 0).unwrap();
+    assert_eq!(d.get_pixel(0, 0, 5, 5).unwrap(), [0, 255, 0, 255]);
+    assert_eq!(
+        d.get_pixel(0, 0, 0, 0).unwrap(),
+        [0, 0, 0, 0],
+        "the fill escaped into the transparent background"
+    );
+}
+
+/// Same root cause as the fill: `from` = an opaque black repainted every
+/// transparent pixel, turning the empty canvas fully opaque.
+#[test]
+fn replace_color_leaves_the_transparent_background_alone() {
+    let mut d = Document::new("t", 8, 8);
+    d.rect(0, 0, 2, 2, 5, 5, [0, 0, 0, 255], true, 1).unwrap();
+    d.replace_color(0, 0, [0, 0, 0, 255], [255, 0, 0, 255], 0)
+        .unwrap();
+    assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [255, 0, 0, 255]);
+    assert_eq!(
+        d.get_pixel(0, 0, 0, 0).unwrap(),
+        [0, 0, 0, 0],
+        "replace_color painted the transparent background"
+    );
+}
+
+/// A stroke wholly off-canvas inverted the clamped bbox, which panicked in
+/// release as well as debug (`clamp` with min > max). Nothing is visible, so it
+/// must clip silently like every other primitive.
+#[test]
+fn stroke_entirely_off_canvas_clips_instead_of_panicking() {
+    let mut d = Document::new("t", 16, 16);
+    for pts in [
+        vec![(-100.0, -100.0, 2.0), (-90.0, -90.0, 2.0)],
+        vec![(200.0, 200.0, 2.0), (300.0, 300.0, 2.0)],
+        vec![(-50.0, 8.0, 2.0), (-40.0, 8.0, 2.0)],
+    ] {
+        d.stroke_f(0, 0, &pts, [255, 0, 0, 255], true, false)
+            .unwrap();
+    }
+    // Canvas untouched, no panic.
+    assert_eq!(d.get_pixel(0, 0, 8, 8).unwrap(), [0, 0, 0, 0]);
 }
 
 #[test]

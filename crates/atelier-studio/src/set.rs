@@ -60,8 +60,10 @@ impl Studio {
             palette: Vec<[u8; 4]>,
             off_palette: u64,
             opaque: u64,
-            vmin: u8,
-            vmax: u8,
+            /// Darkest/brightest luma over the opaque pixels — `None` when the
+            /// document has none, since an empty document has no value range
+            /// rather than a range of nothing.
+            value: Option<(u8, u8)>,
             height: u32,
             has_pivot: bool,
         }
@@ -94,8 +96,7 @@ impl Studio {
                 palette: pal,
                 off_palette: off,
                 opaque,
-                vmin,
-                vmax,
+                value: (opaque > 0).then_some((vmin, vmax)),
                 height,
                 has_pivot,
             });
@@ -150,8 +151,16 @@ impl Studio {
             .collect();
         // -- value cohesion: per-doc contrast ranges should overlap; a doc that
         // lives in a different value band reads as pasted from another game.
-        let set_vmin = stats.iter().map(|s| s.vmin).min().unwrap_or(0);
-        let set_vmax = stats.iter().map(|s| s.vmax).max().unwrap_or(0);
+        // Empty documents carry no value, so they neither widen the set range
+        // nor drag it to a bogus [255, 0].
+        let set_range = {
+            let mut vals = stats.iter().filter_map(|s| s.value).peekable();
+            vals.peek().is_some().then(|| {
+                vals.fold((255u8, 0u8), |(lo, hi), (vmin, vmax)| {
+                    (lo.min(vmin), hi.max(vmax))
+                })
+            })
+        };
         let docs_json: Vec<Value> = stats
             .iter()
             .map(|s| {
@@ -160,7 +169,7 @@ impl Studio {
                     "palette_colors": s.palette.len(),
                     "off_palette_px": s.off_palette,
                     "opaque_px": s.opaque,
-                    "value_range": [s.vmin, s.vmax],
+                    "value_range": s.value.map(|(lo, hi)| json!([lo, hi])),
                     "silhouette_height": s.height,
                     "has_pivot": s.has_pivot,
                 })
@@ -212,7 +221,7 @@ impl Studio {
                 "median_silhouette_height": median,
                 "outliers": scale_outliers,
             },
-            "value": {"set_range": [set_vmin, set_vmax]},
+            "value": {"set_range": set_range.map(|(lo, hi)| json!([lo, hi]))},
             "pivots": {"missing": no_pivot},
             "verdict": if warnings.is_empty() { json!("cohesive") } else { json!(warnings) },
         }))

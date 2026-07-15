@@ -211,6 +211,13 @@ impl Document {
             }
             visited[i] = true;
             let p = img.get_pixel(px as u32, py as u32).0;
+            // close_rgb ignores alpha, and transparent is stored [0,0,0,0] — so
+            // without this a fill outside a BLACK outline matches the outline
+            // (same RGB) and eats it, and a fill inside a black shape escapes to
+            // the whole canvas. Same guard, same reason, as flood_mask.
+            if (p[3] == 0) != (target[3] == 0) {
+                continue;
+            }
             if !raster::close_rgb(p, target, tol) {
                 continue;
             }
@@ -234,7 +241,13 @@ impl Document {
         let img = self.cel_canvas(layer, frame)?;
         for p in img.pixels_mut() {
             // RGB max-channel match (alpha ignored) so AA/semi-transparent edges
-            // of the target colour are recoloured too, not left as a halo.
+            // of the target colour are recoloured too, not left as a halo. But
+            // transparent is stored [0,0,0,0], so matching on RGB alone made
+            // `from` = black repaint the whole empty canvas. Only cross the
+            // opaque/transparent line when that is what was asked for.
+            if (p.0[3] == 0) != (from[3] == 0) {
+                continue;
+            }
             if raster::close_rgb(p.0, from, tol) {
                 *p = Rgba(to);
             }

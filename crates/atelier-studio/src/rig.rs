@@ -126,7 +126,7 @@ impl Studio {
                 j.insert(format!("hand_{side}"), hand);
             }
             let bones = humanoid_bones(&j, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
-            doc.clear_cel(layer, f);
+            doc.clear_cel(layer, f)?;
             for b in &bones {
                 doc.stroke_f(layer, f, b, color, aa, false)?;
             }
@@ -341,7 +341,7 @@ impl Studio {
                 j.insert(format!("hand_{side}"), hand);
             }
             let bones = humanoid_bones(&j, limb_w.max(1), torso_w.max(1), head_r.max(1))?;
-            doc.clear_cel(layer, f);
+            doc.clear_cel(layer, f)?;
             for b in &bones {
                 doc.stroke_f(layer, f, b, color, aa, false)?;
             }

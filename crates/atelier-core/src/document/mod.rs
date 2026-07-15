@@ -531,8 +531,14 @@ impl Document {
     }
 
     /// Remove the cel at (layer, frame), if any.
-    pub fn clear_cel(&mut self, layer: usize, frame: usize) {
+    ///
+    /// Validates the target like every sibling cel op: without this,
+    /// `clear_cel(99, 0)` on a one-layer document reported success, so an agent
+    /// clearing the wrong index was told the cel was empty and carried on.
+    pub fn clear_cel(&mut self, layer: usize, frame: usize) -> Result<(), String> {
+        self.check_cel(layer, frame)?;
         self.cels.remove(&(layer, frame));
+        Ok(())
     }
 
     /// JSON snapshot of the document structure (layers, frames, tags, cels,

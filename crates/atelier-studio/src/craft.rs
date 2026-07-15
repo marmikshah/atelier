@@ -12,6 +12,17 @@ use std::fs;
 use std::path::Path;
 
 use image::{Rgba, RgbaImage};
+
+/// True only for the `cp<n>` ids `doc_checkpoint save` mints.
+///
+/// A checkpoint id is joined onto the store path and then handed to
+/// `remove_dir_all` / `Document::load`, so an unvalidated one is a directory
+/// traversal: `../../../../x` escaped the store and deleted it. Every id the
+/// tool hands out matches this shape, so rejecting anything else costs nothing.
+fn valid_checkpoint_id(cpid: &str) -> bool {
+    cpid.strip_prefix("cp")
+        .is_some_and(|n| !n.is_empty() && n.chars().all(|c| c.is_ascii_digit()))
+}
 use serde_json::{json, Value};
 
 use super::{Selection, Studio};
@@ -84,6 +95,19 @@ impl Studio {
         }
         if !self.exists(id) {
             return Err(format!("no document '{}'", id));
+        }
+        // `checkpoint_id` is joined onto the store path and handed to
+        // remove_dir_all / Document::load, so it is as dangerous as `doc_id` and
+        // gets the same treatment. Ids are always minted as `cp{n}` (below), so
+        // anything else — traversal, absolute paths, a stray name — is a
+        // caller error, not a lookup miss.
+        if let Some(cpid) = checkpoint_id {
+            if !valid_checkpoint_id(cpid) {
+                return Err(format!(
+                    "invalid checkpoint id '{}' — expected the cp<n> form doc_checkpoint save returns",
+                    cpid
+                ));
+            }
         }
         let dir = self.doc_dir(id);
         let cps = dir.join(".checkpoints");
@@ -265,6 +289,7 @@ impl Studio {
         perceptual: bool,
         mode: &str,
     ) -> Result<Value, String> {
+        let mode = crate::SelectMode::parse(mode)?;
         let (_dir, doc) = self.open(id)?;
         let (w, h) = (doc.meta().w, doc.meta().h);
         let new = doc.flood_mask(layer, frame, x, y, tol, conn8, perceptual)?;
@@ -273,15 +298,7 @@ impl Studio {
             _ => vec![false; (w * h) as usize],
         };
         let combined: Vec<bool> = (0..base.len())
-            .map(|i| {
-                let (b, n) = (base[i], new[i]);
-                match mode {
-                    "add" => b || n,
-                    "subtract" => b && !n,
-                    "intersect" => b && n,
-                    _ => n,
-                }
-            })
+            .map(|i| mode.combine(base[i], new[i]))
             .collect();
         let count = combined.iter().filter(|b| **b).count();
         self.selection = Some(Selection {
@@ -291,7 +308,7 @@ impl Studio {
             mask: combined,
         });
         Ok(
-            json!({"doc_id": id, "selected_pixels": count, "mode": mode, "matched": new.iter().filter(|b| **b).count()}),
+            json!({"doc_id": id, "selected_pixels": count, "mode": mode.as_str(), "matched": new.iter().filter(|b| **b).count()}),
         )
     }
 
@@ -1025,7 +1042,7 @@ impl Studio {
         for f in 0..frames {
             let t = f as f32 / (frames - 1) as f32;
             let r = (t * max_radius as f32).round().max(1.0) as i32;
-            doc.clear_cel(layer, f);
+            doc.clear_cel(layer, f)?;
             // Expand-and-dissipate: bright and solid at the flash, thinning to a
             // faint rim as it grows — the shockwave fades OUT, instead of
             // darkening while staying fully opaque (which read as a solid ring).
@@ -1104,7 +1121,7 @@ impl Studio {
         // A unit random in [0,1) that is pure in (seed, particle, channel).
         let rnd = |p: usize, ch: i32| raster::hash2(p as i32, ch, seed) as f32 / u32::MAX as f32;
         for f in 0..frames {
-            doc.clear_cel(layer, f);
+            doc.clear_cel(layer, f)?;
             let ft = f as f32 / frames as f32;
             for p in 0..count {
                 // Staggered phase: each particle is somewhere along its own
@@ -1469,6 +1486,45 @@ mod tests {
             }
         }
         assert!(any_opaque, "emitter drew nothing in the sampled grid");
+    }
+
+    /// `checkpoint_id` is joined onto the store path and fed to remove_dir_all,
+    /// so an unvalidated one deleted arbitrary directories and reported success:
+    /// `prune` with `../../../../x` wiped a tree outside the store.
+    #[test]
+    fn checkpoint_id_cannot_escape_the_store() {
+        let s = studio("cp-escape");
+        s.doc_create("c", 8, 8).unwrap();
+        s.checkpoint("c", "save", None, None).unwrap();
+
+        // A directory outside the store that must survive every attempt.
+        let outside = std::env::temp_dir().join("atelier-test-cp-escape-victim");
+        let _ = std::fs::remove_dir_all(&outside);
+        std::fs::create_dir_all(&outside).unwrap();
+
+        for evil in [
+            "../../../../atelier-test-cp-escape-victim",
+            "../..",
+            "..",
+            "/tmp",
+            "cp1/../../..",
+            "not-a-checkpoint",
+            "cp",
+            "cp1x",
+        ] {
+            for action in ["prune", "restore", "diff"] {
+                let r = s.checkpoint("c", action, None, Some(evil));
+                assert!(
+                    r.is_err(),
+                    "{action} accepted the traversal id {evil:?}: {r:?}"
+                );
+            }
+        }
+        assert!(outside.exists(), "a checkpoint id escaped the store");
+        let _ = std::fs::remove_dir_all(&outside);
+
+        // The real id still works.
+        assert!(s.checkpoint("c", "restore", None, Some("cp1")).is_ok());
     }
 
     #[test]
