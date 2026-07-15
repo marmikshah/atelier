@@ -6,10 +6,18 @@ All notable changes to atelier are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-07-16
+
 The surface release: a smaller, honester tool surface and a CLI an installed
 user can actually drive. The model sees **20 tools** by default instead of 30
 (63 behind `ATELIER_PROFILE=full`, down from 75) with no capability lost, and
 edit tools stopped handing back preview images nobody asked for.
+
+It also carries a review round — a path traversal, three panics, and a family
+of calls that reported success while doing nothing. See **Security** and
+**Fixed** below; if you script against `doc_select`, `doc_tilemap_assemble` or
+`doc_extract_to_layer`, a typo'd `mode`/`outside`/`frames` is now an error
+instead of a silent fallback.
 
 ### Changed (breaking)
 
@@ -113,6 +121,10 @@ edit tools stopped handing back preview images nobody asked for.
 - The light theme failed WCAG AA on its accent, link and faint colours
   (3.3–3.6:1 behind small text); all three darkened at the same hue, in the
   `tools.html` generator too.
+- New hero image: the atelier itself, a studio at night, drawn through
+  atelier's own tools. The old one showed a lantern that lit nothing under a
+  README claiming the art was good enough to ship. The logo keeps the quill and
+  fixes its execution — a real nib, a feather with form, a kerned wordmark.
 
 ## [1.3.0] — 2026-07-11
 
