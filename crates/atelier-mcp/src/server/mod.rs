@@ -71,10 +71,6 @@ fn opt_img_result(r: Result<(Option<Vec<u8>>, Value), String>) -> CallToolResult
     }
 }
 
-/// Append a best-effort inline preview to a successful mutation: the op's JSON
-/// report plus a PNG of the touched cel (or flattened frame), so the agent SEES
-/// the result of an import/stamp/quantize in the same turn. A preview failure
-/// never fails the call — the op already landed.
 /// Acknowledge an edit op with its TEXT report only — no inline preview image.
 /// doc_look is the agent's only eye: returning a preview PNG from every edit
 /// tool taxed every LLM client with image tokens (an upscaled frame is tens of
@@ -394,7 +390,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Place an external PNG into a cel at (x,y) — import bridge for AI-gen/real/Figma art. Optional `scale` (nearest-neighbour) and `rotate` (degrees). By default draws OVER existing content with `opacity`+`blend` (sub-sprite reuse, no layer-per-element); `replace`=true overwrites the whole cel. Honours an active selection. Returns an INLINE preview of the stamped cel."
+        description = "Place an external PNG into a cel at (x,y) — import bridge for AI-gen/real/Figma art. Optional `scale` (nearest-neighbour) and `rotate` (degrees). By default draws OVER existing content with `opacity`+`blend` (sub-sprite reuse, no layer-per-element); `replace`=true overwrites the whole cel. Honours an active selection. Returns a text report — call doc_look to SEE the result."
     )]
     async fn doc_stamp_image(&self, Parameters(p): Parameters<DocStampImage>) -> CallToolResult {
         let studio = self.studio();
@@ -1254,7 +1250,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Paint a whole region DECLARATIVELY from a character grid (the inverse of doc_dump_region): `legend` maps single characters to [r,g,b(,a)] colours or integer PALETTE INDICES, `rows` are pixel-row strings ('.'/' ' leave the pixel untouched). Emitting a sprite as a grid eliminates the absolute-coordinate failure class — prefer this over long pencil/rect sequences for detailed shapes. Verify by diffing against doc_dump_region. Returns painted/clipped counts plus an INLINE preview. Honours an active selection."
+        description = "Paint a whole region DECLARATIVELY from a character grid (the inverse of doc_dump_region): `legend` maps single characters to [r,g,b(,a)] colours or integer PALETTE INDICES, `rows` are pixel-row strings ('.'/' ' leave the pixel untouched). Emitting a sprite as a grid eliminates the absolute-coordinate failure class — prefer this over long pencil/rect sequences for detailed shapes. Verify by diffing against doc_dump_region. Returns painted/clipped counts — call doc_look to SEE the result. Honours an active selection."
     )]
     async fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
         let studio = self.studio();
@@ -1319,7 +1315,7 @@ impl Atelier {
 
     // -- reference subsystem: recreate-from-sample as a measurable loop --
     #[tool(
-        description = "Reference workflow — recreate-from-sample as a measurable loop. `op`: set — attach the ORIGINAL reference (`path`, omit to clear) so compare/diff can score likeness; returns aspect-true fit suggestions. import — trace a source image cleaned onto a guide layer: `path`, `target_w` (required), optional `target_h`, `colors`, `dither`, `defringe`, `to_doc_palette`, `remove_bg`, `pin`; returns an inline preview. analyze — decompose the reference (inline PNG): background coverage, a frequency-weighted SUBJECT palette to lock with doc_palette op=set, and the silhouette as a text grid; `path` analyzes an external file, `target_w` plans at a size. compare — SCORE a `frame` (run after every pass): inline side-by-side (mode=\"overlay\" ghosts the reference), silhouette IoU (≥0.80 reads), per-cell OKLab ΔE with worst cells as rects, and missing palette colours; `cells` sets the grid. diff — PER-PIXEL signed error map (heat PNG: red=too light, blue=too dark, green=wrong hue) plus the `top` worst pixels each with a fix direction."
+        description = "Reference workflow — recreate-from-sample as a measurable loop. `op`: set — attach the ORIGINAL reference (`path`, omit to clear) so compare/diff can score likeness; returns aspect-true fit suggestions. import — trace a source image cleaned onto a guide layer: `path`, `target_w` (required), optional `target_h`, `colors`, `dither`, `defringe`, `to_doc_palette`, `remove_bg`, `pin`; returns a text report — call doc_look to SEE it. analyze — decompose the reference (inline PNG): background coverage, a frequency-weighted SUBJECT palette to lock with doc_palette op=set, and the silhouette as a text grid; `path` analyzes an external file, `target_w` plans at a size. compare — SCORE a `frame` (run after every pass): inline side-by-side (mode=\"overlay\" ghosts the reference), silhouette IoU (≥0.80 reads), per-cell OKLab ΔE with worst cells as rects, and missing palette colours; `cells` sets the grid. diff — PER-PIXEL signed error map (heat PNG: red=too light, blue=too dark, green=wrong hue) plus the `top` worst pixels each with a fix direction."
     )]
     async fn doc_ref(&self, Parameters(p): Parameters<DocRefOp>) -> CallToolResult {
         let studio = self.studio();
@@ -1940,6 +1936,58 @@ mod tests {
                 assert!(blob.starts_with("iVBOR"), "not a PNG blob: {}", &blob[..8]);
             }
             other => panic!("expected blob contents, got {other:?}"),
+        }
+    }
+
+    /// doc_look is the agent's only eye: an edit op acknowledges with text only.
+    /// Returning a preview PNG per edit costs LLM clients tens of thousands of
+    /// image tokens a call — and telling the model it got a preview when it
+    /// didn't suppresses the doc_look it should make. Pin both halves of the
+    /// contract: edits carry no image, visual tools still do.
+    #[test]
+    fn edit_results_carry_no_image_but_visual_results_do() {
+        let has_image = |r: &CallToolResult| {
+            r.content
+                .iter()
+                .any(|c| matches!(c.raw, rmcp::model::RawContent::Image(_)))
+        };
+
+        let edit = edited(Ok(json!({"ok": true})));
+        assert!(
+            !has_image(&edit),
+            "edit ops must return text only — doc_look is the agent's eye"
+        );
+
+        // A 1x1 PNG stands in for any rendered frame.
+        let png = vec![0x89, 0x50, 0x4E, 0x47];
+        let visual = img_result(Ok((png, json!({"ok": true}))));
+        assert!(
+            has_image(&visual),
+            "visual tools must still return the frame"
+        );
+    }
+
+    /// A tool that promises an inline preview it no longer returns lies to the
+    /// model: it may skip doc_look believing it already saw the art. No edit
+    /// tool's description may advertise one.
+    #[test]
+    fn no_tool_description_promises_an_inline_preview_it_cannot_deliver() {
+        let previewless = [
+            "doc_paint_grid",
+            "doc_stamp_image",
+            "doc_ref",
+            "doc_palette",
+        ];
+        for t in Atelier::new().with_profile(true).advertised_tools() {
+            if !previewless.contains(&t.name.as_ref()) {
+                continue;
+            }
+            let d = t.description.as_deref().unwrap_or("").to_lowercase();
+            assert!(
+                !d.contains("inline preview"),
+                "{} advertises an inline preview but edits return text only",
+                t.name
+            );
         }
     }
 
