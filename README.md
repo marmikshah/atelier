@@ -16,7 +16,7 @@ Layered, animated, game-ready art — over MCP.</p>
 </p>
 
 <p align="center">
-  <img src="site/assets/platformer-scene.gif" width="640" alt="dusk side-scroller scene: cloaked lantern-bearer, owl on a ledge, crystal cave, fireflies — drawn and animated entirely by agents">
+  <img src="site/assets/studio-scene.gif" width="640" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a ginger cat sleeps on the desk — drawn and animated entirely by agents">
 </p>
 
 <p align="center">
