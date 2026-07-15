@@ -61,12 +61,40 @@ edit tools stopped handing back preview images nobody asked for.
   runs the HTTP MCP server with no local toolchain; `docker-compose.yml` for a
   persistent self-hosted server.
 
+### Security
+
+- **`doc_checkpoint` could delete directories outside the store.** A checkpoint
+  id is joined onto the store path and handed to `remove_dir_all` / `Document::load`,
+  so an id of `../../../../x` escaped the store and took the target with it.
+  Ids are now validated against the `cp<n>` form the tool itself mints — the
+  only shape it has ever returned. Reproduced with a working exploit before the
+  fix and confirmed rejected after.
+
 ### Fixed
 
 - **`doc_batch` was uncallable from strict tool parsers.** Its `ops` schema
   emitted `items: true` (JSON-Schema "any"), which Gemini and others reject —
   failing the *entire* tool list with a 500, not just that tool. Pinned to a
   concrete object schema.
+- **Three panics and a runaway allocation.** A stroke entirely off-canvas
+  inverted its clamped bbox, wrapping a size cast to ~4 billion and panicking in
+  release; an export `scale` had no ceiling, so `scale=64` on a 4096² canvas
+  targeted a ~256 GB buffer (now clamped at the single choke point every export
+  routes through); and a panic under the studio lock poisoned it, bricking every
+  later tool call on every document until restart — the lock now recovers.
+- **Fills ignored alpha and ate outlines.** `bucket_fill` and `replace_color`
+  compared RGB only, and transparent is stored `[0,0,0,0]` — so a fill beside a
+  black outline matched the outline and consumed it, and a fill inside a black
+  shape escaped to the whole canvas.
+- **Silent success on calls that did nothing.** `clear_cel` skipped the bounds
+  check its sibling cel ops all run, reporting `ok` for a layer that does not
+  exist. A typo'd `mode` on `doc_select` / `doc_select_wand` fell through to
+  *replace*, wiping the selection it was asked to subtract from; `outside` on
+  `doc_tilemap_assemble` and `frames` on `doc_extract_to_layer` had the same
+  silent fallback. All four now name the value and the alternatives.
+- **`doc_set_audit` reported a backwards value range.** An all-transparent
+  document returned `value_range: [255, 0]` — its uninitialised sentinels. Empty
+  documents now report `null` and no longer drag the set range with them.
 
 ### Docs
 
@@ -76,6 +104,15 @@ edit tools stopped handing back preview images nobody asked for.
   not written.
 - Community health files: contributing policy (closed to external contributions
   until 2.0.0), security policy, code of conduct, issue and PR templates.
+- The README install line did not work: the repo root is a virtual manifest, so
+  `cargo install --path .` errors out. It is `cargo install --path crates/atelier`,
+  and `install.sh` lives in `site/`.
+- The gallery claimed every model got identical task text, then displayed a
+  paraphrase of it. It now renders the frozen `benchmarks/tasks/*.txt` verbatim,
+  so the page quotes the tasks instead of restating them.
+- The light theme failed WCAG AA on its accent, link and faint colours
+  (3.3–3.6:1 behind small text); all three darkened at the same hue, in the
+  `tools.html` generator too.
 
 ## [1.3.0] — 2026-07-11
 
