@@ -297,6 +297,24 @@ fn draw_fx_partition_names_real_disjoint_ops() {
     }
 }
 
+/// The partition drives doc_draw/doc_fx dispatch, so an op the registry can
+/// execute but neither list names is reachable ONLY through doc_batch — silently
+/// missing from its single-op tool. `clear_cel` was exactly that: keyed,
+/// dispatchable, documented as draw-side, and rejected by doc_draw.
+///
+/// The key table is a match and can't be iterated, so this pins the cel-wide
+/// ops that pair — a partition entry without its twin is the shape of the bug.
+#[test]
+fn cel_wide_ops_are_reachable_from_their_single_op_tool() {
+    for op in ["fill_cel", "clear_cel"] {
+        assert!(batch_op_keys(op).is_some(), "{op} lost its registry entry");
+        assert!(
+            DRAW_OPS.contains(&op),
+            "{op} is dispatchable but missing from DRAW_OPS — doc_draw rejects it"
+        );
+    }
+}
+
 #[test]
 fn snap_to_palette_picks_perceptual_nearest() {
     let mut d = Document::new("t", 4, 4);

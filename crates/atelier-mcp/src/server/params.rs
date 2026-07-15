@@ -314,7 +314,7 @@ fn op_list_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
     schemars::json_schema!({
         "type": "array",
         "items": { "type": "object" },
-        "description": "Ordered ops, each like {\"op\":\"rect\",\"x0\":1,\"y0\":1,\"x1\":8,\"y1\":8,\"color\":[r,g,b],\"fill\":true}. Ops: pencil/line/rect/ellipse/polyline/polygon/fill/replace_color/flip/shift/outline/fill_cel/clear_cel/gradient/scatter/noise/adjust/blur/quantize/symmetry/drop_shadow/glow/bevel/shade/dither/pixel_perfect."
+        "description": "Ordered ops, each like {\"op\":\"rect\",\"x0\":1,\"y0\":1,\"x1\":8,\"y1\":8,\"color\":[r,g,b],\"fill\":true}. Draw ops: pencil/line/rect/ellipse/polyline/polygon/stroke/fill/bucket/gradient/scatter/noise/text/fill_cel/clear_cel. FX ops: blur/outline/drop_shadow/bevel/shade/form/dither/pixel_perfect/flip/shift/symmetry/quantize/replace_color/adjust/gradient_map. Plus glow (batch only). Each takes the same fields as the matching doc_draw/doc_fx op."
     })
 }
 
@@ -324,7 +324,8 @@ pub(crate) struct DocDraw {
     pub(crate) layer: usize,
     pub(crate) frame: usize,
     /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
-    /// | fill | gradient | scatter | noise | text | fill_cel.
+    /// | fill | gradient | scatter | noise | text | fill_cel | clear_cel |
+    /// box_iso | panel.
     pub(crate) op: String,
     /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,
     /// color, fill). Every op also accepts `opacity` and `blend_mode`.
@@ -339,7 +340,7 @@ pub(crate) struct DocFx {
     pub(crate) frame: usize,
     /// One transform/effect op: blur | outline | drop_shadow | bevel | shade |
     /// form | dither | pixel_perfect | flip | shift | symmetry | quantize |
-    /// replace_color | adjust.
+    /// replace_color | adjust | gradient_map.
     pub(crate) op: String,
     /// The op's own params, flattened alongside. Every op also accepts `opacity`
     /// and `blend_mode`.

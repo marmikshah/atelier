@@ -53,7 +53,7 @@ pub fn wcag_ratio(a: [u8; 4], b: [u8; 4]) -> f32 {
     (hi + 0.05) / (lo + 0.05)
 }
 
-/// RGB (0..255) → HSL with h in degrees [0,360), s and l in [0,1].
+/// RGB (0..255) → HSL with h in degrees `[0,360)`, s and l in `[0,1]`.
 pub fn rgb_to_hsl(r: u8, g: u8, b: u8) -> (f32, f32, f32) {
     let (r, g, b) = (r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0);
     let max = r.max(g).max(b);
@@ -74,7 +74,7 @@ pub fn rgb_to_hsl(r: u8, g: u8, b: u8) -> (f32, f32, f32) {
     (h.rem_euclid(360.0), s, l)
 }
 
-/// HSL (h degrees, s/l in [0,1]) → RGB (0..255).
+/// HSL (h degrees, s/l in `[0,1]`) → RGB (0..255).
 pub fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [u8; 3] {
     let s = s.clamp(0.0, 1.0);
     let l = l.clamp(0.0, 1.0);
@@ -101,9 +101,10 @@ pub fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [u8; 3] {
 //
 // Björn Ottosson's OKLab: a perceptually uniform space where equal numeric
 // steps in L look like equal steps in brightness, and Euclidean distance
-// approximates perceived colour difference. atelier's ramps, quantize and
-// palette-snap all live in sRGB+HSL today, which crushes the midtones and
-// picks perceptually-wrong nearest colours; OKLab fixes both.
+// approximates perceived colour difference. It is atelier's nearest-colour
+// metric — `quantize` and `snap_to_palette` both score candidates in OKLab via
+// `PaletteLab` — and the ramp metric, in `make_ramp_oklch`. The older sRGB+HSL
+// path (`make_ramp`, `shade_hsl`) remains for the legacy ramp/shade callers.
 
 fn srgb_to_linear(c: f32) -> f32 {
     if c <= 0.04045 {
@@ -121,7 +122,7 @@ fn linear_to_srgb(c: f32) -> f32 {
     }
 }
 
-/// sRGB (0..255) → OKLab `(L, a, b)`. L is perceptual lightness in [0,1]; a/b
+/// sRGB (0..255) → OKLab `(L, a, b)`. L is perceptual lightness in `[0,1]`; a/b
 /// are the green–red and blue–yellow opponent axes (roughly ±0.4).
 // The matrix constants are OKLab's canonical f64 values; keep them verbatim.
 #[allow(clippy::excessive_precision)]
@@ -167,7 +168,7 @@ pub fn oklab_to_srgb(lab: (f32, f32, f32)) -> [u8; 3] {
 }
 
 /// Whether an OKLCh colour is inside the sRGB gamut (its linear RGB all in
-/// [0,1]) — so a ramp can reduce chroma to fit instead of letting the per-channel
+/// `[0,1]`) — so a ramp can reduce chroma to fit instead of letting the per-channel
 /// clamp in `oklab_to_srgb` shift its hue.
 fn oklch_in_gamut(l: f32, c: f32, h: f32) -> bool {
     let (r, g, bl) = oklab_to_linear_rgb(oklch_to_oklab((l, c, h)));

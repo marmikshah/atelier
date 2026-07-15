@@ -444,7 +444,6 @@ impl Document {
         self.delete_layer(index)
     }
 
-    /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
     /// Shift cel frame indices: every cel on a frame `>= from` moves by
     /// `delta` frames. The frame-axis twin of `remap_cel_layers` — the single
     /// choke point for keeping the cel map in lock-step with frame inserts,
@@ -459,6 +458,7 @@ impl Document {
         self.cels.extend(moved);
     }
 
+    /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
     pub fn add_frame(&mut self, duration_ms: u32, copy_from: Option<usize>) -> usize {
         let idx = self.meta.frames.len();
         self.meta.frames.push(FrameMeta {
@@ -564,7 +564,7 @@ impl Document {
     }
 
     /// Read one pixel from a cel (document coords). Returns RGBA; out-of-bounds
-    /// or an empty cel reads as transparent [0,0,0,0]. Read-only — never
+    /// or an empty cel reads as transparent `[0,0,0,0]`. Read-only — never
     /// materialises a blank cel (unlike `cel_canvas`).
     pub fn get_pixel(&self, layer: usize, frame: usize, x: i32, y: i32) -> Result<[u8; 4], String> {
         self.check_cel(layer, frame)?;

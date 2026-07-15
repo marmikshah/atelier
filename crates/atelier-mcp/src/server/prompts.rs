@@ -27,7 +27,7 @@ fn arg<'a>(args: &'a Option<serde_json::Map<String, Value>>, key: &str) -> Optio
     args.as_ref()?.get(key)?.as_str()
 }
 
-/// The three shipped workflows. Each `build` emits ordered, numbered steps with
+/// The four shipped workflows. Each `build` emits ordered, numbered steps with
 /// tool names written verbatim — the get_prompt drift test checks every name
 /// here against the live tool list.
 pub(crate) const PROMPTS: &[PromptSpec] = &[

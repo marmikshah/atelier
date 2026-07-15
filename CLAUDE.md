@@ -24,7 +24,12 @@ binary's own subcommands are the interface (an installed user has no Makefile).
 | `make test` | test suite |
 | `make pre-commit-checks` | format-check + clippy gate (what the hooks run) |
 | `make check` | fmt + clippy + tests |
+| `make docs` | regenerate `site/tools.html` from the live tool registry |
+| `make docs-check` | fail if `site/tools.html` is stale (CI runs this) |
 | `make clean` | wipe build artifacts |
+
+Tool descriptions are the model's only guide, and `site/tools.html` is generated
+from them — change a description, run `make docs` in the same commit.
 
 **Run / operate (direct):**
 
@@ -33,6 +38,8 @@ binary's own subcommands are the interface (an installed user has no Makefile).
 | `target/release/atelier` | stdio MCP server (a client spawns it) |
 | `target/release/atelier --http 127.0.0.1:8765` | HTTP MCP server |
 | `atelier install` / `status` / `uninstall` | background daemon (launchd / systemd) |
+| `atelier tools [--html]` | list the tool surface / emit the reference page |
+| `atelier library [rm …]` | inspect or prune the document store (destructive: confirms first) |
 | `atelier replay docs/examples/<r>.json` | replay a recipe (brand art / integration test) |
 | `git config core.hooksPath .githooks` | wire the format/lint/test git hooks (once) |
 
@@ -42,8 +49,10 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 
 - `atelier-core` — document model + raster ops (no async, no MCP).
 - `atelier-studio` — the `Studio` facade (the library API): one method per tool; single draw/fx ops route through `doc_draw`/`doc_fx` over the core op registry.
-- `atelier-mcp` — the rmcp `#[tool]` server (stdio + HTTP); advertises a 30-tool
-  **core** profile by default, the full 75 with `ATELIER_PROFILE=full`.
+- `atelier-mcp` — the rmcp `#[tool]` server (stdio + HTTP); advertises a 20-tool
+  **core** profile by default, the full 63 with `ATELIER_PROFILE=full`. Both
+  counts are pinned by tests — change the profile, update the docs in the same
+  commit.
 - `atelier` — the binary: arg parsing, the daemon installer, the `replay` runner.
 
 ## Hard constraints
