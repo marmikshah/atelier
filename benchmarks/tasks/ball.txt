@@ -1,0 +1,3 @@
+Prop — a rubber ball: falls, squashes flat on contact, rebounds tall, and rises —
+squash & stretch with a scaling cast shadow. Loops seamlessly. 10 frames, 1 second
+at 10 FPS. 32x32 canvas. 4 colours, transparent background.
