@@ -244,6 +244,11 @@ impl Studio {
             .collect();
         // Inline visual: side-by-side (ref | canvas) or overlay (ref ghosted
         // under the canvas) at matched scale.
+        if !matches!(mode, "overlay" | "side_by_side") {
+            return Err(format!(
+                "unknown compare mode '{mode}' — expected side_by_side or overlay"
+            ));
+        }
         let sc = preview_scale(cw.max(ch) * 2, ch);
         let img = match mode {
             "overlay" => {

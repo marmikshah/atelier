@@ -237,8 +237,18 @@ impl Atelier {
         self
     }
 
+    /// The shared studio.
+    ///
+    /// Recovers from a poisoned lock instead of propagating the panic: one bad
+    /// tool call used to take the whole server down with it, since every later
+    /// call re-panicked on the poison. The studio keeps almost no in-memory
+    /// state — documents load and save per op — so the guarded data is not
+    /// meaningfully corrupted by a panic mid-op, and a live server that answers
+    /// the next call beats one that is bricked until restart.
     fn studio(&self) -> std::sync::MutexGuard<'_, Studio> {
-        self.studio.lock().expect("studio lock poisoned")
+        self.studio
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     /// Enumerate every browsable resource: per document, its structure JSON and a
@@ -506,7 +516,15 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocTilemapAssemble>,
     ) -> CallToolResult {
-        let outside_filled = p.outside.as_deref().unwrap_or("filled") == "filled";
+        let outside_filled = match p.outside.as_deref().unwrap_or("filled") {
+            "filled" => true,
+            "empty" => false,
+            other => {
+                return res(Err(format!(
+                    "unknown outside '{other}' — expected filled or empty"
+                )))
+            }
+        };
         res(self
             .studio()
             .tilemap_assemble(&p.doc_id, p.n, &p.rows, outside_filled))
@@ -1273,6 +1291,15 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocExtractToLayer>,
     ) -> CallToolResult {
+        let all_frames = match p.frames.as_deref().unwrap_or("one") {
+            "one" => false,
+            "all" => true,
+            other => {
+                return res(Err(format!(
+                    "unknown frames '{other}' — expected one or all"
+                )))
+            }
+        };
         res(self.studio().doc_extract_to_layer(
             &p.doc_id,
             p.layer,
@@ -1280,7 +1307,7 @@ impl Atelier {
             try_res!(region(&p.region)),
             p.use_selection.unwrap_or(false),
             p.name,
-            p.frames.as_deref() == Some("all"),
+            all_frames,
         ))
     }
 

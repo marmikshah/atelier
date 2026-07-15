@@ -169,10 +169,7 @@ impl Document {
             ),
             "bevel" => self.bevel(layer, frame, col("light"), col("dark"), gi("depth", 1)),
             "fill_cel" => self.fill_cel(layer, frame, col("color")),
-            "clear_cel" => {
-                self.clear_cel(layer, frame);
-                Ok(())
-            }
+            "clear_cel" => self.clear_cel(layer, frame),
             "gradient" => {
                 self.gradient(
                     layer,
