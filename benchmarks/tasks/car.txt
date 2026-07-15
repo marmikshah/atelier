@@ -1,3 +1,3 @@
 Vehicle — a side-view car driving in place: wheels spin, the body bobs on its
 suspension, a small exhaust puff, speed lines streak past. Loops seamlessly.
-10 frames, 1 second at 10 FPS. 6 colours, transparent background.
+10 frames, 1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.
