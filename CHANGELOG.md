@@ -6,30 +6,76 @@ All notable changes to atelier are documented here. Format follows
 
 ## [Unreleased]
 
-Edit tools no longer return an inline preview image. `doc_paint_grid`,
-`doc_ref op=import`, `doc_palette op=snap` and `doc_stamp_image` now return their
-text report only — `doc_look` is the agent's single eye. Returning a preview PNG
-from every edit taxed LLM clients with tens of thousands of image tokens per call
-and undercut the deliberate see-and-fix loop; call `doc_look` to see the result.
-
-Tool-surface fusion, tier 1 (breaking). Twelve near-sibling tools fold into four
-op-dispatched hubs — the same `op=`/`kind=` pattern the surface already used —
-cutting the full profile from 75 to 63 and the core profile from 30 to 24 with
-no capability lost. Old tool names are removed, not aliased.
+The surface release: a smaller, honester tool surface and a CLI an installed
+user can actually drive. The model sees **20 tools** by default instead of 30
+(63 behind `ATELIER_PROFILE=full`, down from 75) with no capability lost, and
+edit tools stopped handing back preview images nobody asked for.
 
 ### Changed (breaking)
 
-- **`doc_palette`** absorbs the palette family as ops: `op=set`
-  (was `doc_set_palette`), `op=snap` (`doc_snap_palette`), `op=swap`
-  (`doc_palette_swap`), `op=report` (`doc_palette_report`), `op=sync`
-  (`doc_set_palette_sync`); `op=generate` stays the default.
-- **`doc_ref`** absorbs the reference analysis as ops: `op=analyze`
-  (was `doc_ref_analyze`), `op=compare` (`doc_ref_compare`), `op=diff`
-  (`doc_diff_map`).
-- **`doc_export`** absorbs the library-wide exporters as ops: `op=all`
-  (was `export_all`), `op=atlas` (`export_atlas`); omit `doc_id` for these.
-- **`doc_draw`** absorbs the shape primitives as ops: `op=box_iso`
-  (was `doc_box`), `op=panel` (`doc_panel`).
+- **Tool fusion.** Twelve near-sibling tools fold into four op-dispatched hubs —
+  the same `op=`/`kind=` pattern the surface already used. Old names are removed,
+  not aliased:
+  - **`doc_palette`** absorbs the palette family: `op=set` (was
+    `doc_set_palette`), `op=snap` (`doc_snap_palette`), `op=swap`
+    (`doc_palette_swap`), `op=report` (`doc_palette_report`), `op=sync`
+    (`doc_set_palette_sync`); `op=generate` stays the default.
+  - **`doc_ref`** absorbs the reference analysis: `op=analyze`
+    (`doc_ref_analyze`), `op=compare` (`doc_ref_compare`), `op=diff`
+    (`doc_diff_map`).
+  - **`doc_export`** absorbs the library-wide exporters: `op=all` (`export_all`),
+    `op=atlas` (`export_atlas`) — omit `doc_id` for these.
+  - **`doc_draw`** absorbs the shape primitives: `op=box_iso` (`doc_box`),
+    `op=panel` (`doc_panel`).
+- **The default profile is 20 tools**, chosen by what an agent actually reaches
+  for: the create → draw → animate → audit → export spine plus the reference
+  loop. `doc_select`, `doc_contrast_check`, `doc_frame_diff` and `doc_set_audit`
+  move to full-only. Discovery filter only — every tool still executes via
+  `call_tool`, so recipes and `replay` reach the whole surface.
+- **Edit tools return text, not pictures.** `doc_paint_grid`, `doc_stamp_image`,
+  `doc_palette op=snap` and `doc_ref op=import` no longer return an inline
+  preview — `doc_look` is the agent's single eye. A preview PNG on every edit
+  cost LLM clients tens of thousands of image tokens per call and undercut the
+  deliberate see-and-fix loop. Their descriptions had also gone on advertising a
+  preview they no longer returned, which told the model it had already seen the
+  art and suppressed the `doc_look` it should have made; both halves are now
+  pinned by tests.
+- **Flat CLI verbs.** `atelier install` / `status` / `uninstall` replace
+  `atelier service <cmd>`. The installer sets up the background daemon by
+  default and gains `--source` (build this checkout) and `--yes` (fully
+  non-interactive).
+- **The Makefile builds, tests and lints — nothing else.** `run`, `serve`,
+  `stdio`, `daemon*`, `branding` and `hooks` are gone; the binary's own
+  subcommands are the interface, since an installed user has no Makefile.
+
+### Added
+
+- **`atelier library`** — inspect and prune the document store: list every
+  document, or `rm <id>… | rm --prefix <p> | rm --all`. Destructive by nature, so
+  it confirms first, refuses on a non-tty rather than assuming yes, and treats a
+  bare `--prefix` as an error, never a wildcard.
+- **`atelier tools`** — list the tool surface as text, or `--html` to emit the
+  reference page. `tools.html` is generated from the live registry (no
+  hand-maintained list to drift) and CI fails if it goes stale.
+- **Docker.** A multi-arch (amd64 + arm64) image at `ghcr.io/marmikshah/atelier`
+  runs the HTTP MCP server with no local toolchain; `docker-compose.yml` for a
+  persistent self-hosted server.
+
+### Fixed
+
+- **`doc_batch` was uncallable from strict tool parsers.** Its `ops` schema
+  emitted `items: true` (JSON-Schema "any"), which Gemini and others reject —
+  failing the *entire* tool list with a 500, not just that tool. Pinned to a
+  concrete object schema.
+
+### Docs
+
+- The site moved out of the repo root into `site/` and carries its own assets;
+  the benchmark gallery is now a Compare view over eight tasks (one per
+  game-object category) run against four models. The tool reference is generated,
+  not written.
+- Community health files: contributing policy (closed to external contributions
+  until 2.0.0), security policy, code of conduct, issue and PR templates.
 
 ## [1.3.0] — 2026-07-11
 
