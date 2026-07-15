@@ -110,6 +110,13 @@ pub fn stroke_ribbon(img: &mut RgbaImage, pts: &[(f32, f32, f32)], color: [u8; 4
     let by0 = ((y0 + 0.5 - pad).floor() as i32).max(0);
     let bx1 = ((x1 + 0.5 + pad).ceil() as i32).min(w - 1);
     let by1 = ((y1 + 0.5 + pad).ceil() as i32).min(h - 1);
+    // A stroke entirely off-canvas inverts the clamped bbox (bx1 < bx0), which
+    // wrapped the size cast to ~4 billion and panicked `clamp(min > max)` in
+    // splat — in release too. Nothing is on screen, so there is nothing to draw:
+    // clip silently, like every other primitive.
+    if bx1 < bx0 || by1 < by0 {
+        return;
+    }
     // Union (max) coverage accumulated per segment over its OWN padded bbox —
     // the whole-polyline bbox × every-segment scan made a long diagonal stroke
     // cost bbox-area × segments. The buffer is composited once at the end.

@@ -53,6 +53,54 @@ fn export_scale(scale: u32) -> u32 {
     scale.clamp(1, MAX_EXPORT_SCALE)
 }
 
+/// How a new shape combines with the selection already on the document.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) enum SelectMode {
+    Replace,
+    Add,
+    Subtract,
+    Intersect,
+}
+
+impl SelectMode {
+    /// Parse a caller-supplied mode.
+    ///
+    /// Rejects anything unknown rather than falling back to `Replace`: a typo
+    /// (`"substract"`) used to silently wipe the existing selection and replace
+    /// it, which reads as a successful subtract until the export is wrong.
+    pub(crate) fn parse(mode: &str) -> Result<Self, String> {
+        match mode {
+            "replace" => Ok(Self::Replace),
+            "add" => Ok(Self::Add),
+            "subtract" => Ok(Self::Subtract),
+            "intersect" => Ok(Self::Intersect),
+            other => Err(format!(
+                "unknown selection mode '{other}' — expected replace, add, subtract or intersect"
+            )),
+        }
+    }
+
+    /// The canonical spelling, for echoing back in a tool response.
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Replace => "replace",
+            Self::Add => "add",
+            Self::Subtract => "subtract",
+            Self::Intersect => "intersect",
+        }
+    }
+
+    /// Combine one pixel: `base` is the current selection, `shape` the new one.
+    pub(crate) fn combine(self, base: bool, shape: bool) -> bool {
+        match self {
+            Self::Replace => shape,
+            Self::Add => base || shape,
+            Self::Subtract => base && !shape,
+            Self::Intersect => base && shape,
+        }
+    }
+}
+
 /// Open an external image with a size cap. The header dimensions are read first
 /// and anything over [`MAX_IMPORT_PIXELS`] is rejected *before* decoding, and
 /// the decoder is then bounded to those dimensions so a lying header can't
@@ -652,7 +700,7 @@ impl Studio {
 
     pub fn doc_clear_cel(&self, id: &str, layer: usize, frame: usize) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        doc.clear_cel(layer, frame);
+        doc.clear_cel(layer, frame)?;
         self.commit(&dir, id, doc)
     }
 
@@ -1116,6 +1164,7 @@ impl Studio {
         ell: Option<(i32, i32, i32, i32)>,
         color_at: Option<ColorSelect>,
     ) -> Result<Value, String> {
+        let mode = SelectMode::parse(mode)?;
         let (_dir, doc) = self.open(id)?;
         let (w, h) = (doc.meta().w, doc.meta().h);
         let n = (w * h) as usize;
@@ -1182,12 +1231,7 @@ impl Studio {
             _ => vec![false; n],
         };
         let mask: Vec<bool> = (0..n)
-            .map(|i| match mode {
-                "add" => base[i] || shape_mask[i],
-                "subtract" => base[i] && !shape_mask[i],
-                "intersect" => base[i] && shape_mask[i],
-                _ => shape_mask[i], // "replace"
-            })
+            .map(|i| mode.combine(base[i], shape_mask[i]))
             .collect();
         let count = mask.iter().filter(|b| **b).count();
         self.selection = Some(Selection {
@@ -1742,7 +1786,15 @@ pub(crate) fn hex_rgba(c: &[u8]) -> String {
 }
 
 /// Nearest-neighbour upscale (keeps the pixel grid crisp).
+///
+/// The scale is clamped to `MAX_EXPORT_SCALE` here rather than at each of the
+/// nine call sites: `doc_look`, `select_render`, `contact_sheet` and the diff
+/// overlays all took it straight from the caller, and `scale: 1000000000`
+/// overflowed the dimension multiply — a panic in debug, a multi-terabyte
+/// allocation in release, and either way a poisoned studio lock that broke every
+/// later call. One choke point cannot be forgotten.
 pub(crate) fn scale_nn(img: &image::RgbaImage, scale: u32) -> image::RgbaImage {
+    let scale = export_scale(scale);
     if scale <= 1 {
         return img.clone();
     }
@@ -1770,6 +1822,41 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    #[test]
+    fn a_typod_selection_mode_is_rejected_not_treated_as_replace() {
+        let mut s = studio("selmode");
+        s.doc_create("d", 8, 8).unwrap();
+        s.doc_select("d", "rect", "replace", Some((0, 0, 3, 3)), None, None)
+            .unwrap();
+        // "substract" is not a mode; it used to fall through to replace, which
+        // silently wipes the mask above instead of subtracting from it.
+        let e = s
+            .doc_select("d", "rect", "substract", Some((0, 0, 1, 1)), None, None)
+            .unwrap_err();
+        assert!(
+            e.contains("unknown selection mode"),
+            "unexpected error: {e}"
+        );
+        let kept = s.selection.as_ref().expect("selection was destroyed");
+        assert_eq!(
+            kept.mask.iter().filter(|b| **b).count(),
+            16,
+            "a rejected mode must leave the existing selection untouched"
+        );
+    }
+
+    #[test]
+    fn selection_modes_combine_as_named() {
+        use SelectMode::*;
+        assert!(Add.combine(true, false) && Add.combine(false, true));
+        assert!(Subtract.combine(true, false) && !Subtract.combine(true, true));
+        assert!(Intersect.combine(true, true) && !Intersect.combine(true, false));
+        assert!(!Replace.combine(true, false) && Replace.combine(false, true));
+        for m in ["replace", "add", "subtract", "intersect"] {
+            assert_eq!(SelectMode::parse(m).unwrap().as_str(), m, "{m} round-trip");
+        }
     }
 
     /// Single draw-op shorthand: `params` is the op's JSON object (as `json!`).
