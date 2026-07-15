@@ -17,3 +17,7 @@ Cargo.lock
 
 # pixel-sheet export sidecars (page reads only runs.json)
 docs/showcase/*-*-*.json
+
+# benchmark run artifacts (transcripts, isolated homes, exported art)
+benchmarks/runs/
+__pycache__/
