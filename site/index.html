@@ -16,8 +16,8 @@
   @media (prefers-color-scheme: light){
     :root{
       --bg:#f0f1ec; --panel:#e7e8e1; --panel2:#dcded4;
-      --ink:#191b14; --ink2:#4c4f43; --ink3:#7d8071;
-      --line:#c9cbbd; --acc:#a8741a; --acc2:#2f7f8e;
+      --ink:#191b14; --ink2:#4c4f43; --ink3:#5d6054;
+      --line:#c9cbbd; --acc:#7d550e; --acc2:#256875;
     }
   }
   *{box-sizing:border-box}
@@ -26,6 +26,9 @@
   .wrap{max-width:74rem;margin:0 auto;padding:0 1.2rem}
   img.px{image-rendering:pixelated}
   header{padding:2.6rem 0 1rem;text-align:center}
+  /* The wordmark IS the page title — an h1 for structure, with the default
+     heading box reset away so it stays purely the image. */
+  h1.wordmark{margin:0;font-size:0;line-height:0}
   header img.logo{width:min(300px,66vw)}
   .tag{color:var(--ink2);margin:.6rem auto 0;max-width:46rem}
   .hero{display:block;margin:1.4rem auto 0;width:min(560px,94vw);border:1px solid var(--line);border-radius:6px}
@@ -72,10 +75,12 @@
 <body>
 
 <header class="wrap">
-  <picture>
-    <source media="(prefers-color-scheme: light)" srcset="assets/logo-wordmark.png">
-    <img class="logo px" src="assets/logo-wordmark-dark.png" alt="atelier">
-  </picture>
+  <h1 class="wordmark">
+    <picture>
+      <source media="(prefers-color-scheme: light)" srcset="assets/logo-wordmark.png">
+      <img class="logo px" src="assets/logo-wordmark-dark.png" alt="atelier">
+    </picture>
+  </h1>
   <p class="tag">The pixel-art studio agents can see — headless, over MCP.</p>
   <img class="hero px" src="assets/platformer-scene.gif" alt="dusk side-scroller scene, drawn and animated entirely by agents">
   <div class="bar">
@@ -116,19 +121,22 @@
 </footer>
 
 <script>
-// Display copy per task. Keys come from runs.json's `tasks` array.
+// Short names for the chips. Keys come from runs.json's `tasks` array; the
+// task WORDING is never written here — the page shows runs.json's `task_text`,
+// which is the frozen benchmarks/tasks/*.txt every model was given verbatim. A
+// paraphrase here would quietly contradict the one claim this page makes.
 const TASK = {
-  person: {label:"Adventurer",    cat:"character",   blurb:"A side-view human adventurer idling: weight settles, chest breathes, arms sway slightly, one blink; feet planted."},
-  cat:    {label:"Wizard cat",    cat:"animal",      blurb:"A cat in a wizard hat with a glowing staff orb that pulses and casts light, tail swaying, sparkles drifting up."},
-  car:    {label:"Car",           cat:"vehicle",     blurb:"A side-view car driving in place: wheels spin, the body bobs on its suspension, a small exhaust puff, speed lines streak past."},
-  alien:  {label:"Space alien",   cat:"creature",    blurb:"A big-headed green alien idling: it hovers, antennae sway, one blink. Symmetric and centered."},
-  ball:   {label:"Bouncing ball", cat:"prop",        blurb:"A rubber ball: falls, squashes flat on contact, rebounds tall, and rises — squash & stretch with a scaling cast shadow."},
-  potion: {label:"Potion",        cat:"item",        blurb:"A corked flask, two-thirds full: bubbles rise through the liquid and pop at a wobbling surface while the bottle stays still."},
-  slash:  {label:"Hero slash",    cat:"effect",      blurb:"A side-view armored hero: wind-up over the shoulder, overhead, downward diagonal slash with a motion smear, follow-through, recover."},
-  torch:  {label:"Torch",         cat:"environment", blurb:"A wall-mounted torch: the flame flickers and licks upward, embers drift up and fade, a soft light pulse on the bracket."},
+  person: {label:"Adventurer",    cat:"character"},
+  cat:    {label:"Wizard cat",    cat:"animal"},
+  car:    {label:"Car",           cat:"vehicle"},
+  alien:  {label:"Space alien",   cat:"creature"},
+  ball:   {label:"Bouncing ball", cat:"prop"},
+  potion: {label:"Potion",        cat:"item"},
+  slash:  {label:"Hero slash",    cat:"effect"},
+  torch:  {label:"Torch",         cat:"environment"},
 };
-// Every task shares these constraints — stated once instead of per blurb.
-const SPEC = "10 frames · 1 second at 10 FPS · 32×32 · transparent background · seamless loop";
+// The exact text the model was given, as run.
+const taskText = () => (state.DATA.task_text || {})[state.task] || "";
 
 // The numbers worth comparing. [field, label, format]
 const COLS = [
@@ -201,7 +209,7 @@ function render(){
   renderChips();
   compare();
   document.getElementById("taskbox").hidden = false;
-  document.getElementById("tasktext").textContent = ((TASK[state.task]||{}).blurb || "") + "\n" + SPEC;
+  document.getElementById("tasktext").textContent = taskText();
 }
 
 const box = document.getElementById("box");
@@ -220,7 +228,7 @@ function copied(btn, text, label){
 document.getElementById("install").onclick = e =>
   copied(e.target, "curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh");
 document.getElementById("copytask").onclick = e =>
-  copied(e.target, ((TASK[state.task]||{}).blurb || "") + " " + SPEC);
+  copied(e.target, taskText());
 </script>
 </body>
 </html>

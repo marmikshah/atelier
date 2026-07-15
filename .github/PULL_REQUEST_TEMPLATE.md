@@ -6,4 +6,5 @@
 
 > ⚠️ **atelier is not accepting external contributions until v2.0.0.**
 > External pull requests are closed automatically — see
-> [CONTRIBUTING.md](CONTRIBUTING.md). Please open an **issue** for bugs or ideas.
+> [CONTRIBUTING.md](https://github.com/marmikshah/atelier/blob/master/.github/CONTRIBUTING.md).
+> Please open an **issue** for bugs or ideas.

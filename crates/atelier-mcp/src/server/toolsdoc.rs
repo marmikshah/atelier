@@ -89,7 +89,7 @@ pub fn tools_html() -> String {
     --accent:#e0a33c;--teal:#57b4c4;--code-bg:#101219;--code-ink:#c9ccd9;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}}
   @media (prefers-color-scheme:light){{:root{{--bg:#f0f1ec;--card:#e7e8e1;--ink:#191b14;
-    --muted:#4c4f43;--line:#c9cbbd;--accent:#a8741a;--teal:#2f7f8e;--code-bg:#191b14;--code-ink:#e7e8e1;}}}}
+    --muted:#4c4f43;--line:#c9cbbd;--accent:#7d550e;--teal:#256875;--code-bg:#191b14;--code-ink:#e7e8e1;}}}}
   *{{box-sizing:border-box}}
   body{{background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);margin:0;padding:0 20px 96px;-webkit-font-smoothing:antialiased}}
   .wrap{{max-width:900px;margin:0 auto}}
