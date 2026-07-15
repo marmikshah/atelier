@@ -153,7 +153,7 @@ fn tile_image(img: &RgbaImage, n: u32) -> RgbaImage {
 pub struct LookOptions {
     /// Upscale factor; None = adaptive (~384px longest side).
     pub scale: Option<u32>,
-    /// Crop region [x0,y0,x1,y1] in document pixels.
+    /// Crop region `[x0,y0,x1,y1]` in document pixels.
     pub region: Option<(i32, i32, i32, i32)>,
     /// render | value/grayscale | bands | sat | hue | notan. Empty = render.
     pub mode: String,

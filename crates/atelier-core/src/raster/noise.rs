@@ -6,12 +6,6 @@ fn lerpf(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 
-/// Easing of a 0..1 progress `t`. "ease-in" t³ (slow start), "ease-out" the
-/// mirror (slow end), "ease-in-out" the symmetric blend, "bounce" (ease-out
-/// bounce), "overshoot" (back ease-out — shoots past 1 then settles), "elastic"
-/// (decaying oscillation ease-out); anything else linear. Every curve satisfies
-/// f(0)=0 and f(1)=1 exactly. Used by keyframe motion so a tween shapes its
-/// acceleration. The non-monotone curves (overshoot/elastic) can exceed [0,1].
 /// The recognised easing names, hyphenated (`ease` also accepts underscore
 /// spellings). The guard callers run so a typo errors instead of silently
 /// falling back to linear — the mistake class `valid_blend` exists to catch.
@@ -37,6 +31,12 @@ pub fn validate_ease(kind: &str) -> Result<(), String> {
     }
 }
 
+/// Easing of a 0..1 progress `t`. "ease-in" t³ (slow start), "ease-out" the
+/// mirror (slow end), "ease-in-out" the symmetric blend, "bounce" (ease-out
+/// bounce), "overshoot" (back ease-out — shoots past 1 then settles), "elastic"
+/// (decaying oscillation ease-out); anything else linear. Every curve satisfies
+/// f(0)=0 and f(1)=1 exactly. Used by keyframe motion so a tween shapes its
+/// acceleration. The non-monotone curves (overshoot/elastic) can exceed `[0,1]`.
 pub fn ease(t: f32, kind: &str) -> f32 {
     let t = t.clamp(0.0, 1.0);
     match kind.replace('_', "-").as_str() {
@@ -77,7 +77,7 @@ pub fn ease(t: f32, kind: &str) -> f32 {
 }
 
 /// Ease-out bounce: `t` decelerates in a series of shrinking bounces, staying
-/// within [0,1] with f(0)=0 and f(1)=1. The classic 4-segment piecewise curve.
+/// within `[0,1]` with f(0)=0 and f(1)=1. The classic 4-segment piecewise curve.
 fn bounce_out(t: f32) -> f32 {
     const N1: f32 = 7.5625;
     const D1: f32 = 2.75;
@@ -100,12 +100,12 @@ fn fade(t: f32) -> f32 {
     t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
 }
 
-/// A lattice random in [0,1] at integer cell (ix,iy).
+/// A lattice random in `[0,1]` at integer cell (ix,iy).
 fn vrand(ix: i32, iy: i32, seed: u64) -> f32 {
     hash2(ix, iy, seed) as f32 / u32::MAX as f32
 }
 
-/// Smooth value noise at (x,y) (faded bilinear of lattice randoms) → [0,1].
+/// Smooth value noise at (x,y) (faded bilinear of lattice randoms) → `[0,1]`.
 fn value_noise(x: f32, y: f32, seed: u64) -> f32 {
     let (ix, iy) = (x.floor() as i32, y.floor() as i32);
     let (fx, fy) = (x - ix as f32, y - iy as f32);
@@ -117,7 +117,7 @@ fn value_noise(x: f32, y: f32, seed: u64) -> f32 {
     lerpf(lerpf(a, b, u), lerpf(c, d, u), v)
 }
 
-/// Fractal (fBm) value noise — summed octaves → soft clouds, in [0,1].
+/// Fractal (fBm) value noise — summed octaves → soft clouds, in `[0,1]`.
 pub fn fbm(x: f32, y: f32, seed: u64, octaves: u32) -> f32 {
     let (mut sum, mut amp, mut freq, mut norm) = (0.0, 0.5, 1.0, 0.0);
     for o in 0..octaves.max(1) {
@@ -129,7 +129,7 @@ pub fn fbm(x: f32, y: f32, seed: u64, octaves: u32) -> f32 {
     sum / norm
 }
 
-/// Perlin gradient noise at (x,y) → [0,1].
+/// Perlin gradient noise at (x,y) → `[0,1]`.
 pub fn perlin(x: f32, y: f32, seed: u64) -> f32 {
     let (ix, iy) = (x.floor() as i32, y.floor() as i32);
     let grad = |cx: i32, cy: i32| {
@@ -146,7 +146,7 @@ pub fn perlin(x: f32, y: f32, seed: u64) -> f32 {
     (lerpf(a, b, v) * 0.7 + 0.5).clamp(0.0, 1.0)
 }
 
-/// Worley/Voronoi cellular noise: distance to the nearest feature point → [0,1].
+/// Worley/Voronoi cellular noise: distance to the nearest feature point → `[0,1]`.
 pub fn voronoi(x: f32, y: f32, seed: u64) -> f32 {
     let (ix, iy) = (x.floor() as i32, y.floor() as i32);
     let mut md = f32::MAX;

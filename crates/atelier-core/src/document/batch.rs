@@ -481,17 +481,26 @@ pub(super) fn batch_op_keys(
     })
 }
 
-/// Strictly validate one batch op object before it runs: the `op` key must name
-/// a known kind, every required key must be present, and no unrecognized keys
-/// may appear (typos / wrong-shape params would otherwise be silently defaulted).
-/// `idx` is the op's position in the batch, used only for the error message.
 /// The draw/fx partition of the batch ops, next to the registry so a new op
 /// lands in exactly one list in the same file. `doc_draw` adds new marks,
 /// `doc_fx` reworks existing pixels; `fill_cel`/`clear_cel` are draw-side,
 /// `glow` is deliberately absent (its on-palette snap is not a batch op).
 pub const DRAW_OPS: &[&str] = &[
-    "pencil", "line", "rect", "ellipse", "polyline", "polygon", "stroke", "fill", "bucket",
-    "gradient", "scatter", "noise", "text", "fill_cel",
+    "pencil",
+    "line",
+    "rect",
+    "ellipse",
+    "polyline",
+    "polygon",
+    "stroke",
+    "fill",
+    "bucket",
+    "gradient",
+    "scatter",
+    "noise",
+    "text",
+    "fill_cel",
+    "clear_cel",
 ];
 pub const FX_OPS: &[&str] = &[
     "blur",
@@ -511,6 +520,10 @@ pub const FX_OPS: &[&str] = &[
     "gradient_map",
 ];
 
+/// Strictly validate one batch op object before it runs: the `op` key must name
+/// a known kind, every required key must be present, and no unrecognized keys
+/// may appear (typos / wrong-shape params would otherwise be silently defaulted).
+/// `idx` is the op's position in the batch, used only for the error message.
 pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
     let obj = op
         .as_object()

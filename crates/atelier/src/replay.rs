@@ -222,7 +222,7 @@ fn print_step(idx: usize, step: &Step, summary: &str) {
 /// Condense a `tools/call` result into a single readable line. atelier returns
 /// its JSON payload in a text content block — but image-first results
 /// (doc_look, diff overlays) put the PNG block before it, so find
-/// the first TEXT block rather than dumping base64 from blocks[0]; fall back
+/// the first TEXT block rather than dumping base64 from the first block; fall back
 /// to a compact dump of whatever shape we get.
 fn summarize(result: &Value) -> String {
     let text = result.get("content").and_then(Value::as_array).and_then(

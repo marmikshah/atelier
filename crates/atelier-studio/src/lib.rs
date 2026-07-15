@@ -739,9 +739,10 @@ impl Studio {
 
     /// One-tool dispatch over the per-document file exports — `op`: `sheet` |
     /// `anim` | `tileset`. Shared `out_path`/`scale`; op-specific params come
-    /// flattened (anim: `format`,`tag`; tileset: `tile_w`,`tile_h`). Generators
-    /// (`wang`) and library-level exports (`export_all`/`export_atlas`) stay
-    /// their own tools.
+    /// flattened (sheet: `meta`; anim: `format`,`tag`; tileset: `tile_w`,
+    /// `tile_h`). The library-wide exports are the sibling [`Self::export_all`]
+    /// and [`Self::export_atlas`], which the MCP layer fuses onto the same tool
+    /// as `doc_export op=all|atlas`; generators (`wang`) stay their own tool.
     pub fn doc_export(
         &self,
         id: &str,
@@ -1675,7 +1676,7 @@ impl Studio {
         Ok(ack)
     }
 
-    /// Apply ONE drawing op to a cel — the single-op form of [`doc_batch`],
+    /// Apply ONE drawing op to a cel — the single-op form of [`Self::doc_batch`],
     /// scoped to the "add marks" vocabulary (geometry, fills, text, procedural).
     /// `params` is the op's flattened args; the op name is injected and the call
     /// routes through the same validate-and-apply path a one-element batch uses,

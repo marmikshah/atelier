@@ -246,8 +246,6 @@ pub fn glyph(c: char) -> u16 {
     }
 }
 
-/// Normalise a possibly-reversed rect and clamp it to a `w`×`h` canvas, returning
-/// `(x0,y0,x1,y1)` (inclusive) or `None` when it lies fully outside the canvas.
 /// Resolve an optional inclusive region against a w×h canvas: clamp to
 /// bounds (normalising reversed corners), default to the full canvas. A
 /// region left empty by clamping is a caller mistake and errors loudly —
@@ -264,6 +262,8 @@ pub fn resolve_region(
     }
 }
 
+/// Normalise a possibly-reversed rect and clamp it to a `w`×`h` canvas, returning
+/// `(x0,y0,x1,y1)` (inclusive) or `None` when it lies fully outside the canvas.
 pub fn clamp_region(
     x0: i32,
     y0: i32,
