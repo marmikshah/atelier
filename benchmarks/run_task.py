@@ -134,17 +134,25 @@ def _strip_images(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
+STALE_LOOK_NOTE = "[earlier doc_look frame — outdated after later edits; call doc_look to see the current art]"
+
+
 def _demote_stale_images(messages: list[dict[str, Any]]) -> None:
-    """Replace inline image data-URIs already in the live context with a text
-    placeholder, so only the newest doc_look frame is ever sent as a real image.
-    Old frames are stale after edits and cost tens of thousands of tokens each on
-    every resend — this bounds image cost to O(1) per request instead of O(looks)."""
+    """Swap image parts already in the live context for TEXT parts, so only the
+    newest doc_look frame is ever sent as a real image. Old frames are stale after
+    edits and cost tens of thousands of tokens each on every resend — this bounds
+    image cost to O(1) per request instead of O(looks). The part's `type` must
+    change too: an image_url carrying a non-image URL is rejected by the API."""
     for m in messages:
         c = m.get("content")
-        if isinstance(c, list):
-            for p in c:
-                if isinstance(p, dict) and p.get("type") == "image_url":
-                    p["image_url"] = {"url": "[earlier look — outdated, call doc_look again to see]"}
+        if not isinstance(c, list):
+            continue
+        m["content"] = [
+            {"type": "text", "text": STALE_LOOK_NOTE}
+            if isinstance(p, dict) and p.get("type") == "image_url"
+            else p
+            for p in c
+        ]
 
 
 def render_tool_result(result: Any) -> tuple[str, list[dict[str, Any]]]:
