@@ -110,30 +110,20 @@ integration tests.
 
 ## A personal note
 
-atelier began as one question: can AI agents, using only tool calls, make art
-that's genuinely good enough to ship in a game?
+atelier began as one question: can agents, using only tool calls, make art good
+enough to ship in a game?
 
 **100% of this code was written by AI.** Not assisted — written. Claude Opus 4.8
 and Fable 5 did the heavy lifting, with Kimi 2.6 and Minimax 2.7 pitching in. I
-have not written a single line. My part was direction: holding the project to the
-same standards I use where I *do* still write the code.
-
-It's an ongoing experiment. I'll keep running the benchmark against other model
-families and trying designs to see how each one holds a brush.
-
-If atelier helps you — as a tool, a reference, or a kick-start on your own game —
-that makes me genuinely happy. The tokens are already spent; the least they can do
-is be useful to you too.
+have not written a line. My part was direction, held to the standards I use where
+I *do* still write the code. If it helps you build something, the tokens were
+worth spending.
 
 > [!WARNING]
-> **Below 2.0.0, this code has not been reviewed by a human.** It's AI-generated,
-> diffs are large, and every release below 2.0.0 will likely contain breaking
-> changes despite my best intentions — assume bugs and security issues I haven't
-> caught. **Use at your own risk.**
->
-> **2.0.0 is the milestone where I start reviewing the code in detail** and
-> contributing directly. It will be tagged by hand — the one release an AI agent
-> is not allowed to cut.
+> **Below 2.0.0, no human has reviewed this code.** Assume bugs and security
+> issues I haven't caught, and breaking changes in any release. Use at your own
+> risk. **2.0.0 is where I start reviewing in detail** — tagged by hand, the one
+> release an agent may not cut.
 
 ## Contributing
 
