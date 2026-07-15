@@ -35,3 +35,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: make test
+
+  # site/tools.html is generated from the live tool registry. Without this the
+  # published reference silently drifts from the code — it already had, still
+  # advertising a preview the edit tools no longer return.
+  docs:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: make docs-check
