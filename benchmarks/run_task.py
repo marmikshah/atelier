@@ -219,6 +219,10 @@ async def run(args: argparse.Namespace) -> int:
         command=str(binary),
         args=[],
         env={**os.environ, "ATELIER_PROFILE": args.profile, "ATELIER_HOME": str(home)},
+        # Models export to a RELATIVE out_path ("hero.gif"), which resolves against
+        # the server's cwd. Anchor it to this run's home so art lands beside its
+        # transcript instead of the repo root — and so parallel runs can't collide.
+        cwd=str(home.resolve()),
     )
 
     # Determinism knobs sent on every completion; seed omitted when < 0 (endpoints
