@@ -19,6 +19,7 @@
 
 use atelier_mcp::server;
 
+mod library;
 mod replay;
 mod service;
 
@@ -33,6 +34,9 @@ USAGE:
             [--bind ADDR] [--home DIR]
     atelier status                show daemon state and log locations
     atelier uninstall             stop + remove the daemon
+    atelier library               list the documents in the store (ATELIER_HOME)
+            rm <id>... | rm --prefix <p> | rm --all [--yes]
+                                  delete documents — permanent, confirms first
     atelier replay <recipe.json>  replay a scripted sequence of tool calls (MCP client)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier tools [--html]        list the tools (plain text; --html emits the reference page)
@@ -56,6 +60,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("install") | Some("uninstall") | Some("status") => {
             std::process::exit(service::run(&args[1..]))
         }
+        // Inspect / prune the document store.
+        Some("library") => std::process::exit(library::run(&args[2..])),
         // Runs inside this runtime (it drives a child MCP server over stdio).
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
