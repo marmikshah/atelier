@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>atelier — the pixel-art studio agents can see</title>
-<meta name="description" content="An objective benchmark: different models animating through atelier's MCP tools from identical briefs — time, tool calls and tokens for each.">
+<meta name="description" content="Four models, eight animation tasks, identical prompts — every frame drawn through atelier's MCP tools. Compare the art and the effort side by side.">
 <style>
   :root{
     --bg:#14161d; --panel:#1b1e28; --panel2:#232735;
@@ -25,10 +25,9 @@
   a{color:var(--acc2)}
   .wrap{max-width:74rem;margin:0 auto;padding:0 1.2rem}
   img.px{image-rendering:pixelated}
-  .mono{font-family:var(--mono)}
   header{padding:2.6rem 0 1rem;text-align:center}
   header img.logo{width:min(300px,66vw)}
-  .tag{color:var(--ink2);margin:.5rem 0 0}
+  .tag{color:var(--ink2);margin:.6rem auto 0;max-width:46rem}
   .hero{display:block;margin:1.4rem auto 0;width:min(560px,94vw);border:1px solid var(--line);border-radius:6px}
   .bar{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;padding:1.2rem 0}
   .btn{font-family:var(--mono);font-size:.76rem;letter-spacing:.03em;color:var(--ink);background:var(--panel);
@@ -38,53 +37,35 @@
 
   .controls{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:.8rem 0}
   .controls .wrap{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center}
-  .seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}
-  .seg button{font-family:var(--mono);font-size:.74rem;padding:.45rem .9rem;border:0;background:var(--panel);color:var(--ink2);cursor:pointer}
-  .seg button.on{background:var(--acc);color:#14161d;font-weight:700}
   .chips{display:flex;gap:.35rem;flex-wrap:wrap}
   .chip{font-family:var(--mono);font-size:.68rem;padding:.32rem .6rem;border:1px solid var(--line);border-radius:999px;
     background:var(--panel);color:var(--ink2);cursor:pointer;user-select:none}
   .chip.on{border-color:var(--acc);color:var(--acc)}
+  .chip .cat{color:var(--ink3);opacity:.8}
   .lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
 
   main{padding:1.6rem 0 2rem;min-height:50vh}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
-  .cell{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:.9rem;text-align:center;cursor:pointer;transition:border-color .15s}
-  .cell:hover{border-color:var(--acc)}
-  .cell img{width:100%;max-width:180px;border-radius:3px}
-  .cell .m{font-family:var(--mono);font-size:.74rem;margin-top:.55rem}
-  .cell .v{font-family:var(--mono);font-size:.6rem;color:var(--ink3);letter-spacing:.05em;text-transform:uppercase}
-  .cell .st{display:flex;justify-content:center;gap:.7rem;margin-top:.4rem;font-family:var(--mono);font-size:.64rem;color:var(--ink2)}
-
-  .compare{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .compare{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
   .cmp{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem;text-align:center}
-  .cmp img{width:100%;max-width:260px;border-radius:4px}
-  .cmp h3{font-family:var(--mono);font-size:.85rem;margin:.6rem 0 .3rem}
-  .cmp dl{display:grid;grid-template-columns:auto 1fr;gap:.15rem .8rem;text-align:left;margin:.6rem 0 0;font-size:.78rem}
+  .cmp img{width:100%;max-width:220px;border-radius:4px;cursor:zoom-in;
+    background:repeating-conic-gradient(var(--panel2) 0 25%, transparent 0 50%) 50%/16px 16px}
+  .cmp h3{font-family:var(--mono);font-size:.85rem;margin:.7rem 0 .2rem}
+  .cmp dl{display:grid;grid-template-columns:auto 1fr;gap:.15rem .8rem;text-align:left;margin:.7rem 0 0;font-size:.78rem}
   .cmp dt{font-family:var(--mono);color:var(--ink3);font-size:.64rem;letter-spacing:.05em;text-transform:uppercase;align-self:center}
   .cmp dd{margin:0;color:var(--ink2);font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .cmp dd b{color:var(--acc);font-weight:700}
   .hint{color:var(--ink3);font-family:var(--mono);font-size:.74rem;padding:2rem 0;text-align:center}
 
-  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
-  table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:60rem}
-  th{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);
-    text-align:right;padding:.6rem .7rem;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;background:var(--panel2);white-space:nowrap}
-  th:first-child,th:nth-child(2),th:nth-child(3){text-align:left}
-  th:hover{color:var(--acc)}
-  td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:middle;text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono)}
-  td.txt{text-align:left;font-family:var(--sans)}
-  tr:hover td{background:var(--panel)}
-  td img{width:38px;vertical-align:middle;border-radius:2px;cursor:pointer}
-  td:nth-child(2){color:var(--ink)}
-
-  .brief{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem 1.1rem;
-    font-family:var(--mono);font-size:.78rem;line-height:1.65;color:var(--ink2);white-space:pre-wrap;position:relative;margin-top:1.2rem}
-  .brief .copy{position:absolute;top:.65rem;right:.65rem}
-  dialog{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);max-width:min(92vw,900px);padding:1.1rem}
+  .task{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem 1.1rem;
+    font-family:var(--mono);font-size:.78rem;line-height:1.65;color:var(--ink2);position:relative;margin-top:1.2rem}
+  .task .copy{position:absolute;top:.65rem;right:.65rem}
+  dialog{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);max-width:min(92vw,640px);padding:1.1rem}
   dialog::backdrop{background:rgba(0,0,0,.72)}
-  dialog img{width:100%;border-radius:4px}
+  dialog img{width:100%;border-radius:4px;background:repeating-conic-gradient(var(--panel2) 0 25%, transparent 0 50%) 50%/22px 22px}
   dialog .row{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.7rem}
   dialog h3{margin:0;font-size:.95rem;font-family:var(--mono)}
+  .note{color:var(--ink3);font-family:var(--mono);font-size:.7rem;line-height:1.75;margin-top:1.6rem;
+    border-left:2px solid var(--line);padding-left:.9rem;max-width:60rem}
   footer{border-top:1px solid var(--line);padding:2rem 0 3rem;color:var(--ink3);font-family:var(--mono);font-size:.72rem;text-align:center;line-height:1.8}
 </style>
 </head>
@@ -92,31 +73,26 @@
 
 <header class="wrap">
   <picture>
-    <source media="(prefers-color-scheme: light)" srcset="docs/logo-wordmark.png">
-    <img class="logo px" src="docs/logo-wordmark-dark.png" alt="atelier">
+    <source media="(prefers-color-scheme: light)" srcset="assets/logo-wordmark.png">
+    <img class="logo px" src="assets/logo-wordmark-dark.png" alt="atelier">
   </picture>
   <p class="tag">The pixel-art studio agents can see — headless, over MCP.</p>
-  <img class="hero px" src="docs/platformer-scene.gif" alt="dusk side-scroller scene, drawn and animated entirely by agents">
+  <img class="hero px" src="assets/platformer-scene.gif" alt="dusk side-scroller scene, drawn and animated entirely by agents">
   <div class="bar">
     <a class="btn" href="https://github.com/marmikshah/atelier">GitHub</a>
     <button class="btn" id="install" type="button">copy install one-liner</button>
     <a class="btn" href="architecture.html">architecture</a>
-    <a class="btn" href="https://marmikshah.github.io/atelier/tools.html">tool reference</a>
+    <a class="btn" href="tools.html">tool reference</a>
   </div>
-  <p class="tag" style="max-width:48rem;margin:0 auto">An <strong>objective</strong> benchmark. Each model gets the <em>same brief</em> —
-  a one-second pixel-art animation — and drives the same tools, seeing its own work through <code>doc_look</code> and correcting it.
-  We publish the art and the numbers (time, tool calls, tokens) and let you judge. <strong>No scores, no opinions.</strong></p>
+  <p class="tag">Each model gets the <em>same task</em> — a one-second pixel-art loop — and drives the same
+  tools, seeing its own work through <code>doc_look</code> and correcting it. The art and the numbers are
+  published as measured. <strong>No scores, no opinions.</strong></p>
 </header>
 
 <div class="controls">
   <div class="wrap">
-    <div class="seg" id="viewseg">
-      <button data-view="gallery" class="on">gallery</button>
-      <button data-view="compare">compare</button>
-      <button data-view="table">table</button>
-    </div>
-    <span class="lbl">brief</span>
-    <div class="chips" id="briefchips"></div>
+    <span class="lbl">task</span>
+    <div class="chips" id="taskchips"></div>
     <span class="lbl">models</span>
     <div class="chips" id="modelchips"></div>
   </div>
@@ -124,183 +100,127 @@
 
 <main class="wrap">
   <div id="view"><p class="hint">loading runs…</p></div>
-  <div class="brief" id="briefbox" hidden><button class="btn copy" id="copybrief" type="button">copy brief</button><span id="brieftext"></span></div>
+  <div class="task" id="taskbox" hidden><button class="btn copy" id="copytask" type="button">copy task</button><span id="tasktext"></span></div>
+  <p class="note" id="method"></p>
 </main>
-
-<footer>
-  <div class="wrap">
-    every pixel on this page was drawn by agents through the atelier MCP tools over stdio, from
-    identical briefs · metrics are captured verbatim per run, no editorial scoring<br>
-    <a href="https://github.com/marmikshah/atelier">github.com/marmikshah/atelier</a> · MIT
-  </div>
-</footer>
 
 <dialog id="box">
   <div class="row"><h3 id="boxtitle"></h3><button class="btn" id="boxclose" type="button">close</button></div>
   <img class="px" id="boximg" alt="">
-  <div class="bar"><button class="btn" id="boxtoggle" type="button">show frames</button></div>
 </dialog>
 
+<footer>
+  every pixel on this page was drawn by agents through the atelier MCP tools, from identical task text ·
+  metrics captured verbatim per run, no editorial scoring<br>
+  <a href="https://github.com/marmikshah/atelier">github.com/marmikshah/atelier</a> · MIT
+</footer>
+
 <script>
-// Display copy per brief. Keys come from runs.json's `briefs` array.
-const BRIEF = {
-  ball:   {label:"Bouncing ball",   blurb:"A rubber ball falls, squashes flat on contact, rebounds tall, and rises — squash & stretch with a scaling cast shadow. 8 frames, ~1s, 4 colours."},
-  slash:  {label:"Hero slash",      blurb:"A side-view armored hero: wind-up over the shoulder → overhead → downward diagonal slash with a motion smear → follow-through → recover. One connected silhouette. 8 frames, ~1s, 6 colours."},
-  alien:  {label:"Space alien",     blurb:"A big-headed green alien idling: hovers, antennae sway, one blink. Symmetric, centered. 8 frames, ~1s, 4 colours."},
-  potion: {label:"Bubbling potion", blurb:"A corked flask, two-thirds full: bubbles rise through the liquid and pop at a wobbling surface while the bottle stays still. 8 frames, ~1s, 6 colours."},
-  cat:    {label:"Wizard cat",      blurb:"A cat in a wizard hat with a glowing staff orb that pulses and casts light, tail swaying, sparkles drifting up. 8 frames, ~1s, 6 colours."},
+// Display copy per task. Keys come from runs.json's `tasks` array.
+const TASK = {
+  person: {label:"Adventurer",    cat:"character",   blurb:"A side-view human adventurer idling: weight settles, chest breathes, arms sway slightly, one blink; feet planted."},
+  cat:    {label:"Wizard cat",    cat:"animal",      blurb:"A cat in a wizard hat with a glowing staff orb that pulses and casts light, tail swaying, sparkles drifting up."},
+  car:    {label:"Car",           cat:"vehicle",     blurb:"A side-view car driving in place: wheels spin, the body bobs on its suspension, a small exhaust puff, speed lines streak past."},
+  alien:  {label:"Space alien",   cat:"creature",    blurb:"A big-headed green alien idling: it hovers, antennae sway, one blink. Symmetric and centered."},
+  ball:   {label:"Bouncing ball", cat:"prop",        blurb:"A rubber ball: falls, squashes flat on contact, rebounds tall, and rises — squash & stretch with a scaling cast shadow."},
+  potion: {label:"Potion",        cat:"item",        blurb:"A corked flask, two-thirds full: bubbles rise through the liquid and pop at a wobbling surface while the bottle stays still."},
+  slash:  {label:"Hero slash",    cat:"effect",      blurb:"A side-view armored hero: wind-up over the shoulder, overhead, downward diagonal slash with a motion smear, follow-through, recover."},
+  torch:  {label:"Torch",         cat:"environment", blurb:"A wall-mounted torch: the flame flickers and licks upward, embers drift up and fade, a soft light pulse on the bracket."},
 };
+// Every task shares these constraints — stated once instead of per blurb.
+const SPEC = "10 frames · 1 second at 10 FPS · 32×32 · transparent background · seamless loop";
+
+// The numbers worth comparing. [field, label, format]
 const COLS = [
-  ["duration_ms", "time",   v => (v/1000).toFixed(0)+"s"],
-  ["tool_calls",  "tool calls", v => v],
-  ["look_iterations", "looks", v => v],
-  ["total_tokens","tokens", v => v.toLocaleString()],
+  ["looks",      "doc_look",   v => `<b>${v}</b>`],
+  ["tool_calls", "tool calls", v => v],
+  ["tokens",     "tokens",     v => (v/1000).toFixed(0) + "k"],
 ];
 
-const state = {view:"gallery", brief:null, models:new Set(), sort:{key:"total_tokens", dir:1}, DATA:null};
+const state = {task:null, models:new Set(), DATA:null};
 const view = document.getElementById("view");
 
-fetch("docs/showcase/runs.json").then(r => r.json()).then(data => {
+fetch("showcase/runs.json").then(r => r.json()).then(data => {
   state.DATA = data;
-  state.brief = data.briefs[0];
-  state.models = new Set(data.runs.map(r => r.model));
+  state.task = data.tasks[0];
+  state.models = new Set(data.models);
+  document.getElementById("method").textContent = data.method + " " + data.verified;
   render();
-}).catch(() => { view.innerHTML = '<p class="hint">no runs yet — the benchmark is still running.</p>'; });
+}).catch(() => { view.innerHTML = '<p class="hint">no runs yet.</p>'; });
 
-const briefs = () => state.DATA.briefs;
-const runs = () => state.DATA.runs;
-const models = () => [...new Set(runs().map(r => r.model))].sort();
-const active = () => runs().filter(r => r.brief === state.brief && state.models.has(r.model));
+const tasks  = () => state.DATA.tasks;
+const runs   = () => state.DATA.runs;
+const models = () => state.DATA.models;
+// Keep model order stable (as declared), not run order.
+const active = () => models()
+  .filter(m => state.models.has(m))
+  .map(m => runs().find(r => r.task === state.task && r.model === m))
+  .filter(Boolean);
 
-document.getElementById("viewseg").onclick = e => {
-  const b = e.target.closest("button"); if (!b) return;
-  state.view = b.dataset.view;
-  [...e.currentTarget.children].forEach(x => x.classList.toggle("on", x === b));
-  render();
-};
-function chipbar(el, items, isOn, toggle){
+function chipbar(el, items, isOn, toggle, html){
   el.innerHTML = "";
   for (const it of items){
     const c = document.createElement("span");
     c.className = "chip" + (isOn(it) ? " on" : "");
-    c.textContent = it;
+    c.innerHTML = html ? html(it) : it;
     c.onclick = () => { toggle(it); render(); };
     el.appendChild(c);
   }
 }
+
 function renderChips(){
-  chipbar(document.getElementById("briefchips"),
-    briefs().map(k => (BRIEF[k]||{}).label || k),
-    l => ((BRIEF[state.brief]||{}).label||state.brief) === l,
-    l => { state.brief = briefs().find(k => ((BRIEF[k]||{}).label||k) === l); });
+  chipbar(document.getElementById("taskchips"), tasks(),
+    t => t === state.task,
+    t => { state.task = t; },
+    t => `${(TASK[t]||{}).label || t} <span class="cat">${(TASK[t]||{}).cat || ""}</span>`);
   chipbar(document.getElementById("modelchips"), models(),
     m => state.models.has(m),
     m => { state.models.has(m) ? state.models.delete(m) : state.models.add(m);
            if (!state.models.size) models().forEach(x => state.models.add(x)); });
 }
 
-function gallery(){
-  const rs = active();
-  if (!rs.length){ view.innerHTML = '<p class="hint">no runs for this brief yet.</p>'; return; }
-  const g = document.createElement("div"); g.className = "grid";
-  for (const r of rs){
-    const cell = document.createElement("div"); cell.className = "cell";
-    const src = r.anim ? r.base + ".gif" : r.base + ".png";
-    cell.innerHTML = `<img class="px" loading="lazy" src="${src}" alt="${(BRIEF[r.brief]||{}).label} by ${r.model}">
-      <div class="m">${r.model}</div><div class="v">${r.vendor}</div>
-      <div class="st"><span>${(r.duration_ms/1000).toFixed(1)}s</span><span>${r.tool_calls} calls</span><span>${(r.total_tokens/1000).toFixed(0)}k tok</span></div>`;
-    cell.onclick = () => openBox(r);
-    g.appendChild(cell);
-  }
-  view.replaceChildren(g);
-}
-
 function compare(){
   const rs = active();
-  if (rs.length < 2){ view.innerHTML = '<p class="hint">select at least two models to compare.</p>'; return; }
+  if (!rs.length){ view.innerHTML = '<p class="hint">select at least one model.</p>'; return; }
   const g = document.createElement("div"); g.className = "compare";
   for (const r of rs){
     const d = document.createElement("div"); d.className = "cmp";
-    const src = r.anim ? r.base + ".gif" : r.base + ".png";
-    d.innerHTML = `<img class="px" src="${src}" alt="${(BRIEF[r.brief]||{}).label} by ${r.model}">
+    const src = `showcase/${r.model}/${r.task}.gif`;
+    const label = (TASK[r.task]||{}).label || r.task;
+    d.innerHTML = `<img class="px" src="${src}" alt="${label} by ${r.model}">
       <h3>${r.model}</h3>
-      <dl>${COLS.map(c => `<dt>${c[1]}</dt><dd>${c[2](r[c[0]])}</dd>`).join("")}</dl>
-`;
+      <dl>${COLS.map(c => `<dt>${c[1]}</dt><dd>${c[2](r[c[0]])}</dd>`).join("")}</dl>`;
+    d.querySelector("img").onclick = () => openBox(label, r.model, src);
     g.appendChild(d);
   }
   view.replaceChildren(g);
 }
 
-function table(){
-  const rows = runs().filter(r => state.models.has(r.model));
-  const cols = [["", null], ["model", r => r.model], ["brief", r => (BRIEF[r.brief]||{}).label || r.brief]]
-    .concat(COLS.map(c => [c[1], r => r[c[0]]]));
-  const sortKey = state.sort.key;
-  rows.sort((a,b) => {
-    const field = (COLS.find(c => c[1] === sortKey) || [])[0];
-    if (!field) return String(a.model).localeCompare(b.model) || a.brief.localeCompare(b.brief);
-    return (a[field] - b[field]) * state.sort.dir;
-  });
-  const wrap = document.createElement("div"); wrap.className = "tblwrap";
-  const t = document.createElement("table");
-  t.innerHTML = `<thead><tr>${cols.map(c =>
-    `<th data-k="${c[0]}">${c[0]}${state.sort.key === c[0] ? (state.sort.dir>0?" ↑":" ↓") : ""}</th>`).join("")}</tr></thead>`;
-  const tb = document.createElement("tbody");
-  for (const r of rows){
-    const tr = document.createElement("tr");
-    const src = r.anim ? r.base + ".gif" : r.base + ".png";
-    tr.innerHTML = `<td><img class="px" loading="lazy" src="${src}" alt=""></td>`
-      + `<td class="txt">${r.model}</td><td class="txt">${(BRIEF[r.brief]||{}).label||r.brief}</td>`
-      + COLS.map(c => `<td>${c[2](r[c[0]])}</td>`).join("");
-    tr.querySelector("img").onclick = () => openBox(r);
-    tb.appendChild(tr);
-  }
-  t.appendChild(tb);
-  t.querySelector("thead").onclick = e => {
-    const th = e.target.closest("th[data-k]"); if (!th) return;
-    const k = th.dataset.k;
-    if (!COLS.some(c => c[1] === k)) return;
-    state.sort = {key:k, dir: state.sort.key === k ? -state.sort.dir : 1};
-    render();
-  };
-  wrap.appendChild(t);
-  view.replaceChildren(wrap);
-}
-
 function render(){
   if (!state.DATA) return;
   renderChips();
-  ({gallery, compare, table})[state.view]();
-  document.getElementById("briefbox").hidden = false;
-  document.getElementById("brieftext").textContent = (BRIEF[state.brief]||{}).blurb || "";
+  compare();
+  document.getElementById("taskbox").hidden = false;
+  document.getElementById("tasktext").textContent = ((TASK[state.task]||{}).blurb || "") + "\n" + SPEC;
 }
 
-// lightbox
-const box = document.getElementById("box"), boximg = document.getElementById("boximg"),
-      boxtitle = document.getElementById("boxtitle"), boxtoggle = document.getElementById("boxtoggle");
-let boxBase = "", boxAnim = true;
-function openBox(r){
-  boxBase = r.base; boxAnim = r.anim;
-  boxtitle.textContent = `${(BRIEF[r.brief]||{}).label} — ${r.model}`;
-  boximg.src = r.anim ? r.base + ".gif" : r.base + ".png";
-  boxtoggle.style.display = r.anim ? "" : "none";
-  boxtoggle.textContent = "show frames";
+const box = document.getElementById("box");
+function openBox(label, model, src){
+  document.getElementById("boxtitle").textContent = `${label} — ${model}`;
+  document.getElementById("boximg").src = src;
   box.showModal();
 }
-boxtoggle.onclick = () => {
-  boxAnim = !boxAnim;
-  boximg.src = boxAnim ? boxBase + ".gif" : boxBase + ".png";
-  boxtoggle.textContent = boxAnim ? "show frames" : "play loop";
-};
 document.getElementById("boxclose").onclick = () => box.close();
-box.onclick = e => { if (e.target === box) box.close(); };
 
-function flash(btn){ btn.classList.add("copyok"); const old = btn.textContent;
-  btn.textContent = "copied"; setTimeout(() => { btn.classList.remove("copyok"); btn.textContent = old; }, 1200); }
-document.getElementById("install").onclick = e => {
-  navigator.clipboard.writeText("curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh"); flash(e.target); };
-document.getElementById("copybrief").onclick = e => {
-  navigator.clipboard.writeText((BRIEF[state.brief]||{}).blurb || ""); flash(e.target); };
+function copied(btn, text, label){
+  navigator.clipboard.writeText(text);
+  btn.classList.add("copyok"); const old = btn.textContent; btn.textContent = "copied";
+  setTimeout(() => { btn.classList.remove("copyok"); btn.textContent = old; }, 1400);
+}
+document.getElementById("install").onclick = e =>
+  copied(e.target, "curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh");
+document.getElementById("copytask").onclick = e =>
+  copied(e.target, ((TASK[state.task]||{}).blurb || "") + " " + SPEC);
 </script>
 </body>
 </html>
