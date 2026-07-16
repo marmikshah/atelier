@@ -27,7 +27,7 @@ MCP_URL="http://127.0.0.1:8765/mcp"
 
 # --source / --build builds the current checkout instead of downloading a release.
 # --yes / -y (or ATELIER_YES=1) runs fully non-interactively, taking every
-# default: reinstall, the background daemon, the default tool profile.
+# default: reinstall, the background daemon.
 FROM_SOURCE=""
 YES="${ATELIER_YES:-}"
 for a in "$@"; do case "$a" in

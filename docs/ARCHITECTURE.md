@@ -41,7 +41,7 @@ The functional core. Has no knowledge of MCP, tokio, or the network.
   frames. A *cel* is the RGBA image for one (layer, frame). `mod.rs` holds the
   types, persistence and layer/frame structure; siblings split the operations by
   responsibility — `draw` (primitives), `region` (clipboard/transform), `fx`
-  (effects), `timeline` (tween/keyframes), `palette`, `render` (flatten +
+  (effects), `timeline` (frames, tags, timing), `palette`, `render` (flatten +
   read-only analysis), `export` (sheet/GIF/APNG writers) and `batch` (the op
   registry, `DRAW_OPS`/`FX_OPS` partition and validator). Persists as a
   directory: `doc.json` (structure + cel file refs) plus one PNG per cel under
@@ -68,7 +68,7 @@ entire library API; the MCP layer is a thin wrapper over it.
   `Studio::with_docs_dir(path)` roots a studio at an explicit directory (for
   embedding or tests, without touching process-global env).
 - **`craft.rs`** — constructive ops: checkpoints, layer/colour ops, import.
-- **`view.rs`** — the see-tools: `doc_look`, the selection render and the
+- **`view.rs`** — the see-tools: `doc_look` and the
   contact sheet.
 - **`analysis.rs`** — the "eye": critique, silhouette, palette, contrast,
   frame-diff and loop-seam reports that turn "does it look right?" into numbers.

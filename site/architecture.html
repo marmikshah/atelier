@@ -191,9 +191,7 @@
       <div class="chips">
         <span class="chip cool">lib.rs · store, exports, draw/fx dispatch, selection</span>
         <span class="chip">craft.rs · checkpoints, import, generators</span>
-        <span class="chip">view.rs · look / select_render / contact sheet</span>
-        <span class="chip">rig.rs · figure / walk / pose_cycle</span>
-        <span class="chip">tiles.rs · wang &amp; blob autotiles</span>
+        <span class="chip">view.rs · look / contact sheet</span>
         <span class="chip">analysis.rs · critique, audits, reports</span>
         <span class="chip">reference.rs · ref compare loop</span>
         <span class="chip">set.rs · multi-document families</span>
@@ -206,7 +204,7 @@
         <span class="chip">document/mod.rs · types, persistence, layers/frames</span>
         <span class="chip">document/draw · primitives</span>
         <span class="chip">document/fx · effects</span>
-        <span class="chip">document/timeline · tween, keyframes</span>
+        <span class="chip">document/timeline · frames, tags, timing</span>
         <span class="chip">document/region · clipboard, transform</span>
         <span class="chip">document/render · flatten + read-only analysis</span>
         <span class="chip">document/export · sheet / GIF / APNG</span>
@@ -305,7 +303,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
       <ul>
         <li>Studio method first (pick the right studio module), tests beside it</li>
         <li>param struct in <code>server/params.rs</code>, thin <code>#[tool]</code> method in <code>server/mod.rs</code></li>
-        <li>the count-pin test fails the moment either profile changes size — on purpose: it is the reminder to update the counts written into README / .env.example / these pages</li>
+        <li>the count-pin test fails the moment the surface changes size — on purpose: it is the reminder to update the counts written into README / these pages</li>
       </ul>
     </div>
     <div class="card">
