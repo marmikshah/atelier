@@ -27,7 +27,7 @@ fn arg<'a>(args: &'a Option<serde_json::Map<String, Value>>, key: &str) -> Optio
     args.as_ref()?.get(key)?.as_str()
 }
 
-/// The four shipped workflows. Each `build` emits ordered, numbered steps with
+/// The shipped workflows. Each `build` emits ordered, numbered steps with
 /// tool names written verbatim — the get_prompt drift test checks every name
 /// here against the live tool list.
 pub(crate) const PROMPTS: &[PromptSpec] = &[
@@ -92,7 +92,6 @@ pub(crate) const PROMPTS: &[PromptSpec] = &[
             "doc_frame",
             "doc_draw",
             "doc_region",
-            "doc_keyframe_move",
             "doc_look",
             "doc_contact_sheet",
             "doc_frame_diff",
@@ -108,11 +107,11 @@ pub(crate) const PROMPTS: &[PromptSpec] = &[
                  1. Start from a finished standing pose on frame 0 (use the pixel-sprite flow first).\n\
                  2. The cycle is contact -> down -> passing -> up. Plan numbers FIRST: stride ~1/3 of \
                  the character's height in px, body bobs 1px DOWN on contact and UP on passing, arms \
-                 counter-swing the legs. NEVER doc_dissolve poses — it cross-fades (ghost frames), it does \
-                 not move limbs.\n\
+                 counter-swing the legs. Repaint each pose — there is no pose interpolation, \
+                 and there should not be: a cross-fade ghosts limbs, it does not move them.\n\
                  3. doc_frame op=add with copy_from the previous frame so each pose starts from the last.\n\
-                 4. Repaint ONLY what changes per pose (legs, arms) with doc_draw (op=pencil) / doc_region op=move; \
-                 doc_keyframe_move eases a region across several frames in one call.\n\
+                 4. Repaint ONLY what changes per pose (legs, arms) with doc_draw (op=pencil), or shift an \
+                 existing limb with doc_region op=move.\n\
                  5. doc_look every frame (onion=true ghosts the neighbours); doc_contact_sheet shows \
                  the whole cycle in one inline grid.\n\
                  6. Verify each adjacent pair with doc_frame_diff (only the limbs should change).\n\
@@ -157,61 +156,6 @@ pub(crate) const PROMPTS: &[PromptSpec] = &[
                  9. Repeat 4-7 until the seam report is clean and the grid looks continuous.\n\
                  10. doc_export op=sheet the tile to a PNG.\n\
                  The tile is done only when doc_seam_report is zero."
-            )
-        },
-    },
-    PromptSpec {
-        name: "game-asset-set",
-        description:
-            "Build a coherent game's asset set — hero moveset, terrain, HUD — audited as ONE work.",
-        args: &[
-            (
-                "theme",
-                "The game's look, e.g. \"forest ruins, dusk\".",
-                true,
-            ),
-            (
-                "hero",
-                "The playable character, e.g. \"a cloaked ranger\".",
-                true,
-            ),
-            (
-                "size",
-                "Character canvas size in pixels (default 48).",
-                false,
-            ),
-        ],
-        tools: &[
-            "doc_create",
-            "doc_palette",
-            "doc_draw",
-            "doc_figure",
-            "doc_pose_cycle",
-            "doc_walk",
-            "doc_look",
-            "doc_autotile_set",
-            "doc_tilemap_assemble",
-            "doc_nine_slice",
-            "doc_set_audit",
-            "doc_colorblind_check",
-            "doc_export",
-        ],
-        build: |g| {
-            let theme = g("theme").unwrap_or_else(|| "the game's theme".into());
-            let hero = g("hero").unwrap_or_else(|| "the hero".into());
-            let size = g("size").unwrap_or_else(|| "48".into());
-            format!(
-                "Build a coherent asset SET for a game: theme {theme}, hero {hero}. \
-                 Name every document with one family prefix (e.g. game-hero-idle, game-tile-grass) so the set tools can find them.\n\
-                 1. ONE palette first: doc_palette a scheme fitting {theme}; you will lock this exact ramp on every document.\n\
-                 2. Hero: doc_create a {size}x{size} doc per animation; doc_palette op=set; pose {hero} once as 13 joints (doc_figure to preview), then doc_walk for the walk and doc_pose_cycle for idle, run, jump, attack, hurt — the same joints every time.\n\
-                 3. doc_look each cycle inline; re-run a gait with different intensity/frames until the motion reads.\n\
-                 4. Terrain: doc_create a tile-sized doc, layer 0 inner material, layer 1 outer; doc_autotile_set for the 47-tile family, then doc_tilemap_assemble a test mask and doc_look the MAP — terrain is judged assembled, never as lone tiles.\n\
-                 5. HUD: doc_create a UI doc; author ONE panel (doc_draw op=panel), then doc_nine_slice it to every dialog/button size.\n\
-                 6. Cohesion gate: doc_set_audit on the family prefix — fix every warning; doc_palette op=sync from the hero doc if palettes drifted.\n\
-                 7. doc_colorblind_check the HUD and any state-colour art; recolour pairs that collapse.\n\
-                 8. Ship: doc_export op=anim per gait tag, doc_export op=tileset for terrain, doc_export op=atlas for the whole set.\n\
-                 The set is done only when doc_set_audit says cohesive."
             )
         },
     },

@@ -67,9 +67,9 @@ deliberate act, and the context stays small enough to look often.
 
 |  |  |
 |---|---|
-| 🎨 **A real editor, headless** | Layers, frames, tags, selections, locked palettes. Generators for figures, walk cycles, autotile terrain, 9-slice panels, particle FX. |
-| 👁 **An eye, not just a hand** | Critique, palette, silhouette, animation and colour-blindness audits turn *"does it look right?"* into numbers an agent can act on. |
-| 🎮 **Game-ready out of the box** | Spritesheets with pivots/hitboxes/tags, GIF/APNG, texture atlases, Tiled tilesets, engine-standard JSON. |
+| 🎨 **A real editor, headless** | Layers, frames, tags, selections, locked palettes, checkpoints. Draw with primitives or paint a whole region declaratively from a character grid. |
+| 👁 **An eye, not just a hand** | Critique, palette, silhouette and animation audits turn *"does it look right?"* into numbers an agent can act on. |
+| 🎮 **Game-ready out of the box** | Tagged spritesheets, GIF/APNG, texture atlases, Tiled tilesets, engine-standard JSON. |
 | 🔒 **Yours, offline** | One static Rust binary. No API keys, no network, no telemetry. Fully deterministic. |
 
 ## The CLI
@@ -83,9 +83,8 @@ atelier library            # what's in your document store
 atelier replay recipe.json # replay a recorded session, byte-identically
 ```
 
-**Tool profile** — 20 tools by default, the set an agent actually reaches for.
-`ATELIER_PROFILE=full` opens all 63. Every tool executes either way; the profile
-only changes what's advertised.
+**28 tools**, all of them advertised — no profiles to pick, nothing hidden behind
+a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
 
 ## Art is a recipe
 
@@ -117,7 +116,7 @@ several documents.
 |---|---|
 | 🖼 **[Benchmark gallery](https://marmikshah.github.io/atelier/)** | Four models, eight tasks, identical prompts — compared side by side |
 | 🧭 **[Architecture tour](https://marmikshah.github.io/atelier/architecture.html)** | The crate tower and the life of a tool call, illustrated |
-| 🔧 **[Tool reference](https://marmikshah.github.io/atelier/tools.html)** | All 63 tools, generated from the live registry |
+| 🔧 **[Tool reference](https://marmikshah.github.io/atelier/tools.html)** | All 28 tools, generated from the live registry |
 | 📓 **[CHANGELOG](CHANGELOG.md)** | What changed, and what broke |
 
 ## A personal note

@@ -57,7 +57,7 @@ ENVIRONMENT:
     ATELIER_HTTP             HTTP bind address (alternative to --http)
     ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use
     ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)
-    ATELIER_PROFILE          tool profile: core (20 tools, default) or full (all 63)";
+";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
