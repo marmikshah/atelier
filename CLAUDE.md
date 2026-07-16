@@ -40,7 +40,7 @@ from them — change a description, run `make docs` in the same commit.
 | `atelier install` / `status` / `uninstall` | background daemon (launchd / systemd) |
 | `atelier tools [--html]` | list the tool surface / emit the reference page |
 | `atelier library [rm …]` | inspect or prune the document store (destructive: confirms first) |
-| `atelier replay docs/examples/<r>.json` | replay a recipe (brand art / integration test) |
+| `atelier replay <recipe.json or doc-id>` | replay a recipe file, or rebuild a document from its own journal |
 | `git config core.hooksPath .githooks` | wire the format/lint/test git hooks (once) |
 
 ## Architecture
@@ -63,7 +63,10 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 - Functional core decoupled from the MCP shell; `Result` over `panic!`; clippy clean.
 - Tests live next to the code as inline `#[cfg(test)]` modules; keep them green.
 - Every document is an ordered sequence of tool calls, so art is a replayable
-  **recipe** (`docs/examples/*.json`) — these double as integration tests.
+  **recipe**. Documents journal themselves to `<store>/<id>/recipe.jsonl` (JSON
+  Lines, on by default, mutations only — `is_journaled` in the MCP server is the
+  read/write classifier, and its default is to record). The authored recipes in
+  `docs/examples/*.json` double as integration tests.
 
 ## Dev notes
 

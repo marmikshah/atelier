@@ -6,6 +6,26 @@ releases.
 
 ## [Unreleased]
 
+### Added
+
+- **Every document journals itself.** The calls that built a document are
+  recorded beside it as `recipe.jsonl`, on by default — so `atelier replay <id>`
+  rebuilds anything you have ever drawn, and "art is a recipe" stops depending on
+  having known to pass a flag first. `atelier library` shows each document's step
+  count.
+
+### Changed
+
+- **Recipes read JSON Lines.** One `{tool, args}` per line, appended: O(1) per
+  call instead of rewriting the whole file, and a killed session leaves every
+  completed line intact. The authored `{name, description, steps}` recipes in
+  `docs/examples` still work — `replay` takes either.
+- **Reads are no longer recorded.** `doc_look`, `doc_info`, the audits and
+  `doc_ref op=compare` rebuild nothing, so they are not part of a recipe. This
+  also removes the see-and-fix loop's noise from `--record` output.
+- `--record` is now the cross-document *session* capture; per-document
+  provenance is the journal's job.
+
 ## [1.4.0] — 2026-07-16
 
 20 core / 63 full tools (was 30 / 75). A CLI that works without the Makefile.

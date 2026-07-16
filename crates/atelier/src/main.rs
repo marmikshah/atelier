@@ -37,7 +37,7 @@ const HELP: &str = "atelier — the pixel-art studio agents can see (MCP-native,
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
     atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
-    atelier --record <recipe.json>  record this session's tool calls into a replayable recipe
+    atelier --record <recipe.jsonl> record a whole session (across documents) as a recipe
             (works with stdio and --http; also ATELIER_RECORD=<path>)
     atelier install               install + start the background daemon (launchd / systemd --user)
             [--bind ADDR] [--home DIR]
@@ -46,7 +46,8 @@ USAGE:
     atelier library               list the documents in the store (ATELIER_HOME)
             rm <id>... | rm --prefix <p> | rm --all [--yes]
                                   delete documents — permanent, confirms first
-    atelier replay <recipe.json>  replay a scripted sequence of tool calls (MCP client)
+    atelier replay <recipe|id>    replay a recipe file, or rebuild a document from its
+                                  own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier tools [--html]        list the tools (plain text; --html emits the reference page)
     atelier --version             print the version

@@ -76,7 +76,7 @@ fn home() -> Option<PathBuf> {
 }
 
 /// Default studio home (matches `studio::Studio`: `ATELIER_HOME` or `~/.atelier`).
-fn default_home() -> PathBuf {
+pub(crate) fn default_home() -> PathBuf {
     if let Some(p) = std::env::var_os("ATELIER_HOME") {
         return PathBuf::from(p);
     }
