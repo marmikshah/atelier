@@ -57,6 +57,11 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
   recipe was deleted, not hidden.
 - `atelier` — the binary: arg parsing, the daemon installer, the `replay` runner.
 
+The workflow guidance lives in `.claude/skills/` (atelier-sprite / atelier-scene /
+atelier-review), not in the server: `install.sh` copies them into the user's
+`~/.claude/skills/`. A test fails if a skill names a tool that no longer exists.
+The MCP server ships no prompts — the skills replaced them.
+
 ## Hard constraints
 
 - **Never cut 2.0.0.** That version is the human-review milestone: no agent may

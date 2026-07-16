@@ -6,9 +6,8 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    AnnotateAble, CallToolResult, Content, GetPromptRequestParams, GetPromptResult,
-    ListPromptsResult, ListResourcesResult, ListToolsResult, PaginatedRequestParams, PromptMessage,
-    PromptMessageRole, RawResource, ReadResourceRequestParams, ReadResourceResult, Resource,
+    AnnotateAble, CallToolResult, Content, ListResourcesResult, ListToolsResult,
+    PaginatedRequestParams, RawResource, ReadResourceRequestParams, ReadResourceResult, Resource,
     ResourceContents, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
@@ -18,7 +17,6 @@ use serde_json::{json, Value};
 use atelier_studio::Studio;
 
 mod params;
-mod prompts;
 mod recorder;
 mod resources;
 mod toolsdoc;
@@ -26,7 +24,6 @@ mod toolsdoc;
 pub use toolsdoc::{tools_html, tools_text};
 
 use params::*;
-use prompts::{build_prompt, prompt_specs};
 use recorder::Recorder;
 use resources::{base64, parse_resource_uri, ResourceTarget, RESOURCE_RENDER_SCALE};
 
@@ -948,36 +945,11 @@ impl ServerHandler for Atelier {
         Ok(ReadResourceResult::new(vec![contents]))
     }
 
-    /// List the packaged workflow prompts (the draw -> render -> audit loop).
-    async fn list_prompts(
-        &self,
-        _request: Option<PaginatedRequestParams>,
-        _context: RequestContext<RoleServer>,
-    ) -> Result<ListPromptsResult, ErrorData> {
-        Ok(ListPromptsResult::with_all_items(prompt_specs()))
-    }
-
-    /// Fill one workflow prompt from its arguments. Unknown names become an
-    /// `invalid_params` error.
-    async fn get_prompt(
-        &self,
-        request: GetPromptRequestParams,
-        _context: RequestContext<RoleServer>,
-    ) -> Result<GetPromptResult, ErrorData> {
-        let (text, description) =
-            build_prompt(&request.name, &request.arguments).ok_or_else(|| {
-                ErrorData::invalid_params(format!("unknown prompt: {}", request.name), None)
-            })?;
-        let message = PromptMessage::new_text(PromptMessageRole::User, text);
-        Ok(GetPromptResult::new(vec![message]).with_description(description))
-    }
-
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
         info.capabilities = ServerCapabilities::builder()
             .enable_tools()
             .enable_resources()
-            .enable_prompts()
             .build();
         info.instructions = Some(
             "atelier: the pixel-art studio you can see — a headless editor where every \
@@ -1065,7 +1037,6 @@ pub async fn run_http(
 
 #[cfg(test)]
 mod tests {
-    use super::prompts::PROMPTS;
     use super::*;
 
     #[test]
@@ -1123,6 +1094,49 @@ mod tests {
             }
         }
         out
+    }
+
+    #[test]
+    fn the_shipped_skills_name_only_real_tools() {
+        // The skills in .claude/skills are the workflow guidance we install for
+        // users; they name tools verbatim. Delete a tool and they rot silently —
+        // the same drift as a stale description, one directory further out.
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.claude/skills");
+        let Ok(entries) = std::fs::read_dir(&root) else {
+            return; // skills are not present in a packaged crate; nothing to check
+        };
+        let names: std::collections::HashSet<String> = Atelier::new()
+            .tool_router
+            .list_all()
+            .into_iter()
+            .map(|t| t.name.to_string())
+            .collect();
+        let mut checked = 0;
+        for e in entries.filter_map(Result::ok) {
+            let skill = e.path().join("SKILL.md");
+            let Ok(body) = std::fs::read_to_string(&skill) else {
+                continue;
+            };
+            checked += 1;
+            for (i, _) in body.match_indices("doc_") {
+                let tool: String = body[i..]
+                    .chars()
+                    .take_while(|c| c.is_ascii_lowercase() || *c == '_' || c.is_ascii_digit())
+                    .collect();
+                if tool == "doc_id" || tool == "doc_" {
+                    continue;
+                }
+                assert!(
+                    names.contains(&tool),
+                    "{} names '{tool}', which is not a tool",
+                    skill.display()
+                );
+            }
+        }
+        assert!(
+            checked >= 3,
+            "expected the three shipped skills, saw {checked}"
+        );
     }
 
     #[test]
@@ -1408,95 +1422,5 @@ mod tests {
             )
             .unwrap_err();
         assert!(err.contains("no document"), "got: {err}");
-    }
-
-    /// Build a `{name: value}` argument object the way a get_prompt request carries it.
-    fn args(pairs: &[(&str, &str)]) -> Option<serde_json::Map<String, Value>> {
-        Some(
-            pairs
-                .iter()
-                .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
-                .collect(),
-        )
-    }
-
-    #[test]
-    fn prompt_substitutes_args_and_falls_back() {
-        // Provided args (incl. an optional one) are substituted verbatim.
-        let (text, _) = build_prompt(
-            "pixel-sprite",
-            &args(&[
-                ("subject", "a knight"),
-                ("size", "48"),
-                ("palette_hint", "cool steel"),
-            ]),
-        )
-        .expect("known prompt");
-        assert!(text.contains("a knight"), "{text}");
-        assert!(text.contains("48x48"), "{text}");
-        assert!(text.contains("cool steel"), "{text}");
-
-        // Omitted optional args fall back to the template default (no `{size}` leaks).
-        let (text, _) = build_prompt("pixel-sprite", &args(&[("subject", "a slime")])).expect("ok");
-        assert!(text.contains("a slime"), "{text}");
-        assert!(text.contains("32x32"), "{text}");
-        assert!(
-            !text.contains('{') && !text.contains('}'),
-            "unfilled slot: {text}"
-        );
-
-        // Unknown prompt name is rejected.
-        assert!(build_prompt("nope", &None).is_none());
-    }
-
-    #[test]
-    fn every_prompt_references_real_tools() {
-        // The live tool list (the drift target).
-        let names: std::collections::HashSet<String> = Atelier::new()
-            .tool_router
-            .list_all()
-            .into_iter()
-            .map(|t| t.name.to_string())
-            .collect();
-
-        for spec in PROMPTS {
-            // Render with no args so we exercise every fallback branch too.
-            let text = (spec.build)(&|_| None);
-            for tool in spec.tools {
-                // Each declared tool name must actually exist...
-                assert!(
-                    names.contains(*tool),
-                    "prompt {} names missing tool {tool}",
-                    spec.name
-                );
-                // ...and must appear verbatim in the rendered guidance.
-                assert!(
-                    text.contains(tool),
-                    "prompt {} omits its declared tool {tool}",
-                    spec.name
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn prompt_specs_advertise_every_prompt() {
-        let specs = prompt_specs();
-        let names: Vec<&str> = specs.iter().map(|p| p.name.as_str()).collect();
-        assert!(names.contains(&"pixel-sprite"));
-        assert!(names.contains(&"walk-cycle"));
-        assert!(names.contains(&"seamless-tile"));
-        // Each carries a description and its required `subject`/`character`/`material` arg.
-        for p in &specs {
-            assert!(p.description.is_some(), "{} has no description", p.name);
-            let req = p
-                .arguments
-                .as_ref()
-                .expect("args advertised")
-                .iter()
-                .filter(|a| a.required == Some(true))
-                .count();
-            assert!(req >= 1, "{} advertises no required arg", p.name);
-        }
     }
 }
