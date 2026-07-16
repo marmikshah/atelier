@@ -171,6 +171,17 @@ macro_rules! try_res {
     };
 }
 
+/// The JSON report a tool answered with. Scans for the first TEXT part rather
+/// than taking `content[0]`: the image-returning tools put the PNG first and the
+/// stats after it.
+fn result_json(result: &rmcp::model::CallToolResult) -> Option<Value> {
+    result
+        .content
+        .iter()
+        .filter_map(|c| c.as_text())
+        .find_map(|t| serde_json::from_str::<Value>(&t.text).ok())
+}
+
 fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
     if result.is_error == Some(true) {
         return true;
@@ -1583,6 +1594,75 @@ impl Atelier {
 /// ADVERTISES; every tool still EXECUTES via call_tool (so `atelier replay` and
 /// a flag-flip both reach the long tail). Keep it small: every advertised tool
 /// taxes the model's attention on every call.
+/// Tools that only LOOK: they read a document, never change it and never write
+/// an artifact, so replaying them rebuilds nothing.
+///
+/// This is an allowlist, and the default is deliberately the other way: an
+/// unlisted tool gets journaled. A stray read in a recipe replays as a harmless
+/// no-op, but a mutation missing from a recipe silently produces different art —
+/// so when in doubt, record. Anything added here must be genuinely inert.
+const READ_ONLY_TOOLS: &[&str] = &[
+    // the eye and the audits it reports through
+    "doc_look",
+    "doc_info",
+    "doc_critique",
+    "doc_critique_vision",
+    "doc_silhouette",
+    "doc_dump_region",
+    "doc_components",
+    "doc_coverage_map",
+    "doc_anim_audit",
+    "doc_form_audit",
+    "doc_frame_diff",
+    "doc_seam_report",
+    "doc_contrast_check",
+    "doc_colorblind_check",
+    "doc_ramp_validate",
+    "doc_translucency_report",
+    "doc_set_audit",
+    "doc_contact_sheet",
+    "doc_select_render",
+    // returns guide geometry for the model to draw against; draws nothing
+    "doc_perspective_guide",
+    // library-level: not part of any one document's provenance
+    "list_docs",
+    "delete_doc",
+];
+
+/// True when this call is part of how the document got made, and so belongs in
+/// its journal.
+///
+/// The hub tools are mixed — `doc_ref op=compare` is the see-and-fix loop's eye
+/// while `op=import` paints a guide layer — so the op decides, not the tool. The
+/// read ops are also the ones an agent calls most, which is exactly the noise a
+/// recipe should not carry.
+fn is_journaled(tool: &str, args: &Value) -> bool {
+    if READ_ONLY_TOOLS.contains(&tool) {
+        return false;
+    }
+    let op = args.get("op").and_then(Value::as_str);
+    !matches!(
+        (tool, op),
+        ("doc_ref", Some("analyze" | "compare" | "diff"))
+            | ("doc_palette", Some("report"))
+            | ("doc_checkpoint", Some("list"))
+    )
+}
+
+/// The document a call belongs to. `doc_create` names it in the result (the id
+/// is minted there, not passed in); everything else carries `doc_id`.
+fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<String> {
+    if tool == "doc_create" {
+        return result_json(result)?
+            .get("id")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+    }
+    args.get("doc_id")
+        .and_then(Value::as_str)
+        .map(str::to_string)
+}
+
 const CORE_TOOLS: &[&str] = &[
     // lifecycle + the eye
     "doc_create",
@@ -1647,18 +1727,32 @@ impl ServerHandler for Atelier {
     ) -> Result<rmcp::model::CallToolResult, rmcp::ErrorData> {
         // Snapshot tool name + raw args up front (the request is moved into the
         // dispatcher). args default to `{}` to match a recipe step's shape.
-        let recording = self.recorder.as_ref().map(|r| {
-            let args = request
-                .arguments
-                .clone()
-                .map(Value::Object)
-                .unwrap_or_else(|| json!({}));
-            (r.clone(), request.name.to_string(), args)
-        });
+        // Snapshot name/args before the router consumes the request: both the
+        // journal and the session recorder need them after the call returns.
+        let tool = request.name.to_string();
+        let args = request
+            .arguments
+            .clone()
+            .map(Value::Object)
+            .unwrap_or_else(|| json!({}));
+        let recorder = self.recorder.clone();
+
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
         let result = self.tool_router.call(tcc).await?;
-        if let Some((recorder, tool, args)) = recording {
-            if !is_error_result(&result) {
+
+        // A read rebuilds nothing, so it belongs in neither recipe. Both
+        // recorders answer to the same question — what did it take to make
+        // this? — so they share the one classifier.
+        if !is_error_result(&result) && is_journaled(&tool, &args) {
+            // The document's own journal: on by default, so every document is a
+            // replayable recipe without anyone having to know to ask first.
+            if let Some(id) = journal_target(&tool, &args, &result) {
+                self.studio().journal_append(&id, &tool, &args);
+            }
+            // The session recorder (--record) stays opt-in and cross-document:
+            // it captures a whole sitting, which per-document journals cannot
+            // express.
+            if let Some(recorder) = recorder {
                 recorder.record(&tool, args);
             }
         }
@@ -1813,36 +1907,113 @@ pub async fn run_http(
 #[cfg(test)]
 mod tests {
     use super::prompts::PROMPTS;
-    use super::recorder::iso_date;
     use super::*;
 
     #[test]
-    fn recorder_writes_replayable_recipe() {
-        let path = std::env::temp_dir().join("atelier-rec-roundtrip.json");
+    fn every_read_only_tool_is_a_real_tool() {
+        let names: Vec<String> = Atelier::new()
+            .tool_router
+            .list_all()
+            .into_iter()
+            .map(|t| t.name.to_string())
+            .collect();
+        for t in READ_ONLY_TOOLS {
+            assert!(
+                names.contains(&t.to_string()),
+                "READ_ONLY_TOOLS names '{t}', which is not a tool — renamed or removed? \
+                 A stale entry here silently drops a real call from every journal."
+            );
+        }
+    }
+
+    #[test]
+    fn the_eye_is_never_journaled_but_the_hand_always_is() {
+        // Reads rebuild nothing; replaying them is noise.
+        for t in ["doc_look", "doc_info", "doc_critique", "doc_silhouette"] {
+            assert!(!is_journaled(t, &json!({"doc_id": "d"})), "{t} is a read");
+        }
+        // Anything that marks the canvas has to be in the recipe.
+        for t in [
+            "doc_draw",
+            "doc_batch",
+            "doc_fx",
+            "doc_create",
+            "doc_export",
+        ] {
+            assert!(
+                is_journaled(t, &json!({"doc_id": "d"})),
+                "{t} builds the art"
+            );
+        }
+    }
+
+    #[test]
+    fn hub_tools_are_classified_by_op_not_by_name() {
+        // doc_ref is both the eye (compare) and the hand (import).
+        assert!(!is_journaled("doc_ref", &json!({"op": "compare"})));
+        assert!(!is_journaled("doc_ref", &json!({"op": "diff"})));
+        assert!(is_journaled("doc_ref", &json!({"op": "import"})));
+        assert!(is_journaled("doc_ref", &json!({"op": "set"})));
+        // Same split inside doc_palette and doc_checkpoint.
+        assert!(!is_journaled("doc_palette", &json!({"op": "report"})));
+        assert!(is_journaled("doc_palette", &json!({"op": "set"})));
+        assert!(!is_journaled("doc_checkpoint", &json!({"op": "list"})));
+        assert!(is_journaled("doc_checkpoint", &json!({"op": "restore"})));
+        // An unknown tool defaults to journaled: a missing mutation corrupts
+        // the replay, a spurious step only wastes a line.
+        assert!(is_journaled("doc_newly_added_tool", &json!({})));
+    }
+
+    #[test]
+    fn doc_create_is_journaled_to_the_id_it_minted() {
+        // The id is in the result, not the args — journaling by args alone
+        // would file every doc_create under nothing.
+        let created = CallToolResult::success(vec![Content::text(
+            json!({"id": "sprite", "w": 8}).to_string(),
+        )]);
+        assert_eq!(
+            journal_target("doc_create", &json!({"name": "sprite"}), &created).as_deref(),
+            Some("sprite")
+        );
+        let drew = CallToolResult::success(vec![Content::text(json!({"ok": true}).to_string())]);
+        assert_eq!(
+            journal_target("doc_draw", &json!({"doc_id": "sprite"}), &drew).as_deref(),
+            Some("sprite")
+        );
+    }
+
+    #[test]
+    fn result_json_reads_past_a_leading_image() {
+        // img_result puts the PNG first and the stats after it; taking
+        // content[0] would miss the report entirely.
+        let looked = CallToolResult::success(vec![
+            Content::image("ZmFrZQ==".to_string(), "image/png".to_string()),
+            Content::text(json!({"doc_id": "x"}).to_string()),
+        ]);
+        assert_eq!(
+            result_json(&looked).unwrap().get("doc_id").unwrap(),
+            &json!("x")
+        );
+    }
+
+    #[test]
+    fn recorder_appends_a_replayable_jsonl_recipe() {
+        let path = std::env::temp_dir().join("atelier-rec-roundtrip.jsonl");
         let _ = std::fs::remove_file(&path);
         let rec = Recorder::new(path.clone());
 
         rec.record("doc_create", json!({"name": "x", "width": 8, "height": 8}));
-        rec.record("doc_info", json!({"doc_id": "x"}));
+        rec.record("doc_draw", json!({"doc_id": "x", "op": "rect"}));
 
-        // The file each rewrite leaves must parse through replay's own parser.
+        // Whatever the recorder leaves on disk must parse through replay's own
+        // parser — the two halves share this format or neither works.
         let src = std::fs::read_to_string(&path).expect("recipe file written");
+        assert_eq!(src.lines().count(), 2, "one appended line per call");
         let recipe = crate::recipe::Recipe::parse(&src).expect("recipe parses");
-
-        // Name is the file stem; description carries the recorded marker.
-        assert_eq!(recipe.name, "atelier-rec-roundtrip");
-        assert!(
-            recipe.description.starts_with("recorded session "),
-            "got: {}",
-            recipe.description
-        );
-        // Steps round-trip in order with their args intact.
         assert_eq!(recipe.steps.len(), 2);
         assert_eq!(recipe.steps[0].tool, "doc_create");
         assert_eq!(recipe.steps[0].args["width"], 8);
-        assert_eq!(recipe.steps[1].tool, "doc_info");
-        assert_eq!(recipe.steps[1].args["doc_id"], "x");
-
+        assert_eq!(recipe.steps[1].args["op"], "rect");
         let _ = std::fs::remove_file(&path);
     }
 
@@ -2041,24 +2212,6 @@ mod tests {
             )
             .unwrap_err();
         assert!(err.contains("no document"), "got: {err}");
-    }
-
-    #[test]
-    fn iso_date_is_well_formed() {
-        let d = iso_date();
-        let parts: Vec<&str> = d.split('-').collect();
-        assert_eq!(parts.len(), 3, "got: {d}");
-        assert_eq!(parts[0].len(), 4);
-        assert_eq!(parts[1].len(), 2);
-        assert_eq!(parts[2].len(), 2);
-        let (y, m, day): (i64, u32, u32) = (
-            parts[0].parse().unwrap(),
-            parts[1].parse().unwrap(),
-            parts[2].parse().unwrap(),
-        );
-        assert!(y >= 2025, "year too small: {y}");
-        assert!((1..=12).contains(&m), "month: {m}");
-        assert!((1..=31).contains(&day), "day: {day}");
     }
 
     /// Build a `{name: value}` argument object the way a get_prompt request carries it.
