@@ -1,7 +1,7 @@
 //! Read-only canvas analysis — the agent's other eye. These readers never
 //! mutate the document (and ignore any active selection); they describe what is
-//! already on the canvas: a text-grid dump, a silhouette report, connected
-//! components, and a coarse coverage heatmap.
+//! already on the canvas: a text-grid dump, a silhouette report, and
+//! connected components.
 
 use std::fs;
 use std::path::PathBuf;
@@ -859,7 +859,7 @@ fn circular_summary(deg: &[f64]) -> (Option<f64>, Option<f64>) {
     (Some(mean), Some(spread))
 }
 
-/// The guts of `doc_form_audit`, factored out so it can be unit-tested without a
+/// The per-form lighting audit behind `critique`, factored out so it can be unit-tested without a
 /// Studio/disk. For each connected opaque component it fits a lightness plane
 /// (the inferred light direction), correlates lightness with interior distance
 /// (the pillow-shading tell), and reports whether the forms share one light.
@@ -1367,47 +1367,5 @@ mod tests {
         assert!(pp["note"].is_string());
         // bad mode errors
         assert!(s.doc_anim_audit("d", None, None, "bogus", None).is_err());
-    }
-
-    #[test]
-    fn keyframe_move_eases_across_frames() {
-        let s = studio("keyframe");
-        s.doc_create("d", 16, 16).unwrap();
-        // a 2x2 block at (1,1) on frame 0; two empty frames to animate into.
-        draw(
-            &s,
-            "d",
-            0,
-            "rect",
-            json!({"x0": 1, "y0": 1, "x1": 2, "y1": 2, "color": [200, 50, 50, 255], "fill": true}),
-        );
-        s.doc_add_frame("d", 100, None).unwrap();
-        s.doc_add_frame("d", 100, None).unwrap();
-        let r = s
-            .doc_keyframe_move("d", 0, (1, 1, 2, 2), 0, 2, 8, 0, "linear", true)
-            .unwrap();
-        assert_eq!(r["frames_touched"], json!(2));
-        assert_eq!(r["offsets"], json!([[4, 0], [8, 0]])); // linear: half then full
-                                                           // frame 0 (source) is untouched
-        assert_eq!(
-            s.doc_get_pixel("d", Some(0), 0, 1, 1).unwrap()["rgba"],
-            json!([200, 50, 50, 255])
-        );
-        // frame 2 has the block at (1+8, 1) = (9,1); the source rect is cleared
-        assert_eq!(
-            s.doc_get_pixel("d", Some(0), 2, 9, 1).unwrap()["rgba"],
-            json!([200, 50, 50, 255])
-        );
-        assert_eq!(
-            s.doc_get_pixel("d", Some(0), 2, 1, 1).unwrap()["rgba"],
-            json!([0, 0, 0, 0])
-        );
-        // to_frame must exist and be > from_frame
-        assert!(s
-            .doc_keyframe_move("d", 0, (1, 1, 2, 2), 0, 9, 8, 0, "linear", true)
-            .is_err());
-        assert!(s
-            .doc_keyframe_move("d", 0, (1, 1, 2, 2), 2, 0, 8, 0, "linear", true)
-            .is_err());
     }
 }

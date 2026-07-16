@@ -1,8 +1,8 @@
 //! The see-tools: `look` (the agent's primary eye — a flattened frame or an
-//! analysis view of it, with measured stats), `select_render` (the quick-mask
-//! view of the active selection), and `contact_sheet` (the animator's
-//! flip-test). Image-returning methods hand back raw PNG bytes; the server
-//! wraps them as inline MCP image content so the pixels arrive in the same turn.
+//! analysis view of it, with measured stats) and `contact_sheet` (the
+//! animator's flip-test). Image-returning methods hand back raw PNG bytes; the
+//! server wraps them as inline MCP image content so the pixels arrive in the
+//! same turn.
 
 use std::fs;
 
@@ -309,8 +309,6 @@ impl Studio {
         }
         Ok((png, report))
     }
-
-    // -- doc_select_render: see the active mask before painting -------------
 
     // -- doc_contact_sheet: the animator's flip-test -----------------------
 
