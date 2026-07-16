@@ -1,3 +1,4 @@
-Character — a side-view human adventurer idling: weight settles, chest breathes,
-arms sway slightly, one blink; feet planted. Reads clearly at small size. Loops
-seamlessly. 10 frames, 1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.
+Character — a front-facing human adventurer jumping: crouch, launch, airborne with
+arms up and legs tucked, fall, then land absorbing the impact. Faces the viewer
+throughout. Weight reads through the whole body. Loops seamlessly. 10 frames,
+1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.

@@ -1,0 +1,4 @@
+Effect — a character seen in profile firing an energy beam from cupped hands:
+gather with a charging orb at the hands, release, the beam lances out to the right
+as the body recoils, then it fades and the pose settles. Loops seamlessly. 10
+frames, 1 second at 10 FPS. 48x48 canvas. 6 colours, transparent background.
