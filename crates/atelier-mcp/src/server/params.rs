@@ -202,6 +202,19 @@ pub(crate) struct DocRegion {
     pub(crate) y: Option<i32>,
     /// `paste`: true = source-over (default), false = overwrite.
     pub(crate) blend: Option<bool>,
+    /// Replay-only, hidden from the advertised schema: the pixels a journaled
+    /// paste embedded, so a rebuild does not depend on the live clipboard.
+    #[schemars(skip)]
+    pub(crate) clipboard: Option<ClipboardPixels>,
+}
+
+/// The clipboard content a journaled `doc_region op=paste` step carries:
+/// base64 RGBA, row-major, `w`×`h`.
+#[derive(Deserialize, JsonSchema)]
+pub(crate) struct ClipboardPixels {
+    pub(crate) w: u32,
+    pub(crate) h: u32,
+    pub(crate) data: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
