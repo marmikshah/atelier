@@ -1098,10 +1098,11 @@ mod tests {
 
     #[test]
     fn the_shipped_skills_name_only_real_tools() {
-        // The skills in .claude/skills are the workflow guidance we install for
-        // users; they name tools verbatim. Delete a tool and they rot silently —
-        // the same drift as a stale description, one directory further out.
-        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.claude/skills");
+        // The shipped skills (crates/atelier/skills) are the workflow guidance we
+        // install for users and embed in `atelier agent`; they name tools
+        // verbatim. Delete a tool and they rot silently — the same drift as a
+        // stale description, one crate over.
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../atelier/skills");
         let Ok(entries) = std::fs::read_dir(&root) else {
             return; // skills are not present in a packaged crate; nothing to check
         };
@@ -1113,7 +1114,10 @@ mod tests {
             .collect();
         let mut checked = 0;
         for e in entries.filter_map(Result::ok) {
-            let skill = e.path().join("SKILL.md");
+            let skill = e.path();
+            if skill.extension().and_then(|x| x.to_str()) != Some("md") {
+                continue;
+            }
             let Ok(body) = std::fs::read_to_string(&skill) else {
                 continue;
             };

@@ -1,8 +1,3 @@
----
-name: atelier-scene
-description: Draw a whole pixel-art picture — a background, environment, interior, landscape or composed scene — as a layered atelier document. Use when the subject is a place rather than an object, or when several elements must read together as one image. Builds it in depth bands on separate layers, looks at every pass, and fixes one band at a time rather than repainting the frame. Requires the atelier MCP server. For a single object use atelier-sprite; to judge finished art use atelier-review.
----
-
 # Drawing a place
 
 A scene is not a big sprite. A sprite is one subject on nothing; a scene is
