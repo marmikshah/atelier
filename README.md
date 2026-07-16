@@ -102,6 +102,23 @@ Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.h
 or see how a call flows through the crates in the
 [architecture tour](https://marmikshah.github.io/atelier/architecture.html).
 
+## Skills
+
+Tools are the hand; these are the craft. Three [skills](.claude/skills) the
+installer offers to add to Claude Code:
+
+| | |
+|---|---|
+| **atelier-sprite** | one subject — character, creature, vehicle, prop |
+| **atelier-scene** | a place — background, environment, composed picture |
+| **atelier-review** | judge finished art and say what's wrong, with a fix |
+
+Both drawing skills insist on the same two things: **build it in layers**, and
+**fix the region that's wrong instead of repainting the frame**. They prescribe
+no style and no palette — that's the request's business.
+
+atelier works fine without them; they just make the art better.
+
 ## Art is a recipe
 
 Every document is an ordered sequence of tool calls, so a piece of art *is* a

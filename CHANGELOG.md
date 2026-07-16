@@ -6,8 +6,21 @@ releases.
 
 ## [Unreleased]
 
+### Added
+
+- **Three skills for Claude Code** (`.claude/skills/`), which `install.sh` offers
+  to install: **atelier-sprite** (one subject), **atelier-scene** (a place), and
+  **atelier-review** (judge it, don't repaint it). Both drawing skills insist on
+  building in layers and fixing the region that is wrong rather than repainting
+  the frame; neither prescribes a style or a palette. A test fails if a skill
+  names a tool that no longer exists.
+
 ### Breaking
 
+- **The MCP server ships no prompts.** `pixel-sprite`, `walk-cycle` and
+  `seamless-tile` are gone; the skills above replace them, and go deeper than a
+  prompt could. Clients other than Claude Code lose the packaged workflows —
+  the tool descriptions still carry the per-tool guidance.
 - **63 tools → 28.** Every tool with no caller — in any agent transcript or any
   shipped recipe — is gone, along with ~6,000 lines behind them. Removed: the
   character generators (`doc_figure`, `doc_walk`, `doc_pose_cycle`), terrain

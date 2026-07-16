@@ -2,7 +2,10 @@
 .atelier/
 .DS_Store
 *.swp
-.claude/
+# Local agent scratch (settings, workflow scripts) stays out — but the skills
+# under .claude/skills are shipped product: install.sh copies them to users.
+.claude/*
+!.claude/skills/
 .venv/
 resume.sh
 docs/ART-QUALITY-REVIEW.md
