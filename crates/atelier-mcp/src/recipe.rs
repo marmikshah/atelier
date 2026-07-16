@@ -85,7 +85,16 @@ impl Recipe {
         for (idx, (n, line)) in nonempty.iter().enumerate() {
             match serde_json::from_str::<Step>(line) {
                 Ok(step) => steps.push(step),
-                Err(_) if idx == last => break, // torn final line — drop it
+                Err(_) if idx == last => {
+                    // Tolerated, but never silently: a rebuild missing its
+                    // last mutation would otherwise look like a clean run.
+                    eprintln!(
+                        "recipe: dropped a partial final line (line {}) — the last \
+                         recorded step is missing from this replay",
+                        n + 1
+                    );
+                    break;
+                }
                 Err(e) => return Err(format!("line {}: {e} — expected {{tool, args}}", n + 1)),
             }
         }
