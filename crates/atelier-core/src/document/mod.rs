@@ -45,40 +45,9 @@ pub struct LayerMeta {
     pub blend: String,
 }
 
-/// A named collision rectangle on a frame: the body box, an attack hitbox, a
-/// vulnerable hurtbox. Pure gameplay metadata — never rasterized; emitted
-/// (scaled) in sheet/atlas JSON so the engine reads it straight off the sheet.
-#[derive(Serialize, Deserialize, Clone)]
-pub struct BoxMeta {
-    pub name: String,
-    /// `body` | `hit` | `hurt` (validated on set).
-    pub kind: String,
-    /// `[x, y, w, h]` in document pixels.
-    pub rect: [i32; 4],
-}
-
-impl BoxMeta {
-    /// JSON form with the rect scaled into export pixels (`scale = 1` = raw).
-    pub fn to_json(&self, scale: u32) -> Value {
-        let s = scale as i32;
-        let [x, y, w, h] = self.rect;
-        json!({"name": self.name, "kind": self.kind, "rect": [x * s, y * s, w * s, h * s]})
-    }
-}
-
-/// The accepted box kinds, in declaration order — the error message lists them.
-const BOX_KINDS: [&str; 3] = ["body", "hit", "hurt"];
-
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FrameMeta {
     pub duration_ms: u32,
-    /// Optional anchor point in document pixels (e.g. feet / weapon mount).
-    /// Engines read this to position the sprite; None = top-left origin.
-    #[serde(default)]
-    pub pivot: Option<[i32; 2]>,
-    /// Collision/hit/hurt boxes on this frame (gameplay metadata, not pixels).
-    #[serde(default)]
-    pub boxes: Vec<BoxMeta>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -205,8 +174,6 @@ impl Document {
             }],
             frames: vec![FrameMeta {
                 duration_ms: DEFAULT_FRAME_MS,
-                pivot: None,
-                boxes: Vec::new(),
             }],
             tags: Vec::new(),
             cels: Vec::new(),
@@ -461,11 +428,7 @@ impl Document {
     /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
     pub fn add_frame(&mut self, duration_ms: u32, copy_from: Option<usize>) -> usize {
         let idx = self.meta.frames.len();
-        self.meta.frames.push(FrameMeta {
-            duration_ms,
-            pivot: None,
-            boxes: Vec::new(),
-        });
+        self.meta.frames.push(FrameMeta { duration_ms });
         if let Some(src) = copy_from {
             // duplicate every cel of frame `src` into the new frame
             let to_copy: Vec<(usize, (i32, i32, RgbaImage))> = self
@@ -556,8 +519,7 @@ impl Document {
                 "index": i, "name": l.name, "opacity": l.opacity, "visible": l.visible, "blend": l.blend
             })).collect::<Vec<_>>(),
             "frames": self.meta.frames.iter().enumerate().map(|(i, f)| json!({
-                "index": i, "duration_ms": f.duration_ms, "pivot": f.pivot,
-                "boxes": f.boxes.iter().map(|b| b.to_json(1)).collect::<Vec<_>>(),
+                "index": i, "duration_ms": f.duration_ms,
             })).collect::<Vec<_>>(),
             "tags": self.meta.tags.iter().map(|t| json!({
                 "name": t.name, "from": t.from, "to": t.to, "direction": t.direction

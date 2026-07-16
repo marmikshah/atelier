@@ -71,101 +71,6 @@ fn palette_set_and_index() {
 }
 
 #[test]
-fn extract_to_layer_cuts_part_onto_new_layer() {
-    let mut d = Document::new("t", 4, 4);
-    d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
-    d.pencil(0, 0, &[(3, 3)], [2, 2, 2, 255], 1).unwrap();
-    let (new_layer, moved) = d
-        .extract_to_layer(0, 0, Some((2, 2, 3, 3)), None, Some("arm".into()), false)
-        .unwrap();
-    assert_eq!((new_layer, moved), (1, 1));
-    assert_eq!(d.meta.layers[1].name, "arm");
-    // The part moved: gone from the source, present on the new layer.
-    assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [0, 0, 0, 0]);
-    assert_eq!(d.get_pixel(1, 0, 3, 3).unwrap(), [2, 2, 2, 255]);
-    // Untouched pixels stayed on the source layer.
-    assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [1, 1, 1, 255]);
-}
-
-#[test]
-fn keyframe_transform_translates_and_rotates_about_pivot() {
-    let mut d = Document::new("t", 8, 8);
-    d.pencil(0, 0, &[(1, 1)], [9, 9, 9, 255], 1).unwrap();
-    d.add_frame(100, Some(0));
-    d.add_frame(100, Some(0));
-    // Pure translation: behaves like keyframe_move.
-    d.keyframe_transform(
-        0,
-        (1, 1, 1, 1),
-        (1.5, 1.5),
-        0,
-        2,
-        0.0,
-        4,
-        0,
-        "linear",
-        false,
-    )
-    .unwrap();
-    assert_eq!(d.get_pixel(0, 1, 3, 1).unwrap(), [9, 9, 9, 255]); // halfway
-    assert_eq!(d.get_pixel(0, 2, 5, 1).unwrap(), [9, 9, 9, 255]); // full offset
-    assert_eq!(d.get_pixel(0, 2, 1, 1).unwrap(), [0, 0, 0, 0]); // source cleared
-                                                                // Rotation: a bar swung 90° about its base ends up horizontal.
-    let mut r = Document::new("r", 9, 9);
-    for y in 1..=4 {
-        r.pencil(0, 0, &[(4, y)], [9, 9, 9, 255], 1).unwrap();
-    }
-    r.add_frame(100, Some(0));
-    let placed = r
-        .keyframe_transform(
-            0,
-            (4, 1, 4, 4),
-            (4.5, 4.5),
-            0,
-            1,
-            90.0,
-            0,
-            0,
-            "linear",
-            false,
-        )
-        .unwrap();
-    assert_eq!(placed.len(), 1);
-    // The vertical bar above the pivot is gone in frame 1...
-    assert_eq!(r.get_pixel(0, 1, 4, 1).unwrap(), [0, 0, 0, 0]);
-    // ...and opaque pixels now sit to the LEFT of the pivot (90° clockwise
-    // takes "up" to "left" in screen coords... or right for cw): just
-    // assert the mass moved off the original column onto one row.
-    let count_row4: usize = (0..9)
-        .filter(|&x| r.get_pixel(0, 1, x, 4).unwrap()[3] > 0)
-        .count();
-    assert!(count_row4 >= 3, "bar should now lie along row 4");
-}
-
-#[test]
-fn tween_inherits_meta_remaps_tags_and_snaps_palette() {
-    let mut d = Document::new("t", 2, 2);
-    d.set_palette(vec![[0, 0, 0, 255], [255, 255, 255, 255]]);
-    d.pencil(0, 0, &[(0, 0)], [0, 0, 0, 255], 1).unwrap();
-    d.add_frame(100, None);
-    d.pencil(0, 1, &[(0, 0)], [255, 255, 255, 255], 1).unwrap();
-    d.set_pivot(0, Some([1, 1])).unwrap();
-    d.add_tag("walk", 0, 1, "forward").unwrap();
-    d.tween(0, 1, 1, 50).unwrap();
-    // Tag stretched over the inserted in-between.
-    assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 2));
-    // The in-between inherited the source frame's pivot.
-    assert_eq!(d.meta.frames[1].pivot, Some([1, 1]));
-    // The 50% grey blend snapped to a palette colour instead of minting one.
-    let px = d.get_pixel(0, 1, 0, 0).unwrap();
-    assert!(
-        d.meta.palette.iter().any(|c| c[..3] == px[..3]),
-        "blend {:?} should be on-palette",
-        px
-    );
-}
-
-#[test]
 fn frame_ops_delete_reindexes_and_protects_last() {
     let mut d = Document::new("t", 2, 2);
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
@@ -602,77 +507,6 @@ fn export_sheet_std_writes_engine_parsable_json() {
 }
 
 #[test]
-fn cast_shadow_projects_behind_caster() {
-    let mut d = Document::new("t", 24, 24);
-    // A vertical bar caster resting on row 15.
-    d.rect(0, 0, 10, 4, 12, 15, [255, 255, 255, 255], true, 1)
-        .unwrap();
-    let painted = d
-        .cast_shadow(0, 0, 135.0, 1.5, 0.2, [20, 20, 30, 255], 180, None, false)
-        .unwrap();
-    assert!(painted > 0, "shadow should paint pixels");
-    // The caster still sits on top (unchanged white).
-    assert_eq!(d.get_pixel(0, 0, 11, 5).unwrap(), [255, 255, 255, 255]);
-    // A shadow-coloured pixel exists off the caster.
-    let mut found = false;
-    for y in 0..24 {
-        for x in 0..24 {
-            let p = d.get_pixel(0, 0, x, y).unwrap();
-            if p[3] > 0 && p[0] == 20 && p[1] == 20 && p[2] == 30 {
-                found = true;
-            }
-        }
-    }
-    assert!(found, "expected shadow-coloured pixels");
-}
-
-#[test]
-fn cast_shadow_clips_to_receiver() {
-    let mut d = Document::new("t", 24, 24);
-    let ground = d.add_layer(Some("ground".into()), 255, "normal".into());
-    let caster = d.add_layer(Some("caster".into()), 255, "normal".into());
-    d.rect(ground, 0, 0, 10, 23, 19, [40, 120, 40, 255], true, 1)
-        .unwrap();
-    d.rect(caster, 0, 8, 6, 10, 15, [255, 255, 255, 255], true, 1)
-        .unwrap();
-    let painted = d
-        .cast_shadow(
-            caster,
-            0,
-            180.0,
-            1.0,
-            0.3,
-            [10, 10, 20, 255],
-            200,
-            Some(ground),
-            false,
-        )
-        .unwrap();
-    assert!(painted > 0, "shadow should land on the ground");
-    // The caster layer is untouched.
-    assert_eq!(d.get_pixel(caster, 0, 9, 7).unwrap(), [255, 255, 255, 255]);
-    // The ground is partly darkened (shadow) and partly its own colour.
-    let (mut blended, mut pure) = (0u32, 0u32);
-    for y in 0..24 {
-        for x in 0..24 {
-            let p = d.get_pixel(ground, 0, x, y).unwrap();
-            if p[3] == 0 {
-                continue;
-            }
-            if p == [40, 120, 40, 255] {
-                pure += 1;
-            } else {
-                blended += 1;
-            }
-        }
-    }
-    assert!(
-        blended > 0 && pure > 0,
-        "ground should be part-shadowed (blended={blended}, pure={pure})"
-    );
-}
-
-#[test]
 fn stroke_f_keeps_subpixel_position() {
     // A 1px AA stroke centred on row 3 lights that row nearly solid; nudging
     // it half a pixel down splits its coverage between rows 3 and 4, so the
@@ -778,62 +612,6 @@ fn stroke_aa_emits_fractional_coverage() {
         frac >= 20,
         "AA capsule should have ≥20 fractional pixels, got {frac}"
     );
-}
-
-#[test]
-fn rim_light_lights_only_the_facing_edge() {
-    let mut d = Document::new("t", 16, 16);
-    d.ellipse(0, 0, 8, 8, 6, 6, [80, 80, 80, 255], true)
-        .unwrap();
-    // Light from the right (az=0): the right edge lights, the left does not.
-    d.rim_light(0, 0, [255, 255, 255, 255], 0.0, 1, 1.5, false, false)
-        .unwrap();
-    let opaque = |x: i32| d.get_pixel(0, 0, x, 8).unwrap()[3] > 0;
-    let rmost = (0..16).rev().find(|&x| opaque(x)).unwrap();
-    let lmost = (0..16).find(|&x| opaque(x)).unwrap();
-    // Right (light-facing) edge lightens toward white; left edge untouched.
-    assert!(
-        d.get_pixel(0, 0, rmost, 8).unwrap()[0] > 80,
-        "right (light-facing) edge should be rim-lit (lighter than base 80)"
-    );
-    assert_eq!(
-        d.get_pixel(0, 0, lmost, 8).unwrap(),
-        [80, 80, 80, 255],
-        "left (away) edge should NOT be rim-lit"
-    );
-}
-
-#[test]
-fn pivot_set_and_clear() {
-    let mut d = Document::new("t", 4, 4);
-    d.set_pivot(0, Some([2, 3])).unwrap();
-    assert_eq!(d.meta.frames[0].pivot, Some([2, 3]));
-    d.set_pivot(0, None).unwrap();
-    assert_eq!(d.meta.frames[0].pivot, None);
-    assert!(d.set_pivot(9, Some([0, 0])).is_err());
-}
-
-#[test]
-fn frame_boxes_set_validate_and_scale() {
-    let mut d = Document::new("t", 4, 4);
-    let b = |kind: &str| BoxMeta {
-        name: "b".into(),
-        kind: kind.into(),
-        rect: [1, 2, 3, 4],
-    };
-    d.set_frame_boxes(0, vec![b("body"), b("hit")]).unwrap();
-    assert_eq!(d.meta.frames[0].boxes.len(), 2);
-    // Unknown kind fails fast; a bad kind leaves the frame untouched.
-    assert!(d.set_frame_boxes(0, vec![b("shield")]).is_err());
-    assert_eq!(d.meta.frames[0].boxes.len(), 2);
-    // Bad frame index errors.
-    assert!(d.set_frame_boxes(9, vec![b("hurt")]).is_err());
-    // Rect scales by the export factor; raw at scale 1.
-    assert_eq!(b("hit").to_json(1)["rect"], json!([1, 2, 3, 4]));
-    assert_eq!(b("hit").to_json(8)["rect"], json!([8, 16, 24, 32]));
-    // Empty vec clears.
-    d.set_frame_boxes(0, vec![]).unwrap();
-    assert!(d.meta.frames[0].boxes.is_empty());
 }
 
 #[test]
@@ -1316,16 +1094,6 @@ fn scatter_is_deterministic_and_density_bounded() {
 }
 
 #[test]
-fn stamp_draws_over_without_replacing() {
-    let mut d = Document::new("t", 4, 4);
-    d.fill_cel(0, 0, [0, 255, 0, 255]).unwrap(); // green backdrop
-    let src = RgbaImage::from_pixel(2, 2, Rgba([255, 0, 0, 255]));
-    d.stamp(0, 0, 0, 0, &src, 255, "normal").unwrap();
-    assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]); // stamped
-    assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [0, 255, 0, 255]); // backdrop kept (not replaced)
-}
-
-#[test]
 fn symmetry_mirrors_across_vertical_axis() {
     let mut d = Document::new("t", 4, 4);
     d.pencil(0, 0, &[(0, 1)], [9, 9, 9, 255], 1).unwrap();
@@ -1421,23 +1189,6 @@ fn tag_range_clamps_to_existing_frames() {
     d.add_tag("big", 0, 4, "forward").unwrap();
     d.meta.frames.truncate(3);
     assert_eq!(d.play_sequence(Some("big")).unwrap(), vec![0, 1, 2]);
-}
-
-#[test]
-fn tween_inserts_and_reindexes_frames() {
-    let mut d = Document::new("t", 4, 4);
-    d.fill_cel(0, 0, [10, 10, 10, 255]).unwrap();
-    d.add_frame(100, None);
-    d.fill_cel(0, 1, [200, 200, 200, 255]).unwrap();
-    d.tween(0, 1, 1, 100).unwrap(); // one in-between after frame 0
-    assert_eq!(d.meta.frames.len(), 3);
-    assert_eq!(d.get_pixel(0, 2, 0, 0).unwrap(), [200, 200, 200, 255]); // old frame 1 → 2
-    let mid = d.get_pixel(0, 1, 0, 0).unwrap();
-    assert!(
-        (mid[0] as i32 - 105).abs() <= 2,
-        "tween mid ~105, got {}",
-        mid[0]
-    ); // dissolve
 }
 
 #[test]

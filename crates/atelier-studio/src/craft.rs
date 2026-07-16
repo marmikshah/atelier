@@ -1,12 +1,11 @@
 //! World-class-art tooling — the craft layer on top of the primitives.
 //!
 //! These methods exist to close the gaps the art-quality review found:
-//! let the near-blind agent actually SEE
-//! (`look`, `select_render`), work without fear (`checkpoint`), edit structure
-//! (`layer_ops`, `transform_cel`), and reach perceptual colour & master finish
-//! (`palette`, `snap_palette`, `smooth_edges`, `select_wand`,
-//! `critique`). Image-returning methods hand back raw PNG bytes; the server
-//! wraps them as inline MCP image content so the pixels arrive in the same turn.
+//! let the near-blind agent actually SEE (`look`), work without fear
+//! (`checkpoint`), edit structure (`layer_ops`), and reach perceptual colour &
+//! master finish (`palette`, `snap_palette`, `select_wand`, `critique`).
+//! Image-returning methods hand back raw PNG bytes; the server wraps them as
+//! inline MCP image content so the pixels arrive in the same turn.
 
 use std::fs;
 use std::path::Path;
@@ -271,87 +270,6 @@ impl Studio {
         Ok(json!({"ok": true, "doc_id": id, "pixels_changed": changed, "palette_len": pal.len()}))
     }
 
-    // -- doc_select_wand: contiguous magic-wand ----------------------------
-
-    // -- doc_smooth_edges: selective anti-aliasing -------------------------
-
-    /// Selout anti-aliasing of the silhouette's staircase corners (master-grade
-    /// smooth diagonals vs Bresenham stairs). `ramp` keeps the AA on-palette.
-    pub fn smooth_edges(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        ramp: Option<Vec<[u8; 4]>>,
-        max_run: i32,
-        keep_square: bool,
-        only_color: Option<[u8; 4]>,
-        region: Option<(i32, i32, i32, i32)>,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let added = doc.smooth_edges(
-            layer,
-            frame,
-            ramp.as_deref(),
-            max_run,
-            keep_square,
-            only_color,
-            region,
-        )?;
-        doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id, "aa_pixels_added": added}))
-    }
-
-    // -- doc_transform_cel: in-place rotate / scale / skew -----------------
-
-    /// Affine-transform a cel or region in place — the #1 missing primitive.
-    /// `method` `rotsprite` (cluster-preserving) | `nearest`. `snap_palette`
-    /// re-snaps the transform fringe to the locked palette; `clear_source`
-    /// makes it a move rather than an overlay.
-    pub fn transform_cel(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        rot: f32,
-        sx: f32,
-        sy: f32,
-        skew_x: f32,
-        skew_y: f32,
-        method: &str,
-        snap_palette: bool,
-        clear_source: bool,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let (bbox, placed) = doc.transform_cel(
-            layer,
-            frame,
-            region,
-            rot,
-            sx,
-            sy,
-            skew_x,
-            skew_y,
-            method,
-            clear_source,
-        )?;
-        let mut snapped = 0;
-        if snap_palette {
-            snapped = doc.snap_cel_to_own_palette(
-                layer,
-                frame,
-                atelier_core::document::AlphaSnap::Preserve,
-            );
-        }
-        doc.save(&dir)?;
-        Ok(json!({
-            "ok": true, "doc_id": id,
-            "placed_bbox": {"x": bbox[0], "y": bbox[1], "w": bbox[2], "h": bbox[3]},
-            "placed_pixels": placed, "snapped": snapped,
-        }))
-    }
-
     // -- doc_critique: the art-director scorecard --------------------------
 
     /// Aggregated craft scorecard — the named pixel-art failure modes the agent
@@ -371,8 +289,6 @@ impl Studio {
         let palette = doc.meta().palette.clone();
         Ok(critique_image(id, frame, &img, &palette))
     }
-
-    // -- doc_relight: multi-light form shading -----------------------------
 
     // -- doc_dither_ramp: graduated multi-tone dithering -------------------
 
@@ -536,31 +452,6 @@ impl Studio {
             Ok(())
         })
     }
-
-    // -- doc_perspective_guide: non-destructive construction layer ---------
-
-    // -- doc_outline_selective: form-following contour ---------------------
-
-    /// Form-following selective outline (vs a flat black keyline). `mode`
-    /// `from_fill` colours each edge from the fill it borders; `light`/`dark`
-    /// bias it. `ramp` keeps it on-palette.
-    pub fn outline_selective(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        mode: &str,
-        ramp: Option<Vec<[u8; 4]>>,
-        steps: i32,
-        region: Option<(i32, i32, i32, i32)>,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let n = doc.outline_selective(layer, frame, mode, ramp.as_deref(), steps, region)?;
-        doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id, "outline_pixels": n}))
-    }
-
-    // -- doc_material: procedural material recipes -------------------------
 
     // -- doc_panel: a HUD/UI 9-slice-style panel ---------------------------
 
@@ -732,99 +623,10 @@ impl Studio {
             "bg_removed": remove_bg,
         }))
     }
-
-    // -- doc_burst: radial FX across frames -------------------------------
-
-    /// Seeded PARTICLE EMITTER rendered to frames — sparks, embers, smoke,
-    /// rain, magic motes. Every particle's whole trajectory is a pure function
-    /// of (seed, particle index): spawned inside the emitter rect with a
-    /// direction in `angle ± spread`, advanced by `speed` and `gravity`, faded
-    /// and shrunk along its `life`, coloured along the ramp — so the animation
-    /// is deterministic and loops cleanly when `loop_seam` (particles respawn
-    /// with staggered phase). Draws onto `layer` across `frames`, clearing each
-    /// cel, and tags the range `emit`.
-    pub fn emit(
-        &self,
-        id: &str,
-        layer: usize,
-        region: (i32, i32, i32, i32),
-        frames: usize,
-        count: usize,
-        angle_deg: f32,
-        spread_deg: f32,
-        speed: f32,
-        gravity: f32,
-        life: f32,
-        size: i32,
-        seed: u64,
-        base: [u8; 4],
-        ramp: Option<Vec<[u8; 4]>>,
-    ) -> Result<Value, String> {
-        let frames = frames.clamp(2, 24);
-        let count = count.clamp(1, 512);
-        let (ex, ey, ew, eh) = region;
-        if ew < 1 || eh < 1 {
-            return Err("emitter region must be at least 1x1".into());
-        }
-        let (dir, mut doc) = self.open(id)?;
-        if layer >= doc.meta().layers.len() {
-            return Err(format!("no layer {}", layer));
-        }
-        let ramp = ramp
-            .filter(|r| !r.is_empty())
-            .unwrap_or_else(|| auto_ramp(base, 5));
-        while doc.meta().frames.len() < frames {
-            doc.add_frame(80, None);
-        }
-        let life = life.clamp(0.2, 4.0); // in cycle units: 1.0 = one full loop
-        let last = ramp.len() - 1;
-        // A unit random in [0,1) that is pure in (seed, particle, channel).
-        let rnd = |p: usize, ch: i32| raster::hash2(p as i32, ch, seed) as f32 / u32::MAX as f32;
-        for f in 0..frames {
-            doc.clear_cel(layer, f)?;
-            let ft = f as f32 / frames as f32;
-            for p in 0..count {
-                // Staggered phase: each particle is somewhere along its own
-                // life when the clip starts, so the loop has no "big bang".
-                let phase = (ft / life + rnd(p, 0)).fract();
-                let age = phase * life; // 0..life, in cycle units
-                let a0 = (angle_deg + spread_deg * (rnd(p, 1) * 2.0 - 1.0)).to_radians();
-                let v = speed * (0.6 + 0.4 * rnd(p, 2));
-                let sx = ex as f32 + rnd(p, 3) * ew as f32;
-                let sy = ey as f32 + rnd(p, 4) * eh as f32;
-                // Analytic ballistic position at this age (frames of travel).
-                let tt = age * frames as f32;
-                let px = sx + a0.cos() * v * tt;
-                let py = sy + a0.sin() * v * tt + 0.5 * gravity * tt * tt;
-                let lt = phase; // 0 = just born, 1 = dying
-                let c = ramp[((lt * last as f32).round() as usize).min(last)];
-                let alpha = ((1.0 - lt) * c[3] as f32).round().clamp(0.0, 255.0) as u8;
-                if alpha == 0 {
-                    continue;
-                }
-                // Particles shrink as they die.
-                let r = ((size as f32) * (1.0 - 0.6 * lt)).max(0.5) / 2.0;
-                doc.stroke_f(
-                    layer,
-                    f,
-                    &[(px, py, r * 2.0)],
-                    [c[0], c[1], c[2], alpha],
-                    true,
-                    false,
-                )?;
-            }
-            doc.snap_cel_to_own_palette(layer, f, atelier_core::document::AlphaSnap::Preserve);
-        }
-        if !doc.meta().tags.iter().any(|t| t.name == "emit") {
-            doc.add_tag("emit", 0, frames - 1, "forward")?;
-        }
-        doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id, "frames": frames, "particles": count}))
-    }
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
-/// ramp shared by `box_iso` and `material`.
+/// ramp used by `box_iso`.
 fn auto_ramp(base: [u8; 4], count: usize) -> Vec<[u8; 4]> {
     let (lb, _, _) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
     let lo = (lb - 0.34).max(0.04);
@@ -1071,50 +873,6 @@ mod tests {
     }
 
     #[test]
-    fn emit_is_deterministic_and_loops() {
-        let s = studio("emit");
-        for d in ["fx-a", "fx-b"] {
-            s.doc_create(d, 32, 32).unwrap();
-            s.emit(
-                d,
-                0,
-                (12, 24, 8, 4),
-                6,
-                16,
-                270.0,
-                25.0,
-                1.5,
-                0.0,
-                1.0,
-                2,
-                7,
-                [255, 180, 60, 255],
-                None,
-            )
-            .unwrap();
-        }
-        // Same seed ⇒ byte-identical frames across separate runs (sampled grid
-        // keeps the test fast; determinism failures are not localized anyway).
-        let mut any_opaque = false;
-        for f in 0..6 {
-            for y in (0..32).step_by(3) {
-                for x in (0..32).step_by(3) {
-                    let a = s.doc_get_pixel("fx-a", Some(0), f, x, y).unwrap()["rgba"].clone();
-                    let b = s.doc_get_pixel("fx-b", Some(0), f, x, y).unwrap()["rgba"].clone();
-                    assert_eq!(a, b, "frame {f} pixel {x},{y}");
-                    if a[3] != json!(0) {
-                        any_opaque = true;
-                    }
-                }
-            }
-        }
-        assert!(any_opaque, "emitter drew nothing in the sampled grid");
-    }
-
-    /// `checkpoint_id` is joined onto the store path and fed to remove_dir_all,
-    /// so an unvalidated one deleted arbitrary directories and reported success:
-    /// `prune` with `../../../../x` wiped a tree outside the store.
-    #[test]
     fn checkpoint_id_cannot_escape_the_store() {
         let s = studio("cp-escape");
         s.doc_create("c", 8, 8).unwrap();
@@ -1170,55 +928,6 @@ mod tests {
             .layer_ops("c", "merge_down", 1, None, None, 255, "normal".into())
             .unwrap();
         assert_eq!(m["layers"].as_array().unwrap().len(), 1);
-    }
-
-    #[test]
-    fn transform_cel_rotate_moves_the_pixel() {
-        let s = studio("xform");
-        s.doc_create("c", 5, 5).unwrap();
-        draw(
-            &s,
-            "c",
-            0,
-            "pencil",
-            json!({"points": [[4, 2]], "color": [255, 255, 255, 255]}),
-        );
-        let r = s
-            .transform_cel(
-                "c", 0, 0, None, 90.0, 1.0, 1.0, 0.0, 0.0, "nearest", false, true,
-            )
-            .unwrap();
-        assert_eq!(r["placed_pixels"], 1);
-        let look = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert_eq!(opaque(&look.1), 1); // cleared source, one pixel placed elsewhere
-    }
-
-    #[test]
-    fn smooth_edges_adds_aa_to_a_staircase() {
-        let s = studio("aa");
-        s.doc_create("c", 6, 6).unwrap();
-        for (x, y) in [(0, 0), (1, 0), (1, 1), (2, 1)] {
-            draw(
-                &s,
-                "c",
-                0,
-                "pencil",
-                json!({"points": [[x, y]], "color": [0, 0, 0, 255]}),
-            );
-        }
-        let r = s
-            .smooth_edges("c", 0, 0, None, 2, true, None, None)
-            .unwrap();
-        assert!(r["aa_pixels_added"].as_u64().unwrap() >= 2);
     }
 
     #[test]
@@ -1297,23 +1006,6 @@ mod tests {
             )
             .unwrap();
         assert!(distinct(&look.1) >= 3, "three faces => three shades");
-    }
-
-    #[test]
-    fn outline_selective_rings_a_shape() {
-        let s = studio("outsel");
-        s.doc_create("c", 8, 8).unwrap();
-        draw(
-            &s,
-            "c",
-            0,
-            "rect",
-            json!({"x0": 2, "y0": 2, "x1": 5, "y1": 5, "color": [200, 60, 60, 255], "fill": true}),
-        );
-        let r = s
-            .outline_selective("c", 0, 0, "from_fill", None, 2, None)
-            .unwrap();
-        assert!(r["outline_pixels"].as_u64().unwrap() > 0);
     }
 
     #[test]

@@ -56,10 +56,6 @@ impl Document {
                 json!({
                     "rect": [i as u32 * fw, 0, fw, fh],
                     "duration_ms": fr.duration_ms,
-                    // Pivot scaled into sheet pixels (engine-ready); null if unset.
-                    "pivot": fr.pivot.map(|[px, py]| [px as u32 * scale, py as u32 * scale]),
-                    // Collision boxes scaled into sheet pixels (gameplay metadata).
-                    "boxes": fr.boxes.iter().map(|b| b.to_json(scale)).collect::<Vec<_>>(),
                 })
             })
             .collect();
@@ -85,9 +81,7 @@ impl Document {
     /// Export the spritesheet with the industry-standard hash sprite-JSON
     /// sidecar instead of atelier's richer native shape — the layout that game
     /// engines' existing sheet importers already parse (`frames` keyed by name
-    /// with `frame`/`sourceSize`/`duration`, `meta.frameTags`). Pivots and
-    /// collision boxes have no slot in this shape; use the native JSON
-    /// (`export_sheet`) when the engine should read those.
+    /// with `frame`/`sourceSize`/`duration`, `meta.frameTags`).
     pub fn export_sheet_std(&self, out: &Path, scale: u32) -> Result<Value, String> {
         let (sheet, fw, fh) = self.sheet_image(scale)?;
         sheet.save(out).map_err(|e| e.to_string())?;
