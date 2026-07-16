@@ -36,7 +36,7 @@ const HELP: &str = "atelier — the pixel-art studio agents can see (MCP-native,
 
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
-    atelier --http `[ADDR]`         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
+    atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
     atelier --record <recipe.json>  record this session's tool calls into a replayable recipe
             (works with stdio and --http; also ATELIER_RECORD=<path>)
     atelier install               install + start the background daemon (launchd / systemd --user)
