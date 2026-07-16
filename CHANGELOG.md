@@ -8,12 +8,32 @@ releases.
 
 ### Added
 
-- **Three skills for Claude Code** (`.claude/skills/`), which `install.sh` offers
+- **`atelier agent` — the one online mode.** Drives an OpenAI-style
+  chat-completions API through an agentic loop so the binary draws a task on its
+  own, with no external client. It executes the model's tool calls against a
+  child `atelier` stdio server, so it reuses the whole validated tool path
+  (schemas, arg-checking, journaling) rather than a second copy; `doc_look`
+  images are fed back to the model. Any OpenAI-compatible endpoint works via
+  `--base-url`. The atelier-sprite/scene/review skills are compiled into the
+  binary, so a bare `atelier agent --task "..."` needs no files — `--skill
+  scene|review` picks another, `--skill-file` injects a custom one.
+- Gated behind the **`agent` cargo feature**, OFF by default: a normal build and
+  the daemon link no HTTP/TLS stack, and the core stays offline, keyless and
+  deterministic. `OPENAI_API_KEY` comes from the env; agent mode is never part
+  of a default install. Build with `cargo install --path crates/atelier
+  --features agent`.
+
+### Added
+
+- **Three skills for Claude Code**, which `install.sh` offers
   to install: **atelier-sprite** (one subject), **atelier-scene** (a place), and
   **atelier-review** (judge it, don't repaint it). Both drawing skills insist on
   building in layers and fixing the region that is wrong rather than repainting
   the frame; neither prescribes a style or a palette. A test fails if a skill
-  names a tool that no longer exists.
+  names a tool that no longer exists. They are a typed registry
+  (`crates/atelier/skills`): Rust owns the metadata and the per-consumer
+  renderers, the prose stays markdown. `atelier skills install` writes the
+  Claude `SKILL.md` files; `atelier skills show <name>` prints one.
 
 ### Breaking
 

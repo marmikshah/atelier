@@ -1,8 +1,3 @@
----
-name: atelier-review
-description: Review finished or in-progress pixel art in an atelier document and report what is wrong with it. Use to judge a sprite, scene, animation or document set — an art-director pass that measures rather than guesses, and names a localised fix for every finding. Read-only by default: it reports, it does not repaint. Requires the atelier MCP server. To make the art in the first place use atelier-sprite or atelier-scene.
----
-
 # Reviewing the art
 
 Look first, measure second, report third. **You are not here to fix it** — you
