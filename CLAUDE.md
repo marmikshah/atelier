@@ -21,7 +21,7 @@ binary's own subcommands are the interface (an installed user has no Makefile).
 |--------|-----|
 | `make release` | optimized binary at `target/release/atelier` |
 | `make build` | debug build |
-| `make test` | test suite |
+| `make test` | test suite + replays every `docs/examples` recipe |
 | `make pre-commit-checks` | format-check + clippy gate (what the hooks run) |
 | `make check` | fmt + clippy + tests |
 | `make docs` | regenerate `site/tools.html` from the live tool registry |
@@ -85,7 +85,8 @@ The MCP server ships no prompts — the skills replaced them.
   **recipe**. Documents journal themselves to `<store>/<id>/recipe.jsonl` (JSON
   Lines, on by default, mutations only — `is_journaled` in the MCP server is the
   read/write classifier, and its default is to record). The authored recipes in
-  `docs/examples/*.json` double as integration tests.
+  `docs/examples/*.json` double as integration tests — `make test` replays
+  each one through the real binary.
 
 ## Dev notes
 
