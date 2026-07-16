@@ -13,11 +13,9 @@
 //! reused rather than reimplemented. `doc_look` images are fed back to the model
 //! as base64 data URIs.
 
-use std::process::Stdio;
-
 use serde_json::{json, Value};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::process::{Child, ChildStdin, ChildStdout, Command};
+
+use crate::stdio_client::{RpcError, StdioClient};
 
 const USAGE: &str = "\
 usage: atelier agent --task <text|@file> [options]
@@ -201,8 +199,16 @@ fn is_safe_base_url(url: &str) -> bool {
 }
 
 async fn drive(cfg: Config) -> Result<(), String> {
-    let mut server = McpServer::spawn(cfg.home.as_deref()).await?;
-    let tools = server.list_tools().await?;
+    let mut server = StdioClient::spawn("atelier-agent", cfg.home.as_deref()).await?;
+    let result = run_loop(&cfg, &mut server).await;
+    // Let the child end cleanly so it flushes its journals before we report.
+    server.shutdown().await;
+    result
+}
+
+/// The agentic loop: ask the model, execute its tool calls, feed images back.
+async fn run_loop(cfg: &Config, server: &mut StdioClient) -> Result<(), String> {
+    let tools = server.list_tools().await.map_err(|e| e.to_string())?;
     let oai_tools = to_openai_tools(&tools);
     eprintln!(
         "agent: {} tools, model {}, drawing: {}",
@@ -223,7 +229,7 @@ async fn drive(cfg: Config) -> Result<(), String> {
     ];
 
     for step in 1..=cfg.max_steps {
-        let reply = chat(&http, &cfg, &messages, &oai_tools).await?;
+        let reply = chat(&http, cfg, &messages, &oai_tools).await?;
         let calls = reply
             .get("tool_calls")
             .and_then(Value::as_array)
@@ -236,7 +242,7 @@ async fn drive(cfg: Config) -> Result<(), String> {
         if calls.is_empty() {
             let text = reply.get("content").and_then(Value::as_str).unwrap_or("");
             eprintln!("agent: done in {step} step(s). {}", first_line(text));
-            return finish(&cfg);
+            return finish(cfg);
         }
 
         // Execute every call, collect any images to show the model next turn.
@@ -251,7 +257,12 @@ async fn drive(cfg: Config) -> Result<(), String> {
                 .and_then(|s| serde_json::from_str(s).ok())
                 .unwrap_or_else(|| json!({}));
 
-            let (text, image) = server.call_tool(name, args).await?;
+            let (text, image) = match server.call_tool(name, args).await {
+                Ok(result) => tool_reply(&result),
+                // A tool error is the model's problem to recover from, not ours.
+                Err(e @ RpcError::Rpc(_)) => (format!("error: {e}"), None),
+                Err(RpcError::Transport(e)) => return Err(e),
+            };
             eprintln!("  → {name} {}", first_line(&text));
             messages.push(json!({"role": "tool", "tool_call_id": id, "content": text}));
             if let Some(png) = image {
@@ -279,7 +290,7 @@ async fn drive(cfg: Config) -> Result<(), String> {
 
     // Even on the limit path, report the export the model may already have
     // written (and the missing-output warning if it didn't).
-    let _ = finish(&cfg);
+    let _ = finish(cfg);
     Err(format!(
         "hit the {}-step limit without finishing (raise --max-steps)",
         cfg.max_steps
@@ -383,170 +394,33 @@ fn first_line(s: &str) -> String {
     }
 }
 
-/// A child `atelier` stdio MCP server, driven over JSON-RPC — the same transport
-/// a real client uses, so the whole validated tool path is reused.
-struct McpServer {
-    child: Child,
-    stdin: ChildStdin,
-    reader: BufReader<ChildStdout>,
-    next_id: i64,
-}
-
-impl McpServer {
-    async fn spawn(home: Option<&str>) -> Result<Self, String> {
-        let exe = std::env::current_exe()
-            .map_err(|e| format!("cannot locate the atelier binary: {e}"))?;
-        let mut cmd = Command::new(&exe);
-        cmd.stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::inherit());
-        if let Some(dir) = home {
-            cmd.env("ATELIER_HOME", dir);
-        }
-        let mut child = cmd
-            .spawn()
-            .map_err(|e| format!("failed to spawn the atelier server: {e}"))?;
-        let stdin = child.stdin.take().ok_or("child stdin unavailable")?;
-        let reader = BufReader::new(child.stdout.take().ok_or("child stdout unavailable")?);
-        let mut s = Self {
-            child,
-            stdin,
-            reader,
-            next_id: 0,
-        };
-        s.handshake().await?;
-        Ok(s)
-    }
-
-    async fn handshake(&mut self) -> Result<(), String> {
-        let id = self.id();
-        self.send(&json!({
-            "jsonrpc": "2.0", "id": id, "method": "initialize",
-            "params": {
-                "protocolVersion": "2025-06-18",
-                "capabilities": {},
-                "clientInfo": {"name": "atelier-agent", "version": env!("CARGO_PKG_VERSION")}
-            }
-        }))
-        .await?;
-        let resp = self.recv_id(id).await?;
-        if let Some(err) = resp.get("error") {
-            return Err(format!("server rejected initialize: {err}"));
-        }
-        self.send(&json!({"jsonrpc": "2.0", "method": "notifications/initialized"}))
-            .await?;
-        Ok(())
-    }
-
-    async fn list_tools(&mut self) -> Result<Vec<Value>, String> {
-        let id = self.id();
-        self.send(&json!({"jsonrpc": "2.0", "id": id, "method": "tools/list", "params": {}}))
-            .await?;
-        let resp = self.recv_id(id).await?;
-        Ok(resp
-            .get("result")
-            .and_then(|r| r.get("tools"))
-            .and_then(Value::as_array)
-            .cloned()
-            .unwrap_or_default())
-    }
-
-    /// Run one tool. Returns (text summary, optional base64 PNG from the result).
-    async fn call_tool(
-        &mut self,
-        name: &str,
-        args: Value,
-    ) -> Result<(String, Option<String>), String> {
-        let id = self.id();
-        self.send(&json!({
-            "jsonrpc": "2.0", "id": id, "method": "tools/call",
-            "params": {"name": name, "arguments": args}
-        }))
-        .await?;
-        let resp = self.recv_id(id).await?;
-        if let Some(err) = resp.get("error") {
-            // A tool error is the model's problem to recover from, not ours.
-            return Ok((format!("error: {err}"), None));
-        }
-        let content = resp
-            .get("result")
-            .and_then(|r| r.get("content"))
-            .and_then(Value::as_array)
-            .cloned()
-            .unwrap_or_default();
-
-        let mut text = String::new();
-        let mut image = None;
-        for part in &content {
-            match part.get("type").and_then(Value::as_str) {
-                Some("text") => {
-                    if let Some(t) = part.get("text").and_then(Value::as_str) {
-                        text.push_str(t);
-                    }
+/// Condense one tool result into (text summary, optional base64 PNG). rmcp
+/// returns already-base64 image data.
+fn tool_reply(result: &Value) -> (String, Option<String>) {
+    let content = result
+        .get("content")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let mut text = String::new();
+    let mut image = None;
+    for part in &content {
+        match part.get("type").and_then(Value::as_str) {
+            Some("text") => {
+                if let Some(t) = part.get("text").and_then(Value::as_str) {
+                    text.push_str(t);
                 }
-                Some("image") => {
-                    // rmcp returns already-base64 image data.
-                    image = part.get("data").and_then(Value::as_str).map(str::to_string);
-                }
-                _ => {}
             }
-        }
-        if text.is_empty() {
-            text = "(ok)".into();
-        }
-        Ok((text, image))
-    }
-
-    fn id(&mut self) -> i64 {
-        self.next_id += 1;
-        self.next_id
-    }
-
-    async fn send(&mut self, msg: &Value) -> Result<(), String> {
-        let line = format!("{msg}\n");
-        self.stdin
-            .write_all(line.as_bytes())
-            .await
-            .map_err(|e| format!("write to server failed: {e}"))?;
-        self.stdin
-            .flush()
-            .await
-            .map_err(|e| format!("flush failed: {e}"))
-    }
-
-    /// Read line-delimited JSON until the response with `want` arrives, skipping
-    /// notifications and any interleaved traffic.
-    async fn recv_id(&mut self, want: i64) -> Result<Value, String> {
-        loop {
-            let mut line = String::new();
-            let n = self
-                .reader
-                .read_line(&mut line)
-                .await
-                .map_err(|e| format!("read from server failed: {e}"))?;
-            if n == 0 {
-                return Err("server closed the connection".into());
+            Some("image") => {
+                image = part.get("data").and_then(Value::as_str).map(str::to_string);
             }
-            let trimmed = line.trim();
-            if trimmed.is_empty() {
-                continue;
-            }
-            let v: Value = match serde_json::from_str(trimmed) {
-                Ok(v) => v,
-                Err(_) => continue, // non-JSON log line on the pipe
-            };
-            if v.get("id").and_then(Value::as_i64) == Some(want) {
-                return Ok(v);
-            }
+            _ => {}
         }
     }
-}
-
-impl Drop for McpServer {
-    fn drop(&mut self) {
-        // Best-effort: closing stdin ends the server's stdio loop.
-        let _ = self.child.start_kill();
+    if text.is_empty() {
+        text = "(ok)".into();
     }
+    (text, image)
 }
 
 #[cfg(test)]
