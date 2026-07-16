@@ -160,7 +160,7 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
 
     Ok(Some(Config {
         task: task.trim().to_string(),
-        system: build_system_prompt(&skill),
+        system: build_system_prompt(&skill, out.as_deref()),
         model,
         base_url: base_url.trim_end_matches('/').to_string(),
         api_key,
@@ -172,7 +172,7 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
 
 /// The system prompt: the injected skills, then the ground rules the loop needs
 /// the model to follow (drive the tools, look, and export at the end).
-fn build_system_prompt(skill: &str) -> String {
+fn build_system_prompt(skill: &str, out: Option<&str>) -> String {
     // Strip YAML frontmatter — the model wants the body, not the metadata.
     let body = skill
         .strip_prefix("---")
@@ -184,10 +184,17 @@ fn build_system_prompt(skill: &str) -> String {
     s.push_str(
         "You are drawing through the atelier tools. Call them to build the art. \
          After a burst of edits, call doc_look to SEE the frame before continuing — \
-         it returns the image. When the piece is finished, call the export tool to \
-         write the file, then reply with a one-line summary and stop. Do not ask the \
-         user questions; you have everything you need.",
+         it returns the image. When the piece is finished, call the export tool, \
+         then reply with a one-line summary and stop. Do not ask the user \
+         questions; you have everything you need.",
     );
+    // The caller chose the file; tell the model, or it picks its own name and the
+    // export lands somewhere the caller is not looking (as a live run showed).
+    if let Some(path) = out {
+        s.push_str(&format!(
+            " Export the finished piece to exactly this path: {path}"
+        ));
+    }
     s
 }
 
@@ -538,7 +545,7 @@ mod tests {
     #[test]
     fn frontmatter_is_stripped_from_the_injected_skill() {
         let skill = "---\nname: x\ndescription: y\n---\n\n# Body\nreal guidance";
-        let sys = build_system_prompt(skill);
+        let sys = build_system_prompt(skill, None);
         assert!(sys.contains("Body"), "{sys}");
         assert!(sys.contains("real guidance"));
         assert!(!sys.contains("description: y"), "frontmatter leaked: {sys}");
@@ -555,7 +562,7 @@ mod tests {
             // And the default (no --skill) is the sprite skill, frontmatter-stripped.
         }
         assert!(builtin_skill("nope").is_err());
-        let default_sys = build_system_prompt(SKILL_SPRITE);
+        let default_sys = build_system_prompt(SKILL_SPRITE, None);
         assert!(default_sys.contains("one subject") || default_sys.contains("sprite"));
         assert!(
             !default_sys.starts_with("---"),
