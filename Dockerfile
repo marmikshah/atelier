@@ -25,9 +25,6 @@ RUN useradd --system --uid 10001 atelier \
 COPY --from=build /src/target/release/atelier /usr/local/bin/atelier
 USER atelier
 ENV ATELIER_HOME=/data
-# A server deployment advertises the full tool surface by default; override with
-# -e ATELIER_PROFILE=core for the lean default set.
-ENV ATELIER_PROFILE=full
 VOLUME ["/data"]
 EXPOSE 8765
 ENTRYPOINT ["atelier"]

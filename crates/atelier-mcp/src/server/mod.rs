@@ -6,11 +6,10 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    AnnotateAble, CallToolResult, Content, CreateMessageRequestParams, GetPromptRequestParams,
-    GetPromptResult, ListPromptsResult, ListResourcesResult, ListToolsResult,
-    PaginatedRequestParams, PromptMessage, PromptMessageRole, RawImageContent, RawResource,
-    ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents, Role,
-    SamplingMessage, SamplingMessageContent, ServerCapabilities, ServerInfo,
+    AnnotateAble, CallToolResult, Content, GetPromptRequestParams, GetPromptResult,
+    ListPromptsResult, ListResourcesResult, ListToolsResult, PaginatedRequestParams, PromptMessage,
+    PromptMessageRole, RawResource, ReadResourceRequestParams, ReadResourceResult, Resource,
+    ResourceContents, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
 use rmcp::{tool, tool_handler, tool_router, ErrorData, RoleServer, ServerHandler, ServiceExt};
@@ -29,9 +28,7 @@ pub use toolsdoc::{tools_html, tools_text};
 use params::*;
 use prompts::{build_prompt, prompt_specs};
 use recorder::Recorder;
-use resources::{
-    base64, parse_resource_uri, ResourceTarget, RESOURCE_RENDER_SCALE, VISION_CRITIQUE_MAX_TOKENS,
-};
+use resources::{base64, parse_resource_uri, ResourceTarget, RESOURCE_RENDER_SCALE};
 
 fn j(v: Value) -> String {
     serde_json::to_string(&v).unwrap_or_else(|_| "{}".into())
@@ -83,27 +80,6 @@ fn edited(r: Result<Value, String>) -> CallToolResult {
 /// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
 fn palette_list(v: &[Vec<i64>]) -> Vec<[u8; 4]> {
     v.iter().map(|c| rgba(c)).collect()
-}
-
-/// [r,g,b] -> RGB (drops alpha) for light/tint colours.
-fn rgb3(v: &[i64]) -> [u8; 3] {
-    [
-        v.first().copied().unwrap_or(0) as u8,
-        v.get(1).copied().unwrap_or(0) as u8,
-        v.get(2).copied().unwrap_or(0) as u8,
-    ]
-}
-
-/// {"head":[x,y],...} joint params -> the (x,y) map the rig tools take
-/// (entries shorter than 2 are dropped; the rig validates the contract).
-fn joints_map(
-    joints: &std::collections::HashMap<String, Vec<i64>>,
-) -> std::collections::HashMap<String, (i32, i32)> {
-    joints
-        .iter()
-        .filter(|(_, v)| v.len() >= 2)
-        .map(|(k, v)| (k.clone(), (v[0] as i32, v[1] as i32)))
-        .collect()
 }
 
 /// [r,g,b] or [r,g,b,a] -> RGBA (alpha defaults to 255).
@@ -203,10 +179,6 @@ pub struct Atelier {
     tool_router: ToolRouter<Self>,
     /// Optional session recorder; when set, each tool call is logged to a recipe.
     recorder: Option<Recorder>,
-    /// Advertise the full 63-tool surface instead of the core profile. Read
-    /// from ATELIER_PROFILE once at construction (env is process-stable), and
-    /// injectable so both profiles are unit-testable.
-    full_profile: bool,
 }
 
 impl Atelier {
@@ -220,26 +192,14 @@ impl Atelier {
             studio,
             tool_router: Self::tool_router(),
             recorder: None,
-            full_profile: profile_full(),
         }
     }
 
-    /// Override the advertised profile (tests exercise both without env; the
-    /// `tools` HTML generator forces the full surface).
-    pub(crate) fn with_profile(mut self, full: bool) -> Self {
-        self.full_profile = full;
-        self
-    }
-
-    /// The tools the active profile advertises: `CORE_TOOLS` by default, the
-    /// full router with `full_profile`. Discovery filter only — `call_tool`
-    /// still dispatches every tool, so recipes/replay reach the tail.
+    /// Every tool the server has. There is no profile filter: the surface is
+    /// small enough that hiding part of it behind a flag would cost more in
+    /// confusion than it ever saved in context.
     fn advertised_tools(&self) -> Vec<rmcp::model::Tool> {
-        let mut tools = self.tool_router.list_all();
-        if !self.full_profile {
-            tools.retain(|t| CORE_TOOLS.contains(&t.name.as_ref()));
-        }
-        tools
+        self.tool_router.list_all()
     }
 
     /// Enable session recording: every tool call is appended to a recipe at `path`.
@@ -338,15 +298,6 @@ impl Atelier {
         res(self.studio().doc_info(&p.doc_id))
     }
 
-    #[tool(
-        description = "Audit N documents as ONE game — the set-level doc_critique. Resolve members by `ids` and/or id `prefix` (union), then report per-doc palette/value/scale/pivot stats plus set cohesion: palette union size + unlocked docs + cross-doc near-duplicate colours (OKLab ΔE), silhouette-height scale outliers vs the set median, the set value range, and docs missing pivots. Verdict is 'cohesive' or a list of actionable warnings (e.g. run doc_palette op=sync). This is how a pile of sprites becomes one game."
-    )]
-    async fn doc_set_audit(&self, Parameters(p): Parameters<DocSetAudit>) -> CallToolResult {
-        res(self
-            .studio()
-            .doc_set_audit(p.ids.as_deref(), p.prefix.as_deref()))
-    }
-
     #[tool(description = "Delete a document and all its files.")]
     async fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().delete_doc(&p.doc_id))
@@ -400,7 +351,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Region + clipboard ops on a cel. `op`: copy (rect [x0,y0,x1,y1] → clipboard) · cut (copy + clear) · clear (erase the rect) · move (shift the rect by dx,dy in place) · paste (clipboard at x,y; `blend` source-over by default, false overwrites). Clipboard is cross-document. (External-image import is doc_stamp_image; lifting a part onto its own layer is doc_extract_to_layer.)"
+        description = "Region + clipboard ops on a cel. `op`: copy (rect [x0,y0,x1,y1] → clipboard) · cut (copy + clear) · clear (erase the rect) · move (shift the rect by dx,dy in place) · paste (clipboard at x,y; `blend` source-over by default, false overwrites). Clipboard is cross-document."
     )]
     async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         res(self.studio().doc_region(
@@ -410,139 +361,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Place an external PNG into a cel at (x,y) — import bridge for AI-gen/real/Figma art. Optional `scale` (area-average when shrinking so a hi-res reference keeps its features, nearest when growing so pixel art stays crisp), `target_w` to scale to an exact width instead (wins over `scale`), and `rotate` (degrees). By default draws OVER existing content with `opacity`+`blend` (sub-sprite reuse, no layer-per-element); `replace`=true overwrites the whole cel. Honours an active selection. Returns a text report — call doc_look to SEE the result."
-    )]
-    async fn doc_stamp_image(&self, Parameters(p): Parameters<DocStampImage>) -> CallToolResult {
-        let studio = self.studio();
-        let r = studio.doc_stamp_image(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.x.unwrap_or(0),
-            p.y.unwrap_or(0),
-            &p.png_path,
-            p.scale.unwrap_or(1.0),
-            p.target_w,
-            p.rotate.unwrap_or(0.0),
-            p.opacity.unwrap_or(255),
-            p.blend.as_deref().unwrap_or("normal"),
-            p.replace.unwrap_or(false),
-        );
-        edited(r)
-    }
-
-    #[tool(
-        description = "Generate the deterministic 16-tile Wang/blob terrain set from a source doc: frame 0's layer 0 holds the INNER material, layer 1 the OUTER (top-left N×N of each is sampled). Creates a NEW document <id>-wang (canvas 4N×4N) holding all 16 corner combinations in a 4×4 grid (tile index = NE,SE,SW,NW corner bits); each set bit fills a quarter-disc (radius N/2) at that corner, adjacent set corners connect along their shared edge. Returns the new doc's structure + id."
-    )]
-    async fn doc_wang_tiles(&self, Parameters(p): Parameters<DocWangTiles>) -> CallToolResult {
-        res(self.studio().wang_tiles(&p.doc_id, p.n))
-    }
-
-    #[tool(
-        description = "TRUE 9-slice: author a panel ONCE (any style — bevels, rounded corners, ornate borders), then emit it at ANY size. The `src` rect is cut into a 3×3 grid by `inset`: corners copy verbatim, edges and centre tile (default) or stretch to fill `dst`. Transparent source pixels are skipped, so rounded panels keep their shape. The dialog-box / button / HUD-frame workhorse: draw one 12×12 panel, stamp every UI size from it."
-    )]
-    async fn doc_nine_slice(&self, Parameters(p): Parameters<DocNineSlice>) -> CallToolResult {
-        let rect = |v: &Vec<i64>| -> Result<(i32, i32, i32, i32), String> {
-            if v.len() != 4 {
-                return Err("rect must be [x, y, w, h]".into());
-            }
-            Ok((v[0] as i32, v[1] as i32, v[2] as i32, v[3] as i32))
-        };
-        let (src, dst) = match (rect(&p.src), rect(&p.dst)) {
-            (Ok(s), Ok(d)) => (s, d),
-            (Err(e), _) | (_, Err(e)) => return res(Err(e)),
-        };
-        res(self.studio().nine_slice(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.src_layer.unwrap_or(p.layer),
-            p.src_frame.unwrap_or(0),
-            src,
-            p.inset.unwrap_or(3) as i32,
-            dst,
-            p.mode.as_deref().unwrap_or("tile"),
-        ))
-    }
-
-    #[tool(
-        description = "Seeded PARTICLE EMITTER rendered to frames — sparks, embers, smoke, rain, magic motes. Particles spawn inside `region`, fly along `angle ± spread` at `speed` under `gravity`, fade + shrink over `life`, coloured birth→death along the ramp (auto-ramped from `color` if omitted). Fully deterministic in `seed` and phase-staggered so the animation LOOPS cleanly. Draws onto `layer` across `frames` (clearing each cel) and tags the range `emit` — put it on its own layer over the art. Export with doc_export op=anim tag=emit."
-    )]
-    async fn doc_emit(&self, Parameters(p): Parameters<DocEmit>) -> CallToolResult {
-        if p.region.len() != 4 {
-            return res(Err("region must be [x, y, w, h]".into()));
-        }
-        let ramp = p
-            .ramp
-            .as_ref()
-            .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
-        res(self.studio().emit(
-            &p.doc_id,
-            p.layer,
-            (
-                p.region[0] as i32,
-                p.region[1] as i32,
-                p.region[2] as i32,
-                p.region[3] as i32,
-            ),
-            p.frames.unwrap_or(8),
-            p.count.unwrap_or(24),
-            p.angle.unwrap_or(270.0),
-            p.spread.unwrap_or(30.0),
-            p.speed.unwrap_or(1.5),
-            p.gravity.unwrap_or(0.0),
-            p.life.unwrap_or(1.0),
-            p.size.unwrap_or(2) as i32,
-            p.seed.unwrap_or(1),
-            rgba(&p.color),
-            ramp,
-        ))
-    }
-
-    #[tool(
-        description = "Colour-vision-deficiency audit: simulate protanopia / deuteranopia / tritanopia over the flattened frame and report which of the art's distinct colour pairs — readable to typical vision — COLLAPSE under each simulation (OKLab ΔE falls below the readable floor). Returns an INLINE side-by-side strip (normal · protan · deutan · tritan) plus the collapsing pairs, so 'is my health bar readable to 8% of players?' is one call. Run before shipping UI/state colours."
-    )]
-    async fn doc_colorblind_check(
-        &self,
-        Parameters(p): Parameters<DocColorblindCheck>,
-    ) -> CallToolResult {
-        img_result(self.studio().doc_colorblind_check(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.scale.unwrap_or(2),
-        ))
-    }
-
-    #[tool(
-        description = "Generate the deterministic 47-tile BLOB autotile set — the full edge+corner bitmask family (the modern superset of the 16-corner Wang set). Same source contract as doc_wang_tiles: frame 0, layer 0 = INNER material, layer 1 = OUTER, top-left N×N sampled. Creates a NEW document <id>-blob (7N×7N, the 47 canonical neighbour masks in a 7×7 grid) and returns `masks` — the 8-bit neighbour mask per grid index (N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128) — so an engine autotiler maps straight onto the sheet. Export with doc_export op=tileset. See it in situ FIRST with doc_tilemap_assemble."
-    )]
-    async fn doc_autotile_set(&self, Parameters(p): Parameters<DocAutotileSet>) -> CallToolResult {
-        res(self.studio().autotile_set(&p.doc_id, p.n))
-    }
-
-    #[tool(
-        description = "Assemble a TILEMAP from a terrain mask — the in-situ test of an autotile set, and the only real one. `rows` = the map as strings (`#`/`1`/`x` = filled); every filled cell computes its 8-neighbour mask and renders straight from the source materials (layer 0 inner / layer 1 outer) with the same blob rules as doc_autotile_set, so what you see IS what the tile family produces in a real map. `outside` = filled (default: terrain continues past the map edge) | empty (borders get outlines). Creates a NEW document <id>-map — doc_look it to judge the terrain reads, then export."
-    )]
-    async fn doc_tilemap_assemble(
-        &self,
-        Parameters(p): Parameters<DocTilemapAssemble>,
-    ) -> CallToolResult {
-        let outside_filled = match p.outside.as_deref().unwrap_or("filled") {
-            "filled" => true,
-            "empty" => false,
-            other => {
-                return res(Err(format!(
-                    "unknown outside '{other}' — expected filled or empty"
-                )))
-            }
-        };
-        res(self
-            .studio()
-            .tilemap_assemble(&p.doc_id, p.n, &p.rows, outside_filled))
-    }
-
-    #[tool(
-        description = "Export to a file. Per-document `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette; `meta`=standard writes the industry-standard hash sprite-JSON engines' existing importers parse instead — no pivots/boxes in that shape) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Library-wide `op` (omit doc_id): all (one spritesheet PNG + JSON per document into `out_path` as a DIRECTORY) · atlas (pack EVERY frame of EVERY document into one atlas PNG + master JSON map — doc/frame/rect/duration/pivot — for slicing a whole game from one texture; `max_width` wraps the shelf packer, default 512). Shared: out_path, scale (sheet/anim/all/atlas 4, tileset 1). For the Wang set use doc_wang_tiles."
+        description = "Export to a file. Per-document `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/pivots/boxes/palette; `meta`=standard writes the industry-standard hash sprite-JSON engines' existing importers parse instead — no pivots/boxes in that shape) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Library-wide `op` (omit doc_id): all (one spritesheet PNG + JSON per document into `out_path` as a DIRECTORY) · atlas (pack EVERY frame of EVERY document into one atlas PNG + master JSON map — doc/frame/rect/duration/pivot — for slicing a whole game from one texture; `max_width` wraps the shelf packer, default 512). Shared: out_path, scale (sheet/anim/all/atlas 4, tileset 1)."
     )]
     async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
         let studio = self.studio();
@@ -567,81 +386,6 @@ impl Atelier {
                 res(studio.doc_export(doc_id, &p.op, &p.out_path, p.scale, &p.params))
             }
         }
-    }
-
-    #[tool(
-        description = "Insert `steps` cross-faded DISSOLVE frames after frame `from`: every layer's pixels alpha-blend toward frame `to` (snapped to the locked palette), so in-betweens are semi-transparent double-exposures. ONLY for fades, FX dissolves, and impact flashes — NEVER pose/limb motion (limbs ghost instead of moving; use doc_keyframe_move or per-frame edits for that). Auto-checkpoints first; undo a bad tween with doc_checkpoint restore or doc_frame op=delete. Reindexes later cels and remaps tags."
-    )]
-    async fn doc_dissolve(&self, Parameters(p): Parameters<DocTween>) -> CallToolResult {
-        let studio = self.studio();
-        studio.auto_checkpoint(&p.doc_id, "dissolve");
-        res(studio.doc_tween(
-            &p.doc_id,
-            p.from,
-            p.to,
-            p.steps.unwrap_or(1),
-            p.duration_ms.unwrap_or(100),
-        ))
-    }
-
-    #[tool(
-        description = "Bloom/glow: blur a bright copy of the cel and composite it back through a light blend (`mode` screen/add) at `intensity`. `color` tints the glow (omit = the art's own colours). Honours an active selection."
-    )]
-    async fn doc_glow(&self, Parameters(p): Parameters<DocGlow>) -> CallToolResult {
-        let color = p.color.as_ref().map(|c| rgba(c));
-        // Default to snapping the bloom on-palette; `snap=false` keeps it soft.
-        let snap = if p.snap != Some(false) {
-            Some(atelier_core::document::AlphaSnap::Opaque(
-                p.snap_cutoff.unwrap_or(64),
-            ))
-        } else {
-            None
-        };
-        res(self.studio().doc_glow(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            color,
-            p.radius.unwrap_or(2),
-            p.intensity.unwrap_or(180),
-            p.mode.as_deref().unwrap_or("screen"),
-            snap,
-        ))
-    }
-
-    #[tool(
-        description = "Paint a RIM/edge light along the silhouette edges that FACE the light (`az`: 0=right, 90=down, 180=left, 270=up) — the edge-relative highlight that was otherwise hand-placed pixel by pixel. Estimates each edge pixel's outward normal and stamps `color` where it faces the light, `width` px thick, `falloff` tightens it. `dark=true` lights the away-facing edge instead (core/contact shadow). Topological — survives small canvases where a Fresnel term washes out. Honours an active selection."
-    )]
-    async fn doc_rim_light(&self, Parameters(p): Parameters<DocRimLight>) -> CallToolResult {
-        res(self.studio().doc_rim_light(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            rgba(&p.color),
-            p.az,
-            p.width.unwrap_or(1),
-            p.falloff.unwrap_or(1.5),
-            p.dark.unwrap_or(false),
-            p.snap.unwrap_or(true),
-        ))
-    }
-
-    #[tool(
-        description = "Cast a projected GROUND shadow from a caster silhouette — not a flat offset copy (that's doc_fx op=drop_shadow) but the caster flattened onto its contact row and sheared AWAY from the light, so a tall shape throws a long foreshortened shadow anchored at its feet. `az` = light azimuth (0=right, 90=down, 180=left, 270=up; pairs with doc_form_audit); `length` stretches it along the ground, `squash` 0..1 is how much height survives (0 = flat). With `receiver_layer` the shadow is painted onto that layer and clipped to its opaque pixels (lands on the ground only); omit to draw behind the caster on its own cel. `snap` keeps it on-palette."
-    )]
-    async fn doc_cast_shadow(&self, Parameters(p): Parameters<DocCastShadow>) -> CallToolResult {
-        res(self.studio().doc_cast_shadow(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.az.unwrap_or(135.0),
-            p.length.unwrap_or(1.0),
-            p.squash.unwrap_or(0.2),
-            rgba(&p.color),
-            p.opacity.unwrap_or(140),
-            p.receiver_layer,
-            p.snap.unwrap_or(true),
-        ))
     }
 
     #[tool(
@@ -718,69 +462,7 @@ impl Atelier {
         ))
     }
 
-    #[tool(
-        description = "Per-form shading audit — sees the #1 beginner failure the scalar reports can't. For each connected opaque form it infers the light direction (least-squares fit of perceptual lightness → `light_azimuth_deg`, `plane_fit_r2`) and flags PILLOW-SHADING (`pillow_corr`: brightness hugging the silhouette centre instead of a light direction). The summary reports `pillow_forms`, the shared `dominant_light_azimuth_deg` / `light_spread_deg`, and a verdict (ok | pillow-shading detected | inconsistent light direction). `min_area` skips specks (default 12). Deterministic; run before relight/form or before export."
-    )]
-    async fn doc_form_audit(&self, Parameters(p): Parameters<DocFormAudit>) -> CallToolResult {
-        res(self.studio().doc_form_audit(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.layer,
-            p.min_area.unwrap_or(12),
-        ))
-    }
-
-    #[tool(
-        description = "Coarse coverage/composition heatmap: split the flattened frame into rows×cols cells (default 8×8), each reporting opaque fill 0..1 and mean luma (null if empty), plus the content bbox and its centre offset from the canvas centre. Check balance/placement/negative space."
-    )]
-    async fn doc_coverage_map(&self, Parameters(p): Parameters<DocCoverageMap>) -> CallToolResult {
-        res(self.studio().doc_coverage_map(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.cols.unwrap_or(8),
-            p.rows.unwrap_or(8),
-        ))
-    }
-
     // -- value & colour feedback (read-only analysis to judge values/colour) --
-    #[tool(
-        description = "Contrast as a number (the WCAG luminance-ratio formula). NOTE: WCAG is a text-on-UI legibility standard, not a sprite-vs-scene readability metric — treat the ratio as a value-separation HINT, not a pass/fail. mode=\"region\" compares the mean colour inside `region` [x0,y0,x1,y1] against its 4px surround → {ratio}. mode=\"palette\" scores every pair of the frame's distinct opaque colours (capped 16 — quantize first if more) and lists the lowest-contrast pairs. mode=\"one-bit\" thresholds luma to a pure B/W PNG (returns path + black/white %) — the real silhouette-readability check. `min_ratio` (default 1.5) only flags pairs below it."
-    )]
-    async fn doc_contrast_check(
-        &self,
-        Parameters(p): Parameters<DocContrastCheck>,
-    ) -> CallToolResult {
-        opt_img_result(self.studio().doc_contrast_check(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            &p.mode,
-            try_res!(region(&p.region)),
-            p.min_ratio.unwrap_or(1.5),
-            p.threshold.unwrap_or(128),
-            p.out_path.as_deref(),
-        ))
-    }
-
-    #[tool(
-        description = "Validate a colour ramp's craft from explicit `colors` [[r,g,b],...] (≥2) OR a `doc_id`'s locked palette (optional [start,end) `slice`). Returns monotonic_value, value_deltas, even_spacing (max step deviation ≤25% of mean), per-step hue_shift_deg (signed shortest-arc), hue_direction (warm-to-cool|cool-to-warm|mixed|none), sat_arc, and warnings (e.g. value reversals). Doc-independent."
-    )]
-    async fn doc_ramp_validate(
-        &self,
-        Parameters(p): Parameters<DocRampValidate>,
-    ) -> CallToolResult {
-        let colors = p
-            .colors
-            .as_ref()
-            .map(|cs| cs.iter().map(|c| rgba(c)).collect::<Vec<_>>());
-        let slice = p
-            .slice
-            .as_ref()
-            .filter(|s| s.len() >= 2)
-            .map(|s| (s[0], s[1]));
-        res(self
-            .studio()
-            .doc_ramp_validate(colors, p.doc_id.as_deref(), slice))
-    }
 
     // -- animation & tiling feedback (read-only) + keyframe write --
     #[tool(
@@ -827,63 +509,7 @@ impl Atelier {
         ))
     }
 
-    #[tool(
-        description = "Eased multi-frame region motion. Reads the `region` [x0,y0,x1,y1] content from `from_frame` and stamps it (source-over) into every frame in (from_frame, to_frame] at an eased fraction of the total (dx,dy); to_frame gets the full offset. easing: linear/ease-in/ease-out/ease-in-out (cubic), bounce, overshoot (shoots past then settles), elastic (decaying oscillation). clear_source=true (default) clears the original rect in each destination frame so a moving limb leaves no stale copy. Frames must already exist (else error — doc_frame op=add first). Returns frames_touched + per-frame offsets."
-    )]
-    async fn doc_keyframe_move(
-        &self,
-        Parameters(p): Parameters<DocKeyframeMove>,
-    ) -> CallToolResult {
-        if p.region.len() < 4 {
-            return res(Err("region must be [x0,y0,x1,y1]".into()));
-        }
-        let region = (p.region[0], p.region[1], p.region[2], p.region[3]);
-        res(self.studio().doc_keyframe_move(
-            &p.doc_id,
-            p.layer,
-            region,
-            p.from_frame,
-            p.to_frame,
-            p.dx,
-            p.dy,
-            p.easing.as_deref().unwrap_or("linear"),
-            p.clear_source.unwrap_or(true),
-        ))
-    }
-
     // -- pivots / palette (engine-ready sprites, cohesive colour) --
-    #[tool(
-        description = "Set a frame's anchor/pivot point [x,y] in document pixels (feet, weapon mount, …) so engines position the sprite. Omit `pivot` to clear it. Exported (scaled) in sheet/atlas JSON."
-    )]
-    async fn doc_set_pivot(&self, Parameters(p): Parameters<DocSetPivot>) -> CallToolResult {
-        let pivot = match &p.pivot {
-            Some(v) if v.len() >= 2 => Some([v[0], v[1]]),
-            Some(_) => return res(Err("pivot must be [x,y]".into())),
-            None => None,
-        };
-        res(self.studio().doc_set_pivot(&p.doc_id, p.frame, pivot))
-    }
-
-    #[tool(
-        description = "Set a frame's collision boxes — body/hit/hurt rects an engine reads straight off the sheet. Each box is {name, kind:body|hit|hurt, rect:[x,y,w,h]}. Replaces the frame's whole set; pass boxes=[] to clear. Emitted (scaled) in sheet/atlas JSON next to pivot."
-    )]
-    async fn doc_set_frame_boxes(
-        &self,
-        Parameters(p): Parameters<DocSetFrameBoxes>,
-    ) -> CallToolResult {
-        let mut boxes = Vec::with_capacity(p.boxes.len());
-        for b in &p.boxes {
-            if b.rect.len() != 4 {
-                return res(Err(format!("box '{}' rect must be [x,y,w,h]", b.name)));
-            }
-            boxes.push(atelier_core::document::BoxMeta {
-                name: b.name.clone(),
-                kind: b.kind.clone(),
-                rect: [b.rect[0], b.rect[1], b.rect[2], b.rect[3]],
-            });
-        }
-        res(self.studio().doc_set_frame_boxes(&p.doc_id, p.frame, boxes))
-    }
 
     #[tool(
         description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only) taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
@@ -932,7 +558,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?,shadow_opacity?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?}; **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?} · gradient_map{stops,region?} (remap luminance through colour stops, alpha kept). All also accept opacity/blend_mode and honour an active doc_select. (Bloom-with-snap stays on doc_glow.)"
+        description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?,shadow_opacity?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?}; **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?} · gradient_map{stops,region?} (remap luminance through colour stops, alpha kept). All also accept opacity/blend_mode and honour an active doc_select."
     )]
     async fn doc_fx(&self, Parameters(p): Parameters<DocFx>) -> CallToolResult {
         res(self
@@ -961,20 +587,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Render the ACTIVE selection as a quick-mask overlay (selected art shown, the rest dimmed + magenta-tinted) so you never paint through an unseen mask. Returns an inline PNG + selected-pixel count and bbox."
-    )]
-    async fn doc_select_render(
-        &self,
-        Parameters(p): Parameters<DocSelectRender>,
-    ) -> CallToolResult {
-        img_result(self.studio().select_render(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.scale.unwrap_or(6),
-        ))
-    }
-
-    #[tool(
         description = "Document history for an all-destructive editor. action: save (snapshot the doc) | list | restore (roll back) | diff (regression deltas vs a snapshot: pixel/colour/contrast change, added/removed/recoloured) | prune. Snapshot before a risky op (form/quantize/relight/fill) and restore if it gets worse."
     )]
     async fn doc_checkpoint(&self, Parameters(p): Parameters<DocCheckpoint>) -> CallToolResult {
@@ -987,68 +599,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Contiguous magic-wand → the active selection mask. Floods from (x,y) over same-colour pixels (perceptual OKLab tolerance by default; `conn8` for 8-connectivity). `layer` omitted samples the flattened composite. `mode` combines with the current selection: replace|add|subtract|intersect. The precondition for local recolour/re-shade; pair with doc_select_render to SEE the mask."
-    )]
-    async fn doc_select_wand(&self, Parameters(p): Parameters<DocSelectWand>) -> CallToolResult {
-        res(self.studio().select_wand(
-            &p.doc_id,
-            p.layer,
-            p.frame.unwrap_or(0),
-            p.x,
-            p.y,
-            p.tol.unwrap_or(16),
-            p.conn8.unwrap_or(false),
-            p.perceptual.unwrap_or(true),
-            p.mode.as_deref().unwrap_or("replace"),
-        ))
-    }
-
-    #[tool(
-        description = "Selective anti-aliasing (selout): drop one opaque, mid-value pixel into each outer staircase notch of the silhouette so diagonals read smooth instead of as Bresenham stairs. Pass a `ramp` to keep the AA on-palette; `max_run` keeps genuine sharp corners crisp; `only_color`/`region` scope it. Returns the AA pixel count."
-    )]
-    async fn doc_smooth_edges(&self, Parameters(p): Parameters<DocSmoothEdges>) -> CallToolResult {
-        res(self.studio().smooth_edges(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.ramp.map(|v| palette_list(&v)),
-            p.max_run.unwrap_or(2),
-            p.keep_square.unwrap_or(true),
-            p.only_color.as_deref().map(rgba),
-            try_res!(region(&p.region)),
-        ))
-    }
-
-    #[tool(
-        description = "Affine-transform a cel (or `region`) IN PLACE about its centre — the #1 missing primitive: rotate degrees, scale_x/scale_y, skew_x/skew_y degrees. method rotsprite (super-sampled, keeps clusters from shattering) | nearest. preserve_volume derives scale_y=1/scale_x for squash-and-stretch. snap_palette re-snaps the transform fringe; clear_source makes it a move. Returns placed bbox + pixel counts."
-    )]
-    async fn doc_transform_cel(
-        &self,
-        Parameters(p): Parameters<DocTransformCel>,
-    ) -> CallToolResult {
-        let sx = p.scale_x.unwrap_or(1.0);
-        let sy = match (p.preserve_volume.unwrap_or(false), p.scale_y) {
-            (true, None) if sx.abs() > 1e-6 => 1.0 / sx,
-            _ => p.scale_y.unwrap_or(1.0),
-        };
-        res(self.studio().transform_cel(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            try_res!(region(&p.region)),
-            p.rotate.unwrap_or(0.0),
-            sx,
-            sy,
-            p.skew_x.unwrap_or(0.0),
-            p.skew_y.unwrap_or(0.0),
-            p.method.as_deref().unwrap_or("rotsprite"),
-            p.snap_palette.unwrap_or(true),
-            p.clear_source.unwrap_or(false),
-        ))
-    }
-
-    #[tool(
-        description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, per-form pillow-shading and mixed light direction (via the doc_form_audit engine), value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
+        description = "Art-director scorecard: the named pixel-art failure modes the agent can't see — orphan specks, un-AA'd jaggies (outer step corners), low contrast, per-form pillow-shading and mixed light direction, value-soup massing, and off-palette drift. Verdicts are conservative (ok|warn|info) with worst-offending cells so you can fix locally. Snapshot with doc_checkpoint first if acting on it."
     )]
     async fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> CallToolResult {
         res(self.studio().critique(
@@ -1056,35 +607,6 @@ impl Atelier {
             p.frame.unwrap_or(0),
             p.layer,
             try_res!(region(&p.region)),
-        ))
-    }
-
-    #[tool(
-        description = "Multi-light form shading — key/fill/rim, the leap from one-direction `form` to PAINTED form. Reads the silhouette as a height field, derives surface normals (bulge = how domed), and lights it: key by azimuth (0=right,90=down,180=left,270=up) + elevation (0=grazing,90=head-on), an auto fill opposite the key, a Fresnel rim, and ambient. Output multiplies the base colour (hue preserved, light colour tints) or snaps to `ramp`. Honours an active selection; pass a region on multi-material sprites."
-    )]
-    async fn doc_relight(&self, Parameters(p): Parameters<DocRelight>) -> CallToolResult {
-        let studio = self.studio();
-        studio.auto_checkpoint(&p.doc_id, "relight");
-        res(studio.relight(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            try_res!(region(&p.region)),
-            p.key_azimuth.unwrap_or(315.0),
-            p.key_elevation.unwrap_or(50.0),
-            p.key_intensity.unwrap_or(1.0),
-            p.key_color.as_deref().map(rgb3).unwrap_or([255, 255, 255]),
-            p.fill_intensity.unwrap_or(0.25),
-            p.fill_color.as_deref().map(rgb3).unwrap_or([120, 140, 200]),
-            p.rim_intensity.unwrap_or(0.0),
-            p.rim_color.as_deref().map(rgb3).unwrap_or([255, 255, 255]),
-            p.ambient.unwrap_or(0.35),
-            p.ambient_color
-                .as_deref()
-                .map(rgb3)
-                .unwrap_or([120, 130, 170]),
-            p.bulge.unwrap_or(0.8),
-            p.ramp.map(|v| palette_list(&v)),
         ))
     }
 
@@ -1210,74 +732,6 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Add a faint, non-destructive guide layer to construct against, then delete with doc_layer op=delete. kind: thirds (rule-of-thirds) | grid (square, `spacing`) | iso (2:1 lattice) | vp (rays from a vanishing point `vp`=[x,y]). Pure construction scaffolding — perspective, iso, and composition."
-    )]
-    async fn doc_perspective_guide(
-        &self,
-        Parameters(p): Parameters<DocPerspectiveGuide>,
-    ) -> CallToolResult {
-        let vp = p.vp.as_ref().filter(|v| v.len() >= 2).map(|v| (v[0], v[1]));
-        res(self.studio().perspective_guide(
-            &p.doc_id,
-            p.kind.as_deref().unwrap_or("thirds"),
-            p.color.as_deref().map(rgba).unwrap_or([255, 0, 255, 130]),
-            p.spacing.unwrap_or(8),
-            vp,
-        ))
-    }
-
-    #[tool(
-        description = "Form-following selective outline (vs a flat black keyline): mode from_fill colours each silhouette edge from the fill it borders, shaded `steps` darker/lighter; light/dark bias the whole contour. `ramp` keeps it on-palette. The 'painted' contour that turns with the form."
-    )]
-    async fn doc_outline_selective(
-        &self,
-        Parameters(p): Parameters<DocOutlineSelective>,
-    ) -> CallToolResult {
-        res(self.studio().outline_selective(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            p.mode.as_deref().unwrap_or("from_fill"),
-            p.ramp.map(|v| palette_list(&v)),
-            p.steps.unwrap_or(2),
-            try_res!(region(&p.region)),
-        ))
-    }
-
-    #[tool(
-        description = "Paint a procedural MATERIAL onto the opaque pixels of a cel from one base colour: metal (specular band + reflection), wood (grain), stone (mottle + speckle), water (ripples), cloth (weave), skin (soft gradient), glass (sheen + streak). Deterministic in `seed`; pass `ramp` to control the palette, or `region`/an active selection to clip it. Turns 6–10 blind calls into 'reads as the material'."
-    )]
-    async fn doc_material(&self, Parameters(p): Parameters<DocMaterial>) -> CallToolResult {
-        let studio = self.studio();
-        studio.auto_checkpoint(&p.doc_id, "material");
-        res(studio.material(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            try_res!(region(&p.region)),
-            &p.material,
-            rgba(&p.color),
-            p.seed.unwrap_or(1),
-            p.ramp.map(|v| palette_list(&v)),
-        ))
-    }
-
-    #[tool(
-        description = "Translucency report — makes glass/glow/soft-FX alpha MEASURABLE instead of eyeballed. Over the flattened frame (or one layer, region-clipped): counts opaque/partial/transparent pixels, mean alpha of non-transparent pixels, a partial-alpha band histogram, and the bbox of the partial pixels."
-    )]
-    async fn doc_translucency_report(
-        &self,
-        Parameters(p): Parameters<DocTranslucency>,
-    ) -> CallToolResult {
-        res(self.studio().doc_translucency_report(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.layer,
-            try_res!(region(&p.region)),
-        ))
-    }
-
-    #[tool(
         description = "Paint a whole region DECLARATIVELY from a character grid (the inverse of doc_dump_region): `legend` maps single characters to [r,g,b(,a)] colours or integer PALETTE INDICES, `rows` are pixel-row strings ('.'/' ' leave the pixel untouched). Emitting a sprite as a grid eliminates the absolute-coordinate failure class — prefer this over long pencil/rect sequences for detailed shapes. Verify by diffing against doc_dump_region. Returns painted/clipped counts — call doc_look to SEE the result. Honours an active selection."
     )]
     async fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
@@ -1295,60 +749,6 @@ impl Atelier {
     }
 
     // -- part-layer rig: limb animation as transforms, not repaints --
-    #[tool(
-        description = "RIG step: cut a part (arm, head, tail) of a flat sprite onto its OWN new layer directly above, same coordinates — by `region` rect or the active selection (doc_select_wand the limb, then use_selection=true). frames=\"all\" cuts every frame so the part stays separated across the timeline. After extraction, animate the part with doc_keyframe_transform / doc_keyframe_move on ITS layer while the body stays untouched. Returns the new layer index."
-    )]
-    async fn doc_extract_to_layer(
-        &self,
-        Parameters(p): Parameters<DocExtractToLayer>,
-    ) -> CallToolResult {
-        let all_frames = match p.frames.as_deref().unwrap_or("one") {
-            "one" => false,
-            "all" => true,
-            other => {
-                return res(Err(format!(
-                    "unknown frames '{other}' — expected one or all"
-                )))
-            }
-        };
-        res(self.studio().doc_extract_to_layer(
-            &p.doc_id,
-            p.layer,
-            p.frame.unwrap_or(0),
-            try_res!(region(&p.region)),
-            p.use_selection.unwrap_or(false),
-            p.name,
-            all_frames,
-        ))
-    }
-
-    #[tool(
-        description = "JOINT-rotate a part across frames in ONE call: reads `region` from from_frame, then every frame in (from_frame, to_frame] gets the part rotated by the eased fraction of `rot_deg` about `pivot` (the joint, e.g. the shoulder — document pixels) plus the eased (dx,dy), original region cleared first. THE replacement for blind per-frame limb repainting — 'swing the arm 30° about the shoulder over frames 1-4' is one call. Works best on a part layer from doc_extract_to_layer. Resampled pixels snap to the locked palette by default."
-    )]
-    async fn doc_keyframe_transform(
-        &self,
-        Parameters(p): Parameters<DocKeyframeTransform>,
-    ) -> CallToolResult {
-        if p.region.len() < 4 {
-            return res(Err("region must be [x0,y0,x1,y1]".into()));
-        }
-        if p.pivot.len() < 2 {
-            return res(Err("pivot must be [x,y]".into()));
-        }
-        res(self.studio().doc_keyframe_transform(
-            &p.doc_id,
-            p.layer,
-            (p.region[0], p.region[1], p.region[2], p.region[3]),
-            (p.pivot[0], p.pivot[1]),
-            p.from_frame,
-            p.to_frame,
-            p.rot_deg.unwrap_or(0.0),
-            p.dx.unwrap_or(0),
-            p.dy.unwrap_or(0),
-            p.easing.as_deref().unwrap_or("linear"),
-            p.snap_palette.unwrap_or(true),
-        ))
-    }
 
     // -- reference subsystem: recreate-from-sample as a measurable loop --
     #[tool(
@@ -1402,198 +802,8 @@ impl Atelier {
             ))),
         }
     }
-
-    #[tool(
-        description = "AI eye for FREE-FORM art — what doc_ref op=diff can't do without a reference. Renders the frame and asks the MCP HOST to run its own vision model over it (atelier ships no weights, makes no network call, holds no keys — the host samples; nothing leaves your client beyond that). Returns a structured critique: does the silhouette read, are proportions/anatomy right, is the value/colour structure working, what 3 fixes raise it most. `focus` weights one axis. Requires a host that advertises the `sampling` capability; errors clearly if it doesn't."
-    )]
-    async fn doc_critique_vision(
-        &self,
-        Parameters(p): Parameters<DocCritiqueVision>,
-        peer: rmcp::Peer<RoleServer>,
-    ) -> CallToolResult {
-        // Fail fast if the client never advertised sampling — otherwise
-        // create_message would block waiting for a response a non-sampling host
-        // never sends.
-        let supports_sampling = peer
-            .peer_info()
-            .map(|i| i.capabilities.sampling.is_some())
-            .unwrap_or(false);
-        if !supports_sampling {
-            return res(Err(
-                "vision critique unavailable — this MCP host does not advertise \
-                the `sampling` capability, so it cannot run a vision model on the render. \
-                (atelier ships no model and makes no network call; the host must sample.)"
-                    .to_string(),
-            ));
-        }
-
-        let frame = p.frame.unwrap_or(0);
-        let scale = p.scale.unwrap_or(8).clamp(1, 16);
-        // Render to owned bytes; the studio guard drops before the await below so
-        // the lock is never held across the sampling round-trip.
-        let png = match self.studio().render_png_bytes(&p.doc_id, frame, scale) {
-            Ok(bytes) => bytes,
-            Err(e) => return res(Err(e)),
-        };
-
-        let focus = match p.focus.as_deref().map(str::trim) {
-            Some(f) if !f.is_empty() => format!(" Weight the critique toward: {f}."),
-            _ => String::new(),
-        };
-        let system = "You are a master pixel-art director reviewing a single sprite/frame. \
-            Be specific and honest — name what is wrong and where (use rough pixel regions \
-            like 'upper-left', 'the head'), not vague praise. Pixel art is low-resolution on \
-            purpose; judge it as such (silhouette readability, value grouping, palette \
-            discipline, proportion/anatomy, appeal), not as a photo."
-            .to_string();
-        let instruction = format!(
-            "Critique this pixel-art frame.{focus}\n\nReturn:\n\
-             1. Reads-as: what the subject clearly is, or 'unclear' + why.\n\
-             2. Silhouette & proportion: what's off.\n\
-             3. Value & colour: flat/muddy/banding/off-palette issues.\n\
-             4. Top 3 fixes, highest-impact first, each naming where on the canvas.\n\
-             Keep it tight."
-        );
-
-        let image = SamplingMessageContent::Image(RawImageContent {
-            data: base64(&png),
-            mime_type: "image/png".to_string(),
-            meta: None,
-        });
-        let text = SamplingMessageContent::text(instruction);
-        let mut params = CreateMessageRequestParams::default();
-        params.messages = vec![SamplingMessage::new_multiple(Role::User, vec![image, text])];
-        params.system_prompt = Some(system);
-        // Enough for a tight structured critique (reads-as, silhouette, value,
-        // top-3 fixes); the host model is asked to be terse.
-        params.max_tokens = VISION_CRITIQUE_MAX_TOKENS;
-
-        // Sampling is deprecated upstream (SEP-2577) but is still the only
-        // no-network way to borrow the HOST's vision model; keep using it
-        // until rmcp removes it, then revisit doc_critique_vision's transport.
-        #[allow(deprecated)]
-        match peer.create_message(params).await {
-            Ok(result) => {
-                let critique = result
-                    .message
-                    .content
-                    .iter()
-                    .filter_map(|c| c.as_text().map(|t| t.text.clone()))
-                    .collect::<Vec<_>>()
-                    .join("\n")
-                    .trim()
-                    .to_string();
-                if critique.is_empty() {
-                    return res(Err(format!(
-                        "the host's vision model returned no text (model: {})",
-                        result.model
-                    )));
-                }
-                res(Ok(json!({
-                    "doc_id": p.doc_id,
-                    "frame": frame,
-                    "model": result.model,
-                    "critique": critique,
-                })))
-            }
-            Err(e) => res(Err(format!(
-                "vision critique unavailable — the MCP host must advertise the `sampling` \
-                 capability (it runs its own vision model; atelier sends nothing elsewhere). \
-                 host: {e}"
-            ))),
-        }
-    }
-
-    #[tool(
-        description = "Generate a radial FX animation (ring | disc | rays) expanding from (cx,cy) across `frames`, fading along a ramp, tagged `burst` — impacts, shockwaves, explosions as frames. Clears the target layer's cels. Export with doc_export op=anim tag=burst."
-    )]
-    async fn doc_burst(&self, Parameters(p): Parameters<DocBurst>) -> CallToolResult {
-        res(self.studio().burst(
-            &p.doc_id,
-            p.layer.unwrap_or(0),
-            p.cx,
-            p.cy,
-            p.frames.unwrap_or(6),
-            p.max_radius,
-            p.kind.as_deref().unwrap_or("ring"),
-            rgba(&p.color),
-            p.ramp.map(|v| palette_list(&v)),
-        ))
-    }
-
-    #[tool(
-        description = "Build a CONNECTED humanoid figure from named JOINT coordinates — reason in joint space (which you do well) instead of placing every silhouette vertex (which you don't). Each bone is drawn as a tapered capsule (a doc_draw op=stroke ribbon) sharing its endpoints, so the whole body is ONE connected silhouette by construction: no detached limbs, no blocky rect stacks. joints = {\"head\":[x,y],\"shoulder_l\":[x,y],\"shoulder_r\":[x,y],\"elbow_l\":...,\"elbow_r\":...,\"hand_l\":...,\"hand_r\":...,\"hip_l\":...,\"hip_r\":...,\"knee_l\":...,\"knee_r\":...,\"foot_l\":...,\"foot_r\":...} (chest/pelvis derived from the midpoints). Re-pose across frames by calling again with new joints — the base for non-wobbly animation. Tune limb_w/torso_w/head_r to the sprite size."
-    )]
-    async fn doc_figure(&self, Parameters(p): Parameters<DocFigure>) -> CallToolResult {
-        let joints = joints_map(&p.joints);
-        res(self.studio().figure(
-            &p.doc_id,
-            p.layer,
-            p.frame,
-            &joints,
-            rgba(&p.color),
-            p.limb_w.unwrap_or(3) as i32,
-            p.torso_w.unwrap_or(6) as i32,
-            p.head_r.unwrap_or(4) as i32,
-            p.aa.unwrap_or(true),
-            p.snap.unwrap_or(true),
-        ))
-    }
-
-    #[tool(
-        description = "GENERATE a side-view walk cycle from a base standing pose (the same 13 joints as doc_figure). Feet stride along a gait path (one planted, one swinging, half a cycle apart), knees/elbows are solved by 2-bone IK, arms counter-swing the legs, and the body bobs — each frame is drawn as the connected-capsule figure and the range is tagged \"walk\". The walk is generated from joints, not hand-painted frame-by-frame, so limbs never wobble or detach. Tune frames/stride/lift/bob/arm_swing. Export with doc_export op=anim tag=walk."
-    )]
-    async fn doc_walk(&self, Parameters(p): Parameters<DocWalk>) -> CallToolResult {
-        let joints = joints_map(&p.joints);
-        res(self.studio().walk(
-            &p.doc_id,
-            p.layer,
-            &joints,
-            p.frames.unwrap_or(8),
-            p.stride.unwrap_or(10) as i32,
-            p.lift.unwrap_or(4) as i32,
-            p.bob.unwrap_or(1) as i32,
-            p.arm_swing.unwrap_or(6) as i32,
-            rgba(&p.color),
-            p.limb_w.unwrap_or(3) as i32,
-            p.torso_w.unwrap_or(6) as i32,
-            p.head_r.unwrap_or(4) as i32,
-            p.aa.unwrap_or(true),
-            p.snap.unwrap_or(true),
-        ))
-    }
-
-    #[tool(
-        description = "GENERATE a full animation cycle for a named GAIT from one standing pose (the same 13 joints as doc_figure) — the moveset generator. `gait`: idle (breathing bob) | run (airborne stride, pumping arms, forward lean) | jump (crouch → rise+tuck → fall → landing absorb) | attack (lead-arm sweep with a lunge) | hurt (recoil and recover). Knees/elbows are solved by 2-bone IK and every frame is the connected-capsule figure, so limbs never wobble or detach. Amplitudes scale from the figure's own leg length × `intensity`, so presets fit any sprite size. Frames are tagged with the gait — one call per gait builds a whole character moveset from the SAME pose (walk has its own tool). Export each with doc_export op=anim tag=<gait>."
-    )]
-    async fn doc_pose_cycle(&self, Parameters(p): Parameters<DocPoseCycle>) -> CallToolResult {
-        let joints = joints_map(&p.joints);
-        res(self.studio().pose_cycle(
-            &p.doc_id,
-            p.layer,
-            &joints,
-            &p.gait,
-            p.frames.unwrap_or(0),
-            p.intensity.unwrap_or(1.0),
-            rgba(&p.color),
-            p.limb_w.unwrap_or(3) as i32,
-            p.torso_w.unwrap_or(6) as i32,
-            p.head_r.unwrap_or(4) as i32,
-            p.aa.unwrap_or(true),
-            p.snap.unwrap_or(true),
-        ))
-    }
 }
 
-/// The default ("core") tool profile — the 20 tools an agent actually reaches
-/// for on a typical sprite / animation / recreate-from-reference task, chosen by
-/// usage probability (the canonical workflows + the create→draw→animate→audit→
-/// export spine). Everything else — heavy effects, the rig/tile/particle
-/// subsystems, the niche audits, multi-doc set tools — stays behind
-/// `ATELIER_PROFILE=full`. The profile filters only what `tools/list`
-/// ADVERTISES; every tool still EXECUTES via call_tool (so `atelier replay` and
-/// a flag-flip both reach the long tail). Keep it small: every advertised tool
-/// taxes the model's attention on every call.
 /// Tools that only LOOK: they read a document, never change it and never write
 /// an artifact, so replaying them rebuilds nothing.
 ///
@@ -1606,24 +816,13 @@ const READ_ONLY_TOOLS: &[&str] = &[
     "doc_look",
     "doc_info",
     "doc_critique",
-    "doc_critique_vision",
     "doc_silhouette",
     "doc_dump_region",
     "doc_components",
-    "doc_coverage_map",
     "doc_anim_audit",
-    "doc_form_audit",
     "doc_frame_diff",
     "doc_seam_report",
-    "doc_contrast_check",
-    "doc_colorblind_check",
-    "doc_ramp_validate",
-    "doc_translucency_report",
-    "doc_set_audit",
     "doc_contact_sheet",
-    "doc_select_render",
-    // returns guide geometry for the model to draw against; draws nothing
-    "doc_perspective_guide",
     // library-level: not part of any one document's provenance
     "list_docs",
     "delete_doc",
@@ -1663,48 +862,11 @@ fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<S
         .map(str::to_string)
 }
 
-const CORE_TOOLS: &[&str] = &[
-    // lifecycle + the eye
-    "doc_create",
-    "doc_info",
-    "list_docs",
-    "delete_doc",
-    "doc_look",
-    "doc_checkpoint",
-    // draw / transform
-    "doc_draw",
-    "doc_batch",
-    "doc_fx",
-    "doc_paint_grid",
-    // structure
-    "doc_layer",
-    "doc_frame",
-    "doc_region",
-    "doc_add_tag",
-    // palette (op-dispatched: generate|set|snap|swap|report|sync)
-    "doc_palette",
-    // export
-    "doc_export",
-    // the light audit set the see-and-fix loop leans on
-    "doc_critique",
-    "doc_silhouette",
-    "doc_components",
-    // reference loop (op-dispatched: set|import|analyze|compare|diff)
-    "doc_ref",
-];
-
-/// True when the full tool surface should be advertised (`ATELIER_PROFILE=full`).
-fn profile_full() -> bool {
-    std::env::var("ATELIER_PROFILE")
-        .map(|v| v.eq_ignore_ascii_case("full"))
-        .unwrap_or(false)
-}
-
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
-    /// Advertise the active tool profile: the 20 `CORE_TOOLS` by default, or the
-    /// full surface when `ATELIER_PROFILE=full`. Discovery filter only — every
-    /// tool still executes via `call_tool`, so recipes/replay reach the tail.
+    /// Advertise the tool surface — all of it. It is small enough that hiding
+    /// part of it behind a profile flag would cost more in confusion than it
+    /// ever saved in context.
     async fn list_tools(
         &self,
         _request: Option<PaginatedRequestParams>,
@@ -1830,15 +992,12 @@ impl ServerHandler for Atelier {
              IoU and per-cell colour ΔE against the reference so likeness is measured, \
              not remembered. \
              Audit before exporting: doc_critique (failure modes), doc_palette op=report, \
-             doc_silhouette. Animate by duplicating frames (doc_frame op=add copy_from) \
-             and editing what moves — doc_keyframe_move for eased motion; doc_dissolve is \
-             a dissolve, NOT pose interpolation. doc_checkpoint save before risky ops \
-             (tween/form/quantize/relight) — restore rolls back. Export with \
-             doc_export (op=sheet|anim|tileset) / op=all. list_docs browses the \
-             library. This is the CORE tool profile (20 tools); the full 63-tool surface \
-             (extra effects like relight/material/rim_light, rigging, audits, \
-             perspective/wang/atlas) is available by restarting with \
-             ATELIER_PROFILE=full."
+             doc_silhouette. Animate by duplicating frames (doc_frame op=add copy_from) and \
+             repainting only what moves — there is no pose interpolation; doc_frame_diff and \
+             doc_anim_audit check what changed and whether the timing reads. doc_checkpoint \
+             save before risky ops (quantize, palette snap) — restore rolls back. Export with \
+             doc_export (op=sheet|anim|tileset) / op=all. list_docs browses the library. \
+             28 tools, all of them advertised — there is no profile to switch."
                 .into(),
         );
         info
@@ -1908,6 +1067,63 @@ pub async fn run_http(
 mod tests {
     use super::prompts::PROMPTS;
     use super::*;
+
+    #[test]
+    fn the_tool_surface_is_the_size_the_docs_claim() {
+        let n = Atelier::new().tool_router.list_all().len();
+        // Written into README / tools.html (regen: make docs) / architecture.html.
+        // Change the surface, update them in the same commit — this is the reminder.
+        assert_eq!(n, 28, "tool count changed — update the docs");
+        assert_eq!(
+            Atelier::new().advertised_tools().len(),
+            28,
+            "every tool is advertised; there is no profile filter"
+        );
+        let instructions = Atelier::new().get_info().instructions.unwrap_or_default();
+        assert!(
+            instructions.contains("28 tools"),
+            "get_info instructions drifted from the tool count"
+        );
+    }
+
+    #[test]
+    fn no_tool_description_points_at_a_tool_that_does_not_exist() {
+        // A description is the model's only guide. Naming a tool that was
+        // removed sends it to call something that will never answer — and the
+        // count pin cannot see this, because the count is still right.
+        let tools = Atelier::new().tool_router.list_all();
+        let names: std::collections::HashSet<String> =
+            tools.iter().map(|t| t.name.to_string()).collect();
+        let mentioned = regex_lite_doc_tools(&tools);
+        for (tool, referenced) in mentioned {
+            assert!(
+                names.contains(&referenced),
+                "{tool}'s description names '{referenced}', which is not a tool"
+            );
+        }
+    }
+
+    /// Every `doc_*` token appearing in each tool's description, paired with the
+    /// tool it came from. Hand-rolled: a regex crate for one scan in one test is
+    /// a dependency the tower does not need.
+    fn regex_lite_doc_tools(tools: &[rmcp::model::Tool]) -> Vec<(String, String)> {
+        let mut out = Vec::new();
+        for t in tools {
+            let d = t.description.as_deref().unwrap_or("");
+            for (i, _) in d.match_indices("doc_") {
+                let tail: String = d[i..]
+                    .chars()
+                    .take_while(|c| c.is_ascii_lowercase() || *c == '_' || c.is_ascii_digit())
+                    .collect();
+                // `doc_id` is a parameter name, not a tool.
+                if tail == "doc_id" || tail == "doc_" {
+                    continue;
+                }
+                out.push((t.name.to_string(), tail));
+            }
+        }
+        out
+    }
 
     #[test]
     fn every_read_only_tool_is_a_real_tool() {
@@ -2167,26 +1383,6 @@ mod tests {
     /// A tool that promises an inline preview it no longer returns lies to the
     /// model: it may skip doc_look believing it already saw the art. No edit
     /// tool's description may advertise one.
-    #[test]
-    fn no_tool_description_promises_an_inline_preview_it_cannot_deliver() {
-        let previewless = [
-            "doc_paint_grid",
-            "doc_stamp_image",
-            "doc_ref",
-            "doc_palette",
-        ];
-        for t in Atelier::new().with_profile(true).advertised_tools() {
-            if !previewless.contains(&t.name.as_ref()) {
-                continue;
-            }
-            let d = t.description.as_deref().unwrap_or("").to_lowercase();
-            assert!(
-                !d.contains("inline preview"),
-                "{} advertises an inline preview but edits return text only",
-                t.name
-            );
-        }
-    }
 
     #[test]
     fn list_resource_specs_pairs_each_doc() {
@@ -2281,56 +1477,6 @@ mod tests {
                 );
             }
         }
-    }
-
-    #[test]
-    fn core_profile_names_are_all_real_tools() {
-        // A typo in CORE_TOOLS would silently drop a core tool from the default
-        // profile — guard it against the live tool list.
-        let names: std::collections::HashSet<String> = Atelier::new()
-            .tool_router
-            .list_all()
-            .into_iter()
-            .map(|t| t.name.to_string())
-            .collect();
-        for t in CORE_TOOLS {
-            assert!(names.contains(*t), "CORE_TOOLS names missing tool {t}");
-        }
-        // Core is a strict, smaller subset of the full surface.
-        assert!(CORE_TOOLS.len() < names.len());
-        // The advertised counts are exact and documented (README / tools.html (regen: make docs) /
-        // ARCHITECTURE / .env.example / install.sh). If either changes, update
-        // those surfaces in the same commit — this assertion is the reminder.
-        assert_eq!(
-            CORE_TOOLS.len(),
-            20,
-            "core profile size changed — update the docs"
-        );
-        assert_eq!(
-            names.len(),
-            63,
-            "total tool count changed — update the docs"
-        );
-        // Both profiles, exercised without touching env.
-        assert_eq!(
-            Atelier::new().with_profile(false).advertised_tools().len(),
-            20
-        );
-        assert_eq!(
-            Atelier::new().with_profile(true).advertised_tools().len(),
-            63
-        );
-        // The nearest doc surface is the in-file get_info instructions string —
-        // it has drifted before; pin its counts too.
-        let instructions = Atelier::new().get_info().instructions.unwrap_or_default();
-        assert!(
-            instructions.contains("20 tools"),
-            "get_info instructions drifted from the core count"
-        );
-        assert!(
-            instructions.contains("63-tool"),
-            "get_info instructions drifted from the full count"
-        );
     }
 
     #[test]

@@ -178,7 +178,7 @@
     <div class="crate shell">
       <div class="head"><span class="name">atelier-mcp</span><span class="role">the imperative shell — rmcp <code>#[tool]</code> router over stdio + HTTP</span></div>
       <div class="chips">
-        <span class="chip hot">server/mod.rs · 63 tools, parse → Studio → format</span>
+        <span class="chip hot">server/mod.rs · 28 tools, parse → Studio → format</span>
         <span class="chip">server/params.rs · request schemas</span>
         <span class="chip">server/recorder.rs · session → recipe</span>
         <span class="chip">server/resources.rs · browse docs/renders</span>
@@ -217,12 +217,12 @@
     </div>
   </div>
 
-  <p class="prose muted" style="margin-top:1rem">By default the server <em>advertises</em> a 20-tool core profile (<code>ATELIER_PROFILE=full</code> advertises all 63). That filter is discovery-only — every tool always executes, so replay always works. Both counts are pinned by a test, so a tool added or moved between profiles fails the suite until the counts written here are updated too.</p>
+  <p class="prose muted" style="margin-top:1rem">The server advertises all <strong>28</strong> tools. There is no profile filter: the surface is small enough that hiding part of it behind a flag would cost more in confusion than it ever saved in context. Every tool here is one an agent or a shipped recipe actually reaches for — the rest were deleted rather than hidden. The count is pinned by a test, so changing the surface fails the suite until the number written here is updated too.</p>
 </section>
 
 <section id="flow">
   <h2>Life of one tool call</h2>
-  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 63 tools:</p>
+  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 28 tools:</p>
   <ol class="flow">
     <li><span class="steplabel">1</span><div>Transport receives the call — stdio or streamable HTTP at <code>/mcp</code>, one shared router.<span class="where">atelier-mcp/src/server/mod.rs · run / run_http</span></div></li>
     <li><span class="steplabel">2</span><div><code>call_tool</code> dispatches; if recording is on, the successful step is appended to the recipe file.<span class="where">server/mod.rs + server/recorder.rs</span></div></li>
@@ -271,7 +271,6 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
       <h3>env vars (all optional, all in .env.example)</h3>
       <div class="tablewrap"><table>
         <tr><td><code>ATELIER_HOME</code></td><td>where documents live (default <code>~/.atelier</code>)</td></tr>
-        <tr><td><code>ATELIER_PROFILE</code></td><td><code>full</code> advertises all 63 tools</td></tr>
         <tr><td><code>ATELIER_HTTP</code></td><td>HTTP bind address</td></tr>
         <tr><td><code>ATELIER_RECORD</code></td><td>record the session into a recipe</td></tr>
         <tr><td><code>ATELIER_ALLOWED_HOSTS</code></td><td>extra Host headers for LAN use</td></tr>
@@ -307,7 +306,6 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
       <ul>
         <li>Studio method first (pick the right studio module), tests beside it</li>
         <li>param struct in <code>server/params.rs</code>, thin <code>#[tool]</code> method in <code>server/mod.rs</code></li>
-        <li>decide: core profile? add to <code>CORE_TOOLS</code></li>
         <li>the count-pin test fails the moment either profile changes size — on purpose: it is the reminder to update the counts written into README / .env.example / these pages</li>
       </ul>
     </div>

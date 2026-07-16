@@ -10,11 +10,9 @@ services:
       - "127.0.0.1:8765:8765"
     volumes:
       - atelier-data:/data
-    environment:
-      # core = the lean default set; full = the whole surface.
-      ATELIER_PROFILE: full
-      # Only needed to reach the server from another host/LAN:
-      # ATELIER_ALLOWED_HOSTS: "atelier.local,10.0.0.5:8765"
+    # Only needed to reach the server from another host/LAN:
+    # environment:
+    #   ATELIER_ALLOWED_HOSTS: "atelier.local,10.0.0.5:8765"
     restart: unless-stopped
 
 volumes:

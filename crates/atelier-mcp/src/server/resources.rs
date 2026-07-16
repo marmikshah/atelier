@@ -3,9 +3,6 @@
 /// Scale used when rendering the `render` resource (matches the doc_look default).
 pub(crate) const RESOURCE_RENDER_SCALE: u32 = 4;
 
-/// Token ceiling for the host-sampled `doc_critique_vision` response.
-pub(crate) const VISION_CRITIQUE_MAX_TOKENS: u32 = 1024;
-
 /// A parsed `atelier://` resource URI: which document, and which view of it.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ResourceTarget {

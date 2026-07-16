@@ -3,56 +3,43 @@
 //! `atelier tools` subcommand and published to the GitHub Pages site
 //! (`make docs`). No hand-maintained tool list to keep in sync.
 
-use super::{Atelier, CORE_TOOLS};
+use super::Atelier;
 
-/// Render the full tool surface as a plain-text listing for the terminal:
-/// core tools first, then full-only, each `name — first sentence`.
+/// Render the tool surface as a plain-text listing for the terminal:
+/// `name — first sentence`, one per line.
 pub fn tools_text() -> String {
-    let mut tools = Atelier::new().with_profile(true).advertised_tools();
+    let mut tools = Atelier::new().advertised_tools();
     tools.sort_by(|a, b| a.name.cmp(&b.name));
     let width = tools.iter().map(|t| t.name.len()).max().unwrap_or(0);
 
-    let mut core = String::new();
-    let mut full = String::new();
+    let mut list = String::new();
     for t in &tools {
         let summary = summarize(t.description.as_deref().unwrap_or(""));
-        let line = format!("  {:width$}  {}\n", t.name, summary, width = width);
-        if CORE_TOOLS.contains(&t.name.as_ref()) {
-            core.push_str(&line);
-        } else {
-            full.push_str(&line);
-        }
+        list.push_str(&format!(
+            "  {:width$}  {}\n",
+            t.name,
+            summary,
+            width = width
+        ));
     }
 
     format!(
-        "atelier tools — {} total ({} core, {} full-only)\n\n\
-         CORE (default profile):\n{}\n\
-         FULL-ONLY (ATELIER_PROFILE=full):\n{}\n\
+        "atelier tools — {} tools\n\n{}\n\
          HTML reference: atelier tools --html  (or `make docs`)\n",
         tools.len(),
-        CORE_TOOLS.len(),
-        tools.len() - CORE_TOOLS.len(),
-        core,
-        full,
+        list,
     )
 }
 
 /// Render the full tool surface as one static HTML page.
 pub fn tools_html() -> String {
-    let mut tools = Atelier::new().with_profile(true).advertised_tools();
+    let mut tools = Atelier::new().advertised_tools();
     tools.sort_by(|a, b| a.name.cmp(&b.name));
 
     let total = tools.len();
-    let core = CORE_TOOLS.len();
 
     let mut cards = String::new();
     for t in &tools {
-        let is_core = CORE_TOOLS.contains(&t.name.as_ref());
-        let badge = if is_core {
-            r#"<span class="badge core">core</span>"#
-        } else {
-            r#"<span class="badge full">full</span>"#
-        };
         let desc = esc(t.description.as_deref().unwrap_or(""));
         let params: Vec<String> = t
             .input_schema
@@ -69,9 +56,8 @@ pub fn tools_html() -> String {
         } else {
             format!(r#"<div class="params">{}</div>"#, params.join(" "))
         };
-        let cls = if is_core { "tool core" } else { "tool full" };
         cards.push_str(&format!(
-            r#"<div class="{cls}" id="{name}"><h3>{name} {badge}</h3><p>{desc}</p>{params}</div>"#,
+            r#"<div class="tool" id="{name}"><h3>{name}</h3><p>{desc}</p>{params}</div>"#,
             name = t.name,
         ));
     }
@@ -114,13 +100,10 @@ pub fn tools_html() -> String {
 <body>
 <div class="wrap">
   <h1>atelier tool reference</h1>
-  <p class="sub"><strong>{total}</strong> tools — <strong>{core}</strong> in the default <code>core</code> profile,
-     the rest behind <code>ATELIER_PROFILE=full</code>. Generated from the live registry; do not edit by hand.</p>
+  <p class="sub"><strong>{total}</strong> tools — every one advertised, no profiles.
+     Generated from the live registry; do not edit by hand.</p>
   <div class="controls">
     <input type="search" id="q" placeholder="filter tools…" autocomplete="off">
-    <button class="filter on" data-f="all">all</button>
-    <button class="filter" data-f="core">core</button>
-    <button class="filter" data-f="full">full-only</button>
   </div>
   <div id="list">
     {cards}
