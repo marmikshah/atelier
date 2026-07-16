@@ -509,7 +509,7 @@ impl Atelier {
     // -- pivots / palette (engine-ready sprites, cohesive colour) --
 
     #[tool(
-        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only) taking the same fields as the matching tool. Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
+        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only; params color?, radius?, intensity?, mode?). Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
     )]
     async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> CallToolResult {
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
@@ -584,7 +584,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Document history for an all-destructive editor. action: save (snapshot the doc) | list | restore (roll back) | diff (regression deltas vs a snapshot: pixel/colour/contrast change, added/removed/recoloured) | prune. Snapshot before a risky op (form/quantize/relight/fill) and restore if it gets worse."
+        description = "Document history for an all-destructive editor. action: save (snapshot the doc) | list | restore (roll back) | diff (regression deltas vs a snapshot: pixel/colour/contrast change, added/removed/recoloured) | prune. Snapshot before a risky op (form/quantize/fill/palette snap) and restore if it gets worse."
     )]
     async fn doc_checkpoint(&self, Parameters(p): Parameters<DocCheckpoint>) -> CallToolResult {
         res(self.studio().checkpoint(
@@ -848,15 +848,31 @@ fn is_journaled(tool: &str, args: &Value) -> bool {
 /// The document a call belongs to. `doc_create` names it in the result (the id
 /// is minted there, not passed in); everything else carries `doc_id`.
 fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<String> {
-    if tool == "doc_create" {
-        return result_json(result)?
+    match tool {
+        // The id is minted in the result, not passed in.
+        "doc_create" => result_json(result)?
             .get("id")
             .and_then(Value::as_str)
-            .map(str::to_string);
+            .map(str::to_string),
+        // doc_export writes an external artifact; it does not define the
+        // document's pixels, so it must NOT enter the per-document recipe —
+        // replaying a rebuild would re-run the export against the author's
+        // out_path (or fail-abort if that path is gone). The session recorder
+        // still captures it (it keys off `is_journaled`, not this).
+        "doc_export" => None,
+        // op=generate locks its palette onto `set_doc`, carrying no `doc_id`;
+        // without this the lock is silently dropped from the recipe and replay
+        // rebuilds the document off-palette.
+        "doc_palette" => args
+            .get("doc_id")
+            .or_else(|| args.get("set_doc"))
+            .and_then(Value::as_str)
+            .map(str::to_string),
+        _ => args
+            .get("doc_id")
+            .and_then(Value::as_str)
+            .map(str::to_string),
     }
-    args.get("doc_id")
-        .and_then(Value::as_str)
-        .map(str::to_string)
 }
 
 #[tool_handler(router = self.tool_router)]
@@ -1213,6 +1229,33 @@ mod tests {
         assert_eq!(
             journal_target("doc_draw", &json!({"doc_id": "sprite"}), &drew).as_deref(),
             Some("sprite")
+        );
+    }
+
+    #[test]
+    fn replay_fidelity_edges_are_journaled_correctly() {
+        let ok = CallToolResult::success(vec![Content::text(json!({"ok": true}).to_string())]);
+        // doc_export writes an artifact, not document state — replaying a rebuild
+        // must not re-run it, so it belongs to no document's recipe.
+        assert!(is_journaled(
+            "doc_export",
+            &json!({"doc_id": "hero", "op": "sheet"})
+        ));
+        assert_eq!(
+            journal_target("doc_export", &json!({"doc_id": "hero", "op": "sheet"}), &ok),
+            None,
+            "export must not enter the per-document journal"
+        );
+        // doc_palette op=generate locks a palette onto `set_doc`, carrying no
+        // `doc_id`; the recipe must still capture it or replay rebuilds off-palette.
+        assert_eq!(
+            journal_target(
+                "doc_palette",
+                &json!({"op": "generate", "set_doc": "hero"}),
+                &ok
+            )
+            .as_deref(),
+            Some("hero")
         );
     }
 

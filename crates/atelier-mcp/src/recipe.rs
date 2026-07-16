@@ -70,15 +70,24 @@ impl Recipe {
 
     /// Parse JSON Lines: one `{tool, args}` per line, blank lines ignored.
     fn parse_jsonl(src: &str) -> Result<Recipe, String> {
+        // The last non-empty line may be a partial write from a process killed
+        // mid-append — tolerate that (matching how the journal writer/reader
+        // treat it), but a broken line with content after it is real corruption
+        // that would silently drop a step from the replay, so error on it.
+        let nonempty: Vec<(usize, &str)> = src
+            .lines()
+            .enumerate()
+            .map(|(n, l)| (n, l.trim()))
+            .filter(|(_, l)| !l.is_empty())
+            .collect();
+        let last = nonempty.len().saturating_sub(1);
         let mut steps = Vec::new();
-        for (n, line) in src.lines().enumerate() {
-            let line = line.trim();
-            if line.is_empty() {
-                continue;
+        for (idx, (n, line)) in nonempty.iter().enumerate() {
+            match serde_json::from_str::<Step>(line) {
+                Ok(step) => steps.push(step),
+                Err(_) if idx == last => break, // torn final line — drop it
+                Err(e) => return Err(format!("line {}: {e} — expected {{tool, args}}", n + 1)),
             }
-            let step: Step = serde_json::from_str(line)
-                .map_err(|e| format!("line {}: {e} — expected {{tool, args}}", n + 1))?;
-            steps.push(step);
         }
         Ok(Recipe {
             name: "journal".into(),
@@ -121,9 +130,18 @@ mod tests {
         // JSON Lines — that sends the reader looking in the wrong place.
         let e = Recipe::parse("{ not json").unwrap_err();
         assert!(e.contains("invalid recipe JSON"), "got: {e}");
-        // A journal with a torn line names the line.
+        // A journal with a torn MIDDLE line (content after it) names the line.
         let e = Recipe::parse("{\"tool\":\"doc_create\"}\n{\"tool\":\ntorn\n").unwrap_err();
         assert!(e.contains("line 2"), "got: {e}");
+    }
+
+    #[test]
+    fn a_torn_final_line_is_tolerated_not_fatal() {
+        // A process killed mid-append leaves a partial last line; the completed
+        // steps must still replay.
+        let r = Recipe::parse("{\"tool\":\"doc_create\",\"args\":{}}\n{\"tool\":\"doc_dr").unwrap();
+        assert_eq!(r.steps.len(), 1);
+        assert_eq!(r.steps[0].tool, "doc_create");
     }
 
     #[test]

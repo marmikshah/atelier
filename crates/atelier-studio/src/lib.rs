@@ -506,6 +506,13 @@ impl Studio {
     /// a journal that cannot be written must never fail the drawing call that
     /// was otherwise fine.
     pub fn journal_append(&self, id: &str, tool: &str, args: &Value) {
+        // Defence in depth: `id` is joined onto the store path, so validate it
+        // here too rather than trust every caller forever — a bad id must never
+        // write recipe.jsonl outside the store (the repo has had a traversal bug
+        // before). `.is_dir()` alone would follow `../` through a real dir.
+        if !Self::valid_id(id) {
+            return;
+        }
         let dir = self.docs_dir.join(id);
         if !dir.is_dir() {
             return; // no document, nothing to journal (e.g. a failed create)
@@ -1266,38 +1273,6 @@ impl Studio {
         }))
     }
 
-    /// Cut a region/selection of a layer onto its own part layer (above it),
-    /// optionally across all frames — the rig step before keyframe_transform.
-    pub fn doc_extract_to_layer(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        use_selection: bool,
-        name: Option<String>,
-        all_frames: bool,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let mask = if use_selection {
-            match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
-                Some(m) => Some(m.to_vec()),
-                None => return Err("use_selection=true but no active selection on this doc".into()),
-            }
-        } else {
-            None
-        };
-        let (new_layer, moved) =
-            doc.extract_to_layer(layer, frame, region, mask.as_deref(), name, all_frames)?;
-        doc.save(&dir)?;
-        Ok(json!({
-            "doc_id": id,
-            "new_layer": new_layer,
-            "pixels_moved": moved,
-            "layers": doc.meta().layers.iter().map(|l| l.name.clone()).collect::<Vec<_>>(),
-        }))
-    }
-
     /// Eased pivot rotation + translation of a region across frames — the
     /// joint-swing primitive.
     pub fn doc_keyframe_transform(
@@ -1647,7 +1622,7 @@ impl Studio {
     /// [`doc_batch`](Self::doc_batch) for the ops that REWORK existing pixels
     /// (filters, lighting, colour, geometry); the complement of
     /// [`doc_draw`](Self::doc_draw), which adds new marks. Same validated dispatch.
-    /// (`glow` keeps its own tool — its on-palette `snap` is not a batch op.)
+    /// (`glow` is batch-only — its on-palette `snap` is not a single-op form.)
     pub fn doc_fx(
         &self,
         id: &str,
@@ -1659,7 +1634,7 @@ impl Studio {
         use atelier_core::document::FX_OPS;
         if !FX_OPS.contains(&op) {
             return Err(format!(
-                "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow has its own tool)",
+                "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow is a batch-only op — call it inside doc_batch)",
                 FX_OPS.join(", ")
             ));
         }

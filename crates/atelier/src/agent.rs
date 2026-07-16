@@ -153,8 +153,21 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
     }
 
     let task = task.ok_or("--task is required")?;
+    if max_steps == 0 {
+        return Err("--max-steps must be at least 1".into());
+    }
     let api_key = std::env::var("OPENAI_API_KEY")
         .map_err(|_| "OPENAI_API_KEY is not set (this is the one command that needs it)")?;
+
+    let base_url = base_url.trim_end_matches('/').to_string();
+    // The API key rides every request as a bearer token — refuse to send it in
+    // cleartext. Plain http is allowed only to a loopback host for local dev.
+    if !is_safe_base_url(&base_url) {
+        return Err(format!(
+            "base-url '{base_url}' is not https — the API key would go over cleartext \
+             (http is allowed only to localhost/127.0.0.1)"
+        ));
+    }
 
     // Render the system prompt from the chosen skill. A built-in goes through
     // the typed renderer; a custom file is treated as the prose body.
@@ -167,12 +180,24 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
         task: task.trim().to_string(),
         system,
         model,
-        base_url: base_url.trim_end_matches('/').to_string(),
+        base_url,
         api_key,
         out,
         max_steps,
         home,
     }))
+}
+
+/// True for an https URL, or an http URL pointing at loopback (dev only).
+fn is_safe_base_url(url: &str) -> bool {
+    if url.starts_with("https://") {
+        return true;
+    }
+    if let Some(rest) = url.strip_prefix("http://") {
+        let host = rest.split(['/', ':']).next().unwrap_or("");
+        return host == "localhost" || host == "127.0.0.1" || host == "[::1]";
+    }
+    false
 }
 
 async fn drive(cfg: Config) -> Result<(), String> {
@@ -186,7 +211,12 @@ async fn drive(cfg: Config) -> Result<(), String> {
         first_line(&cfg.task)
     );
 
-    let http = reqwest::Client::new();
+    // A per-request timeout so a stalled API (connection open, no response)
+    // cannot hang the run forever; generous for slow models.
+    let http = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(300))
+        .build()
+        .map_err(|e| format!("http client: {e}"))?;
     let mut messages = vec![
         json!({"role": "system", "content": cfg.system}),
         json!({"role": "user", "content": cfg.task}),
@@ -232,6 +262,10 @@ async fn drive(cfg: Config) -> Result<(), String> {
         // OpenAI tool messages are text-only; hand any tool image back as a
         // user turn so the model can actually SEE what doc_look returned.
         if !images.is_empty() {
+            // Only the newest frame stays live: drop the base64 from prior image
+            // turns, or every past doc_look is re-uploaded on every later round —
+            // quadratic bytes, exploding token cost, eventual context-limit death.
+            drop_stale_images(&mut messages);
             let mut content = vec![json!({"type": "text", "text": "Tool image output:"})];
             for png in images {
                 content.push(json!({
@@ -243,6 +277,9 @@ async fn drive(cfg: Config) -> Result<(), String> {
         }
     }
 
+    // Even on the limit path, report the export the model may already have
+    // written (and the missing-output warning if it didn't).
+    let _ = finish(&cfg);
     Err(format!(
         "hit the {}-step limit without finishing (raise --max-steps)",
         cfg.max_steps
@@ -319,10 +356,28 @@ fn to_openai_tools(mcp: &[Value]) -> Vec<Value> {
         .collect()
 }
 
+/// Replace every past image user-turn's content with a short text stub, so only
+/// the frame we are about to add is uploaded. Keeps the turn (no structural gap
+/// in the tool/assistant sequence), drops the megabytes.
+fn drop_stale_images(messages: &mut [Value]) {
+    for m in messages.iter_mut() {
+        let is_image_turn = m.get("role").and_then(Value::as_str) == Some("user")
+            && m.get("content").and_then(Value::as_array).is_some_and(|c| {
+                c.iter()
+                    .any(|p| p.get("type").and_then(Value::as_str) == Some("image_url"))
+            });
+        if is_image_turn {
+            *m = json!({"role": "user", "content": "(earlier frame; superseded by a newer doc_look)"});
+        }
+    }
+}
+
 fn first_line(s: &str) -> String {
     let line = s.lines().next().unwrap_or("").trim();
-    if line.len() > 100 {
-        format!("{}…", &line[..100])
+    // Truncate by CHARS, not bytes — a byte slice at 100 can split a multi-byte
+    // UTF-8 sequence (a task with an accent, tool output with →/ΔE) and panic.
+    if line.chars().count() > 100 {
+        format!("{}…", line.chars().take(100).collect::<String>())
     } else {
         line.to_string()
     }
@@ -521,4 +576,41 @@ mod tests {
 
     // Skill rendering (the built-ins, frontmatter, out-path, selectors) is
     // tested in crate::skills; the agent just calls those renderers.
+
+    #[test]
+    fn first_line_does_not_panic_on_multibyte_at_the_boundary() {
+        // A byte-slice at 100 would split the '→' straddling that offset.
+        let s = "a".repeat(99) + &"→".repeat(5);
+        let out = first_line(&s); // must not panic
+        assert!(out.ends_with('…'));
+        assert!(out.chars().count() <= 101);
+    }
+
+    #[test]
+    fn is_safe_base_url_rejects_cleartext_except_loopback() {
+        assert!(is_safe_base_url("https://api.openai.com/v1"));
+        assert!(is_safe_base_url("http://localhost:8000/v1"));
+        assert!(is_safe_base_url("http://127.0.0.1:1234"));
+        assert!(!is_safe_base_url("http://evil.example.com/v1"));
+        assert!(!is_safe_base_url("ftp://x"));
+    }
+
+    #[test]
+    fn stale_image_turns_are_stripped_before_a_new_one() {
+        let mut msgs = vec![
+            json!({"role": "system", "content": "s"}),
+            json!({"role": "user", "content": [
+                {"type": "text", "text": "Tool image output:"},
+                {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}}
+            ]}),
+            json!({"role": "assistant", "content": "ok"}),
+        ];
+        drop_stale_images(&mut msgs);
+        // the old image turn is now a text stub, not a base64 blob
+        assert!(msgs[1]["content"].is_string(), "image turn not stubbed");
+        assert!(!msgs[1]["content"].as_str().unwrap().contains("base64"));
+        // untouched turns stay
+        assert_eq!(msgs[0]["content"], "s");
+        assert_eq!(msgs[2]["content"], "ok");
+    }
 }
