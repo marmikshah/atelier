@@ -74,19 +74,35 @@ fn list() -> i32 {
             .unwrap_or("")
             .to_string()
     });
+    let s = studio();
+    let mut replayable = 0usize;
     for d in &rows {
         let id = d.get("id").and_then(|i| i.as_str()).unwrap_or("?");
+        // The journal is the document's provenance — show it, so `replay <id>`
+        // is discoverable from the listing rather than only from the docs.
+        let steps = s.journal(id).map(|j| j.len()).unwrap_or(0);
+        if steps > 0 {
+            replayable += 1;
+        }
+        let recipe = match steps {
+            0 => "  no recipe".to_string(),
+            n => format!("{n:>4} steps"),
+        };
         println!(
-            "  {:width$}  {:>3}x{:<3}  {:>2} frames  {:>2} layers",
+            "  {:width$}  {:>3}x{:<3}  {:>2} frames  {:>2} layers  {}",
             id,
             num(d, "w"),
             num(d, "h"),
             num(d, "frames"),
             num(d, "layers"),
+            recipe,
             width = width
         );
     }
     println!("\n{} documents in {}", rows.len(), home_display());
+    if replayable > 0 {
+        println!("{replayable} replayable — atelier replay <id>");
+    }
     0
 }
 

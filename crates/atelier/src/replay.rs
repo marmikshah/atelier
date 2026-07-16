@@ -27,7 +27,40 @@ use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 use atelier_mcp::recipe::{Recipe, Step};
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
-const USAGE: &str = "usage: atelier replay <recipe.json> [--home DIR]";
+const USAGE: &str = "usage: atelier replay <recipe.json | doc-id> [--home DIR]";
+
+/// Read the recipe to replay: either a file, or the journal of a document in
+/// the store.
+///
+/// A path wins over an id, so a file named like a document still replays as the
+/// file the user pointed at.
+///
+/// The lookup deliberately ignores `--home`: that flag names where the replay
+/// *writes*, so `replay jt --home /tmp/sandbox` means "rebuild jt over there",
+/// and reading the journal from the destination would only ever find an empty
+/// store. Point `ATELIER_HOME` at a different store to read from one.
+fn resolve_source(path: &str) -> Result<String, String> {
+    let as_file = std::path::Path::new(path);
+    if as_file.is_file() {
+        return std::fs::read_to_string(as_file).map_err(|e| format!("cannot read {path}: {e}"));
+    }
+    let root = crate::service::default_home();
+    let doc = root.join("documents").join(path);
+    if !doc.is_dir() {
+        return Err(format!(
+            "no file or document '{path}' (looked in {})",
+            root.join("documents").display()
+        ));
+    }
+    let journal = doc.join(atelier_studio::JOURNAL_FILE);
+    if !journal.is_file() {
+        return Err(format!(
+            "document '{path}' has no journal — it predates journaling, or was \
+             built by a client that never wrote one"
+        ));
+    }
+    std::fs::read_to_string(&journal).map_err(|e| format!("cannot read {path}'s journal: {e}"))
+}
 
 /// Entry point for the `replay` subcommand. Returns a process exit code.
 /// `args` is everything after `replay` on the command line. Async because it
@@ -71,10 +104,12 @@ pub async fn run(args: &[String]) -> i32 {
         return 2;
     };
 
-    let src = match std::fs::read_to_string(path) {
+    // A bare document id replays that document's own journal — the whole point
+    // of journaling by default is that you never had to keep a recipe file.
+    let src = match resolve_source(path) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("replay: cannot read {path}: {e}");
+            eprintln!("replay: {e}");
             return 2;
         }
     };

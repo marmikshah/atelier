@@ -34,6 +34,8 @@ pub(crate) const MAX_IMPORT_PIXELS: u64 = 64 * 1024 * 1024;
 /// Hard canvas ceiling: width/height a document may have (also the bound the
 /// import/reference paths assume when sizing buffers).
 pub(crate) const MAX_CANVAS: u32 = 4096;
+/// A document's journal, beside its `doc.json` and `cels/`.
+pub const JOURNAL_FILE: &str = "recipe.jsonl";
 /// Text grids (silhouette/dump/diff) stay readable only so long — shared area
 /// cap for every grid-emitting reader.
 pub(crate) const GRID_AREA_CAP: u64 = 4096;
@@ -495,6 +497,63 @@ impl Studio {
         )
         .map_err(|e| e.to_string())?;
         Ok(meta)
+    }
+
+    // -- the document journal ----------------------------------------------
+
+    /// Path of a document's journal: the ordered calls that built it.
+    fn journal_path(&self, id: &str) -> PathBuf {
+        self.docs_dir.join(id).join(JOURNAL_FILE)
+    }
+
+    /// Append one call to `id`'s journal.
+    ///
+    /// The journal is what makes "every document is a replayable recipe" true
+    /// rather than aspirational: it lives beside the art it produced, so a
+    /// document carries its own provenance and nothing has to be turned on
+    /// beforehand to get it.
+    ///
+    /// JSON Lines, appended: one call per line, O(1) per write, and a killed
+    /// process still leaves every completed line intact. Best-effort by design —
+    /// a journal that cannot be written must never fail the drawing call that
+    /// was otherwise fine.
+    pub fn journal_append(&self, id: &str, tool: &str, args: &Value) {
+        let dir = self.docs_dir.join(id);
+        if !dir.is_dir() {
+            return; // no document, nothing to journal (e.g. a failed create)
+        }
+        let Ok(mut line) = serde_json::to_string(&json!({"tool": tool, "args": args})) else {
+            return;
+        };
+        line.push('\n');
+        let appended = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(self.journal_path(id))
+            .and_then(|mut f| std::io::Write::write_all(&mut f, line.as_bytes()));
+        if let Err(e) = appended {
+            eprintln!("atelier: could not journal {tool} for '{id}': {e}");
+        }
+    }
+
+    /// Read a document's journal back as its ordered calls.
+    ///
+    /// A malformed line is skipped rather than failing the read: a partial
+    /// journal still replays most of the document, which beats none of it.
+    pub fn journal(&self, id: &str) -> Result<Vec<Value>, String> {
+        if !self.exists(id) {
+            return Err(format!("no document '{id}'"));
+        }
+        let path = self.journal_path(id);
+        if !path.is_file() {
+            return Ok(Vec::new());
+        }
+        let body = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        Ok(body
+            .lines()
+            .filter(|l| !l.trim().is_empty())
+            .filter_map(|l| serde_json::from_str(l).ok())
+            .collect())
     }
 
     // -- structure / timeline (open -> mutate -> save) ----------------------
@@ -1822,6 +1881,39 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    #[test]
+    fn a_document_journals_the_calls_that_built_it() {
+        let s = studio("journal");
+        s.doc_create("d", 8, 8).unwrap();
+        assert!(s.journal("d").unwrap().is_empty(), "nothing recorded yet");
+
+        s.journal_append("d", "doc_create", &json!({"name": "d"}));
+        s.journal_append("d", "doc_draw", &json!({"op": "rect"}));
+        let steps = s.journal("d").unwrap();
+        assert_eq!(steps.len(), 2, "appends accumulate in order");
+        assert_eq!(steps[0]["tool"], "doc_create");
+        assert_eq!(steps[1]["args"]["op"], "rect");
+
+        // Journaling an unknown document is a no-op, never a panic or a stray
+        // directory: a failed create must not leave a journal behind.
+        s.journal_append("nope", "doc_draw", &json!({}));
+        assert!(s.journal("nope").is_err(), "no document, no journal");
+    }
+
+    #[test]
+    fn a_torn_journal_line_is_skipped_not_fatal() {
+        let s = studio("journal-torn");
+        s.doc_create("d", 8, 8).unwrap();
+        s.journal_append("d", "doc_draw", &json!({"op": "rect"}));
+        // A killed process can leave a half-written final line.
+        let p = s.docs_dir.join("d").join(JOURNAL_FILE);
+        let mut body = fs::read_to_string(&p).unwrap();
+        body.push_str("{\"tool\":\"doc_dr");
+        fs::write(&p, body).unwrap();
+        let steps = s.journal("d").unwrap();
+        assert_eq!(steps.len(), 1, "the intact line still replays");
     }
 
     #[test]

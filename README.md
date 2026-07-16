@@ -90,14 +90,26 @@ only changes what's advertised.
 ## Art is a recipe
 
 Every document is an ordered sequence of tool calls, so a piece of art *is* a
-replayable program — one that renders byte-identically anywhere:
+replayable program — and atelier keeps that sequence for you. Every document
+journals itself as it's drawn, so anything you make can rebuild itself:
+
+```sh
+atelier library                 # every document, with its step count
+atelier replay my-sprite        # rebuild it from its own journal
+```
+
+Nothing to turn on. The journal is JSON Lines beside the art
+(`~/.atelier/documents/<id>/recipe.jsonl`), one tool call per line — only the
+calls that *made* something, never the looks and audits. Replay it into a
+sandbox with `--home /tmp/demo` and you get the same pixels, anywhere:
 
 ```sh
 atelier replay docs/examples/invader-march.json --home /tmp/demo
 ```
 
 The recipes in [docs/examples](docs/examples) are both the brand art and the
-integration tests.
+integration tests. `--record session.jsonl` captures a whole sitting across
+several documents.
 
 ## Documentation
 
