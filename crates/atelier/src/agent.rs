@@ -90,9 +90,13 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
     let mut i = 0;
     while i < args.len() {
         let need = |i: usize| -> Result<String, String> {
-            args.get(i + 1)
-                .cloned()
-                .ok_or_else(|| format!("{} needs a value", args[i]))
+            match args.get(i + 1) {
+                // A following flag is a missing value, not the value —
+                // `--task --skill scene` must not make the task "--skill".
+                Some(v) if v.starts_with("--") => Err(format!("{} needs a value", args[i])),
+                Some(v) => Ok(v.clone()),
+                None => Err(format!("{} needs a value", args[i])),
+            }
         };
         match args[i].as_str() {
             "--help" | "-h" => {
@@ -192,7 +196,16 @@ fn is_safe_base_url(url: &str) -> bool {
         return true;
     }
     if let Some(rest) = url.strip_prefix("http://") {
-        let host = rest.split(['/', ':']).next().unwrap_or("");
+        // A bracketed IPv6 host contains ':' — take through the ']' first, or
+        // splitting on ':' would truncate "[::1]:8000" to "[".
+        let host = if rest.starts_with('[') {
+            rest.split(']')
+                .next()
+                .map(|h| format!("{h}]"))
+                .unwrap_or_default()
+        } else {
+            rest.split(['/', ':']).next().unwrap_or("").to_string()
+        };
         return host == "localhost" || host == "127.0.0.1" || host == "[::1]";
     }
     false
@@ -229,7 +242,15 @@ async fn run_loop(cfg: &Config, server: &mut StdioClient) -> Result<(), String> 
     ];
 
     for step in 1..=cfg.max_steps {
-        let reply = chat(&http, cfg, &messages, &oai_tools).await?;
+        let (reply, finish_reason) = match chat(&http, cfg, &messages, &oai_tools).await {
+            Ok(r) => r,
+            Err(e) => {
+                // Report the export the model may already have written before
+                // the API died — the work is on disk either way.
+                let _ = finish(cfg);
+                return Err(e);
+            }
+        };
         let calls = reply
             .get("tool_calls")
             .and_then(Value::as_array)
@@ -241,6 +262,15 @@ async fn run_loop(cfg: &Config, server: &mut StdioClient) -> Result<(), String> 
 
         if calls.is_empty() {
             let text = reply.get("content").and_then(Value::as_str).unwrap_or("");
+            // No tool calls and nothing said is not "done" — it is the model
+            // running out (finish_reason "length") or misfiring.
+            if text.trim().is_empty() {
+                let _ = finish(cfg);
+                return Err(format!(
+                    "model returned an empty message with no tool calls at step {step} \
+                     (finish_reason: {finish_reason:?})"
+                ));
+            }
             eprintln!("agent: done in {step} step(s). {}", first_line(text));
             return finish(cfg);
         }
@@ -251,11 +281,23 @@ async fn run_loop(cfg: &Config, server: &mut StdioClient) -> Result<(), String> 
             let id = call.get("id").and_then(Value::as_str).unwrap_or("");
             let func = call.get("function").cloned().unwrap_or_default();
             let name = func.get("name").and_then(Value::as_str).unwrap_or("");
-            let args: Value = func
-                .get("arguments")
-                .and_then(Value::as_str)
-                .and_then(|s| serde_json::from_str(s).ok())
-                .unwrap_or_else(|| json!({}));
+            let raw = func.get("arguments").and_then(Value::as_str).unwrap_or("");
+            let args: Value = if raw.trim().is_empty() {
+                json!({})
+            } else {
+                match serde_json::from_str(raw) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        // Coercing bad JSON to {} would run the tool with no
+                        // args and blame it — tell the model whose fault it is
+                        // so it can fix its own call in one round.
+                        let msg = format!("error: your tool-call arguments were not valid JSON ({e}); resend the call with corrected arguments");
+                        eprintln!("  → {name} {}", first_line(&msg));
+                        messages.push(json!({"role": "tool", "tool_call_id": id, "content": msg}));
+                        continue;
+                    }
+                }
+            };
 
             let (text, image) = match server.call_tool(name, args).await {
                 Ok(result) => tool_reply(&result),
@@ -309,41 +351,74 @@ fn finish(cfg: &Config) -> Result<(), String> {
     Ok(())
 }
 
-/// One chat-completions round. Returns the assistant message object.
+/// One chat-completions round, with a bounded retry on transient failures
+/// (429/5xx/connection errors) — one rate-limit blip on step 35 of 40 must not
+/// discard the whole run. Returns `(assistant message, finish_reason)`.
 async fn chat(
     http: &reqwest::Client,
     cfg: &Config,
     messages: &[Value],
     tools: &[Value],
-) -> Result<Value, String> {
+) -> Result<(Value, String), String> {
     let body = json!({
         "model": cfg.model,
         "messages": messages,
         "tools": tools,
         "tool_choice": "auto",
     });
-    let resp = http
-        .post(format!("{}/chat/completions", cfg.base_url))
-        .bearer_auth(&cfg.api_key)
-        .json(&body)
-        .send()
-        .await
-        .map_err(|e| format!("request failed: {e}"))?;
-
-    let status = resp.status();
-    let text = resp
-        .text()
-        .await
-        .map_err(|e| format!("reading response failed: {e}"))?;
-    if !status.is_success() {
-        return Err(format!("API {status}: {}", first_line(&text)));
+    const ATTEMPTS: u32 = 3;
+    let mut last_err = String::new();
+    for attempt in 0..ATTEMPTS {
+        if attempt > 0 {
+            let wait = std::time::Duration::from_secs(2u64.pow(attempt + 1)); // 4s, 8s
+            eprintln!("agent: {last_err} — retrying in {}s", wait.as_secs());
+            tokio::time::sleep(wait).await;
+        }
+        let resp = match http
+            .post(format!("{}/chat/completions", cfg.base_url))
+            .bearer_auth(&cfg.api_key)
+            .json(&body)
+            .send()
+            .await
+        {
+            Ok(r) => r,
+            Err(e) => {
+                last_err = format!("request failed: {e}");
+                continue;
+            }
+        };
+        let status = resp.status();
+        let text = resp
+            .text()
+            .await
+            .map_err(|e| format!("reading response failed: {e}"))?;
+        if status.as_u16() == 429 || status.is_server_error() {
+            last_err = format!("API {status}: {}", first_line(&text));
+            continue;
+        }
+        if !status.is_success() {
+            // 4xx other than 429 is our request's fault; retrying resends the
+            // same mistake.
+            return Err(format!("API {status}: {}", first_line(&text)));
+        }
+        let v: Value =
+            serde_json::from_str(&text).map_err(|e| format!("bad JSON from API: {e}"))?;
+        let choice = v
+            .get("choices")
+            .and_then(|c| c.get(0))
+            .ok_or_else(|| format!("no choices in response: {}", first_line(&text)))?;
+        let message = choice
+            .get("message")
+            .cloned()
+            .ok_or_else(|| format!("no message in response: {}", first_line(&text)))?;
+        let finish = choice
+            .get("finish_reason")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_string();
+        return Ok((message, finish));
     }
-    let v: Value = serde_json::from_str(&text).map_err(|e| format!("bad JSON from API: {e}"))?;
-    v.get("choices")
-        .and_then(|c| c.get(0))
-        .and_then(|c| c.get("message"))
-        .cloned()
-        .ok_or_else(|| format!("no choices in response: {}", first_line(&text)))
+    Err(format!("{last_err} (after {ATTEMPTS} attempts)"))
 }
 
 /// Convert MCP tool definitions to the OpenAI function-tool shape.
@@ -465,6 +540,11 @@ mod tests {
         assert!(is_safe_base_url("https://api.openai.com/v1"));
         assert!(is_safe_base_url("http://localhost:8000/v1"));
         assert!(is_safe_base_url("http://127.0.0.1:1234"));
+        // Bracketed IPv6 loopback, with and without a port — splitting on ':'
+        // naively truncates "[::1]:8000" to "[".
+        assert!(is_safe_base_url("http://[::1]:8000/v1"));
+        assert!(is_safe_base_url("http://[::1]/v1"));
+        assert!(!is_safe_base_url("http://[2001:db8::1]:8000/v1"));
         assert!(!is_safe_base_url("http://evil.example.com/v1"));
         assert!(!is_safe_base_url("ftp://x"));
     }
