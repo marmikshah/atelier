@@ -524,8 +524,11 @@ impl Studio {
 
     /// Read a document's journal back as its ordered calls.
     ///
-    /// A malformed line is skipped rather than failing the read: a partial
-    /// journal still replays most of the document, which beats none of it.
+    /// Same policy as the replay-side parser (`Recipe::parse_jsonl`): a torn
+    /// FINAL line is a crash mid-append and is dropped, but a malformed line
+    /// with content after it is real corruption and errors — silently skipping
+    /// it would report "N steps / replayable" for a journal that `atelier
+    /// replay` then refuses.
     pub fn journal(&self, id: &str) -> Result<Vec<Value>, String> {
         if !self.exists(id) {
             return Err(format!("no document '{id}'"));
@@ -535,11 +538,22 @@ impl Studio {
             return Ok(Vec::new());
         }
         let body = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-        Ok(body
+        let nonempty: Vec<(usize, &str)> = body
             .lines()
-            .filter(|l| !l.trim().is_empty())
-            .filter_map(|l| serde_json::from_str(l).ok())
-            .collect())
+            .enumerate()
+            .map(|(n, l)| (n, l.trim()))
+            .filter(|(_, l)| !l.is_empty())
+            .collect();
+        let last = nonempty.len().saturating_sub(1);
+        let mut out = Vec::new();
+        for (idx, (n, line)) in nonempty.iter().enumerate() {
+            match serde_json::from_str(line) {
+                Ok(v) => out.push(v),
+                Err(_) if idx == last => break, // torn final line — crash mid-append
+                Err(e) => return Err(format!("journal line {}: {e}", n + 1)),
+            }
+        }
+        Ok(out)
     }
 
     // -- structure / timeline (open -> mutate -> save) ----------------------
@@ -1645,5 +1659,24 @@ mod tests {
         // directory: a failed create must not leave a journal behind.
         s.journal_append("nope", "doc_draw", &json!({}));
         assert!(s.journal("nope").is_err(), "no document, no journal");
+    }
+
+    #[test]
+    fn journal_read_policy_matches_the_replay_parser() {
+        // Torn FINAL line = crash mid-append, tolerated. Mid-file corruption =
+        // error — silently skipping it would list steps that replay refuses.
+        let s = studio("journal-policy");
+        s.doc_create("d", 8, 8).unwrap();
+        s.journal_append("d", "doc_create", &json!({"name": "d"}));
+        s.journal_append("d", "doc_draw", &json!({"op": "rect"}));
+        let path = s.journal_path("d");
+
+        let clean = fs::read_to_string(&path).unwrap();
+        fs::write(&path, format!("{clean}{{\"tool\":\"doc_")).unwrap();
+        assert_eq!(s.journal("d").unwrap().len(), 2, "torn final line dropped");
+
+        fs::write(&path, format!("not json\n{clean}")).unwrap();
+        let err = s.journal("d").unwrap_err();
+        assert!(err.contains("line 1"), "mid-file corruption errors: {err}");
     }
 }
