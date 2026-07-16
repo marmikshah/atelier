@@ -67,18 +67,13 @@ entire library API; the MCP layer is a thin wrapper over it.
   small drawing entrypoints. `Studio::new()` reads `ATELIER_HOME`;
   `Studio::with_docs_dir(path)` roots a studio at an explicit directory (for
   embedding or tests, without touching process-global env).
-- **`craft.rs`** — constructive ops: checkpoints, layer/colour ops, import, the
-  9-slice panel emitter and the seeded particle emitter.
-- **`rig.rs`** — the `doc_figure`/`doc_walk`/`doc_pose_cycle` skeletal builders.
+- **`craft.rs`** — constructive ops: checkpoints, layer/colour ops, import.
 - **`view.rs`** — the see-tools: `doc_look`, the selection render and the
   contact sheet.
-- **`tiles.rs`** — the wang/blob autotile generators and `doc_tilemap_assemble`.
 - **`analysis.rs`** — the "eye": critique, silhouette, palette, contrast,
-  frame-diff, loop-seam, per-pixel diff-map, per-form lighting and
-  colour-vision-deficiency reports that turn "does it look right?" into numbers.
-- **`set.rs`** — the game layer: resolve a document family (ids/prefix), audit
-  it as ONE work (`doc_set_audit`) and broadcast a palette across it
-  (`doc_palette op=sync`).
+  frame-diff and loop-seam reports that turn "does it look right?" into numbers.
+- **`set.rs`** — the game layer: resolve a document family (ids/prefix) and
+  broadcast a palette across it (`doc_palette op=sync`).
 - **`reference.rs`** — reference-image workflow: set/analyse a reference and score
   silhouette IoU + per-cell ΔE against it (`doc_ref op=compare`).
 
@@ -89,14 +84,11 @@ Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
 - **`server/`** — the rmcp `#[tool]` router (`mod.rs`), with the param structs
-  (`params.rs`), session `Recorder` (`recorder.rs`), MCP resources
-  (`resources.rs`) and packaged prompts (`prompts.rs`) as siblings: **63 tools**
-  (mutations grouped
-  into op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
-  one or one-family per studio operation. A hand-written `list_tools` advertises
-  only the 20-tool **core profile** by default (the full 63 with
-  `ATELIER_PROFILE=full`); `call_tool` routes them all, so the filter is
-  discovery-only. Runs over two transports that share the router — stdio
+  (`params.rs`), session `Recorder` (`recorder.rs`) and MCP resources
+  (`resources.rs`) as siblings: **28 tools** (mutations grouped into op-dispatch
+  tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`), one or
+  one-family per studio operation. All 28 are advertised unconditionally — there
+  is no profile filter. Runs over two transports that share the router — stdio
   (`run`) and streamable HTTP (`run_http`); the `Recorder` turns a live session
   into a replayable recipe.
 - **`recipe.rs`** — the `Recipe`/`Step` format: the on-disk contract shared by the
@@ -104,8 +96,7 @@ The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
   library crate, so anything embedding atelier can read/write recipes without the
   binary.
 
-Dependencies: `atelier-core`, `atelier-studio`, `rmcp`, `axum`, `tokio`,
-`tokio-stream`, `schemars`, `serde`.
+Dependencies: `atelier-core`, `atelier-studio`, `rmcp`, `axum`, `tokio`, `schemars`, `serde`.
 
 ### `atelier` — the binary (~0.8k LOC)
 
