@@ -102,6 +102,25 @@ Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.h
 or see how a call flows through the crates in the
 [architecture tour](https://marmikshah.github.io/atelier/architecture.html).
 
+## Agent mode — the one online command
+
+Everything above is offline, keyless and deterministic. `atelier agent` is the
+exception: it drives an OpenAI-style API to draw a task by itself, no external
+client needed.
+
+```sh
+cargo install --path crates/atelier --features agent   # opt in — links the HTTP stack
+export OPENAI_API_KEY=sk-…
+atelier agent --task "a bouncing slime, 8 frames" \
+              --skill .claude/skills/atelier-sprite/SKILL.md \
+              --out slime.gif
+```
+
+It's off by default — a normal build and the daemon link no network stack at all
+— and it reuses the same tool server everything else does, so the model draws
+through the exact validated path (schemas, journaling, replay). Any
+OpenAI-compatible endpoint works via `--base-url`.
+
 ## Skills
 
 Tools are the hand; these are the craft. Three [skills](.claude/skills) the

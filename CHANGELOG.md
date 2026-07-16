@@ -8,6 +8,21 @@ releases.
 
 ### Added
 
+- **`atelier agent` — the one online mode.** Drives an OpenAI-style
+  chat-completions API through an agentic loop so the binary draws a task on its
+  own, with no external client. It executes the model's tool calls against a
+  child `atelier` stdio server, so it reuses the whole validated tool path
+  (schemas, arg-checking, journaling) rather than a second copy; `doc_look`
+  images are fed back to the model. Any OpenAI-compatible endpoint works via
+  `--base-url`, and a `--skill` file is injected as the system prompt.
+- Gated behind the **`agent` cargo feature**, OFF by default: a normal build and
+  the daemon link no HTTP/TLS stack, and the core stays offline, keyless and
+  deterministic. `OPENAI_API_KEY` comes from the env; agent mode is never part
+  of a default install. Build with `cargo install --path crates/atelier
+  --features agent`.
+
+### Added
+
 - **Three skills for Claude Code** (`.claude/skills/`), which `install.sh` offers
   to install: **atelier-sprite** (one subject), **atelier-scene** (a place), and
   **atelier-review** (judge it, don't repaint it). Both drawing skills insist on

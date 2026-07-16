@@ -28,6 +28,8 @@
 
 use atelier_mcp::server;
 
+#[cfg(feature = "agent")]
+mod agent;
 mod library;
 mod replay;
 mod service;
@@ -50,6 +52,8 @@ USAGE:
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier tools [--html]        list the tools (plain text; --html emits the reference page)
+    atelier agent --task <t>      draw a task by driving an OpenAI-style API (ONLINE; needs
+                                  OPENAI_API_KEY; build with --features agent)
     atelier --version             print the version
 
 ENVIRONMENT:
@@ -74,6 +78,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("library") => std::process::exit(library::run(&args[2..])),
         // Runs inside this runtime (it drives a child MCP server over stdio).
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
+        // The one online mode: draw a task via an OpenAI-style API. Gated so a
+        // default build carries no HTTP stack.
+        #[cfg(feature = "agent")]
+        Some("agent") => std::process::exit(agent::run(&args[2..]).await),
+        #[cfg(not(feature = "agent"))]
+        Some("agent") => {
+            eprintln!(
+                "atelier: `agent` is the one online mode and is OFF in this build.\n                 Rebuild with it enabled: cargo install --path crates/atelier --features agent"
+            );
+            std::process::exit(2);
+        }
         Some("--version") | Some("-V") => {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
             return Ok(());

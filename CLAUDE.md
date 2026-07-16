@@ -55,7 +55,16 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
   surface, update the docs in the same commit. A tool earns its place by being
   called: everything with no caller in either an agent transcript or a shipped
   recipe was deleted, not hidden.
-- `atelier` — the binary: arg parsing, the daemon installer, the `replay` runner.
+- `atelier` — the binary: arg parsing, the daemon installer, the `replay` runner,
+  and the gated `agent` mode.
+
+**The one online exception.** Everything above is offline, keyless and
+deterministic. `atelier agent` is the single command that reaches the network:
+it drives an OpenAI-style API to draw a task on its own. It is behind the
+`agent` cargo feature (OFF by default, so the shipped binary links no HTTP
+stack), reads `OPENAI_API_KEY` from the env, and is never part of a default
+install. It executes the model's tool calls against a child `atelier` stdio
+server, so it reuses the whole validated tool path rather than a second copy.
 
 The workflow guidance lives in `.claude/skills/` (atelier-sprite / atelier-scene /
 atelier-review), not in the server: `install.sh` copies them into the user's
