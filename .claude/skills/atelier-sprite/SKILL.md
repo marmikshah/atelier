@@ -85,6 +85,27 @@ Iterate 4–7. Stop when the next fix would not change how it reads at 1×.
 - `doc_anim_audit` for spacing and the loop seam. `doc_add_tag` names the range
   so the exported sheet carries it.
 
+## Tool edges worth knowing
+
+These are the ops that surprise people. None are bugs; each does exactly one
+thing, and the wrong choice fails quietly.
+
+- **`pencil` dabs, it does not connect.** Each point is a separate mark. To draw
+  a connected line or path, use `line` or `polyline` — a `pencil` with two points
+  is two dots, not a segment.
+- **`stroke aa=true` softens edges with partial-alpha pixels.** On a locked
+  palette that reads as off-palette colour, and GIF export (1-bit alpha) turns it
+  hard anyway — so on a locked palette, or for anything you will export as GIF,
+  stroke with `aa=false`.
+- **Carry motion in size and colour, not alpha.** GIF alpha is 1-bit: a pulse or
+  fade driven by opacity looks right in `doc_look` and then dies at export. Drive
+  it by changing the drawn pixels instead.
+- **`pixel_perfect` is for lines, not fills** — it thins staircases and will
+  shred a filled shape.
+- **For an effect that fades to nothing, ignore `seam_score`.** It is
+  changed/opaque, so a fade-out scores ~1.0 by construction; judge the loop by
+  eye on the contact sheet instead.
+
 ## Before you touch anything risky
 
 `doc_checkpoint op=save`. Quantising, palette snapping and large fills are hard
