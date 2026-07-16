@@ -6,6 +6,29 @@ releases.
 
 ## [Unreleased]
 
+### Breaking
+
+- **63 tools → 28.** Every tool with no caller — in any agent transcript or any
+  shipped recipe — is gone, along with ~6,000 lines behind them. Removed: the
+  character generators (`doc_figure`, `doc_walk`, `doc_pose_cycle`), terrain
+  (`doc_autotile_set`, `doc_tilemap_assemble`, `doc_wang_tiles`), `doc_nine_slice`,
+  the particle emitters (`doc_emit`, `doc_burst`), the heavy effects
+  (`doc_glow`, `doc_relight`, `doc_material`, `doc_rim_light`, `doc_cast_shadow`,
+  `doc_smooth_edges`, `doc_outline_selective`), the unused audits
+  (`doc_set_audit`, `doc_form_audit`, `doc_colorblind_check`,
+  `doc_contrast_check`, `doc_coverage_map`, `doc_ramp_validate`,
+  `doc_translucency_report`, `doc_critique_vision`), the keyframe/transform tools,
+  `doc_stamp_image`, `doc_extract_to_layer`, `doc_dissolve`, `doc_select_wand`,
+  `doc_select_render`, `doc_perspective_guide`, `doc_set_pivot` and
+  `doc_set_frame_boxes`. Pillow-shading detection survives inside `doc_critique`.
+- **No more tool profiles.** `ATELIER_PROFILE` is gone from the env, the
+  installer, the Docker image and the daemon manifest. All 28 tools are always
+  advertised — at this size, hiding a third of them behind a flag cost more in
+  confusion than it saved in context.
+- **Prompts:** `game-asset-set` is removed (it was built from deleted tools).
+  `walk-cycle` now animates by repainting each pose, which is what agents
+  actually do.
+
 ### Added
 
 - **Every document journals itself.** The calls that built a document are

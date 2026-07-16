@@ -25,7 +25,7 @@ fn valid_checkpoint_id(cpid: &str) -> bool {
 }
 use serde_json::{json, Value};
 
-use super::{Selection, Studio};
+use super::Studio;
 use atelier_core::document::{Document, Light};
 use atelier_core::raster;
 
@@ -272,45 +272,6 @@ impl Studio {
     }
 
     // -- doc_select_wand: contiguous magic-wand ----------------------------
-
-    /// Flood a contiguous region into the active selection mask (the magic-wand
-    /// the roadmap promised). `layer` None samples the flattened composite.
-    /// `mode` combines with any current selection: `replace`|`add`|`subtract`|
-    /// `intersect`. Perceptual (OKLab) tolerance by default.
-    pub fn select_wand(
-        &mut self,
-        id: &str,
-        layer: Option<usize>,
-        frame: usize,
-        x: i32,
-        y: i32,
-        tol: i32,
-        conn8: bool,
-        perceptual: bool,
-        mode: &str,
-    ) -> Result<Value, String> {
-        let mode = crate::SelectMode::parse(mode)?;
-        let (_dir, doc) = self.open(id)?;
-        let (w, h) = (doc.meta().w, doc.meta().h);
-        let new = doc.flood_mask(layer, frame, x, y, tol, conn8, perceptual)?;
-        let base = match &self.selection {
-            Some(s) if s.doc_id == id && s.w == w && s.h == h => s.mask.clone(),
-            _ => vec![false; (w * h) as usize],
-        };
-        let combined: Vec<bool> = (0..base.len())
-            .map(|i| mode.combine(base[i], new[i]))
-            .collect();
-        let count = combined.iter().filter(|b| **b).count();
-        self.selection = Some(Selection {
-            doc_id: id.to_string(),
-            w,
-            h,
-            mask: combined,
-        });
-        Ok(
-            json!({"doc_id": id, "selected_pixels": count, "mode": mode.as_str(), "matched": new.iter().filter(|b| **b).count()}),
-        )
-    }
 
     // -- doc_smooth_edges: selective anti-aliasing -------------------------
 
@@ -640,79 +601,6 @@ impl Studio {
 
     // -- doc_perspective_guide: non-destructive construction layer ---------
 
-    /// Add a faint guide layer (`thirds` | `grid` | `iso` | `vp`) you can build
-    /// against and then delete with doc_layer_ops. `vp` radiates from a
-    /// vanishing point; `grid`/`iso` use `spacing`.
-    pub fn perspective_guide(
-        &self,
-        id: &str,
-        kind: &str,
-        color: [u8; 4],
-        spacing: i32,
-        vp: Option<(i32, i32)>,
-    ) -> Result<Value, String> {
-        let sp = spacing.max(2);
-        self.edit(id, |d| {
-            let li = d.add_layer(Some("guides".into()), 160, "normal".into());
-            let (w, h) = (d.meta().w as i32, d.meta().h as i32);
-            for f in 0..d.meta().frames.len() {
-                match kind {
-                    "thirds" => {
-                        for k in 1..3 {
-                            let x = w * k / 3;
-                            d.line(li, f, x, 0, x, h - 1, color, 1)?;
-                            let y = h * k / 3;
-                            d.line(li, f, 0, y, w - 1, y, color, 1)?;
-                        }
-                    }
-                    "grid" => {
-                        let mut x = 0;
-                        while x < w {
-                            d.line(li, f, x, 0, x, h - 1, color, 1)?;
-                            x += sp;
-                        }
-                        let mut y = 0;
-                        while y < h {
-                            d.line(li, f, 0, y, w - 1, y, color, 1)?;
-                            y += sp;
-                        }
-                    }
-                    "iso" => {
-                        let mut b = -w;
-                        while b < h + w {
-                            // 2:1 iso lines both ways
-                            d.line(li, f, 0, b, w - 1, b + (w - 1) / 2, color, 1)?;
-                            d.line(li, f, 0, b, w - 1, b - (w - 1) / 2, color, 1)?;
-                            b += sp;
-                        }
-                    }
-                    "vp" => {
-                        let (vx, vy) = vp.unwrap_or((w / 2, 0));
-                        // radiate to evenly spaced points around the border
-                        let steps = 24;
-                        for i in 0..steps {
-                            let t = i as f32 / steps as f32 * 4.0;
-                            let (ex, ey) = match t as i32 {
-                                0 => ((t.fract() * w as f32) as i32, 0),
-                                1 => (w - 1, (t.fract() * h as f32) as i32),
-                                2 => (((1.0 - t.fract()) * (w - 1) as f32) as i32, h - 1),
-                                _ => (0, ((1.0 - t.fract()) * h as f32) as i32),
-                            };
-                            d.line(li, f, vx, vy, ex, ey, color, 1)?;
-                        }
-                    }
-                    other => {
-                        return Err(format!(
-                            "unknown guide kind '{}' — use thirds|grid|iso|vp",
-                            other
-                        ))
-                    }
-                }
-            }
-            Ok(())
-        })
-    }
-
     // -- doc_outline_selective: form-following contour ---------------------
 
     /// Form-following selective outline (vs a flat black keyline). `mode`
@@ -792,85 +680,6 @@ impl Studio {
             }
             Ok(())
         })
-    }
-
-    /// TRUE 9-slice: author a panel once, emit it at ANY size. The `src`
-    /// region (on `src_layer`/`src_frame`) is cut into a 3×3 grid by `inset`:
-    /// corners copy verbatim, edges and the centre tile (`mode="tile"`) or
-    /// stretch (`"stretch"`) to fill the `dst` rect on `layer`/`frame`.
-    /// Transparent source pixels are skipped, so a rounded panel keeps its
-    /// shape over existing art.
-    pub fn nine_slice(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        src_layer: usize,
-        src_frame: usize,
-        src: (i32, i32, i32, i32),
-        inset: i32,
-        dst: (i32, i32, i32, i32),
-        mode: &str,
-    ) -> Result<Value, String> {
-        let (sx, sy, sw, sh) = src;
-        let (dx, dy, dw, dh) = dst;
-        let b = inset.max(1);
-        if sw < 2 * b + 1 || sh < 2 * b + 1 {
-            let min = 2 * b + 1;
-            return Err(format!(
-                "source {sw}x{sh} too small for inset {b} — needs at least {min}x{min}"
-            ));
-        }
-        if dw < 2 * b || dh < 2 * b {
-            return Err(format!(
-                "dest {}x{} smaller than the corners (2×inset {})",
-                dw,
-                dh,
-                2 * b
-            ));
-        }
-        if !matches!(mode, "tile" | "stretch") {
-            return Err(format!("unknown mode '{mode}' — use tile|stretch"));
-        }
-        let (dir, mut doc) = self.open(id)?;
-        let src_img = doc.analysis_image(Some(src_layer), src_frame)?;
-        let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
-        // Map one dest axis offset to a source axis offset.
-        let map_axis = |d: i32, dlen: i32, slen: i32| -> i32 {
-            if d < b {
-                d // leading corner: verbatim
-            } else if d >= dlen - b {
-                slen - (dlen - d) // trailing corner: verbatim from the far side
-            } else {
-                let span_s = slen - 2 * b;
-                let span_d = dlen - 2 * b;
-                match mode {
-                    "tile" => b + (d - b) % span_s,
-                    _ => b + ((d - b) as i64 * span_s as i64 / span_d.max(1) as i64) as i32,
-                }
-            }
-        };
-        // Build the whole panel as a patch, then stamp it over the target cel.
-        let mut patch = RgbaImage::from_pixel(dw as u32, dh as u32, image::Rgba([0, 0, 0, 0]));
-        let mut placed = 0u32;
-        for oy in 0..dh {
-            for ox in 0..dw {
-                let (mx, my) = (map_axis(ox, dw, sw), map_axis(oy, dh, sh));
-                let (gx, gy) = (sx + mx, sy + my);
-                if gx < 0 || gy < 0 || gx >= cw || gy >= ch {
-                    continue;
-                }
-                let p = src_img.get_pixel(gx as u32, gy as u32).0;
-                if p[3] == 0 {
-                    continue;
-                }
-                patch.put_pixel(ox as u32, oy as u32, image::Rgba(p));
-                placed += 1;
-            }
-        }
-        doc.stamp_image(layer, frame, dx, dy, patch, 1.0, 0.0, 255, "normal", false)?;
-        doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id, "pixels_placed": placed}))
     }
 
     // -- doc_import_clean: reference -> clean pixel art --------------------
@@ -1011,69 +820,6 @@ impl Studio {
     }
 
     // -- doc_burst: radial FX across frames -------------------------------
-
-    /// Generate a radial FX animation (ring | disc | rays) expanding from a
-    /// centre across `frames`, fading along the ramp, tagged `burst`. VFX-as-
-    /// frames: impacts, shockwaves, explosions. Clears the target layer's cels.
-    pub fn burst(
-        &self,
-        id: &str,
-        layer: usize,
-        cx: i32,
-        cy: i32,
-        frames: usize,
-        max_radius: i32,
-        kind: &str,
-        base: [u8; 4],
-        ramp: Option<Vec<[u8; 4]>>,
-    ) -> Result<Value, String> {
-        let frames = frames.max(2);
-        let (dir, mut doc) = self.open(id)?;
-        if layer >= doc.meta().layers.len() {
-            return Err(format!("no layer {}", layer));
-        }
-        let ramp = ramp
-            .filter(|r| !r.is_empty())
-            .unwrap_or_else(|| auto_ramp(base, frames.clamp(2, 8)));
-        while doc.meta().frames.len() < frames {
-            doc.add_frame(80, None);
-        }
-        let last = ramp.len() - 1;
-        for f in 0..frames {
-            let t = f as f32 / (frames - 1) as f32;
-            let r = (t * max_radius as f32).round().max(1.0) as i32;
-            doc.clear_cel(layer, f)?;
-            // Expand-and-dissipate: bright and solid at the flash, thinning to a
-            // faint rim as it grows — the shockwave fades OUT, instead of
-            // darkening while staying fully opaque (which read as a solid ring).
-            let c = ramp[(((1.0 - t) * last as f32).round() as usize).min(last)];
-            let a = ((1.0 - 0.8 * t) * c[3] as f32).round().clamp(0.0, 255.0) as u8;
-            let col = [c[0], c[1], c[2], a];
-            match kind {
-                "ring" => doc.ellipse(layer, f, cx, cy, r, r, col, false)?,
-                "disc" => doc.ellipse(layer, f, cx, cy, r, r, col, true)?,
-                "rays" => {
-                    for a in (0..360).step_by(30) {
-                        let rad = (a as f32).to_radians();
-                        let ex = cx + (r as f32 * rad.cos()) as i32;
-                        let ey = cy + (r as f32 * rad.sin()) as i32;
-                        doc.line(layer, f, cx, cy, ex, ey, col, 1)?;
-                    }
-                }
-                other => {
-                    return Err(format!(
-                        "unknown burst kind '{}' — use ring|disc|rays",
-                        other
-                    ))
-                }
-            }
-        }
-        if !doc.meta().tags.iter().any(|t| t.name == "burst") {
-            doc.add_tag("burst", 0, frames - 1, "forward")?;
-        }
-        doc.save(&dir)?;
-        Ok(json!({"ok": true, "doc_id": id, "frames": frames, "kind": kind}))
-    }
 
     /// Seeded PARTICLE EMITTER rendered to frames — sparks, embers, smoke,
     /// rain, magic motes. Every particle's whole trajectory is a pure function
@@ -1411,43 +1157,6 @@ mod tests {
     }
 
     #[test]
-    fn nine_slice_keeps_corners_and_fills_centre() {
-        let s = studio("nine");
-        s.doc_create("ui", 48, 48).unwrap();
-        // Author a 9×9 panel: red border, blue fill, at (0,0).
-        s.panel(
-            "ui",
-            0,
-            0,
-            0,
-            0,
-            9,
-            9,
-            [40, 60, 220, 255],
-            [220, 40, 40, 255],
-            false,
-        )
-        .unwrap();
-        // Emit it at 24×12 lower on the canvas.
-        let r = s
-            .nine_slice("ui", 0, 0, 0, 0, (0, 0, 9, 9), 3, (4, 20, 24, 12), "tile")
-            .unwrap();
-        assert!(r["pixels_placed"].as_u64().unwrap() > 0);
-        let px = |x: i32, y: i32| s.doc_get_pixel("ui", Some(0), 0, x, y).unwrap()["rgba"].clone();
-        // All four dest corners carry the border colour...
-        for (x, y) in [(4, 20), (27, 20), (4, 31), (27, 31)] {
-            assert_eq!(px(x, y), json!([220, 40, 40, 255]), "corner {x},{y}");
-        }
-        // ...edges too (top mid), and the centre is fill.
-        assert_eq!(px(16, 20), json!([220, 40, 40, 255]));
-        assert_eq!(px(16, 26), json!([40, 60, 220, 255]));
-        // Too-small dest errors.
-        assert!(s
-            .nine_slice("ui", 0, 0, 0, 0, (0, 0, 9, 9), 3, (0, 0, 5, 5), "tile")
-            .is_err());
-    }
-
-    #[test]
     fn emit_is_deterministic_and_loops() {
         let s = studio("emit");
         for d in ["fx-a", "fx-b"] {
@@ -1528,39 +1237,6 @@ mod tests {
     }
 
     #[test]
-    fn checkpoint_save_restore_round_trips() {
-        let s = studio("cp");
-        s.doc_create("c", 8, 8).unwrap();
-        s.doc_fill_cel("c", 0, 0, [0, 200, 0, 255]).unwrap();
-        let saved = s.checkpoint("c", "save", Some("base"), None).unwrap();
-        assert_eq!(saved["saved"], "cp1");
-        s.doc_clear_cel("c", 0, 0).unwrap();
-        let after = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert_eq!(opaque(&after.1), 0);
-        s.checkpoint("c", "restore", None, Some("cp1")).unwrap();
-        let restored = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert_eq!(opaque(&restored.1), 64);
-    }
-
-    #[test]
     fn layer_ops_insert_and_merge() {
         let s = studio("layers");
         s.doc_create("c", 4, 4).unwrap();
@@ -1580,25 +1256,6 @@ mod tests {
             .layer_ops("c", "merge_down", 1, None, None, 255, "normal".into())
             .unwrap();
         assert_eq!(m["layers"].as_array().unwrap().len(), 1);
-    }
-
-    #[test]
-    fn snap_palette_moves_off_palette_pixels() {
-        let s = studio("snap");
-        s.doc_create("c", 4, 4).unwrap();
-        s.doc_fill_cel("c", 0, 0, [200, 12, 12, 255]).unwrap();
-        s.doc_set_palette("c", vec![[255, 0, 0, 255], [0, 0, 255, 255]])
-            .unwrap();
-        let r = s
-            .snap_palette(
-                "c",
-                None,
-                None,
-                None,
-                atelier_core::document::AlphaSnap::Preserve,
-            )
-            .unwrap();
-        assert_eq!(r["pixels_changed"], 16);
     }
 
     #[test]
@@ -1648,17 +1305,6 @@ mod tests {
             .smooth_edges("c", 0, 0, None, 2, true, None, None)
             .unwrap();
         assert!(r["aa_pixels_added"].as_u64().unwrap() >= 2);
-    }
-
-    #[test]
-    fn select_wand_floods_a_solid_cel() {
-        let mut s = studio("wand");
-        s.doc_create("c", 4, 4).unwrap();
-        s.doc_fill_cel("c", 0, 0, [10, 10, 10, 255]).unwrap();
-        let r = s
-            .select_wand("c", Some(0), 0, 0, 0, 8, false, true, "replace")
-            .unwrap();
-        assert_eq!(r["selected_pixels"], 16);
     }
 
     #[test]
@@ -1717,77 +1363,6 @@ mod tests {
 
     fn distinct(stats: &Value) -> u64 {
         stats["stats"]["distinct_colors"].as_u64().unwrap_or(0)
-    }
-
-    #[test]
-    fn relight_shades_a_flat_fill_into_form() {
-        let s = studio("relight");
-        s.doc_create("c", 16, 16).unwrap();
-        s.doc_fill_cel("c", 0, 0, [128, 128, 128, 255]).unwrap();
-        s.relight(
-            "c",
-            0,
-            0,
-            None,
-            315.0,
-            50.0,
-            1.0,
-            [255, 255, 255],
-            0.25,
-            [120, 140, 200],
-            0.0,
-            [255, 255, 255],
-            0.3,
-            [120, 130, 170],
-            2.0,
-            None,
-        )
-        .unwrap();
-        let look = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    bands: 1,
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert!(
-            distinct(&look.1) > 1,
-            "relight should produce a value gradient"
-        );
-    }
-
-    #[test]
-    fn dither_ramp_spreads_across_the_ramp() {
-        let s = studio("dramp");
-        s.doc_create("c", 4, 8).unwrap();
-        s.doc_fill_cel("c", 0, 0, [100, 100, 100, 255]).unwrap();
-        s.dither_ramp(
-            "c",
-            0,
-            0,
-            None,
-            vec![[0, 0, 0, 255], [128, 128, 128, 255], [255, 255, 255, 255]],
-            "v",
-            "bayer4",
-            true,
-        )
-        .unwrap();
-        let look = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    bands: 1,
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert!(distinct(&look.1) >= 2);
     }
 
     #[test]
@@ -1856,18 +1431,6 @@ mod tests {
     }
 
     #[test]
-    fn perspective_guide_adds_a_layer() {
-        let s = studio("guide");
-        s.doc_create("c", 24, 24).unwrap();
-        s.perspective_guide("c", "thirds", [255, 0, 255, 130], 8, None)
-            .unwrap();
-        assert_eq!(
-            s.doc_info("c").unwrap()["layers"].as_array().unwrap().len(),
-            2
-        );
-    }
-
-    #[test]
     fn panel_draws_fill_and_border() {
         let s = studio("panel");
         s.doc_create("c", 20, 12).unwrap();
@@ -1896,68 +1459,6 @@ mod tests {
             )
             .unwrap();
         assert!(distinct(&look.1) >= 2);
-    }
-
-    #[test]
-    fn burst_creates_frames_and_tag() {
-        let s = studio("burst");
-        s.doc_create("c", 16, 16).unwrap();
-        s.burst("c", 0, 8, 8, 5, 7, "ring", [255, 200, 60, 255], None)
-            .unwrap();
-        let info = s.doc_info("c").unwrap();
-        assert!(info["frames"].as_array().unwrap().len() >= 5);
-        assert!(info["tags"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|t| t["name"] == "burst"));
-    }
-
-    #[test]
-    fn empty_ramp_falls_back_to_auto_ramp_instead_of_panicking() {
-        let s = studio("emptyramp");
-        s.doc_create("c", 16, 16).unwrap();
-        s.burst(
-            "c",
-            0,
-            8,
-            8,
-            5,
-            7,
-            "ring",
-            [255, 200, 60, 255],
-            Some(vec![]),
-        )
-        .unwrap();
-        s.emit(
-            "c",
-            0,
-            (4, 4, 8, 8),
-            4,
-            8,
-            90.0,
-            30.0,
-            1.0,
-            0.0,
-            1.0,
-            1,
-            7,
-            [200, 220, 255, 255],
-            Some(vec![]),
-        )
-        .unwrap();
-        s.doc_fill_cel("c", 0, 0, [90, 90, 90, 255]).unwrap();
-        s.material("c", 0, 0, None, "stone", [90, 90, 90, 255], 7, Some(vec![]))
-            .unwrap();
-    }
-
-    #[test]
-    fn translucency_report_counts_partial_alpha() {
-        let s = studio("trans");
-        s.doc_create("c", 4, 4).unwrap();
-        s.doc_fill_cel("c", 0, 0, [255, 255, 255, 128]).unwrap();
-        let r = s.doc_translucency_report("c", 0, None, None).unwrap();
-        assert_eq!(r["partial"], 16);
     }
 
     #[test]

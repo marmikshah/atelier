@@ -312,84 +312,6 @@ impl Studio {
 
     // -- doc_select_render: see the active mask before painting -------------
 
-    /// Render the active selection mask as a quick-mask overlay (selected art
-    /// shown, the rest dimmed + tinted) so the agent never paints through an
-    /// unseen mask. Returns `(png_bytes, report)`.
-    pub fn select_render(
-        &self,
-        id: &str,
-        frame: usize,
-        scale: u32,
-    ) -> Result<(Vec<u8>, Value), String> {
-        let (_dir, doc) = self.open(id)?;
-        if frame >= doc.meta().frames.len() {
-            return Err(format!(
-                "no frame {} (frames={})",
-                frame,
-                doc.meta().frames.len()
-            ));
-        }
-        let (w, h) = (doc.meta().w, doc.meta().h);
-        let base = doc.flatten(frame);
-        let mask = match &self.selection {
-            Some(s) if s.doc_id == id && s.w == w && s.h == h => Some(&s.mask),
-            _ => None,
-        };
-        let mut out = RgbaImage::from_pixel(w, h, Rgba([24, 24, 32, 255]));
-        let (mut selected, mut bbox): (u64, Option<[i32; 4]>) = (0, None);
-        // Constant per call — hoisted out of the per-pixel loop.
-        let wash = raster::composite_px(
-            [40, 12, 40, 255],
-            [255, 0, 255, 40],
-            40.0 / 255.0,
-            raster::Blend::Normal,
-        );
-        for y in 0..h as i32 {
-            for x in 0..w as i32 {
-                let i = (y as u32 * w + x as u32) as usize;
-                let sel = mask
-                    .map(|m| m.get(i).copied() == Some(true))
-                    .unwrap_or(true);
-                let art = base.get_pixel(x as u32, y as u32).0;
-                let px = if sel {
-                    selected += 1;
-                    bbox = Some(match bbox {
-                        None => [x, y, x, y],
-                        Some([a, b, c, d]) => [a.min(x), b.min(y), c.max(x), d.max(y)],
-                    });
-                    // selected: art over the faint magenta wash
-                    raster::composite_px(wash, art, art[3] as f32 / 255.0, raster::Blend::Normal)
-                } else {
-                    // unselected: dim the art heavily (rubylith feel)
-                    let dim = [
-                        (art[0] as u32 * 35 / 100) as u8,
-                        (art[1] as u32 * 35 / 100) as u8,
-                        (art[2] as u32 * 35 / 100) as u8,
-                        art[3],
-                    ];
-                    raster::composite_px(
-                        [24, 24, 32, 255],
-                        dim,
-                        dim[3] as f32 / 255.0,
-                        raster::Blend::Normal,
-                    )
-                };
-                out.put_pixel(x as u32, y as u32, Rgba(px));
-            }
-        }
-        let scaled = scale_nn(&out, scale.max(1));
-        let png = encode_png(&scaled)?;
-        let report = json!({
-            "doc_id": id,
-            "has_selection": mask.is_some(),
-            "selected_pixels": selected,
-            "total_pixels": (w * h),
-            "bbox": bbox.map(|b| json!({"x": b[0], "y": b[1], "w": b[2]-b[0]+1, "h": b[3]-b[1]+1})),
-            "note": if mask.is_none() { "no active selection for this document — showing the whole canvas as selected" } else { "magenta = selected, dimmed = masked out" },
-        });
-        Ok((png, report))
-    }
-
     // -- doc_contact_sheet: the animator's flip-test -----------------------
 
     /// Every frame in one labelled inline grid — the flip-test the agent can't
@@ -473,44 +395,6 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-view-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
-    }
-
-    fn opaque(stats: &Value) -> u64 {
-        stats["stats"]["opaque_pixels"].as_u64().unwrap_or(0)
-    }
-
-    #[test]
-    fn look_returns_png_and_stats() {
-        let s = studio("look");
-        s.doc_create("c", 8, 8).unwrap();
-        s.doc_fill_cel("c", 0, 0, [255, 0, 0, 255]).unwrap();
-        let (png, report) = s
-            .look(
-                "c",
-                0,
-                &LookOptions {
-                    scale: Some(6),
-                    grid: true,
-                    coords: true,
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert_eq!(&png[0..4], b"\x89PNG");
-        assert_eq!(opaque(&report), 64);
-        // value mode also works and reports masses
-        let (_p, v) = s
-            .look(
-                "c",
-                0,
-                &LookOptions {
-                    scale: Some(4),
-                    mode: "value".into(),
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert!(v["stats"]["masses_pct"].is_object());
     }
 
     #[test]

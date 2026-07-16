@@ -49,10 +49,12 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 
 - `atelier-core` — document model + raster ops (no async, no MCP).
 - `atelier-studio` — the `Studio` facade (the library API): one method per tool; single draw/fx ops route through `doc_draw`/`doc_fx` over the core op registry.
-- `atelier-mcp` — the rmcp `#[tool]` server (stdio + HTTP); advertises a 20-tool
-  **core** profile by default, the full 63 with `ATELIER_PROFILE=full`. Both
-  counts are pinned by tests — change the profile, update the docs in the same
-  commit.
+- `atelier-mcp` — the rmcp `#[tool]` server (stdio + HTTP); advertises all **28**
+  tools, with no profile filter. The count is pinned by a test, and another test
+  fails if a tool description names a tool that no longer exists — change the
+  surface, update the docs in the same commit. A tool earns its place by being
+  called: everything with no caller in either an agent transcript or a shipped
+  recipe was deleted, not hidden.
 - `atelier` — the binary: arg parsing, the daemon installer, the `replay` runner.
 
 ## Hard constraints
