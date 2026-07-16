@@ -192,6 +192,18 @@ async fn run_session(
         let summary = summarize(&result);
         print_step(idx, step, &summary);
         if is_error {
+            // `doc_ref op=set` journals the author's absolute image path; on
+            // another machine that file is usually gone. The ref is metadata —
+            // only compare/analyze/import consume it — so warn and keep
+            // rebuilding; a later step that truly needs it will fail loudly.
+            if step.tool == "doc_ref" && step.args.get("op").and_then(Value::as_str) == Some("set")
+            {
+                eprintln!(
+                    "replay: doc_ref op=set failed (reference image missing?) — \
+                     continuing without it"
+                );
+                continue;
+            }
             return Err(format!(
                 "step {} ({}) failed: {summary}",
                 idx + 1,

@@ -80,13 +80,14 @@ fn list() -> i32 {
         let id = d.get("id").and_then(|i| i.as_str()).unwrap_or("?");
         // The journal is the document's provenance — show it, so `replay <id>`
         // is discoverable from the listing rather than only from the docs.
-        let steps = s.journal(id).map(|j| j.len()).unwrap_or(0);
-        if steps > 0 {
-            replayable += 1;
-        }
-        let recipe = match steps {
-            0 => "  no recipe".to_string(),
-            n => format!("{n:>4} steps"),
+        // A corrupt journal must not be listed as replayable steps — say so.
+        let recipe = match s.journal(id) {
+            Ok(j) if j.is_empty() => "  no recipe".to_string(),
+            Ok(j) => {
+                replayable += 1;
+                format!("{:>4} steps", j.len())
+            }
+            Err(_) => "  corrupt journal".to_string(),
         };
         println!(
             "  {:width$}  {:>3}x{:<3}  {:>2} frames  {:>2} layers  {}",
