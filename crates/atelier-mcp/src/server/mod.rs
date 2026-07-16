@@ -875,6 +875,19 @@ fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<S
     }
 }
 
+/// The args a call is recorded with. `doc_create`'s minted id exists only in
+/// its result; stamping it into the recorded args lets `atelier replay` remap
+/// every later step's ids when a re-run mints a different one (the tool itself
+/// ignores the extra field, and replay strips it before sending).
+fn recorded_args(tool: &str, mut args: Value, target: Option<&str>) -> Value {
+    if tool == "doc_create" {
+        if let (Some(id), Some(obj)) = (target, args.as_object_mut()) {
+            obj.insert("doc_id".into(), json!(id));
+        }
+    }
+    args
+}
+
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
     /// Advertise the tool surface — all of it. It is small enough that hiding
@@ -919,10 +932,12 @@ impl ServerHandler for Atelier {
         // recorders answer to the same question — what did it take to make
         // this? — so they share the one classifier.
         if !is_error_result(&result) && is_journaled(&tool, &args) {
+            let target = journal_target(&tool, &args, &result);
+            let args = recorded_args(&tool, args, target.as_deref());
             // The document's own journal: on by default, so every document is a
             // replayable recipe without anyone having to know to ask first.
-            if let Some(id) = journal_target(&tool, &args, &result) {
-                self.studio().journal_append(&id, &tool, &args);
+            if let Some(id) = &target {
+                self.studio().journal_append(id, &tool, &args);
             }
             // The session recorder (--record) stays opt-in and cross-document:
             // it captures a whole sitting, which per-document journals cannot
@@ -1229,6 +1244,21 @@ mod tests {
         assert_eq!(
             journal_target("doc_draw", &json!({"doc_id": "sprite"}), &drew).as_deref(),
             Some("sprite")
+        );
+    }
+
+    #[test]
+    fn doc_create_records_the_minted_id_for_replay_remapping() {
+        // A collision mints `sprite-2`; without the stamp, replay could not
+        // tell which recorded id the later steps' `doc_id: "sprite"` meant.
+        assert_eq!(
+            recorded_args("doc_create", json!({"name": "sprite"}), Some("sprite-2")),
+            json!({"name": "sprite", "doc_id": "sprite-2"})
+        );
+        // Every other tool records its args untouched.
+        assert_eq!(
+            recorded_args("doc_draw", json!({"doc_id": "sprite"}), Some("sprite")),
+            json!({"doc_id": "sprite"})
         );
     }
 
