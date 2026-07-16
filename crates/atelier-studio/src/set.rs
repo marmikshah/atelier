@@ -1,7 +1,7 @@
 //! Cross-document set tools — the game-level eye. A game is not one sprite but
 //! a SET of documents that must read as one work: shared palette, consistent
 //! value range, consistent scale, aligned pivots. These tools resolve a family
-//! (explicit ids or an id prefix) and audit or synchronize it as a whole.
+//! (explicit ids or an id prefix) and synchronizes it as a whole.
 
 use serde_json::{json, Value};
 

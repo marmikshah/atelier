@@ -395,64 +395,6 @@ impl Document {
         Ok(if text.is_empty() { 0 } else { pen - x - s })
     }
 
-    /// Composite an image ONTO a cel at (x,y) — draws over existing content
-    /// (does not replace the cel), honouring `opacity` and blend `mode`. The
-    /// caller scales/rotates first (see `Studio::doc_stamp_image`). Enables
-    /// sub-sprite reuse without a layer per element.
-    pub(super) fn stamp(
-        &mut self,
-        layer: usize,
-        frame: usize,
-        x: i32,
-        y: i32,
-        src: &RgbaImage,
-        opacity: u8,
-        mode: &str,
-    ) -> Result<(), String> {
-        let img = self.cel_canvas(layer, frame)?;
-        raster::composite(img, src, x, y, opacity, raster::parse_blend(mode));
-        Ok(())
-    }
-
-    /// Place an external image into a cel with optional nearest-neighbour `scale`
-    /// and `rotate` (degrees). `replace` true overwrites the cel (legacy
-    /// behaviour); false composites it OVER existing content with `opacity` +
-    /// blend `mode`.
-    pub fn stamp_image(
-        &mut self,
-        layer: usize,
-        frame: usize,
-        x: i32,
-        y: i32,
-        mut src: RgbaImage,
-        scale: f32,
-        rotate: f32,
-        opacity: u8,
-        mode: &str,
-        replace: bool,
-    ) -> Result<(), String> {
-        if (scale - 1.0).abs() > 1e-6 && scale > 0.0 {
-            let nw = (src.width() as f32 * scale).round().max(1.0) as u32;
-            let nh = (src.height() as f32 * scale).round().max(1.0) as u32;
-            // Shrinking: area-average so a hi-res reference keeps its features
-            // (nearest keeps ~1 of every k² pixels). Growing: nearest stays
-            // crisp for pixel art.
-            src = if scale < 1.0 {
-                raster::downscale_area(&src, nw, nh)
-            } else {
-                image::imageops::resize(&src, nw, nh, image::imageops::FilterType::Nearest)
-            };
-        }
-        if rotate.abs() > 1e-6 {
-            src = raster::rotate_nn(&src, rotate);
-        }
-        if replace {
-            self.set_cel(layer, frame, x, y, src)
-        } else {
-            self.stamp(layer, frame, x, y, &src, opacity, mode)
-        }
-    }
-
     /// Mirror a cel across a vertical axis (column `vertical`) and/or a
     /// horizontal axis (row `horizontal`). `keep_left`/`keep_top` choose which
     /// side is the source that gets reflected onto the other. Draw half a sprite,

@@ -597,23 +597,6 @@ mod tests {
     }
 
     #[test]
-    fn ik2_keeps_bone_lengths_and_bends() {
-        let (root, target) = ((0.0, 0.0), (6.0, 0.0));
-        let mid = solve_ik2(root, target, 4.0, 4.0, 1.0);
-        let d1 = ((mid.0 - root.0).powi(2) + (mid.1 - root.1).powi(2)).sqrt();
-        let d2 = ((mid.0 - target.0).powi(2) + (mid.1 - target.1).powi(2)).sqrt();
-        assert!((d1 - 4.0).abs() < 0.05, "upper bone length {d1}");
-        assert!((d2 - 4.0).abs() < 0.05, "lower bone length {d2}");
-        assert!(
-            mid.1.abs() > 0.1,
-            "joint should bend off the root-target line"
-        );
-        // bend sign flips the joint to the other side
-        let mid2 = solve_ik2(root, target, 4.0, 4.0, -1.0);
-        assert!(mid.1 * mid2.1 < 0.0, "bend +/- should be on opposite sides");
-    }
-
-    #[test]
     fn ramp_gamut_maps_without_hue_shift() {
         // A vivid red at full chroma across the lightness range would, without
         // gamut mapping, per-channel clamp on the bright steps and skew red→orange.
@@ -632,79 +615,6 @@ mod tests {
                 "step {c:?} hue {hh:.0}° drifted {dh:.0}° from base {base_h:.0}°"
             );
         }
-    }
-
-    #[test]
-    fn affine_90_rotation_is_a_clean_permutation() {
-        // 16 unique colours; a 90° rotate (raw ss=1 path) must keep every one —
-        // i.e. it's a permutation, not a half-pixel-biased lossy resample.
-        let mut img = RgbaImage::new(4, 4);
-        for y in 0..4u32 {
-            for x in 0..4u32 {
-                img.put_pixel(
-                    x,
-                    y,
-                    Rgba([(x * 60 + 10) as u8, (y * 60 + 10) as u8, 200, 255]),
-                );
-            }
-        }
-        let out = affine_nn(&img, 90.0, 1.0, 1.0, 0.0, 0.0, 1);
-        let mut src: std::collections::HashSet<[u8; 4]> = img.pixels().map(|p| p.0).collect();
-        for p in out.pixels() {
-            if p.0[3] > 0 {
-                src.remove(&p.0);
-            }
-        }
-        assert!(src.is_empty(), "90° rotate dropped source colours: {src:?}");
-    }
-
-    #[test]
-    fn affine_rotation_emits_no_off_palette_fringe() {
-        // Two opaque colours; rotate 30°. The RotSprite pipeline must emit ONLY
-        // those colours or full transparency — never a blended partial-alpha
-        // fringe (the bilinear-downscale bug that turned 3 colours into 66).
-        let mut img = RgbaImage::from_pixel(14, 14, Rgba([0, 0, 0, 0]));
-        for y in 3..11 {
-            for x in 3..11 {
-                let c = if x < 7 {
-                    [200, 30, 30, 255]
-                } else {
-                    [30, 30, 200, 255]
-                };
-                img.put_pixel(x, y, Rgba(c));
-            }
-        }
-        let out = affine_nn(&img, 30.0, 1.0, 1.0, 0.0, 0.0, 2);
-        let allowed = [[0, 0, 0, 0], [200, 30, 30, 255], [30, 30, 200, 255]];
-        for p in out.pixels() {
-            assert!(
-                p.0[3] == 0 || p.0[3] == 255,
-                "partial-alpha fringe {:?}",
-                p.0
-            );
-            assert!(allowed.contains(&p.0), "off-palette colour {:?}", p.0);
-        }
-    }
-
-    #[test]
-    fn blur_field_spreads_a_spike() {
-        // A single spike should spread to its neighbours and lose its peak —
-        // this is what rounds the relight height-field ridge.
-        let at = |x: usize, y: usize| y * 5 + x;
-        let mut f = vec![0.0f32; 5 * 5];
-        f[at(2, 2)] = 1.0;
-        let out = blur_field(&f, 5, 5, 1);
-        assert!(out[at(2, 2)] < 1.0, "peak should drop");
-        assert!(
-            out[at(1, 2)] > 0.0 && out[at(2, 1)] > 0.0,
-            "neighbours pick up signal"
-        );
-        // mass is roughly preserved (interior, no clipping)
-        let sum: f32 = out.iter().sum();
-        assert!(
-            (sum - 1.0).abs() < 0.2,
-            "blur should roughly conserve mass, got {sum}"
-        );
     }
 
     #[test]
@@ -810,48 +720,5 @@ mod tests {
         assert_eq!(clamp_region(8, 8, 2, 2, 5, 5), Some((2, 2, 4, 4)));
         // Fully outside → None.
         assert_eq!(clamp_region(20, 20, 30, 30, 5, 5), None);
-    }
-
-    #[test]
-    fn ease_endpoints_exact() {
-        // Every curve must pin 0→0 and 1→1 exactly.
-        for kind in ["bounce", "overshoot", "elastic"] {
-            assert_eq!(ease(0.0, kind), 0.0, "{kind} f(0)");
-            assert_eq!(ease(1.0, kind), 1.0, "{kind} f(1)");
-        }
-    }
-
-    #[test]
-    fn ease_overshoot_exceeds_one() {
-        // Back ease-out shoots past 1 somewhere in the open interval.
-        let peak = (1..100)
-            .map(|i| ease(i as f32 / 100.0, "overshoot"))
-            .fold(f32::MIN, f32::max);
-        assert!(peak > 1.0, "overshoot peak {peak} should exceed 1.0");
-    }
-
-    #[test]
-    fn ease_bounce_stays_in_unit() {
-        // Ease-out bounce is monotone-ish but never leaves [0,1].
-        for i in 0..=100 {
-            let v = ease(i as f32 / 100.0, "bounce");
-            assert!((0.0..=1.0).contains(&v), "bounce({i}) = {v} out of range");
-        }
-    }
-
-    #[test]
-    fn ease_elastic_oscillates() {
-        // The decaying oscillation crosses 1.0 more than once.
-        let samples: Vec<f32> = (0..=100)
-            .map(|i| ease(i as f32 / 100.0, "elastic"))
-            .collect();
-        let crossings = samples
-            .windows(2)
-            .filter(|w| (w[0] - 1.0) * (w[1] - 1.0) < 0.0)
-            .count();
-        assert!(
-            crossings > 1,
-            "elastic should cross 1.0 repeatedly, got {crossings}"
-        );
     }
 }

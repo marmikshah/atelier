@@ -1,98 +1,9 @@
 //! Procedural noise (fBm/Perlin/Voronoi), the seedable pixel hash, ordered
-//! dither thresholds, gradient sampling and easing curves.
+//! dither thresholds and gradient sampling.
 
 /// Linear interpolation between `a` and `b` by `t`.
 fn lerpf(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
-}
-
-/// The recognised easing names, hyphenated (`ease` also accepts underscore
-/// spellings). The guard callers run so a typo errors instead of silently
-/// falling back to linear — the mistake class `valid_blend` exists to catch.
-pub const EASE_NAMES: [&str; 7] = [
-    "linear",
-    "ease-in",
-    "ease-out",
-    "ease-in-out",
-    "bounce",
-    "overshoot",
-    "elastic",
-];
-
-/// Error unless `kind` names a real easing (either separator spelling).
-pub fn validate_ease(kind: &str) -> Result<(), String> {
-    if EASE_NAMES.contains(&kind.replace('_', "-").as_str()) {
-        Ok(())
-    } else {
-        Err(format!(
-            "unknown easing '{kind}' — use one of [{}]",
-            EASE_NAMES.join(", ")
-        ))
-    }
-}
-
-/// Easing of a 0..1 progress `t`. "ease-in" t³ (slow start), "ease-out" the
-/// mirror (slow end), "ease-in-out" the symmetric blend, "bounce" (ease-out
-/// bounce), "overshoot" (back ease-out — shoots past 1 then settles), "elastic"
-/// (decaying oscillation ease-out); anything else linear. Every curve satisfies
-/// f(0)=0 and f(1)=1 exactly. Used by keyframe motion so a tween shapes its
-/// acceleration. The non-monotone curves (overshoot/elastic) can exceed `[0,1]`.
-pub fn ease(t: f32, kind: &str) -> f32 {
-    let t = t.clamp(0.0, 1.0);
-    match kind.replace('_', "-").as_str() {
-        "ease-in" => t * t * t,
-        "ease-out" => {
-            let u = 1.0 - t;
-            1.0 - u * u * u
-        }
-        "ease-in-out" => {
-            if t < 0.5 {
-                4.0 * t * t * t
-            } else {
-                let u = -2.0 * t + 2.0;
-                1.0 - u * u * u / 2.0
-            }
-        }
-        "bounce" => bounce_out(t),
-        "overshoot" => {
-            // Back ease-out: a single overshoot past 1 that settles back to 1.
-            const C1: f32 = 1.70158;
-            const C3: f32 = C1 + 1.0;
-            let u = t - 1.0;
-            1.0 + C3 * u * u * u + C1 * u * u
-        }
-        "elastic" => {
-            // Decaying sine oscillation that converges on 1 (ease-out elastic).
-            if t == 0.0 || t == 1.0 {
-                t
-            } else {
-                const P: f32 = std::f32::consts::TAU / 3.0;
-                2f32.powf(-10.0 * t) * ((t * 10.0 - 0.75) * P).sin() + 1.0
-            }
-        }
-        // "linear"; unknowns are screened by `validate_ease` at the API edge,
-        // and an unscreened caller still degrades to linear rather than panic.
-        _ => t,
-    }
-}
-
-/// Ease-out bounce: `t` decelerates in a series of shrinking bounces, staying
-/// within `[0,1]` with f(0)=0 and f(1)=1. The classic 4-segment piecewise curve.
-fn bounce_out(t: f32) -> f32 {
-    const N1: f32 = 7.5625;
-    const D1: f32 = 2.75;
-    if t < 1.0 / D1 {
-        N1 * t * t
-    } else if t < 2.0 / D1 {
-        let t = t - 1.5 / D1;
-        N1 * t * t + 0.75
-    } else if t < 2.5 / D1 {
-        let t = t - 2.25 / D1;
-        N1 * t * t + 0.9375
-    } else {
-        let t = t - 2.625 / D1;
-        N1 * t * t + 0.984375
-    }
 }
 
 /// Quintic smootherstep fade for noise interpolation.

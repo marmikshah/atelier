@@ -389,7 +389,7 @@ impl Studio {
 
     /// Pack every frame of every document into ONE atlas PNG (a simple shelf
     /// layout: rows of frames, wrapping at `max_width`) plus a master JSON map
-    /// of `{doc_id, frame, rect:[x,y,w,h], duration_ms, pivot}` so an engine can
+    /// of `{doc_id, frame, rect:[x,y,w,h], duration_ms}` so an engine can
     /// slice the whole game's sprites from a single texture. Frames are emitted
     /// at native size × `scale`.
     pub fn export_atlas(
@@ -406,12 +406,10 @@ impl Studio {
         }
         // Gather every frame image first (so we can size the atlas).
         struct Item {
-            doc: String,             // owning document id
-            frame: usize,            // frame index within that document
-            img: RgbaImage,          // flattened (and scaled) frame pixels
-            duration_ms: u32,        // frame duration, carried into the map
-            pivot: Option<[i32; 2]>, // pivot in atlas-pixel space (scaled)
-            boxes: Vec<Value>,       // collision boxes, pre-scaled to atlas pixels
+            doc: String,      // owning document id
+            frame: usize,     // frame index within that document
+            img: RgbaImage,   // flattened (and scaled) frame pixels
+            duration_ms: u32, // frame duration, carried into the map
         }
         let mut items: Vec<Item> = Vec::new();
         for id in &ids {
@@ -431,14 +429,6 @@ impl Studio {
                     frame: f,
                     img,
                     duration_ms: doc.meta().frames[f].duration_ms,
-                    pivot: doc.meta().frames[f]
-                        .pivot
-                        .map(|[x, y]| [x * scale as i32, y * scale as i32]),
-                    boxes: doc.meta().frames[f]
-                        .boxes
-                        .iter()
-                        .map(|b| b.to_json(scale))
-                        .collect(),
                 });
             }
         }
@@ -468,8 +458,7 @@ impl Studio {
             frames_meta.push(json!({
                 "doc": it.doc, "frame": it.frame,
                 "rect": [px, py, it.img.width(), it.img.height()],
-                "duration_ms": it.duration_ms, "pivot": it.pivot,
-                "boxes": it.boxes.clone(),
+                "duration_ms": it.duration_ms,
             }));
         }
         if let Some(p) = Path::new(out_path).parent() {
@@ -1265,70 +1254,6 @@ impl Studio {
 
     // -- animation & tiling feedback (read-only) + keyframe write -----------
 
-    /// Eased multi-frame region motion across an existing frame span. The region
-    /// content at `from_frame` is stamped (source-over) into every frame in
-    /// (from, to] at the eased offset; `clear_source` first clears the original
-    /// rect in each destination frame. Reuses the region copy/clear/paste paths.
-    pub fn doc_keyframe_move(
-        &self,
-        id: &str,
-        layer: usize,
-        region: (i32, i32, i32, i32),
-        from_frame: usize,
-        to_frame: usize,
-        dx: i32,
-        dy: i32,
-        easing: &str,
-        clear_source: bool,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let offsets = doc.keyframe_move(
-            layer,
-            region,
-            from_frame,
-            to_frame,
-            dx,
-            dy,
-            easing,
-            clear_source,
-        )?;
-        doc.save(&dir)?;
-        let offs: Vec<Value> = offsets.iter().map(|o| json!(o)).collect();
-        Ok(json!({
-            "doc_id": id,
-            "frames_touched": offsets.len(),
-            "offsets": offs,
-        }))
-    }
-
-    /// Eased pivot rotation + translation of a region across frames — the
-    /// joint-swing primitive.
-    pub fn doc_keyframe_transform(
-        &self,
-        id: &str,
-        layer: usize,
-        region: (i32, i32, i32, i32),
-        pivot: (f32, f32),
-        from_frame: usize,
-        to_frame: usize,
-        rot_deg: f32,
-        dx: i32,
-        dy: i32,
-        easing: &str,
-        snap: bool,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let placed = doc.keyframe_transform(
-            layer, region, pivot, from_frame, to_frame, rot_deg, dx, dy, easing, snap,
-        )?;
-        doc.save(&dir)?;
-        Ok(json!({
-            "doc_id": id,
-            "frames_touched": placed.len(),
-            "placements": placed,
-        }))
-    }
-
     pub fn doc_move_region(
         &self,
         id: &str,
@@ -1360,8 +1285,7 @@ impl Studio {
     /// One-tool dispatch over region + clipboard ops — `op`: `copy` | `cut` |
     /// `clear` (the `[x0,y0,x1,y1]` rect) | `move` (rect by `dx,dy`) | `paste`
     /// (the clipboard at `x,y`, `blend` source-over by default). Routes to the
-    /// kept region methods. (`stamp_image` and `extract_to_layer` keep their own
-    /// tools — image import and rigging, not region mobility.)
+    /// kept region methods.
     pub fn doc_region(
         &mut self,
         id: &str,
@@ -1418,29 +1342,7 @@ impl Studio {
         }
     }
 
-    // -- pivots / palette ---------------------------------------------------
-
-    pub fn doc_set_pivot(
-        &self,
-        id: &str,
-        frame: usize,
-        pivot: Option<[i32; 2]>,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        doc.set_pivot(frame, pivot)?;
-        self.commit(&dir, id, doc)
-    }
-
-    pub fn doc_set_frame_boxes(
-        &self,
-        id: &str,
-        frame: usize,
-        boxes: Vec<atelier_core::document::BoxMeta>,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        doc.set_frame_boxes(frame, boxes)?;
-        self.commit(&dir, id, doc)
-    }
+    // -- palette -------------------------------------------------------------
 
     pub fn doc_set_palette(&self, id: &str, colors: Vec<[u8; 4]>) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
