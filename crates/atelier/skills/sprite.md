@@ -1,8 +1,3 @@
----
-name: atelier-sprite
-description: Draw a single pixel-art subject — a character, creature, vehicle, prop, item or effect — as a layered, optionally animated atelier document. Use when asked to make a sprite, icon, or any one discrete object, still or animated. Builds it in parts on separate layers, looks at every pass, and fixes the specific thing that is wrong rather than redrawing. Requires the atelier MCP server. For backgrounds and full scenes use atelier-scene; to judge finished art use atelier-review.
----
-
 # Drawing one subject
 
 A sprite is one subject on a transparent field. You are not painting a picture —

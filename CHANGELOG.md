@@ -25,12 +25,15 @@ releases.
 
 ### Added
 
-- **Three skills for Claude Code** (`.claude/skills/`), which `install.sh` offers
+- **Three skills for Claude Code**, which `install.sh` offers
   to install: **atelier-sprite** (one subject), **atelier-scene** (a place), and
   **atelier-review** (judge it, don't repaint it). Both drawing skills insist on
   building in layers and fixing the region that is wrong rather than repainting
   the frame; neither prescribes a style or a palette. A test fails if a skill
-  names a tool that no longer exists.
+  names a tool that no longer exists. They are a typed registry
+  (`crates/atelier/skills`): Rust owns the metadata and the per-consumer
+  renderers, the prose stays markdown. `atelier skills install` writes the
+  Claude `SKILL.md` files; `atelier skills show <name>` prints one.
 
 ### Breaking
 

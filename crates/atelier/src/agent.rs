@@ -37,23 +37,15 @@ The atelier-sprite/scene/review skills are baked into the binary, so a bare
 `atelier agent --task \"...\"` works with no files. This is the only atelier
 command that uses the network or an API key.";
 
-/// The skills, compiled into the binary so agent mode needs no files on disk.
-/// They live inside this crate (`skills/`) — an installed user has no repo
-/// checkout, and a cross-crate include would break `cargo package`.
-const SKILL_SPRITE: &str = include_str!("../skills/sprite.md");
-const SKILL_SCENE: &str = include_str!("../skills/scene.md");
-const SKILL_REVIEW: &str = include_str!("../skills/review.md");
+use crate::skills::Skill;
 
-/// Resolve a built-in skill name to its embedded text.
-fn builtin_skill(name: &str) -> Result<&'static str, String> {
-    match name {
-        "sprite" => Ok(SKILL_SPRITE),
-        "scene" => Ok(SKILL_SCENE),
-        "review" => Ok(SKILL_REVIEW),
-        other => Err(format!(
-            "unknown skill '{other}' — expected sprite, scene or review (or --skill-file <path>)"
-        )),
-    }
+/// The skill body the agent injects: either a built-in from the typed registry,
+/// or a custom file.
+enum SkillSource {
+    /// A shipped skill; the registry renders its system prompt.
+    Builtin(&'static Skill),
+    /// A user-supplied `--skill-file`, injected verbatim as the prose body.
+    Custom(String),
 }
 
 struct Config {
@@ -89,7 +81,7 @@ pub async fn run(args: &[String]) -> i32 {
 fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
     let mut task: Option<String> = None;
     // The skill is the built-in sprite unless a name or a file overrides it.
-    let mut skill: String = SKILL_SPRITE.to_string();
+    let mut skill = SkillSource::Builtin(&crate::skills::SPRITE);
     let mut model = std::env::var("OPENAI_MODEL").unwrap_or_else(|_| "gpt-4o".into());
     let mut base_url =
         std::env::var("OPENAI_BASE_URL").unwrap_or_else(|_| "https://api.openai.com/v1".into());
@@ -119,13 +111,19 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
                 i += 2;
             }
             "--skill" => {
-                skill = builtin_skill(&need(i)?)?.to_string();
+                let name = need(i)?;
+                let sk = Skill::by_short(&name).ok_or_else(|| {
+                    format!("unknown skill '{name}' — expected sprite, scene or review (or --skill-file <path>)")
+                })?;
+                skill = SkillSource::Builtin(sk);
                 i += 2;
             }
             "--skill-file" => {
                 let path = need(i)?;
-                skill = std::fs::read_to_string(&path)
-                    .map_err(|e| format!("cannot read skill {path}: {e}"))?;
+                skill = SkillSource::Custom(
+                    std::fs::read_to_string(&path)
+                        .map_err(|e| format!("cannot read skill {path}: {e}"))?,
+                );
                 i += 2;
             }
             "--model" => {
@@ -158,9 +156,16 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
     let api_key = std::env::var("OPENAI_API_KEY")
         .map_err(|_| "OPENAI_API_KEY is not set (this is the one command that needs it)")?;
 
+    // Render the system prompt from the chosen skill. A built-in goes through
+    // the typed renderer; a custom file is treated as the prose body.
+    let system = match &skill {
+        SkillSource::Builtin(sk) => sk.agent_prompt(out.as_deref()),
+        SkillSource::Custom(body) => crate::skills::agent_prompt(body, out.as_deref()),
+    };
+
     Ok(Some(Config {
         task: task.trim().to_string(),
-        system: build_system_prompt(&skill, out.as_deref()),
+        system,
         model,
         base_url: base_url.trim_end_matches('/').to_string(),
         api_key,
@@ -168,34 +173,6 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
         max_steps,
         home,
     }))
-}
-
-/// The system prompt: the injected skills, then the ground rules the loop needs
-/// the model to follow (drive the tools, look, and export at the end).
-fn build_system_prompt(skill: &str, out: Option<&str>) -> String {
-    // Strip YAML frontmatter — the model wants the body, not the metadata.
-    let body = skill
-        .strip_prefix("---")
-        .and_then(|r| r.split_once("\n---").map(|(_, b)| b))
-        .unwrap_or(skill);
-    let mut s = String::new();
-    s.push_str(body.trim());
-    s.push_str("\n\n");
-    s.push_str(
-        "You are drawing through the atelier tools. Call them to build the art. \
-         After a burst of edits, call doc_look to SEE the frame before continuing — \
-         it returns the image. When the piece is finished, call the export tool, \
-         then reply with a one-line summary and stop. Do not ask the user \
-         questions; you have everything you need.",
-    );
-    // The caller chose the file; tell the model, or it picks its own name and the
-    // export lands somewhere the caller is not looking (as a live run showed).
-    if let Some(path) = out {
-        s.push_str(&format!(
-            " Export the finished piece to exactly this path: {path}"
-        ));
-    }
-    s
 }
 
 async fn drive(cfg: Config) -> Result<(), String> {
@@ -542,31 +519,6 @@ mod tests {
         assert_eq!(out[0]["function"]["parameters"]["type"], "object");
     }
 
-    #[test]
-    fn frontmatter_is_stripped_from_the_injected_skill() {
-        let skill = "---\nname: x\ndescription: y\n---\n\n# Body\nreal guidance";
-        let sys = build_system_prompt(skill, None);
-        assert!(sys.contains("Body"), "{sys}");
-        assert!(sys.contains("real guidance"));
-        assert!(!sys.contains("description: y"), "frontmatter leaked: {sys}");
-        assert!(sys.contains("call doc_look"), "ground rules missing");
-    }
-
-    #[test]
-    fn the_built_in_skills_are_embedded_and_selectable() {
-        // include_str! makes agent mode work with no files on disk — the whole
-        // point. If a skill file is renamed, this fails at compile time.
-        for name in ["sprite", "scene", "review"] {
-            let body = builtin_skill(name).unwrap();
-            assert!(body.contains("name: atelier-"), "{name} skill looks wrong");
-            // And the default (no --skill) is the sprite skill, frontmatter-stripped.
-        }
-        assert!(builtin_skill("nope").is_err());
-        let default_sys = build_system_prompt(SKILL_SPRITE, None);
-        assert!(default_sys.contains("one subject") || default_sys.contains("sprite"));
-        assert!(
-            !default_sys.starts_with("---"),
-            "frontmatter leaked into default"
-        );
-    }
+    // Skill rendering (the built-ins, frontmatter, out-path, selectors) is
+    // tested in crate::skills; the agent just calls those renderers.
 }

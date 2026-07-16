@@ -69,7 +69,7 @@ fn flag_value(args: &[String], flag: &str) -> Result<Option<String>, String> {
     }
 }
 
-fn home() -> Option<PathBuf> {
+pub(crate) fn home() -> Option<PathBuf> {
     std::env::var_os("HOME")
         .or_else(|| std::env::var_os("USERPROFILE"))
         .map(PathBuf::from)

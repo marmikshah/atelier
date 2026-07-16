@@ -159,37 +159,22 @@ fi
 # -- skills (Claude Code) ----------------------------------------------------------
 # The workflow guidance that teaches an agent to use atelier well: build in
 # layers, look after every pass, fix the region rather than repaint the frame.
-# Optional — atelier works without them; they just make the art better.
-# canonical source name -> Claude Code skill name on the user's machine
-SKILLS="sprite scene review"
+# The binary carries them and writes the SKILL.md files itself — no per-file
+# download, no path coupling. Optional; atelier works without them.
 SKILL_DIR="$HOME/.claude/skills"
-
-install_skills() {
-  for s in $SKILLS; do
-    dst="$SKILL_DIR/atelier-$s"
-    mkdir -p "$dst" || return 1
-    if [ -n "$FROM_SOURCE" ] && [ -f "crates/atelier/skills/$s.md" ]; then
-      # From a checkout: install the skills you actually have, not master's.
-      cp "crates/atelier/skills/$s.md" "$dst/SKILL.md" || return 1
-    else
-      curl -fsSL "https://raw.githubusercontent.com/$REPO/master/crates/atelier/skills/$s.md" \
-        -o "$dst/SKILL.md" || return 1
-    fi
-  done
-}
 
 if [ -d "$SKILL_DIR/atelier-sprite" ]; then
   # Already installed: refresh without asking. They are ours to update.
-  install_skills && say "Skills updated in $SKILL_DIR" || say "Skills update failed — skipping."
+  "$BIN" skills install >/dev/null 2>&1 && say "Skills updated in $SKILL_DIR" \
+    || say "Skills update failed — skipping."
 else
   case "$(ask "Install the atelier skills for Claude Code? [Y/n]")" in
-    n|N) say "Skipped skills. Install later by re-running this script." ;;
+    n|N) say "Skipped skills. Install later with: atelier skills install" ;;
     *)
-      if install_skills; then
-        say "Skills installed: $SKILLS"
-        say "  (in $SKILL_DIR — atelier works without them; they teach the workflow.)"
+      if "$BIN" skills install >/dev/null 2>&1; then
+        say "Skills installed in $SKILL_DIR (atelier works without them; they teach the workflow)."
       else
-        say "Skills install failed — atelier itself is fine. Re-run to retry."
+        say "Skills install failed — atelier itself is fine. Retry: atelier skills install"
       fi
       ;;
   esac

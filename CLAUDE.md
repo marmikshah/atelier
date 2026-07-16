@@ -66,10 +66,12 @@ stack), reads `OPENAI_API_KEY` from the env, and is never part of a default
 install. It executes the model's tool calls against a child `atelier` stdio
 server, so it reuses the whole validated tool path rather than a second copy.
 
-The workflow guidance lives in `crates/atelier/skills/` (sprite / scene / review),
-not in the server: it is embedded into `atelier agent` via `include_str!`, and
-`install.sh` copies it into the user's `~/.claude/skills/` for Claude Code. A test
-fails if a skill names a tool that no longer exists.
+The workflow guidance is a typed registry (`crates/atelier/src/skills.rs`): Rust
+owns each skill's metadata and the renderers (Claude `SKILL.md`, the agent system
+prompt); the prose stays markdown in `crates/atelier/skills/*.md`. `atelier skills
+install` writes the `SKILL.md` files into `~/.claude/skills/`; `atelier agent`
+renders its prompt from the same registry. A test fails if a skill names a tool
+that no longer exists.
 The MCP server ships no prompts — the skills replaced them.
 
 ## Hard constraints
