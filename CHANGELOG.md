@@ -6,6 +6,40 @@ releases.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Replay remaps document ids.** `atelier replay <id>` into a store where the
+  id already exists used to draw every step onto the LIVE original (and double
+  its journal) while the fresh copy stayed blank; journals of collision-suffixed
+  documents (`hero-2`) could never replay at all. The journal now stamps the
+  minted id onto its `doc_create` line and replay rewrites
+  `doc_id`/`set_doc`/`from_doc`/`ids` through a recorded→minted map.
+- **Pastes replay self-contained.** A journaled `doc_region op=paste` embeds the
+  pixels it used, so a rebuild no longer depends on (or clobbers) the live
+  process clipboard — cross-document copies included.
+- **The child server always speaks stdio.** `atelier replay` and
+  `atelier agent` scrub `ATELIER_HTTP`/`ATELIER_RECORD` from the child's
+  environment; an exported `ATELIER_HTTP` used to make the child bind HTTP and
+  the handshake hang forever. Responses are also read under a timeout now, and
+  both commands share one `StdioClient` instead of two copies of the plumbing.
+- **Journal order can no longer diverge from execution order** under concurrent
+  HTTP sessions: mutations hold one order lock across dispatch and append.
+- **`--record` truncates a reused path** instead of concatenating two sittings
+  into one unreplayable file, and records `delete_doc` so create/delete/create
+  sittings replay with the right ids.
+- **One journal read policy.** `atelier library` no longer reports "N steps /
+  replayable" for a journal `atelier replay` refuses: both tolerate a torn
+  final line (announced on stderr) and error on mid-file corruption; the
+  listing says "corrupt journal". A journaled `doc_ref op=set` whose reference
+  image has moved warns and continues instead of aborting the rebuild.
+- **Agent-loop edges:** transient API failures (429/5xx) retry with backoff
+  instead of discarding the run; malformed tool-call JSON gets an explicit
+  error back instead of running the tool with `{}`; an empty assistant message
+  is a failure, not success; `http://[::1]` is accepted as loopback; a flag
+  following `--task` is a missing value, not the task.
+- The examples in `docs/examples/` are now genuinely integration tests:
+  `make test` replays each through the real binary into a throwaway store.
+
 ### Added
 
 - **`atelier agent` — the one online mode.** Drives an OpenAI-style
@@ -54,13 +88,17 @@ releases.
   `doc_stamp_image`, `doc_extract_to_layer`, `doc_dissolve`, `doc_select_wand`,
   `doc_select_render`, `doc_perspective_guide`, `doc_set_pivot` and
   `doc_set_frame_boxes`. Pillow-shading detection survives inside `doc_critique`.
+  A pre-trim recording or journal that used a deleted tool no longer replays: the
+  run stops cleanly at that step with the unknown-tool error. Frame pivots and
+  collision boxes lose their storage and export slots too — the only setters
+  were the deleted tools, so for any new document they were permanently empty.
 - **No more tool profiles.** `ATELIER_PROFILE` is gone from the env, the
   installer, the Docker image and the daemon manifest. All 28 tools are always
   advertised — at this size, hiding a third of them behind a flag cost more in
   confusion than it saved in context.
-- **Prompts:** `game-asset-set` is removed (it was built from deleted tools).
-  `walk-cycle` now animates by repainting each pose, which is what agents
-  actually do.
+- **Prompts:** `game-asset-set` is removed with the rest of the prompts (it
+  was built from deleted tools). The skills that replaced the prompts animate
+  walk cycles by repainting each pose, which is what agents actually do.
 
 ### Added
 
