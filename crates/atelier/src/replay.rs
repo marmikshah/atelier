@@ -16,6 +16,7 @@
 //! visible result), while status/diagnostics go to stderr (header, errors, the
 //! final "N step(s) ok" tally) so they don't pollute piped stdout.
 
+use std::collections::HashMap;
 use std::process::Stdio;
 
 use serde_json::{json, Value};
@@ -30,7 +31,9 @@ use atelier_mcp::recipe::{Recipe, Step};
 const USAGE: &str = "usage: atelier replay <recipe.json | doc-id> [--home DIR]";
 
 /// Read the recipe to replay: either a file, or the journal of a document in
-/// the store.
+/// the store. The second value is the journal's own document id when the
+/// source is a document — old journals predate the stamped `doc_id` on their
+/// `doc_create` line, and the directory name is the ground truth for them.
 ///
 /// A path wins over an id, so a file named like a document still replays as the
 /// file the user pointed at.
@@ -39,10 +42,12 @@ const USAGE: &str = "usage: atelier replay <recipe.json | doc-id> [--home DIR]";
 /// *writes*, so `replay jt --home /tmp/sandbox` means "rebuild jt over there",
 /// and reading the journal from the destination would only ever find an empty
 /// store. Point `ATELIER_HOME` at a different store to read from one.
-fn resolve_source(path: &str) -> Result<String, String> {
+fn resolve_source(path: &str) -> Result<(String, Option<String>), String> {
     let as_file = std::path::Path::new(path);
     if as_file.is_file() {
-        return std::fs::read_to_string(as_file).map_err(|e| format!("cannot read {path}: {e}"));
+        return std::fs::read_to_string(as_file)
+            .map(|s| (s, None))
+            .map_err(|e| format!("cannot read {path}: {e}"));
     }
     let root = crate::service::default_home();
     let doc = root.join("documents").join(path);
@@ -59,7 +64,9 @@ fn resolve_source(path: &str) -> Result<String, String> {
              built by a client that never wrote one"
         ));
     }
-    std::fs::read_to_string(&journal).map_err(|e| format!("cannot read {path}'s journal: {e}"))
+    std::fs::read_to_string(&journal)
+        .map(|s| (s, Some(path.to_string())))
+        .map_err(|e| format!("cannot read {path}'s journal: {e}"))
 }
 
 /// Entry point for the `replay` subcommand. Returns a process exit code.
@@ -106,7 +113,7 @@ pub async fn run(args: &[String]) -> i32 {
 
     // A bare document id replays that document's own journal — the whole point
     // of journaling by default is that you never had to keep a recipe file.
-    let src = match resolve_source(path) {
+    let (src, journal_id) = match resolve_source(path) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("replay: {e}");
@@ -121,7 +128,7 @@ pub async fn run(args: &[String]) -> i32 {
         }
     };
 
-    match drive(recipe, home).await {
+    match drive(recipe, journal_id, home).await {
         Ok(()) => 0,
         Err(e) => {
             eprintln!("replay: {e}");
@@ -131,7 +138,11 @@ pub async fn run(args: &[String]) -> i32 {
 }
 
 /// Spawn the child server, handshake, and run every step in order.
-async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
+async fn drive(
+    recipe: Recipe,
+    journal_id: Option<String>,
+    home: Option<&str>,
+) -> Result<(), String> {
     let exe = std::env::current_exe()
         .map_err(|e| format!("cannot locate atelier binary (current_exe): {e}"))?;
 
@@ -161,7 +172,7 @@ async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
             .ok_or("child stdout unavailable after spawn")?,
     );
 
-    let result = run_session(&recipe, &mut stdin, &mut reader).await;
+    let result = run_session(&recipe, journal_id, &mut stdin, &mut reader).await;
 
     // Close the child's stdin so its stdio server loop terminates, then reap.
     drop(stdin);
@@ -170,8 +181,15 @@ async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
 }
 
 /// The MCP conversation: handshake then one `tools/call` per step.
+///
+/// Recorded document ids never reach the server verbatim: `doc_create` re-mints
+/// its id in the destination store (a collision mints `name-2`), so every step
+/// is rewritten from the id the recipe recorded to the id this run actually
+/// got. Without that, replaying into a store where the id already exists sends
+/// every draw to the LIVE original instead of the fresh copy.
 async fn run_session(
     recipe: &Recipe,
+    journal_id: Option<String>,
     stdin: &mut ChildStdin,
     reader: &mut BufReader<ChildStdout>,
 ) -> Result<(), String> {
@@ -202,12 +220,24 @@ async fn run_session(
     send(stdin, &notify).await?;
 
     // --- steps ---------------------------------------------------------------
+    let mut ids: HashMap<String, String> = HashMap::new();
+    // Old journals predate the stamped doc_id on their doc_create line; the
+    // journal's directory name is the recorded id, and it binds to the first
+    // (a per-document journal's only) create.
+    let mut journal_id = journal_id;
     for (idx, step) in recipe.steps.iter().enumerate() {
+        let mut args = step.args.clone();
+        let recorded = if step.tool == "doc_create" {
+            create_recorded_id(&mut args, journal_id.take().as_deref())
+        } else {
+            remap_ids(&mut args, &ids);
+            None
+        };
         let req = json!({
             "jsonrpc": "2.0",
             "id": idx + 1,
             "method": "tools/call",
-            "params": {"name": step.tool, "arguments": step.args}
+            "params": {"name": step.tool, "arguments": args}
         });
         send(stdin, &req).await?;
         let resp = recv(reader).await?;
@@ -238,10 +268,83 @@ async fn run_session(
                 step.tool
             ));
         }
+
+        // Bind recorded id → minted id so every later step follows this run's
+        // document, not whatever the recorded id happens to name in the store.
+        if let Some(recorded) = recorded {
+            let Some(minted) = minted_id(&result) else {
+                return Err(format!(
+                    "step {} (doc_create) returned no document id — cannot remap later steps",
+                    idx + 1
+                ));
+            };
+            if recorded != minted {
+                eprintln!("replay: '{recorded}' rebuilds as '{minted}'");
+            }
+            ids.insert(recorded, minted);
+        }
     }
 
     eprintln!("replay: {} step(s) ok", recipe.steps.len());
     Ok(())
+}
+
+/// The id this `doc_create` stood for when recorded: the journal-stamped
+/// `doc_id` if present (stripped before sending — the tool mints its own),
+/// else the journal's own id (old journals predate stamping), else the slug
+/// the name would mint into an empty store (authored recipes).
+fn create_recorded_id(args: &mut Value, journal_id: Option<&str>) -> Option<String> {
+    let stamped = args
+        .as_object_mut()
+        .and_then(|o| o.remove("doc_id"))
+        .and_then(|v| v.as_str().map(str::to_string));
+    stamped
+        .or_else(|| journal_id.map(str::to_string))
+        .or_else(|| {
+            args.get("name")
+                .and_then(Value::as_str)
+                .map(atelier_studio::slugify)
+        })
+}
+
+/// Rewrite every recorded document id in `args` through the remap table.
+/// Covers each id-bearing field on the tool surface: `doc_id` everywhere,
+/// plus doc_palette's `set_doc`, `from_doc` and `ids`.
+fn remap_ids(args: &mut Value, ids: &HashMap<String, String>) {
+    let Some(obj) = args.as_object_mut() else {
+        return;
+    };
+    for key in ["doc_id", "set_doc", "from_doc"] {
+        if let Some(mapped) = obj
+            .get(key)
+            .and_then(Value::as_str)
+            .and_then(|v| ids.get(v))
+        {
+            obj.insert(key.into(), json!(mapped));
+        }
+    }
+    if let Some(list) = obj.get_mut("ids").and_then(Value::as_array_mut) {
+        for item in list {
+            if let Some(mapped) = item.as_str().and_then(|v| ids.get(v)) {
+                *item = json!(mapped);
+            }
+        }
+    }
+}
+
+/// Pull the minted id out of a `doc_create` result: the first text content
+/// block carries the tool's JSON payload, whose `id` field is the new id.
+fn minted_id(result: &Value) -> Option<String> {
+    let text = result
+        .get("content")
+        .and_then(Value::as_array)?
+        .iter()
+        .find_map(|b| b.get("text").and_then(Value::as_str))?;
+    serde_json::from_str::<Value>(text)
+        .ok()?
+        .get("id")
+        .and_then(Value::as_str)
+        .map(str::to_string)
 }
 
 /// One-line per-step report: `[N] tool — summary  (note)`. Goes to stdout.
@@ -367,6 +470,63 @@ mod tests {
     fn malformed_json_actionable_error() {
         let err = Recipe::parse("{ not json").expect_err("must error");
         assert!(err.contains("invalid recipe JSON"), "got: {err}");
+    }
+
+    #[test]
+    fn create_hint_prefers_stamp_then_journal_then_slug() {
+        // Journal-stamped id wins and is stripped from the sent args.
+        let mut args = json!({"name": "Hero", "doc_id": "hero-2"});
+        assert_eq!(
+            create_recorded_id(&mut args, Some("ignored")).as_deref(),
+            Some("hero-2")
+        );
+        assert_eq!(args, json!({"name": "Hero"}));
+
+        // Old journal: the directory name is the recorded id.
+        let mut args = json!({"name": "Hero"});
+        assert_eq!(
+            create_recorded_id(&mut args, Some("hero-2")).as_deref(),
+            Some("hero-2")
+        );
+
+        // Authored recipe: predict the slug an empty store would mint.
+        let mut args = json!({"name": "Invader March"});
+        assert_eq!(
+            create_recorded_id(&mut args, None).as_deref(),
+            Some("invader-march")
+        );
+    }
+
+    #[test]
+    fn remap_rewrites_every_id_bearing_field() {
+        let ids: HashMap<String, String> = [("hero".to_string(), "hero-2".to_string())].into();
+        let mut args = json!({
+            "doc_id": "hero",
+            "set_doc": "hero",
+            "from_doc": "hero",
+            "ids": ["hero", "villain"],
+            "name": "hero"
+        });
+        remap_ids(&mut args, &ids);
+        assert_eq!(
+            args,
+            json!({
+                "doc_id": "hero-2",
+                "set_doc": "hero-2",
+                "from_doc": "hero-2",
+                "ids": ["hero-2", "villain"],
+                "name": "hero"
+            })
+        );
+    }
+
+    #[test]
+    fn minted_id_reads_the_create_payload() {
+        let result = json!({
+            "content": [{"type": "text", "text": "{\"id\":\"hero-2\",\"width\":8}"}]
+        });
+        assert_eq!(minted_id(&result).as_deref(), Some("hero-2"));
+        assert_eq!(minted_id(&json!({"content": []})), None);
     }
 
     #[test]

@@ -128,7 +128,9 @@ pub(crate) fn open_bounded(path: &Path) -> Result<image::RgbaImage, String> {
     Ok(reader.decode().map_err(|e| e.to_string())?.to_rgba8())
 }
 
-fn slugify(name: &str) -> String {
+/// Public because `atelier replay` predicts the id an authored recipe's
+/// `doc_create` would have minted (pre-journal recipes carry no minted id).
+pub fn slugify(name: &str) -> String {
     let mut out = String::new();
     let mut prev_dash = false;
     for ch in name.trim().to_lowercase().chars() {
