@@ -23,7 +23,8 @@ const USAGE: &str = "\
 usage: atelier agent --task <text|@file> [options]
 
   --task <text|@file>   what to draw (literal, or @path to read from a file)
-  --skill <path>        a SKILL.md to inject as the system prompt (repeatable)
+  --skill <name>        built-in skill to inject: sprite (default) | scene | review
+  --skill-file <path>   inject a custom SKILL.md instead of a built-in
   --model <name>        model id (or OPENAI_MODEL; default gpt-4o)
   --base-url <url>      API base (or OPENAI_BASE_URL; default https://api.openai.com/v1)
   --out <path>          expected export path; the run warns if it is missing
@@ -32,7 +33,28 @@ usage: atelier agent --task <text|@file> [options]
 
 env: OPENAI_API_KEY (required). OPENAI_BASE_URL, OPENAI_MODEL as above.
 
-This is the only atelier command that uses the network or an API key.";
+The atelier-sprite/scene/review skills are baked into the binary, so a bare
+`atelier agent --task \"...\"` works with no files. This is the only atelier
+command that uses the network or an API key.";
+
+/// The skills, compiled into the binary so agent mode needs no files on disk.
+/// An installed user has no repo checkout, so a `--skill <path>` would have been
+/// a broken default; these are always here.
+const SKILL_SPRITE: &str = include_str!("../../../.claude/skills/atelier-sprite/SKILL.md");
+const SKILL_SCENE: &str = include_str!("../../../.claude/skills/atelier-scene/SKILL.md");
+const SKILL_REVIEW: &str = include_str!("../../../.claude/skills/atelier-review/SKILL.md");
+
+/// Resolve a built-in skill name to its embedded text.
+fn builtin_skill(name: &str) -> Result<&'static str, String> {
+    match name {
+        "sprite" => Ok(SKILL_SPRITE),
+        "scene" => Ok(SKILL_SCENE),
+        "review" => Ok(SKILL_REVIEW),
+        other => Err(format!(
+            "unknown skill '{other}' — expected sprite, scene or review (or --skill-file <path>)"
+        )),
+    }
+}
 
 struct Config {
     task: String,
@@ -66,7 +88,8 @@ pub async fn run(args: &[String]) -> i32 {
 
 fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
     let mut task: Option<String> = None;
-    let mut skills: Vec<String> = Vec::new();
+    // The skill is the built-in sprite unless a name or a file overrides it.
+    let mut skill: String = SKILL_SPRITE.to_string();
     let mut model = std::env::var("OPENAI_MODEL").unwrap_or_else(|_| "gpt-4o".into());
     let mut base_url =
         std::env::var("OPENAI_BASE_URL").unwrap_or_else(|_| "https://api.openai.com/v1".into());
@@ -96,11 +119,13 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
                 i += 2;
             }
             "--skill" => {
+                skill = builtin_skill(&need(i)?)?.to_string();
+                i += 2;
+            }
+            "--skill-file" => {
                 let path = need(i)?;
-                skills.push(
-                    std::fs::read_to_string(&path)
-                        .map_err(|e| format!("cannot read skill {path}: {e}"))?,
-                );
+                skill = std::fs::read_to_string(&path)
+                    .map_err(|e| format!("cannot read skill {path}: {e}"))?;
                 i += 2;
             }
             "--model" => {
@@ -135,7 +160,7 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
 
     Ok(Some(Config {
         task: task.trim().to_string(),
-        system: build_system_prompt(&skills),
+        system: build_system_prompt(&skill),
         model,
         base_url: base_url.trim_end_matches('/').to_string(),
         api_key,
@@ -147,17 +172,15 @@ fn parse_args(args: &[String]) -> Result<Option<Config>, String> {
 
 /// The system prompt: the injected skills, then the ground rules the loop needs
 /// the model to follow (drive the tools, look, and export at the end).
-fn build_system_prompt(skills: &[String]) -> String {
+fn build_system_prompt(skill: &str) -> String {
+    // Strip YAML frontmatter — the model wants the body, not the metadata.
+    let body = skill
+        .strip_prefix("---")
+        .and_then(|r| r.split_once("\n---").map(|(_, b)| b))
+        .unwrap_or(skill);
     let mut s = String::new();
-    for skill in skills {
-        // Strip YAML frontmatter — the model wants the body, not the metadata.
-        let body = skill
-            .strip_prefix("---")
-            .and_then(|r| r.split_once("\n---").map(|(_, b)| b))
-            .unwrap_or(skill);
-        s.push_str(body.trim());
-        s.push_str("\n\n");
-    }
+    s.push_str(body.trim());
+    s.push_str("\n\n");
     s.push_str(
         "You are drawing through the atelier tools. Call them to build the art. \
          After a burst of edits, call doc_look to SEE the frame before continuing — \
@@ -515,10 +538,28 @@ mod tests {
     #[test]
     fn frontmatter_is_stripped_from_the_injected_skill() {
         let skill = "---\nname: x\ndescription: y\n---\n\n# Body\nreal guidance";
-        let sys = build_system_prompt(&[skill.into()]);
+        let sys = build_system_prompt(skill);
         assert!(sys.contains("Body"), "{sys}");
         assert!(sys.contains("real guidance"));
         assert!(!sys.contains("description: y"), "frontmatter leaked: {sys}");
         assert!(sys.contains("call doc_look"), "ground rules missing");
+    }
+
+    #[test]
+    fn the_built_in_skills_are_embedded_and_selectable() {
+        // include_str! makes agent mode work with no files on disk — the whole
+        // point. If a skill file is renamed, this fails at compile time.
+        for name in ["sprite", "scene", "review"] {
+            let body = builtin_skill(name).unwrap();
+            assert!(body.contains("name: atelier-"), "{name} skill looks wrong");
+            // And the default (no --skill) is the sprite skill, frontmatter-stripped.
+        }
+        assert!(builtin_skill("nope").is_err());
+        let default_sys = build_system_prompt(SKILL_SPRITE);
+        assert!(default_sys.contains("one subject") || default_sys.contains("sprite"));
+        assert!(
+            !default_sys.starts_with("---"),
+            "frontmatter leaked into default"
+        );
     }
 }

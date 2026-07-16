@@ -111,10 +111,12 @@ client needed.
 ```sh
 cargo install --path crates/atelier --features agent   # opt in — links the HTTP stack
 export OPENAI_API_KEY=sk-…
-atelier agent --task "a bouncing slime, 8 frames" \
-              --skill .claude/skills/atelier-sprite/SKILL.md \
-              --out slime.gif
+atelier agent --task "a bouncing slime, 8 frames" --out slime.gif
 ```
+
+The atelier-sprite, -scene and -review skills are **baked into the binary**, so
+that bare command just works — no files, no Claude, no repo checkout.
+`--skill scene|review` picks another, `--skill-file <path>` injects your own.
 
 It's off by default — a normal build and the daemon link no network stack at all
 — and it reuses the same tool server everything else does, so the model draws

@@ -14,7 +14,9 @@ releases.
   child `atelier` stdio server, so it reuses the whole validated tool path
   (schemas, arg-checking, journaling) rather than a second copy; `doc_look`
   images are fed back to the model. Any OpenAI-compatible endpoint works via
-  `--base-url`, and a `--skill` file is injected as the system prompt.
+  `--base-url`. The atelier-sprite/scene/review skills are compiled into the
+  binary, so a bare `atelier agent --task "..."` needs no files — `--skill
+  scene|review` picks another, `--skill-file` injects a custom one.
 - Gated behind the **`agent` cargo feature**, OFF by default: a normal build and
   the daemon link no HTTP/TLS stack, and the core stays offline, keyless and
   deterministic. `OPENAI_API_KEY` comes from the env; agent mode is never part
