@@ -74,9 +74,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/person.gif",
-      "tool_calls": 42,
-      "looks": 1,
-      "tokens": 62267,
+      "tool_calls": 22,
+      "looks": 0,
+      "tokens": 66060,
       "frames": 10
     },
     {
@@ -94,9 +94,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/slash.gif",
-      "tool_calls": 32,
-      "looks": 2,
-      "tokens": 47714,
+      "tool_calls": 26,
+      "looks": 4,
+      "tokens": 40836,
       "frames": 10
     },
     {
@@ -154,9 +154,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/person.gif",
-      "tool_calls": 33,
+      "tool_calls": 78,
       "looks": 6,
-      "tokens": 86716,
+      "tokens": 131848,
       "frames": 10
     },
     {
@@ -175,9 +175,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/slash.gif",
-      "tool_calls": 60,
-      "looks": 8,
-      "tokens": 97112,
+      "tool_calls": 43,
+      "looks": 2,
+      "tokens": 81260,
       "frames": 10
     },
     {
@@ -235,9 +235,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/person.gif",
-      "tool_calls": 52,
-      "looks": 4,
-      "tokens": 68656,
+      "tool_calls": 55,
+      "looks": 8,
+      "tokens": 129682,
       "frames": 10
     },
     {
@@ -255,9 +255,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/slash.gif",
-      "tool_calls": 61,
-      "looks": 9,
-      "tokens": 76374,
+      "tool_calls": 44,
+      "looks": 2,
+      "tokens": 79908,
       "frames": 10
     },
     {
@@ -315,9 +315,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/person.gif",
-      "tool_calls": 33,
-      "looks": 5,
-      "tokens": 62795,
+      "tool_calls": 49,
+      "looks": 2,
+      "tokens": 74733,
       "frames": 10
     },
     {
@@ -335,9 +335,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/slash.gif",
-      "tool_calls": 48,
-      "looks": 10,
-      "tokens": 62434,
+      "tool_calls": 42,
+      "looks": 2,
+      "tokens": 85139,
       "frames": 10
     },
     {
@@ -395,9 +395,9 @@
       "model": "opus-4.8-skills",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8-skills/person.gif",
-      "tool_calls": 47,
-      "looks": 2,
-      "tokens": 83608,
+      "tool_calls": 62,
+      "looks": 6,
+      "tokens": 98805,
       "frames": 10
     },
     {
@@ -415,9 +415,9 @@
       "model": "opus-4.8-skills",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8-skills/slash.gif",
-      "tool_calls": 44,
+      "tool_calls": 37,
       "looks": 3,
-      "tokens": 82915,
+      "tokens": 89753,
       "frames": 10
     },
     {
