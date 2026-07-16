@@ -32,6 +32,12 @@ impl Recorder {
                 );
             }
         }
+        // `--record` names THIS session's output: truncate whatever was there,
+        // or reusing a filename would append a second sitting after the first
+        // and the concatenation replays as one corrupted recipe.
+        if let Err(e) = std::fs::File::create(&path) {
+            eprintln!("atelier: failed to start recording {}: {e}", path.display());
+        }
         Self {
             path: std::sync::Arc::new(path),
             write: std::sync::Arc::new(std::sync::Mutex::new(())),

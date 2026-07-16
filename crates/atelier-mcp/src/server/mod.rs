@@ -853,6 +853,15 @@ fn is_journaled(tool: &str, args: &Value) -> bool {
     )
 }
 
+/// What the session recorder (`--record`) captures: everything the journal
+/// does, plus `delete_doc`. Deleting is not part of any one document's
+/// provenance (the whole dir is gone), but a cross-document sitting that
+/// creates x, deletes it, and creates x again replays as x + x-2 unless the
+/// delete is in the recording.
+fn is_recorded(tool: &str, args: &Value) -> bool {
+    tool == "delete_doc" || is_journaled(tool, args)
+}
+
 /// The document a call belongs to. `doc_create` names it in the result (the id
 /// is minted there, not passed in); everything else carries `doc_id`.
 fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<String> {
@@ -937,8 +946,9 @@ impl ServerHandler for Atelier {
         // after the journal write, so journal order can never diverge from
         // execution order under concurrent sessions. Reads skip it.
         let journaled = is_journaled(&tool, &args);
+        let recorded = is_recorded(&tool, &args);
         let write_order = self.write_order.clone();
-        let _order = if journaled {
+        let _order = if recorded {
             Some(write_order.lock().await)
         } else {
             None
@@ -950,17 +960,20 @@ impl ServerHandler for Atelier {
         // A read rebuilds nothing, so it belongs in neither recipe. Both
         // recorders answer to the same question — what did it take to make
         // this? — so they share the one classifier.
-        if !is_error_result(&result) && journaled {
+        if !is_error_result(&result) && recorded {
             let target = journal_target(&tool, &args, &result);
             let args = recorded_args(&tool, args, target.as_deref());
             // The document's own journal: on by default, so every document is a
             // replayable recipe without anyone having to know to ask first.
-            if let Some(id) = &target {
-                self.studio().journal_append(id, &tool, &args);
+            if journaled {
+                if let Some(id) = &target {
+                    self.studio().journal_append(id, &tool, &args);
+                }
             }
             // The session recorder (--record) stays opt-in and cross-document:
             // it captures a whole sitting, which per-document journals cannot
-            // express.
+            // express (that is also why it gets delete_doc and the journal
+            // does not).
             if let Some(recorder) = recorder {
                 recorder.record(&tool, args);
             }
@@ -1289,6 +1302,33 @@ mod tests {
             journal_target("doc_draw", &json!({"doc_id": "sprite"}), &drew).as_deref(),
             Some("sprite")
         );
+    }
+
+    #[test]
+    fn delete_doc_is_recorded_but_never_journaled() {
+        // Its own journal dies with the doc dir, so journaling it is moot —
+        // but a cross-document sitting that creates x, deletes it and creates
+        // x again replays as x + x-2 unless the recording keeps the delete.
+        assert!(!is_journaled("delete_doc", &json!({"doc_id": "x"})));
+        assert!(is_recorded("delete_doc", &json!({"doc_id": "x"})));
+        // Everything the journal keeps, the recorder keeps too.
+        assert!(is_recorded("doc_draw", &json!({"doc_id": "x"})));
+        assert!(!is_recorded("doc_look", &json!({"doc_id": "x"})));
+    }
+
+    #[test]
+    fn a_reused_recording_path_is_truncated_not_appended() {
+        let path = std::env::temp_dir().join("atelier-rec-truncate.jsonl");
+        std::fs::write(&path, "{\"tool\":\"doc_create\",\"args\":{}}\n").unwrap();
+        let rec = Recorder::new(path.clone());
+        rec.record("doc_draw", json!({"doc_id": "x"}));
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert_eq!(
+            text.lines().count(),
+            1,
+            "old sitting must not survive: {text}"
+        );
+        assert!(text.contains("doc_draw"));
     }
 
     #[test]
