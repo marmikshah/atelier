@@ -1,0 +1,4 @@
+Effect — a particle explosion: a bright core flashes, throws debris and sparks
+outward on arcing paths, they fade as they fly, and a puff of smoke curls up and
+dissipates to nothing. Reads as force. Loops seamlessly. 10 frames, 1 second at
+10 FPS. 32x32 canvas. 6 colours, transparent background.

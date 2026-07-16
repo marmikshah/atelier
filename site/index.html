@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>atelier — the pixel-art studio agents can see</title>
-<meta name="description" content="Four models and one skill, eight animation tasks, identical prompts — every frame drawn through atelier's MCP tools. Compare the art and the effort side by side.">
+<meta name="description" content="Four models, ten animation tasks, identical prompts — every frame drawn through atelier's MCP tools with the atelier-sprite skill. Compare the art and the effort side by side.">
 <style>
   :root{
     --bg:#14161d; --panel:#1b1e28; --panel2:#232735;
@@ -89,11 +89,9 @@
     <a class="btn" href="architecture.html">architecture</a>
     <a class="btn" href="tools.html">tool reference</a>
   </div>
-  <p class="tag">Each model gets the <em>same task</em> — a one-second pixel-art loop — and drives the same
-  tools, seeing its own work through <code>doc_look</code> and correcting it. One row is the same model
-  <em>plus a skill</em>: identical task, identical tools, only the guidance differs. The art and the
-  numbers are published as measured — the skill does not win every task.
-  <strong>No scores, no opinions.</strong></p>
+  <p class="tag">Every model gets the <em>same ten tasks</em> — one-second pixel-art loops — and drives the
+  same tools through the same skill, seeing its own work through <code>doc_look</code> and correcting it.
+  The art and the numbers are published exactly as measured. <strong>No scores, no opinions.</strong></p>
 </header>
 
 <div class="controls">
@@ -128,20 +126,20 @@
 // which is the frozen benchmarks/tasks/*.txt every model was given verbatim. A
 // paraphrase here would quietly contradict the one claim this page makes.
 const TASK = {
-  person: {label:"Adventurer",    cat:"character"},
-  cat:    {label:"Wizard cat",    cat:"animal"},
-  car:    {label:"Car",           cat:"vehicle"},
-  alien:  {label:"Space alien",   cat:"creature"},
-  ball:   {label:"Bouncing ball", cat:"prop"},
-  potion: {label:"Potion",        cat:"item"},
-  slash:  {label:"Hero slash",    cat:"effect"},
-  torch:  {label:"Torch",         cat:"environment"},
+  person:    {label:"Adventurer jump", cat:"character"},
+  cat:       {label:"Wizard cat",      cat:"animal"},
+  car:       {label:"Car",             cat:"vehicle"},
+  alien:     {label:"Space alien",     cat:"creature"},
+  ball:      {label:"Bouncing ball",   cat:"prop"},
+  potion:    {label:"Potion",          cat:"item"},
+  slash:     {label:"Sword slash",     cat:"effect"},
+  explosion: {label:"Explosion",       cat:"effect"},
+  beam:      {label:"Energy beam",     cat:"effect"},
+  torch:     {label:"Torch",           cat:"environment"},
 };
-// Display names. `opus-4.8-skills` is NOT a fifth model: it is opus-4.8 on the
-// same task with the atelier-sprite skill loaded. Labelling it as a model would
-// make the comparison read as something it is not.
-const MODEL = {"opus-4.8-skills": 'opus-4.8 <span class="cat">+ skill</span>'};
-const modelLabel = m => MODEL[m] || m;
+// Every model draws through the atelier-sprite skill, so the model name is the
+// whole label — the skill is the constant, not a variable.
+const modelLabel = m => m;
 
 // The exact text the model was given, as run.
 const taskText = () => (state.DATA.task_text || {})[state.task] || "";

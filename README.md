@@ -16,20 +16,20 @@ Layered, animated, game-ready art — over MCP.</p>
 </p>
 
 <p align="center">
-  <img src="site/assets/studio-scene.gif" width="640" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a ginger cat sleeps on the desk — drawn and animated entirely by agents">
+  <img src="site/assets/studio-scene.gif" width="640" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a cat sleeps on the desk — a full room drawn and animated entirely by agents">
 </p>
 
 <p align="center">
-  <img src="site/showcase/opus-4.8/slash.gif" width="88" alt="armored hero slashing">
-  <img src="site/showcase/sonnet-5/cat.gif" width="88" alt="wizard cat casting">
+  <img src="site/showcase/fable-5/cat.gif" width="88" alt="wizard cat casting">
+  <img src="site/showcase/fable-5/car.gif" width="88" alt="driving car">
+  <img src="site/showcase/fable-5/potion.gif" width="88" alt="bubbling potion">
+  <img src="site/showcase/fable-5/alien.gif" width="88" alt="hovering alien">
+  <img src="site/showcase/fable-5/slash.gif" width="88" alt="sword slash arc">
   <img src="site/showcase/fable-5/torch.gif" width="88" alt="flickering wall torch">
-  <img src="site/showcase/opus-4.8/potion.gif" width="88" alt="bubbling potion">
-  <img src="site/showcase/haiku-4.5/car.gif" width="88" alt="driving car">
-  <img src="site/showcase/fable-5/ball.gif" width="88" alt="bouncing ball">
 </p>
 
 <p align="center"><em>Not one pixel was hand-placed. Every frame is a tool call.<br>
-<a href="https://marmikshah.github.io/atelier/">See all four models draw the same eight tasks →</a></em></p>
+<a href="https://marmikshah.github.io/atelier/">See all four models draw the same ten tasks →</a></em></p>
 
 ---
 
