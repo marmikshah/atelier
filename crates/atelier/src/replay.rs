@@ -8,23 +8,17 @@
 //! server happily pipelines concurrent requests, so strict sequencing is on us
 //! — a recipe is a narrative, step N may depend on step N-1's mutations.
 //!
-//! No rmcp client dependency: that would pull in `process-wrap` (child-process
-//! transport) which we don't otherwise need. Hand-rolled line-delimited
-//! JSON-RPC over the child's stdin/stdout keeps the dep tree unchanged.
-//!
 //! Output convention: the per-step log goes to stdout (scriptable, the recipe's
 //! visible result), while status/diagnostics go to stderr (header, errors, the
 //! final "N step(s) ok" tally) so they don't pollute piped stdout.
 
 use std::collections::HashMap;
-use std::process::Stdio;
 
 use serde_json::{json, Value};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 
 // The recipe format lives in the library crate (shared with the Recorder that
 // writes it); the runner below only consumes it.
+use crate::stdio_client::{RpcError, StdioClient};
 use atelier_mcp::recipe::{Recipe, Step};
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
@@ -143,40 +137,11 @@ async fn drive(
     journal_id: Option<String>,
     home: Option<&str>,
 ) -> Result<(), String> {
-    let exe = std::env::current_exe()
-        .map_err(|e| format!("cannot locate atelier binary (current_exe): {e}"))?;
-
-    let mut cmd = Command::new(&exe);
-    // No subcommand args → the child runs the stdio MCP server. Pipe stdio for
-    // the JSON-RPC dialogue; let the child's stderr flow straight through.
-    cmd.stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::inherit());
     // `--home` overrides ATELIER_HOME for an isolated run; otherwise the child
     // inherits our environment (including any ambient ATELIER_HOME).
-    if let Some(dir) = home {
-        cmd.env("ATELIER_HOME", dir);
-    }
-
-    let mut child: Child = cmd
-        .spawn()
-        .map_err(|e| format!("failed to spawn server child: {e}"))?;
-    let mut stdin = child
-        .stdin
-        .take()
-        .ok_or("child stdin unavailable after spawn")?;
-    let mut reader = BufReader::new(
-        child
-            .stdout
-            .take()
-            .ok_or("child stdout unavailable after spawn")?,
-    );
-
-    let result = run_session(&recipe, journal_id, &mut stdin, &mut reader).await;
-
-    // Close the child's stdin so its stdio server loop terminates, then reap.
-    drop(stdin);
-    let _ = child.wait().await;
+    let mut client = StdioClient::spawn("atelier-replay", home).await?;
+    let result = run_session(&recipe, journal_id, &mut client).await;
+    client.shutdown().await;
     result
 }
 
@@ -190,36 +155,11 @@ async fn drive(
 async fn run_session(
     recipe: &Recipe,
     journal_id: Option<String>,
-    stdin: &mut ChildStdin,
-    reader: &mut BufReader<ChildStdout>,
+    client: &mut StdioClient,
 ) -> Result<(), String> {
     // Header line (to stderr, status channel) so the run is self-identifying.
     eprintln!("== {} — {}", recipe.name, recipe.description);
 
-    // --- handshake: initialize -> initialized notification -------------------
-    let init = json!({
-        "jsonrpc": "2.0",
-        "id": 0,
-        "method": "initialize",
-        "params": {
-            // Must match a protocol version the server supports.
-            "protocolVersion": "2025-06-18",
-            "capabilities": {},
-            "clientInfo": {"name": "atelier-replay", "version": env!("CARGO_PKG_VERSION")}
-        }
-    });
-    send(stdin, &init).await?;
-    let init_resp = recv(reader).await?;
-    if let Some(err) = init_resp.get("error") {
-        return Err(format!("server rejected initialize: {err}"));
-    }
-    let notify = json!({
-        "jsonrpc": "2.0",
-        "method": "notifications/initialized"
-    });
-    send(stdin, &notify).await?;
-
-    // --- steps ---------------------------------------------------------------
     let mut ids: HashMap<String, String> = HashMap::new();
     // Old journals predate the stamped doc_id on their doc_create line; the
     // journal's directory name is the recorded id, and it binds to the first
@@ -233,26 +173,16 @@ async fn run_session(
             remap_ids(&mut args, &ids);
             None
         };
-        let req = json!({
-            "jsonrpc": "2.0",
-            "id": idx + 1,
-            "method": "tools/call",
-            "params": {"name": step.tool, "arguments": args}
-        });
-        send(stdin, &req).await?;
-        let resp = recv(reader).await?;
-
-        // Transport-level JSON-RPC error (unknown tool, malformed args, …).
-        if let Some(err) = resp.get("error") {
-            let msg = err
-                .get("message")
-                .and_then(Value::as_str)
-                .unwrap_or("unknown error");
-            print_step(idx, step, &format!("ERROR {msg}"));
-            return Err(format!("step {} ({}) failed: {msg}", idx + 1, step.tool));
-        }
-
-        let result = resp.get("result").cloned().unwrap_or(Value::Null);
+        let result = match client.call_tool(&step.tool, args).await {
+            Ok(result) => result,
+            // JSON-RPC error (unknown tool, malformed args, …) — a recipe is a
+            // narrative, so the first failed step ends the run.
+            Err(e @ RpcError::Rpc(_)) => {
+                print_step(idx, step, &format!("ERROR {e}"));
+                return Err(format!("step {} ({}) failed: {e}", idx + 1, step.tool));
+            }
+            Err(RpcError::Transport(e)) => return Err(e),
+        };
         // atelier tools surface their own errors as a {"error": ...} text
         // payload with isError set; treat that as a failed step too.
         let is_error = result
@@ -381,48 +311,6 @@ fn summarize(result: &Value) -> String {
         format!("{truncated}…")
     } else {
         line
-    }
-}
-
-/// Write one line-delimited JSON-RPC message to the child.
-async fn send(stdin: &mut ChildStdin, msg: &Value) -> Result<(), String> {
-    let mut line = serde_json::to_string(msg).map_err(|e| format!("encode request: {e}"))?;
-    line.push('\n');
-    stdin
-        .write_all(line.as_bytes())
-        .await
-        .map_err(|e| format!("write to server: {e}"))?;
-    stdin
-        .flush()
-        .await
-        .map_err(|e| format!("flush to server: {e}"))?;
-    Ok(())
-}
-
-/// Read one JSON-RPC message (one line) from the child, skipping any
-/// notifications/log lines the server may emit unsolicited. Assumes strict
-/// request/response sequencing: it returns the next response without matching
-/// against the request's id.
-async fn recv(reader: &mut BufReader<ChildStdout>) -> Result<Value, String> {
-    loop {
-        let mut line = String::new();
-        let n = reader
-            .read_line(&mut line)
-            .await
-            .map_err(|e| format!("read from server: {e}"))?;
-        if n == 0 {
-            return Err("server closed the connection unexpectedly".into());
-        }
-        let trimmed = line.trim();
-        if trimmed.is_empty() {
-            continue;
-        }
-        let msg: Value = serde_json::from_str(trimmed)
-            .map_err(|e| format!("server sent invalid JSON ({e}): {trimmed}"))?;
-        // A response carries an `id`; bare notifications (no id) are skipped.
-        if msg.get("id").is_some() {
-            return Ok(msg);
-        }
     }
 }
 
