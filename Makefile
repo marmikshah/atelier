@@ -20,8 +20,10 @@ build: ## Debug build
 release: ## Optimized release build → target/release/atelier
 	cargo build --release
 
-test: ## Run the test suite
+test: ## Run the test suite (unit tests + example-recipe replays)
 	cargo test
+	cargo build
+	tools/test-examples.sh
 
 fmt: ## Format all sources
 	cargo fmt --all
