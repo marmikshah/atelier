@@ -125,7 +125,7 @@ OpenAI-compatible endpoint works via `--base-url`.
 
 ## Skills
 
-Tools are the hand; these are the craft. Three [skills](.claude/skills) the
+Tools are the hand; these are the craft. Three [skills](crates/atelier/skills) the
 installer offers to add to Claude Code:
 
 | | |

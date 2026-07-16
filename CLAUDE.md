@@ -66,9 +66,10 @@ stack), reads `OPENAI_API_KEY` from the env, and is never part of a default
 install. It executes the model's tool calls against a child `atelier` stdio
 server, so it reuses the whole validated tool path rather than a second copy.
 
-The workflow guidance lives in `.claude/skills/` (atelier-sprite / atelier-scene /
-atelier-review), not in the server: `install.sh` copies them into the user's
-`~/.claude/skills/`. A test fails if a skill names a tool that no longer exists.
+The workflow guidance lives in `crates/atelier/skills/` (sprite / scene / review),
+not in the server: it is embedded into `atelier agent` via `include_str!`, and
+`install.sh` copies it into the user's `~/.claude/skills/` for Claude Code. A test
+fails if a skill names a tool that no longer exists.
 The MCP server ships no prompts — the skills replaced them.
 
 ## Hard constraints

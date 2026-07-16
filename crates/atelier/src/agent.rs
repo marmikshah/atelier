@@ -38,11 +38,11 @@ The atelier-sprite/scene/review skills are baked into the binary, so a bare
 command that uses the network or an API key.";
 
 /// The skills, compiled into the binary so agent mode needs no files on disk.
-/// An installed user has no repo checkout, so a `--skill <path>` would have been
-/// a broken default; these are always here.
-const SKILL_SPRITE: &str = include_str!("../../../.claude/skills/atelier-sprite/SKILL.md");
-const SKILL_SCENE: &str = include_str!("../../../.claude/skills/atelier-scene/SKILL.md");
-const SKILL_REVIEW: &str = include_str!("../../../.claude/skills/atelier-review/SKILL.md");
+/// They live inside this crate (`skills/`) — an installed user has no repo
+/// checkout, and a cross-crate include would break `cargo package`.
+const SKILL_SPRITE: &str = include_str!("../skills/sprite.md");
+const SKILL_SCENE: &str = include_str!("../skills/scene.md");
+const SKILL_REVIEW: &str = include_str!("../skills/review.md");
 
 /// Resolve a built-in skill name to its embedded text.
 fn builtin_skill(name: &str) -> Result<&'static str, String> {
