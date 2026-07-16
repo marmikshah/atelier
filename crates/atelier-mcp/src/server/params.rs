@@ -75,8 +75,6 @@ pub(crate) struct DocSelect {
     pub(crate) tolerance: Option<i32>,
 }
 
-/// A frame's anchor point (pivot) — set or clear it.
-
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocBatch {
     pub(crate) doc_id: String,
