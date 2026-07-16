@@ -1,6 +1,6 @@
 {
-  "method": "Claude Code subagents driving the atelier MCP server (63-tool full profile). One agent per task; each read the task spec verbatim and worked only through atelier's tools. Stats are Claude Code's own (tool_uses, subagent tokens) plus the doc_look count each agent self-reported. Durations are omitted: eight agents ran concurrently, so wall-clock reflects queueing, not work.",
-  "verified": "Every GIF was parsed from disk: all 32 are 10 frames x 100ms = exactly 1000ms.",
+  "method": "Claude Code subagents driving the atelier MCP server. One agent per task; each read the task spec verbatim and worked only through atelier's tools. opus-4.8-skills is the same model on the same task with the atelier-sprite skill loaded — the only difference between it and opus-4.8 is the skill. Stats are Claude Code's own (tool_uses, subagent tokens) plus the doc_look count each agent self-reported. Durations are omitted: agents ran concurrently, so wall-clock reflects queueing, not work.",
+  "verified": "Every GIF was parsed from disk: all 40 are 10 frames x 100ms = exactly 1000ms.",
   "tasks": [
     "alien",
     "ball",
@@ -25,7 +25,8 @@
     "haiku-4.5",
     "sonnet-5",
     "opus-4.8",
-    "fable-5"
+    "fable-5",
+    "opus-4.8-skills"
   ],
   "runs": [
     {
@@ -347,6 +348,86 @@
       "tool_calls": 46,
       "looks": 7,
       "tokens": 61450,
+      "frames": 10
+    },
+    {
+      "task": "alien",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/alien.gif",
+      "tool_calls": 77,
+      "looks": 6,
+      "tokens": 88764,
+      "frames": 10
+    },
+    {
+      "task": "ball",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/ball.gif",
+      "tool_calls": 32,
+      "looks": 3,
+      "tokens": 63976,
+      "frames": 10
+    },
+    {
+      "task": "car",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/car.gif",
+      "tool_calls": 40,
+      "looks": 4,
+      "tokens": 93029,
+      "frames": 10
+    },
+    {
+      "task": "cat",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/cat.gif",
+      "tool_calls": 102,
+      "looks": 9,
+      "tokens": 124457,
+      "frames": 10
+    },
+    {
+      "task": "person",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/person.gif",
+      "tool_calls": 47,
+      "looks": 2,
+      "tokens": 83608,
+      "frames": 10
+    },
+    {
+      "task": "potion",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/potion.gif",
+      "tool_calls": 38,
+      "looks": 4,
+      "tokens": 82554,
+      "frames": 10
+    },
+    {
+      "task": "slash",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/slash.gif",
+      "tool_calls": 44,
+      "looks": 3,
+      "tokens": 82915,
+      "frames": 10
+    },
+    {
+      "task": "torch",
+      "model": "opus-4.8-skills",
+      "vendor": "Anthropic",
+      "gif": "benchmarks/runs/opus-4.8-skills/torch.gif",
+      "tool_calls": 47,
+      "looks": 5,
+      "tokens": 94490,
       "frames": 10
     }
   ]

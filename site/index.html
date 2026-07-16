@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>atelier — the pixel-art studio agents can see</title>
-<meta name="description" content="Four models, eight animation tasks, identical prompts — every frame drawn through atelier's MCP tools. Compare the art and the effort side by side.">
+<meta name="description" content="Four models and one skill, eight animation tasks, identical prompts — every frame drawn through atelier's MCP tools. Compare the art and the effort side by side.">
 <style>
   :root{
     --bg:#14161d; --panel:#1b1e28; --panel2:#232735;
@@ -90,8 +90,10 @@
     <a class="btn" href="tools.html">tool reference</a>
   </div>
   <p class="tag">Each model gets the <em>same task</em> — a one-second pixel-art loop — and drives the same
-  tools, seeing its own work through <code>doc_look</code> and correcting it. The art and the numbers are
-  published as measured. <strong>No scores, no opinions.</strong></p>
+  tools, seeing its own work through <code>doc_look</code> and correcting it. One row is the same model
+  <em>plus a skill</em>: identical task, identical tools, only the guidance differs. The art and the
+  numbers are published as measured — the skill does not win every task.
+  <strong>No scores, no opinions.</strong></p>
 </header>
 
 <div class="controls">
@@ -135,6 +137,12 @@ const TASK = {
   slash:  {label:"Hero slash",    cat:"effect"},
   torch:  {label:"Torch",         cat:"environment"},
 };
+// Display names. `opus-4.8-skills` is NOT a fifth model: it is opus-4.8 on the
+// same task with the atelier-sprite skill loaded. Labelling it as a model would
+// make the comparison read as something it is not.
+const MODEL = {"opus-4.8-skills": 'opus-4.8 <span class="cat">+ skill</span>'};
+const modelLabel = m => MODEL[m] || m;
+
 // The exact text the model was given, as run.
 const taskText = () => (state.DATA.task_text || {})[state.task] || "";
 
@@ -184,7 +192,8 @@ function renderChips(){
   chipbar(document.getElementById("modelchips"), models(),
     m => state.models.has(m),
     m => { state.models.has(m) ? state.models.delete(m) : state.models.add(m);
-           if (!state.models.size) models().forEach(x => state.models.add(x)); });
+           if (!state.models.size) models().forEach(x => state.models.add(x)); },
+    m => modelLabel(m));
 }
 
 function compare(){
@@ -196,7 +205,7 @@ function compare(){
     const src = `showcase/${r.model}/${r.task}.gif`;
     const label = (TASK[r.task]||{}).label || r.task;
     d.innerHTML = `<img class="px" src="${src}" alt="${label} by ${r.model}">
-      <h3>${r.model}</h3>
+      <h3>${modelLabel(r.model)}</h3>
       <dl>${COLS.map(c => `<dt>${c[1]}</dt><dd>${c[2](r[c[0]])}</dd>`).join("")}</dl>`;
     d.querySelector("img").onclick = () => openBox(label, r.model, src);
     g.appendChild(d);
