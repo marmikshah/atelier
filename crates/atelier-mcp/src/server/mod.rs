@@ -311,7 +311,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Frame lifecycle + timing in one tool. `op`: add (append a frame; `copy_from` duplicates that frame's cels, `duration_ms` default 100) · duration (set frame `frame`'s `duration_ms`) · insert (new frame at `frame`) · duplicate (`frame`) · delete (`frame`; last frame protected) · move (`frame`→`to_index`). Cels reindex and tag ranges remap. (Pivots, collision boxes, tags and keyframe motion have their own tools.)"
+        description = "Frame lifecycle + timing in one tool. `op`: add (append a frame; `copy_from` duplicates that frame's cels, `duration_ms` default 100) · duration (set frame `frame`'s `duration_ms`) · insert (new frame at `frame`) · duplicate (`frame`) · delete (`frame`; last frame protected) · move (`frame`→`to_index`). Cels reindex and tag ranges remap. (Animation tags have their own tool: doc_add_tag.)"
     )]
     async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
         let studio = self.studio();
@@ -1105,13 +1105,17 @@ mod tests {
         }
     }
 
-    /// Every `doc_*` token appearing in each tool's description, paired with the
-    /// tool it came from. Hand-rolled: a regex crate for one scan in one test is
-    /// a dependency the tower does not need.
+    /// Every `doc_*` token appearing in each tool's description AND its input
+    /// schema (schemars copies doc comments into schema descriptions — a stray
+    /// `///` above a param struct ships to the model just as surely as the
+    /// `#[tool]` description does), paired with the tool it came from.
+    /// Hand-rolled: a regex crate for one scan in one test is a dependency the
+    /// tower does not need.
     fn regex_lite_doc_tools(tools: &[rmcp::model::Tool]) -> Vec<(String, String)> {
         let mut out = Vec::new();
         for t in tools {
-            let d = t.description.as_deref().unwrap_or("");
+            let schema = serde_json::to_string(&t.input_schema).unwrap_or_default();
+            let d = format!("{} {schema}", t.description.as_deref().unwrap_or(""));
             for (i, _) in d.match_indices("doc_") {
                 let tail: String = d[i..]
                     .chars()
@@ -1125,6 +1129,23 @@ mod tests {
             }
         }
         out
+    }
+
+    #[test]
+    fn no_param_struct_ships_a_top_level_schema_description() {
+        // The `#[tool]` description is a tool's one prose surface; a doc
+        // comment on the param struct rides into the schema's top-level
+        // `description` behind its back (a blank line does NOT detach a `///`
+        // — deleting a neighbouring struct can silently re-home its comment).
+        for t in Atelier::new().tool_router.list_all() {
+            assert!(
+                !t.input_schema.contains_key("description"),
+                "{}'s param struct carries a doc comment — the model would see \
+                 it as a second, competing description: {:?}",
+                t.name,
+                t.input_schema.get("description")
+            );
+        }
     }
 
     #[test]
