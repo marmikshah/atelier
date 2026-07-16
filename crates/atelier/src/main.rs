@@ -34,6 +34,7 @@ mod library;
 mod replay;
 mod service;
 mod skills;
+mod stdio_client;
 
 const HELP: &str = "atelier — the pixel-art studio agents can see (MCP-native, headless).
 
