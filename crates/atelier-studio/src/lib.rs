@@ -1231,10 +1231,36 @@ impl Studio {
             .clipboard
             .as_ref()
             .ok_or("clipboard is empty — copy or cut a region first")?;
+        self.doc_paste_pixels(id, layer, frame, x, y, *w, *h, buf, blend)
+    }
+
+    /// Paste explicit pixels without touching the shared clipboard. This is
+    /// the replay path: a journaled paste step embeds the pixels it used, so a
+    /// document's journal stays self-contained even when the copy came from
+    /// another document (which the per-document journal cannot express).
+    #[allow(clippy::too_many_arguments)]
+    pub fn doc_paste_pixels(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        x: i32,
+        y: i32,
+        w: u32,
+        h: u32,
+        buf: &[u8],
+        blend: bool,
+    ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        doc.paste_region(layer, frame, x, y, *w, *h, buf, blend)?;
+        doc.paste_region(layer, frame, x, y, w, h, buf, blend)?;
         doc.save(&dir)?;
         Ok(json!({"pasted": {"w": w, "h": h, "at": [x, y]}, "doc_id": id}))
+    }
+
+    /// The current clipboard, if any — the journal embeds it into each paste
+    /// step it records (see `doc_paste_pixels`).
+    pub fn clipboard_pixels(&self) -> Option<(u32, u32, &[u8])> {
+        self.clipboard.as_ref().map(|(w, h, b)| (*w, *h, &b[..]))
     }
 
     // -- animation & tiling feedback (read-only) + keyframe write -----------

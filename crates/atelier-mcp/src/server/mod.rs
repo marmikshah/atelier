@@ -25,7 +25,7 @@ pub use toolsdoc::{tools_html, tools_text};
 
 use params::*;
 use recorder::Recorder;
-use resources::{base64, parse_resource_uri, ResourceTarget, RESOURCE_RENDER_SCALE};
+use resources::{base64, base64_decode, parse_resource_uri, ResourceTarget, RESOURCE_RENDER_SCALE};
 
 fn j(v: Value) -> String {
     serde_json::to_string(&v).unwrap_or_else(|_| "{}".into())
@@ -359,6 +359,35 @@ impl Atelier {
         description = "Region + clipboard ops on a cel. `op`: copy (rect [x0,y0,x1,y1] → clipboard) · cut (copy + clear) · clear (erase the rect) · move (shift the rect by dx,dy in place) · paste (clipboard at x,y; `blend` source-over by default, false overwrites). Clipboard is cross-document."
     )]
     async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
+        // A replayed paste carries its pixels (journal-embedded) and must not
+        // depend on — or clobber — the live clipboard.
+        if p.op == "paste" {
+            if let Some(cb) = &p.clipboard {
+                let buf = match base64_decode(&cb.data) {
+                    Ok(b) if b.len() == (cb.w as usize) * (cb.h as usize) * 4 => b,
+                    Ok(b) => {
+                        return res(Err(format!(
+                            "embedded clipboard is {} bytes, expected {}×{}×4",
+                            b.len(),
+                            cb.w,
+                            cb.h
+                        )))
+                    }
+                    Err(e) => return res(Err(format!("embedded clipboard: {e}"))),
+                };
+                return res(self.studio().doc_paste_pixels(
+                    &p.doc_id,
+                    p.layer,
+                    p.frame,
+                    p.x.unwrap_or(0),
+                    p.y.unwrap_or(0),
+                    cb.w,
+                    cb.h,
+                    &buf,
+                    p.blend.unwrap_or(true),
+                ));
+            }
+        }
         res(self.studio().doc_region(
             &p.doc_id, &p.op, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1, p.dx, p.dy, p.x, p.y,
             p.blend,
@@ -892,14 +921,33 @@ fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<S
     }
 }
 
-/// The args a call is recorded with. `doc_create`'s minted id exists only in
-/// its result; stamping it into the recorded args lets `atelier replay` remap
-/// every later step's ids when a re-run mints a different one (the tool itself
-/// ignores the extra field, and replay strips it before sending).
-fn recorded_args(tool: &str, mut args: Value, target: Option<&str>) -> Value {
+/// The args a call is recorded with, enriched so the recording is
+/// self-contained:
+///
+/// - `doc_create`'s minted id exists only in its result; stamping it into the
+///   recorded args lets `atelier replay` remap every later step's ids when a
+///   re-run mints a different one (replay strips it before sending).
+/// - a paste's pixels exist only in the process clipboard, which may have been
+///   filled from another document — the per-document journal cannot express
+///   that, so the pixels ride along (base64 RGBA) and replay pastes them
+///   directly.
+fn recorded_args(
+    tool: &str,
+    mut args: Value,
+    target: Option<&str>,
+    clipboard: Option<(u32, u32, Vec<u8>)>,
+) -> Value {
     if tool == "doc_create" {
         if let (Some(id), Some(obj)) = (target, args.as_object_mut()) {
             obj.insert("doc_id".into(), json!(id));
+        }
+    }
+    if tool == "doc_region" && args.get("op").and_then(Value::as_str) == Some("paste") {
+        if let (Some((w, h, buf)), Some(obj)) = (clipboard, args.as_object_mut()) {
+            obj.insert(
+                "clipboard".into(),
+                json!({"w": w, "h": h, "data": base64(&buf)}),
+            );
         }
     }
     args
@@ -962,7 +1010,19 @@ impl ServerHandler for Atelier {
         // this? — so they share the one classifier.
         if !is_error_result(&result) && recorded {
             let target = journal_target(&tool, &args, &result);
-            let args = recorded_args(&tool, args, target.as_deref());
+            // A successful paste consumed the clipboard as it stands now (the
+            // order lock is still held, so nothing changed it since).
+            let clipboard = if tool == "doc_region"
+                && args.get("op").and_then(Value::as_str) == Some("paste")
+                && args.get("clipboard").is_none()
+            {
+                self.studio()
+                    .clipboard_pixels()
+                    .map(|(w, h, b)| (w, h, b.to_vec()))
+            } else {
+                None
+            };
+            let args = recorded_args(&tool, args, target.as_deref(), clipboard);
             // The document's own journal: on by default, so every document is a
             // replayable recipe without anyone having to know to ask first.
             if journaled {
@@ -1336,14 +1396,50 @@ mod tests {
         // A collision mints `sprite-2`; without the stamp, replay could not
         // tell which recorded id the later steps' `doc_id: "sprite"` meant.
         assert_eq!(
-            recorded_args("doc_create", json!({"name": "sprite"}), Some("sprite-2")),
+            recorded_args(
+                "doc_create",
+                json!({"name": "sprite"}),
+                Some("sprite-2"),
+                None
+            ),
             json!({"name": "sprite", "doc_id": "sprite-2"})
         );
         // Every other tool records its args untouched.
         assert_eq!(
-            recorded_args("doc_draw", json!({"doc_id": "sprite"}), Some("sprite")),
+            recorded_args(
+                "doc_draw",
+                json!({"doc_id": "sprite"}),
+                Some("sprite"),
+                None
+            ),
             json!({"doc_id": "sprite"})
         );
+    }
+
+    #[test]
+    fn a_journaled_paste_embeds_its_pixels() {
+        // The clipboard may have been filled from ANOTHER document; without
+        // the pixels in the step, replaying this document's journal alone
+        // fails with "clipboard is empty".
+        let pixels = vec![1u8, 2, 3, 4, 5, 6, 7, 8];
+        let stamped = recorded_args(
+            "doc_region",
+            json!({"doc_id": "x", "op": "paste", "x": 1, "y": 2}),
+            Some("x"),
+            Some((2, 1, pixels.clone())),
+        );
+        let cb = &stamped["clipboard"];
+        assert_eq!(cb["w"], 2);
+        assert_eq!(cb["h"], 1);
+        assert_eq!(base64_decode(cb["data"].as_str().unwrap()).unwrap(), pixels);
+        // Non-paste region ops carry nothing extra.
+        let copy = recorded_args(
+            "doc_region",
+            json!({"doc_id": "x", "op": "copy"}),
+            Some("x"),
+            None,
+        );
+        assert!(copy.get("clipboard").is_none());
     }
 
     #[test]
@@ -1464,6 +1560,15 @@ mod tests {
         assert_eq!(parse_resource_uri("atelier://doc//render"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/extra"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/render/x"), None);
+    }
+
+    #[test]
+    fn base64_decode_round_trips_and_rejects_garbage() {
+        for input in [&b""[..], b"f", b"fo", b"foo", b"foob", b"\x00\xff\x10\x80"] {
+            assert_eq!(base64_decode(&base64(input)).unwrap(), input);
+        }
+        assert!(base64_decode("a!!!").is_err());
+        assert!(base64_decode("a").is_err(), "dangling single char");
     }
 
     #[test]
