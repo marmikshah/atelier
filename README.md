@@ -39,8 +39,8 @@ Layered, animated, game-ready art — over MCP.</p>
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
-Sets up the background daemon and prints the one line that registers it with your
-MCP client. Restart the client, then just ask:
+Installs the binary, starts a background daemon, and prints the one line that
+registers it with your MCP client. Restart the client, then just ask:
 
 > *"draw me a blinking cat sprite and export it as a GIF"*
 
@@ -48,11 +48,24 @@ MCP client. Restart the client, then just ask:
   <code>doc_create</code> → <code>paint</code> → <b><code>doc_look</code></b> → <i>fix</i> → <code>doc_export</code>
 </p>
 
-<table>
-<tr><td><b>Docker</b></td><td><code>docker run -d -p 8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier</code></td></tr>
-<tr><td><b>Binaries</b></td><td>macOS&nbsp;(ARM), Linux&nbsp;x86_64, Windows — <a href="https://github.com/marmikshah/atelier/releases/latest">latest release</a></td></tr>
-<tr><td><b>Source</b></td><td><code>cargo install --path crates/atelier</code> · or <code>site/install.sh --source</code> to build this checkout and install the daemon</td></tr>
-</table>
+### Docker
+
+Prefer a container? The image serves the same HTTP MCP endpoint:
+
+```sh
+docker run -d -p 127.0.0.1:8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier
+claude mcp add --scope user --transport http atelier http://127.0.0.1:8765/mcp
+```
+
+Multi-arch (amd64 + arm64). Documents persist in the `atelier-data` volume, so
+they survive restarts. There's a [`docker-compose.yml`](docker-compose.yml) if
+you'd rather keep it declarative.
+
+### Other ways
+
+- **Binaries** — macOS (ARM), Linux x86_64, Windows: [latest release](https://github.com/marmikshah/atelier/releases/latest)
+- **Source** — `cargo install --path crates/atelier`, or `site/install.sh --source`
+  to build this checkout and install the daemon
 
 ## Why it's different
 
@@ -85,6 +98,9 @@ atelier replay recipe.json # replay a recorded session, byte-identically
 
 **28 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
+Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
+or see how a call flows through the crates in the
+[architecture tour](https://marmikshah.github.io/atelier/architecture.html).
 
 ## Art is a recipe
 
@@ -110,15 +126,6 @@ The recipes in [docs/examples](docs/examples) are both the brand art and the
 integration tests. `--record session.jsonl` captures a whole sitting across
 several documents.
 
-## Documentation
-
-| | |
-|---|---|
-| 🖼 **[Benchmark gallery](https://marmikshah.github.io/atelier/)** | Four models, eight tasks, identical prompts — compared side by side |
-| 🧭 **[Architecture tour](https://marmikshah.github.io/atelier/architecture.html)** | The crate tower and the life of a tool call, illustrated |
-| 🔧 **[Tool reference](https://marmikshah.github.io/atelier/tools.html)** | All 28 tools, generated from the live registry |
-| 📓 **[CHANGELOG](CHANGELOG.md)** | What changed, and what broke |
-
 ## A personal note
 
 atelier began as one question: can agents, using only tool calls, make art good
@@ -142,7 +149,7 @@ Not accepting external code contributions until **v2.0.0** — pull requests are
 closed automatically until then. Bug reports and ideas are very welcome as
 [issues](https://github.com/marmikshah/atelier/issues).
 
-[Contributing](.github/CONTRIBUTING.md) · [Code of Conduct](.github/CODE_OF_CONDUCT.md) · [Security](.github/SECURITY.md)
+[Contributing](.github/CONTRIBUTING.md) · [Code of Conduct](.github/CODE_OF_CONDUCT.md) · [Security](.github/SECURITY.md) · [Changelog](CHANGELOG.md)
 
 ## License
 
