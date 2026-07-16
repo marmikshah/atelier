@@ -176,6 +176,13 @@ pub struct Atelier {
     tool_router: ToolRouter<Self>,
     /// Optional session recorder; when set, each tool call is logged to a recipe.
     recorder: Option<Recorder>,
+    /// Held across dispatch + journal for every mutating call (an async lock,
+    /// because it spans the dispatcher's await). The studio mutex serialises
+    /// the mutations themselves, but it is released between the mutation and
+    /// its `journal_append` — without this outer lock two concurrent sessions
+    /// could execute A→B and journal B→A, and the recipe would silently
+    /// rebuild different art.
+    write_order: std::sync::Arc<tokio::sync::Mutex<()>>,
 }
 
 impl Atelier {
@@ -189,6 +196,7 @@ impl Atelier {
             studio,
             tool_router: Self::tool_router(),
             recorder: None,
+            write_order: std::sync::Arc::new(tokio::sync::Mutex::new(())),
         }
     }
 
@@ -925,13 +933,24 @@ impl ServerHandler for Atelier {
             .unwrap_or_else(|| json!({}));
         let recorder = self.recorder.clone();
 
+        // For mutations, hold the order lock from before the dispatch until
+        // after the journal write, so journal order can never diverge from
+        // execution order under concurrent sessions. Reads skip it.
+        let journaled = is_journaled(&tool, &args);
+        let write_order = self.write_order.clone();
+        let _order = if journaled {
+            Some(write_order.lock().await)
+        } else {
+            None
+        };
+
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
         let result = self.tool_router.call(tcc).await?;
 
         // A read rebuilds nothing, so it belongs in neither recipe. Both
         // recorders answer to the same question — what did it take to make
         // this? — so they share the one classifier.
-        if !is_error_result(&result) && is_journaled(&tool, &args) {
+        if !is_error_result(&result) && journaled {
             let target = journal_target(&tool, &args, &result);
             let args = recorded_args(&tool, args, target.as_deref());
             // The document's own journal: on by default, so every document is a
@@ -1042,12 +1061,16 @@ pub async fn run_http(
             config.allowed_hosts.push(h);
         }
     }
+    // One write-order lock shared by every session, like the studio itself —
+    // per-session locks would order nothing.
+    let write_order = std::sync::Arc::new(tokio::sync::Mutex::new(()));
     let factory = {
         let studio = studio.clone();
         let recorder = recorder.clone();
         move || {
             let mut atelier = Atelier::with_studio(studio.clone());
             atelier.recorder = recorder.clone();
+            atelier.write_order = write_order.clone();
             Ok(atelier)
         }
     };
