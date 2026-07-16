@@ -26,7 +26,7 @@ fn valid_checkpoint_id(cpid: &str) -> bool {
 use serde_json::{json, Value};
 
 use super::Studio;
-use atelier_core::document::{Document, Light};
+use atelier_core::document::Document;
 use atelier_core::raster;
 
 // -- shared raster helpers --------------------------------------------------
@@ -374,68 +374,6 @@ impl Studio {
 
     // -- doc_relight: multi-light form shading -----------------------------
 
-    /// Key/fill/rim form shading (the "painted form" leap). Lights are given by
-    /// azimuth (0=right, 90=down, 180=left, 270=up) and elevation (0=grazing,
-    /// 90=head-on). Fill is auto-placed opposite the key at low elevation. RGB
-    /// colours are 0..255. Honours an active selection; `ramp` keeps it on-palette.
-    pub fn relight(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        key_az: f32,
-        key_elev: f32,
-        key_intensity: f32,
-        key_color: [u8; 3],
-        fill_intensity: f32,
-        fill_color: [u8; 3],
-        rim_intensity: f32,
-        rim_color: [u8; 3],
-        ambient: f32,
-        ambient_color: [u8; 3],
-        bulge: f32,
-        ramp: Option<Vec<[u8; 4]>>,
-    ) -> Result<Value, String> {
-        let dir = |az: f32, elev: f32| {
-            let (a, e) = (az.to_radians(), elev.to_radians());
-            [e.cos() * a.cos(), e.cos() * a.sin(), e.sin()]
-        };
-        let c01 = |x: [u8; 3]| {
-            [
-                x[0] as f32 / 255.0,
-                x[1] as f32 / 255.0,
-                x[2] as f32 / 255.0,
-            ]
-        };
-        let mut lights = vec![Light {
-            dir: dir(key_az, key_elev),
-            intensity: key_intensity,
-            color: c01(key_color),
-        }];
-        if fill_intensity > 0.0 {
-            lights.push(Light {
-                dir: dir(key_az + 180.0, (key_elev * 0.5).max(8.0)),
-                intensity: fill_intensity,
-                color: c01(fill_color),
-            });
-        }
-        self.edit_masked(id, layer, frame, |d| {
-            d.relight(
-                layer,
-                frame,
-                region,
-                &lights,
-                ambient,
-                c01(ambient_color),
-                rim_intensity,
-                c01(rim_color),
-                bulge,
-                ramp.clone(),
-            )
-        })
-    }
-
     // -- doc_dither_ramp: graduated multi-tone dithering -------------------
 
     /// Graduated dithering across a whole ramp along an axis (h|v|radial) with
@@ -623,30 +561,6 @@ impl Studio {
     }
 
     // -- doc_material: procedural material recipes -------------------------
-
-    /// Paint a procedural material onto the opaque pixels of a cel — metal,
-    /// wood, stone, water, cloth, skin, glass — derived from one base colour (or
-    /// an explicit `ramp`). Honours an active selection so it clings to a
-    /// selected shape. Snap afterwards if it drifts.
-    pub fn material(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        region: Option<(i32, i32, i32, i32)>,
-        material: &str,
-        base: [u8; 4],
-        seed: u64,
-        ramp: Option<Vec<[u8; 4]>>,
-    ) -> Result<Value, String> {
-        let ramp = ramp
-            .filter(|r| !r.is_empty())
-            .unwrap_or_else(|| auto_ramp(base, 6));
-        self.edit_masked(id, layer, frame, |d| {
-            d.material(layer, frame, region, material, &ramp, seed)
-                .map(|_| ())
-        })
-    }
 
     // -- doc_panel: a HUD/UI 9-slice-style panel ---------------------------
 
@@ -1383,34 +1297,6 @@ mod tests {
             )
             .unwrap();
         assert!(distinct(&look.1) >= 3, "three faces => three shades");
-    }
-
-    #[test]
-    fn material_paints_only_opaque_pixels() {
-        let s = studio("material");
-        s.doc_create("c", 16, 16).unwrap();
-        draw(
-            &s,
-            "c",
-            0,
-            "pencil",
-            json!({"points": [[4, 4]], "color": [120, 120, 120, 255]}),
-        );
-        s.material("c", 0, 0, None, "metal", [120, 120, 130, 255], 1, None)
-            .unwrap();
-        let look = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    bands: 1,
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        // still exactly one opaque pixel — material clings to the shape
-        assert_eq!(opaque(&look.1), 1);
     }
 
     #[test]
