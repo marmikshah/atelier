@@ -548,7 +548,7 @@ impl Atelier {
     // -- pivots / palette (engine-ready sprites, cohesive colour) --
 
     #[tool(
-        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only; params color?, radius?, intensity?, mode?). Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting, or \"erase\": true to make the op an ERASER (every pixel it touches goes transparent — any shape can punch a hole). Honours an active doc_select."
+        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing) — and optionally to several frames at once: `frames` applies the same op list to each listed frame (repeated fixes on a static layer are ONE call). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only; params color?, radius?, intensity?, mode?). Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting, or \"erase\": true to make the op an ERASER (every pixel it touches goes transparent — any shape can punch a hole). Honours an active doc_select."
     )]
     async fn doc_batch(&self, Parameters(mut p): Parameters<DocBatch>) -> CallToolResult {
         for op in p.ops.iter_mut() {
@@ -556,7 +556,31 @@ impl Atelier {
                 params::revive_params(obj);
             }
         }
-        res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
+        let targets = batch_targets(p.frame, p.frames);
+        if targets.len() == 1 {
+            return res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops));
+        }
+        let studio = self.studio();
+        let mut per_frame = Vec::new();
+        let mut total: u64 = 0;
+        for f in &targets {
+            match studio.doc_batch(&p.doc_id, p.layer, *f, p.ops.clone()) {
+                Ok(r) => {
+                    let n = r.get("pixels_changed").and_then(Value::as_u64).unwrap_or(0);
+                    total += n;
+                    per_frame.push(json!({"frame": f, "pixels_changed": n}));
+                }
+                Err(e) => return res(Err(format!("frame {f}: {e}"))),
+            }
+        }
+        res(Ok(json!({
+            "ok": true,
+            "doc_id": p.doc_id,
+            "frames": targets,
+            "ops": p.ops.len(),
+            "pixels_changed": total,
+            "per_frame": per_frame,
+        })))
     }
 
     #[tool(
@@ -929,6 +953,18 @@ fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<S
             .and_then(Value::as_str)
             .map(str::to_string),
     }
+}
+
+/// Union of doc_batch's `frame` and `frames`, in order, deduped — one call
+/// fixes a static layer across the whole timeline instead of N round-trips.
+fn batch_targets(frame: usize, frames: Option<Vec<usize>>) -> Vec<usize> {
+    let mut targets = vec![frame];
+    for f in frames.into_iter().flatten() {
+        if !targets.contains(&f) {
+            targets.push(f);
+        }
+    }
+    targets
 }
 
 /// The args a call is recorded with, enriched so the recording is
@@ -1372,6 +1408,13 @@ mod tests {
             journal_target("doc_draw", &json!({"doc_id": "sprite"}), &drew).as_deref(),
             Some("sprite")
         );
+    }
+
+    #[test]
+    fn batch_frames_union_keeps_order_and_dedupes() {
+        assert_eq!(batch_targets(0, None), vec![0]);
+        assert_eq!(batch_targets(0, Some(vec![2, 0, 1, 2])), vec![0, 2, 1]);
+        assert_eq!(batch_targets(3, Some(vec![])), vec![3]);
     }
 
     #[test]
