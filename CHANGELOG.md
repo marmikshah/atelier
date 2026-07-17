@@ -6,6 +6,10 @@ releases.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.5.0] — 2026-07-17
+
 ### Added
 
 
