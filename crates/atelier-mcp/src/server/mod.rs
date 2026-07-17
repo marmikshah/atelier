@@ -1255,8 +1255,17 @@ pub async fn run_http(
             Ok(atelier)
         }
     };
+    // rmcp evicts a session after `keep_alive` of inactivity (default 5 min).
+    // Editor clients hold one session per sitting and routinely idle longer;
+    // eviction surfaces to them as "server closed unexpectedly" and a dead
+    // connection. This is a local single-user daemon — idle is the normal
+    // case — so stretch the safety net to a day.
+    // (Both structs are #[non_exhaustive] — mutate the defaults.)
+    let mut session_manager = LocalSessionManager::default();
+    session_manager.session_config.keep_alive = Some(std::time::Duration::from_secs(24 * 60 * 60));
+    let session_manager = std::sync::Arc::new(session_manager);
     let service: StreamableHttpService<Atelier, LocalSessionManager> =
-        StreamableHttpService::new(factory, Default::default(), config);
+        StreamableHttpService::new(factory, session_manager, config);
 
     let router = axum::Router::new().nest_service("/mcp", service);
     let listener = tokio::net::TcpListener::bind(addr)
