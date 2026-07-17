@@ -137,8 +137,26 @@ fn first_sentence(s: &str) -> &str {
     s.split_once(". ").map(|(a, _)| a).unwrap_or(s)
 }
 
+/// Install the global `tracing` subscriber. Logs go to **stderr only** —
+/// stdout is the stdio MCP transport, so a single log line there corrupts the
+/// protocol stream. `ATELIER_LOG` uses `RUST_LOG` syntax (e.g. `debug`,
+/// `atelier_mcp=trace`); default `info`.
+fn init_logging() {
+    use std::io::IsTerminal;
+    use tracing_subscriber::EnvFilter;
+    let filter = EnvFilter::try_from_env("ATELIER_LOG").unwrap_or_else(|_| EnvFilter::new("info"));
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_writer(std::io::stderr)
+        .with_target(false)
+        // The daemon's stderr is a log file; escape codes would gunk it up.
+        .with_ansi(std::io::stderr().is_terminal())
+        .init();
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
     let args: Vec<String> = std::env::args().collect();
 
     // Subcommands / flags that don't start the server.
