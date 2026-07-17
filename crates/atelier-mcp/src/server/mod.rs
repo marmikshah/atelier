@@ -1136,17 +1136,27 @@ impl ServerHandler for Atelier {
             .map(Value::Object)
             .unwrap_or_else(|| json!({}));
         let recorder = self.recorder.clone();
-        // Caller identity for the log line: the `X-Atelier-Caller` HTTP header
-        // (each client sets its own tag/uuid in its MCP config). The transport
-        // is stateless, so this is the only per-caller signal; stdio has one
-        // caller by definition and logs `-`.
-        let caller = context
-            .extensions
-            .get::<axum::http::request::Parts>()
-            .and_then(|p| p.headers.get("x-atelier-caller"))
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("-")
-            .to_string();
+        // Caller identity for the log line. `X-Atelier-Caller` header when the
+        // client chose a name; otherwise the TCP peer address — each client
+        // process holds its own keep-alive connection, so the port separates
+        // two sessions of the *same* client (e.g. two editor windows) with no
+        // config at all. stdio has one caller by definition and logs `-`.
+        let caller = {
+            let parts = context.extensions.get::<axum::http::request::Parts>();
+            parts
+                .and_then(|p| p.headers.get("x-atelier-caller"))
+                .and_then(|v| v.to_str().ok())
+                .map(str::to_string)
+                .or_else(|| {
+                    parts
+                        .and_then(|p| {
+                            p.extensions
+                                .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+                        })
+                        .map(|ci| ci.0.to_string())
+                })
+                .unwrap_or_else(|| "-".into())
+        };
 
         // For mutations, hold the order lock from before the dispatch until
         // after the journal write, so journal order can never diverge from
@@ -1350,12 +1360,17 @@ pub async fn run_http(
         endpoint = %format!("http://{local}/mcp"),
         "atelier MCP server listening"
     );
-    axum::serve(listener, router)
-        .with_graceful_shutdown(async {
-            let _ = tokio::signal::ctrl_c().await;
-            tracing::info!("shutdown signal received");
-        })
-        .await?;
+    // with_connect_info stamps each request with the TCP peer address, which
+    // the per-call log uses as the default caller identity.
+    axum::serve(
+        listener,
+        router.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .with_graceful_shutdown(async {
+        let _ = tokio::signal::ctrl_c().await;
+        tracing::info!("shutdown signal received");
+    })
+    .await?;
     tracing::info!("atelier MCP server stopped");
     Ok(())
 }

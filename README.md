@@ -99,9 +99,11 @@ atelier replay recipe.json # replay a recorded session, byte-identically
 The server logs every tool call to stderr — name, op, target document, caller,
 duration, and the error text when a call fails. The daemon collects this in
 `~/.atelier/logs/atelier.err.log`; tune verbosity with `ATELIER_LOG`
-(`RUST_LOG` syntax, default `info`). Multiple agents sharing the daemon can
-tag themselves with an `X-Atelier-Caller` header in their MCP client config —
-each call then logs `caller=<tag>`, so interleaved sessions stay attributable.
+(`RUST_LOG` syntax, default `info`). When several agents share the daemon,
+every call logs a `caller=` identity: by default the TCP peer address, which
+separates concurrent sessions — even two windows of the same client — with no
+configuration; set an `X-Atelier-Caller` header in a client's MCP config to
+use a stable name instead.
 (Same-name collisions are already impossible: `doc_create` mints a unique id —
 `hero`, `hero-2`, … — and every caller must use the id it got back.)
 
