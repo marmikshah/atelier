@@ -658,7 +658,22 @@ impl Studio {
                 // base), counted from the flatten the diff already produced.
                 let opaque = ia.pixels().filter(|p| p.0[3] > 0).count().max(1) as u64;
                 let seam_score = (changed as f64 / opaque as f64 * 1000.0).round() / 1000.0;
-                Ok(json!({
+                // Calibrate against the loop's own motion: whole-body animation
+                // repaints most of the sprite EVERY step, so the absolute ratio
+                // reads catastrophic even when the wrap is exactly as busy as
+                // any mid-loop step. The honest question is "does the wrap
+                // change more than a typical step?", so measure that.
+                let mut steps: Vec<u32> = Vec::new();
+                for w in seq.windows(2) {
+                    let (ad, rm, rc, _, _, _) =
+                        doc.frame_diff_region(w[0], w[1], layer, (0, 0, cw - 1, ch - 1))?;
+                    steps.push(ad + rm + rc);
+                }
+                steps.sort_unstable();
+                let typical = steps.get(steps.len() / 2).copied().unwrap_or(0);
+                let wrap_vs_typical = (typical > 0)
+                    .then(|| ((changed as f64 / typical as f64) * 100.0).round() / 100.0);
+                let mut out = json!({
                     "seam_score": seam_score,
                     "changed": changed,
                     "added": added,
@@ -666,7 +681,25 @@ impl Studio {
                     // WHERE the loop pops — fix this area, not the whole frame.
                     "change_bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
                     "frames": [last, first],
-                }))
+                    // Median changed-pixels of the loop's own adjacent steps.
+                    "typical_step_changed": typical,
+                    "wrap_vs_typical": wrap_vs_typical,
+                });
+                if let Some(r) = wrap_vs_typical {
+                    if r <= 1.25 {
+                        out["note"] = json!(
+                            "the wrap changes about as much as a typical mid-loop step — for \
+                             whole-body motion that is a healthy loop, not a pop, whatever \
+                             seam_score says"
+                        );
+                    } else if r >= 2.0 {
+                        out["note"] = json!(
+                            "the wrap changes far more than a typical step — likely a visible \
+                             pop; fix inside change_bbox"
+                        );
+                    }
+                }
+                Ok(out)
             }
             "spacing" => {
                 // Centre per played frame; offsets are step-to-step deltas.
@@ -1318,6 +1351,40 @@ mod tests {
         assert!(s
             .doc_frame_diff("d", 0, 1, None, None, false, "bogus", None, 1)
             .is_err());
+    }
+
+    #[test]
+    fn seam_is_calibrated_against_the_loop_own_motion() {
+        // Whole-body motion repaints most pixels EVERY step; the wrap being as
+        // busy as a mid-loop step must read as healthy, not a pop.
+        let s = studio("seamcal");
+        s.doc_create("d", 8, 8).unwrap();
+        for f in 0..4 {
+            if f > 0 {
+                s.doc_add_frame("d", 100, None, 1).unwrap();
+            }
+            // Every frame repaints a different column: big adjacent diffs.
+            draw(
+                &s,
+                "d",
+                f,
+                "rect",
+                json!({"x0": (f*2) as i32, "y0": 0, "x1": (f*2+1) as i32, "y1": 7,
+                       "color": [200, 40, 40, 255], "fill": true}),
+            );
+        }
+        let seam = s.doc_anim_audit("d", None, None, "seam", None).unwrap();
+        // Absolute ratio is high (everything moved)…
+        assert!(seam["seam_score"].as_f64().unwrap() > 0.5);
+        // …but calibration says the wrap is a normal step.
+        let r = seam["wrap_vs_typical"].as_f64().unwrap();
+        assert!(r <= 1.25, "wrap ~ typical step, got {r}");
+        assert!(
+            seam["note"].as_str().unwrap().contains("healthy loop"),
+            "note: {}",
+            seam["note"]
+        );
+        assert!(seam["typical_step_changed"].as_u64().unwrap() > 0);
     }
 
     #[test]
