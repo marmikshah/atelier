@@ -1275,7 +1275,8 @@ pub async fn run(record: Option<std::path::PathBuf>) -> Result<(), Box<dyn std::
 }
 
 /// Run as a networked MCP server over Streamable HTTP at `addr`, mounted at
-/// `/mcp`. One shared studio backs all sessions (writes serialised by its Mutex).
+/// `/mcp`. Stateless: no sessions, every POST self-contained; one shared studio
+/// backs all clients (writes serialised by its Mutex).
 /// `allowed_hosts` extends the loopback default for LAN/remote `Host` validation
 /// (DNS-rebinding guard); pass the host(s) clients will use.
 pub async fn run_http(
@@ -1284,7 +1285,7 @@ pub async fn run_http(
     record: Option<std::path::PathBuf>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     use rmcp::transport::streamable_http_server::{
-        session::local::LocalSessionManager, StreamableHttpServerConfig, StreamableHttpService,
+        session::never::NeverSessionManager, StreamableHttpServerConfig, StreamableHttpService,
     };
 
     // Shared studio across all HTTP sessions.
@@ -1300,6 +1301,17 @@ pub async fn run_http(
             config.allowed_hosts.push(h);
         }
     }
+    // Stateless by design. The server keeps no per-session state — documents
+    // load and save from disk on every call, and the studio, write-order lock,
+    // and recorder are all process-global — so a session id would name
+    // nothing. Running stateful anyway meant sessions could *die* (idle
+    // eviction, daemon restart), and clients that idled through the timeout
+    // came back to "Session not found" and gave up. With no sessions there is
+    // nothing to lose: every POST is self-contained, a daemon restart is
+    // invisible, and plain JSON responses replace SSE framing (nothing here
+    // streams server→client).
+    config.stateful_mode = false;
+    config.json_response = true;
     // One write-order lock shared by every session, like the studio itself —
     // per-session locks would order nothing.
     let write_order = std::sync::Arc::new(tokio::sync::Mutex::new(()));
@@ -1313,17 +1325,8 @@ pub async fn run_http(
             Ok(atelier)
         }
     };
-    // rmcp evicts a session after `keep_alive` of inactivity (default 5 min).
-    // Editor clients hold one session per sitting and routinely idle longer;
-    // eviction surfaces to them as "server closed unexpectedly" and a dead
-    // connection. This is a local single-user daemon — idle is the normal
-    // case — so stretch the safety net to a day.
-    // (Both structs are #[non_exhaustive] — mutate the defaults.)
-    let mut session_manager = LocalSessionManager::default();
-    session_manager.session_config.keep_alive = Some(std::time::Duration::from_secs(24 * 60 * 60));
-    let session_manager = std::sync::Arc::new(session_manager);
-    let service: StreamableHttpService<Atelier, LocalSessionManager> =
-        StreamableHttpService::new(factory, session_manager, config);
+    let service: StreamableHttpService<Atelier, NeverSessionManager> =
+        StreamableHttpService::new(factory, Default::default(), config);
 
     let router = axum::Router::new().nest_service("/mcp", service);
     let listener = tokio::net::TcpListener::bind(addr)

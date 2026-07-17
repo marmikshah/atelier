@@ -144,7 +144,11 @@ fn first_sentence(s: &str) -> &str {
 fn init_logging() {
     use std::io::IsTerminal;
     use tracing_subscriber::EnvFilter;
-    let filter = EnvFilter::try_from_env("ATELIER_LOG").unwrap_or_else(|_| EnvFilter::new("info"));
+    // rmcp's per-request transport lifecycle chatters at info — three lines
+    // per call under the stateless HTTP transport. Our own per-call line is
+    // the signal; rmcp speaks only when something is wrong.
+    let filter =
+        EnvFilter::try_from_env("ATELIER_LOG").unwrap_or_else(|_| EnvFilter::new("info,rmcp=warn"));
     tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_writer(std::io::stderr)
