@@ -9,6 +9,15 @@ releases.
 ### Added
 
 
+- **`frames` on doc_batch**: apply the same op list to several frames in one
+  call — the repeated 1px fix on a static layer no longer costs one round-trip
+  per frame (the last multi-frame gap the showcase agents hit).
+- **The loop-seam audit calibrates against the loop's own motion.**
+  `doc_anim_audit mode=seam` now also reports `typical_step_changed` (median
+  changed pixels of adjacent steps) and `wrap_vs_typical` — whole-body motion
+  repaints most pixels every step, so the absolute `seam_score` read as a pop
+  even when the wrap was exactly as busy as any mid-loop step. A ratio near 1
+  is called out as healthy; ≥2 as a likely pop.
 - **`erase: true` on every draw op** (doc_draw and doc_batch): the shape becomes
   an eraser — every pixel it touches goes transparent. Any pencil/line/ellipse/
   polygon/fill can punch a hole, which no colour trick could (drawing
