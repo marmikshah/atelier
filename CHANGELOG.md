@@ -12,7 +12,6 @@ Nothing yet.
 
 ### Added
 
-
 - **`frames` on doc_batch**: apply the same op list to several frames in one
   call — the repeated 1px fix on a static layer no longer costs one round-trip
   per frame (the last multi-frame gap the showcase agents hit).
