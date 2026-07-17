@@ -155,6 +155,49 @@ fn result_json(result: &rmcp::model::CallToolResult) -> Option<Value> {
         .find_map(|t| serde_json::from_str::<Value>(&t.text).ok())
 }
 
+/// Remove schemars' Rust-type `format` annotations (`uint32`, `int64`,
+/// `float`, …) everywhere in a schema. They carry no JSON Schema meaning —
+/// the real constraints (`type`, `minimum`) are stated alongside — and
+/// Ajv-based clients log a warning per occurrence. Standard formats
+/// (`date-time`, `uri`, …) are kept.
+fn strip_nonstandard_formats(schema: &mut Value) {
+    match schema {
+        Value::Object(obj) => {
+            let drop = obj.get("format").and_then(Value::as_str).is_some_and(|f| {
+                matches!(
+                    f,
+                    "uint8"
+                        | "uint16"
+                        | "uint32"
+                        | "uint64"
+                        | "uint128"
+                        | "uint"
+                        | "int8"
+                        | "int16"
+                        | "int32"
+                        | "int64"
+                        | "int128"
+                        | "int"
+                        | "float"
+                        | "double"
+                )
+            });
+            if drop {
+                obj.remove("format");
+            }
+            for v in obj.values_mut() {
+                strip_nonstandard_formats(v);
+            }
+        }
+        Value::Array(items) => {
+            for v in items {
+                strip_nonstandard_formats(v);
+            }
+        }
+        _ => {}
+    }
+}
+
 fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
     if result.is_error == Some(true) {
         return true;
@@ -245,8 +288,23 @@ impl Atelier {
     /// Every tool the server has. There is no profile filter: the surface is
     /// small enough that hiding part of it behind a flag would cost more in
     /// confusion than it ever saved in context.
+    ///
+    /// Schemas are scrubbed of schemars' Rust-integer `format` markers
+    /// (`uint32` & co.) — they are not JSON Schema formats, and Ajv-based
+    /// clients warn on every one of them (`unknown format "uint32" ignored`).
     fn advertised_tools(&self) -> Vec<rmcp::model::Tool> {
-        self.tool_router.list_all()
+        self.tool_router
+            .list_all()
+            .into_iter()
+            .map(|mut t| {
+                let mut schema = Value::Object((*t.input_schema).clone());
+                strip_nonstandard_formats(&mut schema);
+                if let Value::Object(obj) = schema {
+                    t.input_schema = std::sync::Arc::new(obj);
+                }
+                t
+            })
+            .collect()
     }
 
     /// Enable session recording: every tool call is appended to a recipe at `path`.
@@ -1290,6 +1348,41 @@ pub async fn run_http(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn advertised_schemas_carry_no_rust_integer_formats() {
+        // Ajv-based clients (Kimi Code, most Node MCP hosts) warn on every
+        // schemars integer format: `unknown format "uint32" ignored`.
+        let tools = Atelier::new().advertised_tools();
+        assert!(!tools.is_empty());
+        let dump = serde_json::to_string(
+            &tools
+                .iter()
+                .map(|t| Value::Object((*t.input_schema).clone()))
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        for fmt in ["uint32", "uint64", "uint8", "int32", "int64", "double"] {
+            let marker = format!("\"format\":\"{fmt}\"");
+            assert!(!dump.contains(&marker), "schema still advertises {marker}");
+        }
+    }
+
+    #[test]
+    fn strip_formats_keeps_standard_ones_and_named_properties() {
+        let mut schema = json!({
+            "properties": {
+                "height": {"type": "integer", "format": "uint32", "minimum": 1},
+                "when": {"type": "string", "format": "date-time"},
+                // A *property named* "format" (doc_export has one) must survive.
+                "format": {"type": "string", "enum": ["png", "gif"]}
+            }
+        });
+        strip_nonstandard_formats(&mut schema);
+        assert_eq!(schema["properties"]["height"].get("format"), None);
+        assert_eq!(schema["properties"]["when"]["format"], "date-time");
+        assert_eq!(schema["properties"]["format"]["enum"][0], "png");
+    }
 
     #[test]
     fn the_tool_surface_is_the_size_the_docs_claim() {
