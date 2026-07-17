@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>atelier — the pixel-art studio agents can see</title>
 <meta name="description" content="Four models, ten animation tasks, identical prompts — every frame drawn through atelier's MCP tools with the atelier-sprite skill. Compare the art and the effort side by side.">
+<meta property="og:title" content="atelier — the pixel-art studio agents can see">
+<meta property="og:description" content="Four models, ten animation tasks, identical prompts. Every frame is a tool call; every model sees its own work through doc_look and fixes it.">
+<meta property="og:image" content="https://marmikshah.github.io/atelier/assets/studio-scene.gif">
+<meta property="og:url" content="https://marmikshah.github.io/atelier/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{
     --bg:#14161d; --panel:#1b1e28; --panel2:#232735;
@@ -59,6 +65,18 @@
   .cmp dd b{color:var(--acc);font-weight:700}
   .hint{color:var(--ink3);font-family:var(--mono);font-size:.74rem;padding:2rem 0;text-align:center}
 
+  /* whole-grid mode: every task x every selected model at once */
+  .gridwrap{overflow-x:auto}
+  table.grid{border-collapse:collapse;margin:0 auto;font-family:var(--mono)}
+  table.grid th{font-size:.68rem;color:var(--ink2);font-weight:400;padding:.4rem .6rem;text-align:center}
+  table.grid td{padding:.3rem .6rem;text-align:center;vertical-align:middle}
+  table.grid td.task-lbl{font-size:.66rem;color:var(--ink3);text-align:right;white-space:nowrap}
+  table.grid img{width:104px;height:104px;object-fit:contain;border-radius:4px;cursor:zoom-in;
+    background:repeating-conic-gradient(var(--panel2) 0 25%, transparent 0 50%) 50%/12px 12px}
+  table.grid td img.wide{width:120px;height:120px}
+  table.grid tfoot td{font-size:.66rem;color:var(--ink2);border-top:1px solid var(--line);padding:.55rem .6rem}
+  table.grid tfoot b{color:var(--acc)}
+
   .task{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem 1.1rem;
     font-family:var(--mono);font-size:.78rem;line-height:1.65;color:var(--ink2);position:relative;margin-top:1.2rem}
   .task .copy{position:absolute;top:.65rem;right:.65rem}
@@ -84,7 +102,7 @@
   <p class="tag">The pixel-art studio agents can see — headless, over MCP.</p>
   <img class="hero px" src="assets/studio-scene.gif" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a ginger cat sleeps on the desk — drawn and animated entirely by agents">
   <div class="bar">
-    <a class="btn" href="https://github.com/marmikshah/atelier">GitHub</a>
+    <a class="btn" href="https://github.com/marmikshah/atelier">★ star on GitHub</a>
     <button class="btn" id="install" type="button">copy install one-liner</button>
     <a class="btn" href="architecture.html">architecture</a>
     <a class="btn" href="tools.html">tool reference</a>
@@ -96,7 +114,9 @@
 
 <div class="controls">
   <div class="wrap">
-    <span class="lbl">task</span>
+    <span class="lbl">view</span>
+    <div class="chips" id="viewchips"></div>
+    <span class="lbl" id="tasklbl">task</span>
     <div class="chips" id="taskchips"></div>
     <span class="lbl">models</span>
     <div class="chips" id="modelchips"></div>
@@ -151,14 +171,15 @@ const COLS = [
   ["tokens",     "tokens",     v => (v/1000).toFixed(0) + "k"],
 ];
 
-const state = {task:null, models:new Set(), DATA:null};
+const state = {task:null, models:new Set(), DATA:null, view:"task"};
 const view = document.getElementById("view");
 
 fetch("showcase/runs.json").then(r => r.json()).then(data => {
   state.DATA = data;
   state.task = data.tasks[0];
   state.models = new Set(data.models);
-  document.getElementById("method").textContent = data.method + " " + data.verified;
+  document.getElementById("method").textContent =
+    data.method + " " + data.verified + (data.server ? " Server: " + data.server + "." : "");
   render();
 }).catch(() => { view.innerHTML = '<p class="hint">no runs yet.</p>'; });
 
@@ -183,10 +204,18 @@ function chipbar(el, items, isOn, toggle, html){
 }
 
 function renderChips(){
-  chipbar(document.getElementById("taskchips"), tasks(),
-    t => t === state.task,
-    t => { state.task = t; },
-    t => `${(TASK[t]||{}).label || t} <span class="cat">${(TASK[t]||{}).cat || ""}</span>`);
+  chipbar(document.getElementById("viewchips"), ["task","grid"],
+    v => v === state.view,
+    v => { state.view = v; },
+    v => v === "task" ? "one task" : "whole grid");
+  const inGrid = state.view === "grid";
+  document.getElementById("tasklbl").hidden = inGrid;
+  document.getElementById("taskchips").hidden = inGrid;
+  if (!inGrid)
+    chipbar(document.getElementById("taskchips"), tasks(),
+      t => t === state.task,
+      t => { state.task = t; },
+      t => `${(TASK[t]||{}).label || t} <span class="cat">${(TASK[t]||{}).cat || ""}</span>`);
   chipbar(document.getElementById("modelchips"), models(),
     m => state.models.has(m),
     m => { state.models.has(m) ? state.models.delete(m) : state.models.add(m);
@@ -211,12 +240,43 @@ function compare(){
   view.replaceChildren(g);
 }
 
+// The whole benchmark at once: rows are tasks, columns the selected models,
+// with per-model totals underneath. Every number still comes verbatim from
+// runs.json — the totals are sums, not scores.
+function grid(){
+  const act = models().filter(m => state.models.has(m));
+  if (!act.length){ view.innerHTML = '<p class="hint">select at least one model.</p>'; return; }
+  const byKey = {};
+  for (const r of runs()) byKey[r.task + "/" + r.model] = r;
+  const cell = r => {
+    if (!r) return "<td>—</td>";
+    const label = (TASK[r.task]||{}).label || r.task;
+    const src = `showcase/${r.model}/${r.task}.gif`;
+    const wide = r.task === "beam" ? " wide" : "";
+    return `<td><img class="px${wide}" loading="lazy" src="${src}" alt="${label} by ${r.model}"
+      data-label="${label}" data-model="${r.model}" data-src="${src}"></td>`;
+  };
+  const head = `<tr><th></th>${act.map(m => `<th>${modelLabel(m)}</th>`).join("")}</tr>`;
+  const body = tasks().map(t =>
+    `<tr><td class="task-lbl">${(TASK[t]||{}).label || t}</td>${act.map(m => cell(byKey[t + "/" + m])).join("")}</tr>`
+  ).join("");
+  const sum = f => m => runs().filter(r => r.model === m).reduce((a,r) => a + r[f], 0);
+  const foot = `<tr><td class="task-lbl">total</td>${act.map(m =>
+    `<td><b>${sum("looks")(m)}</b> looks · ${sum("tool_calls")(m)} calls · ${(sum("tokens")(m)/1000).toFixed(0)}k tok</td>`
+  ).join("")}</tr>`;
+  view.innerHTML = `<div class="gridwrap"><table class="grid">
+    <thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
+  for (const img of view.querySelectorAll("img"))
+    img.onclick = () => openBox(img.dataset.label, img.dataset.model, img.dataset.src);
+}
+
 function render(){
   if (!state.DATA) return;
   renderChips();
-  compare();
-  document.getElementById("taskbox").hidden = false;
-  document.getElementById("tasktext").textContent = taskText();
+  const inGrid = state.view === "grid";
+  if (inGrid) grid(); else compare();
+  document.getElementById("taskbox").hidden = inGrid;
+  if (!inGrid) document.getElementById("tasktext").textContent = taskText();
 }
 
 const box = document.getElementById("box");
