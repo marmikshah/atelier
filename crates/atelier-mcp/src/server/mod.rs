@@ -218,6 +218,7 @@ fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
 fn log_call(
     tool: &str,
     args: &Value,
+    caller: &str,
     result: &rmcp::model::CallToolResult,
     elapsed: std::time::Duration,
 ) {
@@ -237,7 +238,7 @@ fn log_call(
                 .unwrap_or_else(|| e.to_string())
         })
     }) {
-        Some(error) => tracing::warn!(%tool, %op, %doc, ms, %error, "tool error"),
+        Some(error) => tracing::warn!(%tool, %op, %doc, %caller, ms, %error, "tool error"),
         None if is_error_result(result) => {
             // is_error without a JSON error payload: surface what text there is.
             let text = result
@@ -246,9 +247,9 @@ fn log_call(
                 .and_then(|c| c.as_text())
                 .map(|t| t.text.clone())
                 .unwrap_or_default();
-            tracing::warn!(%tool, %op, %doc, ms, error = %text, "tool error");
+            tracing::warn!(%tool, %op, %doc, %caller, ms, error = %text, "tool error");
         }
-        None => tracing::info!(%tool, %op, %doc, ms, "ok"),
+        None => tracing::info!(%tool, %op, %doc, %caller, ms, "ok"),
     }
 }
 
@@ -1135,6 +1136,17 @@ impl ServerHandler for Atelier {
             .map(Value::Object)
             .unwrap_or_else(|| json!({}));
         let recorder = self.recorder.clone();
+        // Caller identity for the log line: the `X-Atelier-Caller` HTTP header
+        // (each client sets its own tag/uuid in its MCP config). The transport
+        // is stateless, so this is the only per-caller signal; stdio has one
+        // caller by definition and logs `-`.
+        let caller = context
+            .extensions
+            .get::<axum::http::request::Parts>()
+            .and_then(|p| p.headers.get("x-atelier-caller"))
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("-")
+            .to_string();
 
         // For mutations, hold the order lock from before the dispatch until
         // after the journal write, so journal order can never diverge from
@@ -1155,11 +1167,11 @@ impl ServerHandler for Atelier {
             // Protocol-level failure (unknown tool, malformed params): the
             // client sees a JSON-RPC error; make sure the operator does too.
             Err(e) => {
-                tracing::error!(%tool, error = %e, "tool call failed (protocol error)");
+                tracing::error!(%tool, %caller, error = %e, "tool call failed (protocol error)");
                 return Err(e);
             }
         };
-        log_call(&tool, &args, &result, started.elapsed());
+        log_call(&tool, &args, &caller, &result, started.elapsed());
 
         // A read rebuilds nothing, so it belongs in neither recipe. Both
         // recorders answer to the same question — what did it take to make
