@@ -173,7 +173,7 @@ enough to ship in a game?
 and Fable 5 did the heavy lifting, with Kimi 2.6 and Minimax 2.7 pitching in. I
 have not written a line. My part was direction, held to the standards I use where
 I *do* still write the code. If it helps you build something, the tokens were
-worth spending.
+worth spending — and a ⭐ helps the next person find it.
 
 > [!WARNING]
 > **Below 2.0.0, no human has reviewed this code.** Assume bugs and security
