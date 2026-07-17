@@ -96,10 +96,14 @@ atelier library            # what's in your document store
 atelier replay recipe.json # replay a recorded session, byte-identically
 ```
 
-The server logs every tool call to stderr — name, op, target document, duration,
-and the error text when a call fails. The daemon collects this in
+The server logs every tool call to stderr — name, op, target document, caller,
+duration, and the error text when a call fails. The daemon collects this in
 `~/.atelier/logs/atelier.err.log`; tune verbosity with `ATELIER_LOG`
-(`RUST_LOG` syntax, default `info`).
+(`RUST_LOG` syntax, default `info`). Multiple agents sharing the daemon can
+tag themselves with an `X-Atelier-Caller` header in their MCP client config —
+each call then logs `caller=<tag>`, so interleaved sessions stay attributable.
+(Same-name collisions are already impossible: `doc_create` mints a unique id —
+`hero`, `hero-2`, … — and every caller must use the id it got back.)
 
 **28 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
