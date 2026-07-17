@@ -6,8 +6,65 @@ releases.
 
 ## [Unreleased]
 
+### Added
+
+
+- **`erase: true` on every draw op** (doc_draw and doc_batch): the shape becomes
+  an eraser — every pixel it touches goes transparent. Any pencil/line/ellipse/
+  polygon/fill can punch a hole, which no colour trick could (drawing
+  `[0,0,0,0]` is a no-op under source-over). Every FX agent in the showcase
+  benchmark wanted this.
+- **`bg` on doc_look** (`checker` | `dark` | `white`): matte transparency for
+  viewing. Most viewers matte on white, which made white-hot FX pixels
+  invisible — two showcase agents flagged it.
+- **`count` on doc_frame op=add**: append several frames in one call instead of
+  N identical round-trips.
+- **`atelier agent` — the one online mode.** Drives an OpenAI-style
+  chat-completions API through an agentic loop so the binary draws a task on its
+  own, with no external client. It executes the model's tool calls against a
+  child `atelier` stdio server, so it reuses the whole validated tool path
+  (schemas, arg-checking, journaling) rather than a second copy; `doc_look`
+  images are fed back to the model. Any OpenAI-compatible endpoint works via
+  `--base-url`. The atelier-sprite/scene/review skills are compiled into the
+  binary, so a bare `atelier agent --task "..."` needs no files — `--skill
+  scene|review` picks another, `--skill-file` injects a custom one.
+- Gated behind the **`agent` cargo feature**, OFF by default: a normal build and
+  the daemon link no HTTP/TLS stack, and the core stays offline, keyless and
+  deterministic. `OPENAI_API_KEY` comes from the env; agent mode is never part
+  of a default install. Build with `cargo install --path crates/atelier
+  --features agent`.
+- **Three skills for Claude Code**, which `install.sh` offers
+  to install: **atelier-sprite** (one subject), **atelier-scene** (a place), and
+  **atelier-review** (judge it, don't repaint it). Both drawing skills insist on
+  building in layers and fixing the region that is wrong rather than repainting
+  the frame; neither prescribes a style or a palette. A test fails if a skill
+  names a tool that no longer exists. They are a typed registry
+  (`crates/atelier/skills`): Rust owns the metadata and the per-consumer
+  renderers, the prose stays markdown. `atelier skills install` writes the
+  Claude `SKILL.md` files; `atelier skills show <name>` prints one.
+- **Every document journals itself.** The calls that built a document are
+  recorded beside it as `recipe.jsonl`, on by default — so `atelier replay <id>`
+  rebuilds anything you have ever drawn, and "art is a recipe" stops depending on
+  having known to pass a flag first. `atelier library` shows each document's step
+  count.
+
 ### Fixed
 
+
+- **Stringified params are revived.** Strict tool-call clients serialize params
+  the flattened open schemas leave untyped as STRINGS — `color: [255,0,0]`
+  arrived as `"[255, 0, 0]"` (rejected) and `dx: 2` as `"2"` (silently
+  defaulted to 0, the doc_fx op=shift "no-op" every showcase model worked
+  around). doc_draw/doc_fx/doc_export/doc_batch now parse those back; `text`
+  stays prose.
+- doc_anim_audit's timing note named a tool that no longer exists
+  (`doc_set_frame_duration`) — it now points at `doc_frame op=duration` and
+  says to skip the advice when the brief fixes the timing.
+- doc_critique's orphan/jaggies notes acknowledge FX sprites: deliberate
+  sparks/embers are legitimate orphans, and small curves on a locked palette
+  always keep some step corners — judge by eye, don't chase zero.
+- The "no pixels changed" warning no longer implies an error when the edit was
+  simply a no-op.
 - **Replay remaps document ids.** `atelier replay <id>` into a store where the
   id already exists used to draw every step onto the LIVE original (and double
   its journal) while the fresh copy stayed blank; journals of collision-suffixed
@@ -40,36 +97,8 @@ releases.
 - The examples in `docs/examples/` are now genuinely integration tests:
   `make test` replays each through the real binary into a throwaway store.
 
-### Added
-
-- **`atelier agent` — the one online mode.** Drives an OpenAI-style
-  chat-completions API through an agentic loop so the binary draws a task on its
-  own, with no external client. It executes the model's tool calls against a
-  child `atelier` stdio server, so it reuses the whole validated tool path
-  (schemas, arg-checking, journaling) rather than a second copy; `doc_look`
-  images are fed back to the model. Any OpenAI-compatible endpoint works via
-  `--base-url`. The atelier-sprite/scene/review skills are compiled into the
-  binary, so a bare `atelier agent --task "..."` needs no files — `--skill
-  scene|review` picks another, `--skill-file` injects a custom one.
-- Gated behind the **`agent` cargo feature**, OFF by default: a normal build and
-  the daemon link no HTTP/TLS stack, and the core stays offline, keyless and
-  deterministic. `OPENAI_API_KEY` comes from the env; agent mode is never part
-  of a default install. Build with `cargo install --path crates/atelier
-  --features agent`.
-
-### Added
-
-- **Three skills for Claude Code**, which `install.sh` offers
-  to install: **atelier-sprite** (one subject), **atelier-scene** (a place), and
-  **atelier-review** (judge it, don't repaint it). Both drawing skills insist on
-  building in layers and fixing the region that is wrong rather than repainting
-  the frame; neither prescribes a style or a palette. A test fails if a skill
-  names a tool that no longer exists. They are a typed registry
-  (`crates/atelier/skills`): Rust owns the metadata and the per-consumer
-  renderers, the prose stays markdown. `atelier skills install` writes the
-  Claude `SKILL.md` files; `atelier skills show <name>` prints one.
-
 ### Breaking
+
 
 - **The MCP server ships no prompts.** `pixel-sprite`, `walk-cycle` and
   `seamless-tile` are gone; the skills above replace them, and go deeper than a
@@ -100,15 +129,8 @@ releases.
   was built from deleted tools). The skills that replaced the prompts animate
   walk cycles by repainting each pose, which is what agents actually do.
 
-### Added
-
-- **Every document journals itself.** The calls that built a document are
-  recorded beside it as `recipe.jsonl`, on by default — so `atelier replay <id>`
-  rebuilds anything you have ever drawn, and "art is a recipe" stops depending on
-  having known to pass a flag first. `atelier library` shows each document's step
-  count.
-
 ### Changed
+
 
 - **Recipes read JSON Lines.** One `{tool, args}` per line, appended: O(1) per
   call instead of rewriting the whole file, and a killed session leaves every

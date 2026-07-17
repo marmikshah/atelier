@@ -1310,6 +1310,28 @@ fn per_op_opacity_blends_in_batch() {
 }
 
 #[test]
+fn erase_turns_any_op_into_an_eraser() {
+    // Drawing [0,0,0,0] is a no-op under source-over, so before `erase` there
+    // was no way to punch a shaped hole — every showcase FX agent wanted one.
+    let mut d = Document::new("t", 4, 4);
+    d.fill_cel(0, 0, [200, 0, 0, 255]).unwrap();
+    d.apply_op(
+        0,
+        0,
+        &json!({"op":"ellipse","cx":1,"cy":1,"rx":1,"ry":1,"color":[1,2,3],"fill":true,"erase":true}),
+    )
+    .unwrap();
+    assert_eq!(d.get_pixel(0, 0, 1, 1).unwrap(), [0, 0, 0, 0], "hole");
+    assert_eq!(d.get_pixel(0, 0, 3, 3).unwrap(), [200, 0, 0, 255], "kept");
+    // The stencil colour never lands.
+    for y in 0..4 {
+        for x in 0..4 {
+            assert_ne!(d.get_pixel(0, 0, x, y).unwrap(), [1, 2, 3, 255]);
+        }
+    }
+}
+
+#[test]
 fn silhouette_center_of_known_shape() {
     let mut d = Document::new("t", 6, 6);
     // Filled 3×3 block from (1,1) to (3,3): bbox-centre is (2,2).

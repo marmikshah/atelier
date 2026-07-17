@@ -319,7 +319,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Frame lifecycle + timing in one tool. `op`: add (append a frame; `copy_from` duplicates that frame's cels, `duration_ms` default 100) · duration (set frame `frame`'s `duration_ms`) · insert (new frame at `frame`) · duplicate (`frame`) · delete (`frame`; last frame protected) · move (`frame`→`to_index`). Cels reindex and tag ranges remap. (Animation tags have their own tool: doc_add_tag.)"
+        description = "Frame lifecycle + timing in one tool. `op`: add (append a frame; `copy_from` duplicates that frame's cels, `count` appends several at once, `duration_ms` default 100) · duration (set frame `frame`'s `duration_ms`) · insert (new frame at `frame`) · duplicate (`frame`) · delete (`frame`; last frame protected) · move (`frame`→`to_index`). Cels reindex and tag ranges remap. (Animation tags have their own tool: doc_add_tag.)"
     )]
     async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
         let studio = self.studio();
@@ -334,6 +334,7 @@ impl Atelier {
             p.copy_from,
             p.to_index,
             p.duration_ms,
+            p.count,
         ))
     }
 
@@ -397,7 +398,8 @@ impl Atelier {
     #[tool(
         description = "Export to a file. Per-document `op`: sheet (horizontal spritesheet PNG + JSON meta — rects/durations/tags/palette; `meta`=standard writes the industry-standard hash sprite-JSON engines' existing importers parse instead) · anim (animated `format`=gif|apng, optional `tag` plays that animation in its direction) · tileset (slice a `tile_w`×`tile_h` grid → PNG + Tiled .tsx + JSON; canvas must divide evenly). Library-wide `op` (omit doc_id): all (one spritesheet PNG + JSON per document into `out_path` as a DIRECTORY) · atlas (pack EVERY frame of EVERY document into one atlas PNG + master JSON map — doc/frame/rect/duration — for slicing a whole game from one texture; `max_width` wraps the shelf packer, default 512). GIF/APNG alpha is 1-bit: a pixel is fully opaque or fully gone, so animation tuned with partial alpha (aa edges, per-op opacity) will jump at export — snap or flatten first. Shared: out_path, scale (sheet/anim/all/atlas 4, tileset 1)."
     )]
-    async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
+    async fn doc_export(&self, Parameters(mut p): Parameters<DocExport>) -> CallToolResult {
+        params::revive_params(&mut p.params);
         let studio = self.studio();
         match p.op.as_str() {
             "all" => res(studio.export_all(&p.out_path, p.scale.unwrap_or(4))),
@@ -546,16 +548,22 @@ impl Atelier {
     // -- pivots / palette (engine-ready sprites, cohesive colour) --
 
     #[tool(
-        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only; params color?, radius?, intensity?, mode?). Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting. Honours an active doc_select."
+        description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only; params color?, radius?, intensity?, mode?). Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting, or \"erase\": true to make the op an ERASER (every pixel it touches goes transparent — any shape can punch a hole). Honours an active doc_select."
     )]
-    async fn doc_batch(&self, Parameters(p): Parameters<DocBatch>) -> CallToolResult {
+    async fn doc_batch(&self, Parameters(mut p): Parameters<DocBatch>) -> CallToolResult {
+        for op in p.ops.iter_mut() {
+            if let Some(obj) = op.as_object_mut() {
+                params::revive_params(obj);
+            }
+        }
         res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops))
     }
 
     #[tool(
-        description = "Draw ONE shape/mark on a cel — the single-op form of doc_batch (use doc_batch for many ops at once). `op` plus its flattened params: pencil{points,color,size?} (each point is a SEPARATE dab — use polyline or line to CONNECT points into a stroke) · line{x0,y0,x1,y1,color,size?} · rect{x0,y0,x1,y1,color,fill?,size?} · ellipse{cx,cy,rx,ry,color,fill?} · polyline{points,color,size?,closed?} · polygon{points,color,fill?} · stroke{points,color,width?,aa?,snap?} (aa=true softens edges with PARTIAL-ALPHA pixels — set aa=false on a locked palette or before a GIF export, whose alpha is 1-bit) · fill{x,y,color,tolerance?} · gradient{stops,kind?,x0,y0,x1,y1,…} · scatter{colors,x0,y0,x1,y1,density?,seed?,size?} · noise{stops,x0,y0,x1,y1,kind?,scale?,…} · text{x,y,text,color,size?} · fill_cel{color} · box_iso{cx,cy,s,ht,color,light_right?} (shaded isometric cuboid — the hard-surface form primitive: crates, blocks, dice) · panel{x,y,w,h,fill,border?,bevel?} (HUD/UI box: filled body + border + inner bevel; pair with op=text for labels). All also accept opacity and blend_mode. Honours an active doc_select."
+        description = "Draw ONE shape/mark on a cel — the single-op form of doc_batch (use doc_batch for many ops at once). `op` plus its flattened params: pencil{points,color,size?} (each point is a SEPARATE dab — use polyline or line to CONNECT points into a stroke) · line{x0,y0,x1,y1,color,size?} · rect{x0,y0,x1,y1,color,fill?,size?} · ellipse{cx,cy,rx,ry,color,fill?} · polyline{points,color,size?,closed?} · polygon{points,color,fill?} · stroke{points,color,width?,aa?,snap?} (aa=true softens edges with PARTIAL-ALPHA pixels — set aa=false on a locked palette or before a GIF export, whose alpha is 1-bit) · fill{x,y,color,tolerance?} · gradient{stops,kind?,x0,y0,x1,y1,…} · scatter{colors,x0,y0,x1,y1,density?,seed?,size?} · noise{stops,x0,y0,x1,y1,kind?,scale?,…} · text{x,y,text,color,size?} · fill_cel{color} · box_iso{cx,cy,s,ht,color,light_right?} (shaded isometric cuboid — the hard-surface form primitive: crates, blocks, dice) · panel{x,y,w,h,fill,border?,bevel?} (HUD/UI box: filled body + border + inner bevel; pair with op=text for labels). All also accept opacity, blend_mode, and erase (true = the shape ERASES to transparent instead of drawing). Honours an active doc_select."
     )]
-    async fn doc_draw(&self, Parameters(p): Parameters<DocDraw>) -> CallToolResult {
+    async fn doc_draw(&self, Parameters(mut p): Parameters<DocDraw>) -> CallToolResult {
+        params::revive_params(&mut p.params);
         let studio = self.studio();
         match p.op.as_str() {
             "box_iso" => {
@@ -592,9 +600,10 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?,shadow_opacity?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?} (thins 1px staircases on OUTLINES/lines — never run it over filled shapes, it shreds them); **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?} · gradient_map{stops,region?} (remap luminance through colour stops, alpha kept). All also accept opacity/blend_mode and honour an active doc_select."
+        description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?,shadow_opacity?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?} (thins 1px staircases on OUTLINES/lines — never run it over filled shapes or size>1 strokes, it shreds them); **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?} · gradient_map{stops,region?} (remap luminance through colour stops, alpha kept). All also accept opacity/blend_mode and honour an active doc_select."
     )]
-    async fn doc_fx(&self, Parameters(p): Parameters<DocFx>) -> CallToolResult {
+    async fn doc_fx(&self, Parameters(mut p): Parameters<DocFx>) -> CallToolResult {
+        params::revive_params(&mut p.params);
         res(self
             .studio()
             .doc_fx(&p.doc_id, p.layer, p.frame, &p.op, p.params))
@@ -602,7 +611,7 @@ impl Atelier {
 
     // -- world-class-art tools (the art-quality pass) --
     #[tool(
-        description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N to check seamlessness; out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
+        description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N to check seamlessness; bg mattes transparency (checker|dark|white — use it when judging white/light pixels, which vanish on a white viewer backdrop); out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
     )]
     async fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
         let opts = atelier_studio::LookOptions {
@@ -616,6 +625,7 @@ impl Atelier {
             max_size: p.max_size,
             tile: p.tile,
             out_path: p.out_path.clone(),
+            bg: p.bg.clone(),
         };
         img_result(self.studio().look(&p.doc_id, p.frame.unwrap_or(0), &opts))
     }
