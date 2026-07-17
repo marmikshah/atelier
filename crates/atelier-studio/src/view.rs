@@ -171,6 +171,49 @@ pub struct LookOptions {
     pub tile: Option<u32>,
     /// Also write the PNG here.
     pub out_path: Option<String>,
+    /// Matte transparency for viewing: checker | dark | white. None keeps the
+    /// alpha channel (most viewers show it on white, which hides light pixels).
+    pub bg: Option<String>,
+}
+
+/// Composite `img` over an opaque backdrop: `checker` (two-tone transparency
+/// grid, cells sized to read at the applied scale), `dark`, or `white`.
+fn matte(img: &RgbaImage, bg: &str, scale: u32) -> Result<RgbaImage, String> {
+    let cell = (scale.max(1) * 4).max(4);
+    let color_at = |x: u32, y: u32| -> [u8; 4] {
+        match bg {
+            "checker" => {
+                if ((x / cell) + (y / cell)).is_multiple_of(2) {
+                    [58, 62, 76, 255]
+                } else {
+                    [40, 43, 54, 255]
+                }
+            }
+            "dark" => [24, 26, 32, 255],
+            "white" => [255, 255, 255, 255],
+            _ => [0, 0, 0, 0], // unreachable; validated below
+        }
+    };
+    if !matches!(bg, "checker" | "dark" | "white") {
+        return Err(format!("unknown bg '{bg}' — use checker|dark|white"));
+    }
+    let mut out = RgbaImage::new(img.width(), img.height());
+    for (x, y, p) in img.enumerate_pixels() {
+        let b = color_at(x, y);
+        let a = p.0[3] as u32;
+        let blend = |s: u8, d: u8| ((s as u32 * a + d as u32 * (255 - a)) / 255) as u8;
+        out.put_pixel(
+            x,
+            y,
+            image::Rgba([
+                blend(p.0[0], b[0]),
+                blend(p.0[1], b[1]),
+                blend(p.0[2], b[2]),
+                255,
+            ]),
+        );
+    }
+    Ok(out)
 }
 
 impl Studio {
@@ -197,6 +240,7 @@ impl Studio {
             max_size,
             tile,
             out_path,
+            bg,
         } = opts;
         let (scale, region, max_size, tile) = (*scale, *region, *max_size, *tile);
         let (grid, coords, onion) = (*grid, *coords, *onion);
@@ -268,6 +312,12 @@ impl Studio {
             }
         } else {
             out = scale_nn(&view, applied_scale);
+        }
+        // Matte transparency on request — a white viewer backdrop (the common
+        // default) makes white-hot FX pixels invisible; checker/dark keep the
+        // silhouette readable. Applied under the art, before the grid overlay.
+        if let Some(bg) = bg.as_deref() {
+            out = matte(&out, bg, applied_scale)?;
         }
         if grid && applied_scale >= 2 {
             // Aim for ~8px native grid cells; at least every pixel boundary.
@@ -402,5 +452,39 @@ mod tests {
         let (png, report) = s.contact_sheet("c", 4, 8, false).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(report["frames"], 1);
+    }
+
+    #[test]
+    fn matte_makes_transparency_opaque_and_rejects_unknown_bg() {
+        // A white viewer backdrop hides white-hot FX pixels — the matte is how
+        // the agent actually sees them.
+        let img = RgbaImage::from_pixel(8, 8, image::Rgba([255, 255, 255, 0]));
+        for bg in ["checker", "dark", "white"] {
+            let out = matte(&img, bg, 4).unwrap();
+            assert!(out.pixels().all(|p| p.0[3] == 255), "{bg}: fully opaque");
+        }
+        // Checker must alternate (two distinct backdrop tones visible).
+        let out = matte(&img, "checker", 1).unwrap();
+        let tones: std::collections::HashSet<[u8; 4]> = out.pixels().map(|p| p.0).collect();
+        assert_eq!(tones.len(), 2, "checker shows two cells");
+        assert!(matte(&img, "plaid", 1).is_err());
+    }
+
+    #[test]
+    fn look_bg_flows_through_the_options() {
+        let s = studio("lookbg");
+        s.doc_create("c", 4, 4).unwrap();
+        let opts = LookOptions {
+            scale: Some(1),
+            bg: Some("dark".into()),
+            ..Default::default()
+        };
+        let (png, _) = s.look("c", 0, &opts).unwrap();
+        assert_eq!(&png[0..4], b"\x89PNG");
+        let bad = LookOptions {
+            bg: Some("plaid".into()),
+            ..Default::default()
+        };
+        assert!(s.look("c", 0, &bad).is_err());
     }
 }

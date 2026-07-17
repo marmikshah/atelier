@@ -789,9 +789,10 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
             "value_masses": {"shadow": round(masses[0]), "mid": round(masses[1]), "light": round(masses[2]),
                              "verdict": if soup { "warn" } else { "ok" },
                              "note": if soup { "even thirds — value soup; group into clearer masses" } else { "" }},
-            "orphans": {"count": orphans, "verdict": if orphans > 0 { "warn" } else { "ok" }, "cells": orphan_cells},
+            "orphans": {"count": orphans, "verdict": if orphans > 0 { "warn" } else { "ok" }, "cells": orphan_cells,
+                        "note": "isolated 1-2px islands; on FX sprites deliberate sparks/embers/motes are LEGITIMATE — fix only true strays"},
             "jaggies": {"count": jaggies, "verdict": if jaggies > (n / 12).max(6) as u32 { "warn" } else { "info" },
-                        "cells": jag_cells, "note": "outer step corners; even out the stair steps, or place single mid-tone (selout) pixels in the corners"},
+                        "cells": jag_cells, "note": "outer step corners; even out the stair steps, or place single mid-tone (selout) pixels in the corners — small curves on a locked palette always keep some, so judge by eye rather than chasing zero"},
             "pillow_shading": {"forms": pillow_forms, "verdict": if pillow_forms > 0 { "warn" } else { "ok" },
                                "note": "forms lit brightest at the centre with no light direction; shade from a light source"},
             "form_lighting": {"dominant_azimuth_deg": fa["dominant_light_azimuth_deg"].clone(),
@@ -1043,8 +1044,8 @@ mod tests {
     fn anim_audit_arc_reports_trajectory_shape() {
         let s = studio("arc");
         s.doc_create("c", 16, 16).unwrap();
-        s.doc_add_frame("c", 100, None).unwrap();
-        s.doc_add_frame("c", 100, None).unwrap();
+        s.doc_add_frame("c", 100, None, 1).unwrap();
+        s.doc_add_frame("c", 100, None, 1).unwrap();
         draw(
             &s,
             "c",

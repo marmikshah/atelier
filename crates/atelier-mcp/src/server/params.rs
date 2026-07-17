@@ -5,6 +5,37 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::Value;
 
+/// Re-type flattened op params a strict tool-call client stringified.
+///
+/// The single-op tools carry their op's params in a `#[serde(flatten)]` open
+/// map, so the advertised schema cannot type them per key — and some clients
+/// serialize anything the schema leaves open as a STRING: `color: [255,0,0]`
+/// arrives as `"[255, 0, 0]"` and `dx: 2` as `"2"`. The op layer then rejects
+/// the colour ("got \"[255, 0, 0]\"") or silently defaults the number — every
+/// model in the showcase benchmark hit one of the two. Anything that parses as
+/// JSON (array/object/number/bool) is parsed back; `text` is exempt because
+/// its value is legitimately prose (drawing the text "42" must stay text).
+pub(crate) fn revive_params(params: &mut serde_json::Map<String, Value>) {
+    for (key, v) in params.iter_mut() {
+        if key == "text" {
+            continue;
+        }
+        if let Value::String(s) = v {
+            let t = s.trim();
+            let looks_typed = t.starts_with('[')
+                || t.starts_with('{')
+                || t == "true"
+                || t == "false"
+                || t.parse::<f64>().is_ok();
+            if looks_typed {
+                if let Ok(parsed) = serde_json::from_str::<Value>(t) {
+                    *v = parsed;
+                }
+            }
+        }
+    }
+}
+
 // --- library params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -176,6 +207,8 @@ pub(crate) struct DocFrame {
     pub(crate) frame: Option<usize>,
     /// For `add`: duplicate this frame's cels into the new frame.
     pub(crate) copy_from: Option<usize>,
+    /// For `add`: append this many frames in one call (default 1, max 256).
+    pub(crate) count: Option<usize>,
     /// Destination index for `move`.
     pub(crate) to_index: Option<usize>,
     /// Frame duration in ms (for add/insert/duration; default 100).
@@ -362,6 +395,9 @@ pub(crate) struct DocLook {
     pub(crate) tile: Option<u32>,
     /// Also write the PNG to this path, for file/export workflows.
     pub(crate) out_path: Option<String>,
+    /// Matte transparency for viewing: checker | dark | white. Omit to keep
+    /// alpha (most viewers show it on white, which hides light/white pixels).
+    pub(crate) bg: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -507,6 +543,31 @@ pub(crate) struct DocPaintGrid {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn stringified_params_are_revived_except_text() {
+        // Every showcase model hit this: a strict client stringifies params
+        // the open flattened schema leaves untyped.
+        let mut p = serde_json::from_value::<serde_json::Map<String, Value>>(serde_json::json!({
+            "color": "[255, 0, 0]",
+            "points": "[[1,2],[3,4]]",
+            "dx": "2",
+            "wrap": "true",
+            "mode": "auto",
+            "text": "[42]",
+            "torn": "[1,"
+        }))
+        .unwrap();
+        revive_params(&mut p);
+        assert_eq!(p["color"], serde_json::json!([255, 0, 0]));
+        assert_eq!(p["points"], serde_json::json!([[1, 2], [3, 4]]));
+        assert_eq!(p["dx"], serde_json::json!(2));
+        assert_eq!(p["wrap"], serde_json::json!(true));
+        // Prose stays prose; malformed JSON stays a string for the op's error.
+        assert_eq!(p["mode"], serde_json::json!("auto"));
+        assert_eq!(p["text"], serde_json::json!("[42]"), "drawn text is prose");
+        assert_eq!(p["torn"], serde_json::json!("[1,"));
+    }
 
     #[test]
     fn doc_batch_ops_items_is_a_concrete_object_not_any() {
