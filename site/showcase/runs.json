@@ -1,5 +1,6 @@
 {
   "method": "Claude Code subagents driving the atelier MCP server, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools. Every model draws the same ten tasks from identical frozen briefs (benchmarks/tasks/*.txt). Stats are Claude Code's own tool_uses and subagent tokens plus each agent's self-reported doc_look count. Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work.",
+  "server": "atelier post-1.4.0 (28-tool surface); every run in this table was drawn against the same build",
   "verified": "Every GIF parsed from disk: all 40 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4.",
   "tasks": [
     "alien",
@@ -14,16 +15,16 @@
     "torch"
   ],
   "task_text": {
-    "alien": "Creature — a big-headed green alien idling: it hovers, antennae sway, one blink.\nSymmetric and centered. Loops seamlessly. 10 frames, 1 second at 10 FPS. 32x32 canvas.\n4 colours, transparent background.",
-    "ball": "Prop — a rubber ball: falls, squashes flat on contact, rebounds tall, and rises —\nsquash & stretch with a scaling cast shadow. Loops seamlessly. 10 frames, 1 second\nat 10 FPS. 32x32 canvas. 4 colours, transparent background.",
-    "beam": "Effect — a character seen in profile firing an energy beam from cupped hands:\ngather with a charging orb at the hands, release, the beam lances out to the right\nas the body recoils, then it fades and the pose settles. Loops seamlessly. 10\nframes, 1 second at 10 FPS. 48x48 canvas. 6 colours, transparent background.",
-    "car": "Vehicle — a side-view car driving in place: wheels spin, the body bobs on its\nsuspension, a small exhaust puff, speed lines streak past. Loops seamlessly.\n10 frames, 1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
-    "cat": "Animal — a cat in a wizard hat with a glowing staff orb that pulses and casts\nlight, tail swaying, sparkles drifting up. Loops seamlessly. 10 frames, 1 second\nat 10 FPS. 32x32 canvas. 6 colours, transparent background.",
-    "explosion": "Effect — a particle explosion: a bright core flashes, throws debris and sparks\noutward on arcing paths, they fade as they fly, and a puff of smoke curls up and\ndissipates to nothing. Reads as force. Loops seamlessly. 10 frames, 1 second at\n10 FPS. 32x32 canvas. 6 colours, transparent background.",
-    "person": "Character — a front-facing human adventurer jumping: crouch, launch, airborne with\narms up and legs tucked, fall, then land absorbing the impact. Faces the viewer\nthroughout. Weight reads through the whole body. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
-    "potion": "Item — a corked flask, two-thirds full: bubbles rise through the liquid and pop at\na wobbling surface while the bottle stays still. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
-    "slash": "Effect — a sword slash arc: a bright crescent sweeps down-right across the frame,\npeaks with a hot leading edge and a hard impact flash, then thins and fades to\nnothing. Reads as motion with no character present. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
-    "torch": "Environment — a wall-mounted torch: the flame flickers and licks upward, embers\ndrift up and fade, a soft light pulse on the bracket. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 5 colours, transparent background."
+    "alien": "Creature \u2014 a big-headed green alien idling: it hovers, antennae sway, one blink.\nSymmetric and centered. Loops seamlessly. 10 frames, 1 second at 10 FPS. 32x32 canvas.\n4 colours, transparent background.",
+    "ball": "Prop \u2014 a rubber ball: falls, squashes flat on contact, rebounds tall, and rises \u2014\nsquash & stretch with a scaling cast shadow. Loops seamlessly. 10 frames, 1 second\nat 10 FPS. 32x32 canvas. 4 colours, transparent background.",
+    "beam": "Effect \u2014 a character seen in profile firing an energy beam from cupped hands:\ngather with a charging orb at the hands, release, the beam lances out to the right\nas the body recoils, then it fades and the pose settles. Loops seamlessly. 10\nframes, 1 second at 10 FPS. 48x48 canvas. 6 colours, transparent background.",
+    "car": "Vehicle \u2014 a side-view car driving in place: wheels spin, the body bobs on its\nsuspension, a small exhaust puff, speed lines streak past. Loops seamlessly.\n10 frames, 1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "cat": "Animal \u2014 a cat in a wizard hat with a glowing staff orb that pulses and casts\nlight, tail swaying, sparkles drifting up. Loops seamlessly. 10 frames, 1 second\nat 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "explosion": "Effect \u2014 a particle explosion: a bright core flashes, throws debris and sparks\noutward on arcing paths, they fade as they fly, and a puff of smoke curls up and\ndissipates to nothing. Reads as force. Loops seamlessly. 10 frames, 1 second at\n10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "person": "Character \u2014 a front-facing human adventurer jumping: crouch, launch, airborne with\narms up and legs tucked, fall, then land absorbing the impact. Faces the viewer\nthroughout. Weight reads through the whole body. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "potion": "Item \u2014 a corked flask, two-thirds full: bubbles rise through the liquid and pop at\na wobbling surface while the bottle stays still. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "slash": "Effect \u2014 a sword slash arc: a bright crescent sweeps down-right across the frame,\npeaks with a hot leading edge and a hard impact flash, then thins and fades to\nnothing. Reads as motion with no character present. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.",
+    "torch": "Environment \u2014 a wall-mounted torch: the flame flickers and licks upward, embers\ndrift up and fade, a soft light pulse on the bracket. Loops seamlessly. 10 frames,\n1 second at 10 FPS. 32x32 canvas. 5 colours, transparent background."
   },
   "models": [
     "haiku-4.5",
@@ -37,9 +38,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/alien.gif",
-      "tool_calls": 45,
-      "looks": 4,
-      "tokens": 63962,
+      "tool_calls": 63,
+      "looks": 3,
+      "tokens": 54205,
       "frames": 10
     },
     {
@@ -47,9 +48,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/ball.gif",
-      "tool_calls": 38,
-      "looks": 2,
-      "tokens": 63962,
+      "tool_calls": 49,
+      "looks": 6,
+      "tokens": 49786,
       "frames": 10
     },
     {
@@ -57,9 +58,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/beam.gif",
-      "tool_calls": 45,
-      "looks": 2,
-      "tokens": 63962,
+      "tool_calls": 53,
+      "looks": 3,
+      "tokens": 50851,
       "frames": 10
     },
     {
@@ -67,9 +68,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/car.gif",
-      "tool_calls": 30,
-      "looks": 2,
-      "tokens": 81325,
+      "tool_calls": 66,
+      "looks": 4,
+      "tokens": 71242,
       "frames": 10
     },
     {
@@ -77,9 +78,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/cat.gif",
-      "tool_calls": 21,
-      "looks": 1,
-      "tokens": 81325,
+      "tool_calls": 64,
+      "looks": 2,
+      "tokens": 73615,
       "frames": 10
     },
     {
@@ -87,9 +88,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/explosion.gif",
-      "tool_calls": 18,
-      "looks": 1,
-      "tokens": 81325,
+      "tool_calls": 68,
+      "looks": 4,
+      "tokens": 62137,
       "frames": 10
     },
     {
@@ -97,9 +98,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/person.gif",
-      "tool_calls": 63,
-      "looks": 4,
-      "tokens": 58790,
+      "tool_calls": 82,
+      "looks": 3,
+      "tokens": 85127,
       "frames": 10
     },
     {
@@ -107,9 +108,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/potion.gif",
-      "tool_calls": 30,
-      "looks": 0,
-      "tokens": 60731,
+      "tool_calls": 58,
+      "looks": 8,
+      "tokens": 56624,
       "frames": 10
     },
     {
@@ -117,9 +118,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/slash.gif",
-      "tool_calls": 26,
-      "looks": 2,
-      "tokens": 82224,
+      "tool_calls": 48,
+      "looks": 4,
+      "tokens": 68593,
       "frames": 10
     },
     {
@@ -127,9 +128,9 @@
       "model": "haiku-4.5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/haiku-4.5/torch.gif",
-      "tool_calls": 24,
-      "looks": 2,
-      "tokens": 82224,
+      "tool_calls": 46,
+      "looks": 3,
+      "tokens": 48004,
       "frames": 10
     },
     {
@@ -137,9 +138,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/alien.gif",
-      "tool_calls": 50,
+      "tool_calls": 88,
       "looks": 3,
-      "tokens": 131019,
+      "tokens": 92909,
       "frames": 10
     },
     {
@@ -147,9 +148,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/ball.gif",
-      "tool_calls": 42,
-      "looks": 1,
-      "tokens": 131019,
+      "tool_calls": 71,
+      "looks": 3,
+      "tokens": 85130,
       "frames": 10
     },
     {
@@ -157,9 +158,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/beam.gif",
-      "tool_calls": 60,
-      "looks": 3,
-      "tokens": 131019,
+      "tool_calls": 53,
+      "looks": 4,
+      "tokens": 80375,
       "frames": 10
     },
     {
@@ -167,9 +168,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/car.gif",
-      "tool_calls": 40,
-      "looks": 3,
-      "tokens": 155077,
+      "tool_calls": 58,
+      "looks": 2,
+      "tokens": 87236,
       "frames": 10
     },
     {
@@ -177,9 +178,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/cat.gif",
-      "tool_calls": 45,
-      "looks": 3,
-      "tokens": 155077,
+      "tool_calls": 115,
+      "looks": 6,
+      "tokens": 140571,
       "frames": 10
     },
     {
@@ -187,9 +188,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/explosion.gif",
-      "tool_calls": 40,
-      "looks": 0,
-      "tokens": 155077,
+      "tool_calls": 57,
+      "looks": 7,
+      "tokens": 84500,
       "frames": 10
     },
     {
@@ -197,9 +198,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/person.gif",
-      "tool_calls": 48,
-      "looks": 1,
-      "tokens": 116179,
+      "tool_calls": 89,
+      "looks": 2,
+      "tokens": 98958,
       "frames": 10
     },
     {
@@ -207,9 +208,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/potion.gif",
-      "tool_calls": 40,
-      "looks": 1,
-      "tokens": 116179,
+      "tool_calls": 125,
+      "looks": 4,
+      "tokens": 126592,
       "frames": 10
     },
     {
@@ -217,9 +218,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/slash.gif",
-      "tool_calls": 43,
-      "looks": 2,
-      "tokens": 148662,
+      "tool_calls": 67,
+      "looks": 4,
+      "tokens": 86938,
       "frames": 10
     },
     {
@@ -227,9 +228,9 @@
       "model": "sonnet-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/sonnet-5/torch.gif",
-      "tool_calls": 40,
-      "looks": 2,
-      "tokens": 148662,
+      "tool_calls": 88,
+      "looks": 3,
+      "tokens": 122338,
       "frames": 10
     },
     {
@@ -237,9 +238,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/alien.gif",
-      "tool_calls": 77,
-      "looks": 6,
-      "tokens": 88764,
+      "tool_calls": 62,
+      "looks": 5,
+      "tokens": 91970,
       "frames": 10
     },
     {
@@ -247,9 +248,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/ball.gif",
-      "tool_calls": 32,
-      "looks": 3,
-      "tokens": 63976,
+      "tool_calls": 56,
+      "looks": 2,
+      "tokens": 77789,
       "frames": 10
     },
     {
@@ -257,9 +258,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/beam.gif",
-      "tool_calls": 38,
-      "looks": 5,
-      "tokens": 66298,
+      "tool_calls": 49,
+      "looks": 3,
+      "tokens": 77010,
       "frames": 10
     },
     {
@@ -267,9 +268,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/car.gif",
-      "tool_calls": 40,
-      "looks": 4,
-      "tokens": 93029,
+      "tool_calls": 84,
+      "looks": 3,
+      "tokens": 94500,
       "frames": 10
     },
     {
@@ -277,9 +278,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/cat.gif",
-      "tool_calls": 102,
-      "looks": 9,
-      "tokens": 124457,
+      "tool_calls": 79,
+      "looks": 3,
+      "tokens": 89721,
       "frames": 10
     },
     {
@@ -287,9 +288,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/explosion.gif",
-      "tool_calls": 34,
-      "looks": 6,
-      "tokens": 106531,
+      "tool_calls": 49,
+      "looks": 3,
+      "tokens": 68110,
       "frames": 10
     },
     {
@@ -297,9 +298,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/person.gif",
-      "tool_calls": 85,
-      "looks": 9,
-      "tokens": 94912,
+      "tool_calls": 33,
+      "looks": 3,
+      "tokens": 67559,
       "frames": 10
     },
     {
@@ -307,9 +308,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/potion.gif",
-      "tool_calls": 38,
+      "tool_calls": 55,
       "looks": 4,
-      "tokens": 82554,
+      "tokens": 83419,
       "frames": 10
     },
     {
@@ -317,9 +318,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/slash.gif",
-      "tool_calls": 37,
-      "looks": 3,
-      "tokens": 89753,
+      "tool_calls": 51,
+      "looks": 5,
+      "tokens": 85473,
       "frames": 10
     },
     {
@@ -327,9 +328,9 @@
       "model": "opus-4.8",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/opus-4.8/torch.gif",
-      "tool_calls": 47,
-      "looks": 5,
-      "tokens": 94490,
+      "tool_calls": 61,
+      "looks": 4,
+      "tokens": 83240,
       "frames": 10
     },
     {
@@ -337,9 +338,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/alien.gif",
-      "tool_calls": 45,
-      "looks": 4,
-      "tokens": 112877,
+      "tool_calls": 55,
+      "looks": 3,
+      "tokens": 76602,
       "frames": 10
     },
     {
@@ -347,9 +348,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/ball.gif",
-      "tool_calls": 38,
-      "looks": 1,
-      "tokens": 112877,
+      "tool_calls": 54,
+      "looks": 2,
+      "tokens": 68817,
       "frames": 10
     },
     {
@@ -357,9 +358,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/beam.gif",
-      "tool_calls": 41,
-      "looks": 2,
-      "tokens": 112877,
+      "tool_calls": 82,
+      "looks": 6,
+      "tokens": 102543,
       "frames": 10
     },
     {
@@ -367,9 +368,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/car.gif",
-      "tool_calls": 38,
-      "looks": 2,
-      "tokens": 99748,
+      "tool_calls": 76,
+      "looks": 3,
+      "tokens": 79945,
       "frames": 10
     },
     {
@@ -377,9 +378,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/cat.gif",
-      "tool_calls": 30,
-      "looks": 2,
-      "tokens": 99748,
+      "tool_calls": 83,
+      "looks": 3,
+      "tokens": 85661,
       "frames": 10
     },
     {
@@ -387,9 +388,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/explosion.gif",
-      "tool_calls": 29,
-      "looks": 0,
-      "tokens": 99748,
+      "tool_calls": 48,
+      "looks": 6,
+      "tokens": 65646,
       "frames": 10
     },
     {
@@ -397,9 +398,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/person.gif",
-      "tool_calls": 56,
-      "looks": 1,
-      "tokens": 104002,
+      "tool_calls": 76,
+      "looks": 6,
+      "tokens": 82198,
       "frames": 10
     },
     {
@@ -407,9 +408,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/potion.gif",
-      "tool_calls": 34,
-      "looks": 2,
-      "tokens": 104002,
+      "tool_calls": 66,
+      "looks": 3,
+      "tokens": 93681,
       "frames": 10
     },
     {
@@ -417,9 +418,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/slash.gif",
-      "tool_calls": 48,
-      "looks": 3,
-      "tokens": 113304,
+      "tool_calls": 51,
+      "looks": 6,
+      "tokens": 70833,
       "frames": 10
     },
     {
@@ -427,9 +428,9 @@
       "model": "fable-5",
       "vendor": "Anthropic",
       "gif": "benchmarks/runs/fable-5/torch.gif",
-      "tool_calls": 46,
-      "looks": 1,
-      "tokens": 113304,
+      "tool_calls": 63,
+      "looks": 3,
+      "tokens": 76229,
       "frames": 10
     }
   ]
