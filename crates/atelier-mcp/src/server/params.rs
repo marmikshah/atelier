@@ -111,6 +111,10 @@ pub(crate) struct DocBatch {
     pub(crate) doc_id: String,
     pub(crate) layer: usize,
     pub(crate) frame: usize,
+    /// Apply the SAME op list to each of these frames as well (a repeated fix
+    /// on a static layer is one call, not one per frame). Runs on the union of
+    /// `frame` and this list, each frame in full op order.
+    pub(crate) frames: Option<Vec<usize>>,
     /// Ordered ops, each an object; the derived item schema would be `true`
     /// (any), which strict tool-call parsers (e.g. Gemini) reject — so pin it to
     /// `{"type":"object"}` while keeping the free-form op payload.
