@@ -1278,8 +1278,8 @@ mod tests {
     fn frame_diff_classifies_changes_and_grids() {
         let s = studio("framediff");
         s.doc_create("d", 4, 4).unwrap();
-        s.doc_add_frame("d", 100, Some(0)).unwrap(); // frame 1 copies frame 0
-                                                     // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
+        s.doc_add_frame("d", 100, Some(0), 1).unwrap(); // frame 1 copies frame 0
+                                                        // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
         draw(
             &s,
             "d",
@@ -1332,7 +1332,7 @@ mod tests {
             "rect",
             json!({"x0": 0, "y0": 0, "x1": 1, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
         );
-        s.doc_add_frame("d", 100, None).unwrap();
+        s.doc_add_frame("d", 100, None, 1).unwrap();
         draw(
             &s,
             "d",
@@ -1340,7 +1340,7 @@ mod tests {
             "rect",
             json!({"x0": 2, "y0": 0, "x1": 3, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
         );
-        s.doc_add_frame("d", 100, None).unwrap();
+        s.doc_add_frame("d", 100, None, 1).unwrap();
         draw(
             &s,
             "d",

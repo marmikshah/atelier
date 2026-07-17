@@ -15,17 +15,34 @@ impl Document {
     /// name) composite the op's result instead of overwriting: the op is run,
     /// then the pixels it changed are re-composited over the pre-op cel with the
     /// given opacity/mode (snapshot-diff, so any op gains blend/opacity).
+    /// `"erase": true` turns the op into an ERASER instead: every pixel the op
+    /// touched becomes transparent — any shape (pencil/line/ellipse/fill/…) can
+    /// punch a hole, which no colour trick could do (drawing [0,0,0,0] is a
+    /// no-op under source-over).
     pub fn apply_op(&mut self, layer: usize, frame: usize, op: &Value) -> Result<(), String> {
         let opacity = op.get("opacity").and_then(|v| v.as_u64()).map(|v| v as u8);
         let mode = op
             .get("blend_mode")
             .and_then(|v| v.as_str())
             .map(raster::parse_blend);
-        if opacity.is_none() && mode.is_none() {
+        let erase = op.get("erase").and_then(|v| v.as_bool()).unwrap_or(false);
+        if !erase && opacity.is_none() && mode.is_none() {
             return self.apply_op_raw(layer, frame, op);
         }
         let before = self.cel_canvas(layer, frame)?.clone();
         self.apply_op_raw(layer, frame, op)?;
+        if erase {
+            // The op is only a stencil: everything it marked goes transparent.
+            let img = self.cel_canvas(layer, frame)?;
+            for y in 0..img.height() {
+                for x in 0..img.width() {
+                    if img.get_pixel(x, y).0 != before.get_pixel(x, y).0 {
+                        img.put_pixel(x, y, Rgba([0, 0, 0, 0]));
+                    }
+                }
+            }
+            return Ok(());
+        }
         let of = opacity.unwrap_or(255) as f32 / 255.0;
         let m = mode.unwrap_or(raster::Blend::Normal);
         let img = self.cel_canvas(layer, frame)?;
@@ -532,7 +549,7 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
     let (required, optional) =
         batch_op_keys(kind).ok_or_else(|| format!("op[{}]: unknown op '{}'", idx, kind))?;
     // Keys every op accepts on top of its own params.
-    let common = ["op", "opacity", "blend_mode"];
+    let common = ["op", "opacity", "blend_mode", "erase"];
     let known = |k: &str| common.contains(&k) || required.contains(&k) || optional.contains(&k);
     let bad: Vec<&str> = obj
         .keys()

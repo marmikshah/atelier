@@ -664,7 +664,9 @@ impl Studio {
         id: &str,
         duration_ms: u32,
         copy_from: Option<usize>,
+        count: usize,
     ) -> Result<Value, String> {
+        let count = count.clamp(1, 256);
         let (dir, mut doc) = self.open(id)?;
         if let Some(src) = copy_from {
             if src >= doc.meta().frames.len() {
@@ -675,7 +677,12 @@ impl Studio {
                 ));
             }
         }
-        let idx = doc.add_frame(duration_ms, copy_from);
+        // Appending N identical frames used to cost N round-trips; `count`
+        // makes "give me my 10 frames" one call.
+        let mut idx = doc.add_frame(duration_ms, copy_from);
+        for _ in 1..count {
+            idx = doc.add_frame(duration_ms, copy_from);
+        }
         doc.save(&dir)?;
         // Slim ack — echoing the whole structure() grew O(layers×frames) per
         // call during walk-cycle work; doc_info has the full picture.
@@ -706,12 +713,14 @@ impl Studio {
         copy_from: Option<usize>,
         to_index: Option<usize>,
         duration_ms: Option<u32>,
+        count: Option<usize>,
     ) -> Result<Value, String> {
         match op {
             "add" => self.doc_add_frame(
                 id,
                 duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
                 copy_from,
+                count.unwrap_or(1),
             ),
             "duration" => self.doc_set_frame_duration(
                 id,
@@ -990,7 +999,7 @@ impl Studio {
         });
         if changed == 0 {
             out["warning"] =
-                json!("no pixels changed — coordinates may be off-canvas, the colour may match what's already there, or the selection may exclude the area");
+                json!("no pixels changed — coordinates may be off-canvas, the edit may match what's already there (a no-op, not a failure), or the selection may exclude the area");
         }
         out
     }
@@ -1659,6 +1668,17 @@ mod tests {
         // directory: a failed create must not leave a journal behind.
         s.journal_append("nope", "doc_draw", &json!({}));
         assert!(s.journal("nope").is_err(), "no document, no journal");
+    }
+
+    #[test]
+    fn frame_add_count_appends_in_one_call() {
+        // "Give me my 10 frames" used to cost 9 identical round-trips.
+        let s = studio("addcount");
+        s.doc_create("d", 4, 4).unwrap();
+        let out = s.doc_frame("d", "add", None, Some(0), None, Some(80), Some(9));
+        assert!(out.is_ok(), "{out:?}");
+        let info = s.doc_info("d").unwrap();
+        assert_eq!(info["frames"].as_array().map(|f| f.len()), Some(10));
     }
 
     #[test]

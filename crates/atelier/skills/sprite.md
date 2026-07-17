@@ -95,8 +95,16 @@ thing, and the wrong choice fails quietly.
 - **Carry motion in size and colour, not alpha.** GIF alpha is 1-bit: a pulse or
   fade driven by opacity looks right in `doc_look` and then dies at export. Drive
   it by changing the drawn pixels instead.
-- **`pixel_perfect` is for lines, not fills** — it thins staircases and will
-  shred a filled shape.
+- **`pixel_perfect` is for 1px lines, not fills or wide strokes** — it thins
+  staircases and will shred a filled shape or a `size>1`/`width>1` stroke into
+  dots. Small curves on a locked palette always keep a few step corners; judge
+  them by eye instead of chasing a zero jaggies count.
+- **Erase with `erase: true`** on any draw op — the shape's pixels go
+  transparent (drawing `[0,0,0,0]` is a no-op under source-over). Punch holes,
+  carve smoke, trim edges.
+- **Judging white or light pixels?** Pass `bg: "checker"` (or `"dark"`) to
+  `doc_look` — most viewers matte transparency on white, which makes white-hot
+  FX invisible.
 - **For an effect that fades to nothing, ignore `seam_score`.** It is
   changed/opaque, so a fade-out scores ~1.0 by construction; judge the loop by
   eye on the contact sheet instead.
