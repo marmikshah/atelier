@@ -167,6 +167,48 @@ fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
         .is_some_and(|v| v.get("error").is_some())
 }
 
+/// One log line per completed tool call: name, `op` variant, target document,
+/// duration, and — for application errors (`{"error": ...}` payloads, which are
+/// `Ok` at the protocol level and otherwise invisible) — the error text at
+/// `warn`. This is the observability for the whole tool surface; keep it on
+/// the single dispatch path so no tool can dodge it.
+fn log_call(
+    tool: &str,
+    args: &Value,
+    result: &rmcp::model::CallToolResult,
+    elapsed: std::time::Duration,
+) {
+    let op = args.get("op").and_then(Value::as_str).unwrap_or("-");
+    let doc = journal_target(tool, args, result)
+        .or_else(|| {
+            args.get("doc_id")
+                .and_then(Value::as_str)
+                .map(str::to_string)
+        })
+        .unwrap_or_else(|| "-".into());
+    let ms = elapsed.as_millis();
+    match result_json(result).and_then(|v| {
+        v.get("error").map(|e| {
+            e.as_str()
+                .map(str::to_string)
+                .unwrap_or_else(|| e.to_string())
+        })
+    }) {
+        Some(error) => tracing::warn!(%tool, %op, %doc, ms, %error, "tool error"),
+        None if is_error_result(result) => {
+            // is_error without a JSON error payload: surface what text there is.
+            let text = result
+                .content
+                .first()
+                .and_then(|c| c.as_text())
+                .map(|t| t.text.clone())
+                .unwrap_or_default();
+            tracing::warn!(%tool, %op, %doc, ms, error = %text, "tool error");
+        }
+        None => tracing::info!(%tool, %op, %doc, ms, "ok"),
+    }
+}
+
 // --- server ----------------------------------------------------------------
 
 #[derive(Clone)]
@@ -1048,8 +1090,18 @@ impl ServerHandler for Atelier {
             None
         };
 
+        let started = std::time::Instant::now();
         let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-        let result = self.tool_router.call(tcc).await?;
+        let result = match self.tool_router.call(tcc).await {
+            Ok(r) => r,
+            // Protocol-level failure (unknown tool, malformed params): the
+            // client sees a JSON-RPC error; make sure the operator does too.
+            Err(e) => {
+                tracing::error!(%tool, error = %e, "tool call failed (protocol error)");
+                return Err(e);
+            }
+        };
+        log_call(&tool, &args, &result, started.elapsed());
 
         // A read rebuilds nothing, so it belongs in neither recipe. Both
         // recorders answer to the same question — what did it take to make
@@ -1150,10 +1202,17 @@ impl ServerHandler for Atelier {
 pub async fn run(record: Option<std::path::PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
     let mut atelier = Atelier::new();
     if let Some(path) = record {
+        tracing::info!(path = %path.display(), "session recording on");
         atelier = atelier.with_recording(path);
     }
+    tracing::info!(
+        version = env!("CARGO_PKG_VERSION"),
+        transport = "stdio",
+        "atelier MCP server starting"
+    );
     let service = atelier.serve(rmcp::transport::stdio()).await?;
     service.waiting().await?;
+    tracing::info!("atelier MCP server stopped (client closed stdio)");
     Ok(())
 }
 
@@ -1173,6 +1232,9 @@ pub async fn run_http(
     // Shared studio across all HTTP sessions.
     let studio = std::sync::Arc::new(std::sync::Mutex::new(Studio::new()));
     // One recorder shared across sessions so every call lands in one recipe.
+    if let Some(path) = &record {
+        tracing::info!(path = %path.display(), "session recording on");
+    }
     let recorder = record.map(Recorder::new);
     let mut config = StreamableHttpServerConfig::default();
     for h in allowed_hosts {
@@ -1197,14 +1259,22 @@ pub async fn run_http(
         StreamableHttpService::new(factory, Default::default(), config);
 
     let router = axum::Router::new().nest_service("/mcp", service);
-    let listener = tokio::net::TcpListener::bind(addr).await?;
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .inspect_err(|e| tracing::error!(%addr, error = %e, "cannot bind HTTP listener"))?;
     let local = listener.local_addr()?;
-    eprintln!("atelier MCP listening on http://{local}/mcp");
+    tracing::info!(
+        version = env!("CARGO_PKG_VERSION"),
+        endpoint = %format!("http://{local}/mcp"),
+        "atelier MCP server listening"
+    );
     axum::serve(listener, router)
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;
+            tracing::info!("shutdown signal received");
         })
         .await?;
+    tracing::info!("atelier MCP server stopped");
     Ok(())
 }
 

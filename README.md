@@ -96,6 +96,11 @@ atelier library            # what's in your document store
 atelier replay recipe.json # replay a recorded session, byte-identically
 ```
 
+The server logs every tool call to stderr — name, op, target document, duration,
+and the error text when a call fails. The daemon collects this in
+`~/.atelier/logs/atelier.err.log`; tune verbosity with `ATELIER_LOG`
+(`RUST_LOG` syntax, default `info`).
+
 **28 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
