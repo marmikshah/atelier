@@ -31,6 +31,74 @@ This is a *functional core, imperative shell*: `atelier-core` and
 `atelier-studio` are deterministic, synchronous, and dependency-light; all of the
 async, networking, and protocol surface lives in `atelier-mcp` and the binary.
 
+## The full picture
+
+The same tower with the runtime paths drawn in — how a tool call flows, where
+every cross-cutting concern hooks, and why the server can be stateless
+(GitHub renders this diagram; raw readers get the ASCII art above).
+
+```mermaid
+flowchart TB
+    subgraph clients["Clients"]
+        cc["Claude Code / any MCP client<br/>(spawns the binary — stdio)"]
+        kimi["Kimi Code / HTTP clients<br/>(stateless POSTs to /mcp)"]
+    end
+
+    subgraph bin["atelier — the binary"]
+        main["arg parsing · tracing init (stderr, ATELIER_LOG)<br/>daemon install (launchd / systemd) · library CLI<br/>replay runner · skills registry"]
+        agent["agent mode — feature-gated OFF<br/>the ONE online path: OpenAI-style API<br/>drives a child atelier over stdio"]
+    end
+
+    subgraph mcp["atelier-mcp — the shell (rmcp server)"]
+        dispatch["call_tool — the single dispatch choke point"]
+        log["log line: tool · op · doc · caller · ms · error"]
+        order["write-order lock (mutations only)"]
+        router["tool_router — 28 tools, schemas scrubbed"]
+        journal["journal_append → recipe.jsonl"]
+        recorder["session recorder (--record, opt-in)"]
+    end
+
+    subgraph studio["atelier-studio — the facade (library API)"]
+        facade["Studio: load doc → op → save doc<br/>stateless per call — disk is the truth<br/>unique_id (hero, hero-2 — no collisions)<br/>palettes · analysis · reference compare · export"]
+    end
+
+    subgraph core["atelier-core — the functional core"]
+        model["Document = layers × frames × cels<br/>raster ops · blend · dither · palette math<br/>pure, deterministic, no async, no MCP"]
+    end
+
+    subgraph disk["~/.atelier — the state"]
+        store["&lt;doc-id&gt;/ document data"]
+        recipe["&lt;doc-id&gt;/recipe.jsonl<br/>every doc is a replayable recipe"]
+    end
+
+    cc -- stdio --> dispatch
+    kimi -- "HTTP /mcp · no sessions<br/>caller = peer addr or header" --> dispatch
+    main --> dispatch
+    agent -. spawns child .-> main
+    dispatch --> log
+    dispatch --> order
+    dispatch --> router
+    dispatch --> journal
+    dispatch --> recorder
+    router --> facade
+    facade --> model
+    facade <--> store
+    journal --> recipe
+    recipe -- "atelier replay &lt;id&gt;" --> dispatch
+```
+
+Properties the shape guarantees:
+
+- **Strict downward tower** — each arrow points one way; the core imports
+  nothing above it. Transport bugs get fixed in the shell without touching art
+  logic.
+- **One choke point** — logging, journaling, write ordering, and recording all
+  hang off `call_tool`; no tool can dodge them.
+- **Disk is the state** — no server-side session, so the HTTP transport is
+  stateless: a daemon restart is invisible mid-conversation.
+- **Recipe = provenance** — art is an ordered list of tool calls; any document
+  rebuilds from its own journal.
+
 ## The crates
 
 ### `atelier-core` — the document model (~8k LOC, no async/MCP)
