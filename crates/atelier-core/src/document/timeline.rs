@@ -123,6 +123,8 @@ impl Document {
                         .into_iter()
                         .map(|((l, f), v)| ((l, map[f]), v))
                         .collect();
+                    // Re-keyed cels need writing under their new frame names.
+                    self.mark_all_dirty();
                     // Tag remap = remove-then-insert, NOT endpoint min/max
                     // through the permutation (that balloons a tag over
                     // untagged frames when a member moves far away, and drops

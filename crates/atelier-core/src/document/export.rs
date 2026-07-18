@@ -157,18 +157,23 @@ impl Document {
         let global: Vec<[u8; 4]> = if !self.meta.palette.is_empty() {
             self.meta.palette.clone()
         } else {
-            let mut px: Vec<[u8; 3]> = Vec::new();
+            // Count per distinct colour (BTreeMap = sorted, so the weighted
+            // cut sees a deterministic order) instead of a per-pixel Vec —
+            // same cut, far less memory on large frames.
+            let mut counts: std::collections::BTreeMap<[u8; 3], u64> =
+                std::collections::BTreeMap::new();
             for &f in &seq {
                 for p in self.flatten(f).pixels() {
                     if p.0[3] > 0 {
-                        px.push([p.0[0], p.0[1], p.0[2]]);
+                        *counts.entry([p.0[0], p.0[1], p.0[2]]).or_insert(0) += 1;
                     }
                 }
             }
-            if px.is_empty() {
+            if counts.is_empty() {
                 Vec::new()
             } else {
-                raster::median_cut(&px, 256)
+                let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
+                raster::median_cut_weighted(&pairs, 256, &[])
             }
         };
         let mut lab = raster::PaletteLab::new(&global);
@@ -189,14 +194,18 @@ impl Document {
                 }
             }
             if scale > 1 {
-                img = image::imageops::resize(
-                    &img,
-                    self.meta.w * scale,
-                    self.meta.h * scale,
-                    image::imageops::FilterType::Nearest,
+                // Same checked math as sheet_image: studio clamps scale, but a
+                // library caller can pass anything.
+                let (fw, fh) = (
+                    self.meta.w.checked_mul(scale).ok_or("gif scale overflow")?,
+                    self.meta.h.checked_mul(scale).ok_or("gif scale overflow")?,
                 );
+                img = image::imageops::resize(&img, fw, fh, image::imageops::FilterType::Nearest);
             }
-            let delay = Delay::from_numer_denom_ms(self.meta.frames[f].duration_ms, 1);
+            // GIF frame delay is u16 centiseconds — cap at the format's ceiling
+            // (~655s) instead of truncating into a wrapped, faster frame.
+            let ms = self.meta.frames[f].duration_ms.min(655_350);
+            let delay = Delay::from_numer_denom_ms(ms, 1);
             enc.encode_frame(Frame::from_parts(img, 0, 0, delay))
                 .map_err(|e| e.to_string())?;
         }
@@ -215,7 +224,12 @@ impl Document {
             return Err("nothing to export: document has no frames".into());
         }
         let sc = scale.max(1);
-        let (w, h) = (self.meta.w * sc, self.meta.h * sc);
+        // Same checked math as sheet_image: studio clamps scale, but a library
+        // caller can pass anything.
+        let (w, h) = (
+            self.meta.w.checked_mul(sc).ok_or("apng scale overflow")?,
+            self.meta.h.checked_mul(sc).ok_or("apng scale overflow")?,
+        );
         let file = std::fs::File::create(out).map_err(|e| e.to_string())?;
         let mut enc = png::Encoder::new(std::io::BufWriter::new(file), w, h);
         enc.set_color(png::ColorType::Rgba);

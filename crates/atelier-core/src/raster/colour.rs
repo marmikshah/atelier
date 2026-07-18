@@ -400,7 +400,11 @@ pub fn median_cut_weighted(
                 mx - mn
             })
             .unwrap();
-        boxes[bi].sort_by_key(|(p, _)| p[axis]);
+        boxes[bi].sort_by_key(|(p, _)| (p[axis], p[0], p[1], p[2]));
+        // ^ Ties on the split channel are broken by the FULL colour, so the
+        // weighted-median walk below sees the same order no matter what order
+        // the caller's collection (e.g. a HashMap of colour counts) yielded —
+        // the palette must be identical for identical input, every run.
         // Split at the weighted median so heavily-used colours dominate the cut.
         let total: u64 = boxes[bi].iter().map(|(_, w)| w).sum();
         let mut acc = 0u64;

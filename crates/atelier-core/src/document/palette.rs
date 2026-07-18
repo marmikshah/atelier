@@ -30,11 +30,17 @@ impl Document {
             if layer.is_some_and(|sel| sel != *l) || frame.is_some_and(|sel| sel != *f) {
                 continue;
             }
+            let before = changed;
             for p in img.pixels_mut() {
                 if let Some((_, to)) = pairs.iter().find(|(from, _)| p.0 == *from) {
                     *p = Rgba(*to);
                     changed += 1;
                 }
+            }
+            if changed > before {
+                // This loop mutates cels in place (no cel_canvas), so the
+                // dirty marking has to happen here, per touched cel.
+                self.dirty.insert((*l, *f));
             }
         }
         // Keep the stored palette consistent with the recolour.
@@ -76,6 +82,7 @@ impl Document {
             if layer.is_some_and(|s| s != *l) || frame.is_some_and(|s| s != *f) {
                 continue;
             }
+            let before = changed;
             for p in img.pixels_mut() {
                 let src = p.0;
                 if src[3] == 0 {
@@ -101,6 +108,10 @@ impl Document {
                     *p = Rgba(new);
                     changed += 1;
                 }
+            }
+            if changed > before {
+                // In-place mutation (no cel_canvas) — mark per touched cel.
+                self.dirty.insert((*l, *f));
             }
         }
         changed

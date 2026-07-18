@@ -29,13 +29,15 @@ pub fn run(args: &[String]) -> i32 {
     // These values are interpolated into a launchd plist / systemd unit; a
     // control char (esp. a newline) could inject an extra directive. Reject
     // them before writing any manifest. XML metacharacters in the plist are
-    // handled by escaping at format time.
+    // handled by escaping at format time. `"` would break out of the quoted
+    // systemd fields below, and `%` is systemd's specifier-expansion prefix —
+    // both are rejected rather than escaped because no real path needs them.
     for (name, val) in [
         ("--bind", bind.as_str()),
         ("--home", &home_dir.to_string_lossy()),
     ] {
-        if val.chars().any(|c| c.is_control()) {
-            eprintln!("atelier: {name} may not contain control characters");
+        if val.chars().any(|c| c.is_control() || c == '"' || c == '%') {
+            eprintln!("atelier: {name} may not contain control characters, '\"' or '%'");
             return 2;
         }
     }
@@ -149,6 +151,10 @@ fn launchd_plist(bin: &str, bind: &str, home_dir: &str, logs: &str) -> String {
 }
 
 /// The systemd --user unit (Linux).
+/// Paths are double-quoted: systemd splits ExecStart/Environment on whitespace,
+/// so a binary or ATELIER_HOME containing a space ("/home/user name/…") would
+/// otherwise install a service that fails to start. `"` and `%` are rejected
+/// at the argument layer, so plain quoting is sufficient here.
 fn systemd_unit(bin: &str, bind: &str, home_dir: &str) -> String {
     format!(
         "[Unit]\n\
@@ -156,8 +162,8 @@ fn systemd_unit(bin: &str, bind: &str, home_dir: &str) -> String {
          After=network.target\n\
          \n\
          [Service]\n\
-         ExecStart={bin} --http {bind}\n\
-         Environment=ATELIER_HOME={home_dir}\n\
+         ExecStart=\"{bin}\" --http \"{bind}\"\n\
+         Environment=\"ATELIER_HOME={home_dir}\"\n\
          Restart=on-failure\n\
          RestartSec=2\n\
          \n\
@@ -408,8 +414,9 @@ mod tests {
             "127.0.0.1:8765",
             "/home/u/.atelier",
         );
-        assert!(unit.contains("ExecStart=/usr/local/bin/atelier --http 127.0.0.1:8765"));
-        assert!(unit.contains("127.0.0.1:8765"));
+        // Fields are quoted so paths with spaces survive systemd's whitespace split.
+        assert!(unit.contains("ExecStart=\"/usr/local/bin/atelier\" --http \"127.0.0.1:8765\""));
+        assert!(unit.contains("Environment=\"ATELIER_HOME=/home/u/.atelier\""));
         assert!(unit.contains("Restart=on-failure"));
     }
 }

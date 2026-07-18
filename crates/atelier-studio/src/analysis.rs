@@ -502,15 +502,9 @@ impl Studio {
                     img.put_pixel(x as u32, y as u32, Rgba(flag));
                 }
             }
-            let sc = scale.max(1);
-            if sc > 1 {
-                img = image::imageops::resize(
-                    &img,
-                    cw as u32 * sc,
-                    ch as u32 * sc,
-                    image::imageops::FilterType::Nearest,
-                );
-            }
+            // scale_nn clamps the caller's scale (1..=16) — this resize used to
+            // take it raw: `cw * sc` could overflow u32 / allocate absurdly.
+            let img = crate::scale_nn(&img, scale);
             img.save(&out).map_err(|e| e.to_string())?;
             res["path"] = json!(out.to_string_lossy());
             png = Some(crate::encode_png(&img)?);
