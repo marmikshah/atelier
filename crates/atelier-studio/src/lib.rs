@@ -320,6 +320,24 @@ impl Studio {
         Ok(out)
     }
 
+    /// Just the frame count, read off doc.json without decoding any cels — the
+    /// MCP multi-frame `doc_batch` preflights its target frames against it
+    /// before applying anything.
+    pub fn frame_count(&self, id: &str) -> Result<usize, String> {
+        if !Self::valid_id(id) {
+            return Err(format!("invalid document id '{id}'"));
+        }
+        if !self.exists(id) {
+            return Err(format!("no document '{id}'"));
+        }
+        let s = fs::read_to_string(self.doc_dir(id).join("doc.json")).map_err(|e| e.to_string())?;
+        let v: Value = serde_json::from_str(&s).map_err(|e| e.to_string())?;
+        v["frames"]
+            .as_array()
+            .map(|a| a.len())
+            .ok_or_else(|| format!("document '{id}': doc.json has no frames array"))
+    }
+
     pub fn list_docs(&self) -> Value {
         self.list_docs_filtered(None, None)
     }
@@ -1111,7 +1129,10 @@ impl Studio {
                 let (a, b) = (rx.max(1) as f32 + 0.5, ry.max(1) as f32 + 0.5);
                 for y in 0..h as i32 {
                     for x in 0..w as i32 {
-                        if ((x - cx) as f32 / a).powi(2) + ((y - cy) as f32 / b).powi(2) <= 1.0 {
+                        // i64: `x - cx` overflows i32 for an extreme centre.
+                        let (dx, dy) =
+                            ((x as i64 - cx as i64) as f32, (y as i64 - cy as i64) as f32);
+                        if (dx / a).powi(2) + (dy / b).powi(2) <= 1.0 {
                             shape_mask[idx(x, y)] = true;
                         }
                     }
@@ -1442,19 +1463,21 @@ impl Studio {
                     })?
                 }
                 Value::Array(a) => {
-                    let c: Vec<i64> = a.iter().filter_map(|x| x.as_i64()).collect();
-                    if c.len() < 3 {
+                    // Strict like validate_batch_op's colour check: exactly
+                    // [r,g,b] or [r,g,b,a], every component 0..=255. The old
+                    // parse dropped non-numbers silently and truncated via
+                    // `as u8` (300 → 44) into a wrong-but-plausible colour.
+                    let ok_shape = (3..=4).contains(&a.len())
+                        && a.iter()
+                            .all(|x| x.as_i64().is_some_and(|n| (0..=255).contains(&n)));
+                    if !ok_shape {
                         return Err(format!(
-                            "legend '{}': colour must be [r,g,b] or [r,g,b,a]",
-                            k
+                            "legend '{}': colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
+                            k, v
                         ));
                     }
-                    [
-                        c[0] as u8,
-                        c[1] as u8,
-                        c[2] as u8,
-                        c.get(3).copied().unwrap_or(255) as u8,
-                    ]
+                    let n = |i: usize| a[i].as_i64().unwrap() as u8;
+                    [n(0), n(1), n(2), if a.len() == 4 { n(3) } else { 255 }]
                 }
                 _ => {
                     return Err(format!(
@@ -1560,11 +1583,11 @@ impl Studio {
         op: &str,
         mut params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
-        use atelier_core::document::DRAW_OPS;
-        if !DRAW_OPS.contains(&op) {
+        let draw_ops = atelier_core::document::draw_ops();
+        if !draw_ops.contains(&op) {
             return Err(format!(
                 "doc_draw: '{op}' is not a draw op — use one of [{}] (filters and lighting live on their own tools)",
-                DRAW_OPS.join(", ")
+                draw_ops.join(", ")
             ));
         }
         params.insert("op".into(), json!(op));
@@ -1584,11 +1607,11 @@ impl Studio {
         op: &str,
         mut params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
-        use atelier_core::document::FX_OPS;
-        if !FX_OPS.contains(&op) {
+        let fx_ops = atelier_core::document::fx_ops();
+        if !fx_ops.contains(&op) {
             return Err(format!(
                 "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow is a batch-only op — call it inside doc_batch)",
-                FX_OPS.join(", ")
+                fx_ops.join(", ")
             ));
         }
         params.insert("op".into(), json!(op));
@@ -1698,5 +1721,45 @@ mod tests {
         fs::write(&path, format!("not json\n{clean}")).unwrap();
         let err = s.journal("d").unwrap_err();
         assert!(err.contains("line 1"), "mid-file corruption errors: {err}");
+    }
+}
+
+#[cfg(test)]
+mod hardening_tests {
+    use super::*;
+
+    fn studio(tag: &str) -> Studio {
+        let dir = std::env::temp_dir().join(format!("atelier-hard-{tag}"));
+        let _ = fs::remove_dir_all(&dir);
+        Studio::with_docs_dir(dir)
+    }
+
+    #[test]
+    fn paint_grid_legend_rejects_out_of_range_colours() {
+        let s = studio("legend");
+        s.doc_create("d", 4, 4).unwrap();
+        let mk = |color: Value| {
+            let mut legend = serde_json::Map::new();
+            legend.insert("k".into(), color);
+            s.doc_paint_grid("d", 0, 0, 0, 0, legend, vec!["k".into()])
+        };
+        // 300 used to truncate to 44 via `as u8`; now it's a loud error.
+        let e = mk(json!([255, 300, 0])).unwrap_err();
+        assert!(e.contains("0..=255"), "got: {e}");
+        assert!(mk(json!([255, 128, 0])).is_ok());
+        assert!(mk(json!([255, 128, 0, 200])).is_ok());
+        assert!(mk(json!([1, 2])).is_err(), "too short must error");
+        assert!(mk(json!([1, 2, 3, 4, 5])).is_err(), "too long must error");
+    }
+
+    #[test]
+    fn frame_count_reads_doc_json_directly() {
+        let s = studio("fc");
+        s.doc_create("d", 4, 4).unwrap();
+        assert_eq!(s.frame_count("d").unwrap(), 1);
+        s.doc_add_frame("d", 100, None, 4).unwrap();
+        assert_eq!(s.frame_count("d").unwrap(), 5);
+        assert!(s.frame_count("ghost").is_err());
+        assert!(s.frame_count("../x").is_err());
     }
 }

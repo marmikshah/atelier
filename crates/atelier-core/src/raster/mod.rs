@@ -25,12 +25,65 @@ pub fn put(img: &mut RgbaImage, x: i32, y: i32, color: [u8; 4]) {
 
 /// Stamp a `size`×`size` square brush centred at (cx, cy).
 pub fn brush(img: &mut RgbaImage, cx: i32, cy: i32, color: [u8; 4], size: i32) {
+    // A brush bigger than the canvas covers it — the size is raw caller input,
+    // and a size×size inner loop over billions of cells hung the server.
+    let size = size.min(img.width().max(img.height()) as i32);
     let o = size / 2;
     for dy in 0..size {
         for dx in 0..size {
             put(img, cx - o + dx, cy - o + dy, color);
         }
     }
+}
+
+/// Clip a segment to a rectangle (Liang–Barsky), returning the visible portion.
+/// Endpoints are raw caller input; this is what lets `draw_line` bound its walk
+/// to the canvas instead of stepping across an arbitrary i32 span. The math is
+/// f64: at 1e9 the f32 grid is 64px wide, which rounded the clipped endpoints
+/// to the same pixel and erased the whole segment.
+fn clip_segment(
+    x0: f64,
+    y0: f64,
+    x1: f64,
+    y1: f64,
+    lo: f64,
+    hi_x: f64,
+    hi_y: f64,
+) -> Option<(i32, i32, i32, i32)> {
+    let (dx, dy) = (x1 - x0, y1 - y0);
+    let (mut t0, mut t1) = (0.0f64, 1.0f64);
+    let mut clip = |p: f64, q: f64| -> bool {
+        if p == 0.0 {
+            return q >= 0.0; // parallel: inside iff on the visible side
+        }
+        let r = q / p;
+        if p < 0.0 {
+            if r > t1 {
+                return false;
+            }
+            if r > t0 {
+                t0 = r;
+            }
+        } else {
+            if r < t0 {
+                return false;
+            }
+            if r < t1 {
+                t1 = r;
+            }
+        }
+        true
+    };
+    // lo applies to both axes' lower edge (upper edges differ: w-1, h-1).
+    if !clip(-dx, x0 - lo) || !clip(dx, hi_x - x0) || !clip(-dy, y0 - lo) || !clip(dy, hi_y - y0) {
+        return None;
+    }
+    Some((
+        (x0 + t0 * dx).round() as i32,
+        (y0 + t0 * dy).round() as i32,
+        (x0 + t1 * dx).round() as i32,
+        (y0 + t1 * dy).round() as i32,
+    ))
 }
 
 /// Bresenham line from (x0,y0) to (x1,y1) stamped with a `size` brush.
@@ -43,6 +96,21 @@ pub fn draw_line(
     color: [u8; 4],
     size: i32,
 ) {
+    // Clip to the canvas (padded by the brush radius) before walking: the raw
+    // endpoints could span ~2^32 steps — and `(x1 - x0).abs()` overflowed i32 —
+    // so one bad call wedged the server drawing nothing visible. Pixels the
+    // unclipped walk would have stamped on-canvas are identical.
+    let pad = (size.max(1) / 2 + 1) as f64;
+    let lo = -pad;
+    let (hi_x, hi_y) = (
+        img.width() as f64 - 1.0 + pad,
+        img.height() as f64 - 1.0 + pad,
+    );
+    let Some((x0, y0, x1, y1)) =
+        clip_segment(x0 as f64, y0 as f64, x1 as f64, y1 as f64, lo, hi_x, hi_y)
+    else {
+        return; // entirely off-canvas
+    };
     let (mut x0, mut y0) = (x0, y0);
     let dx = (x1 - x0).abs();
     let dy = -(y1 - y0).abs();
@@ -456,6 +524,10 @@ pub fn box_blur(src: &RgbaImage, r: i32) -> RgbaImage {
         return src.clone();
     }
     let (w, h) = (src.width() as i32, src.height() as i32);
+    // A radius beyond w+h already covers every pixel from every centre, so
+    // clamp rather than pay for it: `2*r+1` overflowed i32 near i32::MAX, and
+    // the window-seeding loop below is O(r) per line.
+    let r = r.min(w + h);
     // To premultiplied f32 buffers.
     let n = (w * h) as usize;
     let (mut pr, mut pg, mut pb, mut pa) =
@@ -720,5 +792,64 @@ mod tests {
         assert_eq!(clamp_region(8, 8, 2, 2, 5, 5), Some((2, 2, 4, 4)));
         // Fully outside → None.
         assert_eq!(clamp_region(20, 20, 30, 30, 5, 5), None);
+    }
+}
+
+#[cfg(test)]
+mod hardening_tests {
+    use super::*;
+
+    #[test]
+    fn median_cut_weighted_is_input_order_independent() {
+        // Callers build the pair list from HashMaps (random iteration order);
+        // the palette must come out identical regardless.
+        let a: Vec<([u8; 3], u64)> = vec![
+            ([10, 20, 30], 50),
+            ([200, 50, 50], 5),
+            ([40, 200, 60], 20),
+            ([90, 90, 90], 33),
+            ([250, 240, 230], 8),
+        ];
+        let mut b = a.clone();
+        b.reverse();
+        let mut c = a.clone();
+        c.rotate_left(2);
+        let pa = median_cut_weighted(&a, 4, &[]);
+        assert_eq!(pa, median_cut_weighted(&b, 4, &[]));
+        assert_eq!(pa, median_cut_weighted(&c, 4, &[]));
+    }
+
+    #[test]
+    fn draw_line_clips_a_continental_span_to_the_canvas() {
+        let mut img = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 0]));
+        // Both endpoints far off-canvas but the segment crosses it.
+        draw_line(
+            &mut img,
+            -1_000_000_000,
+            4,
+            1_000_000_000,
+            4,
+            [9, 9, 9, 255],
+            1,
+        );
+        for x in 0..8 {
+            assert_eq!(img.get_pixel(x, 4).0, [9, 9, 9, 255], "x={x}");
+        }
+        // Fully outside: nothing drawn (and no multi-billion-step walk).
+        let mut img2 = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 0]));
+        draw_line(
+            &mut img2,
+            1_000_000_000,
+            0,
+            1_000_000_001,
+            7,
+            [9, 9, 9, 255],
+            1,
+        );
+        assert!(img2.pixels().all(|p| p.0[3] == 0));
+        // i32 extremes no longer overflow the span math.
+        let mut img3 = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 0]));
+        draw_line(&mut img3, i32::MIN, 0, i32::MAX, 7, [9, 9, 9, 255], 1);
+        assert!(img3.pixels().any(|p| p.0[3] > 0));
     }
 }

@@ -166,10 +166,28 @@ impl Studio {
                 if !cp.join("doc.json").exists() {
                     return Err(format!("no checkpoint '{}'", cpid));
                 }
-                // Clear live cels so checkpoint-absent cels don't linger, then copy back.
+                // Stage the snapshot's files beside the live doc FIRST, then
+                // swap: the old code deleted the live cels/doc.json and copied
+                // into the void, so a mid-copy failure (disk full, perms)
+                // destroyed the working document it was meant to rescue.
+                let staging = dir.join(".restore-staging");
+                let _ = fs::remove_dir_all(&staging);
+                if let Err(e) = snapshot_files(&cp, &staging) {
+                    let _ = fs::remove_dir_all(&staging);
+                    return Err(e);
+                }
+                // Swap: drop the live pixels, then same-dir renames (atomic on
+                // one filesystem) move the staged files into place. A crash
+                // between the two renames is recoverable: the checkpoint still
+                // exists and restore can simply be run again.
                 let _ = fs::remove_dir_all(dir.join("cels"));
                 let _ = fs::remove_file(dir.join("doc.json"));
-                snapshot_files(&cp, &dir)?;
+                let swapped = fs::rename(staging.join("cels"), dir.join("cels"))
+                    .and_then(|_| fs::rename(staging.join("doc.json"), dir.join("doc.json")));
+                let _ = fs::remove_dir_all(&staging);
+                swapped.map_err(|e| {
+                    format!("restore staged but the swap failed ({e}) — re-run restore to retry")
+                })?;
                 Ok(json!({"restored": cpid, "doc_id": id}))
             }
             "diff" => {
@@ -425,18 +443,27 @@ impl Studio {
         let s = s.max(1);
         let ht = ht.max(1);
         let hh = (s / 2).max(1);
-        let top = vec![(cx, cy - hh), (cx + s, cy), (cx, cy + hh), (cx - s, cy)];
+        // i64 + saturate: the centre/size are raw caller input, and `cx + s`
+        // et al overflow i32 near the extremes (debug panic / release wrap).
+        let c = |v: i64| v.clamp(i32::MIN as i64, i32::MAX as i64) as i32;
+        let (cx, cy, s, ht, hh) = (cx as i64, cy as i64, s as i64, ht as i64, hh as i64);
+        let top = vec![
+            (c(cx), c(cy - hh)),
+            (c(cx + s), c(cy)),
+            (c(cx), c(cy + hh)),
+            (c(cx - s), c(cy)),
+        ];
         let left = vec![
-            (cx - s, cy),
-            (cx, cy + hh),
-            (cx, cy + hh + ht),
-            (cx - s, cy + ht),
+            (c(cx - s), c(cy)),
+            (c(cx), c(cy + hh)),
+            (c(cx), c(cy + hh + ht)),
+            (c(cx - s), c(cy + ht)),
         ];
         let right = vec![
-            (cx + s, cy),
-            (cx, cy + hh),
-            (cx, cy + hh + ht),
-            (cx + s, cy + ht),
+            (c(cx + s), c(cy)),
+            (c(cx), c(cy + hh)),
+            (c(cx), c(cy + hh + ht)),
+            (c(cx + s), c(cy + ht)),
         ];
         let r = auto_ramp(base, 5);
         let (top_c, bright, dark) = (r[4], r[3], r[1]);
@@ -471,7 +498,9 @@ impl Studio {
         border: [u8; 4],
         bevel: bool,
     ) -> Result<Value, String> {
-        let (x1, y1) = (x + w - 1, y + h - 1);
+        // i64 + saturate: `x + w - 1` overflows i32 for extreme caller input.
+        let c = |v: i64| v.clamp(i32::MIN as i64, i32::MAX as i64) as i32;
+        let (x1, y1) = (c(x as i64 + w as i64 - 1), c(y as i64 + h as i64 - 1));
         self.edit(id, |d| {
             d.rect(layer, frame, x, y, x1, y1, fill, true, 1)?;
             d.rect(layer, frame, x, y, x1, y1, border, false, 1)?;
@@ -1155,5 +1184,51 @@ mod tests {
                 .unwrap()
                 > 150
         );
+    }
+}
+
+#[cfg(test)]
+mod hardening_tests {
+    use super::*;
+
+    #[test]
+    fn restore_brings_back_the_checkpointed_pixels() {
+        let s = {
+            let dir = std::env::temp_dir().join("atelier-craft-restore");
+            let _ = fs::remove_dir_all(&dir);
+            Studio::with_docs_dir(dir)
+        };
+        s.doc_create("c", 4, 4).unwrap();
+        s.doc_draw(
+            "c",
+            0,
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 1, "y1": 1, "color": [200, 0, 0, 255], "fill": true})
+                .as_object()
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
+        let cp = s.checkpoint("c", "save", None, None).unwrap();
+        let cpid = cp["saved"].as_str().unwrap().to_string();
+        // Wreck the canvas, then restore.
+        s.doc_draw(
+            "c",
+            0,
+            0,
+            "fill_cel",
+            json!({"color": [0, 0, 0, 255]})
+                .as_object()
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
+        s.checkpoint("c", "restore", None, Some(&cpid)).unwrap();
+        let px = s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap();
+        assert_eq!(px["rgba"], json!([200, 0, 0, 255]));
+        // The staging dir must not linger.
+        let dir = std::env::temp_dir().join("atelier-craft-restore/documents/c/.restore-staging");
+        assert!(!dir.exists());
     }
 }

@@ -1,6 +1,6 @@
 # atelier benchmark
 
-Eight animation tasks, one per game-object category. Each is run by an **agent
+Ten animation tasks, one per game-object category. Each is run by an **agent
 driving atelier's MCP tools** — nothing else. The art is the result; the tool
 calls are the record.
 
@@ -17,6 +17,8 @@ Each is a **1-second loop at 10 FPS (10 frames)** on a transparent background:
 | `ball`    | prop / physics |
 | `potion`  | item / pickup |
 | `slash`   | effect / VFX |
+| `beam`    | effect / VFX |
+| `explosion` | effect / VFX |
 | `torch`   | environment |
 
 The task text is the exact input. Keep it fixed so runs stay comparable.

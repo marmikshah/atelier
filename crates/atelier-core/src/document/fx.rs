@@ -38,6 +38,13 @@ impl Document {
         if !matches!(axis, "h" | "v" | "radial") {
             return Err(format!("unknown axis '{axis}' — use h|v|radial"));
         }
+        // `dither` errors on a bad pattern; the ramp used to fall back to
+        // bayer8 silently — same check, same loud failure.
+        if !matches!(pattern, "checker" | "bayer2" | "bayer4" | "bayer8" | "ign") {
+            return Err(format!(
+                "unknown pattern '{pattern}' — use checker/bayer2/bayer4/bayer8/ign"
+            ));
+        }
         let last = ramp.len() - 1;
         let img = self.cel_canvas(layer, frame)?;
         let mut changed = 0;
@@ -192,7 +199,9 @@ impl Document {
     ) -> Result<(), String> {
         let orig = self.cel_canvas(layer, frame)?.clone();
         let (w, h) = (orig.width() as i32, orig.height() as i32);
-        let depth = depth.max(1);
+        // Bands deeper than the shape itself change nothing — clamp the raw
+        // caller value instead of looping to i32::MAX per pixel.
+        let depth = depth.max(1).min(w.max(h));
         let opaque = |x: i32, y: i32| {
             x >= 0 && y >= 0 && x < w && y < h && orig.get_pixel(x as u32, y as u32).0[3] > 0
         };
@@ -354,7 +363,9 @@ impl Document {
         let (ax, bx) = (x0.min(x1).max(0), x0.max(x1).min(w - 1));
         let (ay, by) = (y0.min(y1).max(0), y0.max(y1).min(h - 1));
         let d = density.clamp(0.0, 1.0);
-        let s = size.max(1);
+        // A dot larger than the canvas paints it solid — clamp the raw caller
+        // value so a size×size inner loop can't explode.
+        let s = size.max(1).min(w.max(h));
         let o = s / 2;
         let img = self.cel_canvas(layer, frame)?;
         for py in ay..=by {
@@ -405,6 +416,9 @@ impl Document {
         let (ax, bx) = (x0.min(x1).max(0), x0.max(x1).min(w - 1));
         let (ay, by) = (y0.min(y1).max(0), y0.max(y1).min(h - 1));
         let freq = 1.0 / scale.max(0.0001);
+        // fBm cost is linear in octaves and each octave beyond ~16 adds
+        // sub-pixel detail nobody reads at canvas scale — cap the raw value.
+        let octaves = octaves.clamp(1, 16);
         let img = self.cel_canvas(layer, frame)?;
         for y in ay..=by {
             for x in ax..=bx {
