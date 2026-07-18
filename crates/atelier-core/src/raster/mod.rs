@@ -98,8 +98,10 @@ pub fn draw_line(
 ) {
     // Clip to the canvas (padded by the brush radius) before walking: the raw
     // endpoints could span ~2^32 steps — and `(x1 - x0).abs()` overflowed i32 —
-    // so one bad call wedged the server drawing nothing visible. Pixels the
-    // unclipped walk would have stamped on-canvas are identical.
+    // so one bad call wedged the server drawing nothing visible. In-canvas
+    // output matches the unclipped walk to within a pixel at the clip boundary
+    // (a re-anchored Bresenham can deviate by one step on rare near-diagonals)
+    // — cosmetic, and the unclipped walk hung on exactly these inputs.
     let pad = (size.max(1) / 2 + 1) as f64;
     let lo = -pad;
     let (hi_x, hi_y) = (
