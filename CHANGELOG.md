@@ -22,8 +22,8 @@ releases.
   deletes the live document it was meant to rescue.
 - **Deterministic palettes** — median-cut ties break on the full colour, so a
   HashMap-ordered input (import, reference palettes) yields the same palette
-  every run; GIF palette building is a sorted weighted cut, and long frame
-  durations clamp to the GIF ceiling instead of wrapping.
+  every run; long GIF frame durations clamp to the format ceiling instead of
+  wrapping.
 - **Multi-frame `doc_batch` preflights frames** — a bad target late in the list
   used to leave earlier frames mutated but the call unjournaled, silently
   diverging the document from its recipe.
@@ -43,6 +43,12 @@ releases.
 
 ### Changed
 
+- **CHANGED OUTPUT — GIF palette for palette-less documents.** The shared
+  global palette is now a frequency-weighted median cut over deduped, sorted
+  colour counts (was a flat per-pixel cut). Deterministic on every run and far
+  less memory, but it is a different cut: re-exported GIFs can quantize
+  slightly differently from 1.5.0. APNG output is unaffected (it never
+  quantizes).
 - **Saves write only dirty cels** — an edit used to re-encode and rewrite every
   cel in the document per call; structural re-keys and per-op edits track a
   dirty set, and a round-trip with no edits writes nothing but `doc.json`.
