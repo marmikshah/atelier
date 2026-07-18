@@ -75,18 +75,27 @@ fn edited(r: Result<Value, String>) -> CallToolResult {
 }
 
 /// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
-fn palette_list(v: &[Vec<i64>]) -> Vec<[u8; 4]> {
+fn palette_list(v: &[Vec<i64>]) -> Result<Vec<[u8; 4]>, String> {
     v.iter().map(|c| rgba(c)).collect()
 }
 
-/// [r,g,b] or [r,g,b,a] -> RGBA (alpha defaults to 255).
-fn rgba(v: &[i64]) -> [u8; 4] {
-    [
-        v.first().copied().unwrap_or(0) as u8,
-        v.get(1).copied().unwrap_or(0) as u8,
-        v.get(2).copied().unwrap_or(0) as u8,
-        v.get(3).copied().unwrap_or(255) as u8,
-    ]
+/// [r,g,b] or [r,g,b,a] -> RGBA, STRICT: exactly 3..=4 components, each
+/// 0..=255 — the same shape `validate_batch_op` enforces on the batch path.
+/// The typed tool paths used to truncate via `as u8` (300 → 44, -1 → 255)
+/// into a wrong-but-plausible colour the agent then painted with.
+fn rgba(v: &[i64]) -> Result<[u8; 4], String> {
+    let ok = (3..=4).contains(&v.len()) && v.iter().all(|n| (0..=255).contains(n));
+    if !ok {
+        return Err(format!(
+            "colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {v:?}"
+        ));
+    }
+    Ok([
+        v[0] as u8,
+        v[1] as u8,
+        v[2] as u8,
+        if v.len() == 4 { v[3] as u8 } else { 255 },
+    ])
 }
 
 /// Parse the `doc_palette op=snap` / FX alpha policy string into an `AlphaSnap`.
@@ -101,7 +110,10 @@ fn alpha_snap(
     match mode.unwrap_or("preserve") {
         "preserve" => Ok(AlphaSnap::Preserve),
         "opaque" => Ok(AlphaSnap::Opaque(cutoff.unwrap_or(128))),
-        "flatten" => Ok(AlphaSnap::Flatten(bg.map(rgba).unwrap_or([0, 0, 0, 255]))),
+        "flatten" => Ok(AlphaSnap::Flatten(match bg {
+            Some(b) => rgba(b)?,
+            None => [0, 0, 0, 255],
+        })),
         m => Err(format!(
             "unknown alpha mode '{m}' — use preserve | opaque | flatten"
         )),
@@ -543,7 +555,10 @@ impl Atelier {
             Some(atelier_studio::ColorSelect {
                 layer: p.layer.unwrap_or(0),
                 frame: p.frame.unwrap_or(0),
-                color: p.color.as_ref().map(|c| rgba(c)),
+                color: match &p.color {
+                    Some(c) => Some(try_res!(rgba(c))),
+                    None => None,
+                },
                 sample: match (p.x, p.y) {
                     (Some(x), Some(y)) => Some((x, y)),
                     _ => None,
@@ -588,7 +603,10 @@ impl Atelier {
         description = "Connected-component analysis of a frame: each blob's bbox, centroid, area and dominant colour (sorted by area desc, capped 64). `connectivity` 4|8 (default 8); `color` restricts to that exact colour (omit = any opaque); `min_area` filters the list. Stray 1–2px `specks` are always reported — catches orphan/leftover pixels."
     )]
     async fn doc_components(&self, Parameters(p): Parameters<DocComponents>) -> CallToolResult {
-        let color = p.color.as_ref().filter(|c| c.len() >= 3).map(|c| rgba(c));
+        let color = match &p.color {
+            Some(c) => Some(try_res!(rgba(c))),
+            None => None,
+        };
         res(self.studio().doc_components(
             &p.doc_id,
             p.frame.unwrap_or(0),
@@ -662,6 +680,16 @@ impl Atelier {
             return res(self.studio().doc_batch(&p.doc_id, p.layer, p.frame, p.ops));
         }
         let studio = self.studio();
+        // Preflight EVERY target frame before applying anything: the per-frame
+        // loop saves each frame as it goes, so a bad frame late in the list
+        // used to leave earlier frames mutated — and the errored call was never
+        // journaled, silently diverging the document from its recipe.
+        let n = try_res!(studio.frame_count(&p.doc_id));
+        if let Some(bad) = targets.iter().find(|f| **f >= n) {
+            return res(Err(format!(
+                "frame {bad} out of range — document has {n} frame(s); no frames were applied"
+            )));
+        }
         let mut per_frame = Vec::new();
         let mut total: u64 = 0;
         for f in &targets {
@@ -701,7 +729,7 @@ impl Atelier {
                     b.cy,
                     b.s,
                     b.ht,
-                    rgba(&b.color),
+                    try_res!(rgba(&b.color)),
                     b.light_right.unwrap_or(true),
                 ))
             }
@@ -715,8 +743,11 @@ impl Atelier {
                     pn.y,
                     pn.w,
                     pn.h,
-                    rgba(&pn.fill),
-                    pn.border.as_deref().map(rgba).unwrap_or([20, 20, 28, 255]),
+                    try_res!(rgba(&pn.fill)),
+                    match &pn.border {
+                        Some(b) => try_res!(rgba(b)),
+                        None => [20, 20, 28, 255],
+                    },
                     pn.bevel.unwrap_or(true),
                 ))
             }
@@ -736,7 +767,7 @@ impl Atelier {
 
     // -- world-class-art tools (the art-quality pass) --
     #[tool(
-        description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N to check seamlessness; bg mattes transparency (checker|dark|white — use it when judging white/light pixels, which vanish on a white viewer backdrop); out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
+        description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N (N ≤ 16) to check seamlessness; bg mattes transparency (checker|dark|white — use it when judging white/light pixels, which vanish on a white viewer backdrop); out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
     )]
     async fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
         let opts = atelier_studio::LookOptions {
@@ -788,7 +819,7 @@ impl Atelier {
             p.layer,
             p.frame,
             try_res!(region(&p.region)),
-            palette_list(&p.ramp),
+            try_res!(palette_list(&p.ramp)),
             p.axis.as_deref().unwrap_or("v"),
             p.pattern.as_deref().unwrap_or("bayer4"),
             p.only_existing.unwrap_or(true),
@@ -821,7 +852,7 @@ impl Atelier {
                     return res(Err("doc_palette op=generate needs `base`".to_string()));
                 };
                 res(studio.palette(
-                    rgba(base),
+                    try_res!(rgba(base)),
                     p.scheme.as_deref().unwrap_or("mono"),
                     p.count.unwrap_or(5),
                     p.value_lo,
@@ -839,7 +870,7 @@ impl Atelier {
                 let Some(colors) = p.colors.as_ref() else {
                     return res(Err("doc_palette op=set needs `colors`".to_string()));
                 };
-                let colors: Vec<[u8; 4]> = colors.iter().map(|c| rgba(c)).collect();
+                let colors = try_res!(palette_list(colors));
                 res(studio.doc_set_palette(doc_id, colors))
             }
             "swap" => {
@@ -849,8 +880,8 @@ impl Atelier {
                 let (Some(from), Some(to)) = (p.from.as_ref(), p.to.as_ref()) else {
                     return res(Err("doc_palette op=swap needs `from` and `to`".to_string()));
                 };
-                let from: Vec<[u8; 4]> = from.iter().map(|c| rgba(c)).collect();
-                let to: Vec<[u8; 4]> = to.iter().map(|c| rgba(c)).collect();
+                let from = try_res!(palette_list(from));
+                let to = try_res!(palette_list(to));
                 res(studio.doc_palette_swap(doc_id, from, to, p.layer, p.frame))
             }
             "report" => {
@@ -877,16 +908,19 @@ impl Atelier {
                     doc_id,
                     p.layer,
                     p.frame,
-                    p.palette.as_ref().map(|v| palette_list(v)),
+                    match &p.palette {
+                        Some(v) => Some(try_res!(palette_list(v))),
+                        None => None,
+                    },
                     alpha,
                 );
                 edited(r)
             }
             "sync" => {
-                let palette = p
-                    .palette
-                    .as_ref()
-                    .map(|v| v.iter().map(|c| rgba(c)).collect::<Vec<[u8; 4]>>());
+                let palette = match &p.palette {
+                    Some(v) => Some(try_res!(palette_list(v))),
+                    None => None,
+                };
                 res(studio.doc_set_palette_sync(
                     p.ids.as_deref(),
                     p.prefix.as_deref(),
@@ -947,7 +981,10 @@ impl Atelier {
                     p.defringe.unwrap_or(false),
                     p.to_doc_palette.unwrap_or(false),
                     p.remove_bg.unwrap_or(false),
-                    p.pin.as_ref().map(|v| palette_list(v)).unwrap_or_default(),
+                    match &p.pin {
+                        Some(v) => try_res!(palette_list(v)),
+                        None => Vec::new(),
+                    },
                 );
                 edited(r)
             }
@@ -973,8 +1010,10 @@ impl Atelier {
     }
 }
 
-/// Tools that only LOOK: they read a document, never change it and never write
-/// an artifact, so replaying them rebuilds nothing.
+/// Tools that only LOOK: they read a document and never change it, so replaying
+/// them rebuilds nothing. (Some can write a PREVIEW artifact via `out_path` —
+/// doc_look, doc_frame_diff, doc_seam_report — but previews are not the art,
+/// and re-running them against a moved out_path would be worse than skipping.)
 ///
 /// This is an allowlist, and the default is deliberately the other way: an
 /// unlisted tool gets journaled. A stray read in a recipe replays as a harmless
@@ -1943,5 +1982,21 @@ mod tests {
             )
             .unwrap_err();
         assert!(err.contains("no document"), "got: {err}");
+    }
+}
+
+#[cfg(test)]
+mod hardening_tests {
+    use super::*;
+
+    #[test]
+    fn rgba_is_strict_like_the_batch_validator() {
+        assert_eq!(rgba(&[255, 128, 0]).unwrap(), [255, 128, 0, 255]);
+        assert_eq!(rgba(&[1, 2, 3, 4]).unwrap(), [1, 2, 3, 4]);
+        // These truncated silently before (300 → 44, -1 → 255, short → 0s).
+        assert!(rgba(&[255, 300, 0]).is_err());
+        assert!(rgba(&[255, -1, 0]).is_err());
+        assert!(rgba(&[255, 0]).is_err());
+        assert!(rgba(&[1, 2, 3, 4, 5]).is_err());
     }
 }

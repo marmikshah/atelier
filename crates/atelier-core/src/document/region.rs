@@ -110,6 +110,10 @@ impl Document {
         let (rw, rh, buf) = self.copy_region(layer, frame, x0, y0, x1, y1)?;
         let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
         self.clear_region(layer, frame, x0, y0, x1, y1)?;
-        self.paste_region(layer, frame, ax + dx, ay + dy, rw, rh, &buf, true)
+        // i64 math: `ax + dx` overflows i32 for an absurd (but accepted) delta;
+        // saturate instead of panicking in debug / wrapping in release.
+        let px = (ax as i64 + dx as i64).clamp(i32::MIN as i64, i32::MAX as i64) as i32;
+        let py = (ay as i64 + dy as i64).clamp(i32::MIN as i64, i32::MAX as i64) as i32;
+        self.paste_region(layer, frame, px, py, rw, rh, &buf, true)
     }
 }

@@ -136,6 +136,10 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
 }
 
 /// Repeat an image N×N — the seamlessness eyeball test for `doc_look` `tile`.
+/// `look` clamps the caller's N to MAX_TILE before this: the output buffer is
+/// (w·n)×(h·n), and an unclamped N was a memory-exhaustion abort.
+pub(crate) const MAX_TILE: u32 = 16;
+
 fn tile_image(img: &RgbaImage, n: u32) -> RgbaImage {
     let (w, h) = (img.width(), img.height());
     let mut out = RgbaImage::new(w * n, h * n);
@@ -249,7 +253,7 @@ impl Studio {
         } else {
             mode.as_str()
         };
-        let bands = if *bands == 0 { 4 } else { *bands };
+        let bands = if *bands == 0 { 4 } else { (*bands).min(256) };
         let out_path = out_path.as_deref();
         let (_dir, doc) = self.open(id)?;
         if frame >= doc.meta().frames.len() {
@@ -294,8 +298,12 @@ impl Studio {
         };
         let stats = look_stats(&view, band_arg);
         // Scale: explicit nearest upscale, or a max_size thumbnail (no grid).
+        // applied_scale goes through the same clamp scale_nn applies internally,
+        // so the report, the grid ruler and the matte all agree with the
+        // actual resize (a caller's scale=1000 used to report 1000 while the
+        // image came out at 16×).
         let mut out;
-        let mut applied_scale = scale.max(1);
+        let mut applied_scale = crate::export_scale(scale);
         if let Some(ms) = max_size {
             let long = view.width().max(view.height());
             if long > ms && ms > 0 {
@@ -326,7 +334,9 @@ impl Studio {
         }
         // Tile the result N×N to eyeball seamlessness (the retired doc_render's
         // `tile`); applied after scale/grid so each cell shows the upscaled art.
+        // Clamped: the buffer grows with N² — an unbounded N was a memory-abort.
         if let Some(t) = tile {
+            let t = t.min(MAX_TILE);
             if t > 1 {
                 out = tile_image(&out, t);
             }
@@ -379,7 +389,11 @@ impl Studio {
         let cols = cols.max(1).min(n.max(1));
         let rows = n.div_ceil(cols);
         let (w, h) = (doc.meta().w, doc.meta().h);
-        let s = scale.max(1);
+        // Clamp ONCE and use it for both the sheet math and the cell renders:
+        // cellw/cellh used to take the raw caller value while scale_nn clamped
+        // internally — scale > 16 sized the cells for one image and drew another
+        // (and an extreme value overflowed the sheet dimensions entirely).
+        let s = crate::export_scale(scale);
         let (pad, label_h) = (3u32, raster::GLYPH_H as u32 + 1);
         let cellw = w * s;
         let cellh = h * s + label_h;
@@ -486,5 +500,48 @@ mod tests {
             ..Default::default()
         };
         assert!(s.look("c", 0, &bad).is_err());
+    }
+}
+
+#[cfg(test)]
+mod hardening_tests {
+    use super::*;
+
+    #[test]
+    fn look_tile_and_scale_are_capped_not_fatal() {
+        let dir = std::env::temp_dir().join("atelier-view-hard");
+        let _ = fs::remove_dir_all(&dir);
+        let s = Studio::with_docs_dir(dir);
+        s.doc_create("c", 8, 8).unwrap();
+        // tile=u32::MAX used to attempt a (8·4·4G)² buffer; now clamps to 16.
+        let (_png, r) = s
+            .look(
+                "c",
+                0,
+                &LookOptions {
+                    scale: Some(2),
+                    tile: Some(u32::MAX),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            r["render_size"],
+            json!([8 * 2 * super::MAX_TILE, 8 * 2 * super::MAX_TILE])
+        );
+        // A huge explicit scale is clamped AND reported as clamped (the grid
+        // ruler and the report used to disagree with the actual resize).
+        let (_png, r) = s
+            .look(
+                "c",
+                0,
+                &LookOptions {
+                    scale: Some(1_000_000),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(r["scale"], json!(16));
+        assert_eq!(r["render_size"], json!([128, 128]));
     }
 }

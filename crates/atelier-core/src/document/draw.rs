@@ -51,8 +51,12 @@ impl Document {
         size: i32,
     ) -> Result<(), String> {
         let img = self.cel_canvas(layer, frame)?;
-        let (ax, bx) = (x0.min(x1), x0.max(x1));
-        let (ay, by) = (y0.min(y1), y0.max(y1));
+        // Clamp the fill span to the canvas: the corners are raw caller input,
+        // and looping over an off-canvas span of billions of cells (one bad
+        // coordinate) wedged the server on a no-op.
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        let (ax, bx) = (x0.min(x1).max(0), x0.max(x1).min(w - 1));
+        let (ay, by) = (y0.min(y1).max(0), y0.max(y1).min(h - 1));
         if fill {
             for y in ay..=by {
                 for x in ax..=bx {
@@ -60,6 +64,8 @@ impl Document {
                 }
             }
         } else {
+            let (ax, bx) = (x0.min(x1), x0.max(x1));
+            let (ay, by) = (y0.min(y1), y0.max(y1));
             raster::draw_line(img, ax, ay, bx, ay, color, size.max(1));
             raster::draw_line(img, ax, by, bx, by, color, size.max(1));
             raster::draw_line(img, ax, ay, ax, by, color, size.max(1));
@@ -88,8 +94,21 @@ impl Document {
         let (rx, ry) = (rx.max(1), ry.max(1));
         let (a, b) = (rx as f32 + 0.5, ry as f32 + 0.5);
         let inside = |x: i32, y: i32| (x as f32 / a).powi(2) + (y as f32 / b).powi(2) <= 1.0;
-        for y in -ry..=ry {
-            for x in -rx..=rx {
+        // Scan only the offsets that can land on the canvas: the radii are raw
+        // caller input, and an i32::MAX radius turned one bad call into a
+        // 4-billion-row loop on a server that then answered nothing else.
+        let (w, h) = (img.width() as i32, img.height() as i32);
+        // Saturating ops: an i32::MIN centre would overflow a plain `-cx`.
+        let (x0, x1) = (
+            (-rx).max(cx.saturating_neg()),
+            rx.min((w - 1).saturating_sub(cx)),
+        );
+        let (y0, y1) = (
+            (-ry).max(cy.saturating_neg()),
+            ry.min((h - 1).saturating_sub(cy)),
+        );
+        for y in y0..=y1 {
+            for x in x0..=x1 {
                 if !inside(x, y) {
                     continue;
                 }
@@ -282,10 +301,21 @@ impl Document {
         let mut out = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
         for y in 0..h {
             for x in 0..w {
+                // i64 math: `x + dx` overflows i32 for an absurd (but accepted)
+                // dx — a debug panic, a wrapped pixel in release.
                 let (tx, ty) = if wrap {
-                    ((x + dx).rem_euclid(w), (y + dy).rem_euclid(h))
+                    (
+                        (x as i64 + dx as i64).rem_euclid(w as i64) as i32,
+                        (y as i64 + dy as i64).rem_euclid(h as i64) as i32,
+                    )
                 } else {
-                    (x + dx, y + dy)
+                    match (
+                        (x as i64 + dx as i64).try_into(),
+                        (y as i64 + dy as i64).try_into(),
+                    ) {
+                        (Ok(tx), Ok(ty)) => (tx, ty),
+                        _ => continue, // shifted fully out of i32 range = off-canvas
+                    }
                 };
                 if tx >= 0 && ty >= 0 && tx < w && ty < h {
                     out.put_pixel(tx as u32, ty as u32, *img.get_pixel(x as u32, y as u32));
@@ -415,8 +445,9 @@ impl Document {
                 for x in 0..w {
                     let on_src = if keep_left { x < ax } else { x > ax };
                     if on_src {
-                        let mx = 2 * ax - x;
-                        if mx >= 0 && mx < w {
+                        // i64: `2 * ax` overflows i32 for an axis far off-canvas.
+                        let mx = 2 * ax as i64 - x as i64;
+                        if mx >= 0 && mx < w as i64 {
                             let p = *img.get_pixel(x as u32, y as u32);
                             img.put_pixel(mx as u32, y as u32, p);
                         }
@@ -429,8 +460,8 @@ impl Document {
                 for x in 0..w {
                     let on_src = if keep_top { y < ay } else { y > ay };
                     if on_src {
-                        let my = 2 * ay - y;
-                        if my >= 0 && my < h {
+                        let my = 2 * ay as i64 - y as i64;
+                        if my >= 0 && my < h as i64 {
                             let p = *img.get_pixel(x as u32, y as u32);
                             img.put_pixel(x as u32, my as u32, p);
                         }

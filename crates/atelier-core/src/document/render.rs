@@ -146,7 +146,11 @@ impl Document {
             )
             .to_image();
         }
-        let tile = tile.max(1);
+        // Raw caller values size an allocation here (tile² cells, w×scale), so
+        // clamp both — 16 matches the studio's export/preview ceiling. A library
+        // caller passing tile=100000 would otherwise ask for an absurd buffer
+        // (and `tw * tile` can wrap u32).
+        let tile = tile.clamp(1, 16);
         if tile > 1 {
             let (tw, th) = (base.width(), base.height());
             let mut t = RgbaImage::from_pixel(tw * tile, th * tile, Rgba([0, 0, 0, 0]));
@@ -157,7 +161,7 @@ impl Document {
             }
             base = t;
         }
-        let sc = scale.max(1);
+        let sc = scale.clamp(1, 16);
         if sc > 1 {
             base = image::imageops::resize(
                 &base,

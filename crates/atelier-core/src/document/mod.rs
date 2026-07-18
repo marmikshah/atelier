@@ -7,10 +7,10 @@
 //!
 //! Persistence: a directory with `doc.json` (structure + cel file refs) and one
 //! PNG per cel under `cels/`. Rendering flattens visible layers at a frame with
-//! source-over compositing scaled by layer opacity; export covers flattened PNG,
-//! a spritesheet (+ JSON meta) and an animated GIF that honours frame durations.
+//! source-over compositing scaled by layer opacity; export covers spritesheets
+//! (+ JSON sidecars), animated GIF/APNG, and tileset slicing.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use image::{Rgba, RgbaImage};
@@ -31,7 +31,7 @@ mod timeline;
 #[cfg(test)]
 mod tests;
 
-pub use batch::{validate_batch_op, DRAW_OPS, FX_OPS};
+pub use batch::{draw_ops, fx_ops, validate_batch_op};
 pub use render::seam_axis_img;
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -90,6 +90,10 @@ pub struct Document {
     pub(crate) meta: DocMeta,
     /// (layer, frame) -> (x, y, image)
     cels: HashMap<(usize, usize), (i32, i32, RgbaImage)>,
+    /// Cels whose pixels changed since load (or that were re-keyed by a
+    /// structural op). `save` writes only these — plus any cel whose file is
+    /// missing — instead of re-encoding the whole document per tool call.
+    dirty: HashSet<(usize, usize)>,
 }
 
 /// Result of `frame_diff_region`: `(added, removed, recolored, change_bbox,
@@ -107,6 +111,21 @@ pub struct Light {
 
 fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
+}
+
+/// True for the `L<layer>_F<frame>.png` shape `save` writes — the only files
+/// the stale-cel sweep may remove.
+fn is_cel_filename(name: &str) -> bool {
+    let Some(rest) = name.strip_prefix('L').and_then(|s| s.strip_suffix(".png")) else {
+        return false;
+    };
+    let Some((l, f)) = rest.split_once("_F") else {
+        return false;
+    };
+    !l.is_empty()
+        && !f.is_empty()
+        && l.chars().all(|c| c.is_ascii_digit())
+        && f.chars().all(|c| c.is_ascii_digit())
 }
 
 /// How `snap_to_palette` treats the partial-alpha pixels that continuous-tone FX
@@ -182,6 +201,7 @@ impl Document {
         Document {
             meta,
             cels: HashMap::new(),
+            dirty: HashSet::new(),
         }
     }
 
@@ -209,7 +229,12 @@ impl Document {
                 .to_rgba8();
             cels.insert((c.layer, c.frame), (c.x, c.y, img));
         }
-        Ok(Document { meta, cels })
+        // Freshly loaded cels match their files — nothing is dirty yet.
+        Ok(Document {
+            meta,
+            cels,
+            dirty: HashSet::new(),
+        })
     }
 
     pub fn save(&mut self, dir: &Path) -> Result<(), String> {
@@ -217,7 +242,12 @@ impl Document {
         let mut cel_metas = Vec::new();
         for ((layer, frame), (x, y, img)) in &self.cels {
             let file = cel_file(*layer, *frame);
-            img.save(dir.join(&file)).map_err(|e| e.to_string())?;
+            // Write only cels dirtied since load (or whose file is missing) —
+            // a one-pixel edit used to re-encode and rewrite every cel in the
+            // document, which made large animated docs crawl.
+            if self.dirty.contains(&(*layer, *frame)) || !dir.join(&file).is_file() {
+                img.save(dir.join(&file)).map_err(|e| e.to_string())?;
+            }
             cel_metas.push(CelMeta {
                 layer: *layer,
                 frame: *frame,
@@ -228,12 +258,41 @@ impl Document {
         }
         cel_metas.sort_by_key(|c| (c.layer, c.frame));
         self.meta.cels = cel_metas;
+        // Atomic-ish structure write: temp file + same-dir rename, so a crash
+        // mid-write leaves the previous doc.json intact instead of a torn one.
+        let tmp = dir.join("doc.json.tmp");
         std::fs::write(
-            dir.join("doc.json"),
+            &tmp,
             serde_json::to_string_pretty(&self.meta).map_err(|e| e.to_string())?,
         )
         .map_err(|e| e.to_string())?;
+        std::fs::rename(&tmp, dir.join("doc.json")).map_err(|e| e.to_string())?;
+        // Delete cel files no longer referenced (cleared cels, deleted layers/
+        // frames) so the store doesn't accumulate orphans. Only the L<n>_F<n>.png
+        // shape is eligible — anything else in the dir is the user's. Runs after
+        // the doc.json rename: a crash can then only leave a harmless orphan,
+        // never a structure that references a deleted file.
+        let keep: HashSet<String> = self.meta.cels.iter().map(|c| c.file.clone()).collect();
+        if let Ok(rd) = std::fs::read_dir(dir.join("cels")) {
+            for ent in rd.flatten() {
+                let name = ent.file_name().to_string_lossy().into_owned();
+                if is_cel_filename(&name) && !keep.contains(&format!("cels/{name}")) {
+                    let _ = std::fs::remove_file(ent.path());
+                }
+            }
+        }
+        self.dirty.clear();
         Ok(())
+    }
+
+    /// Mark one cel for writing on the next `save`.
+    fn mark_dirty(&mut self, layer: usize, frame: usize) {
+        self.dirty.insert((layer, frame));
+    }
+
+    /// Re-keying ops (layer/frame remaps) rename every cel's file — all dirty.
+    fn mark_all_dirty(&mut self) {
+        self.dirty.extend(self.cels.keys().copied());
     }
 
     // -- structure ----------------------------------------------------------
@@ -291,6 +350,8 @@ impl Document {
                 self.cels.insert((nl, f), v);
             }
         }
+        // Every surviving cel just changed its file name (L<old> → L<new>).
+        self.mark_all_dirty();
     }
 
     /// Move layer `from` to index `to` (clamped), shifting the rest; cels follow.
@@ -383,12 +444,15 @@ impl Document {
             .collect();
         for (f, v) in src {
             self.cels.insert((new_index, f), v);
+            self.mark_dirty(new_index, f);
         }
         Ok(new_index)
     }
 
     /// Merge layer `index` down onto the layer below it, baking in the upper
     /// layer's opacity and blend mode (per frame), then remove the upper layer.
+    /// The upper layer's pixels composite even when it is invisible — merging
+    /// is a structural bake, not a render of the visible stack.
     pub fn merge_down(&mut self, index: usize) -> Result<(), String> {
         let n = self.meta.layers.len();
         if index >= n {
@@ -423,6 +487,8 @@ impl Document {
             moved.push(((k.0, (k.1 as isize + delta) as usize), v));
         }
         self.cels.extend(moved);
+        // Re-keyed cels (F<old> → F<new>) all need writing under the new name.
+        self.mark_all_dirty();
     }
 
     /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
@@ -439,6 +505,7 @@ impl Document {
                 .collect();
             for (l, v) in to_copy {
                 self.cels.insert((l, idx), v);
+                self.mark_dirty(l, idx);
             }
         }
         idx
@@ -490,6 +557,7 @@ impl Document {
     ) -> Result<(), String> {
         self.check_cel(layer, frame)?;
         self.cels.insert((layer, frame), (x, y, img));
+        self.mark_dirty(layer, frame);
         Ok(())
     }
 
@@ -501,6 +569,9 @@ impl Document {
     pub fn clear_cel(&mut self, layer: usize, frame: usize) -> Result<(), String> {
         self.check_cel(layer, frame)?;
         self.cels.remove(&(layer, frame));
+        // Not dirty (nothing to write) — its old file goes stale, which `save`
+        // sweeps after the doc.json rename.
+        self.dirty.remove(&(layer, frame));
         Ok(())
     }
 
@@ -529,6 +600,13 @@ impl Document {
             "palette_len": self.meta.palette.len(),
             "reference": self.meta.reference,
         })
+    }
+
+    /// Test-only view of the live cel keys — the meta↔cel lock-step invariant
+    /// the structural fuzzer asserts after every op.
+    #[cfg(test)]
+    pub(crate) fn cel_keys(&self) -> Vec<(usize, usize)> {
+        self.cels.keys().copied().collect()
     }
 
     /// Read one pixel from a cel (document coords). Returns RGBA; out-of-bounds
@@ -576,6 +654,10 @@ impl Document {
             }
             self.cels.insert(key, (0, 0, full));
         }
+        // Every caller of cel_canvas is a mutation op (draw/fx/region) — the
+        // returned &mut image escapes our sight, so conservatively write it
+        // back on the next save.
+        self.mark_dirty(layer, frame);
         Ok(&mut self.cels.get_mut(&key).unwrap().2)
     }
 
@@ -613,6 +695,7 @@ impl Document {
         self.check_cel(layer, frame)?;
         let img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba(color));
         self.cels.insert((layer, frame), (0, 0, img));
+        self.mark_dirty(layer, frame);
         Ok(())
     }
 

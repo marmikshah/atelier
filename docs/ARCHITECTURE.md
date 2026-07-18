@@ -101,7 +101,7 @@ Properties the shape guarantees:
 
 ## The crates
 
-### `atelier-core` — the document model (~8k LOC, no async/MCP)
+### `atelier-core` — the document model (no async/MCP)
 
 The functional core. Has no knowledge of MCP, tokio, or the network.
 
@@ -117,13 +117,14 @@ The functional core. Has no knowledge of MCP, tokio, or the network.
 - **`raster/`** — the pixel-level primitives the layers above compose. `mod.rs`:
   point/brush/line plotting, the anti-aliased `stroke_ribbon`, the 14 blend
   modes and `composite`, the pixel font glyphs; `colour`: sRGB ⇄ OKLab/OKLCh/HSL
-  conversions, ΔE, ramps and median-cut quantisation; `noise`: easing curves,
-  fBm/perlin/voronoi and dither patterns; `transform`: scale2x, affine/rotate,
-  majority downscale, 2-bone IK and distance fields.
+  conversions, ΔE, ramps and median-cut quantisation; `noise`: fBm/Perlin/Voronoi
+  noise, ordered and blue-noise dither thresholds, gradient sampling; `transform`:
+  area-average downscale, corner-seeded background removal and chamfer distance
+  fields.
 
 Dependencies: `image`, `serde`, `serde_json`, `png` (APNG encode).
 
-### `atelier-studio` — the operations (~10k LOC)
+### `atelier-studio` — the operations
 
 The `Studio` facade: a flat document store rooted at `ATELIER_HOME` (default
 `~/.atelier`), exposing **one public method per editor operation** — each takes
@@ -147,7 +148,7 @@ entire library API; the MCP layer is a thin wrapper over it.
 
 Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
-### `atelier-mcp` — the MCP server (~3.6k LOC)
+### `atelier-mcp` — the MCP server
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
@@ -166,7 +167,7 @@ The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
 Dependencies: `atelier-core`, `atelier-studio`, `rmcp`, `axum`, `tokio`, `schemars`, `serde`.
 
-### `atelier` — the binary (~0.8k LOC)
+### `atelier` — the binary
 
 Thin wiring; produces the `atelier` executable.
 
@@ -178,7 +179,8 @@ Thin wiring; produces the `atelier` executable.
   same binary as a child server over stdio and issues one `tools/call` per recipe
   step, strictly sequenced.
 
-Dependencies: `atelier-mcp`, `tokio`, `serde`, `serde_json`.
+Dependencies: `atelier-mcp`, `atelier-studio`, `tokio`, `serde_json`, `tracing`,
+`tracing-subscriber` (+ optional `reqwest` behind the `agent` feature).
 
 ## Request flow
 

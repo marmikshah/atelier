@@ -1,63 +1,45 @@
-use super::batch::batch_op_keys;
+use super::batch::{batch_op_keys, OpSide, OPS};
 use super::*;
 use image::Rgba;
 
 #[test]
-fn every_validated_op_has_an_executor() {
-    // `batch_op_keys` (validation) and `apply_op_raw`'s match (execution) are
-    // hand-synced; this guards against one table gaining an op the other
-    // lacks. Keep this list in step when adding a batch op.
-    let ops = [
-        "pencil",
-        "line",
-        "rect",
-        "ellipse",
-        "polyline",
-        "polygon",
-        "stroke",
-        "fill",
-        "bucket",
-        "replace_color",
-        "flip",
-        "shift",
-        "blur",
-        "quantize",
-        "outline",
-        "drop_shadow",
-        "glow",
-        "bevel",
-        "fill_cel",
-        "clear_cel",
-        "gradient",
-        "scatter",
-        "symmetry",
-        "adjust",
-        "gradient_map",
-        "noise",
-        "shade",
-        "form",
-        "dither",
-        "pixel_perfect",
-        "text",
-    ];
-    for name in ops {
-        assert!(
-            batch_op_keys(name).is_some(),
-            "{name} missing from batch_op_keys"
+fn the_op_table_is_the_single_source_of_truth() {
+    // One table (`OPS`) drives dispatch, validation and the doc_draw/doc_fx
+    // split — the three lists it replaced were hand-synced and drifted.
+    let mut seen = std::collections::HashSet::new();
+    for s in OPS {
+        assert!(seen.insert(s.name), "duplicate op name {}", s.name);
+        // Validation reads the same key lists the table declares.
+        assert_eq!(
+            batch_op_keys(s.name),
+            Some((s.required, s.optional)),
+            "{}: validator disagrees with the table",
+            s.name
         );
+        // Dispatch finds every entry. A missing-required-arg op may Err or
+        // panic; either proves the executor exists. The only forbidden outcome
+        // is "unknown batch op".
         let mut d = Document::new("t", 8, 8);
-        // A missing-required-arg op may Err or panic; either proves the arm
-        // exists. The only forbidden outcome is "unknown batch op".
         let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            d.apply_op_raw(0, 0, &json!({"op": name}))
+            d.apply_op_raw(0, 0, &json!({"op": s.name}))
         }));
         if let Ok(Err(e)) = r {
-            assert!(!e.contains("unknown batch op"), "{name}: {e}");
+            assert!(!e.contains("unknown batch op"), "{}: {e}", s.name);
         }
     }
+    // The vocabularies are filtered views: disjoint, and covering every op.
+    for op in draw_ops() {
+        assert!(OPS.iter().any(|s| s.name == *op && s.side == OpSide::Draw));
+        assert!(!fx_ops().contains(op), "{op} is in both vocabularies");
+    }
+    for op in fx_ops() {
+        assert!(OPS.iter().any(|s| s.name == *op && s.side == OpSide::Fx));
+    }
+    // glow stays batch-only (its on-palette snap has no single-op form).
+    assert!(!draw_ops().contains(&"glow") && !fx_ops().contains(&"glow"));
     // And the reverse: an unknown op IS reported (the guard isn't vacuous).
-    let mut d = Document::new("t", 8, 8);
     assert!(batch_op_keys("nope").is_none());
+    let mut d = Document::new("t", 8, 8);
     let e = d.apply_op_raw(0, 0, &json!({"op": "nope"})).unwrap_err();
     assert!(e.contains("unknown batch op"));
 }
@@ -190,32 +172,15 @@ fn merge_down_bakes_upper_onto_lower() {
 }
 
 #[test]
-fn draw_fx_partition_names_real_disjoint_ops() {
-    for op in DRAW_OPS.iter().chain(FX_OPS.iter()) {
-        assert!(
-            batch_op_keys(op).is_some(),
-            "partition names unknown op {op}"
-        );
-    }
-    for op in DRAW_OPS {
-        assert!(!FX_OPS.contains(op), "{op} is in both partitions");
-    }
-}
-
-/// The partition drives doc_draw/doc_fx dispatch, so an op the registry can
-/// execute but neither list names is reachable ONLY through doc_batch — silently
-/// missing from its single-op tool. `clear_cel` was exactly that: keyed,
-/// dispatchable, documented as draw-side, and rejected by doc_draw.
-///
-/// The key table is a match and can't be iterated, so this pins the cel-wide
-/// ops that pair — a partition entry without its twin is the shape of the bug.
-#[test]
 fn cel_wide_ops_are_reachable_from_their_single_op_tool() {
+    // The vocabulary drives doc_draw/doc_fx dispatch, so an op the registry can
+    // execute but the vocabulary doesn't name is reachable ONLY through
+    // doc_batch — `clear_cel` was exactly that bug once.
     for op in ["fill_cel", "clear_cel"] {
         assert!(batch_op_keys(op).is_some(), "{op} lost its registry entry");
         assert!(
-            DRAW_OPS.contains(&op),
-            "{op} is dispatchable but missing from DRAW_OPS — doc_draw rejects it"
+            draw_ops().contains(&op),
+            "{op} is dispatchable but missing from the draw vocabulary — doc_draw rejects it"
         );
     }
 }
@@ -1355,4 +1320,237 @@ fn seam_axis_solid_is_seamless_edge_mismatch_is_not() {
     let (mh2, max_delta, _) = d.seam_axis(None, 0, true, 8).unwrap();
     assert!(mh2 > 0, "edge mismatch should be detected");
     assert!(max_delta > 8, "delta should exceed threshold");
+}
+
+// -- hardening regression tests (the review pass) -----------------------------
+
+#[test]
+fn huge_coordinates_cannot_wedge_the_drawing_primitives() {
+    let mut d = Document::new("t", 8, 8);
+    // Each of these used to loop over the raw input span (billions of steps).
+    d.rect(0, 0, 0, 0, i32::MAX, i32::MAX, [9, 9, 9, 255], true, 1)
+        .unwrap();
+    assert_eq!(d.get_pixel(0, 0, 7, 7).unwrap(), [9, 9, 9, 255]);
+    d.ellipse(0, 0, 4, 4, i32::MAX, i32::MAX, [1, 1, 1, 255], true)
+        .unwrap();
+    assert_eq!(d.get_pixel(0, 0, 4, 4).unwrap(), [1, 1, 1, 255]);
+    d.line(0, 0, -2_000_000_000, 0, 2_000_000_000, 7, [5, 5, 5, 255], 1)
+        .unwrap();
+    // A horizontal-ish line across the whole canvas still lands.
+    assert_eq!(d.get_pixel(0, 0, 4, 3).unwrap()[3], 255);
+    // Fully off-canvas line: clipped away, no hang, no pixels.
+    let mut d2 = Document::new("t", 8, 8);
+    d2.line(
+        0,
+        0,
+        i32::MAX - 10,
+        i32::MAX - 10,
+        i32::MAX,
+        i32::MAX,
+        [1, 1, 1, 255],
+        1,
+    )
+    .unwrap();
+    assert_eq!(d2.opaque_count(None, 0).unwrap(), 0);
+    // brush/size clamps: an absurd brush size covers the canvas, it doesn't loop.
+    d2.pencil(0, 0, &[(4, 4)], [7, 7, 7, 255], i32::MAX)
+        .unwrap();
+    assert_eq!(d2.opaque_count(None, 0).unwrap(), 64);
+}
+
+#[test]
+fn fx_parameters_are_clamped_to_sane_bounds() {
+    let mut d = Document::new("t", 8, 8);
+    d.rect(0, 0, 0, 0, 7, 7, [200, 30, 30, 255], true, 1)
+        .unwrap();
+    // These used to run O(param) loops straight from caller input.
+    d.bevel(0, 0, [255, 255, 255, 128], [0, 0, 0, 128], i32::MAX)
+        .unwrap();
+    d.noise(
+        0,
+        0,
+        "cloud",
+        0,
+        0,
+        7,
+        7,
+        4.0,
+        u32::MAX,
+        1,
+        vec![(0.0, [0, 0, 0, 255]), (1.0, [255, 255, 255, 255])],
+        false,
+    )
+    .unwrap();
+    d.blur(0, 0, i32::MAX, None).unwrap();
+    d.scatter(0, 0, 0, 0, 7, 7, &[[1, 2, 3, 255]], 1.0, 42, i32::MAX)
+        .unwrap();
+}
+
+#[test]
+fn dither_ramp_rejects_an_unknown_pattern() {
+    let mut d = Document::new("t", 4, 4);
+    let e = d
+        .dither_ramp(
+            0,
+            0,
+            None,
+            &[[0, 0, 0, 255], [255, 255, 255, 255]],
+            "v",
+            "bogus",
+            false,
+        )
+        .unwrap_err();
+    assert!(e.contains("unknown pattern"), "got: {e}");
+}
+
+#[test]
+fn batch_wrapper_scalars_reject_out_of_range_values() {
+    // 300 as u8 == 44: truncation used to silently apply a wrong opacity.
+    let e = validate_batch_op(
+        0,
+        &json!({"op": "rect", "x0": 0, "y0": 0, "x1": 1, "y1": 1,
+        "color": [1, 2, 3], "opacity": 300}),
+    )
+    .unwrap_err();
+    assert!(e.contains("opacity"), "got: {e}");
+    let e = validate_batch_op(0, &json!({"op": "glow", "intensity": 256})).unwrap_err();
+    assert!(e.contains("intensity"), "got: {e}");
+    let e = validate_batch_op(
+        0,
+        &json!({"op": "drop_shadow", "color": [1, 2, 3], "shadow_opacity": 999}),
+    )
+    .unwrap_err();
+    assert!(e.contains("shadow_opacity"), "got: {e}");
+    // And the good path still passes.
+    assert!(validate_batch_op(0, &json!({"op": "glow", "intensity": 255})).is_ok());
+}
+
+#[test]
+fn save_writes_only_dirtied_cels_and_sweeps_stale_files() {
+    let dir = std::env::temp_dir().join(format!("atelier-dirty-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let modified = |p: &std::path::Path| std::fs::metadata(p).unwrap().modified().unwrap();
+    let mut d = Document::new("t", 4, 4);
+    d.add_frame(100, None);
+    d.rect(0, 0, 0, 0, 1, 1, [1, 1, 1, 255], true, 1).unwrap();
+    d.rect(0, 1, 0, 0, 1, 1, [2, 2, 2, 255], true, 1).unwrap();
+    d.save(&dir).unwrap();
+    let f0 = dir.join("cels/L0_F0.png");
+    let f1 = dir.join("cels/L0_F1.png");
+    let m0 = modified(&f0);
+    let m1 = modified(&f1);
+    std::thread::sleep(std::time::Duration::from_millis(20));
+    // Edit ONLY frame 0 and re-save: frame 1's file must not be rewritten.
+    d.rect(0, 0, 2, 2, 3, 3, [3, 3, 3, 255], true, 1).unwrap();
+    d.save(&dir).unwrap();
+    assert!(modified(&f0) > m0, "dirtied cel should be rewritten");
+    assert_eq!(modified(&f1), m1, "untouched cel must not be re-encoded");
+    // Deleting frame 1 must sweep its file (and keep frame 0's).
+    d.frame_ops("delete", 1, None, None).unwrap();
+    d.save(&dir).unwrap();
+    assert!(!f1.exists(), "stale cel file should be swept");
+    assert!(f0.exists());
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn save_load_round_trip_still_recovers_every_cel() {
+    // The dirty-set must never lose an edit: draw on both frames, reload.
+    let dir = std::env::temp_dir().join(format!("atelier-dirty-rt-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut d = Document::new("t", 4, 4);
+    d.add_frame(100, Some(0));
+    d.rect(0, 0, 0, 0, 1, 1, [10, 0, 0, 255], true, 1).unwrap();
+    d.rect(0, 1, 2, 2, 3, 3, [0, 0, 10, 255], true, 1).unwrap();
+    d.save(&dir).unwrap();
+    let back = Document::load(&dir).unwrap();
+    assert_eq!(back.get_pixel(0, 0, 0, 0).unwrap(), [10, 0, 0, 255]);
+    assert_eq!(back.get_pixel(0, 1, 3, 3).unwrap(), [0, 0, 10, 255]);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn structural_ops_keep_cel_and_tag_invariants() {
+    // Deterministic mini-fuzzer: random layer/frame lifecycle ops (seeded by
+    // raster::hash2, no new deps), asserting the meta↔cel lock-step after
+    // EVERY step — the invariant the remap choke points exist to keep.
+    for seed in 0..40u64 {
+        let mut d = Document::new("t", 4, 4);
+        for step in 0..120i32 {
+            let h = crate::raster::hash2(step, seed as i32, seed);
+            let layers = d.meta().layers.len();
+            let frames = d.meta().frames.len();
+            match h % 8 {
+                0 => {
+                    d.insert_layer((h >> 8) as usize % (layers + 1), None, 255, "normal".into());
+                }
+                1 => {
+                    let _ = d.delete_layer((h >> 8) as usize % (layers + 1));
+                }
+                2 => {
+                    let _ = d.move_layer((h >> 8) as usize % layers, (h >> 16) as usize % layers);
+                }
+                3 => {
+                    let _ = d.duplicate_layer((h >> 8) as usize % layers);
+                }
+                4 => {
+                    let _ = d.frame_ops("insert", (h >> 8) as usize % (frames + 1), None, None);
+                }
+                5 => {
+                    let _ = d.frame_ops("delete", (h >> 8) as usize % (frames + 1), None, None);
+                }
+                6 => {
+                    let _ = d.frame_ops(
+                        "move",
+                        (h >> 8) as usize % frames,
+                        Some((h >> 16) as usize % frames),
+                        None,
+                    );
+                }
+                _ => {
+                    let _ = d.add_tag("t", 0, frames - 1, "forward");
+                    d.rect(
+                        0,
+                        0,
+                        (h >> 8) as i32 % 4,
+                        (h >> 16) as i32 % 4,
+                        (h >> 8) as i32 % 4,
+                        (h >> 16) as i32 % 4,
+                        [1, 2, 3, 255],
+                        true,
+                        1,
+                    )
+                    .unwrap();
+                }
+            }
+            // The lock-step invariant, after every single op.
+            for (l, f) in d.cel_keys() {
+                assert!(
+                    l < d.meta().layers.len() && f < d.meta().frames.len(),
+                    "seed {seed} step {step}: cel ({l},{f}) escaped the structure"
+                );
+            }
+            for t in &d.meta().tags {
+                assert!(
+                    t.from <= t.to && t.to < d.meta().frames.len(),
+                    "seed {seed} step {step}: tag {:?} out of bounds",
+                    t.name
+                );
+            }
+        }
+        // And the whole history flattens + round-trips without a panic.
+        for f in 0..d.meta().frames.len() {
+            let _ = d.flatten(f);
+        }
+        let dir = std::env::temp_dir().join(format!("atelier-fuzz-{seed}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        d.save(&dir).unwrap();
+        let back = Document::load(&dir).unwrap();
+        assert_eq!(
+            back.meta().layers.len(),
+            d.meta().layers.len(),
+            "seed {seed}: layer count lost in round-trip"
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }
