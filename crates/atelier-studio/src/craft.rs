@@ -177,9 +177,10 @@ impl Studio {
                     return Err(e);
                 }
                 // Swap: drop the live pixels, then same-dir renames (atomic on
-                // one filesystem) move the staged files into place. A crash
-                // between the two renames is recoverable: the checkpoint still
-                // exists and restore can simply be run again.
+                // one filesystem) move the staged files into place. Not fully
+                // atomic across the TWO renames: a crash in between leaves the
+                // doc without a doc.json (headless) — re-run restore to finish
+                // the swap; the checkpoint itself is untouched.
                 let _ = fs::remove_dir_all(dir.join("cels"));
                 let _ = fs::remove_file(dir.join("doc.json"));
                 let swapped = fs::rename(staging.join("cels"), dir.join("cels"))
