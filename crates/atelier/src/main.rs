@@ -24,6 +24,9 @@
 //! atelier uninstall
 //! atelier tools [--html]         # the tool surface / the reference page
 //! atelier library [rm ...]       # inspect or prune the document store
+//! atelier replay <recipe|id>     # rebuild a document from its journal
+//! atelier skills [install|show]  # the shipped skills, for your agent
+//! atelier agent --task <t>       # the one online mode (feature-gated, off by default)
 //! ```
 
 use atelier_mcp::server;

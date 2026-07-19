@@ -1,6 +1,6 @@
 {
   "method": "Subagents driving the atelier MCP server, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools — the Anthropic models via Claude Code, kimi-k3 via Kimi Code. Every model draws the same ten tasks from identical frozen briefs (benchmarks/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; the kimi-k3 runs report each agent's self-reported tool-call and doc_look tally (Kimi Code exposes no per-agent token usage, so its tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work.",
-  "server": "atelier post-1.4.0 (28-tool surface); every run in this table was drawn against the same build",
+  "server": "atelier 1.5.0+ (28-tool surface); every run in this table was drawn against the same long-running daemon build (master, pre-#51)",
   "verified": "Every GIF parsed from disk: all 50 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4.",
   "tasks": [
     "alien",

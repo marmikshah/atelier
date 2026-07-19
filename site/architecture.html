@@ -135,7 +135,7 @@
       <ul>
         <li><code>{"op":"rect","x0":1,"y0":1,"x1":8,"y1":8,"color":[r,g,b]}</code> — that shape is the entire mutation language</li>
         <li>The registry says what each op takes (<code>batch_op_keys</code>), <code>validate_batch_op</code> rejects unknown keys and malformed colours loudly, <code>apply_op</code> executes — <span class="muted">document/batch.rs</span></li>
-        <li>Every mutating tool bottoms out here: <code>doc_draw</code> and <code>doc_fx</code> are one op, <code>doc_batch</code> is many, and even the fancy generators (rigs, tiles, particles) are Rust that emits the same primitive edits</li>
+        <li>Every mutating tool bottoms out here: <code>doc_draw</code> and <code>doc_fx</code> are one op, <code>doc_batch</code> is many — one validated pipeline, no side channels</li>
         <li>Because an op is data, it is recordable — which is what makes the next rung possible</li>
       </ul>
     </div>
@@ -190,7 +190,7 @@
       <div class="head"><span class="name">atelier-studio</span><span class="role">the <code>Studio</code> facade — the library API, one method per tool</span></div>
       <div class="chips">
         <span class="chip cool">lib.rs · store, exports, draw/fx dispatch, selection</span>
-        <span class="chip">craft.rs · checkpoints, import, generators</span>
+        <span class="chip">craft.rs · checkpoints, layer/colour ops, import</span>
         <span class="chip">view.rs · look / contact sheet</span>
         <span class="chip">analysis.rs · critique, audits, reports</span>
         <span class="chip">reference.rs · ref compare loop</span>
@@ -208,7 +208,7 @@
         <span class="chip">document/region · clipboard, transform</span>
         <span class="chip">document/render · flatten + read-only analysis</span>
         <span class="chip">document/export · sheet / GIF / APNG</span>
-        <span class="chip hot">document/batch · the op registry (DRAW_OPS / FX_OPS)</span>
+        <span class="chip hot">document/batch · the op registry (draw_ops() / fx_ops())</span>
         <span class="chip">raster/ · colour · noise · transform · blend</span>
       </div>
     </div>
@@ -224,7 +224,7 @@
     <li><span class="steplabel">1</span><div>Transport receives the call — stdio or streamable HTTP at <code>/mcp</code>, one shared router.<span class="where">atelier-mcp/src/server/mod.rs · run / run_http</span></div></li>
     <li><span class="steplabel">2</span><div><code>call_tool</code> dispatches; if recording is on, the successful step is appended to the recipe file.<span class="where">server/mod.rs + server/recorder.rs</span></div></li>
     <li><span class="steplabel">3</span><div>The tool method parses params and calls exactly one <code>Studio</code> method. No business logic lives here.<span class="where">server/mod.rs · async fn doc_draw</span></div></li>
-    <li><span class="steplabel">4</span><div><code>Studio::doc_draw</code> checks the op against core's <code>DRAW_OPS</code> partition and routes into the batch pipeline, honouring any active selection mask.<span class="where">atelier-studio/src/lib.rs · doc_draw → doc_batch → edit_masked</span></div></li>
+    <li><span class="steplabel">4</span><div><code>Studio::doc_draw</code> checks the op against core's <code>draw_ops()</code> partition and routes into the batch pipeline, honouring any active selection mask.<span class="where">atelier-studio/src/lib.rs · doc_draw → doc_batch → edit_masked</span></div></li>
     <li><span class="steplabel">5</span><div>The document loads from disk, <code>validate_batch_op</code> rejects unknown keys/malformed colours loudly, then <code>apply_op</code> runs the edit.<span class="where">atelier-core/src/document/{mod,batch}.rs</span></div></li>
     <li><span class="steplabel">6</span><div>The op body is pixel math on the cel — lines, fills, blends, colour spaces.<span class="where">atelier-core/src/document/draw.rs → raster/</span></div></li>
     <li><span class="steplabel">7</span><div>The document saves (<code>doc.json</code> + cel PNGs) and a change ack — pixel count + bbox, often an inline PNG — travels back up unchanged.<span class="where">document/mod.rs · save → back through Studio → JSON out</span></div></li>

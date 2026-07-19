@@ -8,6 +8,7 @@ transports. Each layer depends only on the ones below it — there are no cycles
 ```
             ┌─────────────────────────────────────────────┐
   binary →  │  atelier            main · service · replay  │  arg parsing, daemon,
+            │                     library · skills · agent │  store CLI, skills,
             │                     (the `atelier` binary)   │  replay client
             └───────────────────────┬─────────────────────┘
                                     │ depends on
@@ -111,7 +112,7 @@ The functional core. Has no knowledge of MCP, tokio, or the network.
   responsibility — `draw` (primitives), `region` (clipboard/transform), `fx`
   (effects), `timeline` (frames, tags, timing), `palette`, `render` (flatten +
   read-only analysis), `export` (sheet/GIF/APNG writers) and `batch` (the op
-  registry, `DRAW_OPS`/`FX_OPS` partition and validator). Persists as a
+  registry, `draw_ops()`/`fx_ops()` partition and validator). Persists as a
   directory: `doc.json` (structure + cel file refs) plus one PNG per cel under
   `cels/L<layer>_F<frame>.png`.
 - **`raster/`** — the pixel-level primitives the layers above compose. `mod.rs`:
