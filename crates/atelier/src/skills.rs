@@ -2,9 +2,10 @@
 //!
 //! A skill is a document, so its prose lives as markdown in `skills/*.md`. Rust
 //! owns the *metadata* (name, description) and the *renderers* that wrap that
-//! prose for each consumer — a Claude Code `SKILL.md`, or the `atelier agent`
-//! system prompt. One source, compile-checked, and adding a target (Cursor, …)
-//! is one method, not another copy of the text.
+//! prose for each consumer — the standard `SKILL.md` Claude Code, Kimi Code and
+//! Cursor all load, or the `atelier agent` system prompt. One source,
+//! compile-checked, and adding a consumer is one method or one install dir, not
+//! another copy of the text.
 
 /// One skill: typed metadata plus a pure-prose markdown body (no frontmatter).
 pub struct Skill {
@@ -57,9 +58,9 @@ impl Skill {
         ALL.iter().copied().find(|s| s.short == short)
     }
 
-    /// A Claude Code `SKILL.md`: YAML frontmatter over the prose body. This is
-    /// the file `~/.claude/skills/<name>/SKILL.md` the loader reads.
-    pub fn claude_skill_md(&self) -> String {
+    /// The standard `SKILL.md`: YAML frontmatter over the prose body — the one
+    /// file Claude Code, Kimi Code and Cursor each load from their skills dir.
+    pub fn skill_md(&self) -> String {
         format!(
             "---\nname: {}\ndescription: {}\n---\n\n{}\n",
             self.name,
@@ -106,8 +107,8 @@ mod tests {
     }
 
     #[test]
-    fn claude_skill_md_round_trips_name_and_body() {
-        let md = SPRITE.claude_skill_md();
+    fn skill_md_round_trips_name_and_body() {
+        let md = SPRITE.skill_md();
         assert!(md.starts_with("---\nname: atelier-sprite\n"));
         assert!(md.contains("description: Draw a single"));
         assert!(md.contains("# Drawing one subject"), "prose body missing");

@@ -54,8 +54,9 @@ USAGE:
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier tools [--html]        list the tools (plain text; --html emits the reference page)
-    atelier skills                the shipped skills; `skills install [--dir]` writes them for
-                                  Claude Code (~/.claude/skills), `skills show <name>` prints one
+    atelier skills                the shipped skills; `skills install [--for claude|kimi|cursor|all]`
+                                  writes them for your agent (~/.claude/skills by default, --dir DIR
+                                  for anywhere else), `skills show <name>` prints one
     atelier agent --task <t>      draw a task by driving an OpenAI-style API (ONLINE; needs
                                   OPENAI_API_KEY; build with --features agent)
     atelier --version             print the version
@@ -67,44 +68,69 @@ ENVIRONMENT:
     ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)
 ";
 
+/// Agents that load the standard `SKILL.md`: `--for` selector → skills dir
+/// under the user's home. Cursor additionally reads project-level
+/// `.cursor/skills/`; that is what `--dir` is for.
+const SKILL_TARGETS: &[(&str, &str)] = &[
+    ("claude", ".claude/skills"),
+    ("kimi", ".kimi-code/skills"),
+    ("cursor", ".cursor/skills"),
+];
+
 /// `atelier skills` — inspect or install the shipped skills. Pure markdown
 /// generation from the typed registry; no network, no key.
 fn skills_cmd(args: &[String]) -> i32 {
     match args.first().map(String::as_str) {
-        // Write each SKILL.md for Claude Code into <dir>/<name>/SKILL.md.
+        // Write each SKILL.md for the selected agent(s) into <dir>/<name>/SKILL.md.
         Some("install") => {
-            let dir = flag_value(args, "--dir")
-                .map(std::path::PathBuf::from)
-                .unwrap_or_else(|| {
-                    // The Claude Code skills dir, not near the document store.
-                    service::home()
-                        .unwrap_or_else(|| std::path::PathBuf::from("."))
-                        .join(".claude/skills")
-                });
-            for sk in skills::ALL {
-                let out = dir.join(sk.name).join("SKILL.md");
-                if let Some(p) = out.parent() {
-                    if let Err(e) = std::fs::create_dir_all(p) {
-                        eprintln!("atelier: {}: {e}", p.display());
+            if flag_value(args, "--dir").is_some() && flag_value(args, "--for").is_some() {
+                eprintln!("atelier: --dir and --for are mutually exclusive");
+                return 2;
+            }
+            let dirs: Vec<std::path::PathBuf> = if let Some(dir) = flag_value(args, "--dir") {
+                vec![std::path::PathBuf::from(dir)]
+            } else {
+                // Agent skills dirs, not near the document store.
+                let home = || service::home().unwrap_or_else(|| std::path::PathBuf::from("."));
+                match flag_value(args, "--for").unwrap_or("claude") {
+                    "all" => SKILL_TARGETS.iter().map(|(_, d)| home().join(d)).collect(),
+                    target => match SKILL_TARGETS.iter().find(|(name, _)| *name == target) {
+                        Some((_, d)) => vec![home().join(d)],
+                        None => {
+                            eprintln!(
+                                "atelier: unknown --for '{target}' (claude | kimi | cursor | all)"
+                            );
+                            return 2;
+                        }
+                    },
+                }
+            };
+            for dir in &dirs {
+                for sk in skills::ALL {
+                    let out = dir.join(sk.name).join("SKILL.md");
+                    if let Some(p) = out.parent() {
+                        if let Err(e) = std::fs::create_dir_all(p) {
+                            eprintln!("atelier: {}: {e}", p.display());
+                            return 1;
+                        }
+                    }
+                    if let Err(e) = std::fs::write(&out, sk.skill_md()) {
+                        eprintln!("atelier: {}: {e}", out.display());
                         return 1;
                     }
                 }
-                if let Err(e) = std::fs::write(&out, sk.claude_skill_md()) {
-                    eprintln!("atelier: {}: {e}", out.display());
-                    return 1;
-                }
+                eprintln!(
+                    "installed {} skills into {}",
+                    skills::ALL.len(),
+                    dir.display()
+                );
             }
-            eprintln!(
-                "installed {} skills into {}",
-                skills::ALL.len(),
-                dir.display()
-            );
             0
         }
-        // Print one skill's Claude SKILL.md.
+        // Print one skill's SKILL.md.
         Some("show") => match args.get(1).and_then(|n| skills::Skill::by_short(n)) {
             Some(sk) => {
-                print!("{}", sk.claude_skill_md());
+                print!("{}", sk.skill_md());
                 0
             }
             None => {
