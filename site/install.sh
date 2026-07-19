@@ -199,9 +199,11 @@ fi
 say ""
 say "Register with your MCP client (then restart its session):"
 if [ "$MODE" = "http" ]; then
-  say "  claude mcp add --scope user --transport http atelier $MCP_URL   # Claude Code / Kimi Code"
-  say "  Cursor: ~/.cursor/mcp.json -> \"atelier\": { \"url\": \"$MCP_URL\" }"
+  say "  Claude Code: claude mcp add --scope user --transport http atelier $MCP_URL"
+  say "  Kimi Code:   ~/.kimi-code/mcp.json -> \"atelier\": { \"url\": \"$MCP_URL\" }"
+  say "  Cursor:      ~/.cursor/mcp.json    -> \"atelier\": { \"url\": \"$MCP_URL\" }"
 else
-  say "  claude mcp add --scope user atelier -- $BIN     # Claude Code / Kimi Code: same shape"
-  say "  Cursor: ~/.cursor/mcp.json -> \"atelier\": { \"command\": \"$BIN\" }"
+  say "  Claude Code: claude mcp add --scope user atelier -- $BIN"
+  say "  Kimi Code:   ~/.kimi-code/mcp.json -> \"atelier\": { \"command\": \"$BIN\" }"
+  say "  Cursor:      ~/.cursor/mcp.json    -> \"atelier\": { \"command\": \"$BIN\" }"
 fi
