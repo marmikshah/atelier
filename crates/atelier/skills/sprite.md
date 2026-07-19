@@ -1,5 +1,7 @@
 # Drawing one subject
 
+*Every tool named below is one call: `atelier call <tool> '<json-args>'` from a shell — or the same-named tool over MCP.*
+
 A sprite is one subject on a transparent field. You are not painting a picture —
 you are building an object that a game will move, tint, and cut apart. Build it
 that way.

@@ -1,5 +1,7 @@
 # Reviewing the art
 
+*Every tool named below is one call: `atelier call <tool> '<json-args>'` from a shell — or the same-named tool over MCP.*
+
 Look first, measure second, report third. **You are not here to fix it** — you
 are here to say precisely what is wrong, where, and what would fix it. Someone
 else decides what to act on.

@@ -22,21 +22,21 @@ pub struct Skill {
 pub const SPRITE: Skill = Skill {
     name: "atelier-sprite",
     short: "sprite",
-    description: "Draw a single pixel-art subject — a character, creature, vehicle, prop, item or effect — as a layered, optionally animated atelier document. Use when asked to make a sprite, icon, or any one discrete object, still or animated. Builds it in parts on separate layers, looks at every pass, and fixes the specific thing that is wrong rather than redrawing. Requires the atelier MCP server. For backgrounds and full scenes use atelier-scene; to judge finished art use atelier-review.",
+    description: "Draw a single pixel-art subject — a character, creature, vehicle, prop, item or effect — as a layered, optionally animated atelier document. Use when asked to make a sprite, icon, or any one discrete object, still or animated. Builds it in parts on separate layers, looks at every pass, and fixes the specific thing that is wrong rather than redrawing. Driven through the atelier CLI (`atelier call`) or over MCP. For backgrounds and full scenes use atelier-scene; to judge finished art use atelier-review.",
     body: include_str!("../skills/sprite.md"),
 };
 
 pub const SCENE: Skill = Skill {
     name: "atelier-scene",
     short: "scene",
-    description: "Draw a whole pixel-art picture — a background, environment, interior, landscape or composed scene — as a layered atelier document. Use when the subject is a place rather than an object, or when several elements must read together as one image. Builds it in depth bands on separate layers, looks at every pass, and fixes one band at a time rather than repainting the frame. Requires the atelier MCP server. For a single object use atelier-sprite; to judge finished art use atelier-review.",
+    description: "Draw a whole pixel-art picture — a background, environment, interior, landscape or composed scene — as a layered atelier document. Use when the subject is a place rather than an object, or when several elements must read together as one image. Builds it in depth bands on separate layers, looks at every pass, and fixes one band at a time rather than repainting the frame. Driven through the atelier CLI (`atelier call`) or over MCP. For a single object use atelier-sprite; to judge finished art use atelier-review.",
     body: include_str!("../skills/scene.md"),
 };
 
 pub const REVIEW: Skill = Skill {
     name: "atelier-review",
     short: "review",
-    description: "Review finished or in-progress pixel art in an atelier document and report what is wrong with it. Use to judge a sprite, scene, animation or document set — an art-director pass that measures rather than guesses, and names a localised fix for every finding. Read-only by default: it reports, it does not repaint. Requires the atelier MCP server. To make the art in the first place use atelier-sprite or atelier-scene.",
+    description: "Review finished or in-progress pixel art in an atelier document and report what is wrong with it. Use to judge a sprite, scene, animation or document set — an art-director pass that measures rather than guesses, and names a localised fix for every finding. Read-only by default: it reports, it does not repaint. Driven through the atelier CLI (`atelier call`) or over MCP. To make the art in the first place use atelier-sprite or atelier-scene.",
     body: include_str!("../skills/review.md"),
 };
 
