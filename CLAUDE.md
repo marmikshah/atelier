@@ -67,9 +67,10 @@ install. It executes the model's tool calls against a child `atelier` stdio
 server, so it reuses the whole validated tool path rather than a second copy.
 
 The workflow guidance is a typed registry (`crates/atelier/src/skills.rs`): Rust
-owns each skill's metadata and the renderers (Claude `SKILL.md`, the agent system
-prompt); the prose stays markdown in `crates/atelier/skills/*.md`. `atelier skills
-install` writes the `SKILL.md` files into `~/.claude/skills/`; `atelier agent`
+owns each skill's metadata and the renderers (the standard `SKILL.md`, the agent
+system prompt); the prose stays markdown in `crates/atelier/skills/*.md`.
+`atelier skills install --for claude|kimi|cursor|all` writes the `SKILL.md`
+files into that agent's skills dir (default `~/.claude/skills/`); `atelier agent`
 renders its prompt from the same registry. A test fails if a skill names a tool
 that no longer exists.
 The MCP server ships no prompts — the skills replaced them.

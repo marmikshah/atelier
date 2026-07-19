@@ -6,63 +6,16 @@ releases.
 
 ## [Unreleased]
 
-### Fixed
-
-- **Coordinate/scale hardening** — one absurd parameter can no longer wedge the
-  server or abort it: `rect`/`ellipse` fill loops and `line` are clipped to the
-  canvas (the line's `(x1-x0)` span also overflowed i32), `brush`/`scatter`
-  sizes clamp to the canvas, `bevel` depth, `noise` octaves and `box_blur`
-  radius are bounded, and `doc_look tile`, `contact_sheet scale` and
-  `doc_frame_diff scale` go through the same 1..=16 clamp as every other
-  resize (each sized a buffer straight from caller input).
-- **i32 overflow sweeps** — `shift` wrap, `symmetry`, `move_region`,
-  `doc_select` ellipse, `box_iso`/`panel` geometry now compute in i64/f64 and
-  saturate: no debug panic, no release wrap.
-- **Checkpoint `restore` stages then swaps** — a failed restore no longer
-  deletes the live document it was meant to rescue.
-- **Deterministic palettes** — median-cut ties break on the full colour, so a
-  HashMap-ordered input (import, reference palettes) yields the same palette
-  every run; long GIF frame durations clamp to the format ceiling instead of
-  wrapping.
-- **Multi-frame `doc_batch` preflights frames** — a bad target late in the list
-  used to leave earlier frames mutated but the call unjournaled, silently
-  diverging the document from its recipe.
-- **Colour validation is uniform** — typed tool paths (`doc_palette`,
-  `doc_select`, `box_iso`, `panel`, `dither_ramp`, `paint_grid` legends) reject
-  malformed/out-of-range colours instead of truncating them via `as u8`;
-  batch `opacity`/`intensity`/`shadow_opacity` reject >255 likewise.
-- `dither_ramp` errors on an unknown pattern (it silently fell back to bayer8);
-  core GIF/APNG scale math is checked like the spritesheet's; `doc_look`
-  reports the scale it actually applied.
-- **systemd units quote paths** — an `ATELIER_HOME` or binary path containing
-  spaces no longer installs a service that can't start (`"`/`%` rejected).
-- Stale cel files are swept on save (cleared cels / deleted layers and frames
-  used to linger); `doc.json` writes are temp-then-rename.
-- Doc drift: ARCHITECTURE.md (raster contents, LOC figures, binary deps),
-  benchmark task count (8 → 10), module docs.
-
-### Changed
-
-- **CHANGED OUTPUT — GIF palette for palette-less documents.** The shared
-  global palette is now a frequency-weighted median cut over deduped, sorted
-  colour counts (was a flat per-pixel cut). Deterministic on every run and far
-  less memory, but it is a different cut: re-exported GIFs can quantize
-  slightly differently from 1.5.0. APNG output is unaffected (it never
-  quantizes).
-- **Saves write only dirty cels** — an edit used to re-encode and rewrite every
-  cel in the document per call; structural re-keys and per-op edits track a
-  dirty set, and a round-trip with no edits writes nothing but `doc.json`.
-- **The batch-op registry is one table** — dispatch, validation keys and the
-  doc_draw/doc_fx split were three hand-synced lists with tests existing only
-  to catch drift; a new op is now one `OPS` entry (`DRAW_OPS`/`FX_OPS` consts
-  became `draw_ops()`/`fx_ops()` fns in atelier-core).
-- Release profile: thin LTO, one codegen unit, stripped symbols.
-
 ### Added
 
 - A deterministic structural fuzzer (seeded op sequences over the layer/frame
   lifecycle, asserting the meta↔cel lock-step after every op) and regression
   tests for every fix above.
+- **`atelier skills install --for claude|kimi|cursor|all`** — the skills now
+  install for Kimi Code (`~/.kimi-code/skills`) and Cursor (`~/.cursor/skills`)
+  too; bare `skills install` still defaults to Claude Code. The installer
+  refreshes whichever agents already have them and detects Kimi/Cursor on
+  fresh installs.
 
 ## [1.5.0] — 2026-07-17
 

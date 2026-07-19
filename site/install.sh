@@ -156,26 +156,41 @@ if [ "$MODE" = "http" ]; then
   fi
 fi
 
-# -- skills (Claude Code) ----------------------------------------------------------
+# -- skills (Claude Code, Kimi Code, Cursor) ---------------------------------------
 # The workflow guidance that teaches an agent to use atelier well: build in
 # layers, look after every pass, fix the region rather than repaint the frame.
 # The binary carries them and writes the SKILL.md files itself — no per-file
 # download, no path coupling. Optional; atelier works without them.
-SKILL_DIR="$HOME/.claude/skills"
+SKILL_REFRESHED=""
+for TARGET in claude kimi cursor; do
+  case "$TARGET" in
+    claude) SKILL_DIR="$HOME/.claude/skills" ;;
+    kimi)   SKILL_DIR="$HOME/.kimi-code/skills" ;;
+    cursor) SKILL_DIR="$HOME/.cursor/skills" ;;
+  esac
+  if [ -d "$SKILL_DIR/atelier-sprite" ]; then
+    # Already installed: refresh without asking. They are ours to update.
+    "$BIN" skills install --for "$TARGET" >/dev/null 2>&1 \
+      && say "Skills updated in $SKILL_DIR" || say "Skills update failed for $TARGET — skipping."
+    SKILL_REFRESHED=1
+  fi
+done
 
-if [ -d "$SKILL_DIR/atelier-sprite" ]; then
-  # Already installed: refresh without asking. They are ours to update.
-  "$BIN" skills install >/dev/null 2>&1 && say "Skills updated in $SKILL_DIR" \
-    || say "Skills update failed — skipping."
-else
-  case "$(ask "Install the atelier skills for Claude Code? [Y/n]")" in
-    n|N) say "Skipped skills. Install later with: atelier skills install" ;;
+if [ -z "$SKILL_REFRESHED" ]; then
+  case "$(ask "Install the atelier skills for your agent? [Y/n]")" in
+    n|N) say "Skipped skills. Install later with: atelier skills install --for all" ;;
     *)
-      if "$BIN" skills install >/dev/null 2>&1; then
-        say "Skills installed in $SKILL_DIR (atelier works without them; they teach the workflow)."
-      else
-        say "Skills install failed — atelier itself is fine. Retry: atelier skills install"
-      fi
+      # Claude Code always; Kimi Code and Cursor where their config dir exists.
+      TARGETS="claude"
+      [ -d "$HOME/.kimi-code" ] && TARGETS="$TARGETS kimi"
+      [ -d "$HOME/.cursor" ] && TARGETS="$TARGETS cursor"
+      for TARGET in $TARGETS; do
+        if "$BIN" skills install --for "$TARGET" >/dev/null 2>&1; then
+          say "Skills installed for $TARGET (atelier works without them; they teach the workflow)."
+        else
+          say "Skills install failed for $TARGET — atelier itself is fine. Retry: atelier skills install --for $TARGET"
+        fi
+      done
       ;;
   esac
 fi
