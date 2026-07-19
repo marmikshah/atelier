@@ -8,7 +8,7 @@ use super::Atelier;
 /// Render the tool surface as a plain-text listing for the terminal:
 /// `name — first sentence`, one per line.
 pub fn tools_text() -> String {
-    let mut tools = Atelier::new().advertised_tools();
+    let mut tools = Atelier::registry_tools();
     tools.sort_by(|a, b| a.name.cmp(&b.name));
     let width = tools.iter().map(|t| t.name.len()).max().unwrap_or(0);
 
@@ -33,7 +33,7 @@ pub fn tools_text() -> String {
 
 /// Render the full tool surface as one static HTML page.
 pub fn tools_html() -> String {
-    let mut tools = Atelier::new().advertised_tools();
+    let mut tools = Atelier::registry_tools();
     tools.sort_by(|a, b| a.name.cmp(&b.name));
 
     let total = tools.len();
