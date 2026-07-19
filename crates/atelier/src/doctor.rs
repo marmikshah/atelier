@@ -152,7 +152,10 @@ fn check_store() -> Row {
         HomeOrigin::Global => "global",
     };
     let count = Studio::new().list_docs()["count"].as_u64().unwrap_or(0);
-    Row::ok("store", format!("{} ({count} documents, {scope})", tilde(&home)))
+    Row::ok(
+        "store",
+        format!("{} ({count} documents, {scope})", tilde(&home)),
+    )
 }
 
 // -- 3. daemon ------------------------------------------------------------------
