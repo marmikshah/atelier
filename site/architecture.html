@@ -179,7 +179,7 @@
     <div class="crate shell">
       <div class="head"><span class="name">atelier-mcp</span><span class="role">dispatch + transports — <code>Atelier::dispatch</code>, the rmcp schema registry, stdio + HTTP</span></div>
       <div class="chips">
-        <span class="chip hot">server/mod.rs · Atelier::dispatch — one match over 28 tools</span>
+        <span class="chip hot">server/mod.rs · Atelier::dispatch — one match over 30 tools</span>
         <span class="chip">server/tools_{doc,draw,read,export}.rs · the schema registry</span>
         <span class="chip">server/transport.rs · stdio + streamable HTTP</span>
         <span class="chip">server/params.rs · request schemas</span>
@@ -220,15 +220,15 @@
     </div>
   </div>
 
-  <p class="prose muted" style="margin-top:1rem">The registry advertises all <strong>28</strong> tools, and dispatch runs every one. There is no profile filter: the surface is small enough that hiding part of it behind a flag would cost more in confusion than it ever saved in context. Every tool here is one an agent or a shipped recipe actually reaches for — the rest were deleted rather than hidden. The count is pinned by a test, so changing the surface fails the suite until the number written here is updated too.</p>
+  <p class="prose muted" style="margin-top:1rem">The registry advertises all <strong>30</strong> tools, and dispatch runs every one. There is no profile filter: the surface is small enough that hiding part of it behind a flag would cost more in confusion than it ever saved in context. Every tool here is one an agent or a shipped recipe actually reaches for — the rest were deleted rather than hidden. The count is pinned by a test, so changing the surface fails the suite until the number written here is updated too.</p>
 </section>
 
 <section id="flow">
   <h2>Life of one tool call</h2>
-  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 28 tools and every caller:</p>
+  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 30 tools and every caller:</p>
   <ol class="flow">
     <li><span class="steplabel">1</span><div>A caller hands over one tool call: the CLI (<code>atelier call doc_draw '…'</code>), an MCP client over stdio or streamable HTTP at <code>/mcp</code>, or an in-process loop (<code>atelier replay</code>, <code>atelier agent</code>).<span class="where">atelier/src/{call,replay,agent}.rs · server/transport.rs · run / run_http</span></div></li>
-    <li><span class="steplabel">2</span><div>Every caller funnels into the one choke point, <code>Atelier::dispatch</code>. rmcp's router survives only as the schema registry that advertises the surface; dispatch is a match over the 28 tools that runs the same handlers.<span class="where">atelier-mcp/src/server/mod.rs · dispatch → invoke</span></div></li>
+    <li><span class="steplabel">2</span><div>Every caller funnels into the one choke point, <code>Atelier::dispatch</code>. rmcp's router survives only as the schema registry that advertises the surface; dispatch is a match over the 30 tools that runs the same handlers.<span class="where">atelier-mcp/src/server/mod.rs · dispatch → invoke</span></div></li>
     <li><span class="steplabel">3</span><div>The cross-cutting concerns hang off dispatch, so no caller can dodge them: per-call logging, the write-order lock, the per-document journal (<code>recipe.jsonl</code>, on by default), the opt-in session recorder.<span class="where">server/mod.rs · dispatch + server/recorder.rs</span></div></li>
     <li><span class="steplabel">4</span><div>The matched handler parses params and calls exactly one <code>Studio</code> method. No business logic lives here.<span class="where">server/tools_draw.rs · async fn doc_draw</span></div></li>
     <li><span class="steplabel">5</span><div><code>Studio::doc_draw</code> checks the op against core's <code>draw_ops()</code> partition and routes into the batch pipeline, honouring any active selection mask.<span class="where">atelier-studio/src/lib.rs · doc_draw → doc_batch → edit_masked</span></div></li>

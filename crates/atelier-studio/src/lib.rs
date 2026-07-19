@@ -290,7 +290,8 @@ impl Studio {
 
     /// One-tool dispatch over frame lifecycle + timing — `op`: `add` (append,
     /// optional `copy_from`) | `duration` (set frame `frame`'s ms) | `delete` |
-    /// `insert` | `duplicate` | `move`. Routes to the kept `doc_add_frame` /
+    /// `insert` | `duplicate` (`link=true` shares the source's cels instead of
+    /// copying) | `move`. Routes to the kept `doc_add_frame` /
     /// `doc_set_frame_duration` / `doc_frame_ops`. (Pivot, boxes, tags and
     /// keyframe motion keep their own tools.)
     pub fn doc_frame(
@@ -302,6 +303,7 @@ impl Studio {
         to_index: Option<usize>,
         duration_ms: Option<u32>,
         count: Option<usize>,
+        link: Option<bool>,
     ) -> Result<Value, String> {
         match op {
             "add" => self.doc_add_frame(
@@ -315,6 +317,22 @@ impl Studio {
                 Self::required_index(op, frame)?,
                 duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
             ),
+            // A linked duplicate shares the source frame's cels (copy-on-write
+            // on any later edit) — the animation-idle-frame idiom, one call
+            // instead of duplicate + manual relink.
+            "duplicate" if link.unwrap_or(false) => {
+                let (dir, mut doc) = self.open(id)?;
+                let src = Self::required_index(op, frame)?;
+                let idx = doc.duplicate_frame(src, true)?;
+                doc.save(&dir)?;
+                Ok(json!({
+                    "ok": true,
+                    "doc_id": id,
+                    "duplicated_frame": src,
+                    "new_frame": idx,
+                    "linked": true,
+                }))
+            }
             _ => self.doc_frame_ops(
                 id,
                 op,
@@ -322,6 +340,49 @@ impl Studio {
                 to_index,
                 duration_ms,
             ),
+        }
+    }
+
+    /// Slice metadata (Aseprite-style named rects with optional 9-slice centre
+    /// and pivot) — `op`: `add` (name + inclusive rect, optional centre/pivot)
+    /// | `delete` (by name) | `list` (read-only, straight from the structure).
+    /// Slices ride the sheet export's JSON sidecars; they never touch pixels.
+    pub fn doc_slice(
+        &self,
+        id: &str,
+        op: &str,
+        name: Option<&str>,
+        rect: Option<[i32; 4]>,
+        center: Option<[i32; 4]>,
+        pivot: Option<[i32; 2]>,
+    ) -> Result<Value, String> {
+        match op {
+            "add" => {
+                let (dir, mut doc) = self.open(id)?;
+                let idx = doc.add_slice(
+                    name.ok_or("doc_slice op=add needs `name`")?,
+                    rect.ok_or("doc_slice op=add needs `rect` [x0,y0,x1,y1]")?,
+                    center,
+                    pivot,
+                )?;
+                doc.save(&dir)?;
+                Ok(json!({"ok": true, "doc_id": id, "slice": idx}))
+            }
+            "delete" => {
+                let (dir, mut doc) = self.open(id)?;
+                doc.delete_slice(name.ok_or("doc_slice op=delete needs `name`")?)?;
+                self.commit(&dir, id, doc)
+            }
+            "list" => {
+                let info = self.doc_info(id)?;
+                Ok(json!({
+                    "doc_id": id,
+                    "slices": info.get("slices").cloned().unwrap_or_else(|| json!([])),
+                }))
+            }
+            other => Err(format!(
+                "unknown doc_slice op '{other}' — valid: add | delete | list"
+            )),
         }
     }
 
@@ -769,7 +830,7 @@ mod tests {
         // "Give me my 10 frames" used to cost 9 identical round-trips.
         let s = studio("addcount");
         s.doc_create("d", 4, 4).unwrap();
-        let out = s.doc_frame("d", "add", None, Some(0), None, Some(80), Some(9));
+        let out = s.doc_frame("d", "add", None, Some(0), None, Some(80), Some(9), None);
         assert!(out.is_ok(), "{out:?}");
         let info = s.doc_info("d").unwrap();
         assert_eq!(info["frames"].as_array().map(|f| f.len()), Some(10));

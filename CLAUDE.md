@@ -52,7 +52,7 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 - `atelier-studio` — the `Studio` facade (the library API): one method per tool; single draw/fx ops route through `doc_draw`/`doc_fx` over the core op registry.
 - `atelier-mcp` — `Atelier::dispatch`, the one path every caller (CLI, MCP
   stdio/HTTP, replay, agent) shares, plus the rmcp `#[tool]` server; advertises
-  all **28** tools, with no profile filter. The count is pinned by a test,
+  all **30** tools, with no profile filter. The count is pinned by a test,
   another test fails if a tool description names a tool that no longer exists,
   and a third fails if an advertised tool has no dispatch arm — change the
   surface, update the docs in the same commit. A tool earns its place by being
