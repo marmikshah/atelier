@@ -1,20 +1,22 @@
 # Architecture
 
 atelier is a Cargo **workspace** of four crates arranged as a strict dependency
-tower: a pure document/raster core, the studio operations that act on it, the MCP
-server that exposes those operations as tools, and the binary that wires up
-transports. Each layer depends only on the ones below it — there are no cycles.
+tower: a pure document/raster core, the studio operations that act on it, the
+dispatch layer and MCP server that expose those operations as tools, and the
+binary that wires up the CLI and transports. Each layer depends only on the
+ones below it — there are no cycles.
 
 ```
             ┌─────────────────────────────────────────────┐
-  binary →  │  atelier            main · service · replay  │  arg parsing, daemon,
-            │                     library · skills · agent │  store CLI, skills,
-            │                     (the `atelier` binary)   │  replay client
+  binary →  │  atelier            main · call · service ·  │  arg parsing, the CLI
+            │                     replay · library ·       │  front door, daemon,
+            │                     skills · agent           │  replay, skills, agent
+            │                     (the `atelier` binary)   │
             └───────────────────────┬─────────────────────┘
                                     │ depends on
             ┌───────────────────────▼─────────────────────┐
-  shell  →  │  atelier-mcp        server · recipe          │  rmcp #[tool] router,
-            │                                              │  stdio + HTTP, web views
+  shell  →  │  atelier-mcp        dispatch · server ·      │  one dispatch path;
+            │                     recipe                   │  rmcp stdio + HTTP
             └───────────────────────┬─────────────────────┘
                                     │
             ┌───────────────────────▼─────────────────────┐
@@ -41,20 +43,21 @@ every cross-cutting concern hooks, and why the server can be stateless
 ```mermaid
 flowchart TB
     subgraph clients["Clients"]
+        shell["any agent with a shell<br/>(atelier call · replay · agent)"]
         cc["Claude Code / any MCP client<br/>(spawns the binary — stdio)"]
         kimi["Kimi Code / HTTP clients<br/>(stateless POSTs to /mcp)"]
     end
 
     subgraph bin["atelier — the binary"]
-        main["arg parsing · tracing init (stderr, ATELIER_LOG)<br/>daemon install (launchd / systemd) · library CLI<br/>replay runner · skills registry"]
-        agent["agent mode — feature-gated OFF<br/>the ONE online path: OpenAI-style API<br/>drives a child atelier over stdio"]
+        main["arg parsing · tracing init (stderr, ATELIER_LOG)<br/>the CLI front door (call) · daemon install (launchd / systemd)<br/>replay runner · library · skills registry"]
+        agent["agent mode — feature-gated OFF<br/>the ONE online path: OpenAI-style API<br/>dispatches in-process like the CLI"]
     end
 
-    subgraph mcp["atelier-mcp — the shell (rmcp server)"]
-        dispatch["call_tool — the single dispatch choke point"]
+    subgraph mcp["atelier-mcp — the shell"]
+        dispatch["Atelier::dispatch — the single choke point"]
         log["log line: tool · op · doc · caller · ms · error"]
         order["write-order lock (mutations only)"]
-        router["tool_router — 28 tools, schemas scrubbed"]
+        router["tool registry — 28 tools, schemas scrubbed<br/>(advertise; the dispatch match invokes the handlers)"]
         journal["journal_append → recipe.jsonl"]
         recorder["session recorder (--record, opt-in)"]
     end
@@ -72,10 +75,11 @@ flowchart TB
         recipe["&lt;doc-id&gt;/recipe.jsonl<br/>every doc is a replayable recipe"]
     end
 
+    shell --> main
     cc -- stdio --> dispatch
     kimi -- "HTTP /mcp · no sessions<br/>caller = peer addr or header" --> dispatch
     main --> dispatch
-    agent -. spawns child .-> main
+    agent --> dispatch
     dispatch --> log
     dispatch --> order
     dispatch --> router
@@ -94,7 +98,8 @@ Properties the shape guarantees:
   nothing above it. Transport bugs get fixed in the shell without touching art
   logic.
 - **One choke point** — logging, journaling, write ordering, and recording all
-  hang off `call_tool`; no tool can dodge them.
+  hang off `Atelier::dispatch`, the one path CLI, MCP stdio/HTTP, replay and
+  agent every caller shares; no caller can dodge them.
 - **Disk is the state** — no server-side session, so the HTTP transport is
   stateless: a daemon restart is invisible mid-conversation.
 - **Recipe = provenance** — art is an ordered list of tool calls; any document
@@ -156,20 +161,24 @@ entire library API; the MCP layer is a thin wrapper over it.
 
 Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
-### `atelier-mcp` — the MCP server
+### `atelier-mcp` — dispatch + the MCP server
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
-- **`server/`** — the rmcp `#[tool]` router: `mod.rs` holds the server state and
-  merges four domain routers (`tools_doc`, `tools_draw`, `tools_read`,
-  `tools_export`), with the param structs (`params.rs`), the two transports
+- **`server/`** — `mod.rs` holds the server state and **`Atelier::dispatch`**,
+  the single path every caller (MCP stdio/HTTP, `atelier call`, replay, agent)
+  funnels through: classify journaled/recorded → write-order lock → deserialize
+  params → run the handler → log → journal/record. The four domain routers
+  (`tools_doc`, `tools_draw`, `tools_read`, `tools_export`) hold the 28
+  `#[tool]` handlers and their schemas — the registry the surface is advertised
+  from — with the param structs (`params.rs`), the two transports
   (`transport.rs` — stdio `run` + streamable HTTP `run_http`, re-exported as
   `server::{run, run_http}`), session `Recorder` (`recorder.rs`) and MCP
   resources (`resources.rs`) as siblings: **28 tools** (mutations grouped into
   op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
   one or one-family per studio operation. All 28 are advertised unconditionally
-  — there is no profile filter. The two transports share the router; the
-  `Recorder` turns a live session into a replayable recipe.
+  — there is no profile filter. The `Recorder` turns a live session into a
+  replayable recipe.
 - **`recipe.rs`** — the `Recipe`/`Step` format: the on-disk contract shared by the
   `Recorder` (writer) and the `atelier replay` runner (reader). Lives here, in the
   library crate, so anything embedding atelier can read/write recipes without the
@@ -181,25 +190,29 @@ Dependencies: `atelier-core`, `atelier-studio`, `rmcp`, `axum`, `tokio`, `schema
 
 Thin wiring; produces the `atelier` executable.
 
-- **`main.rs`** — arg/env parsing and transport selection (stdio vs `--http`,
-  `--record`, subcommand dispatch).
+- **`main.rs`** — arg/env parsing and subcommand dispatch (the CLI verbs, the
+  daemon, or the MCP transports: stdio vs `--http`, `--record`).
+- **`call.rs`** — `atelier call`: one tool call, in-process through
+  `Atelier::dispatch` — the CLI front door the whole surface hangs off.
 - **`service.rs`** — installs/uninstalls the background daemon (launchd on macOS,
   `systemd --user` on Linux).
-- **`replay.rs`** — the `atelier replay` runner: an MCP *client* that spawns this
-  same binary as a child server over stdio and issues one `tools/call` per recipe
-  step, strictly sequenced.
+- **`replay.rs`** — the `atelier replay` runner: an in-process dispatch loop, one
+  `dispatch` per recipe step, strictly sequenced, with recorded→minted id
+  remapping.
 
-Dependencies: `atelier-mcp`, `atelier-studio`, `tokio`, `serde_json`, `tracing`,
+Dependencies: `atelier-mcp`, `atelier-studio`, `rmcp`, `tokio`, `serde_json`, `tracing`,
 `tracing-subscriber` (+ optional `reqwest` behind the `agent` feature).
 
 ## Request flow
 
-A single drawing tool call travels straight down the tower and back:
+A single drawing tool call travels straight down the tower and back, whatever
+front door it came in:
 
 ```
-agent → MCP tools/call → server.rs #[tool] handler
-      → Studio::doc_<op>(args)              (atelier-studio)
-      → Document / raster mutation          (atelier-core)
+agent → atelier call | MCP tools/call | replay | agent mode
+      → Atelier::dispatch (log · write-order lock · journal)
+      → the tool's handler → Studio::doc_<op>(args)   (atelier-studio)
+      → Document / raster mutation                    (atelier-core)
       → persist to ~/.atelier/documents/<id>/
       → render PNG → returned to the agent to look at
 ```

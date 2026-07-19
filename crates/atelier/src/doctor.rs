@@ -1,7 +1,9 @@
 //! `atelier doctor` — self-diagnostics for the whole setup: the binary, the
-//! document store, the background daemon, per-client MCP registrations, and
-//! the installed skills. One aligned row per check (`ok` / `note` / `FAIL`),
-//! exit 1 when anything FAILs, and every FAIL row prints its fix.
+//! document store, and the installed skills — plus the optional MCP add-on
+//! (the background daemon and per-client MCP registrations). One aligned row
+//! per check (`ok` / `note` / `FAIL`), exit 1 when anything FAILs, and every
+//! FAIL row prints its fix. The CLI needs none of the MCP machinery, so an
+//! absent registration is a note, never a failure.
 //!
 //! The one network-ish check (probing the local daemon) is a hand-written
 //! HTTP/1.1 POST over `std::net::TcpStream` — localhost only, so the default
@@ -209,7 +211,10 @@ fn check_daemon() -> Row {
     let running = service::daemon_running();
     let addr = std::env::var("ATELIER_HTTP").unwrap_or_else(|_| DEFAULT_ADDR.into());
     if !installed && !tcp_listening(&addr) {
-        return Row::note("daemon", "not installed (stdio mode is fine)");
+        return Row::note(
+            "daemon",
+            "not installed (MCP add-on; the CLI needs no daemon)",
+        );
     }
     let state = match (installed, running) {
         (true, true) => format!("installed + running ({})", service::manager()),
@@ -335,7 +340,10 @@ fn check_clients() -> Vec<Row> {
                 Registration::Absent => {
                     let projects = project_registrations(&body);
                     if projects.is_empty() {
-                        Row::fail(name, format!("atelier not registered — fix: {fix}"))
+                        Row::note(
+                            name,
+                            format!("not registered (the CLI needs nothing) — MCP add-on: {fix}"),
+                        )
                     } else {
                         Row::note(
                             name,

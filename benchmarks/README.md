@@ -1,7 +1,7 @@
 # atelier benchmark
 
 Ten animation tasks, one per game-object category. Each is run by an **agent
-driving atelier's MCP tools** — nothing else. The art is the result; the tool
+driving atelier's tools** — nothing else. The art is the result; the tool
 calls are the record.
 
 ## Tasks
@@ -25,14 +25,16 @@ The task text is the exact input. Keep it fixed so runs stay comparable.
 
 ## How runs are made
 
-Runs are driven by **agent subagents connected to atelier over MCP** — the same
-path any user takes (Claude Code for the Anthropic models, Kimi Code for
-kimi-k3). There is no bespoke benchmark runner: the agent gets the task text
-and the tool surface, and works.
+Runs are driven by **agent subagents driving atelier's tools** — the same path
+any user takes (Claude Code for the Anthropic models, Kimi Code for kimi-k3),
+over the CLI or MCP. There is no bespoke benchmark runner: the agent gets the
+task text and the tool surface, and works.
 
 ```sh
-atelier install                  # background daemon, then connect your client
-claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
+# the CLI path needs no setup at all — the agent's shell just runs:
+atelier call doc_create '{"name":"cat","width":32,"height":32}'
+# or, for an MCP-connected client:
+atelier install && claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
 ```
 
 Then hand an agent one task file and let it work. Recorded per run: the model,

@@ -99,7 +99,7 @@
   <div>
     <span class="eyebrow">architecture &amp; onboarding</span>
     <h1>atelier: a pixel-art editor with no screen</h1>
-    <p class="prose muted">Aseprite-as-an-API. One static Rust binary that speaks MCP; an agent creates layered, animated documents, draws into them, <em>looks</em> at the result, and exports engine-ready art. No network, no keys, fully deterministic.</p>
+    <p class="prose muted">Aseprite-as-an-API. One static Rust binary an agent drives straight from the CLI — one tool call per command — or over MCP: create layered, animated documents, draw into them, <em>look</em> at the result, export engine-ready art. No network, no keys, fully deterministic.</p>
     <hr class="px-rule">
   </div>
 </header>
@@ -148,7 +148,7 @@
     <div class="rung"><span class="rt">document</span><span class="rd">meta + the cel map — layers stack per frame, frames sequence into animation</span></div>
     <div class="rung"><span class="rt">op</span><span class="rd">one validated JSON edit applied to one cel — the mutation language</span></div>
     <div class="rung"><span class="rt">tool call</span><span class="rd">parse params &rarr; Studio method &rarr; ops (+ a <em>look</em> back: inline PNG, stats, critique)</span></div>
-    <div class="rung"><span class="rt">recipe</span><span class="rd">the ordered tool calls of a session — recorded by the server, replayable by <code>atelier replay</code>; a document <em>is</em> the product of its recipe</span></div>
+    <div class="rung"><span class="rt">recipe</span><span class="rd">the ordered tool calls of a session — journaled on the dispatch path (every document keeps its own <code>recipe.jsonl</code>), replayable by <code>atelier replay</code>; a document <em>is</em> the product of its recipe</span></div>
   </div>
   <p class="prose muted">So the full flow is not a separate design — it is this ladder read top to bottom. The see-and-critique loop (<code>doc_look</code>, <code>doc_critique</code>, <code>doc_ref op=compare</code>) exists because the agent driving the ops is nearly blind: draw &rarr; look &rarr; fix, measured instead of remembered.</p>
 </section>
@@ -156,7 +156,7 @@
 
 <section id="idea" class="prose">
   <h2>What that buys: replayable art</h2>
-  <p><strong>Every document is an ordered sequence of tool calls.</strong> Draw a sprite through the API and the session can be recorded as a <em>recipe</em> — a JSON list of steps — and replayed byte-for-byte later. The files in <code>docs/examples/*.json</code> are exactly that: they are the brand art <em>and</em> the integration tests (<code>atelier replay</code> runs them against a real server).</p>
+  <p><strong>Every document is an ordered sequence of tool calls.</strong> Draw a sprite through the API and the session can be recorded as a <em>recipe</em> — a JSON list of steps — and replayed byte-for-byte later. The files in <code>docs/examples/*.json</code> are exactly that: they are the brand art <em>and</em> the integration tests (<code>atelier replay</code> runs them in-process, through the same dispatch path live callers take).</p>
   <p>The second idea is the <strong>see-and-critique loop</strong>. The model drawing the art is nearly blind, so the API is full of eyes: <code>doc_look</code> returns the frame as an inline PNG plus value statistics, <code>doc_critique</code> names failure modes, <code>doc_ref op=compare</code> scores the canvas against a reference image. Draw → look → fix, measured instead of remembered.</p>
   <p>State lives on disk under <code>~/.atelier</code> (override: <code>ATELIER_HOME</code>): one directory per document holding <code>doc.json</code> (structure) plus one PNG per <em>cel</em> — the image at one (layer, frame) coordinate.</p>
 </section>
@@ -167,18 +167,20 @@
 
   <div class="tower">
     <div class="crate shell">
-      <div class="head"><span class="name">atelier</span><span class="role">the binary — arg parsing, daemon installer, replay runner</span></div>
+      <div class="head"><span class="name">atelier</span><span class="role">the binary — the CLI front door (call · replay · agent · library · doctor · skills) + the daemon installer</span></div>
       <div class="chips">
-        <span class="chip">main.rs · flags &amp; transports</span>
+        <span class="chip">main.rs · subcommands &amp; flags</span>
+        <span class="chip">call.rs · one tool call, in-process</span>
+        <span class="chip">replay.rs / agent.rs · in-process dispatch loops</span>
         <span class="chip">service.rs · launchd / systemd install</span>
-        <span class="chip">replay.rs · runs recipes against a child server</span>
       </div>
     </div>
     <div class="dep">depends on</div>
     <div class="crate shell">
-      <div class="head"><span class="name">atelier-mcp</span><span class="role">the imperative shell — rmcp <code>#[tool]</code> router over stdio + HTTP</span></div>
+      <div class="head"><span class="name">atelier-mcp</span><span class="role">dispatch + transports — <code>Atelier::dispatch</code>, the rmcp schema registry, stdio + HTTP</span></div>
       <div class="chips">
-        <span class="chip hot">server/mod.rs · merges 4 domain routers — 28 tools</span>
+        <span class="chip hot">server/mod.rs · Atelier::dispatch — one match over 28 tools</span>
+        <span class="chip">server/tools_{doc,draw,read,export}.rs · the schema registry</span>
         <span class="chip">server/transport.rs · stdio + streamable HTTP</span>
         <span class="chip">server/params.rs · request schemas</span>
         <span class="chip">server/recorder.rs · session → recipe</span>
@@ -218,41 +220,48 @@
     </div>
   </div>
 
-  <p class="prose muted" style="margin-top:1rem">The server advertises all <strong>28</strong> tools. There is no profile filter: the surface is small enough that hiding part of it behind a flag would cost more in confusion than it ever saved in context. Every tool here is one an agent or a shipped recipe actually reaches for — the rest were deleted rather than hidden. The count is pinned by a test, so changing the surface fails the suite until the number written here is updated too.</p>
+  <p class="prose muted" style="margin-top:1rem">The registry advertises all <strong>28</strong> tools, and dispatch runs every one. There is no profile filter: the surface is small enough that hiding part of it behind a flag would cost more in confusion than it ever saved in context. Every tool here is one an agent or a shipped recipe actually reaches for — the rest were deleted rather than hidden. The count is pinned by a test, so changing the surface fails the suite until the number written here is updated too.</p>
 </section>
 
 <section id="flow">
   <h2>Life of one tool call</h2>
-  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 28 tools:</p>
+  <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 28 tools and every caller:</p>
   <ol class="flow">
-    <li><span class="steplabel">1</span><div>Transport receives the call — stdio or streamable HTTP at <code>/mcp</code>, one shared router.<span class="where">atelier-mcp/src/server/mod.rs · run / run_http</span></div></li>
-    <li><span class="steplabel">2</span><div><code>call_tool</code> dispatches; if recording is on, the successful step is appended to the recipe file.<span class="where">server/mod.rs + server/recorder.rs</span></div></li>
-    <li><span class="steplabel">3</span><div>The tool method parses params and calls exactly one <code>Studio</code> method. No business logic lives here.<span class="where">server/mod.rs · async fn doc_draw</span></div></li>
-    <li><span class="steplabel">4</span><div><code>Studio::doc_draw</code> checks the op against core's <code>draw_ops()</code> partition and routes into the batch pipeline, honouring any active selection mask.<span class="where">atelier-studio/src/lib.rs · doc_draw → doc_batch → edit_masked</span></div></li>
-    <li><span class="steplabel">5</span><div>The document loads from disk, <code>validate_batch_op</code> rejects unknown keys/malformed colours loudly, then <code>apply_op</code> runs the edit.<span class="where">atelier-core/src/document/{mod,batch}.rs</span></div></li>
-    <li><span class="steplabel">6</span><div>The op body is pixel math on the cel — lines, fills, blends, colour spaces.<span class="where">atelier-core/src/document/draw.rs → raster/</span></div></li>
-    <li><span class="steplabel">7</span><div>The document saves (<code>doc.json</code> + cel PNGs) and a change ack — pixel count + bbox, often an inline PNG — travels back up unchanged.<span class="where">document/mod.rs · save → back through Studio → JSON out</span></div></li>
+    <li><span class="steplabel">1</span><div>A caller hands over one tool call: the CLI (<code>atelier call doc_draw '…'</code>), an MCP client over stdio or streamable HTTP at <code>/mcp</code>, or an in-process loop (<code>atelier replay</code>, <code>atelier agent</code>).<span class="where">atelier/src/{call,replay,agent}.rs · server/transport.rs · run / run_http</span></div></li>
+    <li><span class="steplabel">2</span><div>Every caller funnels into the one choke point, <code>Atelier::dispatch</code>. rmcp's router survives only as the schema registry that advertises the surface; dispatch is a match over the 28 tools that runs the same handlers.<span class="where">atelier-mcp/src/server/mod.rs · dispatch → invoke</span></div></li>
+    <li><span class="steplabel">3</span><div>The cross-cutting concerns hang off dispatch, so no caller can dodge them: per-call logging, the write-order lock, the per-document journal (<code>recipe.jsonl</code>, on by default), the opt-in session recorder.<span class="where">server/mod.rs · dispatch + server/recorder.rs</span></div></li>
+    <li><span class="steplabel">4</span><div>The matched handler parses params and calls exactly one <code>Studio</code> method. No business logic lives here.<span class="where">server/tools_draw.rs · async fn doc_draw</span></div></li>
+    <li><span class="steplabel">5</span><div><code>Studio::doc_draw</code> checks the op against core's <code>draw_ops()</code> partition and routes into the batch pipeline, honouring any active selection mask.<span class="where">atelier-studio/src/lib.rs · doc_draw → doc_batch → edit_masked</span></div></li>
+    <li><span class="steplabel">6</span><div>The document loads from disk, <code>validate_batch_op</code> rejects unknown keys/malformed colours loudly, then <code>apply_op</code> runs the edit.<span class="where">atelier-core/src/document/{mod,batch}.rs</span></div></li>
+    <li><span class="steplabel">7</span><div>The op body is pixel math on the cel — lines, fills, blends, colour spaces.<span class="where">atelier-core/src/document/draw.rs → raster/</span></div></li>
+    <li><span class="steplabel">8</span><div>The document saves (<code>doc.json</code> + cel PNGs) and a change ack — pixel count + bbox — travels back up unchanged; seeing the pixels is <code>doc_look</code>'s job.<span class="where">document/mod.rs · save → back through Studio → JSON out</span></div></li>
   </ol>
+  <p class="prose muted">Disk is the state — documents load and save per op — so nothing above keeps session memory: the HTTP transport stays stateless, and a CLI call needs no running server at all.</p>
 </section>
 
 <section id="start">
   <h2>Start here — fifteen minutes</h2>
-  <p class="prose">The <code>make</code> targets build, test and lint. Running the server and installing the daemon are direct commands — the binary's own subcommands are the interface.</p>
+  <p class="prose">The <code>make</code> targets build, test and lint. Everything else is a direct subcommand of the binary — and the front door is <code>atelier call</code>: one tool call, in-process, zero setup.</p>
 
 <pre><code><span class="c"># 1 · clone, wire the git hooks once, prove the tree is green</span>
 git config core.hooksPath .githooks
 make pre-commit-checks && make test
 
-<span class="c"># 2 · watch it draw — replay a shipped recipe into an isolated home</span>
+<span class="c"># 2 · watch it draw — replay a shipped recipe, in-process, into an isolated home</span>
 make release
 ./target/release/atelier replay docs/examples/water-tile.json --home /tmp/atelier-demo
 
-<span class="c"># 3 · run it as a real MCP server</span>
+<span class="c"># 3 · drive it yourself — one tool call per command, no registration, no daemon</span>
+./target/release/atelier call doc_create '{"name":"cat","width":32,"height":32}'
+./target/release/atelier call doc_look '{"doc_id":"cat","out_path":"/tmp/cat.png"}'
+./target/release/atelier tools --schema doc_draw       <span class="c"># one tool's input JSON schema</span>
+
+<span class="c"># 4 · optional: run it as an MCP server, for MCP-only clients</span>
 ./target/release/atelier                          <span class="c"># stdio transport (what clients spawn)</span>
 ./target/release/atelier --http 127.0.0.1:8765    <span class="c"># or HTTP at /mcp</span>
 claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
 
-<span class="c"># 4 · first session, from the client side</span>
+<span class="c"># 5 · first session, whichever door you took</span>
 <span class="c">#     doc_create → doc_draw / doc_batch → doc_look → doc_export</span>
 <span class="c">#     look after every burst of edits; export op=sheet|anim|tileset</span></code></pre>
 
@@ -266,7 +275,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
         <tr><td><code>check</code></td><td>fmt + clippy + tests</td></tr>
         <tr><td><code>clean</code></td><td>wipe build artifacts</td></tr>
       </table></div>
-      <p class="prose muted" style="margin-top:.6rem">Run/install are direct: <code>atelier --http …</code>, <code>atelier install</code>, <code>atelier replay …</code>.</p>
+      <p class="prose muted" style="margin-top:.6rem">Run/install are direct: <code>atelier call …</code>, <code>atelier replay …</code>, <code>atelier --http …</code>, <code>atelier install</code>.</p>
     </div>
     <div class="card">
       <h3>env vars (all optional, all in .env.example)</h3>
@@ -284,7 +293,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
   <h2>Reading order</h2>
   <p>Shortest path to a working mental model — top-down, following one call:</p>
   <p><strong>1.</strong> A recipe in <code>docs/examples/</code> (pick <code>water-tile.json</code>, 18 steps) — it reads as a narrated session and shows what the tools <em>feel</em> like.<br>
-  <strong>2.</strong> <code>atelier-mcp/src/server/mod.rs</code> — skim the <code>#[tool]</code> descriptions; they are the product spec.<br>
+  <strong>2.</strong> <code>atelier-mcp/src/server/mod.rs</code> — <code>Atelier::dispatch</code>, the one path every caller takes; then skim the <code>#[tool]</code> descriptions in <code>tools_*.rs</code> — they are the product spec.<br>
   <strong>3.</strong> <code>atelier-studio/src/lib.rs</code> — the <code>Studio</code> struct, <code>open</code>/<code>edit_masked</code>/<code>change_ack</code>: the shape every operation shares.<br>
   <strong>4.</strong> <code>atelier-core/src/document/mod.rs</code> — <code>Document</code>, <code>DocMeta</code>, the cel map, and the two invariant choke points (<code>remap_cel_layers</code>, <code>shift_cel_frames</code>).<br>
   <strong>5.</strong> <code>docs/ARCHITECTURE.md</code> last — it will now read as confirmation, not introduction.</p>
@@ -306,7 +315,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
       <h3>Add a whole tool</h3>
       <ul>
         <li>Studio method first (pick the right studio module), tests beside it</li>
-        <li>param struct in <code>server/params.rs</code>, thin <code>#[tool]</code> method in <code>server/mod.rs</code></li>
+        <li>param struct in <code>server/params.rs</code>, thin <code>#[tool]</code> method in its domain router (<code>server/tools_*.rs</code>), one arm in the dispatch match (<code>server/mod.rs</code>) — a coverage test keeps registry and match in lockstep</li>
         <li>the count-pin test fails the moment the surface changes size — on purpose: it is the reminder to update the counts written into README / these pages</li>
       </ul>
     </div>

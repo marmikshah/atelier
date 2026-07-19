@@ -6,7 +6,7 @@
 </p>
 
 <p align="center"><strong>The pixel-art studio agents can see.</strong><br>
-Layered, animated, game-ready art — over MCP.</p>
+Layered, animated, game-ready art — from your CLI, or over MCP.</p>
 
 <p align="center">
   <a href="https://github.com/marmikshah/atelier/actions/workflows/ci.yml"><img src="https://github.com/marmikshah/atelier/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -39,9 +39,19 @@ Layered, animated, game-ready art — over MCP.</p>
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
-Installs the binary, starts a background daemon, and prints the registration
-snippet for your MCP client — Claude Code, Kimi Code or Cursor. Restart the
-client, then just ask:
+Installs the binary. That's the whole setup — drive it from any shell:
+
+```sh
+atelier call doc_create '{"name":"cat","width":32,"height":32}'
+atelier call doc_draw '{"doc_id":"cat","layer":0,"frame":0,"op":"fill_cel","color":[224,160,80]}'
+atelier call doc_look '{"doc_id":"cat","out_path":"/tmp/cat.png"}'
+```
+
+Every tool is one `atelier call`: stdout gets the JSON report, the exit code
+the verdict (0 ok, 1 tool error, 2 bad call). `atelier tools` lists the
+surface; `atelier tools --schema <name>` dumps one tool's input schema. Any
+agent with a shell — Claude Code, Kimi Code or Cursor — drives it exactly this
+way: no registration, no daemon, no restart. Just ask:
 
 > *"draw me a blinking cat sprite and export it as a GIF"*
 
@@ -49,13 +59,19 @@ client, then just ask:
   <code>doc_create</code> → <code>paint</code> → <b><code>doc_look</code></b> → <i>fix</i> → <code>doc_export</code>
 </p>
 
-### Docker
+### Other ways
 
-Prefer a container? One small image — a static musl binary on Alpine (~15 MB),
-multi-arch (amd64 + arm64) — serving the same HTTP MCP endpoint:
+- **Binaries** — macOS (ARM), Linux x86_64, Windows: [latest release](https://github.com/marmikshah/atelier/releases/latest)
+- **Source** — `cargo install --path crates/atelier`, or `site/install.sh --source`
+  to build this checkout and install it
+
+## Optional: run as an MCP server
+
+For clients that only speak MCP, the same binary is an MCP server — one
+command sets up a shared background daemon (launchd / systemd):
 
 ```sh
-docker run -d -p 127.0.0.1:8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier
+atelier install
 ```
 
 Then register it, the same shape for every client:
@@ -66,15 +82,43 @@ claude mcp add --scope user --transport http atelier http://127.0.0.1:8765/mcp  
 # Cursor:    ~/.cursor/mcp.json     ->  "atelier": { "url": "http://127.0.0.1:8765/mcp" }
 ```
 
+Or skip the daemon and let each client spawn the server itself over stdio —
+zero setup, but each client gets its own store:
+
+```sh
+claude mcp add --scope user atelier -- atelier   # Claude Code
+# Kimi Code: ~/.kimi-code/mcp.json  ->  "atelier": { "command": "atelier" }
+# Cursor:    ~/.cursor/mcp.json     ->  "atelier": { "command": "atelier" }
+```
+
+### Docker
+
+Prefer a container? One small image — a static musl binary on Alpine (~15 MB),
+multi-arch (amd64 + arm64) — serving the same HTTP MCP endpoint:
+
+```sh
+docker run -d -p 127.0.0.1:8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier
+```
+
 Documents persist in the `atelier-data` volume, so they survive restarts.
 There's a [`docker-compose.yml`](docker-compose.yml) if you'd rather keep it
 declarative.
 
-### Other ways
+### MCP notes
 
-- **Binaries** — macOS (ARM), Linux x86_64, Windows: [latest release](https://github.com/marmikshah/atelier/releases/latest)
-- **Source** — `cargo install --path crates/atelier`, or `site/install.sh --source`
-  to build this checkout and install the daemon
+- **Your client shows 0 tools** — restart it after registering; MCP clients read
+  their server list at session start.
+- **stdio or daemon?** The daemon is one shared server and store, and it
+  survives reboots; stdio means each client spawns its own `atelier`, and each
+  gets its own store. (The CLI needs neither — it talks to the store directly.)
+- **Port 8765 already in use** — `atelier status` shows whether it's our daemon
+  (`atelier uninstall` stops it) or something else holding the port.
+- **Where are the logs?** The daemon writes `~/.atelier/logs/atelier.{out,err}.log`;
+  verbosity via `ATELIER_LOG` (`RUST_LOG` syntax). In stdio mode the same log
+  goes to the spawning client's stderr.
+- **Uninstall everything** — `install.sh uninstall` (or `atelier uninstall` for
+  just the daemon). Your documents in `~/.atelier` are kept; delete that
+  directory too if you want them gone.
 
 ## Why it's different
 
@@ -97,25 +141,35 @@ deliberate act, and the context stays small enough to look often.
 ## The CLI
 
 ```sh
+atelier call <tool> '<json>'   # one tool call, in-process — the front door
+atelier call <tool> --file ops.json   # args from a file (or --stdin)
+atelier tools [--schema <name]]       # the tool surface / one input schema
+atelier replay <recipe|id>     # rebuild a document from its journal
+atelier library                # what's in your document store
+atelier doctor                 # check the whole setup, print what to fix
+atelier skills install         # write the skills for your agent (--for claude|kimi|cursor|all)
+atelier agent --task "..."     # the one online mode (feature-gated)
+```
+
+And the MCP add-on:
+
+```sh
 atelier                    # stdio MCP server (your client spawns it)
 atelier --http             # HTTP server at 127.0.0.1:8765/mcp
 atelier install            # background daemon (launchd / systemd)
 atelier status             # daemon state and log locations
 atelier uninstall          # stop and remove the daemon
-atelier skills install     # write the skills for your agent (--for claude|kimi|cursor|all)
-atelier tools              # list the tool surface
-atelier library            # what's in your document store
-atelier replay recipe.json # replay a recorded session, byte-identically
 ```
 
-The server logs every tool call to stderr — name, op, target document, caller,
-duration, and the error text when a call fails. The daemon collects this in
+Every call — CLI, replay, stdio or HTTP — travels one dispatch path, so it logs
+the same line to stderr: tool name, op, target document, caller, duration, and
+the error text when a call fails. The daemon collects this in
 `~/.atelier/logs/atelier.err.log`; tune verbosity with `ATELIER_LOG`
 (`RUST_LOG` syntax, default `info`). When several agents share the daemon,
 every call logs a `caller=` identity: by default the TCP peer address, which
 separates concurrent sessions — even two windows of the same client — with no
 configuration; set an `X-Atelier-Caller` header in a client's MCP config to
-use a stable name instead.
+use a stable name instead. (The CLI and replay log as `cli` / `replay`.)
 (Same-name collisions are already impossible: `doc_create` mints a unique id —
 `hero`, `hero-2`, … — and every caller must use the id it got back.)
 
@@ -124,23 +178,6 @@ a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
 or see how a call flows through the crates in the
 [architecture tour](https://marmikshah.github.io/atelier/architecture.html).
-
-## Troubleshooting
-
-- **Your client shows 0 tools** — restart it after registering; MCP clients read
-  their server list at session start.
-- **stdio or daemon?** The installer's default is the daemon: one shared server
-  and store, survives reboots, every client sees the same documents. Answering
-  `s` (or `ATELIER_MODE=stdio`) has each client spawn its own `atelier` — zero
-  setup, but each client gets its own store.
-- **Port 8765 already in use** — `atelier status` shows whether it's our daemon
-  (`atelier uninstall` stops it) or something else holding the port.
-- **Where are the logs?** The daemon writes `~/.atelier/logs/atelier.{out,err}.log`;
-  verbosity via `ATELIER_LOG` (`RUST_LOG` syntax). In stdio mode the same log
-  goes to the spawning client's stderr.
-- **Uninstall everything** — `install.sh uninstall` (or `atelier uninstall` for
-  just the daemon). Your documents in `~/.atelier` are kept; delete that
-  directory too if you want them gone.
 
 ## Agent mode — the one online command
 
@@ -159,7 +196,7 @@ that bare command just works — no files, no Claude, no repo checkout.
 `--skill scene|review` picks another, `--skill-file <path>` injects your own.
 
 It's off by default — a normal build and the daemon link no network stack at all
-— and it reuses the same tool server everything else does, so the model draws
+— and it reuses the same dispatch path everything else does, so the model draws
 through the exact validated path (schemas, journaling, replay). Any
 OpenAI-compatible endpoint works via `--base-url`.
 
@@ -176,7 +213,9 @@ installer offers to add to your agent — Claude Code, Kimi Code or Cursor:
 
 Both drawing skills insist on the same two things: **build it in layers**, and
 **fix the region that's wrong instead of repainting the frame**. They prescribe
-no style and no palette — that's the request's business.
+no style and no palette — that's the request's business. And they're
+transport-free: every tool they name is one `atelier call`, or the same-named
+MCP tool when you're connected over MCP.
 
 Install or refresh them any time — `atelier skills install` (Claude Code by
 default, `--for kimi|cursor|all` for the others).

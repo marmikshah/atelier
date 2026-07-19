@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>atelier — the pixel-art studio agents can see</title>
-<meta name="description" content="Ten animation tasks, identical prompts — every model draws all ten through atelier's MCP tools with the atelier-sprite skill. Compare the art and the effort side by side.">
+<meta name="description" content="Ten animation tasks, identical prompts — every model draws all ten through atelier's tools with the atelier-sprite skill. Compare the art and the effort side by side.">
 <meta property="og:title" content="atelier — the pixel-art studio agents can see">
 <meta property="og:description" content="Ten animation tasks, identical prompts. Every frame is a tool call; every model sees its own work through doc_look and fixes it.">
 <meta property="og:image" content="https://marmikshah.github.io/atelier/assets/studio-scene.gif">
@@ -87,6 +87,13 @@
   dialog h3{margin:0;font-size:.95rem;font-family:var(--mono)}
   .note{color:var(--ink3);font-family:var(--mono);font-size:.7rem;line-height:1.75;margin-top:1.6rem;
     border-left:2px solid var(--line);padding-left:.9rem;max-width:60rem}
+  section.start{margin:0 auto 2.5rem;max-width:60rem}
+  section.start h2{font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 .7rem}
+  section.start p{color:var(--ink2);font-size:.88rem;margin:.7rem 0}
+  section.start code{font-family:var(--mono);font-size:.85em;background:var(--panel2);padding:.1em .35em;border-radius:3px}
+  pre.cli{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:6px;
+    padding:1rem 1.1rem;overflow-x:auto;font-family:var(--mono);font-size:.78rem;line-height:1.7;color:var(--ink2)}
+  pre.cli .c{opacity:.55}
   footer{border-top:1px solid var(--line);padding:2rem 0 3rem;color:var(--ink3);font-family:var(--mono);font-size:.72rem;text-align:center;line-height:1.8}
 </style>
 </head>
@@ -99,7 +106,7 @@
       <img class="logo px" src="assets/logo-wordmark-dark.png" alt="atelier">
     </picture>
   </h1>
-  <p class="tag">The pixel-art studio agents can see — headless, over MCP.</p>
+  <p class="tag">The pixel-art studio agents can see. Layered, animated, game-ready art — from your CLI, or over MCP.</p>
   <img class="hero px" src="assets/studio-scene.gif" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a ginger cat sleeps on the desk — drawn and animated entirely by agents">
   <div class="bar">
     <a class="btn" href="https://github.com/marmikshah/atelier">★ star on GitHub</a>
@@ -129,13 +136,34 @@
   <p class="note" id="method"></p>
 </main>
 
+<section class="wrap start" id="start">
+  <h2>run it yourself — the CLI is the front door</h2>
+  <p>One static binary. Any agent with a shell — Claude Code, Kimi Code, Cursor — drives it with
+  zero setup: no registration, no daemon, no client restart.</p>
+  <pre class="cli"><span class="c"># install</span>
+curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
+
+<span class="c"># the loop: create → paint → look → fix → export</span>
+atelier call doc_create '{"name":"cat","width":32,"height":32}'
+atelier call doc_draw   '{"doc_id":"cat","layer":0,"frame":0,"op":"rect","x0":6,"y0":6,"x1":25,"y1":25,"color":[224,163,60]}'
+atelier call doc_look   '{"doc_id":"cat","out_path":"/tmp/cat.png"}'  <span class="c"># pixels to a file, then look</span>
+atelier call doc_export '{"doc_id":"cat","op":"sheet","out_path":"/tmp/cat-sheet.png"}'</pre>
+  <p>One tool call per command; stdout carries the tool's JSON report, the exit code the verdict —
+  <code>0</code> ok, <code>1</code> tool error, <code>2</code> bad call. Args are positional JSON,
+  <code>--file PATH</code> or <code>--stdin</code>; <code>--home DIR</code> roots an isolated store.
+  All 28 tools work this way; <code>atelier tools --schema doc_draw</code> dumps one tool's input JSON schema.</p>
+  <p>Optional: run atelier as an MCP server for MCP-only clients — bare <code>atelier</code> (stdio),
+  <code>atelier --http 127.0.0.1:8765</code>, or <code>atelier install</code> for the background daemon.
+  Details on the <a href="architecture.html#start">architecture page</a>.</p>
+</section>
+
 <dialog id="box">
   <div class="row"><h3 id="boxtitle"></h3><button class="btn" id="boxclose" type="button">close</button></div>
   <img class="px" id="boximg" alt="">
 </dialog>
 
 <footer>
-  every pixel on this page was drawn by agents through the atelier MCP tools, from identical task text ·
+  every pixel on this page was drawn by agents through atelier's tools, from identical task text ·
   metrics captured verbatim per run, no editorial scoring<br>
   <a href="https://github.com/marmikshah/atelier">github.com/marmikshah/atelier</a> · MIT
 </footer>
