@@ -168,6 +168,20 @@ pub(crate) static OPS: &[OpSpec] = &[
         run: op_stroke,
     },
     OpSpec {
+        name: "curve",
+        required: &["points", "color"],
+        optional: &["width", "aa", "snap"],
+        side: OpSide::Draw,
+        run: op_curve,
+    },
+    OpSpec {
+        name: "stamp",
+        required: &["points", "tip"],
+        optional: &["colorize"],
+        side: OpSide::Draw,
+        run: op_stamp,
+    },
+    OpSpec {
         name: "fill",
         required: &["x", "y", "color"],
         optional: &["tolerance"],
@@ -295,6 +309,20 @@ pub(crate) static OPS: &[OpSpec] = &[
         optional: &["dx", "dy", "wrap"],
         side: OpSide::Fx,
         run: op_shift,
+    },
+    OpSpec {
+        name: "rotate",
+        required: &[],
+        optional: &["turns"],
+        side: OpSide::Fx,
+        run: op_rotate,
+    },
+    OpSpec {
+        name: "scale",
+        required: &["w", "h"],
+        optional: &["method"],
+        side: OpSide::Fx,
+        run: op_scale,
     },
     OpSpec {
         name: "symmetry",
@@ -465,6 +493,60 @@ fn op_stroke(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), Str
         col(op, "color"),
         gb(op, "aa", true),
         gb(op, "snap", true),
+    )
+}
+
+fn op_curve(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), String> {
+    d.curve(
+        l,
+        f,
+        &points2f_val(op.get("points")),
+        col(op, "color"),
+        op.get("width").and_then(|v| v.as_f64()).unwrap_or(2.0) as f32,
+        gb(op, "aa", true),
+        gb(op, "snap", true),
+    )
+}
+
+fn op_stamp(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), String> {
+    // The tip travels as plain JSON (`{w, h, pixels: [[r,g,b,a], ...]}`) so a
+    // stamped call stays self-contained for journaling and replay — no
+    // base64, no external file.
+    let tip = op.get("tip").ok_or("stamp needs 'tip'")?;
+    let w = tip.get("w").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+    let h = tip.get("h").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+    let px = colors_val(tip.get("pixels"));
+    if w == 0 || h == 0 || px.len() != (w * h) as usize {
+        return Err(format!(
+            "stamp tip must have exactly w*h pixels ({w}×{h} = {}, got {})",
+            w * h,
+            px.len()
+        ));
+    }
+    let mut buf = Vec::with_capacity(px.len() * 4);
+    for c in px {
+        buf.extend_from_slice(&c);
+    }
+    let img = image::RgbaImage::from_raw(w, h, buf)
+        .ok_or_else(|| format!("stamp tip {w}×{h} does not fit its pixel buffer"))?;
+    let colorize = op.get("colorize").map(|_| col(op, "colorize"));
+    d.stamp_tip(l, f, &points_val(op.get("points")), &img, colorize)
+        .map(|_| ())
+}
+
+fn op_rotate(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), String> {
+    d.rotate_cel(l, f, gi(op, "turns", 1) as u8)
+}
+
+fn op_scale(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), String> {
+    d.scale_cel(
+        l,
+        f,
+        gi(op, "w", 0) as u32,
+        gi(op, "h", 0) as u32,
+        op.get("method")
+            .and_then(|v| v.as_str())
+            .unwrap_or("nearest"),
     )
 }
 
@@ -780,6 +862,23 @@ fn points_val(v: Option<&Value>) -> Vec<(i32, i32)> {
         .unwrap_or_default()
 }
 
+/// Parse `[[x,y], ...]` into float vertices — curve control points keep their
+/// sub-pixel precision (unlike `points_val`, which truncates for pixel ops).
+fn points2f_val(v: Option<&Value>) -> Vec<(f32, f32)> {
+    v.and_then(|x| x.as_array())
+        .map(|a| {
+            a.iter()
+                .filter_map(|p| p.as_array())
+                .filter(|pt| pt.len() >= 2)
+                .map(|pt| {
+                    let g = |i: usize| pt.get(i).and_then(|n| n.as_f64()).unwrap_or(0.0) as f32;
+                    (g(0), g(1))
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 /// Parse gradient stops `[{"pos":0.0,"color":[r,g,b,a]}, ...]`.
 fn stops_val(v: Option<&Value>) -> Vec<(f32, [u8; 4])> {
     v.and_then(|x| x.as_array())
@@ -889,7 +988,9 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
     // check a colour given as "#5e2a6e" or {"r":..} silently fell back to
     // BLACK — a wrong-but-plausible result an agent then burns calls
     // repainting around. Malformed input errors loudly instead.
-    const COLOR_KEYS: [&str; 7] = ["color", "light", "dark", "color_a", "color_b", "from", "to"];
+    const COLOR_KEYS: [&str; 8] = [
+        "color", "light", "dark", "color_a", "color_b", "from", "to", "colorize",
+    ];
     for k in COLOR_KEYS {
         // `from`/`to` are colours only where the op's key table says so.
         if !(required.contains(&k) || optional.contains(&k)) {
