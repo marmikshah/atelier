@@ -15,6 +15,14 @@ releases.
   verdict: 0 ok, 1 tool error, 2 bad call. Any agent with a shell can drive
   atelier now — no registration, no daemon, no client restart.
 - **`atelier tools --schema <name>`** dumps one tool's input JSON schema.
+- **Project stores** — `atelier init` stamps `./.atelier` in a project
+  directory (your game repo); from then on, calls made there keep the art and
+  its recipe next to the project, with ids minted clean per project (`hero`,
+  never `hero-2` because another project claimed it). Resolution per call:
+  `--home` / `ATELIER_HOME` → `./.atelier` when one exists → `~/.atelier`.
+  A missing `.atelier` is never created implicitly, so nothing changes until
+  you opt in. `atelier doctor` names the store you're on, and why
+  (`ATELIER_HOME` / project store / global).
 - **Stdio transport smoke test** — spawns the real binary and speaks JSON-RPC
   end-to-end, replacing the coverage replay's child-server runs used to give.
 
@@ -34,6 +42,10 @@ releases.
   and `atelier install` are unchanged for those who want the server); doctor
   treats a missing MCP registration as a note, not a failure; the README,
   site, skills and crate descriptions go CLI-first.
+- **The daemon stays on the global store** — `atelier install` pins
+  `~/.atelier` (or an explicit `--home`) into the launchd/systemd unit, never
+  a project store it happened to be run from. Daemon logs follow the same
+  global root.
 
 ### Removed
 
