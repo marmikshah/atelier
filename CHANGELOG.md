@@ -53,6 +53,9 @@ releases.
   reads `~/.kimi-code/mcp.json` (it has no `mcp add` CLI); the installer now
   prints the correct snippet for Claude Code, Kimi Code and Cursor in both http
   and stdio modes, and the README matches.
+- `atelier tools` no longer creates `~/.atelier/documents` just to list the
+  tool registry; the export dispatch's unknown-op error no longer names the
+  deleted `wang` generator.
 
 ### Changed
 
@@ -73,6 +76,10 @@ releases.
 - **Docker image rebased to Alpine** — a static musl binary (`rust:1-alpine` →
   `alpine:3`, no package installs) on a ~15 MB image instead of ~85 MB Debian.
   Same HTTP endpoint, `/data` volume and non-root user; one supported flavour.
+- **`studio`/`server` internals re-carved** — `atelier-studio`'s lib.rs splits
+  into store / ops_export / ops_region behind an unchanged `Studio` facade; the
+  MCP server's transports move to `transport.rs` and its tool wrappers to
+  per-domain modules. No tool-schema or behavior change.
 
 ### Added
 
