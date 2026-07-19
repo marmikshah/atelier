@@ -343,8 +343,7 @@ impl Studio {
         }
     }
 
-    /// Slice metadata (Aseprite-style named rects with optional 9-slice centre
-    /// and pivot) — `op`: `add` (name + inclusive rect, optional centre/pivot)
+    /// Slice metadata (named rects with optional 9-slice centre and pivot) — `op`: `add` (name + inclusive rect, optional centre/pivot)
     /// | `delete` (by name) | `list` (read-only, straight from the structure).
     /// Slices ride the sheet export's JSON sidecars; they never touch pixels.
     pub fn doc_slice(
