@@ -94,6 +94,10 @@ releases.
 - **kimi-k3 benchmark row** — the showcase gains a fifth model: ten tasks drawn
   by Kimi Code (K3) subagents through the same daemon, briefs and skill as the
   other models. Tokens are unreported by that client (shown as —).
+- **`atelier doctor`** — one command that checks the whole setup: store
+  writability, daemon state + a real MCP `initialize` probe over std-only TCP,
+  per-client MCP registration (Claude Code, Kimi Code, Cursor), and whether
+  installed skills are current. Exit 1 with a printed fix per failure.
 
 ## [1.5.0] — 2026-07-17
 
