@@ -132,11 +132,18 @@ The `Studio` facade: a flat document store rooted at `ATELIER_HOME` (default
 plain arguments and returns `Result<serde_json::Value, String>`. This is the
 entire library API; the MCP layer is a thin wrapper over it.
 
-- **`lib.rs`** (the `Studio` struct) — store/document lifecycle, layers/frames/
-  tags, render and export (`doc_look`, sheet/GIF/APNG/atlas/tileset), and the
-  small drawing entrypoints. `Studio::new()` reads `ATELIER_HOME`;
-  `Studio::with_docs_dir(path)` roots a studio at an explicit directory (for
-  embedding or tests, without touching process-global env).
+- **`lib.rs`** (the `Studio` struct) — the facade: structure/timeline ops
+  (layers/frames/tags), the per-cel drawing entrypoints (palette,
+  `doc_paint_grid`, batch/draw/fx dispatch) and shared helpers. The modules
+  below are one `impl Studio` block each:
+- **`store.rs`** — store/document lifecycle (create/open/list/delete), the
+  journal (`recipe.jsonl`), and `Studio::default_home()` — the single
+  `ATELIER_HOME` policy the binary delegates to. `Studio::new()` reads
+  `ATELIER_HOME`; `Studio::with_docs_dir(path)` roots a studio at an explicit
+  directory (for embedding or tests, without touching process-global env).
+- **`ops_export.rs`** — every export entry point + dispatch (sheet/GIF/APNG/
+  atlas/tileset).
+- **`ops_region.rs`** — selections (`doc_select`) and clipboard/region ops.
 - **`craft.rs`** — constructive ops: checkpoints, layer/colour ops, import.
 - **`view.rs`** — the see-tools: `doc_look` and the
   contact sheet.
@@ -153,14 +160,16 @@ Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
-- **`server/`** — the rmcp `#[tool]` router (`mod.rs`), with the param structs
-  (`params.rs`), session `Recorder` (`recorder.rs`) and MCP resources
-  (`resources.rs`) as siblings: **28 tools** (mutations grouped into op-dispatch
-  tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`), one or
-  one-family per studio operation. All 28 are advertised unconditionally — there
-  is no profile filter. Runs over two transports that share the router — stdio
-  (`run`) and streamable HTTP (`run_http`); the `Recorder` turns a live session
-  into a replayable recipe.
+- **`server/`** — the rmcp `#[tool]` router: `mod.rs` holds the server state and
+  merges four domain routers (`tools_doc`, `tools_draw`, `tools_read`,
+  `tools_export`), with the param structs (`params.rs`), the two transports
+  (`transport.rs` — stdio `run` + streamable HTTP `run_http`, re-exported as
+  `server::{run, run_http}`), session `Recorder` (`recorder.rs`) and MCP
+  resources (`resources.rs`) as siblings: **28 tools** (mutations grouped into
+  op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
+  one or one-family per studio operation. All 28 are advertised unconditionally
+  — there is no profile filter. The two transports share the router; the
+  `Recorder` turns a live session into a replayable recipe.
 - **`recipe.rs`** — the `Recipe`/`Step` format: the on-disk contract shared by the
   `Recorder` (writer) and the `atelier replay` runner (reader). Lives here, in the
   library crate, so anything embedding atelier can read/write recipes without the
