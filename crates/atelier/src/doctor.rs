@@ -94,7 +94,7 @@ pub fn run(args: &[String]) -> i32 {
 }
 
 /// "~"-collapse a path under the user's home for display (the CLI talks about
-/// `~/.atelier`, not `/Users/whoever/.atelier`).
+/// `~/.atelier`, not an absolute machine-specific path).
 fn tilde(p: &Path) -> String {
     match service::home() {
         Some(h) if p.starts_with(&h) => {
