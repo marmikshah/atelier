@@ -321,8 +321,20 @@ impl Atelier {
     /// (`uint32` & co.) — they are not JSON Schema formats, and Ajv-based
     /// clients warn on every one of them (`unknown format "uint32" ignored`).
     fn advertised_tools(&self) -> Vec<rmcp::model::Tool> {
-        self.tool_router
-            .list_all()
+        Self::scrub_tool_schemas(self.tool_router.list_all())
+    }
+
+    /// The advertised tool surface without a server instance: `atelier tools`
+    /// lists the registry and must not build a `Studio` to do it — `Studio::new`
+    /// creates `~/.atelier/documents` on disk, a side effect a listing has no
+    /// business having. The router is an associated fn, so the whole registry
+    /// is instance-free.
+    pub(crate) fn registry_tools() -> Vec<rmcp::model::Tool> {
+        Self::scrub_tool_schemas(Self::tool_router().list_all())
+    }
+
+    fn scrub_tool_schemas(tools: Vec<rmcp::model::Tool>) -> Vec<rmcp::model::Tool> {
+        tools
             .into_iter()
             .map(|mut t| {
                 let mut schema = Value::Object((*t.input_schema).clone());
@@ -721,7 +733,7 @@ mod tests {
     fn advertised_schemas_carry_no_rust_integer_formats() {
         // Ajv-based clients (Kimi Code, most Node MCP hosts) warn on every
         // schemars integer format: `unknown format "uint32" ignored`.
-        let tools = Atelier::new().advertised_tools();
+        let tools = Atelier::registry_tools();
         assert!(!tools.is_empty());
         let dump = serde_json::to_string(
             &tools
@@ -754,16 +766,19 @@ mod tests {
 
     #[test]
     fn the_tool_surface_is_the_size_the_docs_claim() {
-        let n = Atelier::new().tool_router.list_all().len();
+        let n = Atelier::tool_router().list_all().len();
         // Written into README / tools.html (regen: make docs) / architecture.html.
         // Change the surface, update them in the same commit — this is the reminder.
         assert_eq!(n, 28, "tool count changed — update the docs");
         assert_eq!(
-            Atelier::new().advertised_tools().len(),
+            Atelier::registry_tools().len(),
             28,
             "every tool is advertised; there is no profile filter"
         );
-        let instructions = Atelier::new().get_info().instructions.unwrap_or_default();
+        let instructions = temp_atelier("info")
+            .get_info()
+            .instructions
+            .unwrap_or_default();
         assert!(
             instructions.contains("28 tools"),
             "get_info instructions drifted from the tool count"
@@ -771,11 +786,21 @@ mod tests {
     }
 
     #[test]
+    fn the_registry_lists_without_a_studio() {
+        // `atelier tools` lists the registry only; building a `Studio` for it
+        // used to create ~/.atelier/documents as a side effect of `--help`-level
+        // work. The router is an associated fn, so nothing here touches disk.
+        assert_eq!(Atelier::registry_tools().len(), 28);
+        assert!(tools_text().starts_with("atelier tools — 28 tools\n"));
+        assert!(tools_html().contains("28</strong> tools"));
+    }
+
+    #[test]
     fn no_tool_description_points_at_a_tool_that_does_not_exist() {
         // A description is the model's only guide. Naming a tool that was
         // removed sends it to call something that will never answer — and the
         // count pin cannot see this, because the count is still right.
-        let tools = Atelier::new().tool_router.list_all();
+        let tools = Atelier::tool_router().list_all();
         let names: std::collections::HashSet<String> =
             tools.iter().map(|t| t.name.to_string()).collect();
         let mentioned = regex_lite_doc_tools(&tools);
@@ -819,7 +844,7 @@ mod tests {
         // comment on the param struct rides into the schema's top-level
         // `description` behind its back (a blank line does NOT detach a `///`
         // — deleting a neighbouring struct can silently re-home its comment).
-        for t in Atelier::new().tool_router.list_all() {
+        for t in Atelier::tool_router().list_all() {
             assert!(
                 !t.input_schema.contains_key("description"),
                 "{}'s param struct carries a doc comment — the model would see \
@@ -840,8 +865,7 @@ mod tests {
         let Ok(entries) = std::fs::read_dir(&root) else {
             return; // skills are not present in a packaged crate; nothing to check
         };
-        let names: std::collections::HashSet<String> = Atelier::new()
-            .tool_router
+        let names: std::collections::HashSet<String> = Atelier::tool_router()
             .list_all()
             .into_iter()
             .map(|t| t.name.to_string())
@@ -879,8 +903,7 @@ mod tests {
 
     #[test]
     fn every_read_only_tool_is_a_real_tool() {
-        let names: Vec<String> = Atelier::new()
-            .tool_router
+        let names: Vec<String> = Atelier::tool_router()
             .list_all()
             .into_iter()
             .map(|t| t.name.to_string())
