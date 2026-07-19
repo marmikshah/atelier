@@ -818,6 +818,22 @@ pub(super) fn batch_op_keys(
     find_op(kind).map(|s| (s.required, s.optional))
 }
 
+/// Strict colour-array parse: `v` must be `[r,g,b]` or `[r,g,b,a]` with every
+/// component an integer 0..=255; the alpha defaults to 255. The ONE shape check
+/// for caller-supplied colours — the batch validator and the studio's paint-grid
+/// legend parser share it (two hand-synced copies drift).
+pub fn color_array(v: &Value) -> Option<[u8; 4]> {
+    let a = v.as_array()?;
+    if !(3..=4).contains(&a.len()) {
+        return None;
+    }
+    let mut out = [255u8; 4];
+    for (i, c) in a.iter().enumerate() {
+        out[i] = u8::try_from(c.as_u64()?).ok()?;
+    }
+    Some(out)
+}
+
 /// Strictly validate one batch op object before it runs: the `op` key must name
 /// a known kind, every required key must be present, and no unrecognized keys
 /// may appear (typos / wrong-shape params would otherwise be silently defaulted).
@@ -874,18 +890,13 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
     // BLACK — a wrong-but-plausible result an agent then burns calls
     // repainting around. Malformed input errors loudly instead.
     const COLOR_KEYS: [&str; 7] = ["color", "light", "dark", "color_a", "color_b", "from", "to"];
-    let is_color = |v: &Value| {
-        v.as_array().is_some_and(|a| {
-            (3..=4).contains(&a.len()) && a.iter().all(|n| n.as_u64().is_some_and(|n| n <= 255))
-        })
-    };
     for k in COLOR_KEYS {
         // `from`/`to` are colours only where the op's key table says so.
         if !(required.contains(&k) || optional.contains(&k)) {
             continue;
         }
         if let Some(v) = obj.get(k) {
-            if !is_color(v) {
+            if color_array(v).is_none() {
                 return Err(format!(
                     "op[{}] ({}): '{}' must be a colour array [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
                     idx, kind, k, v
