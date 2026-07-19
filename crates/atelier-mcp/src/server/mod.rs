@@ -4,6 +4,7 @@
 //! flag the failure instead of treating it as a success.
 
 use rmcp::handler::server::router::tool::ToolRouter;
+use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
     AnnotateAble, CallToolResult, Content, ListResourcesResult, ListToolsResult,
     PaginatedRequestParams, RawResource, ReadResourceRequestParams, ReadResourceResult, Resource,
@@ -159,8 +160,9 @@ macro_rules! try_res {
 
 /// The JSON report a tool answered with. Scans for the first TEXT part rather
 /// than taking `content[0]`: the image-returning tools put the PNG first and the
-/// stats after it.
-fn result_json(result: &rmcp::model::CallToolResult) -> Option<Value> {
+/// stats after it. Public so the binary's CLI/replay paths read results the
+/// same way the server does.
+pub fn result_json(result: &rmcp::model::CallToolResult) -> Option<Value> {
     result
         .content
         .iter()
@@ -211,7 +213,10 @@ fn strip_nonstandard_formats(schema: &mut Value) {
     }
 }
 
-fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
+/// True when a result is a failure — either flagged `is_error` or carrying a
+/// `{"error": ...}` text payload. Public so CLI/replay exit codes and fail-fast
+/// agree with the server's journaling decision.
+pub fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
     if result.is_error == Some(true) {
         return true;
     }
@@ -329,7 +334,7 @@ impl Atelier {
     /// creates `~/.atelier/documents` on disk, a side effect a listing has no
     /// business having. The router is an associated fn, so the whole registry
     /// is instance-free.
-    pub(crate) fn registry_tools() -> Vec<rmcp::model::Tool> {
+    pub fn registry_tools() -> Vec<rmcp::model::Tool> {
         Self::scrub_tool_schemas(Self::tool_router().list_all())
     }
 
@@ -348,7 +353,7 @@ impl Atelier {
     }
 
     /// Enable session recording: every tool call is appended to a recipe at `path`.
-    fn with_recording(mut self, path: std::path::PathBuf) -> Self {
+    pub fn with_recording(mut self, path: std::path::PathBuf) -> Self {
         self.recorder = Some(Recorder::new(path));
         self
     }
@@ -365,6 +370,137 @@ impl Atelier {
         self.studio
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    /// THE one dispatch path every caller funnels through — the MCP handler
+    /// (`call_tool`), and the binary's own `atelier call` / `replay` / `agent`.
+    /// Logging, journaling, write ordering and session recording live here so
+    /// no caller can dodge them; transport-specific work (caller identity from
+    /// HTTP headers) belongs to the transport above this.
+    ///
+    /// Speaks the rmcp result type because the MCP transport needs it natively;
+    /// CLI callers read the text part (`result_json`) and the error flag
+    /// (`is_error_result`).
+    pub async fn dispatch(
+        &self,
+        tool: &str,
+        args: Value,
+        caller: &str,
+    ) -> Result<CallToolResult, ErrorData> {
+        let recorder = self.recorder.clone();
+        // For mutations, hold the order lock from before the dispatch until
+        // after the journal write, so journal order can never diverge from
+        // execution order under concurrent sessions. Reads skip it.
+        let journaled = is_journaled(tool, &args);
+        let recorded = is_recorded(tool, &args);
+        let write_order = self.write_order.clone();
+        let _order = if recorded {
+            Some(write_order.lock().await)
+        } else {
+            None
+        };
+
+        let started = std::time::Instant::now();
+        let result = match self.invoke(tool, args.clone()).await {
+            Ok(r) => r,
+            // Protocol-level failure (unknown tool, malformed params): the
+            // caller sees the error; make sure the operator does too.
+            Err(e) => {
+                tracing::error!(%tool, %caller, error = %e, "tool call failed (protocol error)");
+                return Err(e);
+            }
+        };
+        log_call(tool, &args, caller, &result, started.elapsed());
+
+        // A read rebuilds nothing, so it belongs in neither recipe. Both
+        // recorders answer to the same question — what did it take to make
+        // this? — so they share the one classifier.
+        if !is_error_result(&result) && recorded {
+            let target = journal_target(tool, &args, &result);
+            // A successful paste consumed the clipboard as it stands now (the
+            // order lock is still held, so nothing changed it since).
+            let clipboard = if tool == "doc_region"
+                && args.get("op").and_then(Value::as_str) == Some("paste")
+                && args.get("clipboard").is_none()
+            {
+                self.studio()
+                    .clipboard_pixels()
+                    .map(|(w, h, b)| (w, h, b.to_vec()))
+            } else {
+                None
+            };
+            let args = recorded_args(tool, args, target.as_deref(), clipboard);
+            // The document's own journal: on by default, so every document is a
+            // replayable recipe without anyone having to know to ask first.
+            if journaled {
+                if let Some(id) = &target {
+                    self.studio().journal_append(id, tool, &args);
+                }
+            }
+            // The session recorder (--record) stays opt-in and cross-document:
+            // it captures a whole sitting, which per-document journals cannot
+            // express (that is also why it gets delete_doc and the journal
+            // does not).
+            if let Some(recorder) = recorder {
+                recorder.record(tool, args);
+            }
+        }
+        Ok(result)
+    }
+
+    /// Invoke one tool by name: deserialize the args into that tool's own
+    /// param struct and run the same handler the MCP router used to reach.
+    /// The router is now only the schema registry (it advertises the surface);
+    /// this match is the dispatch — one path for every transport. The
+    /// count-pin and dispatch-coverage tests keep the two in lockstep.
+    async fn invoke(&self, tool: &str, args: Value) -> Result<CallToolResult, ErrorData> {
+        /// Deserialize `args` into the tool's param struct and call its
+        /// handler, mirroring rmcp's extractor: a param mismatch is a
+        /// protocol-level invalid_params, never a tool result.
+        macro_rules! call {
+            ($ty:ty, $handler:ident) => {{
+                let p = serde_json::from_value::<$ty>(args).map_err(|e| {
+                    ErrorData::invalid_params(format!("bad params for tool '{tool}': {e}"), None)
+                })?;
+                self.$handler(Parameters(p)).await
+            }};
+        }
+        Ok(match tool {
+            "doc_create" => call!(DocCreate, doc_create),
+            "list_docs" => call!(ListDocs, list_docs),
+            "doc_info" => call!(DocRef, doc_info),
+            "delete_doc" => call!(DocRef, delete_doc),
+            "doc_layer" => call!(DocLayer, doc_layer),
+            "doc_frame" => call!(DocFrame, doc_frame),
+            "doc_add_tag" => call!(DocAddTag, doc_add_tag),
+            "doc_clear_cel" => call!(DocCel, doc_clear_cel),
+            "doc_checkpoint" => call!(DocCheckpoint, doc_checkpoint),
+            "doc_palette" => call!(DocPalette, doc_palette),
+            "doc_batch" => call!(DocBatch, doc_batch),
+            "doc_draw" => call!(DocDraw, doc_draw),
+            "doc_fx" => call!(DocFx, doc_fx),
+            "doc_region" => call!(DocRegion, doc_region),
+            "doc_select" => call!(DocSelect, doc_select),
+            "doc_paint_grid" => call!(DocPaintGrid, doc_paint_grid),
+            "doc_dither_ramp" => call!(DocDitherRamp, doc_dither_ramp),
+            "doc_look" => call!(DocLook, doc_look),
+            "doc_dump_region" => call!(DocDumpRegion, doc_dump_region),
+            "doc_silhouette" => call!(DocSilhouette, doc_silhouette),
+            "doc_components" => call!(DocComponents, doc_components),
+            "doc_frame_diff" => call!(DocFrameDiff, doc_frame_diff),
+            "doc_seam_report" => call!(DocSeamReport, doc_seam_report),
+            "doc_anim_audit" => call!(DocAnimAudit, doc_anim_audit),
+            "doc_critique" => call!(DocCritique, doc_critique),
+            "doc_contact_sheet" => call!(DocContactSheet, doc_contact_sheet),
+            "doc_ref" => call!(DocRefOp, doc_ref),
+            "doc_export" => call!(DocExport, doc_export),
+            _ => {
+                return Err(ErrorData::invalid_params(
+                    format!("unknown tool: {tool}"),
+                    None,
+                ))
+            }
+        })
     }
 
     /// Enumerate every browsable resource: per document, its structure JSON and a
@@ -560,29 +696,22 @@ impl ServerHandler for Atelier {
         Ok(ListToolsResult::with_all_items(self.advertised_tools()))
     }
 
-    /// Hand-written so we can record each call before delegating to the
-    /// `#[tool_router]`-generated dispatcher. This replicates the body the
-    /// `#[tool_handler]` macro would otherwise emit (build a `ToolCallContext`,
-    /// then `self.tool_router.call(...)`); because we define it, the macro skips
-    /// its own. Application errors come back as Ok `{"error": ...}` payloads (see
-    /// `res`), so we record only steps that actually succeeded — a failed step
-    /// would break `atelier replay`, which fails fast on an error payload.
+    /// Transport glue: snapshot name/args (args default to `{}` to match a
+    /// recipe step's shape), work out who is calling — the one
+    /// transport-specific concern — then hand off to [`Atelier::dispatch`],
+    /// the single path every caller (MCP, CLI, replay, agent) shares. Because
+    /// we define it, the `#[tool_handler]` macro skips generating its own.
     async fn call_tool(
         &self,
         request: rmcp::model::CallToolRequestParams,
         context: rmcp::service::RequestContext<rmcp::RoleServer>,
     ) -> Result<rmcp::model::CallToolResult, rmcp::ErrorData> {
-        // Snapshot tool name + raw args up front (the request is moved into the
-        // dispatcher). args default to `{}` to match a recipe step's shape.
-        // Snapshot name/args before the router consumes the request: both the
-        // journal and the session recorder need them after the call returns.
         let tool = request.name.to_string();
         let args = request
             .arguments
             .clone()
             .map(Value::Object)
             .unwrap_or_else(|| json!({}));
-        let recorder = self.recorder.clone();
         // Caller identity for the log line. `X-Atelier-Caller` header when the
         // client chose a name; otherwise the TCP peer address — each client
         // process holds its own keep-alive connection, so the port separates
@@ -604,66 +733,7 @@ impl ServerHandler for Atelier {
                 })
                 .unwrap_or_else(|| "-".into())
         };
-
-        // For mutations, hold the order lock from before the dispatch until
-        // after the journal write, so journal order can never diverge from
-        // execution order under concurrent sessions. Reads skip it.
-        let journaled = is_journaled(&tool, &args);
-        let recorded = is_recorded(&tool, &args);
-        let write_order = self.write_order.clone();
-        let _order = if recorded {
-            Some(write_order.lock().await)
-        } else {
-            None
-        };
-
-        let started = std::time::Instant::now();
-        let tcc = rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-        let result = match self.tool_router.call(tcc).await {
-            Ok(r) => r,
-            // Protocol-level failure (unknown tool, malformed params): the
-            // client sees a JSON-RPC error; make sure the operator does too.
-            Err(e) => {
-                tracing::error!(%tool, %caller, error = %e, "tool call failed (protocol error)");
-                return Err(e);
-            }
-        };
-        log_call(&tool, &args, &caller, &result, started.elapsed());
-
-        // A read rebuilds nothing, so it belongs in neither recipe. Both
-        // recorders answer to the same question — what did it take to make
-        // this? — so they share the one classifier.
-        if !is_error_result(&result) && recorded {
-            let target = journal_target(&tool, &args, &result);
-            // A successful paste consumed the clipboard as it stands now (the
-            // order lock is still held, so nothing changed it since).
-            let clipboard = if tool == "doc_region"
-                && args.get("op").and_then(Value::as_str) == Some("paste")
-                && args.get("clipboard").is_none()
-            {
-                self.studio()
-                    .clipboard_pixels()
-                    .map(|(w, h, b)| (w, h, b.to_vec()))
-            } else {
-                None
-            };
-            let args = recorded_args(&tool, args, target.as_deref(), clipboard);
-            // The document's own journal: on by default, so every document is a
-            // replayable recipe without anyone having to know to ask first.
-            if journaled {
-                if let Some(id) = &target {
-                    self.studio().journal_append(id, &tool, &args);
-                }
-            }
-            // The session recorder (--record) stays opt-in and cross-document:
-            // it captures a whole sitting, which per-document journals cannot
-            // express (that is also why it gets delete_doc and the journal
-            // does not).
-            if let Some(recorder) = recorder {
-                recorder.record(&tool, args);
-            }
-        }
-        Ok(result)
+        self.dispatch(&tool, args, &caller).await
     }
 
     /// List the browsable resources: structure JSON + frame-0 render per document.
@@ -793,6 +863,24 @@ mod tests {
         assert_eq!(Atelier::registry_tools().len(), 28);
         assert!(tools_text().starts_with("atelier tools — 28 tools\n"));
         assert!(tools_html().contains("28</strong> tools"));
+    }
+
+    #[tokio::test]
+    async fn dispatch_recognizes_every_advertised_tool() {
+        // invoke() is a hand-written match parallel to the router's registry:
+        // add a #[tool] without adding a dispatch arm and every caller hears
+        // "unknown tool" — while list_tools still happily advertises it. This
+        // pins the lockstep the count-pin test alone cannot see.
+        let a = temp_atelier("dispatch-coverage");
+        for t in Atelier::registry_tools() {
+            let name = t.name.to_string();
+            if let Err(e) = a.dispatch(&name, json!({}), "test").await {
+                assert!(
+                    !e.message.contains("unknown tool"),
+                    "{name} is advertised but dispatch has no arm for it"
+                );
+            }
+        }
     }
 
     #[test]

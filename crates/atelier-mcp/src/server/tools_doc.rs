@@ -14,14 +14,14 @@ impl Atelier {
     #[tool(
         description = "Create an editable document (layered canvas + timeline). Returns its id + structure."
     )]
-    async fn doc_create(&self, Parameters(p): Parameters<DocCreate>) -> CallToolResult {
+    pub(crate) async fn doc_create(&self, Parameters(p): Parameters<DocCreate>) -> CallToolResult {
         res(self.studio().doc_create(&p.name, p.width, p.height))
     }
 
     #[tool(
         description = "List documents (id, name, size, frame/layer counts). Optional `prefix` selects a family by id start (`hero-` matches hero-idle, hero-run); `contains` filters by substring; both = AND. Omit both to list everything."
     )]
-    async fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
+    pub(crate) async fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
         res(Ok(self.studio().list_docs_filtered(
             p.prefix.as_deref(),
             p.contains.as_deref(),
@@ -29,12 +29,12 @@ impl Atelier {
     }
 
     #[tool(description = "Get a document's structure: layers, frames, cels, tags.")]
-    async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
+    pub(crate) async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().doc_info(&p.doc_id))
     }
 
     #[tool(description = "Delete a document and all its files.")]
-    async fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
+    pub(crate) async fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().delete_doc(&p.doc_id))
     }
 
@@ -42,7 +42,7 @@ impl Atelier {
     #[tool(
         description = "Layer structure in one tool. `op`: add (new layer on top — name/opacity/blend) · set (change layer `index`'s visible/opacity/blend; omit a field to leave it) · move (`index`→`to_index`) · insert (new layer at `index`) · delete · rename · duplicate · merge_down (`index` onto the layer below). Blend ∈ normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion."
     )]
-    async fn doc_layer(&self, Parameters(p): Parameters<DocLayer>) -> CallToolResult {
+    pub(crate) async fn doc_layer(&self, Parameters(p): Parameters<DocLayer>) -> CallToolResult {
         res(self.studio().doc_layer(
             &p.doc_id, &p.op, p.index, p.to_index, p.name, p.visible, p.opacity, p.blend,
         ))
@@ -51,7 +51,7 @@ impl Atelier {
     #[tool(
         description = "Frame lifecycle + timing in one tool. `op`: add (append a frame; `copy_from` duplicates that frame's cels, `count` appends several at once, `duration_ms` default 100) · duration (set frame `frame`'s `duration_ms`) · insert (new frame at `frame`) · duplicate (`frame`) · delete (`frame`; last frame protected) · move (`frame`→`to_index`). Cels reindex and tag ranges remap. (Animation tags have their own tool: doc_add_tag.)"
     )]
-    async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
+    pub(crate) async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
         let studio = self.studio();
         // delete destroys cels and move can scramble tags — auto-checkpoint the
         if p.op == "delete" || p.op == "move" {
@@ -71,7 +71,7 @@ impl Atelier {
     #[tool(
         description = "Add an animation tag (named frame range). direction: forward/reverse/pingpong."
     )]
-    async fn doc_add_tag(&self, Parameters(p): Parameters<DocAddTag>) -> CallToolResult {
+    pub(crate) async fn doc_add_tag(&self, Parameters(p): Parameters<DocAddTag>) -> CallToolResult {
         res(self.studio().doc_add_tag(
             &p.doc_id,
             &p.name,
@@ -82,14 +82,17 @@ impl Atelier {
     }
 
     #[tool(description = "Clear (empty) a layer×frame cel.")]
-    async fn doc_clear_cel(&self, Parameters(p): Parameters<DocCel>) -> CallToolResult {
+    pub(crate) async fn doc_clear_cel(&self, Parameters(p): Parameters<DocCel>) -> CallToolResult {
         res(self.studio().doc_clear_cel(&p.doc_id, p.layer, p.frame))
     }
 
     #[tool(
         description = "Document history for an all-destructive editor. action: save (snapshot the doc) | list | restore (roll back) | diff (regression deltas vs a snapshot: pixel/colour/contrast change, added/removed/recoloured) | prune. Snapshot before a risky op (form/quantize/fill/palette snap) and restore if it gets worse."
     )]
-    async fn doc_checkpoint(&self, Parameters(p): Parameters<DocCheckpoint>) -> CallToolResult {
+    pub(crate) async fn doc_checkpoint(
+        &self,
+        Parameters(p): Parameters<DocCheckpoint>,
+    ) -> CallToolResult {
         res(self.studio().checkpoint(
             &p.doc_id,
             &p.action,
@@ -101,7 +104,10 @@ impl Atelier {
     #[tool(
         description = "The palette hub. `op`: generate (default) — synthesize a cohesive palette in OKLCh: a single shading ramp (scheme=\"mono\") or a multi-hue scheme (complementary|triadic|analogous|split|tetradic); `count` colours per ramp, `hue_shift` warms light/cools shadow, `sat_curve` (flat|arc|sat-in-shadow), `anchor_midtone` pins the base; returns ramps + flat palette + hex + evenness validation; `set_doc` locks it on a doc. set — lock explicit `colors` [[r,g,b(,a)]] on `doc_id`. snap — snap `doc_id`'s cel (or whole doc if layer/frame omitted) to its palette by perceptual nearest; `alpha` policy preserve|opaque|flatten (`cutoff`,`bg`), `palette` overrides. swap — recolour `from`→`to` across `doc_id` (optional layer/frame), updating the stored palette. report — colour-usage tally for `doc_id` (frame/layer/region, `dupe_threshold`). sync — broadcast one `palette` (or `from_doc`'s) across a document set (`ids` and/or `prefix`)."
     )]
-    async fn doc_palette(&self, Parameters(p): Parameters<DocPalette>) -> CallToolResult {
+    pub(crate) async fn doc_palette(
+        &self,
+        Parameters(p): Parameters<DocPalette>,
+    ) -> CallToolResult {
         let studio = self.studio();
         match p.op.as_deref().unwrap_or("generate") {
             "generate" => {
