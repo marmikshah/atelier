@@ -88,7 +88,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Slice metadata on the document — Aseprite-style named rects that spritesheet consumers read (UI 9-slice bounds, pivot points), never pixels. `op`: add (`name`, `rect` [x0,y0,x1,y1] inclusive corners; optional 9-slice `center` rect inside it; optional `pivot` [x,y]) · delete (by `name`) · list. Slices ride doc_export op=sheet's JSON sidecars (both the default and the engine-standard meta)."
+        description = "Slice metadata on the document — named rects that spritesheet consumers read (UI 9-slice bounds, pivot points), never pixels. `op`: add (`name`, `rect` [x0,y0,x1,y1] inclusive corners; optional 9-slice `center` rect inside it; optional `pivot` [x,y]) · delete (by `name`) · list. Slices ride doc_export op=sheet's JSON sidecars (both the default and the engine-standard meta)."
     )]
     pub(crate) async fn doc_slice(&self, Parameters(p): Parameters<DocSlice>) -> CallToolResult {
         let rect = match &p.rect {
