@@ -28,6 +28,7 @@ mod reference;
 mod set;
 mod store;
 mod view;
+pub use store::HomeOrigin;
 pub use view::LookOptions;
 
 use ops_region::{Clip, Selection};
