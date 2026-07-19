@@ -4,6 +4,42 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/). Below 2.0.0, breaking changes ship in minor
 releases.
 
+## [1.7.0] — 2026-07-19
+
+### Added
+
+- **`atelier call` — the CLI front door.** Every one of the 28 tools is now one
+  in-process call: `atelier call doc_create '{"name":"cat","width":32,"height":32}'`
+  (args positionally, `--file PATH`, or `--stdin`; `--home DIR` for an isolated
+  store). stdout carries the tool's JSON report; the exit code carries the
+  verdict: 0 ok, 1 tool error, 2 bad call. Any agent with a shell can drive
+  atelier now — no registration, no daemon, no client restart.
+- **`atelier tools --schema <name>`** dumps one tool's input JSON schema.
+- **Stdio transport smoke test** — spawns the real binary and speaks JSON-RPC
+  end-to-end, replacing the coverage replay's child-server runs used to give.
+
+### Changed
+
+- **One dispatch path for every caller.** MCP stdio/HTTP, `atelier call`,
+  `replay` and `agent` all funnel through `Atelier::dispatch` (classify →
+  write-order lock → handler → log → journal/record), so no caller can dodge
+  journaling or ordering. The rmcp router now only advertises the surface; a
+  new test pins every advertised tool to a dispatch arm.
+- **`replay` and `agent` run in-process** — they no longer spawn the binary as
+  a child MCP server to speak JSON-RPC to itself. Same recipe format, same
+  recorded→minted id remapping; documents keep journaling themselves through
+  the shared dispatch.
+- **MCP is repositioned as an add-on, not the default.** The installer asks
+  opt-in ("[d]aemon, [s]tdio, or [N]either", default neither; `ATELIER_MODE`
+  and `atelier install` are unchanged for those who want the server); doctor
+  treats a missing MCP registration as a note, not a failure; the README,
+  site, skills and crate descriptions go CLI-first.
+
+### Removed
+
+- The internal stdio JSON-RPC client — nothing in the binary drives a child
+  server anymore.
+
 ## [1.6.0] — 2026-07-19
 
 ### Fixed
