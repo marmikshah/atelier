@@ -19,7 +19,7 @@ pub fn run(args: &[String]) -> i32 {
     let (bind, home_dir) = match (flag_value(args, "--bind"), flag_value(args, "--home")) {
         (Ok(bind), Ok(home)) => (
             bind.unwrap_or_else(|| DEFAULT_BIND.to_string()),
-            home.map(PathBuf::from).unwrap_or_else(default_home),
+            home.map(PathBuf::from).unwrap_or_else(global_home),
         ),
         (Err(e), _) | (_, Err(e)) => {
             eprintln!("atelier: {e}");
@@ -77,14 +77,22 @@ pub(crate) fn home() -> Option<PathBuf> {
         .map(PathBuf::from)
 }
 
-/// Default studio home (`ATELIER_HOME` or `~/.atelier`): the studio owns the
-/// policy (`Studio::default_home`); this delegates so the two never drift.
+/// Default studio home (env → project `./.atelier` → global): the studio owns
+/// the policy (`Studio::default_home`); this delegates so the two never drift.
 pub(crate) fn default_home() -> PathBuf {
     atelier_studio::Studio::default_home()
 }
 
+/// The global store only (`ATELIER_HOME` or `~/.atelier`). The daemon pins
+/// this at install time: a shared background server has no "current
+/// directory", so a project store must never become its default just because
+/// `atelier install` ran from inside one. (`--home` still overrides.)
+pub(crate) fn global_home() -> PathBuf {
+    atelier_studio::Studio::global_home()
+}
+
 fn log_dir() -> PathBuf {
-    default_home().join("logs")
+    global_home().join("logs")
 }
 
 /// The current numeric UID (needed for the launchd gui domain). Errors loud —
