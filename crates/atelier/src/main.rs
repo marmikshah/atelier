@@ -1,14 +1,21 @@
-//! atelier: the pixel-art studio agents can see — an MCP-native, headless editor.
+//! atelier: the pixel-art studio agents can see — a headless editor.
 //!
 //! Agents create layered/animated documents, paint them with drawing primitives,
 //! render PNG previews to inspect, and iterate. Documents live in a flat,
 //! slug-addressed store (no projects, no baked-in style). Engine-agnostic
 //! PNG/sheet/GIF output.
 //!
-//! Transports:
+//! The CLI is the front door — every tool is one in-process call:
 //!
 //! ```text
-//! atelier                        # stdio (default)
+//! atelier call doc_create '{"name":"cat","width":32,"height":32}'
+//! atelier call doc_look '{"doc_id":"cat","out_path":"/tmp/cat.png"}'
+//! ```
+//!
+//! MCP is an optional add-on transport for clients that only speak MCP:
+//!
+//! ```text
+//! atelier                        # stdio (a client spawns it)
 //! atelier --http [ADDR]          # Streamable HTTP, default 127.0.0.1:8765
 //! ATELIER_HTTP=0.0.0.0:8765 atelier
 //!
@@ -26,6 +33,7 @@
 //! atelier tools [--html]         # the tool surface / the reference page
 //! atelier library [rm ...]       # inspect or prune the document store
 //! atelier replay <recipe|id>     # rebuild a document from its journal
+//! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! atelier agent --task <t>       # the one online mode (feature-gated, off by default)
 //! ```
@@ -34,14 +42,14 @@ use atelier_mcp::server;
 
 #[cfg(feature = "agent")]
 mod agent;
+mod call;
 mod doctor;
 mod library;
 mod replay;
 mod service;
 mod skills;
-mod stdio_client;
 
-const HELP: &str = "atelier — the pixel-art studio agents can see (MCP-native, headless).
+const HELP: &str = "atelier — the pixel-art studio agents can see (headless; CLI-first, MCP optional).
 
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
@@ -58,7 +66,13 @@ USAGE:
     atelier replay <recipe|id>    replay a recipe file, or rebuild a document from its
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
-    atelier tools [--html]        list the tools (plain text; --html emits the reference page)
+    atelier call <tool> ['<json>' | --file PATH | --stdin] [--home DIR]
+                                  run one tool call in-process — the whole op
+                                  surface, scriptable from a shell. stdout gets the
+                                  JSON report; exit 0 ok, 1 tool error, 2 bad call
+    atelier tools [--html|--schema <name>]
+                                  list the tools (plain text; --html emits the
+                                  reference page; --schema dumps one input schema)
     atelier doctor                check the whole setup — store, daemon (with a live MCP
                                   probe), client registrations, skills; prints each fix
     atelier skills                the shipped skills; `skills install [--for claude|kimi|cursor|all]`
@@ -207,7 +221,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("library") => std::process::exit(library::run(&args[2..])),
         // Self-diagnostics: store, daemon (live MCP probe), clients, skills.
         Some("doctor") => std::process::exit(doctor::run(&args[2..])),
-        // Runs inside this runtime (it drives a child MCP server over stdio).
+        // The CLI front door: one tool call, in-process, through dispatch.
+        Some("call") => std::process::exit(call::run(&args[2..]).await),
+        // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         // The one online mode: draw a task via an OpenAI-style API. Gated so a
         // default build carries no HTTP stack.
@@ -225,9 +241,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
         // List the tools (generated from the live registry). Plain text by
-        // default; `--html` emits the reference page `make docs` publishes.
+        // default; `--html` emits the reference page `make docs` publishes;
+        // `--schema <name>` dumps one tool's input JSON schema.
         Some("tools") => {
-            if args[2..].iter().any(|a| a == "--html") {
+            let rest = &args[2..];
+            if let Some(name) = flag_value(rest, "--schema") {
+                match server::Atelier::registry_tools()
+                    .into_iter()
+                    .find(|t| t.name.as_ref() == name)
+                {
+                    Some(t) => println!(
+                        "{}",
+                        serde_json::to_string_pretty(&t.input_schema).unwrap_or_default()
+                    ),
+                    None => {
+                        eprintln!("atelier: unknown tool '{name}' — see `atelier tools`");
+                        std::process::exit(2);
+                    }
+                }
+            } else if rest.iter().any(|a| a == "--html") {
                 print!("{}", server::tools_html());
             } else {
                 print!("{}", server::tools_text());

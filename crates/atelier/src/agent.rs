@@ -7,15 +7,19 @@
 //! deterministic. The whole module is gated behind the `agent` cargo feature,
 //! so a default build links no HTTP/TLS stack at all.
 //!
-//! Wiring: the model talks to us over HTTPS; we execute its tool calls against a
-//! child `atelier` stdio MCP server (the same server a real client spawns), so
-//! the entire validated tool path — schemas, arg-checking, journaling — is
-//! reused rather than reimplemented. `doc_look` images are fed back to the model
-//! as base64 data URIs.
+//! Wiring: the model talks to us over HTTPS; we execute its tool calls
+//! in-process through `Atelier::dispatch` — the same single path the MCP
+//! transports and `atelier call` take — so the entire validated tool path
+//! (schemas, arg-checking, journaling) is reused rather than reimplemented.
+//! `doc_look` images are fed back to the model as base64 data URIs.
+
+use std::sync::{Arc, Mutex};
 
 use serde_json::{json, Value};
 
-use crate::stdio_client::{RpcError, StdioClient};
+use atelier_mcp::server::Atelier;
+use atelier_studio::Studio;
+use rmcp::model::CallToolResult;
 
 const USAGE: &str = "\
 usage: atelier agent --task <text|@file> [options]
@@ -212,17 +216,16 @@ fn is_safe_base_url(url: &str) -> bool {
 }
 
 async fn drive(cfg: Config) -> Result<(), String> {
-    let mut server = StdioClient::spawn("atelier-agent", cfg.home.as_deref()).await?;
-    let result = run_loop(&cfg, &mut server).await;
-    // Let the child end cleanly so it flushes its journals before we report.
-    server.shutdown().await;
-    result
+    let atelier = match &cfg.home {
+        Some(dir) => Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir(dir.into())))),
+        None => Atelier::new(),
+    };
+    run_loop(&cfg, &atelier).await
 }
 
 /// The agentic loop: ask the model, execute its tool calls, feed images back.
-async fn run_loop(cfg: &Config, server: &mut StdioClient) -> Result<(), String> {
-    let tools = server.list_tools().await.map_err(|e| e.to_string())?;
-    let oai_tools = to_openai_tools(&tools);
+async fn run_loop(cfg: &Config, atelier: &Atelier) -> Result<(), String> {
+    let oai_tools = to_openai_tools(&Atelier::registry_tools());
     eprintln!(
         "agent: {} tools, model {}, drawing: {}",
         oai_tools.len(),
@@ -299,11 +302,10 @@ async fn run_loop(cfg: &Config, server: &mut StdioClient) -> Result<(), String> 
                 }
             };
 
-            let (text, image) = match server.call_tool(name, args).await {
+            let (text, image) = match atelier.dispatch(name, args, "agent").await {
                 Ok(result) => tool_reply(&result),
                 // A tool error is the model's problem to recover from, not ours.
-                Err(e @ RpcError::Rpc(_)) => (format!("error: {e}"), None),
-                Err(RpcError::Transport(e)) => return Err(e),
+                Err(e) => (format!("error: {e}"), None),
             };
             eprintln!("  → {name} {}", first_line(&text));
             messages.push(json!({"role": "tool", "tool_call_id": id, "content": text}));
@@ -421,23 +423,18 @@ async fn chat(
     Err(format!("{last_err} (after {ATTEMPTS} attempts)"))
 }
 
-/// Convert MCP tool definitions to the OpenAI function-tool shape.
-fn to_openai_tools(mcp: &[Value]) -> Vec<Value> {
+/// Convert the advertised tool registry into the OpenAI function-tool shape.
+fn to_openai_tools(mcp: &[rmcp::model::Tool]) -> Vec<Value> {
     mcp.iter()
-        .filter_map(|t| {
-            let name = t.get("name")?.as_str()?;
-            let params = t
-                .get("inputSchema")
-                .cloned()
-                .unwrap_or_else(|| json!({"type": "object"}));
-            Some(json!({
+        .map(|t| {
+            json!({
                 "type": "function",
                 "function": {
-                    "name": name,
-                    "description": t.get("description").and_then(Value::as_str).unwrap_or(""),
-                    "parameters": params,
+                    "name": t.name,
+                    "description": t.description.as_deref().unwrap_or(""),
+                    "parameters": Value::Object((*t.input_schema).clone()),
                 }
-            }))
+            })
         })
         .collect()
 }
@@ -469,27 +466,16 @@ fn first_line(s: &str) -> String {
     }
 }
 
-/// Condense one tool result into (text summary, optional base64 PNG). rmcp
-/// returns already-base64 image data.
-fn tool_reply(result: &Value) -> (String, Option<String>) {
-    let content = result
-        .get("content")
-        .and_then(Value::as_array)
-        .cloned()
-        .unwrap_or_default();
+/// Condense one tool result into (text summary, optional base64 PNG). The
+/// image data rides back already-base64, ready for a data URI.
+fn tool_reply(result: &CallToolResult) -> (String, Option<String>) {
     let mut text = String::new();
     let mut image = None;
-    for part in &content {
-        match part.get("type").and_then(Value::as_str) {
-            Some("text") => {
-                if let Some(t) = part.get("text").and_then(Value::as_str) {
-                    text.push_str(t);
-                }
-            }
-            Some("image") => {
-                image = part.get("data").and_then(Value::as_str).map(str::to_string);
-            }
-            _ => {}
+    for part in &result.content {
+        if let Some(t) = part.as_text() {
+            text.push_str(&t.text);
+        } else if let Some(i) = part.as_image() {
+            image = Some(i.data.clone());
         }
     }
     if text.is_empty() {
@@ -504,23 +490,23 @@ mod tests {
 
     #[test]
     fn openai_tools_carry_name_description_and_schema() {
-        let mcp = vec![json!({
-            "name": "doc_look",
-            "description": "SEE a frame",
-            "inputSchema": {"type": "object", "properties": {"doc_id": {"type": "string"}}}
-        })];
-        let out = to_openai_tools(&mcp);
-        assert_eq!(out.len(), 1);
-        assert_eq!(out[0]["type"], "function");
-        assert_eq!(out[0]["function"]["name"], "doc_look");
-        assert_eq!(out[0]["function"]["description"], "SEE a frame");
-        assert_eq!(out[0]["function"]["parameters"]["type"], "object");
-    }
-
-    #[test]
-    fn a_tool_missing_a_schema_still_converts() {
-        let out = to_openai_tools(&[json!({"name": "list_docs", "description": "list"})]);
-        assert_eq!(out[0]["function"]["parameters"]["type"], "object");
+        // The real registry is the input; every advertised tool must convert.
+        let registry = Atelier::registry_tools();
+        let out = to_openai_tools(&registry);
+        assert_eq!(out.len(), registry.len());
+        let look = out
+            .iter()
+            .find(|t| t["function"]["name"] == "doc_look")
+            .expect("doc_look converted");
+        assert_eq!(look["type"], "function");
+        assert!(
+            look["function"]["description"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("SEE"),
+            "the description rides along: {look}"
+        );
+        assert_eq!(look["function"]["parameters"]["type"], "object");
     }
 
     // Skill rendering (the built-ins, frontmatter, out-path, selectors) is
