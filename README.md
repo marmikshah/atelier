@@ -29,7 +29,7 @@ Layered, animated, game-ready art — over MCP.</p>
 </p>
 
 <p align="center"><em>Not one pixel was hand-placed. Every frame is a tool call.<br>
-<a href="https://marmikshah.github.io/atelier/">See all four models draw the same ten tasks →</a></em></p>
+<a href="https://marmikshah.github.io/atelier/">See every model draw the same ten tasks →</a></em></p>
 
 ---
 
@@ -39,8 +39,9 @@ Layered, animated, game-ready art — over MCP.</p>
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
-Installs the binary, starts a background daemon, and prints the one line that
-registers it with your MCP client. Restart the client, then just ask:
+Installs the binary, starts a background daemon, and prints the registration
+snippet for your MCP client — Claude Code, Kimi Code or Cursor. Restart the
+client, then just ask:
 
 > *"draw me a blinking cat sprite and export it as a GIF"*
 
@@ -50,16 +51,24 @@ registers it with your MCP client. Restart the client, then just ask:
 
 ### Docker
 
-Prefer a container? The image serves the same HTTP MCP endpoint:
+Prefer a container? One small image — a static musl binary on Alpine (~15 MB),
+multi-arch (amd64 + arm64) — serving the same HTTP MCP endpoint:
 
 ```sh
 docker run -d -p 127.0.0.1:8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier
-claude mcp add --scope user --transport http atelier http://127.0.0.1:8765/mcp
 ```
 
-Multi-arch (amd64 + arm64). Documents persist in the `atelier-data` volume, so
-they survive restarts. There's a [`docker-compose.yml`](docker-compose.yml) if
-you'd rather keep it declarative.
+Then register it, the same shape for every client:
+
+```sh
+claude mcp add --scope user --transport http atelier http://127.0.0.1:8765/mcp   # Claude Code
+# Kimi Code: ~/.kimi-code/mcp.json  ->  "atelier": { "url": "http://127.0.0.1:8765/mcp" }
+# Cursor:    ~/.cursor/mcp.json     ->  "atelier": { "url": "http://127.0.0.1:8765/mcp" }
+```
+
+Documents persist in the `atelier-data` volume, so they survive restarts.
+There's a [`docker-compose.yml`](docker-compose.yml) if you'd rather keep it
+declarative.
 
 ### Other ways
 
