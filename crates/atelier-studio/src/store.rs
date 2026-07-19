@@ -11,22 +11,80 @@ use atelier_core::document::Document;
 
 use super::{slugify, Studio, JOURNAL_FILE, MAX_CANVAS};
 
+/// Why a store root was picked: an explicit override, a project-local
+/// `./.atelier`, or the global home store. doctor surfaces it so "which
+/// store am I on?" is always answerable.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum HomeOrigin {
+    /// `ATELIER_HOME` (or an explicit `--home`) named the store.
+    Env,
+    /// A `./.atelier` directory exists in the working directory.
+    Project,
+    /// The fallback: `~/.atelier` (or the temp dir when no home resolves).
+    Global,
+}
+
 impl Studio {
-    /// The default atelier home: `$ATELIER_HOME`, else `~/.atelier`, else the
-    /// temp dir as a last resort. The one implementation of the policy — the
+    /// The store resolution policy, pure so it is testable without touching
+    /// process env or cwd:
+    ///
+    /// 1. `ATELIER_HOME` wins — scripts, tests and sandboxes name their store.
+    /// 2. A `./.atelier` in the working directory marks a PROJECT store: the
+    ///    art belongs to whatever lives there (a game repo), so ids mint clean
+    ///    (`hero`, never `hero-2` from some other project's hero) and recipes
+    ///    can be committed next to the game. Opt in once per project with
+    ///    `atelier init` — an absent `.atelier` is never created implicitly.
+    /// 3. Otherwise the global home store. Standing in `$HOME` that IS
+    ///    `~/.atelier`, so the global store is just "the project store of the
+    ///    home directory" — one mental model, not two.
+    pub fn resolve_home(
+        env: Option<&std::ffi::OsStr>,
+        cwd: &std::path::Path,
+        home: Option<PathBuf>,
+    ) -> (PathBuf, HomeOrigin) {
+        if let Some(dir) = env {
+            return (PathBuf::from(dir), HomeOrigin::Env);
+        }
+        let local = cwd.join(".atelier");
+        if local.is_dir() {
+            return (local, HomeOrigin::Project);
+        }
+        (
+            home.unwrap_or_else(|| std::env::temp_dir().join("atelier")),
+            HomeOrigin::Global,
+        )
+    }
+
+    /// The default atelier home: the policy resolved at the process's env and
+    /// cwd (see [`resolve_home`]). The one implementation of the policy — the
     /// binary's service manager delegates here instead of keeping a parallel
     /// copy that could drift.
     pub fn default_home() -> PathBuf {
-        std::env::var("ATELIER_HOME")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| {
-                // No resolvable home = a deliberate, visible choice of the temp
-                // dir — not a silent relative "./.atelier" wherever the process
-                // happens to run.
-                dirs::home_dir()
-                    .map(|h| h.join(".atelier"))
-                    .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
-            })
+        Self::default_home_with_origin().0
+    }
+
+    /// [`default_home`] plus why — for doctor, which displays the choice.
+    pub fn default_home_with_origin() -> (PathBuf, HomeOrigin) {
+        Self::resolve_home(
+            std::env::var_os("ATELIER_HOME").as_deref(),
+            &std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+            dirs::home_dir(),
+        )
+    }
+
+    /// The global tier only: `ATELIER_HOME`, else `~/.atelier`. The background
+    /// daemon pins THIS at install time — a shared server has no "current
+    /// directory", so a project store must never become its default; a user
+    /// who wants the daemon on a project store says so with `--home`.
+    pub fn global_home() -> PathBuf {
+        std::env::var("ATELIER_HOME").map(PathBuf::from).unwrap_or_else(|_| {
+            // No resolvable home = a deliberate, visible choice of the temp
+            // dir — not a silent relative "./.atelier" wherever the process
+            // happens to run.
+            dirs::home_dir()
+                .map(|h| h.join(".atelier"))
+                .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
+        })
     }
 
     #[allow(clippy::new_without_default)]
@@ -351,5 +409,52 @@ mod tests {
         assert_eq!(s.frame_count("d").unwrap(), 5);
         assert!(s.frame_count("ghost").is_err());
         assert!(s.frame_count("../x").is_err());
+    }
+
+    /// A scratch cwd with (or without) a `.atelier` for the resolver tests.
+    fn scratch_cwd(tag: &str, with_local: bool) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("atelier-test-resolve-{tag}"));
+        let _ = fs::remove_dir_all(&dir);
+        if with_local {
+            fs::create_dir_all(dir.join(".atelier")).unwrap();
+        } else {
+            fs::create_dir_all(&dir).unwrap();
+        }
+        dir
+    }
+
+    #[test]
+    fn env_wins_over_a_project_store_and_the_global() {
+        let cwd = scratch_cwd("env", true);
+        let (p, origin) = Studio::resolve_home(
+            Some(std::ffi::OsStr::new("/custom")),
+            &cwd,
+            Some(PathBuf::from("/home/u")),
+        );
+        assert_eq!(p, PathBuf::from("/custom"));
+        assert_eq!(origin, HomeOrigin::Env);
+        let _ = fs::remove_dir_all(&cwd);
+    }
+
+    #[test]
+    fn a_present_dot_atelier_marks_a_project_store() {
+        let cwd = scratch_cwd("project", true);
+        let (p, origin) = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
+        assert_eq!(p, cwd.join(".atelier"));
+        assert_eq!(origin, HomeOrigin::Project);
+        let _ = fs::remove_dir_all(&cwd);
+    }
+
+    #[test]
+    fn an_absent_dot_atelier_falls_back_to_global_and_creates_nothing() {
+        let cwd = scratch_cwd("global", false);
+        let (p, origin) = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
+        assert_eq!(p, PathBuf::from("/home/u"));
+        assert_eq!(origin, HomeOrigin::Global);
+        assert!(
+            !cwd.join(".atelier").exists(),
+            "resolution must never stamp a project store implicitly"
+        );
+        let _ = fs::remove_dir_all(&cwd);
     }
 }
