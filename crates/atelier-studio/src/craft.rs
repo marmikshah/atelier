@@ -653,6 +653,98 @@ impl Studio {
             "bg_removed": remove_bg,
         }))
     }
+
+    // -- doc_place_tiles: tilemap stamping from a tileset doc -------------
+
+    /// Stamp tiles from a tileset document onto a canvas cel. The tileset's
+    /// flattened frame 0 is sliced row-major into `tile_w`×`tile_h` tiles
+    /// (index 0 = top-left); each `cells` entry `[cell_x, cell_y, tile_index]`
+    /// stamps that tile source-over at pixel `(cell_x*tile_w, cell_y*tile_h)`,
+    /// clipping at the canvas edges. The tileset is READ, never saved. Cells
+    /// landing entirely off-canvas are counted as skipped, not errors; a bad
+    /// tile index fails the whole call before anything is stamped. Every
+    /// argument is plain JSON, so the call journals and replays
+    /// byte-identically — no pixel buffer ever crosses the wire.
+    pub fn doc_place_tiles(
+        &self,
+        doc_id: &str,
+        layer: usize,
+        frame: usize,
+        tiles_doc: &str,
+        tile_w: u32,
+        tile_h: u32,
+        cells: &[[i32; 3]],
+    ) -> Result<Value, String> {
+        if tile_w == 0 || tile_h == 0 {
+            return Err(format!(
+                "tile size must be >= 1px — got {}x{}",
+                tile_w, tile_h
+            ));
+        }
+        // Read-only: flatten frame 0 and drop the doc — it is never saved.
+        let sheet = {
+            let (_dir, tiles) = self.open(tiles_doc)?;
+            tiles.flatten(0)
+        };
+        let (sw, sh) = (sheet.width(), sheet.height());
+        if sw % tile_w != 0 || sh % tile_h != 0 {
+            return Err(format!(
+                "tileset '{}' is {}x{} — not divisible into {}x{} tiles",
+                tiles_doc, sw, sh, tile_w, tile_h
+            ));
+        }
+        let (cols, rows) = (sw / tile_w, sh / tile_h);
+        let total = cols * rows;
+        // Validate every index BEFORE the canvas is touched: a bad cell fails
+        // the whole call, never leaves a half-stamped tilemap.
+        for &[_cx, _cy, idx] in cells {
+            if idx < 0 || idx as u32 >= total {
+                return Err(format!(
+                    "tile index {} out of range — '{}' has {} tile(s) (0..={})",
+                    idx,
+                    tiles_doc,
+                    total,
+                    total - 1
+                ));
+            }
+        }
+        let (dir, mut doc) = self.open(doc_id)?;
+        if layer >= doc.meta().layers.len() {
+            return Err(format!("no layer {}", layer));
+        }
+        if frame >= doc.meta().frames.len() {
+            return Err(format!("no frame {}", frame));
+        }
+        let (cw, ch) = (doc.meta().w as i64, doc.meta().h as i64);
+        let (mut placed, mut skipped) = (0u64, 0u64);
+        for &[cx, cy, idx] in cells {
+            // i64 math: cell*size is raw caller input and overflows i32 at the
+            // extremes (debug panic / release wrap). Cells passing the skip
+            // test below sit within one tile of the canvas, so the i32 casts
+            // handed to paste_region cannot wrap.
+            let (dx, dy) = (cx as i64 * tile_w as i64, cy as i64 * tile_h as i64);
+            if dx >= cw || dy >= ch || dx + tile_w as i64 <= 0 || dy + tile_h as i64 <= 0 {
+                skipped += 1;
+                continue;
+            }
+            let idx = idx as u32;
+            let (sx, sy) = ((idx % cols) * tile_w, (idx / cols) * tile_h);
+            let tile = image::imageops::crop_imm(&sheet, sx, sy, tile_w, tile_h)
+                .to_image()
+                .into_raw();
+            doc.paste_region(
+                layer, frame, dx as i32, dy as i32, tile_w, tile_h, &tile, true,
+            )?;
+            placed += 1;
+        }
+        doc.save(&dir)?;
+        Ok(json!({
+            "ok": true,
+            "doc_id": doc_id,
+            "tiles_placed": placed,
+            "cells_skipped": skipped,
+        }))
+    }
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
@@ -1184,6 +1276,152 @@ mod tests {
                 .as_i64()
                 .unwrap()
                 > 150
+        );
+    }
+
+    /// An 8x8 sheet holding four solid 4x4 tiles, row-major: red, green,
+    /// blue, white — so each tile index has a distinct colour to assert on.
+    fn tileset(s: &Studio, id: &str) {
+        s.doc_create(id, 8, 8).unwrap();
+        let tile = |x0, y0, c: [u8; 4]| json!({"x0": x0, "y0": y0, "x1": x0 + 3, "y1": y0 + 3, "color": c, "fill": true});
+        draw(s, id, 0, "rect", tile(0, 0, [255, 0, 0, 255]));
+        draw(s, id, 0, "rect", tile(4, 0, [0, 255, 0, 255]));
+        draw(s, id, 0, "rect", tile(0, 4, [0, 0, 255, 255]));
+        draw(s, id, 0, "rect", tile(4, 4, [255, 255, 255, 255]));
+    }
+
+    /// Every file under a doc dir as (relative path, bytes), sorted — the
+    /// before/after fingerprint behind the tileset-is-read-only guarantee.
+    fn dir_bytes(dir: &std::path::Path) -> Vec<(String, Vec<u8>)> {
+        let mut out = Vec::new();
+        let mut stack = vec![dir.to_path_buf()];
+        while let Some(d) = stack.pop() {
+            for ent in fs::read_dir(&d).unwrap().flatten() {
+                let p = ent.path();
+                if p.is_dir() {
+                    stack.push(p);
+                } else {
+                    let rel = p.strip_prefix(dir).unwrap().to_string_lossy().to_string();
+                    out.push((rel, fs::read(&p).unwrap()));
+                }
+            }
+        }
+        out.sort();
+        out
+    }
+
+    #[test]
+    fn place_tiles_stamps_tiles_at_exact_cell_positions() {
+        let s = studio("tiles");
+        tileset(&s, "ts");
+        s.doc_create("c", 8, 8).unwrap();
+        let r = s
+            .doc_place_tiles(
+                "c",
+                0,
+                0,
+                "ts",
+                4,
+                4,
+                &[[0, 0, 0], [1, 0, 1], [0, 1, 2], [1, 1, 3]],
+            )
+            .unwrap();
+        assert_eq!(r["tiles_placed"], json!(4));
+        assert_eq!(r["cells_skipped"], json!(0));
+        let px = |x: i32, y: i32| s.doc_get_pixel("c", Some(0), 0, x, y).unwrap()["rgba"].clone();
+        // Two corners per 4x4 quadrant pin each tile to its exact position.
+        assert_eq!(px(0, 0), json!([255, 0, 0, 255]));
+        assert_eq!(px(3, 3), json!([255, 0, 0, 255]));
+        assert_eq!(px(4, 0), json!([0, 255, 0, 255]));
+        assert_eq!(px(7, 3), json!([0, 255, 0, 255]));
+        assert_eq!(px(0, 4), json!([0, 0, 255, 255]));
+        assert_eq!(px(3, 7), json!([0, 0, 255, 255]));
+        assert_eq!(px(4, 4), json!([255, 255, 255, 255]));
+        assert_eq!(px(7, 7), json!([255, 255, 255, 255]));
+    }
+
+    #[test]
+    fn place_tiles_blends_source_over_and_skips_off_canvas_cells() {
+        let s = studio("tiles-so");
+        tileset(&s, "ts");
+        // Punch a transparent hole in tile 1's top-left pixel (sheet (4,0)).
+        s.doc_clear_region("ts", 0, 0, 4, 0, 4, 0).unwrap();
+        s.doc_create("c", 8, 8).unwrap();
+        draw(
+            &s,
+            "c",
+            0,
+            "rect",
+            json!({"x0": 0, "y0": 0, "x1": 7, "y1": 7, "color": [90, 90, 90, 255], "fill": true}),
+        );
+        // (-1,0) spans x -4..0 and (5,5) starts past the 8x8 canvas: skipped.
+        let r = s
+            .doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, 1], [-1, 0, 2], [5, 5, 3]])
+            .unwrap();
+        assert_eq!(r["tiles_placed"], json!(1));
+        assert_eq!(r["cells_skipped"], json!(2));
+        let px = |x: i32, y: i32| s.doc_get_pixel("c", Some(0), 0, x, y).unwrap()["rgba"].clone();
+        assert_eq!(
+            px(0, 0),
+            json!([90, 90, 90, 255]),
+            "a transparent tile pixel must not punch through the destination"
+        );
+        assert_eq!(px(1, 0), json!([0, 255, 0, 255]));
+        assert_eq!(
+            px(4, 0),
+            json!([90, 90, 90, 255]),
+            "the skipped cells stamped nothing"
+        );
+    }
+
+    #[test]
+    fn place_tiles_rejects_bad_grids_indices_and_docs() {
+        let s = studio("tiles-err");
+        tileset(&s, "ts");
+        s.doc_create("c", 8, 8).unwrap();
+        let e = s.doc_place_tiles("c", 0, 0, "ts", 0, 4, &[]).unwrap_err();
+        assert!(e.contains(">= 1px"), "{e}");
+        let e = s.doc_place_tiles("c", 0, 0, "ts", 4, 0, &[]).unwrap_err();
+        assert!(e.contains(">= 1px"), "{e}");
+        // 8 is not divisible by 3, and 16 exceeds the 8px sheet outright.
+        let e = s.doc_place_tiles("c", 0, 0, "ts", 3, 3, &[]).unwrap_err();
+        assert!(e.contains("not divisible"), "{e}");
+        let e = s.doc_place_tiles("c", 0, 0, "ts", 16, 16, &[]).unwrap_err();
+        assert!(e.contains("not divisible"), "{e}");
+        // A 2x2 grid of tiles has indices 0..=3.
+        let e = s
+            .doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, 0], [1, 1, 4]])
+            .unwrap_err();
+        assert!(e.contains("out of range"), "{e}");
+        assert!(s
+            .doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, -1]])
+            .is_err());
+        let e = s
+            .doc_place_tiles("nope", 0, 0, "ts", 4, 4, &[])
+            .unwrap_err();
+        assert!(e.contains("no document"), "{e}");
+        let e = s.doc_place_tiles("c", 0, 0, "nope", 4, 4, &[]).unwrap_err();
+        assert!(e.contains("no document"), "{e}");
+        // Every failed call above must have left the canvas untouched.
+        assert_eq!(
+            s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+    }
+
+    #[test]
+    fn place_tiles_never_writes_the_tileset() {
+        let s = studio("tiles-ro");
+        tileset(&s, "ts");
+        s.doc_create("c", 8, 8).unwrap();
+        let ts_dir = std::env::temp_dir().join("atelier-craft-tiles-ro/ts");
+        let before = dir_bytes(&ts_dir);
+        s.doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, 0], [1, 1, 3]])
+            .unwrap();
+        assert_eq!(
+            before,
+            dir_bytes(&ts_dir),
+            "placing tiles mutated the tileset document"
         );
     }
 }

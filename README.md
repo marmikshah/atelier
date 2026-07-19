@@ -173,7 +173,7 @@ use a stable name instead. (The CLI and replay log as `cli` / `replay`.)
 (Same-name collisions are already impossible: `doc_create` mints a unique id —
 `hero`, `hero-2`, … — and every caller must use the id it got back.)
 
-**28 tools**, all of them advertised — no profiles to pick, nothing hidden behind
+**30 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
 or see how a call flows through the crates in the

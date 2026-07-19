@@ -483,9 +483,11 @@ impl Atelier {
             "doc_select" => call!(DocSelect, doc_select),
             "doc_paint_grid" => call!(DocPaintGrid, doc_paint_grid),
             "doc_dither_ramp" => call!(DocDitherRamp, doc_dither_ramp),
+            "doc_tile" => call!(DocTile, doc_tile),
             "doc_look" => call!(DocLook, doc_look),
             "doc_dump_region" => call!(DocDumpRegion, doc_dump_region),
             "doc_silhouette" => call!(DocSilhouette, doc_silhouette),
+            "doc_slice" => call!(DocSlice, doc_slice),
             "doc_components" => call!(DocComponents, doc_components),
             "doc_frame_diff" => call!(DocFrameDiff, doc_frame_diff),
             "doc_seam_report" => call!(DocSeamReport, doc_seam_report),
@@ -787,7 +789,7 @@ impl ServerHandler for Atelier {
              doc_anim_audit check what changed and whether the timing reads. doc_checkpoint \
              save before risky ops (quantize, palette snap) — restore rolls back. Export with \
              doc_export (op=sheet|anim|tileset) / op=all. list_docs browses the library. \
-             28 tools, all of them advertised — there is no profile to switch."
+             30 tools, all of them advertised — there is no profile to switch."
                 .into(),
         );
         info
@@ -839,10 +841,10 @@ mod tests {
         let n = Atelier::tool_router().list_all().len();
         // Written into README / tools.html (regen: make docs) / architecture.html.
         // Change the surface, update them in the same commit — this is the reminder.
-        assert_eq!(n, 28, "tool count changed — update the docs");
+        assert_eq!(n, 30, "tool count changed — update the docs");
         assert_eq!(
             Atelier::registry_tools().len(),
-            28,
+            30,
             "every tool is advertised; there is no profile filter"
         );
         let instructions = temp_atelier("info")
@@ -850,7 +852,7 @@ mod tests {
             .instructions
             .unwrap_or_default();
         assert!(
-            instructions.contains("28 tools"),
+            instructions.contains("30 tools"),
             "get_info instructions drifted from the tool count"
         );
     }
@@ -860,9 +862,9 @@ mod tests {
         // `atelier tools` lists the registry only; building a `Studio` for it
         // used to create ~/.atelier/documents as a side effect of `--help`-level
         // work. The router is an associated fn, so nothing here touches disk.
-        assert_eq!(Atelier::registry_tools().len(), 28);
-        assert!(tools_text().starts_with("atelier tools — 28 tools\n"));
-        assert!(tools_html().contains("28</strong> tools"));
+        assert_eq!(Atelier::registry_tools().len(), 30);
+        assert!(tools_text().starts_with("atelier tools — 30 tools\n"));
+        assert!(tools_html().contains("30</strong> tools"));
     }
 
     #[tokio::test]
