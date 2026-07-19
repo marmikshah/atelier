@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 const LABEL: &str = "com.atelier.server";
-const DEFAULT_BIND: &str = "127.0.0.1:8765";
+pub(crate) const DEFAULT_BIND: &str = "127.0.0.1:8765";
 
 /// Entry point for `atelier <install|uninstall|status> [--bind ADDR]
 /// [--home DIR]`. Returns a process exit code.
@@ -336,17 +336,14 @@ fn uninstall() -> i32 {
     }
 }
 
-fn status() -> i32 {
-    let logs = log_dir();
+/// What the OS service manager says about the daemon: `Err` when the probe
+/// itself can't run (e.g. no UID), else `(running, detail)` where detail is
+/// the `state = …` line `status` prints (empty where the OS gives none). The
+/// one launchd/systemd probe — `status` reports it, `doctor` gates on it.
+fn daemon_probe() -> Result<(bool, String), String> {
     match std::env::consts::OS {
         "macos" => {
-            let uid = match current_uid() {
-                Ok(u) => u,
-                Err(e) => {
-                    eprintln!("atelier: {e}");
-                    return 1;
-                }
-            };
+            let uid = current_uid()?;
             let out = Command::new("launchctl")
                 .args(["print", &format!("gui/{uid}/{LABEL}")])
                 .output();
@@ -358,23 +355,82 @@ fn status() -> i32 {
                         .find(|l| l.trim_start().starts_with("state ="))
                         .map(|l| l.trim().to_string())
                         .unwrap_or_else(|| "state = unknown".into());
-                    println!(
-                        "● {LABEL}: loaded ({state})\n  logs: {}/atelier.{{out,err}}.log",
-                        logs.display()
-                    );
-                    0
+                    Ok((true, state))
                 }
-                _ => {
-                    println!("○ {LABEL}: not installed (run `atelier install`)");
-                    1
-                }
+                _ => Ok((false, String::new())),
             }
         }
         "linux" => {
-            let st = Command::new("systemctl")
+            let running = Command::new("systemctl")
                 .args(["--user", "status", "atelier", "--no-pager"])
-                .status();
-            st.map(|s| if s.success() { 0 } else { 1 }).unwrap_or(1)
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false);
+            Ok((running, String::new()))
+        }
+        other => Ok((false, format!("no native daemon support for '{other}'"))),
+    }
+}
+
+/// The daemon's unit file (launchd plist / systemd unit) exists on disk.
+pub(crate) fn daemon_installed() -> bool {
+    let path = match std::env::consts::OS {
+        "macos" => home().map(|h| {
+            h.join("Library")
+                .join("LaunchAgents")
+                .join(format!("{LABEL}.plist"))
+        }),
+        "linux" => home().map(|h| {
+            h.join(".config")
+                .join("systemd")
+                .join("user")
+                .join("atelier.service")
+        }),
+        _ => None,
+    };
+    path.is_some_and(|p| p.exists())
+}
+
+/// The OS service manager reports the daemon loaded/active.
+pub(crate) fn daemon_running() -> bool {
+    daemon_probe().map(|(running, _)| running).unwrap_or(false)
+}
+
+/// The OS service manager the daemon installs into ("launchd" / "systemd").
+pub(crate) fn manager() -> &'static str {
+    match std::env::consts::OS {
+        "macos" => "launchd",
+        "linux" => "systemd",
+        other => other,
+    }
+}
+
+fn status() -> i32 {
+    let logs = log_dir();
+    match std::env::consts::OS {
+        "macos" => match daemon_probe() {
+            Err(e) => {
+                eprintln!("atelier: {e}");
+                1
+            }
+            Ok((true, state)) => {
+                println!(
+                    "● {LABEL}: loaded ({state})\n  logs: {}/atelier.{{out,err}}.log",
+                    logs.display()
+                );
+                0
+            }
+            Ok((false, _)) => {
+                println!("○ {LABEL}: not installed (run `atelier install`)");
+                1
+            }
+        },
+        "linux" => {
+            if daemon_running() {
+                0
+            } else {
+                1
+            }
         }
         other => {
             eprintln!("no native daemon support for '{other}'");

@@ -22,6 +22,7 @@
 //! atelier install                # launchd (macOS) / systemd --user (Linux)
 //! atelier status
 //! atelier uninstall
+//! atelier doctor                 # check the whole setup, print what to fix
 //! atelier tools [--html]         # the tool surface / the reference page
 //! atelier library [rm ...]       # inspect or prune the document store
 //! atelier replay <recipe|id>     # rebuild a document from its journal
@@ -33,6 +34,7 @@ use atelier_mcp::server;
 
 #[cfg(feature = "agent")]
 mod agent;
+mod doctor;
 mod library;
 mod replay;
 mod service;
@@ -57,6 +59,8 @@ USAGE:
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier tools [--html]        list the tools (plain text; --html emits the reference page)
+    atelier doctor                check the whole setup — store, daemon (with a live MCP
+                                  probe), client registrations, skills; prints each fix
     atelier skills                the shipped skills; `skills install [--for claude|kimi|cursor|all]`
                                   writes them for your agent (~/.claude/skills by default, --dir DIR
                                   for anywhere else), `skills show <name>` prints one
@@ -201,6 +205,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         // Inspect / prune the document store.
         Some("library") => std::process::exit(library::run(&args[2..])),
+        // Self-diagnostics: store, daemon (live MCP probe), clients, skills.
+        Some("doctor") => std::process::exit(doctor::run(&args[2..])),
         // Runs inside this runtime (it drives a child MCP server over stdio).
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         // The one online mode: draw a task via an OpenAI-style API. Gated so a
@@ -285,5 +291,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             server::run_http(&addr, allowed, record).await
         }
         None => server::run(record).await,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HELP;
+
+    #[test]
+    fn doctor_is_wired_and_in_usage() {
+        assert!(
+            HELP.contains("atelier doctor"),
+            "USAGE must list the doctor subcommand"
+        );
+        assert!(
+            HELP.contains("atelier library"),
+            "USAGE still lists its neighbours"
+        );
     }
 }
