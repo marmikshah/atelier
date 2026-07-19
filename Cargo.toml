@@ -9,7 +9,7 @@ members = [
 
 # Shared package metadata — each crate inherits with `field.workspace = true`.
 [workspace.package]
-version = "1.6.0"
+version = "1.7.0"
 description = "The pixel-art studio agents can see — layered, animated, game-ready art from the CLI or over MCP."
 edition = "2021"
 license = "MIT"
@@ -37,9 +37,9 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-
 axum = "0.8"
 
 # Internal crates — path for local builds, version for crates.io publish.
-atelier-core = { version = "1.6.0", path = "crates/atelier-core" }
-atelier-studio = { version = "1.6.0", path = "crates/atelier-studio" }
-atelier-mcp = { version = "1.6.0", path = "crates/atelier-mcp" }
+atelier-core = { version = "1.7.0", path = "crates/atelier-core" }
+atelier-studio = { version = "1.7.0", path = "crates/atelier-studio" }
+atelier-mcp = { version = "1.7.0", path = "crates/atelier-mcp" }
 
 # The shipped binary: thin LTO + one codegen unit + stripped symbols (the
 # Docker image already stripped by hand; the release workflow didn't).
