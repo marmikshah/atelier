@@ -4,7 +4,7 @@ Agent onboarding. Keep it short and current; `make` is the entry point.
 
 ## What this is
 
-atelier is a headless pixel-art editor exposed as an MCP server — layered/animated
+atelier is a headless pixel-art editor driven from the CLI or over MCP — layered/animated
 documents, drawing primitives, a see-and-critique loop, and engine-ready
 PNG/sheet/GIF/atlas export. One static Rust binary; no API keys, no network,
 fully deterministic. See [README.md](README.md) and [docs/](docs/).
@@ -35,12 +35,13 @@ from them — change a description, run `make docs` in the same commit.
 
 | command | use |
 |---------|-----|
-| `target/release/atelier` | stdio MCP server (a client spawns it) |
-| `target/release/atelier --http 127.0.0.1:8765` | HTTP MCP server |
-| `atelier install` / `status` / `uninstall` | background daemon (launchd / systemd) |
-| `atelier tools [--html]` | list the tool surface / emit the reference page |
-| `atelier library [rm …]` | inspect or prune the document store (destructive: confirms first) |
+| `atelier call <tool> '<json>'` | one tool call, in-process — the front door (`--file`/`--stdin`/`--home`) |
+| `atelier tools [--html\|--schema <name>]` | list the tool surface / emit the reference page / dump one input schema |
 | `atelier replay <recipe.json or doc-id>` | replay a recipe file, or rebuild a document from its own journal |
+| `atelier library [rm …]` | inspect or prune the document store (destructive: confirms first) |
+| `target/release/atelier` | MCP add-on: stdio server (a client spawns it) |
+| `target/release/atelier --http 127.0.0.1:8765` | MCP add-on: HTTP server |
+| `atelier install` / `status` / `uninstall` | background daemon (launchd / systemd) |
 | `git config core.hooksPath .githooks` | wire the format/lint/test git hooks (once) |
 
 ## Architecture
@@ -49,22 +50,25 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 
 - `atelier-core` — document model + raster ops (no async, no MCP).
 - `atelier-studio` — the `Studio` facade (the library API): one method per tool; single draw/fx ops route through `doc_draw`/`doc_fx` over the core op registry.
-- `atelier-mcp` — the rmcp `#[tool]` server (stdio + HTTP); advertises all **28**
-  tools, with no profile filter. The count is pinned by a test, and another test
-  fails if a tool description names a tool that no longer exists — change the
+- `atelier-mcp` — `Atelier::dispatch`, the one path every caller (CLI, MCP
+  stdio/HTTP, replay, agent) shares, plus the rmcp `#[tool]` server; advertises
+  all **28** tools, with no profile filter. The count is pinned by a test,
+  another test fails if a tool description names a tool that no longer exists,
+  and a third fails if an advertised tool has no dispatch arm — change the
   surface, update the docs in the same commit. A tool earns its place by being
   called: everything with no caller in either an agent transcript or a shipped
   recipe was deleted, not hidden.
-- `atelier` — the binary: arg parsing, the daemon installer, the `replay` runner,
-  and the gated `agent` mode.
+- `atelier` — the binary: arg parsing, `atelier call` (the CLI front door), the
+  daemon installer, the `replay` runner, and the gated `agent` mode.
 
 **The one online exception.** Everything above is offline, keyless and
 deterministic. `atelier agent` is the single command that reaches the network:
 it drives an OpenAI-style API to draw a task on its own. It is behind the
 `agent` cargo feature (OFF by default, so the shipped binary links no HTTP
 stack), reads `OPENAI_API_KEY` from the env, and is never part of a default
-install. It executes the model's tool calls against a child `atelier` stdio
-server, so it reuses the whole validated tool path rather than a second copy.
+install. It dispatches the model's tool calls in-process through
+`Atelier::dispatch`, so it reuses the whole validated tool path rather than a
+second copy.
 
 The workflow guidance is a typed registry (`crates/atelier/src/skills.rs`): Rust
 owns each skill's metadata and the renderers (the standard `SKILL.md`, the agent
