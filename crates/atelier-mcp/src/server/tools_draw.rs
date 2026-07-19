@@ -16,7 +16,10 @@ impl Atelier {
     #[tool(
         description = "Apply MANY ordered drawing ops to one cel in a single call (fast headless editing) — and optionally to several frames at once: `frames` applies the same op list to each listed frame (repeated fixes on a static layer are ONE call). Each op is an object {\"op\":\"<name>\", ...} taking the same fields as the matching doc_draw/doc_fx op. Draw: pencil|line|rect|ellipse|polyline|polygon|stroke|fill|bucket|gradient|scatter|noise|text|fill_cel|clear_cel. FX: blur|outline|drop_shadow|bevel|shade|form|dither|pixel_perfect|flip|shift|symmetry|quantize|replace_color|adjust|gradient_map. Plus glow (batch only; params color?, radius?, intensity?, mode?). Add per-op \"opacity\" (0..255) and/or \"blend_mode\" to composite that op instead of overwriting, or \"erase\": true to make the op an ERASER (every pixel it touches goes transparent — any shape can punch a hole). Honours an active doc_select."
     )]
-    async fn doc_batch(&self, Parameters(mut p): Parameters<DocBatch>) -> CallToolResult {
+    pub(crate) async fn doc_batch(
+        &self,
+        Parameters(mut p): Parameters<DocBatch>,
+    ) -> CallToolResult {
         for op in p.ops.iter_mut() {
             if let Some(obj) = op.as_object_mut() {
                 params::revive_params(obj);
@@ -62,7 +65,7 @@ impl Atelier {
     #[tool(
         description = "Draw ONE shape/mark on a cel — the single-op form of doc_batch (use doc_batch for many ops at once). `op` plus its flattened params: pencil{points,color,size?} (each point is a SEPARATE dab — use polyline or line to CONNECT points into a stroke) · line{x0,y0,x1,y1,color,size?} · rect{x0,y0,x1,y1,color,fill?,size?} · ellipse{cx,cy,rx,ry,color,fill?} · polyline{points,color,size?,closed?} · polygon{points,color,fill?} · stroke{points,color,width?,aa?,snap?} (aa=true softens edges with PARTIAL-ALPHA pixels — set aa=false on a locked palette or before a GIF export, whose alpha is 1-bit) · fill{x,y,color,tolerance?} · gradient{stops,kind?,x0,y0,x1,y1,…} · scatter{colors,x0,y0,x1,y1,density?,seed?,size?} · noise{stops,x0,y0,x1,y1,kind?,scale?,…} · text{x,y,text,color,size?} · fill_cel{color} · box_iso{cx,cy,s,ht,color,light_right?} (shaded isometric cuboid — the hard-surface form primitive: crates, blocks, dice) · panel{x,y,w,h,fill,border?,bevel?} (HUD/UI box: filled body + border + inner bevel; pair with op=text for labels). All also accept opacity, blend_mode, and erase (true = the shape ERASES to transparent instead of drawing). Honours an active doc_select."
     )]
-    async fn doc_draw(&self, Parameters(mut p): Parameters<DocDraw>) -> CallToolResult {
+    pub(crate) async fn doc_draw(&self, Parameters(mut p): Parameters<DocDraw>) -> CallToolResult {
         params::revive_params(&mut p.params);
         let studio = self.studio();
         match p.op.as_str() {
@@ -105,7 +108,7 @@ impl Atelier {
     #[tool(
         description = "Apply ONE transform/effect op that REWORKS existing pixels — the complement of doc_draw (which adds marks), single-op form of doc_batch. `op` plus its flattened params, grouped: **effects** blur{radius,region?} · outline{color,aa?} · drop_shadow{color,dx?,dy?,blur?,shadow_opacity?} · bevel{light,dark,depth?} · shade{light_dir?,steps?,mode?,ramp?,region?} · form{form,light_dir?,ramp?,strength?,region?} · dither{color_a,color_b,pattern?,density?,region?,only_existing?} · pixel_perfect{region?,color?} (thins 1px staircases on OUTLINES/lines — never run it over filled shapes or size>1 strokes, it shreds them); **transform** flip{horizontal?} · shift{dx?,dy?,wrap?} · symmetry{vertical?,horizontal?,keep_left?,keep_top?}; **colour** quantize{colors,max_colors?} · replace_color{from,to,tolerance?} · adjust{hue?,sat?,lum?,region?} · gradient_map{stops,region?} (remap luminance through colour stops, alpha kept). All also accept opacity/blend_mode and honour an active doc_select."
     )]
-    async fn doc_fx(&self, Parameters(mut p): Parameters<DocFx>) -> CallToolResult {
+    pub(crate) async fn doc_fx(&self, Parameters(mut p): Parameters<DocFx>) -> CallToolResult {
         params::revive_params(&mut p.params);
         res(self
             .studio()
@@ -115,7 +118,7 @@ impl Atelier {
     #[tool(
         description = "Region + clipboard ops on a cel. `op`: copy (rect [x0,y0,x1,y1] → clipboard) · cut (copy + clear) · clear (erase the rect) · move (shift the rect by dx,dy in place) · paste (clipboard at x,y; `blend` source-over by default, false overwrites). Clipboard is cross-document."
     )]
-    async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
+    pub(crate) async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         // A replayed paste carries its pixels (journal-embedded) and must not
         // depend on — or clobber — the live clipboard.
         if p.op == "paste" {
@@ -154,7 +157,7 @@ impl Atelier {
     #[tool(
         description = "Set/modify the active pixel selection so subsequent painting ops (fill/gradient/scatter/rect/ellipse/polygon/pencil/line/batch) are confined to it. shape: rect (x0,y0,x1,y1) | ellipse (cx,cy,rx,ry) | color (layer,frame + `color` or sample x,y + tolerance) | all | none (clear). mode: replace (default) | add | subtract | intersect."
     )]
-    async fn doc_select(&self, Parameters(p): Parameters<DocSelect>) -> CallToolResult {
+    pub(crate) async fn doc_select(&self, Parameters(p): Parameters<DocSelect>) -> CallToolResult {
         let shape = p.shape.as_deref().unwrap_or("rect");
         let mode = p.mode.as_deref().unwrap_or("replace");
         let rect = match (p.x0, p.y0, p.x1, p.y1) {
@@ -190,7 +193,10 @@ impl Atelier {
     #[tool(
         description = "Paint a whole region DECLARATIVELY from a character grid (the inverse of doc_dump_region): `legend` maps single characters to [r,g,b(,a)] colours or integer PALETTE INDICES, `rows` are pixel-row strings ('.'/' ' leave the pixel untouched). Emitting a sprite as a grid eliminates the absolute-coordinate failure class — prefer this over long pencil/rect sequences for detailed shapes. Verify by diffing against doc_dump_region. Returns painted/clipped counts — call doc_look to SEE the result. Honours an active selection."
     )]
-    async fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
+    pub(crate) async fn doc_paint_grid(
+        &self,
+        Parameters(p): Parameters<DocPaintGrid>,
+    ) -> CallToolResult {
         let studio = self.studio();
         let r = studio.doc_paint_grid(
             &p.doc_id,
@@ -207,7 +213,10 @@ impl Atelier {
     #[tool(
         description = "Graduated multi-tone dithering across a whole RAMP along an axis (h|v|radial) — master gradient shading, vs the two-colour `dither`. pattern bayer2/4/8 | checker | ign (blue-noise, no visible matrix grid). only_existing repaints just opaque pixels (shade existing art, keep alpha). Honours an active selection. Snap afterwards with doc_palette op=snap if it drifts."
     )]
-    async fn doc_dither_ramp(&self, Parameters(p): Parameters<DocDitherRamp>) -> CallToolResult {
+    pub(crate) async fn doc_dither_ramp(
+        &self,
+        Parameters(p): Parameters<DocDitherRamp>,
+    ) -> CallToolResult {
         res(self.studio().dither_ramp(
             &p.doc_id,
             p.layer,
