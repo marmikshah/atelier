@@ -12,19 +12,26 @@ use atelier_core::document::Document;
 use super::{slugify, Studio, JOURNAL_FILE, MAX_CANVAS};
 
 impl Studio {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Studio {
-        let home = std::env::var("ATELIER_HOME")
+    /// The default atelier home: `$ATELIER_HOME`, else `~/.atelier`, else the
+    /// temp dir as a last resort. The one implementation of the policy — the
+    /// binary's service manager delegates here instead of keeping a parallel
+    /// copy that could drift.
+    pub fn default_home() -> PathBuf {
+        std::env::var("ATELIER_HOME")
             .map(PathBuf::from)
             .unwrap_or_else(|_| {
                 // No resolvable home = a deliberate, visible choice of the temp
                 // dir — not a silent relative "./.atelier" wherever the process
-                // happens to run (matches the binary's service::default_home).
+                // happens to run.
                 dirs::home_dir()
                     .map(|h| h.join(".atelier"))
                     .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
-            });
-        let docs_dir = home.join("documents");
+            })
+    }
+
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Studio {
+        let docs_dir = Self::default_home().join("documents");
         let _ = fs::create_dir_all(&docs_dir);
         Studio {
             docs_dir,

@@ -77,15 +77,10 @@ pub(crate) fn home() -> Option<PathBuf> {
         .map(PathBuf::from)
 }
 
-/// Default studio home (matches `studio::Studio`: `ATELIER_HOME` or `~/.atelier`).
+/// Default studio home (`ATELIER_HOME` or `~/.atelier`): the studio owns the
+/// policy (`Studio::default_home`); this delegates so the two never drift.
 pub(crate) fn default_home() -> PathBuf {
-    if let Some(p) = std::env::var_os("ATELIER_HOME") {
-        return PathBuf::from(p);
-    }
-    let Some(h) = home() else {
-        return std::env::temp_dir().join("atelier");
-    };
-    h.join(".atelier")
+    atelier_studio::Studio::default_home()
 }
 
 fn log_dir() -> PathBuf {
