@@ -77,14 +77,16 @@ impl Studio {
     /// directory", so a project store must never become its default; a user
     /// who wants the daemon on a project store says so with `--home`.
     pub fn global_home() -> PathBuf {
-        std::env::var("ATELIER_HOME").map(PathBuf::from).unwrap_or_else(|_| {
-            // No resolvable home = a deliberate, visible choice of the temp
-            // dir — not a silent relative "./.atelier" wherever the process
-            // happens to run.
-            dirs::home_dir()
-                .map(|h| h.join(".atelier"))
-                .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
-        })
+        std::env::var("ATELIER_HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| {
+                // No resolvable home = a deliberate, visible choice of the temp
+                // dir — not a silent relative "./.atelier" wherever the process
+                // happens to run.
+                dirs::home_dir()
+                    .map(|h| h.join(".atelier"))
+                    .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
+            })
     }
 
     #[allow(clippy::new_without_default)]
