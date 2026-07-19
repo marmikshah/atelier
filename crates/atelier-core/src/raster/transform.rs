@@ -1,5 +1,5 @@
-//! Geometric transforms and scalar fields: area downscale, interior distance
-//! fields and background removal.
+//! Geometric transforms and scalar fields: quarter-turn rotation, scaling,
+//! area downscale, interior distance fields and background removal.
 
 use image::{Rgba, RgbaImage};
 
@@ -9,18 +9,37 @@ use super::colour::oklab_delta;
 /// source footprint, fractional edges included), alpha-weighted so transparent
 /// source pixels don't darken edges. Keeps thin outlines readable where
 /// bilinear smears them. Falls back to nearest when not actually shrinking.
+/// Kept as its own name for the call sites that predate `scale` — this is
+/// `scale`'s `ScaleMethod::AreaAverage` arm.
 pub fn downscale_area(src: &RgbaImage, tw: u32, th: u32) -> RgbaImage {
-    let (sw, sh) = (src.width(), src.height());
-    let (tw, th) = (tw.max(1), th.max(1));
-    if tw >= sw && th >= sh {
-        return image::imageops::resize(src, tw, th, image::imageops::FilterType::Nearest);
+    scale(src, tw, th, ScaleMethod::AreaAverage)
+}
+
+/// How `scale` resamples: `Nearest` replicates whole source pixels (the crisp
+/// pixel-art upscale), `AreaAverage` box-filters (alpha-weighted, so thin
+/// outlines survive a shrink where nearest drops them).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ScaleMethod {
+    Nearest,
+    AreaAverage,
+}
+
+/// Resize to an exact `w`×`h`. A zero dimension clamps to 1 (the same guard
+/// `downscale_area` always had): the raster primitive stays total — rejecting
+/// 0 loudly is the Document wrapper's job, where a `Result` exists for it.
+pub fn scale(img: &RgbaImage, w: u32, h: u32, method: ScaleMethod) -> RgbaImage {
+    let (w, h) = (w.max(1), h.max(1));
+    let (sw, sh) = (img.width(), img.height());
+    // Nearest is also the area filter's own answer when nothing shrinks.
+    if method == ScaleMethod::Nearest || (w >= sw && h >= sh) {
+        return image::imageops::resize(img, w, h, image::imageops::FilterType::Nearest);
     }
-    let mut out = RgbaImage::new(tw, th);
-    let fx = sw as f64 / tw as f64;
-    let fy = sh as f64 / th as f64;
-    for ty in 0..th {
+    let mut out = RgbaImage::new(w, h);
+    let fx = sw as f64 / w as f64;
+    let fy = sh as f64 / h as f64;
+    for ty in 0..h {
         let (y0, y1) = (ty as f64 * fy, (ty + 1) as f64 * fy);
-        for tx in 0..tw {
+        for tx in 0..w {
             let (x0, x1) = (tx as f64 * fx, (tx + 1) as f64 * fx);
             let (mut r, mut g, mut b, mut a, mut area) = (0f64, 0f64, 0f64, 0f64, 0f64);
             let mut sy = y0.floor() as u32;
@@ -30,7 +49,7 @@ pub fn downscale_area(src: &RgbaImage, tw: u32, th: u32) -> RgbaImage {
                 while (sx as f64) < x1 && sx < sw {
                     let wx = x1.min(sx as f64 + 1.0) - x0.max(sx as f64);
                     let wgt = wx * hy;
-                    let p = src.get_pixel(sx, sy).0;
+                    let p = img.get_pixel(sx, sy).0;
                     let pa = p[3] as f64 / 255.0;
                     r += p[0] as f64 * pa * wgt;
                     g += p[1] as f64 * pa * wgt;
@@ -55,6 +74,42 @@ pub fn downscale_area(src: &RgbaImage, tw: u32, th: u32) -> RgbaImage {
         }
     }
     out
+}
+
+/// Rotate about the centre by `turns_cw` quarter-turns CLOCKWISE (1 = 90°,
+/// 2 = 180°, 3 = 270°; values wrap mod 4). The output keeps the INPUT's
+/// dimensions — the canvas must never change size: content rotates about the
+/// centre, what turns outside clips, and the vacated corners come back
+/// transparent. Exact for square images; on odd turns `imageops` swaps
+/// w×h ↔ h×w, so the rotated rectangle is re-anchored about the same centre
+/// (half-pixel offsets round away from zero).
+pub fn rotate_quarters(img: &RgbaImage, turns_cw: u8) -> RgbaImage {
+    let (w, h) = (img.width(), img.height());
+    match turns_cw % 4 {
+        0 => img.clone(),
+        2 => image::imageops::rotate180(img),
+        turns => {
+            // imageops quarter-turns are clockwise (rotate90: top edge →
+            // right edge) and swap dimensions — re-anchor about the centre.
+            let rotated = if turns == 1 {
+                image::imageops::rotate90(img)
+            } else {
+                image::imageops::rotate270(img)
+            };
+            let mut out = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
+            let ox = ((w as f64 - h as f64) / 2.0).round() as i32;
+            let oy = ((h as f64 - w as f64) / 2.0).round() as i32;
+            for y in 0..rotated.height() as i32 {
+                for x in 0..rotated.width() as i32 {
+                    let (tx, ty) = (x + ox, y + oy);
+                    if tx >= 0 && ty >= 0 && (tx as u32) < w && (ty as u32) < h {
+                        out.put_pixel(tx as u32, ty as u32, *rotated.get_pixel(x as u32, y as u32));
+                    }
+                }
+            }
+            out
+        }
+    }
 }
 
 /// Corner-seeded background removal: flood from each opaque corner over pixels
@@ -164,4 +219,127 @@ pub fn interior_distance(fg: &[bool], w: usize, h: usize) -> Vec<f32> {
         *v /= mx;
     }
     d
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every pixel identifiable: red channel = 10 + 20·(y·w + x).
+    fn tagged(w: u32, h: u32) -> RgbaImage {
+        let mut img = RgbaImage::new(w, h);
+        for y in 0..h {
+            for x in 0..w {
+                let v = (10 + 20 * (y * w + x)) as u8;
+                img.put_pixel(x, y, Rgba([v, 0, 0, 255]));
+            }
+        }
+        img
+    }
+
+    /// ImageBuffer has no PartialEq — compare dims + raw bytes.
+    fn same(a: &RgbaImage, b: &RgbaImage) -> bool {
+        a.dimensions() == b.dimensions() && a.as_raw() == b.as_raw()
+    }
+
+    #[test]
+    fn rotate_quarters_cw90_keeps_dims_and_clips_the_far_corners() {
+        // 2 wide × 4 tall: a 90° CW turn makes the content 4 wide × 2 tall
+        // about the same centre, so the top and bottom rows rotate off the
+        // sides and only the middle band survives, re-centred.
+        let src = tagged(2, 4);
+        let out = rotate_quarters(&src, 1);
+        assert_eq!(out.dimensions(), (2, 4), "canvas must not change size");
+        // The surviving band lands centred: source (x,y) -> output (2-y, x+1).
+        assert_eq!(out.get_pixel(1, 1).0, [50, 0, 0, 255]); // was (0,1)
+        assert_eq!(out.get_pixel(1, 2).0, [70, 0, 0, 255]); // was (1,1)
+        assert_eq!(out.get_pixel(0, 1).0, [90, 0, 0, 255]); // was (0,2)
+        assert_eq!(out.get_pixel(0, 2).0, [110, 0, 0, 255]); // was (1,2)
+        // Rows 0 and 3 are the corners the turn vacated.
+        for x in 0..2 {
+            assert_eq!(out.get_pixel(x, 0).0, [0, 0, 0, 0], "({x},0)");
+            assert_eq!(out.get_pixel(x, 3).0, [0, 0, 0, 0], "({x},3)");
+        }
+        // The top/bottom source rows (10, 30, 130, 150) rotated off-canvas.
+        for p in out.pixels() {
+            assert!(!matches!(p.0[0], 10 | 30 | 130 | 150));
+        }
+    }
+
+    #[test]
+    fn rotate_quarters_square_turn_is_exact() {
+        // No clipping on a square: [a b; c d] -> CW -> [c a; d b].
+        let src = tagged(2, 2);
+        let out = rotate_quarters(&src, 1);
+        assert_eq!(out.get_pixel(0, 0).0, [50, 0, 0, 255]);
+        assert_eq!(out.get_pixel(1, 0).0, [10, 0, 0, 255]);
+        assert_eq!(out.get_pixel(0, 1).0, [70, 0, 0, 255]);
+        assert_eq!(out.get_pixel(1, 1).0, [30, 0, 0, 255]);
+    }
+
+    #[test]
+    fn rotate_quarters_180_twice_is_identity_on_a_non_square_image() {
+        let src = tagged(2, 4);
+        assert!(same(&rotate_quarters(&rotate_quarters(&src, 2), 2), &src));
+    }
+
+    #[test]
+    fn rotate_quarters_inverse_turns_cancel_and_full_turns_are_no_ops() {
+        let src = tagged(3, 3);
+        assert!(same(&rotate_quarters(&rotate_quarters(&src, 1), 3), &src));
+        assert!(same(&rotate_quarters(&rotate_quarters(&src, 3), 1), &src));
+        assert!(same(&rotate_quarters(&src, 0), &src));
+        assert!(same(&rotate_quarters(&src, 4), &src));
+    }
+
+    #[test]
+    fn scale_nearest_replicates_each_pixel_as_a_block() {
+        let src = tagged(2, 2);
+        let out = scale(&src, 4, 4, ScaleMethod::Nearest);
+        assert_eq!(out.dimensions(), (4, 4));
+        for y in 0..4 {
+            for x in 0..4 {
+                assert_eq!(out.get_pixel(x, y).0, src.get_pixel(x / 2, y / 2).0, "({x},{y})");
+            }
+        }
+    }
+
+    #[test]
+    fn scale_area_average_averages_each_source_block() {
+        // 4×4 -> 2×2: each output pixel is the mean of its exact 2×2 source
+        // footprint. Values x·40 + y·15 give half-integer means on purpose,
+        // pinning the rounding too.
+        let mut src = RgbaImage::new(4, 4);
+        for y in 0..4 {
+            for x in 0..4 {
+                src.put_pixel(x, y, Rgba([(x * 40 + y * 15) as u8, 0, 0, 255]));
+            }
+        }
+        let out = scale(&src, 2, 2, ScaleMethod::AreaAverage);
+        assert_eq!(out.dimensions(), (2, 2));
+        assert_eq!(out.get_pixel(0, 0).0, [28, 0, 0, 255]); // 27.5
+        assert_eq!(out.get_pixel(1, 0).0, [108, 0, 0, 255]); // 107.5
+        assert_eq!(out.get_pixel(0, 1).0, [58, 0, 0, 255]); // 57.5
+        assert_eq!(out.get_pixel(1, 1).0, [138, 0, 0, 255]); // 137.5
+    }
+
+    #[test]
+    fn scale_clamps_zero_dimensions_to_one() {
+        // The primitive stays total like downscale_area; the Document wrapper
+        // is the one that rejects 0 loudly.
+        let src = tagged(2, 2);
+        assert_eq!(scale(&src, 0, 0, ScaleMethod::Nearest).dimensions(), (1, 1));
+        assert_eq!(scale(&src, 0, 3, ScaleMethod::AreaAverage).dimensions(), (1, 3));
+    }
+
+    #[test]
+    fn downscale_area_still_falls_back_to_nearest_when_growing() {
+        // Regression guard for the shim: existing callers (studio reference
+        // imports) rely on the nearest upscale path.
+        let src = tagged(2, 2);
+        let out = downscale_area(&src, 4, 4);
+        assert_eq!(out.dimensions(), (4, 4));
+        assert_eq!(out.get_pixel(0, 0).0, src.get_pixel(0, 0).0);
+        assert_eq!(out.get_pixel(3, 3).0, src.get_pixel(1, 1).0);
+    }
 }
