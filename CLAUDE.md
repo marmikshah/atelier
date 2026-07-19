@@ -96,4 +96,7 @@ The MCP server ships no prompts — the skills replaced them.
 ## Dev notes
 
 - Config is via `ATELIER_*` env vars (see `.env.example`); the tool holds no secrets.
+- Stores resolve per call: `ATELIER_HOME`/`--home` → `./.atelier` when the
+  directory has one (`atelier init` stamps a project store) → `~/.atelier`.
+  The daemon always pins the global store at install time.
 - Wire the format/lint/test gate into git once: `git config core.hooksPath .githooks`.
