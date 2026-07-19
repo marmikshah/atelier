@@ -22,7 +22,9 @@ pub use colour::{
 pub use noise::{
     dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
 };
-pub use transform::{downscale_area, interior_distance, remove_background};
+pub use transform::{
+    ScaleMethod, downscale_area, interior_distance, remove_background, rotate_quarters, scale,
+};
 
 // -- drawing helpers (overwrite semantics; alpha 0 = erase) -----------------
 
@@ -259,6 +261,68 @@ pub fn stroke_ribbon(img: &mut RgbaImage, pts: &[(f32, f32, f32)], color: [u8; 4
             img.put_pixel(px as u32, py as u32, Rgba(over(dst, src)));
         }
     }
+}
+
+/// Deepest de Casteljau split `flatten_bezier` will follow. 2^16 segments out
+/// of one control polygon is far past pixel precision; the cap is what keeps a
+/// degenerate polygon (every point identical, or ends that meet with the middle
+/// far away) bounded instead of recursing until the stack gives out.
+const BEZIER_MAX_DEPTH: u32 = 16;
+
+/// Flatten an arbitrary-degree Bezier control polygon (2 = line, 3 = quadratic,
+/// 4 = cubic, …) to a polyline by recursive de Casteljau subdivision: split at
+/// t=0.5 until every interior control point sits within `tolerance` pixels of
+/// the endpoints' chord, then emit the chord. The polygon's own endpoints are
+/// kept exactly — a curve must land where its ends were placed — and
+/// consecutive duplicate vertices are collapsed. Fewer than 2 points is not a
+/// curve and flattens to nothing.
+pub fn flatten_bezier(points: &[(f32, f32)], tolerance: f32) -> Vec<(f32, f32)> {
+    if points.len() < 2 {
+        return Vec::new();
+    }
+    if points.len() == 2 {
+        return points.to_vec();
+    }
+    let mut out = vec![points[0]];
+    flatten_bezier_into(points, tolerance.max(0.0), 0, &mut out);
+    out.dedup();
+    out
+}
+
+/// Recursion core of `flatten_bezier`: appends only each accepted chord's LAST
+/// endpoint, so neighbouring splits share a vertex without emitting it twice.
+fn flatten_bezier_into(ctrl: &[(f32, f32)], tol: f32, depth: u32, out: &mut Vec<(f32, f32)>) {
+    let (ax, ay) = ctrl[0];
+    let last = ctrl[ctrl.len() - 1];
+    let flat = depth >= BEZIER_MAX_DEPTH
+        || ctrl[1..ctrl.len() - 1]
+            .iter()
+            .all(|&(px, py)| point_seg(px, py, ax, ay, last.0, last.1).0 <= tol);
+    if flat {
+        out.push(last);
+        return;
+    }
+    // de Casteljau at t=0.5: each reduction row's first element extends the
+    // left child polygon, its last element the (reversed) right one.
+    let (mut left, mut right) = (
+        Vec::with_capacity(ctrl.len()),
+        Vec::with_capacity(ctrl.len()),
+    );
+    let mut row: Vec<(f32, f32)> = ctrl.to_vec();
+    left.push(row[0]);
+    right.push(row[row.len() - 1]);
+    while row.len() > 1 {
+        let mut next = Vec::with_capacity(row.len() - 1);
+        for w in row.windows(2) {
+            next.push(((w[0].0 + w[1].0) * 0.5, (w[0].1 + w[1].1) * 0.5));
+        }
+        left.push(next[0]);
+        right.push(next[next.len() - 1]);
+        row = next;
+    }
+    right.reverse();
+    flatten_bezier_into(&left, tol, depth + 1, out);
+    flatten_bezier_into(&right, tol, depth + 1, out);
 }
 
 // -- built-in 3×5 pixel font ------------------------------------------------
@@ -804,6 +868,61 @@ mod tests {
         assert_eq!(clamp_region(8, 8, 2, 2, 5, 5), Some((2, 2, 4, 4)));
         // Fully outside → None.
         assert_eq!(clamp_region(20, 20, 30, 30, 5, 5), None);
+    }
+
+    #[test]
+    fn flatten_bezier_two_points_is_the_straight_segment() {
+        let seg = [(1.0, 2.0), (5.0, 6.0)];
+        assert_eq!(flatten_bezier(&seg, 0.25), seg.to_vec());
+        // Fewer than two points is not a curve: nothing to flatten to.
+        assert!(flatten_bezier(&[], 0.25).is_empty());
+        assert!(flatten_bezier(&[(1.0, 2.0)], 0.25).is_empty());
+    }
+
+    #[test]
+    fn flatten_bezier_keeps_the_endpoints_exact() {
+        let cubic = [(0.0, 0.0), (10.0, 20.0), (30.0, 20.0), (40.0, 0.0)];
+        let flat = flatten_bezier(&cubic, 0.25);
+        assert!(flat.len() > 2, "a bent cubic must subdivide, not collapse");
+        assert_eq!(flat.first(), Some(&cubic[0]));
+        assert_eq!(flat.last(), Some(&cubic[3]));
+    }
+
+    #[test]
+    fn flatten_bezier_quadratic_bows_toward_the_control_point() {
+        // Control point pulled 8px above the chord: the flattened apex must
+        // leave the chord on the control point's side — nearer the control
+        // point than the chord's own midpoint is.
+        let quad = [(0.0, 8.0), (8.0, 0.0), (16.0, 8.0)];
+        let flat = flatten_bezier(&quad, 0.25);
+        let apex = flat[flat.len() / 2];
+        let dist = |(x0, y0): (f32, f32), (x1, y1): (f32, f32)| {
+            ((x1 - x0).powi(2) + (y1 - y0).powi(2)).sqrt()
+        };
+        let chord_mid = (8.0, 8.0);
+        assert!(
+            dist(apex, quad[1]) < dist(chord_mid, quad[1]),
+            "apex {apex:?} did not move toward the control point"
+        );
+        // And it must sit well off the chord — a straight line would score 0.
+        assert!(point_seg(apex.0, apex.1, 0.0, 8.0, 16.0, 8.0).0 > 1.0);
+    }
+
+    #[test]
+    fn flatten_bezier_degenerate_polygons_terminate() {
+        // Collinear polygon: already flat against its own chord.
+        assert_eq!(
+            flatten_bezier(&[(0.0, 0.0), (5.0, 5.0), (9.0, 9.0)], 0.25),
+            vec![(0.0, 0.0), (9.0, 9.0)]
+        );
+        // Every point identical: collapses to a single dot.
+        assert_eq!(flatten_bezier(&[(3.0, 3.0); 5], 0.25), vec![(3.0, 3.0)]);
+        // Ends that meet with the middle far away subdivide until flat —
+        // bounded by the depth cap, never a hang.
+        let looped = flatten_bezier(&[(0.0, 0.0), (100.0, 100.0), (0.0, 0.0)], 0.25);
+        assert!(looped.len() <= (1usize << BEZIER_MAX_DEPTH) + 1);
+        assert_eq!(looped.first(), Some(&(0.0, 0.0)));
+        assert_eq!(looped.last(), Some(&(0.0, 0.0)));
     }
 }
 

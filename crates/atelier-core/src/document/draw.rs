@@ -6,6 +6,11 @@ use crate::raster;
 
 use super::{AlphaSnap, Document};
 
+/// Flatten tolerance for `Document::curve`, in pixels. A quarter pixel sits
+/// under the stroke core's 0.5-coverage edge, so the flattened polyline paints
+/// identically to the true curve at any width.
+const CURVE_TOLERANCE: f32 = 0.25;
+
 impl Document {
     pub fn pencil(
         &mut self,
@@ -326,6 +331,52 @@ impl Document {
         Ok(())
     }
 
+    /// Rotate a cel's content by `turns_cw` quarter-turns CLOCKWISE (1 = 90°,
+    /// 2 = 180°, 3 = 270°; values wrap mod 4). Like `flip`, the cel is
+    /// normalised to the full canvas first, so the content turns about the
+    /// canvas centre and the canvas never changes size: what rotates outside
+    /// clips, the vacated corners come back transparent. Exact on a square
+    /// canvas.
+    pub fn rotate_cel(&mut self, layer: usize, frame: usize, turns_cw: u8) -> Result<(), String> {
+        let img = self.cel_canvas(layer, frame)?;
+        *img = raster::rotate_quarters(img, turns_cw);
+        Ok(())
+    }
+
+    /// Resize a cel's image to exactly `w`×`h`, keeping its (x,y) anchor —
+    /// the document canvas is untouched, so a cel that outgrows the canvas
+    /// clips at composite as usual. `method` is "nearest" (crisp pixel
+    /// replication) or "area-average" (the alpha-weighted box filter, kinder
+    /// to thin outlines on shrinks). A missing cel or a zero dimension is a
+    /// caller mistake and errors loudly, not a silent no-op.
+    pub fn scale_cel(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        w: u32,
+        h: u32,
+        method: &str,
+    ) -> Result<(), String> {
+        self.check_cel(layer, frame)?;
+        if w == 0 || h == 0 {
+            return Err(format!("scale_cel needs w/h >= 1 (got {w}x{h})"));
+        }
+        let Some((_, _, img)) = self.cels.get_mut(&(layer, frame)) else {
+            return Err(format!("no cel at layer {layer} frame {frame} to scale"));
+        };
+        *img = match method {
+            "nearest" => image::imageops::resize(img, w, h, image::imageops::FilterType::Nearest),
+            "area-average" => raster::downscale_area(img, w, h),
+            other => {
+                return Err(format!(
+                    "unknown scale method '{other}' — use nearest|area-average"
+                ))
+            }
+        };
+        self.mark_dirty(layer, frame);
+        Ok(())
+    }
+
     /// Draw a variable-width, anti-aliased stroke through `pts` (each
     /// `(x, y, full_width)`) as the union of round-capped capsules — the
     /// clean-by-construction stroke core. Connected (union, no gaps between
@@ -379,6 +430,30 @@ impl Document {
             self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
         }
         Ok(())
+    }
+
+    /// Stroke a Bezier curve through the control polygon `points` (2 = line,
+    /// 3 = quadratic, 4 = cubic, more = higher degree) with a constant
+    /// `width`. The polygon is flattened to a sub-pixel polyline and painted
+    /// by the same coverage core as [`Self::stroke_f`] — same `color`, `aa`
+    /// and `snap` semantics as a straight stroke, bent. Fewer than 2 control
+    /// points is not a curve and errors.
+    pub fn curve(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        points: &[(f32, f32)],
+        color: [u8; 4],
+        width: f32,
+        aa: bool,
+        snap: bool,
+    ) -> Result<(), String> {
+        if points.len() < 2 {
+            return Err("curve needs at least 2 control points".into());
+        }
+        let flat = raster::flatten_bezier(points, CURVE_TOLERANCE);
+        let pts: Vec<(f32, f32, f32)> = flat.iter().map(|&(x, y)| (x, y, width)).collect();
+        self.stroke_f(layer, frame, &pts, color, aa, snap)
     }
 
     /// Stamp `text` left-to-right with the built-in 3×5 pixel font, top-left at
@@ -511,5 +586,195 @@ impl Document {
             }
         }
         Ok((painted, clipped))
+    }
+}
+
+#[cfg(test)]
+mod xform_tests {
+    use super::*;
+
+    fn px(v: u8) -> [u8; 4] {
+        [v, 0, 0, 255]
+    }
+
+    /// 2×2 cel with one identifiable shade per pixel.
+    fn tagged_cel() -> RgbaImage {
+        let mut cel = RgbaImage::new(2, 2);
+        cel.put_pixel(0, 0, Rgba(px(10)));
+        cel.put_pixel(1, 0, Rgba(px(20)));
+        cel.put_pixel(0, 1, Rgba(px(30)));
+        cel.put_pixel(1, 1, Rgba(px(40)));
+        cel
+    }
+
+    #[test]
+    fn rotate_cel_turns_content_clockwise_in_place() {
+        // 4 wide × 2 tall canvas: a 90° CW turn sends the top edge to the
+        // right — the middle two columns survive as a centred 2×2 block, the
+        // outer columns rotate off the top/bottom and clip.
+        let mut d = Document::new("t", 4, 2);
+        d.pencil(0, 0, &[(1, 0)], px(10), 1).unwrap();
+        d.pencil(0, 0, &[(2, 0)], px(20), 1).unwrap();
+        d.pencil(0, 0, &[(1, 1)], px(30), 1).unwrap();
+        d.pencil(0, 0, &[(2, 1)], px(40), 1).unwrap();
+        d.pencil(0, 0, &[(0, 0)], px(50), 1).unwrap(); // clips
+        d.pencil(0, 0, &[(3, 1)], px(60), 1).unwrap(); // clips
+        d.dirty.clear(); // isolate the op's own dirty-marking
+        d.rotate_cel(0, 0, 1).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 2, 0).unwrap(), px(10)); // top -> right
+        assert_eq!(d.get_pixel(0, 0, 2, 1).unwrap(), px(20));
+        assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), px(30));
+        assert_eq!(d.get_pixel(0, 0, 1, 1).unwrap(), px(40));
+        for &(x, y) in &[(0, 0), (3, 0), (0, 1), (3, 1)] {
+            assert_eq!(d.get_pixel(0, 0, x, y).unwrap(), [0, 0, 0, 0], "({x},{y})");
+        }
+        // Canvas size is untouched and the op marks the cel for save.
+        assert_eq!((d.meta().w, d.meta().h), (4, 2));
+        assert!(d.dirty.contains(&(0, 0)));
+    }
+
+    #[test]
+    fn rotate_cel_full_turns_180s_and_bad_indices() {
+        let mut d = Document::new("t", 3, 2);
+        d.pencil(0, 0, &[(0, 0)], px(10), 1).unwrap();
+        d.rotate_cel(0, 0, 0).unwrap();
+        d.rotate_cel(0, 0, 4).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), px(10));
+        // 180 twice returns the art exactly, even on a non-square canvas.
+        d.rotate_cel(0, 0, 2).unwrap();
+        d.rotate_cel(0, 0, 2).unwrap();
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), px(10));
+        assert!(d.rotate_cel(9, 0, 1).is_err());
+        assert!(d.rotate_cel(0, 9, 1).is_err());
+    }
+
+    #[test]
+    fn scale_cel_resizes_the_cel_and_keeps_its_anchor() {
+        let mut d = Document::new("t", 8, 8);
+        d.set_cel(0, 0, 3, 2, tagged_cel()).unwrap();
+        d.dirty.clear();
+        d.scale_cel(0, 0, 4, 4, "nearest").unwrap();
+        // Each source pixel is now a 2×2 block hanging off the same anchor.
+        assert_eq!(d.get_pixel(0, 0, 3, 2).unwrap(), px(10));
+        assert_eq!(d.get_pixel(0, 0, 4, 3).unwrap(), px(10));
+        assert_eq!(d.get_pixel(0, 0, 6, 5).unwrap(), px(40));
+        // Outside the cel still reads transparent; the canvas didn't move.
+        assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [0, 0, 0, 0]);
+        assert_eq!(d.get_pixel(0, 0, 7, 6).unwrap(), [0, 0, 0, 0]);
+        assert_eq!((d.meta().w, d.meta().h), (8, 8));
+        let (x, y, img) = d.cels.get(&(0, 0)).unwrap();
+        assert_eq!((*x, *y), (3, 2), "anchor must survive the resize");
+        assert_eq!(img.dimensions(), (4, 4));
+        assert!(d.dirty.contains(&(0, 0)));
+    }
+
+    #[test]
+    fn scale_cel_area_average_shrinks_to_the_block_mean() {
+        let mut d = Document::new("t", 8, 8);
+        d.set_cel(0, 0, 0, 0, tagged_cel()).unwrap();
+        d.scale_cel(0, 0, 1, 1, "area-average").unwrap();
+        // Mean of 10/20/30/40 with opaque alpha throughout.
+        assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), px(25));
+    }
+
+    #[test]
+    fn scale_cel_rejects_bad_input_loudly() {
+        let mut d = Document::new("t", 8, 8);
+        // Nothing to scale is a caller mistake, not a no-op.
+        assert!(d
+            .scale_cel(0, 0, 4, 4, "nearest")
+            .unwrap_err()
+            .contains("no cel"));
+        d.set_cel(0, 0, 0, 0, tagged_cel()).unwrap();
+        assert!(d.scale_cel(0, 0, 0, 4, "nearest").is_err());
+        assert!(d.scale_cel(0, 0, 4, 0, "nearest").is_err());
+        assert!(d
+            .scale_cel(0, 0, 4, 4, "cubic")
+            .unwrap_err()
+            .contains("unknown scale method"));
+        assert!(d
+            .scale_cel(9, 0, 4, 4, "nearest")
+            .unwrap_err()
+            .contains("no layer"));
+        // Failed calls leave the cel alone.
+        assert_eq!(d.cels.get(&(0, 0)).unwrap().2.dimensions(), (2, 2));
+    }
+
+    #[test]
+    fn rotate_and_scale_persist_through_save() {
+        // The dirty marking is only real if a save writes the changed cel:
+        // save clears the dirty set, so a skipped mark would leave the OLD
+        // pixels on disk and the reload below would catch it.
+        let dir = std::env::temp_dir().join(format!("atelier-xform-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let mut d = Document::new("t", 4, 4);
+        d.pencil(0, 0, &[(0, 0)], px(10), 1).unwrap();
+        d.save(&dir).unwrap();
+        d.rotate_cel(0, 0, 1).unwrap();
+        d.save(&dir).unwrap();
+        let back = Document::load(&dir).unwrap();
+        // 90° CW on a square sends the top-left corner to the top-right.
+        assert_eq!(back.get_pixel(0, 0, 3, 0).unwrap(), px(10));
+        assert_eq!(back.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]);
+
+        let dir2 = std::env::temp_dir().join(format!("atelier-xform2-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir2);
+        let mut d2 = Document::new("t", 8, 8);
+        d2.set_cel(0, 0, 1, 1, tagged_cel()).unwrap();
+        d2.save(&dir2).unwrap();
+        d2.scale_cel(0, 0, 4, 4, "nearest").unwrap();
+        d2.save(&dir2).unwrap();
+        let back2 = Document::load(&dir2).unwrap();
+        // Anchor preserved, content doubled: the 2×2 cel now spans (1,1)..(4,4).
+        assert_eq!(back2.get_pixel(0, 0, 1, 1).unwrap(), px(10));
+        assert_eq!(back2.get_pixel(0, 0, 4, 4).unwrap(), px(40));
+        assert_eq!(back2.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]);
+        let _ = std::fs::remove_dir_all(&dir);
+        let _ = std::fs::remove_dir_all(&dir2);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn curve_paints_both_endpoints_with_hard_pixels() {
+        let mut d = Document::new("t", 16, 16);
+        d.curve(
+            0,
+            0,
+            &[(1.0, 8.0), (8.0, 1.0), (15.0, 8.0)],
+            [255, 0, 0, 255],
+            1.0,
+            false,
+            false,
+        )
+        .unwrap();
+        // The curve lands exactly on the control polygon's endpoints.
+        assert_eq!(d.get_pixel(0, 0, 1, 8).unwrap(), [255, 0, 0, 255]);
+        assert_eq!(d.get_pixel(0, 0, 15, 8).unwrap(), [255, 0, 0, 255]);
+        // ... and its middle is pulled toward the (8,1) control point, off
+        // the y=8 chord a plain line would paint.
+        let lifted = (0..8).any(|y| d.get_pixel(0, 0, 8, y).unwrap()[3] == 255);
+        assert!(lifted, "column x=8 stayed on the chord — no curve");
+        // aa=false: hard pixels only, no fractional coverage anywhere.
+        for y in 0..16 {
+            for x in 0..16 {
+                let a = d.get_pixel(0, 0, x, y).unwrap()[3];
+                assert!(a == 0 || a == 255, "({x},{y}) has fractional alpha {a}");
+            }
+        }
+    }
+
+    #[test]
+    fn curve_with_fewer_than_two_points_errors() {
+        let mut d = Document::new("t", 4, 4);
+        assert!(d
+            .curve(0, 0, &[], [0, 0, 0, 255], 1.0, true, false)
+            .is_err());
+        assert!(d
+            .curve(0, 0, &[(1.0, 1.0)], [0, 0, 0, 255], 1.0, true, false)
+            .is_err());
     }
 }
