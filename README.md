@@ -179,6 +179,20 @@ Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.h
 or see how a call flows through the crates in the
 [architecture tour](https://marmikshah.github.io/atelier/architecture.html).
 
+## Project stores
+
+By default everything lands in the global `~/.atelier`. Run `atelier init` in
+a project — your game repo, say — and that directory gets its own `./.atelier`:
+art and recipes live next to the project, ids mint clean per project (`hero`,
+never `hero-2` because some other game claimed it), and the recipes can be
+committed with the game. Resolution per call: `--home` / `ATELIER_HOME` →
+`./.atelier` when it exists → `~/.atelier`. Standing in `$HOME`, the two are
+the same directory.
+
+The daemon is the exception: a shared server has no working directory, so it
+always pins the global store at install time (or whatever `--home` you give
+it). `atelier doctor` names the store you're on, and why.
+
 ## Agent mode — the one online command
 
 Everything above is offline, keyless and deterministic. `atelier agent` is the
