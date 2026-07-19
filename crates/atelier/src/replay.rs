@@ -1,25 +1,24 @@
-//! `atelier replay <recipe.json>` — drive the atelier MCP server through a
-//! scripted list of tool calls.
+//! `atelier replay <recipe.json>` — drive the tool surface through a scripted
+//! list of tool calls, in-process.
 //!
-//! The runner is itself an MCP *client*: it spawns this very binary
-//! (`current_exe`) as a child over stdio, performs the handshake
-//! (`initialize` → `notifications/initialized`), then issues one `tools/call`
-//! per recipe step, waiting for each response before sending the next. The
-//! server happily pipelines concurrent requests, so strict sequencing is on us
-//! — a recipe is a narrative, step N may depend on step N-1's mutations.
+//! Every step goes through `Atelier::dispatch` — the same single path MCP
+//! clients and `atelier call` take, journaling and write ordering included —
+//! one call at a time, strictly in order: a recipe is a narrative, step N may
+//! depend on step N-1's mutations.
 //!
 //! Output convention: the per-step log goes to stdout (scriptable, the recipe's
 //! visible result), while status/diagnostics go to stderr (header, errors, the
 //! final "N step(s) ok" tally) so they don't pollute piped stdout.
 
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 use serde_json::{json, Value};
 
-// The recipe format lives in the library crate (shared with the Recorder that
-// writes it); the runner below only consumes it.
-use crate::stdio_client::{RpcError, StdioClient};
 use atelier_mcp::recipe::{Recipe, Step};
+use atelier_mcp::server::{self, Atelier};
+use atelier_studio::Studio;
+use rmcp::model::CallToolResult;
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
 const USAGE: &str = "usage: atelier replay <recipe.json | doc-id> [--home DIR]";
@@ -65,7 +64,7 @@ fn resolve_source(path: &str) -> Result<(String, Option<String>), String> {
 
 /// Entry point for the `replay` subcommand. Returns a process exit code.
 /// `args` is everything after `replay` on the command line. Async because it
-/// runs inside main's tokio runtime, driving the child server over stdio.
+/// runs inside main's tokio runtime, driving the dispatch loop.
 pub async fn run(args: &[String]) -> i32 {
     // Parse args: a single positional recipe path plus optional `--home <dir>`.
     let mut path: Option<&str> = None;
@@ -131,21 +130,22 @@ pub async fn run(args: &[String]) -> i32 {
     }
 }
 
-/// Spawn the child server, handshake, and run every step in order.
+/// Build the in-process tool server and run every step in order.
 async fn drive(
     recipe: Recipe,
     journal_id: Option<String>,
     home: Option<&str>,
 ) -> Result<(), String> {
-    // `--home` overrides ATELIER_HOME for an isolated run; otherwise the child
-    // inherits our environment (including any ambient ATELIER_HOME).
-    let mut client = StdioClient::spawn("atelier-replay", home).await?;
-    let result = run_session(&recipe, journal_id, &mut client).await;
-    client.shutdown().await;
-    result
+    // `--home` roots an isolated store for the run; otherwise the ambient
+    // ATELIER_HOME (or the default) is where the rebuild lands.
+    let atelier = match home {
+        Some(dir) => Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir(dir.into())))),
+        None => Atelier::new(),
+    };
+    run_session(&recipe, journal_id, &atelier).await
 }
 
-/// The MCP conversation: handshake then one `tools/call` per step.
+/// The dispatch loop: one `dispatch` per step, in recipe order.
 ///
 /// Recorded document ids never reach the server verbatim: `doc_create` re-mints
 /// its id in the destination store (a collision mints `name-2`), so every step
@@ -155,7 +155,7 @@ async fn drive(
 async fn run_session(
     recipe: &Recipe,
     journal_id: Option<String>,
-    client: &mut StdioClient,
+    atelier: &Atelier,
 ) -> Result<(), String> {
     // Header line (to stderr, status channel) so the run is self-identifying.
     eprintln!("== {} — {}", recipe.name, recipe.description);
@@ -173,22 +173,18 @@ async fn run_session(
             remap_ids(&mut args, &ids);
             None
         };
-        let result = match client.call_tool(&step.tool, args).await {
+        let result = match atelier.dispatch(&step.tool, args, "replay").await {
             Ok(result) => result,
-            // JSON-RPC error (unknown tool, malformed args, …) — a recipe is a
+            // Protocol error (unknown tool, malformed args, …) — a recipe is a
             // narrative, so the first failed step ends the run.
-            Err(e @ RpcError::Rpc(_)) => {
+            Err(e) => {
                 print_step(idx, step, &format!("ERROR {e}"));
                 return Err(format!("step {} ({}) failed: {e}", idx + 1, step.tool));
             }
-            Err(RpcError::Transport(e)) => return Err(e),
         };
         // atelier tools surface their own errors as a {"error": ...} text
         // payload with isError set; treat that as a failed step too.
-        let is_error = result
-            .get("isError")
-            .and_then(Value::as_bool)
-            .unwrap_or(false);
+        let is_error = server::is_error_result(&result);
         let summary = summarize(&result);
         print_step(idx, step, &summary);
         if is_error {
@@ -274,16 +270,10 @@ fn remap_ids(args: &mut Value, ids: &HashMap<String, String>) {
     }
 }
 
-/// Pull the minted id out of a `doc_create` result: the first text content
-/// block carries the tool's JSON payload, whose `id` field is the new id.
-fn minted_id(result: &Value) -> Option<String> {
-    let text = result
-        .get("content")
-        .and_then(Value::as_array)?
-        .iter()
-        .find_map(|b| b.get("text").and_then(Value::as_str))?;
-    serde_json::from_str::<Value>(text)
-        .ok()?
+/// Pull the minted id out of a `doc_create` result: the text report's `id`
+/// field is the new id.
+fn minted_id(result: &CallToolResult) -> Option<String> {
+    server::result_json(result)?
         .get("id")
         .and_then(Value::as_str)
         .map(str::to_string)
@@ -299,22 +289,14 @@ fn print_step(idx: usize, step: &Step, summary: &str) {
     println!("[{}] {} — {summary}{note}", idx + 1, step.tool);
 }
 
-/// Condense a `tools/call` result into a single readable line. atelier returns
-/// its JSON payload in a text content block — but image-first results
-/// (doc_look, diff overlays) put the PNG block before it, so find
-/// the first TEXT block rather than dumping base64 from the first block; fall back
-/// to a compact dump of whatever shape we get.
-fn summarize(result: &Value) -> String {
-    let text = result.get("content").and_then(Value::as_array).and_then(
-        |blocks: &Vec<Value>| -> Option<&str> {
-            blocks
-                .iter()
-                .find_map(|b| b.get("text").and_then(Value::as_str))
-        },
-    );
-    let line = match text {
-        Some(t) => t.to_string(),
-        None => result.to_string(),
+/// Condense a tool result into a single readable line. atelier returns its
+/// JSON payload in a text content block — but image-first results (doc_look,
+/// diff overlays) put the PNG block before it, so take the first TEXT block
+/// rather than dumping base64; fall back to a debug dump of the shape.
+fn summarize(result: &CallToolResult) -> String {
+    let line = match result.content.iter().find_map(|c| c.as_text()) {
+        Some(t) => t.text.clone(),
+        None => format!("{result:?}"),
     };
     // Keep the log scannable.
     const MAX: usize = 200;
@@ -329,6 +311,11 @@ fn summarize(result: &Value) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rmcp::model::Content;
+
+    fn text_result(text: &str) -> CallToolResult {
+        CallToolResult::success(vec![Content::text(text)])
+    }
 
     #[test]
     fn parses_full_recipe() {
@@ -422,18 +409,15 @@ mod tests {
 
     #[test]
     fn minted_id_reads_the_create_payload() {
-        let result = json!({
-            "content": [{"type": "text", "text": "{\"id\":\"hero-2\",\"width\":8}"}]
-        });
+        let result = text_result("{\"id\":\"hero-2\",\"width\":8}");
         assert_eq!(minted_id(&result).as_deref(), Some("hero-2"));
-        assert_eq!(minted_id(&json!({"content": []})), None);
+        let empty = CallToolResult::success(vec![]);
+        assert_eq!(minted_id(&empty), None);
     }
 
     #[test]
     fn summarize_pulls_text_content() {
-        let result = json!({
-            "content": [{"type": "text", "text": "{\"doc_id\":\"x\",\"w\":8}"}]
-        });
+        let result = text_result("{\"doc_id\":\"x\",\"w\":8}");
         assert_eq!(summarize(&result), "{\"doc_id\":\"x\",\"w\":8}");
     }
 
@@ -441,19 +425,17 @@ mod tests {
     fn summarize_skips_leading_image_blocks() {
         // img_result puts the PNG first and the JSON report second — the log
         // line must be the report, never truncated base64.
-        let result = json!({
-            "content": [
-                {"type": "image", "data": "iVBORw0KGgo…", "mimeType": "image/png"},
-                {"type": "text", "text": "{\"path\":\"p.png\"}"}
-            ]
-        });
+        let result = CallToolResult::success(vec![
+            Content::image("iVBORw0KGgo".to_string(), "image/png".to_string()),
+            Content::text("{\"path\":\"p.png\"}"),
+        ]);
         assert_eq!(summarize(&result), "{\"path\":\"p.png\"}");
     }
 
     #[test]
     fn summarize_truncates_long_lines() {
         let long = "a".repeat(500);
-        let result = json!({"content": [{"type": "text", "text": long}]});
+        let result = text_result(&long);
         let s = summarize(&result);
         assert!(s.ends_with('…'));
         assert!(s.chars().count() <= 201);

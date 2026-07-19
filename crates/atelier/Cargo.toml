@@ -1,6 +1,6 @@
 [package]
 name = "atelier"
-description = "MCP-native headless pixel-art editor: layered/animated documents, drawing primitives, PNG/sheet/GIF export."
+description = "The pixel-art studio agents can see — a headless editor driven from the CLI or over MCP: layered/animated documents, drawing primitives, PNG/sheet/GIF export."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -22,6 +22,9 @@ agent = ["dep:reqwest"]
 [dependencies]
 atelier-mcp.workspace = true
 atelier-studio.workspace = true
+# The binary handles rmcp result/tool types from atelier-mcp's dispatch and
+# registry (call/replay/agent); the crate is already in the tree via atelier-mcp.
+rmcp.workspace = true
 tokio.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
