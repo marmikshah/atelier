@@ -57,7 +57,7 @@ flowchart TB
         dispatch["Atelier::dispatch — the single choke point"]
         log["log line: tool · op · doc · caller · ms · error"]
         order["write-order lock (mutations only)"]
-        router["tool registry — 28 tools, schemas scrubbed<br/>(advertise; the dispatch match invokes the handlers)"]
+        router["tool registry — 30 tools, schemas scrubbed<br/>(advertise; the dispatch match invokes the handlers)"]
         journal["journal_append → recipe.jsonl"]
         recorder["session recorder (--record, opt-in)"]
     end
@@ -171,14 +171,14 @@ The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
   the single path every caller (MCP stdio/HTTP, `atelier call`, replay, agent)
   funnels through: classify journaled/recorded → write-order lock → deserialize
   params → run the handler → log → journal/record. The four domain routers
-  (`tools_doc`, `tools_draw`, `tools_read`, `tools_export`) hold the 28
+  (`tools_doc`, `tools_draw`, `tools_read`, `tools_export`) hold the 30
   `#[tool]` handlers and their schemas — the registry the surface is advertised
   from — with the param structs (`params.rs`), the two transports
   (`transport.rs` — stdio `run` + streamable HTTP `run_http`, re-exported as
   `server::{run, run_http}`), session `Recorder` (`recorder.rs`) and MCP
-  resources (`resources.rs`) as siblings: **28 tools** (mutations grouped into
+  resources (`resources.rs`) as siblings: **30 tools** (mutations grouped into
   op-dispatch tools like `doc_draw` / `doc_fx` / `doc_export` / `doc_batch`),
-  one or one-family per studio operation. All 28 are advertised unconditionally
+  one or one-family per studio operation. All 30 are advertised unconditionally
   — there is no profile filter. The `Recorder` turns a live session into a
   replayable recipe.
 - **`recipe.rs`** — the `Recipe`/`Step` format: the on-disk contract shared by the

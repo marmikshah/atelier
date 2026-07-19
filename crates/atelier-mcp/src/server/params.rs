@@ -104,6 +104,9 @@ pub(crate) struct DocSelect {
     pub(crate) x: Option<i32>,
     pub(crate) y: Option<i32>,
     pub(crate) tolerance: Option<i32>,
+    /// polygon/lasso shape — the traced vertices `[[x,y], ...]` (needs ≥3),
+    /// automatically closed (last point joins the first).
+    pub(crate) points: Option<Vec<[i32; 2]>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -217,6 +220,41 @@ pub(crate) struct DocFrame {
     pub(crate) to_index: Option<usize>,
     /// Frame duration in ms (for add/insert/duration; default 100).
     pub(crate) duration_ms: Option<u32>,
+    /// For `duplicate`: link the new frame's cels to the source's (shared
+    /// pixels, copy-on-write on any later edit) instead of copying them.
+    pub(crate) link: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub(crate) struct DocSlice {
+    pub(crate) doc_id: String,
+    /// add | delete | list.
+    pub(crate) op: String,
+    /// Slice name (required for add/delete).
+    pub(crate) name: Option<String>,
+    /// For add: the slice bounds, inclusive corners [x0,y0,x1,y1].
+    pub(crate) rect: Option<Vec<i32>>,
+    /// 9-slice centre rect [x0,y0,x1,y1] (must sit inside rect).
+    pub(crate) center: Option<Vec<i32>>,
+    /// Pivot point [x,y] (unconstrained — a rotation origin may sit off-canvas).
+    pub(crate) pivot: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub(crate) struct DocTile {
+    pub(crate) doc_id: String,
+    /// place (stamp a tilemap from a tileset document).
+    pub(crate) op: String,
+    pub(crate) layer: usize,
+    pub(crate) frame: usize,
+    /// The tileset document: its flattened frame 0 is sliced row-major into
+    /// tile_w×tile_h tiles (index 0 = top-left). Read-only — never modified.
+    pub(crate) tiles_doc: String,
+    pub(crate) tile_w: u32,
+    pub(crate) tile_h: u32,
+    /// Cells to stamp: [[cell_x, cell_y, tile_index], ...]; each lands at
+    /// pixel (cell_x*tile_w, cell_y*tile_h), source-over, canvas-clipped.
+    pub(crate) cells: Vec<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]

@@ -108,7 +108,7 @@ fn stdio_server_handshakes_lists_and_calls() {
     let list = s.request("tools/list", json!({}));
     assert_eq!(
         list["tools"].as_array().map(Vec::len),
-        Some(28),
+        Some(30),
         "the whole surface is advertised"
     );
 
