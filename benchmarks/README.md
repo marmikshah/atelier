@@ -25,9 +25,10 @@ The task text is the exact input. Keep it fixed so runs stay comparable.
 
 ## How runs are made
 
-Runs are driven through **Claude Code**, connected to atelier over MCP — the same
-path any user takes. There is no bespoke benchmark runner: the agent gets the
-task text and the tool surface, and works.
+Runs are driven by **agent subagents connected to atelier over MCP** — the same
+path any user takes (Claude Code for the Anthropic models, Kimi Code for
+kimi-k3). There is no bespoke benchmark runner: the agent gets the task text
+and the tool surface, and works.
 
 ```sh
 atelier install                  # background daemon, then connect your client

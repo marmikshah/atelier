@@ -168,7 +168,7 @@ const taskText = () => (state.DATA.task_text || {})[state.task] || "";
 const COLS = [
   ["looks",      "doc_look",   v => `<b>${v}</b>`],
   ["tool_calls", "tool calls", v => v],
-  ["tokens",     "tokens",     v => (v/1000).toFixed(0) + "k"],
+  ["tokens",     "tokens",     v => v == null ? "—" : (v/1000).toFixed(0) + "k"],
 ];
 
 const state = {task:null, models:new Set(), DATA:null, view:"task"};
@@ -260,9 +260,10 @@ function grid(){
   const body = tasks().map(t =>
     `<tr><td class="task-lbl">${(TASK[t]||{}).label || t}</td>${act.map(m => cell(byKey[t + "/" + m])).join("")}</tr>`
   ).join("");
-  const sum = f => m => runs().filter(r => r.model === m).reduce((a,r) => a + r[f], 0);
+  const sum = f => m => runs().filter(r => r.model === m).reduce((a,r) => a + (r[f] ?? 0), 0);
+  const tok = m => { const t = sum("tokens")(m); return t > 0 ? (t/1000).toFixed(0) + "k tok" : "— tok"; };
   const foot = `<tr><td class="task-lbl">total</td>${act.map(m =>
-    `<td><b>${sum("looks")(m)}</b> looks · ${sum("tool_calls")(m)} calls · ${(sum("tokens")(m)/1000).toFixed(0)}k tok</td>`
+    `<td><b>${sum("looks")(m)}</b> looks · ${sum("tool_calls")(m)} calls · ${tok(m)}</td>`
   ).join("")}</tr>`;
   view.innerHTML = `<div class="gridwrap"><table class="grid">
     <thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
