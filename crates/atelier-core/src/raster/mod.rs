@@ -10,9 +10,19 @@ mod colour;
 mod noise;
 mod transform;
 
-pub use colour::*;
-pub use noise::*;
-pub use transform::*;
+// Explicit surface instead of globs: exactly what the rest of the workspace
+// uses, so the module's API is one readable list. `wcag_ratio` is the single
+// item nothing in-workspace calls — it was public via the old glob and stays
+// exported rather than disappearing as a silent breaking change.
+pub use colour::{
+    close, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp, make_ramp_oklch, median_cut,
+    median_cut_weighted, nearest_oklab, oklab_delta, oklab_to_oklch, oklab_to_srgb, oklch_to_oklab,
+    rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab, wcag_ratio, PaletteLab,
+};
+pub use noise::{
+    dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
+};
+pub use transform::{downscale_area, interior_distance, remove_background};
 
 // -- drawing helpers (overwrite semantics; alpha 0 = erase) -----------------
 
