@@ -31,7 +31,7 @@ mod timeline;
 #[cfg(test)]
 mod tests;
 
-pub use batch::{draw_ops, fx_ops, validate_batch_op};
+pub use batch::{color_array, draw_ops, fx_ops, validate_batch_op};
 pub use render::seam_axis_img;
 
 #[derive(Serialize, Deserialize, Clone)]

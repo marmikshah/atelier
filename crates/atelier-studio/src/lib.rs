@@ -551,22 +551,21 @@ impl Studio {
                         )
                     })?
                 }
-                Value::Array(a) => {
+                Value::Array(_) => {
                     // Strict like validate_batch_op's colour check: exactly
-                    // [r,g,b] or [r,g,b,a], every component 0..=255. The old
-                    // parse dropped non-numbers silently and truncated via
-                    // `as u8` (300 → 44) into a wrong-but-plausible colour.
-                    let ok_shape = (3..=4).contains(&a.len())
-                        && a.iter()
-                            .all(|x| x.as_i64().is_some_and(|n| (0..=255).contains(&n)));
-                    if !ok_shape {
-                        return Err(format!(
-                            "legend '{}': colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
-                            k, v
-                        ));
+                    // [r,g,b] or [r,g,b,a], every component 0..=255 — one shared
+                    // predicate in core. The old parse dropped non-numbers
+                    // silently and truncated via `as u8` (300 → 44) into a
+                    // wrong-but-plausible colour.
+                    match atelier_core::document::color_array(v) {
+                        Some(c) => c,
+                        None => {
+                            return Err(format!(
+                                "legend '{}': colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
+                                k, v
+                            ))
+                        }
                     }
-                    let n = |i: usize| a[i].as_i64().unwrap() as u8;
-                    [n(0), n(1), n(2), if a.len() == 4 { n(3) } else { 255 }]
                 }
                 _ => {
                     return Err(format!(
