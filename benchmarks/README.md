@@ -1,6 +1,6 @@
 # atelier benchmark
 
-Eight animation tasks, one per game-object category. Each is run by an **agent
+Ten animation tasks, one per game-object category. Each is run by an **agent
 driving atelier's MCP tools** — nothing else. The art is the result; the tool
 calls are the record.
 
@@ -17,15 +17,18 @@ Each is a **1-second loop at 10 FPS (10 frames)** on a transparent background:
 | `ball`    | prop / physics |
 | `potion`  | item / pickup |
 | `slash`   | effect / VFX |
+| `beam`    | effect / VFX |
+| `explosion` | effect / VFX |
 | `torch`   | environment |
 
 The task text is the exact input. Keep it fixed so runs stay comparable.
 
 ## How runs are made
 
-Runs are driven through **Claude Code**, connected to atelier over MCP — the same
-path any user takes. There is no bespoke benchmark runner: the agent gets the
-task text and the tool surface, and works.
+Runs are driven by **agent subagents connected to atelier over MCP** — the same
+path any user takes (Claude Code for the Anthropic models, Kimi Code for
+kimi-k3). There is no bespoke benchmark runner: the agent gets the task text
+and the tool surface, and works.
 
 ```sh
 atelier install                  # background daemon, then connect your client
