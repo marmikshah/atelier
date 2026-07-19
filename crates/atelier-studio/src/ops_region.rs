@@ -57,6 +57,44 @@ impl SelectMode {
     }
 }
 
+/// Even-odd scanline fill of the closed polygon `points` (last vertex joins
+/// back to the first) into a row-major `w`×`h` mask. The same crossing test as
+/// `Document::polygon`'s fill, minus its edge stroke — a selection is a region
+/// test, not paint. Vertices may sit off-canvas: crossings clamp to the mask
+/// bounds instead of panicking.
+fn polygon_mask(points: &[[i32; 2]], w: u32, h: u32, mask: &mut [bool]) {
+    let (w, h) = (w as i32, h as i32);
+    let ymin = points.iter().map(|p| p[1]).min().unwrap_or(0).max(0);
+    let ymax = points.iter().map(|p| p[1]).max().unwrap_or(-1).min(h - 1);
+    let n = points.len();
+    for y in ymin..=ymax {
+        let yf = y as f32 + 0.5;
+        // X where each edge crosses this scanline's centre.
+        let mut xs: Vec<f32> = Vec::new();
+        for i in 0..n {
+            let [x1, y1] = points[i];
+            let [x2, y2] = points[(i + 1) % n];
+            let (y1f, y2f) = (y1 as f32, y2 as f32);
+            if (y1f <= yf && y2f > yf) || (y2f <= yf && y1f > yf) {
+                let t = (yf - y1f) / (y2f - y1f);
+                xs.push(x1 as f32 + t * (x2 as f32 - x1 as f32));
+            }
+        }
+        xs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        let mut i = 0;
+        while i + 1 < xs.len() {
+            // float→int casts saturate, so an off-canvas crossing clamps to the
+            // canvas edge; a span that ends before it starts fills nothing.
+            let xa = (xs[i].ceil() as i32).max(0);
+            let xb = (xs[i + 1].floor() as i32).min(w - 1);
+            for x in xa..=xb {
+                mask[(y * w + x) as usize] = true;
+            }
+            i += 2;
+        }
+    }
+}
+
 impl Studio {
     /// The active selection's mask for document `id`, validated against the
     /// canvas: Ok(None) = no selection targets this doc; Err = the selection
@@ -86,9 +124,10 @@ impl Studio {
     }
 
     /// Set/modify the active selection mask. `shape`: rect / ellipse / color /
-    /// all / none. `mode` combines with the current selection: replace / add /
-    /// subtract / intersect. Painting ops then confine to the `true` pixels
-    /// until the selection is replaced or cleared (shape "none").
+    /// polygon (alias `lasso`, `points` vertices, auto-closed) / all / none.
+    /// `mode` combines with the current selection: replace / add / subtract /
+    /// intersect. Painting ops then confine to the `true` pixels until the
+    /// selection is replaced or cleared (shape "none").
     pub fn doc_select(
         &mut self,
         id: &str,
@@ -97,6 +136,7 @@ impl Studio {
         rect: Option<(i32, i32, i32, i32)>,
         ell: Option<(i32, i32, i32, i32)>,
         color_at: Option<ColorSelect>,
+        points: Option<&[[i32; 2]]>,
     ) -> Result<Value, String> {
         let mode = SelectMode::parse(mode)?;
         let (_dir, doc) = self.open(id)?;
@@ -160,6 +200,18 @@ impl Studio {
                         }
                     }
                 }
+            }
+            "polygon" | "lasso" => {
+                let pts = points.ok_or("polygon selection needs `points`")?;
+                // Two vertices trace a line, not a region — refuse loudly
+                // rather than quietly selecting nothing.
+                if pts.len() < 3 {
+                    return Err(format!(
+                        "polygon selection needs at least 3 points, got {}",
+                        pts.len()
+                    ));
+                }
+                polygon_mask(pts, w, h, &mut shape_mask);
             }
             other => return Err(format!("unknown selection shape '{}'", other)),
         }
@@ -378,5 +430,134 @@ impl Studio {
                 "doc_region: unknown op '{other}' — use copy|cut|paste|move|clear"
             )),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    fn studio(tag: &str) -> Studio {
+        let dir = std::env::temp_dir().join(format!("atelier-region-{tag}"));
+        let _ = fs::remove_dir_all(&dir);
+        Studio::with_docs_dir(dir)
+    }
+
+    fn mask_of(s: &Studio) -> Vec<bool> {
+        s.selection.as_ref().unwrap().mask.clone()
+    }
+
+    #[test]
+    fn polygon_triangle_masks_exactly_the_filled_pixels() {
+        let mut s = studio("tri");
+        s.doc_create("d", 8, 8).unwrap();
+        // Right triangle; the even-odd fill covers rows y=1..=5, one pixel
+        // narrower per row (hand-computed from the scanline crossings).
+        let out = s
+            .doc_select(
+                "d",
+                "polygon",
+                "replace",
+                None,
+                None,
+                None,
+                Some(&[[1, 1], [6, 1], [1, 6]]),
+            )
+            .unwrap();
+        assert_eq!(out["selected_pixels"], json!(15));
+        let mut expected = vec![false; 64];
+        for (y, xmax) in [(1usize, 5usize), (2, 4), (3, 3), (4, 2), (5, 1)] {
+            for x in 1..=xmax {
+                expected[y * 8 + x] = true;
+            }
+        }
+        assert_eq!(mask_of(&s), expected);
+    }
+
+    #[test]
+    fn polygon_composes_with_rect_through_add_and_subtract() {
+        let mut s = studio("modes");
+        s.doc_create("d", 8, 8).unwrap();
+        let tri = [[1, 1], [6, 1], [1, 6]];
+        // Top half of the canvas.
+        let out = s
+            .doc_select("d", "rect", "replace", Some((0, 0, 7, 3)), None, None, None)
+            .unwrap();
+        assert_eq!(out["selected_pixels"], json!(32));
+        // Adding the triangle only brings in its rows below y=3.
+        let out = s
+            .doc_select("d", "polygon", "add", None, None, None, Some(&tri))
+            .unwrap();
+        assert_eq!(out["selected_pixels"], json!(35));
+        // Subtracting it again removes the 12 pixels they shared.
+        let out = s
+            .doc_select("d", "polygon", "subtract", None, None, None, Some(&tri))
+            .unwrap();
+        assert_eq!(out["selected_pixels"], json!(20));
+        let mask = mask_of(&s);
+        let at = |x: usize, y: usize| mask[y * 8 + x];
+        assert!(
+            at(0, 0) && at(7, 3),
+            "rect pixels outside the triangle stay"
+        );
+        assert!(!at(1, 1) && !at(5, 1), "shared pixels were subtracted");
+        assert!(!at(1, 5), "below the rect was never selected");
+    }
+
+    #[test]
+    fn polygon_needs_three_points_and_its_vertices() {
+        let mut s = studio("few");
+        s.doc_create("d", 8, 8).unwrap();
+        let e = s
+            .doc_select(
+                "d",
+                "lasso",
+                "replace",
+                None,
+                None,
+                None,
+                Some(&[[0, 0], [3, 3]]),
+            )
+            .unwrap_err();
+        assert!(e.contains("at least 3"), "got: {e}");
+        let e = s
+            .doc_select("d", "polygon", "replace", None, None, None, None)
+            .unwrap_err();
+        assert!(e.contains("points"), "got: {e}");
+        // A rejected lasso must not disturb the selection already in place.
+        assert!(s.selection.is_none());
+    }
+
+    #[test]
+    fn polygon_fully_off_canvas_selects_nothing() {
+        let mut s = studio("off");
+        s.doc_create("d", 8, 8).unwrap();
+        // Above/left: the scanline y-range is empty.
+        let out = s
+            .doc_select(
+                "d",
+                "polygon",
+                "replace",
+                None,
+                None,
+                None,
+                Some(&[[-20, -20], [-10, -20], [-10, -5]]),
+            )
+            .unwrap();
+        assert_eq!(out["selected_pixels"], json!(0));
+        // Right of the canvas: crossings exist on paper but clamp outside.
+        let out = s
+            .doc_select(
+                "d",
+                "polygon",
+                "replace",
+                None,
+                None,
+                None,
+                Some(&[[100, 0], [200, 0], [100, 7]]),
+            )
+            .unwrap();
+        assert_eq!(out["selected_pixels"], json!(0));
     }
 }
