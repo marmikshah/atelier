@@ -6,7 +6,7 @@
 //! **linked**, sharing another cel's pixels (copy-on-write: editing it breaks
 //! the link instead of writing through). The document also holds a **palette**,
 //! animation **tags** (named frame ranges) and **slices** (named canvas rects
-//! with optional 9-slice guides and pivot — the Aseprite concept).
+//! with optional 9-slice guides and pivot).
 //!
 //! Persistence: a directory with `doc.json` (structure + cel file refs) and one
 //! PNG per cel under `cels/` (a linked cel writes none — its `file` points at
@@ -62,7 +62,7 @@ pub struct TagMeta {
     pub direction: String, // "forward" | "reverse" | "pingpong"
 }
 
-/// A named canvas rect — the Aseprite slice. `rect` is INCLUSIVE corners
+/// A named canvas rect — a slice. `rect` is INCLUSIVE corners
 /// `[x0, y0, x1, y1]`: the convention `copy_region`, `render_preview` and the
 /// frame-diff bbox already use (not the x/y/w/h the engine sidecars want —
 /// `export_sheet_std` converts). `center` is the optional 9-slice guide rect
@@ -697,8 +697,8 @@ impl Document {
         Ok(())
     }
 
-    /// Add a named slice (the Aseprite concept: a labelled canvas rect with
-    /// optional 9-slice `center` guides and a `pivot` point), returning its
+    /// Add a named slice (a labelled canvas rect with optional 9-slice
+    /// `center` guides and a `pivot` point), returning its
     /// index. Rects are inclusive corners `[x0, y0, x1, y1]` — the
     /// `copy_region` convention — and follow its policy too: corner order is
     /// normalised, the rect is clamped to the canvas, and one that intersects

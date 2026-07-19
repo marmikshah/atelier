@@ -25,7 +25,7 @@ releases.
   (`ATELIER_HOME` / project store / global).
 - **Stdio transport smoke test** — spawns the real binary and speaks JSON-RPC
   end-to-end, replacing the coverage replay's child-server runs used to give.
-- **The Aseprite gap list** — the missing editor primitives, all riding the
+- **The editor gap list** — the missing editor primitives, all riding the
   one dispatch path:
   - `curve` draw op — a bezier through the control points (de Casteljau
     flattening into the AA stroke core); `stamp` draw op — a custom brush
@@ -35,7 +35,7 @@ releases.
     resampling with the cel's anchor kept.
   - `doc_select` gains `polygon`/`lasso` shapes (traced points, auto-closed),
     composing through every select mode.
-  - **`doc_slice`** (tool 29) — Aseprite-style slice metadata (named rects,
+  - **`doc_slice`** (tool 29) — slice metadata (named rects,
     9-slice centre, pivot), emitted into both spritesheet JSON sidecars.
   - **Linked cels** — `doc_frame op=duplicate link=true` shares the source
     frame's cels instead of copying: edits copy-on-write, whole-cel writes
