@@ -14,7 +14,7 @@ use std::net::{TcpStream, ToSocketAddrs};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use atelier_studio::Studio;
+use atelier_studio::{HomeOrigin, Studio};
 
 use crate::{service, skills};
 
@@ -122,7 +122,7 @@ fn check_binary() -> Row {
 // -- 2. store -------------------------------------------------------------------
 
 fn check_store() -> Row {
-    let home = Studio::default_home();
+    let (home, origin) = Studio::default_home_with_origin();
     let docs = home.join("documents");
     if let Err(e) = std::fs::create_dir_all(&docs) {
         return Row::fail(
@@ -146,8 +146,13 @@ fn check_store() -> Row {
             ),
         );
     }
+    let scope = match origin {
+        HomeOrigin::Env => "ATELIER_HOME",
+        HomeOrigin::Project => "project store",
+        HomeOrigin::Global => "global",
+    };
     let count = Studio::new().list_docs()["count"].as_u64().unwrap_or(0);
-    Row::ok("store", format!("{} ({count} documents)", tilde(&home)))
+    Row::ok("store", format!("{} ({count} documents, {scope})", tilde(&home)))
 }
 
 // -- 3. daemon ------------------------------------------------------------------
