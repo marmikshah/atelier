@@ -143,7 +143,7 @@ impl Studio {
     /// flattened (sheet: `meta`; anim: `format`,`tag`; tileset: `tile_w`,
     /// `tile_h`). The library-wide exports are the sibling [`Self::export_all`]
     /// and [`Self::export_atlas`], which the MCP layer fuses onto the same tool
-    /// as `doc_export op=all|atlas`; generators (`wang`) stay their own tool.
+    /// as `doc_export op=all|atlas`.
     pub fn doc_export(
         &self,
         id: &str,
@@ -179,7 +179,7 @@ impl Studio {
                 self.export_tileset(id, tw, th, scale.unwrap_or(1), out_path)
             }
             other => Err(format!(
-                "doc_export: unknown op '{other}' — use sheet|anim|tileset (wang/atlas/all are their own tools)"
+                "doc_export: unknown op '{other}' — use sheet|anim|tileset (all|atlas are the library-wide ops)"
             )),
         }
     }
