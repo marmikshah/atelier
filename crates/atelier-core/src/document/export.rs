@@ -65,10 +65,16 @@ impl Document {
             .iter()
             .map(|t| json!({"name": t.name, "from": t.from, "to": t.to, "direction": t.direction}))
             .collect();
-        let meta = json!({
+        let slices = sheet_slices(&self.meta.slices, scale);
+        let mut meta = json!({
             "path": out.to_string_lossy(), "frame_w": fw, "frame_h": fh,
             "count": n, "frames": frames, "tags": tags, "palette": self.meta.palette,
         });
+        // Like the sidecar's early days: no slices, no `slices` key — readers
+        // of the old shape see exactly what they always did.
+        if !slices.is_empty() {
+            meta["slices"] = json!(slices);
+        }
         let mp = out.with_extension("json");
         std::fs::write(
             &mp,
@@ -113,7 +119,7 @@ impl Document {
             .iter()
             .map(|t| json!({"name": t.name, "from": t.from, "to": t.to, "direction": t.direction}))
             .collect();
-        let meta = json!({
+        let mut meta = json!({
             "frames": frames,
             "meta": {
                 "app": "atelier",
@@ -125,6 +131,12 @@ impl Document {
                 "frameTags": frame_tags,
             },
         });
+        // Aseprite's own shape: meta.slices with per-frame keys holding
+        // x/y/w/h bounds (+ optional center/pivot), in sheet pixels like
+        // `frame` above.
+        if !self.meta.slices.is_empty() {
+            meta["meta"]["slices"] = json!(std_slices(&self.meta.slices, scale));
+        }
         let mp = out.with_extension("json");
         std::fs::write(
             &mp,
@@ -259,5 +271,124 @@ impl Document {
         }
         writer.finish().map_err(|e| e.to_string())?;
         Ok(seq.len())
+    }
+}
+
+/// Scale an inclusive-corner rect from document to sheet pixels — the far
+/// corner covers a whole scaled pixel cell, hence `(c + 1) * scale - 1`.
+fn scale_rect(r: [i32; 4], scale: u32) -> [i32; 4] {
+    let s = scale as i32;
+    [r[0] * s, r[1] * s, (r[2] + 1) * s - 1, (r[3] + 1) * s - 1]
+}
+
+/// Inclusive corners → the x/y/w/h object Aseprite's sheet format uses.
+fn rect_xywh(r: [i32; 4]) -> Value {
+    json!({"x": r[0], "y": r[1], "w": r[2] - r[0] + 1, "h": r[3] - r[1] + 1})
+}
+
+/// Slices in the native sidecar's shape (name/rect/center/pivot), corners
+/// scaled into sheet pixels like the frame rects.
+fn sheet_slices(slices: &[super::SliceMeta], scale: u32) -> Vec<Value> {
+    slices
+        .iter()
+        .map(|s| {
+            let mut o = serde_json::Map::new();
+            o.insert("name".into(), json!(s.name));
+            o.insert("rect".into(), json!(scale_rect(s.rect, scale)));
+            if let Some(c) = s.center {
+                o.insert("center".into(), json!(scale_rect(c, scale)));
+            }
+            if let Some(p) = s.pivot {
+                o.insert(
+                    "pivot".into(),
+                    json!([p[0] * scale as i32, p[1] * scale as i32]),
+                );
+            }
+            Value::Object(o)
+        })
+        .collect()
+}
+
+/// Slices in Aseprite's sheet-JSON shape (`meta.slices` with per-frame keys)
+/// for `export_sheet_std`.
+fn std_slices(slices: &[super::SliceMeta], scale: u32) -> Vec<Value> {
+    slices
+        .iter()
+        .map(|s| {
+            let mut key = serde_json::Map::new();
+            key.insert("frame".into(), json!(0));
+            key.insert("bounds".into(), rect_xywh(scale_rect(s.rect, scale)));
+            if let Some(c) = s.center {
+                key.insert("center".into(), rect_xywh(scale_rect(c, scale)));
+            }
+            if let Some(p) = s.pivot {
+                key.insert(
+                    "pivot".into(),
+                    json!({"x": p[0] * scale as i32, "y": p[1] * scale as i32}),
+                );
+            }
+            json!({"name": s.name, "keys": [Value::Object(key)]})
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tmp_dir(name: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!("atelier_{name}_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn export_sheet_emits_slices_only_when_present() {
+        let dir = tmp_dir("slice_export");
+        let mut d = Document::new("t", 8, 8);
+        d.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
+        // No slices → no key: readers of the old shape see no difference.
+        let plain = d.export_sheet(&dir.join("plain.png"), 1).unwrap();
+        assert!(plain.get("slices").is_none());
+        // With a slice: name/rect/center/pivot, corners scaled to sheet pixels.
+        d.add_slice("hud", [1, 1, 3, 2], Some([2, 1, 2, 2]), Some([1, 1]))
+            .unwrap();
+        let out = dir.join("sliced.png");
+        let meta = d.export_sheet(&out, 2).unwrap();
+        let slices = meta["slices"].as_array().unwrap();
+        assert_eq!(slices.len(), 1);
+        assert_eq!(slices[0]["name"], json!("hud"));
+        assert_eq!(slices[0]["rect"], json!([2, 2, 7, 5]));
+        assert_eq!(slices[0]["center"], json!([4, 2, 5, 5]));
+        assert_eq!(slices[0]["pivot"], json!([2, 2]));
+        // The sidecar on disk carries them too.
+        let on_disk: Value =
+            serde_json::from_str(&std::fs::read_to_string(out.with_extension("json")).unwrap())
+                .unwrap();
+        assert_eq!(on_disk["slices"].as_array().unwrap().len(), 1);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn export_sheet_std_emits_aseprite_shaped_slices() {
+        let dir = tmp_dir("slice_export_std");
+        let mut d = Document::new("t", 8, 8);
+        d.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
+        d.add_slice("nine", [1, 1, 5, 5], Some([2, 2, 4, 4]), Some([3, 3]))
+            .unwrap();
+        let out = dir.join("std.png");
+        d.export_sheet_std(&out, 1).unwrap();
+        let meta: Value =
+            serde_json::from_str(&std::fs::read_to_string(out.with_extension("json")).unwrap())
+                .unwrap();
+        let slices = meta["meta"]["slices"].as_array().unwrap();
+        assert_eq!(slices.len(), 1);
+        assert_eq!(slices[0]["name"], json!("nine"));
+        let key = &slices[0]["keys"][0];
+        assert_eq!(key["bounds"], json!({"x": 1, "y": 1, "w": 5, "h": 5}));
+        assert_eq!(key["center"], json!({"x": 2, "y": 2, "w": 3, "h": 3}));
+        assert_eq!(key["pivot"], json!({"x": 3, "y": 3}));
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }
