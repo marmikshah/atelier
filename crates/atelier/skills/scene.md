@@ -1,6 +1,6 @@
 # Drawing a place
 
-*Every tool named below is one call: `atelier call <tool> '<json-args>'` from a shell — or the same-named tool over MCP.*
+*Every tool named below is one call: `atelier call <tool> '<json-args>'` from a shell — or the same-named tool over MCP. Run `atelier init` once per project to keep its art in its own `./.atelier`.*
 
 A scene is not a big sprite. A sprite is one subject on nothing; a scene is
 several subjects in a space, and it succeeds or fails on whether that space
