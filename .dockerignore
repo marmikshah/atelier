@@ -1,12 +1,15 @@
 # Keep the build context small — only Cargo manifests + crate sources are needed.
+# NOTE: crates/atelier/skills/*.md MUST stay in context (include_str!'d into the binary).
 target
 .git
 .github
 .githooks
-runs
-tools
+.claude
+.venv
+benchmarks
 docs
-*.html
+site
+tools
 *.gif
 *.png
 *.tar.gz
