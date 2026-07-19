@@ -178,7 +178,8 @@
     <div class="crate shell">
       <div class="head"><span class="name">atelier-mcp</span><span class="role">the imperative shell — rmcp <code>#[tool]</code> router over stdio + HTTP</span></div>
       <div class="chips">
-        <span class="chip hot">server/mod.rs · 28 tools, parse → Studio → format</span>
+        <span class="chip hot">server/mod.rs · merges 4 domain routers — 28 tools</span>
+        <span class="chip">server/transport.rs · stdio + streamable HTTP</span>
         <span class="chip">server/params.rs · request schemas</span>
         <span class="chip">server/recorder.rs · session → recipe</span>
         <span class="chip">server/resources.rs · browse docs/renders</span>
@@ -189,7 +190,10 @@
     <div class="crate facade">
       <div class="head"><span class="name">atelier-studio</span><span class="role">the <code>Studio</code> facade — the library API, one method per tool</span></div>
       <div class="chips">
-        <span class="chip cool">lib.rs · store, exports, draw/fx dispatch, selection</span>
+        <span class="chip cool">lib.rs · the facade — timeline, palette, draw/fx dispatch</span>
+        <span class="chip">store.rs · lifecycle, journal, ATELIER_HOME policy</span>
+        <span class="chip">ops_export.rs · sheet / GIF / APNG / atlas / tileset</span>
+        <span class="chip">ops_region.rs · selection, clipboard</span>
         <span class="chip">craft.rs · checkpoints, layer/colour ops, import</span>
         <span class="chip">view.rs · look / contact sheet</span>
         <span class="chip">analysis.rs · critique, audits, reports</span>
