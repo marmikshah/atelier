@@ -131,7 +131,7 @@ impl Document {
                 "frameTags": frame_tags,
             },
         });
-        // Aseprite's own shape: meta.slices with per-frame keys holding
+        // The engine-standard shape: meta.slices with per-frame keys holding
         // x/y/w/h bounds (+ optional center/pivot), in sheet pixels like
         // `frame` above.
         if !self.meta.slices.is_empty() {
@@ -281,7 +281,8 @@ fn scale_rect(r: [i32; 4], scale: u32) -> [i32; 4] {
     [r[0] * s, r[1] * s, (r[2] + 1) * s - 1, (r[3] + 1) * s - 1]
 }
 
-/// Inclusive corners → the x/y/w/h object Aseprite's sheet format uses.
+/// Inclusive corners → the x/y/w/h object the engine-standard sheet format
+/// uses.
 fn rect_xywh(r: [i32; 4]) -> Value {
     json!({"x": r[0], "y": r[1], "w": r[2] - r[0] + 1, "h": r[3] - r[1] + 1})
 }
@@ -309,8 +310,8 @@ fn sheet_slices(slices: &[super::SliceMeta], scale: u32) -> Vec<Value> {
         .collect()
 }
 
-/// Slices in Aseprite's sheet-JSON shape (`meta.slices` with per-frame keys)
-/// for `export_sheet_std`.
+/// Slices in the engine-standard sheet-JSON shape (`meta.slices` with
+/// per-frame keys) for `export_sheet_std`.
 fn std_slices(slices: &[super::SliceMeta], scale: u32) -> Vec<Value> {
     slices
         .iter()
@@ -371,7 +372,7 @@ mod tests {
     }
 
     #[test]
-    fn export_sheet_std_emits_aseprite_shaped_slices() {
+    fn export_sheet_std_emits_engine_shaped_slices() {
         let dir = tmp_dir("slice_export_std");
         let mut d = Document::new("t", 8, 8);
         d.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
