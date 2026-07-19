@@ -1,6 +1,6 @@
 # Reviewing the art
 
-*Every tool named below is one call: `atelier call <tool> '<json-args>'` from a shell — or the same-named tool over MCP.*
+*Every tool named below is one call: `atelier call <tool> '<json-args>'` from a shell — or the same-named tool over MCP. Run `atelier init` once per project to keep its art in its own `./.atelier`.*
 
 Look first, measure second, report third. **You are not here to fix it** — you
 are here to say precisely what is wrong, where, and what would fix it. Someone

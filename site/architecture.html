@@ -158,7 +158,7 @@
   <h2>What that buys: replayable art</h2>
   <p><strong>Every document is an ordered sequence of tool calls.</strong> Draw a sprite through the API and the session can be recorded as a <em>recipe</em> — a JSON list of steps — and replayed byte-for-byte later. The files in <code>docs/examples/*.json</code> are exactly that: they are the brand art <em>and</em> the integration tests (<code>atelier replay</code> runs them in-process, through the same dispatch path live callers take).</p>
   <p>The second idea is the <strong>see-and-critique loop</strong>. The model drawing the art is nearly blind, so the API is full of eyes: <code>doc_look</code> returns the frame as an inline PNG plus value statistics, <code>doc_critique</code> names failure modes, <code>doc_ref op=compare</code> scores the canvas against a reference image. Draw → look → fix, measured instead of remembered.</p>
-  <p>State lives on disk under <code>~/.atelier</code> (override: <code>ATELIER_HOME</code>): one directory per document holding <code>doc.json</code> (structure) plus one PNG per <em>cel</em> — the image at one (layer, frame) coordinate.</p>
+  <p>State lives on disk in a store — <code>./.atelier</code> when the working directory has one (<code>atelier init</code> stamps a project store), else the global <code>~/.atelier</code>; <code>ATELIER_HOME</code> overrides both. One directory per document holding <code>doc.json</code> (structure) plus one PNG per <em>cel</em> — the image at one (layer, frame) coordinate.</p>
 </section>
 
 <section id="tower">

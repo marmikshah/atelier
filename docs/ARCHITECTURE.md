@@ -70,7 +70,7 @@ flowchart TB
         model["Document = layers × frames × cels<br/>raster ops · blend · dither · palette math<br/>pure, deterministic, no async, no MCP"]
     end
 
-    subgraph disk["~/.atelier — the state"]
+    subgraph disk["./.atelier or ~/.atelier — the state"]
         store["&lt;doc-id&gt;/ document data"]
         recipe["&lt;doc-id&gt;/recipe.jsonl<br/>every doc is a replayable recipe"]
     end
@@ -143,8 +143,10 @@ entire library API; the MCP layer is a thin wrapper over it.
   below are one `impl Studio` block each:
 - **`store.rs`** — store/document lifecycle (create/open/list/delete), the
   journal (`recipe.jsonl`), and `Studio::default_home()` — the single
-  `ATELIER_HOME` policy the binary delegates to. `Studio::new()` reads
-  `ATELIER_HOME`; `Studio::with_docs_dir(path)` roots a studio at an explicit
+  store-resolution policy the binary delegates to: `ATELIER_HOME` → a
+  project-local `./.atelier` when one exists (`atelier init` stamps it) → the
+  global `~/.atelier`. `Studio::new()` resolves it;
+  `Studio::with_docs_dir(path)` roots a studio at an explicit
   directory (for embedding or tests, without touching process-global env).
 - **`ops_export.rs`** — every export entry point + dispatch (sheet/GIF/APNG/
   atlas/tileset).
