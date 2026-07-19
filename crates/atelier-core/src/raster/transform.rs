@@ -255,7 +255,7 @@ mod tests {
         assert_eq!(out.get_pixel(1, 2).0, [70, 0, 0, 255]); // was (1,1)
         assert_eq!(out.get_pixel(0, 1).0, [90, 0, 0, 255]); // was (0,2)
         assert_eq!(out.get_pixel(0, 2).0, [110, 0, 0, 255]); // was (1,2)
-        // Rows 0 and 3 are the corners the turn vacated.
+                                                             // Rows 0 and 3 are the corners the turn vacated.
         for x in 0..2 {
             assert_eq!(out.get_pixel(x, 0).0, [0, 0, 0, 0], "({x},0)");
             assert_eq!(out.get_pixel(x, 3).0, [0, 0, 0, 0], "({x},3)");
@@ -299,7 +299,11 @@ mod tests {
         assert_eq!(out.dimensions(), (4, 4));
         for y in 0..4 {
             for x in 0..4 {
-                assert_eq!(out.get_pixel(x, y).0, src.get_pixel(x / 2, y / 2).0, "({x},{y})");
+                assert_eq!(
+                    out.get_pixel(x, y).0,
+                    src.get_pixel(x / 2, y / 2).0,
+                    "({x},{y})"
+                );
             }
         }
     }
@@ -329,7 +333,10 @@ mod tests {
         // is the one that rejects 0 loudly.
         let src = tagged(2, 2);
         assert_eq!(scale(&src, 0, 0, ScaleMethod::Nearest).dimensions(), (1, 1));
-        assert_eq!(scale(&src, 0, 3, ScaleMethod::AreaAverage).dimensions(), (1, 3));
+        assert_eq!(
+            scale(&src, 0, 3, ScaleMethod::AreaAverage).dimensions(),
+            (1, 3)
+        );
     }
 
     #[test]
