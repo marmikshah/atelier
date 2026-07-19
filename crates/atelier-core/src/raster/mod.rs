@@ -23,7 +23,7 @@ pub use noise::{
     dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
 };
 pub use transform::{
-    ScaleMethod, downscale_area, interior_distance, remove_background, rotate_quarters, scale,
+    downscale_area, interior_distance, remove_background, rotate_quarters, scale, ScaleMethod,
 };
 
 // -- drawing helpers (overwrite semantics; alpha 0 = erase) -----------------
