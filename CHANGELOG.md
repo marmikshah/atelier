@@ -40,6 +40,15 @@ releases.
   used to linger); `doc.json` writes are temp-then-rename.
 - Doc drift: ARCHITECTURE.md (raster contents, LOC figures, binary deps),
   benchmark task count (8 → 10), module docs.
+- Doc drift, release sweep: site meta/OG no longer pin a model count,
+  architecture pages drop references to the deleted generators and name
+  `draw_ops()`/`fx_ops()`, the binary's module doc lists every subcommand,
+  `.env.example` documents the `agent` feature's `OPENAI_*` vars (and stops
+  claiming "no network calls" unconditionally), and the benchmark's `server`
+  note names the actual build. New to the README: a Troubleshooting section
+  (0-tools, stdio-vs-daemon, port conflict, logs, uninstall), `status` /
+  `uninstall` / `skills` in the CLI block, the MCP `atelier://doc/<id>`
+  resources, and `docs/examples/README.md` naming what each recipe shows.
 - **Installer registration hints name the right file per client** — Kimi Code
   reads `~/.kimi-code/mcp.json` (it has no `mcp add` CLI); the installer now
   prints the correct snippet for Claude Code, Kimi Code and Cursor in both http
@@ -75,6 +84,9 @@ releases.
   too; bare `skills install` still defaults to Claude Code. The installer
   refreshes whichever agents already have them and detects Kimi/Cursor on
   fresh installs.
+- **kimi-k3 benchmark row** — the showcase gains a fifth model: ten tasks drawn
+  by Kimi Code (K3) subagents through the same daemon, briefs and skill as the
+  other models. Tokens are unreported by that client (shown as —).
 
 ## [1.5.0] — 2026-07-17
 

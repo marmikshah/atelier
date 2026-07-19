@@ -100,6 +100,9 @@ deliberate act, and the context stays small enough to look often.
 atelier                    # stdio MCP server (your client spawns it)
 atelier --http             # HTTP server at 127.0.0.1:8765/mcp
 atelier install            # background daemon (launchd / systemd)
+atelier status             # daemon state and log locations
+atelier uninstall          # stop and remove the daemon
+atelier skills install     # write the skills for your agent (--for claude|kimi|cursor|all)
 atelier tools              # list the tool surface
 atelier library            # what's in your document store
 atelier replay recipe.json # replay a recorded session, byte-identically
@@ -121,6 +124,23 @@ a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
 or see how a call flows through the crates in the
 [architecture tour](https://marmikshah.github.io/atelier/architecture.html).
+
+## Troubleshooting
+
+- **Your client shows 0 tools** — restart it after registering; MCP clients read
+  their server list at session start.
+- **stdio or daemon?** The installer's default is the daemon: one shared server
+  and store, survives reboots, every client sees the same documents. Answering
+  `s` (or `ATELIER_MODE=stdio`) has each client spawn its own `atelier` — zero
+  setup, but each client gets its own store.
+- **Port 8765 already in use** — `atelier status` shows whether it's our daemon
+  (`atelier uninstall` stops it) or something else holding the port.
+- **Where are the logs?** The daemon writes `~/.atelier/logs/atelier.{out,err}.log`;
+  verbosity via `ATELIER_LOG` (`RUST_LOG` syntax). In stdio mode the same log
+  goes to the spawning client's stderr.
+- **Uninstall everything** — `install.sh uninstall` (or `atelier uninstall` for
+  just the daemon). Your documents in `~/.atelier` are kept; delete that
+  directory too if you want them gone.
 
 ## Agent mode — the one online command
 
@@ -158,6 +178,9 @@ Both drawing skills insist on the same two things: **build it in layers**, and
 **fix the region that's wrong instead of repainting the frame**. They prescribe
 no style and no palette — that's the request's business.
 
+Install or refresh them any time — `atelier skills install` (Claude Code by
+default, `--for kimi|cursor|all` for the others).
+
 atelier works fine without them; they just make the art better.
 
 ## Art is a recipe
@@ -182,7 +205,9 @@ atelier replay docs/examples/invader-march.json --home /tmp/demo
 
 The recipes in [docs/examples](docs/examples) are both the brand art and the
 integration tests. `--record session.jsonl` captures a whole sitting across
-several documents.
+several documents. MCP clients can also read any live document directly:
+`atelier://doc/<id>` (structure JSON) and `atelier://doc/<id>/render` (frame 0
+as PNG).
 
 ## A personal note
 
