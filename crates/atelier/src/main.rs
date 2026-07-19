@@ -34,6 +34,7 @@
 //! atelier library [rm ...]       # inspect or prune the document store
 //! atelier replay <recipe|id>     # rebuild a document from its journal
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
+//! atelier init                   # stamp ./.atelier — a project store here
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! atelier agent --task <t>       # the one online mode (feature-gated, off by default)
 //! ```
@@ -44,6 +45,7 @@ use atelier_mcp::server;
 mod agent;
 mod call;
 mod doctor;
+mod init;
 mod library;
 mod replay;
 mod service;
@@ -70,6 +72,8 @@ USAGE:
                                   run one tool call in-process — the whole op
                                   surface, scriptable from a shell. stdout gets the
                                   JSON report; exit 0 ok, 1 tool error, 2 bad call
+    atelier init                  stamp ./.atelier so this directory keeps its own
+                                  project store (art + recipes live next to it)
     atelier tools [--html|--schema <name>]
                                   list the tools (plain text; --html emits the
                                   reference page; --schema dumps one input schema)
@@ -223,6 +227,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("doctor") => std::process::exit(doctor::run(&args[2..])),
         // The CLI front door: one tool call, in-process, through dispatch.
         Some("call") => std::process::exit(call::run(&args[2..]).await),
+        // Stamp ./.atelier, opting this directory into a project store.
+        Some("init") => std::process::exit(init::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         // The one online mode: draw a task via an OpenAI-style API. Gated so a
@@ -340,5 +346,8 @@ mod tests {
             HELP.contains("atelier library"),
             "USAGE still lists its neighbours"
         );
+        for cmd in ["atelier call", "atelier init"] {
+            assert!(HELP.contains(cmd), "USAGE must list the {cmd} subcommand");
+        }
     }
 }
