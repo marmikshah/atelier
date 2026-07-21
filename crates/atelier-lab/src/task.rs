@@ -3,6 +3,10 @@
 //! Tasks are JSON records consumed from dataset files, so the struct mirrors
 //! the record exactly — serde field names are the frozen on-disk contract.
 
+use std::collections::HashSet;
+use std::io::{BufRead, Write};
+use std::path::Path;
+
 use serde::{Deserialize, Serialize};
 
 /// Style constraints a task imposes on the artwork. Values are free-form
@@ -69,6 +73,56 @@ impl Task {
     }
 }
 
+/// Write the frozen task records as newline-delimited JSON. JSONL keeps large
+/// benchmark splits diffable and lets callers stream them later.
+pub fn write_tasks_jsonl(path: &Path, tasks: &[Task]) -> Result<(), String> {
+    validate_task_set(tasks)?;
+    let file = std::fs::File::create(path)
+        .map_err(|e| format!("cannot create {}: {e}", path.display()))?;
+    let mut writer = std::io::BufWriter::new(file);
+    for task in tasks {
+        serde_json::to_writer(&mut writer, task).map_err(|e| e.to_string())?;
+        writer
+            .write_all(b"\n")
+            .map_err(|e| format!("cannot write {}: {e}", path.display()))?;
+    }
+    writer
+        .flush()
+        .map_err(|e| format!("cannot flush {}: {e}", path.display()))
+}
+
+/// Read and validate a task JSONL file, rejecting duplicate ids across the
+/// complete benchmark rather than allowing the later record to shadow one.
+pub fn read_tasks_jsonl(path: &Path) -> Result<Vec<Task>, String> {
+    let file =
+        std::fs::File::open(path).map_err(|e| format!("cannot open {}: {e}", path.display()))?;
+    let mut tasks = Vec::new();
+    for (line_no, line) in std::io::BufReader::new(file).lines().enumerate() {
+        let line = line.map_err(|e| format!("{} line {}: {e}", path.display(), line_no + 1))?;
+        if line.trim().is_empty() {
+            continue;
+        }
+        let task: Task = serde_json::from_str(&line)
+            .map_err(|e| format!("{} line {}: {e}", path.display(), line_no + 1))?;
+        task.validate()
+            .map_err(|e| format!("{} line {}: {e}", path.display(), line_no + 1))?;
+        tasks.push(task);
+    }
+    validate_task_set(&tasks)?;
+    Ok(tasks)
+}
+
+fn validate_task_set(tasks: &[Task]) -> Result<(), String> {
+    let mut ids = HashSet::new();
+    for task in tasks {
+        task.validate()?;
+        if !ids.insert(task.id.as_str()) {
+            return Err(format!("duplicate task id '{}'", task.id));
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -119,5 +173,16 @@ mod tests {
         task.width = 32;
         task.category = "scene".into();
         assert!(task.validate().is_err());
+    }
+
+    #[test]
+    fn task_jsonl_roundtrips_and_rejects_duplicate_ids() {
+        let task: Task = serde_json::from_str(LAB_MD_EXAMPLE).unwrap();
+        let path =
+            std::env::temp_dir().join(format!("atelier-lab-tasks-{}.jsonl", std::process::id()));
+        write_tasks_jsonl(&path, std::slice::from_ref(&task)).unwrap();
+        assert_eq!(read_tasks_jsonl(&path).unwrap(), vec![task.clone()]);
+        assert!(write_tasks_jsonl(&path, &[task.clone(), task]).is_err());
+        let _ = std::fs::remove_file(path);
     }
 }

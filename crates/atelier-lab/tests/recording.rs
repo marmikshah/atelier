@@ -245,3 +245,84 @@ fn replay_names_the_first_tampered_step() {
     let _ = std::fs::remove_dir_all(&root);
     let _ = std::fs::remove_dir_all(&replay_root);
 }
+
+#[test]
+fn episodes_bundle_and_annotations_export_in_canonical_order() {
+    let root = test_root("dataset-loop");
+    let episode_a = run_episode(&root, 11);
+    let episode_b = run_episode(&root, 12);
+    let manifest = root.join("pairs.jsonl");
+    let input = ComparisonBundleInput {
+        format_version: EVALUATION_FORMAT_VERSION,
+        id: "character-001-baseline-v-model".into(),
+        candidate_a: EpisodeCandidateInput {
+            id: "baseline".into(),
+            episode_dir: episode_a,
+            source: SampleSource::Model,
+            generator: Some("baseline-model".into()),
+        },
+        candidate_b: EpisodeCandidateInput {
+            id: "challenger".into(),
+            episode_dir: episode_b,
+            source: SampleSource::Search,
+            generator: Some("search-policy".into()),
+        },
+        consistency_group: None,
+    };
+    std::fs::write(
+        &manifest,
+        format!("{}\n", serde_json::to_string(&input).unwrap()),
+    )
+    .unwrap();
+
+    let bundle = root.join("bundle");
+    let comparisons = bundle_episode_comparisons(&manifest, &bundle).unwrap();
+    assert_eq!(comparisons.len(), 1);
+    let comparison = &comparisons[0];
+    let store = ArtifactStore::new(bundle.join(ARTIFACTS_DIR)).unwrap();
+    for artifact in [
+        &comparison.candidate_a.native,
+        &comparison.candidate_a.enlarged,
+        comparison.candidate_a.grayscale.as_ref().unwrap(),
+        comparison.candidate_a.notan.as_ref().unwrap(),
+    ] {
+        assert!(store.exists(&artifact.sha256));
+    }
+    let enlarged =
+        image::load_from_memory(&store.get(&comparison.candidate_a.enlarged.sha256).unwrap())
+            .unwrap();
+    assert_eq!((enlarged.width(), enlarged.height()), (256, 256));
+
+    let annotations_path = root.join("annotations.jsonl");
+    write_annotations_jsonl(
+        &annotations_path,
+        &[PairwiseAnnotation {
+            format_version: EVALUATION_FORMAT_VERSION,
+            comparison_id: comparison.id.clone(),
+            annotator_id: "reviewer-opaque".into(),
+            // Browser showed canonical B on the left.
+            presented: ["challenger".into(), "baseline".into()],
+            overall: Preference::Left,
+            requirement_adherence: Preference::Right,
+            native_readability: Preference::Tie,
+            reasons: vec![PreferenceReason::Silhouette],
+            explanation: Some("clearer shape".into()),
+        }],
+    )
+    .unwrap();
+    let critic_path = root.join("critic.jsonl");
+    let count = export_annotated_critic_jsonl(
+        &bundle.join(COMPARISONS_FILE),
+        &annotations_path,
+        &critic_path,
+    )
+    .unwrap();
+    assert_eq!(count, 1);
+    let row: serde_json::Value =
+        serde_json::from_str(std::fs::read_to_string(&critic_path).unwrap().trim()).unwrap();
+    assert_eq!(row["overall"], "candidate_b");
+    assert_eq!(row["requirement_adherence"], "candidate_a");
+    assert_eq!(row["native_readability"], "tie");
+    assert!(row.get("annotator_id").is_none());
+    let _ = std::fs::remove_dir_all(&root);
+}

@@ -6,12 +6,13 @@
 //! latency, and tool count out of the judgement surface without losing
 //! provenance needed for later analysis.
 
+use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, Write};
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::artifacts::ArtifactRef;
+use crate::artifacts::{ArtifactKind, ArtifactRef};
 use crate::task::Task;
 
 /// Independent from the episode format: comparison records can evolve without
@@ -25,6 +26,58 @@ pub enum SampleSource {
     Human,
     Corruption,
     Search,
+}
+
+impl PairwiseCandidate {
+    fn validate(&self) -> Result<(), String> {
+        if self.id.trim().is_empty() || self.episode_id.trim().is_empty() {
+            return Err("candidate id and episode_id cannot be empty".into());
+        }
+        validate_artifact(&self.id, "native", &self.native, ArtifactKind::RenderNative)?;
+        validate_artifact(
+            &self.id,
+            "enlarged",
+            &self.enlarged,
+            ArtifactKind::RenderEnlarged,
+        )?;
+        if let Some(grayscale) = &self.grayscale {
+            validate_artifact(
+                &self.id,
+                "grayscale",
+                grayscale,
+                ArtifactKind::RenderGrayscale,
+            )?;
+        }
+        if let Some(notan) = &self.notan {
+            validate_artifact(&self.id, "notan", notan, ArtifactKind::RenderNotan)?;
+        }
+        Ok(())
+    }
+}
+
+fn validate_artifact(
+    candidate_id: &str,
+    view: &str,
+    artifact: &ArtifactRef,
+    expected_kind: ArtifactKind,
+) -> Result<(), String> {
+    let valid_hash = artifact.sha256.len() == 64
+        && artifact
+            .sha256
+            .chars()
+            .all(|c| c.is_ascii_hexdigit() && !c.is_ascii_uppercase());
+    if !valid_hash {
+        return Err(format!(
+            "candidate '{candidate_id}' {view} artifact has an invalid hash"
+        ));
+    }
+    if artifact.kind != expected_kind {
+        return Err(format!(
+            "candidate '{candidate_id}' {view} artifact has kind {:?}, expected {:?}",
+            artifact.kind, expected_kind
+        ));
+    }
+    Ok(())
 }
 
 /// Everything the UI may show for one candidate. `generator` remains in the
@@ -91,6 +144,9 @@ impl PairwiseComparison {
                 self.id
             ));
         }
+        self.task.validate()?;
+        self.candidate_a.validate()?;
+        self.candidate_b.validate()?;
         Ok(())
     }
 }
@@ -139,6 +195,42 @@ pub struct PairwiseAnnotation {
     pub explanation: Option<String>,
 }
 
+/// Canonical preference in stored candidate order. Unlike [`Preference`],
+/// this is independent of whichever candidate the browser placed left.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CanonicalPreference {
+    CandidateA,
+    CandidateB,
+    Tie,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CriticLabelSource {
+    Human,
+    Synthetic,
+}
+
+/// Trainer-facing contract. It deliberately repeats the task and candidates
+/// so each JSONL row is independently consumable, and omits annotator ids.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CriticExample {
+    pub format_version: u32,
+    pub id: String,
+    pub comparison_id: String,
+    pub task: Task,
+    pub candidate_a: PairwiseCandidate,
+    pub candidate_b: PairwiseCandidate,
+    pub overall: CanonicalPreference,
+    pub requirement_adherence: CanonicalPreference,
+    pub native_readability: CanonicalPreference,
+    pub reasons: Vec<PreferenceReason>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub explanation: Option<String>,
+    pub label_source: CriticLabelSource,
+}
+
 impl PairwiseAnnotation {
     pub fn validate_against(&self, comparison: &PairwiseComparison) -> Result<(), String> {
         if self.format_version != EVALUATION_FORMAT_VERSION {
@@ -171,17 +263,34 @@ impl PairwiseAnnotation {
         }
         Ok(())
     }
+
+    fn canonicalize(
+        &self,
+        comparison: &PairwiseComparison,
+        preference: Preference,
+    ) -> CanonicalPreference {
+        let preferred = match preference {
+            Preference::Tie => return CanonicalPreference::Tie,
+            Preference::Left => &self.presented[0],
+            Preference::Right => &self.presented[1],
+        };
+        if preferred == &comparison.candidate_a.id {
+            CanonicalPreference::CandidateA
+        } else {
+            CanonicalPreference::CandidateB
+        }
+    }
 }
 
 pub fn write_comparisons_jsonl(
     path: &Path,
     comparisons: &[PairwiseComparison],
 ) -> Result<(), String> {
+    validate_comparison_set(comparisons)?;
     let file = std::fs::File::create(path)
         .map_err(|e| format!("cannot create {}: {e}", path.display()))?;
     let mut writer = std::io::BufWriter::new(file);
     for comparison in comparisons {
-        comparison.validate()?;
         serde_json::to_writer(&mut writer, comparison).map_err(|e| e.to_string())?;
         writer
             .write_all(b"\n")
@@ -205,6 +314,122 @@ pub fn read_comparisons_jsonl(path: &Path) -> Result<Vec<PairwiseComparison>, St
             .map_err(|e| format!("{} line {}: {e}", path.display(), line_no + 1))?;
         comparison.validate()?;
         out.push(comparison);
+    }
+    validate_comparison_set(&out)?;
+    Ok(out)
+}
+
+fn validate_comparison_set(comparisons: &[PairwiseComparison]) -> Result<(), String> {
+    let mut ids = HashSet::new();
+    for comparison in comparisons {
+        comparison.validate()?;
+        if !ids.insert(comparison.id.as_str()) {
+            return Err(format!("duplicate comparison id '{}'", comparison.id));
+        }
+    }
+    Ok(())
+}
+
+pub fn write_annotations_jsonl(
+    path: &Path,
+    annotations: &[PairwiseAnnotation],
+) -> Result<(), String> {
+    write_jsonl(path, annotations)
+}
+
+pub fn read_annotations_jsonl(path: &Path) -> Result<Vec<PairwiseAnnotation>, String> {
+    read_jsonl(path)
+}
+
+/// Join blinded browser annotations to comparisons and remove presentation
+/// order from all labels. Duplicate judgements by one annotator are rejected:
+/// repeated/reversed consistency pairs need distinct comparison ids.
+pub fn export_critic_examples(
+    comparisons: &[PairwiseComparison],
+    annotations: &[PairwiseAnnotation],
+) -> Result<Vec<CriticExample>, String> {
+    let mut by_id = HashMap::new();
+    for comparison in comparisons {
+        comparison.validate()?;
+        if by_id.insert(comparison.id.as_str(), comparison).is_some() {
+            return Err(format!("duplicate comparison id '{}'", comparison.id));
+        }
+    }
+
+    let mut seen = HashSet::new();
+    let mut out = Vec::with_capacity(annotations.len());
+    for annotation in annotations {
+        let comparison = by_id
+            .get(annotation.comparison_id.as_str())
+            .ok_or_else(|| {
+                format!(
+                    "annotation targets missing comparison '{}'",
+                    annotation.comparison_id
+                )
+            })?;
+        annotation.validate_against(comparison)?;
+        if !seen.insert((
+            annotation.comparison_id.as_str(),
+            annotation.annotator_id.as_str(),
+        )) {
+            return Err(format!(
+                "duplicate annotation for comparison '{}' by annotator '{}'",
+                annotation.comparison_id, annotation.annotator_id
+            ));
+        }
+        let fingerprint = serde_json::to_vec(annotation).map_err(|e| e.to_string())?;
+        let fingerprint = crate::artifacts::sha256_hex(&fingerprint);
+        out.push(CriticExample {
+            format_version: EVALUATION_FORMAT_VERSION,
+            id: format!("human-{}", &fingerprint[..16]),
+            comparison_id: comparison.id.clone(),
+            task: comparison.task.clone(),
+            candidate_a: comparison.candidate_a.clone(),
+            candidate_b: comparison.candidate_b.clone(),
+            overall: annotation.canonicalize(comparison, annotation.overall),
+            requirement_adherence: annotation
+                .canonicalize(comparison, annotation.requirement_adherence),
+            native_readability: annotation.canonicalize(comparison, annotation.native_readability),
+            reasons: annotation.reasons.clone(),
+            explanation: annotation.explanation.clone(),
+            label_source: CriticLabelSource::Human,
+        });
+    }
+    Ok(out)
+}
+
+pub fn write_critic_examples_jsonl(path: &Path, examples: &[CriticExample]) -> Result<(), String> {
+    write_jsonl(path, examples)
+}
+
+fn write_jsonl<T: Serialize>(path: &Path, records: &[T]) -> Result<(), String> {
+    let file = std::fs::File::create(path)
+        .map_err(|e| format!("cannot create {}: {e}", path.display()))?;
+    let mut writer = std::io::BufWriter::new(file);
+    for record in records {
+        serde_json::to_writer(&mut writer, record).map_err(|e| e.to_string())?;
+        writer
+            .write_all(b"\n")
+            .map_err(|e| format!("cannot write {}: {e}", path.display()))?;
+    }
+    writer
+        .flush()
+        .map_err(|e| format!("cannot flush {}: {e}", path.display()))
+}
+
+fn read_jsonl<T: serde::de::DeserializeOwned>(path: &Path) -> Result<Vec<T>, String> {
+    let file =
+        std::fs::File::open(path).map_err(|e| format!("cannot open {}: {e}", path.display()))?;
+    let mut out = Vec::new();
+    for (line_no, line) in std::io::BufReader::new(file).lines().enumerate() {
+        let line = line.map_err(|e| format!("{} line {}: {e}", path.display(), line_no + 1))?;
+        if line.trim().is_empty() {
+            continue;
+        }
+        out.push(
+            serde_json::from_str(&line)
+                .map_err(|e| format!("{} line {}: {e}", path.display(), line_no + 1))?,
+        );
     }
     Ok(out)
 }
@@ -284,6 +509,20 @@ mod tests {
             explanation: None,
         };
         annotation.validate_against(&comparison).unwrap();
+        let examples = export_critic_examples(
+            std::slice::from_ref(&comparison),
+            std::slice::from_ref(&annotation),
+        )
+        .unwrap();
+        assert_eq!(examples[0].overall, CanonicalPreference::CandidateB);
+        assert_eq!(
+            examples[0].native_readability,
+            CanonicalPreference::CandidateA
+        );
+        assert_eq!(examples[0].label_source, CriticLabelSource::Human);
+        assert_eq!(examples[0].explanation, annotation.explanation);
+        let value = serde_json::to_value(&examples[0]).unwrap();
+        assert!(value.get("annotator_id").is_none());
         let _ = std::fs::remove_file(path);
     }
 
@@ -292,5 +531,27 @@ mod tests {
         let candidate = candidate("same", 'a');
         let comparison = PairwiseComparison::new("cmp", task(), candidate.clone(), candidate);
         assert!(comparison.validate().is_err());
+    }
+
+    #[test]
+    fn duplicate_annotation_is_rejected() {
+        let comparison = PairwiseComparison::new(
+            "cmp-1",
+            task(),
+            candidate("draft-a", 'a'),
+            candidate("draft-b", 'b'),
+        );
+        let annotation = PairwiseAnnotation {
+            format_version: EVALUATION_FORMAT_VERSION,
+            comparison_id: comparison.id.clone(),
+            annotator_id: "reviewer-1".into(),
+            presented: ["draft-a".into(), "draft-b".into()],
+            overall: Preference::Left,
+            requirement_adherence: Preference::Left,
+            native_readability: Preference::Left,
+            reasons: vec![],
+            explanation: None,
+        };
+        assert!(export_critic_examples(&[comparison], &[annotation.clone(), annotation]).is_err());
     }
 }
