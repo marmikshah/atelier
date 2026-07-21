@@ -18,6 +18,7 @@
 mod action;
 mod artifacts;
 mod corruption;
+mod dataset;
 mod env;
 mod evaluation;
 mod observation;
@@ -35,9 +36,15 @@ pub use corruption::{
     apply_operation, corrupt, CorruptionKind, CorruptionOperation, CorruptionRecord, IndexedSprite,
     PaletteEdit, PixelEdit, Severity,
 };
+pub use dataset::{
+    bundle_episode_comparisons, export_annotated_critic_jsonl, ComparisonBundleInput,
+    EpisodeCandidateInput, COMPARISONS_FILE,
+};
 pub use env::{AtelierEnv, CheckpointId, EpisodeResult, PixelArtEnv, Result};
 pub use evaluation::{
-    read_comparisons_jsonl, write_comparisons_jsonl, PairwiseAnnotation, PairwiseCandidate,
+    export_critic_examples, read_annotations_jsonl, read_comparisons_jsonl,
+    write_annotations_jsonl, write_comparisons_jsonl, write_critic_examples_jsonl,
+    CanonicalPreference, CriticExample, CriticLabelSource, PairwiseAnnotation, PairwiseCandidate,
     PairwiseComparison, Preference, PreferenceReason, SampleSource, EVALUATION_FORMAT_VERSION,
 };
 pub use observation::{
@@ -50,5 +57,5 @@ pub use recorder::{
 };
 pub use replay::{replay, Divergence, DivergenceKind, ReplayReport};
 pub use storage::Storage;
-pub use task::{StyleSpec, Task};
+pub use task::{read_tasks_jsonl, write_tasks_jsonl, StyleSpec, Task};
 pub use transition::{ToolResult, Transition};

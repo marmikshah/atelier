@@ -19,4 +19,5 @@ Cargo.lock
 
 # benchmark run artifacts (transcripts, isolated homes, exported art)
 benchmarks/runs/
+research/
 __pycache__/
