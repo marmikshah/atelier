@@ -36,6 +36,7 @@ mod timeline;
 mod tests;
 
 pub use batch::{color_array, draw_ops, fx_ops, validate_batch_op};
+pub use palette::IndexedRaster;
 pub use render::seam_axis_img;
 
 #[derive(Serialize, Deserialize, Clone)]
