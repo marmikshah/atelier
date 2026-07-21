@@ -5,6 +5,7 @@ members = [
     "crates/atelier-studio",
     "crates/atelier-mcp",
     "crates/atelier",
+    "crates/atelier-lab",
 ]
 
 # Shared package metadata — each crate inherits with `field.workspace = true`.
