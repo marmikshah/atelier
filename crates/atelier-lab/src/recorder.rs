@@ -19,6 +19,7 @@ use crate::action::{Action, CompileError, CompiledCall};
 use crate::artifacts::ArtifactRef;
 use crate::env::{CheckpointId, EpisodeResult};
 use crate::observation::{DocMetadata, LightObservation};
+use crate::policy::{PolicyOutcome, PolicyRequest};
 use crate::task::Task;
 use crate::transition::ToolResult;
 
@@ -80,6 +81,13 @@ pub enum EventKind {
     Reset {
         task: Task,
         observation: LightObservation,
+    },
+    /// One external policy attempt, successful or not. It precedes the Step
+    /// event for a successful response and stands alone for provider errors.
+    PolicyCall {
+        policy: String,
+        request: PolicyRequest,
+        outcome: PolicyOutcome,
     },
     /// One `step`, accepted or rejected. `intent` mirrors the action's
     /// model-provided intent for consumers that index event metadata without

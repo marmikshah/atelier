@@ -22,8 +22,10 @@ mod dataset;
 mod env;
 mod evaluation;
 mod observation;
+mod policy;
 mod recorder;
 mod replay;
+mod runner;
 mod storage;
 mod task;
 mod transition;
@@ -51,11 +53,16 @@ pub use observation::{
     DocMetadata, FullObservation, IntegrityChecks, LayerObservation, LightObservation, Observation,
     ObservationLevel, Renders,
 };
+pub use policy::{
+    CommandPolicy, Policy, PolicyError, PolicyFeedback, PolicyOutcome, PolicyRequest,
+    PolicyResponse, PolicyUsage, MAX_POLICY_RESPONSE_BYTES, POLICY_FORMAT_VERSION,
+};
 pub use recorder::{
     Event, EventKind, RecordedFullObservation, RecordedObservation, RecordedRenders, Recorder,
     EPISODE_LOG_FILE, FORMAT_VERSION,
 };
 pub use replay::{replay, Divergence, DivergenceKind, ReplayReport};
+pub use runner::{run_policy_episode, RunnerConfig, RunnerReport, RunnerTermination};
 pub use storage::Storage;
 pub use task::{read_tasks_jsonl, write_tasks_jsonl, StyleSpec, Task};
 pub use transition::{ToolResult, Transition};

@@ -1,14 +1,28 @@
 use std::collections::BTreeMap;
 use std::path::Path;
+use std::time::Duration;
 
-use atelier_lab::{bundle_episode_comparisons, export_annotated_critic_jsonl, read_tasks_jsonl};
+use atelier_lab::{
+    bundle_episode_comparisons, export_annotated_critic_jsonl, read_tasks_jsonl, replay,
+    run_policy_episode, AtelierEnv, CommandPolicy, RunnerConfig,
+};
 
 const USAGE: &str = "atelier-lab data tools
 
 usage:
   atelier-lab validate-tasks <tasks.jsonl>
   atelier-lab bundle <pairs.jsonl> <output-dir>
-  atelier-lab export-critic <comparisons.jsonl> <annotations.jsonl> <output.jsonl>";
+  atelier-lab export-critic <comparisons.jsonl> <annotations.jsonl> <output.jsonl>
+  atelier-lab replay <episode-dir> <replay-root>
+  atelier-lab run-policy <tasks.jsonl> <task-id> <episode-root> --policy <program> [options]
+
+run-policy options:
+  --policy-arg <arg>       argument passed directly to the policy (repeatable)
+  --name <name>            policy/model provenance label (default: program)
+  --seed <n>               deterministic episode seed (default: 0)
+  --max-turns <n>          model-call limit (default: 40)
+  --max-policy-errors <n>  provider/protocol error limit (default: 3)
+  --timeout-secs <n>       per-call command timeout (default: 300)";
 
 fn main() {
     if let Err(error) = run() {
@@ -50,6 +64,126 @@ fn run() -> Result<(), String> {
             println!("exported {count} critic examples to {output}");
             Ok(())
         }
+        [command, episode, replay_root] if command == "replay" => {
+            let report = replay(Path::new(episode), Path::new(replay_root))?;
+            println!(
+                "{}",
+                serde_json::to_string(&report).map_err(|e| e.to_string())?
+            );
+            if report.matched {
+                Ok(())
+            } else {
+                Err("episode replay diverged".into())
+            }
+        }
+        [command, rest @ ..] if command == "run-policy" => run_policy(rest),
         _ => Err("invalid arguments".into()),
     }
+}
+
+fn run_policy(args: &[String]) -> Result<(), String> {
+    if args.len() < 3 {
+        return Err("run-policy needs <tasks.jsonl> <task-id> <episode-root>".into());
+    }
+    let tasks_path = &args[0];
+    let task_id = &args[1];
+    let episode_root = &args[2];
+    let mut program = None;
+    let mut policy_args = Vec::new();
+    let mut name = None;
+    let mut seed = 0u64;
+    let mut config = RunnerConfig::default();
+    let mut timeout_secs = 300u64;
+
+    let mut i = 3;
+    while i < args.len() {
+        let value = |index: usize| -> Result<&String, String> {
+            args.get(index + 1)
+                .ok_or_else(|| format!("{} needs a value", args[index]))
+        };
+        match args[i].as_str() {
+            "--policy" => {
+                program = Some(value(i)?.clone());
+                i += 2;
+            }
+            "--policy-arg" => {
+                policy_args.push(value(i)?.clone());
+                i += 2;
+            }
+            "--name" => {
+                name = Some(value(i)?.clone());
+                i += 2;
+            }
+            "--seed" => {
+                seed = value(i)?
+                    .parse()
+                    .map_err(|_| "--seed must be an unsigned integer".to_string())?;
+                i += 2;
+            }
+            "--max-turns" => {
+                config.max_turns = value(i)?
+                    .parse()
+                    .map_err(|_| "--max-turns must be an integer".to_string())?;
+                i += 2;
+            }
+            "--max-policy-errors" => {
+                config.max_policy_errors = value(i)?
+                    .parse()
+                    .map_err(|_| "--max-policy-errors must be an integer".to_string())?;
+                i += 2;
+            }
+            "--timeout-secs" => {
+                timeout_secs = value(i)?
+                    .parse()
+                    .map_err(|_| "--timeout-secs must be an unsigned integer".to_string())?;
+                i += 2;
+            }
+            other => return Err(format!("unknown run-policy argument '{other}'")),
+        }
+    }
+    config.validate()?;
+    if timeout_secs == 0 {
+        return Err("--timeout-secs must be at least 1".into());
+    }
+    let program = program.ok_or("run-policy requires --policy <program>")?;
+    let policy_name = name.unwrap_or_else(|| program.clone());
+    let tasks = read_tasks_jsonl(Path::new(tasks_path))?;
+    let task = tasks
+        .iter()
+        .find(|task| &task.id == task_id)
+        .ok_or_else(|| format!("task '{task_id}' not found in {tasks_path}"))?;
+    let mut env = AtelierEnv::new(episode_root, seed)?;
+    let mut policy = CommandPolicy::new(
+        policy_name,
+        &program,
+        policy_args,
+        Duration::from_secs(timeout_secs),
+    )?;
+    let report = run_policy_episode(&mut env, task, &mut policy, &config)?;
+    eprintln!(
+        "atelier-lab: {:?} after {} turn(s); episode {}",
+        report.termination,
+        report.turns,
+        env.episode_dir().display()
+    );
+    let summary = serde_json::json!({
+        "policy": report.policy,
+        "turns": report.turns,
+        "accepted_actions": report.accepted_actions,
+        "rejected_actions": report.rejected_actions,
+        "policy_errors": report.policy_errors,
+        "usage": report.usage,
+        "termination": report.termination,
+        "episode_id": report.result.episode_id,
+        "episode_dir": env.episode_dir(),
+        "task_id": report.result.task_id,
+        "steps": report.result.steps,
+        "stage": report.result.stage,
+        "completed": report.result.completed,
+    });
+    println!(
+        "{}",
+        serde_json::to_string(&summary).map_err(|e| e.to_string())?
+    );
+    Ok(())
 }

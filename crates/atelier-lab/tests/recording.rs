@@ -80,6 +80,7 @@ fn episode_log_captures_the_full_flow() {
         .iter()
         .map(|e| match &e.event {
             EventKind::Reset { .. } => "reset",
+            EventKind::PolicyCall { .. } => "policy_call",
             EventKind::Step { .. } => "step",
             EventKind::Observation { .. } => "observation",
             EventKind::Checkpoint { .. } => "checkpoint",

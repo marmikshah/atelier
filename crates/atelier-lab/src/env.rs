@@ -32,6 +32,7 @@ use crate::observation::{
     DocMetadata, FullObservation, IntegrityChecks, LayerObservation, LightObservation, Observation,
     ObservationLevel, Renders,
 };
+use crate::policy::{PolicyOutcome, PolicyRequest};
 use crate::recorder::{
     EventKind, RecordedFullObservation, RecordedObservation, RecordedRenders, Recorder,
 };
@@ -197,6 +198,27 @@ impl AtelierEnv {
             .append(EventKind::Feedback {
                 label: label.into(),
                 note,
+            })
+            .map(|_| ())
+    }
+
+    /// Record one provider-neutral policy exchange. Credentials and provider
+    /// stderr never enter these typed values; the request/response and usage
+    /// needed to reproduce or price the trajectory do.
+    pub fn record_policy_call(
+        &mut self,
+        policy: &str,
+        request: PolicyRequest,
+        outcome: PolicyOutcome,
+    ) -> Result<()> {
+        if policy.trim().is_empty() {
+            return Err("policy name cannot be empty".into());
+        }
+        self.recorder
+            .append(EventKind::PolicyCall {
+                policy: policy.into(),
+                request,
+                outcome,
             })
             .map(|_| ())
     }

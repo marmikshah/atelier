@@ -36,7 +36,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # MCP server stack (stdio + streamable-HTTP transports).
 rmcp = { version = "1.7", features = ["server", "macros", "transport-io", "transport-streamable-http-server", "schemars"] }
 schemars = "1"
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "net", "process", "signal", "sync"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "net", "process", "signal", "sync", "time"] }
 axum = "0.8"
 
 # Internal crates — path for local builds, version for crates.io publish.
