@@ -26,9 +26,9 @@ The task text is the exact input. Keep it fixed so runs stay comparable.
 ## How runs are made
 
 Runs are driven by **agent subagents driving atelier's tools** — the same path
-any user takes (Claude Code for the Anthropic models, Kimi Code for kimi-k3),
-over the CLI or MCP. There is no bespoke benchmark runner: the agent gets the
-task text and the tool surface, and works.
+any user takes (Claude Code for the Anthropic models, Kimi Code for kimi-k3,
+and Codex for gpt-5.6-sol-max), over the CLI or MCP. There is no bespoke
+benchmark runner: the agent gets the task text and the tool surface, and works.
 
 ```sh
 # the CLI path needs no setup at all — the agent's shell just runs:
@@ -44,9 +44,10 @@ exported GIF.
 ## Reading the numbers
 
 Metrics come from the client that ran the agent, so they describe **that client's
-loop**, not a normalised API call — Claude Code brings its own system prompt,
-context handling and caching. Compare runs made the same way; treat
-cross-client numbers as indicative, not exact.
+loop**, not a normalised API call — Claude Code, Kimi Code, and Codex bring their
+own system prompts, context handling, and caching. Compare runs made the same
+way; treat cross-client numbers as indicative, not exact. `runs.json` records
+the Atelier version used for each batch when it differs.
 
 What is exactly reproducible is the **art**: every document is an ordered
 sequence of tool calls, so a recorded run replays byte-identically via
