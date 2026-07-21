@@ -50,10 +50,11 @@ fn run_episode(root: &Path, seed: u64) -> PathBuf {
     // Stage violation — must be recorded, not dropped.
     let t = env.step(&paint(0, 0, 2, 0)).unwrap();
     assert!(!t.accepted);
-    env.step(&Action::new(ActionKind::SetPalette {
+    let mut palette = Action::new(ActionKind::SetPalette {
         colors: vec![[0, 0, 0, 255], [200, 30, 30, 255], [30, 30, 200, 255]],
-    }))
-    .unwrap();
+    });
+    palette.intent = Some("establish the shield's red focal ramp".into());
+    env.step(&palette).unwrap();
     env.step(&Action::new(ActionKind::AdvanceStage)).unwrap();
     env.step(&paint(2, 3, 4, 1)).unwrap();
     env.observe(ObservationLevel::Full).unwrap();
@@ -125,6 +126,13 @@ fn episode_log_captures_the_full_flow() {
     assert!(!accepted);
     assert!(matches!(error, Some(CompileError::StageViolation { .. })));
     assert!(observation_after.is_none());
+    let EventKind::Step { intent, .. } = &events[2].event else {
+        panic!("event 2 is the palette step")
+    };
+    assert_eq!(
+        intent.as_deref(),
+        Some("establish the shield's red focal ramp")
+    );
     let _ = std::fs::remove_dir_all(&root);
 }
 

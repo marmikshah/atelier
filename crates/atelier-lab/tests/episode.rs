@@ -137,6 +137,12 @@ fn episode_paint_checkpoint_restore() {
     assert_eq!(idx(obs, 2, 3), Some(1), "first patch survives the restore");
     assert_eq!(idx(obs, 10, 10), None, "second patch rolled back");
     assert_eq!(obs.integrity.opaque_pixels, 16);
+    assert_eq!(obs.stage, Stage::Silhouette);
+    assert_eq!(
+        obs.recent_actions.len(),
+        3,
+        "the rejected branch's action history is rolled back"
+    );
 
     // Finish via the action, then finish() reports a completed episode.
     let t = env.step(&Action::new(ActionKind::Finish)).unwrap();
@@ -146,11 +152,35 @@ fn episode_paint_checkpoint_restore() {
     assert!(result.completed);
     assert_eq!(result.task_id, "character-001");
     assert_eq!(result.seed, 42);
-    assert_eq!(result.steps, 5);
+    assert_eq!(
+        result.steps, 4,
+        "rolled-back branch steps do not consume budget"
+    );
     assert!(
         env.step(&paint).is_err(),
         "stepping a finished episode errors"
     );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn checkpoint_restores_stage_state_for_branch_search() {
+    let root = test_root("checkpoint-stage");
+    let mut env = AtelierEnv::new(&root, 9).unwrap();
+    env.reset(&sample_task()).unwrap();
+    env.step(&Action::new(ActionKind::SetPalette {
+        colors: vec![[0, 0, 0, 255]],
+    }))
+    .unwrap();
+    env.step(&Action::new(ActionKind::AdvanceStage)).unwrap();
+    let cp = env.checkpoint().unwrap();
+
+    env.step(&Action::new(ActionKind::AdvanceStage)).unwrap();
+    assert_eq!(env.stage(), Stage::ColorBlocking);
+    let restored = env.restore(&cp).unwrap();
+    assert_eq!(env.stage(), Stage::Silhouette);
+    assert_eq!(restored.light().stage, Stage::Silhouette);
 
     let _ = std::fs::remove_dir_all(&root);
 }

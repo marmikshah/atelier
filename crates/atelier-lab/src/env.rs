@@ -6,15 +6,16 @@
 //!
 //! Isolation is per-episode: each env gets a unique episode directory under
 //! a configurable root, its own `Studio` rooted there, and its own seed —
-//! the per-tenant model the SaaS shape later inherits. Checkpoints cover the
-//! DOCUMENT only (atelier's checkpoint semantics); env bookkeeping — stage,
-//! recent actions, step count — is not rolled back by `restore`.
+//! the per-tenant model the SaaS shape later inherits. Atelier snapshots the
+//! document; the lab pairs it with stage, recent-action history, step count,
+//! and terminal state so branching search restores everything the policy sees.
 //!
 //! Every env records its own episode: an append-only event log
 //! (`episode.jsonl`, see `recorder`) and a content-addressed artifact store
 //! (`artifacts/`, see `artifacts`) inside the episode directory. Recording
 //! is not optional — an episode without its log is training data lost.
 
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -102,6 +103,18 @@ pub struct AtelierEnv {
     recent: std::collections::VecDeque<String>,
     steps: usize,
     finished: bool,
+    /// Document checkpoints also capture policy-visible episode state. Search
+    /// restores must not leak a rejected branch's stage, history, or budget
+    /// usage into the next candidate.
+    checkpoints: HashMap<CheckpointId, EnvCheckpoint>,
+}
+
+#[derive(Clone)]
+struct EnvCheckpoint {
+    stage: crate::action::Stage,
+    recent: std::collections::VecDeque<String>,
+    steps: usize,
+    finished: bool,
 }
 
 impl AtelierEnv {
@@ -136,6 +149,7 @@ impl AtelierEnv {
             recent: std::collections::VecDeque::new(),
             steps: 0,
             finished: false,
+            checkpoints: HashMap::new(),
         })
     }
 
@@ -337,6 +351,7 @@ impl PixelArtEnv for AtelierEnv {
     /// back at Specification, recent actions and step count cleared. A doc
     /// left over from a previous reset on this env is deleted first.
     fn reset(&mut self, task: &Task) -> Result<Observation> {
+        task.validate()?;
         if let Some(old) = self.doc_id.take() {
             self.dispatch_ok("delete_doc", json!({"doc_id": old}))?;
         }
@@ -355,6 +370,7 @@ impl PixelArtEnv for AtelierEnv {
         self.recent.clear();
         self.steps = 0;
         self.finished = false;
+        self.checkpoints.clear();
         tracing::info!(episode = %self.episode_id, task = %task.id, "episode reset");
         let observation = self.observe_light()?;
         self.recorder.append(EventKind::Reset {
@@ -417,6 +433,11 @@ impl PixelArtEnv for AtelierEnv {
             width: before.width,
             height: before.height,
             palette: before.palette.clone(),
+            max_colors: self
+                .task
+                .as_ref()
+                .map(|task| task.max_colors as usize)
+                .ok_or("no task — reset the episode first")?,
             stage: self.stage,
             layers: before.layers.iter().map(|l| l.indices.clone()).collect(),
         };
@@ -434,6 +455,25 @@ impl PixelArtEnv for AtelierEnv {
                 }
             }
             Ok(compiled) => {
+                // A DSL action is one transition even when it compiles to
+                // several Atelier calls. Snapshot multi-call actions so a
+                // failure cannot leave behind a half-applied rejected edit.
+                let transaction = if compiled.len() > 1 {
+                    let saved = self.dispatch_ok(
+                        "doc_checkpoint",
+                        json!({"doc_id": self.doc_id()?, "action": "save", "label": "lab-transaction"}),
+                    )?;
+                    Some(
+                        saved["saved"]
+                            .as_str()
+                            .ok_or_else(|| {
+                                format!("transaction checkpoint returned no id: {saved}")
+                            })?
+                            .to_string(),
+                    )
+                } else {
+                    None
+                };
                 let mut tool_results = Vec::with_capacity(compiled.len());
                 let mut accepted = true;
                 for c in &compiled {
@@ -443,6 +483,26 @@ impl PixelArtEnv for AtelierEnv {
                     if !accepted {
                         break;
                     }
+                }
+                if let Some(checkpoint_id) = transaction {
+                    if !accepted {
+                        self.dispatch_ok(
+                            "doc_checkpoint",
+                            json!({
+                                "doc_id": self.doc_id()?,
+                                "action": "restore",
+                                "checkpoint_id": checkpoint_id,
+                            }),
+                        )?;
+                    }
+                    self.dispatch_ok(
+                        "doc_checkpoint",
+                        json!({
+                            "doc_id": self.doc_id()?,
+                            "action": "prune",
+                            "checkpoint_id": checkpoint_id,
+                        }),
+                    )?;
                 }
                 if accepted {
                     match &action.action {
@@ -472,9 +532,9 @@ impl PixelArtEnv for AtelierEnv {
         };
         self.recorder.append(EventKind::Step {
             observation_before: before,
-            // Model reasoning placeholder — item 11 reserves the slot; the
-            // policy that fills it arrives in a later phase.
-            intent: None,
+            // Keep the dedicated field for the frozen event contract while
+            // sourcing it from the action metadata the model actually emits.
+            intent: transition.action.intent.clone(),
             action: transition.action.clone(),
             compiled: transition.compiled.clone(),
             tool_results: transition.tool_results.clone(),
@@ -500,17 +560,34 @@ impl PixelArtEnv for AtelierEnv {
         self.recorder.append(EventKind::Checkpoint {
             checkpoint_id: checkpoint_id.clone(),
         })?;
+        self.checkpoints.insert(
+            checkpoint_id.clone(),
+            EnvCheckpoint {
+                stage: self.stage,
+                recent: self.recent.clone(),
+                steps: self.steps,
+                finished: self.finished,
+            },
+        );
         Ok(checkpoint_id)
     }
 
-    /// Restore a document checkpoint, then answer the resulting state.
-    /// Document-only (see module docs): stage, recent actions and step count
-    /// are untouched.
+    /// Restore a document checkpoint and its matching policy-visible episode
+    /// state, then answer the result.
     fn restore(&mut self, id: &CheckpointId) -> Result<Observation> {
+        let state = self
+            .checkpoints
+            .get(id)
+            .cloned()
+            .ok_or_else(|| format!("checkpoint '{id}' has no environment state"))?;
         self.dispatch_ok(
             "doc_checkpoint",
             json!({"doc_id": self.doc_id()?, "action": "restore", "checkpoint_id": id}),
         )?;
+        self.stage = state.stage;
+        self.recent = state.recent;
+        self.steps = state.steps;
+        self.finished = state.finished;
         let observation = self.observe_light()?;
         self.recorder.append(EventKind::Restore {
             checkpoint_id: id.clone(),

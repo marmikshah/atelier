@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Atelier pairwise annotation</title>
+  <style>
+    :root { color-scheme: dark; --ink:#f4efe4; --muted:#a89f92; --panel:#201d1a; --line:#3a342e; --accent:#f2a65a; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:#13110f; color:var(--ink); font:15px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    main { width:min(1120px,94vw); margin:32px auto 80px; }
+    h1 { margin:0 0 8px; font-size:24px; }
+    .muted { color:var(--muted); }
+    .setup,.review,.question { background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+    .setup { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:14px; padding:16px; align-items:end; }
+    label { display:block; }
+    input[type=file],input[type=text],textarea { width:100%; margin-top:6px; padding:9px; color:var(--ink); background:#100e0d; border:1px solid var(--line); border-radius:5px; }
+    button { padding:10px 15px; color:#17120d; background:var(--accent); border:0; border-radius:5px; font:inherit; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.35; cursor:not-allowed; }
+    #status { min-height:24px; margin:12px 0; }
+    .review { display:none; padding:18px; }
+    .prompt { font:600 18px/1.45 system-ui,sans-serif; margin:4px 0 18px; }
+    .candidates { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .candidate { text-align:center; border:1px solid var(--line); border-radius:8px; padding:14px; }
+    .candidate h2 { margin:0 0 12px; font-size:16px; }
+    .images { display:flex; gap:16px; align-items:center; justify-content:center; min-height:286px; background:#0c0b0a; border-radius:6px; padding:12px; }
+    .native { width:32px; height:32px; image-rendering:pixelated; }
+    .enlarged { width:256px; height:256px; image-rendering:pixelated; max-width:75%; }
+    .questions { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+    .question { padding:12px; }
+    .choices { display:flex; justify-content:space-between; gap:6px; margin-top:8px; }
+    .choices label { cursor:pointer; }
+    .reasons { display:flex; flex-wrap:wrap; gap:8px 16px; margin:16px 0; }
+    .footer { display:flex; justify-content:space-between; align-items:end; gap:16px; }
+    .footer label { flex:1; }
+    progress { width:220px; }
+    @media (max-width:800px) { .setup,.questions,.candidates { grid-template-columns:1fr; } .images { min-height:auto; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Atelier pairwise annotation</h1>
+  <p class="muted">Blinded comparison at native size and 8× nearest-neighbor scale. Nothing leaves this browser.</p>
+
+  <section class="setup">
+    <label>Comparisons JSON/JSONL<input id="comparisons" type="file" accept=".json,.jsonl,application/json"></label>
+    <label>Artifact directory<input id="artifacts" type="file" webkitdirectory multiple></label>
+    <label>Opaque annotator id<input id="annotator" type="text" autocomplete="off" placeholder="reviewer-01"></label>
+    <button id="start">Start</button>
+  </section>
+  <div id="status" class="muted"></div>
+
+  <section id="review" class="review">
+    <div class="muted"><span id="counter"></span> · <span id="taskId"></span></div>
+    <div id="prompt" class="prompt"></div>
+    <div class="candidates">
+      <article class="candidate"><h2>Left</h2><div class="images"><img id="leftNative" class="native" alt="Left at native size"><img id="leftLarge" class="enlarged" alt="Left enlarged"></div></article>
+      <article class="candidate"><h2>Right</h2><div class="images"><img id="rightNative" class="native" alt="Right at native size"><img id="rightLarge" class="enlarged" alt="Right enlarged"></div></article>
+    </div>
+
+    <div class="questions">
+      <div class="question"><strong>Better overall?</strong><div class="choices" data-question="overall"></div></div>
+      <div class="question"><strong>Follows the requirement?</strong><div class="choices" data-question="requirement_adherence"></div></div>
+      <div class="question"><strong>Reads at native size?</strong><div class="choices" data-question="native_readability"></div></div>
+    </div>
+
+    <strong>Main reasons</strong>
+    <div id="reasons" class="reasons"></div>
+    <div class="footer">
+      <label>Optional explanation<textarea id="explanation" rows="2"></textarea></label>
+      <div><div><progress id="progress" max="1" value="0"></progress></div><button id="submit">Save & next</button></div>
+    </div>
+  </section>
+</main>
+<script>
+const FORMAT_VERSION = 1;
+const REASONS = ["requirement_adherence","silhouette","composition","pose","proportions","palette","lighting","pixel_clusters","readability","personality","style","polish"];
+const state = { comparisons:[], artifacts:new Map(), annotations:[], index:0, presented:[], urls:[] };
+const $ = id => document.getElementById(id);
+
+for (const box of document.querySelectorAll(".choices")) {
+  for (const [value,label] of [["left","Left"],["tie","Tie"],["right","Right"]]) {
+    box.insertAdjacentHTML("beforeend", `<label><input type="radio" name="${box.dataset.question}" value="${value}"> ${label}</label>`);
+  }
+}
+for (const reason of REASONS) {
+  $("reasons").insertAdjacentHTML("beforeend", `<label><input type="checkbox" value="${reason}"> ${reason.replaceAll("_"," ")}</label>`);
+}
+
+function parseComparisons(text) {
+  const trimmed = text.trim();
+  const records = trimmed.startsWith("[") ? JSON.parse(trimmed) : trimmed.split(/\r?\n/).filter(Boolean).map(JSON.parse);
+  for (const record of records) {
+    if (record.format_version !== FORMAT_VERSION) throw new Error(`Unsupported format_version ${record.format_version}`);
+    if (!record.candidate_a || !record.candidate_b) throw new Error(`Comparison ${record.id || "?"} has no candidates`);
+  }
+  return records;
+}
+
+function hashOf(ref) { return ref && ref.sha256; }
+function artifactUrl(ref) {
+  const file = state.artifacts.get(hashOf(ref));
+  if (!file) throw new Error(`Missing artifact ${hashOf(ref)}`);
+  const url = URL.createObjectURL(file); state.urls.push(url); return url;
+}
+function clearUrls() { for (const url of state.urls) URL.revokeObjectURL(url); state.urls=[]; }
+function setImage(id, ref) { $(id).src = artifactUrl(ref); }
+
+function render() {
+  clearUrls();
+  const comparison = state.comparisons[state.index];
+  if (!comparison) return download();
+  const reversed = crypto.getRandomValues(new Uint8Array(1))[0] < 128;
+  state.presented = reversed ? [comparison.candidate_b, comparison.candidate_a] : [comparison.candidate_a, comparison.candidate_b];
+  $("counter").textContent = `${state.index + 1} / ${state.comparisons.length}`;
+  $("taskId").textContent = comparison.task.id;
+  $("prompt").textContent = comparison.task.prompt;
+  setImage("leftNative", state.presented[0].native); setImage("leftLarge", state.presented[0].enlarged);
+  setImage("rightNative", state.presented[1].native); setImage("rightLarge", state.presented[1].enlarged);
+  document.querySelectorAll("input[type=radio],#reasons input").forEach(input => input.checked=false);
+  $("explanation").value="";
+  $("progress").max=state.comparisons.length; $("progress").value=state.index;
+}
+
+function answer(name) { return document.querySelector(`input[name=${name}]:checked`)?.value; }
+function download() {
+  clearUrls();
+  const body = state.annotations.map(a => JSON.stringify(a)).join("\n") + "\n";
+  const url = URL.createObjectURL(new Blob([body], {type:"application/x-ndjson"}));
+  const a = document.createElement("a"); a.href=url; a.download="annotations.jsonl"; a.click(); URL.revokeObjectURL(url);
+  $("review").style.display="none"; $("status").textContent=`Complete: ${state.annotations.length} annotations downloaded.`;
+}
+
+$("start").onclick = async () => {
+  try {
+    const comparisonFile = $("comparisons").files[0];
+    const annotator = $("annotator").value.trim();
+    if (!comparisonFile || !annotator) throw new Error("Choose comparisons and enter an opaque annotator id.");
+    state.comparisons = parseComparisons(await comparisonFile.text());
+    state.artifacts.clear();
+    for (const file of $("artifacts").files) if (/^[a-f0-9]{64}$/.test(file.name)) state.artifacts.set(file.name,file);
+    if (!state.artifacts.size) throw new Error("Choose an artifact directory containing hash-named files.");
+    state.annotations=[]; state.index=0;
+    $("review").style.display="block"; $("status").textContent=`Loaded ${state.comparisons.length} comparisons and ${state.artifacts.size} artifacts.`;
+    render();
+  } catch (error) { $("status").textContent=error.message; }
+};
+
+$("submit").onclick = () => {
+  const overall=answer("overall"), adherence=answer("requirement_adherence"), readability=answer("native_readability");
+  if (!overall || !adherence || !readability) { $("status").textContent="Answer all three comparison questions."; return; }
+  const comparison=state.comparisons[state.index];
+  state.annotations.push({
+    format_version:FORMAT_VERSION, comparison_id:comparison.id, annotator_id:$("annotator").value.trim(),
+    presented:[state.presented[0].id,state.presented[1].id], overall,
+    requirement_adherence:adherence, native_readability:readability,
+    reasons:[...document.querySelectorAll("#reasons input:checked")].map(x=>x.value),
+    explanation:$("explanation").value.trim() || undefined
+  });
+  state.index++; $("status").textContent="Saved locally in this browser session."; render();
+};
+</script>
+</body>
+</html>

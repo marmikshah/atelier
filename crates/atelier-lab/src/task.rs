@@ -33,6 +33,42 @@ pub struct Task {
     pub split: String,
 }
 
+impl Task {
+    /// Validate the deliberately narrow first research domain. Widening this
+    /// is a dataset-version decision, not something an individual episode may
+    /// silently opt into.
+    pub fn validate(&self) -> Result<(), String> {
+        if self.id.trim().is_empty() || self.prompt.trim().is_empty() {
+            return Err("task id and prompt must be non-empty".into());
+        }
+        if (self.width, self.height) != (32, 32) {
+            return Err(format!(
+                "atelier-lab v1 tasks must use a 32x32 canvas, got {}x{}",
+                self.width, self.height
+            ));
+        }
+        if !(1..=16).contains(&self.max_colors) {
+            return Err(format!(
+                "atelier-lab v1 tasks require 1..=16 colors, got {}",
+                self.max_colors
+            ));
+        }
+        if !["character", "creature", "item", "prop"].contains(&self.category.as_str()) {
+            return Err(format!(
+                "unsupported category '{}' — use character|creature|item|prop",
+                self.category
+            ));
+        }
+        if !["development", "validation", "frozen_test"].contains(&self.split.as_str()) {
+            return Err(format!(
+                "unsupported split '{}' — use development|validation|frozen_test",
+                self.split
+            ));
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -72,5 +108,16 @@ mod tests {
             serde_json::from_str::<serde_json::Value>(LAB_MD_EXAMPLE).unwrap(),
             v
         );
+        task.validate().unwrap();
+    }
+
+    #[test]
+    fn v1_scope_is_enforced() {
+        let mut task: Task = serde_json::from_str(LAB_MD_EXAMPLE).unwrap();
+        task.width = 64;
+        assert!(task.validate().is_err());
+        task.width = 32;
+        task.category = "scene".into();
+        assert!(task.validate().is_err());
     }
 }

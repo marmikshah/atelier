@@ -1110,9 +1110,9 @@ Follow this order strictly:
 - [x] Implement deterministic replay with exact-pixel verification
 - [x] Upstream replay pixel-equality test into atelier
 - [ ] Generate four baseline outputs for 20 prompts
-- [ ] Build the minimal pairwise annotation page
+- [x] Build the minimal pairwise annotation page
 - [ ] Label 200 comparisons
-- [ ] Implement five corruptions
+- [x] Implement five corruptions
 - [ ] Export the first critic dataset (frozen JSONL + hashes format)
 - [ ] Train a tiny critic to overfit the dataset
 

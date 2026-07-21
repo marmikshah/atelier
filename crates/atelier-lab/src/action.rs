@@ -221,6 +221,10 @@ pub struct DocSnapshot {
     pub width: u32,
     pub height: u32,
     pub palette: Vec<[u8; 4]>,
+    /// Task-level palette budget. Kept in the snapshot so validation stays a
+    /// pure compiler concern instead of accepting an invalid action and only
+    /// noticing it in the next observation.
+    pub max_colors: usize,
     pub stage: Stage,
     /// Per-layer indexed rasters of frame 0 (row-major, None = transparent).
     pub layers: Vec<Vec<Option<u32>>>,
@@ -662,6 +666,17 @@ pub fn compile(action: &Action, doc: &DocSnapshot) -> Result<Vec<CompiledCall>, 
                     reason: "an empty palette can hold no colour".into(),
                 });
             }
+            if colors.len() > doc.max_colors {
+                return Err(CompileError::TooManyColors {
+                    count: colors.len(),
+                    max: doc.max_colors,
+                });
+            }
+            if colors == &doc.palette {
+                return Err(CompileError::EmptyModification {
+                    reason: "the document already has that palette".into(),
+                });
+            }
             Ok(vec![call(
                 "doc_palette",
                 json!({"op": "set", "doc_id": doc.doc_id, "colors": colors}),
@@ -723,6 +738,7 @@ mod tests {
             width: 4,
             height: 4,
             palette: vec![[10, 0, 0, 255], [20, 0, 0, 255]],
+            max_colors: 16,
             stage,
             layers: vec![vec![None; 16]],
         }
@@ -1049,5 +1065,27 @@ mod tests {
         let bare: Action = serde_json::from_value(json!({"action": "Finish"})).unwrap();
         assert_eq!(bare.action, ActionKind::Finish);
         assert_eq!(bare.summarize(), "finish");
+    }
+
+    #[test]
+    fn set_palette_enforces_task_budget_and_rejects_noop() {
+        let mut s = snap(Stage::Specification);
+        s.max_colors = 1;
+        let too_many = Action::new(ActionKind::SetPalette {
+            colors: vec![[1, 2, 3, 255], [4, 5, 6, 255]],
+        });
+        assert!(matches!(
+            compile(&too_many, &s),
+            Err(CompileError::TooManyColors { count: 2, max: 1 })
+        ));
+
+        s.max_colors = 16;
+        let noop = Action::new(ActionKind::SetPalette {
+            colors: s.palette.clone(),
+        });
+        assert!(matches!(
+            compile(&noop, &s),
+            Err(CompileError::EmptyModification { .. })
+        ));
     }
 }
