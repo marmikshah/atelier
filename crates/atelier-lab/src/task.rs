@@ -185,4 +185,21 @@ mod tests {
         assert!(write_tasks_jsonl(&path, &[task.clone(), task]).is_err());
         let _ = std::fs::remove_file(path);
     }
+
+    #[test]
+    fn shipped_development_pack_is_valid_and_balanced() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tasks/development.jsonl");
+        let tasks = read_tasks_jsonl(&path).unwrap();
+        assert_eq!(tasks.len(), 40);
+        assert!(tasks.iter().all(|task| task.split == "development"));
+
+        let mut categories = std::collections::BTreeMap::new();
+        for task in tasks {
+            *categories.entry(task.category).or_insert(0usize) += 1;
+        }
+        assert_eq!(categories.get("character"), Some(&10));
+        assert_eq!(categories.get("creature"), Some(&10));
+        assert_eq!(categories.get("item"), Some(&10));
+        assert_eq!(categories.get("prop"), Some(&10));
+    }
 }
