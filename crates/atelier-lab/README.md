@@ -20,10 +20,32 @@ with at most 16 colors. Task ids must be unique.
 
 ## 2. Generate complete episodes
 
-Run each baseline or search candidate through `AtelierEnv`, including
-`Finish`, then call `finish()`. Keep the resulting episode directories under
-`research/`; that directory is gitignored because it can contain large model
-traces and human data.
+Run a task through a provider wrapper implementing the
+[`policy` command protocol](policy/README.md):
+
+```sh
+cargo run -p atelier-lab --bin atelier-lab -- \
+  run-policy research/tasks.jsonl item-001 research/episodes \
+  --policy ./path/to/provider-wrapper \
+  --name baseline-model \
+  --max-turns 40
+```
+
+The bounded runner records every policy request, response, protocol/provider
+failure, compiled action, and token count. It closes incomplete episodes on
+turn/error limits so failed attempts remain usable research data. Keep episode
+directories under `research/`; that directory is gitignored because it can
+contain large model traces and human data.
+
+Before using an episode in a comparison, rebuild its accepted actions and
+final image in a fresh store:
+
+```sh
+cargo run -p atelier-lab --bin atelier-lab -- \
+  replay research/episodes/episode-123 research/replays
+```
+
+The command exits unsuccessfully on the first raster or final-image divergence.
 
 Create an explicit pair manifest (`pairs.jsonl`), one object per line:
 
