@@ -10,12 +10,16 @@
 //! did), and [`PixelArtEnv`] with its [`AtelierEnv`] implementation (the
 //! episode loop). Every episode is recorded ([`Recorder`]: append-only JSONL
 //! events; binary payloads content-addressed in the [`ArtifactStore`]) and
-//! replayable with an exact-pixel gate ([`replay`]). Corruption, evaluation
-//! and search are later phases and deliberately absent.
+//! replayable with an exact-pixel gate ([`replay`]). Pairwise evaluation
+//! records and the first deterministic corruption families provide the data
+//! foundation for a learned critic; search and model training remain later
+//! phases.
 
 mod action;
 mod artifacts;
+mod corruption;
 mod env;
+mod evaluation;
 mod observation;
 mod recorder;
 mod replay;
@@ -27,7 +31,15 @@ pub use action::{
     compile, Action, ActionKind, CompileError, CompiledCall, DocSnapshot, Stage, MAX_PATCH_PIXELS,
 };
 pub use artifacts::{sha256_hex, ArtifactKind, ArtifactRef, ArtifactStore, ARTIFACTS_DIR};
+pub use corruption::{
+    apply_operation, corrupt, CorruptionKind, CorruptionOperation, CorruptionRecord, IndexedSprite,
+    PaletteEdit, PixelEdit, Severity,
+};
 pub use env::{AtelierEnv, CheckpointId, EpisodeResult, PixelArtEnv, Result};
+pub use evaluation::{
+    read_comparisons_jsonl, write_comparisons_jsonl, PairwiseAnnotation, PairwiseCandidate,
+    PairwiseComparison, Preference, PreferenceReason, SampleSource, EVALUATION_FORMAT_VERSION,
+};
 pub use observation::{
     DocMetadata, FullObservation, IntegrityChecks, LayerObservation, LightObservation, Observation,
     ObservationLevel, Renders,

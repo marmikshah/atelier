@@ -81,9 +81,9 @@ pub enum EventKind {
         task: Task,
         observation: LightObservation,
     },
-    /// One `step`, accepted or rejected. `intent` is the model-reasoning
-    /// placeholder (item 11) — always None until a policy provides reasoning
-    /// separate from the action's own effect metadata.
+    /// One `step`, accepted or rejected. `intent` mirrors the action's
+    /// model-provided intent for consumers that index event metadata without
+    /// decoding the complete action payload.
     Step {
         observation_before: LightObservation,
         intent: Option<String>,
