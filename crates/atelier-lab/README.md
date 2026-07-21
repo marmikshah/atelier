@@ -7,12 +7,13 @@ episodes into blinded comparisons and then into model-independent critic data.
 ## 1. Write and validate tasks
 
 Keep task records in JSONL and commit the benchmark prompts only after their
-splits are frozen. The v1 target is 40 development, 30 validation, and 100
-frozen-test prompts.
+splits are frozen. The first balanced 40-task development pack is checked in
+at [`tasks/development.jsonl`](tasks/development.jsonl). The remaining v1
+target is 30 validation and 100 frozen-test prompts.
 
 ```sh
 cargo run -p atelier-lab --bin atelier-lab -- \
-  validate-tasks research/tasks.jsonl
+  validate-tasks crates/atelier-lab/tasks/development.jsonl
 ```
 
 Every task must be a 32x32 single-subject character, creature, item, or prop
@@ -36,6 +37,26 @@ failure, compiled action, and token count. It closes incomplete episodes on
 turn/error limits so failed attempts remain usable research data. Keep episode
 directories under `research/`; that directory is gitignored because it can
 contain large model traces and human data.
+
+For a baseline sweep, run a fixed task subset as a resumable batch:
+
+```sh
+cargo run -p atelier-lab --bin atelier-lab -- \
+  run-batch crates/atelier-lab/tasks/development.jsonl research/episodes \
+  --policy ./path/to/provider-wrapper \
+  --name baseline-model-v1 \
+  --split development \
+  --limit 20 \
+  --max-turns 40
+```
+
+Each closed attempt appends one versioned row to
+`research/episodes/batch-results.jsonl`. On rerun, the command verifies the
+referenced episode log and skips only exact completed task/policy/seed keys.
+Incomplete attempts remain in the dataset and are retried. `--repeats 4`
+uses four stable seeds per task; use a distinct `--name` for each different
+model or prompt configuration. `--no-resume` deliberately forces new runs.
+Run only one batch writer per episode root at a time.
 
 Before using an episode in a comparison, rebuild its accepted actions and
 final image in a fresh store:

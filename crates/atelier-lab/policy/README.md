@@ -1,8 +1,9 @@
 # Policy command protocol
 
-`atelier-lab run-policy` is provider-neutral. On every turn it starts the
-configured program without a shell, writes one `PolicyRequest` JSON object to
-stdin, closes stdin, and reads one `PolicyResponse` JSON object from stdout.
+`atelier-lab run-policy` and `atelier-lab run-batch` are provider-neutral. On
+every turn they start the configured program without a shell, write one
+`PolicyRequest` JSON object to stdin, close stdin, and read one
+`PolicyResponse` JSON object from stdout.
 
 The child inherits the operator's environment, allowing a wrapper to read its
 own API key. Atelier never serializes environment variables or stderr into an
@@ -72,3 +73,23 @@ cargo run -p atelier-lab --bin atelier-lab -- \
 A real provider wrapper has the same stdin/stdout contract. It should translate
 the request into its provider's prompt or structured-output call, report token
 usage when available, and place credentials only in its environment.
+
+## Resumable batches
+
+`run-batch` accepts the same policy, budget, seed, and timeout options as
+`run-policy`, plus task selection options:
+
+```sh
+cargo run -p atelier-lab --bin atelier-lab -- \
+  run-batch crates/atelier-lab/tasks/development.jsonl research/episodes \
+  --policy python3 \
+  --policy-arg crates/atelier-lab/policy/example_policy.py \
+  --name deterministic-example \
+  --split development --limit 20 --repeats 1
+```
+
+Resume identity is `(task_id, policy name, seed)`. The batch manifest stores
+the policy label and token usage, but never the child environment, stderr, or
+policy arguments. Keep credentials in environment variables, not command-line
+arguments. A completed key is skipped only after its reset, policy-call, and
+finish provenance has been re-read from the referenced episode log.

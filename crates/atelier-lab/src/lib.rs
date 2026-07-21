@@ -17,6 +17,7 @@
 
 mod action;
 mod artifacts;
+mod batch;
 mod corruption;
 mod dataset;
 mod env;
@@ -34,6 +35,10 @@ pub use action::{
     compile, Action, ActionKind, CompileError, CompiledCall, DocSnapshot, Stage, MAX_PATCH_PIXELS,
 };
 pub use artifacts::{sha256_hex, ArtifactKind, ArtifactRef, ArtifactStore, ARTIFACTS_DIR};
+pub use batch::{
+    append_batch_record, completed_batch_keys, plan_batch_runs, read_batch_records, BatchRecord,
+    BatchRunKey, BatchRunSpec, BatchSelection, BATCH_FORMAT_VERSION, BATCH_RESULTS_FILE,
+};
 pub use corruption::{
     apply_operation, corrupt, CorruptionKind, CorruptionOperation, CorruptionRecord, IndexedSprite,
     PaletteEdit, PixelEdit, Severity,
