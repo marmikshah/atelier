@@ -9,6 +9,11 @@
 //! the per-tenant model the SaaS shape later inherits. Checkpoints cover the
 //! DOCUMENT only (atelier's checkpoint semantics); env bookkeeping — stage,
 //! recent actions, step count — is not rolled back by `restore`.
+//!
+//! Every env records its own episode: an append-only event log
+//! (`episode.jsonl`, see `recorder`) and a content-addressed artifact store
+//! (`artifacts/`, see `artifacts`) inside the episode directory. Recording
+//! is not optional — an episode without its log is training data lost.
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -21,10 +26,15 @@ use atelier_mcp::server::{is_error_result, result_json, Atelier};
 use atelier_studio::{LookOptions, Studio};
 
 use crate::action::{compile, Action, ActionKind, DocSnapshot};
+use crate::artifacts::{ArtifactKind, ArtifactRef, ArtifactStore, ARTIFACTS_DIR};
 use crate::observation::{
     DocMetadata, FullObservation, IntegrityChecks, LayerObservation, LightObservation, Observation,
     ObservationLevel, Renders,
 };
+use crate::recorder::{
+    EventKind, RecordedFullObservation, RecordedObservation, RecordedRenders, Recorder,
+};
+use crate::storage::Storage;
 use crate::task::Task;
 use crate::transition::{ToolResult, Transition};
 
@@ -84,6 +94,8 @@ pub struct AtelierEnv {
     runtime: tokio::runtime::Runtime,
     atelier: Atelier,
     studio: Arc<Mutex<Studio>>,
+    recorder: Recorder,
+    artifacts: ArtifactStore,
     doc_id: Option<String>,
     task: Option<Task>,
     stage: crate::action::Stage,
@@ -107,6 +119,8 @@ impl AtelierEnv {
             .enable_all()
             .build()
             .map_err(|e| format!("cannot build the tokio runtime: {e}"))?;
+        let recorder = Recorder::create(&episode_dir, &episode_id)?;
+        let artifacts = ArtifactStore::new(episode_dir.join(ARTIFACTS_DIR))?;
         Ok(AtelierEnv {
             episode_id,
             episode_dir,
@@ -114,6 +128,8 @@ impl AtelierEnv {
             runtime,
             atelier: Atelier::with_studio(Arc::clone(&studio)),
             studio,
+            recorder,
+            artifacts,
             doc_id: None,
             task: None,
             stage: crate::action::Stage::Specification,
@@ -137,6 +153,38 @@ impl AtelierEnv {
 
     pub fn stage(&self) -> crate::action::Stage {
         self.stage
+    }
+
+    pub fn recorder(&self) -> &Recorder {
+        &self.recorder
+    }
+
+    pub fn artifacts(&self) -> &ArtifactStore {
+        &self.artifacts
+    }
+
+    /// Store one binary payload and return its reference — the only way
+    /// bytes should reach the episode record (events carry refs, not bytes).
+    fn store_artifact(&self, kind: ArtifactKind, bytes: &[u8]) -> Result<ArtifactRef> {
+        Ok(ArtifactRef {
+            sha256: self.artifacts.put(bytes)?,
+            kind,
+        })
+    }
+
+    /// Append a human/critic judgement to the episode log (lab.md item 11 —
+    /// feedback arrives after the steps it judges, so it is its own event).
+    pub fn record_feedback(
+        &mut self,
+        label: impl Into<String>,
+        note: Option<String>,
+    ) -> Result<()> {
+        self.recorder
+            .append(EventKind::Feedback {
+                label: label.into(),
+                note,
+            })
+            .map(|_| ())
     }
 
     /// Poison recovery like the server's: a panicked tool call must not
@@ -308,20 +356,57 @@ impl PixelArtEnv for AtelierEnv {
         self.steps = 0;
         self.finished = false;
         tracing::info!(episode = %self.episode_id, task = %task.id, "episode reset");
-        self.observe(ObservationLevel::Light)
+        let observation = self.observe_light()?;
+        self.recorder.append(EventKind::Reset {
+            task: task.clone(),
+            observation: observation.clone(),
+        })?;
+        Ok(Observation::Light(observation))
     }
 
+    /// Observe the current state, recording the read — the atelier journal
+    /// omits reads, and an episode log without them can't show what the
+    /// policy was looking at when it chose an action. Full observations put
+    /// their render bytes in the artifact store and log the references.
     fn observe(&mut self, level: ObservationLevel) -> Result<Observation> {
-        Ok(match level {
-            ObservationLevel::Light => Observation::Light(self.observe_light()?),
-            ObservationLevel::Full => Observation::Full(Box::new(self.observe_full()?)),
-        })
+        let (obs, recorded) = match level {
+            ObservationLevel::Light => {
+                let l = self.observe_light()?;
+                (Observation::Light(l.clone()), RecordedObservation::Light(l))
+            }
+            ObservationLevel::Full => {
+                let f = self.observe_full()?;
+                let recorded = RecordedObservation::Full(Box::new(RecordedFullObservation {
+                    light: f.light.clone(),
+                    renders: RecordedRenders {
+                        native: self
+                            .store_artifact(ArtifactKind::RenderNative, &f.renders.native)?,
+                        enlarged: self
+                            .store_artifact(ArtifactKind::RenderEnlarged, &f.renders.enlarged)?,
+                        grayscale: self
+                            .store_artifact(ArtifactKind::RenderGrayscale, &f.renders.grayscale)?,
+                        notan: self.store_artifact(ArtifactKind::RenderNotan, &f.renders.notan)?,
+                    },
+                    palette_report: f.palette_report.clone(),
+                    components: f.components.clone(),
+                    critique: f.critique.clone(),
+                    doc: f.doc.clone(),
+                }));
+                (Observation::Full(Box::new(f)), recorded)
+            }
+        };
+        self.recorder.append(EventKind::Observation {
+            observation: recorded,
+        })?;
+        Ok(obs)
     }
 
     /// One action: compile against the current light observation (rejection
     /// costs no tool calls and touches nothing), dispatch the compiled calls
     /// in order, then observe again. Compile rejections and mid-sequence
-    /// tool errors are `accepted: false` transitions, not env errors.
+    /// tool errors are `accepted: false` transitions, not env errors — and
+    /// both paths land in the episode log: a rejected action the record
+    /// silently dropped would fake a better invalid-action rate.
     fn step(&mut self, action: &Action) -> Result<Transition> {
         if self.finished {
             return Err("episode is finished — reset before stepping again".into());
@@ -335,55 +420,72 @@ impl PixelArtEnv for AtelierEnv {
             stage: self.stage,
             layers: before.layers.iter().map(|l| l.indices.clone()).collect(),
         };
-        let compiled = match compile(action, &snapshot) {
-            Ok(calls) => calls,
+        let transition = match compile(action, &snapshot) {
             Err(error) => {
                 tracing::debug!(episode = %self.episode_id, %error, "action rejected");
-                return Ok(Transition {
-                    observation_before: Observation::Light(before),
+                Transition {
+                    observation_before: Observation::Light(before.clone()),
                     action: action.clone(),
                     compiled: Vec::new(),
                     tool_results: Vec::new(),
                     observation_after: None,
                     accepted: false,
                     error: Some(error),
-                });
+                }
+            }
+            Ok(compiled) => {
+                let mut tool_results = Vec::with_capacity(compiled.len());
+                let mut accepted = true;
+                for c in &compiled {
+                    let r = self.dispatch_capture(&c.tool, c.args.clone());
+                    accepted &= r.ok;
+                    tool_results.push(r);
+                    if !accepted {
+                        break;
+                    }
+                }
+                if accepted {
+                    match &action.action {
+                        ActionKind::AdvanceStage => {
+                            self.stage = self.stage.next().unwrap_or(self.stage);
+                        }
+                        ActionKind::Finish => self.stage = crate::action::Stage::Finished,
+                        _ => {}
+                    }
+                    self.recent.push_back(action.summarize());
+                    if self.recent.len() > RECENT_ACTIONS_CAP {
+                        self.recent.pop_front();
+                    }
+                    self.steps += 1;
+                }
+                let after = self.observe_light()?;
+                Transition {
+                    observation_before: Observation::Light(before.clone()),
+                    action: action.clone(),
+                    compiled,
+                    tool_results,
+                    observation_after: Some(Observation::Light(after)),
+                    accepted,
+                    error: None,
+                }
             }
         };
-        let mut tool_results = Vec::with_capacity(compiled.len());
-        let mut accepted = true;
-        for c in &compiled {
-            let r = self.dispatch_capture(&c.tool, c.args.clone());
-            accepted &= r.ok;
-            tool_results.push(r);
-            if !accepted {
-                break;
-            }
-        }
-        if accepted {
-            match &action.action {
-                ActionKind::AdvanceStage => {
-                    self.stage = self.stage.next().unwrap_or(self.stage);
-                }
-                ActionKind::Finish => self.stage = crate::action::Stage::Finished,
-                _ => {}
-            }
-            self.recent.push_back(action.summarize());
-            if self.recent.len() > RECENT_ACTIONS_CAP {
-                self.recent.pop_front();
-            }
-            self.steps += 1;
-        }
-        let after = self.observe_light()?;
-        Ok(Transition {
-            observation_before: Observation::Light(before),
-            action: action.clone(),
-            compiled,
-            tool_results,
-            observation_after: Some(Observation::Light(after)),
-            accepted,
-            error: None,
-        })
+        self.recorder.append(EventKind::Step {
+            observation_before: before,
+            // Model reasoning placeholder — item 11 reserves the slot; the
+            // policy that fills it arrives in a later phase.
+            intent: None,
+            action: transition.action.clone(),
+            compiled: transition.compiled.clone(),
+            tool_results: transition.tool_results.clone(),
+            observation_after: transition
+                .observation_after
+                .as_ref()
+                .map(|o| o.light().clone()),
+            accepted: transition.accepted,
+            error: transition.error.clone(),
+        })?;
+        Ok(transition)
     }
 
     fn checkpoint(&mut self) -> Result<CheckpointId> {
@@ -391,10 +493,14 @@ impl PixelArtEnv for AtelierEnv {
             "doc_checkpoint",
             json!({"doc_id": self.doc_id()?, "action": "save"}),
         )?;
-        v["saved"]
+        let checkpoint_id = v["saved"]
             .as_str()
             .map(str::to_string)
-            .ok_or_else(|| format!("doc_checkpoint save returned no id: {v}"))
+            .ok_or_else(|| format!("doc_checkpoint save returned no id: {v}"))?;
+        self.recorder.append(EventKind::Checkpoint {
+            checkpoint_id: checkpoint_id.clone(),
+        })?;
+        Ok(checkpoint_id)
     }
 
     /// Restore a document checkpoint, then answer the resulting state.
@@ -405,7 +511,12 @@ impl PixelArtEnv for AtelierEnv {
             "doc_checkpoint",
             json!({"doc_id": self.doc_id()?, "action": "restore", "checkpoint_id": id}),
         )?;
-        self.observe(ObservationLevel::Light)
+        let observation = self.observe_light()?;
+        self.recorder.append(EventKind::Restore {
+            checkpoint_id: id.clone(),
+            observation: observation.clone(),
+        })?;
+        Ok(Observation::Light(observation))
     }
 
     fn finish(&mut self) -> Result<EpisodeResult> {
@@ -413,8 +524,7 @@ impl PixelArtEnv for AtelierEnv {
             return Err("episode is already finished".into());
         }
         let final_observation = Observation::Light(self.observe_light()?);
-        self.finished = true;
-        Ok(EpisodeResult {
+        let result = EpisodeResult {
             episode_id: self.episode_id.clone(),
             task_id: self
                 .task
@@ -426,6 +536,17 @@ impl PixelArtEnv for AtelierEnv {
             stage: self.stage,
             completed: self.stage == crate::action::Stage::Finished,
             final_observation,
-        })
+        };
+        // The closing render is the replay gate's reference image (lab.md
+        // item 12), so it is stored content-addressed with the episode, not
+        // recomputed later from a store that may be gone.
+        let png = self.studio().render_png_bytes(self.doc_id()?, 0, 1)?;
+        let final_render = self.store_artifact(ArtifactKind::FinalImage, &png)?;
+        self.recorder.append(EventKind::Finish {
+            result: result.clone(),
+            final_render,
+        })?;
+        self.finished = true;
+        Ok(result)
     }
 }

@@ -440,4 +440,90 @@ mod tests {
         assert!(s.ends_with('…'));
         assert!(s.chars().count() <= 201);
     }
+
+    /// The exact-pixel gate replay has always claimed but never enforced:
+    /// a document rebuilt from its own journal must render byte-identical
+    /// to the original. Bytes, not just structure — a deterministic encoder
+    /// makes byte equality exactly pixel equality.
+    #[tokio::test]
+    async fn replayed_document_renders_pixel_identical_to_the_original() {
+        async fn dispatch_ok(atelier: &Atelier, tool: &str, args: Value) {
+            let r = atelier
+                .dispatch(tool, args, "test")
+                .await
+                .expect("dispatch");
+            assert!(
+                !server::is_error_result(&r),
+                "{tool} failed: {:?}",
+                server::result_json(&r)
+            );
+        }
+
+        let tag = format!("atelier-test-replay-px-{}", std::process::id());
+        let (dir_a, dir_b) = (
+            std::env::temp_dir().join(format!("{tag}-a")),
+            std::env::temp_dir().join(format!("{tag}-b")),
+        );
+        let _ = std::fs::remove_dir_all(&dir_a);
+        let _ = std::fs::remove_dir_all(&dir_b);
+
+        // Build a document through dispatch, so every mutation lands in its
+        // journal — palette set, index-legend grid paint, a raw draw.
+        let studio_a = Arc::new(Mutex::new(Studio::with_docs_dir(dir_a.clone())));
+        let atelier_a = Atelier::with_studio(Arc::clone(&studio_a));
+        dispatch_ok(
+            &atelier_a,
+            "doc_create",
+            json!({"name": "px", "width": 8, "height": 8}),
+        )
+        .await;
+        dispatch_ok(
+            &atelier_a,
+            "doc_palette",
+            json!({"op": "set", "doc_id": "px", "colors": [[10, 20, 30], [200, 30, 30], [30, 30, 200]]}),
+        )
+        .await;
+        dispatch_ok(
+            &atelier_a,
+            "doc_paint_grid",
+            json!({"doc_id": "px", "layer": 0, "frame": 0, "x": 1, "y": 1,
+                   "legend": {"a": 0, "b": 1}, "rows": ["aba", "bab", "aba"]}),
+        )
+        .await;
+        dispatch_ok(
+            &atelier_a,
+            "doc_draw",
+            json!({"doc_id": "px", "layer": 0, "frame": 0, "op": "rect",
+                   "x0": 5, "y0": 5, "x1": 7, "y1": 7, "color": [30, 30, 200], "fill": true}),
+        )
+        .await;
+        let original = studio_a
+            .lock()
+            .unwrap()
+            .render_png_bytes("px", 0, 4)
+            .unwrap();
+
+        // Replay the journal into a fresh store and export the rebuild.
+        let journal =
+            std::fs::read_to_string(dir_a.join("px").join(atelier_studio::JOURNAL_FILE)).unwrap();
+        let recipe = Recipe::parse(&journal).unwrap();
+        assert!(recipe.steps.len() >= 4, "the journal drives the rebuild");
+        let studio_b = Arc::new(Mutex::new(Studio::with_docs_dir(dir_b.clone())));
+        let atelier_b = Atelier::with_studio(Arc::clone(&studio_b));
+        run_session(&recipe, Some("px".to_string()), &atelier_b)
+            .await
+            .unwrap();
+        let replayed = studio_b
+            .lock()
+            .unwrap()
+            .render_png_bytes("px", 0, 4)
+            .unwrap();
+
+        assert_eq!(
+            original, replayed,
+            "a journaled rebuild must export pixel-identical pixels"
+        );
+        let _ = std::fs::remove_dir_all(&dir_a);
+        let _ = std::fs::remove_dir_all(&dir_b);
+    }
 }
