@@ -1092,7 +1092,7 @@ Follow this order strictly:
 ## Week 1
 
 - [x] Freeze the 32×32 static-sprite scope
-- [ ] Write 40 development prompts
+- [x] Write 40 development prompts
 - [x] Create `crates/atelier-lab` as a workspace member (local only, not pushed)
 - [x] Upstream `indexed_raster()` into atelier (core method + `Studio::doc_indexed_raster`; MCP tool wiring deferred)
 - [x] Implement `Task`

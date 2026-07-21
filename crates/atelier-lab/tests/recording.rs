@@ -61,7 +61,10 @@ fn run_episode(root: &Path, seed: u64) -> PathBuf {
     let cp = env.checkpoint().unwrap();
     env.step(&paint(10, 10, 2, 2)).unwrap();
     env.restore(&cp).unwrap();
-    env.step(&paint(20, 20, 3, 2)).unwrap();
+    // Let the deterministic fixture policy vary one feature by seed so the
+    // exported pair is actually learnable by the smoke critic.
+    let final_x = 18 + (seed % 4) as i32;
+    env.step(&paint(final_x, 20, 3, 2)).unwrap();
     env.step(&Action::new(ActionKind::Finish)).unwrap();
     env.finish().unwrap();
     env.episode_dir().to_path_buf()
@@ -248,7 +251,7 @@ fn replay_names_the_first_tampered_step() {
 }
 
 #[test]
-fn episodes_bundle_and_annotations_export_in_canonical_order() {
+fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
     let root = test_root("dataset-loop");
     let episode_a = run_episode(&root, 11);
     let episode_b = run_episode(&root, 12);
@@ -280,6 +283,10 @@ fn episodes_bundle_and_annotations_export_in_canonical_order() {
     let comparisons = bundle_episode_comparisons(&manifest, &bundle).unwrap();
     assert_eq!(comparisons.len(), 1);
     let comparison = &comparisons[0];
+    assert_ne!(
+        comparison.candidate_a.native.sha256,
+        comparison.candidate_b.native.sha256
+    );
     let store = ArtifactStore::new(bundle.join(ARTIFACTS_DIR)).unwrap();
     for artifact in [
         &comparison.candidate_a.native,
@@ -325,5 +332,23 @@ fn episodes_bundle_and_annotations_export_in_canonical_order() {
     assert_eq!(row["requirement_adherence"], "candidate_a");
     assert_eq!(row["native_readability"], "tie");
     assert!(row.get("annotator_id").is_none());
+
+    #[cfg(unix)]
+    {
+        let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("training/critic_smoke.py");
+        let output = std::process::Command::new("python3")
+            .arg(script)
+            .arg(&critic_path)
+            .arg(bundle.join(ARTIFACTS_DIR))
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "smoke critic failed: {}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(String::from_utf8_lossy(&output.stdout).contains("PASS"));
+    }
     let _ = std::fs::remove_dir_all(&root);
 }

@@ -117,4 +117,6 @@ python3 crates/atelier-lab/training/critic_smoke.py \
 
 Passing does not mean the critic generalizes. The next gates remain a held-out
 validation split, order-bias checks, subtle corruptions, and at least 80%
-agreement on frozen human comparisons.
+agreement on frozen human comparisons. The test suite exercises this entire
+plumbing path with two deterministic, distinct episode rasters and requires
+the smoke critic to overfit the exported preference.
