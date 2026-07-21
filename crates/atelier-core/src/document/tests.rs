@@ -53,6 +53,64 @@ fn palette_set_and_index() {
 }
 
 #[test]
+fn indexed_raster_inverts_an_index_legend_paint() {
+    let mut d = Document::new("t", 4, 4);
+    d.set_palette(vec![[10, 0, 0, 255], [20, 0, 0, 255]]);
+    let legend: std::collections::HashMap<char, [u8; 4]> =
+        [('k', [10, 0, 0, 255]), ('r', [20, 0, 0, 255])]
+            .into_iter()
+            .collect();
+    d.paint_grid(0, 0, 1, 1, &legend, &["kr".to_string(), ".k".to_string()])
+        .unwrap();
+    let r = d.indexed_raster(0, 0).unwrap();
+    assert_eq!((r.width, r.height), (4, 4));
+    assert_eq!(r.palette, d.meta.palette);
+    // row 1: [None, Some(0), Some(1), None]; row 2: [None, None, Some(0), None]
+    assert_eq!(
+        r.indices,
+        vec![
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(0),
+            Some(1),
+            None,
+            None,
+            None,
+            Some(0),
+            None,
+            None,
+            None,
+            None,
+            None,
+        ]
+    );
+    // Transparency stays None even though swatch 0 exists: index 0 is a real
+    // paintable colour, not the background.
+    assert_eq!(r.indices[0], None);
+}
+
+#[test]
+fn indexed_raster_rejects_off_palette_pixels_and_bad_cels() {
+    let mut d = Document::new("t", 4, 4);
+    d.set_palette(vec![[10, 0, 0, 255]]);
+    d.pencil(0, 0, &[(2, 1)], [99, 99, 99, 255], 1).unwrap();
+    let e = d.indexed_raster(0, 0).unwrap_err();
+    assert!(e.contains("not in the palette"), "got: {e}");
+    assert!(e.contains("(2,1)"), "names the offender: {e}");
+    // Bad layer/frame fail like every other cel read; an unindexed but
+    // all-transparent cel is fine (no opaque pixel to place).
+    assert!(d.indexed_raster(9, 0).is_err());
+    assert!(d.indexed_raster(0, 9).is_err());
+    d.set_palette(Vec::new());
+    d.clear_cel(0, 0).unwrap();
+    let r = d.indexed_raster(0, 0).unwrap();
+    assert!(r.indices.iter().all(|i| i.is_none()));
+}
+
+#[test]
 fn frame_ops_delete_reindexes_and_protects_last() {
     let mut d = Document::new("t", 2, 2);
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();

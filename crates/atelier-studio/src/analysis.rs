@@ -27,6 +27,32 @@ fn area_cap_check(label: &str, w: u64, h: u64, advice: &str) -> Result<(), Strin
 impl Studio {
     // -- canvas readers (read-only analysis; ignore any active selection) ----
 
+    /// Indexed read of one cel: every pixel as its palette index, row-major —
+    /// the inverse of `doc_paint_grid` with a palette-index legend, for
+    /// consumers that think in indices rather than colours. Transparent
+    /// pixels are `null` (transparency is not swatch 0 — swatch 0 is a real
+    /// paintable colour; see `Document::indexed_raster`). An opaque pixel
+    /// with no exact swatch match is an error, never a silent nearest-colour
+    /// guess: snap first (`doc_palette op=snap`).
+    pub fn doc_indexed_raster(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+    ) -> Result<Value, String> {
+        let (_dir, doc) = self.open(id)?;
+        let r = doc.indexed_raster(layer, frame)?;
+        Ok(json!({
+            "doc_id": id,
+            "layer": layer,
+            "frame": frame,
+            "width": r.width,
+            "height": r.height,
+            "palette": r.palette,
+            "indices": r.indices,
+        }))
+    }
+
     /// Text-grid dump of pixels for blind inspection. `layer` None → flattened
     /// composite, else that cel. `region` (inclusive corners) defaults to the
     /// whole canvas. `mode` "symbol" assigns A..Z a..z 0..9 per distinct colour

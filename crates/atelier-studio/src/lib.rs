@@ -834,6 +834,44 @@ mod tests {
         let info = s.doc_info("d").unwrap();
         assert_eq!(info["frames"].as_array().map(|f| f.len()), Some(10));
     }
+
+    #[test]
+    fn indexed_raster_round_trips_a_palette_index_paint() {
+        let s = studio("indexed");
+        s.doc_create("d", 4, 4).unwrap();
+        s.doc_set_palette("d", vec![[10, 0, 0, 255], [20, 0, 0, 255]])
+            .unwrap();
+        let mut legend = serde_json::Map::new();
+        legend.insert("k".into(), json!(0));
+        legend.insert("r".into(), json!(1));
+        s.doc_paint_grid("d", 0, 0, 1, 1, legend, vec!["kr".into(), ".k".into()])
+            .unwrap();
+        let v = s.doc_indexed_raster("d", 0, 0).unwrap();
+        assert_eq!(v["width"], json!(4));
+        assert_eq!(v["palette"], json!([[10, 0, 0, 255], [20, 0, 0, 255]]));
+        let indices: Vec<Option<u32>> = serde_json::from_value(v["indices"].clone()).unwrap();
+        assert_eq!(indices[5], Some(0));
+        assert_eq!(indices[6], Some(1));
+        assert_eq!(indices[10], Some(0));
+        assert_eq!(indices[0], None, "transparent stays null, not swatch 0");
+        // Off-palette pixels are a loud error, not a nearest-colour guess.
+        s.doc_paint_grid(
+            "d",
+            0,
+            0,
+            0,
+            0,
+            [("x".to_string(), json!([1, 2, 3, 255]))]
+                .into_iter()
+                .collect(),
+            vec!["x".into()],
+        )
+        .unwrap();
+        assert!(s
+            .doc_indexed_raster("d", 0, 0)
+            .unwrap_err()
+            .contains("not in the palette"));
+    }
 }
 
 #[cfg(test)]
