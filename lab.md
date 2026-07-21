@@ -1,10 +1,10 @@
 # Atelier Learning System — Implementation Plan (v2)
 
-> Status: **local-first, private**. `atelier-lab` lives in this repo at `crates/atelier-lab/`
-> but stays **local only — do not push** (this repo is a public OSS library; pushing publishes
-> it). It consumes atelier through its public API only. If the system proves out, it becomes a
-> SaaS product; the architecture below is chosen so that move is a deployment exercise, not a
-> rewrite. At that point the crate moves to a private repo (path deps become git/vendor deps).
+> Status: **public, in-repo**. `atelier-lab` lives at `crates/atelier-lab/` and is pushed with
+> the repo (the local-only constraint was dropped). It consumes atelier through its public API
+> only and carries `publish = false` — it ships with the source tree, not to crates.io. If the
+> system proves out, it becomes a SaaS product; the architecture below is chosen so that move
+> is a deployment exercise, not a rewrite.
 
 ## Goal
 
@@ -73,13 +73,10 @@ Known gaps (small, none architectural):
 
 # Architecture decisions
 
-## A1. Repo placement — same repo, local only (for now)
+## A1. Repo placement — same repo, public
 
-- `atelier-lab` lives at `crates/atelier-lab/` in this repo as a workspace member, depending on
-  atelier crates by workspace path deps.
-- **It is not pushed.** The repo is public OSS; the lab stays in the local working tree (and
-  out of any pushed branch) until the SaaS decision is made. Consider a `.gitignore` entry or
-  local-only commits as the guardrail.
+- `atelier-lab` lives at `crates/atelier-lab/` as a workspace member with `publish = false`,
+  depending on atelier crates by workspace path deps. It is part of the public tree.
 - SaaS migration path: move the crate to a private repo, switch path deps to git/vendor.
   Atelier is MIT — no licensing friction.
 
@@ -109,7 +106,6 @@ Known gaps (small, none architectural):
 
 - Hardcoding local paths or `~/.atelier` anywhere outside one config module.
 - Letting the trainer import atelier crates.
-- Committing this document or any lab strategy into the public atelier repo.
 
 ---
 
@@ -1109,10 +1105,10 @@ Follow this order strictly:
 
 ## Week 2
 
-- [ ] Implement episode recording (dispatch wrapper, versioned event log)
-- [ ] Implement artifact hashing (storage trait + local-FS impl)
-- [ ] Implement deterministic replay with exact-pixel verification
-- [ ] Upstream replay pixel-equality test into atelier
+- [x] Implement episode recording (dispatch wrapper, versioned event log)
+- [x] Implement artifact hashing (storage trait + local-FS impl)
+- [x] Implement deterministic replay with exact-pixel verification
+- [x] Upstream replay pixel-equality test into atelier
 - [ ] Generate four baseline outputs for 20 prompts
 - [ ] Build the minimal pairwise annotation page
 - [ ] Label 200 comparisons
