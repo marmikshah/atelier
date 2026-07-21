@@ -1,7 +1,7 @@
 {
-  "method": "Subagents driving the atelier MCP server, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools — the Anthropic models via Claude Code, kimi-k3 via Kimi Code. Every model draws the same ten tasks from identical frozen briefs (benchmarks/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; the kimi-k3 runs report each agent's self-reported tool-call and doc_look tally (Kimi Code exposes no per-agent token usage, so its tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work.",
-  "server": "atelier 1.5.0+ (28-tool surface); every run in this table was drawn against the same long-running daemon build (master, pre-#51)",
-  "verified": "Every GIF parsed from disk: all 50 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4.",
+  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools — the Anthropic models via Claude Code, kimi-k3 via Kimi Code, and gpt-5.6-sol-max via Codex. Every model draws the same ten tasks from identical frozen briefs (benchmarks/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and Codex runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work.",
+  "server": "The original 50 runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master.",
+  "verified": "Every GIF parsed from disk: all 60 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, with the requested palette cardinality and transparency.",
   "tasks": [
     "alien",
     "ball",
@@ -31,7 +31,8 @@
     "sonnet-5",
     "opus-4.8",
     "fable-5",
-    "kimi-k3"
+    "kimi-k3",
+    "gpt-5.6-sol-max"
   ],
   "runs": [
     {
@@ -531,6 +532,106 @@
       "gif": "benchmarks/runs/kimi-k3/torch.gif",
       "tool_calls": 54,
       "looks": 5,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "alien",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/alien.gif",
+      "tool_calls": 66,
+      "looks": 5,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "ball",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/ball.gif",
+      "tool_calls": 45,
+      "looks": 3,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "beam",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/beam.gif",
+      "tool_calls": 51,
+      "looks": 4,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "car",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/car.gif",
+      "tool_calls": 63,
+      "looks": 7,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "cat",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/cat.gif",
+      "tool_calls": 42,
+      "looks": 4,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "explosion",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/explosion.gif",
+      "tool_calls": 51,
+      "looks": 10,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "person",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/person.gif",
+      "tool_calls": 62,
+      "looks": 6,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "potion",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/potion.gif",
+      "tool_calls": 50,
+      "looks": 6,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "slash",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/slash.gif",
+      "tool_calls": 35,
+      "looks": 4,
+      "tokens": null,
+      "frames": 10
+    },
+    {
+      "task": "torch",
+      "model": "gpt-5.6-sol-max",
+      "vendor": "OpenAI",
+      "gif": "benchmarks/runs/gpt-5.6-sol-max/torch.gif",
+      "tool_calls": 58,
+      "looks": 3,
       "tokens": null,
       "frames": 10
     }
