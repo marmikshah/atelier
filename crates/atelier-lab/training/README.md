@@ -108,6 +108,19 @@ Use the one-command runner first. It trains one epoch on at most 32 development
 rows, saves to a separate quick checkpoint, and then reports exact-match
 accuracy on at most 32 **validation** rows:
 
+For a fresh clone and a 16 GiB CUDA laptop, the bundled smoke script creates a
+small deterministic development/validation dataset and runs the full 2B QLoRA
+cycle. Its generated art is deliberately crude; this proves plumbing and GPU
+fit, not artistic quality:
+
+```sh
+bash crates/atelier-lab/training/laptop_smoke.sh
+```
+
+Use `--dry-run` to stop after data creation and contract validation. Set
+`PYTHON_BIN` when the VLM dependencies are installed in a specific environment,
+for example `PYTHON_BIN=research/vlm-venv/bin/python`.
+
 ```sh
 python3 crates/atelier-lab/training/quick_vlm.py \
   generator research/generator-sft/generator.jsonl \
