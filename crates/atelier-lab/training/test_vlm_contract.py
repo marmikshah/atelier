@@ -3,12 +3,18 @@
 
 import json
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from eval_vlm import select_rows
 from quick_vlm import default_config, resolve_input, validation_count
+from train_vlm import load_config
 from vlm_data import critic_messages, extract_json_object, generator_messages
-from vlm_runtime import attach_images
+from vlm_runtime import (
+    attach_images,
+    generation_chat_template_kwargs,
+    multimodal_model_class,
+)
 
 
 TASK = {
@@ -90,6 +96,31 @@ class ContractTests(unittest.TestCase):
     def test_quick_run_has_a_bundled_default_config(self):
         config = default_config("generator")
         self.assertEqual(resolve_input(config, "config"), config.resolve())
+        self.assertEqual(config.name, "generator-qwen3.5-4b-qlora.json")
+
+    def test_qwen35_generation_disables_thinking(self):
+        config = type("Config", (), {"model_type": "qwen3_5"})()
+        model = type("Model", (), {"config": config})()
+        self.assertEqual(
+            generation_chat_template_kwargs(model), {"enable_thinking": False}
+        )
+
+    def test_runtime_uses_transformers_multimodal_auto_class(self):
+        expected = object()
+        transformers = type(
+            "Transformers", (), {"AutoModelForMultimodalLM": expected}
+        )()
+        self.assertIs(multimodal_model_class(transformers), expected)
+
+    def test_runtime_rejects_old_transformers(self):
+        with self.assertRaisesRegex(ValueError, "AutoModelForMultimodalLM"):
+            multimodal_model_class(object())
+
+    def test_all_bundled_training_configs_are_valid(self):
+        configs = Path(__file__).resolve().parent / "configs"
+        for path in configs.glob("*.json"):
+            with self.subTest(config=path.name):
+                load_config(path)
 
     def test_quick_run_reports_every_attempted_input_path(self):
         with self.assertRaisesRegex(ValueError, "dataset file not found; tried:"):

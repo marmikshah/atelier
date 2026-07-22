@@ -67,7 +67,7 @@ def positive(value, name):
     return value
 
 
-def materialize(items, image_scale):
+def materialize(items, image_scale, chat_template_kwargs=None):
     from PIL import Image
 
     records = []
@@ -81,8 +81,35 @@ def materialize(items, image_scale):
                     Image.Resampling.NEAREST,
                 )
             images.append(image)
-        records.append({"images": images, "messages": messages})
+        record = {"images": images, "messages": messages}
+        if chat_template_kwargs:
+            record["chat_template_kwargs"] = chat_template_kwargs
+        records.append(record)
     return records
+
+
+def training_dtype(torch, config):
+    if not torch.cuda.is_available():
+        raise ValueError("VLM training requires a CUDA device")
+    if config.get("bf16", True):
+        if not torch.cuda.is_bf16_supported():
+            raise ValueError(
+                "this config requires bfloat16, but the GPU does not support it; "
+                "use a *-15gb config or set bf16=false"
+            )
+        return torch.bfloat16
+    return torch.float16
+
+
+def print_gpu_summary(torch, config):
+    device = torch.cuda.current_device()
+    properties = torch.cuda.get_device_properties(device)
+    total_gib = properties.total_memory / (1024**3)
+    print(
+        f"gpu={properties.name} vram={total_gib:.1f}GiB "
+        f"precision={'bf16' if config.get('bf16', True) else 'fp16'} "
+        f"quantization={config['quantization']}"
+    )
 
 
 def train(config, train_items, eval_items):
@@ -98,14 +125,10 @@ def train(config, train_items, eval_items):
             "training dependencies missing; install requirements-vlm.txt"
         ) from error
 
-    dtype = torch.bfloat16 if config.get("bf16", True) else torch.float16
+    dtype = training_dtype(torch, config)
+    print_gpu_summary(torch, config)
     model_kwargs = {"dtype": dtype, "device_map": "auto"}
     if config["quantization"] == "4bit":
-        if not torch.cuda.is_available():
-            raise ValueError(
-                "the checked-in 4bit config requires CUDA; use quantization=none "
-                "for a non-CUDA training experiment"
-            )
         model_kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -126,13 +149,18 @@ def train(config, train_items, eval_items):
         r=config["lora_r"],
         lora_alpha=config["lora_alpha"],
         lora_dropout=config["lora_dropout"],
-        target_modules="all-linear",
+        target_modules=config.get("lora_target_modules", "all-linear"),
         bias="none",
         task_type="CAUSAL_LM",
     )
-    train_dataset = Dataset.from_list(materialize(train_items, config["image_scale"]))
+    template_kwargs = config.get("chat_template_kwargs")
+    train_dataset = Dataset.from_list(
+        materialize(train_items, config["image_scale"], template_kwargs)
+    )
     eval_dataset = (
-        Dataset.from_list(materialize(eval_items, config["image_scale"]))
+        Dataset.from_list(
+            materialize(eval_items, config["image_scale"], template_kwargs)
+        )
         if eval_items
         else None
     )
@@ -144,15 +172,21 @@ def train(config, train_items, eval_items):
         per_device_eval_batch_size=config["batch_size"],
         gradient_accumulation_steps=config["gradient_accumulation"],
         gradient_checkpointing=config.get("gradient_checkpointing", True),
+        gradient_checkpointing_kwargs={"use_reentrant": False},
         bf16=config.get("bf16", True),
         fp16=not config.get("bf16", True),
+        tf32=config.get("tf32", config.get("bf16", True)),
+        optim=config.get("optim", "paged_adamw_8bit"),
         logging_steps=config.get("logging_steps", 1),
         save_strategy="epoch",
         eval_strategy="epoch" if eval_dataset is not None else "no",
         report_to="none",
         max_length=None,
         assistant_only_loss=config.get("assistant_only_loss", True),
+        loss_type=config.get("loss_type", "chunked_nll"),
         remove_unused_columns=False,
+        seed=config.get("seed", 42),
+        data_seed=config.get("seed", 42),
     )
     trainer = SFTTrainer(
         model=model,
@@ -162,7 +196,15 @@ def train(config, train_items, eval_items):
         processing_class=processor,
         peft_config=peft_config,
     )
-    trainer.train()
+    try:
+        trainer.train()
+    except torch.OutOfMemoryError as error:
+        torch.cuda.empty_cache()
+        raise ValueError(
+            "CUDA out of memory; retry with the Qwen3.5-2B 15 GB config, "
+            "reduce image_scale, or increase gradient_accumulation while keeping "
+            "batch_size=1"
+        ) from error
     trainer.save_model(config["output_dir"])
     processor.save_pretrained(config["output_dir"])
 

@@ -398,7 +398,7 @@ fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
             .arg("generator")
             .arg(generator_bundle.join(GENERATOR_EXAMPLES_FILE))
             .arg(generator_bundle.join(ARTIFACTS_DIR))
-            .arg(training.join("configs/generator-qwen3-vl-2b-lora.json"))
+            .arg(training.join("configs/generator-qwen3.5-4b-qlora.json"))
             .arg("--dry-run")
             .output()
             .unwrap();
@@ -414,7 +414,7 @@ fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
             .arg("critic")
             .arg(&critic_path)
             .arg(bundle.join(ARTIFACTS_DIR))
-            .arg(training.join("configs/critic-qwen3-vl-2b-lora.json"))
+            .arg(training.join("configs/critic-qwen3.5-4b-qlora.json"))
             .arg("--dry-run")
             .output()
             .unwrap();

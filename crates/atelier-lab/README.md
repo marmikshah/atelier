@@ -138,7 +138,8 @@ the smoke critic to overfit the exported preference.
 
 ## 6. Train the custom VLM loop
 
-The checked-in Qwen3-VL 2B LoRA configs train both sides of the loop:
+The checked-in Qwen3.5-4B QLoRA configs train both sides of the loop, with
+Qwen3.5-2B low-VRAM fallbacks:
 
 - generator: task + current raster → one typed Atelier action;
 - critic: task + two blinded sprites → canonical preference.

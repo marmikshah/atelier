@@ -25,7 +25,7 @@ def main():
     parser.add_argument("images", nargs="+", type=Path)
     parser.add_argument("--tasks", type=Path, required=True)
     parser.add_argument("--task-id", required=True)
-    parser.add_argument("--base-model", default="Qwen/Qwen3-VL-2B-Instruct")
+    parser.add_argument("--base-model", default="Qwen/Qwen3.5-4B")
     parser.add_argument("--adapter", required=True)
     parser.add_argument("--quantization", choices=("none", "4bit"), default="4bit")
     parser.add_argument("--image-scale", type=int, default=8)

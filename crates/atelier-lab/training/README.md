@@ -7,10 +7,17 @@ Atelier trains two adapters over the same small vision-language base:
 2. The **critic** sees the task and two blinded sprites, then emits
    `candidate_a`, `candidate_b`, or `tie`.
 
-The checked-in starting configs use
-[`Qwen/Qwen3-VL-2B-Instruct`](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct)
-with PEFT LoRA and optional 4-bit QLoRA. The exporter and policy protocol are
-model-independent; changing the base model is a config/runtime decision.
+The default configs use
+[`Qwen/Qwen3.5-4B`](https://huggingface.co/Qwen/Qwen3.5-4B) with 4-bit QLoRA.
+It is a current, natively multimodal 4B model and is the recommended starting
+point for both adapters. The 4B critic has useful extra capacity for subtle
+pixel-art comparisons while remaining small enough for a single accelerator.
+
+For a strict 15 GiB ceiling or the cheapest experiments, use the checked-in
+`Qwen3.5-2B` `*-15gb.json` configs. They reduce LoRA rank and use fp16 so they
+also work on older CUDA GPUs without bfloat16. The older Qwen3-VL configs remain
+as reproducibility baselines, but the quick runner no longer selects them.
+The exporter and policy protocol remain model-independent.
 
 The implementation follows the official
 [TRL vision-language SFT format](https://huggingface.co/docs/trl/sft_trainer),
@@ -62,9 +69,17 @@ research/vlm-venv/bin/pip install -r \
   crates/atelier-lab/training/requirements-vlm.txt
 ```
 
-The default configs use 4-bit NF4 and bfloat16. Set `quantization` to `none`
-and `bf16` to `false` when targeting hardware that does not support those
-modes. Keep downloaded weights and checkpoints under `research/`.
+The default configs use 4-bit NF4 and bfloat16. GB10 and H100 can run them as
+checked in. On a GPU without bfloat16 support, select the 2B 15 GiB config; the
+trainer checks this before downloading model weights. It also prints the GPU,
+VRAM, precision, and quantization mode before loading the model. Keep downloaded
+weights and checkpoints under `research/`.
+
+Qwen3.5 uses thinking mode by default at 4B. Atelier explicitly disables it in
+training and inference: the required response is compact JSON, not a reasoning
+transcript. Use recent pinned releases from `requirements-vlm.txt`; Qwen3.5 and
+its assistant-only training template require newer Transformers and TRL than
+the legacy Qwen3-VL setup.
 
 ## 4. Validate data without a GPU
 
@@ -74,12 +89,12 @@ These commands load no model and make no network calls:
 python3 crates/atelier-lab/training/train_vlm.py \
   generator research/generator-sft/generator.jsonl \
   research/generator-sft/artifacts \
-  crates/atelier-lab/training/configs/generator-qwen3-vl-2b-lora.json \
+  crates/atelier-lab/training/configs/generator-qwen3.5-4b-qlora.json \
   --dry-run
 
 python3 crates/atelier-lab/training/train_vlm.py \
   critic research/critic.jsonl research/review-bundle/artifacts \
-  crates/atelier-lab/training/configs/critic-qwen3-vl-2b-lora.json \
+  crates/atelier-lab/training/configs/critic-qwen3.5-4b-qlora.json \
   --dry-run
 ```
 
@@ -113,6 +128,16 @@ pass a config as the fourth positional argument only when overriding it.
 Documented repo-relative paths also resolve from the repository root when the
 command is launched from another directory.
 
+To force the lower-memory model, pass its config as the fourth positional
+argument:
+
+```sh
+python3 crates/atelier-lab/training/quick_vlm.py \
+  generator research/generator-sft/generator.jsonl \
+  research/generator-sft/artifacts \
+  crates/atelier-lab/training/configs/generator-qwen3.5-2b-qlora-15gb.json
+```
+
 ## 6. Train and prove overfit first
 
 Remove `--dry-run` to train. Before scaling data, train on a tiny curated
@@ -122,13 +147,13 @@ subset and require exact output-contract memorization:
 python3 crates/atelier-lab/training/eval_vlm.py \
   generator research/generator-sft/generator.jsonl \
   research/generator-sft/artifacts \
-  --adapter research/checkpoints/generator-qwen3-vl-2b-lora \
+  --adapter research/checkpoints/generator-qwen3.5-4b-qlora \
   --split development \
   --limit 32 --expect-accuracy 0.95
 
 python3 crates/atelier-lab/training/eval_vlm.py \
   critic research/critic.jsonl research/review-bundle/artifacts \
-  --adapter research/checkpoints/critic-qwen3-vl-2b-lora \
+  --adapter research/checkpoints/critic-qwen3.5-4b-qlora \
   --split development \
   --limit 32 --expect-accuracy 0.95
 ```
@@ -144,7 +169,7 @@ Keep the model resident in one local process:
 
 ```sh
 python3 crates/atelier-lab/policy/vlm_server.py \
-  --adapter research/checkpoints/generator-qwen3-vl-2b-lora
+  --adapter research/checkpoints/generator-qwen3.5-4b-qlora
 ```
 
 The lightweight command client implements the existing policy protocol, so it
@@ -155,7 +180,7 @@ cargo run -p atelier-lab --bin atelier-lab -- \
   run-batch crates/atelier-lab/tasks/development.jsonl research/vlm-episodes \
   --policy python3 \
   --policy-arg crates/atelier-lab/policy/vlm_client.py \
-  --name generator-qwen3-vl-2b-lora \
+  --name generator-qwen3.5-4b-qlora \
   --split development --limit 20 --repeats 4
 ```
 
@@ -172,7 +197,7 @@ python3 crates/atelier-lab/training/rank_candidates.py \
   draft-1.png draft-2.png draft-3.png \
   --tasks crates/atelier-lab/tasks/development.jsonl \
   --task-id development-character-001 \
-  --adapter research/checkpoints/critic-qwen3-vl-2b-lora
+  --adapter research/checkpoints/critic-qwen3.5-4b-qlora
 ```
 
 The output contains the ranking, scores, and both directional judgements for

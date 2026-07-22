@@ -102,14 +102,14 @@ special Rust integration:
 
 ```sh
 python3 crates/atelier-lab/policy/vlm_server.py \
-  --adapter research/checkpoints/generator-qwen3-vl-2b-lora
+  --adapter research/checkpoints/generator-qwen3.5-4b-qlora
 
 cargo run -p atelier-lab --bin atelier-lab -- \
   run-policy crates/atelier-lab/tasks/development.jsonl \
   development-character-001 research/vlm-episodes \
   --policy python3 \
   --policy-arg crates/atelier-lab/policy/vlm_client.py \
-  --name generator-qwen3-vl-2b-lora
+  --name generator-qwen3.5-4b-qlora
 ```
 
 The server reconstructs the exact visual state from the indexed observation,

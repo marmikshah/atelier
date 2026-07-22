@@ -32,7 +32,7 @@ def main():
     parser.add_argument("task", choices=("generator", "critic"))
     parser.add_argument("dataset", type=Path)
     parser.add_argument("artifacts", type=Path)
-    parser.add_argument("--base-model", default="Qwen/Qwen3-VL-2B-Instruct")
+    parser.add_argument("--base-model", default="Qwen/Qwen3.5-4B")
     parser.add_argument("--adapter", required=True)
     parser.add_argument("--quantization", choices=("none", "4bit"), default="4bit")
     parser.add_argument("--image-scale", type=int, default=8)

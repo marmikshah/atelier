@@ -6,6 +6,31 @@ import copy
 from vlm_data import extract_json_object
 
 
+def inference_dtype(torch):
+    if not torch.cuda.is_available():
+        return torch.float32
+    if torch.cuda.is_bf16_supported():
+        return torch.bfloat16
+    return torch.float16
+
+
+def multimodal_model_class(transformers):
+    model_class = getattr(transformers, "AutoModelForMultimodalLM", None)
+    if model_class is None:
+        raise ValueError(
+            "installed transformers does not provide AutoModelForMultimodalLM; "
+            "install requirements-vlm.txt"
+        )
+    return model_class
+
+
+def generation_chat_template_kwargs(model):
+    model_type = getattr(getattr(model, "config", None), "model_type", "")
+    if model_type in ("qwen3_5", "qwen3_5_moe"):
+        return {"enable_thinking": False}
+    return {}
+
+
 def load_model(base_model, adapter=None, quantization="none"):
     try:
         import torch
@@ -17,7 +42,7 @@ def load_model(base_model, adapter=None, quantization="none"):
             "inference dependencies missing; install requirements-vlm.txt"
         ) from error
 
-    dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+    dtype = inference_dtype(torch)
     kwargs = {"dtype": dtype, "device_map": "auto"}
     if quantization == "4bit":
         if not torch.cuda.is_available():
@@ -29,9 +54,7 @@ def load_model(base_model, adapter=None, quantization="none"):
         )
     elif quantization != "none":
         raise ValueError("quantization must be none or 4bit")
-    model_class = getattr(transformers, "Qwen3VLForConditionalGeneration", None)
-    if model_class is None:
-        raise ValueError("installed transformers does not provide Qwen3-VL")
+    model_class = multimodal_model_class(transformers)
     model = model_class.from_pretrained(base_model, **kwargs)
     if adapter:
         model = PeftModel.from_pretrained(model, adapter)
@@ -74,6 +97,7 @@ def generate_json(model, processor, messages, required_key, max_new_tokens):
         add_generation_prompt=True,
         return_dict=True,
         return_tensors="pt",
+        **generation_chat_template_kwargs(model),
     )
     inputs = inputs.to(model.device)
     with torch.inference_mode():

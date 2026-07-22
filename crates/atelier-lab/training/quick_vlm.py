@@ -15,7 +15,7 @@ REPO_ROOT = SCRIPT_DIR.parents[2]
 
 
 def default_config(task):
-    return SCRIPT_DIR / "configs" / f"{task}-qwen3-vl-2b-lora.json"
+    return SCRIPT_DIR / "configs" / f"{task}-qwen3.5-4b-qlora.json"
 
 
 def resolve_input(path, label, directory=False):
