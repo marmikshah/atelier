@@ -103,7 +103,22 @@ The critic export carries canonical `candidate_a`, `candidate_b`, or `tie`
 labels. It does not contain annotator ids. Human and future synthetic labels
 remain distinguishable through `label_source`.
 
-## 4. Run the smoke gate
+## 4. Export generator demonstrations
+
+Create an explicit manifest of curated, completed episodes and export visual
+state → next-action SFT examples:
+
+```sh
+cargo run -p atelier-lab --bin atelier-lab -- \
+  export-generator research/generator-episodes.jsonl research/generator-sft
+```
+
+The exporter refuses frozen-test tasks, rejected actions, incomplete episodes,
+and actions discarded by checkpoint restore. See
+[`training/README.md`](training/README.md) for the manifest contract and the
+complete LoRA train/evaluate/serve workflow.
+
+## 5. Run the critic smoke gate
 
 The dependency-free script is only an overfit/data-plumbing check. It trains a
 small linear ranker on exact 32x32 luminance and alpha pixels, skips ties, and
@@ -120,3 +135,15 @@ validation split, order-bias checks, subtle corruptions, and at least 80%
 agreement on frozen human comparisons. The test suite exercises this entire
 plumbing path with two deterministic, distinct episode rasters and requires
 the smoke critic to overfit the exported preference.
+
+## 6. Train the custom VLM loop
+
+The checked-in Qwen3-VL 2B LoRA configs train both sides of the loop:
+
+- generator: task + current raster → one typed Atelier action;
+- critic: task + two blinded sprites → canonical preference.
+
+Training dependencies, checkpoints, and datasets are optional research assets,
+not Rust workspace dependencies. The training guide includes offline dry-run
+validation, exact overfit gates, a persistent local generator server, the
+provider-neutral policy client, and bidirectional best-of-N critic ranking.

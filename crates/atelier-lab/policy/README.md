@@ -93,3 +93,27 @@ the policy label and token usage, but never the child environment, stderr, or
 policy arguments. Keep credentials in environment variables, not command-line
 arguments. A completed key is skipped only after its reset, policy-call, and
 finish provenance has been re-read from the referenced episode log.
+
+## Trained checkpoint adapter
+
+The custom generator adapter stays resident behind a loopback-only server;
+`vlm_client.py` remains a small command-policy process and therefore needs no
+special Rust integration:
+
+```sh
+python3 crates/atelier-lab/policy/vlm_server.py \
+  --adapter research/checkpoints/generator-qwen3-vl-2b-lora
+
+cargo run -p atelier-lab --bin atelier-lab -- \
+  run-policy crates/atelier-lab/tasks/development.jsonl \
+  development-character-001 research/vlm-episodes \
+  --policy python3 \
+  --policy-arg crates/atelier-lab/policy/vlm_client.py \
+  --name generator-qwen3-vl-2b-lora
+```
+
+The server reconstructs the exact visual state from the indexed observation,
+applies the same nearest-neighbour scale used for SFT, and requires the model
+to return a versioned `PolicyResponse`. `ATELIER_VLM_URL` can point the client
+at another trusted endpoint, but the supplied server has no authentication and
+must not be exposed publicly.

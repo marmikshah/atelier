@@ -22,6 +22,7 @@ mod corruption;
 mod dataset;
 mod env;
 mod evaluation;
+mod generator_dataset;
 mod observation;
 mod policy;
 mod recorder;
@@ -53,6 +54,10 @@ pub use evaluation::{
     write_annotations_jsonl, write_comparisons_jsonl, write_critic_examples_jsonl,
     CanonicalPreference, CriticExample, CriticLabelSource, PairwiseAnnotation, PairwiseCandidate,
     PairwiseComparison, Preference, PreferenceReason, SampleSource, EVALUATION_FORMAT_VERSION,
+};
+pub use generator_dataset::{
+    export_generator_sft, GeneratorContext, GeneratorEpisodeInput, GeneratorExample,
+    GENERATOR_EXAMPLES_FILE, GENERATOR_FORMAT_VERSION,
 };
 pub use observation::{
     DocMetadata, FullObservation, IntegrityChecks, LayerObservation, LightObservation, Observation,

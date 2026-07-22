@@ -255,6 +255,52 @@ fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
     let root = test_root("dataset-loop");
     let episode_a = run_episode(&root, 11);
     let episode_b = run_episode(&root, 12);
+
+    let generator_manifest = root.join("generator-episodes.jsonl");
+    let generator_input = GeneratorEpisodeInput {
+        format_version: GENERATOR_FORMAT_VERSION,
+        id: "character-001-human-demo".into(),
+        episode_dir: episode_a.clone(),
+        source: SampleSource::Human,
+        generator: None,
+    };
+    std::fs::write(
+        &generator_manifest,
+        format!("{}\n", serde_json::to_string(&generator_input).unwrap()),
+    )
+    .unwrap();
+    let generator_bundle = root.join("generator-sft");
+    let generator_examples = export_generator_sft(&generator_manifest, &generator_bundle).unwrap();
+    assert_eq!(generator_examples.len(), 5, "only accepted actions export");
+    assert!(generator_examples
+        .iter()
+        .all(|example| example.task.split == "development"));
+    let generator_store = ArtifactStore::new(generator_bundle.join(ARTIFACTS_DIR)).unwrap();
+    let state_png = generator_store
+        .get(&generator_examples[0].image.sha256)
+        .unwrap();
+    let state_image = image::load_from_memory(&state_png).unwrap();
+    assert_eq!((state_image.width(), state_image.height()), (32, 32));
+    let final_reference = read_events(&episode_a)
+        .into_iter()
+        .find_map(|event| match event.event {
+            EventKind::Finish { final_render, .. } => Some(final_render),
+            _ => None,
+        })
+        .unwrap();
+    let episode_store = ArtifactStore::new(episode_a.join(ARTIFACTS_DIR)).unwrap();
+    let final_image = image::load_from_memory(&episode_store.get(&final_reference.sha256).unwrap())
+        .unwrap()
+        .to_rgba8();
+    let finish_state = generator_store
+        .get(&generator_examples.last().unwrap().image.sha256)
+        .unwrap();
+    assert_eq!(
+        image::load_from_memory(&finish_state).unwrap().to_rgba8(),
+        final_image,
+        "the visual SFT state before Finish matches Atelier's final render"
+    );
+
     let manifest = root.join("pairs.jsonl");
     let input = ComparisonBundleInput {
         format_version: EVALUATION_FORMAT_VERSION,
@@ -335,7 +381,51 @@ fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
 
     #[cfg(unix)]
     {
-        let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("training/critic_smoke.py");
+        let training = Path::new(env!("CARGO_MANIFEST_DIR")).join("training");
+        let contract_tests = std::process::Command::new("python3")
+            .arg(training.join("test_vlm_contract.py"))
+            .output()
+            .unwrap();
+        assert!(
+            contract_tests.status.success(),
+            "VLM contract tests failed: {}{}",
+            String::from_utf8_lossy(&contract_tests.stdout),
+            String::from_utf8_lossy(&contract_tests.stderr)
+        );
+
+        let generator_dry_run = std::process::Command::new("python3")
+            .arg(training.join("train_vlm.py"))
+            .arg("generator")
+            .arg(generator_bundle.join(GENERATOR_EXAMPLES_FILE))
+            .arg(generator_bundle.join(ARTIFACTS_DIR))
+            .arg(training.join("configs/generator-qwen3-vl-2b-lora.json"))
+            .arg("--dry-run")
+            .output()
+            .unwrap();
+        assert!(
+            generator_dry_run.status.success(),
+            "generator VLM dry-run failed: {}{}",
+            String::from_utf8_lossy(&generator_dry_run.stdout),
+            String::from_utf8_lossy(&generator_dry_run.stderr)
+        );
+
+        let critic_dry_run = std::process::Command::new("python3")
+            .arg(training.join("train_vlm.py"))
+            .arg("critic")
+            .arg(&critic_path)
+            .arg(bundle.join(ARTIFACTS_DIR))
+            .arg(training.join("configs/critic-qwen3-vl-2b-lora.json"))
+            .arg("--dry-run")
+            .output()
+            .unwrap();
+        assert!(
+            critic_dry_run.status.success(),
+            "critic VLM dry-run failed: {}{}",
+            String::from_utf8_lossy(&critic_dry_run.stdout),
+            String::from_utf8_lossy(&critic_dry_run.stderr)
+        );
+
+        let script = training.join("critic_smoke.py");
         let output = std::process::Command::new("python3")
             .arg(script)
             .arg(&critic_path)

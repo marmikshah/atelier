@@ -4,8 +4,9 @@ use std::time::Duration;
 
 use atelier_lab::{
     append_batch_record, bundle_episode_comparisons, completed_batch_keys,
-    export_annotated_critic_jsonl, plan_batch_runs, read_tasks_jsonl, replay, run_policy_episode,
-    AtelierEnv, BatchRecord, BatchSelection, CommandPolicy, RunnerConfig, BATCH_RESULTS_FILE,
+    export_annotated_critic_jsonl, export_generator_sft, plan_batch_runs, read_tasks_jsonl, replay,
+    run_policy_episode, AtelierEnv, BatchRecord, BatchSelection, CommandPolicy, RunnerConfig,
+    BATCH_RESULTS_FILE,
 };
 
 const USAGE: &str = "atelier-lab data tools
@@ -14,6 +15,7 @@ usage:
   atelier-lab validate-tasks <tasks.jsonl>
   atelier-lab bundle <pairs.jsonl> <output-dir>
   atelier-lab export-critic <comparisons.jsonl> <annotations.jsonl> <output.jsonl>
+  atelier-lab export-generator <episodes.jsonl> <output-dir>
   atelier-lab replay <episode-dir> <replay-root>
   atelier-lab run-policy <tasks.jsonl> <task-id> <episode-root> --policy <program> [options]
   atelier-lab run-batch <tasks.jsonl> <episode-root> --policy <program> [options]
@@ -70,6 +72,15 @@ fn run() -> Result<(), String> {
                 Path::new(output),
             )?;
             println!("exported {count} critic examples to {output}");
+            Ok(())
+        }
+        [command, manifest, output] if command == "export-generator" => {
+            let examples = export_generator_sft(Path::new(manifest), Path::new(output))?;
+            println!(
+                "exported {} generator examples to {}",
+                examples.len(),
+                output
+            );
             Ok(())
         }
         [command, episode, replay_root] if command == "replay" => {

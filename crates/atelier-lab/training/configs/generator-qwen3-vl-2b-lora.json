@@ -1,0 +1,21 @@
+{
+  "task": "generator",
+  "model_id": "Qwen/Qwen3-VL-2B-Instruct",
+  "model_class": "Qwen3VLForConditionalGeneration",
+  "output_dir": "research/checkpoints/generator-qwen3-vl-2b-lora",
+  "quantization": "4bit",
+  "image_scale": 8,
+  "train_split": "development",
+  "eval_split": "validation",
+  "epochs": 3,
+  "learning_rate": 0.0002,
+  "batch_size": 1,
+  "gradient_accumulation": 16,
+  "gradient_checkpointing": true,
+  "bf16": true,
+  "assistant_only_loss": true,
+  "logging_steps": 1,
+  "lora_r": 16,
+  "lora_alpha": 32,
+  "lora_dropout": 0.05
+}
