@@ -446,8 +446,8 @@ fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
             .arg("generator")
             .arg(&quick_generator_path)
             .arg(generator_bundle.join(ARTIFACTS_DIR))
-            .arg(training.join("configs/generator-qwen3-vl-2b-lora.json"))
             .arg("--dry-run")
+            .current_dir(&root)
             .output()
             .unwrap();
         assert!(
@@ -475,8 +475,8 @@ fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
             .arg("critic")
             .arg(&quick_critic_path)
             .arg(bundle.join(ARTIFACTS_DIR))
-            .arg(training.join("configs/critic-qwen3-vl-2b-lora.json"))
             .arg("--dry-run")
+            .current_dir(&root)
             .output()
             .unwrap();
         assert!(

@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 from eval_vlm import select_rows
-from quick_vlm import validation_count
+from quick_vlm import default_config, resolve_input, validation_count
 from vlm_data import critic_messages, extract_json_object, generator_messages
 from vlm_runtime import attach_images
 
@@ -86,6 +86,14 @@ class ContractTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, "no rows for validation split"):
                 validation_count("unused.jsonl", "validation", 1)
+
+    def test_quick_run_has_a_bundled_default_config(self):
+        config = default_config("generator")
+        self.assertEqual(resolve_input(config, "config"), config.resolve())
+
+    def test_quick_run_reports_every_attempted_input_path(self):
+        with self.assertRaisesRegex(ValueError, "dataset file not found; tried:"):
+            resolve_input("definitely-missing.jsonl", "dataset")
 
 
 if __name__ == "__main__":

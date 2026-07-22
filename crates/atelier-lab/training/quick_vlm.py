@@ -11,6 +11,23 @@ from vlm_data import load_jsonl
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[2]
+
+
+def default_config(task):
+    return SCRIPT_DIR / "configs" / f"{task}-qwen3-vl-2b-lora.json"
+
+
+def resolve_input(path, label, directory=False):
+    path = Path(path).expanduser()
+    candidates = [path] if path.is_absolute() else [Path.cwd() / path, REPO_ROOT / path]
+    predicate = Path.is_dir if directory else Path.is_file
+    for candidate in candidates:
+        if predicate(candidate):
+            return candidate.resolve()
+    tried = ", ".join(str(candidate) for candidate in candidates)
+    kind = "directory" if directory else "file"
+    raise ValueError(f"{label} {kind} not found; tried: {tried}")
 
 
 def positive(value, name):
@@ -37,7 +54,12 @@ def main():
     parser.add_argument("task", choices=("generator", "critic"))
     parser.add_argument("dataset", type=Path)
     parser.add_argument("artifacts", type=Path)
-    parser.add_argument("config", type=Path)
+    parser.add_argument(
+        "config",
+        nargs="?",
+        type=Path,
+        help="optional training config; defaults to the config beside this script",
+    )
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--epochs", type=float, default=1)
     parser.add_argument("--train-limit", type=int, default=32)
@@ -58,24 +80,29 @@ def main():
     if not 0 <= args.expect_val_accuracy <= 1:
         parser.error("expected validation accuracy must be between 0 and 1")
 
-    config = load_config(args.config)
+    dataset = resolve_input(args.dataset, "dataset")
+    artifacts = resolve_input(args.artifacts, "artifacts", directory=True)
+    config_path = resolve_input(args.config or default_config(args.task), "config")
+    config = load_config(config_path)
     if config.get("task") not in (None, args.task):
         raise ValueError(
             f"config task {config['task']!r} does not match command task {args.task!r}"
         )
     eval_split = config.get("eval_split", "validation")
-    val_rows = validation_count(args.dataset, eval_split, args.val_limit)
-    output_dir = args.output_dir or Path(
-        "research/checkpoints/" + args.task + "-quick"
+    val_rows = validation_count(dataset, eval_split, args.val_limit)
+    output_dir = (
+        args.output_dir.expanduser().resolve()
+        if args.output_dir is not None
+        else REPO_ROOT / "research" / "checkpoints" / f"{args.task}-quick"
     )
 
     train_command = [
         sys.executable,
         SCRIPT_DIR / "train_vlm.py",
         args.task,
-        args.dataset,
-        args.artifacts,
-        args.config,
+        dataset,
+        artifacts,
+        config_path,
         "--output-dir",
         output_dir,
         "--epochs",
@@ -99,8 +126,8 @@ def main():
         sys.executable,
         SCRIPT_DIR / "eval_vlm.py",
         args.task,
-        args.dataset,
-        args.artifacts,
+        dataset,
+        artifacts,
         "--base-model",
         config["model_id"],
         "--adapter",

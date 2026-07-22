@@ -96,12 +96,10 @@ accuracy on at most 32 **validation** rows:
 ```sh
 python3 crates/atelier-lab/training/quick_vlm.py \
   generator research/generator-sft/generator.jsonl \
-  research/generator-sft/artifacts \
-  crates/atelier-lab/training/configs/generator-qwen3-vl-2b-lora.json
+  research/generator-sft/artifacts
 
 python3 crates/atelier-lab/training/quick_vlm.py \
-  critic research/critic.jsonl research/review-bundle/artifacts \
-  crates/atelier-lab/training/configs/critic-qwen3-vl-2b-lora.json
+  critic research/critic.jsonl research/review-bundle/artifacts
 ```
 
 Run either command with `--dry-run` before moving data to the GPU. Override
@@ -110,6 +108,10 @@ default validation threshold is zero so an initial experiment always reports
 its metric; use `--expect-val-accuracy 0.8` to make the command fail below the
 target quality gate. The command refuses to run without the configured
 validation split and never writes over the full-run checkpoint by default.
+The matching checked-in generator or critic config is selected automatically;
+pass a config as the fourth positional argument only when overriding it.
+Documented repo-relative paths also resolve from the repository root when the
+command is launched from another directory.
 
 ## 6. Train and prove overfit first
 
