@@ -87,7 +87,31 @@ Both dry-runs are exercised by the repository test suite on generated fixture
 data. They validate schemas, split safety, artifact hashes, PNGs, messages,
 targets, and configs.
 
-## 5. Train and prove overfit first
+## 5. Quick train + validation
+
+Use the one-command runner first. It trains one epoch on at most 32 development
+rows, saves to a separate quick checkpoint, and then reports exact-match
+accuracy on at most 32 **validation** rows:
+
+```sh
+python3 crates/atelier-lab/training/quick_vlm.py \
+  generator research/generator-sft/generator.jsonl \
+  research/generator-sft/artifacts \
+  crates/atelier-lab/training/configs/generator-qwen3-vl-2b-lora.json
+
+python3 crates/atelier-lab/training/quick_vlm.py \
+  critic research/critic.jsonl research/review-bundle/artifacts \
+  crates/atelier-lab/training/configs/critic-qwen3-vl-2b-lora.json
+```
+
+Run either command with `--dry-run` before moving data to the GPU. Override
+`--epochs`, `--train-limit`, `--val-limit`, or `--output-dir` when needed. The
+default validation threshold is zero so an initial experiment always reports
+its metric; use `--expect-val-accuracy 0.8` to make the command fail below the
+target quality gate. The command refuses to run without the configured
+validation split and never writes over the full-run checkpoint by default.
+
+## 6. Train and prove overfit first
 
 Remove `--dry-run` to train. Before scaling data, train on a tiny curated
 subset and require exact output-contract memorization:
@@ -97,11 +121,13 @@ python3 crates/atelier-lab/training/eval_vlm.py \
   generator research/generator-sft/generator.jsonl \
   research/generator-sft/artifacts \
   --adapter research/checkpoints/generator-qwen3-vl-2b-lora \
+  --split development \
   --limit 32 --expect-accuracy 0.95
 
 python3 crates/atelier-lab/training/eval_vlm.py \
   critic research/critic.jsonl research/review-bundle/artifacts \
   --adapter research/checkpoints/critic-qwen3-vl-2b-lora \
+  --split development \
   --limit 32 --expect-accuracy 0.95
 ```
 
@@ -110,7 +136,7 @@ masking, adapter loading, and JSON decoding. It is not evidence of artistic
 generalization. Generalization requires validation tasks and at least 80%
 agreement with frozen human comparisons.
 
-## 6. Serve the trained generator
+## 7. Serve the trained generator
 
 Keep the model resident in one local process:
 
@@ -134,7 +160,7 @@ cargo run -p atelier-lab --bin atelier-lab -- \
 `ATELIER_VLM_URL` overrides the loopback URL. The server is deliberately local
 by default; do not expose an unauthenticated checkpoint server publicly.
 
-## 7. Rank best-of-N drafts
+## 8. Rank best-of-N drafts
 
 After training the critic, rank any set of candidate PNGs. Every pair is
 evaluated in both A/B orders to make order bias visible:

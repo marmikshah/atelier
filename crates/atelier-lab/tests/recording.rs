@@ -425,6 +425,67 @@ fn episodes_bundle_annotations_and_smoke_critic_end_to_end() {
             String::from_utf8_lossy(&critic_dry_run.stderr)
         );
 
+        let quick_generator_path = root.join("quick-generator.jsonl");
+        let generator_text =
+            std::fs::read_to_string(generator_bundle.join(GENERATOR_EXAMPLES_FILE)).unwrap();
+        let mut generator_validation: serde_json::Value =
+            serde_json::from_str(generator_text.lines().next().unwrap()).unwrap();
+        generator_validation["id"] = serde_json::json!("generator-validation");
+        generator_validation["task"]["split"] = serde_json::json!("validation");
+        std::fs::write(
+            &quick_generator_path,
+            format!(
+                "{}\n{}\n",
+                generator_text.trim(),
+                serde_json::to_string(&generator_validation).unwrap()
+            ),
+        )
+        .unwrap();
+        let quick_generator = std::process::Command::new("python3")
+            .arg(training.join("quick_vlm.py"))
+            .arg("generator")
+            .arg(&quick_generator_path)
+            .arg(generator_bundle.join(ARTIFACTS_DIR))
+            .arg(training.join("configs/generator-qwen3-vl-2b-lora.json"))
+            .arg("--dry-run")
+            .output()
+            .unwrap();
+        assert!(
+            quick_generator.status.success(),
+            "quick generator dry-run failed: {}{}",
+            String::from_utf8_lossy(&quick_generator.stdout),
+            String::from_utf8_lossy(&quick_generator.stderr)
+        );
+
+        let quick_critic_path = root.join("quick-critic.jsonl");
+        let mut critic_validation = row.clone();
+        critic_validation["id"] = serde_json::json!("critic-validation");
+        critic_validation["task"]["split"] = serde_json::json!("validation");
+        std::fs::write(
+            &quick_critic_path,
+            format!(
+                "{}\n{}\n",
+                serde_json::to_string(&row).unwrap(),
+                serde_json::to_string(&critic_validation).unwrap()
+            ),
+        )
+        .unwrap();
+        let quick_critic = std::process::Command::new("python3")
+            .arg(training.join("quick_vlm.py"))
+            .arg("critic")
+            .arg(&quick_critic_path)
+            .arg(bundle.join(ARTIFACTS_DIR))
+            .arg(training.join("configs/critic-qwen3-vl-2b-lora.json"))
+            .arg("--dry-run")
+            .output()
+            .unwrap();
+        assert!(
+            quick_critic.status.success(),
+            "quick critic dry-run failed: {}{}",
+            String::from_utf8_lossy(&quick_critic.stdout),
+            String::from_utf8_lossy(&quick_critic.stderr)
+        );
+
         let script = training.join("critic_smoke.py");
         let output = std::process::Command::new("python3")
             .arg(script)

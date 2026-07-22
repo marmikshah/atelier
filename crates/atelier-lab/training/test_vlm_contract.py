@@ -3,7 +3,10 @@
 
 import json
 import unittest
+from unittest.mock import patch
 
+from eval_vlm import select_rows
+from quick_vlm import validation_count
 from vlm_data import critic_messages, extract_json_object, generator_messages
 from vlm_runtime import attach_images
 
@@ -55,6 +58,34 @@ class ContractTests(unittest.TestCase):
             "action",
         )
         self.assertEqual(value["action"]["action"], "Finish")
+
+    def test_evaluation_selects_validation_before_limit(self):
+        rows = [
+            {"task": {"split": "development"}, "id": "train"},
+            {"task": {"split": "validation"}, "id": "val-1"},
+            {"task": {"split": "validation"}, "id": "val-2"},
+        ]
+        selected = select_rows(rows, "validation", 1)
+        self.assertEqual([row["id"] for row in selected], ["val-1"])
+
+    def test_evaluation_rejects_an_empty_split(self):
+        with self.assertRaisesRegex(ValueError, "no evaluation rows"):
+            select_rows([{"task": {"split": "development"}}], "validation", 1)
+
+    def test_quick_run_requires_and_bounds_validation_rows(self):
+        rows = [
+            {"task": {"split": "development"}},
+            {"task": {"split": "validation"}},
+            {"task": {"split": "validation"}},
+        ]
+        with patch("quick_vlm.load_jsonl", return_value=rows):
+            self.assertEqual(validation_count("unused.jsonl", "validation", 1), 1)
+        with patch(
+            "quick_vlm.load_jsonl",
+            return_value=[{"task": {"split": "development"}}],
+        ):
+            with self.assertRaisesRegex(ValueError, "no rows for validation split"):
+                validation_count("unused.jsonl", "validation", 1)
 
 
 if __name__ == "__main__":

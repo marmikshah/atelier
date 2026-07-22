@@ -61,6 +61,12 @@ def split_rows(checked, train_split, eval_split):
     return train, evaluate
 
 
+def positive(value, name):
+    if value is not None and value <= 0:
+        raise ValueError(f"{name} must be greater than zero")
+    return value
+
+
 def materialize(items, image_scale):
     from PIL import Image
 
@@ -168,6 +174,10 @@ def main():
     parser.add_argument("artifacts", type=Path)
     parser.add_argument("config", type=Path)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--epochs", type=float)
+    parser.add_argument("--train-limit", type=int)
+    parser.add_argument("--eval-limit", type=int)
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -175,6 +185,13 @@ def main():
         raise ValueError(
             f"config task {config['task']!r} does not match command task {args.task!r}"
         )
+    positive(args.epochs, "epochs")
+    positive(args.train_limit, "train limit")
+    positive(args.eval_limit, "eval limit")
+    if args.output_dir is not None:
+        config["output_dir"] = str(args.output_dir)
+    if args.epochs is not None:
+        config["epochs"] = args.epochs
     rows = load_jsonl(args.dataset)
     checked = validate_rows(args.task, rows, args.artifacts)
     train_rows, eval_rows = split_rows(
@@ -182,9 +199,14 @@ def main():
         config.get("train_split", "development"),
         config.get("eval_split", "validation"),
     )
+    if args.train_limit is not None:
+        train_rows = train_rows[: args.train_limit]
+    if args.eval_limit is not None:
+        eval_rows = eval_rows[: args.eval_limit]
     print(
         f"task={args.task} rows={len(rows)} train={len(train_rows)} "
-        f"eval={len(eval_rows)} model={config['model_id']}"
+        f"eval={len(eval_rows)} epochs={config['epochs']} "
+        f"model={config['model_id']} output={config['output_dir']}"
     )
     if args.dry_run:
         print("PASS: dataset, artifacts, messages, targets, and config are valid")

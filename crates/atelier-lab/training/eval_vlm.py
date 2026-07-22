@@ -16,6 +16,17 @@ from vlm_data import (
 from vlm_runtime import attach_images, generate_json, load_model
 
 
+def select_rows(rows, split=None, limit=None):
+    if split is not None:
+        rows = [row for row in rows if row["task"]["split"] == split]
+    if limit is not None:
+        rows = rows[:limit]
+    if not rows:
+        label = f" for split {split!r}" if split is not None else ""
+        raise ValueError(f"dataset contains no evaluation rows{label}")
+    return rows
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("task", choices=("generator", "critic"))
@@ -27,28 +38,33 @@ def main():
     parser.add_argument("--image-scale", type=int, default=8)
     parser.add_argument("--max-new-tokens", type=int, default=768)
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--split", choices=("development", "validation"))
     parser.add_argument("--expect-accuracy", type=float, default=0.95)
     args = parser.parse_args()
     if not 0 <= args.expect_accuracy <= 1:
         parser.error("expected accuracy must be between 0 and 1")
+    if args.limit is not None and args.limit <= 0:
+        parser.error("limit must be greater than zero")
 
     try:
         from PIL import Image
     except ImportError as error:
         raise ValueError("Pillow is required for VLM evaluation") from error
-    rows = load_jsonl(args.dataset)
-    if args.limit is not None:
-        rows = rows[: args.limit]
+    rows = select_rows(load_jsonl(args.dataset), args.split, args.limit)
+    validator = validate_generator_row if args.task == "generator" else validate_critic_row
+    checked = []
+    for row in rows:
+        paths, _ = validator(row, args.artifacts)
+        checked.append((row, paths))
     model, processor = load_model(args.base_model, args.adapter, args.quantization)
     correct = 0
-    for row in rows:
+    invalid = 0
+    for index, (row, paths) in enumerate(checked, 1):
         if args.task == "generator":
-            paths, _ = validate_generator_row(row, args.artifacts)
             messages = generator_messages(row, include_target=False)
             expected = {"format_version": 1, "action": row["action"]}
             required = "action"
         else:
-            paths, _ = validate_critic_row(row, args.artifacts)
             messages = critic_messages(row, include_target=False)
             expected = {"preference": row["overall"]}
             required = "preference"
@@ -61,16 +77,25 @@ def main():
                     Image.Resampling.NEAREST,
                 )
             images.append(image)
-        predicted = generate_json(
-            model,
-            processor,
-            attach_images(messages, images),
-            required,
-            args.max_new_tokens,
-        )
+        try:
+            predicted = generate_json(
+                model,
+                processor,
+                attach_images(messages, images),
+                required,
+                args.max_new_tokens,
+            )
+        except ValueError as error:
+            invalid += 1
+            print(f"example={index} invalid_output={error}", file=sys.stderr)
+            continue
         correct += int(predicted == expected)
     accuracy = correct / len(rows)
-    print(f"task={args.task} examples={len(rows)} exact_accuracy={accuracy:.3f}")
+    split = args.split or "all"
+    print(
+        f"task={args.task} split={split} examples={len(rows)} invalid={invalid} "
+        f"exact_accuracy={accuracy:.3f}"
+    )
     if accuracy < args.expect_accuracy:
         print(
             f"FAILED: expected exact accuracy >= {args.expect_accuracy:.3f}",
