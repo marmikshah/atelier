@@ -29,7 +29,8 @@ MCP_URL="http://127.0.0.1:8765/mcp"
 
 # --source / --build builds the current checkout instead of downloading a release.
 # --yes / -y (or ATELIER_YES=1) runs fully non-interactively, taking every
-# default: reinstall, the background daemon.
+# default: reinstall, no MCP add-on. With an explicit ATELIER_MODE, detected
+# clients are registered but broad tool approval still defaults to no.
 FROM_SOURCE=""
 YES="${ATELIER_YES:-}"
 for a in "$@"; do case "$a" in
@@ -48,6 +49,19 @@ ask() { # ask <question> -> stdout: the answer ("" when non-interactive)
   printf '%s ' "$1" > /dev/tty
   read -r ans < /dev/tty || ans=""
   printf '%s' "$ans"
+}
+
+# A client counts as available when its executable or normal config directory
+# exists. The latter catches desktop/app installs whose launcher is not on PATH.
+client_available() {
+  command -v "$1" >/dev/null 2>&1 && return 0
+  case "$1" in
+    claude) [ -d "$HOME/.claude" ] ;;
+    codex)  [ -d "${CODEX_HOME:-$HOME/.codex}" ] ;;
+    kimi)   [ -d "${KIMI_CODE_HOME:-$HOME/.kimi-code}" ] ;;
+    cursor) [ -d "$HOME/.cursor" ] ;;
+    *)      return 1 ;;
+  esac
 }
 
 # -- uninstall ------------------------------------------------------------------
@@ -160,15 +174,49 @@ if [ "$MODE" = "http" ]; then
   fi
 fi
 
-# -- skills (Claude Code, Kimi Code, Cursor) ---------------------------------------
+# -- client registration + explicit broad-tool approval ----------------------------
+# Only ask about clients whose executable or config directory is present.
+# Registration defaults to yes; broad approval defaults to no because atelier
+# includes destructive tools.
+MCP_CONFIGURED=""
+if [ "$MODE" = "http" ] || [ "$MODE" = "stdio" ]; then
+  for CLIENT in claude codex kimi; do
+    client_available "$CLIENT" || continue
+    case "$(ask "Register Atelier MCP for $CLIENT? [Y/n]")" in
+      n|N) say "Skipped MCP registration for $CLIENT." ;;
+      *)
+        if "$BIN" clients install --for "$CLIENT" --mode "$MODE" >/dev/null; then
+          say "Atelier MCP registered for $CLIENT."
+          MCP_CONFIGURED=1
+          case "$(ask "Pre-approve every Atelier tool for $CLIENT? This includes delete_doc and doc_export. [y/N]")" in
+            y|Y)
+              if "$BIN" clients install --for "$CLIENT" --mode "$MODE" --allow-tools >/dev/null; then
+                say "All Atelier MCP tools pre-approved for $CLIENT."
+              else
+                say "Could not update $CLIENT's tool approvals. Retry: atelier clients install --for $CLIENT --mode $MODE --allow-tools"
+              fi
+              ;;
+            *) say "Kept $CLIENT's normal tool approval prompts." ;;
+          esac
+        else
+          say "MCP registration failed for $CLIENT; its existing config was left untouched."
+          say "Retry: atelier clients install --for $CLIENT --mode $MODE"
+        fi
+        ;;
+    esac
+  done
+fi
+
+# -- skills (Claude Code, Codex, Kimi Code, Cursor) --------------------------------
 # The workflow guidance that teaches an agent to use atelier well: build in
 # layers, look after every pass, fix the region rather than repaint the frame.
 # The binary carries them and writes the SKILL.md files itself — no per-file
 # download, no path coupling. Optional; atelier works without them.
-SKILL_REFRESHED=""
-for TARGET in claude kimi cursor; do
+MISSING_SKILL_TARGETS=""
+for TARGET in claude codex kimi cursor; do
   case "$TARGET" in
     claude) SKILL_DIR="$HOME/.claude/skills" ;;
+    codex)  SKILL_DIR="$HOME/.agents/skills" ;;
     kimi)   SKILL_DIR="$HOME/.kimi-code/skills" ;;
     cursor) SKILL_DIR="$HOME/.cursor/skills" ;;
   esac
@@ -176,19 +224,16 @@ for TARGET in claude kimi cursor; do
     # Already installed: refresh without asking. They are ours to update.
     "$BIN" skills install --for "$TARGET" >/dev/null 2>&1 \
       && say "Skills updated in $SKILL_DIR" || say "Skills update failed for $TARGET — skipping."
-    SKILL_REFRESHED=1
+  elif client_available "$TARGET"; then
+    MISSING_SKILL_TARGETS="$MISSING_SKILL_TARGETS $TARGET"
   fi
 done
 
-if [ -z "$SKILL_REFRESHED" ]; then
+if [ -n "$MISSING_SKILL_TARGETS" ]; then
   case "$(ask "Install the atelier skills for your agent? [Y/n]")" in
     n|N) say "Skipped skills. Install later with: atelier skills install --for all" ;;
     *)
-      # Claude Code always; Kimi Code and Cursor where their config dir exists.
-      TARGETS="claude"
-      [ -d "$HOME/.kimi-code" ] && TARGETS="$TARGETS kimi"
-      [ -d "$HOME/.cursor" ] && TARGETS="$TARGETS cursor"
-      for TARGET in $TARGETS; do
+      for TARGET in $MISSING_SKILL_TARGETS; do
         if "$BIN" skills install --for "$TARGET" >/dev/null 2>&1; then
           say "Skills installed for $TARGET (atelier works without them; they teach the workflow)."
         else
@@ -202,15 +247,21 @@ fi
 # -- next step ---------------------------------------------------------------------
 say ""
 if [ "$MODE" = "http" ]; then
-  say "Register the MCP daemon with your client (then restart its session):"
-  say "  Claude Code: claude mcp add --scope user --transport http atelier $MCP_URL"
-  say "  Kimi Code:   ~/.kimi-code/mcp.json -> \"atelier\": { \"url\": \"$MCP_URL\" }"
-  say "  Cursor:      ~/.cursor/mcp.json    -> \"atelier\": { \"url\": \"$MCP_URL\" }"
+  if [ -n "$MCP_CONFIGURED" ]; then
+    say "Restart each configured client session so it loads Atelier."
+  else
+    say "No supported client was configured. Register one later with:"
+    say "  atelier clients install --for <claude|codex|kimi> --mode http"
+  fi
+  say "  Cursor (manual): ~/.cursor/mcp.json -> \"atelier\": { \"url\": \"$MCP_URL\" }"
 elif [ "$MODE" = "stdio" ]; then
-  say "Register the stdio MCP server with your client (then restart its session):"
-  say "  Claude Code: claude mcp add --scope user atelier -- $BIN"
-  say "  Kimi Code:   ~/.kimi-code/mcp.json -> \"atelier\": { \"command\": \"$BIN\" }"
-  say "  Cursor:      ~/.cursor/mcp.json    -> \"atelier\": { \"command\": \"$BIN\" }"
+  if [ -n "$MCP_CONFIGURED" ]; then
+    say "Restart each configured client session so it loads Atelier."
+  else
+    say "No supported client was configured. Register one later with:"
+    say "  atelier clients install --for <claude|codex|kimi> --mode stdio"
+  fi
+  say "  Cursor (manual): ~/.cursor/mcp.json -> \"atelier\": { \"command\": \"$BIN\" }"
 else
   say "Try it — no setup, no registration:"
   say "  atelier call doc_create '{\"name\":\"cat\",\"width\":32,\"height\":32}'"

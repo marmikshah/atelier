@@ -50,8 +50,8 @@ atelier call doc_look '{"doc_id":"cat","out_path":"/tmp/cat.png"}'
 Every tool is one `atelier call`: stdout gets the JSON report, the exit code
 the verdict (0 ok, 1 tool error, 2 bad call). `atelier tools` lists the
 surface; `atelier tools --schema <name>` dumps one tool's input schema. Any
-agent with a shell — Claude Code, Kimi Code or Cursor — drives it exactly this
-way: no registration, no daemon, no restart. Just ask:
+agent with a shell — Claude Code, Codex, Kimi Code or Cursor — drives it
+exactly this way: no registration, no daemon, no restart. Just ask:
 
 > *"draw me a blinking cat sprite and export it as a GIF"*
 
@@ -74,22 +74,29 @@ command sets up a shared background daemon (launchd / systemd):
 atelier install
 ```
 
-Then register it, the same shape for every client:
+The installer detects Claude Code, Codex, and Kimi Code and offers to register
+each one after you select an MCP mode. You can do the same later:
 
 ```sh
-claude mcp add --scope user --transport http atelier http://127.0.0.1:8765/mcp   # Claude Code
-# Kimi Code: ~/.kimi-code/mcp.json  ->  "atelier": { "url": "http://127.0.0.1:8765/mcp" }
-# Cursor:    ~/.cursor/mcp.json     ->  "atelier": { "url": "http://127.0.0.1:8765/mcp" }
+atelier clients install --for claude --mode http
+atelier clients install --for codex  --mode http
+atelier clients install --for kimi   --mode http
 ```
 
 Or skip the daemon and let each client spawn the server itself over stdio —
-zero setup, but each client gets its own store:
+zero daemon setup, but each client gets its own process:
 
 ```sh
-claude mcp add --scope user atelier -- atelier   # Claude Code
-# Kimi Code: ~/.kimi-code/mcp.json  ->  "atelier": { "command": "atelier" }
-# Cursor:    ~/.cursor/mcp.json     ->  "atelier": { "command": "atelier" }
+atelier clients install --for codex --mode stdio
 ```
+
+Add `--allow-tools` only when you want that client to pre-approve the entire
+`mcp__atelier__*` namespace. This includes destructive tools such as
+`delete_doc` and `doc_export`; without the flag, the client's normal approval
+prompts stay in force. Existing valid Atelier registrations and unrelated
+JSON/TOML settings are preserved when they match the requested mode; conflicting
+Atelier entries are reported and left untouched. Cursor remains a manual MCP
+registration in `~/.cursor/mcp.json`.
 
 ### Docker
 
@@ -147,7 +154,8 @@ atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
 atelier doctor                 # check the whole setup, print what to fix
-atelier skills install         # write the skills for your agent (--for claude|kimi|cursor|all)
+atelier clients install        # register MCP (--for claude|codex|kimi --mode http|stdio)
+atelier skills install         # write the skills (--for claude|codex|kimi|cursor|all)
 atelier agent --task "..."     # the one online mode (feature-gated)
 ```
 
@@ -217,7 +225,7 @@ OpenAI-compatible endpoint works via `--base-url`.
 ## Skills
 
 Tools are the hand; these are the craft. Three [skills](crates/atelier/skills) the
-installer offers to add to your agent — Claude Code, Kimi Code or Cursor:
+installer offers to add to your agent — Claude Code, Codex, Kimi Code or Cursor:
 
 | | |
 |---|---|
@@ -232,7 +240,7 @@ transport-free: every tool they name is one `atelier call`, or the same-named
 MCP tool when you're connected over MCP.
 
 Install or refresh them any time — `atelier skills install` (Claude Code by
-default, `--for kimi|cursor|all` for the others).
+default, `--for codex|kimi|cursor|all` for the others).
 
 atelier works fine without them; they just make the art better.
 

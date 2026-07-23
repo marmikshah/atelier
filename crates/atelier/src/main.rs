@@ -44,6 +44,7 @@ use atelier_mcp::server;
 #[cfg(feature = "agent")]
 mod agent;
 mod call;
+mod clients;
 mod doctor;
 mod init;
 mod library;
@@ -79,7 +80,11 @@ USAGE:
                                   reference page; --schema dumps one input schema)
     atelier doctor                check the whole setup — store, daemon (with a live MCP
                                   probe), client registrations, skills; prints each fix
-    atelier skills                the shipped skills; `skills install [--for claude|kimi|cursor|all]`
+    atelier clients install       register the MCP add-on for an agent:
+            --for <claude|codex|kimi> --mode <http|stdio> [--allow-tools]
+                                  preserves existing registrations; --allow-tools
+                                  pre-approves every atelier MCP tool
+    atelier skills                the shipped skills; `skills install [--for claude|codex|kimi|cursor|all]`
                                   writes them for your agent (~/.claude/skills by default, --dir DIR
                                   for anywhere else), `skills show <name>` prints one
     atelier agent --task <t>      draw a task by driving an OpenAI-style API (ONLINE; needs
@@ -94,10 +99,11 @@ ENVIRONMENT:
 ";
 
 /// Agents that load the standard `SKILL.md`: `--for` selector → skills dir
-/// under the user's home. Cursor additionally reads project-level
-/// `.cursor/skills/`; that is what `--dir` is for.
+/// under the user's home. Codex and Cursor additionally read project-level
+/// skill directories; that is what `--dir` is for.
 const SKILL_TARGETS: &[(&str, &str)] = &[
     ("claude", ".claude/skills"),
+    ("codex", ".agents/skills"),
     ("kimi", ".kimi-code/skills"),
     ("cursor", ".cursor/skills"),
 ];
@@ -123,7 +129,7 @@ fn skills_cmd(args: &[String]) -> i32 {
                         Some((_, d)) => vec![home().join(d)],
                         None => {
                             eprintln!(
-                                "atelier: unknown --for '{target}' (claude | kimi | cursor | all)"
+                                "atelier: unknown --for '{target}' (claude | codex | kimi | cursor | all)"
                             );
                             return 2;
                         }
@@ -225,6 +231,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("library") => std::process::exit(library::run(&args[2..])),
         // Self-diagnostics: store, daemon (live MCP probe), clients, skills.
         Some("doctor") => std::process::exit(doctor::run(&args[2..])),
+        // Register the optional MCP add-on and, only when explicitly asked,
+        // pre-approve atelier's tools in one supported agent client.
+        Some("clients") => std::process::exit(clients::run(&args[2..])),
         // The CLI front door: one tool call, in-process, through dispatch.
         Some("call") => std::process::exit(call::run(&args[2..]).await),
         // Stamp ./.atelier, opting this directory into a project store.
@@ -273,7 +282,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
         // Emit the shipped skills. `install [--dir DIR]` writes SKILL.md files
-        // for Claude Code; bare / `show <name>` prints. No network, no key.
+        // for supported agents; bare / `show <name>` prints. No network, no key.
         Some("skills") => std::process::exit(skills_cmd(&args[2..])),
         Some("--help") | Some("-h") => {
             println!("{HELP}");
@@ -346,7 +355,7 @@ mod tests {
             HELP.contains("atelier library"),
             "USAGE still lists its neighbours"
         );
-        for cmd in ["atelier call", "atelier init"] {
+        for cmd in ["atelier call", "atelier init", "atelier clients install"] {
             assert!(HELP.contains(cmd), "USAGE must list the {cmd} subcommand");
         }
     }
