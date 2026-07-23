@@ -264,6 +264,12 @@ enum Registration {
     Malformed,
 }
 
+#[derive(Clone, Copy)]
+enum RegistrationFormat {
+    Json,
+    Toml,
+}
+
 /// Parse one agent config body for its `mcpServers.atelier` entry.
 fn registration(body: &str) -> Registration {
     let Ok(v) = serde_json::from_str::<serde_json::Value>(body) else {
@@ -278,6 +284,33 @@ fn registration(body: &str) -> Registration {
         Registration::Stdio(cmd.to_string())
     } else {
         Registration::Malformed
+    }
+}
+
+/// Codex keeps the equivalent registration in TOML under
+/// `[mcp_servers.atelier]`.
+fn codex_registration(body: &str) -> Registration {
+    let Ok(document) = body.parse::<toml_edit::DocumentMut>() else {
+        return Registration::Malformed;
+    };
+    let Some(servers) = document.get("mcp_servers") else {
+        return Registration::Absent;
+    };
+    let Some(servers) = servers.as_table_like() else {
+        return Registration::Malformed;
+    };
+    let Some(entry) = servers.get("atelier") else {
+        return Registration::Absent;
+    };
+    let Some(entry) = entry.as_table_like() else {
+        return Registration::Malformed;
+    };
+    let url = entry.get("url").and_then(toml_edit::Item::as_str);
+    let command = entry.get("command").and_then(toml_edit::Item::as_str);
+    match (url, command) {
+        (Some(url), None) => Registration::Http(url.to_string()),
+        (None, Some(command)) => Registration::Stdio(command.to_string()),
+        _ => Registration::Malformed,
     }
 }
 
@@ -307,8 +340,14 @@ fn project_registrations(body: &str) -> Vec<String> {
 }
 
 /// The agents' config files and the fix line that registers atelier for each.
-fn clients() -> Vec<(&'static str, PathBuf, String)> {
+fn clients() -> Vec<(&'static str, PathBuf, RegistrationFormat, String)> {
     let home = service::home().unwrap_or_default();
+    let codex_home = std::env::var_os("CODEX_HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| home.join(".codex"));
+    let kimi_home = std::env::var_os("KIMI_CODE_HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| home.join(".kimi-code"));
     let http_fix = |path: &str| {
         format!(
             "add \"atelier\": {{\"url\": \"http://{DEFAULT_ADDR}/mcp\"}} to mcpServers in {path}"
@@ -318,18 +357,25 @@ fn clients() -> Vec<(&'static str, PathBuf, String)> {
         (
             "claude",
             home.join(".claude.json"),
-            format!(
-                "claude mcp add --scope user --transport http atelier http://{DEFAULT_ADDR}/mcp"
-            ),
+            RegistrationFormat::Json,
+            "atelier clients install --for claude --mode http".into(),
+        ),
+        (
+            "codex",
+            codex_home.join("config.toml"),
+            RegistrationFormat::Toml,
+            "atelier clients install --for codex --mode http".into(),
         ),
         (
             "kimi",
-            home.join(".kimi-code/mcp.json"),
-            http_fix("~/.kimi-code/mcp.json"),
+            kimi_home.join("mcp.json"),
+            RegistrationFormat::Json,
+            "atelier clients install --for kimi --mode http".into(),
         ),
         (
             "cursor",
             home.join(".cursor/mcp.json"),
+            RegistrationFormat::Json,
             http_fix("~/.cursor/mcp.json"),
         ),
     ]
@@ -338,15 +384,23 @@ fn clients() -> Vec<(&'static str, PathBuf, String)> {
 fn check_clients() -> Vec<Row> {
     clients()
         .into_iter()
-        .map(|(name, config, fix)| {
+        .map(|(name, config, format, fix)| {
             let Ok(body) = std::fs::read_to_string(&config) else {
                 return Row::note(name, format!("{} not found (client not installed)", tilde(&config)));
             };
-            match registration(&body) {
+            let found = match format {
+                RegistrationFormat::Json => registration(&body),
+                RegistrationFormat::Toml => codex_registration(&body),
+            };
+            match found {
                 Registration::Http(url) => Row::ok(name, format!("registered (http: {url})")),
                 Registration::Stdio(cmd) => Row::ok(name, format!("registered (stdio: {cmd})")),
                 Registration::Absent => {
-                    let projects = project_registrations(&body);
+                    let projects = if name == "claude" {
+                        project_registrations(&body)
+                    } else {
+                        Vec::new()
+                    };
                     if projects.is_empty() {
                         Row::note(
                             name,
@@ -365,7 +419,7 @@ fn check_clients() -> Vec<Row> {
                 Registration::Malformed => Row::fail(
                     name,
                     format!(
-                        "atelier entry in {} is malformed (need a \"url\" or \"command\" shape) — fix: {fix}",
+                        "atelier registration in {} is malformed (need exactly one of \"url\" or \"command\") — fix: repair or remove that entry, then run: {fix}",
                         tilde(&config)
                     ),
                 ),
@@ -415,6 +469,7 @@ fn check_skills() -> Vec<Row> {
     let home = service::home().unwrap_or_default();
     [
         ("claude", ".claude"),
+        ("codex", ".agents"),
         ("kimi", ".kimi-code"),
         ("cursor", ".cursor"),
     ]
@@ -500,6 +555,37 @@ mod tests {
         assert_eq!(registration("not json"), Registration::Malformed);
         assert_eq!(
             registration(r#"{"mcpServers": {"atelier": {"transport": "http"}}}"#),
+            Registration::Malformed
+        );
+    }
+
+    #[test]
+    fn codex_registration_parses_toml_shapes() {
+        assert_eq!(
+            codex_registration(
+                r#"
+[mcp_servers.atelier]
+url = "http://127.0.0.1:8765/mcp"
+"#
+            ),
+            Registration::Http("http://127.0.0.1:8765/mcp".into())
+        );
+        assert_eq!(
+            codex_registration(
+                r#"
+[mcp_servers.atelier]
+command = "/opt/atelier"
+args = []
+"#
+            ),
+            Registration::Stdio("/opt/atelier".into())
+        );
+        assert_eq!(
+            codex_registration("model = \"gpt-5\"\n"),
+            Registration::Absent
+        );
+        assert_eq!(
+            codex_registration("[mcp_servers]\natelier = \"wrong\"\n"),
             Registration::Malformed
         );
     }
