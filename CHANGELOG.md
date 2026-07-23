@@ -4,6 +4,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/). Below 2.0.0, breaking changes ship in minor
 releases.
 
+## [1.7.1] — 2026-07-23
+
+### Added
+
+- **Guided MCP client setup.** The installer detects Claude Code, Codex, and
+  Kimi Code, then asks separately whether to register Atelier and whether to
+  pre-approve its tools. Registration supports both the HTTP daemon and stdio;
+  broad approval defaults to no and warns about write-capable tools first.
+- **`atelier clients install`.** The same setup is available after installation
+  for one client at a time, with safe, idempotent JSON/TOML config merges.
+- **Codex support.** Atelier skills install into `~/.agents/skills`, and
+  `atelier doctor` checks Codex MCP registration.
+
+### Changed
+
+- Existing matching Atelier registrations and unrelated client settings are
+  preserved; malformed or conflicting entries are reported without being
+  replaced.
+
 ## [1.7.0] — 2026-07-19
 
 ### Added

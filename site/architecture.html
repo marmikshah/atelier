@@ -259,7 +259,7 @@ make release
 <span class="c"># 4 · optional: run it as an MCP server, for MCP-only clients</span>
 ./target/release/atelier                          <span class="c"># stdio transport (what clients spawn)</span>
 ./target/release/atelier --http 127.0.0.1:8765    <span class="c"># or HTTP at /mcp</span>
-claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
+./target/release/atelier clients install --for codex --mode http
 
 <span class="c"># 5 · first session, whichever door you took</span>
 <span class="c">#     doc_create → doc_draw / doc_batch → doc_look → doc_export</span>
@@ -275,7 +275,7 @@ claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
         <tr><td><code>check</code></td><td>fmt + clippy + tests</td></tr>
         <tr><td><code>clean</code></td><td>wipe build artifacts</td></tr>
       </table></div>
-      <p class="prose muted" style="margin-top:.6rem">Run/install are direct: <code>atelier call …</code>, <code>atelier replay …</code>, <code>atelier --http …</code>, <code>atelier install</code>.</p>
+      <p class="prose muted" style="margin-top:.6rem">Run/install are direct: <code>atelier call …</code>, <code>atelier replay …</code>, <code>atelier --http …</code>, <code>atelier install</code>, <code>atelier clients install …</code>.</p>
     </div>
     <div class="card">
       <h3>env vars (all optional, all in .env.example)</h3>

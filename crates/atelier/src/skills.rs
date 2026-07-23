@@ -2,14 +2,14 @@
 //!
 //! A skill is a document, so its prose lives as markdown in `skills/*.md`. Rust
 //! owns the *metadata* (name, description) and the *renderers* that wrap that
-//! prose for each consumer — the standard `SKILL.md` Claude Code, Kimi Code and
-//! Cursor all load, or the `atelier agent` system prompt. One source,
+//! prose for each consumer — the standard `SKILL.md` Claude Code, Codex, Kimi
+//! Code and Cursor all load, or the `atelier agent` system prompt. One source,
 //! compile-checked, and adding a consumer is one method or one install dir, not
 //! another copy of the text.
 
 /// One skill: typed metadata plus a pure-prose markdown body (no frontmatter).
 pub struct Skill {
-    /// The Claude Code skill name, e.g. `atelier-sprite`.
+    /// The agent skill name, e.g. `atelier-sprite`.
     pub name: &'static str,
     /// The short selector used on the command line, e.g. `sprite`.
     pub short: &'static str,
@@ -59,7 +59,7 @@ impl Skill {
     }
 
     /// The standard `SKILL.md`: YAML frontmatter over the prose body — the one
-    /// file Claude Code, Kimi Code and Cursor each load from their skills dir.
+    /// file Claude Code, Codex, Kimi Code and Cursor each load from their skills dir.
     pub fn skill_md(&self) -> String {
         format!(
             "---\nname: {}\ndescription: {}\n---\n\n{}\n",
