@@ -109,14 +109,7 @@ fn tilde(p: &Path) -> String {
 // -- 1. binary (informational) ------------------------------------------------
 
 fn check_binary() -> Row {
-    let agent = if cfg!(feature = "agent") { "on" } else { "off" };
-    Row::note(
-        "binary",
-        format!(
-            "atelier {} (agent feature: {agent})",
-            env!("CARGO_PKG_VERSION")
-        ),
-    )
+    Row::note("binary", format!("atelier {}", env!("CARGO_PKG_VERSION")))
 }
 
 // -- 2. store -------------------------------------------------------------------
@@ -467,40 +460,36 @@ fn check_skills_in(dir: &Path) -> Vec<(&'static str, SkillFile)> {
 
 fn check_skills() -> Vec<Row> {
     let home = service::home().unwrap_or_default();
-    [
-        ("claude", ".claude"),
-        ("codex", ".agents"),
-        ("kimi", ".kimi-code"),
-        ("cursor", ".cursor"),
-    ]
-    .into_iter()
-    .map(|(agent, dir)| {
-        let name = format!("skills {agent}");
-        let dir = home.join(dir);
-        if !dir.is_dir() {
-            return Row::note(
-                name,
-                format!("{} not found (agent not installed)", tilde(&dir)),
-            );
-        }
-        let bad: Vec<String> = check_skills_in(&dir)
-            .into_iter()
-            .filter(|(_, s)| *s != SkillFile::Current)
-            .map(|(skill, s)| format!("{skill} {}", s.label()))
-            .collect();
-        if bad.is_empty() {
-            Row::ok(name, format!("{} skills current", skills::ALL.len()))
-        } else {
-            Row::fail(
-                name,
-                format!(
-                    "{} — fix: atelier skills install --for {agent}",
-                    bad.join(", ")
-                ),
-            )
-        }
-    })
-    .collect()
+    ["claude", "codex", "kimi", "cursor"]
+        .into_iter()
+        .map(|agent| {
+            let name = format!("skills {agent}");
+            let dir = crate::skill_target_root(agent, &home)
+                .expect("check_skills lists only supported skill targets");
+            if !dir.is_dir() {
+                return Row::note(
+                    name,
+                    format!("{} not found (agent not installed)", tilde(&dir)),
+                );
+            }
+            let bad: Vec<String> = check_skills_in(&dir)
+                .into_iter()
+                .filter(|(_, s)| *s != SkillFile::Current)
+                .map(|(skill, s)| format!("{skill} {}", s.label()))
+                .collect();
+            if bad.is_empty() {
+                Row::ok(name, format!("{} skills current", skills::ALL.len()))
+            } else {
+                Row::fail(
+                    name,
+                    format!(
+                        "{} — fix: atelier skills install --for {agent}",
+                        bad.join(", ")
+                    ),
+                )
+            }
+        })
+        .collect()
 }
 
 #[cfg(test)]

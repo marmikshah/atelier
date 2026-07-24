@@ -1,7 +1,7 @@
 //! End-to-end smoke for the stdio MCP transport: spawn the real binary and
-//! speak line-delimited JSON-RPC to it. `call` / `replay` / `agent` all
-//! dispatch in-process now, so this is the one test that still proves the
-//! stdio server answers a real client.
+//! speak line-delimited JSON-RPC to it. `call` and `replay` dispatch
+//! in-process, so this is the one test that still proves the stdio server
+//! answers a real client.
 
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, ChildStdin, Command, Stdio};

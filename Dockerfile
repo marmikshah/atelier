@@ -12,7 +12,7 @@ FROM rust:1-alpine AS build
 # installs at all (the default build links no openssl, no C deps).
 WORKDIR /src
 COPY . .
-RUN cargo build --release -p atelier \
+RUN cargo build --release --locked -p atelier \
  && strip target/release/atelier
 
 # ---- runtime -----------------------------------------------------------------

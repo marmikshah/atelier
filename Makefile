@@ -8,34 +8,39 @@
 BIN := target/release/atelier
 
 .DEFAULT_GOAL := help
-.PHONY: help build release test fmt lint check pre-commit-checks docs docs-check clean
+.PHONY: help build release test fmt lint rustdoc-check check pre-commit-checks docs docs-check clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
 build: ## Debug build
-	cargo build
+	cargo build --locked -p atelier
 
 release: ## Optimized release build → target/release/atelier
-	cargo build --release
+	cargo build --release --locked -p atelier
 
 test: ## Run the test suite (unit tests + example-recipe replays)
-	cargo test
-	cargo build
+	cargo test --locked
+	cargo build --locked -p atelier
 	tools/test-examples.sh
 
 fmt: ## Format all sources
 	cargo fmt --all
 
 lint: ## Clippy with warnings denied
-	cargo clippy --all-targets -- -D warnings
+	cargo clippy --locked --all-targets -- -D warnings
 
-check: fmt lint test ## Format + clippy + tests (use before committing)
+rustdoc-check: ## Check public API documentation and intra-doc links
+	RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps
 
-pre-commit-checks: ## Format-check + clippy gate — exactly what the git hooks run.
+check: fmt lint rustdoc-check test ## Format + clippy + rustdoc + tests
+
+pre-commit-checks: ## Release metadata + format + clippy + rustdoc gate run by git hooks
 	cargo fmt --all -- --check
-	cargo clippy --all-targets -- -D warnings
+	tools/release-check.sh --current
+	cargo clippy --locked --all-targets -- -D warnings
+	RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps
 
 docs: release ## Regenerate the HTML tool reference (tools.html) from the live registry
 	$(BIN) tools --html > site/tools.html

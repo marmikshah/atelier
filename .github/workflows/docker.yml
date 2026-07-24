@@ -1,19 +1,44 @@
 name: Docker
 
+# Release tags reach this workflow only after the file-archive release succeeds.
+# workflow_dispatch remains available for an explicit retry of an existing tag.
 on:
-  push:
-    tags: ["v*"]
-  workflow_dispatch: {}
+  workflow_call:
+    inputs:
+      release_tag:
+        description: Existing annotated release tag
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing annotated release tag (for example v1.8.0)
+        required: true
+        type: string
 
 jobs:
   image:
     runs-on: ubuntu-latest
-    # GITHUB_TOKEN needs write to publish the image to GHCR.
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.release_tag }}
+          fetch-depth: 0
+
+      - name: Validate the release tag
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          tag_ref="refs/tags/${RELEASE_TAG}"
+          [[ "$(git cat-file -t "$tag_ref" 2>/dev/null || true)" == "tag" ]] || {
+            echo "::error::$RELEASE_TAG must be an existing annotated or signed tag"
+            exit 1
+          }
+          tools/release-check.sh "$RELEASE_TAG"
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -25,18 +50,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tags & labels
+      - name: Tags and labels
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=tag
+            type=semver,pattern={{version}},value=${{ inputs.release_tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.release_tag }}
+            type=raw,value=${{ inputs.release_tag }}
+            type=raw,value=latest
 
-      # Smoke first: a release tag must never publish an image that doesn't boot.
+      # Smoke first: a release tag must never publish an image that does not boot.
       - name: Build (amd64, loaded for the smoke test)
         uses: docker/build-push-action@v6
         with:
@@ -47,6 +72,7 @@ jobs:
           cache-from: type=gha
 
       - name: Smoke test — the image boots and answers MCP initialize
+        shell: bash
         run: |
           docker run -d --name smoke -p 127.0.0.1:18765:8765 ghcr.io/${{ github.repository }}:smoke
           code=000
@@ -63,7 +89,7 @@ jobs:
           grep -q '"serverInfo"' /tmp/mcp.json || { echo "smoke: no serverInfo in initialize reply"; cat /tmp/mcp.json; exit 1; }
           echo "smoke: image answered MCP initialize with serverInfo"
 
-      - name: Build & push (multi-arch)
+      - name: Build and push (multi-arch)
         uses: docker/build-push-action@v6
         with:
           context: .
