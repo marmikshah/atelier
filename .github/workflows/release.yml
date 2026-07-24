@@ -2,7 +2,8 @@ name: Release
 
 # A maintainer-created annotated tag is the release approval. The verify job
 # must pass before any platform build starts, and GitHub Release creation waits
-# for every archive + checksum so a failed matrix cannot publish half a release.
+# for every archive, checksum, and container so failures cannot publish a
+# user-facing partial release.
 on:
   push:
     tags: ["v*"]
@@ -14,10 +15,11 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
 
@@ -36,24 +38,21 @@ jobs:
             exit 1
           fi
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
+          toolchain: stable
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
       - name: Match tag, packages, lockfile, and changelog
         run: tools/release-check.sh "$GITHUB_REF_NAME"
-      - name: Format, lint, and rustdoc gate
-        run: make pre-commit-checks
-      - name: Tests and recipe replays
-        run: make test
-      - name: Generated docs and release binary
-        run: make docs-check
+      - name: Production gate
+        run: make check
       - name: Match the binary version
         shell: bash
         run: |
           expected="atelier ${GITHUB_REF_NAME#v}"
-          actual="$(target/release/atelier --version)"
+          actual="$(target/debug/atelier --version)"
           [[ "$actual" == "$expected" ]] || {
             echo "::error::binary reports '$actual', expected '$expected'"
             exit 1
@@ -77,10 +76,12 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
 
       # Name and lock the release package explicitly.
@@ -105,20 +106,31 @@ jobs:
           $hash = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
           "$hash  $archive" | Set-Content -Encoding ascii "$archive.sha256"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-${{ matrix.target }}
           path: atelier-${{ github.ref_name }}-${{ matrix.target }}.*
           if-no-files-found: error
           retention-days: 1
 
-  publish_release:
+  docker:
     needs: build
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/docker.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+    secrets: inherit
+
+  publish_release:
+    needs: [build, docker]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: release-*
           merge-multiple: true
@@ -133,17 +145,8 @@ jobs:
           }
           cd dist
           sha256sum -c -- *.sha256
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: dist/*
           fail_on_unmatched_files: true
-
-  docker:
-    needs: publish_release
-    permissions:
-      contents: read
-      packages: write
-    uses: ./.github/workflows/docker.yml
-    with:
-      release_tag: ${{ github.ref_name }}
-    secrets: inherit
+          generate_release_notes: true

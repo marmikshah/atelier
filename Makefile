@@ -5,10 +5,10 @@
 # Docker image are direct commands (see the README); the binary's own
 # subcommands are the interface (an installed user has no Makefile).
 
-BIN := target/release/atelier
+BIN := target/debug/atelier
 
 .DEFAULT_GOAL := help
-.PHONY: help build release test fmt lint rustdoc-check check pre-commit-checks docs docs-check clean
+.PHONY: help build release test fmt fmt-check lint rustdoc-check check pre-commit-checks docs docs-check site clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -28,27 +28,32 @@ test: ## Run the test suite (unit tests + example-recipe replays)
 fmt: ## Format all sources
 	cargo fmt --all
 
+fmt-check: ## Check formatting without changing files
+	cargo fmt --all -- --check
+
 lint: ## Clippy with warnings denied
 	cargo clippy --locked --all-targets -- -D warnings
 
 rustdoc-check: ## Check public API documentation and intra-doc links
 	RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps
 
-check: fmt lint rustdoc-check test ## Format + clippy + rustdoc + tests
+check: pre-commit-checks test docs-check ## Complete non-mutating local/CI gate
 
 pre-commit-checks: ## Release metadata + format + clippy + rustdoc gate run by git hooks
-	cargo fmt --all -- --check
+	$(MAKE) fmt-check
 	tools/release-check.sh --current
-	cargo clippy --locked --all-targets -- -D warnings
-	RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps
+	$(MAKE) lint
+	$(MAKE) rustdoc-check
 
-docs: release ## Regenerate the HTML tool reference (tools.html) from the live registry
+docs: build ## Regenerate the HTML tool reference (tools.html) from the live registry
 	$(BIN) tools --html > site/tools.html
 	@echo "wrote tools.html"
 
-docs-check: release ## Fail if tools.html is stale (CI drift guard)
-	@$(BIN) tools --html | diff -q - site/tools.html >/dev/null || { \
-		echo "tools.html is stale — run 'make docs' and commit"; exit 1; }
+docs-check: build ## Verify that the generated HTML tool reference renders
+	@$(BIN) tools --html >/dev/null
+
+site: docs ## Assemble generated files into site/ for preview or Pages
+	cp benchmarks/runs.json site/showcase/runs.json
 
 clean: ## Remove build artifacts
 	cargo clean

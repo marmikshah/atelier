@@ -21,10 +21,9 @@ The pull request must:
 After changing versions, refresh the lockfile deliberately, then validate it:
 
 ```sh
-cargo check --workspace
+cargo check --locked
 tools/release-check.sh v1.8.0
 make check
-make docs-check
 ```
 
 Replace `v1.8.0` with the version being prepared. Merge the pull request before
@@ -46,7 +45,6 @@ tools/release-check.sh "$ATELIER_RELEASE_TAG"
 
 ```sh
 make check
-make docs-check
 ```
 
 Create a signed annotated tag when signing is configured:
@@ -77,8 +75,8 @@ That push is the only publication trigger.
 ## 3. Watch publication
 
 The workflow validates the tag and reruns the production gate before building.
-It creates the GitHub Release only after all three platform archives and their
-SHA-256 sidecars exist. The Docker workflow runs afterward.
+It creates the GitHub Release only after all three platform archives, their
+SHA-256 sidecars, and the multi-architecture container have succeeded.
 
 ```sh
 gh run list --workflow Release --limit 3

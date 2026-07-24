@@ -3,8 +3,11 @@ name = "atelier"
 description = "The pixel-art studio agents can see — a headless editor driven from the CLI or over MCP: layered/animated documents, drawing primitives, PNG/sheet/GIF export."
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+publish.workspace = true
 keywords.workspace = true
 categories.workspace = true
 
