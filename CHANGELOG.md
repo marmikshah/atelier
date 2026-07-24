@@ -17,6 +17,16 @@ releases.
   parent, and symlink escapes. Strict version, field, operation, range,
   duplicate-name, and duplicate-output validation turns configuration typos
   into actionable errors before any export runs.
+- **Compact recipe JSONL v2.** Versioned headers, reusable document/layer/frame
+  context, hex colours, flattened points, and positional tuples for common
+  batch operations shrink both the 44,736-byte Kamehameha example and its
+  already-minified legacy JSONL by more than 50%, while preserving every call,
+  argument, note, and replay result.
+- **`atelier recipe compact|expand|stats`.** Convert old JSON/JSONL without
+  replaying it, expand v2 for review, or report steps, batch/tuple counts, byte
+  savings, and reduction as text or JSON. Replay auto-detects every format.
+  New journals and `--record` sessions use v2; existing legacy journals keep
+  their original append format.
 
 ### Removed
 

@@ -7,8 +7,8 @@
 //!
 //! This module is the facade: the `Studio` struct, the structure/timeline and
 //! per-cel ops, and the shared helpers. The store/journal lives in `store`,
-//! file exports in `ops_export`, selection/clipboard in `ops_region`, and the
-//! themed readers/crafters in their own modules.
+//! file exports in `ops_export`, selection/clipboard in `ops_region`, replay
+//! formats in `recipe`, and the themed readers/crafters in their own modules.
 
 // Drawing/region ops are inherently coordinate-heavy (layer, frame, x0..y1,
 // colour, …); the argument-count lint fights the domain here.
@@ -24,6 +24,7 @@ mod analysis;
 mod craft;
 mod ops_export;
 mod ops_region;
+pub mod recipe;
 mod reference;
 mod set;
 mod store;

@@ -1,8 +1,9 @@
 # Example recipes
 
-Four recorded sessions — each is a JSON Lines recipe of real tool calls that
-atelier replays byte-identically. They double as the brand art and the
-integration tests (`make test` replays them all).
+Four authored JSON recipes of real tool calls that atelier replays
+byte-identically. They double as the brand art and the integration tests
+(`make test` replays them all). `atelier recipe compact` can turn any of them
+into compact JSONL v2 without changing a call.
 
 Replay one into a throwaway store:
 
@@ -17,5 +18,5 @@ atelier replay docs/examples/invader-march.json --home /tmp/demo
 | `water-tile.json` | A seamless 16×16 water tile, then a toroidal-shift flow loop — the wrap seam is zero by construction, verified with the seam audit. |
 | `kamehameha.json` | The big one: 14 frames of layered character FX — camera-shake background, a distinct body pose per frame (anticipation, smear, recoil), a charge orb that grows into a beam. |
 
-Every step in every file carries its own narration (the `description` fields),
+Every step in every file carries its own narration (the `note` fields),
 so reading a recipe top to bottom is a guided tour of the tool surface.
