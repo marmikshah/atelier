@@ -979,8 +979,8 @@ max_width = 256
         let metadata: Value =
             serde_json::from_slice(&std::fs::read(root.0.join("dist/hero.json")).unwrap()).unwrap();
         assert_eq!(
-            metadata["path"],
-            root.0.join("dist/hero.png").to_string_lossy().as_ref()
+            PathBuf::from(metadata["path"].as_str().unwrap()),
+            root.0.join("dist").join("hero.png")
         );
     }
 
@@ -1020,8 +1020,8 @@ max_width = 256
             serde_json::from_slice(&std::fs::read(root.0.join("dist/all/hero.json")).unwrap())
                 .unwrap();
         assert_eq!(
-            metadata["path"],
-            root.0.join("dist/all/hero.png").to_string_lossy().as_ref()
+            PathBuf::from(metadata["path"].as_str().unwrap()),
+            root.0.join("dist").join("all").join("hero.png")
         );
     }
 
