@@ -32,8 +32,8 @@ fn j(v: Value) -> String {
 }
 
 /// Wraps a studio result as a tool result: Ok becomes a JSON text part; errors
-/// keep the {"error": ...} payload (replay and older clients sniff it) and set
-/// `is_error` so the harness surfaces the failure.
+/// carry a machine-readable {"error": ...} payload and set `is_error` so every
+/// caller gets the same failure.
 fn res(r: Result<Value, String>) -> CallToolResult {
     match r {
         Ok(v) => CallToolResult::success(vec![Content::text(j(v))]),
@@ -746,6 +746,35 @@ impl ServerHandler for Atelier {
 mod tests {
     use super::*;
 
+    const PUBLIC_TOOL_NAMES: &[&str] = &[
+        "delete_doc",
+        "doc_add_tag",
+        "doc_anim_audit",
+        "doc_batch",
+        "doc_checkpoint",
+        "doc_components",
+        "doc_contact_sheet",
+        "doc_create",
+        "doc_critique",
+        "doc_dither_ramp",
+        "doc_draw",
+        "doc_dump_region",
+        "doc_export",
+        "doc_frame",
+        "doc_frame_diff",
+        "doc_fx",
+        "doc_info",
+        "doc_layer",
+        "doc_look",
+        "doc_paint_grid",
+        "doc_palette",
+        "doc_ref",
+        "doc_region",
+        "doc_seam_report",
+        "doc_silhouette",
+        "list_docs",
+    ];
+
     #[test]
     fn advertised_schemas_carry_no_rust_integer_formats() {
         // Ajv-based clients (Kimi Code, most Node MCP hosts) warn on every
@@ -786,10 +815,14 @@ mod tests {
         let n = Atelier::tool_router().list_all().len();
         // Written into README and tools.html (regen: make docs).
         // Change the surface, update them in the same commit — this is the reminder.
-        assert_eq!(n, 26, "tool count changed — update the docs");
+        assert_eq!(
+            n,
+            PUBLIC_TOOL_NAMES.len(),
+            "tool count changed — update the docs"
+        );
         assert_eq!(
             Atelier::registry_tools().len(),
-            26,
+            PUBLIC_TOOL_NAMES.len(),
             "every tool is advertised; there is no profile filter"
         );
         let instructions = temp_atelier("info")
@@ -800,6 +833,23 @@ mod tests {
             instructions.contains("26 tools"),
             "get_info instructions drifted from the tool count"
         );
+    }
+
+    #[test]
+    fn the_public_tool_names_are_pinned() {
+        // A count alone would allow one released call to disappear while an
+        // unrelated new call took its place. Keep the retained 1.8 contract
+        // explicit: changing a name is a deliberate breaking API decision.
+        let mut actual: Vec<String> = Atelier::registry_tools()
+            .into_iter()
+            .map(|tool| tool.name.to_string())
+            .collect();
+        actual.sort();
+        let expected: Vec<String> = PUBLIC_TOOL_NAMES
+            .iter()
+            .map(|name| (*name).to_string())
+            .collect();
+        assert_eq!(actual, expected);
     }
 
     #[test]
