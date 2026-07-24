@@ -55,7 +55,7 @@ flowchart TB
     subgraph mcp["atelier-mcp — the shell"]
         dispatch["Atelier::dispatch — the single choke point"]
         log["log line: tool · op · doc · caller · ms · error"]
-        order["write-order lock (mutations only)"]
+        order["in-process order + cross-process store locks"]
         router["tool registry — 30 tools, schemas scrubbed<br/>(advertise; the dispatch match invokes the handlers)"]
         journal["journal_append → recipe.jsonl"]
         recorder["compact JSONL v2 session recorder (--record, opt-in)"]
@@ -143,7 +143,7 @@ entire library API; the MCP layer is a thin wrapper over it.
   `doc_paint_grid`, batch/draw/fx dispatch) and shared helpers. The modules
   below are one `impl Studio` block each:
 - **`store.rs`** — store/document lifecycle (create/open/list/delete), the
-  journal (`recipe.jsonl`), and `Studio::default_home()` — the single
+  cross-process lock, journal (`recipe.jsonl`), and `Studio::default_home()` — the single
   store-resolution policy the binary delegates to: `ATELIER_HOME` → a
   project-local `./.atelier` when one exists (`atelier init` stamps it) → the
   global `~/.atelier`. `Studio::new()` resolves it;
@@ -168,7 +168,7 @@ entire library API; the MCP layer is a thin wrapper over it.
 - **`reference.rs`** — reference-image workflow: set/analyse a reference and score
   silhouette IoU + per-cell ΔE against it (`doc_ref op=compare`).
 
-Dependencies: `atelier-core`, `image`, `serde`, `serde_json`, `dirs`.
+Dependencies: `atelier-core`, `image`, `serde`, `serde_json`, `dirs`, `fs4`.
 
 ### `atelier-mcp` — dispatch + the MCP server
 
@@ -176,8 +176,9 @@ The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
 - **`server/`** — `mod.rs` holds the server state and **`Atelier::dispatch`**,
   the single path every caller (MCP stdio/HTTP, `atelier call`, replay)
-  funnels through: classify journaled/recorded → write-order lock → deserialize
-  params → run the handler → log → journal/record. The four domain routers
+  funnels through: classify journaled/recorded → in-process order lock →
+  cross-process store lock → deserialize params → run the handler → log →
+  journal/record. The four domain routers
   (`tools_doc`, `tools_draw`, `tools_read`, `tools_export`) hold the 30
   `#[tool]` handlers and their schemas — the registry the surface is advertised
   from — with the param structs (`params.rs`), the two transports
@@ -210,19 +211,19 @@ Thin wiring; produces the `atelier` executable.
   remapping.
 - **`project.rs`** — strict parsing for the versioned
   `.atelier/project.toml` format and the `atelier build` runner. Named exports
-  become `doc_export` calls; paths are confined to the project root before the
-  first call executes.
+  become `doc_export` calls; complete artifact sets (including sidecars) are
+  collision-checked, staged, and promoted with rollback inside the project root.
 - **`check.rs`** — read-only project/CI validation. It opens live documents,
   validates manifest references, rebuilds journals in isolated temporary
-  stores and compares structure plus rendered frames, then redirects configured
-  exports into a temporary workspace. Human and JSON reports share the same
-  findings and exit status.
+  stores and compares structure, exact cel pixels, and rendered frames, then
+  redirects configured exports into a temporary workspace. Human and JSON
+  reports share the same findings and exit status.
 - **`recipe_cmd.rs`** — non-executing compact/expand/stats transforms over the
   shared recipe codec; stdout stays pipeable unless an explicit output path is
   supplied.
 
 Dependencies: `atelier-mcp`, `atelier-studio`, `rmcp`, `tokio`, `serde_json`,
-`toml_edit`, `tracing-subscriber`.
+`toml_edit`, `image`, `tracing-subscriber`, `fs4`.
 
 ## Request flow
 
@@ -231,7 +232,7 @@ front door it came in:
 
 ```
 external agent → atelier call | MCP tools/call | replay | project build/check
-               → Atelier::dispatch (log · write-order lock · journal)
+               → Atelier::dispatch (log · process/store locks · journal)
                → the tool's handler → Studio::doc_<op>(args)   (atelier-studio)
                → Document / raster mutation                    (atelier-core)
                → persist to ~/.atelier/documents/<id>/

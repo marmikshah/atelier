@@ -24,6 +24,21 @@ pub enum HomeOrigin {
     Global,
 }
 
+/// An advisory cross-process lock for one Atelier document store.
+///
+/// The lock file is infrastructure only; dropping this guard releases the OS
+/// lock. Writers take an exclusive guard across dispatch plus journaling, while
+/// snapshot-style readers such as `atelier check` hold a shared guard.
+pub struct StoreLock {
+    file: fs::File,
+}
+
+impl Drop for StoreLock {
+    fn drop(&mut self) {
+        let _ = fs4::FileExt::unlock(&self.file);
+    }
+}
+
 impl Studio {
     /// The store resolution policy, pure so it is testable without touching
     /// process env or cwd:
@@ -110,6 +125,34 @@ impl Studio {
             clipboard: None,
             selection: None,
         }
+    }
+
+    fn lock_store(&self, exclusive: bool) -> Result<StoreLock, String> {
+        let path = self.docs_dir.join(".store.lock");
+        let file = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(&path)
+            .map_err(|error| format!("cannot open store lock {}: {error}", path.display()))?;
+        let locked = if exclusive {
+            fs4::FileExt::lock(&file)
+        } else {
+            fs4::FileExt::lock_shared(&file)
+        };
+        locked.map_err(|error| format!("cannot lock document store: {error}"))?;
+        Ok(StoreLock { file })
+    }
+
+    /// Hold a shared store lock until the returned guard is dropped.
+    pub fn lock_store_shared(&self) -> Result<StoreLock, String> {
+        self.lock_store(false)
+    }
+
+    /// Hold an exclusive store lock until the returned guard is dropped.
+    pub fn lock_store_exclusive(&self) -> Result<StoreLock, String> {
+        self.lock_store(true)
     }
 
     pub(crate) fn doc_dir(&self, id: &str) -> PathBuf {
@@ -364,14 +407,17 @@ impl Studio {
                                 }
                             }
                         });
-                match first
-                    .ok()
-                    .and_then(|first| serde_json::from_str::<Value>(first.trim()).ok())
-                {
-                    Some(value) if value.get("v").and_then(Value::as_u64) == Some(2) => {
+                match first.ok() {
+                    Some(first) if super::recipe::valid_compact_header(first.trim()) => {
                         Format::Compact
                     }
-                    Some(value) if value.get("tool").and_then(Value::as_str).is_some() => {
+                    Some(first)
+                        if serde_json::from_str::<Value>(first.trim())
+                            .ok()
+                            .is_some_and(|value| {
+                                value.get("tool").and_then(Value::as_str).is_some()
+                            }) =>
+                    {
                         Format::Legacy
                     }
                     _ => {
@@ -519,6 +565,43 @@ mod tests {
             "legacy and compact lines must never mix: {source}"
         );
         assert_eq!(s.journal("d").unwrap().len(), 2);
+    }
+
+    #[test]
+    fn compact_append_rejects_an_incomplete_v2_header() {
+        let s = studio("journal-invalid-v2-header");
+        s.doc_create("d", 8, 8).unwrap();
+        let path = s.journal_path("d");
+        fs::write(&path, "{\"v\":2}\n").unwrap();
+        s.journal_append_compact(
+            "d",
+            "doc_draw",
+            &json!({"doc_id":"d","layer":0,"frame":0,"op":"clear_cel"}),
+        );
+        assert_eq!(
+            fs::read_to_string(path).unwrap(),
+            "{\"v\":2}\n",
+            "a corrupt header must never gain dependent compact calls"
+        );
+    }
+
+    #[test]
+    fn store_locks_coordinate_independent_studio_instances() {
+        let first = studio("store-lock");
+        let second = Studio::with_docs_dir(first.docs_dir.clone());
+        let guard = first.lock_store_exclusive().unwrap();
+        let contender = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(second.docs_dir.join(".store.lock"))
+            .unwrap();
+        assert!(matches!(
+            fs4::FileExt::try_lock_shared(&contender),
+            Err(fs4::TryLockError::WouldBlock)
+        ));
+        drop(guard);
+        fs4::FileExt::try_lock_shared(&contender).unwrap();
+        fs4::FileExt::unlock(&contender).unwrap();
     }
 
     #[test]

@@ -16,6 +16,9 @@ use atelier_studio::{MAX_EXPORT_SCALE, Studio};
 use serde_json::{Map, Value, json};
 use toml_edit::{DocumentMut, Table};
 
+mod transaction;
+use transaction::{BuildLock, BuildWorkspace, promote_outputs};
+
 const MANIFEST_PATH: &str = ".atelier/project.toml";
 const MANIFEST_VERSION: i64 = 1;
 const USAGE: &str = "usage: atelier build [--only NAME] [--dry-run]";
@@ -23,7 +26,8 @@ const USAGE: &str = "usage: atelier build [--only NAME] [--dry-run]";
 /// The starter manifest is useful without inventing a sample document that
 /// does not exist. Uncommenting the example is enough to opt into a build.
 pub(crate) const MANIFEST_TEMPLATE: &str = r#"# Atelier project manifest.
-# Output paths are relative to the project root and cannot leave it.
+# Output paths are relative to the project root; .atelier is reserved.
+# Generated sidecars participate in collision checks.
 version = 1
 
 # [[exports]]
@@ -112,11 +116,15 @@ pub(crate) struct Export {
 
 impl Export {
     pub(crate) fn dispatch_args(&self) -> Value {
+        self.dispatch_args_to(&self.out_path)
+    }
+
+    fn dispatch_args_to(&self, out_path: &Path) -> Value {
         let mut args = self.params.clone();
         args.insert("op".into(), json!(self.op));
         args.insert(
             "out_path".into(),
-            json!(self.out_path.to_string_lossy().as_ref()),
+            json!(out_path.to_string_lossy().as_ref()),
         );
         if let Some(doc) = &self.doc {
             args.insert("doc_id".into(), json!(doc));
@@ -125,6 +133,23 @@ impl Export {
             args.insert("scale".into(), json!(scale));
         }
         Value::Object(args)
+    }
+
+    /// Every path an export owns. Sidecars participate in collision detection
+    /// and transactional promotion just like the primary output.
+    fn output_claims(&self) -> Vec<PathBuf> {
+        match self.op.as_str() {
+            "sheet" | "atlas" => {
+                vec![self.out_path.clone(), self.out_path.with_extension("json")]
+            }
+            "tileset" => vec![
+                self.out_path.clone(),
+                self.out_path.with_extension("tsx"),
+                self.out_path.with_extension("json"),
+            ],
+            "anim" | "all" => vec![self.out_path.clone()],
+            _ => unreachable!("export op was validated"),
+        }
     }
 
     pub(crate) fn name(&self) -> &str {
@@ -207,7 +232,7 @@ impl Project {
 
         let mut exports = Vec::with_capacity(tables.len());
         let mut names = HashSet::new();
-        let mut outputs = HashSet::new();
+        let mut outputs: Vec<(String, PathBuf, PathBuf)> = Vec::new();
         for (index, table) in tables.iter().enumerate() {
             let mut export = parse_export(table, index, &manifest)?;
             if !names.insert(export.name.clone()) {
@@ -218,12 +243,30 @@ impl Project {
                 ));
             }
             export.out_path = resolve_output(root, &export.out)?;
-            if !outputs.insert(export.out_path.clone()) {
-                return Err(format!(
-                    "{}: more than one export writes '{}'",
-                    manifest.display(),
-                    export.out
-                ));
+            for output in export.output_claims() {
+                let identity = canonicalize_with_missing(&output)?;
+                if let Some((owner, existing, _)) = outputs
+                    .iter()
+                    .find(|(_, _, existing)| portable_paths_overlap(existing, &identity))
+                {
+                    let conflict = if owner == &export.name {
+                        format!(
+                            "export '{}' writes overlapping paths '{}' and '{}'",
+                            export.name,
+                            display_output(root, existing),
+                            display_output(root, &output),
+                        )
+                    } else {
+                        format!(
+                            "more than one export writes overlapping paths: '{}' ({owner}) and '{}' ({})",
+                            display_output(root, existing),
+                            display_output(root, &output),
+                            export.name,
+                        )
+                    };
+                    return Err(format!("{}: {conflict}", manifest.display()));
+                }
+                outputs.push((export.name.clone(), output, identity));
             }
             exports.push(export);
         }
@@ -242,6 +285,100 @@ impl Project {
     pub(crate) fn exports(&self) -> &[Export] {
         &self.exports
     }
+
+    /// Whether a configured deliverable depends on this document. Library-wide
+    /// exports consume every document; per-document exports name their target.
+    pub(crate) fn requires_recipe(&self, id: &str) -> bool {
+        self.exports.iter().any(|export| {
+            matches!(export.op.as_str(), "all" | "atlas") || export.doc.as_deref() == Some(id)
+        })
+    }
+}
+
+fn display_output<'a>(root: &Path, output: &'a Path) -> std::borrow::Cow<'a, str> {
+    output
+        .strip_prefix(root)
+        .unwrap_or(output)
+        .to_string_lossy()
+}
+
+/// Compare paths with a deliberately stricter, case-folded component model so
+/// a manifest accepted on Linux cannot alias on default Windows/macOS filesystems.
+fn portable_paths_overlap(left: &Path, right: &Path) -> bool {
+    let components = |path: &Path| {
+        path.components()
+            .map(|component| component.as_os_str().to_string_lossy().to_lowercase())
+            .collect::<Vec<_>>()
+    };
+    let left = components(left);
+    let right = components(right);
+    left.starts_with(&right) || right.starts_with(&left)
+}
+
+/// Resolve the existing prefix of a possibly-not-yet-created path, then append
+/// its missing suffix. This gives collision checks the physical identity behind
+/// in-project symlink aliases without requiring the output itself to exist.
+fn canonicalize_with_missing(path: &Path) -> Result<PathBuf, String> {
+    let mut ancestor = path;
+    let mut suffix = Vec::new();
+    loop {
+        match std::fs::symlink_metadata(ancestor) {
+            Ok(_) => break,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                let name = ancestor.file_name().ok_or_else(|| {
+                    format!("cannot resolve parent of output path '{}'", path.display())
+                })?;
+                suffix.push(name.to_os_string());
+                ancestor = ancestor.parent().ok_or_else(|| {
+                    format!("cannot resolve parent of output path '{}'", path.display())
+                })?;
+            }
+            Err(error) => {
+                return Err(format!(
+                    "cannot inspect output path '{}': {error}",
+                    ancestor.display()
+                ));
+            }
+        }
+    }
+    let mut resolved = ancestor.canonicalize().map_err(|error| {
+        format!(
+            "cannot resolve output path ancestor '{}': {error}",
+            ancestor.display()
+        )
+    })?;
+    for component in suffix.into_iter().rev() {
+        resolved.push(component);
+    }
+    Ok(resolved)
+}
+
+fn validate_portable_component(component: &std::ffi::OsStr) -> Result<(), &'static str> {
+    let value = component.to_string_lossy();
+    if value.ends_with(['.', ' ']) {
+        return Err("components cannot end with a dot or space");
+    }
+    if value
+        .chars()
+        .any(|character| character.is_control() || r#"<>:"|?*"#.contains(character))
+    {
+        return Err("components contain characters unsupported on Windows");
+    }
+    let stem = value
+        .split('.')
+        .next()
+        .unwrap_or_default()
+        .to_ascii_uppercase();
+    let reserved = matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+        || ["COM", "LPT"].iter().any(|prefix| {
+            stem.strip_prefix(prefix).is_some_and(|number| {
+                matches!(number, "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")
+            })
+        });
+    if reserved {
+        return Err("components cannot use a reserved Windows device name");
+    }
+    Ok(())
 }
 
 const BASE_KEYS: &[&str] = &["name", "doc", "op", "out", "scale"];
@@ -410,11 +547,27 @@ fn resolve_output(root: &Path, raw: &str) -> Result<PathBuf, String> {
     if raw.trim().is_empty() {
         return Err("project export path cannot be empty".into());
     }
+    if raw.contains('\\') {
+        return Err(format!(
+            "project export path '{raw}' must use '/' as its portable separator"
+        ));
+    }
     let path = Path::new(raw);
     let mut output = root.to_path_buf();
+    let mut first_component = true;
     for component in path.components() {
         match component {
-            Component::Normal(part) => output.push(part),
+            Component::Normal(part) => {
+                validate_portable_component(part)
+                    .map_err(|reason| format!("project export path '{raw}': {reason}"))?;
+                if first_component && part.to_string_lossy().eq_ignore_ascii_case(".atelier") {
+                    return Err(format!(
+                        "project export path '{raw}' cannot write inside the reserved .atelier directory"
+                    ));
+                }
+                first_component = false;
+                output.push(part);
+            }
             Component::CurDir => {}
             Component::ParentDir | Component::RootDir | Component::Prefix(_) => {
                 return Err(format!(
@@ -432,36 +585,11 @@ fn resolve_output(root: &Path, raw: &str) -> Result<PathBuf, String> {
     let canonical_root = root
         .canonicalize()
         .map_err(|error| format!("cannot resolve project root {}: {error}", root.display()))?;
-    let mut ancestor = output.as_path();
-    loop {
-        match std::fs::symlink_metadata(ancestor) {
-            Ok(_) => break,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                ancestor = ancestor.parent().ok_or_else(|| {
-                    format!(
-                        "cannot resolve parent of export path '{}'",
-                        output.display()
-                    )
-                })?;
-            }
-            Err(error) => {
-                return Err(format!(
-                    "cannot inspect export path '{}': {error}",
-                    ancestor.display()
-                ));
-            }
-        }
-    }
-    let canonical_ancestor = ancestor.canonicalize().map_err(|error| {
-        format!(
-            "cannot resolve export path ancestor '{}': {error}",
-            ancestor.display()
-        )
-    })?;
-    if !canonical_ancestor.starts_with(&canonical_root) {
+    let canonical_output = canonicalize_with_missing(&output)?;
+    if !canonical_output.starts_with(&canonical_root) {
         return Err(format!(
             "project export path '{raw}' escapes the project through '{}'",
-            ancestor.display()
+            canonical_output.display()
         ));
     }
     Ok(output)
@@ -557,12 +685,17 @@ async fn execute(project: &Project, options: &Options, docs_dir: &Path) -> Resul
         return Ok(());
     }
 
-    let atelier = Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir(
-        docs_dir.to_path_buf(),
-    ))));
+    let _build_lock = BuildLock::acquire(&project.root)?;
+    let workspace = BuildWorkspace::new(&project.root)?;
+    let studio = Studio::with_docs_dir(docs_dir.to_path_buf());
+    // One source snapshot feeds the complete staged build. A mutation waits
+    // until every export has succeeded and its outputs have been promoted.
+    let _store_lock = studio.lock_store_shared()?;
+    let atelier = Atelier::with_studio(Arc::new(Mutex::new(studio)));
     for export in &exports {
+        let staged = workspace.staged_output(&project.root, &export.out_path)?;
         let result = atelier
-            .dispatch("doc_export", export.dispatch_args(), "build")
+            .dispatch("doc_export", export.dispatch_args_to(&staged), "build")
             .await
             .map_err(|error| format!("{}: {error}", export.name))?;
         if server::is_error_result(&result) {
@@ -574,6 +707,9 @@ async fn execute(project: &Project, options: &Options, docs_dir: &Path) -> Resul
                 .unwrap_or("export failed");
             return Err(format!("{}: {detail}", export.name));
         }
+    }
+    promote_outputs(project, &exports, &workspace)?;
+    for export in &exports {
         println!("built {} -> {}", export.name, export.out);
     }
     println!("atelier build: {} export(s) ok", exports.len());
@@ -693,6 +829,42 @@ max_width = 256
                 "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='sheet'\nout='x.png'\n[[exports]]\nname='y'\ndoc='y'\nop='sheet'\nout='./x.png'",
                 "more than one export writes",
             ),
+            (
+                "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='sheet'\nout='dist/Hero.png'\n[[exports]]\nname='y'\ndoc='y'\nop='sheet'\nout='dist/hero.png'",
+                "more than one export writes",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='sheet'\ndoc='x'\nop='sheet'\nout='dist/x.png'\n[[exports]]\nname='meta'\ndoc='x'\nop='anim'\nout='dist/x.json'",
+                "more than one export writes",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='all'\nop='all'\nout='dist'\n[[exports]]\nname='anim'\ndoc='x'\nop='anim'\nout='dist/x.gif'",
+                "more than one export writes",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='sheet'\nout='dist/x.json'",
+                "writes overlapping paths",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='anim'\nout='./.atelier/x.gif'",
+                "reserved .atelier",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='anim'\nout='dist/con.gif'",
+                "reserved Windows",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='anim'\nout='dist/bad.'",
+                "end with a dot",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='anim'\nout='dist/a:b.gif'",
+                "unsupported on Windows",
+            ),
+            (
+                "version = 1\n[[exports]]\nname='x'\ndoc='x'\nop='anim'\nout='dist\\x.gif'",
+                "portable separator",
+            ),
         ] {
             write_manifest(&root.0, source);
             let error = Project::load(&root.0).unwrap_err();
@@ -717,6 +889,28 @@ max_width = 256
         );
         let error = Project::load(&root.0).unwrap_err();
         assert!(error.contains("escapes the project"), "got: {error}");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rejects_outputs_that_alias_through_two_in_project_symlinks() {
+        use std::os::unix::fs::symlink;
+
+        let root = TempDir::new();
+        std::fs::create_dir(root.0.join("assets")).unwrap();
+        symlink(root.0.join("assets"), root.0.join("alias-a")).unwrap();
+        symlink(root.0.join("assets"), root.0.join("alias-b")).unwrap();
+        write_manifest(
+            &root.0,
+            "version=1\n\
+             [[exports]]\nname='a'\ndoc='x'\nop='anim'\nout='alias-a/x.gif'\n\
+             [[exports]]\nname='b'\ndoc='x'\nop='anim'\nout='alias-b/x.gif'\n",
+        );
+        let error = Project::load(&root.0).unwrap_err();
+        assert!(
+            error.contains("more than one export writes"),
+            "got: {error}"
+        );
     }
 
     #[test]
@@ -757,6 +951,9 @@ max_width = 256
             .await
             .unwrap();
         assert!(!server::is_error_result(&result));
+        std::fs::create_dir_all(root.0.join("dist")).unwrap();
+        std::fs::write(root.0.join("dist/hero.png"), b"old image").unwrap();
+        std::fs::write(root.0.join("dist/hero.json"), b"old metadata").unwrap();
 
         let project = Project::load(&root.0).unwrap();
         execute(
@@ -771,5 +968,119 @@ max_width = 256
         .unwrap();
         assert!(root.0.join("dist/hero.png").is_file());
         assert!(root.0.join("dist/hero.json").is_file());
+        assert_ne!(
+            std::fs::read(root.0.join("dist/hero.png")).unwrap(),
+            b"old image"
+        );
+        assert_ne!(
+            std::fs::read(root.0.join("dist/hero.json")).unwrap(),
+            b"old metadata"
+        );
+        let metadata: Value =
+            serde_json::from_slice(&std::fs::read(root.0.join("dist/hero.json")).unwrap()).unwrap();
+        assert_eq!(
+            metadata["path"],
+            root.0.join("dist/hero.png").to_string_lossy().as_ref()
+        );
+    }
+
+    #[tokio::test]
+    async fn library_build_metadata_names_the_final_output_not_staging() {
+        let root = TempDir::new();
+        let docs = root.0.join(".atelier/documents");
+        std::fs::create_dir_all(&docs).unwrap();
+        write_manifest(
+            &root.0,
+            "version=1\n[[exports]]\nname='all'\nop='all'\nout='dist/all'\nscale=1",
+        );
+        let atelier =
+            Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir(docs.clone()))));
+        let result = atelier
+            .dispatch(
+                "doc_create",
+                json!({"name": "hero", "width": 4, "height": 4}),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(!server::is_error_result(&result));
+
+        let project = Project::load(&root.0).unwrap();
+        execute(
+            &project,
+            &Options {
+                only: None,
+                dry_run: false,
+            },
+            &docs,
+        )
+        .await
+        .unwrap();
+        let metadata: Value =
+            serde_json::from_slice(&std::fs::read(root.0.join("dist/all/hero.json")).unwrap())
+                .unwrap();
+        assert_eq!(
+            metadata["path"],
+            root.0.join("dist/all/hero.png").to_string_lossy().as_ref()
+        );
+    }
+
+    #[tokio::test]
+    async fn a_failed_build_preserves_every_previous_output() {
+        let root = TempDir::new();
+        let docs = root.0.join(".atelier/documents");
+        std::fs::create_dir_all(&docs).unwrap();
+        write_manifest(
+            &root.0,
+            "version=1\n\
+             [[exports]]\n\
+             name='hero'\n\
+             doc='hero'\n\
+             op='sheet'\n\
+             out='dist/hero.png'\n\
+             scale=1\n\
+             [[exports]]\n\
+             name='missing'\n\
+             doc='missing'\n\
+             op='sheet'\n\
+             out='dist/missing.png'\n\
+             scale=1\n",
+        );
+        let atelier =
+            Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir(docs.clone()))));
+        let result = atelier
+            .dispatch(
+                "doc_create",
+                json!({"name": "hero", "width": 4, "height": 4}),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(!server::is_error_result(&result));
+        std::fs::create_dir_all(root.0.join("dist")).unwrap();
+        std::fs::write(root.0.join("dist/hero.png"), b"previous image").unwrap();
+        std::fs::write(root.0.join("dist/hero.json"), b"previous metadata").unwrap();
+
+        let project = Project::load(&root.0).unwrap();
+        let error = execute(
+            &project,
+            &Options {
+                only: None,
+                dry_run: false,
+            },
+            &docs,
+        )
+        .await
+        .unwrap_err();
+        assert!(error.contains("missing"), "got: {error}");
+        assert_eq!(
+            std::fs::read(root.0.join("dist/hero.png")).unwrap(),
+            b"previous image"
+        );
+        assert_eq!(
+            std::fs::read(root.0.join("dist/hero.json")).unwrap(),
+            b"previous metadata"
+        );
+        assert!(!root.0.join("dist/missing.png").exists());
     }
 }
