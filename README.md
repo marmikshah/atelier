@@ -168,6 +168,7 @@ atelier call <tool> --file ops.json   # args from a file (or --stdin)
 atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier init                   # create a project store and build manifest
 atelier build [--only NAME]    # build the manifest's named exports
+atelier check [--json]         # validate project state and reproducibility
 atelier recipe compact|expand|stats  # convert or measure recipes
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
@@ -244,6 +245,8 @@ one named output:
 atelier build
 atelier build --dry-run
 atelier build --only hero-walk
+atelier check
+atelier check --json
 ```
 
 | `op` | Required fields | Optional fields |
@@ -257,6 +260,18 @@ atelier build --only hero-walk
 Manifest output paths are portable: they are relative to the project root and
 cannot use absolute paths, `..`, or a symlink to write outside the project.
 Each build still uses `doc_export` through Atelier's shared dispatch path.
+
+`atelier check` is the read-only CI counterpart to build. It validates the
+manifest, opens every document, verifies each configured document and animation
+tag reference, replays every available journal in an isolated temporary store,
+compares the rebuilt structure and every rendered frame with the live document,
+and exercises each export against temporary output paths. It never writes the
+project's configured outputs and does not make subjective art judgments.
+
+The human report is concise; `--json` emits a versioned report with stable
+`summary` and `checks` objects for automation. A failed check exits 1, invalid
+command arguments exit 2, and warnings (such as an older document with no
+journal) remain visible without failing the build.
 
 Store resolution remains: `--home` / `ATELIER_HOME` → `./.atelier` when it
 exists → `~/.atelier`. Standing in `$HOME`, the two are the same directory.
