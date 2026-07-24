@@ -43,6 +43,7 @@ use atelier_mcp::server;
 mod call;
 mod clients;
 mod doctor;
+mod fsutil;
 mod init;
 mod library;
 mod replay;
@@ -165,7 +166,7 @@ fn skills_cmd(args: &[String]) -> i32 {
                             return 1;
                         }
                     }
-                    if let Err(e) = std::fs::write(&out, sk.skill_md()) {
+                    if let Err(e) = fsutil::write_text(&out, &sk.skill_md()) {
                         eprintln!("atelier: {}: {e}", out.display());
                         return 1;
                     }

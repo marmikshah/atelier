@@ -7,7 +7,7 @@
 # Persist documents by mounting a volume at /data (ATELIER_HOME).
 
 # ---- build -------------------------------------------------------------------
-FROM rust:1-alpine AS build
+FROM rust:1.96.0-alpine3.22 AS build
 # musl is the default target here, so the binary is fully static — no package
 # installs at all (the default build links no openssl, no C deps).
 WORKDIR /src
@@ -16,7 +16,7 @@ RUN cargo build --release --locked -p atelier \
  && strip target/release/atelier
 
 # ---- runtime -----------------------------------------------------------------
-FROM alpine:3
+FROM alpine:3.22
 # Non-root, unprivileged; documents live in a mounted volume it owns.
 RUN addgroup -S atelier \
  && adduser -S -u 10001 -G atelier atelier \

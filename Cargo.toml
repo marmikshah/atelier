@@ -7,13 +7,26 @@ members = [
     "crates/atelier",
     "crates/atelier-lab",
 ]
+# Normal root commands cover only what ships. The unpublished research crate
+# remains available explicitly with `-p atelier-lab` or `--workspace`.
+default-members = [
+    "crates/atelier-core",
+    "crates/atelier-studio",
+    "crates/atelier-mcp",
+    "crates/atelier",
+]
 # Shared package metadata — each crate inherits with `field.workspace = true`.
 [workspace.package]
 version = "1.8.0"
 description = "The pixel-art studio agents can see — layered, animated, game-ready art from the CLI or over MCP."
 edition = "2021"
+rust-version = "1.88"
 license = "MIT"
 repository = "https://github.com/marmikshah/atelier"
+homepage = "https://marmikshah.github.io/atelier/"
+# GitHub releases are the distribution channel for now. Opt in crate-by-crate
+# only after the public Rust API and crates.io release order are documented.
+publish = false
 keywords = ["mcp", "pixel-art", "sprite", "gamedev", "animation"]
 categories = ["command-line-utilities", "multimedia::images", "game-development"]
 

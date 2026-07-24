@@ -1,10 +1,17 @@
-<!--
-  atelier is NOT accepting external contributions until v2.0.0.
-  External pull requests are closed automatically. Please open an issue instead.
-  See .github/CONTRIBUTING.md
--->
+## Summary
 
-> ⚠️ **atelier is not accepting external contributions until v2.0.0.**
-> External pull requests are closed automatically — see
-> [CONTRIBUTING.md](https://github.com/marmikshah/atelier/blob/master/.github/CONTRIBUTING.md).
-> Please open an **issue** for bugs or ideas.
+<!-- What problem does this solve, and what is intentionally out of scope? -->
+
+## Validation
+
+<!-- List the commands run and any manual evidence. -->
+
+- [ ] `make check`
+- [ ] Tests cover behavior changes
+- [ ] User-facing changes are documented
+- [ ] Tool descriptions/docs were regenerated when applicable
+- [ ] No release tag was created or pushed
+
+## Related issue
+
+<!-- Link an issue for new tools, APIs, dependencies, formats, or broad refactors. -->

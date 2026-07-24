@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use serde_json::{Map, Value};
 use toml_edit::{value, ArrayOfTables, DocumentMut, Item, Table};
 
-use crate::service;
+use crate::{fsutil, service};
 
 pub(crate) const DEFAULT_MCP_URL: &str = "http://127.0.0.1:8765/mcp";
 
@@ -407,7 +407,7 @@ fn write_json(path: &Path, value: &Value) -> Result<(), String> {
     let mut body = serde_json::to_string_pretty(value)
         .map_err(|error| format!("cannot encode {}: {error}", path.display()))?;
     body.push('\n');
-    write_text(path, &body)
+    fsutil::write_text(path, &body)
 }
 
 fn read_toml(path: &Path) -> Result<DocumentMut, String> {
@@ -485,7 +485,7 @@ fn configure_codex(
     let body = document.to_string();
     let old = std::fs::read_to_string(path).ok();
     if old.as_deref() != Some(body.as_str()) {
-        write_text(path, &body)?;
+        fsutil::write_text(path, &body)?;
     }
     Ok(change)
 }
@@ -555,17 +555,9 @@ fn configure_kimi_approval(path: &Path) -> Result<(), String> {
     let body = document.to_string();
     let old = std::fs::read_to_string(path).ok();
     if old.as_deref() != Some(body.as_str()) {
-        write_text(path, &body)?;
+        fsutil::write_text(path, &body)?;
     }
     Ok(())
-}
-
-fn write_text(path: &Path, body: &str) -> Result<(), String> {
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|error| format!("cannot create {}: {error}", parent.display()))?;
-    }
-    std::fs::write(path, body).map_err(|error| format!("cannot write {}: {error}", path.display()))
 }
 
 #[cfg(test)]

@@ -3,8 +3,11 @@ name = "atelier-core"
 description = "atelier core: the layered/animated pixel-art document model and raster primitives (no MCP, no async)."
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+publish.workspace = true
 keywords.workspace = true
 categories.workspace = true
 

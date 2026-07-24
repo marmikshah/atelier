@@ -3,8 +3,11 @@ name = "atelier-mcp"
 description = "atelier MCP server: exposes the atelier studio as MCP tools over stdio and streamable HTTP."
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+publish.workspace = true
 keywords.workspace = true
 categories.workspace = true
 

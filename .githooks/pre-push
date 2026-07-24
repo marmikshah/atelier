@@ -1,6 +1,6 @@
 #!/bin/sh
-# Canonical pre-push hook — mirrors CI: checks + tests, and refuses direct
-# pushes to master (master moves only by PR merge).
+# Optional pre-push hook: static checks plus a direct-master guard. Full tests
+# and generated-doc verification remain authoritative in CI.
 # Enable once with: git config core.hooksPath .githooks .
 # Bypass in an emergency with --no-verify.
 set -e
@@ -11,4 +11,3 @@ while read -r _local_ref _local_sha remote_ref _remote_sha; do
   fi
 done
 make pre-commit-checks
-make test

@@ -20,8 +20,20 @@ releases.
 
 - **Releases are maintainer-approved annotated tags.** The tag, every release package,
   `Cargo.lock`, and the changelog must agree before the production gate or any
-  platform build runs. GitHub Release creation now waits for every archive, and
-  Docker publication follows the completed file release.
+  platform build runs. GitHub Release creation now waits for every archive and
+  the multi-architecture container.
+- **The download installer is binary-only.** Daemon setup, MCP registration,
+  broad tool approval, and skill installation are now separate, explicit
+  commands.
+- Root Cargo commands target only the four shipped crates by default;
+  `atelier-lab` remains an explicit, unpublished workspace member.
+- Client configuration and installed skill updates now use same-directory
+  temporary files and retain the previous content as an `.atelier-backup`.
+- GitHub Pages now builds the tool reference and benchmark index from their
+  canonical sources instead of committing duplicate generated files.
+- CI now has one complete Linux gate, an explicit Rust 1.88 minimum-version
+  check, and lightweight macOS and Windows checks. Local hooks remain optional
+  and fast.
 
 ### Fixed
 
@@ -33,6 +45,8 @@ releases.
 - Release, Docker, CI, and source builds use the committed lockfile. Release
   archives carry SHA-256 sidecars, and the installer requires verification for
   v1.8.0 and later.
+- Third-party GitHub Actions are pinned to full commit SHAs, Docker base images
+  are version-pinned, and Dependabot tracks Cargo, Actions, and Docker updates.
 
 ## [1.7.1] — 2026-07-23
 
