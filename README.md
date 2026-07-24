@@ -39,7 +39,7 @@ Layered, animated, game-ready art — from your CLI, or over MCP.</p>
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
-Installs the binary after verifying its published SHA-256 (v1.8.0+). That's the
+Installs the binary after verifying its published SHA-256. That's the
 whole setup — drive it from any shell:
 
 ```sh

@@ -101,6 +101,11 @@ MCP is optional:
 - `atelier install` manages the HTTP server through launchd or systemd user
   services.
 
+Both transports terminate at the same `ServerHandler::call_tool` implementation,
+which delegates to `Atelier::dispatch`; HTTP adds caller metadata but has no
+alternate tool path. End-to-end tests launch each real transport, require its
+advertised names to equal the canonical registry exactly, and make a tool call.
+
 Atelier does not edit third-party MCP client configuration. Clients point at
 the HTTP endpoint printed by `atelier status`, or spawn `atelier` over stdio.
 

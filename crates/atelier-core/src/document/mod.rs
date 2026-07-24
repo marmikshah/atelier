@@ -199,46 +199,12 @@ impl Document {
 
     pub fn load(dir: &Path) -> Result<Document, String> {
         let s = std::fs::read_to_string(dir.join("doc.json")).map_err(|e| e.to_string())?;
-        let raw: Value = serde_json::from_str(&s).map_err(|e| e.to_string())?;
-        let meta: DocMeta = serde_json::from_value(raw.clone()).map_err(|e| e.to_string())?;
-        let raw_cels = raw
-            .get("cels")
-            .and_then(Value::as_array)
-            .ok_or("doc.json: `cels` must be an array")?;
-        if raw_cels.len() != meta.cels.len() {
-            return Err("doc.json: cel metadata did not round-trip".into());
-        }
+        let meta: DocMeta = serde_json::from_str(&s).map_err(|e| e.to_string())?;
         let mut cels = HashMap::new();
-        for (c, raw_cel) in meta.cels.iter().zip(raw_cels) {
-            // v1.7 could persist linked cels whose `file` pointed at another
-            // cel. Materialize those pixels on load; the next save writes the
-            // cel under its own ordinary L<layer>_F<frame>.png path.
-            let legacy_link = match raw_cel.get("link") {
-                None | Some(Value::Null) => None,
-                Some(value) => Some(
-                    serde_json::from_value::<(usize, usize)>(value.clone())
-                        .map_err(|error| format!("invalid legacy cel link: {error}"))?,
-                ),
-            };
-            if let Some((layer, frame)) = legacy_link
-                && (layer >= meta.layers.len()
-                    || frame >= meta.frames.len()
-                    || !meta
-                        .cels
-                        .iter()
-                        .any(|candidate| candidate.layer == layer && candidate.frame == frame))
-            {
-                return Err(format!(
-                    "legacy cel L{}_F{} links to missing L{layer}_F{frame}",
-                    c.layer, c.frame
-                ));
-            }
+        for c in &meta.cels {
             // `c.file` comes from doc.json; a synced/hand-crafted doc could point
-            // outside `cels/`. Accept only the canonical own path or, for a
-            // legacy link, the canonical target path.
-            let expected = legacy_link
-                .map(|(layer, frame)| cel_file(layer, frame))
-                .unwrap_or_else(|| cel_file(c.layer, c.frame));
+            // outside `cels/`. Every cel owns one canonical path.
+            let expected = cel_file(c.layer, c.frame);
             if c.file != expected {
                 return Err(format!("refusing suspicious cel path '{}'", c.file));
             }

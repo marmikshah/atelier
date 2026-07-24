@@ -25,8 +25,7 @@ fail() { printf 'install: %s\n' "$*" >&2; exit 1; }
 
 for argument in "$@"; do
   case "$argument" in
-    --source|--build) FROM_SOURCE=1 ;;
-    --yes|-y) : ;; # retained as a harmless compatibility flag
+    --source) FROM_SOURCE=1 ;;
     uninstall) COMMAND="uninstall" ;;
     *) fail "unknown argument '$argument'" ;;
   esac
@@ -108,42 +107,26 @@ else
   say "Downloading atelier $VERSION ($TARGET)..."
   curl -fsSL "$URL" -o "$ARCHIVE" || fail "download failed: $URL"
 
-  # v1.8.0 is the first release that publishes a checksum sidecar. Explicit
-  # older installs remain possible with a warning.
-  RELEASE_NUMBERS="${VERSION#v}"
-  RELEASE_MAJOR="${RELEASE_NUMBERS%%.*}"
-  RELEASE_REST="${RELEASE_NUMBERS#*.}"
-  RELEASE_MINOR="${RELEASE_REST%%.*}"
-  CHECKSUM_REQUIRED=""
-  if [ "$RELEASE_MAJOR" -gt 1 ] ||
-    { [ "$RELEASE_MAJOR" -eq 1 ] && [ "$RELEASE_MINOR" -ge 8 ]; }; then
-    CHECKSUM_REQUIRED=1
-  fi
-
-  if curl -fsSL "$CHECKSUM_URL" -o "$CHECKSUM"; then
-    EXPECTED="$(awk 'NR == 1 {print $1}' "$CHECKSUM")"
-    case "$EXPECTED" in
-      ""|*[!0-9A-Fa-f]*) fail "invalid checksum at $CHECKSUM_URL" ;;
-    esac
-    [ "${#EXPECTED}" -eq 64 ] || fail "invalid checksum at $CHECKSUM_URL"
-
-    if command -v sha256sum >/dev/null 2>&1; then
-      ACTUAL="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
-    elif command -v shasum >/dev/null 2>&1; then
-      ACTUAL="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
-    else
-      fail "sha256sum or shasum is required to verify $VERSION"
-    fi
-
-    EXPECTED="$(printf '%s' "$EXPECTED" | tr 'A-F' 'a-f')"
-    ACTUAL="$(printf '%s' "$ACTUAL" | tr 'A-F' 'a-f')"
-    [ "$ACTUAL" = "$EXPECTED" ] || fail "SHA-256 mismatch for $URL"
-    say "Verified SHA-256: $ACTUAL"
-  elif [ -n "$CHECKSUM_REQUIRED" ]; then
+  curl -fsSL "$CHECKSUM_URL" -o "$CHECKSUM" ||
     fail "checksum download failed: $CHECKSUM_URL"
+  EXPECTED="$(awk 'NR == 1 {print $1}' "$CHECKSUM")"
+  case "$EXPECTED" in
+    ""|*[!0-9A-Fa-f]*) fail "invalid checksum at $CHECKSUM_URL" ;;
+  esac
+  [ "${#EXPECTED}" -eq 64 ] || fail "invalid checksum at $CHECKSUM_URL"
+
+  if command -v sha256sum >/dev/null 2>&1; then
+    ACTUAL="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
+  elif command -v shasum >/dev/null 2>&1; then
+    ACTUAL="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
   else
-    say "Warning: $VERSION predates published checksums; archive was not verified."
+    fail "sha256sum or shasum is required to verify $VERSION"
   fi
+
+  EXPECTED="$(printf '%s' "$EXPECTED" | tr 'A-F' 'a-f')"
+  ACTUAL="$(printf '%s' "$ACTUAL" | tr 'A-F' 'a-f')"
+  [ "$ACTUAL" = "$EXPECTED" ] || fail "SHA-256 mismatch for $URL"
+  say "Verified SHA-256: $ACTUAL"
 
   tar -xzf "$ARCHIVE" -C "$TMP"
   mkdir -p "$INSTALL_DIR"
