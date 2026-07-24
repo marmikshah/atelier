@@ -3,9 +3,8 @@
 //! A skill is a document, so its prose lives as markdown in `skills/*.md`. Rust
 //! owns the *metadata* (name, description) and the *renderers* that wrap that
 //! prose for each consumer — the standard `SKILL.md` Claude Code, Codex, Kimi
-//! Code and Cursor all load, or the `atelier agent` system prompt. One source,
-//! compile-checked, and adding a consumer is one method or one install dir, not
-//! another copy of the text.
+//! Code and Cursor all load. One source, compile-checked, and adding a consumer
+//! is one method or one install dir, not another copy of the text.
 
 /// One skill: typed metadata plus a pure-prose markdown body (no frontmatter).
 pub struct Skill {
@@ -43,15 +42,6 @@ pub const REVIEW: Skill = Skill {
 /// Every shipped skill.
 pub const ALL: &[&Skill] = &[&SPRITE, &SCENE, &REVIEW];
 
-/// The ground rules the `agent` loop needs on top of a skill: drive the tools,
-/// look, and export at the end. Skill-agnostic, so it lives with the renderer,
-/// not in the prose.
-#[cfg(feature = "agent")]
-const AGENT_GROUND_RULES: &str = "You are drawing through the atelier tools. Call them to \
-    build the art. After a burst of edits, call doc_look to SEE the frame before continuing — \
-    it returns the image. When the piece is finished, call the export tool, then reply with a \
-    one-line summary and stop. Do not ask the user questions; you have everything you need.";
-
 impl Skill {
     /// Resolve a short selector (`sprite`/`scene`/`review`) to a skill.
     pub fn by_short(short: &str) -> Option<&'static Skill> {
@@ -68,26 +58,6 @@ impl Skill {
             self.body.trim()
         )
     }
-
-    /// The `atelier agent` system prompt: the prose plus the drive-the-tools
-    /// ground rules. `out` names the file the model must export to, if any.
-    #[cfg(feature = "agent")]
-    pub fn agent_prompt(&self, out: Option<&str>) -> String {
-        agent_prompt(self.body, out)
-    }
-}
-
-/// Render an agent system prompt from any prose `body` — used for a built-in
-/// skill or a caller's `--skill-file`, so both take the same shape.
-#[cfg(feature = "agent")]
-pub fn agent_prompt(body: &str, out: Option<&str>) -> String {
-    let mut s = format!("{}\n\n{}", body.trim(), AGENT_GROUND_RULES);
-    if let Some(path) = out {
-        s.push_str(&format!(
-            " Export the finished piece to exactly this path: {path}"
-        ));
-    }
-    s
 }
 
 #[cfg(test)]
@@ -112,19 +82,6 @@ mod tests {
         assert!(md.starts_with("---\nname: atelier-sprite\n"));
         assert!(md.contains("description: Draw a single"));
         assert!(md.contains("# Drawing one subject"), "prose body missing");
-    }
-
-    #[cfg(feature = "agent")]
-    #[test]
-    fn agent_prompt_has_prose_rules_and_out_path() {
-        let p = SPRITE.agent_prompt(Some("/tmp/x.gif"));
-        assert!(p.contains("# Drawing one subject"), "prose missing");
-        assert!(p.contains("call doc_look"), "ground rules missing");
-        assert!(p.contains("/tmp/x.gif"), "out path missing");
-        assert!(!p.starts_with("---"), "frontmatter leaked into the prompt");
-        assert!(!SPRITE
-            .agent_prompt(None)
-            .contains("Export the finished piece"));
     }
 
     #[test]

@@ -1,4 +1,4 @@
-# Canonical Rust CI — mirrors the local gate (make pre-commit-checks + make test).
+# Canonical Rust CI — mirrors the local gate (format, clippy, rustdoc + tests).
 name: CI
 
 on:
@@ -35,10 +35,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: make test
-      # The `agent` feature is off by default and links an HTTP stack, so the
-      # normal gate never touches it. Build + test it here so it cannot rot.
-      - run: cargo clippy -p atelier --features agent --all-targets -- -D warnings
-      - run: cargo test -p atelier --features agent
 
   # site/tools.html is generated from the live tool registry. Without this the
   # published reference silently drifts from the code — it already had, still

@@ -39,7 +39,8 @@ Layered, animated, game-ready art — from your CLI, or over MCP.</p>
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
-Installs the binary. That's the whole setup — drive it from any shell:
+Installs the binary after verifying its published SHA-256 (v1.8.0+). That's the
+whole setup — drive it from any shell:
 
 ```sh
 atelier call doc_create '{"name":"cat","width":32,"height":32}'
@@ -62,7 +63,7 @@ exactly this way: no registration, no daemon, no restart. Just ask:
 ### Other ways
 
 - **Binaries** — macOS (ARM), Linux x86_64, Windows: [latest release](https://github.com/marmikshah/atelier/releases/latest)
-- **Source** — `cargo install --path crates/atelier`, or `site/install.sh --source`
+- **Source** — `cargo install --locked --path crates/atelier`, or `site/install.sh --source`
   to build this checkout and install it
 
 ## Optional: run as an MCP server
@@ -156,7 +157,6 @@ atelier library                # what's in your document store
 atelier doctor                 # check the whole setup, print what to fix
 atelier clients install        # register MCP (--for claude|codex|kimi --mode http|stdio)
 atelier skills install         # write the skills (--for claude|codex|kimi|cursor|all)
-atelier agent --task "..."     # the one online mode (feature-gated)
 ```
 
 And the MCP add-on:
@@ -182,7 +182,8 @@ use a stable name instead. (The CLI and replay log as `cli` / `replay`.)
 `hero`, `hero-2`, … — and every caller must use the id it got back.)
 
 **30 tools**, all of them advertised — no profiles to pick, nothing hidden behind
-a flag. Every one is a tool an agent or a shipped recipe actually reaches for.
+a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
+turn into an unreachable dead end.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
 or see how a call flows through the crates in the
 [architecture tour](https://marmikshah.github.io/atelier/architecture.html).
@@ -200,27 +201,6 @@ the same directory.
 The daemon is the exception: a shared server has no working directory, so it
 always pins the global store at install time (or whatever `--home` you give
 it). `atelier doctor` names the store you're on, and why.
-
-## Agent mode — the one online command
-
-Everything above is offline, keyless and deterministic. `atelier agent` is the
-exception: it drives an OpenAI-style API to draw a task by itself, no external
-client needed.
-
-```sh
-cargo install --path crates/atelier --features agent   # opt in — links the HTTP stack
-export OPENAI_API_KEY=sk-…
-atelier agent --task "a bouncing slime, 8 frames" --out slime.gif
-```
-
-The atelier-sprite, -scene and -review skills are **baked into the binary**, so
-that bare command just works — no files, no Claude, no repo checkout.
-`--skill scene|review` picks another, `--skill-file <path>` injects your own.
-
-It's off by default — a normal build and the daemon link no network stack at all
-— and it reuses the same dispatch path everything else does, so the model draws
-through the exact validated path (schemas, journaling, replay). Any
-OpenAI-compatible endpoint works via `--base-url`.
 
 ## Skills
 
@@ -292,6 +272,9 @@ worth spending — and a ⭐ helps the next person find it.
 Not accepting external code contributions until **v2.0.0** — pull requests are
 closed automatically until then. Bug reports and ideas are very welcome as
 [issues](https://github.com/marmikshah/atelier/issues).
+
+Maintainer releases are approved by a manually created annotated tag; the exact
+procedure is in [docs/RELEASING.md](docs/RELEASING.md).
 
 [Contributing](.github/CONTRIBUTING.md) · [Code of Conduct](.github/CODE_OF_CONDUCT.md) · [Security](.github/SECURITY.md) · [Changelog](CHANGELOG.md)
 

@@ -56,14 +56,14 @@ impl Studio {
     }
 
     /// The default atelier home: the policy resolved at the process's env and
-    /// cwd (see [`resolve_home`]). The one implementation of the policy — the
+    /// cwd (see [`Self::resolve_home`]). The one implementation of the policy — the
     /// binary's service manager delegates here instead of keeping a parallel
     /// copy that could drift.
     pub fn default_home() -> PathBuf {
         Self::default_home_with_origin().0
     }
 
-    /// [`default_home`] plus why — for doctor, which displays the choice.
+    /// [`Self::default_home`] plus why — for doctor, which displays the choice.
     pub fn default_home_with_origin() -> (PathBuf, HomeOrigin) {
         Self::resolve_home(
             std::env::var_os("ATELIER_HOME").as_deref(),

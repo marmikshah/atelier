@@ -373,7 +373,7 @@ impl Atelier {
     }
 
     /// THE one dispatch path every caller funnels through — the MCP handler
-    /// (`call_tool`), and the binary's own `atelier call` / `replay` / `agent`.
+    /// (`call_tool`), and the binary's own `atelier call` / `replay`.
     /// Logging, journaling, write ordering and session recording live here so
     /// no caller can dodge them; transport-specific work (caller identity from
     /// HTTP headers) belongs to the transport above this.
@@ -701,7 +701,7 @@ impl ServerHandler for Atelier {
     /// Transport glue: snapshot name/args (args default to `{}` to match a
     /// recipe step's shape), work out who is calling — the one
     /// transport-specific concern — then hand off to [`Atelier::dispatch`],
-    /// the single path every caller (MCP, CLI, replay, agent) shares. Because
+    /// the single path every caller (MCP, CLI, replay) shares. Because
     /// we define it, the `#[tool_handler]` macro skips generating its own.
     async fn call_tool(
         &self,
@@ -948,9 +948,8 @@ mod tests {
     #[test]
     fn the_shipped_skills_name_only_real_tools() {
         // The shipped skills (crates/atelier/skills) are the workflow guidance we
-        // install for users and embed in `atelier agent`; they name tools
-        // verbatim. Delete a tool and they rot silently — the same drift as a
-        // stale description, one crate over.
+        // install for users; they name tools verbatim. Delete a tool and they
+        // rot silently — the same drift as a stale description, one crate over.
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../atelier/skills");
         let Ok(entries) = std::fs::read_dir(&root) else {
             return; // skills are not present in a packaged crate; nothing to check

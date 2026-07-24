@@ -4,6 +4,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/). Below 2.0.0, breaking changes ship in minor
 releases.
 
+## [1.8.0] — 2026-07-24
+
+### Removed
+
+- **`atelier agent`.** The built-in OpenAI-compatible agent loop, its Cargo
+  feature, environment variables, and HTTP client dependency have been removed.
+  Atelier is again fully offline and is driven through `atelier call` or MCP.
+- The orphaned `atelier_core::document::Light` data type, left behind when its
+  only consumer (`Document::relight`) was removed in 1.5.0.
+
+### Changed
+
+- **Releases are maintainer-approved annotated tags.** The tag, every release package,
+  `Cargo.lock`, and the changelog must agree before the production gate or any
+  platform build runs. GitHub Release creation now waits for every archive, and
+  Docker publication follows the completed file release.
+
+### Fixed
+
+- Kimi skill installation and `atelier doctor` now honor `KIMI_CODE_HOME`,
+  matching Kimi MCP registration and installer detection.
+
+### Security
+
+- Release, Docker, CI, and source builds use the committed lockfile. Release
+  archives carry SHA-256 sidecars, and the installer requires verification for
+  v1.8.0 and later.
+
 ## [1.7.1] — 2026-07-23
 
 ### Added

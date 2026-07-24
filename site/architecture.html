@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>atelier — architecture & getting started</title>
-<meta name="description" content="How atelier is built — the four-crate dependency tower, the life of a tool call, and a fifteen-minute onboarding path.">
+<meta name="description" content="How atelier is built — the four-crate production dependency tower, the life of a tool call, and a fifteen-minute onboarding path.">
 <style>
   :root{
     --bg:#14161d; --card:#1b1e28; --card2:#232735;
@@ -107,7 +107,7 @@
 <nav class="toc" aria-label="sections">
   <a href="#unit">the atom</a>
   <a href="#idea">the idea</a>
-  <a href="#tower">the four crates</a>
+  <a href="#tower">the production crates</a>
   <a href="#flow">life of a tool call</a>
   <a href="#start">start here</a>
   <a href="#reading">reading order</a>
@@ -162,16 +162,16 @@
 </section>
 
 <section id="tower">
-  <h2>The four crates — a strict dependency tower</h2>
+  <h2>The four production crates — a strict dependency tower</h2>
   <p class="prose">Functional core, imperative shell. Everything below <code>atelier-mcp</code> is synchronous, deterministic, and knows nothing about MCP or tokio. Dependencies point one way only.</p>
 
   <div class="tower">
     <div class="crate shell">
-      <div class="head"><span class="name">atelier</span><span class="role">the binary — the CLI front door (call · replay · agent · library · doctor · skills) + the daemon installer</span></div>
+      <div class="head"><span class="name">atelier</span><span class="role">the binary — the CLI front door (call · replay · library · doctor · skills) + the daemon installer</span></div>
       <div class="chips">
         <span class="chip">main.rs · subcommands &amp; flags</span>
         <span class="chip">call.rs · one tool call, in-process</span>
-        <span class="chip">replay.rs / agent.rs · in-process dispatch loops</span>
+        <span class="chip">replay.rs · in-process dispatch loop</span>
         <span class="chip">service.rs · launchd / systemd install</span>
       </div>
     </div>
@@ -220,14 +220,14 @@
     </div>
   </div>
 
-  <p class="prose muted" style="margin-top:1rem">The registry advertises all <strong>30</strong> tools, and dispatch runs every one. There is no profile filter: the surface is small enough that hiding part of it behind a flag would cost more in confusion than it ever saved in context. Every tool here is one an agent or a shipped recipe actually reaches for — the rest were deleted rather than hidden. The count is pinned by a test, so changing the surface fails the suite until the number written here is updated too.</p>
+  <p class="prose muted" style="margin-top:1rem">The registry advertises all <strong>30</strong> tools, and dispatch runs every one. There is no profile filter: the surface is small enough that hiding part of it behind a flag would cost more in confusion than it ever saved in context. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot turn into an unreachable dead end. The count is pinned too, so changing the surface fails the suite until the number written here is updated.</p>
 </section>
 
 <section id="flow">
   <h2>Life of one tool call</h2>
   <p class="prose">What happens when an agent calls <code>doc_draw {"op":"line", …}</code> — this path is the whole system in miniature, and it is the same for all 30 tools and every caller:</p>
   <ol class="flow">
-    <li><span class="steplabel">1</span><div>A caller hands over one tool call: the CLI (<code>atelier call doc_draw '…'</code>), an MCP client over stdio or streamable HTTP at <code>/mcp</code>, or an in-process loop (<code>atelier replay</code>, <code>atelier agent</code>).<span class="where">atelier/src/{call,replay,agent}.rs · server/transport.rs · run / run_http</span></div></li>
+    <li><span class="steplabel">1</span><div>A caller hands over one tool call: the CLI (<code>atelier call doc_draw '…'</code>), an MCP client over stdio or streamable HTTP at <code>/mcp</code>, or the in-process replay loop (<code>atelier replay</code>).<span class="where">atelier/src/{call,replay}.rs · server/transport.rs · run / run_http</span></div></li>
     <li><span class="steplabel">2</span><div>Every caller funnels into the one choke point, <code>Atelier::dispatch</code>. rmcp's router survives only as the schema registry that advertises the surface; dispatch is a match over the 30 tools that runs the same handlers.<span class="where">atelier-mcp/src/server/mod.rs · dispatch → invoke</span></div></li>
     <li><span class="steplabel">3</span><div>The cross-cutting concerns hang off dispatch, so no caller can dodge them: per-call logging, the write-order lock, the per-document journal (<code>recipe.jsonl</code>, on by default), the opt-in session recorder.<span class="where">server/mod.rs · dispatch + server/recorder.rs</span></div></li>
     <li><span class="steplabel">4</span><div>The matched handler parses params and calls exactly one <code>Studio</code> method. No business logic lives here.<span class="where">server/tools_draw.rs · async fn doc_draw</span></div></li>

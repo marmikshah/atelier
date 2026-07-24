@@ -22,8 +22,8 @@ binary's own subcommands are the interface (an installed user has no Makefile).
 | `make release` | optimized binary at `target/release/atelier` |
 | `make build` | debug build |
 | `make test` | test suite + replays every `docs/examples` recipe |
-| `make pre-commit-checks` | format-check + clippy gate (what the hooks run) |
-| `make check` | fmt + clippy + tests |
+| `make pre-commit-checks` | release metadata + format + clippy + strict rustdoc gate (what the hooks run) |
+| `make check` | fmt + clippy + strict rustdoc + tests |
 | `make docs` | regenerate `site/tools.html` from the live tool registry |
 | `make docs-check` | fail if `site/tools.html` is stale (CI runs this) |
 | `make clean` | wipe build artifacts |
@@ -51,36 +51,28 @@ A Cargo workspace, strict dependency tower (see [docs/ARCHITECTURE.md](docs/ARCH
 - `atelier-core` — document model + raster ops (no async, no MCP).
 - `atelier-studio` — the `Studio` facade (the library API): one method per tool; single draw/fx ops route through `doc_draw`/`doc_fx` over the core op registry.
 - `atelier-mcp` — `Atelier::dispatch`, the one path every caller (CLI, MCP
-  stdio/HTTP, replay, agent) shares, plus the rmcp `#[tool]` server; advertises
+  stdio/HTTP, replay) shares, plus the rmcp `#[tool]` server; advertises
   all **30** tools, with no profile filter. The count is pinned by a test,
   another test fails if a tool description names a tool that no longer exists,
   and a third fails if an advertised tool has no dispatch arm — change the
-  surface, update the docs in the same commit. A tool earns its place by being
-  called: everything with no caller in either an agent transcript or a shipped
-  recipe was deleted, not hidden.
+  surface, update the docs in the same commit. This registry/dispatch lockstep
+  prevents an advertised tool from becoming an unreachable dead end.
 - `atelier` — the binary: arg parsing, `atelier call` (the CLI front door), the
-  daemon installer, the `replay` runner, and the gated `agent` mode.
-
-**The one online exception.** Everything above is offline, keyless and
-deterministic. `atelier agent` is the single command that reaches the network:
-it drives an OpenAI-style API to draw a task on its own. It is behind the
-`agent` cargo feature (OFF by default, so the shipped binary links no HTTP
-stack), reads `OPENAI_API_KEY` from the env, and is never part of a default
-install. It dispatches the model's tool calls in-process through
-`Atelier::dispatch`, so it reuses the whole validated tool path rather than a
-second copy.
+  daemon installer, and the `replay` runner.
 
 The workflow guidance is a typed registry (`crates/atelier/src/skills.rs`): Rust
-owns each skill's metadata and the renderers (the standard `SKILL.md`, the agent
-system prompt); the prose stays markdown in `crates/atelier/skills/*.md`.
+owns each skill's metadata and the standard `SKILL.md` renderer; the prose stays
+markdown in `crates/atelier/skills/*.md`.
 `atelier skills install --for claude|codex|kimi|cursor|all` writes the `SKILL.md`
-files into that agent's skills dir (default `~/.claude/skills/`); `atelier agent`
-renders its prompt from the same registry. A test fails if a skill names a tool
-that no longer exists.
+files into that agent's skills dir (default `~/.claude/skills/`). A test fails
+if a skill names a tool that no longer exists.
 The MCP server ships no prompts — the skills replaced them.
 
 ## Hard constraints
 
+- **Only the maintainer tags releases.** Agents may prepare a version PR, but
+  must never create or push a version tag or publish a release. The maintainer
+  follows [`docs/RELEASING.md`](docs/RELEASING.md) after merge.
 - **Never cut 2.0.0.** That version is the human-review milestone: no agent may
   bump the workspace to 2.0.0, tag v2.0.0, or publish a 2.0.0 release. It is
   tagged by the maintainer, by hand, after a full manual review. Stay on 1.x.

@@ -17,7 +17,7 @@ impl Document {
     /// given opacity/mode (snapshot-diff, so any op gains blend/opacity).
     /// `"erase": true` turns the op into an ERASER instead: every pixel the op
     /// touched becomes transparent — any shape (pencil/line/ellipse/fill/…) can
-    /// punch a hole, which no colour trick could do (drawing [0,0,0,0] is a
+    /// punch a hole, which no colour trick could do (drawing `[0,0,0,0]` is a
     /// no-op under source-over).
     pub fn apply_op(&mut self, layer: usize, frame: usize, op: &Value) -> Result<(), String> {
         let opacity = op.get("opacity").and_then(|v| v.as_u64()).map(|v| v as u8);
@@ -78,10 +78,8 @@ impl Document {
         // ops (outline, dither, pixel_perfect, quantize, adjust) are excluded.
         if matches!(name, "blur" | "drop_shadow" | "bevel" | "form" | "shade")
             && gb(op, "snap", true)
-            && !self.meta.palette.is_empty()
         {
-            let pal = self.meta.palette.clone();
-            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
+            self.snap_cel_to_own_palette(layer, frame, AlphaSnap::Preserve);
         }
         Ok(())
     }
@@ -578,9 +576,8 @@ fn op_gradient(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), S
     )?;
     // Parity with the standalone doc_gradient: re-snap on-palette by default
     // when a palette is locked (the batch path used to skip it).
-    if gb(op, "snap", true) && !d.meta().palette.is_empty() {
-        let pal = d.meta().palette.clone();
-        d.snap_to_palette(&pal, Some(l), Some(f), AlphaSnap::Preserve);
+    if gb(op, "snap", true) {
+        d.snap_cel_to_own_palette(l, f, AlphaSnap::Preserve);
     }
     Ok(())
 }
