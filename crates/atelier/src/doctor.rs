@@ -157,11 +157,9 @@ fn check_store() -> Row {
 /// the answer. Thin OS glue (untested, like service.rs's launchd glue) — the
 /// verdict lives in the pure [`initialize_ok`].
 fn probe_initialize(addr: &str) -> bool {
-    let sa = addr
-        .to_socket_addrs()
-        .ok()
-        .and_then(|mut a| a.next())
-        .unwrap_or_else(|| ([127, 0, 0, 1], 8765).into());
+    let Some(sa) = addr.to_socket_addrs().ok().and_then(|mut a| a.next()) else {
+        return false;
+    };
     let mut stream = match TcpStream::connect_timeout(&sa, Duration::from_secs(2)) {
         Ok(s) => s,
         Err(_) => return false,
@@ -210,7 +208,10 @@ fn tcp_listening(addr: &str) -> bool {
 fn check_daemon() -> Row {
     let installed = service::daemon_installed();
     let running = service::daemon_running();
-    let addr = std::env::var("ATELIER_HTTP").unwrap_or_else(|_| DEFAULT_ADDR.into());
+    let addr = std::env::var("ATELIER_HTTP")
+        .ok()
+        .or_else(service::installed_bind)
+        .unwrap_or_else(|| DEFAULT_ADDR.into());
     if !installed && !tcp_listening(&addr) {
         return Row::note(
             "daemon",
@@ -341,11 +342,9 @@ fn clients() -> Vec<(&'static str, PathBuf, RegistrationFormat, String)> {
     let kimi_home = std::env::var_os("KIMI_CODE_HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|| home.join(".kimi-code"));
-    let http_fix = |path: &str| {
-        format!(
-            "add \"atelier\": {{\"url\": \"http://{DEFAULT_ADDR}/mcp\"}} to mcpServers in {path}"
-        )
-    };
+    let mcp_url = service::installed_mcp_url();
+    let http_fix =
+        |path: &str| format!("add \"atelier\": {{\"url\": \"{mcp_url}\"}} to mcpServers in {path}");
     vec![
         (
             "claude",
@@ -375,6 +374,7 @@ fn clients() -> Vec<(&'static str, PathBuf, RegistrationFormat, String)> {
 }
 
 fn check_clients() -> Vec<Row> {
+    let expected_http = service::daemon_installed().then(service::installed_mcp_url);
     clients()
         .into_iter()
         .map(|(name, config, format, fix)| {
@@ -386,6 +386,19 @@ fn check_clients() -> Vec<Row> {
                 RegistrationFormat::Toml => codex_registration(&body),
             };
             match found {
+                Registration::Http(url)
+                    if expected_http
+                        .as_deref()
+                        .is_some_and(|expected| url != expected) =>
+                {
+                    Row::fail(
+                        name,
+                        format!(
+                            "registered at {url}, but the installed daemon is {}; fix the entry, then run: {fix}",
+                            expected_http.as_deref().unwrap_or_default()
+                        ),
+                    )
+                }
                 Registration::Http(url) => Row::ok(name, format!("registered (http: {url})")),
                 Registration::Stdio(cmd) => Row::ok(name, format!("registered (stdio: {cmd})")),
                 Registration::Absent => {

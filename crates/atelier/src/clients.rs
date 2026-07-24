@@ -1,9 +1,8 @@
 //! Agent-client setup for the optional MCP transport.
 //!
 //! This is deliberately a CLI command instead of shell-script JSON/TOML
-//! surgery. The installer can ask the human two separate questions
-//! (registration, then broad tool approval), while this module owns
-//! idempotent, tested config merges and refuses malformed files.
+//! surgery. This module owns idempotent, tested config merges, refuses
+//! malformed files, and follows the endpoint persisted by `atelier install`.
 
 use std::path::{Path, PathBuf};
 
@@ -11,8 +10,7 @@ use serde_json::{Map, Value};
 use toml_edit::{value, ArrayOfTables, DocumentMut, Item, Table};
 
 use crate::{fsutil, service};
-
-pub(crate) const DEFAULT_MCP_URL: &str = "http://127.0.0.1:8765/mcp";
+use service::DEFAULT_MCP_URL;
 
 const USAGE: &str =
     "atelier clients install --for <claude|codex|kimi> --mode <http|stdio> [--allow-tools]";
@@ -72,6 +70,7 @@ struct Options {
     client: Client,
     mode: Mode,
     allow_tools: bool,
+    http_url: String,
 }
 
 #[derive(Clone, Debug)]
@@ -98,6 +97,7 @@ impl ConfigHomes {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum RegistrationChange {
     Added,
+    Updated,
     Preserved,
 }
 
@@ -109,13 +109,16 @@ fn implicit_table() -> Item {
 
 /// Entry point for `atelier clients`.
 pub(crate) fn run(args: &[String]) -> i32 {
-    let options = match parse_options(args) {
+    let mut options = match parse_options(args) {
         Ok(options) => options,
         Err(error) => {
             eprintln!("atelier clients: {error}\nusage: {USAGE}");
             return 2;
         }
     };
+    if options.mode == Mode::Http {
+        options.http_url = service::installed_mcp_url();
+    }
     let homes = match ConfigHomes::from_env() {
         Ok(homes) => homes,
         Err(error) => {
@@ -136,6 +139,11 @@ pub(crate) fn run(args: &[String]) -> i32 {
             match change {
                 RegistrationChange::Added => println!(
                     "{}: atelier MCP registered ({})",
+                    options.client.name(),
+                    options.mode.name()
+                ),
+                RegistrationChange::Updated => println!(
+                    "{}: atelier MCP registration updated ({})",
                     options.client.name(),
                     options.mode.name()
                 ),
@@ -214,6 +222,7 @@ fn parse_options(args: &[String]) -> Result<Options, String> {
         client: client.ok_or_else(|| "--for is required".to_string())?,
         mode: mode.ok_or_else(|| "--mode is required".to_string())?,
         allow_tools,
+        http_url: DEFAULT_MCP_URL.into(),
     })
 }
 
@@ -229,6 +238,7 @@ fn install_at(
                 Client::Claude,
                 options.mode,
                 binary,
+                &options.http_url,
             )?;
             if options.allow_tools {
                 configure_claude_approval(&homes.user.join(".claude/settings.json"))?;
@@ -240,6 +250,7 @@ fn install_at(
             options.mode,
             binary,
             options.allow_tools,
+            &options.http_url,
         ),
         Client::Kimi => {
             let registration = configure_json_registration(
@@ -247,6 +258,7 @@ fn install_at(
                 Client::Kimi,
                 options.mode,
                 binary,
+                &options.http_url,
             )?;
             if options.allow_tools {
                 configure_kimi_approval(&homes.kimi.join("config.toml"))?;
@@ -256,17 +268,17 @@ fn install_at(
     }
 }
 
-fn desired_json_registration(client: Client, mode: Mode, binary: &Path) -> Value {
+fn desired_json_registration(client: Client, mode: Mode, binary: &Path, http_url: &str) -> Value {
     match (client, mode) {
         (Client::Claude, Mode::Http) => {
-            serde_json::json!({"type": "http", "url": DEFAULT_MCP_URL})
+            serde_json::json!({"type": "http", "url": http_url})
         }
         (Client::Claude, Mode::Stdio) => serde_json::json!({
             "type": "stdio",
             "command": binary.to_string_lossy(),
             "args": []
         }),
-        (_, Mode::Http) => serde_json::json!({"url": DEFAULT_MCP_URL}),
+        (_, Mode::Http) => serde_json::json!({"url": http_url}),
         (_, Mode::Stdio) => serde_json::json!({
             "command": binary.to_string_lossy(),
             "args": []
@@ -283,17 +295,46 @@ fn valid_json_registration(value: &Value) -> bool {
     matches!((url, command), (Some(_), None) | (None, Some(_)))
 }
 
+fn is_loopback_mcp_url(url: &str) -> bool {
+    let Some(authority) = url
+        .strip_prefix("http://")
+        .and_then(|url| url.strip_suffix("/mcp"))
+    else {
+        return false;
+    };
+    ["127.0.0.1:", "localhost:", "[::1]:"]
+        .into_iter()
+        .find_map(|prefix| authority.strip_prefix(prefix))
+        .and_then(|port| port.parse::<u16>().ok())
+        .is_some_and(|port| port != 0)
+}
+
+fn json_http_can_retarget(value: &Value) -> bool {
+    let Some(entry) = value.as_object() else {
+        return false;
+    };
+    entry
+        .get("url")
+        .and_then(Value::as_str)
+        .is_some_and(is_loopback_mcp_url)
+        && entry.get("command").is_none()
+        && matches!(
+            entry.get("type").and_then(Value::as_str),
+            None | Some("http")
+        )
+}
+
 fn command_matches(existing: &str, binary: &Path) -> bool {
     existing == "atelier" || existing == binary.to_string_lossy()
 }
 
-fn json_registration_matches(value: &Value, mode: Mode, binary: &Path) -> bool {
+fn json_registration_matches(value: &Value, mode: Mode, binary: &Path, http_url: &str) -> bool {
     let Some(entry) = value.as_object() else {
         return false;
     };
     let registration_matches = match mode {
         Mode::Http => {
-            entry.get("url").and_then(Value::as_str) == Some(DEFAULT_MCP_URL)
+            entry.get("url").and_then(Value::as_str) == Some(http_url)
                 && entry.get("command").is_none()
         }
         Mode::Stdio => {
@@ -318,27 +359,39 @@ fn configure_json_registration(
     client: Client,
     mode: Mode,
     binary: &Path,
+    http_url: &str,
 ) -> Result<RegistrationChange, String> {
     let mut root = read_json_object(path)?;
     let servers = object_field(&mut root, "mcpServers", path)?;
-    if let Some(existing) = servers.get("atelier") {
+    if let Some(existing) = servers.get_mut("atelier") {
         if !valid_json_registration(existing) {
             return Err(format!(
                 "{} has a malformed mcpServers.atelier entry; expected exactly one of url or command",
                 path.display()
             ));
         }
-        if !json_registration_matches(existing, mode, binary) {
+        let change = if json_registration_matches(existing, mode, binary, http_url) {
+            RegistrationChange::Preserved
+        } else if mode == Mode::Http && json_http_can_retarget(existing) {
+            existing
+                .as_object_mut()
+                .expect("json_http_can_retarget requires an object")
+                .insert("url".into(), Value::String(http_url.into()));
+            RegistrationChange::Updated
+        } else {
             return Err(format!(
                 "{} already registers atelier with a different transport, endpoint, or command; refusing to replace it",
                 path.display()
             ));
+        };
+        if change == RegistrationChange::Updated {
+            write_json(path, &root)?;
         }
-        return Ok(RegistrationChange::Preserved);
+        return Ok(change);
     }
     servers.insert(
         "atelier".into(),
-        desired_json_registration(client, mode, binary),
+        desired_json_registration(client, mode, binary, http_url),
     );
     write_json(path, &root)?;
     Ok(RegistrationChange::Added)
@@ -425,6 +478,7 @@ fn configure_codex(
     mode: Mode,
     binary: &Path,
     allow_tools: bool,
+    http_url: &str,
 ) -> Result<RegistrationChange, String> {
     let mut document = read_toml(path)?;
     let servers = document
@@ -446,18 +500,25 @@ fn configure_codex(
                 path.display()
             ));
         }
-        if !toml_registration_matches(existing, mode, binary) {
+        if toml_registration_matches(existing, mode, binary, http_url) {
+            RegistrationChange::Preserved
+        } else if mode == Mode::Http && toml_http_can_retarget(existing) {
+            existing
+                .as_table_like_mut()
+                .expect("toml_http_can_retarget requires a table")
+                .insert("url", value(http_url));
+            RegistrationChange::Updated
+        } else {
             return Err(format!(
                 "{} already registers atelier with a different transport, endpoint, or command; refusing to replace it",
                 path.display()
             ));
         }
-        RegistrationChange::Preserved
     } else {
         let mut atelier = Table::new();
         match mode {
             Mode::Http => {
-                atelier.insert("url", value(DEFAULT_MCP_URL));
+                atelier.insert("url", value(http_url));
             }
             Mode::Stdio => {
                 atelier.insert("command", value(binary.to_string_lossy().as_ref()));
@@ -499,13 +560,24 @@ fn valid_toml_registration(item: &Item) -> bool {
     matches!((url, command), (Some(_), None) | (None, Some(_)))
 }
 
-fn toml_registration_matches(item: &Item, mode: Mode, binary: &Path) -> bool {
+fn toml_http_can_retarget(item: &Item) -> bool {
+    let Some(entry) = item.as_table_like() else {
+        return false;
+    };
+    entry
+        .get("url")
+        .and_then(Item::as_str)
+        .is_some_and(is_loopback_mcp_url)
+        && entry.get("command").is_none()
+}
+
+fn toml_registration_matches(item: &Item, mode: Mode, binary: &Path, http_url: &str) -> bool {
     let Some(entry) = item.as_table_like() else {
         return false;
     };
     match mode {
         Mode::Http => {
-            entry.get("url").and_then(Item::as_str) == Some(DEFAULT_MCP_URL)
+            entry.get("url").and_then(Item::as_str) == Some(http_url)
                 && entry.get("command").is_none()
         }
         Mode::Stdio => {
@@ -602,6 +674,7 @@ mod tests {
             client,
             mode,
             allow_tools,
+            http_url: DEFAULT_MCP_URL.into(),
         }
     }
 
@@ -628,6 +701,70 @@ mod tests {
             "http".into()
         ])
         .is_err());
+    }
+
+    #[test]
+    fn http_registration_uses_the_selected_daemon_endpoint() {
+        let temp = TempDir::new();
+        let homes = homes(&temp);
+        let mut opts = options(Client::Kimi, Mode::Http, false);
+        opts.http_url = "http://127.0.0.1:9123/mcp".into();
+
+        install_at(&homes, Path::new("/opt/atelier"), &opts).unwrap();
+        let registration: Value =
+            serde_json::from_str(&std::fs::read_to_string(homes.kimi.join("mcp.json")).unwrap())
+                .unwrap();
+        assert_eq!(
+            registration["mcpServers"]["atelier"]["url"],
+            "http://127.0.0.1:9123/mcp"
+        );
+    }
+
+    #[test]
+    fn local_http_registration_retargets_after_a_port_change() {
+        let temp = TempDir::new();
+        let homes = homes(&temp);
+        std::fs::create_dir_all(&homes.kimi).unwrap();
+        std::fs::write(
+            homes.kimi.join("mcp.json"),
+            r#"{"mcpServers":{"atelier":{"url":"http://127.0.0.1:8765/mcp","headers":{"x-local":"yes"}}}}"#,
+        )
+        .unwrap();
+        let mut opts = options(Client::Kimi, Mode::Http, false);
+        opts.http_url = "http://127.0.0.1:9123/mcp".into();
+
+        assert_eq!(
+            install_at(&homes, Path::new("/opt/atelier"), &opts).unwrap(),
+            RegistrationChange::Updated
+        );
+        let registration: Value =
+            serde_json::from_str(&std::fs::read_to_string(homes.kimi.join("mcp.json")).unwrap())
+                .unwrap();
+        assert_eq!(
+            registration["mcpServers"]["atelier"]["url"],
+            "http://127.0.0.1:9123/mcp"
+        );
+        assert_eq!(
+            registration["mcpServers"]["atelier"]["headers"]["x-local"],
+            "yes"
+        );
+    }
+
+    #[test]
+    fn remote_http_registration_is_not_retargeted() {
+        let temp = TempDir::new();
+        let homes = homes(&temp);
+        std::fs::create_dir_all(&homes.kimi).unwrap();
+        let existing = r#"{"mcpServers":{"atelier":{"url":"https://remote.example/mcp","headers":{"x":"y"}}}}"#;
+        std::fs::write(homes.kimi.join("mcp.json"), existing).unwrap();
+        let mut opts = options(Client::Kimi, Mode::Http, false);
+        opts.http_url = "http://127.0.0.1:9123/mcp".into();
+
+        assert!(install_at(&homes, Path::new("/opt/atelier"), &opts).is_err());
+        assert_eq!(
+            std::fs::read_to_string(homes.kimi.join("mcp.json")).unwrap(),
+            existing
+        );
     }
 
     #[test]
@@ -766,6 +903,24 @@ mod tests {
         assert_eq!(std::fs::read_to_string(&path).unwrap(), once);
         assert!(install_at(&homes, Path::new("/different/atelier"), &opts).is_err());
         assert_eq!(std::fs::read_to_string(path).unwrap(), once);
+    }
+
+    #[test]
+    fn codex_http_registration_retargets_without_losing_approval() {
+        let temp = TempDir::new();
+        let homes = homes(&temp);
+        let path = homes.codex.join("config.toml");
+        let mut opts = options(Client::Codex, Mode::Http, true);
+        install_at(&homes, Path::new("/opt/atelier"), &opts).unwrap();
+
+        opts.http_url = "http://127.0.0.1:9123/mcp".into();
+        assert_eq!(
+            install_at(&homes, Path::new("/opt/atelier"), &opts).unwrap(),
+            RegistrationChange::Updated
+        );
+        let body = std::fs::read_to_string(path).unwrap();
+        assert!(body.contains("url = \"http://127.0.0.1:9123/mcp\""));
+        assert!(body.contains("default_tools_approval_mode = \"approve\""));
     }
 
     #[test]

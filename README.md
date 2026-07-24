@@ -73,7 +73,17 @@ command sets up a shared background daemon (launchd / systemd):
 
 ```sh
 atelier install
+# MCP HTTP port [8765]:
 ```
+
+The prompt appears on both first install and reinstall; reinstall defaults to
+the currently configured port. For scripts, use `atelier install --port 9123`.
+Advanced/LAN setups can still choose the whole address with
+`atelier install --bind 0.0.0.0:9123`. New HTTP client registrations use the
+installed daemon endpoint automatically (a wildcard bind is advertised to
+local clients as loopback). After changing a port, rerun the relevant
+`atelier clients install --for … --mode http` command: loopback registrations
+are safely retargeted, while remote/custom endpoints are never replaced.
 
 The download installer changes only the Atelier binary. Register a client
 explicitly after choosing an MCP mode:
@@ -106,10 +116,12 @@ Prefer a container? One small image — a static musl binary on Alpine (~15 MB),
 multi-arch (amd64 + arm64) — serving the same HTTP MCP endpoint:
 
 ```sh
-docker run -d -p 127.0.0.1:8765:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier
+docker run -d -p 127.0.0.1:9123:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier
 ```
 
 Documents persist in the `atelier-data` volume, so they survive restarts.
+Here `9123` is the configurable host port; the Alpine container keeps its
+internal endpoint on `8765`.
 There's a [`docker-compose.yml`](docker-compose.yml) if you'd rather keep it
 declarative.
 
@@ -120,8 +132,9 @@ declarative.
 - **stdio or daemon?** The daemon is one shared server and store, and it
   survives reboots; stdio means each client spawns its own `atelier`, and each
   gets its own store. (The CLI needs neither — it talks to the store directly.)
-- **Port 8765 already in use** — `atelier status` shows whether it's our daemon
-  (`atelier uninstall` stops it) or something else holding the port.
+- **The selected port is already in use** — rerun `atelier install` and choose
+  another port (`--port PORT` in scripts). `atelier status` prints the installed
+  endpoint; `atelier uninstall` stops the daemon.
 - **Where are the logs?** The daemon writes `~/.atelier/logs/atelier.{out,err}.log`;
   verbosity via `ATELIER_LOG` (`RUST_LOG` syntax). In stdio mode the same log
   goes to the spawning client's stderr.
@@ -165,8 +178,9 @@ And the MCP add-on:
 ```sh
 atelier                    # stdio MCP server (your client spawns it)
 atelier --http             # HTTP server at 127.0.0.1:8765/mcp
-atelier install            # background daemon (launchd / systemd)
-atelier status             # daemon state and log locations
+atelier install            # background daemon; asks for port (default 8765)
+atelier install --port 9123 # non-interactive install/reinstall
+atelier status             # daemon state, endpoint, and log locations
 atelier uninstall          # stop and remove the daemon
 ```
 
