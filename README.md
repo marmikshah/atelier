@@ -168,6 +168,7 @@ atelier call <tool> --file ops.json   # args from a file (or --stdin)
 atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier init                   # create a project store and build manifest
 atelier build [--only NAME]    # build the manifest's named exports
+atelier recipe compact|expand|stats  # convert or measure recipes
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
 atelier doctor                 # check the whole setup, print what to fix
@@ -299,18 +300,37 @@ atelier library                 # every document, with its step count
 atelier replay my-sprite        # rebuild it from its own journal
 ```
 
-Nothing to turn on. The journal is JSON Lines beside the art
-(`~/.atelier/documents/<id>/recipe.jsonl`), one tool call per line — only the
-calls that *made* something, never the looks and audits. Replay it into a
-sandbox with `--home /tmp/demo` and you get the same pixels, anywhere:
+Nothing to turn on. The journal is compact, versioned JSON Lines beside the art
+(`~/.atelier/documents/<id>/recipe.jsonl`): one header, then one completed tool
+call per line — only the calls that *made* something, never the looks and
+audits. Old authored JSON and `{tool,args}` JSONL remain readable. Replay any
+form into a sandbox and you get the same pixels, anywhere:
 
 ```sh
 atelier replay docs/examples/invader-march.json --home /tmp/demo
 ```
 
+Compact a recipe for source control, expand it for a detailed review, or see
+where its bytes go:
+
+```sh
+atelier recipe compact recipe.json -o recipe.jsonl
+atelier recipe expand recipe.jsonl -o recipe.json
+atelier recipe stats recipe.jsonl
+```
+
+Context defaults remove repeated document/layer/frame fields; common batch
+draw operations use readable positional tuples; unknown shapes remain ordinary
+JSON objects. Compact/expand is lossless and deterministic. On the 51-step,
+320-operation Kamehameha example, compact v2 is 19,471 bytes instead of 44,736
+(56.5% smaller); the equivalent already-minified legacy JSONL is still 50.9%
+smaller. The full on-disk contract is in
+[Recipe formats](docs/RECIPES.md).
+
 The recipes in [docs/examples](docs/examples) are both the brand art and the
 integration tests. `--record session.jsonl` captures a whole sitting across
-several documents. MCP clients can also read any live document directly:
+several documents directly in compact v2. MCP clients can also read any live
+document directly:
 `atelier://doc/<id>` (structure JSON) and `atelier://doc/<id>/render` (frame 0
 as PNG).
 
