@@ -839,7 +839,7 @@ mod tests {
     #[test]
     fn the_tool_surface_is_the_size_the_docs_claim() {
         let n = Atelier::tool_router().list_all().len();
-        // Written into README / tools.html (regen: make docs) / architecture.html.
+        // Written into README and tools.html (regen: make docs).
         // Change the surface, update them in the same commit — this is the reminder.
         assert_eq!(n, 30, "tool count changed — update the docs");
         assert_eq!(
