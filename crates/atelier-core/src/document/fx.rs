@@ -510,7 +510,7 @@ impl Document {
                 return Err(format!(
                     "unknown light_dir '{}' — use top-left/top/top-right/left/right/bottom-left/bottom/bottom-right",
                     other
-                ))
+                ));
             }
         };
         let (do_hi, do_sh) = match mode {
@@ -521,7 +521,7 @@ impl Document {
                 return Err(format!(
                     "unknown mode '{}' — use both/highlight/shadow",
                     other
-                ))
+                ));
             }
         };
         let steps = steps.max(1);
@@ -599,7 +599,7 @@ impl Document {
                 return Err(format!(
                     "unknown light_dir '{}' — use top-left/top/top-right/left/right/bottom-left/bottom/bottom-right",
                     other
-                ))
+                ));
             }
         };
         if !matches!(form, "sphere" | "cylinder-h" | "cylinder-v" | "auto") {

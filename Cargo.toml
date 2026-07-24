@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 members = [
     "crates/atelier-core",
     "crates/atelier-studio",
@@ -10,7 +10,7 @@ members = [
 [workspace.package]
 version = "1.8.0"
 description = "The pixel-art studio agents can see — layered, animated, game-ready art from the CLI or over MCP."
-edition = "2021"
+edition = "2024"
 rust-version = "1.88"
 license = "MIT"
 repository = "https://github.com/marmikshah/atelier"
@@ -23,23 +23,23 @@ categories = ["command-line-utilities", "multimedia::images", "game-development"
 
 # Single source of truth for dependency versions across the workspace.
 [workspace.dependencies]
-image = { version = "0.25", default-features = false, features = ["png", "gif"] }
-png = "0.18" # direct: APNG animation encoder (already in the tree via image)
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-toml_edit = "0.22"
-dirs = "5"
+image = { version = "0.25.10", default-features = false, features = ["png", "gif"] }
+png = "0.18.1" # direct: APNG animation encoder (already in the tree via image)
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+toml_edit = "0.25.13"
+dirs = "6.0.0"
 
 # Structured logging: the library crates emit `tracing` events; only the
 # binary installs a subscriber (stderr, `ATELIER_LOG` filter).
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
 # MCP server stack (stdio + streamable-HTTP transports).
-rmcp = { version = "1.7", features = ["server", "macros", "transport-io", "transport-streamable-http-server", "schemars"] }
-schemars = "1"
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "net", "process", "signal", "sync"] }
-axum = "0.8"
+rmcp = { version = "2.2.0", features = ["server", "macros", "transport-io", "transport-streamable-http-server", "schemars"] }
+schemars = "1.2.1"
+tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "net", "process", "signal", "sync"] }
+axum = "0.8.9"
 
 # Internal crates — path for local builds, version for crates.io publish.
 atelier-core = { version = "1.8.0", path = "crates/atelier-core" }

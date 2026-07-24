@@ -4,7 +4,7 @@
 //! so anything embedding atelier can read/write recipes without the binary.
 
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 /// A replay recipe: a named, described sequence of tool calls.
 #[derive(Debug, Deserialize)]

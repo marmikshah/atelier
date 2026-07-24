@@ -160,11 +160,11 @@ fn skills_cmd(args: &[String]) -> i32 {
             for dir in &dirs {
                 for sk in skills::ALL {
                     let out = dir.join(sk.name).join("SKILL.md");
-                    if let Some(p) = out.parent() {
-                        if let Err(e) = std::fs::create_dir_all(p) {
-                            eprintln!("atelier: {}: {e}", p.display());
-                            return 1;
-                        }
+                    if let Some(p) = out.parent()
+                        && let Err(e) = std::fs::create_dir_all(p)
+                    {
+                        eprintln!("atelier: {}: {e}", p.display());
+                        return 1;
                     }
                     if let Err(e) = fsutil::write_text(&out, &sk.skill_md()) {
                         eprintln!("atelier: {}: {e}", out.display());
@@ -353,7 +353,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{skill_target_root_with_kimi_home, HELP};
+    use super::{HELP, skill_target_root_with_kimi_home};
     use std::ffi::OsStr;
     use std::path::{Path, PathBuf};
 

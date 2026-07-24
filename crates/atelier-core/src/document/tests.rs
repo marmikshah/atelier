@@ -1,4 +1,4 @@
-use super::batch::{batch_op_keys, OpSide, OPS};
+use super::batch::{OPS, OpSide, batch_op_keys};
 use super::*;
 use image::Rgba;
 
@@ -816,7 +816,7 @@ fn text_returns_layout_width() {
     assert_eq!(d.text(0, 0, 0, 0, "", [0; 4], 1).unwrap(), 0);
     assert_eq!(d.text(0, 0, 0, 0, "I", [255; 4], 1).unwrap(), 3);
     assert_eq!(d.text(0, 0, 0, 0, "II", [255; 4], 1).unwrap(), 7); // 3 + 1 + 3
-                                                                   // size 2 scales the whole width.
+    // size 2 scales the whole width.
     assert_eq!(d.text(0, 0, 0, 0, "II", [255; 4], 2).unwrap(), 14);
 }
 
@@ -964,7 +964,7 @@ fn move_region_does_not_punch_a_hole_in_dest_art() {
     let mut d = Document::new("t", 8, 8);
     d.pencil(0, 0, &[(0, 0)], [9, 9, 9, 255], 1).unwrap(); // only opaque pixel of the 2x2 source
     d.pencil(0, 0, &[(6, 2)], [7, 7, 7, 255], 1).unwrap(); // dest art, under the block's transparent corner
-                                                           // Move the 2x2 rect (0,0)-(1,1) by (+5,+1): source(0,0)->(5,1), source(1,1)->(6,2).
+    // Move the 2x2 rect (0,0)-(1,1) by (+5,+1): source(0,0)->(5,1), source(1,1)->(6,2).
     d.move_region(0, 0, 0, 0, 1, 1, 5, 1).unwrap();
     assert_eq!(d.get_pixel(0, 0, 5, 1).unwrap(), [9, 9, 9, 255]); // opaque pixel landed
     assert_eq!(d.get_pixel(0, 0, 6, 2).unwrap(), [7, 7, 7, 255]); // dest art survived the transparent corner

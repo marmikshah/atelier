@@ -58,7 +58,7 @@ impl Document {
                     return Err(format!(
                         "unknown value mode '{}' — use grayscale|bands|saturation|hue",
                         other
-                    ))
+                    ));
                 }
             };
             out.put_pixel(x, y, Rgba([g, g, g, c[3]]));

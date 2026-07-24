@@ -5,10 +5,10 @@
 
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, ChildStdin, Command, Stdio};
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::{Receiver, channel};
 use std::time::Duration;
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 /// A spawned `atelier` stdio server with a reader thread pumping protocol
 /// lines into a channel (a recv_timeout then bounds any server hang).

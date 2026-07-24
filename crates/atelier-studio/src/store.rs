@@ -5,11 +5,11 @@
 use std::fs;
 use std::path::PathBuf;
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use atelier_core::document::Document;
 
-use super::{slugify, Studio, JOURNAL_FILE, MAX_CANVAS};
+use super::{JOURNAL_FILE, MAX_CANVAS, Studio, slugify};
 
 /// Why a store root was picked: an explicit override, a project-local
 /// `./.atelier`, or the global home store. doctor surfaces it so "which
@@ -233,15 +233,15 @@ impl Studio {
     pub fn list_docs_filtered(&self, prefix: Option<&str>, contains: Option<&str>) -> Value {
         let mut items = Vec::new();
         for id in self.doc_ids() {
-            if let Some(p) = prefix {
-                if !id.starts_with(p) {
-                    continue;
-                }
+            if let Some(p) = prefix
+                && !id.starts_with(p)
+            {
+                continue;
             }
-            if let Some(c) = contains {
-                if !id.contains(c) {
-                    continue;
-                }
+            if let Some(c) = contains
+                && !id.contains(c)
+            {
+                continue;
             }
             // Read doc.json directly (don't load cel images just to list).
             let meta = fs::read_to_string(self.doc_dir(&id).join("doc.json"))

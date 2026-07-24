@@ -22,7 +22,7 @@ fn valid_checkpoint_id(cpid: &str) -> bool {
     cpid.strip_prefix("cp")
         .is_some_and(|n| !n.is_empty() && n.chars().all(|c| c.is_ascii_digit()))
 }
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use super::Studio;
 use atelier_core::document::Document;
@@ -100,13 +100,13 @@ impl Studio {
         // gets the same treatment. Ids are always minted as `cp{n}` (below), so
         // anything else — traversal, absolute paths, a stray name — is a
         // caller error, not a lookup miss.
-        if let Some(cpid) = checkpoint_id {
-            if !valid_checkpoint_id(cpid) {
-                return Err(format!(
-                    "invalid checkpoint id '{}' — expected the cp<n> form doc_checkpoint save returns",
-                    cpid
-                ));
-            }
+        if let Some(cpid) = checkpoint_id
+            && !valid_checkpoint_id(cpid)
+        {
+            return Err(format!(
+                "invalid checkpoint id '{}' — expected the cp<n> form doc_checkpoint save returns",
+                cpid
+            ));
         }
         let dir = self.doc_dir(id);
         let cps = dir.join(".checkpoints");
@@ -244,9 +244,9 @@ impl Studio {
             "merge_down" => doc.merge_down(index)?,
             other => {
                 return Err(format!(
-                "unknown layer action '{}' — use move|insert|delete|rename|duplicate|merge_down",
-                other
-            ))
+                    "unknown layer action '{}' — use move|insert|delete|rename|duplicate|merge_down",
+                    other
+                ));
             }
         }
         doc.save(&dir)?;
@@ -361,7 +361,7 @@ impl Studio {
             other => {
                 return Err(format!(
                     "unknown scheme '{other}' — use mono|complementary|triadic|analogous|split|tetradic"
-                ))
+                ));
             }
         };
         let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
@@ -765,11 +765,7 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
             return None;
         }
         let p = img.get_pixel(x as u32, y as u32).0;
-        if p[3] == 0 {
-            None
-        } else {
-            Some(p)
-        }
+        if p[3] == 0 { None } else { Some(p) }
     };
     // -- value stats + masses --
     let (mut min, mut max, mut sum, mut n) = (255u8, 0u8, 0f64, 0u64);
@@ -890,10 +886,10 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
         let mut off = 0u64;
         for y in 0..h {
             for x in 0..w {
-                if let Some(p) = op(x, y) {
-                    if !inset.contains(&p) {
-                        off += 1;
-                    }
+                if let Some(p) = op(x, y)
+                    && !inset.contains(&p)
+                {
+                    off += 1;
                 }
             }
         }
@@ -1393,9 +1389,10 @@ mod tests {
             .doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, 0], [1, 1, 4]])
             .unwrap_err();
         assert!(e.contains("out of range"), "{e}");
-        assert!(s
-            .doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, -1]])
-            .is_err());
+        assert!(
+            s.doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, -1]])
+                .is_err()
+        );
         let e = s
             .doc_place_tiles("nope", 0, 0, "ts", 4, 4, &[])
             .unwrap_err();

@@ -16,7 +16,7 @@
 
 use std::path::{Path, PathBuf};
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use atelier_core::document::Document;
 
@@ -115,11 +115,7 @@ pub fn slugify(name: &str) -> String {
         }
     }
     let s = out.trim_matches('-').to_string();
-    if s.is_empty() {
-        "untitled".into()
-    } else {
-        s
-    }
+    if s.is_empty() { "untitled".into() } else { s }
 }
 
 /// A by-colour selection request: which cel to read, an explicit target colour
@@ -187,13 +183,13 @@ impl Studio {
         opacity: Option<u8>,
         blend: Option<String>,
     ) -> Result<Value, String> {
-        if let Some(b) = &blend {
-            if !atelier_core::raster::valid_blend(b) {
-                return Err(format!(
-                    "unknown blend '{b}' — valid: {}",
-                    atelier_core::raster::BLEND_NAMES
-                ));
-            }
+        if let Some(b) = &blend
+            && !atelier_core::raster::valid_blend(b)
+        {
+            return Err(format!(
+                "unknown blend '{b}' — valid: {}",
+                atelier_core::raster::BLEND_NAMES
+            ));
         }
         let (dir, mut doc) = self.open(id)?;
         doc.set_layer(layer, visible, opacity, blend)?;
@@ -256,14 +252,14 @@ impl Studio {
     ) -> Result<Value, String> {
         let count = count.clamp(1, 256);
         let (dir, mut doc) = self.open(id)?;
-        if let Some(src) = copy_from {
-            if src >= doc.meta().frames.len() {
-                return Err(format!(
-                    "copy_from {src} out of range — document has {} frame(s) (0..={})",
-                    doc.meta().frames.len(),
-                    doc.meta().frames.len().saturating_sub(1)
-                ));
-            }
+        if let Some(src) = copy_from
+            && src >= doc.meta().frames.len()
+        {
+            return Err(format!(
+                "copy_from {src} out of range — document has {} frame(s) (0..={})",
+                doc.meta().frames.len(),
+                doc.meta().frames.len().saturating_sub(1)
+            ));
         }
         // Appending N identical frames used to cost N round-trips; `count`
         // makes "give me my 10 frames" one call.
@@ -463,8 +459,9 @@ impl Studio {
             "change_bbox": bbox.map(|b| json!(b)).unwrap_or(Value::Null),
         });
         if changed == 0 {
-            out["warning"] =
-                json!("no pixels changed — coordinates may be off-canvas, the edit may match what's already there (a no-op, not a failure), or the selection may exclude the area");
+            out["warning"] = json!(
+                "no pixels changed — coordinates may be off-canvas, the edit may match what's already there (a no-op, not a failure), or the selection may exclude the area"
+            );
         }
         out
     }
@@ -624,7 +621,7 @@ impl Studio {
                             return Err(format!(
                                 "legend '{}': colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
                                 k, v
-                            ))
+                            ));
                         }
                     }
                 }
@@ -632,7 +629,7 @@ impl Studio {
                     return Err(format!(
                         "legend '{}': value must be [r,g,b(,a)] or a palette index",
                         k
-                    ))
+                    ));
                 }
             };
             map.insert(ch, color);
@@ -867,10 +864,11 @@ mod tests {
             vec!["x".into()],
         )
         .unwrap();
-        assert!(s
-            .doc_indexed_raster("d", 0, 0)
-            .unwrap_err()
-            .contains("not in the palette"));
+        assert!(
+            s.doc_indexed_raster("d", 0, 0)
+                .unwrap_err()
+                .contains("not in the palette")
+        );
     }
 }
 
