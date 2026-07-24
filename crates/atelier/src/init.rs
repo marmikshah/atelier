@@ -7,13 +7,24 @@
 
 use std::path::{Path, PathBuf};
 
-/// Create `<dir>/.atelier/documents`, returning the store root and whether it
-/// already existed.
-fn init_in(dir: &Path) -> std::io::Result<(PathBuf, bool)> {
+struct InitResult {
+    root: PathBuf,
+    store_existed: bool,
+    manifest_created: bool,
+}
+
+/// Create `<dir>/.atelier/documents` and its starter project manifest without
+/// replacing either one when this is an existing project store.
+fn init_in(dir: &Path) -> std::io::Result<InitResult> {
     let root = dir.join(".atelier");
-    let existed = root.is_dir();
+    let store_existed = root.is_dir();
     std::fs::create_dir_all(root.join("documents"))?;
-    Ok((root, existed))
+    let manifest_created = crate::project::ensure_manifest(&root)?;
+    Ok(InitResult {
+        root,
+        store_existed,
+        manifest_created,
+    })
 }
 
 /// Entry point for `atelier init`. Returns a process exit code.
@@ -30,11 +41,22 @@ pub(crate) fn run(args: &[String]) -> i32 {
         }
     };
     match init_in(&cwd) {
-        Ok((root, existed)) => {
-            if existed {
-                println!("already a project store: {}", root.display());
+        Ok(result) => {
+            if result.store_existed {
+                println!("already a project store: {}", result.root.display());
             } else {
-                println!("project store created: {}", root.display());
+                println!("project store created: {}", result.root.display());
+            }
+            if result.manifest_created {
+                println!(
+                    "project manifest created: {}",
+                    result.root.join("project.toml").display()
+                );
+            } else {
+                println!(
+                    "project manifest preserved: {}",
+                    result.root.join("project.toml").display()
+                );
             }
             println!("atelier calls from here now keep their art and recipes in ./.atelier");
             if std::env::var_os("ATELIER_HOME").is_some() {
@@ -58,11 +80,25 @@ mod tests {
     fn init_creates_documents_idempotently() {
         let dir = std::env::temp_dir().join(format!("atelier-init-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
-        let (root, existed) = super::init_in(&dir).unwrap();
-        assert!(!existed, "a fresh directory is not a store yet");
-        assert!(root.join("documents").is_dir());
-        let (_, existed) = super::init_in(&dir).unwrap();
-        assert!(existed, "a second init sees the store");
+        let result = super::init_in(&dir).unwrap();
+        assert!(
+            !result.store_existed,
+            "a fresh directory is not a store yet"
+        );
+        assert!(result.root.join("documents").is_dir());
+        assert!(result.root.join("project.toml").is_file());
+        assert!(result.manifest_created);
+        let manifest = std::fs::read_to_string(result.root.join("project.toml")).unwrap();
+        assert!(manifest.contains("version = 1"));
+
+        let result = super::init_in(&dir).unwrap();
+        assert!(result.store_existed, "a second init sees the store");
+        assert!(!result.manifest_created);
+        assert_eq!(
+            std::fs::read_to_string(result.root.join("project.toml")).unwrap(),
+            manifest,
+            "reinitializing must not replace a project manifest"
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 

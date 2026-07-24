@@ -6,6 +6,18 @@ releases.
 
 ## [1.8.0] — Unreleased
 
+### Added
+
+- **Reproducible project builds.** `atelier init` now creates a versioned
+  `.atelier/project.toml`, and `atelier build` runs its named sheet, animation,
+  tileset, library, and atlas exports through the existing `doc_export`
+  dispatcher. `--only NAME` selects one artifact and `--dry-run` prints the
+  exact calls without writing. Existing manifests are never replaced.
+- Manifest output paths are project-relative and checked against absolute,
+  parent, and symlink escapes. Strict version, field, operation, range,
+  duplicate-name, and duplicate-output validation turns configuration typos
+  into actionable errors before any export runs.
+
 ### Removed
 
 - **`atelier agent`.** The built-in OpenAI-compatible agent loop, its Cargo

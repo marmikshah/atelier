@@ -9,8 +9,8 @@ are no cycles.
 ```
             ┌─────────────────────────────────────────────┐
   binary →  │  atelier            main · call · service ·  │  arg parsing, the CLI
-            │                     replay · library ·       │  front door, daemon,
-            │                     skills                   │  replay, skills
+            │                     replay · project ·       │  front door, daemon,
+            │                     library · skills         │  builds, replay, skills
             │                     (the `atelier` binary)   │
             └───────────────────────┬─────────────────────┘
                                     │ depends on
@@ -49,7 +49,7 @@ flowchart TB
     end
 
     subgraph bin["atelier — the binary"]
-        main["arg parsing · tracing init (stderr, ATELIER_LOG)<br/>the CLI front door (call) · daemon install (launchd / systemd)<br/>replay runner · library · skills registry"]
+        main["arg parsing · tracing init (stderr, ATELIER_LOG)<br/>the CLI front door (call) · daemon install (launchd / systemd)<br/>project build · replay runner · library · skills registry"]
     end
 
     subgraph mcp["atelier-mcp — the shell"]
@@ -70,6 +70,7 @@ flowchart TB
     end
 
     subgraph disk["./.atelier or ~/.atelier — the state"]
+        manifest["project.toml<br/>versioned named exports"]
         store["&lt;doc-id&gt;/ document data"]
         recipe["&lt;doc-id&gt;/recipe.jsonl<br/>every doc is a replayable recipe"]
     end
@@ -78,6 +79,7 @@ flowchart TB
     cc -- stdio --> dispatch
     kimi -- "HTTP /mcp · no sessions<br/>caller = peer addr or header" --> dispatch
     main --> dispatch
+    manifest -- "atelier build → doc_export" --> main
     dispatch --> log
     dispatch --> order
     dispatch --> router
@@ -97,7 +99,7 @@ Properties the shape guarantees:
   logic.
 - **One choke point** — logging, journaling, write ordering, and recording all
   hang off `Atelier::dispatch`, the one path CLI, MCP stdio/HTTP, and replay
-  every caller shares; no caller can dodge them.
+  every caller shares; project builds route their exports through it too.
 - **Disk is the state** — no server-side session, so the HTTP transport is
   stateless: a daemon restart is invisible mid-conversation.
 - **Recipe = provenance** — art is an ordered list of tool calls; any document
@@ -200,6 +202,10 @@ Thin wiring; produces the `atelier` executable.
 - **`replay.rs`** — the `atelier replay` runner: an in-process dispatch loop, one
   `dispatch` per recipe step, strictly sequenced, with recorded→minted id
   remapping.
+- **`project.rs`** — strict parsing for the versioned
+  `.atelier/project.toml` format and the `atelier build` runner. Named exports
+  become `doc_export` calls; paths are confined to the project root before the
+  first call executes.
 
 Dependencies: `atelier-mcp`, `atelier-studio`, `rmcp`, `tokio`, `serde_json`,
 `toml_edit`, `tracing-subscriber`.
@@ -210,7 +216,7 @@ A single drawing tool call travels straight down the tower and back, whatever
 front door it came in:
 
 ```
-external agent → atelier call | MCP tools/call | replay
+external agent → atelier call | MCP tools/call | replay | project build
                → Atelier::dispatch (log · write-order lock · journal)
                → the tool's handler → Studio::doc_<op>(args)   (atelier-studio)
                → Document / raster mutation                    (atelier-core)

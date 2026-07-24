@@ -34,7 +34,8 @@
 //! atelier library [rm ...]       # inspect or prune the document store
 //! atelier replay <recipe|id>     # rebuild a document from its journal
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
-//! atelier init                   # stamp ./.atelier — a project store here
+//! atelier init                   # stamp ./.atelier and its project manifest
+//! atelier build                  # build the manifest's named exports
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! ```
 
@@ -46,6 +47,7 @@ mod doctor;
 mod fsutil;
 mod init;
 mod library;
+mod project;
 mod replay;
 mod service;
 mod skills;
@@ -71,8 +73,11 @@ USAGE:
                                   run one tool call in-process — the whole op
                                   surface, scriptable from a shell. stdout gets the
                                   JSON report; exit 0 ok, 1 tool error, 2 bad call
-    atelier init                  stamp ./.atelier so this directory keeps its own
-                                  project store (art + recipes live next to it)
+    atelier init                  stamp ./.atelier and its project.toml so this
+                                  directory keeps its own art, recipes, and builds
+    atelier build                 build every named export in .atelier/project.toml
+            [--only NAME] [--dry-run]
+                                  select one export, or print calls without writing
     atelier tools [--html|--schema <name>]
                                   list the tools (plain text; --html emits the
                                   reference page; --schema dumps one input schema)
@@ -259,6 +264,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("call") => std::process::exit(call::run(&args[2..]).await),
         // Stamp ./.atelier, opting this directory into a project store.
         Some("init") => std::process::exit(init::run(&args[2..])),
+        // Build the portable, named exports declared by the project.
+        Some("build") => std::process::exit(project::run(&args[2..]).await),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
@@ -367,7 +374,12 @@ mod tests {
             HELP.contains("atelier library"),
             "USAGE still lists its neighbours"
         );
-        for cmd in ["atelier call", "atelier init", "atelier clients install"] {
+        for cmd in [
+            "atelier call",
+            "atelier init",
+            "atelier build",
+            "atelier clients install",
+        ] {
             assert!(HELP.contains(cmd), "USAGE must list the {cmd} subcommand");
         }
     }
