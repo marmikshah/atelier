@@ -82,7 +82,9 @@ jobs:
         run: |
           docker run -d --name smoke -p 127.0.0.1:18765:8765 ghcr.io/${{ github.repository }}:smoke
           code=000
-          for i in $(seq 1 30); do
+          attempts=0
+          while [ "$attempts" -lt 30 ]; do
+            attempts=$((attempts + 1))
             code=$(curl -s -o /tmp/mcp.json -w '%{http_code}' -X POST http://127.0.0.1:18765/mcp \
               -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
               -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"smoke","version":"0"}}}' || echo 000)
