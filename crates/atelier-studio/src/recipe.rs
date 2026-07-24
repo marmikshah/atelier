@@ -280,6 +280,11 @@ fn encode_header(name: &str, description: &str, defaults: &Context) -> Result<St
     .map_err(|error| format!("cannot encode compact recipe header: {error}"))
 }
 
+/// Validate the complete v2 header contract before a journal appends to it.
+pub(crate) fn valid_compact_header(line: &str) -> bool {
+    serde_json::from_str::<CompactHeader>(line).is_ok_and(|header| header.v == COMPACT_VERSION)
+}
+
 /// True when the source is legacy JSON Lines rather than one authored recipe
 /// object or compact JSONL v2.
 fn looks_like_jsonl(src: &str) -> bool {
