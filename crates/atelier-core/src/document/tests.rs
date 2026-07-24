@@ -437,42 +437,6 @@ fn load_rejects_traversal_cel_paths() {
 }
 
 #[test]
-fn load_materializes_legacy_linked_cels() {
-    let dir = std::env::temp_dir().join("atelier-legacy-link-test");
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(dir.join("cels")).unwrap();
-    RgbaImage::from_pixel(2, 2, Rgba([9, 8, 7, 255]))
-        .save(dir.join("cels/L0_F0.png"))
-        .unwrap();
-    std::fs::write(
-        dir.join("doc.json"),
-        serde_json::to_string_pretty(&json!({
-            "name": "legacy",
-            "w": 2,
-            "h": 2,
-            "layers": [{"name": "Layer 1", "opacity": 255, "visible": true, "blend": "normal"}],
-            "frames": [{"duration_ms": 100}, {"duration_ms": 100}],
-            "cels": [
-                {"layer": 0, "frame": 0, "x": 0, "y": 0, "file": "cels/L0_F0.png"},
-                {"layer": 0, "frame": 1, "x": 0, "y": 0, "file": "cels/L0_F0.png", "link": [0, 0]}
-            ]
-        }))
-        .unwrap(),
-    )
-    .unwrap();
-
-    let mut document = Document::load(&dir).unwrap();
-    assert_eq!(document.get_pixel(0, 1, 0, 0).unwrap(), [9, 8, 7, 255]);
-    document.save(&dir).unwrap();
-    assert!(dir.join("cels/L0_F1.png").is_file());
-    let saved: Value =
-        serde_json::from_str(&std::fs::read_to_string(dir.join("doc.json")).unwrap()).unwrap();
-    assert_eq!(saved["cels"][1]["file"], "cels/L0_F1.png");
-    assert!(saved["cels"][1].get("link").is_none());
-    let _ = std::fs::remove_dir_all(&dir);
-}
-
-#[test]
 fn sheet_image_errors_on_dimension_overflow() {
     // Built directly, past the studio's 4096 cap; a wild scale overflows the
     // frame-width u32 and must error instead of wrapping to a garbage buffer.

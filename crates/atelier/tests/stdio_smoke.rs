@@ -8,7 +8,33 @@ use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc::{Receiver, channel};
 use std::time::Duration;
 
+use atelier_mcp::server::Atelier;
 use serde_json::{Value, json};
+
+fn advertised_tool_names(list: &Value) -> Vec<String> {
+    let mut names: Vec<String> = list["tools"]
+        .as_array()
+        .expect("tools/list returned an array")
+        .iter()
+        .map(|tool| {
+            tool["name"]
+                .as_str()
+                .expect("advertised tool has a name")
+                .to_string()
+        })
+        .collect();
+    names.sort();
+    names
+}
+
+fn registry_tool_names() -> Vec<String> {
+    let mut names: Vec<String> = Atelier::registry_tools()
+        .into_iter()
+        .map(|tool| tool.name.to_string())
+        .collect();
+    names.sort();
+    names
+}
 
 /// A spawned `atelier` stdio server with a reader thread pumping protocol
 /// lines into a channel (a recv_timeout then bounds any server hang).
@@ -107,9 +133,9 @@ fn stdio_server_handshakes_lists_and_calls() {
 
     let list = s.request("tools/list", json!({}));
     assert_eq!(
-        list["tools"].as_array().map(Vec::len),
-        Some(26),
-        "the whole surface is advertised"
+        advertised_tool_names(&list),
+        registry_tool_names(),
+        "stdio must advertise the canonical registry exactly"
     );
 
     let created = s.request(

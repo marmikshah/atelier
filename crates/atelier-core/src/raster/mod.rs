@@ -456,22 +456,22 @@ pub enum Blend {
     ColorBurn,
 }
 
-/// Parse a blend-mode name (with hyphen/underscore aliases); unknown → `Normal`.
+/// Parse a canonical blend-mode name; unknown → `Normal`.
 pub fn parse_blend(s: &str) -> Blend {
     match s {
         "multiply" => Blend::Multiply,
         "screen" => Blend::Screen,
-        "add" | "additive" | "linear-dodge" | "linear_dodge" => Blend::Add,
+        "add" => Blend::Add,
         "subtract" => Blend::Subtract,
         "darken" => Blend::Darken,
         "lighten" => Blend::Lighten,
         "difference" => Blend::Difference,
         "exclusion" => Blend::Exclusion,
         "overlay" => Blend::Overlay,
-        "hard-light" | "hard_light" | "hardlight" => Blend::HardLight,
-        "soft-light" | "soft_light" | "softlight" => Blend::SoftLight,
-        "color-dodge" | "color_dodge" | "dodge" => Blend::ColorDodge,
-        "color-burn" | "color_burn" | "burn" => Blend::ColorBurn,
+        "hard-light" => Blend::HardLight,
+        "soft-light" => Blend::SoftLight,
+        "color-dodge" => Blend::ColorDodge,
+        "color-burn" => Blend::ColorBurn,
         _ => Blend::Normal,
     }
 }
@@ -698,6 +698,28 @@ pub fn over(dst: [u8; 4], src: [u8; 4]) -> [u8; 4] {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn blend_modes_accept_only_the_documented_names() {
+        for name in BLEND_NAMES.split(" | ") {
+            assert!(valid_blend(name), "canonical blend rejected: {name}");
+        }
+        for alias in [
+            "additive",
+            "linear-dodge",
+            "linear_dodge",
+            "hard_light",
+            "hardlight",
+            "soft_light",
+            "softlight",
+            "color_dodge",
+            "dodge",
+            "color_burn",
+            "burn",
+        ] {
+            assert!(!valid_blend(alias), "undocumented alias accepted: {alias}");
+        }
+    }
 
     #[test]
     fn median_cut_weighted_pins_consume_the_budget() {

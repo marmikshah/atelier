@@ -17,8 +17,10 @@ releases.
   shared globally by the HTTP daemon. `doc_region` is now stateless and supports
   only `clear` and `move`, using `rect` and optional `offset`.
 - **Unproven document features have been removed:** linked cels, slice metadata,
-  `doc_slice`, `doc_tile`, and the duplicate `doc_clear_cel` endpoint. Clear a
-  cel with `doc_batch` `op=clear_cel`.
+  `doc_slice`, `doc_tile`, and the duplicate `doc_clear_cel` endpoint.
+  `doc_tile` made one document's replay depend on another mutable document;
+  slice metadata had no shipped consumer. Clear a cel with `doc_batch`
+  `op=clear_cel`.
 - **Peripheral integration ownership has been removed from the binary:**
   `atelier clients`, `atelier doctor`, and cross-document `--record` session
   recording. Atelier no longer rewrites third-party client configuration;
@@ -39,11 +41,17 @@ releases.
 ### Changed
 
 - **The advertised MCP surface is 26 tools, down from 30.** Removed tools are
-  also gone from dispatch, schemas, skills, docs, and examples.
+  also gone from dispatch, schemas, skills, docs, and examples; there are no
+  deprecated aliases.
+- The retained public tool names are contract-pinned, and end-to-end stdio and
+  HTTP tests require both transports to advertise that exact registry and
+  successfully dispatch a real tool call.
 - Independent CLI and daemon processes now hold an advisory store lock through
   document save and journal append, preserving mutation and provenance order.
-- Documents saved with 1.7 linked cels still open: links are materialized as
-  ordinary independent cels on the next save.
+- Compatibility-only input paths were removed: 1.7 linked-cel documents are no
+  longer materialized on load, blend modes accept only their documented
+  canonical spellings, and the installer no longer accepts the obsolete
+  `--build`, `--yes`, or `-y` flags.
 - **The Rust stack has been refreshed.** Development and release builds now use
   Rust 1.97.1 with Edition 2024 and Cargo resolver 3. Dependencies, CI actions,
   and the Alpine runtime are current while the tested Rust 1.88 minimum remains
