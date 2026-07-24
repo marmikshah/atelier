@@ -195,7 +195,8 @@ Thin wiring; produces the `atelier` executable.
 - **`call.rs`** — `atelier call`: one tool call, in-process through
   `Atelier::dispatch` — the CLI front door the whole surface hangs off.
 - **`service.rs`** — installs/uninstalls the background daemon (launchd on macOS,
-  `systemd --user` on Linux).
+  `systemd --user` on Linux), prompts for its HTTP port, and recovers the
+  installed endpoint from the service manifest for reinstalls and diagnostics.
 - **`replay.rs`** — the `atelier replay` runner: an in-process dispatch loop, one
   `dispatch` per recipe step, strictly sequenced, with recorded→minted id
   remapping.
