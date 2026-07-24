@@ -82,6 +82,7 @@ dependencies = [
  "atelier-core",
  "dirs",
  "image",
+ "serde",
  "serde_json",
 ]
 

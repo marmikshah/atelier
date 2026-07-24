@@ -433,7 +433,7 @@ impl Atelier {
             // The document's own journal: on by default, so every document is a
             // replayable recipe without anyone having to know to ask first.
             if journaled && let Some(id) = &target {
-                self.studio().journal_append(id, tool, &args);
+                self.studio().journal_append_compact(id, tool, &args);
             }
             // The session recorder (--record) stays opt-in and cross-document:
             // it captures a whole sitting, which per-document journals cannot
@@ -1087,9 +1087,10 @@ mod tests {
         let text = std::fs::read_to_string(&path).unwrap();
         assert_eq!(
             text.lines().count(),
-            1,
+            2,
             "old sitting must not survive: {text}"
         );
+        assert!(text.lines().next().unwrap().contains("\"v\":2"));
         assert!(text.contains("doc_draw"));
     }
 
@@ -1197,7 +1198,11 @@ mod tests {
         // Whatever the recorder leaves on disk must parse through replay's own
         // parser — the two halves share this format or neither works.
         let src = std::fs::read_to_string(&path).expect("recipe file written");
-        assert_eq!(src.lines().count(), 2, "one appended line per call");
+        assert_eq!(
+            src.lines().count(),
+            3,
+            "one header plus one appended line per call"
+        );
         let recipe = crate::recipe::Recipe::parse(&src).expect("recipe parses");
         assert_eq!(recipe.steps.len(), 2);
         assert_eq!(recipe.steps[0].tool, "doc_create");

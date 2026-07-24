@@ -36,6 +36,7 @@
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
 //! atelier init                   # stamp ./.atelier and its project manifest
 //! atelier build                  # build the manifest's named exports
+//! atelier recipe compact|expand  # convert recipes without replaying them
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! ```
 
@@ -48,6 +49,7 @@ mod fsutil;
 mod init;
 mod library;
 mod project;
+mod recipe_cmd;
 mod replay;
 mod service;
 mod skills;
@@ -78,6 +80,8 @@ USAGE:
     atelier build                 build every named export in .atelier/project.toml
             [--only NAME] [--dry-run]
                                   select one export, or print calls without writing
+    atelier recipe <compact|expand|stats> <INPUT|->
+                                  convert or measure recipes without replaying them
     atelier tools [--html|--schema <name>]
                                   list the tools (plain text; --html emits the
                                   reference page; --schema dumps one input schema)
@@ -266,6 +270,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("init") => std::process::exit(init::run(&args[2..])),
         // Build the portable, named exports declared by the project.
         Some("build") => std::process::exit(project::run(&args[2..]).await),
+        // Inspect or convert recipes without executing their tool calls.
+        Some("recipe") => std::process::exit(recipe_cmd::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
@@ -378,6 +384,7 @@ mod tests {
             "atelier call",
             "atelier init",
             "atelier build",
+            "atelier recipe",
             "atelier clients install",
         ] {
             assert!(HELP.contains(cmd), "USAGE must list the {cmd} subcommand");
