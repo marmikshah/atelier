@@ -89,7 +89,7 @@ if [ -n "$FROM_SOURCE" ]; then
   command -v cargo >/dev/null 2>&1 || fail "--source needs cargo (https://rustup.rs)"
   [ -f Cargo.toml ] || fail "--source must run from inside an atelier checkout"
   say "Building atelier from source (this can take a minute)..."
-  cargo build --release || fail "cargo build failed"
+  cargo build --release --locked -p atelier || fail "cargo build failed"
   mkdir -p "$INSTALL_DIR"
   install -m 755 target/release/atelier "$BIN"
   say "Installed: $BIN ($("$BIN" --version)) — built from source"
@@ -104,12 +104,12 @@ case "$OS" in
   Darwin)
     case "$ARCH" in
       arm64) TARGET="aarch64-apple-darwin" ;;
-      *) fail "Intel macOS binaries are not published — install with: cargo install --git https://github.com/$REPO" ;;
+      *) fail "Intel macOS binaries are not published — install with: cargo install --locked --git https://github.com/$REPO --package atelier" ;;
     esac ;;
   Linux)
     case "$ARCH" in
       x86_64) TARGET="x86_64-unknown-linux-gnu" ;;
-      *) fail "no prebuilt binary for Linux/$ARCH — install with: cargo install --git https://github.com/$REPO" ;;
+      *) fail "no prebuilt binary for Linux/$ARCH — install with: cargo install --locked --git https://github.com/$REPO --package atelier" ;;
     esac ;;
   MINGW*|MSYS*|CYGWIN*)
     fail "on Windows, download the .zip from https://github.com/$REPO/releases/latest" ;;
@@ -124,16 +124,59 @@ if [ -z "$VERSION" ]; then
   [ -n "$VERSION" ] || fail "could not resolve the latest release tag"
 fi
 
+printf '%s\n' "$VERSION" | grep -Eq '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' \
+  || fail "invalid release version '$VERSION' (expected vMAJOR.MINOR.PATCH)"
+
 URL="https://github.com/$REPO/releases/download/$VERSION/atelier-$VERSION-$TARGET.tar.gz"
+CHECKSUM_URL="$URL.sha256"
 
 # -- download, extract, install --------------------------------------------------
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
+ARCHIVE="$TMP/atelier.tar.gz"
+CHECKSUM="$TMP/atelier.tar.gz.sha256"
 
 say "Downloading atelier $VERSION ($TARGET)..."
-curl -fsSL "$URL" -o "$TMP/atelier.tar.gz" \
+curl -fsSL "$URL" -o "$ARCHIVE" \
   || fail "download failed: $URL"
-tar -xzf "$TMP/atelier.tar.gz" -C "$TMP"
+
+# v1.8.0 is the first release that publishes a sidecar SHA-256. Older tags
+# remain installable with an explicit warning; every current/future release
+# fails closed when its checksum is missing or does not match.
+RELEASE_NUMBERS="${VERSION#v}"
+RELEASE_MAJOR="${RELEASE_NUMBERS%%.*}"
+RELEASE_REST="${RELEASE_NUMBERS#*.}"
+RELEASE_MINOR="${RELEASE_REST%%.*}"
+CHECKSUM_REQUIRED=""
+if [ "$RELEASE_MAJOR" -gt 1 ] \
+  || { [ "$RELEASE_MAJOR" -eq 1 ] && [ "$RELEASE_MINOR" -ge 8 ]; }; then
+  CHECKSUM_REQUIRED=1
+fi
+
+if curl -fsSL "$CHECKSUM_URL" -o "$CHECKSUM"; then
+  EXPECTED="$(awk 'NR == 1 {print $1}' "$CHECKSUM")"
+  case "$EXPECTED" in
+    ""|*[!0-9A-Fa-f]*) fail "invalid checksum published at $CHECKSUM_URL" ;;
+  esac
+  [ "${#EXPECTED}" -eq 64 ] || fail "invalid checksum published at $CHECKSUM_URL"
+  if command -v sha256sum >/dev/null 2>&1; then
+    ACTUAL="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
+  elif command -v shasum >/dev/null 2>&1; then
+    ACTUAL="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
+  else
+    fail "sha256sum or shasum is required to verify $VERSION"
+  fi
+  EXPECTED="$(printf '%s' "$EXPECTED" | tr 'A-F' 'a-f')"
+  ACTUAL="$(printf '%s' "$ACTUAL" | tr 'A-F' 'a-f')"
+  [ "$ACTUAL" = "$EXPECTED" ] || fail "SHA-256 mismatch for $URL"
+  say "Verified SHA-256: $ACTUAL"
+elif [ -n "$CHECKSUM_REQUIRED" ]; then
+  fail "checksum download failed: $CHECKSUM_URL"
+else
+  say "Warning: $VERSION predates published checksums; archive was not verified."
+fi
+
+tar -xzf "$ARCHIVE" -C "$TMP"
 
 mkdir -p "$INSTALL_DIR"
 install -m 755 "$TMP/atelier" "$BIN"
@@ -217,7 +260,7 @@ for TARGET in claude codex kimi cursor; do
   case "$TARGET" in
     claude) SKILL_DIR="$HOME/.claude/skills" ;;
     codex)  SKILL_DIR="$HOME/.agents/skills" ;;
-    kimi)   SKILL_DIR="$HOME/.kimi-code/skills" ;;
+    kimi)   SKILL_DIR="${KIMI_CODE_HOME:-$HOME/.kimi-code}/skills" ;;
     cursor) SKILL_DIR="$HOME/.cursor/skills" ;;
   esac
   if [ -d "$SKILL_DIR/atelier-sprite" ]; then

@@ -1,22 +1,77 @@
 name: Release
 
+# A maintainer-created annotated tag is the release approval. The verify job
+# must pass before any platform build starts, and GitHub Release creation waits
+# for every archive + checksum so a failed matrix cannot publish half a release.
 on:
   push:
     tags: ["v*"]
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
-  build:
-    # action-gh-release creates the GitHub Release; the default GITHUB_TOKEN is
-    # read-only, so grant write access to repository contents (releases).
+  verify:
+    runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Require a manual annotated tag on master
+        shell: bash
+        run: |
+          tag_ref="refs/tags/${GITHUB_REF_NAME}"
+          if [[ "$(git cat-file -t "$tag_ref" 2>/dev/null || true)" != "tag" ]]; then
+            echo "::error::$GITHUB_REF_NAME must be an annotated or signed tag"
+            exit 1
+          fi
+          tag_commit="$(git rev-list -n 1 "$tag_ref")"
+          git fetch --no-tags origin master
+          if ! git merge-base --is-ancestor "$tag_commit" origin/master; then
+            echo "::error::$GITHUB_REF_NAME does not point to a commit on origin/master"
+            exit 1
+          fi
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Match tag, packages, lockfile, and changelog
+        run: tools/release-check.sh "$GITHUB_REF_NAME"
+      - name: Format, lint, and rustdoc gate
+        run: make pre-commit-checks
+      - name: Tests and recipe replays
+        run: make test
+      - name: Generated docs and release binary
+        run: make docs-check
+      - name: Match the binary version
+        shell: bash
+        run: |
+          expected="atelier ${GITHUB_REF_NAME#v}"
+          actual="$(target/release/atelier --version)"
+          [[ "$actual" == "$expected" ]] || {
+            echo "::error::binary reports '$actual', expected '$expected'"
+            exit 1
+          }
+
+  build:
+    needs: verify
+    permissions:
+      contents: read
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
           # One macOS build: Apple Silicon on the latest runner. Intel users
-          # build from source (cargo install --git https://github.com/marmikshah/atelier).
+          # build from source (`cargo install --locked --git
+          # https://github.com/marmikshah/atelier --package atelier`).
           - os: macos-latest
             target: aarch64-apple-darwin
           - os: windows-latest
@@ -27,15 +82,68 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Archive (unix)
+      # Name and lock the release package explicitly.
+      - run: cargo build --release --locked -p atelier --target ${{ matrix.target }}
+
+      - name: Archive and checksum (unix)
         if: runner.os != 'Windows'
-        run: tar -czf atelier-${{ github.ref_name }}-${{ matrix.target }}.tar.gz -C target/${{ matrix.target }}/release atelier
-      - name: Archive (windows)
-        if: runner.os == 'Windows'
-        run: Compress-Archive -Path target/${{ matrix.target }}/release/atelier.exe -DestinationPath atelier-${{ github.ref_name }}-${{ matrix.target }}.zip
+        shell: bash
+        run: |
+          archive="atelier-${GITHUB_REF_NAME}-${{ matrix.target }}.tar.gz"
+          tar -czf "$archive" -C "target/${{ matrix.target }}/release" atelier
+          shasum -a 256 "$archive" > "$archive.sha256"
 
+      - name: Archive and checksum (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $archive = "atelier-${env:GITHUB_REF_NAME}-${{ matrix.target }}.zip"
+          Compress-Archive `
+            -Path "target/${{ matrix.target }}/release/atelier.exe" `
+            -DestinationPath $archive
+          $hash = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
+          "$hash  $archive" | Set-Content -Encoding ascii "$archive.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: atelier-${{ github.ref_name }}-${{ matrix.target }}.*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish_release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: dist
+      - name: Verify the complete artifact set
+        shell: bash
+        run: |
+          [[ "$(find dist -maxdepth 1 -type f | wc -l)" -eq 6 ]] || {
+            echo "::error::expected three archives and three checksums"
+            find dist -maxdepth 1 -type f -print
+            exit 1
+          }
+          cd dist
+          sha256sum -c -- *.sha256
       - uses: softprops/action-gh-release@v2
         with:
-          files: atelier-${{ github.ref_name }}-${{ matrix.target }}.*
+          files: dist/*
+          fail_on_unmatched_files: true
+
+  docker:
+    needs: publish_release
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/docker.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+    secrets: inherit

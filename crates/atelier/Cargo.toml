@@ -12,24 +12,13 @@ categories.workspace = true
 name = "atelier"
 path = "src/main.rs"
 
-[features]
-# `agent` is the ONE online mode: it drives an OpenAI-style API to draw a task.
-# OFF by default, so the shipped binary links no HTTP/TLS stack and the core
-# stays offline and deterministic. Build with `cargo build --features agent`.
-default = []
-agent = ["dep:reqwest"]
-
 [dependencies]
 atelier-mcp.workspace = true
 atelier-studio.workspace = true
 # The binary handles rmcp result/tool types from atelier-mcp's dispatch and
-# registry (call/replay/agent); the crate is already in the tree via atelier-mcp.
+# registry (call/replay); the crate is already in the tree via atelier-mcp.
 rmcp.workspace = true
 tokio.workspace = true
 serde_json.workspace = true
 toml_edit.workspace = true
-tracing.workspace = true
 tracing-subscriber.workspace = true
-
-# Online-only, gated behind `agent`. rustls (no system OpenSSL); no default features.
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"], optional = true }

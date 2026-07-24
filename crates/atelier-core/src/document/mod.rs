@@ -140,14 +140,6 @@ pub struct Document {
 /// both analysis images so callers can also render a grid/overlay.
 pub type FrameDiff = (u32, u32, u32, Option<[i32; 4]>, RgbaImage, RgbaImage);
 
-/// One light for [`Document::relight`]: a direction (need not be unit length),
-/// an intensity multiplier, and an RGB colour in 0..1.
-pub struct Light {
-    pub dir: [f32; 3],
-    pub intensity: f32,
-    pub color: [f32; 3],
-}
-
 fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
 }

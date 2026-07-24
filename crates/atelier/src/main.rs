@@ -36,13 +36,10 @@
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
 //! atelier init                   # stamp ./.atelier — a project store here
 //! atelier skills [install|show]  # the shipped skills, for your agent
-//! atelier agent --task <t>       # the one online mode (feature-gated, off by default)
 //! ```
 
 use atelier_mcp::server;
 
-#[cfg(feature = "agent")]
-mod agent;
 mod call;
 mod clients;
 mod doctor;
@@ -87,8 +84,6 @@ USAGE:
     atelier skills                the shipped skills; `skills install [--for claude|codex|kimi|cursor|all]`
                                   writes them for your agent (~/.claude/skills by default, --dir DIR
                                   for anywhere else), `skills show <name>` prints one
-    atelier agent --task <t>      draw a task by driving an OpenAI-style API (ONLINE; needs
-                                  OPENAI_API_KEY; build with --features agent)
     atelier --version             print the version
 
 ENVIRONMENT:
@@ -96,17 +91,38 @@ ENVIRONMENT:
     ATELIER_HTTP             HTTP bind address (alternative to --http)
     ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use
     ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)
+    ATELIER_LOG              log filter (RUST_LOG syntax; default info, output on stderr)
 ";
 
 /// Agents that load the standard `SKILL.md`: `--for` selector → skills dir
 /// under the user's home. Codex and Cursor additionally read project-level
 /// skill directories; that is what `--dir` is for.
-const SKILL_TARGETS: &[(&str, &str)] = &[
-    ("claude", ".claude/skills"),
-    ("codex", ".agents/skills"),
-    ("kimi", ".kimi-code/skills"),
-    ("cursor", ".cursor/skills"),
-];
+const SKILL_TARGETS: &[&str] = &["claude", "codex", "kimi", "cursor"];
+
+/// Root directory for one client's skills. Kimi's config and skills share the
+/// same overridable home; keeping that rule here lets install and doctor agree.
+fn skill_target_root(target: &str, home: &std::path::Path) -> Option<std::path::PathBuf> {
+    let kimi_home = std::env::var_os("KIMI_CODE_HOME");
+    skill_target_root_with_kimi_home(target, home, kimi_home.as_deref())
+}
+
+fn skill_target_root_with_kimi_home(
+    target: &str,
+    home: &std::path::Path,
+    kimi_home: Option<&std::ffi::OsStr>,
+) -> Option<std::path::PathBuf> {
+    match target {
+        "claude" => Some(home.join(".claude")),
+        "codex" => Some(home.join(".agents")),
+        "kimi" => Some(
+            kimi_home
+                .map(std::path::PathBuf::from)
+                .unwrap_or_else(|| home.join(".kimi-code")),
+        ),
+        "cursor" => Some(home.join(".cursor")),
+        _ => None,
+    }
+}
 
 /// `atelier skills` — inspect or install the shipped skills. Pure markdown
 /// generation from the typed registry; no network, no key.
@@ -122,11 +138,15 @@ fn skills_cmd(args: &[String]) -> i32 {
                 vec![std::path::PathBuf::from(dir)]
             } else {
                 // Agent skills dirs, not near the document store.
-                let home = || service::home().unwrap_or_else(|| std::path::PathBuf::from("."));
+                let home = service::home().unwrap_or_else(|| std::path::PathBuf::from("."));
                 match flag_value(args, "--for").unwrap_or("claude") {
-                    "all" => SKILL_TARGETS.iter().map(|(_, d)| home().join(d)).collect(),
-                    target => match SKILL_TARGETS.iter().find(|(name, _)| *name == target) {
-                        Some((_, d)) => vec![home().join(d)],
+                    "all" => SKILL_TARGETS
+                        .iter()
+                        .filter_map(|target| skill_target_root(target, &home))
+                        .map(|root| root.join("skills"))
+                        .collect(),
+                    target => match skill_target_root(target, &home) {
+                        Some(root) => vec![root.join("skills")],
                         None => {
                             eprintln!(
                                 "atelier: unknown --for '{target}' (claude | codex | kimi | cursor | all)"
@@ -240,17 +260,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("init") => std::process::exit(init::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
-        // The one online mode: draw a task via an OpenAI-style API. Gated so a
-        // default build carries no HTTP stack.
-        #[cfg(feature = "agent")]
-        Some("agent") => std::process::exit(agent::run(&args[2..]).await),
-        #[cfg(not(feature = "agent"))]
-        Some("agent") => {
-            eprintln!(
-                "atelier: `agent` is the one online mode and is OFF in this build.\n                 Rebuild with it enabled: cargo install --path crates/atelier --features agent"
-            );
-            std::process::exit(2);
-        }
         Some("--version") | Some("-V") => {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
             return Ok(());
@@ -343,7 +352,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
-    use super::HELP;
+    use super::{skill_target_root_with_kimi_home, HELP};
+    use std::ffi::OsStr;
+    use std::path::{Path, PathBuf};
 
     #[test]
     fn doctor_is_wired_and_in_usage() {
@@ -358,5 +369,26 @@ mod tests {
         for cmd in ["atelier call", "atelier init", "atelier clients install"] {
             assert!(HELP.contains(cmd), "USAGE must list the {cmd} subcommand");
         }
+    }
+
+    #[test]
+    fn skill_targets_share_kimis_overridable_home() {
+        let home = Path::new("user-home");
+        assert_eq!(
+            skill_target_root_with_kimi_home("kimi", home, None),
+            Some(home.join(".kimi-code"))
+        );
+        assert_eq!(
+            skill_target_root_with_kimi_home("kimi", home, Some(OsStr::new("custom-kimi"))),
+            Some(PathBuf::from("custom-kimi"))
+        );
+        assert_eq!(
+            skill_target_root_with_kimi_home("codex", home, Some(OsStr::new("ignored"))),
+            Some(home.join(".agents"))
+        );
+        assert_eq!(
+            skill_target_root_with_kimi_home("unknown", home, None),
+            None
+        );
     }
 }

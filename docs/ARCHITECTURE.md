@@ -1,16 +1,16 @@
 # Architecture
 
-atelier is a Cargo **workspace** of four crates arranged as a strict dependency
-tower: a pure document/raster core, the studio operations that act on it, the
-dispatch layer and MCP server that expose those operations as tools, and the
-binary that wires up the CLI and transports. Each layer depends only on the
-ones below it — there are no cycles.
+atelier's shipped system is a strict four-crate dependency tower: a pure
+document/raster core, the studio operations that act on it, the dispatch layer
+and MCP server that expose those operations as tools, and the binary that wires
+up the CLI and transports. Each layer depends only on the ones below it — there
+are no cycles.
 
 ```
             ┌─────────────────────────────────────────────┐
   binary →  │  atelier            main · call · service ·  │  arg parsing, the CLI
             │                     replay · library ·       │  front door, daemon,
-            │                     skills · agent           │  replay, skills, agent
+            │                     skills                   │  replay, skills
             │                     (the `atelier` binary)   │
             └───────────────────────┬─────────────────────┘
                                     │ depends on
@@ -43,14 +43,13 @@ every cross-cutting concern hooks, and why the server can be stateless
 ```mermaid
 flowchart TB
     subgraph clients["Clients"]
-        shell["any agent with a shell<br/>(atelier call · replay · agent)"]
+        shell["any agent with a shell<br/>(atelier call · replay)"]
         cc["Claude Code / any MCP client<br/>(spawns the binary — stdio)"]
         kimi["Kimi Code / HTTP clients<br/>(stateless POSTs to /mcp)"]
     end
 
     subgraph bin["atelier — the binary"]
         main["arg parsing · tracing init (stderr, ATELIER_LOG)<br/>the CLI front door (call) · daemon install (launchd / systemd)<br/>replay runner · library · skills registry"]
-        agent["agent mode — feature-gated OFF<br/>the ONE online path: OpenAI-style API<br/>dispatches in-process like the CLI"]
     end
 
     subgraph mcp["atelier-mcp — the shell"]
@@ -79,7 +78,6 @@ flowchart TB
     cc -- stdio --> dispatch
     kimi -- "HTTP /mcp · no sessions<br/>caller = peer addr or header" --> dispatch
     main --> dispatch
-    agent --> dispatch
     dispatch --> log
     dispatch --> order
     dispatch --> router
@@ -98,8 +96,8 @@ Properties the shape guarantees:
   nothing above it. Transport bugs get fixed in the shell without touching art
   logic.
 - **One choke point** — logging, journaling, write ordering, and recording all
-  hang off `Atelier::dispatch`, the one path CLI, MCP stdio/HTTP, replay and
-  agent every caller shares; no caller can dodge them.
+  hang off `Atelier::dispatch`, the one path CLI, MCP stdio/HTTP, and replay
+  every caller shares; no caller can dodge them.
 - **Disk is the state** — no server-side session, so the HTTP transport is
   stateless: a daemon restart is invisible mid-conversation.
 - **Recipe = provenance** — art is an ordered list of tool calls; any document
@@ -168,7 +166,7 @@ Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
 The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
 
 - **`server/`** — `mod.rs` holds the server state and **`Atelier::dispatch`**,
-  the single path every caller (MCP stdio/HTTP, `atelier call`, replay, agent)
+  the single path every caller (MCP stdio/HTTP, `atelier call`, replay)
   funnels through: classify journaled/recorded → write-order lock → deserialize
   params → run the handler → log → journal/record. The four domain routers
   (`tools_doc`, `tools_draw`, `tools_read`, `tools_export`) hold the 30
@@ -202,8 +200,8 @@ Thin wiring; produces the `atelier` executable.
   `dispatch` per recipe step, strictly sequenced, with recorded→minted id
   remapping.
 
-Dependencies: `atelier-mcp`, `atelier-studio`, `rmcp`, `tokio`, `serde_json`, `tracing`,
-`tracing-subscriber` (+ optional `reqwest` behind the `agent` feature).
+Dependencies: `atelier-mcp`, `atelier-studio`, `rmcp`, `tokio`, `serde_json`,
+`toml_edit`, `tracing-subscriber`.
 
 ## Request flow
 
@@ -211,12 +209,12 @@ A single drawing tool call travels straight down the tower and back, whatever
 front door it came in:
 
 ```
-agent → atelier call | MCP tools/call | replay | agent mode
-      → Atelier::dispatch (log · write-order lock · journal)
-      → the tool's handler → Studio::doc_<op>(args)   (atelier-studio)
-      → Document / raster mutation                    (atelier-core)
-      → persist to ~/.atelier/documents/<id>/
-      → render PNG → returned to the agent to look at
+external agent → atelier call | MCP tools/call | replay
+               → Atelier::dispatch (log · write-order lock · journal)
+               → the tool's handler → Studio::doc_<op>(args)   (atelier-studio)
+               → Document / raster mutation                    (atelier-core)
+               → persist to ~/.atelier/documents/<id>/
+               → render PNG → returned to the agent to look at
 ```
 
 Because every mutation is one tool call and documents are an ordered sequence of
@@ -226,12 +224,15 @@ deterministically — which is also how the `docs/examples/` integration tests w
 ## Conventions
 
 - **Tests live next to the code** they cover, as inline `#[cfg(test)]` modules
-  (the bulk in `atelier-core` and `atelier-studio`). `cargo test` at the workspace
-  root runs every crate; so do `cargo clippy --all-targets -- -D warnings` and
-  `cargo fmt --all`.
+  (the bulk in `atelier-core` and `atelier-studio`). `cargo test`,
+  `cargo clippy --all-targets -- -D warnings`, and `cargo fmt --all` run at the
+  workspace root.
 - **Dependency versions are centralised** in the root `[workspace.dependencies]`;
   crates inherit with `<dep>.workspace = true`. Package metadata (version, license,
   repository) is shared via `[workspace.package]`.
+- **`Cargo.lock` is committed** because this workspace ships the `atelier`
+  executable. CI, source installation, Docker, and release builds use
+  `--locked`; dependency updates are deliberate reviewable diffs.
 - **The release binary is unchanged at `target/release/atelier`** — the virtual
   workspace doesn't move it, so `install.sh`, the `Makefile`, and the release
   workflow need no path changes.

@@ -419,15 +419,14 @@ impl Document {
         if pts.is_empty() {
             return Err("stroke needs at least one point".into());
         }
-        let pal = self.meta.palette.clone();
         let f: Vec<(f32, f32, f32)> = pts
             .iter()
             .map(|&(x, y, w)| (x, y, w.max(0.0) / 2.0))
             .collect();
         let img = self.cel_canvas(layer, frame)?;
         raster::stroke_ribbon(img, &f, color, aa);
-        if snap && !pal.is_empty() {
-            self.snap_to_palette(&pal, Some(layer), Some(frame), AlphaSnap::Preserve);
+        if snap {
+            self.snap_cel_to_own_palette(layer, frame, AlphaSnap::Preserve);
         }
         Ok(())
     }
