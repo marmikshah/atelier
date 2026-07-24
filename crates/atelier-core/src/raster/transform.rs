@@ -255,7 +255,7 @@ mod tests {
         assert_eq!(out.get_pixel(1, 2).0, [70, 0, 0, 255]); // was (1,1)
         assert_eq!(out.get_pixel(0, 1).0, [90, 0, 0, 255]); // was (0,2)
         assert_eq!(out.get_pixel(0, 2).0, [110, 0, 0, 255]); // was (1,2)
-                                                             // Rows 0 and 3 are the corners the turn vacated.
+        // Rows 0 and 3 are the corners the turn vacated.
         for x in 0..2 {
             assert_eq!(out.get_pixel(x, 0).0, [0, 0, 0, 0], "({x},0)");
             assert_eq!(out.get_pixel(x, 3).0, [0, 0, 0, 0], "({x},3)");

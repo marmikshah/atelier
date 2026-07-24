@@ -5,11 +5,11 @@
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::CallToolResult;
 use rmcp::{tool, tool_router};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use super::params::{self, *};
 use super::resources::base64_decode;
-use super::{batch_targets, draw_op_params, edited, palette_list, region, res, rgba, Atelier};
+use super::{Atelier, batch_targets, draw_op_params, edited, palette_list, region, res, rgba};
 
 #[tool_router(router = draw_router, vis = "pub(crate)")]
 impl Atelier {
@@ -121,32 +121,32 @@ impl Atelier {
     pub(crate) async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         // A replayed paste carries its pixels (journal-embedded) and must not
         // depend on — or clobber — the live clipboard.
-        if p.op == "paste" {
-            if let Some(cb) = &p.clipboard {
-                let buf = match base64_decode(&cb.data) {
-                    Ok(b) if b.len() == (cb.w as usize) * (cb.h as usize) * 4 => b,
-                    Ok(b) => {
-                        return res(Err(format!(
-                            "embedded clipboard is {} bytes, expected {}×{}×4",
-                            b.len(),
-                            cb.w,
-                            cb.h
-                        )))
-                    }
-                    Err(e) => return res(Err(format!("embedded clipboard: {e}"))),
-                };
-                return res(self.studio().doc_paste_pixels(
-                    &p.doc_id,
-                    p.layer,
-                    p.frame,
-                    p.x.unwrap_or(0),
-                    p.y.unwrap_or(0),
-                    cb.w,
-                    cb.h,
-                    &buf,
-                    p.blend.unwrap_or(true),
-                ));
-            }
+        if p.op == "paste"
+            && let Some(cb) = &p.clipboard
+        {
+            let buf = match base64_decode(&cb.data) {
+                Ok(b) if b.len() == (cb.w as usize) * (cb.h as usize) * 4 => b,
+                Ok(b) => {
+                    return res(Err(format!(
+                        "embedded clipboard is {} bytes, expected {}×{}×4",
+                        b.len(),
+                        cb.w,
+                        cb.h
+                    )));
+                }
+                Err(e) => return res(Err(format!("embedded clipboard: {e}"))),
+            };
+            return res(self.studio().doc_paste_pixels(
+                &p.doc_id,
+                p.layer,
+                p.frame,
+                p.x.unwrap_or(0),
+                p.y.unwrap_or(0),
+                cb.w,
+                cb.h,
+                &buf,
+                p.blend.unwrap_or(true),
+            ));
         }
         res(self.studio().doc_region(
             &p.doc_id, &p.op, p.layer, p.frame, p.x0, p.y0, p.x1, p.y1, p.dx, p.dy, p.x, p.y,
@@ -249,7 +249,7 @@ impl Atelier {
                 Err(_) => {
                     return res(Err(format!(
                         "cells[{i}] must be [cell_x, cell_y, tile_index], got {c:?}"
-                    )))
+                    )));
                 }
             }
         }

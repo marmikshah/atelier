@@ -993,25 +993,25 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
         if !(required.contains(&k) || optional.contains(&k)) {
             continue;
         }
-        if let Some(v) = obj.get(k) {
-            if color_array(v).is_none() {
-                return Err(format!(
-                    "op[{}] ({}): '{}' must be a colour array [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
-                    idx, kind, k, v
-                ));
-            }
+        if let Some(v) = obj.get(k)
+            && color_array(v).is_none()
+        {
+            return Err(format!(
+                "op[{}] ({}): '{}' must be a colour array [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
+                idx, kind, k, v
+            ));
         }
     }
     // 0..=255 scalars: the wrapper `opacity`, glow's `intensity` and
     // drop_shadow's `shadow_opacity` all funnel into u8 — a value like 300
     // used to truncate (300 → 44) into a wrong-but-plausible result.
     for k in ["opacity", "intensity", "shadow_opacity"] {
-        if let Some(v) = obj.get(k) {
-            if v.as_u64().is_none_or(|n| n > 255) {
-                return Err(format!(
-                    "op[{idx}] ({kind}): '{k}' must be an integer 0..=255, got {v}"
-                ));
-            }
+        if let Some(v) = obj.get(k)
+            && v.as_u64().is_none_or(|n| n > 255)
+        {
+            return Err(format!(
+                "op[{idx}] ({kind}): '{k}' must be an integer 0..=255, got {v}"
+            ));
         }
     }
     Ok(())

@@ -6,8 +6,8 @@ use rmcp::ServiceExt;
 
 use atelier_studio::Studio;
 
-use super::recorder::Recorder;
 use super::Atelier;
+use super::recorder::Recorder;
 
 /// Run over stdio (default transport). `record` enables session recording to a
 /// recipe at that path.
@@ -39,7 +39,7 @@ pub async fn run_http(
     record: Option<std::path::PathBuf>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     use rmcp::transport::streamable_http_server::{
-        session::never::NeverSessionManager, StreamableHttpServerConfig, StreamableHttpService,
+        StreamableHttpServerConfig, StreamableHttpService, session::never::NeverSessionManager,
     };
 
     // Shared studio across all HTTP sessions.

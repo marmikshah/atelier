@@ -7,7 +7,7 @@
 use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
-use toml_edit::{value, ArrayOfTables, DocumentMut, Item, Table};
+use toml_edit::{ArrayOfTables, DocumentMut, Item, Table, value};
 
 use crate::{fsutil, service};
 use service::DEFAULT_MCP_URL;
@@ -693,14 +693,16 @@ mod tests {
             options(Client::Codex, Mode::Http, true)
         );
         assert!(parse_options(&["install".into()]).is_err());
-        assert!(parse_options(&[
-            "install".into(),
-            "--for".into(),
-            "cursor".into(),
-            "--mode".into(),
-            "http".into()
-        ])
-        .is_err());
+        assert!(
+            parse_options(&[
+                "install".into(),
+                "--for".into(),
+                "cursor".into(),
+                "--mode".into(),
+                "http".into()
+            ])
+            .is_err()
+        );
     }
 
     #[test]
@@ -868,12 +870,14 @@ mod tests {
         let path = homes.kimi.join("mcp.json");
         std::fs::write(&path, "not json\n").unwrap();
 
-        assert!(install_at(
-            &homes,
-            Path::new("/opt/atelier"),
-            &options(Client::Kimi, Mode::Http, false)
-        )
-        .is_err());
+        assert!(
+            install_at(
+                &homes,
+                Path::new("/opt/atelier"),
+                &options(Client::Kimi, Mode::Http, false)
+            )
+            .is_err()
+        );
         assert_eq!(std::fs::read_to_string(path).unwrap(), "not json\n");
     }
 

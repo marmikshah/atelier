@@ -53,7 +53,7 @@ impl Document {
                         "pixel ({x},{y}) is {:?}, which is not in the palette ({} swatches) — snap to the palette first",
                         p.0,
                         self.meta.palette.len()
-                    ))
+                    ));
                 }
             }
         }

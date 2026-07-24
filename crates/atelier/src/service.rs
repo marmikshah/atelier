@@ -716,13 +716,15 @@ mod tests {
                 home: None,
             }
         );
-        assert!(parse_install_options(&install_args(&[
-            "--port",
-            "9000",
-            "--bind",
-            "127.0.0.1:9000"
-        ]))
-        .is_err());
+        assert!(
+            parse_install_options(&install_args(&[
+                "--port",
+                "9000",
+                "--bind",
+                "127.0.0.1:9000"
+            ]))
+            .is_err()
+        );
     }
 
     #[test]

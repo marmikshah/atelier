@@ -1,4 +1,4 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 // --- session recorder ------------------------------------------------------
 
@@ -24,13 +24,13 @@ impl Recorder {
     pub(crate) fn new(path: std::path::PathBuf) -> Self {
         // Create the recipe's parent dir once so `--record nested/dir/recipe.jsonl`
         // works instead of every write silently failing.
-        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
-            if let Err(e) = std::fs::create_dir_all(parent) {
-                eprintln!(
-                    "atelier: failed to create recording dir {}: {e}",
-                    parent.display()
-                );
-            }
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty())
+            && let Err(e) = std::fs::create_dir_all(parent)
+        {
+            eprintln!(
+                "atelier: failed to create recording dir {}: {e}",
+                parent.display()
+            );
         }
         // `--record` names THIS session's output: truncate whatever was there,
         // or reusing a filename would append a second sitting after the first

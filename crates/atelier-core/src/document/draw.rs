@@ -370,7 +370,7 @@ impl Document {
             other => {
                 return Err(format!(
                     "unknown scale method '{other}' — use nearest|area-average"
-                ))
+                ));
             }
         };
         self.mark_dirty(layer, frame);
@@ -680,21 +680,24 @@ mod xform_tests {
     fn scale_cel_rejects_bad_input_loudly() {
         let mut d = Document::new("t", 8, 8);
         // Nothing to scale is a caller mistake, not a no-op.
-        assert!(d
-            .scale_cel(0, 0, 4, 4, "nearest")
-            .unwrap_err()
-            .contains("no cel"));
+        assert!(
+            d.scale_cel(0, 0, 4, 4, "nearest")
+                .unwrap_err()
+                .contains("no cel")
+        );
         d.set_cel(0, 0, 0, 0, tagged_cel()).unwrap();
         assert!(d.scale_cel(0, 0, 0, 4, "nearest").is_err());
         assert!(d.scale_cel(0, 0, 4, 0, "nearest").is_err());
-        assert!(d
-            .scale_cel(0, 0, 4, 4, "cubic")
-            .unwrap_err()
-            .contains("unknown scale method"));
-        assert!(d
-            .scale_cel(9, 0, 4, 4, "nearest")
-            .unwrap_err()
-            .contains("no layer"));
+        assert!(
+            d.scale_cel(0, 0, 4, 4, "cubic")
+                .unwrap_err()
+                .contains("unknown scale method")
+        );
+        assert!(
+            d.scale_cel(9, 0, 4, 4, "nearest")
+                .unwrap_err()
+                .contains("no layer")
+        );
         // Failed calls leave the cel alone.
         assert_eq!(d.cels.get(&(0, 0)).unwrap().2.dimensions(), (2, 2));
     }
@@ -769,11 +772,13 @@ mod tests {
     #[test]
     fn curve_with_fewer_than_two_points_errors() {
         let mut d = Document::new("t", 4, 4);
-        assert!(d
-            .curve(0, 0, &[], [0, 0, 0, 255], 1.0, true, false)
-            .is_err());
-        assert!(d
-            .curve(0, 0, &[(1.0, 1.0)], [0, 0, 0, 255], 1.0, true, false)
-            .is_err());
+        assert!(
+            d.curve(0, 0, &[], [0, 0, 0, 255], 1.0, true, false)
+                .is_err()
+        );
+        assert!(
+            d.curve(0, 0, &[(1.0, 1.0)], [0, 0, 0, 255], 1.0, true, false)
+                .is_err()
+        );
     }
 }

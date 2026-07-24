@@ -15,15 +15,15 @@ mod transform;
 // item nothing in-workspace calls — it was public via the old glob and stays
 // exported rather than disappearing as a silent breaking change.
 pub use colour::{
-    close, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp, make_ramp_oklch, median_cut,
-    median_cut_weighted, nearest_oklab, oklab_delta, oklab_to_oklch, oklab_to_srgb, oklch_to_oklab,
-    rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab, wcag_ratio, PaletteLab,
+    PaletteLab, close, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp, make_ramp_oklch,
+    median_cut, median_cut_weighted, nearest_oklab, oklab_delta, oklab_to_oklch, oklab_to_srgb,
+    oklch_to_oklab, rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab, wcag_ratio,
 };
 pub use noise::{
     dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
 };
 pub use transform::{
-    downscale_area, interior_distance, remove_background, rotate_quarters, scale, ScaleMethod,
+    ScaleMethod, downscale_area, interior_distance, remove_background, rotate_quarters, scale,
 };
 
 // -- drawing helpers (overwrite semantics; alpha 0 = erase) -----------------

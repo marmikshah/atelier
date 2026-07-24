@@ -13,13 +13,12 @@ include evidence for the behavior they change.
 - Open an issue first for new tools, public API changes, dependencies, storage
   formats, or broad refactors.
 - Keep unrelated cleanup out of the change.
-- Do not modify `atelier-lab` unless the issue is explicitly about experimental
-  lab work.
 - Never create or push a release tag. Releases are maintainer-only.
 
 ## Development setup
 
-Install Rust 1.88 or newer, clone the repository, and run:
+Install the Rust toolchain declared in `rust-toolchain.toml`, clone the
+repository, and run:
 
 ```sh
 make check
@@ -39,6 +38,7 @@ make release      # optimized binary
 
 The workspace commits `Cargo.lock` because it publishes executable artifacts.
 Include its changes when adding or updating dependencies.
+Rust 1.88 remains the minimum supported compiler and has a dedicated CI check.
 
 The hooks in `.githooks/` are optional:
 

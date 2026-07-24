@@ -13,7 +13,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use atelier_mcp::recipe::{Recipe, Step};
 use atelier_mcp::server::{self, Atelier};
@@ -311,7 +311,7 @@ fn summarize(result: &CallToolResult) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rmcp::model::Content;
+    use rmcp::model::ContentBlock as Content;
 
     fn text_result(text: &str) -> CallToolResult {
         CallToolResult::success(vec![Content::text(text)])

@@ -1,9 +1,9 @@
 //! Animation: frame metadata, timeline lifecycle and eased keyframe motion.
 
 use image::RgbaImage;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use super::{Document, FrameMeta, DEFAULT_FRAME_MS};
+use super::{DEFAULT_FRAME_MS, Document, FrameMeta};
 
 impl Document {
     /// Set a frame's display duration in milliseconds.
@@ -146,7 +146,7 @@ impl Document {
                 return Err(format!(
                     "unknown frame action '{}' — use delete|insert|duplicate|move",
                     other
-                ))
+                ));
             }
         }
         Ok(json!({"ok": true, "action": action, "frames": self.meta.frames.len()}))

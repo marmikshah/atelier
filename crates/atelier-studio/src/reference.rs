@@ -6,9 +6,9 @@
 use std::path::Path;
 
 use image::{Rgba, RgbaImage};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use super::{encode_png, preview_scale, Studio};
+use super::{Studio, encode_png, preview_scale};
 use atelier_core::document::Document;
 use atelier_core::raster;
 
@@ -24,10 +24,10 @@ impl Studio {
     pub fn set_reference(&self, id: &str, path: Option<&str>) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let Some(path) = path else {
-            if let Some(name) = doc.set_reference_file(None) {
-                if let Ok(p) = ref_path(&dir, &name) {
-                    let _ = std::fs::remove_file(p);
-                }
+            if let Some(name) = doc.set_reference_file(None)
+                && let Ok(p) = ref_path(&dir, &name)
+            {
+                let _ = std::fs::remove_file(p);
             }
             doc.save(&dir)?;
             return Ok(json!({"ok": true, "doc_id": id, "reference": Value::Null}));
@@ -551,10 +551,12 @@ mod tests {
         block(&s, [30, 30, 200, 255]);
         let (_png, bad) = s.ref_compare("d", 0, "overlay", 4).unwrap();
         assert!(bad["mean_delta"].as_f64().unwrap() > 0.1);
-        assert!(!bad["missing_reference_colors"]
-            .as_array()
-            .unwrap()
-            .is_empty());
+        assert!(
+            !bad["missing_reference_colors"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[test]
