@@ -27,9 +27,8 @@ image = { version = "0.25.10", default-features = false, features = ["png", "gif
 png = "0.18.1" # direct: APNG animation encoder (already in the tree via image)
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
-toml_edit = "0.25.13"
 dirs = "6.0.0"
-# Advisory store/build locks across independent CLI and daemon processes.
+# Coordinates independent CLI and daemon processes that share a document store.
 fs4 = { version = "1.1.0", features = ["sync"] }
 
 # Structured logging: the library crates emit `tracing` events; only the

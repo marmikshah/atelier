@@ -15,8 +15,8 @@ use image::{Rgba, RgbaImage};
 /// True only for the `cp<n>` ids `doc_checkpoint save` mints.
 ///
 /// A checkpoint id is joined onto the store path and then handed to
-/// `remove_dir_all` / `Document::load`, so an unvalidated one is a directory
-/// traversal: `../../../../x` escaped the store and deleted it. Every id the
+/// `remove_dir_all`, so an unvalidated one is a directory traversal:
+/// `../../../../x` escaped the store and deleted it. Every id the
 /// tool hands out matches this shape, so rejecting anything else costs nothing.
 fn valid_checkpoint_id(cpid: &str) -> bool {
     cpid.strip_prefix("cp")
@@ -25,7 +25,6 @@ fn valid_checkpoint_id(cpid: &str) -> bool {
 use serde_json::{Value, json};
 
 use super::Studio;
-use atelier_core::document::Document;
 use atelier_core::raster;
 
 // -- shared raster helpers --------------------------------------------------
@@ -77,11 +76,11 @@ fn snapshot_files(src: &Path, dst: &Path) -> Result<(), String> {
 }
 
 impl Studio {
-    // -- doc_checkpoint: snapshot / restore / diff -------------------------
+    // -- doc_checkpoint: snapshot / restore -------------------------------
 
     /// History for an all-destructive editor: snapshot the document directory,
-    /// list/restore/diff snapshots, or prune them. `action`: `save` | `list` |
-    /// `restore` | `diff` | `prune`.
+    /// list/restore snapshots, or prune them. `action`: `save` | `list` |
+    /// `restore` | `prune`.
     pub fn checkpoint(
         &self,
         id: &str,
@@ -96,7 +95,7 @@ impl Studio {
             return Err(format!("no document '{}'", id));
         }
         // `checkpoint_id` is joined onto the store path and handed to
-        // remove_dir_all / Document::load, so it is as dangerous as `doc_id` and
+        // remove_dir_all, so it is as dangerous as `doc_id` and
         // gets the same treatment. Ids are always minted as `cp{n}` (below), so
         // anything else — traversal, absolute paths, a stray name — is a
         // caller error, not a lookup miss.
@@ -191,16 +190,6 @@ impl Studio {
                 })?;
                 Ok(json!({"restored": cpid, "doc_id": id}))
             }
-            "diff" => {
-                let cpid = checkpoint_id.ok_or("diff needs checkpoint_id")?;
-                let cp = cps.join(cpid);
-                if !cp.join("doc.json").exists() {
-                    return Err(format!("no checkpoint '{}'", cpid));
-                }
-                let (_d, live) = self.open(id)?;
-                let was = Document::load(&cp)?;
-                Ok(checkpoint_diff(cpid, &was, &live))
-            }
             "prune" => match checkpoint_id {
                 Some(cpid) => {
                     let cp = cps.join(cpid);
@@ -213,7 +202,7 @@ impl Studio {
                 }
             },
             other => Err(format!(
-                "unknown checkpoint action '{}' — use save|list|restore|diff|prune",
+                "unknown checkpoint action '{}' — use save|list|restore|prune",
                 other
             )),
         }
@@ -313,7 +302,6 @@ impl Studio {
 
     /// Graduated dithering across a whole ramp along an axis (h|v|radial) with
     /// an ordered or `ign` blue-noise pattern — master gradient shading.
-    /// Honours an active selection.
     pub fn dither_ramp(
         &self,
         id: &str,
@@ -325,7 +313,7 @@ impl Studio {
         pattern: &str,
         only_existing: bool,
     ) -> Result<Value, String> {
-        self.edit_masked(id, layer, frame, |d| {
+        self.edit_with_ack(id, layer, frame, |d| {
             d.dither_ramp(layer, frame, region, &ramp, axis, pattern, only_existing)
                 .map(|_| ())
         })
@@ -653,98 +641,6 @@ impl Studio {
             "bg_removed": remove_bg,
         }))
     }
-
-    // -- doc_place_tiles: tilemap stamping from a tileset doc -------------
-
-    /// Stamp tiles from a tileset document onto a canvas cel. The tileset's
-    /// flattened frame 0 is sliced row-major into `tile_w`×`tile_h` tiles
-    /// (index 0 = top-left); each `cells` entry `[cell_x, cell_y, tile_index]`
-    /// stamps that tile source-over at pixel `(cell_x*tile_w, cell_y*tile_h)`,
-    /// clipping at the canvas edges. The tileset is READ, never saved. Cells
-    /// landing entirely off-canvas are counted as skipped, not errors; a bad
-    /// tile index fails the whole call before anything is stamped. Every
-    /// argument is plain JSON, so the call journals and replays
-    /// byte-identically — no pixel buffer ever crosses the wire.
-    pub fn doc_place_tiles(
-        &self,
-        doc_id: &str,
-        layer: usize,
-        frame: usize,
-        tiles_doc: &str,
-        tile_w: u32,
-        tile_h: u32,
-        cells: &[[i32; 3]],
-    ) -> Result<Value, String> {
-        if tile_w == 0 || tile_h == 0 {
-            return Err(format!(
-                "tile size must be >= 1px — got {}x{}",
-                tile_w, tile_h
-            ));
-        }
-        // Read-only: flatten frame 0 and drop the doc — it is never saved.
-        let sheet = {
-            let (_dir, tiles) = self.open(tiles_doc)?;
-            tiles.flatten(0)
-        };
-        let (sw, sh) = (sheet.width(), sheet.height());
-        if sw % tile_w != 0 || sh % tile_h != 0 {
-            return Err(format!(
-                "tileset '{}' is {}x{} — not divisible into {}x{} tiles",
-                tiles_doc, sw, sh, tile_w, tile_h
-            ));
-        }
-        let (cols, rows) = (sw / tile_w, sh / tile_h);
-        let total = cols * rows;
-        // Validate every index BEFORE the canvas is touched: a bad cell fails
-        // the whole call, never leaves a half-stamped tilemap.
-        for &[_cx, _cy, idx] in cells {
-            if idx < 0 || idx as u32 >= total {
-                return Err(format!(
-                    "tile index {} out of range — '{}' has {} tile(s) (0..={})",
-                    idx,
-                    tiles_doc,
-                    total,
-                    total - 1
-                ));
-            }
-        }
-        let (dir, mut doc) = self.open(doc_id)?;
-        if layer >= doc.meta().layers.len() {
-            return Err(format!("no layer {}", layer));
-        }
-        if frame >= doc.meta().frames.len() {
-            return Err(format!("no frame {}", frame));
-        }
-        let (cw, ch) = (doc.meta().w as i64, doc.meta().h as i64);
-        let (mut placed, mut skipped) = (0u64, 0u64);
-        for &[cx, cy, idx] in cells {
-            // i64 math: cell*size is raw caller input and overflows i32 at the
-            // extremes (debug panic / release wrap). Cells passing the skip
-            // test below sit within one tile of the canvas, so the i32 casts
-            // handed to paste_region cannot wrap.
-            let (dx, dy) = (cx as i64 * tile_w as i64, cy as i64 * tile_h as i64);
-            if dx >= cw || dy >= ch || dx + tile_w as i64 <= 0 || dy + tile_h as i64 <= 0 {
-                skipped += 1;
-                continue;
-            }
-            let idx = idx as u32;
-            let (sx, sy) = ((idx % cols) * tile_w, (idx / cols) * tile_h);
-            let tile = image::imageops::crop_imm(&sheet, sx, sy, tile_w, tile_h)
-                .to_image()
-                .into_raw();
-            doc.paste_region(
-                layer, frame, dx as i32, dy as i32, tile_w, tile_h, &tile, true,
-            )?;
-            placed += 1;
-        }
-        doc.save(&dir)?;
-        Ok(json!({
-            "ok": true,
-            "doc_id": doc_id,
-            "tiles_placed": placed,
-            "cells_skipped": skipped,
-        }))
-    }
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
@@ -922,55 +818,6 @@ fn critique_image(id: &str, frame: usize, img: &RgbaImage, palette: &[[u8; 4]]) 
     })
 }
 
-/// Cross-snapshot diff: structural + per-pixel change tallies on frame 0.
-fn checkpoint_diff(cpid: &str, was: &Document, now: &Document) -> Value {
-    let stat = |img: &RgbaImage| -> (u64, usize, u8, u8) {
-        let (mut n, mut min, mut max) = (0u64, 255u8, 0u8);
-        let mut distinct = std::collections::HashSet::new();
-        for p in img.pixels() {
-            if p.0[3] == 0 {
-                continue;
-            }
-            n += 1;
-            let v = raster::luma(p.0);
-            min = min.min(v);
-            max = max.max(v);
-            distinct.insert(p.0);
-        }
-        (n, distinct.len(), min, max)
-    };
-    // One flatten per document — stat and the pixel tally share it.
-    let (ia, ib) = (was.flatten(0), now.flatten(0));
-    let (an, ac, amin, amax) = stat(&ia);
-    let (bn, bc, bmin, bmax) = stat(&ib);
-    // Per-pixel change tally where the canvases line up.
-    let (mut added, mut removed, mut changed) = (0u64, 0u64, 0u64);
-    if was.meta().w == now.meta().w && was.meta().h == now.meta().h {
-        for (pa, pb) in ia.pixels().zip(ib.pixels()) {
-            match (pa.0[3] == 0, pb.0[3] == 0) {
-                (true, false) => added += 1,
-                (false, true) => removed += 1,
-                (false, false) if pa.0 != pb.0 => changed += 1,
-                _ => {}
-            }
-        }
-    }
-    json!({
-        "checkpoint": cpid,
-        "pixels": {"was": an, "now": bn, "delta": bn as i64 - an as i64},
-        "distinct_colors": {"was": ac, "now": bc, "delta": bc as i64 - ac as i64},
-        "contrast": {
-            "was": ((amax - amin) as f64 / 255.0 * 1000.0).round() / 1000.0,
-            "now": ((bmax - bmin) as f64 / 255.0 * 1000.0).round() / 1000.0,
-        },
-        "frame0_change": {"added": added, "removed": removed, "recolored": changed},
-        "regressions": {
-            "lost_contrast": (bmax - bmin) < (amax - amin),
-            "color_creep": bc > ac + (ac / 4).max(2),
-        }
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1012,7 +859,7 @@ mod tests {
             "cp",
             "cp1x",
         ] {
-            for action in ["prune", "restore", "diff"] {
+            for action in ["prune", "restore"] {
                 let r = s.checkpoint("c", action, None, Some(evil));
                 assert!(
                     r.is_err(),
@@ -1272,153 +1119,6 @@ mod tests {
                 .as_i64()
                 .unwrap()
                 > 150
-        );
-    }
-
-    /// An 8x8 sheet holding four solid 4x4 tiles, row-major: red, green,
-    /// blue, white — so each tile index has a distinct colour to assert on.
-    fn tileset(s: &Studio, id: &str) {
-        s.doc_create(id, 8, 8).unwrap();
-        let tile = |x0, y0, c: [u8; 4]| json!({"x0": x0, "y0": y0, "x1": x0 + 3, "y1": y0 + 3, "color": c, "fill": true});
-        draw(s, id, 0, "rect", tile(0, 0, [255, 0, 0, 255]));
-        draw(s, id, 0, "rect", tile(4, 0, [0, 255, 0, 255]));
-        draw(s, id, 0, "rect", tile(0, 4, [0, 0, 255, 255]));
-        draw(s, id, 0, "rect", tile(4, 4, [255, 255, 255, 255]));
-    }
-
-    /// Every file under a doc dir as (relative path, bytes), sorted — the
-    /// before/after fingerprint behind the tileset-is-read-only guarantee.
-    fn dir_bytes(dir: &std::path::Path) -> Vec<(String, Vec<u8>)> {
-        let mut out = Vec::new();
-        let mut stack = vec![dir.to_path_buf()];
-        while let Some(d) = stack.pop() {
-            for ent in fs::read_dir(&d).unwrap().flatten() {
-                let p = ent.path();
-                if p.is_dir() {
-                    stack.push(p);
-                } else {
-                    let rel = p.strip_prefix(dir).unwrap().to_string_lossy().to_string();
-                    out.push((rel, fs::read(&p).unwrap()));
-                }
-            }
-        }
-        out.sort();
-        out
-    }
-
-    #[test]
-    fn place_tiles_stamps_tiles_at_exact_cell_positions() {
-        let s = studio("tiles");
-        tileset(&s, "ts");
-        s.doc_create("c", 8, 8).unwrap();
-        let r = s
-            .doc_place_tiles(
-                "c",
-                0,
-                0,
-                "ts",
-                4,
-                4,
-                &[[0, 0, 0], [1, 0, 1], [0, 1, 2], [1, 1, 3]],
-            )
-            .unwrap();
-        assert_eq!(r["tiles_placed"], json!(4));
-        assert_eq!(r["cells_skipped"], json!(0));
-        let px = |x: i32, y: i32| s.doc_get_pixel("c", Some(0), 0, x, y).unwrap()["rgba"].clone();
-        // Two corners per 4x4 quadrant pin each tile to its exact position.
-        assert_eq!(px(0, 0), json!([255, 0, 0, 255]));
-        assert_eq!(px(3, 3), json!([255, 0, 0, 255]));
-        assert_eq!(px(4, 0), json!([0, 255, 0, 255]));
-        assert_eq!(px(7, 3), json!([0, 255, 0, 255]));
-        assert_eq!(px(0, 4), json!([0, 0, 255, 255]));
-        assert_eq!(px(3, 7), json!([0, 0, 255, 255]));
-        assert_eq!(px(4, 4), json!([255, 255, 255, 255]));
-        assert_eq!(px(7, 7), json!([255, 255, 255, 255]));
-    }
-
-    #[test]
-    fn place_tiles_blends_source_over_and_skips_off_canvas_cells() {
-        let s = studio("tiles-so");
-        tileset(&s, "ts");
-        // Punch a transparent hole in tile 1's top-left pixel (sheet (4,0)).
-        s.doc_clear_region("ts", 0, 0, 4, 0, 4, 0).unwrap();
-        s.doc_create("c", 8, 8).unwrap();
-        draw(
-            &s,
-            "c",
-            0,
-            "rect",
-            json!({"x0": 0, "y0": 0, "x1": 7, "y1": 7, "color": [90, 90, 90, 255], "fill": true}),
-        );
-        // (-1,0) spans x -4..0 and (5,5) starts past the 8x8 canvas: skipped.
-        let r = s
-            .doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, 1], [-1, 0, 2], [5, 5, 3]])
-            .unwrap();
-        assert_eq!(r["tiles_placed"], json!(1));
-        assert_eq!(r["cells_skipped"], json!(2));
-        let px = |x: i32, y: i32| s.doc_get_pixel("c", Some(0), 0, x, y).unwrap()["rgba"].clone();
-        assert_eq!(
-            px(0, 0),
-            json!([90, 90, 90, 255]),
-            "a transparent tile pixel must not punch through the destination"
-        );
-        assert_eq!(px(1, 0), json!([0, 255, 0, 255]));
-        assert_eq!(
-            px(4, 0),
-            json!([90, 90, 90, 255]),
-            "the skipped cells stamped nothing"
-        );
-    }
-
-    #[test]
-    fn place_tiles_rejects_bad_grids_indices_and_docs() {
-        let s = studio("tiles-err");
-        tileset(&s, "ts");
-        s.doc_create("c", 8, 8).unwrap();
-        let e = s.doc_place_tiles("c", 0, 0, "ts", 0, 4, &[]).unwrap_err();
-        assert!(e.contains(">= 1px"), "{e}");
-        let e = s.doc_place_tiles("c", 0, 0, "ts", 4, 0, &[]).unwrap_err();
-        assert!(e.contains(">= 1px"), "{e}");
-        // 8 is not divisible by 3, and 16 exceeds the 8px sheet outright.
-        let e = s.doc_place_tiles("c", 0, 0, "ts", 3, 3, &[]).unwrap_err();
-        assert!(e.contains("not divisible"), "{e}");
-        let e = s.doc_place_tiles("c", 0, 0, "ts", 16, 16, &[]).unwrap_err();
-        assert!(e.contains("not divisible"), "{e}");
-        // A 2x2 grid of tiles has indices 0..=3.
-        let e = s
-            .doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, 0], [1, 1, 4]])
-            .unwrap_err();
-        assert!(e.contains("out of range"), "{e}");
-        assert!(
-            s.doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, -1]])
-                .is_err()
-        );
-        let e = s
-            .doc_place_tiles("nope", 0, 0, "ts", 4, 4, &[])
-            .unwrap_err();
-        assert!(e.contains("no document"), "{e}");
-        let e = s.doc_place_tiles("c", 0, 0, "nope", 4, 4, &[]).unwrap_err();
-        assert!(e.contains("no document"), "{e}");
-        // Every failed call above must have left the canvas untouched.
-        assert_eq!(
-            s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap()["rgba"],
-            json!([0, 0, 0, 0])
-        );
-    }
-
-    #[test]
-    fn place_tiles_never_writes_the_tileset() {
-        let s = studio("tiles-ro");
-        tileset(&s, "ts");
-        s.doc_create("c", 8, 8).unwrap();
-        let ts_dir = std::env::temp_dir().join("atelier-craft-tiles-ro/ts");
-        let before = dir_bytes(&ts_dir);
-        s.doc_place_tiles("c", 0, 0, "ts", 4, 4, &[[0, 0, 0], [1, 1, 3]])
-            .unwrap();
-        assert_eq!(
-            before,
-            dir_bytes(&ts_dir),
-            "placing tiles mutated the tileset document"
         );
     }
 }

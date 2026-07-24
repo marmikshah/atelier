@@ -730,8 +730,8 @@ impl Document {
     /// fraction of pixels that take color_b via the threshold matrix). When
     /// `only_existing` only pixels already equal to color_a or color_b are
     /// repainted — recolour an existing flat region into a dither without
-    /// spilling onto neighbouring art. Honours an active selection via the
-    /// studio mask. Reuses the shared Bayer thresholds (bayer8).
+    /// spilling onto neighbouring art. Reuses the shared Bayer thresholds
+    /// (bayer8).
     pub fn dither(
         &mut self,
         layer: usize,

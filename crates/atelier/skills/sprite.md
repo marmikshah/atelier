@@ -33,8 +33,8 @@ the cel. Name the failing area, fix exactly that, and look again.
 
 - `doc_look` tells you *something* is wrong; `doc_dump_region` tells you *which
   pixels* — read the actual grid before you touch it.
-- Confine the fix: `doc_select` the area, or aim `doc_draw`/`doc_batch` at the
-  specific coordinates on the specific layer.
+- Confine the fix by aiming `doc_draw`/`doc_batch` at specific coordinates on
+  the specific layer; use `doc_region` only for a self-contained clear or move.
 - One problem per pass. Two fixes at once and you cannot tell which worked.
 
 A redraw throws away everything that was already right. It is almost never the

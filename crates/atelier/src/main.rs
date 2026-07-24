@@ -29,29 +29,20 @@
 //! atelier install                # asks for port; launchd / systemd --user
 //! atelier status
 //! atelier uninstall
-//! atelier doctor                 # check the whole setup, print what to fix
 //! atelier tools [--html]         # the tool surface / the reference page
 //! atelier library [rm ...]       # inspect or prune the document store
 //! atelier replay <recipe|id>     # rebuild a document from its journal
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
-//! atelier init                   # stamp ./.atelier and its project manifest
-//! atelier build                  # build the manifest's named exports
-//! atelier check                  # validate project references, recipes, exports
-//! atelier recipe compact|expand  # convert recipes without replaying them
+//! atelier init                   # stamp a directory-local ./.atelier store
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! ```
 
 use atelier_mcp::server;
 
 mod call;
-mod check;
-mod clients;
-mod doctor;
 mod fsutil;
 mod init;
 mod library;
-mod project;
-mod recipe_cmd;
 mod replay;
 mod service;
 mod skills;
@@ -61,8 +52,6 @@ const HELP: &str = "atelier — the pixel-art studio agents can see (headless; C
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
     atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
-    atelier --record <recipe.jsonl> record a whole session (across documents) as a recipe
-            (works with stdio and --http; also ATELIER_RECORD=<path>)
     atelier install               install/reconfigure the background daemon; asks for port
             [--port PORT | --bind ADDR] [--home DIR]
     atelier status                show daemon state and log locations
@@ -77,24 +66,11 @@ USAGE:
                                   run one tool call in-process — the whole op
                                   surface, scriptable from a shell. stdout gets the
                                   JSON report; exit 0 ok, 1 tool error, 2 bad call
-    atelier init                  stamp ./.atelier and its project.toml so this
-                                  directory keeps its own art, recipes, and builds
-    atelier build                 build every named export in .atelier/project.toml
-            [--only NAME] [--dry-run]
-                                  select one export, or print calls without writing
-    atelier check [--json]        validate the manifest, documents, recipe rebuilds,
-                                  references, and exports without writing project output
-    atelier recipe <compact|expand|stats> <INPUT|->
-                                  convert or measure recipes without replaying them
+    atelier init                  stamp ./.atelier so this directory keeps its
+                                  own art and recipes
     atelier tools [--html|--schema <name>]
                                   list the tools (plain text; --html emits the
                                   reference page; --schema dumps one input schema)
-    atelier doctor                check the whole setup — store, daemon (with a live MCP
-                                  probe), client registrations, skills; prints each fix
-    atelier clients install       register the MCP add-on for an agent:
-            --for <claude|codex|kimi> --mode <http|stdio> [--allow-tools]
-                                  preserves existing registrations; --allow-tools
-                                  pre-approves every atelier MCP tool
     atelier skills                the shipped skills; `skills install [--for claude|codex|kimi|cursor|all]`
                                   writes them for your agent (~/.claude/skills by default, --dir DIR
                                   for anywhere else), `skills show <name>` prints one
@@ -104,7 +80,6 @@ ENVIRONMENT:
     ATELIER_HOME             where documents/exports live (default ~/.atelier)
     ATELIER_HTTP             HTTP bind address (alternative to --http)
     ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use
-    ATELIER_RECORD           record tool calls into this recipe path (alternative to --record)
     ATELIER_LOG              log filter (RUST_LOG syntax; default info, output on stderr)
 ";
 
@@ -114,7 +89,7 @@ ENVIRONMENT:
 const SKILL_TARGETS: &[&str] = &["claude", "codex", "kimi", "cursor"];
 
 /// Root directory for one client's skills. Kimi's config and skills share the
-/// same overridable home; keeping that rule here lets install and doctor agree.
+/// same overridable home.
 fn skill_target_root(target: &str, home: &std::path::Path) -> Option<std::path::PathBuf> {
     let kimi_home = std::env::var_os("KIMI_CODE_HOME");
     skill_target_root_with_kimi_home(target, home, kimi_home.as_deref())
@@ -263,21 +238,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         // Inspect / prune the document store.
         Some("library") => std::process::exit(library::run(&args[2..])),
-        // Self-diagnostics: store, daemon (live MCP probe), clients, skills.
-        Some("doctor") => std::process::exit(doctor::run(&args[2..])),
-        // Register the optional MCP add-on and, only when explicitly asked,
-        // pre-approve atelier's tools in one supported agent client.
-        Some("clients") => std::process::exit(clients::run(&args[2..])),
         // The CLI front door: one tool call, in-process, through dispatch.
         Some("call") => std::process::exit(call::run(&args[2..]).await),
-        // Stamp ./.atelier, opting this directory into a project store.
+        // Stamp ./.atelier, opting into a directory-local store.
         Some("init") => std::process::exit(init::run(&args[2..])),
-        // Build the portable, named exports declared by the project.
-        Some("build") => std::process::exit(project::run(&args[2..]).await),
-        // Validate project state and reproducibility without touching outputs.
-        Some("check") => std::process::exit(check::run(&args[2..]).await),
-        // Inspect or convert recipes without executing their tool calls.
-        Some("recipe") => std::process::exit(recipe_cmd::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
@@ -320,7 +284,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Any other first token that isn't a known server flag is a mistake —
         // erroring beats silently starting the stdio server (which then blocks
         // on stdin) under a typo like `atelier serve`.
-        Some(other) if !matches!(other, "--http" | "--record") => {
+        Some(other) if other != "--http" => {
             eprintln!("atelier: unknown argument '{other}'\n\n{HELP}");
             std::process::exit(2);
         }
@@ -335,17 +299,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some(a) if !a.starts_with("--") => a.clone(),
             _ => "127.0.0.1:8765".into(),
         });
-    }
-
-    // Resolve the optional session-recording path: --record <path> or ATELIER_RECORD.
-    // The path is required, so a missing or flag-like next token is an error.
-    let mut record: Option<std::path::PathBuf> = std::env::var_os("ATELIER_RECORD").map(Into::into);
-    if let Some(i) = args.iter().position(|a| a == "--record") {
-        let Some(path) = args.get(i + 1).filter(|a| !a.starts_with("--")) else {
-            eprintln!("atelier: --record needs a recipe path argument");
-            std::process::exit(2);
-        };
-        record = Some(path.into());
     }
 
     match http_addr {
@@ -364,9 +317,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             if let Some((host, _)) = addr.rsplit_once(':') {
                 allowed.push(host.to_string());
             }
-            server::run_http(&addr, allowed, record).await
+            server::run_http(&addr, allowed).await
         }
-        None => server::run(record).await,
+        None => server::run().await,
     }
 }
 
@@ -377,23 +330,12 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     #[test]
-    fn doctor_is_wired_and_in_usage() {
-        assert!(
-            HELP.contains("atelier doctor"),
-            "USAGE must list the doctor subcommand"
-        );
+    fn core_commands_are_listed() {
         assert!(
             HELP.contains("atelier library"),
             "USAGE still lists its neighbours"
         );
-        for cmd in [
-            "atelier call",
-            "atelier init",
-            "atelier build",
-            "atelier check",
-            "atelier recipe",
-            "atelier clients install",
-        ] {
+        for cmd in ["atelier call", "atelier init", "atelier replay"] {
             assert!(HELP.contains(cmd), "USAGE must list the {cmd} subcommand");
         }
     }

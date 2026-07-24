@@ -53,64 +53,6 @@ fn palette_set_and_index() {
 }
 
 #[test]
-fn indexed_raster_inverts_an_index_legend_paint() {
-    let mut d = Document::new("t", 4, 4);
-    d.set_palette(vec![[10, 0, 0, 255], [20, 0, 0, 255]]);
-    let legend: std::collections::HashMap<char, [u8; 4]> =
-        [('k', [10, 0, 0, 255]), ('r', [20, 0, 0, 255])]
-            .into_iter()
-            .collect();
-    d.paint_grid(0, 0, 1, 1, &legend, &["kr".to_string(), ".k".to_string()])
-        .unwrap();
-    let r = d.indexed_raster(0, 0).unwrap();
-    assert_eq!((r.width, r.height), (4, 4));
-    assert_eq!(r.palette, d.meta.palette);
-    // row 1: [None, Some(0), Some(1), None]; row 2: [None, None, Some(0), None]
-    assert_eq!(
-        r.indices,
-        vec![
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(0),
-            Some(1),
-            None,
-            None,
-            None,
-            Some(0),
-            None,
-            None,
-            None,
-            None,
-            None,
-        ]
-    );
-    // Transparency stays None even though swatch 0 exists: index 0 is a real
-    // paintable colour, not the background.
-    assert_eq!(r.indices[0], None);
-}
-
-#[test]
-fn indexed_raster_rejects_off_palette_pixels_and_bad_cels() {
-    let mut d = Document::new("t", 4, 4);
-    d.set_palette(vec![[10, 0, 0, 255]]);
-    d.pencil(0, 0, &[(2, 1)], [99, 99, 99, 255], 1).unwrap();
-    let e = d.indexed_raster(0, 0).unwrap_err();
-    assert!(e.contains("not in the palette"), "got: {e}");
-    assert!(e.contains("(2,1)"), "names the offender: {e}");
-    // Bad layer/frame fail like every other cel read; an unindexed but
-    // all-transparent cel is fine (no opaque pixel to place).
-    assert!(d.indexed_raster(9, 0).is_err());
-    assert!(d.indexed_raster(0, 9).is_err());
-    d.set_palette(Vec::new());
-    d.clear_cel(0, 0).unwrap();
-    let r = d.indexed_raster(0, 0).unwrap();
-    assert!(r.indices.iter().all(|i| i.is_none()));
-}
-
-#[test]
 fn frame_ops_delete_reindexes_and_protects_last() {
     let mut d = Document::new("t", 2, 2);
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
@@ -495,6 +437,42 @@ fn load_rejects_traversal_cel_paths() {
 }
 
 #[test]
+fn load_materializes_legacy_linked_cels() {
+    let dir = std::env::temp_dir().join("atelier-legacy-link-test");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("cels")).unwrap();
+    RgbaImage::from_pixel(2, 2, Rgba([9, 8, 7, 255]))
+        .save(dir.join("cels/L0_F0.png"))
+        .unwrap();
+    std::fs::write(
+        dir.join("doc.json"),
+        serde_json::to_string_pretty(&json!({
+            "name": "legacy",
+            "w": 2,
+            "h": 2,
+            "layers": [{"name": "Layer 1", "opacity": 255, "visible": true, "blend": "normal"}],
+            "frames": [{"duration_ms": 100}, {"duration_ms": 100}],
+            "cels": [
+                {"layer": 0, "frame": 0, "x": 0, "y": 0, "file": "cels/L0_F0.png"},
+                {"layer": 0, "frame": 1, "x": 0, "y": 0, "file": "cels/L0_F0.png", "link": [0, 0]}
+            ]
+        }))
+        .unwrap(),
+    )
+    .unwrap();
+
+    let mut document = Document::load(&dir).unwrap();
+    assert_eq!(document.get_pixel(0, 1, 0, 0).unwrap(), [9, 8, 7, 255]);
+    document.save(&dir).unwrap();
+    assert!(dir.join("cels/L0_F1.png").is_file());
+    let saved: Value =
+        serde_json::from_str(&std::fs::read_to_string(dir.join("doc.json")).unwrap()).unwrap();
+    assert_eq!(saved["cels"][1]["file"], "cels/L0_F1.png");
+    assert!(saved["cels"][1].get("link").is_none());
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn sheet_image_errors_on_dimension_overflow() {
     // Built directly, past the studio's 4096 cap; a wild scale overflows the
     // frame-width u32 and must error instead of wrapping to a garbage buffer.
@@ -766,17 +744,6 @@ fn form_auto_brightens_interior_over_edge() {
         core,
         edge
     );
-}
-
-#[test]
-fn apply_masked_confines_op_to_mask() {
-    let mut d = Document::new("t", 4, 4);
-    let mut mask = vec![false; 16];
-    mask[2 * 4 + 2] = true; // select only (x=2,y=2)
-    d.apply_masked(0, 0, &mask, |dd| dd.fill_cel(0, 0, [200, 0, 0, 255]))
-        .unwrap();
-    assert_eq!(d.get_pixel(0, 0, 2, 2).unwrap(), [200, 0, 0, 255]); // masked pixel painted
-    assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]); // rest restored
 }
 
 #[test]
