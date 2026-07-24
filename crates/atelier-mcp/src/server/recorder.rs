@@ -1,4 +1,6 @@
-use serde_json::{Value, json};
+use serde_json::Value;
+
+use crate::recipe::{CompactEncoder, Step};
 
 // --- session recorder ------------------------------------------------------
 
@@ -10,14 +12,15 @@ use serde_json::{Value, json};
 /// earns its keep when a session spans several documents and you want the whole
 /// sitting in one file.
 ///
-/// Writes JSON Lines, appended: one call per line, O(1) per call instead of
-/// rewriting the whole recipe every time, and a killed session still leaves every
-/// completed line intact.
+/// Writes compact JSONL v2, appended: one call per line after the versioned
+/// header, O(1) per call instead of rewriting the whole recipe every time, and
+/// a killed session still leaves every completed line intact.
 #[derive(Clone)]
 pub(crate) struct Recorder {
     path: std::sync::Arc<std::path::PathBuf>,
-    /// Serialises appends so concurrent HTTP sessions cannot interleave a line.
-    write: std::sync::Arc<std::sync::Mutex<()>>,
+    /// Serialises appends so concurrent HTTP sessions cannot interleave a line,
+    /// and carries the context that makes subsequent lines smaller.
+    encoder: std::sync::Arc<std::sync::Mutex<CompactEncoder>>,
 }
 
 impl Recorder {
@@ -32,41 +35,61 @@ impl Recorder {
                 parent.display()
             );
         }
+        let encoder = CompactEncoder::recording();
         // `--record` names THIS session's output: truncate whatever was there,
-        // or reusing a filename would append a second sitting after the first
-        // and the concatenation replays as one corrupted recipe.
-        if let Err(e) = std::fs::File::create(&path) {
-            eprintln!("atelier: failed to start recording {}: {e}", path.display());
+        // then write the v2 header. Reusing a filename must never append a
+        // second sitting after the first.
+        let started = encoder.recording_header().and_then(|mut header| {
+            use std::io::Write;
+            header.push('\n');
+            let mut file = std::fs::File::create(&path)
+                .map_err(|error| format!("cannot create {}: {error}", path.display()))?;
+            file.write_all(header.as_bytes())
+                .map_err(|error| format!("cannot write {}: {error}", path.display()))
+        });
+        if let Err(error) = started {
+            eprintln!("atelier: failed to start recording: {error}");
         }
         Self {
             path: std::sync::Arc::new(path),
-            write: std::sync::Arc::new(std::sync::Mutex::new(())),
+            encoder: std::sync::Arc::new(std::sync::Mutex::new(encoder)),
         }
     }
 
-    /// Append one `{tool, args}` call. Only successful, non-read calls reach
-    /// here (see `call_tool`), so the recipe stays replayable and carries no
-    /// `doc_look` noise. Best-effort: a write failure is logged, never fails the
-    /// call that was otherwise fine.
+    /// Append one compact call line. Only successful, non-read calls reach here,
+    /// so the recipe stays replayable and carries no `doc_look` noise.
+    /// Best-effort: a write failure is logged, never fails the call that was
+    /// otherwise fine.
     pub(crate) fn record(&self, tool: &str, args: Value) {
-        let Ok(mut line) = serde_json::to_string(&json!({"tool": tool, "args": args})) else {
+        let mut encoder = self
+            .encoder
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        // Advance the sticky context only after the corresponding line lands
+        // on disk; otherwise one failed append could make the next line depend
+        // on context the file never received.
+        let mut next = encoder.clone();
+        let Ok(mut line) = next.encode(&Step {
+            tool: tool.to_string(),
+            args,
+            note: None,
+        }) else {
             return;
         };
         line.push('\n');
-        let _guard = self
-            .write
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let appended = std::fs::OpenOptions::new()
             .create(true)
             .append(true)
             .open(&*self.path)
             .and_then(|mut f| std::io::Write::write_all(&mut f, line.as_bytes()));
-        if let Err(e) = appended {
-            eprintln!(
-                "atelier: failed to write recording {}: {e}",
-                self.path.display()
-            );
+        match appended {
+            Ok(()) => *encoder = next,
+            Err(error) => {
+                eprintln!(
+                    "atelier: failed to write recording {}: {error}",
+                    self.path.display()
+                );
+            }
         }
     }
 }

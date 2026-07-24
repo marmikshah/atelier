@@ -15,13 +15,13 @@ are no cycles.
             └───────────────────────┬─────────────────────┘
                                     │ depends on
             ┌───────────────────────▼─────────────────────┐
-  shell  →  │  atelier-mcp        dispatch · server ·      │  one dispatch path;
-            │                     recipe                   │  rmcp stdio + HTTP
+  shell  →  │  atelier-mcp        dispatch · server         │  one dispatch path;
+            │                                              │  rmcp stdio + HTTP
             └───────────────────────┬─────────────────────┘
                                     │
             ┌───────────────────────▼─────────────────────┐
-  core   →  │  atelier-studio     studio · craft ·         │  the Studio facade:
-            │                     analysis · reference     │  one fn per operation
+  core   →  │  atelier-studio     studio · recipe ·        │  the Studio facade:
+            │                     craft · analysis · ref   │  ops + stored formats
             └───────────────────────┬─────────────────────┘
                                     │
             ┌───────────────────────▼─────────────────────┐
@@ -58,7 +58,7 @@ flowchart TB
         order["write-order lock (mutations only)"]
         router["tool registry — 30 tools, schemas scrubbed<br/>(advertise; the dispatch match invokes the handlers)"]
         journal["journal_append → recipe.jsonl"]
-        recorder["session recorder (--record, opt-in)"]
+        recorder["compact JSONL v2 session recorder (--record, opt-in)"]
     end
 
     subgraph studio["atelier-studio — the facade (library API)"]
@@ -72,7 +72,7 @@ flowchart TB
     subgraph disk["./.atelier or ~/.atelier — the state"]
         manifest["project.toml<br/>versioned named exports"]
         store["&lt;doc-id&gt;/ document data"]
-        recipe["&lt;doc-id&gt;/recipe.jsonl<br/>every doc is a replayable recipe"]
+        recipe["&lt;doc-id&gt;/recipe.jsonl<br/>compact v2 · every doc is replayable"]
     end
 
     shell --> main
@@ -148,6 +148,12 @@ entire library API; the MCP layer is a thin wrapper over it.
   global `~/.atelier`. `Studio::new()` resolves it;
   `Studio::with_docs_dir(path)` roots a studio at an explicit
   directory (for embedding or tests, without touching process-global env).
+- **`recipe.rs`** — the `Recipe`/`Step` contract and compact JSONL v2 codec,
+  shared by document journals, the session recorder, `atelier recipe`, and
+  replay. It reads authored JSON and legacy JSONL indefinitely; v2 adds
+  contextual defaults and lossless batch tuples while retaining append-per-line
+  crash safety. Keeping the codec beside the store lets `Studio::journal()`
+  return normalized calls for every on-disk format.
 - **`ops_export.rs`** — every export entry point + dispatch (sheet/GIF/APNG/
   atlas/tileset).
 - **`ops_region.rs`** — selections (`doc_select`) and clipboard/region ops.
@@ -161,7 +167,7 @@ entire library API; the MCP layer is a thin wrapper over it.
 - **`reference.rs`** — reference-image workflow: set/analyse a reference and score
   silhouette IoU + per-cell ΔE against it (`doc_ref op=compare`).
 
-Dependencies: `atelier-core`, `image`, `serde_json`, `dirs`.
+Dependencies: `atelier-core`, `image`, `serde`, `serde_json`, `dirs`.
 
 ### `atelier-mcp` — dispatch + the MCP server
 
@@ -181,10 +187,9 @@ The imperative shell. Wraps `Studio` in an `Arc<Mutex<…>>` and exposes it.
   one or one-family per studio operation. All 30 are advertised unconditionally
   — there is no profile filter. The `Recorder` turns a live session into a
   replayable recipe.
-- **`recipe.rs`** — the `Recipe`/`Step` format: the on-disk contract shared by the
-  `Recorder` (writer) and the `atelier replay` runner (reader). Lives here, in the
-  library crate, so anything embedding atelier can read/write recipes without the
-  binary.
+- **`recipe.rs`** — a compatibility re-export of the Studio recipe types, so
+  the established `atelier_mcp::recipe::{Recipe, Step}` embedder path remains
+  valid after persistence moved beside the store.
 
 Dependencies: `atelier-core`, `atelier-studio`, `rmcp`, `axum`, `tokio`, `schemars`, `serde`.
 
@@ -206,6 +211,9 @@ Thin wiring; produces the `atelier` executable.
   `.atelier/project.toml` format and the `atelier build` runner. Named exports
   become `doc_export` calls; paths are confined to the project root before the
   first call executes.
+- **`recipe_cmd.rs`** — non-executing compact/expand/stats transforms over the
+  shared recipe codec; stdout stays pipeable unless an explicit output path is
+  supplied.
 
 Dependencies: `atelier-mcp`, `atelier-studio`, `rmcp`, `tokio`, `serde_json`,
 `toml_edit`, `tracing-subscriber`.

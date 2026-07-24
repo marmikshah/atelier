@@ -14,5 +14,6 @@ categories.workspace = true
 [dependencies]
 atelier-core.workspace = true
 image.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 dirs.workspace = true

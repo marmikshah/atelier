@@ -289,10 +289,12 @@ impl Studio {
     /// document carries its own provenance and nothing has to be turned on
     /// beforehand to get it.
     ///
-    /// JSON Lines, appended: one call per line, O(1) per write, and a killed
-    /// process still leaves every completed line intact. Best-effort by design —
-    /// a journal that cannot be written must never fail the drawing call that
-    /// was otherwise fine.
+    /// Legacy `{tool,args}` JSON Lines, appended one call per line. Kept as the
+    /// compatibility writer for documents whose journal began before compact
+    /// JSONL v2; new dispatch-created journals use
+    /// [`Self::journal_append_compact`]. Best-effort by design — a journal that
+    /// cannot be written must never fail the drawing call that was otherwise
+    /// fine.
     pub fn journal_append(&self, id: &str, tool: &str, args: &Value) {
         // Defence in depth: `id` is joined onto the store path, so validate it
         // here too rather than trust every caller forever — a bad id must never
@@ -319,13 +321,103 @@ impl Studio {
         }
     }
 
+    /// Append a compact JSONL v2 call, while preserving an existing legacy
+    /// journal's format. New journals receive a header and call in one append;
+    /// existing v2 journals receive only the call; existing `{tool,args}`
+    /// journals continue through [`Self::journal_append`] so a document is
+    /// never left with mixed, unreplayable line formats.
+    pub fn journal_append_compact(&self, id: &str, tool: &str, args: &Value) {
+        if !Self::valid_id(id) {
+            return;
+        }
+        let dir = self.docs_dir.join(id);
+        if !dir.is_dir() {
+            return;
+        }
+        let (header, line) = match super::recipe::compact_journal_record(id, tool, args.clone()) {
+            Ok(encoded) => encoded,
+            Err(_) => {
+                self.journal_append(id, tool, args);
+                return;
+            }
+        };
+        let path = self.journal_path(id);
+        enum Format {
+            New,
+            Legacy,
+            Compact,
+        }
+        let format = match fs::metadata(&path) {
+            Ok(metadata) if metadata.len() == 0 => Format::New,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Format::New,
+            Ok(_) => {
+                use std::io::BufRead;
+                let first =
+                    fs::File::open(&path)
+                        .map(std::io::BufReader::new)
+                        .and_then(|mut reader| {
+                            let mut line = String::new();
+                            loop {
+                                line.clear();
+                                if reader.read_line(&mut line)? == 0 || !line.trim().is_empty() {
+                                    return Ok(line);
+                                }
+                            }
+                        });
+                match first
+                    .ok()
+                    .and_then(|first| serde_json::from_str::<Value>(first.trim()).ok())
+                {
+                    Some(value) if value.get("v").and_then(Value::as_u64) == Some(2) => {
+                        Format::Compact
+                    }
+                    Some(value) if value.get("tool").and_then(Value::as_str).is_some() => {
+                        Format::Legacy
+                    }
+                    _ => {
+                        eprintln!(
+                            "atelier: could not journal {tool} for '{id}': \
+                             existing recipe has an unknown or corrupt header"
+                        );
+                        return;
+                    }
+                }
+            }
+            Err(error) => {
+                eprintln!("atelier: could not inspect journal for '{id}': {error}");
+                return;
+            }
+        };
+        if matches!(format, Format::Legacy) {
+            self.journal_append(id, tool, args);
+            return;
+        }
+        if header.contains('\n') || line.contains('\n') {
+            eprintln!(
+                "atelier: could not journal {tool} for '{id}': encoded line contains newline"
+            );
+            return;
+        }
+        let payload = match format {
+            Format::New => format!("{header}\n{line}\n"),
+            Format::Compact => format!("{line}\n"),
+            Format::Legacy => unreachable!("legacy returned above"),
+        };
+        let appended = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+            .and_then(|mut file| std::io::Write::write_all(&mut file, payload.as_bytes()));
+        if let Err(error) = appended {
+            eprintln!("atelier: could not journal {tool} for '{id}': {error}");
+        }
+    }
+
     /// Read a document's journal back as its ordered calls.
     ///
-    /// Same policy as the replay-side parser (`Recipe::parse_jsonl`): a torn
-    /// FINAL line is a crash mid-append and is dropped, but a malformed line
-    /// with content after it is real corruption and errors — silently skipping
-    /// it would report "N steps / replayable" for a journal that `atelier
-    /// replay` then refuses.
+    /// Uses the shared recipe parser, so legacy and compact files both return
+    /// normalized `{tool,args,note?}` calls and corruption has exactly the same
+    /// verdict here as it does under `atelier replay`.
     pub fn journal(&self, id: &str) -> Result<Vec<Value>, String> {
         if !self.exists(id) {
             return Err(format!("no document '{id}'"));
@@ -335,22 +427,15 @@ impl Studio {
             return Ok(Vec::new());
         }
         let body = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-        let nonempty: Vec<(usize, &str)> = body
-            .lines()
-            .enumerate()
-            .map(|(n, l)| (n, l.trim()))
-            .filter(|(_, l)| !l.is_empty())
-            .collect();
-        let last = nonempty.len().saturating_sub(1);
-        let mut out = Vec::new();
-        for (idx, (n, line)) in nonempty.iter().enumerate() {
-            match serde_json::from_str(line) {
-                Ok(v) => out.push(v),
-                Err(_) if idx == last => break, // torn final line — crash mid-append
-                Err(e) => return Err(format!("journal line {}: {e}", n + 1)),
-            }
+        if body.trim().is_empty() {
+            return Ok(Vec::new());
         }
-        Ok(out)
+        let recipe = super::recipe::Recipe::parse(&body)?;
+        recipe
+            .steps
+            .into_iter()
+            .map(|step| serde_json::to_value(step).map_err(|error| error.to_string()))
+            .collect()
     }
 }
 
@@ -400,6 +485,40 @@ mod tests {
         fs::write(&path, format!("not json\n{clean}")).unwrap();
         let err = s.journal("d").unwrap_err();
         assert!(err.contains("line 1"), "mid-file corruption errors: {err}");
+    }
+
+    #[test]
+    fn compact_journal_headers_are_not_counted_as_steps() {
+        let s = studio("journal-compact");
+        s.doc_create("d", 8, 8).unwrap();
+        s.journal_append_compact("d", "doc_create", &json!({"name":"d","doc_id":"d"}));
+        s.journal_append_compact("d", "doc_info", &json!({"doc_id":"d"}));
+        let steps = s.journal("d").unwrap();
+        assert_eq!(steps.len(), 2);
+        assert_eq!(steps[0]["tool"], "doc_create");
+        assert_eq!(steps[0]["args"]["doc_id"], "d");
+        assert_eq!(steps[1]["tool"], "doc_info");
+        assert_eq!(steps[1]["args"]["doc_id"], "d");
+        let source = fs::read_to_string(s.journal_path("d")).unwrap();
+        assert_eq!(source.lines().count(), 3, "one header plus two calls");
+    }
+
+    #[test]
+    fn compact_appends_preserve_an_existing_legacy_journal() {
+        let s = studio("journal-legacy-append");
+        s.doc_create("d", 8, 8).unwrap();
+        s.journal_append("d", "doc_create", &json!({"name":"d"}));
+        s.journal_append_compact(
+            "d",
+            "doc_draw",
+            &json!({"doc_id":"d","layer":0,"frame":0,"op":"clear_cel"}),
+        );
+        let source = fs::read_to_string(s.journal_path("d")).unwrap();
+        assert!(
+            source.lines().all(|line| line.contains("\"tool\"")),
+            "legacy and compact lines must never mix: {source}"
+        );
+        assert_eq!(s.journal("d").unwrap().len(), 2);
     }
 
     #[test]
