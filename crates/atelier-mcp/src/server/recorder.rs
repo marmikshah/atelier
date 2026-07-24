@@ -18,6 +18,10 @@ use crate::recipe::{CompactEncoder, Step};
 #[derive(Clone)]
 pub(crate) struct Recorder {
     path: std::sync::Arc<std::path::PathBuf>,
+    /// A failed header write disables this recorder permanently. Recreating the
+    /// path later and appending a call without its v2 header would produce a
+    /// corrupt recipe.
+    active: bool,
     /// Serialises appends so concurrent HTTP sessions cannot interleave a line,
     /// and carries the context that makes subsequent lines smaller.
     encoder: std::sync::Arc<std::sync::Mutex<CompactEncoder>>,
@@ -47,11 +51,16 @@ impl Recorder {
             file.write_all(header.as_bytes())
                 .map_err(|error| format!("cannot write {}: {error}", path.display()))
         });
-        if let Err(error) = started {
-            eprintln!("atelier: failed to start recording: {error}");
-        }
+        let active = match started {
+            Ok(()) => true,
+            Err(error) => {
+                eprintln!("atelier: failed to start recording: {error}");
+                false
+            }
+        };
         Self {
             path: std::sync::Arc::new(path),
+            active,
             encoder: std::sync::Arc::new(std::sync::Mutex::new(encoder)),
         }
     }
@@ -61,6 +70,9 @@ impl Recorder {
     /// Best-effort: a write failure is logged, never fails the call that was
     /// otherwise fine.
     pub(crate) fn record(&self, tool: &str, args: Value) {
+        if !self.active {
+            return;
+        }
         let mut encoder = self
             .encoder
             .lock()
@@ -69,12 +81,16 @@ impl Recorder {
         // on disk; otherwise one failed append could make the next line depend
         // on context the file never received.
         let mut next = encoder.clone();
-        let Ok(mut line) = next.encode(&Step {
+        let mut line = match next.encode(&Step {
             tool: tool.to_string(),
             args,
             note: None,
-        }) else {
-            return;
+        }) {
+            Ok(line) => line,
+            Err(error) => {
+                eprintln!("atelier: failed to encode recording step {tool}: {error}");
+                return;
+            }
         };
         line.push('\n');
         let appended = std::fs::OpenOptions::new()

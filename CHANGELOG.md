@@ -14,9 +14,12 @@ releases.
   dispatcher. `--only NAME` selects one artifact and `--dry-run` prints the
   exact calls without writing. Existing manifests are never replaced.
 - Manifest output paths are project-relative and checked against absolute,
-  parent, and symlink escapes. Strict version, field, operation, range,
-  duplicate-name, and duplicate-output validation turns configuration typos
-  into actionable errors before any export runs.
+  parent, symlink, and platform-specific path hazards. Strict version, field,
+  operation, range, duplicate-name, case-insensitive output, sidecar, and
+  directory-overlap validation turns configuration typos into actionable
+  errors before any export runs. Builds stage every artifact and promote them
+  with rollback only after every selected export succeeds; an `all` export's
+  target directory is treated as one build-owned artifact.
 - **Compact recipe JSONL v2.** Versioned headers, reusable document/layer/frame
   context, hex colours, flattened points, and positional tuples for common
   batch operations shrink both the 44,736-byte Kamehameha example and its
@@ -29,9 +32,11 @@ releases.
   their original append format.
 - **`atelier check`.** Read-only project validation for local use and CI:
   strict manifest parsing, document and animation-tag references, isolated
-  recipe rebuilds compared against every live frame, and real exports redirected
-  to a temporary workspace. `--json` provides a stable machine-readable report;
-  failures return a non-zero status while missing legacy journals are warnings.
+  recipe rebuilds compared against the structure, every cel (including hidden
+  pixels), and every live frame, plus real exports redirected to a temporary
+  workspace. `--json` provides a stable machine-readable report; failures
+  return a non-zero status. Missing legacy journals warn when unused and fail
+  when a configured deliverable depends on them.
 
 ### Removed
 
@@ -71,13 +76,19 @@ releases.
 - GitHub Pages now builds the tool reference and benchmark index from their
   canonical sources instead of committing duplicate generated files.
 - CI now has one complete Linux gate, an explicit Rust 1.88 minimum-version
-  check, and lightweight macOS and Windows checks. Local hooks remain optional
-  and fast.
+  check, and the full Rust test suite on macOS and Windows. Local hooks remain
+  optional and fast.
 
 ### Fixed
 
 - Kimi skill installation and `atelier doctor` now honor `KIMI_CODE_HOME`,
   matching Kimi MCP registration and installer detection.
+- Cross-process store locks now serialize document mutations through save and
+  journal append, preventing separate CLI/server processes from losing updates
+  or recording state in a different order.
+- A failed `--record` header write now disables that recorder instead of later
+  producing headerless JSONL, and compact journals refuse to append to a
+  malformed v2 header.
 
 ### Security
 

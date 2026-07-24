@@ -199,6 +199,9 @@ configuration; set an `X-Atelier-Caller` header in a client's MCP config to
 use a stable name instead. (The CLI and replay log as `cli` / `replay`.)
 (Same-name collisions are already impossible: `doc_create` mints a unique id —
 `hero`, `hero-2`, … — and every caller must use the id it got back.)
+Mutations also hold an advisory store lock through both document save and
+journal append, so independent CLI and daemon processes cannot overwrite one
+another or record a different order.
 
 **30 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
@@ -257,21 +260,31 @@ atelier check --json
 | `all` | `name`, `out` | `scale` |
 | `atlas` | `name`, `out` | `scale`, `max_width` |
 
+An `all` export owns its complete `out` directory. A successful project build
+replaces that directory, so keep hand-authored files elsewhere.
+
 Manifest output paths are portable: they are relative to the project root and
-cannot use absolute paths, `..`, or a symlink to write outside the project.
-Each build still uses `doc_export` through Atelier's shared dispatch path.
+cannot use absolute paths, `..`, backslashes, Windows-invalid or reserved path
+components, the reserved `.atelier` directory, or a symlink to write outside
+the project. Primary files, generated sidecars, and output directories are
+checked for case-insensitive and nested collisions. Each build
+still uses `doc_export` through Atelier's shared dispatch path, but writes into
+a project-local staging area first; configured outputs are promoted with
+rollback only after every selected export succeeds.
 
 `atelier check` is the read-only CI counterpart to build. It validates the
 manifest, opens every document, verifies each configured document and animation
 tag reference, replays every available journal in an isolated temporary store,
-compares the rebuilt structure and every rendered frame with the live document,
-and exercises each export against temporary output paths. It never writes the
-project's configured outputs and does not make subjective art judgments.
+compares the rebuilt structure, exact per-cel RGBA state (including hidden
+layers), and every rendered frame with the live document, and exercises each
+export against temporary output paths. It never writes the project's configured
+outputs and does not make subjective art judgments.
 
 The human report is concise; `--json` emits a versioned report with stable
 `summary` and `checks` objects for automation. A failed check exits 1, invalid
-command arguments exit 2, and warnings (such as an older document with no
-journal) remain visible without failing the build.
+command arguments exit 2, and an older document with no journal remains a
+warning only while no configured export depends on it. An unreproducible
+deliverable fails the check.
 
 Store resolution remains: `--home` / `ATELIER_HOME` → `./.atelier` when it
 exists → `~/.atelier`. Standing in `$HOME`, the two are the same directory.

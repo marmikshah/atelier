@@ -416,12 +416,26 @@ impl Atelier {
         // execution order under concurrent sessions. Reads skip it.
         let journaled = is_journaled(tool, &args);
         let recorded = is_recorded(tool, &args);
+        let store_mutation = is_store_mutation(tool, &args);
         let write_order = self.write_order.clone();
         let _order = if recorded {
             Some(write_order.lock().await)
         } else {
             None
         };
+        // The async order lock above coordinates sessions in this server. The
+        // advisory file lock also coordinates independent CLI/server processes
+        // and stays held through journaling, so state and provenance commit in
+        // the same order everywhere.
+        let _store_lock = {
+            let studio = self.studio();
+            if store_mutation {
+                studio.lock_store_exclusive()
+            } else {
+                studio.lock_store_shared()
+            }
+        }
+        .map_err(|error| ErrorData::internal_error(error, None))?;
 
         let started = std::time::Instant::now();
         let result = match self.invoke(tool, args.clone()).await {
@@ -530,7 +544,8 @@ impl Atelier {
 
     /// Enumerate every browsable resource: per document, its structure JSON and a
     /// frame-0 PNG render, each with a human-readable name.
-    fn list_resource_specs(&self) -> Vec<Resource> {
+    fn list_resource_specs(&self) -> Result<Vec<Resource>, String> {
+        let _store_lock = self.studio().lock_store_shared()?;
         let docs = self.studio().list_docs();
         let mut out = Vec::new();
         for d in docs["documents"].as_array().into_iter().flatten() {
@@ -552,7 +567,7 @@ impl Atelier {
                 .with_mime_type("image/png"),
             );
         }
-        out
+        Ok(out)
     }
 
     /// Resolve a parsed [`ResourceTarget`] to its contents (structure JSON text or
@@ -562,6 +577,7 @@ impl Atelier {
         uri: &str,
         target: ResourceTarget,
     ) -> Result<ResourceContents, String> {
+        let _store_lock = self.studio().lock_store_shared()?;
         match target {
             ResourceTarget::Structure(id) => {
                 let v = self.studio().doc_info(&id)?;
@@ -577,16 +593,15 @@ impl Atelier {
     }
 }
 
-/// Tools that only LOOK: they read a document and never change it, so replaying
-/// them rebuilds nothing. (Some can write a PREVIEW artifact via `out_path` —
-/// doc_look, doc_frame_diff, doc_seam_report — but previews are not the art,
-/// and re-running them against a moved out_path would be worse than skipping.)
+/// Tools that never belong in a per-document journal. Most only look at a
+/// document. `delete_doc` is the deliberate exception: it changes the library,
+/// but the journal it could belong to disappears with the document.
 ///
 /// This is an allowlist, and the default is deliberately the other way: an
 /// unlisted tool gets journaled. A stray read in a recipe replays as a harmless
 /// no-op, but a mutation missing from a recipe silently produces different art —
-/// so when in doubt, record. Anything added here must be genuinely inert.
-const READ_ONLY_TOOLS: &[&str] = &[
+/// so when in doubt, record.
+const NON_JOURNALED_TOOLS: &[&str] = &[
     // the eye and the audits it reports through
     "doc_look",
     "doc_info",
@@ -611,7 +626,7 @@ const READ_ONLY_TOOLS: &[&str] = &[
 /// read ops are also the ones an agent calls most, which is exactly the noise a
 /// recipe should not carry.
 fn is_journaled(tool: &str, args: &Value) -> bool {
-    if READ_ONLY_TOOLS.contains(&tool) {
+    if NON_JOURNALED_TOOLS.contains(&tool) {
         return false;
     }
     let op = args.get("op").and_then(Value::as_str);
@@ -630,6 +645,12 @@ fn is_journaled(tool: &str, args: &Value) -> bool {
 /// delete is in the recording.
 fn is_recorded(tool: &str, args: &Value) -> bool {
     tool == "delete_doc" || is_journaled(tool, args)
+}
+
+/// Whether the call changes the document store itself. `doc_export` belongs in
+/// a cross-document session recording but only reads the store.
+fn is_store_mutation(tool: &str, args: &Value) -> bool {
+    tool != "doc_export" && is_recorded(tool, args)
 }
 
 /// The document a call belongs to. `doc_create` names it in the result (the id
@@ -766,9 +787,10 @@ impl ServerHandler for Atelier {
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, ErrorData> {
-        Ok(ListResourcesResult::with_all_items(
-            self.list_resource_specs(),
-        ))
+        let resources = self
+            .list_resource_specs()
+            .map_err(|error| ErrorData::internal_error(error, None))?;
+        Ok(ListResourcesResult::with_all_items(resources))
     }
 
     /// Read one resource by URI. Unknown URIs and missing documents become a
@@ -1013,16 +1035,16 @@ mod tests {
     }
 
     #[test]
-    fn every_read_only_tool_is_a_real_tool() {
+    fn every_non_journaled_tool_is_a_real_tool() {
         let names: Vec<String> = Atelier::tool_router()
             .list_all()
             .into_iter()
             .map(|t| t.name.to_string())
             .collect();
-        for t in READ_ONLY_TOOLS {
+        for t in NON_JOURNALED_TOOLS {
             assert!(
                 names.contains(&t.to_string()),
-                "READ_ONLY_TOOLS names '{t}', which is not a tool — renamed or removed? \
+                "NON_JOURNALED_TOOLS names '{t}', which is not a tool — renamed or removed? \
                  A stale entry here silently drops a real call from every journal."
             );
         }
@@ -1101,6 +1123,13 @@ mod tests {
         // Everything the journal keeps, the recorder keeps too.
         assert!(is_recorded("doc_draw", &json!({"doc_id": "x"})));
         assert!(!is_recorded("doc_look", &json!({"doc_id": "x"})));
+        assert!(is_store_mutation("delete_doc", &json!({"doc_id": "x"})));
+        assert!(is_store_mutation("doc_draw", &json!({"doc_id": "x"})));
+        assert!(!is_store_mutation(
+            "doc_export",
+            &json!({"doc_id":"x","op":"sheet"})
+        ));
+        assert!(!is_store_mutation("doc_look", &json!({"doc_id": "x"})));
     }
 
     #[test]
@@ -1117,6 +1146,25 @@ mod tests {
         );
         assert!(text.lines().next().unwrap().contains("\"v\":2"));
         assert!(text.contains("doc_draw"));
+    }
+
+    #[test]
+    fn a_failed_recording_header_never_leaves_headerless_jsonl() {
+        let blocked =
+            std::env::temp_dir().join(format!("atelier-rec-blocked-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&blocked);
+        let _ = std::fs::remove_file(&blocked);
+        std::fs::write(&blocked, "not a directory").unwrap();
+        let path = blocked.join("recipe.jsonl");
+        let recorder = Recorder::new(path.clone());
+
+        // Make the target writable after startup failed. The recorder must stay
+        // disabled instead of creating a call-only v2 file with no header.
+        std::fs::remove_file(&blocked).unwrap();
+        std::fs::create_dir(&blocked).unwrap();
+        recorder.record("doc_create", json!({"name":"x"}));
+        assert!(!path.exists());
+        let _ = std::fs::remove_dir_all(&blocked);
     }
 
     #[test]
@@ -1400,7 +1448,7 @@ mod tests {
     fn list_resource_specs_pairs_each_doc() {
         let a = temp_atelier("list");
         a.studio().doc_create("Hero", 8, 8).unwrap();
-        let specs = a.list_resource_specs();
+        let specs = a.list_resource_specs().unwrap();
         let uris: Vec<&str> = specs.iter().map(|r| r.uri.as_str()).collect();
         assert!(uris.contains(&"atelier://doc/hero"));
         assert!(uris.contains(&"atelier://doc/hero/render"));

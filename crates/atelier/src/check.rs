@@ -7,7 +7,7 @@
 //! document, then exercises every configured export against temporary output
 //! paths. Subjective art critique remains an explicit editor tool.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -256,6 +256,13 @@ async fn inspect(root: &Path, store_root: &Path) -> Report {
         return report;
     }
     let studio = Studio::with_docs_dir(docs_dir.clone());
+    let _store_lock = match studio.lock_store_shared() {
+        Ok(lock) => lock,
+        Err(error) => {
+            report.add(Status::Fail, "store", docs_dir.display().to_string(), error);
+            return report;
+        }
+    };
     let ids = match document_ids(&docs_dir) {
         Ok(ids) => ids,
         Err(error) => {
@@ -303,6 +310,7 @@ async fn inspect(root: &Path, store_root: &Path) -> Report {
                 &docs_dir,
                 &studio,
                 infos.get(id),
+                project.requires_recipe(id),
                 scratch.path(),
                 &mut report,
             )
@@ -409,6 +417,7 @@ async fn validate_recipe(
     docs_dir: &Path,
     live: &Studio,
     live_info: Option<&Value>,
+    required: bool,
     scratch: &Path,
     report: &mut Report,
 ) {
@@ -416,20 +425,32 @@ async fn validate_recipe(
     let source = match std::fs::read_to_string(&path) {
         Ok(source) if source.trim().is_empty() => {
             report.add(
-                Status::Warn,
+                if required { Status::Fail } else { Status::Warn },
                 "recipe",
                 id,
-                "journal is empty; this document cannot be reproduced",
+                if required {
+                    "journal is empty; a configured export depends on this unreproducible document"
+                } else {
+                    "journal is empty; this document cannot be reproduced"
+                },
             );
             return;
         }
         Ok(source) => source,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
             report.add(
-                Status::Warn,
+                if required {
+                    Status::Fail
+                } else {
+                    Status::Warn
+                },
                 "recipe",
                 id,
-                "journal is missing; older documents remain usable but are not reproducible",
+                if required {
+                    "journal is missing; a configured export depends on this unreproducible document"
+                } else {
+                    "journal is missing; older documents remain usable but are not reproducible"
+                },
             );
             return;
         }
@@ -472,7 +493,7 @@ async fn validate_recipe(
     };
     let steps = recipe.steps.len();
     let replay_docs = scratch.join("replay").join(id).join("documents");
-    let replay_studio = Arc::new(Mutex::new(Studio::with_docs_dir(replay_docs)));
+    let replay_studio = Arc::new(Mutex::new(Studio::with_docs_dir(replay_docs.clone())));
     let atelier = Atelier::with_studio(Arc::clone(&replay_studio));
     let remapped =
         match crate::replay::validate_session(&recipe, Some(id.to_string()), &atelier).await {
@@ -501,7 +522,15 @@ async fn validate_recipe(
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     match live_info {
         Some(live_info) => {
-            match compare_document(live, id, live_info, &replay_studio, &rebuilt_id) {
+            match compare_document(
+                live,
+                &docs_dir.join(id),
+                id,
+                live_info,
+                &replay_studio,
+                &replay_docs.join(&rebuilt_id),
+                &rebuilt_id,
+            ) {
                 Ok(frames) => report.add(
                     Status::Pass,
                     "recipe",
@@ -537,9 +566,11 @@ fn rebuilt_id(recorded: &str, remapped: &HashMap<String, String>) -> Option<Stri
 
 fn compare_document(
     live: &Studio,
+    live_dir: &Path,
     live_id: &str,
     live_info: &Value,
     rebuilt: &Studio,
+    rebuilt_dir: &Path,
     rebuilt_id: &str,
 ) -> Result<usize, String> {
     let rebuilt_info = rebuilt
@@ -548,6 +579,7 @@ fn compare_document(
     if comparable_info(live_info.clone()) != comparable_info(rebuilt_info) {
         return Err("replay completed, but document structure differs from live state".into());
     }
+    compare_persisted_cels(live_dir, rebuilt_dir)?;
     let frames = live_info
         .get("frames")
         .and_then(Value::as_array)
@@ -567,6 +599,81 @@ fn compare_document(
         }
     }
     Ok(frames)
+}
+
+fn document_metadata(directory: &Path) -> Result<Value, String> {
+    let path = directory.join("doc.json");
+    let source = std::fs::read_to_string(&path)
+        .map_err(|error| format!("cannot read {}: {error}", path.display()))?;
+    serde_json::from_str(&source)
+        .map_err(|error| format!("cannot parse {}: {error}", path.display()))
+}
+
+fn comparable_metadata(mut metadata: Value) -> Value {
+    if let Some(object) = metadata.as_object_mut() {
+        object.remove("reference");
+    }
+    metadata
+}
+
+fn cel_files(metadata: &Value) -> Result<BTreeSet<String>, String> {
+    metadata
+        .get("cels")
+        .and_then(Value::as_array)
+        .ok_or("doc.json has no cels array")?
+        .iter()
+        .map(|cel| {
+            cel.get("file")
+                .and_then(Value::as_str)
+                .map(str::to_string)
+                .ok_or_else(|| "doc.json cel has no file".to_string())
+        })
+        .collect()
+}
+
+fn document_file(directory: &Path, relative: &str) -> Result<PathBuf, String> {
+    let relative = Path::new(relative);
+    if relative.as_os_str().is_empty()
+        || relative
+            .components()
+            .any(|component| !matches!(component, std::path::Component::Normal(_)))
+    {
+        return Err(format!(
+            "document contains unsafe cel path '{}'",
+            relative.display()
+        ));
+    }
+    Ok(directory.join(relative))
+}
+
+fn decode_cel(path: &Path) -> Result<image::RgbaImage, String> {
+    image::ImageReader::open(path)
+        .map_err(|error| format!("cannot open {}: {error}", path.display()))?
+        .with_guessed_format()
+        .map_err(|error| format!("cannot identify {}: {error}", path.display()))?
+        .decode()
+        .map_err(|error| format!("cannot decode {}: {error}", path.display()))
+        .map(image::DynamicImage::into_rgba8)
+}
+
+fn compare_persisted_cels(live_dir: &Path, rebuilt_dir: &Path) -> Result<(), String> {
+    let live_metadata = document_metadata(live_dir)?;
+    let rebuilt_metadata = document_metadata(rebuilt_dir)?;
+    if comparable_metadata(live_metadata.clone()) != comparable_metadata(rebuilt_metadata) {
+        return Err(
+            "replay completed, but document persistence metadata differs from live state".into(),
+        );
+    }
+    for file in cel_files(&live_metadata)? {
+        let live = decode_cel(&document_file(live_dir, &file)?)?;
+        let rebuilt = decode_cel(&document_file(rebuilt_dir, &file)?)?;
+        if live != rebuilt {
+            return Err(format!(
+                "replay completed, but exact cel pixels differ from live state in '{file}'"
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// A reference image is an external review aid, not part of the rebuilt pixel
@@ -751,6 +858,118 @@ mod tests {
                 && finding.name == "hero"
                 && finding.status == Status::Fail
                 && finding.detail.contains("differs from live state")
+        }));
+    }
+
+    #[tokio::test]
+    async fn detects_pixel_drift_on_a_hidden_layer() {
+        let root = Scratch::new().unwrap();
+        let store = root.path().join(".atelier");
+        let docs = store.join("documents");
+        std::fs::create_dir_all(&docs).unwrap();
+        std::fs::write(store.join("project.toml"), "version=1\n").unwrap();
+        let studio = Arc::new(Mutex::new(Studio::with_docs_dir(docs)));
+        let atelier = Atelier::with_studio(Arc::clone(&studio));
+        dispatch_ok(
+            &atelier,
+            "doc_create",
+            json!({"name":"hero","width":4,"height":4}),
+        )
+        .await;
+        dispatch_ok(
+            &atelier,
+            "doc_layer",
+            json!({"doc_id":"hero","op":"add","name":"secret"}),
+        )
+        .await;
+        dispatch_ok(
+            &atelier,
+            "doc_draw",
+            json!({
+                "doc_id":"hero","layer":1,"frame":0,"op":"fill_cel",
+                "color":[10,20,30,255]
+            }),
+        )
+        .await;
+        dispatch_ok(
+            &atelier,
+            "doc_layer",
+            json!({"doc_id":"hero","op":"set","index":1,"visible":false}),
+        )
+        .await;
+
+        // This bypasses dispatch and changes only invisible pixels. Flattened
+        // frame comparison alone cannot see it.
+        studio
+            .lock()
+            .unwrap()
+            .doc_draw(
+                "hero",
+                1,
+                0,
+                "fill_cel",
+                json!({"color":[200,100,50,255]})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            )
+            .unwrap();
+
+        let report = inspect(root.path(), &store).await;
+        assert!(report.failed());
+        assert!(report.findings.iter().any(|finding| {
+            finding.kind == "recipe"
+                && finding.name == "hero"
+                && finding.status == Status::Fail
+                && finding.detail.contains("exact cel pixels differ")
+        }));
+    }
+
+    #[tokio::test]
+    async fn a_configured_export_requires_a_replayable_journal() {
+        let root = Scratch::new().unwrap();
+        let store = root.path().join(".atelier");
+        let docs = store.join("documents");
+        std::fs::create_dir_all(&docs).unwrap();
+        std::fs::write(
+            store.join("project.toml"),
+            "version=1\n\
+             [[exports]]\n\
+             name='hero'\n\
+             doc='hero'\n\
+             op='sheet'\n\
+             out='dist/hero.png'\n",
+        )
+        .unwrap();
+        Studio::with_docs_dir(docs)
+            .doc_create("hero", 4, 4)
+            .unwrap();
+
+        let report = inspect(root.path(), &store).await;
+        assert!(report.failed());
+        assert!(report.findings.iter().any(|finding| {
+            finding.kind == "recipe"
+                && finding.name == "hero"
+                && finding.status == Status::Fail
+                && finding.detail.contains("configured export")
+        }));
+    }
+
+    #[tokio::test]
+    async fn an_unreferenced_legacy_document_without_a_journal_only_warns() {
+        let root = Scratch::new().unwrap();
+        let store = root.path().join(".atelier");
+        let docs = store.join("documents");
+        std::fs::create_dir_all(&docs).unwrap();
+        std::fs::write(store.join("project.toml"), "version=1\n").unwrap();
+        Studio::with_docs_dir(docs)
+            .doc_create("archive", 4, 4)
+            .unwrap();
+
+        let report = inspect(root.path(), &store).await;
+        assert!(!report.failed(), "{:#?}", report.findings);
+        assert!(report.findings.iter().any(|finding| {
+            finding.kind == "recipe" && finding.name == "archive" && finding.status == Status::Warn
         }));
     }
 
