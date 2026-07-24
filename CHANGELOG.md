@@ -15,6 +15,8 @@ releases.
   only consumer (`Document::relight`) was removed in 1.5.0.
 - The standalone GitHub Pages architecture page. The maintained architecture
   guide remains in `docs/ARCHITECTURE.md`.
+- The misleading `.env.example`; Atelier does not load dotenv files, and its
+  supported environment variables remain documented in CLI help and the README.
 
 ### Changed
 
