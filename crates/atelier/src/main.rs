@@ -36,6 +36,7 @@
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
 //! atelier init                   # stamp ./.atelier and its project manifest
 //! atelier build                  # build the manifest's named exports
+//! atelier check                  # validate project references, recipes, exports
 //! atelier recipe compact|expand  # convert recipes without replaying them
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! ```
@@ -43,6 +44,7 @@
 use atelier_mcp::server;
 
 mod call;
+mod check;
 mod clients;
 mod doctor;
 mod fsutil;
@@ -80,6 +82,8 @@ USAGE:
     atelier build                 build every named export in .atelier/project.toml
             [--only NAME] [--dry-run]
                                   select one export, or print calls without writing
+    atelier check [--json]        validate the manifest, documents, recipe rebuilds,
+                                  references, and exports without writing project output
     atelier recipe <compact|expand|stats> <INPUT|->
                                   convert or measure recipes without replaying them
     atelier tools [--html|--schema <name>]
@@ -270,6 +274,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("init") => std::process::exit(init::run(&args[2..])),
         // Build the portable, named exports declared by the project.
         Some("build") => std::process::exit(project::run(&args[2..]).await),
+        // Validate project state and reproducibility without touching outputs.
+        Some("check") => std::process::exit(check::run(&args[2..]).await),
         // Inspect or convert recipes without executing their tool calls.
         Some("recipe") => std::process::exit(recipe_cmd::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
@@ -384,6 +390,7 @@ mod tests {
             "atelier call",
             "atelier init",
             "atelier build",
+            "atelier check",
             "atelier recipe",
             "atelier clients install",
         ] {
