@@ -13,8 +13,10 @@ fail() {
 }
 
 RELEASE_TAG="${1:-${GITHUB_REF_NAME:-}}"
+CHECK_MODE="release"
 [ -f Cargo.lock ] || fail "Cargo.lock is missing"
 if [ "$RELEASE_TAG" = "--current" ]; then
+  CHECK_MODE="current"
   current_id="$(cargo pkgid --locked -p atelier)" \
     || fail "cannot resolve the atelier package"
   current_version="${current_id##*#}"
@@ -39,8 +41,19 @@ for package in atelier-core atelier-studio atelier-mcp atelier; do
     || fail "$package is $package_version, but the tag is $RELEASE_TAG"
 done
 
-grep -F "## [$RELEASE_VERSION] — " CHANGELOG.md >/dev/null \
-  || fail "CHANGELOG.md has no dated [$RELEASE_VERSION] heading"
+changelog_heading="$(
+  grep -E "^## \[$RELEASE_VERSION\] — (Unreleased|[0-9]{4}-[0-9]{2}-[0-9]{2})$" \
+    CHANGELOG.md \
+    | head -n 1 \
+    || true
+)"
+[ -n "$changelog_heading" ] \
+  || fail "CHANGELOG.md has no valid [$RELEASE_VERSION] heading"
+if [ "$CHECK_MODE" = "release" ]; then
+  printf '%s\n' "$changelog_heading" \
+    | grep -Eq "^## \[$RELEASE_VERSION\] — [0-9]{4}-[0-9]{2}-[0-9]{2}$" \
+    || fail "CHANGELOG.md [$RELEASE_VERSION] is still Unreleased; replace it with the release date before tagging"
+fi
 
 printf 'release-check: %s matches Cargo.lock, all release packages, and CHANGELOG.md\n' \
   "$RELEASE_TAG"
