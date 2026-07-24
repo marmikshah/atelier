@@ -28,7 +28,7 @@ png = "0.18" # direct: APNG animation encoder (already in the tree via image)
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml_edit = "0.22"
-dirs = "5"
+dirs = "6"
 
 # Structured logging: the library crates emit `tracing` events; only the
 # binary installs a subscriber (stderr, `ATELIER_LOG` filter).
