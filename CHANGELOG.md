@@ -13,6 +13,8 @@ releases.
   Atelier is again fully offline and is driven through `atelier call` or MCP.
 - The orphaned `atelier_core::document::Light` data type, left behind when its
   only consumer (`Document::relight`) was removed in 1.5.0.
+- The standalone GitHub Pages architecture page. The maintained architecture
+  guide remains in `docs/ARCHITECTURE.md`.
 
 ### Changed
 
