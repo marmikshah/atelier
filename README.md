@@ -186,7 +186,7 @@ a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool canno
 turn into an unreachable dead end.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
 or see how a call flows through the crates in the
-[architecture tour](https://marmikshah.github.io/atelier/architecture.html).
+[architecture guide](docs/ARCHITECTURE.md).
 
 ## Project stores
 
