@@ -5,15 +5,6 @@ members = [
     "crates/atelier-studio",
     "crates/atelier-mcp",
     "crates/atelier",
-    "crates/atelier-lab",
-]
-# Normal root commands cover only what ships. The unpublished research crate
-# remains available explicitly with `-p atelier-lab` or `--workspace`.
-default-members = [
-    "crates/atelier-core",
-    "crates/atelier-studio",
-    "crates/atelier-mcp",
-    "crates/atelier",
 ]
 # Shared package metadata — each crate inherits with `field.workspace = true`.
 [workspace.package]
@@ -38,8 +29,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml_edit = "0.22"
 dirs = "5"
-# Content-addressing for the lab's artifact store (small, pure-Rust).
-sha2 = "0.10"
 
 # Structured logging: the library crates emit `tracing` events; only the
 # binary installs a subscriber (stderr, `ATELIER_LOG` filter).

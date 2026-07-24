@@ -27,8 +27,9 @@ releases.
 - **The download installer is binary-only.** Daemon setup, MCP registration,
   broad tool approval, and skill installation are now separate, explicit
   commands.
-- Root Cargo commands target only the four shipped crates by default;
-  `atelier-lab` remains an explicit, unpublished workspace member.
+- **The experimental lab has been removed from this repository.** This deletes
+  the unpublished `atelier-lab` crate, its research plan, and its lab-only
+  hashing dependency so the work can resume later outside the 1.8.0 release.
 - Client configuration and installed skill updates now use same-directory
   temporary files and retain the previous content as an `.atelier-backup`.
 - **The background daemon port is configurable at install time.**
