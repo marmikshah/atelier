@@ -8,8 +8,7 @@ instructions for coding agents.
 
 atelier is an offline, headless pixel-art editor exposed through a CLI and MCP.
 The shipped dependency tower is `atelier-core` → `atelier-studio` →
-`atelier-mcp` → `atelier`. `atelier-lab` is unpublished experimental work: do
-not modify it unless the task explicitly asks for lab work.
+`atelier-mcp` → `atelier`.
 
 ## Commands
 
