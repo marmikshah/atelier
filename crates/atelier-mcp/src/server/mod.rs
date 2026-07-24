@@ -17,7 +17,6 @@ use serde_json::{Value, json};
 use atelier_studio::Studio;
 
 mod params;
-mod recorder;
 mod resources;
 mod toolsdoc;
 mod transport;
@@ -26,7 +25,6 @@ pub use toolsdoc::{tools_html, tools_text};
 pub use transport::{run, run_http};
 
 use params::*;
-use recorder::Recorder;
 use resources::{RESOURCE_RENDER_SCALE, ResourceTarget, base64, parse_resource_uri};
 
 fn j(v: Value) -> String {
@@ -285,8 +283,6 @@ pub struct Atelier {
     /// Shared so concurrent HTTP sessions serialise document file writes.
     studio: std::sync::Arc<std::sync::Mutex<Studio>>,
     tool_router: ToolRouter<Self>,
-    /// Optional session recorder; when set, each tool call is logged to a recipe.
-    recorder: Option<Recorder>,
     /// Held across dispatch + journal for every mutating call (an async lock,
     /// because it spans the dispatcher's await). The studio mutex serialises
     /// the mutations themselves, but it is released between the mutation and
@@ -306,7 +302,6 @@ impl Atelier {
         Self {
             studio,
             tool_router: Self::tool_router(),
-            recorder: None,
             write_order: std::sync::Arc::new(tokio::sync::Mutex::new(())),
         }
     }
@@ -352,12 +347,6 @@ impl Atelier {
             .collect()
     }
 
-    /// Enable session recording: every tool call is appended to a recipe at `path`.
-    pub fn with_recording(mut self, path: std::path::PathBuf) -> Self {
-        self.recorder = Some(Recorder::new(path));
-        self
-    }
-
     /// The shared studio.
     ///
     /// Recovers from a poisoned lock instead of propagating the panic: one bad
@@ -374,7 +363,7 @@ impl Atelier {
 
     /// THE one dispatch path every caller funnels through — the MCP handler
     /// (`call_tool`), and the binary's own `atelier call` / `replay`.
-    /// Logging, journaling, write ordering and session recording live here so
+    /// Logging, journaling, and write ordering live here so
     /// no caller can dodge them; transport-specific work (caller identity from
     /// HTTP headers) belongs to the transport above this.
     ///
@@ -387,46 +376,20 @@ impl Atelier {
         args: Value,
         caller: &str,
     ) -> Result<CallToolResult, ErrorData> {
-        self.dispatch_inner(tool, args, caller, true).await
-    }
-
-    /// The same dispatch path without success-level call logging. Validation
-    /// may replay hundreds of calls internally; their individual success lines
-    /// obscure its report. Protocol and tool failures remain logged.
-    #[doc(hidden)]
-    pub async fn dispatch_quiet(
-        &self,
-        tool: &str,
-        args: Value,
-        caller: &str,
-    ) -> Result<CallToolResult, ErrorData> {
-        self.dispatch_inner(tool, args, caller, false).await
-    }
-
-    async fn dispatch_inner(
-        &self,
-        tool: &str,
-        args: Value,
-        caller: &str,
-        log_success: bool,
-    ) -> Result<CallToolResult, ErrorData> {
-        let recorder = self.recorder.clone();
         // For mutations, hold the order lock from before the dispatch until
         // after the journal write, so journal order can never diverge from
         // execution order under concurrent sessions. Reads skip it.
         let journaled = is_journaled(tool, &args);
-        let recorded = is_recorded(tool, &args);
         let store_mutation = is_store_mutation(tool, &args);
         let write_order = self.write_order.clone();
-        let _order = if recorded {
+        let _order = if store_mutation {
             Some(write_order.lock().await)
         } else {
             None
         };
-        // The async order lock above coordinates sessions in this server. The
-        // advisory file lock also coordinates independent CLI/server processes
-        // and stays held through journaling, so state and provenance commit in
-        // the same order everywhere.
+        // The async order lock coordinates sessions in this server; the file
+        // lock also coordinates separate CLI and daemon processes. Keep it
+        // through journaling so pixels and provenance commit in one order.
         let _store_lock = {
             let studio = self.studio();
             if store_mutation {
@@ -447,39 +410,13 @@ impl Atelier {
                 return Err(e);
             }
         };
-        if log_success || is_error_result(&result) {
-            log_call(tool, &args, caller, &result, started.elapsed());
-        }
+        log_call(tool, &args, caller, &result, started.elapsed());
 
-        // A read rebuilds nothing, so it belongs in neither recipe. Both
-        // recorders answer to the same question — what did it take to make
-        // this? — so they share the one classifier.
-        if !is_error_result(&result) && recorded {
+        if !is_error_result(&result) && journaled {
             let target = journal_target(tool, &args, &result);
-            // A successful paste consumed the clipboard as it stands now (the
-            // order lock is still held, so nothing changed it since).
-            let clipboard = if tool == "doc_region"
-                && args.get("op").and_then(Value::as_str) == Some("paste")
-                && args.get("clipboard").is_none()
-            {
-                self.studio()
-                    .clipboard_pixels()
-                    .map(|(w, h, b)| (w, h, b.to_vec()))
-            } else {
-                None
-            };
-            let args = recorded_args(tool, args, target.as_deref(), clipboard);
-            // The document's own journal: on by default, so every document is a
-            // replayable recipe without anyone having to know to ask first.
-            if journaled && let Some(id) = &target {
-                self.studio().journal_append_compact(id, tool, &args);
-            }
-            // The session recorder (--record) stays opt-in and cross-document:
-            // it captures a whole sitting, which per-document journals cannot
-            // express (that is also why it gets delete_doc and the journal
-            // does not).
-            if let Some(recorder) = recorder {
-                recorder.record(tool, args);
+            let args = journal_args(tool, args, target.as_deref());
+            if let Some(id) = &target {
+                self.studio().journal_append(id, tool, &args);
             }
         }
         Ok(result)
@@ -510,21 +447,17 @@ impl Atelier {
             "doc_layer" => call!(DocLayer, doc_layer),
             "doc_frame" => call!(DocFrame, doc_frame),
             "doc_add_tag" => call!(DocAddTag, doc_add_tag),
-            "doc_clear_cel" => call!(DocCel, doc_clear_cel),
             "doc_checkpoint" => call!(DocCheckpoint, doc_checkpoint),
             "doc_palette" => call!(DocPalette, doc_palette),
             "doc_batch" => call!(DocBatch, doc_batch),
             "doc_draw" => call!(DocDraw, doc_draw),
             "doc_fx" => call!(DocFx, doc_fx),
             "doc_region" => call!(DocRegion, doc_region),
-            "doc_select" => call!(DocSelect, doc_select),
             "doc_paint_grid" => call!(DocPaintGrid, doc_paint_grid),
             "doc_dither_ramp" => call!(DocDitherRamp, doc_dither_ramp),
-            "doc_tile" => call!(DocTile, doc_tile),
             "doc_look" => call!(DocLook, doc_look),
             "doc_dump_region" => call!(DocDumpRegion, doc_dump_region),
             "doc_silhouette" => call!(DocSilhouette, doc_silhouette),
-            "doc_slice" => call!(DocSlice, doc_slice),
             "doc_components" => call!(DocComponents, doc_components),
             "doc_frame_diff" => call!(DocFrameDiff, doc_frame_diff),
             "doc_seam_report" => call!(DocSeamReport, doc_seam_report),
@@ -593,14 +526,15 @@ impl Atelier {
     }
 }
 
-/// Tools that never belong in a per-document journal. Most only look at a
-/// document. `delete_doc` is the deliberate exception: it changes the library,
-/// but the journal it could belong to disappears with the document.
+/// Tools omitted from per-document journals because replaying them does not
+/// rebuild document state. Most are reads. `doc_export` writes an external
+/// artifact, while `delete_doc` removes the journal along with the document.
 ///
 /// This is an allowlist, and the default is deliberately the other way: an
 /// unlisted tool gets journaled. A stray read in a recipe replays as a harmless
 /// no-op, but a mutation missing from a recipe silently produces different art —
-/// so when in doubt, record.
+/// so when in doubt, record. Anything added here must be irrelevant to rebuilding
+/// the document.
 const NON_JOURNALED_TOOLS: &[&str] = &[
     // the eye and the audits it reports through
     "doc_look",
@@ -616,6 +550,7 @@ const NON_JOURNALED_TOOLS: &[&str] = &[
     // library-level: not part of any one document's provenance
     "list_docs",
     "delete_doc",
+    "doc_export",
 ];
 
 /// True when this call is part of how the document got made, and so belongs in
@@ -638,19 +573,9 @@ fn is_journaled(tool: &str, args: &Value) -> bool {
     )
 }
 
-/// What the session recorder (`--record`) captures: everything the journal
-/// does, plus `delete_doc`. Deleting is not part of any one document's
-/// provenance (the whole dir is gone), but a cross-document sitting that
-/// creates x, deletes it, and creates x again replays as x + x-2 unless the
-/// delete is in the recording.
-fn is_recorded(tool: &str, args: &Value) -> bool {
-    tool == "delete_doc" || is_journaled(tool, args)
-}
-
-/// Whether the call changes the document store itself. `doc_export` belongs in
-/// a cross-document session recording but only reads the store.
+/// Whether a call changes documents in the store.
 fn is_store_mutation(tool: &str, args: &Value) -> bool {
-    tool != "doc_export" && is_recorded(tool, args)
+    tool == "delete_doc" || is_journaled(tool, args)
 }
 
 /// The document a call belongs to. `doc_create` names it in the result (the id
@@ -665,8 +590,7 @@ fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<S
         // doc_export writes an external artifact; it does not define the
         // document's pixels, so it must NOT enter the per-document recipe —
         // replaying a rebuild would re-run the export against the author's
-        // out_path (or fail-abort if that path is gone). The session recorder
-        // still captures it (it keys off `is_journaled`, not this).
+        // out_path (or fail-abort if that path is gone).
         "doc_export" => None,
         // op=generate locks its palette onto `set_doc`, carrying no `doc_id`;
         // without this the lock is silently dropped from the recipe and replay
@@ -695,35 +619,13 @@ fn batch_targets(frame: usize, frames: Option<Vec<usize>>) -> Vec<usize> {
     targets
 }
 
-/// The args a call is recorded with, enriched so the recording is
-/// self-contained:
-///
-/// - `doc_create`'s minted id exists only in its result; stamping it into the
-///   recorded args lets `atelier replay` remap every later step's ids when a
-///   re-run mints a different one (replay strips it before sending).
-/// - a paste's pixels exist only in the process clipboard, which may have been
-///   filled from another document — the per-document journal cannot express
-///   that, so the pixels ride along (base64 RGBA) and replay pastes them
-///   directly.
-fn recorded_args(
-    tool: &str,
-    mut args: Value,
-    target: Option<&str>,
-    clipboard: Option<(u32, u32, Vec<u8>)>,
-) -> Value {
+/// `doc_create`'s minted id exists only in its result. Stamping it into the
+/// recorded args lets replay remap later steps when a rerun mints a new id.
+fn journal_args(tool: &str, mut args: Value, target: Option<&str>) -> Value {
     if tool == "doc_create"
         && let (Some(id), Some(obj)) = (target, args.as_object_mut())
     {
         obj.insert("doc_id".into(), json!(id));
-    }
-    if tool == "doc_region"
-        && args.get("op").and_then(Value::as_str) == Some("paste")
-        && let (Some((w, h, buf)), Some(obj)) = (clipboard, args.as_object_mut())
-    {
-        obj.insert(
-            "clipboard".into(),
-            json!({"w": w, "h": h, "data": base64(&buf)}),
-        );
     }
     args
 }
@@ -832,8 +734,8 @@ impl ServerHandler for Atelier {
              repainting only what moves — there is no pose interpolation; doc_frame_diff and \
              doc_anim_audit check what changed and whether the timing reads. doc_checkpoint \
              save before risky ops (quantize, palette snap) — restore rolls back. Export with \
-             doc_export (op=sheet|anim|tileset) / op=all. list_docs browses the library. \
-             30 tools, all of them advertised — there is no profile to switch."
+             doc_export (op=sheet|anim). list_docs browses the library. \
+             26 tools, all of them advertised — there is no profile to switch."
                 .into(),
         );
         info
@@ -842,7 +744,6 @@ impl ServerHandler for Atelier {
 
 #[cfg(test)]
 mod tests {
-    use super::resources::base64_decode;
     use super::*;
 
     #[test]
@@ -885,10 +786,10 @@ mod tests {
         let n = Atelier::tool_router().list_all().len();
         // Written into README and tools.html (regen: make docs).
         // Change the surface, update them in the same commit — this is the reminder.
-        assert_eq!(n, 30, "tool count changed — update the docs");
+        assert_eq!(n, 26, "tool count changed — update the docs");
         assert_eq!(
             Atelier::registry_tools().len(),
-            30,
+            26,
             "every tool is advertised; there is no profile filter"
         );
         let instructions = temp_atelier("info")
@@ -896,7 +797,7 @@ mod tests {
             .instructions
             .unwrap_or_default();
         assert!(
-            instructions.contains("30 tools"),
+            instructions.contains("26 tools"),
             "get_info instructions drifted from the tool count"
         );
     }
@@ -906,9 +807,9 @@ mod tests {
         // `atelier tools` lists the registry only; building a `Studio` for it
         // used to create ~/.atelier/documents as a side effect of `--help`-level
         // work. The router is an associated fn, so nothing here touches disk.
-        assert_eq!(Atelier::registry_tools().len(), 30);
-        assert!(tools_text().starts_with("atelier tools — 30 tools\n"));
-        assert!(tools_html().contains("30</strong> tools"));
+        assert_eq!(Atelier::registry_tools().len(), 26);
+        assert!(tools_text().starts_with("atelier tools — 26 tools\n"));
+        assert!(tools_html().contains("26</strong> tools"));
     }
 
     #[tokio::test]
@@ -1056,14 +957,12 @@ mod tests {
         for t in ["doc_look", "doc_info", "doc_critique", "doc_silhouette"] {
             assert!(!is_journaled(t, &json!({"doc_id": "d"})), "{t} is a read");
         }
+        assert!(
+            !is_journaled("doc_export", &json!({"doc_id": "d"})),
+            "export writes an artifact but does not build the document"
+        );
         // Anything that marks the canvas has to be in the recipe.
-        for t in [
-            "doc_draw",
-            "doc_batch",
-            "doc_fx",
-            "doc_create",
-            "doc_export",
-        ] {
+        for t in ["doc_draw", "doc_batch", "doc_fx", "doc_create"] {
             assert!(
                 is_journaled(t, &json!({"doc_id": "d"})),
                 "{t} builds the art"
@@ -1114,108 +1013,31 @@ mod tests {
     }
 
     #[test]
-    fn delete_doc_is_recorded_but_never_journaled() {
-        // Its own journal dies with the doc dir, so journaling it is moot —
-        // but a cross-document sitting that creates x, deletes it and creates
-        // x again replays as x + x-2 unless the recording keeps the delete.
+    fn store_mutations_are_classified_for_locking() {
+        // Its own journal dies with the doc dir, so journaling delete is moot.
         assert!(!is_journaled("delete_doc", &json!({"doc_id": "x"})));
-        assert!(is_recorded("delete_doc", &json!({"doc_id": "x"})));
-        // Everything the journal keeps, the recorder keeps too.
-        assert!(is_recorded("doc_draw", &json!({"doc_id": "x"})));
-        assert!(!is_recorded("doc_look", &json!({"doc_id": "x"})));
         assert!(is_store_mutation("delete_doc", &json!({"doc_id": "x"})));
         assert!(is_store_mutation("doc_draw", &json!({"doc_id": "x"})));
         assert!(!is_store_mutation(
             "doc_export",
-            &json!({"doc_id":"x","op":"sheet"})
+            &json!({"doc_id": "x", "op": "sheet"})
         ));
         assert!(!is_store_mutation("doc_look", &json!({"doc_id": "x"})));
     }
 
     #[test]
-    fn a_reused_recording_path_is_truncated_not_appended() {
-        let path = std::env::temp_dir().join("atelier-rec-truncate.jsonl");
-        std::fs::write(&path, "{\"tool\":\"doc_create\",\"args\":{}}\n").unwrap();
-        let rec = Recorder::new(path.clone());
-        rec.record("doc_draw", json!({"doc_id": "x"}));
-        let text = std::fs::read_to_string(&path).unwrap();
-        assert_eq!(
-            text.lines().count(),
-            2,
-            "old sitting must not survive: {text}"
-        );
-        assert!(text.lines().next().unwrap().contains("\"v\":2"));
-        assert!(text.contains("doc_draw"));
-    }
-
-    #[test]
-    fn a_failed_recording_header_never_leaves_headerless_jsonl() {
-        let blocked =
-            std::env::temp_dir().join(format!("atelier-rec-blocked-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&blocked);
-        let _ = std::fs::remove_file(&blocked);
-        std::fs::write(&blocked, "not a directory").unwrap();
-        let path = blocked.join("recipe.jsonl");
-        let recorder = Recorder::new(path.clone());
-
-        // Make the target writable after startup failed. The recorder must stay
-        // disabled instead of creating a call-only v2 file with no header.
-        std::fs::remove_file(&blocked).unwrap();
-        std::fs::create_dir(&blocked).unwrap();
-        recorder.record("doc_create", json!({"name":"x"}));
-        assert!(!path.exists());
-        let _ = std::fs::remove_dir_all(&blocked);
-    }
-
-    #[test]
-    fn doc_create_records_the_minted_id_for_replay_remapping() {
+    fn doc_create_journals_the_minted_id_for_replay_remapping() {
         // A collision mints `sprite-2`; without the stamp, replay could not
         // tell which recorded id the later steps' `doc_id: "sprite"` meant.
         assert_eq!(
-            recorded_args(
-                "doc_create",
-                json!({"name": "sprite"}),
-                Some("sprite-2"),
-                None
-            ),
+            journal_args("doc_create", json!({"name": "sprite"}), Some("sprite-2")),
             json!({"name": "sprite", "doc_id": "sprite-2"})
         );
         // Every other tool records its args untouched.
         assert_eq!(
-            recorded_args(
-                "doc_draw",
-                json!({"doc_id": "sprite"}),
-                Some("sprite"),
-                None
-            ),
+            journal_args("doc_draw", json!({"doc_id": "sprite"}), Some("sprite")),
             json!({"doc_id": "sprite"})
         );
-    }
-
-    #[test]
-    fn a_journaled_paste_embeds_its_pixels() {
-        // The clipboard may have been filled from ANOTHER document; without
-        // the pixels in the step, replaying this document's journal alone
-        // fails with "clipboard is empty".
-        let pixels = vec![1u8, 2, 3, 4, 5, 6, 7, 8];
-        let stamped = recorded_args(
-            "doc_region",
-            json!({"doc_id": "x", "op": "paste", "x": 1, "y": 2}),
-            Some("x"),
-            Some((2, 1, pixels.clone())),
-        );
-        let cb = &stamped["clipboard"];
-        assert_eq!(cb["w"], 2);
-        assert_eq!(cb["h"], 1);
-        assert_eq!(base64_decode(cb["data"].as_str().unwrap()).unwrap(), pixels);
-        // Non-paste region ops carry nothing extra.
-        let copy = recorded_args(
-            "doc_region",
-            json!({"doc_id": "x", "op": "copy"}),
-            Some("x"),
-            None,
-        );
-        assert!(copy.get("clipboard").is_none());
     }
 
     #[test]
@@ -1223,7 +1045,7 @@ mod tests {
         let ok = CallToolResult::success(vec![Content::text(json!({"ok": true}).to_string())]);
         // doc_export writes an artifact, not document state — replaying a rebuild
         // must not re-run it, so it belongs to no document's recipe.
-        assert!(is_journaled(
+        assert!(!is_journaled(
             "doc_export",
             &json!({"doc_id": "hero", "op": "sheet"})
         ));
@@ -1260,71 +1082,6 @@ mod tests {
     }
 
     #[test]
-    fn recorder_appends_a_replayable_jsonl_recipe() {
-        let path = std::env::temp_dir().join("atelier-rec-roundtrip.jsonl");
-        let _ = std::fs::remove_file(&path);
-        let rec = Recorder::new(path.clone());
-
-        rec.record("doc_create", json!({"name": "x", "width": 8, "height": 8}));
-        rec.record("doc_draw", json!({"doc_id": "x", "op": "rect"}));
-
-        // Whatever the recorder leaves on disk must parse through replay's own
-        // parser — the two halves share this format or neither works.
-        let src = std::fs::read_to_string(&path).expect("recipe file written");
-        assert_eq!(
-            src.lines().count(),
-            3,
-            "one header plus one appended line per call"
-        );
-        let recipe = crate::recipe::Recipe::parse(&src).expect("recipe parses");
-        assert_eq!(recipe.steps.len(), 2);
-        assert_eq!(recipe.steps[0].tool, "doc_create");
-        assert_eq!(recipe.steps[0].args["width"], 8);
-        assert_eq!(recipe.steps[1].args["op"], "rect");
-        let _ = std::fs::remove_file(&path);
-    }
-
-    #[test]
-    fn recorder_skips_failed_steps() {
-        let path = std::env::temp_dir().join("atelier-rec-skip.json");
-        let _ = std::fs::remove_file(&path);
-        let rec = Recorder::new(path.clone());
-
-        // Mirror call_tool: record only when the result is not an error payload.
-        let ok = rmcp::model::CallToolResult::success(vec![rmcp::model::ContentBlock::text(j(
-            json!({"id": "x"}),
-        ))]);
-        let err = rmcp::model::CallToolResult::success(vec![rmcp::model::ContentBlock::text(j(
-            json!({"error": "no such doc"}),
-        ))]);
-        assert!(!is_error_result(&ok));
-        assert!(is_error_result(&err));
-        if !is_error_result(&ok) {
-            rec.record("doc_create", json!({"name": "x"}));
-        }
-        if !is_error_result(&err) {
-            rec.record("doc_info", json!({"doc_id": "nope"}));
-        }
-
-        let src = std::fs::read_to_string(&path).expect("recipe file written");
-        let recipe = crate::recipe::Recipe::parse(&src).expect("recipe parses");
-        assert_eq!(recipe.steps.len(), 1);
-        assert_eq!(recipe.steps[0].tool, "doc_create");
-        let _ = std::fs::remove_file(&path);
-    }
-
-    #[test]
-    fn recorder_creates_missing_parent_dir() {
-        let base = std::env::temp_dir().join(format!("atelier-rec-nested-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&base);
-        let path = base.join("a").join("b").join("recipe.json");
-        let rec = Recorder::new(path.clone()); // must create a/b/
-        rec.record("doc_create", json!({"name": "x"}));
-        assert!(path.exists(), "recipe written into freshly created dirs");
-        let _ = std::fs::remove_dir_all(&base);
-    }
-
-    #[test]
     fn resource_uri_parses_and_rejects() {
         assert_eq!(
             parse_resource_uri("atelier://doc/hero"),
@@ -1340,15 +1097,6 @@ mod tests {
         assert_eq!(parse_resource_uri("atelier://doc//render"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/extra"), None);
         assert_eq!(parse_resource_uri("atelier://doc/hero/render/x"), None);
-    }
-
-    #[test]
-    fn base64_decode_round_trips_and_rejects_garbage() {
-        for input in [&b""[..], b"f", b"fo", b"foo", b"foob", b"\x00\xff\x10\x80"] {
-            assert_eq!(base64_decode(&base64(input)).unwrap(), input);
-        }
-        assert!(base64_decode("a!!!").is_err());
-        assert!(base64_decode("a").is_err(), "dangling single char");
     }
 
     #[test]

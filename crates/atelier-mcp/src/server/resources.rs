@@ -26,42 +26,6 @@ pub(crate) fn parse_resource_uri(uri: &str) -> Option<ResourceTarget> {
     }
 }
 
-/// Decode standard base64 (the inverse of `base64` below) — used to read the
-/// clipboard pixels a journaled paste step embeds. Strict: any non-alphabet
-/// character (other than trailing `=`) is an error.
-pub(crate) fn base64_decode(text: &str) -> Result<Vec<u8>, String> {
-    fn val(c: u8) -> Result<u32, String> {
-        match c {
-            b'A'..=b'Z' => Ok((c - b'A') as u32),
-            b'a'..=b'z' => Ok((c - b'a' + 26) as u32),
-            b'0'..=b'9' => Ok((c - b'0' + 52) as u32),
-            b'+' => Ok(62),
-            b'/' => Ok(63),
-            _ => Err(format!("invalid base64 byte {c:#x}")),
-        }
-    }
-    let text = text.trim_end_matches('=');
-    let mut out = Vec::with_capacity(text.len() * 3 / 4);
-    for chunk in text.as_bytes().chunks(4) {
-        if chunk.len() == 1 {
-            return Err("truncated base64 (dangling single character)".into());
-        }
-        let mut n: u32 = 0;
-        for &c in chunk {
-            n = n << 6 | val(c)?;
-        }
-        n <<= 6 * (4 - chunk.len() as u32);
-        out.push((n >> 16) as u8);
-        if chunk.len() > 2 {
-            out.push((n >> 8) as u8);
-        }
-        if chunk.len() > 3 {
-            out.push(n as u8);
-        }
-    }
-    Ok(out)
-}
-
 /// Standard base64 (no line wrapping) — the blob field wants pre-encoded text and
 /// we'd rather not pull in a crate for ~15 lines.
 pub(crate) fn base64(bytes: &[u8]) -> String {

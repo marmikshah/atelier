@@ -7,8 +7,8 @@
 //!
 //! This module is the facade: the `Studio` struct, the structure/timeline and
 //! per-cel ops, and the shared helpers. The store/journal lives in `store`,
-//! file exports in `ops_export`, selection/clipboard in `ops_region`, replay
-//! formats in `recipe`, and the themed readers/crafters in their own modules.
+//! file exports in `ops_export`, rectangular edits in `ops_region`, and the
+//! themed readers/crafters in their own modules.
 
 // Drawing/region ops are inherently coordinate-heavy (layer, frame, x0..y1,
 // colour, …); the argument-count lint fights the domain here.
@@ -24,15 +24,11 @@ mod analysis;
 mod craft;
 mod ops_export;
 mod ops_region;
-pub mod recipe;
 mod reference;
 mod set;
 mod store;
 mod view;
-pub use store::HomeOrigin;
 pub use view::LookOptions;
-
-use ops_region::{Clip, Selection};
 
 /// Hard cap on the pixel count (w×h) of an external source image. ~64 MP covers
 /// any real reference/photo; the point is that a tiny-on-disk "decompression
@@ -54,7 +50,7 @@ pub(crate) const MAX_TARGET_PIXELS: usize = 1_048_576;
 /// Upper bound on an export scale factor. Canvases are already capped at 4096²
 /// (`doc_create`); without a scale ceiling a `scale=64` export of that targets a
 /// ~256 GB buffer. 16 matches the render/preview clamp.
-pub const MAX_EXPORT_SCALE: u32 = 16;
+pub(crate) const MAX_EXPORT_SCALE: u32 = 16;
 
 /// Export scale when the caller leaves it unset.
 pub(crate) const DEFAULT_EXPORT_SCALE: u32 = 4;
@@ -119,25 +115,9 @@ pub fn slugify(name: &str) -> String {
     if s.is_empty() { "untitled".into() } else { s }
 }
 
-/// A by-colour selection request: which cel to read, an explicit target colour
-/// or a sample point to read it from, and the channel-distance tolerance.
-pub struct ColorSelect {
-    pub layer: usize,
-    pub frame: usize,
-    pub color: Option<[u8; 4]>,
-    pub sample: Option<(i32, i32)>,
-    pub tol: i32,
-}
-
 #[derive(Clone)]
 pub struct Studio {
     docs_dir: PathBuf,
-    /// Cross-cel / cross-document clipboard for copy/cut → paste. Lives for the
-    /// process; one shared studio means one shared clipboard across sessions.
-    clipboard: Option<Clip>,
-    /// Active selection mask (at most one), set by `doc_select`; painting ops
-    /// confine to it. Process-lived, like the clipboard.
-    selection: Option<Selection>,
 }
 
 impl Studio {
@@ -287,8 +267,7 @@ impl Studio {
 
     /// One-tool dispatch over frame lifecycle + timing — `op`: `add` (append,
     /// optional `copy_from`) | `duration` (set frame `frame`'s ms) | `delete` |
-    /// `insert` | `duplicate` (`link=true` shares the source's cels instead of
-    /// copying) | `move`. Routes to the kept `doc_add_frame` /
+    /// `insert` | `duplicate` | `move`. Routes to the kept `doc_add_frame` /
     /// `doc_set_frame_duration` / `doc_frame_ops`. (Pivot, boxes, tags and
     /// keyframe motion keep their own tools.)
     pub fn doc_frame(
@@ -300,7 +279,6 @@ impl Studio {
         to_index: Option<usize>,
         duration_ms: Option<u32>,
         count: Option<usize>,
-        link: Option<bool>,
     ) -> Result<Value, String> {
         match op {
             "add" => self.doc_add_frame(
@@ -314,22 +292,6 @@ impl Studio {
                 Self::required_index(op, frame)?,
                 duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
             ),
-            // A linked duplicate shares the source frame's cels (copy-on-write
-            // on any later edit) — the animation-idle-frame idiom, one call
-            // instead of duplicate + manual relink.
-            "duplicate" if link.unwrap_or(false) => {
-                let (dir, mut doc) = self.open(id)?;
-                let src = Self::required_index(op, frame)?;
-                let idx = doc.duplicate_frame(src, true)?;
-                doc.save(&dir)?;
-                Ok(json!({
-                    "ok": true,
-                    "doc_id": id,
-                    "duplicated_frame": src,
-                    "new_frame": idx,
-                    "linked": true,
-                }))
-            }
             _ => self.doc_frame_ops(
                 id,
                 op,
@@ -337,48 +299,6 @@ impl Studio {
                 to_index,
                 duration_ms,
             ),
-        }
-    }
-
-    /// Slice metadata (named rects with optional 9-slice centre and pivot) — `op`: `add` (name + inclusive rect, optional centre/pivot)
-    /// | `delete` (by name) | `list` (read-only, straight from the structure).
-    /// Slices ride the sheet export's JSON sidecars; they never touch pixels.
-    pub fn doc_slice(
-        &self,
-        id: &str,
-        op: &str,
-        name: Option<&str>,
-        rect: Option<[i32; 4]>,
-        center: Option<[i32; 4]>,
-        pivot: Option<[i32; 2]>,
-    ) -> Result<Value, String> {
-        match op {
-            "add" => {
-                let (dir, mut doc) = self.open(id)?;
-                let idx = doc.add_slice(
-                    name.ok_or("doc_slice op=add needs `name`")?,
-                    rect.ok_or("doc_slice op=add needs `rect` [x0,y0,x1,y1]")?,
-                    center,
-                    pivot,
-                )?;
-                doc.save(&dir)?;
-                Ok(json!({"ok": true, "doc_id": id, "slice": idx}))
-            }
-            "delete" => {
-                let (dir, mut doc) = self.open(id)?;
-                doc.delete_slice(name.ok_or("doc_slice op=delete needs `name`")?)?;
-                self.commit(&dir, id, doc)
-            }
-            "list" => {
-                let info = self.doc_info(id)?;
-                Ok(json!({
-                    "doc_id": id,
-                    "slices": info.get("slices").cloned().unwrap_or_else(|| json!([])),
-                }))
-            }
-            other => Err(format!(
-                "unknown doc_slice op '{other}' — valid: add | delete | list"
-            )),
         }
     }
 
@@ -397,12 +317,6 @@ impl Studio {
         }
         let (dir, mut doc) = self.open(id)?;
         doc.add_tag(name, from, to, direction)?;
-        self.commit(&dir, id, doc)
-    }
-
-    pub fn doc_clear_cel(&self, id: &str, layer: usize, frame: usize) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        doc.clear_cel(layer, frame)?;
         self.commit(&dir, id, doc)
     }
 
@@ -461,27 +375,20 @@ impl Studio {
         });
         if changed == 0 {
             out["warning"] = json!(
-                "no pixels changed — coordinates may be off-canvas, the edit may match what's already there (a no-op, not a failure), or the selection may exclude the area"
+                "no pixels changed — coordinates may be off-canvas or the edit may match what's already there (a no-op, not a failure)"
             );
         }
         out
     }
 
-    /// Like `edit`, but if an active selection covers this document the op `f`
-    /// is confined to the selected pixels. Used by the painting ops so
-    /// `doc_select` masks any of them. A stale selection (dims mismatch) is an
-    /// error, never a silent unmasked apply. Returns a change ack (pixel
-    /// count + bbox) instead of a blind ok.
-    fn edit_masked<F>(&self, id: &str, layer: usize, frame: usize, f: F) -> Result<Value, String>
+    /// Apply a cel edit and return its changed-pixel count and bounding box.
+    fn edit_with_ack<F>(&self, id: &str, layer: usize, frame: usize, f: F) -> Result<Value, String>
     where
         F: FnOnce(&mut Document) -> Result<(), String>,
     {
         let (dir, mut doc) = self.open(id)?;
         let before = doc.cel_full(layer, frame);
-        match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
-            Some(mask) => doc.apply_masked(layer, frame, mask, f)?,
-            None => f(&mut doc)?,
-        }
+        f(&mut doc)?;
         let after = doc.cel_full(layer, frame);
         doc.save(&dir)?;
         Ok(Self::change_ack(id, &before, &after))
@@ -501,37 +408,6 @@ impl Studio {
         let out = doc.frame_ops(action, frame, to_index, duration_ms)?;
         doc.save(&dir)?;
         Ok(out)
-    }
-
-    /// Best-effort auto-checkpoint before a destructive op, labelled
-    /// `auto:<tool>`, keeping only the newest few auto snapshots so repeated
-    /// ops don't grow the doc dir without bound. Never fails the caller.
-    pub fn auto_checkpoint(&self, id: &str, tool: &str) {
-        const KEEP: usize = 5;
-        let label = format!("auto:{}", tool);
-        let _ = self.checkpoint(id, "save", Some(&label), None);
-        if let Ok(list) = self.checkpoint(id, "list", None, None) {
-            let mut autos: Vec<String> = list["checkpoints"]
-                .as_array()
-                .map(|a| {
-                    a.iter()
-                        .filter(|c| c["label"].as_str().is_some_and(|l| l.starts_with("auto:")))
-                        .filter_map(|c| c["id"].as_str().map(String::from))
-                        .collect()
-                })
-                .unwrap_or_default();
-            // Numeric order — lexical sort would call cp10 older than cp2.
-            autos.sort_by_key(|s| {
-                s.strip_prefix("cp")
-                    .and_then(|t| t.parse::<u32>().ok())
-                    .unwrap_or(0)
-            });
-            if autos.len() > KEEP {
-                for cpid in &autos[..autos.len() - KEEP] {
-                    let _ = self.checkpoint(id, "prune", None, Some(cpid));
-                }
-            }
-        }
     }
 
     // -- palette -------------------------------------------------------------
@@ -568,7 +444,7 @@ impl Studio {
     /// Apply many ordered drawing ops to one cel in a single open→save cycle.
     /// Declarative grid painting: legend (char -> colour or palette index) +
     /// row strings paint a whole region in one call. Palette-index legends are
-    /// palette-true by construction. Honours an active selection.
+    /// palette-true by construction.
     pub fn doc_paint_grid(
         &self,
         id: &str,
@@ -581,7 +457,6 @@ impl Studio {
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let palette = doc.meta().palette.clone();
-        let (dw, dh) = (doc.meta().w, doc.meta().h);
         drop(doc);
         let mut map = std::collections::HashMap::new();
         for (k, v) in &legend {
@@ -636,44 +511,11 @@ impl Studio {
             map.insert(ch, color);
         }
         let counts = std::cell::Cell::new((0u64, 0u64));
-        let mut ack = self.edit_masked(id, layer, frame, |d| {
+        let mut ack = self.edit_with_ack(id, layer, frame, |d| {
             counts.set(d.paint_grid(layer, frame, x, y, &map, &rows)?);
             Ok(())
         })?;
-        let (mut painted, clipped) = counts.get();
-        // Under an active selection, edit_masked reverts cells the mask
-        // excludes AFTER paint_grid counted them — recount so `painted`
-        // reports what actually landed (dims captured above; no third load).
-        {
-            if let Some(mask) = self.selection_mask_for(id, dw, dh)? {
-                let (dwi, dhi) = (dw as i32, dh as i32);
-                let (mut kept, mut masked) = (0u64, 0u64);
-                for (ry, row) in rows.iter().enumerate() {
-                    for (rx, ch) in row.chars().enumerate() {
-                        if ch == '.' || ch == ' ' {
-                            continue;
-                        }
-                        let (tx, ty) = (x + rx as i32, y + ry as i32);
-                        if tx < 0 || ty < 0 || tx >= dwi || ty >= dhi {
-                            continue;
-                        }
-                        match mask.get((ty * dwi + tx) as usize).copied() {
-                            Some(true) => kept += 1,
-                            _ => masked += 1,
-                        }
-                    }
-                }
-                if masked > 0 {
-                    painted = kept;
-                    ack["masked"] = json!(masked);
-                    ack["warning"] = json!(format!(
-                        "{} grid cells fell inside the canvas but outside the active \
-                         selection and were not painted",
-                        masked
-                    ));
-                }
-            }
-        }
+        let (painted, clipped) = counts.get();
         ack["painted"] = json!(painted);
         if clipped > 0 {
             ack["clipped"] = json!(clipped);
@@ -706,10 +548,7 @@ impl Studio {
             Ok(())
         };
         let before = doc.cel_full(layer, frame);
-        match self.selection_mask_for(id, doc.meta().w, doc.meta().h)? {
-            Some(mask) => doc.apply_masked(layer, frame, mask, run)?,
-            None => run(&mut doc)?,
-        }
+        run(&mut doc)?;
         let after = doc.cel_full(layer, frame);
         doc.save(&dir)?;
         let mut ack = Self::change_ack(id, &before, &after);
@@ -827,49 +666,10 @@ mod tests {
         // "Give me my 10 frames" used to cost 9 identical round-trips.
         let s = studio("addcount");
         s.doc_create("d", 4, 4).unwrap();
-        let out = s.doc_frame("d", "add", None, Some(0), None, Some(80), Some(9), None);
+        let out = s.doc_frame("d", "add", None, Some(0), None, Some(80), Some(9));
         assert!(out.is_ok(), "{out:?}");
         let info = s.doc_info("d").unwrap();
         assert_eq!(info["frames"].as_array().map(|f| f.len()), Some(10));
-    }
-
-    #[test]
-    fn indexed_raster_round_trips_a_palette_index_paint() {
-        let s = studio("indexed");
-        s.doc_create("d", 4, 4).unwrap();
-        s.doc_set_palette("d", vec![[10, 0, 0, 255], [20, 0, 0, 255]])
-            .unwrap();
-        let mut legend = serde_json::Map::new();
-        legend.insert("k".into(), json!(0));
-        legend.insert("r".into(), json!(1));
-        s.doc_paint_grid("d", 0, 0, 1, 1, legend, vec!["kr".into(), ".k".into()])
-            .unwrap();
-        let v = s.doc_indexed_raster("d", 0, 0).unwrap();
-        assert_eq!(v["width"], json!(4));
-        assert_eq!(v["palette"], json!([[10, 0, 0, 255], [20, 0, 0, 255]]));
-        let indices: Vec<Option<u32>> = serde_json::from_value(v["indices"].clone()).unwrap();
-        assert_eq!(indices[5], Some(0));
-        assert_eq!(indices[6], Some(1));
-        assert_eq!(indices[10], Some(0));
-        assert_eq!(indices[0], None, "transparent stays null, not swatch 0");
-        // Off-palette pixels are a loud error, not a nearest-colour guess.
-        s.doc_paint_grid(
-            "d",
-            0,
-            0,
-            0,
-            0,
-            [("x".to_string(), json!([1, 2, 3, 255]))]
-                .into_iter()
-                .collect(),
-            vec!["x".into()],
-        )
-        .unwrap();
-        assert!(
-            s.doc_indexed_raster("d", 0, 0)
-                .unwrap_err()
-                .contains("not in the palette")
-        );
     }
 }
 

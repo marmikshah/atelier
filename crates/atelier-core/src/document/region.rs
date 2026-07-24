@@ -1,4 +1,4 @@
-//! Region clipboard, transforms and selection helpers.
+//! Brush stamping and rectangular transforms.
 
 use image::RgbaImage;
 
@@ -10,7 +10,7 @@ impl Document {
     /// Copy a rectangular region of a cel as a flat RGBA buffer (w*h*4),
     /// returned with its width/height. Out-of-cel pixels come back transparent.
     /// The rect is given as inclusive corners and normalised/clamped to canvas.
-    pub fn copy_region(
+    pub(crate) fn copy_region(
         &self,
         layer: usize,
         frame: usize,
@@ -45,7 +45,7 @@ impl Document {
     /// Paste a flat RGBA buffer onto a cel at (x,y). `blend` true = source-over
     /// (transparent source pixels keep the destination); false = overwrite
     /// (copy every pixel including transparency, so it also erases).
-    pub fn paste_region(
+    pub(crate) fn paste_region(
         &mut self,
         layer: usize,
         frame: usize,

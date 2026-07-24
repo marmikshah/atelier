@@ -11,24 +11,7 @@ use atelier_core::document::Document;
 
 use super::{JOURNAL_FILE, MAX_CANVAS, Studio, slugify};
 
-/// Why a store root was picked: an explicit override, a project-local
-/// `./.atelier`, or the global home store. doctor surfaces it so "which
-/// store am I on?" is always answerable.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum HomeOrigin {
-    /// `ATELIER_HOME` (or an explicit `--home`) named the store.
-    Env,
-    /// A `./.atelier` directory exists in the working directory.
-    Project,
-    /// The fallback: `~/.atelier` (or the temp dir when no home resolves).
-    Global,
-}
-
-/// An advisory cross-process lock for one Atelier document store.
-///
-/// The lock file is infrastructure only; dropping this guard releases the OS
-/// lock. Writers take an exclusive guard across dispatch plus journaling, while
-/// snapshot-style readers such as `atelier check` hold a shared guard.
+/// An advisory cross-process lock for one document store.
 pub struct StoreLock {
     file: fs::File,
 }
@@ -44,30 +27,24 @@ impl Studio {
     /// process env or cwd:
     ///
     /// 1. `ATELIER_HOME` wins — scripts, tests and sandboxes name their store.
-    /// 2. A `./.atelier` in the working directory marks a PROJECT store: the
-    ///    art belongs to whatever lives there (a game repo), so ids mint clean
-    ///    (`hero`, never `hero-2` from some other project's hero) and recipes
-    ///    can be committed next to the game. Opt in once per project with
+    /// 2. A `./.atelier` in the working directory marks a local store: ids mint
+    ///    clean for that directory and recipes can be committed beside the
+    ///    project. Opt in explicitly with
     ///    `atelier init` — an absent `.atelier` is never created implicitly.
-    /// 3. Otherwise the global home store. Standing in `$HOME` that IS
-    ///    `~/.atelier`, so the global store is just "the project store of the
-    ///    home directory" — one mental model, not two.
+    /// 3. Otherwise use the global home store.
     pub fn resolve_home(
         env: Option<&std::ffi::OsStr>,
         cwd: &std::path::Path,
         home: Option<PathBuf>,
-    ) -> (PathBuf, HomeOrigin) {
+    ) -> PathBuf {
         if let Some(dir) = env {
-            return (PathBuf::from(dir), HomeOrigin::Env);
+            return PathBuf::from(dir);
         }
         let local = cwd.join(".atelier");
         if local.is_dir() {
-            return (local, HomeOrigin::Project);
+            return local;
         }
-        (
-            home.unwrap_or_else(|| std::env::temp_dir().join("atelier")),
-            HomeOrigin::Global,
-        )
+        home.unwrap_or_else(|| std::env::temp_dir().join("atelier"))
     }
 
     /// The default atelier home: the policy resolved at the process's env and
@@ -75,11 +52,6 @@ impl Studio {
     /// binary's service manager delegates here instead of keeping a parallel
     /// copy that could drift.
     pub fn default_home() -> PathBuf {
-        Self::default_home_with_origin().0
-    }
-
-    /// [`Self::default_home`] plus why — for doctor, which displays the choice.
-    pub fn default_home_with_origin() -> (PathBuf, HomeOrigin) {
         Self::resolve_home(
             std::env::var_os("ATELIER_HOME").as_deref(),
             &std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
@@ -88,9 +60,9 @@ impl Studio {
     }
 
     /// The global tier only: `ATELIER_HOME`, else `~/.atelier`. The background
-    /// daemon pins THIS at install time — a shared server has no "current
-    /// directory", so a project store must never become its default; a user
-    /// who wants the daemon on a project store says so with `--home`.
+    /// daemon pins THIS at install time — a shared server has no stable current
+    /// directory. A user who wants a different daemon store says so with
+    /// `--home`.
     pub fn global_home() -> PathBuf {
         std::env::var("ATELIER_HOME")
             .map(PathBuf::from)
@@ -108,11 +80,7 @@ impl Studio {
     pub fn new() -> Studio {
         let docs_dir = Self::default_home().join("documents");
         let _ = fs::create_dir_all(&docs_dir);
-        Studio {
-            docs_dir,
-            clipboard: None,
-            selection: None,
-        }
+        Studio { docs_dir }
     }
 
     /// Build a studio rooted at an explicit documents directory, bypassing the
@@ -120,11 +88,7 @@ impl Studio {
     /// a studio at an arbitrary location without mutating process state.
     pub fn with_docs_dir(docs_dir: PathBuf) -> Studio {
         let _ = fs::create_dir_all(&docs_dir);
-        Studio {
-            docs_dir,
-            clipboard: None,
-            selection: None,
-        }
+        Studio { docs_dir }
     }
 
     fn lock_store(&self, exclusive: bool) -> Result<StoreLock, String> {
@@ -136,12 +100,12 @@ impl Studio {
             .truncate(false)
             .open(&path)
             .map_err(|error| format!("cannot open store lock {}: {error}", path.display()))?;
-        let locked = if exclusive {
+        if exclusive {
             fs4::FileExt::lock(&file)
         } else {
             fs4::FileExt::lock_shared(&file)
-        };
-        locked.map_err(|error| format!("cannot lock document store: {error}"))?;
+        }
+        .map_err(|error| format!("cannot lock document store: {error}"))?;
         Ok(StoreLock { file })
     }
 
@@ -332,12 +296,10 @@ impl Studio {
     /// document carries its own provenance and nothing has to be turned on
     /// beforehand to get it.
     ///
-    /// Legacy `{tool,args}` JSON Lines, appended one call per line. Kept as the
-    /// compatibility writer for documents whose journal began before compact
-    /// JSONL v2; new dispatch-created journals use
-    /// [`Self::journal_append_compact`]. Best-effort by design — a journal that
-    /// cannot be written must never fail the drawing call that was otherwise
-    /// fine.
+    /// JSON Lines, appended: one call per line, O(1) per write, and a killed
+    /// process still leaves every completed line intact. Best-effort by design —
+    /// a journal that cannot be written must never fail the drawing call that
+    /// was otherwise fine.
     pub fn journal_append(&self, id: &str, tool: &str, args: &Value) {
         // Defence in depth: `id` is joined onto the store path, so validate it
         // here too rather than trust every caller forever — a bad id must never
@@ -364,106 +326,13 @@ impl Studio {
         }
     }
 
-    /// Append a compact JSONL v2 call, while preserving an existing legacy
-    /// journal's format. New journals receive a header and call in one append;
-    /// existing v2 journals receive only the call; existing `{tool,args}`
-    /// journals continue through [`Self::journal_append`] so a document is
-    /// never left with mixed, unreplayable line formats.
-    pub fn journal_append_compact(&self, id: &str, tool: &str, args: &Value) {
-        if !Self::valid_id(id) {
-            return;
-        }
-        let dir = self.docs_dir.join(id);
-        if !dir.is_dir() {
-            return;
-        }
-        let (header, line) = match super::recipe::compact_journal_record(id, tool, args.clone()) {
-            Ok(encoded) => encoded,
-            Err(_) => {
-                self.journal_append(id, tool, args);
-                return;
-            }
-        };
-        let path = self.journal_path(id);
-        enum Format {
-            New,
-            Legacy,
-            Compact,
-        }
-        let format = match fs::metadata(&path) {
-            Ok(metadata) if metadata.len() == 0 => Format::New,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Format::New,
-            Ok(_) => {
-                use std::io::BufRead;
-                let first =
-                    fs::File::open(&path)
-                        .map(std::io::BufReader::new)
-                        .and_then(|mut reader| {
-                            let mut line = String::new();
-                            loop {
-                                line.clear();
-                                if reader.read_line(&mut line)? == 0 || !line.trim().is_empty() {
-                                    return Ok(line);
-                                }
-                            }
-                        });
-                match first.ok() {
-                    Some(first) if super::recipe::valid_compact_header(first.trim()) => {
-                        Format::Compact
-                    }
-                    Some(first)
-                        if serde_json::from_str::<Value>(first.trim())
-                            .ok()
-                            .is_some_and(|value| {
-                                value.get("tool").and_then(Value::as_str).is_some()
-                            }) =>
-                    {
-                        Format::Legacy
-                    }
-                    _ => {
-                        eprintln!(
-                            "atelier: could not journal {tool} for '{id}': \
-                             existing recipe has an unknown or corrupt header"
-                        );
-                        return;
-                    }
-                }
-            }
-            Err(error) => {
-                eprintln!("atelier: could not inspect journal for '{id}': {error}");
-                return;
-            }
-        };
-        if matches!(format, Format::Legacy) {
-            self.journal_append(id, tool, args);
-            return;
-        }
-        if header.contains('\n') || line.contains('\n') {
-            eprintln!(
-                "atelier: could not journal {tool} for '{id}': encoded line contains newline"
-            );
-            return;
-        }
-        let payload = match format {
-            Format::New => format!("{header}\n{line}\n"),
-            Format::Compact => format!("{line}\n"),
-            Format::Legacy => unreachable!("legacy returned above"),
-        };
-        let appended = fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-            .and_then(|mut file| std::io::Write::write_all(&mut file, payload.as_bytes()));
-        if let Err(error) = appended {
-            eprintln!("atelier: could not journal {tool} for '{id}': {error}");
-        }
-    }
-
     /// Read a document's journal back as its ordered calls.
     ///
-    /// Uses the shared recipe parser, so legacy and compact files both return
-    /// normalized `{tool,args,note?}` calls and corruption has exactly the same
-    /// verdict here as it does under `atelier replay`.
+    /// Same policy as the replay-side parser (`Recipe::parse_jsonl`): a torn
+    /// FINAL line is a crash mid-append and is dropped, but a malformed line
+    /// with content after it is real corruption and errors — silently skipping
+    /// it would report "N steps / replayable" for a journal that `atelier
+    /// replay` then refuses.
     pub fn journal(&self, id: &str) -> Result<Vec<Value>, String> {
         if !self.exists(id) {
             return Err(format!("no document '{id}'"));
@@ -473,15 +342,22 @@ impl Studio {
             return Ok(Vec::new());
         }
         let body = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-        if body.trim().is_empty() {
-            return Ok(Vec::new());
+        let nonempty: Vec<(usize, &str)> = body
+            .lines()
+            .enumerate()
+            .map(|(n, l)| (n, l.trim()))
+            .filter(|(_, l)| !l.is_empty())
+            .collect();
+        let last = nonempty.len().saturating_sub(1);
+        let mut out = Vec::new();
+        for (idx, (n, line)) in nonempty.iter().enumerate() {
+            match serde_json::from_str(line) {
+                Ok(v) => out.push(v),
+                Err(error) if idx == last && error.is_eof() => break,
+                Err(e) => return Err(format!("journal line {}: {e}", n + 1)),
+            }
         }
-        let recipe = super::recipe::Recipe::parse(&body)?;
-        recipe
-            .steps
-            .into_iter()
-            .map(|step| serde_json::to_value(step).map_err(|error| error.to_string()))
-            .collect()
+        Ok(out)
     }
 }
 
@@ -531,62 +407,17 @@ mod tests {
         fs::write(&path, format!("not json\n{clean}")).unwrap();
         let err = s.journal("d").unwrap_err();
         assert!(err.contains("line 1"), "mid-file corruption errors: {err}");
-    }
 
-    #[test]
-    fn compact_journal_headers_are_not_counted_as_steps() {
-        let s = studio("journal-compact");
-        s.doc_create("d", 8, 8).unwrap();
-        s.journal_append_compact("d", "doc_create", &json!({"name":"d","doc_id":"d"}));
-        s.journal_append_compact("d", "doc_info", &json!({"doc_id":"d"}));
-        let steps = s.journal("d").unwrap();
-        assert_eq!(steps.len(), 2);
-        assert_eq!(steps[0]["tool"], "doc_create");
-        assert_eq!(steps[0]["args"]["doc_id"], "d");
-        assert_eq!(steps[1]["tool"], "doc_info");
-        assert_eq!(steps[1]["args"]["doc_id"], "d");
-        let source = fs::read_to_string(s.journal_path("d")).unwrap();
-        assert_eq!(source.lines().count(), 3, "one header plus two calls");
-    }
-
-    #[test]
-    fn compact_appends_preserve_an_existing_legacy_journal() {
-        let s = studio("journal-legacy-append");
-        s.doc_create("d", 8, 8).unwrap();
-        s.journal_append("d", "doc_create", &json!({"name":"d"}));
-        s.journal_append_compact(
-            "d",
-            "doc_draw",
-            &json!({"doc_id":"d","layer":0,"frame":0,"op":"clear_cel"}),
-        );
-        let source = fs::read_to_string(s.journal_path("d")).unwrap();
+        fs::write(&path, format!("{clean}not json\n")).unwrap();
+        let err = s.journal("d").unwrap_err();
         assert!(
-            source.lines().all(|line| line.contains("\"tool\"")),
-            "legacy and compact lines must never mix: {source}"
-        );
-        assert_eq!(s.journal("d").unwrap().len(), 2);
-    }
-
-    #[test]
-    fn compact_append_rejects_an_incomplete_v2_header() {
-        let s = studio("journal-invalid-v2-header");
-        s.doc_create("d", 8, 8).unwrap();
-        let path = s.journal_path("d");
-        fs::write(&path, "{\"v\":2}\n").unwrap();
-        s.journal_append_compact(
-            "d",
-            "doc_draw",
-            &json!({"doc_id":"d","layer":0,"frame":0,"op":"clear_cel"}),
-        );
-        assert_eq!(
-            fs::read_to_string(path).unwrap(),
-            "{\"v\":2}\n",
-            "a corrupt header must never gain dependent compact calls"
+            err.contains("line 3"),
+            "complete final corruption errors: {err}"
         );
     }
 
     #[test]
-    fn store_locks_coordinate_independent_studio_instances() {
+    fn store_locks_coordinate_independent_studios() {
         let first = studio("store-lock");
         let second = Studio::with_docs_dir(first.docs_dir.clone());
         let guard = first.lock_store_exclusive().unwrap();
@@ -628,36 +459,33 @@ mod tests {
     }
 
     #[test]
-    fn env_wins_over_a_project_store_and_the_global() {
+    fn env_wins_over_a_local_store_and_the_global() {
         let cwd = scratch_cwd("env", true);
-        let (p, origin) = Studio::resolve_home(
+        let path = Studio::resolve_home(
             Some(std::ffi::OsStr::new("/custom")),
             &cwd,
             Some(PathBuf::from("/home/u")),
         );
-        assert_eq!(p, PathBuf::from("/custom"));
-        assert_eq!(origin, HomeOrigin::Env);
+        assert_eq!(path, PathBuf::from("/custom"));
         let _ = fs::remove_dir_all(&cwd);
     }
 
     #[test]
-    fn a_present_dot_atelier_marks_a_project_store() {
+    fn a_present_dot_atelier_marks_a_local_store() {
         let cwd = scratch_cwd("project", true);
-        let (p, origin) = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
-        assert_eq!(p, cwd.join(".atelier"));
-        assert_eq!(origin, HomeOrigin::Project);
+        let path = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
+        assert_eq!(path, cwd.join(".atelier"));
         let _ = fs::remove_dir_all(&cwd);
     }
 
     #[test]
     fn an_absent_dot_atelier_falls_back_to_global_and_creates_nothing() {
         let cwd = scratch_cwd("global", false);
-        let (p, origin) = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
-        assert_eq!(p, PathBuf::from("/home/u"));
-        assert_eq!(origin, HomeOrigin::Global);
+        let path = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
+        assert_eq!(path, PathBuf::from("/home/u"));
         assert!(
             !cwd.join(".atelier").exists(),
-            "resolution must never stamp a project store implicitly"
+            "resolution must never stamp a local store implicitly"
         );
         let _ = fs::remove_dir_all(&cwd);
     }

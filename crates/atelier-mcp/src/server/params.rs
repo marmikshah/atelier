@@ -67,45 +67,7 @@ pub(crate) struct DocAddTag {
     pub(crate) direction: Option<String>,
 }
 
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocCel {
-    pub(crate) doc_id: String,
-    pub(crate) layer: usize,
-    pub(crate) frame: usize,
-}
-
 // --- drawing params --------------------------------------------------------
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocSelect {
-    pub(crate) doc_id: String,
-    /// "rect" | "ellipse" | "color" | "all" | "none". Default "rect".
-    pub(crate) shape: Option<String>,
-    /// Combine with the current selection: "replace" (default) | "add" |
-    /// "subtract" | "intersect".
-    pub(crate) mode: Option<String>,
-    /// rect shape:
-    pub(crate) x0: Option<i32>,
-    pub(crate) y0: Option<i32>,
-    pub(crate) x1: Option<i32>,
-    pub(crate) y1: Option<i32>,
-    /// ellipse shape:
-    pub(crate) cx: Option<i32>,
-    pub(crate) cy: Option<i32>,
-    pub(crate) rx: Option<i32>,
-    pub(crate) ry: Option<i32>,
-    /// color shape — which cel to test, and either an explicit `color` or a
-    /// sample point (`x`,`y`) plus `tolerance` (max channel distance).
-    pub(crate) layer: Option<usize>,
-    pub(crate) frame: Option<usize>,
-    pub(crate) color: Option<Vec<i64>>,
-    pub(crate) x: Option<i32>,
-    pub(crate) y: Option<i32>,
-    pub(crate) tolerance: Option<i32>,
-    /// polygon/lasso shape — the traced vertices `[[x,y], ...]` (needs ≥3),
-    /// automatically closed (last point joins the first).
-    pub(crate) points: Option<Vec<[i32; 2]>>,
-}
 
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocBatch {
@@ -130,7 +92,7 @@ fn op_list_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
     schemars::json_schema!({
         "type": "array",
         "items": { "type": "object" },
-        "description": "Ordered ops, each like {\"op\":\"rect\",\"x0\":1,\"y0\":1,\"x1\":8,\"y1\":8,\"color\":[r,g,b],\"fill\":true}. Draw ops: pencil/line/rect/ellipse/polyline/polygon/stroke/fill/bucket/gradient/scatter/noise/text/fill_cel/clear_cel. FX ops: blur/outline/drop_shadow/bevel/shade/form/dither/pixel_perfect/flip/shift/symmetry/quantize/replace_color/adjust/gradient_map. Plus glow (batch only). Each takes the same fields as the matching doc_draw/doc_fx op (glow is batch-only)."
+        "description": "Ordered ops, each like {\"op\":\"rect\",\"x0\":1,\"y0\":1,\"x1\":8,\"y1\":8,\"color\":[r,g,b],\"fill\":true}. Draw ops: pencil/line/rect/ellipse/polyline/polygon/stroke/curve/stamp/fill/bucket/gradient/scatter/noise/text/fill_cel/clear_cel. FX ops: blur/outline/drop_shadow/bevel/shade/form/dither/pixel_perfect/flip/shift/rotate/scale/symmetry/quantize/replace_color/adjust/gradient_map. Plus glow (batch only)."
     })
 }
 
@@ -140,11 +102,12 @@ pub(crate) struct DocDraw {
     pub(crate) layer: usize,
     pub(crate) frame: usize,
     /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
-    /// | fill | gradient | scatter | noise | text | fill_cel | clear_cel |
-    /// box_iso | panel.
+    /// | curve | stamp | fill | bucket | gradient | scatter | noise | text |
+    /// fill_cel | clear_cel | box_iso | panel.
     pub(crate) op: String,
     /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,
-    /// color, fill). Every op also accepts `opacity` and `blend_mode`.
+    /// color, fill). Registry-backed ops also accept `opacity`, `blend_mode`,
+    /// and `erase`.
     #[serde(flatten)]
     pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
@@ -155,31 +118,25 @@ pub(crate) struct DocFx {
     pub(crate) layer: usize,
     pub(crate) frame: usize,
     /// One transform/effect op: blur | outline | drop_shadow | bevel | shade |
-    /// form | dither | pixel_perfect | flip | shift | symmetry | quantize |
-    /// replace_color | adjust | gradient_map.
+    /// form | dither | pixel_perfect | flip | shift | rotate | scale | symmetry |
+    /// quantize | replace_color | adjust | gradient_map.
     pub(crate) op: String,
-    /// The op's own params, flattened alongside. Every op also accepts `opacity`
-    /// and `blend_mode`.
+    /// The op's own params, flattened alongside. Every op also accepts
+    /// `opacity`, `blend_mode`, and `erase`.
     #[serde(flatten)]
     pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocExport {
-    /// Required for per-document ops (sheet | anim | tileset); omit for the
-    /// library-wide ops (all | atlas), which span every document.
-    pub(crate) doc_id: Option<String>,
-    /// Per-document: sheet | anim | tileset. Library-wide: all (one spritesheet
-    /// per document into a dir) | atlas (every frame of every document packed
-    /// into one atlas PNG + master JSON map).
+    pub(crate) doc_id: String,
+    /// sheet | anim.
     pub(crate) op: String,
-    /// Output path: a file for sheet/anim/tileset/atlas, a target DIRECTORY for
-    /// op=all.
     pub(crate) out_path: String,
-    /// Nearest-neighbour upscale (sheet/anim/all/atlas default 4, tileset 1).
+    /// Nearest-neighbour upscale (default 4).
     pub(crate) scale: Option<u32>,
-    /// Op-specific params, flattened: anim → format ("gif"|"apng"), tag;
-    /// tileset → tile_w, tile_h; atlas → max_width (shelf-packer wrap, default 512).
+    /// Op-specific params: sheet → meta ("atelier"|"standard");
+    /// anim → format ("gif"|"apng") and optional tag.
     #[serde(flatten)]
     pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
@@ -218,76 +175,19 @@ pub(crate) struct DocFrame {
     pub(crate) to_index: Option<usize>,
     /// Frame duration in ms (for add/insert/duration; default 100).
     pub(crate) duration_ms: Option<u32>,
-    /// For `duplicate`: link the new frame's cels to the source's (shared
-    /// pixels, copy-on-write on any later edit) instead of copying them.
-    pub(crate) link: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocSlice {
-    pub(crate) doc_id: String,
-    /// add | delete | list.
-    pub(crate) op: String,
-    /// Slice name (required for add/delete).
-    pub(crate) name: Option<String>,
-    /// For add: the slice bounds, inclusive corners [x0,y0,x1,y1].
-    pub(crate) rect: Option<Vec<i32>>,
-    /// 9-slice centre rect [x0,y0,x1,y1] (must sit inside rect).
-    pub(crate) center: Option<Vec<i32>>,
-    /// Pivot point [x,y] (unconstrained — a rotation origin may sit off-canvas).
-    pub(crate) pivot: Option<Vec<i32>>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocTile {
-    pub(crate) doc_id: String,
-    /// place (stamp a tilemap from a tileset document).
-    pub(crate) op: String,
-    pub(crate) layer: usize,
-    pub(crate) frame: usize,
-    /// The tileset document: its flattened frame 0 is sliced row-major into
-    /// tile_w×tile_h tiles (index 0 = top-left). Read-only — never modified.
-    pub(crate) tiles_doc: String,
-    pub(crate) tile_w: u32,
-    pub(crate) tile_h: u32,
-    /// Cells to stamp: [[cell_x, cell_y, tile_index], ...]; each lands at
-    /// pixel (cell_x*tile_w, cell_y*tile_h), source-over, canvas-clipped.
-    pub(crate) cells: Vec<Vec<i32>>,
 }
 
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocRegion {
     pub(crate) doc_id: String,
-    /// copy | cut | clear | move | paste.
+    /// clear | move.
     pub(crate) op: String,
     pub(crate) layer: usize,
     pub(crate) frame: usize,
-    /// Source rect for copy/cut/clear/move.
-    pub(crate) x0: Option<i32>,
-    pub(crate) y0: Option<i32>,
-    pub(crate) x1: Option<i32>,
-    pub(crate) y1: Option<i32>,
-    /// Offset for `move`.
-    pub(crate) dx: Option<i32>,
-    pub(crate) dy: Option<i32>,
-    /// Destination top-left for `paste`.
-    pub(crate) x: Option<i32>,
-    pub(crate) y: Option<i32>,
-    /// `paste`: true = source-over (default), false = overwrite.
-    pub(crate) blend: Option<bool>,
-    /// Replay-only, hidden from the advertised schema: the pixels a journaled
-    /// paste embedded, so a rebuild does not depend on the live clipboard.
-    #[schemars(skip)]
-    pub(crate) clipboard: Option<ClipboardPixels>,
-}
-
-/// The clipboard content a journaled `doc_region op=paste` step carries:
-/// base64 RGBA, row-major, `w`×`h`.
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct ClipboardPixels {
-    pub(crate) w: u32,
-    pub(crate) h: u32,
-    pub(crate) data: String,
+    /// Inclusive source rectangle [x0,y0,x1,y1].
+    pub(crate) rect: [i32; 4],
+    /// For move, destination offset [dx,dy].
+    pub(crate) offset: Option<[i32; 2]>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -443,7 +343,7 @@ pub(crate) struct DocLook {
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocCheckpoint {
     pub(crate) doc_id: String,
-    /// save | list | restore | diff | prune.
+    /// save | list | restore | prune.
     pub(crate) action: String,
     pub(crate) label: Option<String>,
     pub(crate) checkpoint_id: Option<String>,

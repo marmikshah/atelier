@@ -6,52 +6,44 @@ releases.
 
 ## [1.8.0] — Unreleased
 
-### Added
-
-- **Reproducible project builds.** `atelier init` now creates a versioned
-  `.atelier/project.toml`, and `atelier build` runs its named sheet, animation,
-  tileset, library, and atlas exports through the existing `doc_export`
-  dispatcher. `--only NAME` selects one artifact and `--dry-run` prints the
-  exact calls without writing. Existing manifests are never replaced.
-- Manifest output paths are project-relative and checked against absolute,
-  parent, symlink, and platform-specific path hazards. Strict version, field,
-  operation, range, duplicate-name, case-insensitive output, sidecar, and
-  directory-overlap validation turns configuration typos into actionable
-  errors before any export runs. Builds stage every artifact and promote them
-  with rollback only after every selected export succeeds; an `all` export's
-  target directory is treated as one build-owned artifact.
-- **Compact recipe JSONL v2.** Versioned headers, reusable document/layer/frame
-  context, hex colours, flattened points, and positional tuples for common
-  batch operations shrink both the 44,736-byte Kamehameha example and its
-  already-minified legacy JSONL by more than 50%, while preserving every call,
-  argument, note, and replay result.
-- **`atelier recipe compact|expand|stats`.** Convert old JSON/JSONL without
-  replaying it, expand v2 for review, or report steps, batch/tuple counts, byte
-  savings, and reduction as text or JSON. Replay auto-detects every format.
-  New journals and `--record` sessions use v2; existing legacy journals keep
-  their original append format.
-- **`atelier check`.** Read-only project validation for local use and CI:
-  strict manifest parsing, document and animation-tag references, isolated
-  recipe rebuilds compared against the structure, every cel (including hidden
-  pixels), and every live frame, plus real exports redirected to a temporary
-  workspace. `--json` provides a stable machine-readable report; failures
-  return a non-zero status. Missing legacy journals warn when unused and fail
-  when a configured deliverable depends on them.
-
 ### Removed
 
-- **`atelier agent`.** The built-in OpenAI-compatible agent loop, its Cargo
-  feature, environment variables, and HTTP client dependency have been removed.
-  Atelier is again fully offline and is driven through `atelier call` or MCP.
-- The orphaned `atelier_core::document::Light` data type, left behind when its
-  only consumer (`Document::relight`) was removed in 1.5.0.
-- The standalone GitHub Pages architecture page. The maintained architecture
-  guide remains in `docs/ARCHITECTURE.md`.
-- The misleading `.env.example`; Atelier does not load dotenv files, and its
-  supported environment variables remain documented in CLI help and the README.
+- **The product surface has been narrowed back to the editor.** The unreleased
+  project manifest/build/check subsystem and compact recipe v2 codec are gone.
+  `atelier init` now creates only a directory-local document store; recipes are
+  ordinary `{tool,args}` JSON Lines again.
+- **Process-local editing state has been removed.** `doc_select` and clipboard
+  copy/cut/paste could not survive separate `atelier call` processes and were
+  shared globally by the HTTP daemon. `doc_region` is now stateless and supports
+  only `clear` and `move`, using `rect` and optional `offset`.
+- **Unproven document features have been removed:** linked cels, slice metadata,
+  `doc_slice`, `doc_tile`, and the duplicate `doc_clear_cel` endpoint. Clear a
+  cel with `doc_batch` `op=clear_cel`.
+- **Peripheral integration ownership has been removed from the binary:**
+  `atelier clients`, `atelier doctor`, and cross-document `--record` session
+  recording. Atelier no longer rewrites third-party client configuration;
+  clients point at the endpoint from `atelier status` or spawn `atelier` over
+  stdio.
+- `doc_export` now owns only per-document spritesheets and GIF/APNG animations.
+  The library-wide `all`/`atlas` modes and Tiled tileset export were removed.
+- Automatic checkpoints and checkpoint `diff` were removed. Explicit
+  save/list/restore/prune remains.
+- The remaining Lab-only indexed-raster API and the orphaned
+  `atelier_core::document::Light` type were removed.
+- **`atelier agent`**, its network client, environment variables, and feature
+  flag were removed. Atelier is fully offline and is driven through the CLI or
+  MCP.
+- The standalone architecture HTML page and misleading `.env.example` were
+  removed. The maintained guide remains in `docs/ARCHITECTURE.md`.
 
 ### Changed
 
+- **The advertised MCP surface is 26 tools, down from 30.** Removed tools are
+  also gone from dispatch, schemas, skills, docs, and examples.
+- Independent CLI and daemon processes now hold an advisory store lock through
+  document save and journal append, preserving mutation and provenance order.
+- Documents saved with 1.7 linked cels still open: links are materialized as
+  ordinary independent cels on the next save.
 - **The Rust stack has been refreshed.** Development and release builds now use
   Rust 1.97.1 with Edition 2024 and Cargo resolver 3. Dependencies, CI actions,
   and the Alpine runtime are current while the tested Rust 1.88 minimum remains
@@ -66,29 +58,15 @@ releases.
 - **The experimental lab has been removed from this repository.** This deletes
   the unpublished `atelier-lab` crate, its research plan, and its lab-only
   hashing dependency so the work can resume later outside the 1.8.0 release.
-- Client configuration and installed skill updates now use same-directory
-  temporary files and retain the previous content as an `.atelier-backup`.
 - **The background daemon port is configurable at install time.**
   `atelier install` prompts on first install and reinstall, reuses the current
   port as the default, and accepts `--port PORT` for non-interactive setup.
-  Diagnostics and new HTTP client registrations follow the installed endpoint;
-  rerunning client setup safely retargets existing loopback registrations.
+  `atelier status` prints the installed endpoint.
 - GitHub Pages now builds the tool reference and benchmark index from their
   canonical sources instead of committing duplicate generated files.
 - CI now has one complete Linux gate, an explicit Rust 1.88 minimum-version
-  check, and the full Rust test suite on macOS and Windows. Local hooks remain
-  optional and fast.
-
-### Fixed
-
-- Kimi skill installation and `atelier doctor` now honor `KIMI_CODE_HOME`,
-  matching Kimi MCP registration and installer detection.
-- Cross-process store locks now serialize document mutations through save and
-  journal append, preventing separate CLI/server processes from losing updates
-  or recording state in a different order.
-- A failed `--record` header write now disables that recorder instead of later
-  producing headerless JSONL, and compact journals refuse to append to a
-  malformed v2 header.
+  check, and lightweight macOS and Windows checks. Local hooks remain optional
+  and fast.
 
 ### Security
 

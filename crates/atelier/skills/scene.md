@@ -35,7 +35,8 @@ of that.
 **2. Fix one band, never the frame.** When a scene is wrong, the instinct is to
 repaint. Don't. Name which band fails, fix that band's layer, look again.
 
-- `doc_select` or explicit coordinates confine the change.
+- Explicit coordinates confine the change; `doc_region` handles a
+  self-contained clear or move.
 - `doc_dump_region` reads the actual pixels of the area you doubt.
 - One band per pass. A scene has too many variables to change two at once and
   still know what happened.

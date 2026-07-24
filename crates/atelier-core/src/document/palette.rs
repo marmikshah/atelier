@@ -6,63 +6,12 @@ use crate::raster;
 
 use super::{AlphaSnap, Document};
 
-/// A cel read back as palette indices — the exact inverse of `paint_grid`
-/// with a palette-index legend.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct IndexedRaster {
-    pub width: u32,
-    pub height: u32,
-    /// The document palette the indices refer into (a snapshot: the palette
-    /// may be edited after the read).
-    pub palette: Vec<[u8; 4]>,
-    /// Row-major, one entry per pixel. `None` = fully transparent pixel;
-    /// `Some(i)` = palette swatch `i`. Transparency is deliberately NOT
-    /// index 0: swatch 0 is a real, paintable colour (a `paint_grid` index
-    /// legend paints it), so folding transparent into 0 would make the
-    /// background indistinguishable from the first swatch.
-    pub indices: Vec<Option<u32>>,
-}
-
 impl Document {
     // -- palette (indexed-friendly swatch list) -----------------------------
 
     /// Replace the document's palette swatch list.
     pub fn set_palette(&mut self, colors: Vec<[u8; 4]>) {
         self.meta.palette = colors;
-    }
-
-    /// Read one cel as palette indices (row-major), full-canvas and anchored
-    /// at (0,0) like every other analysis read. Matching is EXACT RGBA — the
-    /// same convention `doc_palette_report`'s `in_palette` flag uses — so an
-    /// opaque pixel whose colour has no swatch is an error naming the first
-    /// offender, never a silent nearest-colour guess: a consumer building
-    /// training data on these indices must be able to trust them. Snap first
-    /// (`snap_to_palette` / `doc_palette op=snap`) to make a cel indexable.
-    pub fn indexed_raster(&self, layer: usize, frame: usize) -> Result<IndexedRaster, String> {
-        let img = self.cel_image(layer, frame)?;
-        let mut indices = Vec::with_capacity((self.meta.w * self.meta.h) as usize);
-        for (x, y, p) in img.enumerate_pixels() {
-            if p.0[3] == 0 {
-                indices.push(None);
-                continue;
-            }
-            match self.meta.palette.iter().position(|c| *c == p.0) {
-                Some(i) => indices.push(Some(i as u32)),
-                None => {
-                    return Err(format!(
-                        "pixel ({x},{y}) is {:?}, which is not in the palette ({} swatches) — snap to the palette first",
-                        p.0,
-                        self.meta.palette.len()
-                    ));
-                }
-            }
-        }
-        Ok(IndexedRaster {
-            width: img.width(),
-            height: img.height(),
-            palette: self.meta.palette.clone(),
-            indices,
-        })
     }
 
     /// Swap a set of colours across the whole document in one pass — the

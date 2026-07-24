@@ -79,36 +79,21 @@ atelier install
 The prompt appears on both first install and reinstall; reinstall defaults to
 the currently configured port. For scripts, use `atelier install --port 9123`.
 Advanced/LAN setups can still choose the whole address with
-`atelier install --bind 0.0.0.0:9123`. New HTTP client registrations use the
-installed daemon endpoint automatically (a wildcard bind is advertised to
-local clients as loopback). After changing a port, rerun the relevant
-`atelier clients install --for … --mode http` command: loopback registrations
-are safely retargeted, while remote/custom endpoints are never replaced.
+`atelier install --bind 0.0.0.0:9123`.
 
-The download installer changes only the Atelier binary. Register a client
-explicitly after choosing an MCP mode:
+Atelier deliberately does not rewrite third-party client configuration. Point
+your MCP client at the endpoint printed by `atelier status`:
 
-```sh
-atelier clients install --for claude --mode http
-atelier clients install --for codex  --mode http
-atelier clients install --for kimi   --mode http
+```text
+http://127.0.0.1:8765/mcp
 ```
 
-Or skip the daemon and let each client spawn the server itself over stdio —
-zero daemon setup, but each client gets its own process:
+Or configure a stdio MCP server whose command is simply `atelier`. Stdio needs
+no daemon: each client starts its own process, while all processes still resolve
+the same global or directory-local document store.
 
-```sh
-atelier clients install --for codex --mode stdio
-```
-
-Add `--allow-tools` only when you want that client to pre-approve the entire
-`mcp__atelier__*` namespace. This includes destructive tools such as
-`delete_doc` and `doc_export`; without the flag, the client's normal approval
-prompts stay in force. Existing valid Atelier registrations and unrelated
-JSON/TOML settings are preserved when they match the requested mode; conflicting
-Atelier entries are reported and left untouched. Changed configuration files
-are backed up beside the original as `<name>.atelier-backup`. Cursor remains a
-manual MCP registration in `~/.cursor/mcp.json`.
+Keep your client's normal approval prompts enabled: Atelier can write exports
+and delete documents.
 
 ### Docker
 
@@ -130,8 +115,8 @@ declarative.
 - **Your client shows 0 tools** — restart it after registering; MCP clients read
   their server list at session start.
 - **stdio or daemon?** The daemon is one shared server and store, and it
-  survives reboots; stdio means each client spawns its own `atelier`, and each
-  gets its own store. (The CLI needs neither — it talks to the store directly.)
+  survives reboots; stdio means each client spawns its own `atelier` process.
+  Both use the same resolved store. (The CLI needs neither transport.)
 - **The selected port is already in use** — rerun `atelier install` and choose
   another port (`--port PORT` in scripts). `atelier status` prints the installed
   endpoint; `atelier uninstall` stops the daemon.
@@ -155,10 +140,10 @@ deliberate act, and the context stays small enough to look often.
 
 |  |  |
 |---|---|
-| 🎨 **A real editor, headless** | Layers, frames, tags, selections, locked palettes, checkpoints. Draw with primitives or paint a whole region declaratively from a character grid. |
+| 🎨 **A real editor, headless** | Layers, frames, tags, locked palettes, checkpoints. Draw with primitives or paint a whole region declaratively from a character grid. |
 | 👁 **An eye, not just a hand** | Critique, palette, silhouette and animation audits turn *"does it look right?"* into numbers an agent can act on. |
-| 🎮 **Game-ready out of the box** | Tagged spritesheets, GIF/APNG, texture atlases, Tiled tilesets, engine-standard JSON. |
-| 🔒 **Yours, offline** | One static Rust binary. No API keys, no network, no telemetry. Fully deterministic. |
+| 🎮 **Game-ready out of the box** | Tagged spritesheets, GIF/APNG, and engine-standard JSON. |
+| 🔒 **Yours, offline** | One self-contained Rust binary. No API keys, no network, no telemetry. Fully deterministic. |
 
 ## The CLI
 
@@ -166,14 +151,8 @@ deliberate act, and the context stays small enough to look often.
 atelier call <tool> '<json>'   # one tool call, in-process — the front door
 atelier call <tool> --file ops.json   # args from a file (or --stdin)
 atelier tools [--schema <name]]       # the tool surface / one input schema
-atelier init                   # create a project store and build manifest
-atelier build [--only NAME]    # build the manifest's named exports
-atelier check [--json]         # validate project state and reproducibility
-atelier recipe compact|expand|stats  # convert or measure recipes
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
-atelier doctor                 # check the whole setup, print what to fix
-atelier clients install        # register MCP (--for claude|codex|kimi --mode http|stdio)
 atelier skills install         # write the skills (--for claude|codex|kimi|cursor|all)
 ```
 
@@ -199,101 +178,26 @@ configuration; set an `X-Atelier-Caller` header in a client's MCP config to
 use a stable name instead. (The CLI and replay log as `cli` / `replay`.)
 (Same-name collisions are already impossible: `doc_create` mints a unique id —
 `hero`, `hero-2`, … — and every caller must use the id it got back.)
-Mutations also hold an advisory store lock through both document save and
-journal append, so independent CLI and daemon processes cannot overwrite one
-another or record a different order.
 
-**30 tools**, all of them advertised — no profiles to pick, nothing hidden behind
+**26 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
 turn into an unreachable dead end.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
 or see how a call flows through the crates in the
 [architecture guide](docs/ARCHITECTURE.md).
 
-## Project stores
+## Directory-local stores
 
 By default everything lands in the global `~/.atelier`. Run `atelier init` in
-a project — your game repo, say — and that directory gets its own `./.atelier`:
-art and recipes live next to the project, ids mint clean per project (`hero`,
-never `hero-2` because some other game claimed it), and the recipes can be
-committed with the game. Init also creates a versioned
-`.atelier/project.toml`; rerunning it adds a missing manifest to an older store
-but never replaces one.
-
-Declare the assets the project should produce:
-
-```toml
-version = 1
-
-[[exports]]
-name = "hero-sheet"
-doc = "hero"
-op = "sheet"
-out = "assets/hero.png"
-scale = 4
-meta = "standard"
-
-[[exports]]
-name = "hero-walk"
-doc = "hero"
-op = "anim"
-out = "assets/hero-walk.gif"
-tag = "walk"
-```
-
-Then build every entry, inspect the planned calls without writing, or select
-one named output:
-
-```sh
-atelier build
-atelier build --dry-run
-atelier build --only hero-walk
-atelier check
-atelier check --json
-```
-
-| `op` | Required fields | Optional fields |
-|---|---|---|
-| `sheet` | `name`, `doc`, `out` | `scale`, `meta = "atelier" \| "standard"` |
-| `anim` | `name`, `doc`, `out` | `scale`, `format = "gif" \| "apng"`, `tag` |
-| `tileset` | `name`, `doc`, `out`, `tile_w`, `tile_h` | `scale` |
-| `all` | `name`, `out` | `scale` |
-| `atlas` | `name`, `out` | `scale`, `max_width` |
-
-An `all` export owns its complete `out` directory. A successful project build
-replaces that directory, so keep hand-authored files elsewhere.
-
-Manifest output paths are portable: they are relative to the project root and
-cannot use absolute paths, `..`, backslashes, Windows-invalid or reserved path
-components, the reserved `.atelier` directory, or a symlink to write outside
-the project. Primary files, generated sidecars, and output directories are
-checked for case-insensitive and nested collisions. Each build
-still uses `doc_export` through Atelier's shared dispatch path, but writes into
-a project-local staging area first; configured outputs are promoted with
-rollback only after every selected export succeeds.
-
-`atelier check` is the read-only CI counterpart to build. It validates the
-manifest, opens every document, verifies each configured document and animation
-tag reference, replays every available journal in an isolated temporary store,
-compares the rebuilt structure, exact per-cel RGBA state (including hidden
-layers), and every rendered frame with the live document, and exercises each
-export against temporary output paths. It never writes the project's configured
-outputs and does not make subjective art judgments.
-
-The human report is concise; `--json` emits a versioned report with stable
-`summary` and `checks` objects for automation. A failed check exits 1, invalid
-command arguments exit 2, and an older document with no journal remains a
-warning only while no configured export depends on it. An unreproducible
-deliverable fails the check.
-
-Store resolution remains: `--home` / `ATELIER_HOME` → `./.atelier` when it
-exists → `~/.atelier`. Standing in `$HOME`, the two are the same directory.
-`atelier build` reads the manifest in the current project; `ATELIER_HOME`, when
-set, can supply that build's document store just as it does for normal calls.
+your game or app directory and it gets its own `./.atelier`: art and recipes
+live beside the code, ids mint clean for that directory, and recipes can be
+committed with the game. Resolution per call: `--home` / `ATELIER_HOME` →
+`./.atelier` when it exists → `~/.atelier`. Standing in `$HOME`, the two are
+the same directory.
 
 The daemon is the exception: a shared server has no working directory, so it
 always pins the global store at install time (or whatever `--home` you give
-it). `atelier doctor` names the store you're on, and why.
+it). `atelier status` shows the daemon endpoint and store.
 
 ## Skills
 
@@ -328,37 +232,17 @@ atelier library                 # every document, with its step count
 atelier replay my-sprite        # rebuild it from its own journal
 ```
 
-Nothing to turn on. The journal is compact, versioned JSON Lines beside the art
-(`~/.atelier/documents/<id>/recipe.jsonl`): one header, then one completed tool
-call per line — only the calls that *made* something, never the looks and
-audits. Old authored JSON and `{tool,args}` JSONL remain readable. Replay any
-form into a sandbox and you get the same pixels, anywhere:
+Nothing to turn on. The journal is JSON Lines beside the art
+(`~/.atelier/documents/<id>/recipe.jsonl`), one tool call per line — only the
+calls that *made* something, never the looks and audits. Replay it into a
+sandbox with `--home /tmp/demo` and you get the same pixels, anywhere:
 
 ```sh
 atelier replay docs/examples/invader-march.json --home /tmp/demo
 ```
 
-Compact a recipe for source control, expand it for a detailed review, or see
-where its bytes go:
-
-```sh
-atelier recipe compact recipe.json -o recipe.jsonl
-atelier recipe expand recipe.jsonl -o recipe.json
-atelier recipe stats recipe.jsonl
-```
-
-Context defaults remove repeated document/layer/frame fields; common batch
-draw operations use readable positional tuples; unknown shapes remain ordinary
-JSON objects. Compact/expand is lossless and deterministic. On the 51-step,
-320-operation Kamehameha example, compact v2 is 19,471 bytes instead of 44,736
-(56.5% smaller); the equivalent already-minified legacy JSONL is still 50.9%
-smaller. The full on-disk contract is in
-[Recipe formats](docs/RECIPES.md).
-
 The recipes in [docs/examples](docs/examples) are both the brand art and the
-integration tests. `--record session.jsonl` captures a whole sitting across
-several documents directly in compact v2. MCP clients can also read any live
-document directly:
+integration tests. MCP clients can also read any live document directly:
 `atelier://doc/<id>` (structure JSON) and `atelier://doc/<id>/render` (frame 0
 as PNG).
 

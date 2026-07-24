@@ -696,8 +696,7 @@ fn op_dither(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), Str
     d.dither(
         l,
         f,
-        // In a batch the studio applies any active selection as a mask,
-        // so default to the whole canvas when no explicit region.
+        // Default to the whole canvas when no explicit region is provided.
         region_val(op.get("region")).unwrap_or((
             0,
             0,
