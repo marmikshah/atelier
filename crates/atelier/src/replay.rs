@@ -157,33 +157,8 @@ async fn run_session(
     journal_id: Option<String>,
     atelier: &Atelier,
 ) -> Result<(), String> {
-    run_session_inner(recipe, journal_id, atelier, true)
-        .await
-        .map(|_| ())
-}
-
-/// Replay without writing the human step log. `atelier check` uses this against
-/// an isolated temporary store, then compares the rebuilt document with the
-/// live one. The returned map resolves every recorded id to the id minted in
-/// that empty store.
-pub(crate) async fn validate_session(
-    recipe: &Recipe,
-    journal_id: Option<String>,
-    atelier: &Atelier,
-) -> Result<HashMap<String, String>, String> {
-    run_session_inner(recipe, journal_id, atelier, false).await
-}
-
-async fn run_session_inner(
-    recipe: &Recipe,
-    journal_id: Option<String>,
-    atelier: &Atelier,
-    report: bool,
-) -> Result<HashMap<String, String>, String> {
     // Header line (to stderr, status channel) so the run is self-identifying.
-    if report {
-        eprintln!("== {} — {}", recipe.name, recipe.description);
-    }
+    eprintln!("== {} — {}", recipe.name, recipe.description);
 
     let mut ids: HashMap<String, String> = HashMap::new();
     // Old journals predate the stamped doc_id on their doc_create line; the
@@ -198,19 +173,12 @@ async fn run_session_inner(
             remap_ids(&mut args, &ids);
             None
         };
-        let dispatched = if report {
-            atelier.dispatch(&step.tool, args, "replay").await
-        } else {
-            atelier.dispatch_quiet(&step.tool, args, "check").await
-        };
-        let result = match dispatched {
+        let result = match atelier.dispatch(&step.tool, args, "replay").await {
             Ok(result) => result,
             // Protocol error (unknown tool, malformed args, …) — a recipe is a
             // narrative, so the first failed step ends the run.
             Err(e) => {
-                if report {
-                    print_step(idx, step, &format!("ERROR {e}"));
-                }
+                print_step(idx, step, &format!("ERROR {e}"));
                 return Err(format!("step {} ({}) failed: {e}", idx + 1, step.tool));
             }
         };
@@ -218,9 +186,7 @@ async fn run_session_inner(
         // payload with isError set; treat that as a failed step too.
         let is_error = server::is_error_result(&result);
         let summary = summarize(&result);
-        if report {
-            print_step(idx, step, &summary);
-        }
+        print_step(idx, step, &summary);
         if is_error {
             // `doc_ref op=set` journals the author's absolute image path; on
             // another machine that file is usually gone. The ref is metadata —
@@ -228,12 +194,10 @@ async fn run_session_inner(
             // rebuilding; a later step that truly needs it will fail loudly.
             if step.tool == "doc_ref" && step.args.get("op").and_then(Value::as_str) == Some("set")
             {
-                if report {
-                    eprintln!(
-                        "replay: doc_ref op=set failed (reference image missing?) — \
-                         continuing without it"
-                    );
-                }
+                eprintln!(
+                    "replay: doc_ref op=set failed (reference image missing?) — \
+                     continuing without it"
+                );
                 continue;
             }
             return Err(format!(
@@ -252,17 +216,15 @@ async fn run_session_inner(
                     idx + 1
                 ));
             };
-            if recorded != minted && report {
+            if recorded != minted {
                 eprintln!("replay: '{recorded}' rebuilds as '{minted}'");
             }
             ids.insert(recorded, minted);
         }
     }
 
-    if report {
-        eprintln!("replay: {} step(s) ok", recipe.steps.len());
-    }
-    Ok(ids)
+    eprintln!("replay: {} step(s) ok", recipe.steps.len());
+    Ok(())
 }
 
 /// The id this `doc_create` stood for when recorded: the journal-stamped

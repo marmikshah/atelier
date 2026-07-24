@@ -12,7 +12,6 @@ use std::process::Command;
 
 const LABEL: &str = "com.atelier.server";
 pub(crate) const DEFAULT_BIND: &str = "127.0.0.1:8765";
-pub(crate) const DEFAULT_MCP_URL: &str = "http://127.0.0.1:8765/mcp";
 const DEFAULT_PORT: u16 = 8765;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -249,7 +248,7 @@ pub(crate) fn default_home() -> PathBuf {
 
 /// The global store only (`ATELIER_HOME` or `~/.atelier`). The daemon pins
 /// this at install time: a shared background server has no "current
-/// directory", so a project store must never become its default just because
+/// directory", so a local store must never become its default just because
 /// `atelier install` ran from inside one. (`--home` still overrides.)
 pub(crate) fn global_home() -> PathBuf {
     atelier_studio::Studio::global_home()
@@ -410,13 +409,6 @@ pub(crate) fn installed_bind() -> Option<String> {
         "linux" => parse_systemd_bind(&body),
         _ => None,
     }
-}
-
-/// Endpoint client registration should use for the installed daemon.
-pub(crate) fn installed_mcp_url() -> String {
-    installed_bind()
-        .map(|bind| mcp_url_for_bind(&bind))
-        .unwrap_or_else(|| DEFAULT_MCP_URL.to_string())
 }
 
 // Asymmetry by design: install fails loud (a half-set-up service is useless),
@@ -629,15 +621,6 @@ pub(crate) fn daemon_installed() -> bool {
 /// The OS service manager reports the daemon loaded/active.
 pub(crate) fn daemon_running() -> bool {
     daemon_probe().map(|(running, _)| running).unwrap_or(false)
-}
-
-/// The OS service manager the daemon installs into ("launchd" / "systemd").
-pub(crate) fn manager() -> &'static str {
-    match std::env::consts::OS {
-        "macos" => "launchd",
-        "linux" => "systemd",
-        other => other,
-    }
 }
 
 fn status() -> i32 {

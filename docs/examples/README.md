@@ -1,9 +1,8 @@
 # Example recipes
 
-Four authored JSON recipes of real tool calls that atelier replays
-byte-identically. They double as the brand art and the integration tests
-(`make test` replays them all). `atelier recipe compact` can turn any of them
-into compact JSONL v2 without changing a call.
+Four authored recipes built from real tool calls that Atelier replays
+byte-identically. They double as brand art and integration tests (`make test`
+replays them all).
 
 Replay one into a throwaway store:
 

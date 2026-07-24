@@ -1,5 +1,5 @@
 //! Document lifecycle + structure tools: create/list/info/delete, layers,
-//! frames, tags, cels, document history (`doc_checkpoint`) and the palette hub.
+//! frames, tags, document history (`doc_checkpoint`) and the palette hub.
 
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::CallToolResult;
@@ -49,15 +49,10 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Frame lifecycle + timing in one tool. `op`: add (append a frame; `copy_from` duplicates that frame's cels, `count` appends several at once, `duration_ms` default 100) · duration (set frame `frame`'s `duration_ms`) · insert (new frame at `frame`) · duplicate (`frame`; `link`=true shares the source's cels — copy-on-write — instead of copying) · delete (`frame`; last frame protected) · move (`frame`→`to_index`). Cels reindex and tag ranges remap. (Animation tags have their own tool: doc_add_tag.)"
+        description = "Frame lifecycle + timing in one tool. `op`: add (append; `copy_from` copies a frame, `count` appends several, `duration_ms` defaults to 100) · duration · insert · duplicate · delete · move. Cels reindex and tag ranges remap."
     )]
     pub(crate) async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
-        let studio = self.studio();
-        // delete destroys cels and move can scramble tags — auto-checkpoint the
-        if p.op == "delete" || p.op == "move" {
-            studio.auto_checkpoint(&p.doc_id, "doc_frame");
-        }
-        res(studio.doc_frame(
+        res(self.studio().doc_frame(
             &p.doc_id,
             &p.op,
             p.frame,
@@ -65,7 +60,6 @@ impl Atelier {
             p.to_index,
             p.duration_ms,
             p.count,
-            p.link,
         ))
     }
 
@@ -82,43 +76,8 @@ impl Atelier {
         ))
     }
 
-    #[tool(description = "Clear (empty) a layer×frame cel.")]
-    pub(crate) async fn doc_clear_cel(&self, Parameters(p): Parameters<DocCel>) -> CallToolResult {
-        res(self.studio().doc_clear_cel(&p.doc_id, p.layer, p.frame))
-    }
-
     #[tool(
-        description = "Slice metadata on the document — named rects that spritesheet consumers read (UI 9-slice bounds, pivot points), never pixels. `op`: add (`name`, `rect` [x0,y0,x1,y1] inclusive corners; optional 9-slice `center` rect inside it; optional `pivot` [x,y]) · delete (by `name`) · list. Slices ride doc_export op=sheet's JSON sidecars (both the default and the engine-standard meta)."
-    )]
-    pub(crate) async fn doc_slice(&self, Parameters(p): Parameters<DocSlice>) -> CallToolResult {
-        let rect = match &p.rect {
-            Some(v) => match <[i32; 4]>::try_from(v.as_slice()) {
-                Ok(r) => Some(r),
-                Err(_) => return res(Err("slice rect needs 4 numbers [x0,y0,x1,y1]".into())),
-            },
-            None => None,
-        };
-        let center = match &p.center {
-            Some(v) => match <[i32; 4]>::try_from(v.as_slice()) {
-                Ok(r) => Some(r),
-                Err(_) => return res(Err("slice center needs 4 numbers [x0,y0,x1,y1]".into())),
-            },
-            None => None,
-        };
-        let pivot = match &p.pivot {
-            Some(v) => match <[i32; 2]>::try_from(v.as_slice()) {
-                Ok(r) => Some(r),
-                Err(_) => return res(Err("slice pivot needs 2 numbers [x,y]".into())),
-            },
-            None => None,
-        };
-        res(self
-            .studio()
-            .doc_slice(&p.doc_id, &p.op, p.name.as_deref(), rect, center, pivot))
-    }
-
-    #[tool(
-        description = "Document history for an all-destructive editor. action: save (snapshot the doc) | list | restore (roll back) | diff (regression deltas vs a snapshot: pixel/colour/contrast change, added/removed/recoloured) | prune. Snapshot before a risky op (form/quantize/fill/palette snap) and restore if it gets worse."
+        description = "Explicit document snapshots. action: save, list, restore, or prune. Save before a risky edit and restore if the result is worse."
     )]
     pub(crate) async fn doc_checkpoint(
         &self,
