@@ -19,7 +19,7 @@ use std::path::Path;
 
 use image::{Rgba, RgbaImage};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::raster;
 
@@ -1085,9 +1085,10 @@ mod slice_link_tests {
             .unwrap();
         assert_eq!(d.meta.slices[j].rect, [2, 2, 8, 8]);
         assert_eq!(d.meta.slices[j].center, Some([4, 4, 8, 8]));
-        assert!(d
-            .add_slice("bad", [0, 0, 3, 3], Some([9, 9, 12, 12]), None)
-            .is_err());
+        assert!(
+            d.add_slice("bad", [0, 0, 3, 3], Some([9, 9, 12, 12]), None)
+                .is_err()
+        );
         let s = d.structure();
         assert_eq!(s["slices"].as_array().unwrap().len(), 2);
         assert_eq!(s["slices"][0]["name"], json!("hud"));

@@ -27,10 +27,8 @@ pub(crate) fn revive_params(params: &mut serde_json::Map<String, Value>) {
                 || t == "true"
                 || t == "false"
                 || t.parse::<f64>().is_ok();
-            if looks_typed {
-                if let Ok(parsed) = serde_json::from_str::<Value>(t) {
-                    *v = parsed;
-                }
+            if looks_typed && let Ok(parsed) = serde_json::from_str::<Value>(t) {
+                *v = parsed;
             }
         }
     }

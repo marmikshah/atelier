@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use image::{Rgba, RgbaImage};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::raster;
 
@@ -197,11 +197,11 @@ impl Document {
             let mut img = self.flatten(f);
             if !global.is_empty() {
                 for p in img.pixels_mut() {
-                    if p.0[3] > 0 {
-                        if let Some(i) = lab.nearest(p.0) {
-                            let c = lab.color(i);
-                            *p = Rgba([c[0], c[1], c[2], p.0[3]]);
-                        }
+                    if p.0[3] > 0
+                        && let Some(i) = lab.nearest(p.0)
+                    {
+                        let c = lab.color(i);
+                        *p = Rgba([c[0], c[1], c[2], p.0[3]]);
                     }
                 }
             }

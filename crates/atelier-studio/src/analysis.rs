@@ -6,7 +6,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use super::Studio;
 
@@ -566,7 +566,7 @@ impl Studio {
                 return Err(format!(
                     "unknown axis '{}' — use both|horizontal|vertical",
                     other
-                ))
+                ));
             }
         };
         // One flatten serves both axes AND the overlay below.
@@ -1089,7 +1089,7 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
 mod tests {
     use super::Studio;
     use super::{circular_summary, form_audit_image};
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
 
     fn studio(tag: &str) -> Studio {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
@@ -1131,7 +1131,7 @@ mod tests {
             .doc_dump_region("d", 0, None, Some((0, 0, 2, 0)), "hex")
             .unwrap();
         assert_eq!(hx["rows"][0], "#0a141e #28323c ."); // opaque, opaque, transparent
-                                                        // area cap rejects oversized regions
+        // area cap rejects oversized regions
         s.doc_create("big", 128, 128).unwrap();
         assert!(s.doc_dump_region("big", 0, None, None, "symbol").is_err());
     }
@@ -1225,7 +1225,7 @@ mod tests {
         assert_eq!(r["components"][0]["area"], 9); // biggest first
         assert_eq!(r["components"][0]["dominant"], "#ff0000");
         assert_eq!(r["specks"].as_array().unwrap().len(), 1); // the 1px dot
-                                                              // colour filter isolates one blob
+        // colour filter isolates one blob
         let red = s
             .doc_components("d", 0, None, 8, Some([255, 0, 0, 255]), 1)
             .unwrap();
@@ -1272,9 +1272,9 @@ mod tests {
         assert_eq!(v["max"], json!(255)); // white luma
         assert_eq!(v["mean"], json!(128)); // (0+255)/2 rounded
         assert_eq!(v["contrast"], json!(1.0)); // full value range
-                                               // unknown mode is an actionable error
-        assert!(s
-            .look(
+        // unknown mode is an actionable error
+        assert!(
+            s.look(
                 "d",
                 0,
                 &crate::LookOptions {
@@ -1283,7 +1283,8 @@ mod tests {
                     ..Default::default()
                 }
             )
-            .is_err());
+            .is_err()
+        );
     }
 
     #[test]
@@ -1311,7 +1312,7 @@ mod tests {
         assert_eq!(r["colors"][0]["hex"], "#ff0000ff"); // most-used first
         assert_eq!(r["colors"][0]["in_palette"], json!(true));
         assert_eq!(r["off_palette_count"], json!(1)); // the near-red stray
-                                                      // the two reds are within dist 8 → flagged as near-dupes
+        // the two reds are within dist 8 → flagged as near-dupes
         assert_eq!(r["near_dupes"].as_array().unwrap().len(), 1);
         // no-palette doc → in_palette null
         s.doc_create("e", 2, 2).unwrap();
@@ -1332,7 +1333,7 @@ mod tests {
         let s = studio("framediff");
         s.doc_create("d", 4, 4).unwrap();
         s.doc_add_frame("d", 100, Some(0), 1).unwrap(); // frame 1 copies frame 0
-                                                        // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
+        // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
         draw(
             &s,
             "d",
@@ -1351,7 +1352,7 @@ mod tests {
             .doc_frame_diff("d", 0, 1, None, None, true, "none", None, 1)
             .unwrap();
         assert!(png.is_none()); // render="none" → no inline overlay
-                                // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
+        // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
         assert_eq!(r["added"], json!(1));
         assert_eq!(r["removed"], json!(1));
         assert_eq!(r["recolored"], json!(0));
@@ -1359,7 +1360,7 @@ mod tests {
         assert_eq!(r["change_bbox"], json!([0, 0, 1, 1]));
         assert_eq!(r["grid"][0], "-..."); // (0,0) removed
         assert_eq!(r["grid"][1], ".+.."); // (1,1) added
-                                          // overlay render writes a PNG and returns the bytes for inlining
+        // overlay render writes a PNG and returns the bytes for inlining
         let out = s.docs_dir.join("diff.png");
         let (ov_png, ov) = s
             .doc_frame_diff("d", 0, 1, None, None, false, "overlay", out.to_str(), 1)
@@ -1368,9 +1369,10 @@ mod tests {
         assert!(ov_png.is_some());
         assert_eq!(ov["path"], json!(out.to_string_lossy()));
         // unknown render mode is an actionable error
-        assert!(s
-            .doc_frame_diff("d", 0, 1, None, None, false, "bogus", None, 1)
-            .is_err());
+        assert!(
+            s.doc_frame_diff("d", 0, 1, None, None, false, "bogus", None, 1)
+                .is_err()
+        );
     }
 
     #[test]
@@ -1441,7 +1443,7 @@ mod tests {
         assert_eq!(sp["per_frame_offset"].as_array().unwrap().len(), 2);
         assert!(sp["total_drift"][0].as_f64().unwrap() > 0.0); // moved right
         assert_eq!(sp["evenness"], json!(0.0)); // two equal 2px steps
-                                                // seam: last frame vs first differ → non-zero score
+        // seam: last frame vs first differ → non-zero score
         let seam = s.doc_anim_audit("d", None, None, "seam", None).unwrap();
         assert!(seam["seam_score"].as_f64().unwrap() > 0.0);
         assert_eq!(seam["frames"], json!([2, 0]));

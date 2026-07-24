@@ -20,6 +20,10 @@ releases.
 
 ### Changed
 
+- **The Rust stack has been refreshed.** Development and release builds now use
+  Rust 1.97.1 with Edition 2024 and Cargo resolver 3. Dependencies, CI actions,
+  and the Alpine runtime are current while the tested Rust 1.88 minimum remains
+  supported.
 - **Releases are maintainer-approved annotated tags.** The tag, every release package,
   `Cargo.lock`, and the changelog must agree before the production gate or any
   platform build runs. GitHub Release creation now waits for every archive and

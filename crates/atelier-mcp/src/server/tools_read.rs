@@ -8,7 +8,7 @@ use rmcp::model::CallToolResult;
 use rmcp::{tool, tool_router};
 
 use super::params::*;
-use super::{edited, img_result, opt_img_result, palette_list, region, res, rgba, Atelier};
+use super::{Atelier, edited, img_result, opt_img_result, palette_list, region, res, rgba};
 
 #[tool_router(router = read_router, vis = "pub(crate)")]
 impl Atelier {

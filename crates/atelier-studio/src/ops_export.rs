@@ -5,9 +5,9 @@
 use std::fs;
 use std::path::Path;
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use super::{export_scale, Studio, DEFAULT_EXPORT_SCALE};
+use super::{DEFAULT_EXPORT_SCALE, Studio, export_scale};
 
 /// Create the parent directory of an export target (one guard, not one per
 /// entry point). An empty/absent parent is a no-op.
@@ -156,19 +156,34 @@ impl Studio {
         let gets = |k: &str| params.get(k).and_then(|v| v.as_str());
         match op {
             "sheet" => match gets("meta").unwrap_or("atelier") {
-                "atelier" => self.doc_export_sheet(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE)),
+                "atelier" => {
+                    self.doc_export_sheet(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE))
+                }
                 "standard" => {
                     let (_dir, doc) = self.open(id)?;
                     ensure_parent(out_path)?;
-                    doc.export_sheet_std(Path::new(out_path), export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE)))
+                    doc.export_sheet_std(
+                        Path::new(out_path),
+                        export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE)),
+                    )
                 }
                 other => Err(format!(
                     "doc_export op=sheet: unknown meta '{other}' — use atelier|standard"
                 )),
             },
             "anim" => match gets("format").unwrap_or("gif") {
-                "apng" => self.doc_export_apng(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE), gets("tag")),
-                "gif" => self.doc_export_gif(id, out_path, scale.unwrap_or(DEFAULT_EXPORT_SCALE), gets("tag")),
+                "apng" => self.doc_export_apng(
+                    id,
+                    out_path,
+                    scale.unwrap_or(DEFAULT_EXPORT_SCALE),
+                    gets("tag"),
+                ),
+                "gif" => self.doc_export_gif(
+                    id,
+                    out_path,
+                    scale.unwrap_or(DEFAULT_EXPORT_SCALE),
+                    gets("tag"),
+                ),
                 other => Err(format!(
                     "doc_export op=anim: unknown format '{other}' — use gif|apng"
                 )),

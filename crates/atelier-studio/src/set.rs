@@ -3,7 +3,7 @@
 //! value range, consistent scale, aligned pivots. These tools resolve a family
 //! (explicit ids or an id prefix) and synchronizes it as a whole.
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use atelier_core::document::AlphaSnap;
 
@@ -84,7 +84,7 @@ impl Studio {
 #[cfg(test)]
 mod tests {
     use super::Studio;
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
 
     fn studio(name: &str) -> Studio {
         let dir = std::env::temp_dir().join(format!("atelier-set-{}", name));

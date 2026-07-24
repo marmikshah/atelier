@@ -7,10 +7,10 @@
 use std::fs;
 
 use image::{Rgba, RgbaImage};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use super::craft::{crop_region, MID_MAX, SHADOW_MAX};
-use super::{encode_png, scale_nn, Studio};
+use super::craft::{MID_MAX, SHADOW_MAX, crop_region};
+use super::{Studio, encode_png, scale_nn};
 use atelier_core::raster;
 
 /// Alpha-composite one pixel onto `img` (source-over) — for overlays that must
@@ -53,7 +53,7 @@ fn overlay_grid(img: &mut RgbaImage, ox: i32, oy: i32, scale: u32, step: i32, co
     let s = scale as i32;
     let (w, h) = (img.width() as i32, img.height() as i32);
     let line = [255, 0, 255, 70]; // magenta, faint — survives over any art
-                                  // Vertical lines at every `step`-th native column boundary.
+    // Vertical lines at every `step`-th native column boundary.
     let mut nx = ox - ox.rem_euclid(step);
     while (nx - ox) * s <= w {
         let sx = (nx - ox) * s;
@@ -285,7 +285,7 @@ impl Studio {
                 return Err(format!(
                     "unknown look mode '{}' — use render|value|bands|sat|hue|notan",
                     other
-                ))
+                ));
             }
         };
         let (view, ox, oy) = crop_region(&native, region)?;

@@ -2,7 +2,7 @@
 //! (`doc_region`): process-lived state on the `Studio` that painting ops
 //! consult before touching a cel.
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use super::{ColorSelect, Studio};
 
@@ -181,7 +181,7 @@ impl Studio {
                     (Some(col), _) => col,
                     (None, Some((px, py))) => doc.get_pixel(c.layer, c.frame, px, py)?,
                     (None, None) => {
-                        return Err("color selection needs `color` or `x,y` to sample".into())
+                        return Err("color selection needs `color` or `x,y` to sample".into());
                     }
                 };
                 let near = |a: [u8; 4], b: [u8; 4]| -> bool {

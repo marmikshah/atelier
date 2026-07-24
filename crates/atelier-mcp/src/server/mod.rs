@@ -6,13 +6,13 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    AnnotateAble, CallToolResult, Content, ListResourcesResult, ListToolsResult,
-    PaginatedRequestParams, RawResource, ReadResourceRequestParams, ReadResourceResult, Resource,
+    CallToolResult, ContentBlock as Content, ListResourcesResult, ListToolsResult,
+    PaginatedRequestParams, ReadResourceRequestParams, ReadResourceResult, Resource,
     ResourceContents, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
-use rmcp::{tool_handler, ErrorData, RoleServer, ServerHandler};
-use serde_json::{json, Value};
+use rmcp::{ErrorData, RoleServer, ServerHandler, tool_handler};
+use serde_json::{Value, json};
 
 use atelier_studio::Studio;
 
@@ -27,7 +27,7 @@ pub use transport::{run, run_http};
 
 use params::*;
 use recorder::Recorder;
-use resources::{base64, parse_resource_uri, ResourceTarget, RESOURCE_RENDER_SCALE};
+use resources::{RESOURCE_RENDER_SCALE, ResourceTarget, base64, parse_resource_uri};
 
 fn j(v: Value) -> String {
     serde_json::to_string(&v).unwrap_or_else(|_| "{}".into())
@@ -150,7 +150,7 @@ fn draw_op_params<T: serde::de::DeserializeOwned>(p: &DocDraw) -> Result<T, Stri
 
 /// Unwrap a parse result inside a tool method, or return it as the tool error.
 macro_rules! try_res {
-    ($e:expr) => {
+    ($e:expr_2021) => {
         match $e {
             Ok(v) => v,
             Err(e) => return res(Err(e)),
@@ -432,10 +432,8 @@ impl Atelier {
             let args = recorded_args(tool, args, target.as_deref(), clipboard);
             // The document's own journal: on by default, so every document is a
             // replayable recipe without anyone having to know to ask first.
-            if journaled {
-                if let Some(id) = &target {
-                    self.studio().journal_append(id, tool, &args);
-                }
+            if journaled && let Some(id) = &target {
+                self.studio().journal_append(id, tool, &args);
             }
             // The session recorder (--record) stays opt-in and cross-document:
             // it captures a whole sitting, which per-document journals cannot
@@ -500,7 +498,7 @@ impl Atelier {
                 return Err(ErrorData::invalid_params(
                     format!("unknown tool: {tool}"),
                     None,
-                ))
+                ));
             }
         })
     }
@@ -514,21 +512,19 @@ impl Atelier {
             let Some(id) = d["id"].as_str() else { continue };
             let name = d["name"].as_str().unwrap_or(id);
             out.push(
-                RawResource::new(format!("atelier://doc/{id}"), format!("{name} (structure)"))
+                Resource::new(format!("atelier://doc/{id}"), format!("{name} (structure)"))
                     .with_description("Document structure: layers, frames, cels, tags.")
-                    .with_mime_type("application/json")
-                    .no_annotation(),
+                    .with_mime_type("application/json"),
             );
             out.push(
-                RawResource::new(
+                Resource::new(
                     format!("atelier://doc/{id}/render"),
                     format!("{name} (render)"),
                 )
                 .with_description(format!(
                     "Frame 0 flattened to a PNG at scale {RESOURCE_RENDER_SCALE}."
                 ))
-                .with_mime_type("image/png")
-                .no_annotation(),
+                .with_mime_type("image/png"),
             );
         }
         out
@@ -669,18 +665,19 @@ fn recorded_args(
     target: Option<&str>,
     clipboard: Option<(u32, u32, Vec<u8>)>,
 ) -> Value {
-    if tool == "doc_create" {
-        if let (Some(id), Some(obj)) = (target, args.as_object_mut()) {
-            obj.insert("doc_id".into(), json!(id));
-        }
+    if tool == "doc_create"
+        && let (Some(id), Some(obj)) = (target, args.as_object_mut())
+    {
+        obj.insert("doc_id".into(), json!(id));
     }
-    if tool == "doc_region" && args.get("op").and_then(Value::as_str) == Some("paste") {
-        if let (Some((w, h, buf)), Some(obj)) = (clipboard, args.as_object_mut()) {
-            obj.insert(
-                "clipboard".into(),
-                json!({"w": w, "h": h, "data": base64(&buf)}),
-            );
-        }
+    if tool == "doc_region"
+        && args.get("op").and_then(Value::as_str) == Some("paste")
+        && let (Some((w, h, buf)), Some(obj)) = (clipboard, args.as_object_mut())
+    {
+        obj.insert(
+            "clipboard".into(),
+            json!({"w": w, "h": h, "data": base64(&buf)}),
+        );
     }
     args
 }
@@ -1216,10 +1213,10 @@ mod tests {
         let rec = Recorder::new(path.clone());
 
         // Mirror call_tool: record only when the result is not an error payload.
-        let ok = rmcp::model::CallToolResult::success(vec![rmcp::model::Content::text(j(
+        let ok = rmcp::model::CallToolResult::success(vec![rmcp::model::ContentBlock::text(j(
             json!({"id": "x"}),
         ))]);
-        let err = rmcp::model::CallToolResult::success(vec![rmcp::model::Content::text(j(
+        let err = rmcp::model::CallToolResult::success(vec![rmcp::model::ContentBlock::text(j(
             json!({"error": "no such doc"}),
         ))]);
         assert!(!is_error_result(&ok));
@@ -1347,7 +1344,7 @@ mod tests {
         let has_image = |r: &CallToolResult| {
             r.content
                 .iter()
-                .any(|c| matches!(c.raw, rmcp::model::RawContent::Image(_)))
+                .any(|c| matches!(c, rmcp::model::ContentBlock::Image(_)))
         };
 
         let edit = edited(Ok(json!({"ok": true})));
