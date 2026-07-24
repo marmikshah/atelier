@@ -29,6 +29,11 @@ releases.
   `atelier-lab` remains an explicit, unpublished workspace member.
 - Client configuration and installed skill updates now use same-directory
   temporary files and retain the previous content as an `.atelier-backup`.
+- **The background daemon port is configurable at install time.**
+  `atelier install` prompts on first install and reinstall, reuses the current
+  port as the default, and accepts `--port PORT` for non-interactive setup.
+  Diagnostics and new HTTP client registrations follow the installed endpoint;
+  rerunning client setup safely retargets existing loopback registrations.
 - GitHub Pages now builds the tool reference and benchmark index from their
   canonical sources instead of committing duplicate generated files.
 - CI now has one complete Linux gate, an explicit Rust 1.88 minimum-version

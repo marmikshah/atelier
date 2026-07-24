@@ -26,7 +26,7 @@
 //! Daemon (background HTTP server, survives logout/reboot), and the store:
 //!
 //! ```text
-//! atelier install                # launchd (macOS) / systemd --user (Linux)
+//! atelier install                # asks for port; launchd / systemd --user
 //! atelier status
 //! atelier uninstall
 //! atelier doctor                 # check the whole setup, print what to fix
@@ -57,8 +57,8 @@ USAGE:
     atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
     atelier --record <recipe.jsonl> record a whole session (across documents) as a recipe
             (works with stdio and --http; also ATELIER_RECORD=<path>)
-    atelier install               install + start the background daemon (launchd / systemd --user)
-            [--bind ADDR] [--home DIR]
+    atelier install               install/reconfigure the background daemon; asks for port
+            [--port PORT | --bind ADDR] [--home DIR]
     atelier status                show daemon state and log locations
     atelier uninstall             stop + remove the daemon
     atelier library               list the documents in the store (ATELIER_HOME)
