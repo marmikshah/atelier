@@ -93,14 +93,14 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
 }
 
 #[derive(Debug)]
-struct Project {
+pub(crate) struct Project {
     root: PathBuf,
     manifest: PathBuf,
     exports: Vec<Export>,
 }
 
 #[derive(Debug)]
-struct Export {
+pub(crate) struct Export {
     name: String,
     op: String,
     doc: Option<String>,
@@ -111,7 +111,7 @@ struct Export {
 }
 
 impl Export {
-    fn dispatch_args(&self) -> Value {
+    pub(crate) fn dispatch_args(&self) -> Value {
         let mut args = self.params.clone();
         args.insert("op".into(), json!(self.op));
         args.insert(
@@ -126,10 +126,30 @@ impl Export {
         }
         Value::Object(args)
     }
+
+    pub(crate) fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub(crate) fn op(&self) -> &str {
+        &self.op
+    }
+
+    pub(crate) fn doc(&self) -> Option<&str> {
+        self.doc.as_deref()
+    }
+
+    pub(crate) fn out(&self) -> &str {
+        &self.out
+    }
+
+    pub(crate) fn tag(&self) -> Option<&str> {
+        self.params.get("tag").and_then(Value::as_str)
+    }
 }
 
 impl Project {
-    fn load(root: &Path) -> Result<Self, String> {
+    pub(crate) fn load(root: &Path) -> Result<Self, String> {
         let manifest = root.join(MANIFEST_PATH);
         let source = std::fs::read_to_string(&manifest).map_err(|error| {
             if error.kind() == std::io::ErrorKind::NotFound {
@@ -213,6 +233,14 @@ impl Project {
             manifest,
             exports,
         })
+    }
+
+    pub(crate) fn manifest(&self) -> &Path {
+        &self.manifest
+    }
+
+    pub(crate) fn exports(&self) -> &[Export] {
+        &self.exports
     }
 }
 

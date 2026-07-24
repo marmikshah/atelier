@@ -387,6 +387,29 @@ impl Atelier {
         args: Value,
         caller: &str,
     ) -> Result<CallToolResult, ErrorData> {
+        self.dispatch_inner(tool, args, caller, true).await
+    }
+
+    /// The same dispatch path without success-level call logging. Validation
+    /// may replay hundreds of calls internally; their individual success lines
+    /// obscure its report. Protocol and tool failures remain logged.
+    #[doc(hidden)]
+    pub async fn dispatch_quiet(
+        &self,
+        tool: &str,
+        args: Value,
+        caller: &str,
+    ) -> Result<CallToolResult, ErrorData> {
+        self.dispatch_inner(tool, args, caller, false).await
+    }
+
+    async fn dispatch_inner(
+        &self,
+        tool: &str,
+        args: Value,
+        caller: &str,
+        log_success: bool,
+    ) -> Result<CallToolResult, ErrorData> {
         let recorder = self.recorder.clone();
         // For mutations, hold the order lock from before the dispatch until
         // after the journal write, so journal order can never diverge from
@@ -410,7 +433,9 @@ impl Atelier {
                 return Err(e);
             }
         };
-        log_call(tool, &args, caller, &result, started.elapsed());
+        if log_success || is_error_result(&result) {
+            log_call(tool, &args, caller, &result, started.elapsed());
+        }
 
         // A read rebuilds nothing, so it belongs in neither recipe. Both
         // recorders answer to the same question — what did it take to make

@@ -27,6 +27,11 @@ releases.
   savings, and reduction as text or JSON. Replay auto-detects every format.
   New journals and `--record` sessions use v2; existing legacy journals keep
   their original append format.
+- **`atelier check`.** Read-only project validation for local use and CI:
+  strict manifest parsing, document and animation-tag references, isolated
+  recipe rebuilds compared against every live frame, and real exports redirected
+  to a temporary workspace. `--json` provides a stable machine-readable report;
+  failures return a non-zero status while missing legacy journals are warnings.
 
 ### Removed
 
