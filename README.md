@@ -75,8 +75,8 @@ command sets up a shared background daemon (launchd / systemd):
 atelier install
 ```
 
-The installer detects Claude Code, Codex, and Kimi Code and offers to register
-each one after you select an MCP mode. You can do the same later:
+The download installer changes only the Atelier binary. Register a client
+explicitly after choosing an MCP mode:
 
 ```sh
 atelier clients install --for claude --mode http
@@ -96,8 +96,9 @@ Add `--allow-tools` only when you want that client to pre-approve the entire
 `delete_doc` and `doc_export`; without the flag, the client's normal approval
 prompts stay in force. Existing valid Atelier registrations and unrelated
 JSON/TOML settings are preserved when they match the requested mode; conflicting
-Atelier entries are reported and left untouched. Cursor remains a manual MCP
-registration in `~/.cursor/mcp.json`.
+Atelier entries are reported and left untouched. Changed configuration files
+are backed up beside the original as `<name>.atelier-backup`. Cursor remains a
+manual MCP registration in `~/.cursor/mcp.json`.
 
 ### Docker
 
@@ -204,8 +205,8 @@ it). `atelier doctor` names the store you're on, and why.
 
 ## Skills
 
-Tools are the hand; these are the craft. Three [skills](crates/atelier/skills) the
-installer offers to add to your agent — Claude Code, Codex, Kimi Code or Cursor:
+Tools are the hand; these are the craft. Three [skills](crates/atelier/skills)
+you can explicitly add to Claude Code, Codex, Kimi Code or Cursor:
 
 | | |
 |---|---|
@@ -269,9 +270,10 @@ worth spending — and a ⭐ helps the next person find it.
 
 ## Contributing
 
-Not accepting external code contributions until **v2.0.0** — pull requests are
-closed automatically until then. Bug reports and ideas are very welcome as
-[issues](https://github.com/marmikshah/atelier/issues).
+Bug reports, ideas, documentation improvements, and focused pull requests are
+welcome. Open an issue first for new tools, public API changes, dependencies,
+formats, or broad refactors; the full development and review expectations are in
+[CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 Maintainer releases are approved by a manually created annotated tag; the exact
 procedure is in [docs/RELEASING.md](docs/RELEASING.md).

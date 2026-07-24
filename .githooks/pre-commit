@@ -1,5 +1,5 @@
 #!/bin/sh
-# Canonical pre-commit hook — the same gate locally and in CI, fast.
+# Fast optional pre-commit hook. CI remains the authoritative full gate.
 # Enable once with: git config core.hooksPath .githooks .
 # Bypass in an emergency with --no-verify.
-exec make pre-commit-checks
+exec make fmt-check

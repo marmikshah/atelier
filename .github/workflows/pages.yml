@@ -1,11 +1,17 @@
 name: Pages
 
-# Publishes the site/ folder to GitHub Pages via Actions (Pages source must be
-# set to "GitHub Actions" in repo settings). Root stays code-only.
 on:
   push:
     branches: [master]
-    paths: ["site/**", ".github/workflows/pages.yml"]
+    paths:
+      - "site/**"
+      - "benchmarks/runs.json"
+      - "crates/atelier-mcp/**"
+      - "crates/atelier/Cargo.toml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "Makefile"
+      - ".github/workflows/pages.yml"
   workflow_dispatch: {}
 
 permissions:
@@ -13,7 +19,6 @@ permissions:
   pages: write
   id-token: write
 
-# One deploy at a time; a newer push supersedes an in-flight run.
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -21,14 +26,21 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
+      - name: Generate site data and tool reference
+        run: make site
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: site
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

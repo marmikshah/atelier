@@ -1,49 +1,71 @@
-# Canonical Rust CI — mirrors the local gate (format, clippy, rustdoc + tests).
 name: CI
 
 on:
+  push:
+    branches: [master]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  checks:
-    if: github.event.pull_request.draft == false
+  linux:
+    name: Linux gate
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
       - name: No local machine paths
-        # Fail if a tracked file leaks an absolute local path (home dir, temp,
-        # build workspace). Generic test fixtures are fine; real per-machine
-        # paths are not.
         run: |
           if git grep -nI -E '/Users/|/private/(tmp|var)|[A-Za-z]:\\Users\\|/home/[a-z0-9_.-]+/Workspace' \
               -- . ':!*.lock' ':!.github/workflows/ci.yml'; then
             echo "::error::Local machine path found in a tracked file — scrub it before pushing."
             exit 1
           fi
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Shell scripts
+        run: shellcheck .githooks/pre-commit .githooks/pre-push site/install.sh tools/*.sh
+
+      - name: GitHub Actions workflows
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
+          toolchain: stable
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: make pre-commit-checks
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
+      - run: make check
 
-  tests:
-    if: github.event.pull_request.draft == false
+  msrv:
+    name: MSRV (1.88)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: make test
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: 1.88.0
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
+      - run: cargo check --locked
 
-  # site/tools.html is generated from the live tool registry. Without this the
-  # published reference silently drifts from the code — it already had, still
-  # advertising a preview the edit tools no longer return.
-  docs:
-    if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+  platforms:
+    name: Platform (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: make docs-check
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
+      - run: cargo check --locked -p atelier
