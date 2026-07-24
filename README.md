@@ -166,6 +166,8 @@ deliberate act, and the context stays small enough to look often.
 atelier call <tool> '<json>'   # one tool call, in-process — the front door
 atelier call <tool> --file ops.json   # args from a file (or --stdin)
 atelier tools [--schema <name]]       # the tool surface / one input schema
+atelier init                   # create a project store and build manifest
+atelier build [--only NAME]    # build the manifest's named exports
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
 atelier doctor                 # check the whole setup, print what to fix
@@ -209,9 +211,56 @@ By default everything lands in the global `~/.atelier`. Run `atelier init` in
 a project — your game repo, say — and that directory gets its own `./.atelier`:
 art and recipes live next to the project, ids mint clean per project (`hero`,
 never `hero-2` because some other game claimed it), and the recipes can be
-committed with the game. Resolution per call: `--home` / `ATELIER_HOME` →
-`./.atelier` when it exists → `~/.atelier`. Standing in `$HOME`, the two are
-the same directory.
+committed with the game. Init also creates a versioned
+`.atelier/project.toml`; rerunning it adds a missing manifest to an older store
+but never replaces one.
+
+Declare the assets the project should produce:
+
+```toml
+version = 1
+
+[[exports]]
+name = "hero-sheet"
+doc = "hero"
+op = "sheet"
+out = "assets/hero.png"
+scale = 4
+meta = "standard"
+
+[[exports]]
+name = "hero-walk"
+doc = "hero"
+op = "anim"
+out = "assets/hero-walk.gif"
+tag = "walk"
+```
+
+Then build every entry, inspect the planned calls without writing, or select
+one named output:
+
+```sh
+atelier build
+atelier build --dry-run
+atelier build --only hero-walk
+```
+
+| `op` | Required fields | Optional fields |
+|---|---|---|
+| `sheet` | `name`, `doc`, `out` | `scale`, `meta = "atelier" \| "standard"` |
+| `anim` | `name`, `doc`, `out` | `scale`, `format = "gif" \| "apng"`, `tag` |
+| `tileset` | `name`, `doc`, `out`, `tile_w`, `tile_h` | `scale` |
+| `all` | `name`, `out` | `scale` |
+| `atlas` | `name`, `out` | `scale`, `max_width` |
+
+Manifest output paths are portable: they are relative to the project root and
+cannot use absolute paths, `..`, or a symlink to write outside the project.
+Each build still uses `doc_export` through Atelier's shared dispatch path.
+
+Store resolution remains: `--home` / `ATELIER_HOME` → `./.atelier` when it
+exists → `~/.atelier`. Standing in `$HOME`, the two are the same directory.
+`atelier build` reads the manifest in the current project; `ATELIER_HOME`, when
+set, can supply that build's document store just as it does for normal calls.
 
 The daemon is the exception: a shared server has no working directory, so it
 always pins the global store at install time (or whatever `--home` you give

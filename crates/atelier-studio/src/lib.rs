@@ -53,7 +53,7 @@ pub(crate) const MAX_TARGET_PIXELS: usize = 1_048_576;
 /// Upper bound on an export scale factor. Canvases are already capped at 4096²
 /// (`doc_create`); without a scale ceiling a `scale=64` export of that targets a
 /// ~256 GB buffer. 16 matches the render/preview clamp.
-pub(crate) const MAX_EXPORT_SCALE: u32 = 16;
+pub const MAX_EXPORT_SCALE: u32 = 16;
 
 /// Export scale when the caller leaves it unset.
 pub(crate) const DEFAULT_EXPORT_SCALE: u32 = 4;
