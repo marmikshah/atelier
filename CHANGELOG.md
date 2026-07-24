@@ -4,7 +4,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versions follow
 [SemVer](https://semver.org/). Below 2.0.0, breaking changes ship in minor
 releases.
 
-## [1.8.0] — 2026-07-24
+## [1.8.0] — Unreleased
 
 ### Removed
 

@@ -5,8 +5,10 @@ version-change pull request, but pushing the tag is the human approval that
 starts publication.
 
 The release workflow accepts only a stable SemVer tag such as `v1.8.0`. It must
-be annotated or signed, match every release package and the dated changelog
-heading, and point to a commit on `master`.
+be annotated or signed, match every release package and a dated changelog
+heading, and point to a commit on `master`. A version-preparation PR keeps its
+changelog heading marked `Unreleased`; dating it is a separate, explicit part
+of the maintainer's release approval.
 
 ## 1. Prepare and merge the version pull request
 
@@ -14,7 +16,7 @@ The pull request must:
 
 - set `workspace.package.version` and the three internal dependency requirements
   in `Cargo.toml`;
-- add the dated `CHANGELOG.md` section;
+- add the `CHANGELOG.md` section as `## [VERSION] — Unreleased`;
 - refresh and commit `Cargo.lock`;
 - pass CI and generated-doc checks.
 
@@ -22,16 +24,22 @@ After changing versions, refresh the lockfile deliberately, then validate it:
 
 ```sh
 cargo check --locked
-tools/release-check.sh v1.8.0
+tools/release-check.sh --current
 make check
 ```
 
-Replace `v1.8.0` with the version being prepared. Merge the pull request before
-creating the tag.
+This validates the version already declared by the workspace while allowing its
+changelog section to remain unreleased. Merge the pull request before creating
+the tag.
 
 ## 2. Create the tag by hand
 
-Start from a clean, current `master`:
+As the final release change, replace `Unreleased` in the version heading with
+the actual release date (`YYYY-MM-DD`), commit it, and get that commit onto
+`master`. An explicit version check deliberately fails while the heading still
+says `Unreleased`.
+
+Then start from a clean, current `master`:
 
 ```sh
 git checkout master
