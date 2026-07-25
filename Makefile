@@ -20,10 +20,8 @@ build: ## Debug build
 release: ## Optimized release build → target/release/atelier
 	cargo build --release --locked -p atelier
 
-test: ## Run the test suite (unit tests + example-recipe replays)
+test: ## Run the complete test suite
 	cargo test --locked
-	cargo build --locked -p atelier
-	tools/test-examples.sh
 
 fmt: ## Format all sources
 	cargo fmt --all

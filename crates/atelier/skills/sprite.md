@@ -33,7 +33,7 @@ the cel. Name the failing area, fix exactly that, and look again.
 
 - `doc_look` tells you *something* is wrong; `doc_dump_region` tells you *which
   pixels* — read the actual grid before you touch it.
-- Confine the fix by aiming `doc_draw`/`doc_batch` at specific coordinates on
+- Confine the fix by aiming one `doc_draw` operation at specific coordinates on
   the specific layer; use `doc_region` only for a self-contained clear or move.
 - One problem per pass. Two fixes at once and you cannot tell which worked.
 
@@ -55,10 +55,10 @@ doc_new → lock a palette → silhouette → look → block → look → detail
    Run `doc_silhouette` — if the subject does not read as itself in pure black,
    the shape is wrong. Fix it now, before a single detail. A detailed sprite with
    a broken silhouette is wasted work.
-4. **Block the big masses** per layer with `doc_batch` (many ops, one call).
-   `doc_draw` is the single-op form — use it for a one-off, `doc_batch` for a
-   burst.
-5. **`doc_look` after every burst.** It hands the frame back as an image. Look at
+4. **Block the big masses** per layer with one `doc_draw` operation per call.
+   Use `doc_paint_grid` when the mass is most naturally expressed as dense pixel
+   rows.
+5. **`doc_look` after every coherent pass.** It hands the frame back as an image. Look at
    it and say what is wrong in words before you touch anything. If you cannot
    name the problem, you are guessing.
 6. **Detail last**, and only where it earns attention — the focal area (usually

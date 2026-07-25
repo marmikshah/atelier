@@ -432,7 +432,6 @@ impl Studio {
         Ok(json!({"doc_id": id, "changed": changed}))
     }
 
-    /// Apply many ordered drawing ops to one cel in a single open→save cycle.
     /// Declarative grid painting: legend (char -> colour or palette index) +
     /// row strings paint a whole region in one call. Palette-index legends are
     /// palette-true by construction.
@@ -477,7 +476,7 @@ impl Studio {
                     })?
                 }
                 Value::Array(_) => {
-                    // Strict like validate_batch_op's colour check: exactly
+                    // Strict like validate_op's colour check: exactly
                     // [r,g,b] or [r,g,b,a], every component 0..=255 — one shared
                     // predicate in core. The old parse dropped non-numbers
                     // silently and truncated via `as u8` (300 → 44) into a
@@ -518,47 +517,34 @@ impl Studio {
         Ok(ack)
     }
 
-    pub fn doc_batch(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        ops: Vec<Value>,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        // Strict pre-flight: reject typo'd / wrong-shape ops up front so the whole
-        // batch fails cleanly instead of silently defaulting bad params.
-        for (i, op) in ops.iter().enumerate() {
-            atelier_core::document::validate_batch_op(i, op)?;
-        }
-        let run = |doc: &mut Document| -> Result<(), String> {
-            for (i, op) in ops.iter().enumerate() {
-                doc.apply_op(layer, frame, op)
-                    .map_err(|e| format!("op {}: {}", i, e))?;
-            }
-            Ok(())
-        };
-        let before = doc.cel_full(layer, frame);
-        run(&mut doc)?;
-        let after = doc.cel_full(layer, frame);
-        doc.save(&dir)?;
-        let mut ack = Self::change_ack(id, &before, &after);
-        ack["ops"] = json!(ops.len());
-        Ok(ack)
-    }
-
-    /// Apply ONE drawing op to a cel — the single-op form of [`Self::doc_batch`],
-    /// scoped to the "add marks" vocabulary (geometry, fills, text, procedural).
-    /// `params` is the op's flattened args; the op name is injected and the call
-    /// routes through the same validate-and-apply path a one-element batch uses,
-    /// so there is one source of truth for the op schema and behaviour.
-    pub fn doc_draw(
+    /// Validate and apply exactly one draw or effect operation.
+    fn edit_operation(
         &self,
         id: &str,
         layer: usize,
         frame: usize,
         op: &str,
         mut params: serde_json::Map<String, Value>,
+    ) -> Result<Value, String> {
+        params.insert("op".into(), json!(op));
+        let operation = Value::Object(params);
+        atelier_core::document::validate_op(&operation)?;
+        let mut ack = self.edit_with_ack(id, layer, frame, |doc| {
+            doc.apply_op(layer, frame, &operation)
+        })?;
+        ack["op"] = json!(op);
+        Ok(ack)
+    }
+
+    /// Apply one drawing operation to a cel, scoped to the "add marks"
+    /// vocabulary (geometry, fills, text, and procedural drawing).
+    pub fn doc_draw(
+        &self,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        op: &str,
+        params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
         let draw_ops = atelier_core::document::draw_ops();
         if !draw_ops.contains(&op) {
@@ -567,32 +553,27 @@ impl Studio {
                 draw_ops.join(", ")
             ));
         }
-        params.insert("op".into(), json!(op));
-        self.doc_batch(id, layer, frame, vec![Value::Object(params)])
+        self.edit_operation(id, layer, frame, op, params)
     }
 
-    /// Apply ONE transform/effect op to a cel — the single-op form of
-    /// [`doc_batch`](Self::doc_batch) for the ops that REWORK existing pixels
-    /// (filters, lighting, colour, geometry); the complement of
-    /// [`doc_draw`](Self::doc_draw), which adds new marks. Same validated dispatch.
-    /// (`glow` is batch-only — its on-palette `snap` is not a single-op form.)
+    /// Apply one transform/effect operation to a cel. These operations rework
+    /// existing pixels; [`doc_draw`](Self::doc_draw) adds new marks.
     pub fn doc_fx(
         &self,
         id: &str,
         layer: usize,
         frame: usize,
         op: &str,
-        mut params: serde_json::Map<String, Value>,
+        params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
         let fx_ops = atelier_core::document::fx_ops();
         if !fx_ops.contains(&op) {
             return Err(format!(
-                "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw; glow is a batch-only op — call it inside doc_batch)",
+                "doc_fx: '{op}' is not an fx op — use one of [{}] (drawing marks → doc_draw)",
                 fx_ops.join(", ")
             ));
         }
-        params.insert("op".into(), json!(op));
-        self.doc_batch(id, layer, frame, vec![Value::Object(params)])
+        self.edit_operation(id, layer, frame, op, params)
     }
 }
 

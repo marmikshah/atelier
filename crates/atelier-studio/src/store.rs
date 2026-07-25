@@ -305,22 +305,6 @@ impl Studio {
         Ok(out)
     }
 
-    /// Just the frame count, read off doc.json without decoding any cels — the
-    /// MCP multi-frame `doc_batch` preflights its target frames against it
-    /// before applying anything.
-    pub fn frame_count(&self, id: &str) -> Result<usize, String> {
-        if !Self::valid_id(id) {
-            return Err(format!("invalid document id '{id}'"));
-        }
-        if !self.exists(id) {
-            return Err(format!("no document '{id}'"));
-        }
-        let s = fs::read_to_string(self.doc_dir(id).join("doc.json")).map_err(|e| e.to_string())?;
-        let meta: DocMeta = serde_json::from_str(&s).map_err(|e| e.to_string())?;
-        meta.validate()?;
-        Ok(meta.frames.len())
-    }
-
     pub fn list_docs(&self) -> Value {
         self.list_docs_filtered(None, None)
     }
@@ -610,18 +594,6 @@ mod tests {
         drop(guard);
         fs4::FileExt::try_lock_shared(&contender).unwrap();
         fs4::FileExt::unlock(&contender).unwrap();
-    }
-
-    #[test]
-    fn frame_count_reads_doc_json_directly() {
-        let s = studio("fc");
-        let created = s.doc_new("d", 4, 4).unwrap();
-        let id = created["doc_id"].as_str().unwrap();
-        assert_eq!(s.frame_count(id).unwrap(), 1);
-        s.doc_add_frame(id, 100, None, 4).unwrap();
-        assert_eq!(s.frame_count(id).unwrap(), 5);
-        assert!(s.frame_count("ghost").is_err());
-        assert!(s.frame_count("../x").is_err());
     }
 
     #[test]

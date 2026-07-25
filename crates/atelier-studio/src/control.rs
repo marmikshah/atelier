@@ -206,7 +206,6 @@ parsed_control_enum! {
         DeleteDoc => "delete_doc",
         DocAddTag => "doc_add_tag",
         DocAnimAudit => "doc_anim_audit",
-        DocBatch => "doc_batch",
         DocCheckpoint => "doc_checkpoint",
         DocComponents => "doc_components",
         DocContactSheet => "doc_contact_sheet",
@@ -249,7 +248,6 @@ impl ToolName {
             | Self::DocExport => true,
             Self::DeleteDoc
             | Self::DocAddTag
-            | Self::DocBatch
             | Self::DocCheckpoint
             | Self::DocDitherRamp
             | Self::DocDraw
@@ -268,7 +266,6 @@ impl ToolName {
         match self {
             Self::DocNew
             | Self::DocAddTag
-            | Self::DocBatch
             | Self::DocDraw
             | Self::DocDitherRamp
             | Self::DocFrame

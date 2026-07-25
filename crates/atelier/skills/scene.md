@@ -59,8 +59,8 @@ doc_new → layers back-to-front → lock a palette → value blocking → look 
    sources, what temperature. Then apply it *consistently*: every object lit on
    the same side, every shadow cast away from the same source. Inconsistent light
    is the single loudest tell that a scene was assembled rather than seen.
-5. **Work band by band, back to front**, with `doc_batch` per burst.
-   `doc_look` between bands.
+5. **Work band by band, back to front**, with one `doc_draw` or `doc_fx`
+   operation per call. `doc_look` between bands.
 6. **Detail only the focal area.** The eye lands in one place. Detail everywhere
    is detail nowhere, and it flattens the depth the bands just bought you.
 7. **Audit**: `doc_critique`, `doc_palette op=report`.
