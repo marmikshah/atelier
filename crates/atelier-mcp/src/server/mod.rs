@@ -161,18 +161,6 @@ fn region(r: &Option<Vec<i32>>) -> Result<Option<(i32, i32, i32, i32)>, String> 
     }
 }
 
-/// Re-deserialize `doc_draw`'s flattened op params (plus the shared doc_id/
-/// layer/frame) into a composite draw op's own typed struct (box_iso → DocBox,
-/// panel → DocPanel), so those primitives ride the single `doc_draw` surface.
-fn draw_op_params<T: serde::de::DeserializeOwned>(p: &DocDraw) -> Result<T, String> {
-    let mut m = p.params.clone();
-    m.insert("doc_id".to_string(), Value::String(p.doc_id.clone()));
-    m.insert("layer".to_string(), Value::from(p.layer as u64));
-    m.insert("frame".to_string(), Value::from(p.frame as u64));
-    serde_json::from_value(Value::Object(m))
-        .map_err(|e| format!("doc_draw op={}: bad params — {e}", p.op))
-}
-
 /// Unwrap a parse result inside a tool method, or return it as the tool error.
 macro_rules! try_res {
     ($e:expr_2021) => {
@@ -253,8 +241,8 @@ pub fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
         .is_some_and(|v| v.get("error").is_some())
 }
 
-/// Hub-operation discriminator. Most hubs call it `op`; checkpoints predate
-/// that convention and use `action`.
+/// Hub-operation discriminator. Editing hubs use `op`; checkpoints use
+/// `action`.
 fn call_op(args: &Value) -> Option<&str> {
     args.get("op")
         .or_else(|| args.get("action"))
@@ -1399,7 +1387,7 @@ mod tests {
             "restore must discard post-checkpoint provenance"
         );
         assert_eq!(
-            journal[1]["args"],
+            Value::Object(journal[1].args.clone()),
             json!({
                 "doc_id": "hero",
                 "layer": 0,

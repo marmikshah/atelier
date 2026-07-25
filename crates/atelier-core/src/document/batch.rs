@@ -21,10 +21,20 @@ impl Document {
     /// no-op under source-over).
     pub fn apply_op(&mut self, layer: usize, frame: usize, op: &Value) -> Result<(), String> {
         let opacity = op.get("opacity").and_then(|v| v.as_u64()).map(|v| v as u8);
-        let mode = op
-            .get("blend_mode")
-            .and_then(|v| v.as_str())
-            .map(raster::parse_blend);
+        let mode = match op.get("blend_mode") {
+            None => None,
+            Some(value) => {
+                let name = value
+                    .as_str()
+                    .ok_or_else(|| format!("blend_mode must be a string, got {value}"))?;
+                Some(raster::parse_blend(name).ok_or_else(|| {
+                    format!(
+                        "unknown blend_mode '{name}' — valid: {}",
+                        raster::BLEND_NAMES
+                    )
+                })?)
+            }
+        };
         let erase = op.get("erase").and_then(|v| v.as_bool()).unwrap_or(false);
         if !erase && opacity.is_none() && mode.is_none() {
             return self.apply_op_raw(layer, frame, op);
@@ -1012,6 +1022,24 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
                 "op[{idx}] ({kind}): '{k}' must be an integer 0..=255, got {v}"
             ));
         }
+    }
+    if let Some(value) = obj.get("blend_mode") {
+        let name = value
+            .as_str()
+            .ok_or_else(|| format!("op[{idx}] ({kind}): 'blend_mode' must be a string"))?;
+        if !raster::valid_blend(name) {
+            return Err(format!(
+                "op[{idx}] ({kind}): unknown blend_mode '{name}' — valid: {}",
+                raster::BLEND_NAMES
+            ));
+        }
+    }
+    if let Some(value) = obj.get("erase")
+        && !value.is_boolean()
+    {
+        return Err(format!(
+            "op[{idx}] ({kind}): 'erase' must be a boolean, got {value}"
+        ));
     }
     Ok(())
 }

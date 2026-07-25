@@ -22,15 +22,19 @@ impl Studio {
         op: &str,
         out_path: &str,
         scale: Option<u32>,
-        params: &serde_json::Map<String, Value>,
+        meta: Option<&str>,
+        format: Option<&str>,
+        tag: Option<&str>,
     ) -> Result<Value, String> {
-        let text = |key: &str| params.get(key).and_then(Value::as_str);
         let scale = export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE));
         match op {
             "sheet" => {
+                if format.is_some() || tag.is_some() {
+                    return Err("doc_export op=sheet accepts `meta`, not `format` or `tag`".into());
+                }
                 let (_dir, document) = self.open(id)?;
                 ensure_parent(out_path)?;
-                match text("meta").unwrap_or("atelier") {
+                match meta.unwrap_or("atelier") {
                     "atelier" => document.export_sheet(Path::new(out_path), scale),
                     "standard" => document.export_sheet_std(Path::new(out_path), scale),
                     other => Err(format!(
@@ -38,13 +42,18 @@ impl Studio {
                     )),
                 }
             }
-            "anim" => match text("format").unwrap_or("gif") {
-                "gif" => self.doc_export_gif(id, out_path, scale, text("tag")),
-                "apng" => self.doc_export_apng(id, out_path, scale, text("tag")),
-                other => Err(format!(
-                    "doc_export op=anim: unknown format '{other}' — use gif or apng"
-                )),
-            },
+            "anim" => {
+                if meta.is_some() {
+                    return Err("doc_export op=anim accepts `format` and `tag`, not `meta`".into());
+                }
+                match format.unwrap_or("gif") {
+                    "gif" => self.doc_export_gif(id, out_path, scale, tag),
+                    "apng" => self.doc_export_apng(id, out_path, scale, tag),
+                    other => Err(format!(
+                        "doc_export op=anim: unknown format '{other}' — use gif or apng"
+                    )),
+                }
+            }
             other => Err(format!(
                 "unknown doc_export op '{other}' — use sheet or anim"
             )),

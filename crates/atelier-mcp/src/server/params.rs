@@ -37,6 +37,7 @@ pub(crate) fn revive_params(params: &mut serde_json::Map<String, Value>) {
 // --- library params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocCreate {
     pub(crate) name: String,
     pub(crate) width: u32,
@@ -44,11 +45,13 @@ pub(crate) struct DocCreate {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocRef {
     pub(crate) doc_id: String,
 }
 
 #[derive(Deserialize, JsonSchema, Default)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct ListDocs {
     /// Keep documents whose id starts with this (family selector, e.g. "hero-").
     pub(crate) prefix: Option<String>,
@@ -59,6 +62,7 @@ pub(crate) struct ListDocs {
 // --- document params -------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocAddTag {
     pub(crate) doc_id: String,
     pub(crate) name: String,
@@ -70,6 +74,7 @@ pub(crate) struct DocAddTag {
 // --- drawing params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocBatch {
     pub(crate) doc_id: String,
     pub(crate) layer: usize,
@@ -103,7 +108,7 @@ pub(crate) struct DocDraw {
     pub(crate) frame: usize,
     /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
     /// | curve | stamp | fill | bucket | gradient | scatter | noise | text |
-    /// fill_cel | clear_cel | box_iso | panel.
+    /// fill_cel | clear_cel.
     pub(crate) op: String,
     /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,
     /// color, fill). Registry-backed ops also accept `opacity`, `blend_mode`,
@@ -128,6 +133,7 @@ pub(crate) struct DocFx {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocExport {
     pub(crate) doc_id: String,
     /// sheet | anim.
@@ -135,13 +141,16 @@ pub(crate) struct DocExport {
     pub(crate) out_path: String,
     /// Nearest-neighbour upscale (default 4).
     pub(crate) scale: Option<u32>,
-    /// Op-specific params: sheet → meta ("atelier"|"standard");
-    /// anim → format ("gif"|"apng") and optional tag.
-    #[serde(flatten)]
-    pub(crate) params: serde_json::Map<String, serde_json::Value>,
+    /// `sheet`: metadata dialect ("atelier" or "standard").
+    pub(crate) meta: Option<String>,
+    /// `anim`: gif or apng.
+    pub(crate) format: Option<String>,
+    /// `anim`: optional animation tag.
+    pub(crate) tag: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocLayer {
     pub(crate) doc_id: String,
     /// add (new layer on top) | set (visibility/opacity/blend of layer `index`) |
@@ -160,6 +169,7 @@ pub(crate) struct DocLayer {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocFrame {
     pub(crate) doc_id: String,
     /// add (append) | duration (set frame timing) | delete | insert | duplicate |
@@ -178,6 +188,7 @@ pub(crate) struct DocFrame {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocRegion {
     pub(crate) doc_id: String,
     /// clear | move.
@@ -191,6 +202,7 @@ pub(crate) struct DocRegion {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocRefOp {
     pub(crate) doc_id: String,
     /// set (attach/clear the comparison reference) | analyze (decompose the
@@ -219,6 +231,7 @@ pub(crate) struct DocRefOp {
 // --- canvas reader params --------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocDumpRegion {
     pub(crate) doc_id: String,
     pub(crate) frame: Option<usize>,
@@ -231,6 +244,7 @@ pub(crate) struct DocDumpRegion {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocSilhouette {
     pub(crate) doc_id: String,
     pub(crate) frame: Option<usize>,
@@ -240,6 +254,7 @@ pub(crate) struct DocSilhouette {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocComponents {
     pub(crate) doc_id: String,
     pub(crate) frame: Option<usize>,
@@ -257,6 +272,7 @@ pub(crate) struct DocComponents {
 // --- animation & tiling feedback params ------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocFrameDiff {
     pub(crate) doc_id: String,
     pub(crate) frame_a: usize,
@@ -274,6 +290,7 @@ pub(crate) struct DocFrameDiff {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocSeamReport {
     pub(crate) doc_id: String,
     pub(crate) frame: Option<usize>,
@@ -288,6 +305,7 @@ pub(crate) struct DocSeamReport {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocAnimAudit {
     pub(crate) doc_id: String,
     /// Audit this tag's loop; omit to audit the whole timeline.
@@ -305,6 +323,7 @@ pub(crate) struct DocAnimAudit {
 // --- world-class-art tool params (the art-quality pass) --------------------
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocLook {
     pub(crate) doc_id: String,
     pub(crate) frame: Option<usize>,
@@ -329,6 +348,7 @@ pub(crate) struct DocLook {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocCheckpoint {
     pub(crate) doc_id: String,
     /// save | list | restore | prune.
@@ -338,6 +358,7 @@ pub(crate) struct DocCheckpoint {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocCritique {
     pub(crate) doc_id: String,
     pub(crate) frame: Option<usize>,
@@ -346,6 +367,7 @@ pub(crate) struct DocCritique {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocDitherRamp {
     pub(crate) doc_id: String,
     pub(crate) layer: usize,
@@ -361,6 +383,7 @@ pub(crate) struct DocDitherRamp {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocContactSheet {
     pub(crate) doc_id: String,
     pub(crate) scale: Option<u32>,
@@ -371,6 +394,7 @@ pub(crate) struct DocContactSheet {
 }
 
 #[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocPalette {
     /// generate (default) — synthesize a ramp/scheme · set — lock explicit
     /// `colors` on a doc · snap — snap a cel/doc to its palette · swap — recolour
@@ -417,36 +441,7 @@ pub(crate) struct DocPalette {
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocBox {
-    pub(crate) doc_id: String,
-    pub(crate) layer: usize,
-    pub(crate) frame: usize,
-    /// Centre of the top diamond.
-    pub(crate) cx: i32,
-    pub(crate) cy: i32,
-    /// Half-width of the top diamond.
-    pub(crate) s: i32,
-    /// Body height.
-    pub(crate) ht: i32,
-    pub(crate) color: Vec<i64>,
-    pub(crate) light_right: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub(crate) struct DocPanel {
-    pub(crate) doc_id: String,
-    pub(crate) layer: usize,
-    pub(crate) frame: usize,
-    pub(crate) x: i32,
-    pub(crate) y: i32,
-    pub(crate) w: i32,
-    pub(crate) h: i32,
-    pub(crate) fill: Vec<i64>,
-    pub(crate) border: Option<Vec<i64>>,
-    pub(crate) bevel: Option<bool>,
-}
-
-#[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct DocPaintGrid {
     pub(crate) doc_id: String,
     pub(crate) layer: usize,
@@ -499,6 +494,37 @@ mod tests {
         assert_eq!(
             items["type"], "object",
             "ops items must be an object schema, got {items}"
+        );
+    }
+
+    #[test]
+    fn typed_tool_params_reject_removed_or_misspelled_fields() {
+        assert!(
+            serde_json::from_value::<DocCreate>(serde_json::json!({
+                "name": "x",
+                "width": 8,
+                "height": 8,
+                "doc_id": "old"
+            }))
+            .is_err()
+        );
+        assert!(
+            serde_json::from_value::<DocPalette>(serde_json::json!({
+                "op": "set",
+                "doc_id": "x",
+                "colors": [[0, 0, 0]],
+                "ids": ["old"]
+            }))
+            .is_err()
+        );
+        assert!(
+            serde_json::from_value::<DocExport>(serde_json::json!({
+                "doc_id": "x",
+                "op": "sheet",
+                "out_path": "x.png",
+                "params": {}
+            }))
+            .is_err()
         );
     }
 }

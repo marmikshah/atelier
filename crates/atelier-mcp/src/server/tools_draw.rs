@@ -7,7 +7,7 @@ use rmcp::{tool, tool_router};
 use serde_json::{Value, json};
 
 use super::params::{self, *};
-use super::{Atelier, batch_targets, draw_op_params, edited, palette_list, region, res, rgba};
+use super::{Atelier, batch_targets, edited, palette_list, region, res};
 
 #[tool_router(router = draw_router, vis = "pub(crate)")]
 impl Atelier {
@@ -61,46 +61,13 @@ impl Atelier {
     }
 
     #[tool(
-        description = "Draw ONE mark on a cel. Most ops are the single-op form of doc_batch: pencil{points,color,size?}; line/rect{x0,y0,x1,y1,color,...}; ellipse{cx,cy,rx,ry,color,fill?}; polyline/polygon/stroke/curve{points,color,...}; stamp{points,tip,colorize?}; fill/bucket{x,y,color,tolerance?}; gradient{stops,...}; scatter{colors,bounds,...}; noise{stops,bounds,...}; text{x,y,text,color,size?}; fill_cel{color}; clear_cel. These accept opacity, blend_mode, and erase. Composite helpers: box_iso{cx,cy,s,ht,color}; panel{x,y,w,h,fill}."
+        description = "Draw ONE mark on a cel — the single-op form of doc_batch: pencil{points,color,size?}; line/rect{x0,y0,x1,y1,color,...}; ellipse{cx,cy,rx,ry,color,fill?}; polyline/polygon/stroke/curve{points,color,...}; stamp{points,tip,colorize?}; fill/bucket{x,y,color,tolerance?}; gradient{stops,...}; scatter{colors,bounds,...}; noise{stops,bounds,...}; text{x,y,text,color,size?}; fill_cel{color}; clear_cel. These accept opacity, blend_mode, and erase."
     )]
     pub(crate) async fn doc_draw(&self, Parameters(mut p): Parameters<DocDraw>) -> CallToolResult {
         params::revive_params(&mut p.params);
-        let studio = self.studio();
-        match p.op.as_str() {
-            "box_iso" => {
-                let b: DocBox = try_res!(draw_op_params(&p));
-                res(studio.box_iso(
-                    &b.doc_id,
-                    b.layer,
-                    b.frame,
-                    b.cx,
-                    b.cy,
-                    b.s,
-                    b.ht,
-                    try_res!(rgba(&b.color)),
-                    b.light_right.unwrap_or(true),
-                ))
-            }
-            "panel" => {
-                let pn: DocPanel = try_res!(draw_op_params(&p));
-                res(studio.panel(
-                    &pn.doc_id,
-                    pn.layer,
-                    pn.frame,
-                    pn.x,
-                    pn.y,
-                    pn.w,
-                    pn.h,
-                    try_res!(rgba(&pn.fill)),
-                    match &pn.border {
-                        Some(b) => try_res!(rgba(b)),
-                        None => [20, 20, 28, 255],
-                    },
-                    pn.bevel.unwrap_or(true),
-                ))
-            }
-            _ => res(studio.doc_draw(&p.doc_id, p.layer, p.frame, &p.op, p.params)),
-        }
+        res(self
+            .studio()
+            .doc_draw(&p.doc_id, p.layer, p.frame, &p.op, p.params))
     }
 
     #[tool(

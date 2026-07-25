@@ -23,9 +23,7 @@ use rmcp::model::CallToolResult;
 const USAGE: &str = "usage: atelier replay <recipe.json | doc-id> [--home DIR]";
 
 /// Read the recipe to replay: either a file, or the journal of a document in
-/// the store. The second value is the journal's own document id when the
-/// source is a document — old journals predate the stamped `doc_id` on their
-/// `doc_create` line, and the directory name is the ground truth for them.
+/// the store.
 ///
 /// A path wins over an id, so a file named like a document still replays as the
 /// file the user pointed at.
@@ -34,12 +32,10 @@ const USAGE: &str = "usage: atelier replay <recipe.json | doc-id> [--home DIR]";
 /// *writes*, so `replay jt --home /tmp/sandbox` means "rebuild jt over there",
 /// and reading the journal from the destination would only ever find an empty
 /// store. Point `ATELIER_HOME` at a different store to read from one.
-fn resolve_source(path: &str) -> Result<(String, Option<String>), String> {
+fn resolve_source(path: &str) -> Result<String, String> {
     let as_file = std::path::Path::new(path);
     if as_file.is_file() {
-        return std::fs::read_to_string(as_file)
-            .map(|s| (s, None))
-            .map_err(|e| format!("cannot read {path}: {e}"));
+        return std::fs::read_to_string(as_file).map_err(|e| format!("cannot read {path}: {e}"));
     }
     let root = crate::service::default_home();
     let doc = root.join("documents").join(path);
@@ -52,13 +48,10 @@ fn resolve_source(path: &str) -> Result<(String, Option<String>), String> {
     let journal = doc.join(atelier_studio::JOURNAL_FILE);
     if !journal.is_file() {
         return Err(format!(
-            "document '{path}' has no journal — it predates journaling, or was \
-             built by a client that never wrote one"
+            "document '{path}' has no journal — no replay source is available"
         ));
     }
-    std::fs::read_to_string(&journal)
-        .map(|s| (s, Some(path.to_string())))
-        .map_err(|e| format!("cannot read {path}'s journal: {e}"))
+    std::fs::read_to_string(&journal).map_err(|e| format!("cannot read {path}'s journal: {e}"))
 }
 
 /// Entry point for the `replay` subcommand. Returns a process exit code.
@@ -105,7 +98,7 @@ pub async fn run(args: &[String]) -> i32 {
 
     // A bare document id replays that document's own journal — the whole point
     // of journaling by default is that you never had to keep a recipe file.
-    let (src, journal_id) = match resolve_source(path) {
+    let src = match resolve_source(path) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("replay: {e}");
@@ -120,7 +113,7 @@ pub async fn run(args: &[String]) -> i32 {
         }
     };
 
-    match drive(recipe, journal_id, home).await {
+    match drive(recipe, home).await {
         Ok(()) => 0,
         Err(e) => {
             eprintln!("replay: {e}");
@@ -130,18 +123,14 @@ pub async fn run(args: &[String]) -> i32 {
 }
 
 /// Build the in-process tool server and run every step in order.
-async fn drive(
-    recipe: Recipe,
-    journal_id: Option<String>,
-    home: Option<&str>,
-) -> Result<(), String> {
+async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
     // `--home` roots an isolated store for the run; otherwise the ambient
     // ATELIER_HOME (or the default) is where the rebuild lands.
     let atelier = match home {
         Some(dir) => Atelier::with_studio(Studio::with_docs_dir(dir.into())),
         None => Atelier::new(),
     };
-    run_session(&recipe, journal_id, &atelier).await
+    run_session(&recipe, &atelier).await
 }
 
 /// The dispatch loop: one `dispatch` per step, in recipe order.
@@ -151,23 +140,21 @@ async fn drive(
 /// is rewritten from the id the recipe recorded to the id this run actually
 /// got. Without that, replaying into a store where the id already exists sends
 /// every draw to the LIVE original instead of the fresh copy.
-async fn run_session(
-    recipe: &Recipe,
-    journal_id: Option<String>,
-    atelier: &Atelier,
-) -> Result<(), String> {
+async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
     // Header line (to stderr, status channel) so the run is self-identifying.
     eprintln!("== {} — {}", recipe.name, recipe.description);
 
     let mut ids: HashMap<String, String> = HashMap::new();
-    // Old journals predate the stamped doc_id on their doc_create line; the
-    // journal's directory name is the recorded id, and it binds to the first
-    // (a per-document journal's only) create.
-    let mut journal_id = journal_id;
     for (idx, step) in recipe.steps.iter().enumerate() {
         let mut args = step.args.clone();
         let recorded = if step.tool == "doc_create" {
-            create_recorded_id(&mut args, journal_id.take().as_deref())
+            match create_recorded_id(&mut args, recipe.is_journal()) {
+                Ok(recorded) => recorded,
+                Err(error) => {
+                    print_step(idx, step, &format!("ERROR {error}"));
+                    return Err(format!("step {} ({}) failed: {error}", idx + 1, step.tool));
+                }
+            }
         } else {
             remap_ids(&mut args, &ids);
             None
@@ -217,22 +204,31 @@ async fn run_session(
     Ok(())
 }
 
-/// The id this `doc_create` stood for when recorded: the journal-stamped
-/// `doc_id` if present (stripped before sending — the tool mints its own),
-/// else the journal's own id (old journals predate stamping), else the slug
-/// the name would mint into an empty store (authored recipes).
-fn create_recorded_id(args: &mut Value, journal_id: Option<&str>) -> Option<String> {
-    let stamped = args
+/// Resolve the id this `doc_create` represents and remove replay-only metadata
+/// before dispatch. Current journals must carry a non-empty stamped `doc_id`;
+/// authored recipes must not, and derive the id from `name`.
+fn create_recorded_id(args: &mut Value, journal: bool) -> Result<Option<String>, String> {
+    let obj = args
         .as_object_mut()
-        .and_then(|o| o.remove("doc_id"))
-        .and_then(|v| v.as_str().map(str::to_string));
-    stamped
-        .or_else(|| journal_id.map(str::to_string))
-        .or_else(|| {
-            args.get("name")
-                .and_then(Value::as_str)
-                .map(atelier_studio::slugify)
-        })
+        .ok_or("doc_create args must be a JSON object")?;
+    let stamped = match obj.remove("doc_id") {
+        None => None,
+        Some(Value::String(id)) if !id.is_empty() => Some(id),
+        Some(_) => return Err("doc_create doc_id must be a non-empty string".into()),
+    };
+    if journal {
+        return stamped.map(Some).ok_or_else(|| {
+            "journal doc_create is missing required args.doc_id — rewrite the journal in the current format"
+                .into()
+        });
+    }
+    if stamped.is_some() {
+        return Err("authored doc_create must not include journal-only args.doc_id".into());
+    }
+    Ok(obj
+        .get("name")
+        .and_then(Value::as_str)
+        .map(atelier_studio::slugify))
 }
 
 /// Rewrite every recorded document id in `args` through the remap table.
@@ -318,15 +314,13 @@ mod tests {
     }
 
     #[test]
-    fn args_default_to_empty_object() {
+    fn args_are_required() {
         let src = r#"{
             "name": "n",
             "description": "d",
             "steps": [{"tool": "list_docs"}]
         }"#;
-        let r = Recipe::parse(src).expect("should parse");
-        assert_eq!(r.steps[0].args, json!({}));
-        assert_eq!(r.steps[0].note, None);
+        assert!(Recipe::parse(src).is_err());
     }
 
     #[test]
@@ -343,28 +337,29 @@ mod tests {
     }
 
     #[test]
-    fn create_hint_prefers_stamp_then_journal_then_slug() {
-        // Journal-stamped id wins and is stripped from the sent args.
+    fn create_hint_separates_journals_from_authored_recipes() {
+        // A current journal requires its stamp and strips it from sent args.
         let mut args = json!({"name": "Hero", "doc_id": "hero-2"});
         assert_eq!(
-            create_recorded_id(&mut args, Some("ignored")).as_deref(),
+            create_recorded_id(&mut args, true).unwrap().as_deref(),
             Some("hero-2")
         );
         assert_eq!(args, json!({"name": "Hero"}));
 
-        // Old journal: the directory name is the recorded id.
+        // An unstamped journal is obsolete rather than inferred from location.
         let mut args = json!({"name": "Hero"});
-        assert_eq!(
-            create_recorded_id(&mut args, Some("hero-2")).as_deref(),
-            Some("hero-2")
-        );
+        assert!(create_recorded_id(&mut args, true).is_err());
 
         // Authored recipe: predict the slug an empty store would mint.
         let mut args = json!({"name": "Invader March"});
         assert_eq!(
-            create_recorded_id(&mut args, None).as_deref(),
+            create_recorded_id(&mut args, false).unwrap().as_deref(),
             Some("invader-march")
         );
+
+        // The two source forms cannot be silently mixed.
+        let mut args = json!({"name": "Hero", "doc_id": "hero"});
+        assert!(create_recorded_id(&mut args, false).is_err());
     }
 
     #[test]
@@ -498,9 +493,7 @@ mod tests {
         assert!(recipe.steps.len() >= 4, "the journal drives the rebuild");
         let studio_b = Studio::with_docs_dir(dir_b.clone());
         let atelier_b = Atelier::with_studio(studio_b.clone());
-        run_session(&recipe, Some("px".to_string()), &atelier_b)
-            .await
-            .unwrap();
+        run_session(&recipe, &atelier_b).await.unwrap();
         let replayed = render(&studio_b);
 
         assert_eq!(

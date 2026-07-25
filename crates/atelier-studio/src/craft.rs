@@ -248,7 +248,7 @@ impl Studio {
         let mut new_index = None;
         match action {
             "move" => doc.move_layer(index, to_index.ok_or("move needs to_index")?)?,
-            "insert" => new_index = Some(doc.insert_layer(index, name, opacity, blend)),
+            "insert" => new_index = Some(doc.insert_layer(index, name, opacity, blend)?),
             "delete" => doc.delete_layer(index)?,
             "rename" => doc.rename_layer(index, name.ok_or("rename needs name")?)?,
             "duplicate" => new_index = Some(doc.duplicate_layer(index)?),
@@ -428,110 +428,6 @@ impl Studio {
         }
         Ok(out)
     }
-
-    // -- doc_box: 3-face shaded isometric cuboid ----------------------------
-
-    /// Draw a shaded isometric cuboid (top + two side faces) from one base
-    /// colour, auto-shaded along a perceptual ramp — the hard-surface form
-    /// primitive `form` can't make. `(cx,cy)` is the centre of the top diamond,
-    /// `s` its half-width, `ht` the body height; `light_right` brightens the
-    /// right face (else the left).
-    pub fn box_iso(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        cx: i32,
-        cy: i32,
-        s: i32,
-        ht: i32,
-        base: [u8; 4],
-        light_right: bool,
-    ) -> Result<Value, String> {
-        let s = s.max(1);
-        let ht = ht.max(1);
-        let hh = (s / 2).max(1);
-        // i64 + saturate: the centre/size are raw caller input, and `cx + s`
-        // et al overflow i32 near the extremes (debug panic / release wrap).
-        let c = |v: i64| v.clamp(i32::MIN as i64, i32::MAX as i64) as i32;
-        let (cx, cy, s, ht, hh) = (cx as i64, cy as i64, s as i64, ht as i64, hh as i64);
-        let top = vec![
-            (c(cx), c(cy - hh)),
-            (c(cx + s), c(cy)),
-            (c(cx), c(cy + hh)),
-            (c(cx - s), c(cy)),
-        ];
-        let left = vec![
-            (c(cx - s), c(cy)),
-            (c(cx), c(cy + hh)),
-            (c(cx), c(cy + hh + ht)),
-            (c(cx - s), c(cy + ht)),
-        ];
-        let right = vec![
-            (c(cx + s), c(cy)),
-            (c(cx), c(cy + hh)),
-            (c(cx), c(cy + hh + ht)),
-            (c(cx + s), c(cy + ht)),
-        ];
-        let r = auto_ramp(base, 5);
-        let (top_c, bright, dark) = (r[4], r[3], r[1]);
-        let (right_c, left_c) = if light_right {
-            (bright, dark)
-        } else {
-            (dark, bright)
-        };
-        self.edit(id, |d| {
-            d.polygon(layer, frame, &left, left_c, true)?;
-            d.polygon(layer, frame, &right, right_c, true)?;
-            d.polygon(layer, frame, &top, top_c, true)?;
-            Ok(())
-        })
-    }
-
-    // -- doc_panel: a HUD/UI 9-slice-style panel ---------------------------
-
-    /// Draw a UI panel: filled body, border, and an optional inner bevel
-    /// (top/left lit, bottom/right shadowed) — a ready HUD panel/dialog box vs
-    /// hand-placing every edge pixel.
-    pub fn panel(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        x: i32,
-        y: i32,
-        w: i32,
-        h: i32,
-        fill: [u8; 4],
-        border: [u8; 4],
-        bevel: bool,
-    ) -> Result<Value, String> {
-        // i64 + saturate: `x + w - 1` overflows i32 for extreme caller input.
-        let c = |v: i64| v.clamp(i32::MIN as i64, i32::MAX as i64) as i32;
-        let (x1, y1) = (c(x as i64 + w as i64 - 1), c(y as i64 + h as i64 - 1));
-        self.edit(id, |d| {
-            d.rect(layer, frame, x, y, x1, y1, fill, true, 1)?;
-            d.rect(layer, frame, x, y, x1, y1, border, false, 1)?;
-            if bevel && w > 3 && h > 3 {
-                let hi = raster::shade_hsl(fill, 1, 2);
-                let lo = raster::shade_hsl(fill, -1, 2);
-                d.line(layer, frame, x + 1, y + 1, x1 - 1, y + 1, hi, 1)?; // top
-                d.line(layer, frame, x + 1, y + 1, x + 1, y1 - 1, hi, 1)?; // left
-                d.line(layer, frame, x1 - 1, y + 1, x1 - 1, y1 - 1, lo, 1)?; // right
-                d.line(layer, frame, x + 1, y1 - 1, x1 - 1, y1 - 1, lo, 1)?; // bottom
-            }
-            Ok(())
-        })
-    }
-}
-
-/// A perceptually-even ramp bracketing a base colour's lightness — the default
-/// ramp used by `box_iso`.
-fn auto_ramp(base: [u8; 4], count: usize) -> Vec<[u8; 4]> {
-    let (lb, _, _) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
-    let lo = (lb - 0.34).max(0.04);
-    let hi = (lb + 0.34).min(0.97);
-    raster::make_ramp_oklch(base, count, lo, hi, 18.0, "arc", false)
 }
 
 /// Pure scorecard over a single image — the guts of `critique`, factored out so
@@ -828,61 +724,6 @@ mod tests {
         assert!(r["checks"]["pillow_shading"]["forms"].as_u64().unwrap() >= 1);
     }
 
-    fn distinct(stats: &Value) -> u64 {
-        stats["stats"]["distinct_colors"].as_u64().unwrap_or(0)
-    }
-
-    #[test]
-    fn box_iso_draws_three_shaded_faces() {
-        let s = studio("box");
-        s.doc_create("c", 32, 32).unwrap();
-        s.box_iso("c", 0, 0, 16, 10, 8, 10, [150, 110, 80, 255], true)
-            .unwrap();
-        let look = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    bands: 1,
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert!(distinct(&look.1) >= 3, "three faces => three shades");
-    }
-
-    #[test]
-    fn panel_draws_fill_and_border() {
-        let s = studio("panel");
-        s.doc_create("c", 20, 12).unwrap();
-        s.panel(
-            "c",
-            0,
-            0,
-            1,
-            1,
-            18,
-            10,
-            [60, 60, 90, 255],
-            [10, 10, 20, 255],
-            true,
-        )
-        .unwrap();
-        let look = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    bands: 1,
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert!(distinct(&look.1) >= 2);
-    }
-
     #[test]
     fn anim_audit_arc_reports_trajectory_shape() {
         let s = studio("arc");
@@ -947,7 +788,7 @@ mod hardening_tests {
             .save(&blue_ref)
             .unwrap();
         s.set_reference("c", red_ref.to_str()).unwrap();
-        s.journal_append("c", "doc_create", &json!({"name": "c"}));
+        s.journal_append("c", "doc_create", &json!({"name": "c", "doc_id": "c"}));
 
         let cp = s.checkpoint("c", "save", None, None).unwrap();
         let cpid = cp["saved"].as_str().unwrap().to_string();

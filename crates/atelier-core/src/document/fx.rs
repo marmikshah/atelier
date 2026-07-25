@@ -178,9 +178,15 @@ impl Document {
                 }
             }
         }
+        let blend = raster::parse_blend(mode).ok_or_else(|| {
+            format!(
+                "unknown glow blend '{mode}' — valid: {}",
+                raster::BLEND_NAMES
+            )
+        })?;
         let g = raster::box_blur(&src, radius.max(1));
         let mut out = orig.clone();
-        raster::composite(&mut out, &g, 0, 0, intensity, raster::parse_blend(mode));
+        raster::composite(&mut out, &g, 0, 0, intensity, blend);
         *self.cel_canvas(layer, frame)? = out;
         Ok(())
     }

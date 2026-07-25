@@ -258,7 +258,10 @@ Nothing to turn on. The journal is JSON Lines beside the art
 deterministic calls that *made* something, never looks, audits, external
 reference setup, or checkpoint bookkeeping. Restoring a checkpoint restores
 its journal too, so discarded edits cannot survive in provenance. Replay into
-a sandbox with `--home /tmp/demo` and you get the same pixels, anywhere:
+a sandbox with `--home /tmp/demo` and you get the same pixels, anywhere.
+Current journals start with exactly one `doc_create` whose arguments include
+the minted `doc_id`, followed only by deterministic editing calls for that
+same document; replay rejects older or malformed shapes instead of guessing:
 
 ```sh
 atelier replay docs/examples/invader-march.json --home /tmp/demo
