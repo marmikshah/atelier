@@ -452,8 +452,7 @@ fn install(bind: &str, home_dir: &std::path::Path) -> i32 {
                     return 1;
                 }
             };
-            // Clear any stale registration, then bootstrap (fall back to the
-            // legacy `load -w` on older macOS).
+            // Clear any stale registration, then use the current launchd API.
             let _ = Command::new("launchctl")
                 .args(["bootout", &format!("gui/{uid}/{LABEL}")])
                 .output();
@@ -462,13 +461,7 @@ fn install(bind: &str, home_dir: &std::path::Path) -> i32 {
                 .arg(&plist_path)
                 .status()
                 .map(|s| s.success())
-                .unwrap_or(false)
-                || Command::new("launchctl")
-                    .args(["load", "-w"])
-                    .arg(&plist_path)
-                    .status()
-                    .map(|s| s.success())
-                    .unwrap_or(false);
+                .unwrap_or(false);
             if !ok {
                 eprintln!(
                     "launchctl failed to start the service (see logs in {})",

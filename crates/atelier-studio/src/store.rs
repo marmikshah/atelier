@@ -5,11 +5,95 @@
 use std::fs;
 use std::path::PathBuf;
 
-use serde_json::{Value, json};
+use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value, json};
 
-use atelier_core::document::Document;
+use atelier_core::document::{DocMeta, Document};
 
 use super::{JOURNAL_FILE, MAX_CANVAS, Studio, slugify};
+
+/// The one current journal-line shape, shared by the writer, store reader, and
+/// replay parser.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct JournalEntry {
+    pub tool: String,
+    pub args: Map<String, Value>,
+}
+
+/// Validate the current per-document journal contract. An absent/empty journal
+/// means "no recipe"; a non-empty one is a complete, self-identifying rebuild.
+pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
+    const TOOLS: &[&str] = &[
+        "doc_create",
+        "doc_add_tag",
+        "doc_batch",
+        "doc_draw",
+        "doc_dither_ramp",
+        "doc_frame",
+        "doc_fx",
+        "doc_layer",
+        "doc_paint_grid",
+        "doc_palette",
+        "doc_region",
+    ];
+    let Some(first) = entries.first() else {
+        return Ok(());
+    };
+    if first.tool != "doc_create" {
+        return Err("journal must start with doc_create".into());
+    }
+    if entries
+        .iter()
+        .skip(1)
+        .any(|entry| entry.tool == "doc_create")
+    {
+        return Err("journal may contain exactly one doc_create".into());
+    }
+    let recorded_id = first
+        .args
+        .get("doc_id")
+        .and_then(Value::as_str)
+        .filter(|id| Studio::valid_id(id))
+        .ok_or("journal doc_create requires a valid args.doc_id stamp")?;
+    for (index, entry) in entries.iter().enumerate().skip(1) {
+        if !TOOLS.contains(&entry.tool.as_str()) {
+            return Err(format!(
+                "journal line {} uses non-recipe tool '{}'",
+                index + 1,
+                entry.tool
+            ));
+        }
+        let mut targets = Vec::new();
+        for key in ["doc_id", "set_doc"] {
+            if let Some(value) = entry.args.get(key) {
+                targets.push(value.as_str().ok_or_else(|| {
+                    format!(
+                        "journal line {} ({}) has a non-string {key}",
+                        index + 1,
+                        entry.tool
+                    )
+                })?);
+            }
+        }
+        if targets.is_empty() {
+            return Err(format!(
+                "journal line {} ({}) has no document target",
+                index + 1,
+                entry.tool
+            ));
+        }
+        if targets.iter().any(|target| *target != recorded_id) {
+            return Err(format!(
+                "journal line {} ({}) targets a document other than '{}'",
+                index + 1,
+                entry.tool,
+                recorded_id
+            ));
+        }
+    }
+    Ok(())
+}
 
 /// An advisory cross-process lock for one document store.
 pub struct StoreLock {
@@ -223,11 +307,9 @@ impl Studio {
             return Err(format!("no document '{id}'"));
         }
         let s = fs::read_to_string(self.doc_dir(id).join("doc.json")).map_err(|e| e.to_string())?;
-        let v: Value = serde_json::from_str(&s).map_err(|e| e.to_string())?;
-        v["frames"]
-            .as_array()
-            .map(|a| a.len())
-            .ok_or_else(|| format!("document '{id}': doc.json has no frames array"))
+        let meta: DocMeta = serde_json::from_str(&s).map_err(|e| e.to_string())?;
+        meta.validate()?;
+        Ok(meta.frames.len())
     }
 
     pub fn list_docs(&self) -> Value {
@@ -252,21 +334,29 @@ impl Studio {
             }
             // Read doc.json directly (don't load cel images just to list).
             let meta = fs::read_to_string(self.doc_dir(&id).join("doc.json"))
-                .ok()
-                .and_then(|s| serde_json::from_str::<Value>(&s).ok());
-            let (name, w, h, frames, layers) = match &meta {
-                Some(m) => (
-                    m["name"].clone(),
-                    m["w"].clone(),
-                    m["h"].clone(),
-                    m["frames"].as_array().map(|a| a.len()).unwrap_or(0),
-                    m["layers"].as_array().map(|a| a.len()).unwrap_or(0),
-                ),
-                None => (json!(id), json!(null), json!(null), 0, 0),
+                .map_err(|error| error.to_string())
+                .and_then(|source| {
+                    serde_json::from_str::<DocMeta>(&source).map_err(|error| error.to_string())
+                })
+                .and_then(|meta| {
+                    meta.validate()?;
+                    Ok(meta)
+                });
+            let item = match meta {
+                Ok(meta) => json!({
+                    "id": id,
+                    "name": meta.name,
+                    "w": meta.w,
+                    "h": meta.h,
+                    "frames": meta.frames.len(),
+                    "layers": meta.layers.len(),
+                }),
+                Err(error) => json!({
+                    "id": id,
+                    "error": format!("invalid doc.json: {error}"),
+                }),
             };
-            items.push(
-                json!({"id": id, "name": name, "w": w, "h": h, "frames": frames, "layers": layers}),
-            );
+            items.push(item);
         }
         json!({"count": items.len(), "documents": items})
     }
@@ -312,7 +402,15 @@ impl Studio {
         if !dir.is_dir() {
             return; // no document, nothing to journal (e.g. a failed create)
         }
-        let Ok(mut line) = serde_json::to_string(&json!({"tool": tool, "args": args})) else {
+        let Some(args) = args.as_object() else {
+            eprintln!("atelier: refusing to journal non-object args for {tool}");
+            return;
+        };
+        let entry = JournalEntry {
+            tool: tool.to_string(),
+            args: args.clone(),
+        };
+        let Ok(mut line) = serde_json::to_string(&entry) else {
             return;
         };
         line.push('\n');
@@ -333,7 +431,7 @@ impl Studio {
     /// with content after it is real corruption and errors — silently skipping
     /// it would report "N steps / replayable" for a journal that `atelier
     /// replay` then refuses.
-    pub fn journal(&self, id: &str) -> Result<Vec<Value>, String> {
+    pub fn journal(&self, id: &str) -> Result<Vec<JournalEntry>, String> {
         if !self.exists(id) {
             return Err(format!("no document '{id}'"));
         }
@@ -351,11 +449,25 @@ impl Studio {
         let last = nonempty.len().saturating_sub(1);
         let mut out = Vec::new();
         for (idx, (n, line)) in nonempty.iter().enumerate() {
-            match serde_json::from_str(line) {
-                Ok(v) => out.push(v),
+            match serde_json::from_str::<JournalEntry>(line) {
+                Ok(entry) if entry.tool.is_empty() => {
+                    return Err(format!("journal line {}: tool must not be empty", n + 1));
+                }
+                Ok(entry) => out.push(entry),
                 Err(error) if idx == last && error.is_eof() => break,
                 Err(e) => return Err(format!("journal line {}: {e}", n + 1)),
             }
+        }
+        validate_journal(&out).map_err(|error| format!("journal: {error}"))?;
+        if let Some(recorded_id) = out
+            .first()
+            .and_then(|entry| entry.args.get("doc_id"))
+            .and_then(Value::as_str)
+            && recorded_id != id
+        {
+            return Err(format!(
+                "journal: doc_create stamp '{recorded_id}' does not match document '{id}'"
+            ));
         }
         Ok(out)
     }
@@ -377,12 +489,12 @@ mod tests {
         s.doc_create("d", 8, 8).unwrap();
         assert!(s.journal("d").unwrap().is_empty(), "nothing recorded yet");
 
-        s.journal_append("d", "doc_create", &json!({"name": "d"}));
-        s.journal_append("d", "doc_draw", &json!({"op": "rect"}));
+        s.journal_append("d", "doc_create", &json!({"name": "d", "doc_id": "d"}));
+        s.journal_append("d", "doc_draw", &json!({"doc_id": "d", "op": "rect"}));
         let steps = s.journal("d").unwrap();
         assert_eq!(steps.len(), 2, "appends accumulate in order");
-        assert_eq!(steps[0]["tool"], "doc_create");
-        assert_eq!(steps[1]["args"]["op"], "rect");
+        assert_eq!(steps[0].tool, "doc_create");
+        assert_eq!(steps[1].args["op"], "rect");
 
         // Journaling an unknown document is a no-op, never a panic or a stray
         // directory: a failed create must not leave a journal behind.
@@ -396,8 +508,8 @@ mod tests {
         // error — silently skipping it would list steps that replay refuses.
         let s = studio("journal-policy");
         s.doc_create("d", 8, 8).unwrap();
-        s.journal_append("d", "doc_create", &json!({"name": "d"}));
-        s.journal_append("d", "doc_draw", &json!({"op": "rect"}));
+        s.journal_append("d", "doc_create", &json!({"name": "d", "doc_id": "d"}));
+        s.journal_append("d", "doc_draw", &json!({"doc_id": "d", "op": "rect"}));
         let path = s.journal_path("d");
 
         let clean = fs::read_to_string(&path).unwrap();
@@ -414,6 +526,60 @@ mod tests {
             err.contains("line 3"),
             "complete final corruption errors: {err}"
         );
+
+        fs::write(
+            &path,
+            "{\"tool\":\"doc_create\",\"args\":[],\"note\":\"old\"}\n",
+        )
+        .unwrap();
+        let err = s.journal("d").unwrap_err();
+        assert!(
+            err.contains("line 1"),
+            "non-current entry shape errors: {err}"
+        );
+
+        fs::write(
+            &path,
+            "{\"tool\":\"doc_create\",\"args\":{\"name\":\"d\",\"doc_id\":\"other\"}}\n",
+        )
+        .unwrap();
+        let err = s.journal("d").unwrap_err();
+        assert!(err.contains("does not match document"), "got: {err}");
+    }
+
+    #[test]
+    fn journal_contract_rejects_context_and_cross_document_steps() {
+        let create = JournalEntry {
+            tool: "doc_create".into(),
+            args: serde_json::from_value(json!({"name": "d", "doc_id": "d"})).unwrap(),
+        };
+        for entry in [
+            JournalEntry {
+                tool: "doc_checkpoint".into(),
+                args: serde_json::from_value(json!({"doc_id": "d", "action": "save"})).unwrap(),
+            },
+            JournalEntry {
+                tool: "doc_draw".into(),
+                args: serde_json::from_value(json!({"doc_id": "other", "op": "clear_cel"}))
+                    .unwrap(),
+            },
+            JournalEntry {
+                tool: "doc_draw".into(),
+                args: serde_json::from_value(json!({"op": "clear_cel"})).unwrap(),
+            },
+        ] {
+            assert!(validate_journal(&[create.clone(), entry]).is_err());
+        }
+        let palette = JournalEntry {
+            tool: "doc_palette".into(),
+            args: serde_json::from_value(json!({
+                "op": "generate",
+                "base": [1, 2, 3],
+                "set_doc": "d"
+            }))
+            .unwrap(),
+        };
+        validate_journal(&[create, palette]).unwrap();
     }
 
     #[test]

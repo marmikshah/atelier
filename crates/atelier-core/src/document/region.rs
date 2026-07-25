@@ -7,10 +7,9 @@ use crate::raster;
 use super::Document;
 
 impl Document {
-    /// Copy a rectangular region of a cel as a flat RGBA buffer (w*h*4),
-    /// returned with its width/height. Out-of-cel pixels come back transparent.
-    /// The rect is given as inclusive corners and normalised/clamped to canvas.
-    pub(crate) fn copy_region(
+    /// Read a rectangular block for `move_region`. Out-of-cel pixels are
+    /// transparent; inclusive corners are normalised and clamped to canvas.
+    fn read_block(
         &self,
         layer: usize,
         frame: usize,
@@ -42,10 +41,9 @@ impl Document {
         Ok((rw, rh, buf))
     }
 
-    /// Paste a flat RGBA buffer onto a cel at (x,y). `blend` true = source-over
-    /// (transparent source pixels keep the destination); false = overwrite
-    /// (copy every pixel including transparency, so it also erases).
-    pub(crate) fn paste_region(
+    /// Write a flat RGBA block onto a cel for internal transforms. Transparent
+    /// source pixels leave the destination unchanged.
+    fn write_block(
         &mut self,
         layer: usize,
         frame: usize,
@@ -54,7 +52,6 @@ impl Document {
         rw: u32,
         rh: u32,
         buf: &[u8],
-        blend: bool,
     ) -> Result<(), String> {
         if buf.len() != (rw * rh * 4) as usize {
             return Err(format!("buffer length {} != {}x{}x4", buf.len(), rw, rh));
@@ -64,7 +61,7 @@ impl Document {
             for rx in 0..rw as i32 {
                 let i = ((ry as u32 * rw + rx as u32) * 4) as usize;
                 let p = [buf[i], buf[i + 1], buf[i + 2], buf[i + 3]];
-                if blend && p[3] == 0 {
+                if p[3] == 0 {
                     continue;
                 }
                 raster::put(img, x + rx, y + ry, p);
@@ -81,11 +78,10 @@ impl Document {
     /// `colorize` is the classic "brush shape, current colour": the tip acts
     /// as an alpha mask — RGB from the colour, alpha = tip.a × colour.a (the
     /// `drop_shadow` tint) — while None stamps the tip's pixels verbatim.
-    /// Blending reuses `paste_region`'s source-over rule: a fully transparent
-    /// tip pixel keeps the destination, anything else overwrites. Returns the
-    /// pixels painted, counting every in-canvas write — overlapping dabs count
-    /// a shared pixel once per dab. Off-canvas points clip silently, exactly
-    /// like `paste_region`.
+    /// A fully transparent tip pixel keeps the destination; anything else
+    /// overwrites. Returns the pixels painted, counting every in-canvas write
+    /// — overlapping dabs count a shared pixel once per dab. Off-canvas points
+    /// clip silently.
     pub fn stamp_tip(
         &mut self,
         layer: usize,
@@ -124,7 +120,7 @@ impl Document {
         let mut painted = 0usize;
         for &(px, py) in points {
             // Saturate the origin (i64 math, like move_region) so neither this
-            // offset nor paste_region's `x + rx` walk can overflow i32 on an
+            // offset nor write_block's `x + rx` walk can overflow i32 on an
             // absurd point — a dab that far out clips to nothing anyway.
             let ox = (px as i64 - tw as i64 / 2)
                 .clamp(i32::MIN as i64, i32::MAX as i64 - tw as i64 + 1)
@@ -132,7 +128,7 @@ impl Document {
             let oy = (py as i64 - th as i64 / 2)
                 .clamp(i32::MIN as i64, i32::MAX as i64 - th as i64 + 1)
                 as i32;
-            // paste_region reports nothing, so tally its writes up front: the
+            // write_block reports nothing, so tally its writes up front: the
             // alpha>0 source pixels that land inside the canvas.
             for ry in 0..th as i32 {
                 for rx in 0..tw as i32 {
@@ -143,7 +139,7 @@ impl Document {
                     }
                 }
             }
-            self.paste_region(layer, frame, ox, oy, tw, th, buf, true)?;
+            self.write_block(layer, frame, ox, oy, tw, th, buf)?;
         }
         Ok(painted)
     }
@@ -184,14 +180,14 @@ impl Document {
         dx: i32,
         dy: i32,
     ) -> Result<(), String> {
-        let (rw, rh, buf) = self.copy_region(layer, frame, x0, y0, x1, y1)?;
+        let (rw, rh, buf) = self.read_block(layer, frame, x0, y0, x1, y1)?;
         let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
         self.clear_region(layer, frame, x0, y0, x1, y1)?;
         // i64 math: `ax + dx` overflows i32 for an absurd (but accepted) delta;
         // saturate instead of panicking in debug / wrapping in release.
         let px = (ax as i64 + dx as i64).clamp(i32::MIN as i64, i32::MAX as i64) as i32;
         let py = (ay as i64 + dy as i64).clamp(i32::MIN as i64, i32::MAX as i64) as i32;
-        self.paste_region(layer, frame, px, py, rw, rh, &buf, true)
+        self.write_block(layer, frame, px, py, rw, rh, &buf)
     }
 }
 

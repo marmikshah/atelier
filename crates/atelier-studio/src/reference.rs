@@ -76,7 +76,12 @@ impl Studio {
         let canvas = doc.analysis_image(None, frame)?;
         let mut subject = src.clone();
         raster::remove_background(&mut subject, BG_TOL);
-        let small = raster::downscale_area(&subject, canvas.width(), canvas.height());
+        let small = raster::scale(
+            &subject,
+            canvas.width(),
+            canvas.height(),
+            raster::ScaleMethod::AreaAverage,
+        );
         Ok((canvas, small, doc))
     }
 
@@ -113,7 +118,7 @@ impl Studio {
                 tw, th
             ));
         }
-        let small = raster::downscale_area(&subject, tw, th);
+        let small = raster::scale(&subject, tw, th, raster::ScaleMethod::AreaAverage);
         // Frequency-weighted subject palette of the downscaled art.
         let palette = subject_palette(&small, colors.max(2));
         let pal_json: Vec<Value> = palette.iter().map(|c| json!(c)).collect();
@@ -473,7 +478,7 @@ fn fit_under(img: &RgbaImage, max: u32) -> RgbaImage {
     }
     let tw = (img.width() as u64 * max as u64 / longest as u64).max(1) as u32;
     let th = (img.height() as u64 * max as u64 / longest as u64).max(1) as u32;
-    raster::downscale_area(img, tw, th)
+    raster::scale(img, tw, th, raster::ScaleMethod::AreaAverage)
 }
 
 #[cfg(test)]

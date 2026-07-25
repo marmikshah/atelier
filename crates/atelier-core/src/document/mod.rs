@@ -35,22 +35,25 @@ pub use batch::{color_array, draw_ops, fx_ops, validate_batch_op};
 pub use render::seam_axis_img;
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct LayerMeta {
     pub name: String,
     pub opacity: u8,
     pub visible: bool,
     /// Compositing mode: normal/multiply/screen/add/overlay/soft-light/
     /// hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/
-    /// exclusion. Unknown values fall back to normal. See `Blend`.
+    /// exclusion. Only canonical values are accepted.
     pub blend: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct FrameMeta {
     pub duration_ms: u32,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct TagMeta {
     pub name: String,
     pub from: usize,
@@ -59,6 +62,7 @@ pub struct TagMeta {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct CelMeta {
     pub layer: usize,
     pub frame: usize,
@@ -68,21 +72,26 @@ pub struct CelMeta {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct DocMeta {
     pub name: String,
     pub w: u32,
     pub h: u32,
-    #[serde(default)]
     pub palette: Vec<[u8; 4]>,
     pub layers: Vec<LayerMeta>,
     pub frames: Vec<FrameMeta>,
-    #[serde(default)]
     pub tags: Vec<TagMeta>,
     pub cels: Vec<CelMeta>,
     /// Reference image filename inside the doc dir (`doc_ref op=set`).
     /// — the original the artwork is recreating, kept for compare loops.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference: Option<String>,
+}
+
+impl DocMeta {
+    /// Validate the one current persisted metadata contract.
+    pub fn validate(&self) -> Result<(), String> {
+        validate_meta(self)
+    }
 }
 
 /// A loaded document: structure + the cel images in memory.
@@ -103,6 +112,79 @@ pub type FrameDiff = (u32, u32, u32, Option<[i32; 4]>, RgbaImage, RgbaImage);
 
 fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
+}
+
+/// Validate the one current on-disk document shape. Loading does not repair,
+/// default, or reinterpret persisted metadata.
+fn validate_meta(meta: &DocMeta) -> Result<(), String> {
+    if meta.w == 0 || meta.h == 0 {
+        return Err(format!(
+            "document dimensions must be non-zero, got {}x{}",
+            meta.w, meta.h
+        ));
+    }
+    if meta.layers.is_empty() {
+        return Err("document must contain at least one layer".into());
+    }
+    if meta.frames.is_empty() {
+        return Err("document must contain at least one frame".into());
+    }
+    for (index, layer) in meta.layers.iter().enumerate() {
+        if !raster::valid_blend(&layer.blend) {
+            return Err(format!(
+                "layer {index} has unknown blend '{}' — valid: {}",
+                layer.blend,
+                raster::BLEND_NAMES
+            ));
+        }
+    }
+    for tag in &meta.tags {
+        if tag.from > tag.to || tag.to >= meta.frames.len() {
+            return Err(format!(
+                "tag '{}' range {}..{} is outside {} frame(s)",
+                tag.name,
+                tag.from,
+                tag.to,
+                meta.frames.len()
+            ));
+        }
+        if !matches!(tag.direction.as_str(), "forward" | "reverse" | "pingpong") {
+            return Err(format!(
+                "tag '{}' has unknown direction '{}'",
+                tag.name, tag.direction
+            ));
+        }
+    }
+    let mut cel_keys = HashSet::new();
+    for cel in &meta.cels {
+        if cel.layer >= meta.layers.len() || cel.frame >= meta.frames.len() {
+            return Err(format!(
+                "cel ({},{}) is outside {} layer(s) and {} frame(s)",
+                cel.layer,
+                cel.frame,
+                meta.layers.len(),
+                meta.frames.len()
+            ));
+        }
+        if !cel_keys.insert((cel.layer, cel.frame)) {
+            return Err(format!(
+                "duplicate cel metadata for ({},{})",
+                cel.layer, cel.frame
+            ));
+        }
+        let expected = cel_file(cel.layer, cel.frame);
+        if cel.file != expected {
+            return Err(format!("refusing suspicious cel path '{}'", cel.file));
+        }
+    }
+    if let Some(reference) = &meta.reference
+        && reference != "reference.png"
+    {
+        return Err(format!(
+            "stored reference must be 'reference.png', got '{reference}'"
+        ));
+    }
+    Ok(())
 }
 
 /// True for the `L<layer>_F<frame>.png` shape `save` writes — the only files
@@ -126,8 +208,8 @@ fn is_cel_filename(name: &str) -> bool {
 /// crisp pixel art again".
 #[derive(Clone, Copy, Debug)]
 pub enum AlphaSnap {
-    /// Keep each pixel's source alpha; only the RGB is snapped (legacy default,
-    /// preserves deliberate soft edges).
+    /// Keep each pixel's source alpha; only the RGB is snapped, preserving
+    /// deliberate soft edges.
     Preserve,
     /// Binarise alpha at `cutoff`: a pixel with alpha ≥ cutoff becomes fully
     /// opaque and snaps to the palette; below cutoff it is cleared. Collapses a
@@ -200,14 +282,14 @@ impl Document {
     pub fn load(dir: &Path) -> Result<Document, String> {
         let s = std::fs::read_to_string(dir.join("doc.json")).map_err(|e| e.to_string())?;
         let meta: DocMeta = serde_json::from_str(&s).map_err(|e| e.to_string())?;
+        meta.validate()?;
+        if let Some(reference) = &meta.reference
+            && !dir.join(reference).is_file()
+        {
+            return Err(format!("stored reference file '{reference}' is missing"));
+        }
         let mut cels = HashMap::new();
         for c in &meta.cels {
-            // `c.file` comes from doc.json; a synced/hand-crafted doc could point
-            // outside `cels/`. Every cel owns one canonical path.
-            let expected = cel_file(c.layer, c.frame);
-            if c.file != expected {
-                return Err(format!("refusing suspicious cel path '{}'", c.file));
-            }
             let img = image::open(dir.join(&c.file))
                 .map_err(|e| e.to_string())?
                 .to_rgba8();
@@ -222,6 +304,11 @@ impl Document {
     }
 
     pub fn save(&mut self, dir: &Path) -> Result<(), String> {
+        if let Some(reference) = &self.meta.reference
+            && !dir.join(reference).is_file()
+        {
+            return Err(format!("stored reference file '{reference}' is missing"));
+        }
         std::fs::create_dir_all(dir.join("cels")).map_err(|e| e.to_string())?;
         let mut cel_metas = Vec::new();
         for ((layer, frame), (x, y, img)) in &self.cels {
@@ -242,6 +329,7 @@ impl Document {
         }
         cel_metas.sort_by_key(|c| (c.layer, c.frame));
         self.meta.cels = cel_metas;
+        self.meta.validate()?;
         // Atomic-ish structure write: temp file + same-dir rename, so a crash
         // mid-write leaves the previous doc.json intact instead of a torn one.
         let tmp = dir.join("doc.json.tmp");
@@ -282,7 +370,18 @@ impl Document {
     // -- structure ----------------------------------------------------------
 
     /// Append a new layer on top; returns its index.
-    pub fn add_layer(&mut self, name: Option<String>, opacity: u8, blend: String) -> usize {
+    pub fn add_layer(
+        &mut self,
+        name: Option<String>,
+        opacity: u8,
+        blend: String,
+    ) -> Result<usize, String> {
+        if !raster::valid_blend(&blend) {
+            return Err(format!(
+                "unknown blend '{blend}' — valid: {}",
+                raster::BLEND_NAMES
+            ));
+        }
         let idx = self.meta.layers.len();
         self.meta.layers.push(LayerMeta {
             name: name.unwrap_or_else(|| format!("Layer {}", idx + 1)),
@@ -290,7 +389,7 @@ impl Document {
             visible: true,
             blend,
         });
-        idx
+        Ok(idx)
     }
 
     /// Patch a layer's visibility / opacity / blend (each optional).
@@ -301,6 +400,14 @@ impl Document {
         opacity: Option<u8>,
         blend: Option<String>,
     ) -> Result<(), String> {
+        if let Some(blend) = &blend
+            && !raster::valid_blend(blend)
+        {
+            return Err(format!(
+                "unknown blend '{blend}' — valid: {}",
+                raster::BLEND_NAMES
+            ));
+        }
         let l = self
             .meta
             .layers
@@ -362,7 +469,13 @@ impl Document {
         name: Option<String>,
         opacity: u8,
         blend: String,
-    ) -> usize {
+    ) -> Result<usize, String> {
+        if !raster::valid_blend(&blend) {
+            return Err(format!(
+                "unknown blend '{blend}' — valid: {}",
+                raster::BLEND_NAMES
+            ));
+        }
         let n = self.meta.layers.len();
         let index = index.min(n);
         self.meta.layers.insert(
@@ -375,7 +488,7 @@ impl Document {
             },
         );
         self.remap_cel_layers(|old| Some(if old >= index { old + 1 } else { old }));
-        index
+        Ok(index)
     }
 
     /// Delete a layer and its cels (cannot remove the last remaining layer).
@@ -447,7 +560,8 @@ impl Document {
         }
         let lower = index - 1;
         let upper = self.meta.layers[index].clone();
-        let blend = raster::parse_blend(&upper.blend);
+        let blend = raster::parse_blend(&upper.blend)
+            .expect("document layer blend was validated on load or mutation");
         for f in 0..self.meta.frames.len() {
             if !self.cels.contains_key(&(index, f)) {
                 continue;

@@ -121,7 +121,7 @@ fn frame_ops_move_and_duplicate() {
 #[test]
 fn move_layer_reorders_and_cels_follow() {
     let mut d = Document::new("t", 4, 4);
-    d.add_layer(None, 255, "normal".into()); // layer 1
+    d.add_layer(None, 255, "normal".into()).unwrap(); // layer 1
     d.pencil(0, 0, &[(0, 0)], [255, 0, 0, 255], 1).unwrap();
     d.pencil(1, 0, &[(1, 1)], [0, 0, 255, 255], 1).unwrap();
     d.move_layer(0, 1).unwrap();
@@ -134,7 +134,8 @@ fn move_layer_reorders_and_cels_follow() {
 fn insert_and_delete_layer_shift_cels() {
     let mut d = Document::new("t", 4, 4);
     d.pencil(0, 0, &[(0, 0)], [9, 9, 9, 255], 1).unwrap();
-    d.insert_layer(0, Some("bg".into()), 255, "normal".into());
+    d.insert_layer(0, Some("bg".into()), 255, "normal".into())
+        .unwrap();
     // the drawn cel moved from layer 0 to layer 1
     assert_eq!(d.meta.layers.len(), 2);
     assert_eq!(d.get_pixel(1, 0, 0, 0).unwrap(), [9, 9, 9, 255]);
@@ -163,7 +164,7 @@ fn duplicate_layer_copies_cels_above() {
 #[test]
 fn merge_down_bakes_upper_onto_lower() {
     let mut d = Document::new("t", 4, 4);
-    d.add_layer(None, 255, "normal".into());
+    d.add_layer(None, 255, "normal".into()).unwrap();
     d.pencil(0, 0, &[(0, 0)], [255, 0, 0, 255], 1).unwrap();
     d.pencil(1, 0, &[(0, 0)], [0, 0, 255, 255], 1).unwrap();
     d.merge_down(1).unwrap();
@@ -437,6 +438,53 @@ fn load_rejects_traversal_cel_paths() {
 }
 
 #[test]
+fn persisted_document_shape_is_strict() {
+    let dir = std::env::temp_dir().join("atelier-strict-doc-shape-test");
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut document = Document::new("strict", 8, 8);
+    document.save(&dir).unwrap();
+    let path = dir.join("doc.json");
+    let current: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    assert!(
+        current.get("reference").is_some_and(Value::is_null),
+        "the current optional field is explicit, not inferred when absent"
+    );
+
+    let mut missing = current.clone();
+    missing.as_object_mut().unwrap().remove("palette");
+    std::fs::write(&path, serde_json::to_vec(&missing).unwrap()).unwrap();
+    assert!(Document::load(&dir).is_err(), "missing fields must fail");
+
+    let mut unknown = current.clone();
+    unknown["linked"] = json!(true);
+    std::fs::write(&path, serde_json::to_vec(&unknown).unwrap()).unwrap();
+    assert!(Document::load(&dir).is_err(), "unknown fields must fail");
+
+    let mut bad_blend = current;
+    bad_blend["layers"][0]["blend"] = json!("source-over");
+    std::fs::write(&path, serde_json::to_vec(&bad_blend).unwrap()).unwrap();
+    let error = Document::load(&dir).err().expect("invalid blend must fail");
+    assert!(error.contains("unknown blend"), "got: {error}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn layer_mutations_reject_unknown_blends() {
+    let mut document = Document::new("strict", 8, 8);
+    assert!(document.add_layer(None, 255, "source-over".into()).is_err());
+    assert!(
+        document
+            .insert_layer(0, None, 255, "source-over".into())
+            .is_err()
+    );
+    assert!(
+        document
+            .set_layer(0, None, None, Some("source-over".into()))
+            .is_err()
+    );
+}
+
+#[test]
 fn sheet_image_errors_on_dimension_overflow() {
     // Built directly, past the studio's 4096 cap; a wild scale overflows the
     // frame-width u32 and must error instead of wrapping to a garbage buffer.
@@ -607,7 +655,7 @@ fn save_load_round_trip() {
 #[test]
 fn structure_reports_layers_frames_and_cels() {
     let mut d = Document::new("s", 4, 4);
-    d.add_layer(None, 255, "normal".into());
+    d.add_layer(None, 255, "normal".into()).unwrap();
     let img = RgbaImage::from_pixel(1, 1, Rgba([1, 1, 1, 255]));
     d.set_cel(1, 0, 0, 0, img).unwrap();
     let v = d.structure();
@@ -785,7 +833,7 @@ fn batch_text_op_validates() {
 fn blend_two(mode: &str, bottom: [u8; 4], top: [u8; 4]) -> [u8; 4] {
     let mut d = Document::new("t", 1, 1);
     d.fill_cel(0, 0, bottom).unwrap();
-    let l = d.add_layer(None, 255, mode.into());
+    let l = d.add_layer(None, 255, mode.into()).unwrap();
     d.fill_cel(l, 0, top).unwrap();
     d.flatten(0).get_pixel(0, 0).0
 }
@@ -820,7 +868,7 @@ fn multiply_darkens_screen_lightens() {
 fn multiply_over_empty_backdrop_keeps_source() {
     // No backdrop (αb=0): a multiply layer must not collapse to black.
     let mut d = Document::new("t", 1, 1);
-    let l = d.add_layer(None, 255, "multiply".into());
+    let l = d.add_layer(None, 255, "multiply".into()).unwrap();
     d.fill_cel(l, 0, [40, 90, 160, 255]).unwrap();
     assert_eq!(d.flatten(0).get_pixel(0, 0).0, [40, 90, 160, 255]);
 }
@@ -830,7 +878,7 @@ fn layer_opacity_blends_toward_backdrop() {
     // A 50%-opacity red layer over an opaque black backdrop flattens to ~half red.
     let mut d = Document::new("t", 1, 1);
     d.fill_cel(0, 0, [0, 0, 0, 255]).unwrap();
-    let l = d.add_layer(None, 128, "normal".into());
+    let l = d.add_layer(None, 128, "normal".into()).unwrap();
     d.fill_cel(l, 0, [255, 0, 0, 255]).unwrap();
     let p = d.flatten(0).get_pixel(0, 0).0;
     assert!(
@@ -870,16 +918,6 @@ fn shift_wrap_rolls_pixels_around() {
 }
 
 #[test]
-fn copy_then_paste_replicates_a_block() {
-    let mut d = Document::new("t", 8, 8);
-    d.rect(0, 0, 0, 0, 1, 1, [9, 9, 9, 255], true, 1).unwrap(); // 2x2 block
-    let (w, h, buf) = d.copy_region(0, 0, 0, 0, 1, 1).unwrap();
-    assert_eq!((w, h), (2, 2));
-    d.paste_region(0, 0, 5, 5, w, h, &buf, false).unwrap();
-    assert_eq!(d.get_pixel(0, 0, 6, 6).unwrap(), [9, 9, 9, 255]);
-}
-
-#[test]
 fn move_region_clears_source_and_fills_dest() {
     let mut d = Document::new("t", 8, 8);
     d.pencil(0, 0, &[(1, 1)], [5, 5, 5, 255], 1).unwrap();
@@ -899,24 +937,6 @@ fn move_region_does_not_punch_a_hole_in_dest_art() {
     d.move_region(0, 0, 0, 0, 1, 1, 5, 1).unwrap();
     assert_eq!(d.get_pixel(0, 0, 5, 1).unwrap(), [9, 9, 9, 255]); // opaque pixel landed
     assert_eq!(d.get_pixel(0, 0, 6, 2).unwrap(), [7, 7, 7, 255]); // dest art survived the transparent corner
-}
-
-#[test]
-fn paste_blend_keeps_dest_under_transparent_source() {
-    let mut d = Document::new("t", 4, 4);
-    d.pencil(0, 0, &[(0, 0)], [1, 2, 3, 255], 1).unwrap();
-    let buf = vec![0u8; 4]; // 1x1 fully transparent
-    d.paste_region(0, 0, 0, 0, 1, 1, &buf, true).unwrap(); // blend: no-op
-    assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [1, 2, 3, 255]);
-    d.paste_region(0, 0, 0, 0, 1, 1, &buf, false).unwrap(); // overwrite: erases
-    assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [0, 0, 0, 0]);
-}
-
-#[test]
-fn copy_region_clamps_to_canvas() {
-    let d = Document::new("t", 4, 4);
-    let (w, h, _) = d.copy_region(0, 0, -5, -5, 100, 100).unwrap();
-    assert_eq!((w, h), (4, 4));
 }
 
 #[test]
@@ -1410,6 +1430,13 @@ fn batch_wrapper_scalars_reject_out_of_range_values() {
     )
     .unwrap_err();
     assert!(e.contains("shadow_opacity"), "got: {e}");
+    for bad in [
+        json!({"op": "clear_cel", "blend_mode": "source-over"}),
+        json!({"op": "clear_cel", "blend_mode": 1}),
+        json!({"op": "clear_cel", "erase": "true"}),
+    ] {
+        assert!(validate_batch_op(0, &bad).is_err(), "accepted {bad}");
+    }
     // And the good path still passes.
     assert!(validate_batch_op(0, &json!({"op": "glow", "intensity": 255})).is_ok());
 }
@@ -1471,7 +1498,12 @@ fn structural_ops_keep_cel_and_tag_invariants() {
             let frames = d.meta().frames.len();
             match h % 8 {
                 0 => {
-                    d.insert_layer((h >> 8) as usize % (layers + 1), None, 255, "normal".into());
+                    let _ = d.insert_layer(
+                        (h >> 8) as usize % (layers + 1),
+                        None,
+                        255,
+                        "normal".into(),
+                    );
                 }
                 1 => {
                     let _ = d.delete_layer((h >> 8) as usize % (layers + 1));

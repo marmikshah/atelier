@@ -78,6 +78,10 @@ fn list() -> i32 {
     let mut replayable = 0usize;
     for d in &rows {
         let id = d.get("id").and_then(|i| i.as_str()).unwrap_or("?");
+        if let Some(error) = d.get("error").and_then(|value| value.as_str()) {
+            println!("  {:width$}  {error}", id, width = width);
+            continue;
+        }
         // The journal is the document's provenance — show it, so `replay <id>`
         // is discoverable from the listing rather than only from the docs.
         // A corrupt journal must not be listed as replayable steps — say so.

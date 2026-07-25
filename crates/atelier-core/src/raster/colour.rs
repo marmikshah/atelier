@@ -1,4 +1,4 @@
-//! Colour math: HSL and OKLab/OKLCh conversions, WCAG contrast, shading
+//! Colour math: HSL and OKLab/OKLCh conversions, shading
 //! ramps and palette machinery (nearest-colour, median-cut quantisation).
 
 /// Manhattan colour distance over all 4 channels within tolerance.
@@ -29,28 +29,6 @@ pub fn hue_deg(c: [u8; 4]) -> f32 {
 /// HSL saturation (0..1) of an RGBA colour.
 pub fn saturation(c: [u8; 4]) -> f32 {
     rgb_to_hsl(c[0], c[1], c[2]).1
-}
-
-/// WCAG relative luminance (0..1) from linearised sRGB. The `(L+0.05)` form fed
-/// into the contrast ratio — distinct from perceptual `luma`, which is gamma
-/// space. Alpha-agnostic.
-fn wcag_luminance(c: [u8; 4]) -> f32 {
-    let lin = |v: u8| {
-        let s = v as f32 / 255.0;
-        if s <= 0.03928 {
-            s / 12.92
-        } else {
-            ((s + 0.055) / 1.055).powf(2.4)
-        }
-    };
-    0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2])
-}
-
-/// WCAG contrast ratio (1..21) between two colours: (Llighter+0.05)/(Ldarker+0.05).
-pub fn wcag_ratio(a: [u8; 4], b: [u8; 4]) -> f32 {
-    let (la, lb) = (wcag_luminance(a), wcag_luminance(b));
-    let (hi, lo) = if la >= lb { (la, lb) } else { (lb, la) };
-    (hi + 0.05) / (lo + 0.05)
 }
 
 /// RGB (0..255) → HSL with h in degrees `[0,360)`, s and l in `[0,1]`.
@@ -103,8 +81,8 @@ pub fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [u8; 3] {
 // steps in L look like equal steps in brightness, and Euclidean distance
 // approximates perceived colour difference. It is atelier's nearest-colour
 // metric — `quantize` and `snap_to_palette` both score candidates in OKLab via
-// `PaletteLab` — and the ramp metric, in `make_ramp_oklch`. The older sRGB+HSL
-// path (`make_ramp`, `shade_hsl`) remains for the legacy ramp/shade callers.
+// `PaletteLab` — and the ramp metric, in `make_ramp_oklch`. HSL remains the
+// intentional basis for the stylised ramp and shade effects.
 
 fn srgb_to_linear(c: f32) -> f32 {
     if c <= 0.04045 {
