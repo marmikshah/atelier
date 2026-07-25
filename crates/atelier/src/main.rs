@@ -62,7 +62,8 @@ USAGE:
     atelier replay <recipe|id>    replay a recipe file, or rebuild a document from its
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
-    atelier call <tool> ['<json>' | --file PATH | --stdin] [--home DIR]
+    atelier call <tool> ['<json>' | --file PATH | --stdin]
+            [--doc ID] [--layer N] [--frame N] [--home DIR]
                                   run one tool call in-process — the whole op
                                   surface, scriptable from a shell. stdout gets the
                                   JSON report; exit 0 ok, 1 tool error, 2 bad call

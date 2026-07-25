@@ -59,7 +59,7 @@ impl Studio {
             .meta()
             .reference
             .as_ref()
-            .ok_or("document has no reference image — doc_set_reference first")?;
+            .ok_or("document has no reference image — use doc_ref op=set first")?;
         crate::open_bounded(&ref_path(dir, name)?).map_err(|e| format!("reference unreadable: {e}"))
     }
 
@@ -105,8 +105,8 @@ impl Studio {
             - src.pixels().filter(|p| p.0[3] == 0).count() as u64;
         let tw = target_w.unwrap_or(doc.meta().w).max(1);
         let th = ((rh as f64 * tw as f64 / rw.max(1) as f64).round() as u32).max(1);
-        // Same 1M-pixel cap as import_clean — an oversized target_w would
-        // otherwise allocate an unbounded image in one call.
+        // An oversized target_w would otherwise allocate an unbounded image in
+        // one call.
         if tw as usize * th as usize > crate::MAX_TARGET_PIXELS {
             return Err(format!(
                 "target {}x{} is over the 1M-pixel cap — pass a smaller target_w",

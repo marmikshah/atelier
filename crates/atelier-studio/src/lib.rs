@@ -25,7 +25,6 @@ mod craft;
 mod ops_export;
 mod ops_region;
 mod reference;
-mod set;
 mod store;
 mod view;
 pub use view::LookOptions;
@@ -34,17 +33,16 @@ pub use view::LookOptions;
 /// any real reference/photo; the point is that a tiny-on-disk "decompression
 /// bomb" (a 30000×30000 PNG is a few KB) is rejected at the header probe, before
 /// its pixels are ever allocated. Shared by every `open_bounded` caller.
-pub(crate) const MAX_IMPORT_PIXELS: u64 = 64 * 1024 * 1024;
+pub(crate) const MAX_SOURCE_PIXELS: u64 = 64 * 1024 * 1024;
 
-/// Hard canvas ceiling: width/height a document may have (also the bound the
-/// import/reference paths assume when sizing buffers).
+/// Hard canvas ceiling: width/height a document may have.
 pub(crate) const MAX_CANVAS: u32 = 4096;
 /// A document's journal, beside its `doc.json` and `cels/`.
 pub const JOURNAL_FILE: &str = "recipe.jsonl";
 /// Text grids (silhouette/dump/diff) stay readable only so long — shared area
 /// cap for every grid-emitting reader.
 pub(crate) const GRID_AREA_CAP: u64 = 4096;
-/// Import/reference targets above this allocate unbounded images in one call.
+/// Reference-analysis targets above this allocate unbounded images in one call.
 pub(crate) const MAX_TARGET_PIXELS: usize = 1_048_576;
 
 /// Upper bound on an export scale factor. Canvases are already capped at 4096²
@@ -61,17 +59,17 @@ pub(crate) fn export_scale(scale: u32) -> u32 {
 }
 
 /// Open an external image with a size cap. The header dimensions are read first
-/// and anything over [`MAX_IMPORT_PIXELS`] is rejected *before* decoding, and
+/// and anything over [`MAX_SOURCE_PIXELS`] is rejected *before* decoding, and
 /// the decoder is then bounded to those dimensions so a lying header can't
 /// allocate past them either — an OOM / decompression-bomb guard for every
-/// path that ingests a caller-supplied image (import, references, stamp).
-/// Reject source dimensions whose pixel count exceeds [`MAX_IMPORT_PIXELS`].
+/// path that ingests a caller-supplied reference image.
+/// Reject source dimensions whose pixel count exceeds [`MAX_SOURCE_PIXELS`].
 /// Extracted so the cap is unit-testable without materialising a huge file.
-fn check_import_dims(w: u32, h: u32) -> Result<(), String> {
+fn check_source_dims(w: u32, h: u32) -> Result<(), String> {
     let px = w as u64 * h as u64;
-    if px > MAX_IMPORT_PIXELS {
+    if px > MAX_SOURCE_PIXELS {
         return Err(format!(
-            "source image is {w}x{h} = {px} px, over the {MAX_IMPORT_PIXELS}-px import cap"
+            "source image is {w}x{h} = {px} px, over the {MAX_SOURCE_PIXELS}-px safety cap"
         ));
     }
     Ok(())
@@ -85,7 +83,7 @@ pub(crate) fn open_bounded(path: &Path) -> Result<image::RgbaImage, String> {
         .into_dimensions()
         .map_err(|e| e.to_string())?;
     let (w, h) = dims;
-    check_import_dims(w, h)?;
+    check_source_dims(w, h)?;
     let mut reader = image::ImageReader::open(path)
         .map_err(|e| e.to_string())?
         .with_guessed_format()
@@ -123,14 +121,7 @@ pub struct Studio {
 impl Studio {
     // -- structure / timeline (open -> mutate -> save) ----------------------
 
-    fn commit(&self, dir: &Path, id: &str, mut doc: Document) -> Result<Value, String> {
-        doc.save(dir)?;
-        let mut out = doc.structure();
-        out["id"] = json!(id);
-        Ok(out)
-    }
-
-    pub fn doc_add_layer(
+    fn doc_add_layer(
         &self,
         id: &str,
         name: Option<String>,
@@ -156,7 +147,7 @@ impl Studio {
         }))
     }
 
-    pub fn doc_set_layer(
+    fn doc_set_layer(
         &self,
         id: &str,
         layer: usize,
@@ -174,7 +165,16 @@ impl Studio {
         }
         let (dir, mut doc) = self.open(id)?;
         doc.set_layer(layer, visible, opacity, blend)?;
-        self.commit(&dir, id, doc)
+        doc.save(&dir)?;
+        let current = &doc.meta().layers[layer];
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "layer": layer,
+            "visible": current.visible,
+            "opacity": current.opacity,
+            "blend": current.blend.as_str(),
+        }))
     }
 
     /// One-tool dispatch over layer structure — `op`: `add` (new layer on top) |
@@ -224,7 +224,7 @@ impl Studio {
         }
     }
 
-    pub fn doc_add_frame(
+    pub(crate) fn doc_add_frame(
         &self,
         id: &str,
         duration_ms: u32,
@@ -259,10 +259,16 @@ impl Studio {
         }))
     }
 
-    pub fn doc_set_frame_duration(&self, id: &str, frame: usize, ms: u32) -> Result<Value, String> {
+    fn doc_set_frame_duration(&self, id: &str, frame: usize, ms: u32) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         doc.set_frame_duration(frame, ms)?;
-        self.commit(&dir, id, doc)
+        doc.save(&dir)?;
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "frame": frame,
+            "duration_ms": ms,
+        }))
     }
 
     /// One-tool dispatch over frame lifecycle + timing — `op`: `add` (append,
@@ -317,28 +323,18 @@ impl Studio {
         }
         let (dir, mut doc) = self.open(id)?;
         doc.add_tag(name, from, to, direction)?;
-        self.commit(&dir, id, doc)
+        doc.save(&dir)?;
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "tag": name,
+            "from": from,
+            "to": to,
+            "direction": direction,
+        }))
     }
 
     // -- render ---------------------------------------------------------------
-
-    /// Flatten one frame and encode it straight to PNG bytes in memory (no file).
-    /// Backs the MCP `render` resource, which serves the bytes as a blob.
-    pub fn render_png_bytes(&self, id: &str, frame: usize, scale: u32) -> Result<Vec<u8>, String> {
-        let (_dir, doc) = self.open(id)?;
-        if frame >= doc.meta().frames.len() {
-            return Err(format!(
-                "no frame {} (frames={})",
-                frame,
-                doc.meta().frames.len()
-            ));
-        }
-        let img = doc.render_preview(frame, scale.max(1), None, false, 1, None)?;
-        let mut buf = std::io::Cursor::new(Vec::new());
-        img.write_to(&mut buf, image::ImageFormat::Png)
-            .map_err(|e| e.to_string())?;
-        Ok(buf.into_inner())
-    }
 
     // -- per-cel drawing ----------------------------------------------------
 
@@ -396,7 +392,7 @@ impl Studio {
 
     /// Timeline lifecycle (delete | insert | duplicate | move) with cel
     /// reindexing and tag remapping — the recovery path for a bad tween.
-    pub fn doc_frame_ops(
+    fn doc_frame_ops(
         &self,
         id: &str,
         action: &str,
@@ -405,8 +401,9 @@ impl Studio {
         duration_ms: Option<u32>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        let out = doc.frame_ops(action, frame, to_index, duration_ms)?;
+        let mut out = doc.frame_ops(action, frame, to_index, duration_ms)?;
         doc.save(&dir)?;
+        out["doc_id"] = json!(id);
         Ok(out)
     }
 
@@ -414,10 +411,15 @@ impl Studio {
 
     pub fn doc_set_palette(&self, id: &str, colors: Vec<[u8; 4]>) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
+        let count = colors.len();
         doc.set_palette(colors);
-        let mut out = self.commit(&dir, id, doc)?;
-        out["palette_set"] = json!(true);
-        Ok(out)
+        doc.save(&dir)?;
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "palette_set": true,
+            "colors": count,
+        }))
     }
 
     /// Recolour paired `from`→`to` colours across the whole document (one sprite,
@@ -623,12 +625,10 @@ pub(crate) fn hex_rgba(c: &[u8]) -> String {
 
 /// Nearest-neighbour upscale (keeps the pixel grid crisp).
 ///
-/// The scale is clamped to `MAX_EXPORT_SCALE` here rather than at each of the
-/// nine call sites: `doc_look`, `select_render`, `contact_sheet` and the diff
-/// overlays all took it straight from the caller, and `scale: 1000000000`
-/// overflowed the dimension multiply — a panic in debug, a multi-terabyte
-/// allocation in release, and either way a poisoned studio lock that broke every
-/// later call. One choke point cannot be forgotten.
+/// The scale is clamped to `MAX_EXPORT_SCALE` here rather than at every
+/// preview, contact-sheet, and diff caller. A `scale: 1000000000`
+/// overflowed the dimension multiply — a panic in debug or a multi-terabyte
+/// allocation in release. One choke point cannot be forgotten.
 pub(crate) fn scale_nn(img: &image::RgbaImage, scale: u32) -> image::RgbaImage {
     let scale = export_scale(scale);
     if scale <= 1 {

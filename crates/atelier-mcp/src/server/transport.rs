@@ -4,8 +4,6 @@
 
 use rmcp::ServiceExt;
 
-use atelier_studio::Studio;
-
 use super::Atelier;
 
 /// Run over stdio (default transport).
@@ -24,7 +22,8 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
 
 /// Run as a networked MCP server over Streamable HTTP at `addr`, mounted at
 /// `/mcp`. Stateless: no sessions, every POST self-contained; one shared studio
-/// backs all clients (writes serialised by its Mutex).
+/// path handle backs all clients. Mutations are ordered by the shared async
+/// lock and the document store's advisory file lock.
 /// `allowed_hosts` extends the loopback default for LAN/remote `Host` validation
 /// (DNS-rebinding guard); pass the host(s) clients will use.
 pub async fn run_http(
@@ -35,8 +34,10 @@ pub async fn run_http(
         StreamableHttpServerConfig, StreamableHttpService, session::never::NeverSessionManager,
     };
 
-    // Shared studio across all HTTP sessions.
-    let studio = std::sync::Arc::new(std::sync::Mutex::new(Studio::new()));
+    // Build the immutable tool router once. Each stateless request gets a cheap
+    // clone sharing that router and the single write-order lock; `Studio`
+    // itself is only a cloneable document-store path.
+    let atelier = Atelier::new();
     let mut config = StreamableHttpServerConfig::default();
     for h in allowed_hosts {
         if !config.allowed_hosts.contains(&h) {
@@ -54,17 +55,7 @@ pub async fn run_http(
     // streams server→client).
     config.stateful_mode = false;
     config.json_response = true;
-    // One write-order lock shared by every session, like the studio itself —
-    // per-session locks would order nothing.
-    let write_order = std::sync::Arc::new(tokio::sync::Mutex::new(()));
-    let factory = {
-        let studio = studio.clone();
-        move || {
-            let mut atelier = Atelier::with_studio(studio.clone());
-            atelier.write_order = write_order.clone();
-            Ok(atelier)
-        }
-    };
+    let factory = move || Ok(atelier.clone());
     let service: StreamableHttpService<Atelier, NeverSessionManager> =
         StreamableHttpService::new(factory, Default::default(), config);
 

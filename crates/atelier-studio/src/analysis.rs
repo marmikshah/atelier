@@ -338,7 +338,7 @@ impl Studio {
         let in_pal = |c: [u8; 4]| -> bool { doc.meta().palette.contains(&c) };
         let hex = |c: [u8; 4]| crate::hex_rgba(&c);
         let count = entries.len();
-        // Top-48 with an "others" rollup: an unquantized import has hundreds
+        // Top-48 with an "others" rollup: an unquantized source has hundreds
         // of distinct colours, and 256 JSON objects of them helps nobody.
         /// The report lists at most this many colours; the tail is summarised.
         const PALETTE_LIST_CAP: usize = 48;
@@ -846,7 +846,7 @@ impl Studio {
                 if uniform && seq.len() > 2 {
                     out["note"] = json!(
                         "uniform timing reads mechanical — hold contact/key poses ~1.5x longer \
-                         with doc_set_frame_duration"
+                         with doc_frame op=duration"
                     );
                 }
                 Ok(out)

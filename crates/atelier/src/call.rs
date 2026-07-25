@@ -13,11 +13,9 @@
 //! 0 ok, 1 the tool ran and failed (`{"error": ...}` payload), 2 the call
 //! itself was malformed (bad JSON, unknown tool, bad params).
 
-use std::sync::{Arc, Mutex};
-
 use serde_json::Value;
 
-use atelier_mcp::server::{self, Atelier};
+use atelier_mcp::server::{self, Atelier, CallContext};
 use atelier_studio::Studio;
 
 /// One parsed invocation: which tool, with what args, rooted where.
@@ -25,20 +23,24 @@ struct Call {
     tool: String,
     args: Value,
     home: Option<String>,
+    context: CallContext,
 }
 
-/// Parse `<tool> ['<json>' | --file PATH | --stdin] [--home DIR]`. The three
-/// arg sources are mutually exclusive — a paint_grid legend or a batch op
-/// list outgrows a comfortable shell argument, which is what --file/--stdin
-/// are for. Errors are usage errors (exit 2), never tool results.
+/// Parse `<tool> ['<json>' | --file PATH | --stdin] [context flags]`. The three
+/// arg sources are mutually exclusive — a paint_grid legend or a batch op list
+/// outgrows a comfortable shell argument, which is what --file/--stdin are for.
+/// `--doc`/`--layer`/`--frame` fill omitted tool arguments before dispatch;
+/// explicit JSON always wins and the expanded args are what the journal stores.
+/// Errors are usage errors (exit 2), never tool results.
 fn parse(args: &[String]) -> Result<Call, String> {
-    const USAGE: &str =
-        "usage: atelier call <tool> ['<json>' | --file PATH | --stdin] [--home DIR]";
+    const USAGE: &str = "usage: atelier call <tool> ['<json>' | --file PATH | --stdin] \
+                         [--doc ID] [--layer N] [--frame N] [--home DIR]";
     let mut tool = None;
     let mut positional_json = None;
     let mut file = None;
     let mut stdin = false;
     let mut home = None;
+    let mut context = CallContext::new("cli");
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -50,6 +52,26 @@ fn parse(args: &[String]) -> Result<Call, String> {
             "--home" => {
                 i += 1;
                 home = Some(args.get(i).ok_or("--home needs a directory")?.clone());
+            }
+            "--doc" => {
+                i += 1;
+                context.doc_id = Some(args.get(i).ok_or("--doc needs a document id")?.clone());
+            }
+            "--layer" => {
+                i += 1;
+                let raw = args.get(i).ok_or("--layer needs a non-negative integer")?;
+                context.layer =
+                    Some(raw.parse().map_err(|_| {
+                        format!("--layer expects a non-negative integer, got '{raw}'")
+                    })?);
+            }
+            "--frame" => {
+                i += 1;
+                let raw = args.get(i).ok_or("--frame needs a non-negative integer")?;
+                context.frame =
+                    Some(raw.parse().map_err(|_| {
+                        format!("--frame expects a non-negative integer, got '{raw}'")
+                    })?);
             }
             other if other.starts_with("--") => return Err(format!("unknown flag '{other}'")),
             other => {
@@ -85,7 +107,12 @@ fn parse(args: &[String]) -> Result<Call, String> {
     if !args.is_object() {
         return Err("args must be a JSON object".into());
     }
-    Ok(Call { tool, args, home })
+    Ok(Call {
+        tool,
+        args,
+        home,
+        context,
+    })
 }
 
 pub(crate) async fn run(args: &[String]) -> i32 {
@@ -97,11 +124,11 @@ pub(crate) async fn run(args: &[String]) -> i32 {
         }
     };
     let atelier = match &call.home {
-        Some(dir) => Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir(dir.into())))),
+        Some(dir) => Atelier::with_studio(Studio::with_docs_dir(dir.into())),
         None => Atelier::new(),
     };
     let had_out_path = call.args.get("out_path").is_some();
-    match atelier.dispatch(&call.tool, call.args, "cli").await {
+    match atelier.dispatch(&call.tool, call.args, call.context).await {
         // Protocol-level failure: the call itself, not the tool, was wrong.
         Err(e) => {
             eprintln!("atelier: {e}");
@@ -145,6 +172,7 @@ mod tests {
         assert_eq!(c.tool, "list_docs");
         assert_eq!(c.args, serde_json::json!({}));
         assert!(c.home.is_none());
+        assert_eq!(c.context, CallContext::new("cli"));
     }
 
     #[test]
@@ -159,6 +187,26 @@ mod tests {
         assert_eq!(c.tool, "doc_create");
         assert_eq!(c.args["name"], "cat");
         assert_eq!(c.home.as_deref(), Some("/tmp/x"));
+    }
+
+    #[test]
+    fn parse_takes_explicit_call_context() {
+        let c = parse(&argv(&[
+            "doc_draw",
+            "{\"op\":\"clear_cel\"}",
+            "--doc",
+            "hero",
+            "--layer",
+            "2",
+            "--frame",
+            "3",
+        ]))
+        .unwrap();
+        assert_eq!(c.context.doc_id.as_deref(), Some("hero"));
+        assert_eq!(c.context.layer, Some(2));
+        assert_eq!(c.context.frame, Some(3));
+        assert!(parse(&argv(&["doc_draw", "--layer", "-1"])).is_err());
+        assert!(parse(&argv(&["doc_draw", "--frame", "x"])).is_err());
     }
 
     #[test]
@@ -179,8 +227,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-call-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let home = dir.to_string_lossy().to_string();
-        let atelier =
-            Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir((&home).into()))));
+        let atelier = Atelier::with_studio(Studio::with_docs_dir((&home).into()));
 
         let create = parse(&argv(&[
             "doc_create",
@@ -188,16 +235,16 @@ mod tests {
         ]))
         .unwrap();
         let result = atelier
-            .dispatch(&create.tool, create.args, "test")
+            .dispatch(&create.tool, create.args, CallContext::new("test"))
             .await
             .unwrap();
         assert!(!server::is_error_result(&result));
         let report = server::result_json(&result).unwrap();
         assert_eq!(report["id"], "cat");
 
-        let info = parse(&argv(&["doc_info", "{\"doc_id\":\"cat\"}"])).unwrap();
+        let info = parse(&argv(&["doc_info", "--doc", "cat"])).unwrap();
         let result = atelier
-            .dispatch(&info.tool, info.args, "test")
+            .dispatch(&info.tool, info.args, info.context)
             .await
             .unwrap();
         let report = server::result_json(&result).unwrap();

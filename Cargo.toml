@@ -49,7 +49,6 @@ atelier-mcp = { version = "1.8.0", path = "crates/atelier-mcp" }
 
 # The shipped binary: thin LTO + one codegen unit + stripped symbols (the
 # Docker image already stripped by hand; the release workflow didn't).
-# No `panic = "abort"` — the server recovers poisoned studio locks by design.
 [profile.release]
 lto = "thin"
 codegen-units = 1

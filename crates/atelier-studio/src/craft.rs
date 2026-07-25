@@ -3,16 +3,16 @@
 //! These methods exist to close the gaps the art-quality review found:
 //! let the near-blind agent actually SEE (`look`), work without fear
 //! (`checkpoint`), edit structure (`layer_ops`), and reach perceptual colour &
-//! master finish (`palette`, `snap_palette`, `select_wand`, `critique`).
+//! master finish (`palette`, `snap_palette`, `critique`).
 //! Image-returning methods hand back raw PNG bytes; the server wraps them as
 //! inline MCP image content so the pixels arrive in the same turn.
 
 use std::fs;
 use std::path::Path;
 
-use image::{Rgba, RgbaImage};
+use image::RgbaImage;
 
-/// True only for the `cp<n>` ids `doc_checkpoint save` mints.
+/// True only for the `cp<n>` ids `doc_checkpoint action=save` mints.
 ///
 /// A checkpoint id is joined onto the store path and then handed to
 /// `remove_dir_all`, so an unvalidated one is a directory traversal:
@@ -24,7 +24,7 @@ fn valid_checkpoint_id(cpid: &str) -> bool {
 }
 use serde_json::{Value, json};
 
-use super::Studio;
+use super::{JOURNAL_FILE, Studio};
 use atelier_core::raster;
 
 // -- shared raster helpers --------------------------------------------------
@@ -58,7 +58,8 @@ pub(super) fn crop_region(
 pub(super) const SHADOW_MAX: u8 = 85;
 pub(super) const MID_MAX: u8 = 170;
 
-/// Recursively snapshot a document's files (doc.json + cels/) into `dst`.
+/// Snapshot every file that defines live document state. Checkpoint metadata
+/// itself is intentionally excluded.
 fn snapshot_files(src: &Path, dst: &Path) -> Result<(), String> {
     fs::create_dir_all(dst).map_err(|e| e.to_string())?;
     fs::copy(src.join("doc.json"), dst.join("doc.json")).map_err(|e| e.to_string())?;
@@ -70,6 +71,15 @@ fn snapshot_files(src: &Path, dst: &Path) -> Result<(), String> {
             if p.is_file() {
                 fs::copy(&p, dcels.join(ent.file_name())).map_err(|e| e.to_string())?;
             }
+        }
+    }
+    // A restored document must restore both its external comparison context
+    // and the recipe that describes its pixels. Otherwise the canvas rolls
+    // back while replay keeps the discarded edits.
+    for name in [JOURNAL_FILE, "reference.png"] {
+        let path = src.join(name);
+        if path.is_file() {
+            fs::copy(path, dst.join(name)).map_err(|e| e.to_string())?;
         }
     }
     Ok(())
@@ -103,7 +113,7 @@ impl Studio {
             && !valid_checkpoint_id(cpid)
         {
             return Err(format!(
-                "invalid checkpoint id '{}' — expected the cp<n> form doc_checkpoint save returns",
+                "invalid checkpoint id '{}' — expected the cp<n> form doc_checkpoint action=save returns",
                 cpid
             ));
         }
@@ -181,9 +191,20 @@ impl Studio {
                 // doc without a doc.json (headless) — re-run restore to finish
                 // the swap; the checkpoint itself is untouched.
                 let _ = fs::remove_dir_all(dir.join("cels"));
-                let _ = fs::remove_file(dir.join("doc.json"));
-                let swapped = fs::rename(staging.join("cels"), dir.join("cels"))
-                    .and_then(|_| fs::rename(staging.join("doc.json"), dir.join("doc.json")));
+                for name in ["doc.json", JOURNAL_FILE, "reference.png"] {
+                    let _ = fs::remove_file(dir.join(name));
+                }
+                let swapped = (|| -> std::io::Result<()> {
+                    fs::rename(staging.join("cels"), dir.join("cels"))?;
+                    fs::rename(staging.join("doc.json"), dir.join("doc.json"))?;
+                    for name in [JOURNAL_FILE, "reference.png"] {
+                        let staged = staging.join(name);
+                        if staged.is_file() {
+                            fs::rename(staged, dir.join(name))?;
+                        }
+                    }
+                    Ok(())
+                })();
                 let _ = fs::remove_dir_all(&staging);
                 swapped.map_err(|e| {
                     format!("restore staged but the swap failed ({e}) — re-run restore to retry")
@@ -211,8 +232,9 @@ impl Studio {
     // -- doc_layer_ops: the structural backbone ----------------------------
 
     /// Layer-stack lifecycle in one tool: `move` | `insert` | `delete` |
-    /// `rename` | `duplicate` | `merge_down`. Returns the new layer list.
-    pub fn layer_ops(
+    /// `rename` | `duplicate` | `merge_down`. Returns a compact mutation ack;
+    /// callers that need the complete stack use `doc_info`.
+    pub(crate) fn layer_ops(
         &self,
         id: &str,
         action: &str,
@@ -239,16 +261,13 @@ impl Studio {
             }
         }
         doc.save(&dir)?;
-        let layers: Vec<Value> = doc
-            .meta()
-            .layers
-            .iter()
-            .enumerate()
-            .map(|(i, l)| json!({"index": i, "name": l.name, "opacity": l.opacity, "visible": l.visible, "blend": l.blend}))
-            .collect();
-        Ok(
-            json!({"ok": true, "doc_id": id, "action": action, "new_index": new_index, "layers": layers}),
-        )
+        Ok(json!({
+            "ok": true,
+            "doc_id": id,
+            "action": action,
+            "new_index": new_index,
+            "layers": doc.meta().layers.len(),
+        }))
     }
 
     // -- doc_snap_palette ---------------------------------------------------
@@ -270,7 +289,7 @@ impl Studio {
         };
         if pal.is_empty() {
             return Err(
-                "no palette to snap to — pass `palette` or set one with doc_set_palette".into(),
+                "no palette to snap to — pass `palette` or use doc_palette op=set first".into(),
             );
         }
         let changed = doc.snap_to_palette(&pal, layer, frame, alpha);
@@ -504,143 +523,6 @@ impl Studio {
             Ok(())
         })
     }
-
-    // -- doc_import_clean: reference -> clean pixel art --------------------
-
-    /// Import an external image as clean pixel art: optional corner-seeded
-    /// background removal, TRUE area-average downscale to the target size
-    /// (aspect-derived height when omitted), then quantise — optionally
-    /// Floyd–Steinberg — to a palette (the document's locked one, or a
-    /// frequency-weighted median-cut of the SUBJECT's colours, with `pin`ned
-    /// colours always kept), with optional alpha defringe. The reference-
-    /// onboarding pipeline for characters and AI/photo art.
-    pub fn import_clean(
-        &self,
-        id: &str,
-        layer: usize,
-        frame: usize,
-        path: &str,
-        target_w: u32,
-        target_h: Option<u32>,
-        colors: usize,
-        dither: Option<bool>,
-        defringe: bool,
-        to_doc_palette: bool,
-        remove_bg: bool,
-        pin: Vec<[u8; 4]>,
-    ) -> Result<Value, String> {
-        let (dir, mut doc) = self.open(id)?;
-        let mut src = crate::open_bounded(std::path::Path::new(path))?;
-        // Background removal runs at SOURCE resolution, before any pixel of
-        // backdrop can be averaged into the subject's edges or its palette.
-        if remove_bg {
-            raster::remove_background(&mut src, 0.08);
-        }
-        let tw = target_w.max(1);
-        let th = target_h.unwrap_or_else(|| {
-            // Derive an aspect-true height so a wrong guess can't squash the
-            // subject. Round to nearest, floor 1.
-            ((src.height() as f64 * tw as f64 / src.width().max(1) as f64).round() as u32).max(1)
-        });
-        if th as usize * tw as usize > crate::MAX_TARGET_PIXELS {
-            return Err(format!(
-                "target {}x{} is over the 1M-pixel cap — import at a smaller size",
-                tw, th
-            ));
-        }
-        // Default decided HERE, where the derived height is known — at sprite
-        // scale (longest side ≤ 64px) error diffusion reads as speckle.
-        let dither = dither.unwrap_or(tw.max(th) > 64);
-        let resized = raster::downscale_area(&src, tw, th);
-        let mut work: Vec<[f32; 4]> = resized
-            .pixels()
-            .map(|p| [p.0[0] as f32, p.0[1] as f32, p.0[2] as f32, p.0[3] as f32])
-            .collect();
-        let (w, h) = (resized.width() as i32, resized.height() as i32);
-        if defringe {
-            for px in work.iter_mut() {
-                px[3] = if px[3] < 128.0 { 0.0 } else { 255.0 };
-            }
-        }
-        // Palette: the doc's locked one, or a frequency-weighted median cut of
-        // the (post-bg-removal) opaque pixels so the subject owns every slot.
-        let palette: Vec<[u8; 4]> = if to_doc_palette && !doc.meta().palette.is_empty() {
-            doc.meta().palette.clone()
-        } else {
-            let mut counts: std::collections::HashMap<[u8; 3], u64> =
-                std::collections::HashMap::new();
-            for p in work.iter().filter(|p| p[3] > 0.0) {
-                *counts
-                    .entry([p[0] as u8, p[1] as u8, p[2] as u8])
-                    .or_insert(0) += 1;
-            }
-            if counts.is_empty() {
-                return Err("imported image is fully transparent".into());
-            }
-            let pairs: Vec<([u8; 3], u64)> = counts.into_iter().collect();
-            raster::median_cut_weighted(&pairs, colors.max(2), &pin)
-        };
-        // Quantise (optionally Floyd–Steinberg) to the palette.
-        let mut lab = raster::PaletteLab::new(&palette);
-        let mut out = RgbaImage::from_pixel(w as u32, h as u32, Rgba([0, 0, 0, 0]));
-        let idx = |x: i32, y: i32| (y * w + x) as usize;
-        for y in 0..h {
-            for x in 0..w {
-                let p = work[idx(x, y)];
-                if p[3] <= 0.0 {
-                    continue;
-                }
-                let cur = [
-                    p[0].clamp(0.0, 255.0) as u8,
-                    p[1].clamp(0.0, 255.0) as u8,
-                    p[2].clamp(0.0, 255.0) as u8,
-                    255,
-                ];
-                let pi = lab.nearest(cur).unwrap_or(0);
-                let chosen = lab.color(pi);
-                out.put_pixel(
-                    x as u32,
-                    y as u32,
-                    Rgba([chosen[0], chosen[1], chosen[2], p[3] as u8]),
-                );
-                if dither {
-                    let err = [
-                        p[0] - chosen[0] as f32,
-                        p[1] - chosen[1] as f32,
-                        p[2] - chosen[2] as f32,
-                    ];
-                    let mut spread = |sx: i32, sy: i32, f: f32| {
-                        if sx >= 0 && sy >= 0 && sx < w && sy < h {
-                            let q = &mut work[idx(sx, sy)];
-                            if q[3] > 0.0 {
-                                for c in 0..3 {
-                                    q[c] += err[c] * f;
-                                }
-                            }
-                        }
-                    };
-                    spread(x + 1, y, 7.0 / 16.0);
-                    spread(x - 1, y + 1, 3.0 / 16.0);
-                    spread(x, y + 1, 5.0 / 16.0);
-                    spread(x + 1, y + 1, 1.0 / 16.0);
-                }
-            }
-        }
-        doc.set_cel(layer, frame, 0, 0, out)?;
-        if to_doc_palette && doc.meta().palette.is_empty() {
-            doc.set_palette(palette.clone());
-        }
-        doc.save(&dir)?;
-        let pal_json: Vec<Value> = palette.iter().map(|c| json!(c)).collect();
-        Ok(json!({
-            "ok": true,
-            "doc_id": id,
-            "size": [w, h],
-            "palette": pal_json,
-            "dithered": dither,
-            "bg_removed": remove_bg,
-        }))
-    }
 }
 
 /// A perceptually-even ramp bracketing a base colour's lightness — the default
@@ -834,10 +716,6 @@ mod tests {
             .unwrap()
     }
 
-    fn opaque(stats: &Value) -> u64 {
-        stats["stats"]["opaque_pixels"].as_u64().unwrap_or(0)
-    }
-
     #[test]
     fn checkpoint_id_cannot_escape_the_store() {
         let s = studio("cp-escape");
@@ -889,11 +767,11 @@ mod tests {
                 "normal".into(),
             )
             .unwrap();
-        assert_eq!(r["layers"].as_array().unwrap().len(), 2);
+        assert_eq!(r["layers"], 2);
         let m = s
             .layer_ops("c", "merge_down", 1, None, None, 255, "normal".into())
             .unwrap();
-        assert_eq!(m["layers"].as_array().unwrap().len(), 1);
+        assert_eq!(m["layers"], 1);
     }
 
     #[test]
@@ -1036,91 +914,6 @@ mod tests {
         assert!(r["arc_residual"].as_f64().unwrap() > 0.0);
         assert_eq!(r["shape"], "arced");
     }
-
-    #[test]
-    fn import_clean_downscales_and_quantizes() {
-        let s = studio("import");
-        s.doc_create("c", 2, 2).unwrap();
-        let p = std::env::temp_dir().join("atelier-import-src.png");
-        RgbaImage::from_pixel(4, 4, Rgba([200, 30, 30, 255]))
-            .save(&p)
-            .unwrap();
-        let r = s
-            .import_clean(
-                "c",
-                0,
-                0,
-                p.to_str().unwrap(),
-                2,
-                Some(2),
-                4,
-                Some(true),
-                false,
-                false,
-                false,
-                vec![],
-            )
-            .unwrap();
-        assert!(!r["palette"].as_array().unwrap().is_empty());
-        let look = s
-            .look(
-                "c",
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    bands: 1,
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert_eq!(opaque(&look.1), 4);
-    }
-
-    #[test]
-    fn import_clean_derives_aspect_and_removes_backdrop() {
-        let s = studio("importbg");
-        s.doc_create("c", 8, 4).unwrap();
-        // 16x8 source: flat grey backdrop, red 8x8 block in the middle.
-        let mut src = RgbaImage::from_pixel(16, 8, Rgba([90, 90, 90, 255]));
-        for y in 0..8 {
-            for x in 4..12 {
-                src.put_pixel(x, y, Rgba([200, 30, 30, 255]));
-            }
-        }
-        let p = std::env::temp_dir().join("atelier-import-bg.png");
-        src.save(&p).unwrap();
-        // target_h omitted → derived 4 from the 2:1 aspect; remove_bg floods
-        // the grey corners away so the palette is subject-only.
-        let r = s
-            .import_clean(
-                "c",
-                0,
-                0,
-                p.to_str().unwrap(),
-                8,
-                None,
-                4,
-                Some(false),
-                false,
-                false,
-                true,
-                vec![],
-            )
-            .unwrap();
-        assert_eq!(r["size"], json!([8, 4]));
-        assert_eq!(r["bg_removed"], json!(true));
-        // The backdrop corner became transparent; the subject survived.
-        assert_eq!(
-            s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap()["rgba"][3],
-            json!(0)
-        );
-        assert!(
-            s.doc_get_pixel("c", Some(0), 0, 4, 2).unwrap()["rgba"][0]
-                .as_i64()
-                .unwrap()
-                > 150
-        );
-    }
 }
 
 #[cfg(test)]
@@ -1128,12 +921,10 @@ mod hardening_tests {
     use super::*;
 
     #[test]
-    fn restore_brings_back_the_checkpointed_pixels() {
-        let s = {
-            let dir = std::env::temp_dir().join("atelier-craft-restore");
-            let _ = fs::remove_dir_all(&dir);
-            Studio::with_docs_dir(dir)
-        };
+    fn restore_brings_back_complete_checkpointed_state() {
+        let root = std::env::temp_dir().join("atelier-craft-restore");
+        let _ = fs::remove_dir_all(&root);
+        let s = Studio::with_docs_dir(root.clone());
         s.doc_create("c", 4, 4).unwrap();
         s.doc_draw(
             "c",
@@ -1146,9 +937,21 @@ mod hardening_tests {
                 .clone(),
         )
         .unwrap();
+
+        let red_ref = root.join("red.png");
+        let blue_ref = root.join("blue.png");
+        RgbaImage::from_pixel(2, 2, image::Rgba([200, 0, 0, 255]))
+            .save(&red_ref)
+            .unwrap();
+        RgbaImage::from_pixel(2, 2, image::Rgba([0, 0, 200, 255]))
+            .save(&blue_ref)
+            .unwrap();
+        s.set_reference("c", red_ref.to_str()).unwrap();
+        s.journal_append("c", "doc_create", &json!({"name": "c"}));
+
         let cp = s.checkpoint("c", "save", None, None).unwrap();
         let cpid = cp["saved"].as_str().unwrap().to_string();
-        // Wreck the canvas, then restore.
+        // Wreck every checkpointed state surface, then restore.
         s.doc_draw(
             "c",
             0,
@@ -1160,11 +963,22 @@ mod hardening_tests {
                 .clone(),
         )
         .unwrap();
+        s.set_reference("c", blue_ref.to_str()).unwrap();
+        s.journal_append("c", "doc_draw", &json!({"op": "fill_cel"}));
+
         s.checkpoint("c", "restore", None, Some(&cpid)).unwrap();
         let px = s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap();
         assert_eq!(px["rgba"], json!([200, 0, 0, 255]));
+        assert_eq!(s.journal("c").unwrap().len(), 1);
+        assert_eq!(
+            image::open(root.join("c/reference.png"))
+                .unwrap()
+                .to_rgba8()
+                .get_pixel(0, 0)
+                .0,
+            [200, 0, 0, 255]
+        );
         // The staging dir must not linger.
-        let dir = std::env::temp_dir().join("atelier-craft-restore/documents/c/.restore-staging");
-        assert!(!dir.exists());
+        assert!(!root.join("c/.restore-staging").exists());
     }
 }
