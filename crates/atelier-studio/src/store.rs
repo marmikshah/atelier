@@ -10,7 +10,6 @@ use serde_json::{Map, Value, json};
 
 use atelier_core::document::{DocMeta, Document};
 
-use super::control::{DOC_ID_ALPHABET, DOC_ID_CHARS, DOC_ID_PREFIX};
 use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, Studio, ToolName};
 
 /// The one current journal-line shape, shared by the writer, store reader, and
@@ -194,10 +193,9 @@ impl Studio {
         self.docs_dir.join(id)
     }
 
-    /// The one current document-id shape: `d_` plus 16 lowercase Crockford
-    /// Base32 characters (80 random bits). Reject anything else before it
-    /// reaches the filesystem — ids arrive untrusted over MCP, and an id like
-    /// `../x` would otherwise escape the store.
+    /// Only canonical UUIDv4 document ids reach the filesystem. IDs arrive
+    /// untrusted over MCP, and a value like `../x` would otherwise escape the
+    /// store.
     pub(crate) fn valid_id(id: &str) -> bool {
         DocumentId::is_valid(id)
     }
@@ -219,24 +217,6 @@ impl Studio {
         }
         out.sort();
         out
-    }
-
-    fn random_id() -> Result<DocumentId, String> {
-        let mut bytes = [0u8; 10];
-        getrandom::fill(&mut bytes)
-            .map_err(|error| format!("cannot generate document id: {error}"))?;
-        let mut value = bytes
-            .into_iter()
-            .fold(0u128, |value, byte| (value << 8) | byte as u128);
-        let mut encoded = [b'0'; DOC_ID_CHARS];
-        for character in encoded.iter_mut().rev() {
-            *character = DOC_ID_ALPHABET[(value & 31) as usize];
-            value >>= 5;
-        }
-        DocumentId::parse(format!(
-            "{DOC_ID_PREFIX}{}",
-            std::str::from_utf8(&encoded).expect("the id alphabet is ASCII")
-        ))
     }
 
     pub(crate) fn open(&self, id: &str) -> Result<(PathBuf, Document), String> {
@@ -275,7 +255,7 @@ impl Studio {
         let (id, dir) = {
             let mut created = None;
             for _ in 0..32 {
-                let id = Self::random_id()?;
+                let id = DocumentId::new_v4();
                 let dir = self.doc_dir(id.as_str());
                 match fs::create_dir(&dir) {
                     Ok(()) => {
@@ -534,7 +514,7 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"d_1111111111111111\"}}\n",
+            "{\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"123e4567-e89b-42d3-a456-426614174000\"}}\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -543,8 +523,8 @@ mod tests {
 
     #[test]
     fn journal_contract_rejects_context_and_cross_document_steps() {
-        let id = "d_0000000000000000";
-        let other = "d_1111111111111111";
+        let id = "550e8400-e29b-41d4-a716-446655440000";
+        let other = "123e4567-e89b-42d3-a456-426614174000";
         let create = JournalEntry {
             tool: ToolName::DocNew,
             args: serde_json::from_value(json!({"name": "d", "doc_id": id})).unwrap(),

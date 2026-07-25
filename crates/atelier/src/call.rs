@@ -6,7 +6,7 @@
 //! ```text
 //! atelier call doc_new '{"name":"cat","width":32,"height":32}'
 //! atelier call doc_paint_grid --file grid.json
-//! atelier call doc_look '{"doc_id":"d_…","out_path":"/tmp/cat.png"}'
+//! atelier call doc_look '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","out_path":"/tmp/cat.png"}'
 //! ```
 //!
 //! stdout carries the tool's JSON report; the exit code carries the verdict:

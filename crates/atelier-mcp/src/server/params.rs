@@ -526,7 +526,7 @@ mod tests {
 
     #[test]
     fn typed_tool_params_reject_removed_or_misspelled_fields() {
-        let id = "d_0000000000000000";
+        let id = "550e8400-e29b-41d4-a716-446655440000";
         assert!(
             serde_json::from_value::<DocNew>(serde_json::json!({
                 "name": "x",
@@ -558,7 +558,7 @@ mod tests {
 
     #[test]
     fn closed_control_values_and_document_ids_are_typed() {
-        let id = "d_0000000000000000";
+        let id = "550e8400-e29b-41d4-a716-446655440000";
         assert!(
             serde_json::from_value::<DocLayer>(serde_json::json!({
                 "doc_id": id,
@@ -646,10 +646,8 @@ mod tests {
             ])
         );
         assert_eq!(layer["properties"]["doc_id"]["$ref"], "#/$defs/DocumentId");
-        assert_eq!(
-            layer["$defs"]["DocumentId"]["pattern"],
-            "^d_[0-9abcdefghjkmnpqrstvwxyz]{16}$"
-        );
+        assert_eq!(layer["$defs"]["DocumentId"]["type"], "string");
+        assert_eq!(layer["$defs"]["DocumentId"]["format"], "uuid");
 
         let draw = schemars::schema_for!(DocDraw);
         assert_eq!(

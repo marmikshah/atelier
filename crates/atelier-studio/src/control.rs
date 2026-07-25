@@ -2,40 +2,60 @@
 //! CLI. User content (names, paths, labels, drawing text) remains ordinary
 //! strings; values that select code paths do not.
 
-use schemars::JsonSchema;
+use std::borrow::Cow;
+
+use schemars::{JsonSchema, Schema, SchemaGenerator, json_schema};
 use serde::{Deserialize, Deserializer, Serialize};
+use uuid::{Uuid, Variant, Version};
 
-pub(crate) const DOC_ID_PREFIX: &str = "d_";
-pub(crate) const DOC_ID_CHARS: usize = 16;
-pub(crate) const DOC_ID_ALPHABET: &[u8; 32] = b"0123456789abcdefghjkmnpqrstvwxyz";
-
-/// Opaque, validated document identity.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, JsonSchema)]
+/// Opaque, validated canonical UUIDv4 document identity.
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(transparent)]
-pub struct DocumentId(#[schemars(regex(pattern = "^d_[0-9abcdefghjkmnpqrstvwxyz]{16}$"))] String);
+pub struct DocumentId(String);
 
 impl DocumentId {
+    pub(crate) fn new_v4() -> Self {
+        Self(Uuid::new_v4().to_string())
+    }
+
     pub fn parse(value: impl Into<String>) -> Result<Self, String> {
         let value = value.into();
         if Self::is_valid(&value) {
             Ok(Self(value))
         } else {
             Err(format!(
-                "invalid document id '{value}' — expected d_ plus 16 lowercase Crockford Base32 characters"
+                "invalid document id '{value}' — expected a canonical lowercase UUIDv4"
             ))
         }
     }
 
     pub fn is_valid(value: &str) -> bool {
-        value.len() == DOC_ID_PREFIX.len() + DOC_ID_CHARS
-            && value.starts_with(DOC_ID_PREFIX)
-            && value[DOC_ID_PREFIX.len()..]
-                .bytes()
-                .all(|byte| DOC_ID_ALPHABET.contains(&byte))
+        Uuid::parse_str(value).is_ok_and(|uuid| {
+            uuid.get_version() == Some(Version::Random)
+                && uuid.get_variant() == Variant::RFC4122
+                && uuid.hyphenated().to_string() == value
+        })
     }
 
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+}
+
+impl JsonSchema for DocumentId {
+    fn schema_name() -> Cow<'static, str> {
+        "DocumentId".into()
+    }
+
+    fn schema_id() -> Cow<'static, str> {
+        "atelier_studio::DocumentId".into()
+    }
+
+    fn json_schema(_: &mut SchemaGenerator) -> Schema {
+        json_schema!({
+            "type": "string",
+            "format": "uuid"
+        })
     }
 }
 
@@ -468,14 +488,21 @@ mod tests {
     }
 
     #[test]
-    fn document_ids_reject_paths_and_noncanonical_characters() {
-        assert!(DocumentId::parse("d_0000000000000000").is_ok());
+    fn document_ids_are_canonical_uuid_v4_values() {
+        const ID: &str = "550e8400-e29b-41d4-a716-446655440000";
+
+        assert_eq!(DocumentId::parse(ID).unwrap().as_str(), ID);
+        let generated = DocumentId::new_v4();
+        assert!(DocumentId::is_valid(generated.as_str()));
+
         for invalid in [
             "hero",
-            "../d_0000000000000000",
-            "d_000000000000000",
-            "d_000000000000000i",
-            "d_000000000000000O",
+            "d_0000000000000000",
+            "../550e8400-e29b-41d4-a716-446655440000",
+            "550E8400-E29B-41D4-A716-446655440000",
+            "550e8400e29b41d4a716446655440000",
+            "550e8400-e29b-11d4-a716-446655440000",
+            "550e8400-e29b-41d4-7716-446655440000",
         ] {
             assert!(DocumentId::parse(invalid).is_err(), "accepted {invalid}");
         }

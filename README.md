@@ -44,9 +44,9 @@ whole setup — drive it from any shell:
 
 ```sh
 atelier call doc_new '{"name":"cat","width":32,"height":32}'
-# {"doc_id":"d_7m2k9x4p6r8t3w5y", ...} — use the returned id
-atelier call doc_draw '{"doc_id":"d_7m2k9x4p6r8t3w5y","layer":0,"frame":0,"op":"fill_cel","color":[224,160,80]}'
-atelier call doc_look '{"doc_id":"d_7m2k9x4p6r8t3w5y","out_path":"/tmp/cat.png"}'
+# {"doc_id":"550e8400-e29b-41d4-a716-446655440000", ...} — use the returned id
+atelier call doc_draw '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","layer":0,"frame":0,"op":"fill_cel","color":[224,160,80]}'
+atelier call doc_look '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","out_path":"/tmp/cat.png"}'
 ```
 
 Every tool is one `atelier call`: stdout gets the JSON report, the exit code
@@ -151,7 +151,7 @@ deliberate act, and the context stays small enough to look often.
 ```sh
 atelier call <tool> '<json>'   # one tool call, in-process — the front door
 atelier call <tool> --file ops.json   # args from a file (or --stdin)
-atelier call doc_draw '{"doc_id":"d_7m2k9x4p6r8t3w5y","layer":1,"frame":0,"op":"clear_cel"}'
+atelier call doc_draw '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","layer":1,"frame":0,"op":"clear_cel"}'
 atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
@@ -179,7 +179,8 @@ every call logs a `caller=` identity: by default the TCP peer address; set an
 metadata below, when the name must stay stable across reconnects. (The CLI and
 replay log as `cli` / `replay`.)
 
-`doc_new` returns a fresh opaque id such as `d_7m2k9x4p6r8t3w5y`. Its `name`
+`doc_new` returns a fresh canonical UUIDv4 such as
+`550e8400-e29b-41d4-a716-446655440000`. Its `name`
 is only a display label and may repeat. Every later document call must carry
 the returned `doc_id` explicitly; layer and frame targets are explicit too.
 There is no active document, inferred name, CLI routing flag, or transport
@@ -248,7 +249,7 @@ journals itself as it's drawn, so anything you make can rebuild itself:
 
 ```sh
 atelier library                 # every document, with its step count
-atelier replay d_7m2k9x4p6r8t3w5y  # rebuild it from its own journal
+atelier replay 550e8400-e29b-41d4-a716-446655440000  # rebuild it from its own journal
 ```
 
 Nothing to turn on. The journal is JSON Lines beside the art

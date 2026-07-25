@@ -274,6 +274,10 @@ mod tests {
     use super::*;
     use rmcp::model::ContentBlock as Content;
 
+    const ID: &str = "550e8400-e29b-41d4-a716-446655440000";
+    const RECORDED_ID: &str = "123e4567-e89b-42d3-a456-426614174000";
+    const MISSING_ID: &str = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+
     fn text_result(text: &str) -> CallToolResult {
         CallToolResult::success(vec![Content::text(text)])
     }
@@ -286,9 +290,9 @@ mod tests {
     fn recorded_identity_is_required_and_removed_before_dispatch() {
         let mut args = object(json!({
             "name": "Hero",
-            "doc_id": "d_0000000000000000"
+            "doc_id": ID
         }));
-        assert_eq!(take_recorded_id(&mut args).unwrap(), "d_0000000000000000");
+        assert_eq!(take_recorded_id(&mut args).unwrap(), ID);
         assert_eq!(args, object(json!({"name": "Hero"})));
 
         let mut unstamped = object(json!({"name": "Hero"}));
@@ -297,30 +301,29 @@ mod tests {
 
     #[test]
     fn remap_rewrites_every_id_bearing_field() {
-        let ids: HashMap<String, String> =
-            [("d_old".to_string(), "d_0000000000000000".to_string())].into();
+        let ids: HashMap<String, String> = [(RECORDED_ID.to_string(), ID.to_string())].into();
         let mut args = object(json!({
-            "doc_id": "d_old",
-            "set_doc": "d_old",
+            "doc_id": RECORDED_ID,
+            "set_doc": RECORDED_ID,
             "name": "hero"
         }));
         remap_ids(&mut args, &ids).unwrap();
         assert_eq!(
             args,
             object(json!({
-                "doc_id": "d_0000000000000000",
-                "set_doc": "d_0000000000000000",
+                "doc_id": ID,
+                "set_doc": ID,
                 "name": "hero"
             }))
         );
-        let mut unresolved = object(json!({"doc_id": "d_missing"}));
+        let mut unresolved = object(json!({"doc_id": MISSING_ID}));
         assert!(remap_ids(&mut unresolved, &ids).is_err());
     }
 
     #[test]
     fn minted_id_reads_the_new_payload() {
-        let result = text_result("{\"doc_id\":\"d_0000000000000000\",\"width\":8}");
-        assert_eq!(minted_id(&result).as_deref(), Some("d_0000000000000000"));
+        let result = text_result(&format!("{{\"doc_id\":\"{ID}\",\"width\":8}}"));
+        assert_eq!(minted_id(&result).as_deref(), Some(ID));
         let empty = CallToolResult::success(vec![]);
         assert_eq!(minted_id(&empty), None);
     }
