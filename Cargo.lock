@@ -55,6 +55,7 @@ version = "1.8.0"
 dependencies = [
  "image",
  "png",
+ "schemars",
  "serde",
  "serde_json",
 ]
@@ -83,6 +84,7 @@ dependencies = [
  "fs4",
  "getrandom 0.4.3",
  "image",
+ "schemars",
  "serde",
  "serde_json",
 ]

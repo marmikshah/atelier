@@ -15,11 +15,11 @@ impl Atelier {
     pub(crate) async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
         res(self.studio().doc_export(
             &p.doc_id,
-            &p.op,
+            p.op,
             &p.out_path,
             p.scale,
-            p.meta.as_deref(),
-            p.format.as_deref(),
+            p.meta,
+            p.format,
             p.tag.as_deref(),
         ))
     }

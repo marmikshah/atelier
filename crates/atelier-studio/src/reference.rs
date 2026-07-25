@@ -8,7 +8,7 @@ use std::path::Path;
 use image::{Rgba, RgbaImage};
 use serde_json::{Value, json};
 
-use super::{Studio, encode_png, preview_scale};
+use super::{CompareMode, Studio, encode_png, preview_scale};
 use atelier_core::document::Document;
 use atelier_core::raster;
 
@@ -167,7 +167,7 @@ impl Studio {
         &self,
         id: &str,
         frame: usize,
-        mode: &str,
+        mode: CompareMode,
         cells: u32,
     ) -> Result<(Vec<u8>, Value), String> {
         let (canvas, small, doc) = self.ref_vs_canvas(id, frame)?;
@@ -249,14 +249,9 @@ impl Studio {
             .collect();
         // Inline visual: side-by-side (ref | canvas) or overlay (ref ghosted
         // under the canvas) at matched scale.
-        if !matches!(mode, "overlay" | "side_by_side") {
-            return Err(format!(
-                "unknown compare mode '{mode}' — expected side_by_side or overlay"
-            ));
-        }
         let sc = preview_scale(cw.max(ch) * 2, ch);
         let img = match mode {
-            "overlay" => {
+            CompareMode::Overlay => {
                 let mut out = RgbaImage::from_pixel(cw, ch, Rgba([0, 0, 0, 0]));
                 for (x, y, p) in small.enumerate_pixels() {
                     if p.0[3] > 0 {
@@ -270,7 +265,7 @@ impl Studio {
                 }
                 out
             }
-            _ => {
+            CompareMode::SideBySide => {
                 // side_by_side: reference | 2px gutter | canvas.
                 let gut = 2;
                 let mut out = RgbaImage::from_pixel(cw * 2 + gut, ch, Rgba([0, 0, 0, 0]));
@@ -301,7 +296,7 @@ impl Studio {
                 "mean_delta": mean_delta,
                 "worst_cells": worst,
                 "missing_reference_colors": missing,
-                "mode": if mode == "overlay" { "overlay" } else { "side_by_side" },
+                "mode": mode,
                 "guide": "iou ≥ 0.80 = silhouette reads right; mean_delta ≤ 0.06 = colours read right. Fix worst_cells first.",
             }),
         ))
@@ -550,13 +545,13 @@ mod tests {
         s.set_reference(id, p.to_str()).unwrap();
         // Faithful recreation: the same red block, backdrop left transparent.
         block(&s, id, [200, 30, 30, 255]);
-        let (png, good) = s.ref_compare(id, 0, "side_by_side", 4).unwrap();
+        let (png, good) = s.ref_compare(id, 0, CompareMode::SideBySide, 4).unwrap();
         assert!(!png.is_empty());
         let iou = good["silhouette_iou"].as_f64().unwrap();
         assert!(iou > 0.9, "faithful copy should score high, got {iou}");
         // A wrong-colour copy keeps the silhouette but raises the colour delta.
         block(&s, id, [30, 30, 200, 255]);
-        let (_png, bad) = s.ref_compare(id, 0, "overlay", 4).unwrap();
+        let (_png, bad) = s.ref_compare(id, 0, CompareMode::Overlay, 4).unwrap();
         assert!(bad["mean_delta"].as_f64().unwrap() > 0.1);
         assert!(
             !bad["missing_reference_colors"]

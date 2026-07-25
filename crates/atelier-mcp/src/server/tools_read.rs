@@ -14,13 +14,13 @@ use super::{Atelier, img_result, opt_img_result, region, res, rgba};
 impl Atelier {
     // -- world-class-art tools (the art-quality pass) --
     #[tool(
-        description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value/grayscale | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N (N ≤ 16) to check seamlessness; bg mattes transparency (checker|dark|white — use it when judging white/light pixels, which vanish on a white viewer backdrop); out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
+        description = "SEE a frame as an INLINE PNG (no separate file read) plus measured stats — the agent's primary and only eye for the canvas. mode: render | value | bands | sat | hue | notan (3-value squint). grid + coords burn a pixel ruler into the upscale; onion ghosts neighbours; region crops; max_size makes a thumbnail; tile repeats the result N×N (N ≤ 16) to check seamlessness; bg mattes transparency (checker|dark|white — use it when judging white/light pixels, which vanish on a white viewer backdrop); out_path also writes the PNG to a file. Stats report value min/max/mean/contrast and shadow/mid/light mass % (plus per-band coverage in bands/notan modes)."
     )]
     pub(crate) async fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
         let opts = atelier_studio::LookOptions {
             scale: p.scale,
-            region: try_res!(region(&p.region)),
-            mode: p.mode.clone().unwrap_or_default(),
+            region: region(p.region),
+            mode: p.mode.unwrap_or_default(),
             bands: p.bands.unwrap_or(0),
             grid: p.grid.unwrap_or(false),
             coords: p.coords.unwrap_or(false),
@@ -28,7 +28,7 @@ impl Atelier {
             max_size: p.max_size,
             tile: p.tile,
             out_path: p.out_path.clone(),
-            bg: p.bg.clone(),
+            bg: p.bg,
         };
         img_result(self.studio().look(&p.doc_id, p.frame.unwrap_or(0), &opts))
     }
@@ -45,8 +45,8 @@ impl Atelier {
             &p.doc_id,
             p.frame.unwrap_or(0),
             p.layer,
-            try_res!(region(&p.region)),
-            p.mode.as_deref().unwrap_or("symbol"),
+            region(p.region),
+            p.mode.unwrap_or_default(),
         ))
     }
 
@@ -99,9 +99,9 @@ impl Atelier {
             p.frame_a,
             p.frame_b,
             p.layer,
-            try_res!(region(&p.region)),
+            region(p.region),
             p.grid.unwrap_or(false),
-            p.render.as_deref().unwrap_or("none"),
+            p.render.unwrap_or_default(),
             p.out_path.as_deref(),
             p.scale.unwrap_or(4),
         ))
@@ -118,7 +118,7 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame.unwrap_or(0),
-            p.axis.as_deref().unwrap_or("both"),
+            p.axis.unwrap_or_default(),
             p.threshold.unwrap_or(0),
             p.out_path.as_deref(),
         ))
@@ -135,8 +135,8 @@ impl Atelier {
             &p.doc_id,
             p.tag.as_deref(),
             p.layer,
-            &p.mode,
-            try_res!(region(&p.region)),
+            p.mode,
+            region(p.region),
         ))
     }
 
@@ -147,12 +147,9 @@ impl Atelier {
         &self,
         Parameters(p): Parameters<DocCritique>,
     ) -> CallToolResult {
-        res(self.studio().critique(
-            &p.doc_id,
-            p.frame.unwrap_or(0),
-            p.layer,
-            try_res!(region(&p.region)),
-        ))
+        res(self
+            .studio()
+            .critique(&p.doc_id, p.frame.unwrap_or(0), p.layer, region(p.region)))
     }
 
     #[tool(
@@ -176,26 +173,25 @@ impl Atelier {
     )]
     pub(crate) async fn doc_ref(&self, Parameters(p): Parameters<DocRefOp>) -> CallToolResult {
         let studio = self.studio();
-        match p.op.as_str() {
-            "set" => res(studio.set_reference(&p.doc_id, p.path.as_deref())),
-            "analyze" => img_result(studio.ref_analyze(
+        match p.op {
+            atelier_studio::ReferenceOp::Set => {
+                res(studio.set_reference(&p.doc_id, p.path.as_deref()))
+            }
+            atelier_studio::ReferenceOp::Analyze => img_result(studio.ref_analyze(
                 &p.doc_id,
                 p.path.as_deref(),
                 p.target_w,
                 p.colors.unwrap_or(8),
             )),
-            "compare" => img_result(studio.ref_compare(
+            atelier_studio::ReferenceOp::Compare => img_result(studio.ref_compare(
                 &p.doc_id,
                 p.frame.unwrap_or(0),
-                p.mode.as_deref().unwrap_or("side_by_side"),
+                p.mode.unwrap_or_default(),
                 p.cells.unwrap_or(8),
             )),
-            "diff" => {
+            atelier_studio::ReferenceOp::Diff => {
                 img_result(studio.diff_map(&p.doc_id, p.frame.unwrap_or(0), p.top.unwrap_or(20)))
             }
-            other => res(Err(format!(
-                "doc_ref: unknown op '{other}' — use set|analyze|compare|diff"
-            ))),
         }
     }
 }

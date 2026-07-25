@@ -4,7 +4,7 @@ use serde_json::Value;
 #[cfg(test)]
 use serde_json::json;
 
-use super::Studio;
+use super::{RegionOp, Studio};
 
 impl Studio {
     /// Read one pixel — RGBA plus a `#rrggbbaa` value.
@@ -71,7 +71,7 @@ impl Studio {
     pub fn doc_region(
         &self,
         id: &str,
-        op: &str,
+        op: RegionOp,
         layer: usize,
         frame: usize,
         rect: Option<[i32; 4]>,
@@ -79,17 +79,14 @@ impl Studio {
     ) -> Result<Value, String> {
         let rect = rect.ok_or_else(|| format!("doc_region op '{op}' needs `rect`"))?;
         match op {
-            "clear" => self.doc_clear_region(id, layer, frame, rect),
-            "move" => self.doc_move_region(
+            RegionOp::Clear => self.doc_clear_region(id, layer, frame, rect),
+            RegionOp::Move => self.doc_move_region(
                 id,
                 layer,
                 frame,
                 rect,
                 offset.ok_or("doc_region op 'move' needs `offset`")?,
             ),
-            other => Err(format!(
-                "unknown doc_region op '{other}' — use clear or move"
-            )),
         }
     }
 }
@@ -128,7 +125,7 @@ mod tests {
             .unwrap();
 
         studio
-            .doc_region(id, "move", 0, 0, Some([0, 0, 1, 0]), Some([1, 1]))
+            .doc_region(id, RegionOp::Move, 0, 0, Some([0, 0, 1, 0]), Some([1, 1]))
             .unwrap();
         assert_eq!(
             studio.doc_get_pixel(id, Some(0), 0, 1, 1).unwrap()["rgba"],
@@ -136,7 +133,7 @@ mod tests {
         );
 
         studio
-            .doc_region(id, "clear", 0, 0, Some([1, 1, 2, 1]), None)
+            .doc_region(id, RegionOp::Clear, 0, 0, Some([1, 1, 2, 1]), None)
             .unwrap();
         assert_eq!(
             studio.doc_get_pixel(id, Some(0), 0, 1, 1).unwrap()["rgba"],

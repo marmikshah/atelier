@@ -1,11 +1,51 @@
 //! Effects that rework existing pixels — shading, lighting, texture, cleanup.
 
 use image::{Rgba, RgbaImage};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 use crate::raster;
 use crate::raster::resolve_region;
 
 use super::Document;
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum DitherAxis {
+    #[serde(rename = "h")]
+    Horizontal,
+    #[default]
+    #[serde(rename = "v")]
+    Vertical,
+    #[serde(rename = "radial")]
+    Radial,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum DitherPattern {
+    #[serde(rename = "bayer2")]
+    Bayer2,
+    #[default]
+    #[serde(rename = "bayer4")]
+    Bayer4,
+    #[serde(rename = "bayer8")]
+    Bayer8,
+    #[serde(rename = "checker")]
+    Checker,
+    #[serde(rename = "ign")]
+    Ign,
+}
+
+impl DitherPattern {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Bayer2 => "bayer2",
+            Self::Bayer4 => "bayer4",
+            Self::Bayer8 => "bayer8",
+            Self::Checker => "checker",
+            Self::Ign => "ign",
+        }
+    }
+}
 
 impl Document {
     /// Graduated multi-tone dithering across a whole ramp along an axis — master
@@ -20,8 +60,8 @@ impl Document {
         frame: usize,
         region: Option<(i32, i32, i32, i32)>,
         ramp: &[[u8; 4]],
-        axis: &str,
-        pattern: &str,
+        axis: DitherAxis,
+        pattern: DitherPattern,
         only_existing: bool,
     ) -> Result<u32, String> {
         if ramp.len() < 2 {
@@ -35,16 +75,6 @@ impl Document {
         let rmax = ((span_x / 2.0).powi(2) + (span_y / 2.0).powi(2))
             .sqrt()
             .max(1.0);
-        if !matches!(axis, "h" | "v" | "radial") {
-            return Err(format!("unknown axis '{axis}' — use h|v|radial"));
-        }
-        // `dither` errors on a bad pattern; the ramp used to fall back to
-        // bayer8 silently — same check, same loud failure.
-        if !matches!(pattern, "checker" | "bayer2" | "bayer4" | "bayer8" | "ign") {
-            return Err(format!(
-                "unknown pattern '{pattern}' — use checker/bayer2/bayer4/bayer8/ign"
-            ));
-        }
         let last = ramp.len() - 1;
         let img = self.cel_canvas(layer, frame)?;
         let mut changed = 0;
@@ -55,15 +85,17 @@ impl Document {
                     continue;
                 }
                 let t = match axis {
-                    "v" => (y - ay) as f32 / span_y,
-                    "radial" => ((x as f32 - cx).powi(2) + (y as f32 - cy).powi(2)).sqrt() / rmax,
-                    _ => (x - ax) as f32 / span_x,
+                    DitherAxis::Vertical => (y - ay) as f32 / span_y,
+                    DitherAxis::Radial => {
+                        ((x as f32 - cx).powi(2) + (y as f32 - cy).powi(2)).sqrt() / rmax
+                    }
+                    DitherAxis::Horizontal => (x - ax) as f32 / span_x,
                 }
                 .clamp(0.0, 1.0);
                 let pos = t * last as f32;
                 let k = pos.floor() as usize;
                 let frac = pos - k as f32;
-                let thr = raster::ramp_dither_threshold(pattern, x, y);
+                let thr = raster::ramp_dither_threshold(pattern.as_str(), x, y);
                 let idx = if frac > thr {
                     (k + 1).min(last)
                 } else {
@@ -164,7 +196,7 @@ impl Document {
         color: Option<[u8; 4]>,
         radius: i32,
         intensity: u8,
-        mode: &str,
+        blend: raster::Blend,
     ) -> Result<(), String> {
         let orig = self.cel_canvas(layer, frame)?.clone();
         let (w, h) = (orig.width(), orig.height());
@@ -178,12 +210,6 @@ impl Document {
                 }
             }
         }
-        let blend = raster::parse_blend(mode).ok_or_else(|| {
-            format!(
-                "unknown glow blend '{mode}' — valid: {}",
-                raster::BLEND_NAMES
-            )
-        })?;
         let g = raster::box_blur(&src, radius.max(1));
         let mut out = orig.clone();
         raster::composite(&mut out, &g, 0, 0, intensity, blend);
