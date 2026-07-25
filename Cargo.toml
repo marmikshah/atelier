@@ -14,7 +14,7 @@ edition = "2024"
 rust-version = "1.88"
 license = "MIT"
 repository = "https://github.com/marmikshah/atelier"
-homepage = "https://marmikshah.github.io/atelier/"
+homepage = "https://marmikshah.github.io/atelier-site/"
 # GitHub releases are the distribution channel for now. Opt in crate-by-crate
 # only after the public Rust API and crates.io release order are documented.
 publish = false

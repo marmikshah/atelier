@@ -13,10 +13,9 @@ The shipped dependency tower is `atelier-core` → `atelier-studio` →
 ## Commands
 
 - `make check` — complete non-mutating gate: metadata, formatting, Clippy,
-  rustdoc, tests, example replays, and tool-reference rendering.
+  rustdoc, tests, and tool-reference rendering.
 - `make fmt` — apply Rust formatting.
-- `make docs` — generate a local `site/tools.html` preview. Pages generates it
-  during deployment.
+- `make docs` — generate a local `target/atelier-tools.html` preview.
 - `make release` — build `target/release/atelier`.
 
 The committed `Cargo.lock` is intentional because this workspace ships release

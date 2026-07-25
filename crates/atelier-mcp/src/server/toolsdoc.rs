@@ -1,7 +1,8 @@
 //! Self-contained HTML tool reference, generated from the live tool registry so
 //! it can never drift from the actual `#[tool]` descriptions. Emitted by the
-//! `atelier tools` subcommand and published to the GitHub Pages site
-//! (`make docs`). No hand-maintained tool list to keep in sync.
+//! `atelier tools` subcommand, generated locally by `make docs`, and published
+//! by the companion `atelier-site` repository. No hand-maintained tool list to
+//! keep in sync.
 
 use super::Atelier;
 

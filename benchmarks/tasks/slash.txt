@@ -1,4 +1,0 @@
-Effect — a sword slash arc: a bright crescent sweeps down-right across the frame,
-peaks with a hot leading edge and a hard impact flash, then thins and fades to
-nothing. Reads as motion with no character present. Loops seamlessly. 10 frames,
-1 second at 10 FPS. 32x32 canvas. 6 colours, transparent background.

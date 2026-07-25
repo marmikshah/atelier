@@ -30,7 +30,7 @@ jobs:
           fi
 
       - name: Shell scripts
-        run: shellcheck .githooks/pre-commit .githooks/pre-push site/install.sh tools/*.sh
+        run: shellcheck .githooks/pre-commit .githooks/pre-push tools/*.sh
 
       - name: GitHub Actions workflows
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12

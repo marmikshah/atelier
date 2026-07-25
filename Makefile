@@ -6,9 +6,10 @@
 # subcommands are the interface (an installed user has no Makefile).
 
 BIN := target/debug/atelier
+DOC_HTML := target/atelier-tools.html
 
 .DEFAULT_GOAL := help
-.PHONY: help build release test fmt fmt-check lint rustdoc-check check pre-commit-checks docs docs-check site clean
+.PHONY: help build release test fmt fmt-check lint rustdoc-check check pre-commit-checks docs docs-check clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -43,15 +44,12 @@ pre-commit-checks: ## Release metadata + format + clippy + rustdoc gate run by g
 	$(MAKE) lint
 	$(MAKE) rustdoc-check
 
-docs: build ## Regenerate the HTML tool reference (tools.html) from the live registry
-	$(BIN) tools --html > site/tools.html
-	@echo "wrote tools.html"
+docs: build ## Generate a local HTML tool reference under target/
+	$(BIN) tools --html > $(DOC_HTML)
+	@echo "wrote $(DOC_HTML)"
 
 docs-check: build ## Verify that the generated HTML tool reference renders
 	@$(BIN) tools --html >/dev/null
-
-site: docs ## Assemble generated files into site/ for preview or Pages
-	cp benchmarks/runs.json site/showcase/runs.json
 
 clean: ## Remove build artifacts
 	cargo clean

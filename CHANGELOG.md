@@ -118,8 +118,10 @@ releases.
   `atelier install` prompts on first install and reinstall, reuses the current
   port as the default, and accepts `--port PORT` for non-interactive setup.
   `atelier status` prints the installed endpoint.
-- GitHub Pages now builds the tool reference and benchmark index from their
-  canonical sources instead of committing duplicate generated files.
+- The website, GitHub Pages deployment, and complete showcase benchmark now
+  live in the companion `marmikshah/atelier-site` repository. This repository
+  retains the canonical installer source and tool-reference generator while
+  the site pins the exact Atelier revision used to validate its 60 replays.
 - CI now has one complete Linux gate, an explicit Rust 1.88 minimum-version
   check, and lightweight macOS and Windows checks. Local hooks remain optional
   and fast.

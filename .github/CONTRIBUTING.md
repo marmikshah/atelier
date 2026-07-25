@@ -32,7 +32,7 @@ Useful commands:
 ```sh
 make fmt          # apply formatting
 make test         # complete Rust test suite
-make docs         # generate a local site/tools.html preview
+make docs         # generate target/atelier-tools.html
 make release      # optimized binary
 ```
 
