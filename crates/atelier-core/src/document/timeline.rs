@@ -3,7 +3,26 @@
 use image::RgbaImage;
 use serde_json::{Value, json};
 
-use super::{DEFAULT_FRAME_MS, Document, FrameMeta};
+use super::{DEFAULT_FRAME_MS, Document, FrameMeta, TagDirection};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FrameAction {
+    Delete,
+    Insert,
+    Duplicate,
+    Move,
+}
+
+impl FrameAction {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Delete => "delete",
+            Self::Insert => "insert",
+            Self::Duplicate => "duplicate",
+            Self::Move => "move",
+        }
+    }
+}
 
 impl Document {
     /// Set a frame's display duration in milliseconds.
@@ -23,14 +42,14 @@ impl Document {
     /// this is the recovery path for a bad tween or duplicated pose.
     pub fn frame_ops(
         &mut self,
-        action: &str,
+        action: FrameAction,
         frame: usize,
         to_index: Option<usize>,
         duration_ms: Option<u32>,
     ) -> Result<Value, String> {
         let n = self.meta.frames.len();
         match action {
-            "delete" => {
+            FrameAction::Delete => {
                 if frame >= n {
                     return Err(format!("no frame {} (frames={})", frame, n));
                 }
@@ -52,7 +71,7 @@ impl Document {
                     }
                 }
             }
-            "insert" => {
+            FrameAction::Insert => {
                 if frame > n {
                     return Err(format!(
                         "insert index {} out of range (frames={})",
@@ -75,7 +94,7 @@ impl Document {
                     }
                 }
             }
-            "duplicate" => {
+            FrameAction::Duplicate => {
                 if frame >= n {
                     return Err(format!("no frame {} (frames={})", frame, n));
                 }
@@ -101,7 +120,7 @@ impl Document {
                     }
                 }
             }
-            "move" => {
+            FrameAction::Move => {
                 let to = to_index.ok_or("move needs `to_index`")?;
                 if frame >= n || to >= n {
                     return Err(format!(
@@ -159,14 +178,12 @@ impl Document {
                     }
                 }
             }
-            other => {
-                return Err(format!(
-                    "unknown frame action '{}' — use delete|insert|duplicate|move",
-                    other
-                ));
-            }
         }
-        Ok(json!({"ok": true, "action": action, "frames": self.meta.frames.len()}))
+        Ok(json!({
+            "ok": true,
+            "action": action.as_str(),
+            "frames": self.meta.frames.len()
+        }))
     }
 
     /// Resolve the ordered frame indices to *play*. With `tag`, honour that
@@ -178,7 +195,7 @@ impl Document {
         if self.meta.frames.is_empty() {
             return Ok(vec![]);
         }
-        let (from, to, dir) = match tag {
+        let (from, to, direction) = match tag {
             Some(name) => {
                 let t = self
                     .meta
@@ -186,24 +203,24 @@ impl Document {
                     .iter()
                     .find(|t| t.name == name)
                     .ok_or_else(|| format!("no tag '{}'", name))?;
-                (t.from, t.to, t.direction.as_str())
+                (t.from, t.to, t.direction)
             }
-            None => (0, self.meta.frames.len() - 1, "forward"),
+            None => (0, self.meta.frames.len() - 1, TagDirection::Forward),
         };
         // Clamp defensively in case a tag references frames since removed.
         let last = self.meta.frames.len() - 1;
         let (from, to) = (from.min(last), to.min(last));
         let fwd: Vec<usize> = (from..=to).collect();
-        let seq = match dir {
-            "reverse" => fwd.into_iter().rev().collect(),
-            "pingpong" => {
+        let seq = match direction {
+            TagDirection::Reverse => fwd.into_iter().rev().collect(),
+            TagDirection::Pingpong => {
                 let mut s = fwd;
                 if to > from + 1 {
                     s.extend((from + 1..to).rev()); // inner frames, no dup of endpoints
                 }
                 s
             }
-            _ => fwd, // "forward" and any unknown direction
+            TagDirection::Forward => fwd,
         };
         Ok(seq)
     }

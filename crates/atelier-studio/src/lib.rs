@@ -18,15 +18,22 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
 
-use atelier_core::document::Document;
+use atelier_core::document::{Document, FrameAction, TagDirection};
+use atelier_core::raster::Blend;
 
 mod analysis;
+mod control;
 mod craft;
 mod ops_export;
 mod ops_region;
 mod reference;
 mod store;
 mod view;
+pub use control::{
+    AlphaMode, AnimAuditMode, AnimationFormat, CheckpointAction, CompareMode, DiffRender,
+    DocumentId, DumpMode, ExportOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
+    PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta, ToolName,
+};
 pub use store::{JournalEntry, validate_journal};
 pub use view::LookOptions;
 
@@ -109,10 +116,10 @@ impl Studio {
         id: &str,
         name: Option<String>,
         opacity: u8,
-        blend: String,
+        blend: Blend,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
-        let idx = doc.add_layer(name, opacity, blend)?;
+        let idx = doc.add_layer(name, opacity, blend);
         doc.save(&dir)?;
         // Slim ack — echoing the whole structure() grew O(layers×frames) per
         // call; doc_info still serves the full picture on demand.
@@ -130,7 +137,7 @@ impl Studio {
         layer: usize,
         visible: Option<bool>,
         opacity: Option<u8>,
-        blend: Option<String>,
+        blend: Option<Blend>,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         doc.set_layer(layer, visible, opacity, blend)?;
@@ -152,29 +159,26 @@ impl Studio {
     /// `doc_add_layer` / `doc_set_layer` / `layer_ops` methods.
     /// Destructive dispatch ops must say WHICH target they hit — a defaulted
     /// index 0 silently deletes/mutates the first layer/frame.
-    fn required_index(op: &str, index: Option<usize>) -> Result<usize, String> {
+    fn required_index(op: impl std::fmt::Display, index: Option<usize>) -> Result<usize, String> {
         index.ok_or_else(|| format!("op '{op}' needs an explicit index"))
     }
 
     pub fn doc_layer(
         &self,
         id: &str,
-        op: &str,
+        op: LayerOp,
         index: Option<usize>,
         to_index: Option<usize>,
         name: Option<String>,
         visible: Option<bool>,
         opacity: Option<u8>,
-        blend: Option<String>,
+        blend: Option<Blend>,
     ) -> Result<Value, String> {
         match op {
-            "add" => self.doc_add_layer(
-                id,
-                name,
-                opacity.unwrap_or(255),
-                blend.unwrap_or_else(|| "normal".into()),
-            ),
-            "set" => self.doc_set_layer(
+            LayerOp::Add => {
+                self.doc_add_layer(id, name, opacity.unwrap_or(255), blend.unwrap_or_default())
+            }
+            LayerOp::Set => self.doc_set_layer(
                 id,
                 Self::required_index(op, index)?,
                 visible,
@@ -188,7 +192,7 @@ impl Studio {
                 to_index,
                 name,
                 opacity.unwrap_or(255),
-                blend.unwrap_or_else(|| "normal".into()),
+                blend.unwrap_or_default(),
             ),
         }
     }
@@ -248,7 +252,7 @@ impl Studio {
     pub fn doc_frame(
         &self,
         id: &str,
-        op: &str,
+        op: FrameOp,
         frame: Option<usize>,
         copy_from: Option<usize>,
         to_index: Option<usize>,
@@ -256,20 +260,41 @@ impl Studio {
         count: Option<usize>,
     ) -> Result<Value, String> {
         match op {
-            "add" => self.doc_add_frame(
+            FrameOp::Add => self.doc_add_frame(
                 id,
                 duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
                 copy_from,
                 count.unwrap_or(1),
             ),
-            "duration" => self.doc_set_frame_duration(
+            FrameOp::Duration => self.doc_set_frame_duration(
                 id,
                 Self::required_index(op, frame)?,
                 duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
             ),
-            _ => self.doc_frame_ops(
+            FrameOp::Delete => self.doc_frame_ops(
                 id,
-                op,
+                FrameAction::Delete,
+                Self::required_index(op, frame)?,
+                to_index,
+                duration_ms,
+            ),
+            FrameOp::Insert => self.doc_frame_ops(
+                id,
+                FrameAction::Insert,
+                Self::required_index(op, frame)?,
+                to_index,
+                duration_ms,
+            ),
+            FrameOp::Duplicate => self.doc_frame_ops(
+                id,
+                FrameAction::Duplicate,
+                Self::required_index(op, frame)?,
+                to_index,
+                duration_ms,
+            ),
+            FrameOp::Move => self.doc_frame_ops(
+                id,
+                FrameAction::Move,
                 Self::required_index(op, frame)?,
                 to_index,
                 duration_ms,
@@ -283,13 +308,8 @@ impl Studio {
         name: &str,
         from: usize,
         to: usize,
-        direction: &str,
+        direction: TagDirection,
     ) -> Result<Value, String> {
-        if !matches!(direction, "forward" | "reverse" | "pingpong") {
-            return Err(format!(
-                "unknown tag direction '{direction}' — valid: forward | reverse | pingpong"
-            ));
-        }
         let (dir, mut doc) = self.open(id)?;
         doc.add_tag(name, from, to, direction)?;
         doc.save(&dir)?;
@@ -299,7 +319,7 @@ impl Studio {
             "tag": name,
             "from": from,
             "to": to,
-            "direction": direction,
+            "direction": direction.as_str(),
         }))
     }
 
@@ -364,7 +384,7 @@ impl Studio {
     fn doc_frame_ops(
         &self,
         id: &str,
-        action: &str,
+        action: FrameAction,
         frame: usize,
         to_index: Option<usize>,
         duration_ms: Option<u32>,
@@ -636,7 +656,7 @@ mod tests {
         let s = studio("addcount");
         let created = s.doc_new("d", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        let out = s.doc_frame(id, "add", None, Some(0), None, Some(80), Some(9));
+        let out = s.doc_frame(id, FrameOp::Add, None, Some(0), None, Some(80), Some(9));
         assert!(out.is_ok(), "{out:?}");
         let info = s.doc_info(id).unwrap();
         assert_eq!(info["frames"].as_array().map(|f| f.len()), Some(10));

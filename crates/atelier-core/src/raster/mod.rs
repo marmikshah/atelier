@@ -5,6 +5,8 @@
 //! quantisation and shading ramps. Everything here is stateless and reusable.
 
 use image::{Rgba, RgbaImage};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod colour;
 mod noise;
@@ -13,9 +15,9 @@ mod transform;
 // Explicit surface instead of globs: exactly what the rest of the workspace
 // uses, so the module's API is one readable list.
 pub use colour::{
-    PaletteLab, close, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp, make_ramp_oklch,
-    median_cut, median_cut_weighted, nearest_oklab, oklab_delta, oklab_to_oklch, oklab_to_srgb,
-    oklch_to_oklab, rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab,
+    PaletteLab, SaturationCurve, close, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp,
+    make_ramp_oklch, median_cut, median_cut_weighted, nearest_oklab, oklab_delta, oklab_to_oklch,
+    oklab_to_srgb, oklch_to_oklab, rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab,
 };
 pub use noise::{
     dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
@@ -434,8 +436,10 @@ pub fn clamp_region(
 
 /// Separable layer blend modes (W3C Compositing & Blending). `Normal` reduces
 /// the compositor to plain source-over, so existing art renders unchanged.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "kebab-case")]
 pub enum Blend {
+    #[default]
     Normal,
     Multiply,
     Screen,
@@ -452,34 +456,59 @@ pub enum Blend {
     ColorBurn,
 }
 
-/// Parse a canonical blend-mode name. Unknown values are never coerced.
-pub(crate) fn parse_blend(s: &str) -> Option<Blend> {
-    Some(match s {
-        "normal" => Blend::Normal,
-        "multiply" => Blend::Multiply,
-        "screen" => Blend::Screen,
-        "add" => Blend::Add,
-        "subtract" => Blend::Subtract,
-        "darken" => Blend::Darken,
-        "lighten" => Blend::Lighten,
-        "difference" => Blend::Difference,
-        "exclusion" => Blend::Exclusion,
-        "overlay" => Blend::Overlay,
-        "hard-light" => Blend::HardLight,
-        "soft-light" => Blend::SoftLight,
-        "color-dodge" => Blend::ColorDodge,
-        "color-burn" => Blend::ColorBurn,
-        _ => return None,
-    })
+impl Blend {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Normal => "normal",
+            Self::Multiply => "multiply",
+            Self::Screen => "screen",
+            Self::Add => "add",
+            Self::Subtract => "subtract",
+            Self::Darken => "darken",
+            Self::Lighten => "lighten",
+            Self::Difference => "difference",
+            Self::Exclusion => "exclusion",
+            Self::Overlay => "overlay",
+            Self::HardLight => "hard-light",
+            Self::SoftLight => "soft-light",
+            Self::ColorDodge => "color-dodge",
+            Self::ColorBurn => "color-burn",
+        }
+    }
 }
 
 /// Human-readable list of accepted blend tokens (for validation error messages).
 pub const BLEND_NAMES: &str = "normal | multiply | screen | add | subtract | darken | \
 lighten | difference | exclusion | overlay | hard-light | soft-light | color-dodge | color-burn";
 
-/// Whether `s` is a canonical blend token.
-pub fn valid_blend(s: &str) -> bool {
-    parse_blend(s).is_some()
+impl std::str::FromStr for Blend {
+    type Err = String;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value {
+            "normal" => Ok(Self::Normal),
+            "multiply" => Ok(Self::Multiply),
+            "screen" => Ok(Self::Screen),
+            "add" => Ok(Self::Add),
+            "subtract" => Ok(Self::Subtract),
+            "darken" => Ok(Self::Darken),
+            "lighten" => Ok(Self::Lighten),
+            "difference" => Ok(Self::Difference),
+            "exclusion" => Ok(Self::Exclusion),
+            "overlay" => Ok(Self::Overlay),
+            "hard-light" => Ok(Self::HardLight),
+            "soft-light" => Ok(Self::SoftLight),
+            "color-dodge" => Ok(Self::ColorDodge),
+            "color-burn" => Ok(Self::ColorBurn),
+            other => Err(format!("unknown blend '{other}' — valid: {BLEND_NAMES}")),
+        }
+    }
+}
+
+impl std::fmt::Display for Blend {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(self.as_str())
+    }
 }
 
 /// `overlay(cb, cs)` — multiply on the dark half of the backdrop, screen on the
@@ -698,7 +727,10 @@ mod tests {
     #[test]
     fn blend_modes_accept_only_the_documented_names() {
         for name in BLEND_NAMES.split(" | ") {
-            assert!(valid_blend(name), "canonical blend rejected: {name}");
+            assert!(
+                name.parse::<Blend>().is_ok(),
+                "canonical blend rejected: {name}"
+            );
         }
         for alias in [
             "additive",
@@ -713,7 +745,10 @@ mod tests {
             "color_burn",
             "burn",
         ] {
-            assert!(!valid_blend(alias), "undocumented alias accepted: {alias}");
+            assert!(
+                alias.parse::<Blend>().is_err(),
+                "undocumented alias accepted: {alias}"
+            );
         }
     }
 
@@ -769,7 +804,7 @@ mod tests {
         // With chroma reduced to fit, every chromatic step keeps the base hue.
         let base = [220, 30, 40, 255];
         let (_, _, base_h) = oklab_to_oklch(srgb_to_oklab(base));
-        let ramp = make_ramp_oklch(base, 6, 0.2, 0.92, 0.0, "flat", false);
+        let ramp = make_ramp_oklch(base, 6, 0.2, 0.92, 0.0, SaturationCurve::Flat, false);
         for c in &ramp {
             let (_, cc, hh) = oklab_to_oklch(srgb_to_oklab(*c));
             if cc < 0.03 {
@@ -786,7 +821,7 @@ mod tests {
     #[test]
     fn perceptual_ramp_is_monotonic_and_anchors_midtone() {
         let base = [120, 80, 60, 255];
-        let ramp = make_ramp_oklch(base, 5, 0.2, 0.85, 25.0, "arc", true);
+        let ramp = make_ramp_oklch(base, 5, 0.2, 0.85, 25.0, SaturationCurve::Arc, true);
         assert_eq!(ramp.len(), 5);
         // perceptual lightness rises across the ramp
         let ls: Vec<f32> = ramp.iter().map(|c| srgb_to_oklab(*c).0).collect();

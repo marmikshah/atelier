@@ -16,11 +16,11 @@
 use serde_json::Value;
 
 use atelier_mcp::server::{self, Atelier};
-use atelier_studio::Studio;
+use atelier_studio::{Studio, ToolName};
 
 /// One parsed invocation: which tool, with what args, rooted where.
 struct Call {
-    tool: String,
+    tool: ToolName,
     args: Value,
     home: Option<String>,
 }
@@ -64,7 +64,10 @@ fn parse(args: &[String]) -> Result<Call, String> {
         }
         i += 1;
     }
-    let tool = tool.ok_or(USAGE)?;
+    let tool = tool
+        .ok_or(USAGE)?
+        .parse::<ToolName>()
+        .map_err(|error| format!("{error}\n{USAGE}"))?;
     if positional_json.is_some() as u8 + file.is_some() as u8 + u8::from(stdin) > 1 {
         return Err("pass the args one way: '<json>' | --file PATH | --stdin".into());
     }
@@ -101,7 +104,7 @@ pub(crate) async fn run(args: &[String]) -> i32 {
         None => Atelier::new(),
     };
     let had_out_path = call.args.get("out_path").is_some();
-    match atelier.dispatch(&call.tool, call.args, "cli").await {
+    match atelier.dispatch(call.tool, call.args, "cli").await {
         // Protocol-level failure: the call itself, not the tool, was wrong.
         Err(e) => {
             eprintln!("atelier: {e}");
@@ -137,12 +140,14 @@ mod tests {
     #[test]
     fn parse_requires_a_tool() {
         assert!(parse(&argv(&[])).is_err());
+        let error = parse(&argv(&["atelier_agent"])).err().unwrap();
+        assert!(error.contains("unknown tool"));
     }
 
     #[test]
     fn parse_defaults_args_to_an_empty_object() {
         let c = parse(&argv(&["list_docs"])).unwrap();
-        assert_eq!(c.tool, "list_docs");
+        assert_eq!(c.tool, ToolName::ListDocs);
         assert_eq!(c.args, serde_json::json!({}));
         assert!(c.home.is_none());
     }
@@ -156,7 +161,7 @@ mod tests {
             "/tmp/x",
         ]))
         .unwrap();
-        assert_eq!(c.tool, "doc_new");
+        assert_eq!(c.tool, ToolName::DocNew);
         assert_eq!(c.args["name"], "cat");
         assert_eq!(c.home.as_deref(), Some("/tmp/x"));
     }
@@ -194,7 +199,7 @@ mod tests {
         ]))
         .unwrap();
         let result = atelier
-            .dispatch(&create.tool, create.args, "test")
+            .dispatch(create.tool, create.args, "test")
             .await
             .unwrap();
         assert!(!server::is_error_result(&result));
@@ -203,7 +208,7 @@ mod tests {
 
         let info = parse(&argv(&["doc_info", &format!(r#"{{"doc_id":"{doc_id}"}}"#)])).unwrap();
         let result = atelier
-            .dispatch(&info.tool, info.args, "test")
+            .dispatch(info.tool, info.args, "test")
             .await
             .unwrap();
         let report = server::result_json(&result).unwrap();

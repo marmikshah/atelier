@@ -7,7 +7,8 @@ use std::path::PathBuf;
 
 use serde_json::{Value, json};
 
-use super::Studio;
+use super::{AnimAuditMode, DiffRender, DumpMode, SeamAxis, Studio};
+use atelier_core::document::TagDirection;
 
 /// Shared >4096-px area cap for the grid-emitting readers. Builds the error from
 /// a `label` ("region" / "diff region") and tail `advice`; `doc_dump_region` and
@@ -36,7 +37,7 @@ impl Studio {
         frame: usize,
         layer: Option<usize>,
         region: Option<(i32, i32, i32, i32)>,
-        mode: &str,
+        mode: DumpMode,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let img = doc.analysis_image(layer, frame)?;
@@ -50,7 +51,7 @@ impl Studio {
             "crop with a smaller `region` first",
         )?;
         let px = |x: i32, y: i32| img.get_pixel(x as u32, y as u32).0;
-        if mode == "hex" {
+        if mode == DumpMode::Hex {
             let rows: Vec<String> = (y0..=y1)
                 .map(|y| {
                     (x0..=x1)
@@ -420,7 +421,7 @@ impl Studio {
         layer: Option<usize>,
         region: Option<(i32, i32, i32, i32)>,
         grid: bool,
-        render: &str,
+        render: DiffRender,
         out_path: Option<&str>,
         scale: u32,
     ) -> Result<(Option<Vec<u8>>, Value), String> {
@@ -469,7 +470,7 @@ impl Studio {
             res["origin"] = json!([x0, y0]);
         }
         let mut png = None;
-        if render == "overlay" {
+        if render == DiffRender::Overlay {
             let out = match out_path {
                 Some(p) => PathBuf::from(p),
                 None => dir.join(format!("diff_{}_{}.png", frame_a, frame_b)),
@@ -507,8 +508,6 @@ impl Studio {
             img.save(&out).map_err(|e| e.to_string())?;
             res["path"] = json!(out.to_string_lossy());
             png = Some(crate::encode_png(&img)?);
-        } else if render != "none" {
-            return Err(format!("unknown render '{}' — use none|overlay", render));
         }
         Ok((png, res))
     }
@@ -525,22 +524,16 @@ impl Studio {
         id: &str,
         layer: Option<usize>,
         frame: usize,
-        axis: &str,
+        axis: SeamAxis,
         threshold: i32,
         out_path: Option<&str>,
     ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
         let (_dir, doc) = self.open(id)?;
         let (want_h, want_v) = match axis {
-            "both" => (true, true),
-            "horizontal" => (true, false),
-            "vertical" => (false, true),
-            other => {
-                return Err(format!(
-                    "unknown axis '{}' — use both|horizontal|vertical",
-                    other
-                ));
-            }
+            SeamAxis::Both => (true, true),
+            SeamAxis::Horizontal => (true, false),
+            SeamAxis::Vertical => (false, true),
         };
         // One flatten serves both axes AND the overlay below.
         let img = doc.analysis_image(layer, frame)?;
@@ -615,7 +608,7 @@ impl Studio {
         id: &str,
         tag: Option<&str>,
         layer: Option<usize>,
-        mode: &str,
+        mode: AnimAuditMode,
         region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
@@ -624,7 +617,7 @@ impl Studio {
             return Err("animation has no frames to audit".into());
         }
         match mode {
-            "seam" => {
+            AnimAuditMode::Seam => {
                 // Pingpong reverses at the ends, so the loop never hard-cuts.
                 let dir = match tag {
                     Some(name) => doc
@@ -632,11 +625,11 @@ impl Studio {
                         .tags
                         .iter()
                         .find(|t| t.name == name)
-                        .map(|t| t.direction.as_str())
-                        .unwrap_or("forward"),
-                    None => "forward",
+                        .map(|t| t.direction)
+                        .unwrap_or(TagDirection::Forward),
+                    None => TagDirection::Forward,
                 };
-                if dir == "pingpong" {
+                if dir == TagDirection::Pingpong {
                     return Ok(json!({
                         "seam_score": 0.0,
                         "note": "pingpong loops reverse at the ends — no last→first seam",
@@ -694,7 +687,7 @@ impl Studio {
                 }
                 Ok(out)
             }
-            "spacing" => {
+            AnimAuditMode::Spacing => {
                 // Centre per played frame; offsets are step-to-step deltas.
                 // A frame whose silhouette has no opaque pixel in the region
                 // stays None — scoring it as motion to the canvas origin
@@ -769,7 +762,7 @@ impl Studio {
                 }
                 Ok(out)
             }
-            "arc" => {
+            AnimAuditMode::Arc => {
                 // Trajectory shape: does the centre follow an arc (good for
                 // jumps/swings) or a straight slide? Plus volume constancy —
                 // squash/stretch should trade height for width, not vanish.
@@ -831,7 +824,7 @@ impl Studio {
                 }
                 Ok(out)
             }
-            "timing" => {
+            AnimAuditMode::Timing => {
                 let durs: Vec<u32> = seq
                     .iter()
                     .map(|&f| doc.meta().frames[f].duration_ms)
@@ -851,10 +844,6 @@ impl Studio {
                 }
                 Ok(out)
             }
-            other => Err(format!(
-                "unknown mode '{}' — use seam|spacing|arc|timing",
-                other
-            )),
         }
     }
 }
@@ -1060,8 +1049,10 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
 
 #[cfg(test)]
 mod tests {
-    use super::Studio;
-    use super::{circular_summary, form_audit_image};
+    use super::{
+        AnimAuditMode, DiffRender, DumpMode, Studio, TagDirection, circular_summary,
+        form_audit_image,
+    };
     use serde_json::{Value, json};
 
     fn studio(tag: &str) -> Studio {
@@ -1097,18 +1088,21 @@ mod tests {
             json!({"points": [[1, 0]], "color": [40, 50, 60, 255]}),
         );
         let sym = s
-            .doc_dump_region(id, 0, None, Some((0, 0, 1, 0)), "symbol")
+            .doc_dump_region(id, 0, None, Some((0, 0, 1, 0)), DumpMode::Symbol)
             .unwrap();
         assert_eq!(sym["rows"][0], "AB"); // first-seen order
         assert_eq!(sym["legend"]["A"], "#0a141eff");
         let hx = s
-            .doc_dump_region(id, 0, None, Some((0, 0, 2, 0)), "hex")
+            .doc_dump_region(id, 0, None, Some((0, 0, 2, 0)), DumpMode::Hex)
             .unwrap();
         assert_eq!(hx["rows"][0], "#0a141e #28323c ."); // opaque, opaque, transparent
         // area cap rejects oversized regions
         let big = s.doc_new("big", 128, 128).unwrap();
         let big_id = big["doc_id"].as_str().unwrap();
-        assert!(s.doc_dump_region(big_id, 0, None, None, "symbol").is_err());
+        assert!(
+            s.doc_dump_region(big_id, 0, None, None, DumpMode::Symbol)
+                .is_err()
+        );
     }
 
     #[test]
@@ -1210,7 +1204,7 @@ mod tests {
     }
 
     #[test]
-    fn look_grayscale_writes_file_and_reports() {
+    fn look_value_writes_file_and_reports() {
         let s = studio("renderval");
         let created = s.doc_new("d", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap();
@@ -1236,7 +1230,7 @@ mod tests {
                 0,
                 &crate::LookOptions {
                     scale: Some(1),
-                    mode: "grayscale".into(),
+                    mode: crate::LookMode::Value,
                     out_path: out.to_str().map(|s| s.to_string()),
                     ..Default::default()
                 },
@@ -1250,19 +1244,6 @@ mod tests {
         assert_eq!(v["max"], json!(255)); // white luma
         assert_eq!(v["mean"], json!(128)); // (0+255)/2 rounded
         assert_eq!(v["contrast"], json!(1.0)); // full value range
-        // unknown mode is an actionable error
-        assert!(
-            s.look(
-                id,
-                0,
-                &crate::LookOptions {
-                    scale: Some(1),
-                    mode: "bogus".into(),
-                    ..Default::default()
-                }
-            )
-            .is_err()
-        );
     }
 
     #[test]
@@ -1332,7 +1313,7 @@ mod tests {
             json!({"points": [[1, 1]], "color": [0, 255, 0, 255]}),
         );
         let (png, r) = s
-            .doc_frame_diff(id, 0, 1, None, None, true, "none", None, 1)
+            .doc_frame_diff(id, 0, 1, None, None, true, DiffRender::None, None, 1)
             .unwrap();
         assert!(png.is_none()); // render="none" → no inline overlay
         // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
@@ -1346,16 +1327,21 @@ mod tests {
         // overlay render writes a PNG and returns the bytes for inlining
         let out = s.docs_dir.join("diff.png");
         let (ov_png, ov) = s
-            .doc_frame_diff(id, 0, 1, None, None, false, "overlay", out.to_str(), 1)
+            .doc_frame_diff(
+                id,
+                0,
+                1,
+                None,
+                None,
+                false,
+                DiffRender::Overlay,
+                out.to_str(),
+                1,
+            )
             .unwrap();
         assert!(out.exists());
         assert!(ov_png.is_some());
         assert_eq!(ov["path"], json!(out.to_string_lossy()));
-        // unknown render mode is an actionable error
-        assert!(
-            s.doc_frame_diff(id, 0, 1, None, None, false, "bogus", None, 1)
-                .is_err()
-        );
     }
 
     #[test]
@@ -1379,7 +1365,9 @@ mod tests {
                        "color": [200, 40, 40, 255], "fill": true}),
             );
         }
-        let seam = s.doc_anim_audit(id, None, None, "seam", None).unwrap();
+        let seam = s
+            .doc_anim_audit(id, None, None, AnimAuditMode::Seam, None)
+            .unwrap();
         // Absolute ratio is high (everything moved)…
         assert!(seam["seam_score"].as_f64().unwrap() > 0.5);
         // …but calibration says the wrap is a normal step.
@@ -1423,23 +1411,26 @@ mod tests {
             json!({"x0": 4, "y0": 0, "x1": 5, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
         );
         // spacing: even rightward drift → low evenness, positive total drift.
-        let sp = s.doc_anim_audit(id, None, None, "spacing", None).unwrap();
+        let sp = s
+            .doc_anim_audit(id, None, None, AnimAuditMode::Spacing, None)
+            .unwrap();
         assert_eq!(sp["per_frame_center"].as_array().unwrap().len(), 3);
         assert_eq!(sp["per_frame_offset"].as_array().unwrap().len(), 2);
         assert!(sp["total_drift"][0].as_f64().unwrap() > 0.0); // moved right
         assert_eq!(sp["evenness"], json!(0.0)); // two equal 2px steps
         // seam: last frame vs first differ → non-zero score
-        let seam = s.doc_anim_audit(id, None, None, "seam", None).unwrap();
+        let seam = s
+            .doc_anim_audit(id, None, None, AnimAuditMode::Seam, None)
+            .unwrap();
         assert!(seam["seam_score"].as_f64().unwrap() > 0.0);
         assert_eq!(seam["frames"], json!([2, 0]));
         // pingpong tag → no seam (score 0 + note)
-        s.doc_add_tag(id, "pp", 0, 2, "pingpong").unwrap();
+        s.doc_add_tag(id, "pp", 0, 2, TagDirection::Pingpong)
+            .unwrap();
         let pp = s
-            .doc_anim_audit(id, Some("pp"), None, "seam", None)
+            .doc_anim_audit(id, Some("pp"), None, AnimAuditMode::Seam, None)
             .unwrap();
         assert_eq!(pp["seam_score"], json!(0.0));
         assert!(pp["note"].is_string());
-        // bad mode errors
-        assert!(s.doc_anim_audit(id, None, None, "bogus", None).is_err());
     }
 }

@@ -16,7 +16,7 @@ use serde_json::{Value, json};
 
 use atelier_mcp::recipe::{Recipe, Step};
 use atelier_mcp::server::{self, Atelier};
-use atelier_studio::Studio;
+use atelier_studio::{Studio, ToolName};
 use rmcp::model::CallToolResult;
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
@@ -147,7 +147,7 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
     let mut ids: HashMap<String, String> = HashMap::new();
     for (idx, step) in recipe.steps.iter().enumerate() {
         let mut args = step.args.clone();
-        let recorded = if step.tool == "doc_new" {
+        let recorded = if step.tool == ToolName::DocNew {
             match new_recorded_id(step, &mut args, recipe.is_journal()) {
                 Ok(recorded) => recorded,
                 Err(error) => {
@@ -162,10 +162,11 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
             }
             None
         };
-        let result = match atelier.dispatch(&step.tool, args, "replay").await {
+        let result = match atelier.dispatch(step.tool, args, "replay").await {
             Ok(result) => result,
-            // Protocol error (unknown tool, malformed args, …) — a recipe is a
-            // narrative, so the first failed step ends the run.
+            // Protocol error (malformed args) — recipe parsing already rejects
+            // unknown tools. A recipe is a narrative, so the first failed step
+            // ends the run.
             Err(e) => {
                 print_step(idx, step, &format!("ERROR {e}"));
                 return Err(format!("step {} ({}) failed: {e}", idx + 1, step.tool));
@@ -312,7 +313,7 @@ mod tests {
         let r = Recipe::parse(src).expect("should parse");
         assert_eq!(r.name, "demo");
         assert_eq!(r.steps.len(), 2);
-        assert_eq!(r.steps[0].tool, "doc_new");
+        assert_eq!(r.steps[0].tool, ToolName::DocNew);
         assert_eq!(r.steps[1].note.as_deref(), Some("inspect"));
     }
 
@@ -342,7 +343,7 @@ mod tests {
     #[test]
     fn new_identity_separates_journals_from_authored_bindings() {
         let journal_step = Step {
-            tool: "doc_new".into(),
+            tool: ToolName::DocNew,
             args: json!({}),
             bind: None,
             note: None,
@@ -363,7 +364,7 @@ mod tests {
 
         // An authored recipe names the returned value rather than predicting it.
         let authored_step = Step {
-            tool: "doc_new".into(),
+            tool: ToolName::DocNew,
             args: json!({}),
             bind: Some("hero".into()),
             note: None,
@@ -444,8 +445,9 @@ mod tests {
     #[tokio::test]
     async fn replayed_document_renders_pixel_identical_to_the_original() {
         async fn dispatch_ok(atelier: &Atelier, tool: &str, args: Value) -> Value {
+            let name = tool.parse::<ToolName>().unwrap();
             let r = atelier
-                .dispatch(tool, args, "test")
+                .dispatch(name, args, "test")
                 .await
                 .expect("dispatch");
             assert!(

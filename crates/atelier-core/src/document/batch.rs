@@ -27,12 +27,7 @@ impl Document {
                 let name = value
                     .as_str()
                     .ok_or_else(|| format!("blend_mode must be a string, got {value}"))?;
-                Some(raster::parse_blend(name).ok_or_else(|| {
-                    format!(
-                        "unknown blend_mode '{name}' — valid: {}",
-                        raster::BLEND_NAMES
-                    )
-                })?)
+                Some(name.parse::<raster::Blend>()?)
             }
         };
         let erase = op.get("erase").and_then(|v| v.as_bool()).unwrap_or(false);
@@ -797,13 +792,18 @@ fn op_gradient_map(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(
 }
 
 fn op_glow(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), String> {
+    let blend = op
+        .get("mode")
+        .and_then(|v| v.as_str())
+        .unwrap_or("screen")
+        .parse::<raster::Blend>()?;
     d.glow(
         l,
         f,
         op.get("color").map(|_| col(op, "color")),
         gi(op, "radius", 2),
         op.get("intensity").and_then(|v| v.as_u64()).unwrap_or(180) as u8,
-        op.get("mode").and_then(|v| v.as_str()).unwrap_or("screen"),
+        blend,
     )
 }
 
@@ -1027,12 +1027,8 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
         let name = value
             .as_str()
             .ok_or_else(|| format!("op[{idx}] ({kind}): 'blend_mode' must be a string"))?;
-        if !raster::valid_blend(name) {
-            return Err(format!(
-                "op[{idx}] ({kind}): unknown blend_mode '{name}' — valid: {}",
-                raster::BLEND_NAMES
-            ));
-        }
+        name.parse::<raster::Blend>()
+            .map_err(|error| format!("op[{idx}] ({kind}): {error}"))?;
     }
     if let Some(value) = obj.get("erase")
         && !value.is_boolean()

@@ -1,6 +1,20 @@
 //! Colour math: HSL and OKLab/OKLCh conversions, shading
 //! ramps and palette machinery (nearest-colour, median-cut quantisation).
 
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum SaturationCurve {
+    #[serde(rename = "flat")]
+    Flat,
+    #[default]
+    #[serde(rename = "arc")]
+    Arc,
+    #[serde(rename = "sat-in-shadow")]
+    SaturatedShadows,
+}
+
 /// Manhattan colour distance over all 4 channels within tolerance.
 pub fn close(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
     let d: i32 = (0..4).map(|i| (a[i] as i32 - b[i] as i32).abs()).sum();
@@ -283,7 +297,7 @@ pub fn make_ramp_oklch(
     value_lo: f32,
     value_hi: f32,
     hue_shift: f32,
-    sat_curve: &str,
+    sat_curve: SaturationCurve,
     anchor_midtone: bool,
 ) -> Vec<[u8; 4]> {
     let count = count.max(1);
@@ -302,12 +316,11 @@ pub fn make_ramp_oklch(
             let l = value_lo + (value_hi - value_lo) * t;
             let h = hb + (t - 0.5) * hue_shift;
             let c = match sat_curve {
-                "flat" => cb,
+                SaturationCurve::Flat => cb,
                 // peak chroma at the midtone, falling toward both ends
-                "arc" => cb * (1.0 - 0.55 * (2.0 * t - 1.0).powi(2)),
+                SaturationCurve::Arc => cb * (1.0 - 0.55 * (2.0 * t - 1.0).powi(2)),
                 // richer colour in the shadows, desaturating into the light
-                "sat-in-shadow" => cb * (1.15 - 0.5 * t),
-                _ => cb,
+                SaturationCurve::SaturatedShadows => cb * (1.15 - 0.5 * t),
             }
             .max(0.0);
             // Gamut-map: a vivid step reduces chroma to fit sRGB (even
