@@ -14,6 +14,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use image::{Rgba, RgbaImage};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
@@ -32,7 +33,9 @@ mod timeline;
 mod tests;
 
 pub use batch::{color_array, draw_ops, fx_ops, validate_batch_op};
-pub use render::seam_axis_img;
+pub use fx::{DitherAxis, DitherPattern};
+pub use render::{ValueView, seam_axis_img};
+pub use timeline::FrameAction;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
@@ -43,7 +46,7 @@ pub struct LayerMeta {
     /// Compositing mode: normal/multiply/screen/add/overlay/soft-light/
     /// hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/
     /// exclusion. Only canonical values are accepted.
-    pub blend: String,
+    pub blend: raster::Blend,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -52,13 +55,38 @@ pub struct FrameMeta {
     pub duration_ms: u32,
 }
 
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum TagDirection {
+    #[default]
+    Forward,
+    Reverse,
+    Pingpong,
+}
+
+impl TagDirection {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Forward => "forward",
+            Self::Reverse => "reverse",
+            Self::Pingpong => "pingpong",
+        }
+    }
+}
+
+impl std::fmt::Display for TagDirection {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(self.as_str())
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct TagMeta {
     pub name: String,
     pub from: usize,
     pub to: usize,
-    pub direction: String, // "forward" | "reverse" | "pingpong"
+    pub direction: TagDirection,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -129,15 +157,6 @@ fn validate_meta(meta: &DocMeta) -> Result<(), String> {
     if meta.frames.is_empty() {
         return Err("document must contain at least one frame".into());
     }
-    for (index, layer) in meta.layers.iter().enumerate() {
-        if !raster::valid_blend(&layer.blend) {
-            return Err(format!(
-                "layer {index} has unknown blend '{}' — valid: {}",
-                layer.blend,
-                raster::BLEND_NAMES
-            ));
-        }
-    }
     for tag in &meta.tags {
         if tag.from > tag.to || tag.to >= meta.frames.len() {
             return Err(format!(
@@ -146,12 +165,6 @@ fn validate_meta(meta: &DocMeta) -> Result<(), String> {
                 tag.from,
                 tag.to,
                 meta.frames.len()
-            ));
-        }
-        if !matches!(tag.direction.as_str(), "forward" | "reverse" | "pingpong") {
-            return Err(format!(
-                "tag '{}' has unknown direction '{}'",
-                tag.name, tag.direction
             ));
         }
     }
@@ -263,7 +276,7 @@ impl Document {
                 name: "Layer 1".into(),
                 opacity: 255,
                 visible: true,
-                blend: "normal".into(),
+                blend: raster::Blend::Normal,
             }],
             frames: vec![FrameMeta {
                 duration_ms: DEFAULT_FRAME_MS,
@@ -370,18 +383,7 @@ impl Document {
     // -- structure ----------------------------------------------------------
 
     /// Append a new layer on top; returns its index.
-    pub fn add_layer(
-        &mut self,
-        name: Option<String>,
-        opacity: u8,
-        blend: String,
-    ) -> Result<usize, String> {
-        if !raster::valid_blend(&blend) {
-            return Err(format!(
-                "unknown blend '{blend}' — valid: {}",
-                raster::BLEND_NAMES
-            ));
-        }
+    pub fn add_layer(&mut self, name: Option<String>, opacity: u8, blend: raster::Blend) -> usize {
         let idx = self.meta.layers.len();
         self.meta.layers.push(LayerMeta {
             name: name.unwrap_or_else(|| format!("Layer {}", idx + 1)),
@@ -389,7 +391,7 @@ impl Document {
             visible: true,
             blend,
         });
-        Ok(idx)
+        idx
     }
 
     /// Patch a layer's visibility / opacity / blend (each optional).
@@ -398,16 +400,8 @@ impl Document {
         layer: usize,
         visible: Option<bool>,
         opacity: Option<u8>,
-        blend: Option<String>,
+        blend: Option<raster::Blend>,
     ) -> Result<(), String> {
-        if let Some(blend) = &blend
-            && !raster::valid_blend(blend)
-        {
-            return Err(format!(
-                "unknown blend '{blend}' — valid: {}",
-                raster::BLEND_NAMES
-            ));
-        }
         let l = self
             .meta
             .layers
@@ -468,14 +462,8 @@ impl Document {
         index: usize,
         name: Option<String>,
         opacity: u8,
-        blend: String,
-    ) -> Result<usize, String> {
-        if !raster::valid_blend(&blend) {
-            return Err(format!(
-                "unknown blend '{blend}' — valid: {}",
-                raster::BLEND_NAMES
-            ));
-        }
+        blend: raster::Blend,
+    ) -> usize {
         let n = self.meta.layers.len();
         let index = index.min(n);
         self.meta.layers.insert(
@@ -488,7 +476,7 @@ impl Document {
             },
         );
         self.remap_cel_layers(|old| Some(if old >= index { old + 1 } else { old }));
-        Ok(index)
+        index
     }
 
     /// Delete a layer and its cels (cannot remove the last remaining layer).
@@ -560,8 +548,7 @@ impl Document {
         }
         let lower = index - 1;
         let upper = self.meta.layers[index].clone();
-        let blend = raster::parse_blend(&upper.blend)
-            .expect("document layer blend was validated on load or mutation");
+        let blend = upper.blend;
         for f in 0..self.meta.frames.len() {
             if !self.cels.contains_key(&(index, f)) {
                 continue;
@@ -615,7 +602,7 @@ impl Document {
         name: &str,
         from: usize,
         to: usize,
-        direction: &str,
+        direction: TagDirection,
     ) -> Result<(), String> {
         if from > to || to >= self.meta.frames.len() {
             return Err(format!(
@@ -629,7 +616,7 @@ impl Document {
             name: name.into(),
             from,
             to,
-            direction: direction.into(),
+            direction,
         });
         Ok(())
     }

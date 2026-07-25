@@ -6,6 +6,14 @@ use crate::raster;
 
 use super::{Document, FrameDiff};
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ValueView {
+    Grayscale,
+    Bands,
+    Saturation,
+    Hue,
+}
+
 impl Document {
     // -- render / export ----------------------------------------------------
 
@@ -25,11 +33,17 @@ impl Document {
         }
     }
 
-    /// Render a frame into analysis space: each opaque pixel becomes a grey level
-    /// derived from `mode` (transparency preserved). "grayscale" = luma; "bands" =
-    /// luma posterised into `bands` even steps; "saturation"/"hue" = that HSL
-    /// channel scaled to 0..255 grey. The shared core behind doc_look's value modes.
-    pub fn value_image(&self, frame: usize, mode: &str, bands: u32) -> Result<RgbaImage, String> {
+    /// Render a frame into analysis space: each opaque pixel becomes a grey
+    /// level derived from `mode` (transparency preserved). `Grayscale` uses
+    /// luma, `Bands` posterises luma into `bands` even steps, and
+    /// `Saturation`/`Hue` scale that HSL channel to 0..255 grey. The shared
+    /// core behind `doc_look`'s value modes.
+    pub fn value_image(
+        &self,
+        frame: usize,
+        mode: ValueView,
+        bands: u32,
+    ) -> Result<RgbaImage, String> {
         let src = self.analysis_image(None, frame)?;
         let bands = bands.max(1);
         let mut out = RgbaImage::from_pixel(src.width(), src.height(), Rgba([0, 0, 0, 0]));
@@ -39,8 +53,8 @@ impl Document {
                 continue;
             }
             let g = match mode {
-                "grayscale" => raster::luma(c),
-                "bands" => {
+                ValueView::Grayscale => raster::luma(c),
+                ValueView::Bands => {
                     // Posterise luma into `bands` even buckets, spread back to 0..255.
                     let l = raster::luma(c) as u32;
                     let b = (l * bands / 256).min(bands - 1);
@@ -50,16 +64,10 @@ impl Document {
                         (b * 255 / (bands - 1)) as u8
                     }
                 }
-                "saturation" => (raster::saturation(c) * 255.0).round() as u8,
-                "hue" => (raster::hue_deg(c) / 360.0 * 255.0)
+                ValueView::Saturation => (raster::saturation(c) * 255.0).round() as u8,
+                ValueView::Hue => (raster::hue_deg(c) / 360.0 * 255.0)
                     .round()
                     .clamp(0.0, 255.0) as u8,
-                other => {
-                    return Err(format!(
-                        "unknown value mode '{}' — use grayscale|bands|saturation|hue",
-                        other
-                    ));
-                }
             };
             out.put_pixel(x, y, Rgba([g, g, g, c[3]]));
         }
@@ -73,15 +81,7 @@ impl Document {
                 continue;
             }
             if let Some((cx, cy, img)) = self.cels.get(&(li, frame)) {
-                raster::composite(
-                    &mut out,
-                    img,
-                    *cx,
-                    *cy,
-                    layer.opacity,
-                    raster::parse_blend(&layer.blend)
-                        .expect("document layer blend was validated on load or mutation"),
-                );
+                raster::composite(&mut out, img, *cx, *cy, layer.opacity, layer.blend);
             }
         }
         out

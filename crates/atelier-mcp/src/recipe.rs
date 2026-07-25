@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashSet;
 
-use atelier_studio::{JournalEntry, validate_journal};
+use atelier_studio::{JournalEntry, ToolName, validate_journal};
 
 #[derive(Debug, Default, PartialEq, Eq)]
 enum RecipeSource {
@@ -28,7 +28,7 @@ pub struct Recipe {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Step {
-    pub tool: String,
+    pub tool: ToolName,
     pub args: Value,
     /// Authored recipes bind `doc_new`'s returned id under this name. Later
     /// document targets refer to it explicitly as `$name`. Journals never bind:
@@ -81,9 +81,6 @@ impl Recipe {
         }
         let mut bindings = HashSet::new();
         for (index, step) in recipe.steps.iter().enumerate() {
-            if step.tool.is_empty() {
-                return Err(format!("step {} has an empty tool name", index + 1));
-            }
             if !step.args.is_object() {
                 return Err(format!(
                     "step {} ({}) args must be a JSON object",
@@ -101,7 +98,7 @@ impl Recipe {
             if recipe.is_journal() {
                 continue;
             }
-            if step.tool == "doc_new" {
+            if step.tool == ToolName::DocNew {
                 if step.args.get("doc_id").is_some() {
                     return Err(format!(
                         "step {} (doc_new) may not set doc_id; bind its returned id instead",
@@ -231,7 +228,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(r.name, "n");
-        assert_eq!(r.steps[0].tool, "doc_new");
+        assert_eq!(r.steps[0].tool, ToolName::DocNew);
     }
 
     #[test]
@@ -272,7 +269,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(r.steps.len(), 1);
-        assert_eq!(r.steps[0].tool, "doc_new");
+        assert_eq!(r.steps[0].tool, ToolName::DocNew);
 
         // Complete but invalid JSON is authoring corruption, not a torn write.
         let invalid = "{\"tool\":\"doc_new\",\"args\":{}}\n{\"args\":{}}\n";

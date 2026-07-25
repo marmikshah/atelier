@@ -10,7 +10,8 @@ use image::{Rgba, RgbaImage};
 use serde_json::{Value, json};
 
 use super::craft::{MID_MAX, SHADOW_MAX, crop_region};
-use super::{Studio, encode_png, scale_nn};
+use super::{LookBackground, LookMode, Studio, encode_png, scale_nn};
+use atelier_core::document::ValueView;
 use atelier_core::raster;
 
 /// Alpha-composite one pixel onto `img` (source-over) — for overlays that must
@@ -159,8 +160,8 @@ pub struct LookOptions {
     pub scale: Option<u32>,
     /// Crop region `[x0,y0,x1,y1]` in document pixels.
     pub region: Option<(i32, i32, i32, i32)>,
-    /// render | value/grayscale | bands | sat | hue | notan. Empty = render.
-    pub mode: String,
+    /// render | value | bands | sat | hue | notan.
+    pub mode: LookMode,
     /// Band count for bands mode (0 = default 4).
     pub bands: u32,
     /// Burn a pixel ruler into the upscale.
@@ -177,30 +178,26 @@ pub struct LookOptions {
     pub out_path: Option<String>,
     /// Matte transparency for viewing: checker | dark | white. None keeps the
     /// alpha channel (most viewers show it on white, which hides light pixels).
-    pub bg: Option<String>,
+    pub bg: Option<LookBackground>,
 }
 
 /// Composite `img` over an opaque backdrop: `checker` (two-tone transparency
 /// grid, cells sized to read at the applied scale), `dark`, or `white`.
-fn matte(img: &RgbaImage, bg: &str, scale: u32) -> Result<RgbaImage, String> {
+fn matte(img: &RgbaImage, bg: LookBackground, scale: u32) -> RgbaImage {
     let cell = (scale.max(1) * 4).max(4);
     let color_at = |x: u32, y: u32| -> [u8; 4] {
         match bg {
-            "checker" => {
+            LookBackground::Checker => {
                 if ((x / cell) + (y / cell)).is_multiple_of(2) {
                     [58, 62, 76, 255]
                 } else {
                     [40, 43, 54, 255]
                 }
             }
-            "dark" => [24, 26, 32, 255],
-            "white" => [255, 255, 255, 255],
-            _ => [0, 0, 0, 0], // unreachable; validated below
+            LookBackground::Dark => [24, 26, 32, 255],
+            LookBackground::White => [255, 255, 255, 255],
         }
     };
-    if !matches!(bg, "checker" | "dark" | "white") {
-        return Err(format!("unknown bg '{bg}' — use checker|dark|white"));
-    }
     let mut out = RgbaImage::new(img.width(), img.height());
     for (x, y, p) in img.enumerate_pixels() {
         let b = color_at(x, y);
@@ -217,7 +214,7 @@ fn matte(img: &RgbaImage, bg: &str, scale: u32) -> Result<RgbaImage, String> {
             ]),
         );
     }
-    Ok(out)
+    out
 }
 
 impl Studio {
@@ -225,8 +222,8 @@ impl Studio {
 
     /// Flatten a frame (or an analysis-space view of it) to inline PNG bytes
     /// plus measured stats — the agent's primary eye. `mode`: `render` |
-    /// `value`/`grayscale` | `bands` | `sat` | `hue` | `notan`. `grid`/`coords`
-    /// burn a pixel ruler into the upscale. Returns `(png_bytes, stats)`.
+    /// `value` | `bands` | `sat` | `hue` | `notan`. `grid`/`coords` burn a
+    /// pixel ruler into the upscale. Returns `(png_bytes, stats)`.
     pub fn look(
         &self,
         id: &str,
@@ -248,11 +245,7 @@ impl Studio {
         } = opts;
         let (scale, region, max_size, tile) = (*scale, *region, *max_size, *tile);
         let (grid, coords, onion) = (*grid, *coords, *onion);
-        let mode = if mode.is_empty() {
-            "render"
-        } else {
-            mode.as_str()
-        };
+        let mode = *mode;
         let bands = if *bands == 0 { 4 } else { (*bands).min(256) };
         let out_path = out_path.as_deref();
         let (_dir, doc) = self.open(id)?;
@@ -268,32 +261,26 @@ impl Studio {
         let scale = scale.unwrap_or_else(|| crate::preview_scale(doc.meta().w, doc.meta().h));
         // Native, full-canvas image for the requested mode.
         let native = match mode {
-            "render" => {
+            LookMode::Render => {
                 if onion {
                     doc.render_preview(frame, 1, None, true, 1, None)?
                 } else {
                     doc.flatten(frame)
                 }
             }
-            "value" | "grayscale" => doc.value_image(frame, "grayscale", 1)?,
-            "bands" => doc.value_image(frame, "bands", bands.max(2))?,
-            "sat" | "saturation" => doc.value_image(frame, "saturation", 1)?,
-            "hue" => doc.value_image(frame, "hue", 1)?,
+            LookMode::Value => doc.value_image(frame, ValueView::Grayscale, 1)?,
+            LookMode::Bands => doc.value_image(frame, ValueView::Bands, bands.max(2))?,
+            LookMode::Saturation => doc.value_image(frame, ValueView::Saturation, 1)?,
+            LookMode::Hue => doc.value_image(frame, ValueView::Hue, 1)?,
             // Notan = 3-value massing (dark / mid / light) — the squint test.
-            "notan" => doc.value_image(frame, "bands", 3)?,
-            other => {
-                return Err(format!(
-                    "unknown look mode '{}' — use render|value|bands|sat|hue|notan",
-                    other
-                ));
-            }
+            LookMode::Notan => doc.value_image(frame, ValueView::Bands, 3)?,
         };
         let (view, ox, oy) = crop_region(&native, region)?;
         // Per-band coverage is the value-structure read; meaningful only for the
         // posterised modes (carried over from the retired doc_render_value).
         let band_arg = match mode {
-            "bands" => Some(bands.max(2)),
-            "notan" => Some(3),
+            LookMode::Bands => Some(bands.max(2)),
+            LookMode::Notan => Some(3),
             _ => None,
         };
         let stats = look_stats(&view, band_arg);
@@ -324,8 +311,8 @@ impl Studio {
         // Matte transparency on request — a white viewer backdrop (the common
         // default) makes white-hot FX pixels invisible; checker/dark keep the
         // silhouette readable. Applied under the art, before the grid overlay.
-        if let Some(bg) = bg.as_deref() {
-            out = matte(&out, bg, applied_scale)?;
+        if let Some(bg) = *bg {
+            out = matte(&out, bg, applied_scale);
         }
         if grid && applied_scale >= 2 {
             // Aim for ~8px native grid cells; at least every pixel boundary.
@@ -470,19 +457,22 @@ mod tests {
     }
 
     #[test]
-    fn matte_makes_transparency_opaque_and_rejects_unknown_bg() {
+    fn matte_makes_transparency_opaque() {
         // A white viewer backdrop hides white-hot FX pixels — the matte is how
         // the agent actually sees them.
         let img = RgbaImage::from_pixel(8, 8, image::Rgba([255, 255, 255, 0]));
-        for bg in ["checker", "dark", "white"] {
-            let out = matte(&img, bg, 4).unwrap();
-            assert!(out.pixels().all(|p| p.0[3] == 255), "{bg}: fully opaque");
+        for bg in [
+            LookBackground::Checker,
+            LookBackground::Dark,
+            LookBackground::White,
+        ] {
+            let out = matte(&img, bg, 4);
+            assert!(out.pixels().all(|p| p.0[3] == 255), "{bg:?}: fully opaque");
         }
         // Checker must alternate (two distinct backdrop tones visible).
-        let out = matte(&img, "checker", 1).unwrap();
+        let out = matte(&img, LookBackground::Checker, 1);
         let tones: std::collections::HashSet<[u8; 4]> = out.pixels().map(|p| p.0).collect();
         assert_eq!(tones.len(), 2, "checker shows two cells");
-        assert!(matte(&img, "plaid", 1).is_err());
     }
 
     #[test]
@@ -492,16 +482,11 @@ mod tests {
         let id = created["doc_id"].as_str().unwrap();
         let opts = LookOptions {
             scale: Some(1),
-            bg: Some("dark".into()),
+            bg: Some(LookBackground::Dark),
             ..Default::default()
         };
         let (png, _) = s.look(id, 0, &opts).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
-        let bad = LookOptions {
-            bg: Some("plaid".into()),
-            ..Default::default()
-        };
-        assert!(s.look(id, 0, &bad).is_err());
     }
 }
 

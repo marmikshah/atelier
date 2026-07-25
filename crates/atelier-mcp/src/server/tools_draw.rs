@@ -67,7 +67,7 @@ impl Atelier {
         params::revive_params(&mut p.params);
         res(self
             .studio()
-            .doc_draw(&p.doc_id, p.layer, p.frame, &p.op, p.params))
+            .doc_draw(&p.doc_id, p.layer, p.frame, p.op.as_str(), p.params))
     }
 
     #[tool(
@@ -77,7 +77,7 @@ impl Atelier {
         params::revive_params(&mut p.params);
         res(self
             .studio()
-            .doc_fx(&p.doc_id, p.layer, p.frame, &p.op, p.params))
+            .doc_fx(&p.doc_id, p.layer, p.frame, p.op.as_str(), p.params))
     }
 
     #[tool(
@@ -86,7 +86,7 @@ impl Atelier {
     pub(crate) async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         edited(
             self.studio()
-                .doc_region(&p.doc_id, &p.op, p.layer, p.frame, Some(p.rect), p.offset),
+                .doc_region(&p.doc_id, p.op, p.layer, p.frame, Some(p.rect), p.offset),
         )
     }
 
@@ -121,10 +121,10 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
-            try_res!(region(&p.region)),
+            region(p.region),
             try_res!(palette_list(&p.ramp)),
-            p.axis.as_deref().unwrap_or("v"),
-            p.pattern.as_deref().unwrap_or("bayer4"),
+            p.axis.unwrap_or_default(),
+            p.pattern.unwrap_or_default(),
             p.only_existing.unwrap_or(true),
         ))
     }

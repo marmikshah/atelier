@@ -13,7 +13,7 @@ use rmcp::service::RequestContext;
 use rmcp::{ErrorData, RoleServer, ServerHandler, tool_handler};
 use serde_json::{Value, json};
 
-use atelier_studio::Studio;
+use atelier_studio::{AlphaMode, Studio, ToolName};
 
 mod params;
 mod toolsdoc;
@@ -128,36 +128,24 @@ fn rgba(v: &[i64]) -> Result<[u8; 4], String> {
 /// The one place the mode strings are known — an unknown mode errors here
 /// instead of silently mapping to Preserve.
 fn alpha_snap(
-    mode: Option<&str>,
+    mode: AlphaMode,
     cutoff: Option<u8>,
     bg: Option<&[i64]>,
 ) -> Result<atelier_core::document::AlphaSnap, String> {
     use atelier_core::document::AlphaSnap;
-    match mode.unwrap_or("preserve") {
-        "preserve" => Ok(AlphaSnap::Preserve),
-        "opaque" => Ok(AlphaSnap::Opaque(cutoff.unwrap_or(128))),
-        "flatten" => Ok(AlphaSnap::Flatten(match bg {
+    match mode {
+        AlphaMode::Preserve => Ok(AlphaSnap::Preserve),
+        AlphaMode::Opaque => Ok(AlphaSnap::Opaque(cutoff.unwrap_or(128))),
+        AlphaMode::Flatten => Ok(AlphaSnap::Flatten(match bg {
             Some(b) => rgba(b)?,
             None => [0, 0, 0, 255],
         })),
-        m => Err(format!(
-            "unknown alpha mode '{m}' — use preserve | opaque | flatten"
-        )),
     }
 }
 
-/// Optional [x0,y0,x1,y1] -> (x0,y0,x1,y1). A region that is present but
-/// shorter than 4 numbers is an agent mistake — error loudly instead of
-/// silently acting on the whole canvas.
-fn region(r: &Option<Vec<i32>>) -> Result<Option<(i32, i32, i32, i32)>, String> {
-    match r {
-        None => Ok(None),
-        Some(v) if v.len() >= 4 => Ok(Some((v[0], v[1], v[2], v[3]))),
-        Some(v) => Err(format!(
-            "region needs 4 numbers [x0,y0,x1,y1], got {} — omit it to act on the whole canvas",
-            v.len()
-        )),
-    }
+/// Fixed-size JSON region -> the tuple used by the document APIs.
+fn region(value: Option<[i32; 4]>) -> Option<(i32, i32, i32, i32)> {
+    value.map(|[x0, y0, x1, y1]| (x0, y0, x1, y1))
 }
 
 /// Unwrap a parse result inside a tool method, or return it as the tool error.
@@ -254,7 +242,7 @@ fn call_op(args: &Value) -> Option<&str> {
 /// `warn`. This is the observability for the whole tool surface; keep it on
 /// the single dispatch path so no tool can dodge it.
 fn log_call(
-    tool: &str,
+    tool: ToolName,
     args: &Value,
     caller: &str,
     result: &rmcp::model::CallToolResult,
@@ -276,7 +264,9 @@ fn log_call(
                 .unwrap_or_else(|| e.to_string())
         })
     }) {
-        Some(error) => tracing::warn!(%tool, %op, %doc, %caller, ms, %error, "tool error"),
+        Some(error) => {
+            tracing::warn!(tool = tool.as_str(), %op, %doc, %caller, ms, %error, "tool error")
+        }
         None if is_error_result(result) => {
             // is_error without a JSON error payload: surface what text there is.
             let text = result
@@ -285,9 +275,9 @@ fn log_call(
                 .and_then(|c| c.as_text())
                 .map(|t| t.text.clone())
                 .unwrap_or_default();
-            tracing::warn!(%tool, %op, %doc, %caller, ms, error = %text, "tool error");
+            tracing::warn!(tool = tool.as_str(), %op, %doc, %caller, ms, error = %text, "tool error");
         }
-        None => tracing::info!(%tool, %op, %doc, %caller, ms, "ok"),
+        None => tracing::info!(tool = tool.as_str(), %op, %doc, %caller, ms, "ok"),
     }
 }
 
@@ -392,7 +382,7 @@ impl Atelier {
     /// (`is_error_result`).
     pub async fn dispatch(
         &self,
-        tool: &str,
+        tool: ToolName,
         args: Value,
         caller: &str,
     ) -> Result<CallToolResult, ErrorData> {
@@ -423,10 +413,11 @@ impl Atelier {
         let started = std::time::Instant::now();
         let result = match self.invoke(tool, args.clone()).await {
             Ok(r) => r,
-            // Protocol-level failure (unknown tool, malformed params): the
-            // caller sees the error; make sure the operator does too.
+            // Protocol-level failure (malformed params): the caller sees the
+            // error; make sure the operator does too. Unknown names are
+            // rejected while constructing `ToolName`, before dispatch.
             Err(e) => {
-                tracing::error!(%tool, %caller, error = %e, "tool call failed (protocol error)");
+                tracing::error!(tool = tool.as_str(), %caller, error = %e, "tool call failed (protocol error)");
                 return Err(e);
             }
         };
@@ -447,7 +438,7 @@ impl Atelier {
     /// The router is now only the schema registry (it advertises the surface);
     /// this match is the dispatch — one path for every transport. The
     /// count-pin and dispatch-coverage tests keep the two in lockstep.
-    async fn invoke(&self, tool: &str, args: Value) -> Result<CallToolResult, ErrorData> {
+    async fn invoke(&self, tool: ToolName, args: Value) -> Result<CallToolResult, ErrorData> {
         /// Deserialize `args` into the tool's param struct and call its
         /// handler, mirroring rmcp's extractor: a param mismatch is a
         /// protocol-level invalid_params, never a tool result.
@@ -460,77 +451,52 @@ impl Atelier {
             }};
         }
         Ok(match tool {
-            "doc_new" => call!(DocNew, doc_new),
-            "list_docs" => call!(ListDocs, list_docs),
-            "doc_info" => call!(DocRef, doc_info),
-            "delete_doc" => call!(DocRef, delete_doc),
-            "doc_layer" => call!(DocLayer, doc_layer),
-            "doc_frame" => call!(DocFrame, doc_frame),
-            "doc_add_tag" => call!(DocAddTag, doc_add_tag),
-            "doc_checkpoint" => call!(DocCheckpoint, doc_checkpoint),
-            "doc_palette" => call!(DocPalette, doc_palette),
-            "doc_batch" => call!(DocBatch, doc_batch),
-            "doc_draw" => call!(DocDraw, doc_draw),
-            "doc_fx" => call!(DocFx, doc_fx),
-            "doc_region" => call!(DocRegion, doc_region),
-            "doc_paint_grid" => call!(DocPaintGrid, doc_paint_grid),
-            "doc_dither_ramp" => call!(DocDitherRamp, doc_dither_ramp),
-            "doc_look" => call!(DocLook, doc_look),
-            "doc_dump_region" => call!(DocDumpRegion, doc_dump_region),
-            "doc_silhouette" => call!(DocSilhouette, doc_silhouette),
-            "doc_components" => call!(DocComponents, doc_components),
-            "doc_frame_diff" => call!(DocFrameDiff, doc_frame_diff),
-            "doc_seam_report" => call!(DocSeamReport, doc_seam_report),
-            "doc_anim_audit" => call!(DocAnimAudit, doc_anim_audit),
-            "doc_critique" => call!(DocCritique, doc_critique),
-            "doc_contact_sheet" => call!(DocContactSheet, doc_contact_sheet),
-            "doc_ref" => call!(DocRefOp, doc_ref),
-            "doc_export" => call!(DocExport, doc_export),
-            _ => {
-                return Err(ErrorData::invalid_params(
-                    format!("unknown tool: {tool}"),
-                    None,
-                ));
-            }
+            ToolName::DocNew => call!(DocNew, doc_new),
+            ToolName::ListDocs => call!(ListDocs, list_docs),
+            ToolName::DocInfo => call!(DocRef, doc_info),
+            ToolName::DeleteDoc => call!(DocRef, delete_doc),
+            ToolName::DocLayer => call!(DocLayer, doc_layer),
+            ToolName::DocFrame => call!(DocFrame, doc_frame),
+            ToolName::DocAddTag => call!(DocAddTag, doc_add_tag),
+            ToolName::DocCheckpoint => call!(DocCheckpoint, doc_checkpoint),
+            ToolName::DocPalette => call!(DocPalette, doc_palette),
+            ToolName::DocBatch => call!(DocBatch, doc_batch),
+            ToolName::DocDraw => call!(DocDraw, doc_draw),
+            ToolName::DocFx => call!(DocFx, doc_fx),
+            ToolName::DocRegion => call!(DocRegion, doc_region),
+            ToolName::DocPaintGrid => call!(DocPaintGrid, doc_paint_grid),
+            ToolName::DocDitherRamp => call!(DocDitherRamp, doc_dither_ramp),
+            ToolName::DocLook => call!(DocLook, doc_look),
+            ToolName::DocDumpRegion => call!(DocDumpRegion, doc_dump_region),
+            ToolName::DocSilhouette => call!(DocSilhouette, doc_silhouette),
+            ToolName::DocComponents => call!(DocComponents, doc_components),
+            ToolName::DocFrameDiff => call!(DocFrameDiff, doc_frame_diff),
+            ToolName::DocSeamReport => call!(DocSeamReport, doc_seam_report),
+            ToolName::DocAnimAudit => call!(DocAnimAudit, doc_anim_audit),
+            ToolName::DocCritique => call!(DocCritique, doc_critique),
+            ToolName::DocContactSheet => call!(DocContactSheet, doc_contact_sheet),
+            ToolName::DocRef => call!(DocRefOp, doc_ref),
+            ToolName::DocExport => call!(DocExport, doc_export),
         })
     }
 }
 
-/// Tools that never change the document store. They still take a shared store
-/// lock so a concurrent mutation cannot expose a half-written document.
-const READ_ONLY_TOOLS: &[&str] = &[
-    // the eye and the audits it reports through
-    "doc_look",
-    "doc_info",
-    "doc_critique",
-    "doc_silhouette",
-    "doc_dump_region",
-    "doc_components",
-    "doc_anim_audit",
-    "doc_frame_diff",
-    "doc_seam_report",
-    "doc_contact_sheet",
-    // library/external output: not document-store mutations
-    "list_docs",
-    "doc_export",
-];
-
 /// Whether a call changes files in the document store. Kept separate from
 /// journaling: checkpoints and reference setup mutate working state but are
 /// session context, not deterministic recipe steps.
-fn is_store_mutation(tool: &str, args: &Value) -> bool {
-    if READ_ONLY_TOOLS.contains(&tool) {
+fn is_store_mutation(tool: ToolName, args: &Value) -> bool {
+    if tool.is_read_only() {
         return false;
     }
     let op = call_op(args);
     !matches!(
         (tool, op),
-        ("doc_ref", Some("analyze" | "compare" | "diff"))
-            | ("doc_palette", Some("report"))
-            | ("doc_checkpoint", Some("list"))
+        (ToolName::DocRef, Some("analyze" | "compare" | "diff"))
+            | (ToolName::DocPalette, Some("report"))
+            | (ToolName::DocCheckpoint, Some("list"))
     ) && !matches!(
         (tool, op),
-        ("doc_palette", None | Some("generate")) if args.get("set_doc").is_none()
+        (ToolName::DocPalette, None | Some("generate")) if args.get("set_doc").is_none()
     )
 }
 
@@ -538,18 +504,18 @@ fn is_store_mutation(tool: &str, args: &Value) -> bool {
 /// document. A checkpoint restore replaces the journal with its snapshot;
 /// recording save/restore/prune would make checkpoint ids part of the recipe.
 /// Reference files are external working context, so no `doc_ref` op is
-/// journaled. Unknown tools default to mutation+journal: a spurious recipe step
-/// fails loudly, while omitting a real mutation silently changes the rebuild.
-fn is_journaled(tool: &str, args: &Value) -> bool {
-    is_store_mutation(tool, args) && !matches!(tool, "delete_doc" | "doc_checkpoint" | "doc_ref")
+/// journaled. [`ToolName`] is closed, so every new tool must make its replay
+/// policy explicit before it can be dispatched.
+fn is_journaled(tool: ToolName, args: &Value) -> bool {
+    tool.is_recipe_step() && is_store_mutation(tool, args)
 }
 
 /// The document a call belongs to. `doc_new` returns it in the result (the id
 /// is minted there, not passed in); everything else carries `doc_id`.
-fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<String> {
+fn journal_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Option<String> {
     match tool {
         // The id is minted in the result, not passed in.
-        "doc_new" => result_json(result)?
+        ToolName::DocNew => result_json(result)?
             .get("doc_id")
             .and_then(Value::as_str)
             .map(str::to_string),
@@ -557,11 +523,11 @@ fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<S
         // document's pixels, so it must NOT enter the per-document recipe —
         // replaying a rebuild would re-run the export against the author's
         // out_path (or fail-abort if that path is gone).
-        "doc_export" => None,
+        ToolName::DocExport => None,
         // op=generate locks its palette onto `set_doc`, carrying no `doc_id`;
         // without this the lock is silently dropped from the recipe and replay
         // rebuilds the document off-palette.
-        "doc_palette" => args
+        ToolName::DocPalette => args
             .get("doc_id")
             .or_else(|| args.get("set_doc"))
             .and_then(Value::as_str)
@@ -587,8 +553,8 @@ fn batch_targets(frame: usize, frames: Option<Vec<usize>>) -> Vec<usize> {
 
 /// `doc_new`'s minted id exists only in its result. Stamping it into the
 /// recorded args lets replay remap later steps when a rerun mints a new id.
-fn journal_args(tool: &str, mut args: Value, target: Option<&str>) -> Value {
-    if tool == "doc_new"
+fn journal_args(tool: ToolName, mut args: Value, target: Option<&str>) -> Value {
+    if tool == ToolName::DocNew
         && let (Some(id), Some(obj)) = (target, args.as_object_mut())
     {
         obj.insert("doc_id".into(), json!(id));
@@ -641,7 +607,10 @@ impl ServerHandler for Atelier {
         request: rmcp::model::CallToolRequestParams,
         context: rmcp::service::RequestContext<rmcp::RoleServer>,
     ) -> Result<rmcp::model::CallToolResult, rmcp::ErrorData> {
-        let tool = request.name.to_string();
+        let tool = request
+            .name
+            .parse::<ToolName>()
+            .map_err(|error| ErrorData::invalid_params(error, None))?;
         let args = request
             .arguments
             .clone()
@@ -669,7 +638,7 @@ impl ServerHandler for Atelier {
         // rmcp moves protocol `_meta` out of the params and into the request
         // context before invoking the handler.
         let caller = caller_from_meta(Some(&context.meta), caller)?;
-        self.dispatch(&tool, args, &caller).await
+        self.dispatch(tool, args, &caller).await
     }
 
     fn get_info(&self) -> ServerInfo {
@@ -693,34 +662,9 @@ impl ServerHandler for Atelier {
 mod tests {
     use super::*;
 
-    const PUBLIC_TOOL_NAMES: &[&str] = &[
-        "delete_doc",
-        "doc_add_tag",
-        "doc_anim_audit",
-        "doc_batch",
-        "doc_checkpoint",
-        "doc_components",
-        "doc_contact_sheet",
-        "doc_critique",
-        "doc_dither_ramp",
-        "doc_draw",
-        "doc_dump_region",
-        "doc_export",
-        "doc_frame",
-        "doc_frame_diff",
-        "doc_fx",
-        "doc_info",
-        "doc_layer",
-        "doc_look",
-        "doc_new",
-        "doc_paint_grid",
-        "doc_palette",
-        "doc_ref",
-        "doc_region",
-        "doc_seam_report",
-        "doc_silhouette",
-        "list_docs",
-    ];
+    fn tool(name: &str) -> ToolName {
+        name.parse().unwrap()
+    }
 
     #[test]
     fn advertised_schemas_carry_no_rust_integer_formats() {
@@ -764,12 +708,12 @@ mod tests {
         // Change the surface, update them in the same commit — this is the reminder.
         assert_eq!(
             n,
-            PUBLIC_TOOL_NAMES.len(),
+            ToolName::ALL.len(),
             "tool count changed — update the docs"
         );
         assert_eq!(
             Atelier::registry_tools().len(),
-            PUBLIC_TOOL_NAMES.len(),
+            ToolName::ALL.len(),
             "every tool is advertised; there is no profile filter"
         );
         let instructions = temp_atelier("info")
@@ -792,10 +736,8 @@ mod tests {
             .map(|tool| tool.name.to_string())
             .collect();
         actual.sort();
-        let expected: Vec<String> = PUBLIC_TOOL_NAMES
-            .iter()
-            .map(|name| (*name).to_string())
-            .collect();
+        let mut expected: Vec<String> = ToolName::ALL.iter().map(ToString::to_string).collect();
+        expected.sort();
         assert_eq!(actual, expected);
     }
 
@@ -807,24 +749,6 @@ mod tests {
         assert_eq!(Atelier::registry_tools().len(), 26);
         assert!(tools_text().starts_with("atelier tools — 26 tools\n"));
         assert!(tools_html().contains("26</strong> tools"));
-    }
-
-    #[tokio::test]
-    async fn dispatch_recognizes_every_advertised_tool() {
-        // invoke() is a hand-written match parallel to the router's registry:
-        // add a #[tool] without adding a dispatch arm and every caller hears
-        // "unknown tool" — while list_tools still happily advertises it. This
-        // pins the lockstep the count-pin test alone cannot see.
-        let a = temp_atelier("dispatch-coverage");
-        for t in Atelier::registry_tools() {
-            let name = t.name.to_string();
-            if let Err(e) = a.dispatch(&name, json!({}), "test").await {
-                assert!(
-                    !e.message.contains("unknown tool"),
-                    "{name} is advertised but dispatch has no arm for it"
-                );
-            }
-        }
     }
 
     #[test]
@@ -933,34 +857,22 @@ mod tests {
     }
 
     #[test]
-    fn every_read_only_tool_is_a_real_tool() {
-        let names: Vec<String> = Atelier::tool_router()
-            .list_all()
-            .into_iter()
-            .map(|t| t.name.to_string())
-            .collect();
-        for t in READ_ONLY_TOOLS {
-            assert!(
-                names.contains(&t.to_string()),
-                "READ_ONLY_TOOLS names '{t}', which is not a tool — renamed or removed?"
-            );
-        }
-    }
-
-    #[test]
     fn the_eye_is_never_journaled_but_the_hand_always_is() {
         // Reads rebuild nothing; replaying them is noise.
         for t in ["doc_look", "doc_info", "doc_critique", "doc_silhouette"] {
-            assert!(!is_journaled(t, &json!({"doc_id": "d"})), "{t} is a read");
+            assert!(
+                !is_journaled(tool(t), &json!({"doc_id": "d"})),
+                "{t} is a read"
+            );
         }
         assert!(
-            !is_journaled("doc_export", &json!({"doc_id": "d"})),
+            !is_journaled(ToolName::DocExport, &json!({"doc_id": "d"})),
             "export writes an artifact but does not build the document"
         );
         // Anything that marks the canvas has to be in the recipe.
         for t in ["doc_draw", "doc_batch", "doc_fx", "doc_new"] {
             assert!(
-                is_journaled(t, &json!({"doc_id": "d"})),
+                is_journaled(tool(t), &json!({"doc_id": "d"})),
                 "{t} builds the art"
             );
         }
@@ -970,43 +882,49 @@ mod tests {
     fn hub_tools_are_classified_by_op_not_by_name() {
         // Reference setup changes working state but is external context, not a
         // deterministic recipe step.
-        assert!(!is_journaled("doc_ref", &json!({"op": "compare"})));
-        assert!(!is_journaled("doc_ref", &json!({"op": "diff"})));
-        assert!(!is_store_mutation("doc_ref", &json!({"op": "compare"})));
-        assert!(is_store_mutation("doc_ref", &json!({"op": "set"})));
-        assert!(!is_journaled("doc_ref", &json!({"op": "set"})));
+        assert!(!is_journaled(ToolName::DocRef, &json!({"op": "compare"})));
+        assert!(!is_journaled(ToolName::DocRef, &json!({"op": "diff"})));
+        assert!(!is_store_mutation(
+            ToolName::DocRef,
+            &json!({"op": "compare"})
+        ));
+        assert!(is_store_mutation(ToolName::DocRef, &json!({"op": "set"})));
+        assert!(!is_journaled(ToolName::DocRef, &json!({"op": "set"})));
 
         // Palette reports and unbound generation are reads; document-targeted
         // palette ops remain deterministic mutations.
-        assert!(!is_journaled("doc_palette", &json!({"op": "report"})));
-        assert!(is_journaled("doc_palette", &json!({"op": "set"})));
+        assert!(!is_journaled(
+            ToolName::DocPalette,
+            &json!({"op": "report"})
+        ));
+        assert!(is_journaled(ToolName::DocPalette, &json!({"op": "set"})));
         assert!(!is_store_mutation(
-            "doc_palette",
+            ToolName::DocPalette,
             &json!({"op": "generate"})
         ));
         assert!(is_journaled(
-            "doc_palette",
+            ToolName::DocPalette,
             &json!({"op": "generate", "set_doc": "hero"})
         ));
 
         // Checkpoint files mutate the store, but restore replaces the live
         // journal with the checkpointed one instead of recording checkpoint ids.
-        assert!(!is_journaled("doc_checkpoint", &json!({"action": "list"})));
+        assert!(!is_journaled(
+            ToolName::DocCheckpoint,
+            &json!({"action": "list"})
+        ));
         assert!(!is_store_mutation(
-            "doc_checkpoint",
+            ToolName::DocCheckpoint,
             &json!({"action": "list"})
         ));
         assert!(is_store_mutation(
-            "doc_checkpoint",
+            ToolName::DocCheckpoint,
             &json!({"action": "restore"})
         ));
         assert!(!is_journaled(
-            "doc_checkpoint",
+            ToolName::DocCheckpoint,
             &json!({"action": "restore"})
         ));
-        // An unknown tool defaults to journaled: a missing mutation corrupts
-        // the replay, a spurious step only wastes a line.
-        assert!(is_journaled("doc_newly_added_tool", &json!({})));
     }
 
     #[test]
@@ -1018,12 +936,12 @@ mod tests {
             json!({"doc_id": doc_id, "w": 8}).to_string(),
         )]);
         assert_eq!(
-            journal_target("doc_new", &json!({"name": "sprite"}), &created).as_deref(),
+            journal_target(ToolName::DocNew, &json!({"name": "sprite"}), &created).as_deref(),
             Some(doc_id)
         );
         let drew = CallToolResult::success(vec![Content::text(json!({"ok": true}).to_string())]);
         assert_eq!(
-            journal_target("doc_draw", &json!({"doc_id": doc_id}), &drew).as_deref(),
+            journal_target(ToolName::DocDraw, &json!({"doc_id": doc_id}), &drew).as_deref(),
             Some(doc_id)
         );
     }
@@ -1056,26 +974,35 @@ mod tests {
     #[test]
     fn store_mutations_are_classified_for_locking() {
         // Its own journal dies with the doc dir, so journaling delete is moot.
-        assert!(!is_journaled("delete_doc", &json!({"doc_id": "x"})));
-        assert!(is_store_mutation("delete_doc", &json!({"doc_id": "x"})));
-        assert!(is_store_mutation("doc_draw", &json!({"doc_id": "x"})));
+        assert!(!is_journaled(ToolName::DeleteDoc, &json!({"doc_id": "x"})));
+        assert!(is_store_mutation(
+            ToolName::DeleteDoc,
+            &json!({"doc_id": "x"})
+        ));
+        assert!(is_store_mutation(
+            ToolName::DocDraw,
+            &json!({"doc_id": "x"})
+        ));
         assert!(!is_store_mutation(
-            "doc_export",
+            ToolName::DocExport,
             &json!({"doc_id": "x", "op": "sheet"})
         ));
-        assert!(!is_store_mutation("doc_look", &json!({"doc_id": "x"})));
+        assert!(!is_store_mutation(
+            ToolName::DocLook,
+            &json!({"doc_id": "x"})
+        ));
     }
 
     #[test]
     fn doc_new_journals_the_minted_id_for_replay_remapping() {
         let doc_id = "d_0000000000000000";
         assert_eq!(
-            journal_args("doc_new", json!({"name": "sprite"}), Some(doc_id)),
+            journal_args(ToolName::DocNew, json!({"name": "sprite"}), Some(doc_id)),
             json!({"name": "sprite", "doc_id": doc_id})
         );
         // Every other tool records its args untouched.
         assert_eq!(
-            journal_args("doc_draw", json!({"doc_id": doc_id}), Some(doc_id)),
+            journal_args(ToolName::DocDraw, json!({"doc_id": doc_id}), Some(doc_id)),
             json!({"doc_id": doc_id})
         );
     }
@@ -1086,11 +1013,15 @@ mod tests {
         // doc_export writes an artifact, not document state — replaying a rebuild
         // must not re-run it, so it belongs to no document's recipe.
         assert!(!is_journaled(
-            "doc_export",
+            ToolName::DocExport,
             &json!({"doc_id": "hero", "op": "sheet"})
         ));
         assert_eq!(
-            journal_target("doc_export", &json!({"doc_id": "hero", "op": "sheet"}), &ok),
+            journal_target(
+                ToolName::DocExport,
+                &json!({"doc_id": "hero", "op": "sheet"}),
+                &ok
+            ),
             None,
             "export must not enter the per-document journal"
         );
@@ -1098,7 +1029,7 @@ mod tests {
         // `doc_id`; the recipe must still capture it or replay rebuilds off-palette.
         assert_eq!(
             journal_target(
-                "doc_palette",
+                ToolName::DocPalette,
                 &json!({"op": "generate", "set_doc": "hero"}),
                 &ok
             )
@@ -1134,6 +1065,7 @@ mod tests {
     #[tokio::test]
     async fn explicit_targets_are_journaled_and_checkpoint_restore_rewinds_them() {
         async fn ok(atelier: &Atelier, tool: &str, args: Value) -> Value {
+            let tool = tool.parse::<ToolName>().unwrap();
             let result = atelier.dispatch(tool, args, "test").await.unwrap();
             assert!(
                 !is_error_result(&result),
@@ -1202,7 +1134,13 @@ mod tests {
         assert_eq!(
             atelier
                 .studio()
-                .doc_dump_region(doc_id, 0, Some(0), Some((1, 1, 1, 1)), "hex")
+                .doc_dump_region(
+                    doc_id,
+                    0,
+                    Some(0),
+                    Some((1, 1, 1, 1)),
+                    atelier_studio::DumpMode::Hex,
+                )
                 .unwrap()["rows"][0],
             "#c80000"
         );

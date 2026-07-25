@@ -24,8 +24,9 @@ fn valid_checkpoint_id(cpid: &str) -> bool {
 }
 use serde_json::{Value, json};
 
-use super::{JOURNAL_FILE, Studio};
-use atelier_core::raster;
+use super::{CheckpointAction, JOURNAL_FILE, LayerOp, PaletteScheme, Studio};
+use atelier_core::document::{DitherAxis, DitherPattern};
+use atelier_core::raster::{self, Blend, SaturationCurve};
 
 // -- shared raster helpers --------------------------------------------------
 
@@ -94,7 +95,7 @@ impl Studio {
     pub fn checkpoint(
         &self,
         id: &str,
-        action: &str,
+        action: CheckpointAction,
         label: Option<&str>,
         checkpoint_id: Option<&str>,
     ) -> Result<Value, String> {
@@ -138,7 +139,7 @@ impl Studio {
             v
         };
         match action {
-            "save" => {
+            CheckpointAction::Save => {
                 let n = list_cps()
                     .iter()
                     .filter_map(|s| s.strip_prefix("cp").and_then(|t| t.parse::<u32>().ok()))
@@ -159,7 +160,7 @@ impl Studio {
                 }
                 Ok(json!({"saved": cpid, "label": label, "doc_id": id}))
             }
-            "list" => {
+            CheckpointAction::List => {
                 let items: Vec<Value> = list_cps()
                     .into_iter()
                     .map(|cpid| {
@@ -169,7 +170,7 @@ impl Studio {
                     .collect();
                 Ok(json!({"doc_id": id, "checkpoints": items, "count": items.len()}))
             }
-            "restore" => {
+            CheckpointAction::Restore => {
                 let cpid = checkpoint_id.ok_or("restore needs checkpoint_id")?;
                 let cp = cps.join(cpid);
                 if !cp.join("doc.json").exists() {
@@ -211,7 +212,7 @@ impl Studio {
                 })?;
                 Ok(json!({"restored": cpid, "doc_id": id}))
             }
-            "prune" => match checkpoint_id {
+            CheckpointAction::Prune => match checkpoint_id {
                 Some(cpid) => {
                     let cp = cps.join(cpid);
                     let _ = fs::remove_dir_all(&cp);
@@ -222,10 +223,6 @@ impl Studio {
                     Ok(json!({"pruned": "all", "doc_id": id}))
                 }
             },
-            other => Err(format!(
-                "unknown checkpoint action '{}' — use save|list|restore|prune",
-                other
-            )),
         }
     }
 
@@ -237,34 +234,31 @@ impl Studio {
     pub(crate) fn layer_ops(
         &self,
         id: &str,
-        action: &str,
+        action: LayerOp,
         index: usize,
         to_index: Option<usize>,
         name: Option<String>,
         opacity: u8,
-        blend: String,
+        blend: Blend,
     ) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let mut new_index = None;
         match action {
-            "move" => doc.move_layer(index, to_index.ok_or("move needs to_index")?)?,
-            "insert" => new_index = Some(doc.insert_layer(index, name, opacity, blend)?),
-            "delete" => doc.delete_layer(index)?,
-            "rename" => doc.rename_layer(index, name.ok_or("rename needs name")?)?,
-            "duplicate" => new_index = Some(doc.duplicate_layer(index)?),
-            "merge_down" => doc.merge_down(index)?,
-            other => {
-                return Err(format!(
-                    "unknown layer action '{}' — use move|insert|delete|rename|duplicate|merge_down",
-                    other
-                ));
+            LayerOp::Move => doc.move_layer(index, to_index.ok_or("move needs to_index")?)?,
+            LayerOp::Insert => new_index = Some(doc.insert_layer(index, name, opacity, blend)),
+            LayerOp::Delete => doc.delete_layer(index)?,
+            LayerOp::Rename => doc.rename_layer(index, name.ok_or("rename needs name")?)?,
+            LayerOp::Duplicate => new_index = Some(doc.duplicate_layer(index)?),
+            LayerOp::MergeDown => doc.merge_down(index)?,
+            LayerOp::Add | LayerOp::Set => {
+                unreachable!("add/set are handled before layer_ops")
             }
         }
         doc.save(&dir)?;
         Ok(json!({
             "ok": true,
             "doc_id": id,
-            "action": action,
+            "action": action.as_str(),
             "new_index": new_index,
             "layers": doc.meta().layers.len(),
         }))
@@ -328,8 +322,8 @@ impl Studio {
         frame: usize,
         region: Option<(i32, i32, i32, i32)>,
         ramp: Vec<[u8; 4]>,
-        axis: &str,
-        pattern: &str,
+        axis: DitherAxis,
+        pattern: DitherPattern,
         only_existing: bool,
     ) -> Result<Value, String> {
         self.edit_with_ack(id, layer, frame, |d| {
@@ -349,33 +343,28 @@ impl Studio {
     pub fn palette(
         &self,
         base: [u8; 4],
-        scheme: &str,
+        scheme: PaletteScheme,
         count: usize,
         value_lo: Option<f32>,
         value_hi: Option<f32>,
         hue_shift: f32,
-        sat_curve: &str,
+        sat_curve: SaturationCurve,
         anchor_midtone: bool,
         set_doc: Option<&str>,
     ) -> Result<Value, String> {
         let offsets: Vec<f32> = match scheme {
-            "mono" => vec![0.0],
-            "complementary" => vec![0.0, 180.0],
-            "triadic" => vec![0.0, 120.0, 240.0],
-            "analogous" => vec![0.0, 30.0, -30.0],
-            "split" => vec![0.0, 150.0, 210.0],
-            "tetradic" => vec![0.0, 90.0, 180.0, 270.0],
-            other => {
-                return Err(format!(
-                    "unknown scheme '{other}' — use mono|complementary|triadic|analogous|split|tetradic"
-                ));
-            }
+            PaletteScheme::Mono => vec![0.0],
+            PaletteScheme::Complementary => vec![0.0, 180.0],
+            PaletteScheme::Triadic => vec![0.0, 120.0, 240.0],
+            PaletteScheme::Analogous => vec![0.0, 30.0, -30.0],
+            PaletteScheme::Split => vec![0.0, 150.0, 210.0],
+            PaletteScheme::Tetradic => vec![0.0, 90.0, 180.0, 270.0],
         };
         let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
         let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
         let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
         // mono honours the exact count; a multi-hue scheme needs >=2 per ramp.
-        let per = if scheme == "mono" {
+        let per = if scheme == PaletteScheme::Mono {
             count.max(1)
         } else {
             count.max(2)
@@ -617,7 +606,8 @@ mod tests {
         let s = studio("cp-escape");
         let created = s.doc_new("c", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        s.checkpoint(id, "save", None, None).unwrap();
+        s.checkpoint(id, CheckpointAction::Save, None, None)
+            .unwrap();
 
         // A directory outside the store that must survive every attempt.
         let outside = std::env::temp_dir().join("atelier-test-cp-escape-victim");
@@ -634,11 +624,11 @@ mod tests {
             "cp",
             "cp1x",
         ] {
-            for action in ["prune", "restore"] {
+            for action in [CheckpointAction::Prune, CheckpointAction::Restore] {
                 let r = s.checkpoint(id, action, None, Some(evil));
                 assert!(
                     r.is_err(),
-                    "{action} accepted the traversal id {evil:?}: {r:?}"
+                    "{action:?} accepted the traversal id {evil:?}: {r:?}"
                 );
             }
         }
@@ -646,7 +636,10 @@ mod tests {
         let _ = std::fs::remove_dir_all(&outside);
 
         // The real id still works.
-        assert!(s.checkpoint(id, "restore", None, Some("cp1")).is_ok());
+        assert!(
+            s.checkpoint(id, CheckpointAction::Restore, None, Some("cp1"))
+                .is_ok()
+        );
     }
 
     #[test]
@@ -657,17 +650,17 @@ mod tests {
         let r = s
             .layer_ops(
                 id,
-                "insert",
+                LayerOp::Insert,
                 0,
                 None,
                 Some("bg".into()),
                 255,
-                "normal".into(),
+                Blend::Normal,
             )
             .unwrap();
         assert_eq!(r["layers"], 2);
         let m = s
-            .layer_ops(id, "merge_down", 1, None, None, 255, "normal".into())
+            .layer_ops(id, LayerOp::MergeDown, 1, None, None, 255, Blend::Normal)
             .unwrap();
         assert_eq!(m["layers"], 1);
     }
@@ -756,7 +749,9 @@ mod tests {
             "pencil",
             json!({"points": [[14, 8]], "color": [255, 255, 255, 255]}),
         );
-        let r = s.doc_anim_audit(id, None, None, "arc", None).unwrap();
+        let r = s
+            .doc_anim_audit(id, None, None, crate::AnimAuditMode::Arc, None)
+            .unwrap();
         assert!(r["arc_residual"].as_f64().unwrap() > 0.0);
         assert_eq!(r["shape"], "arced");
     }
@@ -794,9 +789,15 @@ mod hardening_tests {
             .save(&blue_ref)
             .unwrap();
         s.set_reference(id, red_ref.to_str()).unwrap();
-        s.journal_append(id, "doc_new", &json!({"name": "c", "doc_id": id}));
+        s.journal_append(
+            id,
+            crate::ToolName::DocNew,
+            &json!({"name": "c", "doc_id": id}),
+        );
 
-        let cp = s.checkpoint(id, "save", None, None).unwrap();
+        let cp = s
+            .checkpoint(id, CheckpointAction::Save, None, None)
+            .unwrap();
         let cpid = cp["saved"].as_str().unwrap().to_string();
         // Wreck every checkpointed state surface, then restore.
         s.doc_draw(
@@ -811,9 +812,14 @@ mod hardening_tests {
         )
         .unwrap();
         s.set_reference(id, blue_ref.to_str()).unwrap();
-        s.journal_append(id, "doc_draw", &json!({"doc_id": id, "op": "fill_cel"}));
+        s.journal_append(
+            id,
+            crate::ToolName::DocDraw,
+            &json!({"doc_id": id, "op": "fill_cel"}),
+        );
 
-        s.checkpoint(id, "restore", None, Some(&cpid)).unwrap();
+        s.checkpoint(id, CheckpointAction::Restore, None, Some(&cpid))
+            .unwrap();
         let px = s.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap();
         assert_eq!(px["rgba"], json!([200, 0, 0, 255]));
         assert_eq!(s.journal(id).unwrap().len(), 1);

@@ -60,17 +60,17 @@ fn frame_ops_delete_reindexes_and_protects_last() {
     d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
     d.add_frame(100, None);
     d.pencil(0, 2, &[(0, 0)], [3, 3, 3, 255], 1).unwrap();
-    d.add_tag("mid", 1, 1, "forward").unwrap();
-    d.add_tag("all", 0, 2, "forward").unwrap();
-    d.frame_ops("delete", 1, None, None).unwrap();
+    d.add_tag("mid", 1, 1, TagDirection::Forward).unwrap();
+    d.add_tag("all", 0, 2, TagDirection::Forward).unwrap();
+    d.frame_ops(FrameAction::Delete, 1, None, None).unwrap();
     assert_eq!(d.meta.frames.len(), 2);
     // Frame 2's cel slid down to index 1.
     assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [3, 3, 3, 255]);
     // The tag covering only the deleted frame is gone; the spanning one shrank.
     assert_eq!(d.meta.tags.len(), 1);
     assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 1));
-    d.frame_ops("delete", 1, None, None).unwrap();
-    assert!(d.frame_ops("delete", 0, None, None).is_err()); // last frame protected
+    d.frame_ops(FrameAction::Delete, 1, None, None).unwrap();
+    assert!(d.frame_ops(FrameAction::Delete, 0, None, None).is_err()); // last frame protected
 }
 
 #[test]
@@ -81,16 +81,16 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
     for _ in 0..3 {
         d.add_frame(100, None);
     }
-    d.add_tag("walk", 0, 1, "forward").unwrap();
-    d.frame_ops("move", 1, Some(3), None).unwrap();
+    d.add_tag("walk", 0, 1, TagDirection::Forward).unwrap();
+    d.frame_ops(FrameAction::Move, 1, Some(3), None).unwrap();
     assert_eq!((d.meta.tags[0].from, d.meta.tags[0].to), (0, 0));
 
     // A reorder entirely INSIDE a tag keeps the tag's full coverage.
     let mut e = Document::new("t", 2, 2);
     e.add_frame(100, None);
     e.add_frame(100, None);
-    e.add_tag("all", 0, 2, "forward").unwrap();
-    e.frame_ops("move", 1, Some(2), None).unwrap();
+    e.add_tag("all", 0, 2, TagDirection::Forward).unwrap();
+    e.frame_ops(FrameAction::Move, 1, Some(2), None).unwrap();
     assert_eq!((e.meta.tags[0].from, e.meta.tags[0].to), (0, 2));
 
     // A single-frame tag follows its frame.
@@ -98,8 +98,8 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
     for _ in 0..3 {
         s.add_frame(100, None);
     }
-    s.add_tag("pose", 1, 1, "forward").unwrap();
-    s.frame_ops("move", 1, Some(3), None).unwrap();
+    s.add_tag("pose", 1, 1, TagDirection::Forward).unwrap();
+    s.frame_ops(FrameAction::Move, 1, Some(3), None).unwrap();
     assert_eq!((s.meta.tags[0].from, s.meta.tags[0].to), (3, 3));
 }
 
@@ -109,10 +109,10 @@ fn frame_ops_move_and_duplicate() {
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
     d.add_frame(100, None);
     d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
-    d.frame_ops("move", 0, Some(1), None).unwrap();
+    d.frame_ops(FrameAction::Move, 0, Some(1), None).unwrap();
     assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [2, 2, 2, 255]);
     assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [1, 1, 1, 255]);
-    d.frame_ops("duplicate", 0, None, None).unwrap();
+    d.frame_ops(FrameAction::Duplicate, 0, None, None).unwrap();
     assert_eq!(d.meta.frames.len(), 3);
     assert_eq!(d.get_pixel(0, 1, 0, 0).unwrap(), [2, 2, 2, 255]); // the copy
     assert_eq!(d.get_pixel(0, 2, 0, 0).unwrap(), [1, 1, 1, 255]); // shifted
@@ -121,7 +121,7 @@ fn frame_ops_move_and_duplicate() {
 #[test]
 fn move_layer_reorders_and_cels_follow() {
     let mut d = Document::new("t", 4, 4);
-    d.add_layer(None, 255, "normal".into()).unwrap(); // layer 1
+    d.add_layer(None, 255, raster::Blend::Normal); // layer 1
     d.pencil(0, 0, &[(0, 0)], [255, 0, 0, 255], 1).unwrap();
     d.pencil(1, 0, &[(1, 1)], [0, 0, 255, 255], 1).unwrap();
     d.move_layer(0, 1).unwrap();
@@ -134,8 +134,7 @@ fn move_layer_reorders_and_cels_follow() {
 fn insert_and_delete_layer_shift_cels() {
     let mut d = Document::new("t", 4, 4);
     d.pencil(0, 0, &[(0, 0)], [9, 9, 9, 255], 1).unwrap();
-    d.insert_layer(0, Some("bg".into()), 255, "normal".into())
-        .unwrap();
+    d.insert_layer(0, Some("bg".into()), 255, raster::Blend::Normal);
     // the drawn cel moved from layer 0 to layer 1
     assert_eq!(d.meta.layers.len(), 2);
     assert_eq!(d.get_pixel(1, 0, 0, 0).unwrap(), [9, 9, 9, 255]);
@@ -164,7 +163,7 @@ fn duplicate_layer_copies_cels_above() {
 #[test]
 fn merge_down_bakes_upper_onto_lower() {
     let mut d = Document::new("t", 4, 4);
-    d.add_layer(None, 255, "normal".into()).unwrap();
+    d.add_layer(None, 255, raster::Blend::Normal);
     d.pencil(0, 0, &[(0, 0)], [255, 0, 0, 255], 1).unwrap();
     d.pencil(1, 0, &[(0, 0)], [0, 0, 255, 255], 1).unwrap();
     d.merge_down(1).unwrap();
@@ -464,24 +463,8 @@ fn persisted_document_shape_is_strict() {
     bad_blend["layers"][0]["blend"] = json!("source-over");
     std::fs::write(&path, serde_json::to_vec(&bad_blend).unwrap()).unwrap();
     let error = Document::load(&dir).err().expect("invalid blend must fail");
-    assert!(error.contains("unknown blend"), "got: {error}");
+    assert!(error.contains("source-over"), "got: {error}");
     let _ = std::fs::remove_dir_all(&dir);
-}
-
-#[test]
-fn layer_mutations_reject_unknown_blends() {
-    let mut document = Document::new("strict", 8, 8);
-    assert!(document.add_layer(None, 255, "source-over".into()).is_err());
-    assert!(
-        document
-            .insert_layer(0, None, 255, "source-over".into())
-            .is_err()
-    );
-    assert!(
-        document
-            .set_layer(0, None, None, Some("source-over".into()))
-            .is_err()
-    );
 }
 
 #[test]
@@ -498,7 +481,7 @@ fn export_sheet_std_writes_engine_parsable_json() {
     let mut d = Document::new("runner", 8, 8);
     d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
     d.add_frame(80, Some(0));
-    d.add_tag("run", 0, 1, "forward").unwrap();
+    d.add_tag("run", 0, 1, TagDirection::Forward).unwrap();
     let dir = std::env::temp_dir().join("atelier-std-json-test");
     let _ = std::fs::create_dir_all(&dir);
     let out = dir.join("runner.png");
@@ -655,7 +638,7 @@ fn save_load_round_trip() {
 #[test]
 fn structure_reports_layers_frames_and_cels() {
     let mut d = Document::new("s", 4, 4);
-    d.add_layer(None, 255, "normal".into()).unwrap();
+    d.add_layer(None, 255, raster::Blend::Normal);
     let img = RgbaImage::from_pixel(1, 1, Rgba([1, 1, 1, 255]));
     d.set_cel(1, 0, 0, 0, img).unwrap();
     let v = d.structure();
@@ -833,7 +816,7 @@ fn batch_text_op_validates() {
 fn blend_two(mode: &str, bottom: [u8; 4], top: [u8; 4]) -> [u8; 4] {
     let mut d = Document::new("t", 1, 1);
     d.fill_cel(0, 0, bottom).unwrap();
-    let l = d.add_layer(None, 255, mode.into()).unwrap();
+    let l = d.add_layer(None, 255, mode.parse().unwrap());
     d.fill_cel(l, 0, top).unwrap();
     d.flatten(0).get_pixel(0, 0).0
 }
@@ -868,7 +851,7 @@ fn multiply_darkens_screen_lightens() {
 fn multiply_over_empty_backdrop_keeps_source() {
     // No backdrop (αb=0): a multiply layer must not collapse to black.
     let mut d = Document::new("t", 1, 1);
-    let l = d.add_layer(None, 255, "multiply".into()).unwrap();
+    let l = d.add_layer(None, 255, raster::Blend::Multiply);
     d.fill_cel(l, 0, [40, 90, 160, 255]).unwrap();
     assert_eq!(d.flatten(0).get_pixel(0, 0).0, [40, 90, 160, 255]);
 }
@@ -878,7 +861,7 @@ fn layer_opacity_blends_toward_backdrop() {
     // A 50%-opacity red layer over an opaque black backdrop flattens to ~half red.
     let mut d = Document::new("t", 1, 1);
     d.fill_cel(0, 0, [0, 0, 0, 255]).unwrap();
-    let l = d.add_layer(None, 128, "normal".into()).unwrap();
+    let l = d.add_layer(None, 128, raster::Blend::Normal);
     d.fill_cel(l, 0, [255, 0, 0, 255]).unwrap();
     let p = d.flatten(0).get_pixel(0, 0).0;
     assert!(
@@ -1124,21 +1107,21 @@ fn no_tag_plays_whole_timeline_forward() {
 #[test]
 fn forward_tag_is_inclusive_range() {
     let mut d = doc_with_frames(5);
-    d.add_tag("walk", 1, 3, "forward").unwrap();
+    d.add_tag("walk", 1, 3, TagDirection::Forward).unwrap();
     assert_eq!(d.play_sequence(Some("walk")).unwrap(), vec![1, 2, 3]);
 }
 
 #[test]
 fn reverse_tag_plays_high_to_low() {
     let mut d = doc_with_frames(5);
-    d.add_tag("rev", 1, 3, "reverse").unwrap();
+    d.add_tag("rev", 1, 3, TagDirection::Reverse).unwrap();
     assert_eq!(d.play_sequence(Some("rev")).unwrap(), vec![3, 2, 1]);
 }
 
 #[test]
 fn pingpong_does_not_duplicate_endpoints() {
     let mut d = doc_with_frames(4);
-    d.add_tag("blink", 0, 2, "pingpong").unwrap();
+    d.add_tag("blink", 0, 2, TagDirection::Pingpong).unwrap();
     // open -> half -> closed -> half (-> loops to open), no double closed/open
     assert_eq!(d.play_sequence(Some("blink")).unwrap(), vec![0, 1, 2, 1]);
 }
@@ -1146,7 +1129,7 @@ fn pingpong_does_not_duplicate_endpoints() {
 #[test]
 fn pingpong_two_frame_range_has_no_inner_turnaround() {
     let mut d = doc_with_frames(3);
-    d.add_tag("pp", 0, 1, "pingpong").unwrap();
+    d.add_tag("pp", 0, 1, TagDirection::Pingpong).unwrap();
     assert_eq!(d.play_sequence(Some("pp")).unwrap(), vec![0, 1]);
 }
 
@@ -1160,7 +1143,7 @@ fn unknown_tag_errors() {
 fn tag_range_clamps_to_existing_frames() {
     // A tag added when there were more frames must not index out of bounds.
     let mut d = doc_with_frames(5);
-    d.add_tag("big", 0, 4, "forward").unwrap();
+    d.add_tag("big", 0, 4, TagDirection::Forward).unwrap();
     d.meta.frames.truncate(3);
     assert_eq!(d.play_sequence(Some("big")).unwrap(), vec![0, 1, 2]);
 }
@@ -1241,7 +1224,7 @@ fn export_apng_honours_tag_direction() {
     std::fs::create_dir_all(&dir).unwrap();
     let mut d = doc_with_frames(3);
     // pingpong over 0..2 plays 0,1,2,1 — 4 frames from a 3-frame range.
-    d.add_tag("pp", 0, 2, "pingpong").unwrap();
+    d.add_tag("pp", 0, 2, TagDirection::Pingpong).unwrap();
     let out = dir.join("pp.png");
     let n = d.export_apng(&out, 1, Some("pp")).unwrap();
     assert_eq!(n, 4);
@@ -1396,23 +1379,6 @@ fn fx_parameters_are_clamped_to_sane_bounds() {
 }
 
 #[test]
-fn dither_ramp_rejects_an_unknown_pattern() {
-    let mut d = Document::new("t", 4, 4);
-    let e = d
-        .dither_ramp(
-            0,
-            0,
-            None,
-            &[[0, 0, 0, 255], [255, 255, 255, 255]],
-            "v",
-            "bogus",
-            false,
-        )
-        .unwrap_err();
-    assert!(e.contains("unknown pattern"), "got: {e}");
-}
-
-#[test]
 fn batch_wrapper_scalars_reject_out_of_range_values() {
     // 300 as u8 == 44: truncation used to silently apply a wrong opacity.
     let e = validate_batch_op(
@@ -1462,7 +1428,7 @@ fn save_writes_only_dirtied_cels_and_sweeps_stale_files() {
     assert!(modified(&f0) > m0, "dirtied cel should be rewritten");
     assert_eq!(modified(&f1), m1, "untouched cel must not be re-encoded");
     // Deleting frame 1 must sweep its file (and keep frame 0's).
-    d.frame_ops("delete", 1, None, None).unwrap();
+    d.frame_ops(FrameAction::Delete, 1, None, None).unwrap();
     d.save(&dir).unwrap();
     assert!(!f1.exists(), "stale cel file should be swept");
     assert!(f0.exists());
@@ -1502,7 +1468,7 @@ fn structural_ops_keep_cel_and_tag_invariants() {
                         (h >> 8) as usize % (layers + 1),
                         None,
                         255,
-                        "normal".into(),
+                        raster::Blend::Normal,
                     );
                 }
                 1 => {
@@ -1515,21 +1481,31 @@ fn structural_ops_keep_cel_and_tag_invariants() {
                     let _ = d.duplicate_layer((h >> 8) as usize % layers);
                 }
                 4 => {
-                    let _ = d.frame_ops("insert", (h >> 8) as usize % (frames + 1), None, None);
+                    let _ = d.frame_ops(
+                        FrameAction::Insert,
+                        (h >> 8) as usize % (frames + 1),
+                        None,
+                        None,
+                    );
                 }
                 5 => {
-                    let _ = d.frame_ops("delete", (h >> 8) as usize % (frames + 1), None, None);
+                    let _ = d.frame_ops(
+                        FrameAction::Delete,
+                        (h >> 8) as usize % (frames + 1),
+                        None,
+                        None,
+                    );
                 }
                 6 => {
                     let _ = d.frame_ops(
-                        "move",
+                        FrameAction::Move,
                         (h >> 8) as usize % frames,
                         Some((h >> 16) as usize % frames),
                         None,
                     );
                 }
                 _ => {
-                    let _ = d.add_tag("t", 0, frames - 1, "forward");
+                    let _ = d.add_tag("t", 0, frames - 1, TagDirection::Forward);
                     d.rect(
                         0,
                         0,

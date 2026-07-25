@@ -60,6 +60,10 @@ releases.
 - The retained public tool names are contract-pinned, and end-to-end stdio and
   HTTP tests require both transports to advertise that exact registry and
   successfully dispatch a real tool call.
+- Tool names and finite control values are typed end to end instead of being
+  independently matched as strings. MCP schemas now advertise their exact enum
+  choices; malformed document ids, region tuples, removed aliases, and unknown
+  recipe/journal tools fail at the input boundary.
 - **Document identity is explicit and transport-independent.** `doc_create` is
   replaced by `doc_new`, which returns a fresh opaque 80-bit Base32 `doc_id`;
   names are display labels and may repeat. Every later document call carries

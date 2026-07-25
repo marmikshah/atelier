@@ -44,7 +44,7 @@ impl Atelier {
     )]
     pub(crate) async fn doc_layer(&self, Parameters(p): Parameters<DocLayer>) -> CallToolResult {
         res(self.studio().doc_layer(
-            &p.doc_id, &p.op, p.index, p.to_index, p.name, p.visible, p.opacity, p.blend,
+            &p.doc_id, p.op, p.index, p.to_index, p.name, p.visible, p.opacity, p.blend,
         ))
     }
 
@@ -54,7 +54,7 @@ impl Atelier {
     pub(crate) async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
         res(self.studio().doc_frame(
             &p.doc_id,
-            &p.op,
+            p.op,
             p.frame,
             p.copy_from,
             p.to_index,
@@ -72,7 +72,7 @@ impl Atelier {
             &p.name,
             p.from,
             p.to,
-            p.direction.as_deref().unwrap_or("forward"),
+            p.direction.unwrap_or_default(),
         ))
     }
 
@@ -85,7 +85,7 @@ impl Atelier {
     ) -> CallToolResult {
         res(self.studio().checkpoint(
             &p.doc_id,
-            &p.action,
+            p.action,
             p.label.as_deref(),
             p.checkpoint_id.as_deref(),
         ))
@@ -99,24 +99,24 @@ impl Atelier {
         Parameters(p): Parameters<DocPalette>,
     ) -> CallToolResult {
         let studio = self.studio();
-        match p.op.as_deref().unwrap_or("generate") {
-            "generate" => {
+        match p.op.unwrap_or_default() {
+            atelier_studio::PaletteOp::Generate => {
                 let Some(base) = p.base.as_deref() else {
                     return res(Err("doc_palette op=generate needs `base`".to_string()));
                 };
                 res(studio.palette(
                     try_res!(rgba(base)),
-                    p.scheme.as_deref().unwrap_or("mono"),
+                    p.scheme.unwrap_or_default(),
                     p.count.unwrap_or(5),
                     p.value_lo,
                     p.value_hi,
                     p.hue_shift.unwrap_or(20.0),
-                    p.sat_curve.as_deref().unwrap_or("arc"),
+                    p.sat_curve.unwrap_or_default(),
                     p.anchor_midtone.unwrap_or(false),
                     p.set_doc.as_deref(),
                 ))
             }
-            "set" => {
+            atelier_studio::PaletteOp::Set => {
                 let Some(doc_id) = p.doc_id.as_deref() else {
                     return res(Err("doc_palette op=set needs `doc_id`".to_string()));
                 };
@@ -126,7 +126,7 @@ impl Atelier {
                 let colors = try_res!(palette_list(colors));
                 res(studio.doc_set_palette(doc_id, colors))
             }
-            "swap" => {
+            atelier_studio::PaletteOp::Swap => {
                 let Some(doc_id) = p.doc_id.as_deref() else {
                     return res(Err("doc_palette op=swap needs `doc_id`".to_string()));
                 };
@@ -137,7 +137,7 @@ impl Atelier {
                 let to = try_res!(palette_list(to));
                 res(studio.doc_palette_swap(doc_id, from, to, p.layer, p.frame))
             }
-            "report" => {
+            atelier_studio::PaletteOp::Report => {
                 let Some(doc_id) = p.doc_id.as_deref() else {
                     return res(Err("doc_palette op=report needs `doc_id`".to_string()));
                 };
@@ -145,15 +145,16 @@ impl Atelier {
                     doc_id,
                     p.frame,
                     p.layer,
-                    try_res!(region(&p.region)),
+                    region(p.region),
                     p.dupe_threshold.unwrap_or(8),
                 ))
             }
-            "snap" => {
+            atelier_studio::PaletteOp::Snap => {
                 let Some(doc_id) = p.doc_id.as_deref() else {
                     return res(Err("doc_palette op=snap needs `doc_id`".to_string()));
                 };
-                let alpha = match alpha_snap(p.alpha.as_deref(), p.cutoff, p.bg.as_deref()) {
+                let alpha = match alpha_snap(p.alpha.unwrap_or_default(), p.cutoff, p.bg.as_deref())
+                {
                     Ok(a) => a,
                     Err(e) => return res(Err(e)),
                 };
@@ -169,9 +170,6 @@ impl Atelier {
                 );
                 edited(r)
             }
-            other => res(Err(format!(
-                "doc_palette: unknown op '{other}' — use generate|set|snap|swap|report"
-            ))),
         }
     }
 }
