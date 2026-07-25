@@ -5,16 +5,6 @@ use image::{Rgba, RgbaImage};
 
 use super::colour::oklab_delta;
 
-/// True area-average downscale (box filter over each target pixel's exact
-/// source footprint, fractional edges included), alpha-weighted so transparent
-/// source pixels don't darken edges. Keeps thin outlines readable where
-/// bilinear smears them. Falls back to nearest when not actually shrinking.
-/// Kept as its own name for the call sites that predate `scale` — this is
-/// `scale`'s `ScaleMethod::AreaAverage` arm.
-pub fn downscale_area(src: &RgbaImage, tw: u32, th: u32) -> RgbaImage {
-    scale(src, tw, th, ScaleMethod::AreaAverage)
-}
-
 /// How `scale` resamples: `Nearest` replicates whole source pixels (the crisp
 /// pixel-art upscale), `AreaAverage` box-filters (alpha-weighted, so thin
 /// outlines survive a shrink where nearest drops them).
@@ -24,9 +14,9 @@ pub enum ScaleMethod {
     AreaAverage,
 }
 
-/// Resize to an exact `w`×`h`. A zero dimension clamps to 1 (the same guard
-/// `downscale_area` always had): the raster primitive stays total — rejecting
-/// 0 loudly is the Document wrapper's job, where a `Result` exists for it.
+/// Resize to an exact `w`×`h`. A zero dimension clamps to 1: the raster
+/// primitive stays total, while the Document wrapper rejects 0 where a
+/// `Result` exists.
 pub fn scale(img: &RgbaImage, w: u32, h: u32, method: ScaleMethod) -> RgbaImage {
     let (w, h) = (w.max(1), h.max(1));
     let (sw, sh) = (img.width(), img.height());
@@ -329,8 +319,7 @@ mod tests {
 
     #[test]
     fn scale_clamps_zero_dimensions_to_one() {
-        // The primitive stays total like downscale_area; the Document wrapper
-        // is the one that rejects 0 loudly.
+        // The primitive stays total; the Document wrapper rejects 0 loudly.
         let src = tagged(2, 2);
         assert_eq!(scale(&src, 0, 0, ScaleMethod::Nearest).dimensions(), (1, 1));
         assert_eq!(
@@ -340,11 +329,9 @@ mod tests {
     }
 
     #[test]
-    fn downscale_area_still_falls_back_to_nearest_when_growing() {
-        // Regression guard for the shim: existing callers (studio reference
-        // imports) rely on the nearest upscale path.
+    fn area_scale_uses_nearest_when_growing() {
         let src = tagged(2, 2);
-        let out = downscale_area(&src, 4, 4);
+        let out = scale(&src, 4, 4, ScaleMethod::AreaAverage);
         assert_eq!(out.dimensions(), (4, 4));
         assert_eq!(out.get_pixel(0, 0).0, src.get_pixel(0, 0).0);
         assert_eq!(out.get_pixel(3, 3).0, src.get_pixel(1, 1).0);

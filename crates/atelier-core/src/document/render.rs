@@ -79,7 +79,8 @@ impl Document {
                     *cx,
                     *cy,
                     layer.opacity,
-                    raster::parse_blend(&layer.blend),
+                    raster::parse_blend(&layer.blend)
+                        .expect("document layer blend was validated on load or mutation"),
                 );
             }
         }

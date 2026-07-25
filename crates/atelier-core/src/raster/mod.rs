@@ -11,20 +11,16 @@ mod noise;
 mod transform;
 
 // Explicit surface instead of globs: exactly what the rest of the workspace
-// uses, so the module's API is one readable list. `wcag_ratio` is the single
-// item nothing in-workspace calls — it was public via the old glob and stays
-// exported rather than disappearing as a silent breaking change.
+// uses, so the module's API is one readable list.
 pub use colour::{
     PaletteLab, close, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp, make_ramp_oklch,
     median_cut, median_cut_weighted, nearest_oklab, oklab_delta, oklab_to_oklch, oklab_to_srgb,
-    oklch_to_oklab, rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab, wcag_ratio,
+    oklch_to_oklab, rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab,
 };
 pub use noise::{
     dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
 };
-pub use transform::{
-    ScaleMethod, downscale_area, interior_distance, remove_background, rotate_quarters, scale,
-};
+pub use transform::{ScaleMethod, interior_distance, remove_background, rotate_quarters, scale};
 
 // -- drawing helpers (overwrite semantics; alpha 0 = erase) -----------------
 
@@ -456,9 +452,10 @@ pub enum Blend {
     ColorBurn,
 }
 
-/// Parse a canonical blend-mode name; unknown → `Normal`.
-pub fn parse_blend(s: &str) -> Blend {
-    match s {
+/// Parse a canonical blend-mode name. Unknown values are never coerced.
+pub(crate) fn parse_blend(s: &str) -> Option<Blend> {
+    Some(match s {
+        "normal" => Blend::Normal,
         "multiply" => Blend::Multiply,
         "screen" => Blend::Screen,
         "add" => Blend::Add,
@@ -472,18 +469,17 @@ pub fn parse_blend(s: &str) -> Blend {
         "soft-light" => Blend::SoftLight,
         "color-dodge" => Blend::ColorDodge,
         "color-burn" => Blend::ColorBurn,
-        _ => Blend::Normal,
-    }
+        _ => return None,
+    })
 }
 
 /// Human-readable list of accepted blend tokens (for validation error messages).
 pub const BLEND_NAMES: &str = "normal | multiply | screen | add | subtract | darken | \
 lighten | difference | exclusion | overlay | hard-light | soft-light | color-dodge | color-burn";
 
-/// Whether `s` is a blend token `parse_blend` recognizes (incl. "normal").
-/// Used to reject silent typos that would otherwise composite as Normal.
+/// Whether `s` is a canonical blend token.
 pub fn valid_blend(s: &str) -> bool {
-    s == "normal" || !matches!(parse_blend(s), Blend::Normal)
+    parse_blend(s).is_some()
 }
 
 /// `overlay(cb, cs)` — multiply on the dark half of the backdrop, screen on the

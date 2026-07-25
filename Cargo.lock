@@ -82,6 +82,7 @@ dependencies = [
  "dirs",
  "fs4",
  "image",
+ "serde",
  "serde_json",
 ]
 

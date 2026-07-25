@@ -1,29 +1,36 @@
 //! Replay recipes: plain JSON Lines journals and authored JSON objects.
 
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::Value;
+
+use atelier_studio::{JournalEntry, validate_journal};
+
+#[derive(Debug, Default, PartialEq, Eq)]
+enum RecipeSource {
+    #[default]
+    Authored,
+    Journal,
+}
 
 /// A replay recipe: a named, described sequence of tool calls.
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Recipe {
     pub name: String,
     pub description: String,
     pub steps: Vec<Step>,
+    #[serde(skip)]
+    source: RecipeSource,
 }
 
 /// One scripted tool call.
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Step {
     pub tool: String,
-    #[serde(default = "empty_obj")]
     pub args: Value,
     /// Optional human note, echoed alongside the step for context.
-    #[serde(default)]
     pub note: Option<String>,
-}
-
-fn empty_obj() -> Value {
-    json!({})
 }
 
 /// True when the source is JSON Lines rather than one authored recipe object.
@@ -61,7 +68,25 @@ impl Recipe {
         if recipe.steps.is_empty() {
             return Err("recipe has no steps — add at least one {tool, args}".into());
         }
+        for (index, step) in recipe.steps.iter().enumerate() {
+            if step.tool.is_empty() {
+                return Err(format!("step {} has an empty tool name", index + 1));
+            }
+            if !step.args.is_object() {
+                return Err(format!(
+                    "step {} ({}) args must be a JSON object",
+                    index + 1,
+                    step.tool
+                ));
+            }
+        }
         Ok(recipe)
+    }
+
+    /// Recorded journals carry a stamped document id on `doc_create`; authored
+    /// recipes derive the id from the requested name.
+    pub fn is_journal(&self) -> bool {
+        self.source == RecipeSource::Journal
     }
 
     /// Parse JSON Lines: one `{tool, args}` per line, blank lines ignored.
@@ -77,10 +102,10 @@ impl Recipe {
             .filter(|(_, l)| !l.is_empty())
             .collect();
         let last = nonempty.len().saturating_sub(1);
-        let mut steps = Vec::new();
+        let mut entries = Vec::new();
         for (idx, (n, line)) in nonempty.iter().enumerate() {
-            match serde_json::from_str::<Step>(line) {
-                Ok(step) => steps.push(step),
+            match serde_json::from_str::<JournalEntry>(line) {
+                Ok(entry) => entries.push(entry),
                 Err(error) if idx == last && error.is_eof() => {
                     // Tolerated, but never silently: a rebuild missing its
                     // last mutation would otherwise look like a clean run.
@@ -94,10 +119,20 @@ impl Recipe {
                 Err(e) => return Err(format!("line {}: {e} — expected {{tool, args}}", n + 1)),
             }
         }
+        validate_journal(&entries)?;
+        let steps = entries
+            .into_iter()
+            .map(|entry| Step {
+                tool: entry.tool,
+                args: Value::Object(entry.args),
+                note: None,
+            })
+            .collect();
         Ok(Recipe {
             name: "journal".into(),
             description: "recorded from the document's journal".into(),
             steps,
+            source: RecipeSource::Journal,
         })
     }
 }
@@ -120,11 +155,12 @@ mod tests {
     fn reads_a_document_journal() {
         // What journal_append writes: one call per line, no wrapper object.
         let r = Recipe::parse(
-            "{\"tool\":\"doc_create\",\"args\":{\"name\":\"x\"}}\n\
+            "{\"tool\":\"doc_create\",\"args\":{\"name\":\"x\",\"doc_id\":\"x\"}}\n\
              \n\
-             {\"tool\":\"doc_draw\",\"args\":{\"op\":\"rect\"}}\n",
+             {\"tool\":\"doc_draw\",\"args\":{\"doc_id\":\"x\",\"op\":\"rect\"}}\n",
         )
         .unwrap();
+        assert!(r.is_journal());
         assert_eq!(r.steps.len(), 2, "blank lines are skipped, not counted");
         assert_eq!(r.steps[1].args["op"], "rect");
     }
@@ -136,7 +172,8 @@ mod tests {
         let e = Recipe::parse("{ not json").unwrap_err();
         assert!(e.contains("invalid recipe JSON"), "got: {e}");
         // A journal with a torn MIDDLE line (content after it) names the line.
-        let e = Recipe::parse("{\"tool\":\"doc_create\"}\n{\"tool\":\ntorn\n").unwrap_err();
+        let e =
+            Recipe::parse("{\"tool\":\"doc_create\",\"args\":{}}\n{\"tool\":\ntorn\n").unwrap_err();
         assert!(e.contains("line 2"), "got: {e}");
     }
 
@@ -144,7 +181,10 @@ mod tests {
     fn a_torn_final_line_is_tolerated_not_fatal() {
         // A process killed mid-append leaves a partial last line; the completed
         // steps must still replay.
-        let r = Recipe::parse("{\"tool\":\"doc_create\",\"args\":{}}\n{\"tool\":\"doc_dr").unwrap();
+        let r = Recipe::parse(
+            "{\"tool\":\"doc_create\",\"args\":{\"doc_id\":\"x\"}}\n{\"tool\":\"doc_dr",
+        )
+        .unwrap();
         assert_eq!(r.steps.len(), 1);
         assert_eq!(r.steps[0].tool, "doc_create");
 
@@ -157,5 +197,20 @@ mod tests {
     fn an_empty_recipe_is_an_error_either_way() {
         assert!(Recipe::parse(r#"{"name":"n","description":"d","steps":[]}"#).is_err());
         assert!(Recipe::parse("\n\n").is_err());
+    }
+
+    #[test]
+    fn args_are_required_objects_and_unknown_fields_fail() {
+        for src in [
+            r#"{"name":"n","description":"d","steps":[{"tool":"list_docs"}]}"#,
+            r#"{"name":"n","description":"d","steps":[{"tool":"list_docs","args":[]}]}"#,
+            r#"{"name":"n","description":"d","steps":[{"tool":"list_docs","args":{},"old":true}]}"#,
+            r#"{"name":"n","description":"d","steps":[],"version":1}"#,
+        ] {
+            assert!(
+                Recipe::parse(src).is_err(),
+                "accepted obsolete shape: {src}"
+            );
+        }
     }
 }

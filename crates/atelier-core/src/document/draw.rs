@@ -366,7 +366,7 @@ impl Document {
         };
         *img = match method {
             "nearest" => image::imageops::resize(img, w, h, image::imageops::FilterType::Nearest),
-            "area-average" => raster::downscale_area(img, w, h),
+            "area-average" => raster::scale(img, w, h, raster::ScaleMethod::AreaAverage),
             other => {
                 return Err(format!(
                     "unknown scale method '{other}' — use nearest|area-average"

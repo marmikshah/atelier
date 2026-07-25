@@ -1,3 +1,3 @@
-# Claude Code compatibility
+# Claude Code
 
 @AGENTS.md

@@ -27,6 +27,7 @@ mod ops_region;
 mod reference;
 mod store;
 mod view;
+pub use store::{JournalEntry, validate_journal};
 pub use view::LookOptions;
 
 /// Hard cap on the pixel count (w×h) of an external source image. ~64 MP covers
@@ -96,7 +97,7 @@ pub(crate) fn open_bounded(path: &Path) -> Result<image::RgbaImage, String> {
 }
 
 /// Public because `atelier replay` predicts the id an authored recipe's
-/// `doc_create` would have minted (pre-journal recipes carry no minted id).
+/// `doc_create` will mint.
 pub fn slugify(name: &str) -> String {
     let mut out = String::new();
     let mut prev_dash = false;
@@ -128,14 +129,8 @@ impl Studio {
         opacity: u8,
         blend: String,
     ) -> Result<Value, String> {
-        if !atelier_core::raster::valid_blend(&blend) {
-            return Err(format!(
-                "unknown blend '{blend}' — valid: {}",
-                atelier_core::raster::BLEND_NAMES
-            ));
-        }
         let (dir, mut doc) = self.open(id)?;
-        let idx = doc.add_layer(name, opacity, blend);
+        let idx = doc.add_layer(name, opacity, blend)?;
         doc.save(&dir)?;
         // Slim ack — echoing the whole structure() grew O(layers×frames) per
         // call; doc_info still serves the full picture on demand.
@@ -155,14 +150,6 @@ impl Studio {
         opacity: Option<u8>,
         blend: Option<String>,
     ) -> Result<Value, String> {
-        if let Some(b) = &blend
-            && !atelier_core::raster::valid_blend(b)
-        {
-            return Err(format!(
-                "unknown blend '{b}' — valid: {}",
-                atelier_core::raster::BLEND_NAMES
-            ));
-        }
         let (dir, mut doc) = self.open(id)?;
         doc.set_layer(layer, visible, opacity, blend)?;
         doc.save(&dir)?;
