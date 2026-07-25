@@ -619,7 +619,7 @@ pub fn composite(dst: &mut RgbaImage, src: &RgbaImage, ox: i32, oy: i32, opacity
 }
 
 /// Separable box blur of radius `r` (premultiplied alpha, so transparent regions
-/// don't bleed dark haloes). Shared by blur / drop-shadow / glow.
+/// don't bleed dark haloes). Shared by blur and drop-shadow.
 pub fn box_blur(src: &RgbaImage, r: i32) -> RgbaImage {
     if r <= 0 {
         return src.clone();
@@ -645,7 +645,7 @@ pub fn box_blur(src: &RgbaImage, r: i32) -> RgbaImage {
         }
     }
     // Sliding-window pass: O(w·h) per axis regardless of radius (the naive
-    // per-pixel window made glow/shadow cost scale linearly with r).
+    // per-pixel window made blur/shadow cost scale linearly with r).
     let blur1 = |buf: &[f32], horizontal: bool| -> Vec<f32> {
         let mut out = vec![0f32; n];
         let win = (2 * r + 1) as f32;

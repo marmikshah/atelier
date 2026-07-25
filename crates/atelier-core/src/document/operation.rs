@@ -1,4 +1,4 @@
-//! Batched JSON drawing ops: dispatch, key registry and strict validation.
+//! JSON drawing operations: dispatch, key registry, and strict validation.
 
 use image::Rgba;
 use serde_json::Value;
@@ -8,8 +8,8 @@ use crate::raster;
 use super::{AlphaSnap, Document};
 
 impl Document {
-    /// Apply one batched drawing op described by a JSON object `{"op": "...", ...}`.
-    /// Lets a headless client send many ordered edits in a single tool call.
+    /// Apply one drawing operation described by a JSON object
+    /// `{"op": "...", ...}`.
     ///
     /// Optional per-op `"opacity"` (0..255) and `"blend_mode"` (a layer blend
     /// name) composite the op's result instead of overwriting: the op is run,
@@ -74,11 +74,11 @@ impl Document {
         let name = op
             .get("op")
             .and_then(|v| v.as_str())
-            .ok_or("batch op missing 'op'")?;
-        let spec = find_op(name).ok_or_else(|| format!("unknown batch op '{name}'"))?;
+            .ok_or("operation missing 'op'")?;
+        let spec = find_op(name).ok_or_else(|| format!("unknown operation '{name}'"))?;
         (spec.run)(self, layer, frame, op)?;
         // Continuous-tone FX push a locked palette into hundreds of colours; re-snap
-        // onto it by default (parity with gradient/glow) so the result stays crisp
+        // onto it by default (as gradient does) so the result stays crisp
         // pixel art. Opt out per op with `snap:false`. Hard-edged / already-on-palette
         // ops (outline, dither, pixel_perfect, quantize, adjust) are excluded.
         if matches!(name, "blur" | "drop_shadow" | "bevel" | "form" | "shade")
@@ -98,17 +98,15 @@ impl Document {
 // key table, draw/fx partition) with two tests existing only to catch drift —
 // a new op is now exactly one entry here.
 
-/// Which tool vocabulary an op belongs to. `doc_draw` adds new marks, `doc_fx`
-/// reworks existing pixels; `BatchOnly` is callable only inside doc_batch
-/// (glow — its on-palette snap is not a single-op form).
+/// Which single-operation tool vocabulary an operation belongs to.
+/// `doc_draw` adds new marks and `doc_fx` reworks existing pixels.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum OpSide {
     Draw,
     Fx,
-    BatchOnly,
 }
 
-/// One batch op: its name, JSON schema (required/optional keys), side, and
+/// One operation: its name, JSON schema (required/optional keys), side, and
 /// executor. Every op additionally accepts the compositing wrapper keys
 /// `opacity`/`blend_mode`/`erase` (see `apply_op`).
 pub(crate) struct OpSpec {
@@ -362,14 +360,6 @@ pub(crate) static OPS: &[OpSpec] = &[
         side: OpSide::Fx,
         run: op_gradient_map,
     },
-    // -- batch-only --
-    OpSpec {
-        name: "glow",
-        required: &[],
-        optional: &["color", "radius", "intensity", "mode"],
-        side: OpSide::BatchOnly,
-        run: op_glow,
-    },
 ];
 
 fn find_op(name: &str) -> Option<&'static OpSpec> {
@@ -382,7 +372,7 @@ fn side_ops(side: OpSide) -> &'static [&'static str] {
     static FX: std::sync::OnceLock<Vec<&'static str>> = std::sync::OnceLock::new();
     let cell = match side {
         OpSide::Draw => &DRAW,
-        _ => &FX,
+        OpSide::Fx => &FX,
     };
     cell.get_or_init(|| {
         OPS.iter()
@@ -397,7 +387,7 @@ pub fn draw_ops() -> &'static [&'static str] {
     side_ops(OpSide::Draw)
 }
 
-/// The doc_fx vocabulary (`glow` is deliberately absent — batch-only).
+/// The `doc_fx` vocabulary.
 pub fn fx_ops() -> &'static [&'static str] {
     side_ops(OpSide::Fx)
 }
@@ -579,8 +569,7 @@ fn op_gradient(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), S
         region_val(op.get("region")),
         gb(op, "blend", true),
     )?;
-    // Parity with the standalone doc_gradient: re-snap on-palette by default
-    // when a palette is locked (the batch path used to skip it).
+    // Re-snap on-palette by default when a palette is locked.
     if gb(op, "snap", true) {
         d.snap_cel_to_own_palette(l, f, AlphaSnap::Preserve);
     }
@@ -649,7 +638,7 @@ fn op_outline(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), St
 }
 
 fn op_drop_shadow(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), String> {
-    // `shadow_opacity`, not `opacity`: the plain key is the batch-wide
+    // `shadow_opacity`, not `opacity`: the plain key is the operation-wide
     // compositing wrapper (consumed by apply_op), and one value must
     // not silently drive both.
     d.drop_shadow(
@@ -791,23 +780,7 @@ fn op_gradient_map(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(
     )
 }
 
-fn op_glow(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), String> {
-    let blend = op
-        .get("mode")
-        .and_then(|v| v.as_str())
-        .unwrap_or("screen")
-        .parse::<raster::Blend>()?;
-    d.glow(
-        l,
-        f,
-        op.get("color").map(|_| col(op, "color")),
-        gi(op, "radius", 2),
-        op.get("intensity").and_then(|v| v.as_u64()).unwrap_or(180) as u8,
-        blend,
-    )
-}
-
-// -- batch-op JSON parsing helpers ------------------------------------------
+// -- operation JSON parsing helpers -----------------------------------------
 
 fn rgba_val(v: Option<&Value>) -> [u8; 4] {
     if let Some(a) = v.and_then(|x| x.as_array()) {
@@ -915,17 +888,15 @@ fn region_val(v: Option<&Value>) -> Option<(i32, i32, i32, i32)> {
     Some((g(0), g(1), g(2), g(3)))
 }
 
-/// The recognized keys for a batch op kind: `(required, optional)`, read off
+/// The recognized keys for an operation kind: `(required, optional)`, read off
 /// the [`OPS`] table. Returns None for an unknown op kind.
-pub(super) fn batch_op_keys(
-    kind: &str,
-) -> Option<(&'static [&'static str], &'static [&'static str])> {
+pub(super) fn op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [&'static str])> {
     find_op(kind).map(|s| (s.required, s.optional))
 }
 
 /// Strict colour-array parse: `v` must be `[r,g,b]` or `[r,g,b,a]` with every
 /// component an integer 0..=255; the alpha defaults to 255. The ONE shape check
-/// for caller-supplied colours — the batch validator and the studio's paint-grid
+/// for caller-supplied colours — the operation validator and Studio's paint-grid
 /// legend parser share it (two hand-synced copies drift).
 pub fn color_array(v: &Value) -> Option<[u8; 4]> {
     let a = v.as_array()?;
@@ -939,20 +910,17 @@ pub fn color_array(v: &Value) -> Option<[u8; 4]> {
     Some(out)
 }
 
-/// Strictly validate one batch op object before it runs: the `op` key must name
+/// Strictly validate one operation object before it runs: the `op` key must name
 /// a known kind, every required key must be present, and no unrecognized keys
 /// may appear (typos / wrong-shape params would otherwise be silently defaulted).
-/// `idx` is the op's position in the batch, used only for the error message.
-pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
-    let obj = op
-        .as_object()
-        .ok_or_else(|| format!("op[{}]: each op must be a JSON object", idx))?;
+pub fn validate_op(op: &Value) -> Result<(), String> {
+    let obj = op.as_object().ok_or("operation must be a JSON object")?;
     let kind = obj
         .get("op")
         .and_then(|v| v.as_str())
-        .ok_or_else(|| format!("op[{}]: missing 'op' key naming the op kind", idx))?;
+        .ok_or("operation is missing the 'op' key")?;
     let (required, optional) =
-        batch_op_keys(kind).ok_or_else(|| format!("op[{}]: unknown op '{}'", idx, kind))?;
+        op_keys(kind).ok_or_else(|| format!("unknown operation '{kind}'"))?;
     // Keys every op accepts on top of its own params.
     let common = ["op", "opacity", "blend_mode", "erase"];
     let known = |k: &str| common.contains(&k) || required.contains(&k) || optional.contains(&k);
@@ -964,8 +932,7 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
     if !bad.is_empty() {
         let mut allowed: Vec<&str> = required.iter().chain(optional.iter()).copied().collect();
         return Err(format!(
-            "op[{}] ({}): unknown keys {} — {} takes {}",
-            idx,
+            "operation ({}) has unknown keys {} — {} takes {}",
             kind,
             bad.join(","),
             kind,
@@ -984,8 +951,7 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
         .collect();
     if !missing.is_empty() {
         return Err(format!(
-            "op[{}] ({}): missing required keys {}",
-            idx,
+            "operation ({}) is missing required keys {}",
             kind,
             missing.join(",")
         ));
@@ -1006,35 +972,34 @@ pub fn validate_batch_op(idx: usize, op: &Value) -> Result<(), String> {
             && color_array(v).is_none()
         {
             return Err(format!(
-                "op[{}] ({}): '{}' must be a colour array [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
-                idx, kind, k, v
+                "operation ({kind}): '{k}' must be a colour array [r,g,b] or [r,g,b,a] with 0..=255 values, got {v}"
             ));
         }
     }
-    // 0..=255 scalars: the wrapper `opacity`, glow's `intensity` and
-    // drop_shadow's `shadow_opacity` all funnel into u8 — a value like 300
+    // 0..=255 scalars: the wrapper `opacity` and drop_shadow's
+    // `shadow_opacity` both funnel into u8 — a value like 300
     // used to truncate (300 → 44) into a wrong-but-plausible result.
-    for k in ["opacity", "intensity", "shadow_opacity"] {
+    for k in ["opacity", "shadow_opacity"] {
         if let Some(v) = obj.get(k)
             && v.as_u64().is_none_or(|n| n > 255)
         {
             return Err(format!(
-                "op[{idx}] ({kind}): '{k}' must be an integer 0..=255, got {v}"
+                "operation ({kind}): '{k}' must be an integer 0..=255, got {v}"
             ));
         }
     }
     if let Some(value) = obj.get("blend_mode") {
         let name = value
             .as_str()
-            .ok_or_else(|| format!("op[{idx}] ({kind}): 'blend_mode' must be a string"))?;
+            .ok_or_else(|| format!("operation ({kind}): 'blend_mode' must be a string"))?;
         name.parse::<raster::Blend>()
-            .map_err(|error| format!("op[{idx}] ({kind}): {error}"))?;
+            .map_err(|error| format!("operation ({kind}): {error}"))?;
     }
     if let Some(value) = obj.get("erase")
         && !value.is_boolean()
     {
         return Err(format!(
-            "op[{idx}] ({kind}): 'erase' must be a boolean, got {value}"
+            "operation ({kind}): 'erase' must be a boolean, got {value}"
         ));
     }
     Ok(())

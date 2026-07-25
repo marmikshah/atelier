@@ -81,34 +81,6 @@ pub(crate) struct DocAddTag {
 
 // --- drawing params --------------------------------------------------------
 
-#[derive(Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
-pub(crate) struct DocBatch {
-    pub(crate) doc_id: DocumentId,
-    pub(crate) layer: usize,
-    pub(crate) frame: usize,
-    /// Apply the SAME op list to each of these frames as well (a repeated fix
-    /// on a static layer is one call, not one per frame). Runs on the union of
-    /// `frame` and this list, each frame in full op order.
-    pub(crate) frames: Option<Vec<usize>>,
-    /// Ordered ops, each an object; the derived item schema would be `true`
-    /// (any), which strict tool-call parsers (e.g. Gemini) reject — so pin it to
-    /// `{"type":"object"}` while keeping the free-form op payload.
-    #[schemars(schema_with = "op_list_schema")]
-    pub(crate) ops: Vec<serde_json::Value>,
-}
-
-/// Array-of-object schema for a free-form op list. Emitting a concrete `items`
-/// object keeps `doc_batch` callable by tool parsers that refuse a boolean
-/// (`items: true`) array schema.
-fn op_list_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-    schemars::json_schema!({
-        "type": "array",
-        "items": { "type": "object" },
-        "description": "Ordered ops, each like {\"op\":\"rect\",\"x0\":1,\"y0\":1,\"x1\":8,\"y1\":8,\"color\":[r,g,b],\"fill\":true}. Draw ops: pencil/line/rect/ellipse/polyline/polygon/stroke/curve/stamp/fill/bucket/gradient/scatter/noise/text/fill_cel/clear_cel. FX ops: blur/outline/drop_shadow/bevel/shade/form/dither/pixel_perfect/flip/shift/rotate/scale/symmetry/quantize/replace_color/adjust/gradient_map. Plus glow (batch only)."
-    })
-}
-
 fn op_name_schema(names: &[&str]) -> schemars::Schema {
     let mut schema = schemars::json_schema!({"type": "string"});
     schema
@@ -553,18 +525,6 @@ mod tests {
     }
 
     #[test]
-    fn doc_batch_ops_items_is_a_concrete_object_not_any() {
-        // Regression: `Vec<serde_json::Value>` derives `items: true` (any),
-        // which strict tool-call parsers (Gemini) reject. Pin it to an object.
-        let schema = schemars::schema_for!(DocBatch);
-        let items = &schema.as_value()["properties"]["ops"]["items"];
-        assert_eq!(
-            items["type"], "object",
-            "ops items must be an object schema, got {items}"
-        );
-    }
-
-    #[test]
     fn typed_tool_params_reject_removed_or_misspelled_fields() {
         let id = "d_0000000000000000";
         assert!(
@@ -645,7 +605,7 @@ mod tests {
                 "op": "glow"
             }))
             .is_err(),
-            "accepted a batch-only op through doc_fx"
+            "accepted the removed glow operation through doc_fx"
         );
         // Undocumented aliases are not compatibility APIs.
         for alias in ["grayscale", "saturation"] {

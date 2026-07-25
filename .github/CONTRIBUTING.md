@@ -25,13 +25,13 @@ make check
 ```
 
 That non-mutating gate checks release metadata, formatting, Clippy, rustdoc,
-tests, authored recipe replays, and tool-reference rendering.
+tests, and tool-reference rendering.
 
 Useful commands:
 
 ```sh
 make fmt          # apply formatting
-make test         # shipped crates + recipe replays
+make test         # complete Rust test suite
 make docs         # generate a local site/tools.html preview
 make release      # optimized binary
 ```
