@@ -1,5 +1,5 @@
-//! `atelier replay <recipe.json>` — drive the tool surface through a scripted
-//! list of tool calls, in-process.
+//! `atelier replay <recipe.jsonl>` — rebuild through a recorded list of tool
+//! calls, in process.
 //!
 //! Every step goes through `Atelier::dispatch` — the same single path MCP
 //! clients and `atelier call` take, journaling and write ordering included —
@@ -12,15 +12,15 @@
 
 use std::collections::HashMap;
 
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
 
-use atelier_mcp::recipe::{Recipe, Step};
+use atelier_mcp::recipe::Recipe;
 use atelier_mcp::server::{self, Atelier};
-use atelier_studio::{Studio, ToolName};
+use atelier_studio::{JournalEntry, Studio, ToolName};
 use rmcp::model::CallToolResult;
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
-const USAGE: &str = "usage: atelier replay <recipe.json | doc-id> [--home DIR]";
+const USAGE: &str = "usage: atelier replay <recipe.jsonl | doc-id> [--home DIR]";
 
 /// Read the recipe to replay: either a file, or the journal of a document in
 /// the store.
@@ -137,19 +137,16 @@ async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
 ///
 /// Recorded document ids never reach the server verbatim: `doc_new` always
 /// mints a fresh opaque id, so every later target is rewritten to the id this
-/// run actually received. Authored recipes name the returned value with an
-/// explicit `bind` and refer to it as `$name`; journals carry the concrete id
-/// captured from the original live call.
+/// run actually received.
 async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
-    // Header line (to stderr, status channel) so the run is self-identifying.
-    eprintln!("== {} — {}", recipe.name, recipe.description);
+    eprintln!("== replaying journal");
 
     let mut ids: HashMap<String, String> = HashMap::new();
     for (idx, step) in recipe.steps.iter().enumerate() {
         let mut args = step.args.clone();
         let recorded = if step.tool == ToolName::DocNew {
-            match new_recorded_id(step, &mut args, recipe.is_journal()) {
-                Ok(recorded) => recorded,
+            match take_recorded_id(&mut args) {
+                Ok(recorded) => Some(recorded),
                 Err(error) => {
                     print_step(idx, step, &format!("ERROR {error}"));
                     return Err(format!("step {} ({}) failed: {error}", idx + 1, step.tool));
@@ -162,7 +159,10 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
             }
             None
         };
-        let result = match atelier.dispatch(step.tool, args, "replay").await {
+        let result = match atelier
+            .dispatch(step.tool, Value::Object(args), "replay")
+            .await
+        {
             Ok(result) => result,
             // Protocol error (malformed args) — recipe parsing already rejects
             // unknown tools. A recipe is a narrative, so the first failed step
@@ -185,7 +185,7 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
             ));
         }
 
-        // Bind recorded id → minted id so every later step follows this run's
+        // Map recorded id → minted id so every later step follows this run's
         // document, not whatever the recorded id happens to name in the store.
         if let Some(recorded) = recorded {
             let Some(minted) = minted_id(&result) else {
@@ -205,49 +205,32 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
     Ok(())
 }
 
-/// Resolve the identity represented by `doc_new` and remove journal-only
-/// output metadata before dispatch. A journal carries the concrete id returned
-/// by the original call. An authored recipe names that result with `bind`.
-fn new_recorded_id(step: &Step, args: &mut Value, journal: bool) -> Result<Option<String>, String> {
-    let obj = args
-        .as_object_mut()
-        .ok_or("doc_new args must be a JSON object")?;
-    let stamped = match obj.remove("doc_id") {
-        None => None,
-        Some(Value::String(id)) if !id.is_empty() => Some(id),
-        Some(_) => return Err("doc_new doc_id must be a non-empty string".into()),
-    };
-    if journal {
-        return stamped.map(Some).ok_or_else(|| {
+/// Remove the concrete id stamped into the recorded `doc_new` arguments. The
+/// replayed call mints a new id; later targets are remapped to it.
+fn take_recorded_id(args: &mut Map<String, Value>) -> Result<String, String> {
+    match args.remove("doc_id") {
+        Some(Value::String(id)) if !id.is_empty() => Ok(id),
+        Some(_) => Err("doc_new doc_id must be a non-empty string".into()),
+        None => Err(
             "journal doc_new is missing required args.doc_id — rewrite the journal in the current format"
-                .into()
-        });
+                .into(),
+        ),
     }
-    if stamped.is_some() {
-        return Err("authored doc_new must not include journal-only args.doc_id".into());
-    }
-    step.bind
-        .as_ref()
-        .map(|binding| Some(format!("${binding}")))
-        .ok_or_else(|| "authored doc_new needs an explicit bind".into())
 }
 
 /// Rewrite every recorded document id in `args` through the remap table.
 /// Covers each id-bearing field on the tool surface: `doc_id` everywhere,
 /// plus doc_palette's `set_doc`.
-fn remap_ids(args: &mut Value, ids: &HashMap<String, String>) -> Result<(), String> {
-    let Some(obj) = args.as_object_mut() else {
-        return Ok(());
-    };
+fn remap_ids(args: &mut Map<String, Value>, ids: &HashMap<String, String>) -> Result<(), String> {
     for key in ["doc_id", "set_doc"] {
-        let Some(recorded) = obj.get(key).and_then(Value::as_str) else {
+        let Some(recorded) = args.get(key).and_then(Value::as_str) else {
             continue;
         };
         if let Some(mapped) = ids.get(recorded) {
-            obj.insert(key.into(), json!(mapped));
-        } else if recorded.starts_with('$') {
+            args.insert(key.into(), json!(mapped));
+        } else {
             return Err(format!(
-                "unresolved document binding '{recorded}' in `{key}`"
+                "recorded document id '{recorded}' in `{key}` has no doc_new mapping"
             ));
         }
     }
@@ -262,14 +245,9 @@ fn minted_id(result: &CallToolResult) -> Option<String> {
         .map(str::to_string)
 }
 
-/// One-line per-step report: `[N] tool — summary  (note)`. Goes to stdout.
-fn print_step(idx: usize, step: &Step, summary: &str) {
-    let note = step
-        .note
-        .as_deref()
-        .map(|n| format!("  ({n})"))
-        .unwrap_or_default();
-    println!("[{}] {} — {summary}{note}", idx + 1, step.tool);
+/// One-line per-step report: `[N] tool — summary`. Goes to stdout.
+fn print_step(idx: usize, step: &JournalEntry, summary: &str) {
+    println!("[{}] {} — {summary}", idx + 1, step.tool);
 }
 
 /// Condense a tool result into a single readable line. atelier returns its
@@ -300,107 +278,42 @@ mod tests {
         CallToolResult::success(vec![Content::text(text)])
     }
 
-    #[test]
-    fn parses_full_recipe() {
-        let src = r#"{
-            "name": "demo",
-            "description": "tiny",
-            "steps": [
-                {"tool": "doc_new", "bind": "doc", "args": {"name": "x", "width": 8, "height": 8}},
-                {"tool": "doc_info", "args": {"doc_id": "$doc"}, "note": "inspect"}
-            ]
-        }"#;
-        let r = Recipe::parse(src).expect("should parse");
-        assert_eq!(r.name, "demo");
-        assert_eq!(r.steps.len(), 2);
-        assert_eq!(r.steps[0].tool, ToolName::DocNew);
-        assert_eq!(r.steps[1].note.as_deref(), Some("inspect"));
+    fn object(value: Value) -> Map<String, Value> {
+        value.as_object().unwrap().clone()
     }
 
     #[test]
-    fn args_are_required() {
-        let src = r#"{
-            "name": "n",
-            "description": "d",
-            "steps": [{"tool": "list_docs"}]
-        }"#;
-        assert!(Recipe::parse(src).is_err());
-    }
+    fn recorded_identity_is_required_and_removed_before_dispatch() {
+        let mut args = object(json!({
+            "name": "Hero",
+            "doc_id": "d_0000000000000000"
+        }));
+        assert_eq!(take_recorded_id(&mut args).unwrap(), "d_0000000000000000");
+        assert_eq!(args, object(json!({"name": "Hero"})));
 
-    #[test]
-    fn empty_steps_rejected() {
-        let src = r#"{"name": "n", "description": "d", "steps": []}"#;
-        let err = Recipe::parse(src).expect_err("empty steps must error");
-        assert!(err.contains("no steps"), "got: {err}");
-    }
-
-    #[test]
-    fn malformed_json_actionable_error() {
-        let err = Recipe::parse("{ not json").expect_err("must error");
-        assert!(err.contains("invalid recipe JSON"), "got: {err}");
-    }
-
-    #[test]
-    fn new_identity_separates_journals_from_authored_bindings() {
-        let journal_step = Step {
-            tool: ToolName::DocNew,
-            args: json!({}),
-            bind: None,
-            note: None,
-        };
-        // A current journal requires its stamp and strips it from sent args.
-        let mut args = json!({"name": "Hero", "doc_id": "d_0000000000000000"});
-        assert_eq!(
-            new_recorded_id(&journal_step, &mut args, true)
-                .unwrap()
-                .as_deref(),
-            Some("d_0000000000000000")
-        );
-        assert_eq!(args, json!({"name": "Hero"}));
-
-        // An unstamped journal is obsolete rather than inferred from location.
-        let mut args = json!({"name": "Hero"});
-        assert!(new_recorded_id(&journal_step, &mut args, true).is_err());
-
-        // An authored recipe names the returned value rather than predicting it.
-        let authored_step = Step {
-            tool: ToolName::DocNew,
-            args: json!({}),
-            bind: Some("hero".into()),
-            note: None,
-        };
-        let mut args = json!({"name": "Invader March"});
-        assert_eq!(
-            new_recorded_id(&authored_step, &mut args, false)
-                .unwrap()
-                .as_deref(),
-            Some("$hero")
-        );
-
-        // The two source forms cannot be silently mixed.
-        let mut args = json!({"name": "Hero", "doc_id": "d_0000000000000000"});
-        assert!(new_recorded_id(&authored_step, &mut args, false).is_err());
+        let mut unstamped = object(json!({"name": "Hero"}));
+        assert!(take_recorded_id(&mut unstamped).is_err());
     }
 
     #[test]
     fn remap_rewrites_every_id_bearing_field() {
         let ids: HashMap<String, String> =
-            [("$hero".to_string(), "d_0000000000000000".to_string())].into();
-        let mut args = json!({
-            "doc_id": "$hero",
-            "set_doc": "$hero",
+            [("d_old".to_string(), "d_0000000000000000".to_string())].into();
+        let mut args = object(json!({
+            "doc_id": "d_old",
+            "set_doc": "d_old",
             "name": "hero"
-        });
+        }));
         remap_ids(&mut args, &ids).unwrap();
         assert_eq!(
             args,
-            json!({
+            object(json!({
                 "doc_id": "d_0000000000000000",
                 "set_doc": "d_0000000000000000",
                 "name": "hero"
-            })
+            }))
         );
-        let mut unresolved = json!({"doc_id": "$missing"});
+        let mut unresolved = object(json!({"doc_id": "d_missing"}));
         assert!(remap_ids(&mut unresolved, &ids).is_err());
     }
 

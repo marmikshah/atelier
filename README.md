@@ -200,7 +200,7 @@ changes tool arguments:
 The server retains no request context. Journals record the exact arguments that
 ran, so a replay never depends on a live session or another caller's state.
 
-**26 tools**, all of them advertised — no profiles to pick, nothing hidden behind
+**25 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
 turn into an unreachable dead end.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html).
@@ -257,37 +257,15 @@ deterministic calls that *made* something, never looks, audits, external
 reference setup, or checkpoint bookkeeping. Restoring a checkpoint restores
 its journal too, so discarded edits cannot survive in provenance. Replay into
 a sandbox with `--home /tmp/demo` and you get the same pixels, anywhere.
-Current journals start with exactly one `doc_new` whose arguments include
-the minted `doc_id`, followed only by deterministic editing calls for that
-same document; replay rejects older or malformed shapes instead of guessing:
+Current journals start with exactly one `doc_new` whose arguments include the
+minted `doc_id`, followed only by deterministic editing calls for that same
+document. Replay accepts only this JSONL contract and rejects wrapped objects,
+bindings, older shapes, or malformed lines instead of guessing.
 
-```sh
-atelier replay docs/examples/invader-march.json --home /tmp/demo
-```
-
-The recipes in [docs/examples](docs/examples) are both the brand art and the
-integration tests. MCP clients inspect live documents through `doc_info` and
-`doc_look`, the same calls used by CLI and replay.
-
-Stored journals deliberately stay plain and fully resolved. Hand-authored
-recipe objects have one small convenience for opaque identities: bind the
-result of `doc_new`, then refer to it explicitly as `$doc`:
-
-```json
-{
-  "name": "tiny",
-  "description": "one authored document",
-  "steps": [
-    {"tool":"doc_new","bind":"doc","args":{"name":"tiny","width":8,"height":8}},
-    {"tool":"doc_draw","args":{"doc_id":"$doc","layer":0,"frame":0,"op":"fill_cel","color":[30,40,50]}}
-  ]
-}
-```
-
-That is result binding, not a second drawing language: every step is still a
-normal tool call and replay substitutes only ID-bearing fields. Use `doc_batch`
-for many ordered edits and `doc_paint_grid` for dense pixel rows when a recipe
-needs fewer, smaller calls.
+Each `doc_draw` and `doc_fx` line applies exactly one operation to one cel.
+`doc_paint_grid` remains the single declarative operation for dense pixel rows.
+MCP clients inspect live documents through `doc_info` and `doc_look`, the same
+calls used by CLI and replay.
 
 ## A personal note
 

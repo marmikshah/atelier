@@ -1,4 +1,4 @@
-use super::batch::{OPS, OpSide, batch_op_keys};
+use super::operation::{OPS, OpSide, op_keys};
 use super::*;
 use image::Rgba;
 
@@ -11,20 +11,20 @@ fn the_op_table_is_the_single_source_of_truth() {
         assert!(seen.insert(s.name), "duplicate op name {}", s.name);
         // Validation reads the same key lists the table declares.
         assert_eq!(
-            batch_op_keys(s.name),
+            op_keys(s.name),
             Some((s.required, s.optional)),
             "{}: validator disagrees with the table",
             s.name
         );
         // Dispatch finds every entry. A missing-required-arg op may Err or
         // panic; either proves the executor exists. The only forbidden outcome
-        // is "unknown batch op".
+        // is "unknown operation".
         let mut d = Document::new("t", 8, 8);
         let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             d.apply_op_raw(0, 0, &json!({"op": s.name}))
         }));
         if let Ok(Err(e)) = r {
-            assert!(!e.contains("unknown batch op"), "{}: {e}", s.name);
+            assert!(!e.contains("unknown operation"), "{}: {e}", s.name);
         }
     }
     // The vocabularies are filtered views: disjoint, and covering every op.
@@ -35,13 +35,11 @@ fn the_op_table_is_the_single_source_of_truth() {
     for op in fx_ops() {
         assert!(OPS.iter().any(|s| s.name == *op && s.side == OpSide::Fx));
     }
-    // glow stays batch-only (its on-palette snap has no single-op form).
-    assert!(!draw_ops().contains(&"glow") && !fx_ops().contains(&"glow"));
     // And the reverse: an unknown op IS reported (the guard isn't vacuous).
-    assert!(batch_op_keys("nope").is_none());
+    assert!(op_keys("nope").is_none());
     let mut d = Document::new("t", 8, 8);
     let e = d.apply_op_raw(0, 0, &json!({"op": "nope"})).unwrap_err();
-    assert!(e.contains("unknown batch op"));
+    assert!(e.contains("unknown operation"));
 }
 
 #[test]
@@ -174,10 +172,9 @@ fn merge_down_bakes_upper_onto_lower() {
 #[test]
 fn cel_wide_ops_are_reachable_from_their_single_op_tool() {
     // The vocabulary drives doc_draw/doc_fx dispatch, so an op the registry can
-    // execute but the vocabulary doesn't name is reachable ONLY through
-    // doc_batch — `clear_cel` was exactly that bug once.
+    // execute but the vocabulary doesn't name would be unreachable.
     for op in ["fill_cel", "clear_cel"] {
-        assert!(batch_op_keys(op).is_some(), "{op} lost its registry entry");
+        assert!(op_keys(op).is_some(), "{op} lost its registry entry");
         assert!(
             draw_ops().contains(&op),
             "{op} is dispatchable but missing from the draw vocabulary — doc_draw rejects it"
@@ -376,13 +373,13 @@ fn malformed_colour_errors_instead_of_black_fallback() {
         json!([255, 0]),
         json!([255, 0, 300]),
     ] {
-        let e = validate_batch_op(0, &json!({"op": "outline", "color": bad}))
+        let e = validate_op(&json!({"op": "outline", "color": bad}))
             .expect_err("malformed colour must be rejected");
         assert!(e.contains("colour array"), "unhelpful error: {e}");
     }
     // Well-formed colours still pass, 3 or 4 channels.
-    validate_batch_op(0, &json!({"op": "outline", "color": [255, 0, 255]})).unwrap();
-    validate_batch_op(0, &json!({"op": "outline", "color": [255, 0, 255, 128]})).unwrap();
+    validate_op(&json!({"op": "outline", "color": [255, 0, 255]})).unwrap();
+    validate_op(&json!({"op": "outline", "color": [255, 0, 255, 128]})).unwrap();
 }
 
 #[test]
@@ -803,13 +800,13 @@ fn text_unknown_char_is_hollow_box() {
 }
 
 #[test]
-fn batch_text_op_validates() {
-    // The "text" op must be a known batch op with its required keys checked.
+fn text_op_validates() {
+    // The "text" op must be known and have its required keys checked.
     let ok = json!({"op": "text", "x": 0, "y": 0, "text": "HI", "color": [255, 255, 255]});
-    assert!(validate_batch_op(0, &ok).is_ok());
+    assert!(validate_op(&ok).is_ok());
     // Missing the required `text` key is rejected.
     let missing = json!({"op": "text", "x": 0, "y": 0, "color": [255, 255, 255]});
-    assert!(validate_batch_op(0, &missing).is_err());
+    assert!(validate_op(&missing).is_err());
 }
 
 /// Two opaque full-cel layers, top with `mode`, flattened at frame 0.
@@ -1253,7 +1250,7 @@ fn export_apng_long_delay_does_not_wrap() {
 }
 
 #[test]
-fn per_op_opacity_blends_in_batch() {
+fn per_op_opacity_blends() {
     let mut d = Document::new("t", 2, 2);
     d.fill_cel(0, 0, [0, 0, 0, 255]).unwrap();
     d.apply_op(0, 0, &json!({"op":"rect","x0":0,"y0":0,"x1":1,"y1":1,"color":[200,0,0],"fill":true,"opacity":128})).unwrap();
@@ -1379,32 +1376,27 @@ fn fx_parameters_are_clamped_to_sane_bounds() {
 }
 
 #[test]
-fn batch_wrapper_scalars_reject_out_of_range_values() {
+fn operation_wrapper_scalars_reject_out_of_range_values() {
     // 300 as u8 == 44: truncation used to silently apply a wrong opacity.
-    let e = validate_batch_op(
-        0,
-        &json!({"op": "rect", "x0": 0, "y0": 0, "x1": 1, "y1": 1,
-        "color": [1, 2, 3], "opacity": 300}),
-    )
+    let e = validate_op(&json!({"op": "rect", "x0": 0, "y0": 0, "x1": 1, "y1": 1,
+        "color": [1, 2, 3], "opacity": 300}))
     .unwrap_err();
     assert!(e.contains("opacity"), "got: {e}");
-    let e = validate_batch_op(0, &json!({"op": "glow", "intensity": 256})).unwrap_err();
-    assert!(e.contains("intensity"), "got: {e}");
-    let e = validate_batch_op(
-        0,
-        &json!({"op": "drop_shadow", "color": [1, 2, 3], "shadow_opacity": 999}),
-    )
-    .unwrap_err();
+    let e = validate_op(&json!({"op": "drop_shadow", "color": [1, 2, 3], "shadow_opacity": 999}))
+        .unwrap_err();
     assert!(e.contains("shadow_opacity"), "got: {e}");
     for bad in [
         json!({"op": "clear_cel", "blend_mode": "source-over"}),
         json!({"op": "clear_cel", "blend_mode": 1}),
         json!({"op": "clear_cel", "erase": "true"}),
     ] {
-        assert!(validate_batch_op(0, &bad).is_err(), "accepted {bad}");
+        assert!(validate_op(&bad).is_err(), "accepted {bad}");
     }
     // And the good path still passes.
-    assert!(validate_batch_op(0, &json!({"op": "glow", "intensity": 255})).is_ok());
+    assert!(
+        validate_op(&json!({"op": "drop_shadow", "color": [1, 2, 3], "shadow_opacity": 255}))
+            .is_ok()
+    );
 }
 
 #[test]

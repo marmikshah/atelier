@@ -106,7 +106,7 @@ fn palette_list(v: &[Vec<i64>]) -> Result<Vec<[u8; 4]>, String> {
 }
 
 /// [r,g,b] or [r,g,b,a] -> RGBA, STRICT: exactly 3..=4 components, each
-/// 0..=255 — the same shape `validate_batch_op` enforces on the batch path.
+/// 0..=255 — the same shape the operation validator enforces for draw/FX.
 /// The typed tool paths used to truncate via `as u8` (300 → 44, -1 → 255)
 /// into a wrong-but-plausible colour the agent then painted with.
 fn rgba(v: &[i64]) -> Result<[u8; 4], String> {
@@ -460,7 +460,6 @@ impl Atelier {
             ToolName::DocAddTag => call!(DocAddTag, doc_add_tag),
             ToolName::DocCheckpoint => call!(DocCheckpoint, doc_checkpoint),
             ToolName::DocPalette => call!(DocPalette, doc_palette),
-            ToolName::DocBatch => call!(DocBatch, doc_batch),
             ToolName::DocDraw => call!(DocDraw, doc_draw),
             ToolName::DocFx => call!(DocFx, doc_fx),
             ToolName::DocRegion => call!(DocRegion, doc_region),
@@ -537,18 +536,6 @@ fn journal_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Opti
             .and_then(Value::as_str)
             .map(str::to_string),
     }
-}
-
-/// Union of doc_batch's `frame` and `frames`, in order, deduped — one call
-/// fixes a static layer across the whole timeline instead of N round-trips.
-fn batch_targets(frame: usize, frames: Option<Vec<usize>>) -> Vec<usize> {
-    let mut targets = vec![frame];
-    for f in frames.into_iter().flatten() {
-        if !targets.contains(&f) {
-            targets.push(f);
-        }
-    }
-    targets
 }
 
 /// `doc_new`'s minted id exists only in its result. Stamping it into the
@@ -646,12 +633,13 @@ impl ServerHandler for Atelier {
         info.capabilities = ServerCapabilities::builder().enable_tools().build();
         info.instructions = Some(
             "Atelier is a stateless, offline pixel-art editor. Keep the doc_id returned \
-             by doc_new and pass it explicitly on every later document call. Use doc_batch \
-             or doc_paint_grid for a burst of marks and doc_look to inspect the result. MCP \
+             by doc_new and pass it explicitly on every later document call. Each doc_draw \
+             or doc_fx call applies exactly one operation; use doc_paint_grid for dense pixel \
+             rows and doc_look to inspect the result. MCP \
              _meta may carry a log label at \"io.github.marmikshah.atelier/session\", but \
              never tool defaults. Calls are journaled with concrete arguments, so stdio, \
              HTTP, CLI, and replay stay equivalent. Save a \
-             doc_checkpoint before destructive edits. All 26 tools are advertised."
+             doc_checkpoint before destructive edits. All 25 tools are advertised."
                 .into(),
         );
         info
@@ -721,7 +709,7 @@ mod tests {
             .instructions
             .unwrap_or_default();
         assert!(
-            instructions.contains("26 tools"),
+            instructions.contains("25 tools"),
             "get_info instructions drifted from the tool count"
         );
     }
@@ -746,9 +734,9 @@ mod tests {
         // `atelier tools` lists the registry only; building a `Studio` for it
         // used to create ~/.atelier/documents as a side effect of `--help`-level
         // work. The router is an associated fn, so nothing here touches disk.
-        assert_eq!(Atelier::registry_tools().len(), 26);
-        assert!(tools_text().starts_with("atelier tools — 26 tools\n"));
-        assert!(tools_html().contains("26</strong> tools"));
+        assert_eq!(Atelier::registry_tools().len(), 25);
+        assert!(tools_text().starts_with("atelier tools — 25 tools\n"));
+        assert!(tools_html().contains("25</strong> tools"));
     }
 
     #[test]
@@ -870,7 +858,7 @@ mod tests {
             "export writes an artifact but does not build the document"
         );
         // Anything that marks the canvas has to be in the recipe.
-        for t in ["doc_draw", "doc_batch", "doc_fx", "doc_new"] {
+        for t in ["doc_draw", "doc_fx", "doc_new"] {
             assert!(
                 is_journaled(tool(t), &json!({"doc_id": "d"})),
                 "{t} builds the art"
@@ -944,13 +932,6 @@ mod tests {
             journal_target(ToolName::DocDraw, &json!({"doc_id": doc_id}), &drew).as_deref(),
             Some(doc_id)
         );
-    }
-
-    #[test]
-    fn batch_frames_union_keeps_order_and_dedupes() {
-        assert_eq!(batch_targets(0, None), vec![0]);
-        assert_eq!(batch_targets(0, Some(vec![2, 0, 1, 2])), vec![0, 2, 1]);
-        assert_eq!(batch_targets(3, Some(vec![])), vec![3]);
     }
 
     #[test]
@@ -1188,7 +1169,7 @@ mod hardening_tests {
     use super::*;
 
     #[test]
-    fn rgba_is_strict_like_the_batch_validator() {
+    fn rgba_rejects_values_that_cannot_be_rgba() {
         assert_eq!(rgba(&[255, 128, 0]).unwrap(), [255, 128, 0, 255]);
         assert_eq!(rgba(&[1, 2, 3, 4]).unwrap(), [1, 2, 3, 4]);
         // These truncated silently before (300 → 44, -1 → 255, short → 0s).

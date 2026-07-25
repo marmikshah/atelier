@@ -186,37 +186,6 @@ impl Document {
         Ok(())
     }
 
-    /// Bloom: blur a bright copy of the cel and composite it back through a
-    /// light blend (`mode`, e.g. screen/add) at `intensity`. `color` (None =
-    /// the art's own colours) tints the glow. Self-contained on one cel.
-    pub fn glow(
-        &mut self,
-        layer: usize,
-        frame: usize,
-        color: Option<[u8; 4]>,
-        radius: i32,
-        intensity: u8,
-        blend: raster::Blend,
-    ) -> Result<(), String> {
-        let orig = self.cel_canvas(layer, frame)?.clone();
-        let (w, h) = (orig.width(), orig.height());
-        let mut src = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
-        for y in 0..h {
-            for x in 0..w {
-                let p = orig.get_pixel(x, y).0;
-                if p[3] > 0 {
-                    let c = color.unwrap_or(p);
-                    src.put_pixel(x, y, Rgba([c[0], c[1], c[2], p[3]]));
-                }
-            }
-        }
-        let g = raster::box_blur(&src, radius.max(1));
-        let mut out = orig.clone();
-        raster::composite(&mut out, &g, 0, 0, intensity, blend);
-        *self.cel_canvas(layer, frame)? = out;
-        Ok(())
-    }
-
     /// Fake-3D bevel: lighten the top/left edge band and darken the bottom/right
     /// band of the opaque shape (each within `depth` pixels of a silhouette
     /// edge), giving raised volume. `light`/`dark` carry their own alpha as the

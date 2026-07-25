@@ -20,10 +20,10 @@ use serde_json::{Value, json};
 
 use crate::raster;
 
-mod batch;
 mod draw;
 mod export;
 mod fx;
+mod operation;
 mod palette;
 mod region;
 mod render;
@@ -32,8 +32,8 @@ mod timeline;
 #[cfg(test)]
 mod tests;
 
-pub use batch::{color_array, draw_ops, fx_ops, validate_batch_op};
 pub use fx::{DitherAxis, DitherPattern};
+pub use operation::{color_array, draw_ops, fx_ops, validate_op};
 pub use render::{ValueView, seam_axis_img};
 pub use timeline::FrameAction;
 
@@ -216,7 +216,7 @@ fn is_cel_filename(name: &str) -> bool {
 }
 
 /// How `snap_to_palette` treats the partial-alpha pixels that continuous-tone FX
-/// (glow/blur/gradient/drop_shadow) and AA fringes leave behind — the difference
+/// (blur/gradient/drop_shadow) and AA fringes leave behind — the difference
 /// between "snap the colour but keep 200 soft alphas off-palette" and "make it
 /// crisp pixel art again".
 #[derive(Clone, Copy, Debug)]

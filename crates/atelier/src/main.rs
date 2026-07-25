@@ -31,7 +31,7 @@
 //! atelier uninstall
 //! atelier tools [--html]         # the tool surface / the reference page
 //! atelier library [rm ...]       # inspect or prune the document store
-//! atelier replay <recipe|id>     # rebuild a document from its journal
+//! atelier replay <journal|id>    # rebuild a document from its journal
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
 //! atelier init                   # stamp a directory-local ./.atelier store
 //! atelier skills [install|show]  # the shipped skills, for your agent
@@ -59,7 +59,7 @@ USAGE:
     atelier library               list the documents in the store (ATELIER_HOME)
             rm <id>... | rm --prefix <p> | rm --all [--yes]
                                   delete documents — permanent, confirms first
-    atelier replay <recipe|id>    replay a recipe file, or rebuild a document from its
+    atelier replay <journal|id>   replay a JSONL journal, or rebuild a document from its
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier call <tool> ['<json>' | --file PATH | --stdin]

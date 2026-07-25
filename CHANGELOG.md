@@ -19,8 +19,15 @@ releases.
 - **Unproven document features have been removed:** linked cels, slice metadata,
   `doc_slice`, `doc_tile`, and the duplicate `doc_clear_cel` endpoint.
   `doc_tile` made one document's replay depend on another mutable document;
-  slice metadata had no shipped consumer. Clear a cel with `doc_batch`
-  `op=clear_cel`.
+  slice metadata had no shipped consumer. Clear a cel with
+  `doc_draw op=clear_cel`.
+- **`doc_batch` has been removed.** `doc_draw` and `doc_fx` now apply exactly
+  one operation per call, eliminating the free-form operation list,
+  multi-frame batch routing, and batch-only `glow` path. The four unused
+  authored example recipes and their replay harness were removed with it.
+- Replay now accepts only the current `{tool,args}` JSONL journal contract.
+  The authored wrapper-object format and its result-binding subsystem were
+  removed after their only consumers—the four example recipes—were deleted.
 - The unused `doc_draw` `box_iso` and `panel` special cases were removed. They
   bypassed the shared operation registry and had no calls in the full journal
   corpus; compose those shapes from the generic polygon, rectangle, and line
@@ -54,7 +61,7 @@ releases.
 
 ### Changed
 
-- **The advertised MCP surface is 26 tools, down from 30.** Removed tools are
+- **The advertised MCP surface is 25 tools, down from 30.** Removed tools are
   also gone from dispatch, schemas, skills, docs, and examples; there are no
   deprecated aliases.
 - The retained public tool names are contract-pinned, and end-to-end stdio and
@@ -71,10 +78,9 @@ releases.
   routing-context metadata are removed, so stdio, HTTP, CLI, and replay dispatch
   the same payload. Optional
   `_meta["io.github.marmikshah.atelier/session"]` is a log label only.
-- Authored recipe objects can bind `doc_new`'s result and use `$<bind>` in
-  later ID-bearing fields. Stored JSONL journals remain fully resolved: their
-  first `doc_new` step is stamped with the concrete minted id, and replay mints
-  a new id and remaps the remaining steps.
+- Stored JSONL journals are fully resolved: their first `doc_new` step is
+  stamped with the concrete minted id, and replay mints a new id and remaps the
+  remaining steps.
 - Independent CLI and daemon processes now hold an advisory store lock through
   document save and journal append, preserving mutation and provenance order.
 - `Studio` is now a cloneable store-path handle instead of a process-wide

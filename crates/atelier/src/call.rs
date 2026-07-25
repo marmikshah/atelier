@@ -26,8 +26,8 @@ struct Call {
 }
 
 /// Parse `<tool> ['<json>' | --file PATH | --stdin]`. The three
-/// arg sources are mutually exclusive — a paint_grid legend or a batch op list
-/// outgrows a comfortable shell argument, which is what --file/--stdin are for.
+/// arg sources are mutually exclusive — a paint-grid legend can outgrow a
+/// comfortable shell argument, which is what --file/--stdin are for.
 /// Every tool argument is explicit JSON; the CLI carries no active document,
 /// layer, or frame.
 /// Errors are usage errors (exit 2), never tool results.
