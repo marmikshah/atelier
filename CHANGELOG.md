@@ -72,11 +72,11 @@ releases.
   choices; malformed document ids, region tuples, removed aliases, and unknown
   recipe/journal tools fail at the input boundary.
 - **Document identity is explicit and transport-independent.** `doc_create` is
-  replaced by `doc_new`, which returns a fresh opaque 80-bit Base32 `doc_id`;
-  names are display labels and may repeat. Every later document call carries
-  that id explicitly. The CLI `--doc`/`--layer`/`--frame` defaults and MCP
-  routing-context metadata are removed, so stdio, HTTP, CLI, and replay dispatch
-  the same payload. Optional
+  replaced by `doc_new`, which returns a canonical UUIDv4 `doc_id`; names are
+  display labels and may repeat. Custom `d_…` ids are not accepted. Every later
+  document call carries that id explicitly. The CLI
+  `--doc`/`--layer`/`--frame` defaults and MCP routing-context metadata are
+  removed, so stdio, HTTP, CLI, and replay dispatch the same payload. Optional
   `_meta["io.github.marmikshah.atelier/session"]` is a log label only.
 - Stored JSONL journals are fully resolved: their first `doc_new` step is
   stamped with the concrete minted id, and replay mints a new id and remaps the

@@ -59,7 +59,7 @@ mod tests {
     use super::*;
     use atelier_studio::ToolName;
 
-    const ID: &str = "d_0000000000000000";
+    const ID: &str = "550e8400-e29b-41d4-a716-446655440000";
 
     #[test]
     fn reads_a_document_journal() {
@@ -99,6 +99,10 @@ mod tests {
              {{\"args\":{{}}}}\n"
         );
         assert!(Recipe::parse(&invalid_complete).is_err());
+        assert!(
+            Recipe::parse("{\"tool\":\"doc_new\",\"args\":{\"doc_id\":\"d_0000000000000000\"}}\n")
+                .is_err()
+        );
         assert!(Recipe::parse("\n\n").is_err());
         assert!(Recipe::parse(r#"{"name":"old","description":"wrapped","steps":[]}"#).is_err());
     }
