@@ -29,14 +29,14 @@ Layered, animated, game-ready art — from your CLI, or over MCP.</p>
 </p>
 
 <p align="center"><em>Not one pixel was hand-placed. Every frame is a tool call.<br>
-<a href="https://marmikshah.github.io/atelier-site/">See every model draw the same ten tasks →</a></em></p>
+<a href="https://marmikshah.github.io/atelier/">See every model draw the same ten tasks →</a></em></p>
 
 ---
 
 ## Install
 
 ```sh
-curl -fsSL https://marmikshah.github.io/atelier-site/install.sh | sh
+curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
 
 Installs the binary after verifying its published SHA-256. That's the
@@ -204,7 +204,7 @@ ran, so a replay never depends on a live session or another caller's state.
 **25 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
 turn into an unreachable dead end.
-Browse them in the [tool reference](https://marmikshah.github.io/atelier-site/tools.html).
+Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html).
 
 ## Directory-local stores
 
