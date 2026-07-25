@@ -6,18 +6,17 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    CallToolResult, ContentBlock as Content, ListResourcesResult, ListToolsResult,
-    PaginatedRequestParams, ReadResourceRequestParams, ReadResourceResult, Resource,
-    ResourceContents, ServerCapabilities, ServerInfo,
+    CallToolResult, ContentBlock as Content, ListToolsResult, PaginatedRequestParams,
+    ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
 use rmcp::{ErrorData, RoleServer, ServerHandler, tool_handler};
+use serde::Deserialize;
 use serde_json::{Value, json};
 
 use atelier_studio::Studio;
 
 mod params;
-mod resources;
 mod toolsdoc;
 mod transport;
 
@@ -25,10 +24,38 @@ pub use toolsdoc::{tools_html, tools_text};
 pub use transport::{run, run_http};
 
 use params::*;
-use resources::{RESOURCE_RENDER_SCALE, ResourceTarget, base64, parse_resource_uri};
 
 fn j(v: Value) -> String {
     serde_json::to_string(&v).unwrap_or_else(|_| "{}".into())
+}
+
+/// Standard base64 for MCP image blocks. Kept here because inline images are
+/// part of tool results; Atelier no longer exposes a second, duplicate resource
+/// API for document renders.
+fn base64(bytes: &[u8]) -> String {
+    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for chunk in bytes.chunks(3) {
+        let b = [
+            chunk[0],
+            *chunk.get(1).unwrap_or(&0),
+            *chunk.get(2).unwrap_or(&0),
+        ];
+        let n = (b[0] as u32) << 16 | (b[1] as u32) << 8 | b[2] as u32;
+        out.push(TABLE[(n >> 18 & 63) as usize] as char);
+        out.push(TABLE[(n >> 12 & 63) as usize] as char);
+        out.push(if chunk.len() > 1 {
+            TABLE[(n >> 6 & 63) as usize] as char
+        } else {
+            '='
+        });
+        out.push(if chunk.len() > 2 {
+            TABLE[(n & 63) as usize] as char
+        } else {
+            '='
+        });
+    }
+    out
 }
 
 /// Wraps a studio result as a tool result: Ok becomes a JSON text part; errors
@@ -226,6 +253,14 @@ pub fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
         .is_some_and(|v| v.get("error").is_some())
 }
 
+/// Hub-operation discriminator. Most hubs call it `op`; checkpoints predate
+/// that convention and use `action`.
+fn call_op(args: &Value) -> Option<&str> {
+    args.get("op")
+        .or_else(|| args.get("action"))
+        .and_then(Value::as_str)
+}
+
 /// One log line per completed tool call: name, `op` variant, target document,
 /// duration, and — for application errors (`{"error": ...}` payloads, which are
 /// `Ok` at the protocol level and otherwise invisible) — the error text at
@@ -238,7 +273,7 @@ fn log_call(
     result: &rmcp::model::CallToolResult,
     elapsed: std::time::Duration,
 ) {
-    let op = args.get("op").and_then(Value::as_str).unwrap_or("-");
+    let op = call_op(args).unwrap_or("-");
     let doc = journal_target(tool, args, result)
         .or_else(|| {
             args.get("doc_id")
@@ -278,30 +313,147 @@ mod tools_read;
 
 // --- server ----------------------------------------------------------------
 
+/// Optional defaults attached to one call. Context is deliberately carried by
+/// the caller, never retained in the server: stdio, HTTP, CLI, and replay
+/// therefore resolve identical arguments, and concurrent clients cannot change
+/// one another's active document.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct CallContext {
+    /// Stable name used in logs. MCP callers may override the transport-derived
+    /// identity with `session` in Atelier's namespaced request metadata.
+    pub caller: String,
+    pub doc_id: Option<String>,
+    pub layer: Option<usize>,
+    pub frame: Option<usize>,
+}
+
+impl CallContext {
+    pub fn new(caller: impl Into<String>) -> Self {
+        Self {
+            caller: caller.into(),
+            ..Self::default()
+        }
+    }
+}
+
+/// Namespaced MCP `_meta` entry carrying [`CallContext`] defaults.
+pub const CALL_CONTEXT_META_KEY: &str = "io.github.marmikshah.atelier/context";
+
+/// Expand only fields the target tool actually accepts. Explicit arguments
+/// always win. The expanded object is what dispatch logs and journals, so
+/// replay never depends on an ambient session.
+fn apply_call_context(tool: &str, mut args: Value, context: &CallContext) -> Value {
+    let operation = call_op(&args).map(str::to_owned);
+    let op = operation.as_deref();
+    let Some(obj) = args.as_object_mut() else {
+        return args;
+    };
+
+    let accepts_doc = !matches!(tool, "doc_create" | "list_docs")
+        && !matches!((tool, op), ("doc_palette", None | Some("generate")));
+    let accepts_layer = matches!(
+        tool,
+        "doc_batch"
+            | "doc_draw"
+            | "doc_fx"
+            | "doc_region"
+            | "doc_paint_grid"
+            | "doc_dither_ramp"
+            | "doc_dump_region"
+            | "doc_silhouette"
+            | "doc_components"
+            | "doc_frame_diff"
+            | "doc_seam_report"
+            | "doc_anim_audit"
+            | "doc_critique"
+    ) || matches!(
+        (tool, op),
+        ("doc_palette", Some("snap" | "swap" | "report"))
+    );
+    let accepts_layer_index = matches!(
+        (tool, op),
+        (
+            "doc_layer",
+            Some("set" | "move" | "insert" | "delete" | "rename" | "duplicate" | "merge_down")
+        )
+    );
+    let accepts_frame = matches!(
+        tool,
+        "doc_batch"
+            | "doc_draw"
+            | "doc_fx"
+            | "doc_region"
+            | "doc_paint_grid"
+            | "doc_dither_ramp"
+            | "doc_dump_region"
+            | "doc_silhouette"
+            | "doc_components"
+            | "doc_seam_report"
+            | "doc_look"
+            | "doc_critique"
+    ) || matches!(
+        (tool, op),
+        ("doc_palette", Some("snap" | "swap" | "report"))
+            | ("doc_ref", Some("compare" | "diff"))
+            | (
+                "doc_frame",
+                Some("duration" | "delete" | "insert" | "duplicate" | "move")
+            )
+    );
+
+    if accepts_doc
+        && !obj.contains_key("doc_id")
+        && let Some(doc_id) = &context.doc_id
+    {
+        obj.insert("doc_id".into(), json!(doc_id));
+    }
+    if accepts_layer
+        && !obj.contains_key("layer")
+        && let Some(layer) = context.layer
+    {
+        obj.insert("layer".into(), json!(layer));
+    }
+    if accepts_layer_index
+        && !obj.contains_key("index")
+        && let Some(layer) = context.layer
+    {
+        obj.insert("index".into(), json!(layer));
+    }
+    if accepts_frame
+        && !obj.contains_key("frame")
+        && let Some(frame) = context.frame
+    {
+        obj.insert("frame".into(), json!(frame));
+    }
+    args
+}
+
 #[derive(Clone)]
 pub struct Atelier {
-    /// Shared so concurrent HTTP sessions serialise document file writes.
-    studio: std::sync::Arc<std::sync::Mutex<Studio>>,
-    tool_router: ToolRouter<Self>,
+    /// A cheap path handle, not editor state. Documents are opened from disk
+    /// for each operation; the async write-order lock and advisory store lock
+    /// provide the actual concurrency guarantees.
+    studio: Studio,
+    /// Immutable after startup and shared by cheap `Atelier` clones (notably
+    /// the stateless HTTP service's per-request handlers).
+    tool_router: std::sync::Arc<ToolRouter<Self>>,
     /// Held across dispatch + journal for every mutating call (an async lock,
-    /// because it spans the dispatcher's await). The studio mutex serialises
-    /// the mutations themselves, but it is released between the mutation and
-    /// its `journal_append` — without this outer lock two concurrent sessions
-    /// could execute A→B and journal B→A, and the recipe would silently
-    /// rebuild different art.
+    /// because it spans the dispatcher's await). Without it two concurrent
+    /// sessions could execute A→B and journal B→A, and the recipe would
+    /// silently rebuild different art.
     write_order: std::sync::Arc<tokio::sync::Mutex<()>>,
 }
 
 impl Atelier {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        Self::with_studio(std::sync::Arc::new(std::sync::Mutex::new(Studio::new())))
+        Self::with_studio(Studio::new())
     }
 
-    pub fn with_studio(studio: std::sync::Arc<std::sync::Mutex<Studio>>) -> Self {
+    pub fn with_studio(studio: Studio) -> Self {
         Self {
             studio,
-            tool_router: Self::tool_router(),
+            tool_router: std::sync::Arc::new(Self::tool_router()),
             write_order: std::sync::Arc::new(tokio::sync::Mutex::new(())),
         }
     }
@@ -347,18 +499,10 @@ impl Atelier {
             .collect()
     }
 
-    /// The shared studio.
-    ///
-    /// Recovers from a poisoned lock instead of propagating the panic: one bad
-    /// tool call used to take the whole server down with it, since every later
-    /// call re-panicked on the poison. The studio keeps almost no in-memory
-    /// state — documents load and save per op — so the guarded data is not
-    /// meaningfully corrupted by a panic mid-op, and a live server that answers
-    /// the next call beats one that is bricked until restart.
-    fn studio(&self) -> std::sync::MutexGuard<'_, Studio> {
-        self.studio
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    /// The document-store handle. `Studio` contains only the store path; there
+    /// is no process-local selection, clipboard, or active-document state.
+    fn studio(&self) -> &Studio {
+        &self.studio
     }
 
     /// THE one dispatch path every caller funnels through — the MCP handler
@@ -374,8 +518,10 @@ impl Atelier {
         &self,
         tool: &str,
         args: Value,
-        caller: &str,
+        context: CallContext,
     ) -> Result<CallToolResult, ErrorData> {
+        let args = apply_call_context(tool, args, &context);
+        let caller = context.caller.as_str();
         // For mutations, hold the order lock from before the dispatch until
         // after the journal write, so journal order can never diverge from
         // execution order under concurrent sessions. Reads skip it.
@@ -474,68 +620,11 @@ impl Atelier {
             }
         })
     }
-
-    /// Enumerate every browsable resource: per document, its structure JSON and a
-    /// frame-0 PNG render, each with a human-readable name.
-    fn list_resource_specs(&self) -> Result<Vec<Resource>, String> {
-        let _store_lock = self.studio().lock_store_shared()?;
-        let docs = self.studio().list_docs();
-        let mut out = Vec::new();
-        for d in docs["documents"].as_array().into_iter().flatten() {
-            let Some(id) = d["id"].as_str() else { continue };
-            let name = d["name"].as_str().unwrap_or(id);
-            out.push(
-                Resource::new(format!("atelier://doc/{id}"), format!("{name} (structure)"))
-                    .with_description("Document structure: layers, frames, cels, tags.")
-                    .with_mime_type("application/json"),
-            );
-            out.push(
-                Resource::new(
-                    format!("atelier://doc/{id}/render"),
-                    format!("{name} (render)"),
-                )
-                .with_description(format!(
-                    "Frame 0 flattened to a PNG at scale {RESOURCE_RENDER_SCALE}."
-                ))
-                .with_mime_type("image/png"),
-            );
-        }
-        Ok(out)
-    }
-
-    /// Resolve a parsed [`ResourceTarget`] to its contents (structure JSON text or
-    /// a PNG blob). Studio errors surface as `resource_not_found`.
-    fn fetch_resource(
-        &self,
-        uri: &str,
-        target: ResourceTarget,
-    ) -> Result<ResourceContents, String> {
-        let _store_lock = self.studio().lock_store_shared()?;
-        match target {
-            ResourceTarget::Structure(id) => {
-                let v = self.studio().doc_info(&id)?;
-                Ok(ResourceContents::text(j(v), uri).with_mime_type("application/json"))
-            }
-            ResourceTarget::Render(id) => {
-                let png = self
-                    .studio()
-                    .render_png_bytes(&id, 0, RESOURCE_RENDER_SCALE)?;
-                Ok(ResourceContents::blob(base64(&png), uri).with_mime_type("image/png"))
-            }
-        }
-    }
 }
 
-/// Tools omitted from per-document journals because replaying them does not
-/// rebuild document state. Most are reads. `doc_export` writes an external
-/// artifact, while `delete_doc` removes the journal along with the document.
-///
-/// This is an allowlist, and the default is deliberately the other way: an
-/// unlisted tool gets journaled. A stray read in a recipe replays as a harmless
-/// no-op, but a mutation missing from a recipe silently produces different art —
-/// so when in doubt, record. Anything added here must be irrelevant to rebuilding
-/// the document.
-const NON_JOURNALED_TOOLS: &[&str] = &[
+/// Tools that never change the document store. They still take a shared store
+/// lock so a concurrent mutation cannot expose a half-written document.
+const READ_ONLY_TOOLS: &[&str] = &[
     // the eye and the audits it reports through
     "doc_look",
     "doc_info",
@@ -547,35 +636,38 @@ const NON_JOURNALED_TOOLS: &[&str] = &[
     "doc_frame_diff",
     "doc_seam_report",
     "doc_contact_sheet",
-    // library-level: not part of any one document's provenance
+    // library/external output: not document-store mutations
     "list_docs",
-    "delete_doc",
     "doc_export",
 ];
 
-/// True when this call is part of how the document got made, and so belongs in
-/// its journal.
-///
-/// The hub tools are mixed — `doc_ref op=compare` is the see-and-fix loop's eye
-/// while `op=import` paints a guide layer — so the op decides, not the tool. The
-/// read ops are also the ones an agent calls most, which is exactly the noise a
-/// recipe should not carry.
-fn is_journaled(tool: &str, args: &Value) -> bool {
-    if NON_JOURNALED_TOOLS.contains(&tool) {
+/// Whether a call changes files in the document store. Kept separate from
+/// journaling: checkpoints and reference setup mutate working state but are
+/// session context, not deterministic recipe steps.
+fn is_store_mutation(tool: &str, args: &Value) -> bool {
+    if READ_ONLY_TOOLS.contains(&tool) {
         return false;
     }
-    let op = args.get("op").and_then(Value::as_str);
+    let op = call_op(args);
     !matches!(
         (tool, op),
         ("doc_ref", Some("analyze" | "compare" | "diff"))
             | ("doc_palette", Some("report"))
             | ("doc_checkpoint", Some("list"))
+    ) && !matches!(
+        (tool, op),
+        ("doc_palette", None | Some("generate")) if args.get("set_doc").is_none()
     )
 }
 
-/// Whether a call changes documents in the store.
-fn is_store_mutation(tool: &str, args: &Value) -> bool {
-    tool == "delete_doc" || is_journaled(tool, args)
+/// True when a successful mutation is one deterministic step in rebuilding the
+/// document. A checkpoint restore replaces the journal with its snapshot;
+/// recording save/restore/prune would make checkpoint ids part of the recipe.
+/// Reference files are external working context, so no `doc_ref` op is
+/// journaled. Unknown tools default to mutation+journal: a spurious recipe step
+/// fails loudly, while omitting a real mutation silently changes the rebuild.
+fn is_journaled(tool: &str, args: &Value) -> bool {
+    is_store_mutation(tool, args) && !matches!(tool, "delete_doc" | "doc_checkpoint" | "doc_ref")
 }
 
 /// The document a call belongs to. `doc_create` names it in the result (the id
@@ -630,6 +722,50 @@ fn journal_args(tool: &str, mut args: Value, target: Option<&str>) -> Value {
     args
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct McpCallContext {
+    doc_id: Option<String>,
+    layer: Option<usize>,
+    frame: Option<usize>,
+    session: Option<String>,
+}
+
+fn context_from_meta(
+    meta: Option<&rmcp::model::Meta>,
+    fallback_caller: String,
+) -> Result<CallContext, ErrorData> {
+    let Some(raw) = meta.and_then(|meta| meta.0.get(CALL_CONTEXT_META_KEY)) else {
+        return Ok(CallContext::new(fallback_caller));
+    };
+    let parsed: McpCallContext = serde_json::from_value(raw.clone()).map_err(|error| {
+        ErrorData::invalid_params(
+            format!("invalid MCP _meta['{CALL_CONTEXT_META_KEY}']: {error}"),
+            None,
+        )
+    })?;
+    let caller = match parsed.session {
+        Some(session)
+            if session.is_empty()
+                || session.len() > 128
+                || session.chars().any(char::is_control) =>
+        {
+            return Err(ErrorData::invalid_params(
+                "atelier call-context session must be 1..=128 bytes with no control characters",
+                None,
+            ));
+        }
+        Some(session) => session,
+        None => fallback_caller,
+    };
+    Ok(CallContext {
+        caller,
+        doc_id: parsed.doc_id,
+        layer: parsed.layer,
+        frame: parsed.frame,
+    })
+}
+
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for Atelier {
     /// Advertise the tool surface — all of it. It is small enough that hiding
@@ -659,11 +795,9 @@ impl ServerHandler for Atelier {
             .clone()
             .map(Value::Object)
             .unwrap_or_else(|| json!({}));
-        // Caller identity for the log line. `X-Atelier-Caller` header when the
-        // client chose a name; otherwise the TCP peer address — each client
-        // process holds its own keep-alive connection, so the port separates
-        // two sessions of the *same* client (e.g. two editor windows) with no
-        // config at all. stdio has one caller by definition and logs `-`.
+        // Fallback caller identity for the log line: configured HTTP header,
+        // then TCP peer, then `-` for stdio. A per-call `session` in the
+        // namespaced MCP metadata overrides it and survives HTTP reconnects.
         let caller = {
             let parts = context.extensions.get::<axum::http::request::Parts>();
             parts
@@ -680,62 +814,23 @@ impl ServerHandler for Atelier {
                 })
                 .unwrap_or_else(|| "-".into())
         };
-        self.dispatch(&tool, args, &caller).await
-    }
-
-    /// List the browsable resources: structure JSON + frame-0 render per document.
-    async fn list_resources(
-        &self,
-        _request: Option<PaginatedRequestParams>,
-        _context: RequestContext<RoleServer>,
-    ) -> Result<ListResourcesResult, ErrorData> {
-        let resources = self
-            .list_resource_specs()
-            .map_err(|error| ErrorData::internal_error(error, None))?;
-        Ok(ListResourcesResult::with_all_items(resources))
-    }
-
-    /// Read one resource by URI. Unknown URIs and missing documents become a
-    /// `resource_not_found` error rather than a panic.
-    async fn read_resource(
-        &self,
-        request: ReadResourceRequestParams,
-        _context: RequestContext<RoleServer>,
-    ) -> Result<ReadResourceResult, ErrorData> {
-        let target = parse_resource_uri(&request.uri).ok_or_else(|| {
-            ErrorData::resource_not_found(format!("unknown resource uri: {}", request.uri), None)
-        })?;
-        let contents = self
-            .fetch_resource(&request.uri, target)
-            .map_err(|e| ErrorData::resource_not_found(e, None))?;
-        Ok(ReadResourceResult::new(vec![contents]))
+        // rmcp moves protocol `_meta` out of the params and into the request
+        // context before invoking the handler.
+        let call_context = context_from_meta(Some(&context.meta), caller)?;
+        self.dispatch(&tool, args, call_context).await
     }
 
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
-        info.capabilities = ServerCapabilities::builder()
-            .enable_tools()
-            .enable_resources()
-            .build();
+        info.capabilities = ServerCapabilities::builder().enable_tools().build();
         info.instructions = Some(
-            "atelier: the pixel-art studio you can see — a headless editor where every \
-             mark is a tool call and doc_look hands the frame back as an image. doc_create a \
-             layered/animated document, then paint cels with doc_draw (one op: \
-             line/rect/ellipse/fill/stroke/text/…) or doc_batch (many ops in one call). LOOK with doc_look \
-             after every burst of edits — it returns the frame as an INLINE image plus \
-             value stats (pass doc_look out_path when you also need the PNG written to a file). \
-             Recreating from a reference image? doc_ref op=set FIRST, doc_ref op=analyze \
-             to plan (subject palette + silhouette), optionally doc_ref op=import onto a \
-             guide layer, then doc_ref op=compare after EVERY pass — it scores silhouette \
-             IoU and per-cell colour ΔE against the reference so likeness is measured, \
-             not remembered. \
-             Audit before exporting: doc_critique (failure modes), doc_palette op=report, \
-             doc_silhouette. Animate by duplicating frames (doc_frame op=add copy_from) and \
-             repainting only what moves — there is no pose interpolation; doc_frame_diff and \
-             doc_anim_audit check what changed and whether the timing reads. doc_checkpoint \
-             save before risky ops (quantize, palette snap) — restore rolls back. Export with \
-             doc_export (op=sheet|anim). list_docs browses the library. \
-             26 tools, all of them advertised — there is no profile to switch."
+            "Atelier is a stateless, offline pixel-art editor. Keep the id returned by \
+             doc_create; use doc_batch or doc_paint_grid for a burst of marks and doc_look \
+             to inspect the result. Calls may carry {doc_id,layer,frame,session} under MCP \
+             _meta[\"io.github.marmikshah.atelier/context\"]; explicit arguments win and \
+             resolved arguments are \
+             journaled, so stdio, HTTP, CLI, and replay stay equivalent. Save a \
+             doc_checkpoint before destructive edits. All 26 tools are advertised."
                 .into(),
         );
         info
@@ -871,7 +966,7 @@ mod tests {
         let a = temp_atelier("dispatch-coverage");
         for t in Atelier::registry_tools() {
             let name = t.name.to_string();
-            if let Err(e) = a.dispatch(&name, json!({}), "test").await {
+            if let Err(e) = a.dispatch(&name, json!({}), CallContext::new("test")).await {
                 assert!(
                     !e.message.contains("unknown tool"),
                     "{name} is advertised but dispatch has no arm for it"
@@ -986,17 +1081,16 @@ mod tests {
     }
 
     #[test]
-    fn every_non_journaled_tool_is_a_real_tool() {
+    fn every_read_only_tool_is_a_real_tool() {
         let names: Vec<String> = Atelier::tool_router()
             .list_all()
             .into_iter()
             .map(|t| t.name.to_string())
             .collect();
-        for t in NON_JOURNALED_TOOLS {
+        for t in READ_ONLY_TOOLS {
             assert!(
                 names.contains(&t.to_string()),
-                "NON_JOURNALED_TOOLS names '{t}', which is not a tool — renamed or removed? \
-                 A stale entry here silently drops a real call from every journal."
+                "READ_ONLY_TOOLS names '{t}', which is not a tool — renamed or removed?"
             );
         }
     }
@@ -1022,16 +1116,42 @@ mod tests {
 
     #[test]
     fn hub_tools_are_classified_by_op_not_by_name() {
-        // doc_ref is both the eye (compare) and the hand (import).
+        // Reference setup changes working state but is external context, not a
+        // deterministic recipe step.
         assert!(!is_journaled("doc_ref", &json!({"op": "compare"})));
         assert!(!is_journaled("doc_ref", &json!({"op": "diff"})));
-        assert!(is_journaled("doc_ref", &json!({"op": "import"})));
-        assert!(is_journaled("doc_ref", &json!({"op": "set"})));
-        // Same split inside doc_palette and doc_checkpoint.
+        assert!(!is_store_mutation("doc_ref", &json!({"op": "compare"})));
+        assert!(is_store_mutation("doc_ref", &json!({"op": "set"})));
+        assert!(!is_journaled("doc_ref", &json!({"op": "set"})));
+
+        // Palette reports and unbound generation are reads; document-targeted
+        // palette ops remain deterministic mutations.
         assert!(!is_journaled("doc_palette", &json!({"op": "report"})));
         assert!(is_journaled("doc_palette", &json!({"op": "set"})));
-        assert!(!is_journaled("doc_checkpoint", &json!({"op": "list"})));
-        assert!(is_journaled("doc_checkpoint", &json!({"op": "restore"})));
+        assert!(!is_store_mutation(
+            "doc_palette",
+            &json!({"op": "generate"})
+        ));
+        assert!(is_journaled(
+            "doc_palette",
+            &json!({"op": "generate", "set_doc": "hero"})
+        ));
+
+        // Checkpoint files mutate the store, but restore replaces the live
+        // journal with the checkpointed one instead of recording checkpoint ids.
+        assert!(!is_journaled("doc_checkpoint", &json!({"action": "list"})));
+        assert!(!is_store_mutation(
+            "doc_checkpoint",
+            &json!({"action": "list"})
+        ));
+        assert!(is_store_mutation(
+            "doc_checkpoint",
+            &json!({"action": "restore"})
+        ));
+        assert!(!is_journaled(
+            "doc_checkpoint",
+            &json!({"action": "restore"})
+        ));
         // An unknown tool defaults to journaled: a missing mutation corrupts
         // the replay, a spurious step only wastes a line.
         assert!(is_journaled("doc_newly_added_tool", &json!({})));
@@ -1060,6 +1180,79 @@ mod tests {
         assert_eq!(batch_targets(0, None), vec![0]);
         assert_eq!(batch_targets(0, Some(vec![2, 0, 1, 2])), vec![0, 2, 1]);
         assert_eq!(batch_targets(3, Some(vec![])), vec![3]);
+    }
+
+    #[test]
+    fn call_context_expands_supported_fields_without_overriding_args() {
+        let context = CallContext {
+            caller: "session-a".into(),
+            doc_id: Some("hero".into()),
+            layer: Some(2),
+            frame: Some(3),
+        };
+        assert_eq!(
+            apply_call_context("doc_draw", json!({"op": "clear_cel", "frame": 7}), &context),
+            json!({
+                "doc_id": "hero",
+                "layer": 2,
+                "frame": 7,
+                "op": "clear_cel"
+            }),
+            "explicit frame wins over the context default"
+        );
+        assert_eq!(
+            apply_call_context("doc_palette", json!({"op": "generate"}), &context),
+            json!({"op": "generate"}),
+            "unbound palette generation must not mutate the active document"
+        );
+        assert_eq!(
+            apply_call_context("list_docs", json!({}), &context),
+            json!({}),
+            "library calls do not acquire document/cel context"
+        );
+        assert_eq!(
+            apply_call_context(
+                "doc_layer",
+                json!({"op": "rename", "name": "ink"}),
+                &context
+            ),
+            json!({"doc_id": "hero", "op": "rename", "index": 2, "name": "ink"}),
+            "the layer default maps to doc_layer's index field"
+        );
+        assert_eq!(
+            apply_call_context("doc_layer", json!({"op": "add"}), &context),
+            json!({"doc_id": "hero", "op": "add"}),
+            "adding a layer has no existing-layer target"
+        );
+    }
+
+    #[test]
+    fn mcp_context_is_namespaced_strict_and_session_named() {
+        let meta: rmcp::model::Meta = serde_json::from_value(json!({
+            CALL_CONTEXT_META_KEY: {
+                "doc_id": "hero",
+                "layer": 1,
+                "frame": 2,
+                "session": "sprite-pass"
+            }
+        }))
+        .unwrap();
+        let context = context_from_meta(Some(&meta), "transport".into()).unwrap();
+        assert_eq!(
+            context,
+            CallContext {
+                caller: "sprite-pass".into(),
+                doc_id: Some("hero".into()),
+                layer: Some(1),
+                frame: Some(2),
+            }
+        );
+
+        let bad: rmcp::model::Meta = serde_json::from_value(json!({
+            CALL_CONTEXT_META_KEY: {"unknown": true}
+        }))
+        .unwrap();
+        assert!(context_from_meta(Some(&bad), "transport".into()).is_err());
     }
 
     #[test]
@@ -1132,24 +1325,6 @@ mod tests {
     }
 
     #[test]
-    fn resource_uri_parses_and_rejects() {
-        assert_eq!(
-            parse_resource_uri("atelier://doc/hero"),
-            Some(ResourceTarget::Structure("hero".into()))
-        );
-        assert_eq!(
-            parse_resource_uri("atelier://doc/hero/render"),
-            Some(ResourceTarget::Render("hero".into()))
-        );
-        // Unknown scheme, empty id, extra segments, and bare prefixes -> None.
-        assert_eq!(parse_resource_uri("file:///hero"), None);
-        assert_eq!(parse_resource_uri("atelier://doc/"), None);
-        assert_eq!(parse_resource_uri("atelier://doc//render"), None);
-        assert_eq!(parse_resource_uri("atelier://doc/hero/extra"), None);
-        assert_eq!(parse_resource_uri("atelier://doc/hero/render/x"), None);
-    }
-
-    #[test]
     fn base64_matches_known_vectors() {
         // RFC 4648 test vectors exercise the 0/1/2 trailing-byte padding cases.
         assert_eq!(base64(b""), "");
@@ -1159,55 +1334,97 @@ mod tests {
         assert_eq!(base64(b"foobar"), "Zm9vYmFy");
     }
 
+    #[tokio::test]
+    async fn resolved_context_is_journaled_and_checkpoint_restore_rewinds_it() {
+        async fn ok(atelier: &Atelier, tool: &str, args: Value, context: CallContext) -> Value {
+            let result = atelier.dispatch(tool, args, context).await.unwrap();
+            assert!(
+                !is_error_result(&result),
+                "{tool} failed: {:?}",
+                result_json(&result)
+            );
+            result_json(&result).unwrap()
+        }
+
+        let atelier = temp_atelier("context-checkpoint");
+        ok(
+            &atelier,
+            "doc_create",
+            json!({"name": "hero", "width": 4, "height": 4}),
+            CallContext::new("test"),
+        )
+        .await;
+        let cel = || CallContext {
+            caller: "test".into(),
+            doc_id: Some("hero".into()),
+            layer: Some(0),
+            frame: Some(0),
+        };
+        ok(
+            &atelier,
+            "doc_draw",
+            json!({"op": "pencil", "points": [[1, 1]], "color": [200, 0, 0]}),
+            cel(),
+        )
+        .await;
+        let saved = ok(
+            &atelier,
+            "doc_checkpoint",
+            json!({"action": "save", "label": "red"}),
+            cel(),
+        )
+        .await;
+        let checkpoint_id = saved["saved"].as_str().unwrap();
+
+        ok(
+            &atelier,
+            "doc_draw",
+            json!({"op": "pencil", "points": [[1, 1]], "color": [0, 0, 200]}),
+            cel(),
+        )
+        .await;
+        assert_eq!(atelier.studio().journal("hero").unwrap().len(), 3);
+
+        ok(
+            &atelier,
+            "doc_checkpoint",
+            json!({"action": "restore", "checkpoint_id": checkpoint_id}),
+            cel(),
+        )
+        .await;
+        let journal = atelier.studio().journal("hero").unwrap();
+        assert_eq!(
+            journal.len(),
+            2,
+            "restore must discard post-checkpoint provenance"
+        );
+        assert_eq!(
+            journal[1]["args"],
+            json!({
+                "doc_id": "hero",
+                "layer": 0,
+                "frame": 0,
+                "op": "pencil",
+                "points": [[1, 1]],
+                "color": [200, 0, 0]
+            }),
+            "the journal stores resolved context, not ambient defaults"
+        );
+        assert_eq!(
+            atelier
+                .studio()
+                .doc_dump_region("hero", 0, Some(0), Some((1, 1, 1, 1)), "hex")
+                .unwrap()["rows"][0],
+            "#c80000"
+        );
+    }
+
     /// Build an Atelier whose studio is rooted at a throwaway temp dir.
     fn temp_atelier(tag: &str) -> Atelier {
         let dir = std::env::temp_dir().join(format!("atelier-srv-test-{tag}"));
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir);
-        Atelier::with_studio(std::sync::Arc::new(std::sync::Mutex::new(studio)))
-    }
-
-    #[test]
-    fn fetch_returns_structure_json_and_png_blob() {
-        let a = temp_atelier("fetch");
-        a.studio().doc_create("Hero", 8, 8).unwrap();
-
-        // Structure resource: JSON text carrying the document's dimensions.
-        let s = a
-            .fetch_resource(
-                "atelier://doc/hero",
-                ResourceTarget::Structure("hero".into()),
-            )
-            .expect("structure fetched");
-        match s {
-            ResourceContents::TextResourceContents {
-                text, mime_type, ..
-            } => {
-                assert_eq!(mime_type.as_deref(), Some("application/json"));
-                let v: Value = serde_json::from_str(&text).expect("valid json");
-                assert_eq!(v["w"], 8);
-                assert_eq!(v["id"], "hero");
-            }
-            other => panic!("expected text contents, got {other:?}"),
-        }
-
-        // Render resource: a base64 PNG blob (verify the magic bytes decode out).
-        let r = a
-            .fetch_resource(
-                "atelier://doc/hero/render",
-                ResourceTarget::Render("hero".into()),
-            )
-            .expect("render fetched");
-        match r {
-            ResourceContents::BlobResourceContents {
-                blob, mime_type, ..
-            } => {
-                assert_eq!(mime_type.as_deref(), Some("image/png"));
-                // base64 of a PNG always starts with the "iVBOR" signature.
-                assert!(blob.starts_with("iVBOR"), "not a PNG blob: {}", &blob[..8]);
-            }
-            other => panic!("expected blob contents, got {other:?}"),
-        }
+        Atelier::with_studio(studio)
     }
 
     /// doc_look is the agent's only eye: an edit op acknowledges with text only.
@@ -1236,36 +1453,6 @@ mod tests {
             has_image(&visual),
             "visual tools must still return the frame"
         );
-    }
-
-    /// A tool that promises an inline preview it no longer returns lies to the
-    /// model: it may skip doc_look believing it already saw the art. No edit
-    /// tool's description may advertise one.
-
-    #[test]
-    fn list_resource_specs_pairs_each_doc() {
-        let a = temp_atelier("list");
-        a.studio().doc_create("Hero", 8, 8).unwrap();
-        let specs = a.list_resource_specs().unwrap();
-        let uris: Vec<&str> = specs.iter().map(|r| r.uri.as_str()).collect();
-        assert!(uris.contains(&"atelier://doc/hero"));
-        assert!(uris.contains(&"atelier://doc/hero/render"));
-        // Both carry their advertised mime types.
-        for r in &specs {
-            assert!(r.mime_type.is_some());
-        }
-    }
-
-    #[test]
-    fn fetch_unknown_doc_errors() {
-        let a = temp_atelier("missing");
-        let err = a
-            .fetch_resource(
-                "atelier://doc/ghost",
-                ResourceTarget::Structure("ghost".into()),
-            )
-            .unwrap_err();
-        assert!(err.contains("no document"), "got: {err}");
     }
 }
 

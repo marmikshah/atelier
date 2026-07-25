@@ -446,6 +446,18 @@ mod tests {
         assert!(s.frame_count("../x").is_err());
     }
 
+    #[test]
+    fn list_docs_filters_by_prefix_and_substring() {
+        let s = studio("filters");
+        for name in ["hero-idle", "hero-run", "tile-grass"] {
+            s.doc_create(name, 4, 4).unwrap();
+        }
+        assert_eq!(s.list_docs_filtered(None, None)["count"], 3);
+        assert_eq!(s.list_docs_filtered(Some("hero-"), None)["count"], 2);
+        assert_eq!(s.list_docs_filtered(None, Some("grass"))["count"], 1);
+        assert_eq!(s.list_docs_filtered(Some("hero-"), Some("run"))["count"], 1);
+    }
+
     /// A scratch cwd with (or without) a `.atelier` for the resolver tests.
     fn scratch_cwd(tag: &str, with_local: bool) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("atelier-test-resolve-{tag}"));

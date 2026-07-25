@@ -30,13 +30,22 @@ releases.
   The library-wide `all`/`atlas` modes and Tiled tileset export were removed.
 - Automatic checkpoints and checkpoint `diff` were removed. Explicit
   save/list/restore/prune remains.
+- Cross-document palette `sync` and reference-image `import` were removed.
+  Both made a per-document replay depend on mutable state outside its journal;
+  per-document palette operations and the non-painting reference
+  set/analyze/compare/diff workflow remain.
+- The duplicate MCP resource API was removed. `doc_info` and `doc_look` already
+  provide document structure and rendered pixels through the same dispatch,
+  locking, logging, and error path as every other caller.
 - The remaining Lab-only indexed-raster API and the orphaned
   `atelier_core::document::Light` type were removed.
 - **`atelier agent`**, its network client, environment variables, and feature
   flag were removed. Atelier is fully offline and is driven through the CLI or
   MCP.
-- The standalone architecture HTML page and misleading `.env.example` were
-  removed. The maintained guide remains in `docs/ARCHITECTURE.md`.
+- The standalone architecture HTML page, the now-redundant
+  `docs/ARCHITECTURE.md`, and the misleading `.env.example` were removed.
+  Runtime guidance lives in the README; durable contributor invariants live in
+  `AGENTS.md`.
 
 ### Changed
 
@@ -46,8 +55,23 @@ releases.
 - The retained public tool names are contract-pinned, and end-to-end stdio and
   HTTP tests require both transports to advertise that exact registry and
   successfully dispatch a real tool call.
+- **Call context is explicit and transport-independent.** `atelier call`
+  accepts `--doc`, `--layer`, and `--frame`; stdio and HTTP accept the same
+  defaults plus a stable session name under MCP
+  `_meta["io.github.marmikshah.atelier/context"]`.
+  Explicit arguments win, no context is retained server-side, and dispatch
+  journals the expanded call.
 - Independent CLI and daemon processes now hold an advisory store lock through
   document save and journal append, preserving mutation and provenance order.
+- `Studio` is now a cloneable store-path handle instead of a process-wide
+  mutex. The existing write-order and advisory store locks still serialize
+  mutations, while independent reads no longer block one another. Stateless
+  HTTP handlers also share one prebuilt immutable tool router.
+- Checkpoint restore now restores the journal and reference image alongside
+  `doc.json` and cels. Checkpoint control and external reference setup are
+  excluded from recipes, so replay contains only deterministic build steps.
+- Structural mutation results are concise acknowledgements; full document
+  structure remains available on demand through `doc_info`.
 - Compatibility-only input paths were removed: 1.7 linked-cel documents are no
   longer materialized on load, blend modes accept only their documented
   canonical spellings, and the installer no longer accepts the obsolete

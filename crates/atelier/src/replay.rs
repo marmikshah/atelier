@@ -11,12 +11,11 @@
 //! final "N step(s) ok" tally) so they don't pollute piped stdout.
 
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 
 use serde_json::{Value, json};
 
 use atelier_mcp::recipe::{Recipe, Step};
-use atelier_mcp::server::{self, Atelier};
+use atelier_mcp::server::{self, Atelier, CallContext};
 use atelier_studio::Studio;
 use rmcp::model::CallToolResult;
 
@@ -139,7 +138,7 @@ async fn drive(
     // `--home` roots an isolated store for the run; otherwise the ambient
     // ATELIER_HOME (or the default) is where the rebuild lands.
     let atelier = match home {
-        Some(dir) => Atelier::with_studio(Arc::new(Mutex::new(Studio::with_docs_dir(dir.into())))),
+        Some(dir) => Atelier::with_studio(Studio::with_docs_dir(dir.into())),
         None => Atelier::new(),
     };
     run_session(&recipe, journal_id, &atelier).await
@@ -173,7 +172,10 @@ async fn run_session(
             remap_ids(&mut args, &ids);
             None
         };
-        let result = match atelier.dispatch(&step.tool, args, "replay").await {
+        let result = match atelier
+            .dispatch(&step.tool, args, CallContext::new("replay"))
+            .await
+        {
             Ok(result) => result,
             // Protocol error (unknown tool, malformed args, …) — a recipe is a
             // narrative, so the first failed step ends the run.
@@ -188,18 +190,6 @@ async fn run_session(
         let summary = summarize(&result);
         print_step(idx, step, &summary);
         if is_error {
-            // `doc_ref op=set` journals the author's absolute image path; on
-            // another machine that file is usually gone. The ref is metadata —
-            // only compare/analyze/import consume it — so warn and keep
-            // rebuilding; a later step that truly needs it will fail loudly.
-            if step.tool == "doc_ref" && step.args.get("op").and_then(Value::as_str) == Some("set")
-            {
-                eprintln!(
-                    "replay: doc_ref op=set failed (reference image missing?) — \
-                     continuing without it"
-                );
-                continue;
-            }
             return Err(format!(
                 "step {} ({}) failed: {summary}",
                 idx + 1,
@@ -247,25 +237,18 @@ fn create_recorded_id(args: &mut Value, journal_id: Option<&str>) -> Option<Stri
 
 /// Rewrite every recorded document id in `args` through the remap table.
 /// Covers each id-bearing field on the tool surface: `doc_id` everywhere,
-/// plus doc_palette's `set_doc`, `from_doc` and `ids`.
+/// plus doc_palette's `set_doc`.
 fn remap_ids(args: &mut Value, ids: &HashMap<String, String>) {
     let Some(obj) = args.as_object_mut() else {
         return;
     };
-    for key in ["doc_id", "set_doc", "from_doc"] {
+    for key in ["doc_id", "set_doc"] {
         if let Some(mapped) = obj
             .get(key)
             .and_then(Value::as_str)
             .and_then(|v| ids.get(v))
         {
             obj.insert(key.into(), json!(mapped));
-        }
-    }
-    if let Some(list) = obj.get_mut("ids").and_then(Value::as_array_mut) {
-        for item in list {
-            if let Some(mapped) = item.as_str().and_then(|v| ids.get(v)) {
-                *item = json!(mapped);
-            }
         }
     }
 }
@@ -390,8 +373,6 @@ mod tests {
         let mut args = json!({
             "doc_id": "hero",
             "set_doc": "hero",
-            "from_doc": "hero",
-            "ids": ["hero", "villain"],
             "name": "hero"
         });
         remap_ids(&mut args, &ids);
@@ -400,8 +381,6 @@ mod tests {
             json!({
                 "doc_id": "hero-2",
                 "set_doc": "hero-2",
-                "from_doc": "hero-2",
-                "ids": ["hero-2", "villain"],
                 "name": "hero"
             })
         );
@@ -449,7 +428,7 @@ mod tests {
     async fn replayed_document_renders_pixel_identical_to_the_original() {
         async fn dispatch_ok(atelier: &Atelier, tool: &str, args: Value) {
             let r = atelier
-                .dispatch(tool, args, "test")
+                .dispatch(tool, args, CallContext::new("test"))
                 .await
                 .expect("dispatch");
             assert!(
@@ -469,8 +448,8 @@ mod tests {
 
         // Build a document through dispatch, so every mutation lands in its
         // journal — palette set, index-legend grid paint, a raw draw.
-        let studio_a = Arc::new(Mutex::new(Studio::with_docs_dir(dir_a.clone())));
-        let atelier_a = Atelier::with_studio(Arc::clone(&studio_a));
+        let studio_a = Studio::with_docs_dir(dir_a.clone());
+        let atelier_a = Atelier::with_studio(studio_a.clone());
         dispatch_ok(
             &atelier_a,
             "doc_create",
@@ -497,27 +476,32 @@ mod tests {
                    "x0": 5, "y0": 5, "x1": 7, "y1": 7, "color": [30, 30, 200], "fill": true}),
         )
         .await;
-        let original = studio_a
-            .lock()
-            .unwrap()
-            .render_png_bytes("px", 0, 4)
-            .unwrap();
+        let render = |studio: &Studio| {
+            studio
+                .look(
+                    "px",
+                    0,
+                    &atelier_studio::LookOptions {
+                        scale: Some(4),
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
+                .0
+        };
+        let original = render(&studio_a);
 
         // Replay the journal into a fresh store and export the rebuild.
         let journal =
             std::fs::read_to_string(dir_a.join("px").join(atelier_studio::JOURNAL_FILE)).unwrap();
         let recipe = Recipe::parse(&journal).unwrap();
         assert!(recipe.steps.len() >= 4, "the journal drives the rebuild");
-        let studio_b = Arc::new(Mutex::new(Studio::with_docs_dir(dir_b.clone())));
-        let atelier_b = Atelier::with_studio(Arc::clone(&studio_b));
+        let studio_b = Studio::with_docs_dir(dir_b.clone());
+        let atelier_b = Atelier::with_studio(studio_b.clone());
         run_session(&recipe, Some("px".to_string()), &atelier_b)
             .await
             .unwrap();
-        let replayed = studio_b
-            .lock()
-            .unwrap()
-            .render_png_bytes("px", 0, 4)
-            .unwrap();
+        let replayed = render(&studio_b);
 
         assert_eq!(
             original, replayed,
