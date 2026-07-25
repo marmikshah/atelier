@@ -1,3 +1,0 @@
-Animal — a cat in a wizard hat with a glowing staff orb that pulses and casts
-light, tail swaying, sparkles drifting up. Loops seamlessly. 10 frames, 1 second
-at 10 FPS. 32x32 canvas. 6 colours, transparent background.

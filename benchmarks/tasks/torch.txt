@@ -1,3 +1,0 @@
-Environment — a wall-mounted torch: the flame flickers and licks upward, embers
-drift up and fade, a soft light pulse on the bracket. Loops seamlessly. 10 frames,
-1 second at 10 FPS. 32x32 canvas. 5 colours, transparent background.

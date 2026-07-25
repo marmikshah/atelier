@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="site/assets/logo-wordmark-dark.png">
-    <img src="site/assets/logo-wordmark.png" width="384" alt="atelier">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/logo-wordmark-dark.png">
+    <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/logo-wordmark.png" width="384" alt="atelier">
   </picture>
 </p>
 
@@ -16,27 +16,27 @@ Layered, animated, game-ready art — from your CLI, or over MCP.</p>
 </p>
 
 <p align="center">
-  <img src="site/assets/studio-scene.gif" width="640" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a cat sleeps on the desk — a full room drawn and animated entirely by agents">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/studio-scene.gif" width="640" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a cat sleeps on the desk — a full room drawn and animated entirely by agents">
 </p>
 
 <p align="center">
-  <img src="site/showcase/fable-5/cat.gif" width="88" alt="wizard cat casting">
-  <img src="site/showcase/fable-5/car.gif" width="88" alt="driving car">
-  <img src="site/showcase/fable-5/potion.gif" width="88" alt="bubbling potion">
-  <img src="site/showcase/fable-5/alien.gif" width="88" alt="hovering alien">
-  <img src="site/showcase/fable-5/slash.gif" width="88" alt="sword slash arc">
-  <img src="site/showcase/fable-5/torch.gif" width="88" alt="flickering wall torch">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/cat.gif" width="88" alt="wizard cat casting">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/car.gif" width="88" alt="driving car">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/potion.gif" width="88" alt="bubbling potion">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/alien.gif" width="88" alt="hovering alien">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/slash.gif" width="88" alt="sword slash arc">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/torch.gif" width="88" alt="flickering wall torch">
 </p>
 
 <p align="center"><em>Not one pixel was hand-placed. Every frame is a tool call.<br>
-<a href="https://marmikshah.github.io/atelier/">See every model draw the same ten tasks →</a></em></p>
+<a href="https://marmikshah.github.io/atelier-site/">See every model draw the same ten tasks →</a></em></p>
 
 ---
 
 ## Install
 
 ```sh
-curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
+curl -fsSL https://marmikshah.github.io/atelier-site/install.sh | sh
 ```
 
 Installs the binary after verifying its published SHA-256. That's the
@@ -64,7 +64,7 @@ exactly this way: no registration, no daemon, no restart. Just ask:
 ### Other ways
 
 - **Binaries** — macOS (ARM), Linux x86_64, Windows: [latest release](https://github.com/marmikshah/atelier/releases/latest)
-- **Source** — `cargo install --locked --path crates/atelier`, or `site/install.sh --source`
+- **Source** — `cargo install --locked --path crates/atelier`, or `tools/install.sh --source`
   to build this checkout and install it
 
 ## Optional: run as an MCP server
@@ -204,7 +204,7 @@ ran, so a replay never depends on a live session or another caller's state.
 **25 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
 turn into an unreachable dead end.
-Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html).
+Browse them in the [tool reference](https://marmikshah.github.io/atelier-site/tools.html).
 
 ## Directory-local stores
 

@@ -1,9 +1,9 @@
 #!/bin/sh
 # atelier binary installer
 #
-#   curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
-#   curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh -s -- uninstall
-#   ./site/install.sh --source
+#   curl -fsSL https://marmikshah.github.io/atelier-site/install.sh | sh
+#   curl -fsSL https://marmikshah.github.io/atelier-site/install.sh | sh -s -- uninstall
+#   ./tools/install.sh --source
 #
 # The script only installs or removes the binary. Daemon setup, MCP client
 # registration, tool approvals, and agent skills are explicit `atelier`
