@@ -111,10 +111,11 @@ mod tests {
     #[test]
     fn clear_and_move_are_self_contained() {
         let studio = studio("stateless");
-        studio.doc_create("d", 4, 4).unwrap();
+        let created = studio.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         studio
             .doc_paint_grid(
-                "d",
+                id,
                 0,
                 0,
                 0,
@@ -127,18 +128,18 @@ mod tests {
             .unwrap();
 
         studio
-            .doc_region("d", "move", 0, 0, Some([0, 0, 1, 0]), Some([1, 1]))
+            .doc_region(id, "move", 0, 0, Some([0, 0, 1, 0]), Some([1, 1]))
             .unwrap();
         assert_eq!(
-            studio.doc_get_pixel("d", Some(0), 0, 1, 1).unwrap()["rgba"],
+            studio.doc_get_pixel(id, Some(0), 0, 1, 1).unwrap()["rgba"],
             json!([255, 0, 0, 255])
         );
 
         studio
-            .doc_region("d", "clear", 0, 0, Some([1, 1, 2, 1]), None)
+            .doc_region(id, "clear", 0, 0, Some([1, 1, 2, 1]), None)
             .unwrap();
         assert_eq!(
-            studio.doc_get_pixel("d", Some(0), 0, 1, 1).unwrap()["rgba"],
+            studio.doc_get_pixel(id, Some(0), 0, 1, 1).unwrap()["rgba"],
             json!([0, 0, 0, 0])
         );
     }

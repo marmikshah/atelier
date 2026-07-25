@@ -30,6 +30,9 @@ serde_json = "1.0.151"
 dirs = "6.0.0"
 # Coordinates independent CLI and daemon processes that share a document store.
 fs4 = { version = "1.1.0", features = ["sync"] }
+# Opaque 80-bit document ids. Already present through the MCP stack; declaring
+# it directly keeps identity generation in the storage layer.
+getrandom = "0.4.3"
 
 # Structured logging: the library crates emit `tracing` events; only the
 # binary installs a subscriber (stderr, `ATELIER_LOG` filter).

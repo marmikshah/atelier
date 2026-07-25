@@ -493,9 +493,9 @@ mod tests {
     }
 
     /// Paint the reference's 8x8 block footprint (x 4..=11) in `color`.
-    fn block(s: &Studio, color: [u8; 4]) {
+    fn block(s: &Studio, id: &str, color: [u8; 4]) {
         s.doc_draw(
-            "d",
+            id,
             0,
             0,
             "rect",
@@ -523,38 +523,40 @@ mod tests {
     #[test]
     fn set_reference_persists_and_clears() {
         let s = studio("set");
-        s.doc_create("d", 16, 8).unwrap();
+        let created = s.doc_new("d", 16, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         let p = sample_png("set");
-        let r = s.set_reference("d", p.to_str()).unwrap();
+        let r = s.set_reference(id, p.to_str()).unwrap();
         assert_eq!(r["source_size"], json!([16, 8]));
         // Stored with the doc: a fresh open still sees it.
-        let info = s.doc_info("d").unwrap();
+        let info = s.doc_info(id).unwrap();
         assert_eq!(info["reference"], json!("reference.png"));
         // Analyze without a path uses the stored reference.
-        let (png, rep) = s.ref_analyze("d", None, None, 4).unwrap();
+        let (png, rep) = s.ref_analyze(id, None, None, 4).unwrap();
         assert!(!png.is_empty());
         assert!(rep["bg_coverage_pct"].as_f64().unwrap() > 10.0);
         assert!(!rep["subject_palette"].as_array().unwrap().is_empty());
         // Clearing removes it.
-        s.set_reference("d", None).unwrap();
-        assert!(s.ref_analyze("d", None, None, 4).is_err());
+        s.set_reference(id, None).unwrap();
+        assert!(s.ref_analyze(id, None, None, 4).is_err());
     }
 
     #[test]
     fn ref_compare_scores_likeness() {
         let s = studio("cmp");
-        s.doc_create("d", 16, 8).unwrap();
+        let created = s.doc_new("d", 16, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         let p = sample_png("cmp");
-        s.set_reference("d", p.to_str()).unwrap();
+        s.set_reference(id, p.to_str()).unwrap();
         // Faithful recreation: the same red block, backdrop left transparent.
-        block(&s, [200, 30, 30, 255]);
-        let (png, good) = s.ref_compare("d", 0, "side_by_side", 4).unwrap();
+        block(&s, id, [200, 30, 30, 255]);
+        let (png, good) = s.ref_compare(id, 0, "side_by_side", 4).unwrap();
         assert!(!png.is_empty());
         let iou = good["silhouette_iou"].as_f64().unwrap();
         assert!(iou > 0.9, "faithful copy should score high, got {iou}");
         // A wrong-colour copy keeps the silhouette but raises the colour delta.
-        block(&s, [30, 30, 200, 255]);
-        let (_png, bad) = s.ref_compare("d", 0, "overlay", 4).unwrap();
+        block(&s, id, [30, 30, 200, 255]);
+        let (_png, bad) = s.ref_compare(id, 0, "overlay", 4).unwrap();
         assert!(bad["mean_delta"].as_f64().unwrap() > 0.1);
         assert!(
             !bad["missing_reference_colors"]
@@ -567,12 +569,13 @@ mod tests {
     #[test]
     fn diff_map_flags_too_dark_pixels_to_lighten() {
         let s = studio("diff");
-        s.doc_create("d", 16, 8).unwrap();
+        let created = s.doc_new("d", 16, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         let p = sample_png("diff");
-        s.set_reference("d", p.to_str()).unwrap();
+        s.set_reference(id, p.to_str()).unwrap();
         // Same silhouette as the reference's red block, but darker -> "lighten".
-        block(&s, [120, 18, 18, 255]);
-        let (png, r) = s.diff_map("d", 0, 10).unwrap();
+        block(&s, id, [120, 18, 18, 255]);
+        let (png, r) = s.diff_map(id, 0, 10).unwrap();
         assert!(!png.is_empty());
         assert!(
             r["mean_delta"].as_f64().unwrap() > 0.05,

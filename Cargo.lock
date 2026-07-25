@@ -81,6 +81,7 @@ dependencies = [
  "atelier-core",
  "dirs",
  "fs4",
+ "getrandom 0.4.3",
  "image",
  "serde",
  "serde_json",

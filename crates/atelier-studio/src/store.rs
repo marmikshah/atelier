@@ -10,7 +10,11 @@ use serde_json::{Map, Value, json};
 
 use atelier_core::document::{DocMeta, Document};
 
-use super::{JOURNAL_FILE, MAX_CANVAS, Studio, slugify};
+use super::{JOURNAL_FILE, MAX_CANVAS, Studio};
+
+const DOC_ID_PREFIX: &str = "d_";
+const DOC_ID_CHARS: usize = 16;
+const DOC_ID_ALPHABET: &[u8; 32] = b"0123456789abcdefghjkmnpqrstvwxyz";
 
 /// The one current journal-line shape, shared by the writer, store reader, and
 /// replay parser.
@@ -25,7 +29,7 @@ pub struct JournalEntry {
 /// means "no recipe"; a non-empty one is a complete, self-identifying rebuild.
 pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
     const TOOLS: &[&str] = &[
-        "doc_create",
+        "doc_new",
         "doc_add_tag",
         "doc_batch",
         "doc_draw",
@@ -40,22 +44,18 @@ pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
     let Some(first) = entries.first() else {
         return Ok(());
     };
-    if first.tool != "doc_create" {
-        return Err("journal must start with doc_create".into());
+    if first.tool != "doc_new" {
+        return Err("journal must start with doc_new".into());
     }
-    if entries
-        .iter()
-        .skip(1)
-        .any(|entry| entry.tool == "doc_create")
-    {
-        return Err("journal may contain exactly one doc_create".into());
+    if entries.iter().skip(1).any(|entry| entry.tool == "doc_new") {
+        return Err("journal may contain exactly one doc_new".into());
     }
     let recorded_id = first
         .args
         .get("doc_id")
         .and_then(Value::as_str)
         .filter(|id| Studio::valid_id(id))
-        .ok_or("journal doc_create requires a valid args.doc_id stamp")?;
+        .ok_or("journal doc_new requires a valid args.doc_id stamp")?;
     for (index, entry) in entries.iter().enumerate().skip(1) {
         if !TOOLS.contains(&entry.tool.as_str()) {
             return Err(format!(
@@ -111,15 +111,14 @@ impl Studio {
     /// process env or cwd:
     ///
     /// 1. `ATELIER_HOME` wins — scripts, tests and sandboxes name their store.
-    /// 2. A `./.atelier` in the working directory marks a local store: ids mint
-    ///    clean for that directory and recipes can be committed beside the
-    ///    project. Opt in explicitly with
+    /// 2. A `./.atelier` in the working directory marks a local store. Recipes
+    ///    and documents can then be committed beside the project. Opt in with
     ///    `atelier init` — an absent `.atelier` is never created implicitly.
     /// 3. Otherwise use the global home store.
     pub fn resolve_home(
         env: Option<&std::ffi::OsStr>,
         cwd: &std::path::Path,
-        home: Option<PathBuf>,
+        global_home: Option<PathBuf>,
     ) -> PathBuf {
         if let Some(dir) = env {
             return PathBuf::from(dir);
@@ -128,7 +127,7 @@ impl Studio {
         if local.is_dir() {
             return local;
         }
-        home.unwrap_or_else(|| std::env::temp_dir().join("atelier"))
+        global_home.unwrap_or_else(|| std::env::temp_dir().join("atelier"))
     }
 
     /// The default atelier home: the policy resolved at the process's env and
@@ -139,7 +138,7 @@ impl Studio {
         Self::resolve_home(
             std::env::var_os("ATELIER_HOME").as_deref(),
             &std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
-            dirs::home_dir(),
+            dirs::home_dir().map(|home| home.join(".atelier")),
         )
     }
 
@@ -207,18 +206,20 @@ impl Studio {
         self.docs_dir.join(id)
     }
 
-    /// Stored ids are always slugs (`doc_create` slugifies the name). Reject
-    /// anything else before it reaches the filesystem — ids arrive untrusted
-    /// over MCP, and an id like `../x` would otherwise escape the store.
+    /// The one current document-id shape: `d_` plus 16 lowercase Crockford
+    /// Base32 characters (80 random bits). Reject anything else before it
+    /// reaches the filesystem — ids arrive untrusted over MCP, and an id like
+    /// `../x` would otherwise escape the store.
     pub(crate) fn valid_id(id: &str) -> bool {
-        !id.is_empty()
-            && id
-                .chars()
-                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+        id.len() == DOC_ID_PREFIX.len() + DOC_ID_CHARS
+            && id.starts_with(DOC_ID_PREFIX)
+            && id[DOC_ID_PREFIX.len()..]
+                .bytes()
+                .all(|byte| DOC_ID_ALPHABET.contains(&byte))
     }
 
     pub(crate) fn exists(&self, id: &str) -> bool {
-        self.doc_dir(id).join("doc.json").exists()
+        Self::valid_id(id) && self.doc_dir(id).join("doc.json").exists()
     }
 
     /// All document ids on disk (directories with a doc.json), sorted.
@@ -226,8 +227,9 @@ impl Studio {
         let mut out = Vec::new();
         if let Ok(rd) = fs::read_dir(&self.docs_dir) {
             for e in rd.flatten() {
-                if e.path().join("doc.json").exists() {
-                    out.push(e.file_name().to_string_lossy().to_string());
+                let id = e.file_name().to_string_lossy().to_string();
+                if Self::valid_id(&id) && e.path().join("doc.json").exists() {
+                    out.push(id);
                 }
             }
         }
@@ -235,19 +237,22 @@ impl Studio {
         out
     }
 
-    fn unique_id(&self, base: &str) -> String {
-        let base = slugify(base);
-        if !self.exists(&base) {
-            return base;
+    fn random_id() -> Result<String, String> {
+        let mut bytes = [0u8; 10];
+        getrandom::fill(&mut bytes)
+            .map_err(|error| format!("cannot generate document id: {error}"))?;
+        let mut value = bytes
+            .into_iter()
+            .fold(0u128, |value, byte| (value << 8) | byte as u128);
+        let mut encoded = [b'0'; DOC_ID_CHARS];
+        for character in encoded.iter_mut().rev() {
+            *character = DOC_ID_ALPHABET[(value & 31) as usize];
+            value >>= 5;
         }
-        let mut i = 2;
-        loop {
-            let cand = format!("{}-{}", base, i);
-            if !self.exists(&cand) {
-                return cand;
-            }
-            i += 1;
-        }
+        Ok(format!(
+            "{DOC_ID_PREFIX}{}",
+            std::str::from_utf8(&encoded).expect("the id alphabet is ASCII")
+        ))
     }
 
     pub(crate) fn open(&self, id: &str) -> Result<(PathBuf, Document), String> {
@@ -273,26 +278,46 @@ impl Studio {
 
     // -- library ------------------------------------------------------------
 
-    pub fn doc_create(&self, name: &str, w: u32, h: u32) -> Result<Value, String> {
+    pub fn doc_new(&self, name: &str, w: u32, h: u32) -> Result<Value, String> {
         if w == 0 || h == 0 || w > MAX_CANVAS || h > MAX_CANVAS {
             return Err(format!(
                 "canvas {w}x{h} out of range — width/height must be 1..={MAX_CANVAS}"
             ));
         }
-        let id = self.unique_id(name);
-        let dir = self.doc_dir(&id);
-        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        // Directory creation is the atomic uniqueness claim. The dispatch
+        // layer already serializes normal callers, but Studio is also a public
+        // embedding API and two independent processes must not share an id
+        // even if they race between generation and creation.
+        let (id, dir) = {
+            let mut created = None;
+            for _ in 0..32 {
+                let id = Self::random_id()?;
+                let dir = self.doc_dir(&id);
+                match fs::create_dir(&dir) {
+                    Ok(()) => {
+                        created = Some((id, dir));
+                        break;
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                    Err(error) => return Err(error.to_string()),
+                }
+            }
+            created.ok_or("could not generate a unique document id after 32 attempts")?
+        };
         let mut doc = Document::new(name, w, h);
-        doc.save(&dir)?;
+        if let Err(error) = doc.save(&dir) {
+            let _ = fs::remove_dir_all(&dir);
+            return Err(error);
+        }
         let mut out = doc.structure();
-        out["id"] = json!(id);
+        out["doc_id"] = json!(id);
         Ok(out)
     }
 
     pub fn doc_info(&self, id: &str) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let mut out = doc.structure();
-        out["id"] = json!(id);
+        out["doc_id"] = json!(id);
         Ok(out)
     }
 
@@ -316,19 +341,13 @@ impl Studio {
         self.list_docs_filtered(None, None)
     }
 
-    /// `prefix` keeps ids starting with it (family selector: `hero-` matches
-    /// `hero-idle`, `hero-run`); `contains` keeps ids with the substring. Both
-    /// case-sensitive on the slug; combined = AND.
+    /// `prefix` keeps opaque ids starting with it; `contains` searches either
+    /// the id or the display name. Both are case-sensitive; combined = AND.
     pub fn list_docs_filtered(&self, prefix: Option<&str>, contains: Option<&str>) -> Value {
         let mut items = Vec::new();
         for id in self.doc_ids() {
             if let Some(p) = prefix
                 && !id.starts_with(p)
-            {
-                continue;
-            }
-            if let Some(c) = contains
-                && !id.contains(c)
             {
                 continue;
             }
@@ -342,9 +361,17 @@ impl Studio {
                     meta.validate()?;
                     Ok(meta)
                 });
+            if let Some(c) = contains
+                && !id.contains(c)
+                && !meta
+                    .as_ref()
+                    .is_ok_and(|document| document.name.contains(c))
+            {
+                continue;
+            }
             let item = match meta {
                 Ok(meta) => json!({
-                    "id": id,
+                    "doc_id": id,
                     "name": meta.name,
                     "w": meta.w,
                     "h": meta.h,
@@ -352,7 +379,7 @@ impl Studio {
                     "layers": meta.layers.len(),
                 }),
                 Err(error) => json!({
-                    "id": id,
+                    "doc_id": id,
                     "error": format!("invalid doc.json: {error}"),
                 }),
             };
@@ -466,7 +493,7 @@ impl Studio {
             && recorded_id != id
         {
             return Err(format!(
-                "journal: doc_create stamp '{recorded_id}' does not match document '{id}'"
+                "journal: doc_new stamp '{recorded_id}' does not match document '{id}'"
             ));
         }
         Ok(out)
@@ -486,14 +513,15 @@ mod tests {
     #[test]
     fn a_document_journals_the_calls_that_built_it() {
         let s = studio("journal");
-        s.doc_create("d", 8, 8).unwrap();
-        assert!(s.journal("d").unwrap().is_empty(), "nothing recorded yet");
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        assert!(s.journal(id).unwrap().is_empty(), "nothing recorded yet");
 
-        s.journal_append("d", "doc_create", &json!({"name": "d", "doc_id": "d"}));
-        s.journal_append("d", "doc_draw", &json!({"doc_id": "d", "op": "rect"}));
-        let steps = s.journal("d").unwrap();
+        s.journal_append(id, "doc_new", &json!({"name": "d", "doc_id": id}));
+        s.journal_append(id, "doc_draw", &json!({"doc_id": id, "op": "rect"}));
+        let steps = s.journal(id).unwrap();
         assert_eq!(steps.len(), 2, "appends accumulate in order");
-        assert_eq!(steps[0].tool, "doc_create");
+        assert_eq!(steps[0].tool, "doc_new");
         assert_eq!(steps[1].args["op"], "rect");
 
         // Journaling an unknown document is a no-op, never a panic or a stray
@@ -507,21 +535,22 @@ mod tests {
         // Torn FINAL line = crash mid-append, tolerated. Mid-file corruption =
         // error — silently skipping it would list steps that replay refuses.
         let s = studio("journal-policy");
-        s.doc_create("d", 8, 8).unwrap();
-        s.journal_append("d", "doc_create", &json!({"name": "d", "doc_id": "d"}));
-        s.journal_append("d", "doc_draw", &json!({"doc_id": "d", "op": "rect"}));
-        let path = s.journal_path("d");
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.journal_append(id, "doc_new", &json!({"name": "d", "doc_id": id}));
+        s.journal_append(id, "doc_draw", &json!({"doc_id": id, "op": "rect"}));
+        let path = s.journal_path(id);
 
         let clean = fs::read_to_string(&path).unwrap();
         fs::write(&path, format!("{clean}{{\"tool\":\"doc_")).unwrap();
-        assert_eq!(s.journal("d").unwrap().len(), 2, "torn final line dropped");
+        assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
 
         fs::write(&path, format!("not json\n{clean}")).unwrap();
-        let err = s.journal("d").unwrap_err();
+        let err = s.journal(id).unwrap_err();
         assert!(err.contains("line 1"), "mid-file corruption errors: {err}");
 
         fs::write(&path, format!("{clean}not json\n")).unwrap();
-        let err = s.journal("d").unwrap_err();
+        let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 3"),
             "complete final corruption errors: {err}"
@@ -529,10 +558,10 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"tool\":\"doc_create\",\"args\":[],\"note\":\"old\"}\n",
+            "{\"tool\":\"doc_new\",\"args\":[],\"note\":\"old\"}\n",
         )
         .unwrap();
-        let err = s.journal("d").unwrap_err();
+        let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 1"),
             "non-current entry shape errors: {err}"
@@ -540,28 +569,29 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"tool\":\"doc_create\",\"args\":{\"name\":\"d\",\"doc_id\":\"other\"}}\n",
+            "{\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"d_1111111111111111\"}}\n",
         )
         .unwrap();
-        let err = s.journal("d").unwrap_err();
+        let err = s.journal(id).unwrap_err();
         assert!(err.contains("does not match document"), "got: {err}");
     }
 
     #[test]
     fn journal_contract_rejects_context_and_cross_document_steps() {
+        let id = "d_0000000000000000";
+        let other = "d_1111111111111111";
         let create = JournalEntry {
-            tool: "doc_create".into(),
-            args: serde_json::from_value(json!({"name": "d", "doc_id": "d"})).unwrap(),
+            tool: "doc_new".into(),
+            args: serde_json::from_value(json!({"name": "d", "doc_id": id})).unwrap(),
         };
         for entry in [
             JournalEntry {
                 tool: "doc_checkpoint".into(),
-                args: serde_json::from_value(json!({"doc_id": "d", "action": "save"})).unwrap(),
+                args: serde_json::from_value(json!({"doc_id": id, "action": "save"})).unwrap(),
             },
             JournalEntry {
                 tool: "doc_draw".into(),
-                args: serde_json::from_value(json!({"doc_id": "other", "op": "clear_cel"}))
-                    .unwrap(),
+                args: serde_json::from_value(json!({"doc_id": other, "op": "clear_cel"})).unwrap(),
             },
             JournalEntry {
                 tool: "doc_draw".into(),
@@ -575,7 +605,7 @@ mod tests {
             args: serde_json::from_value(json!({
                 "op": "generate",
                 "base": [1, 2, 3],
-                "set_doc": "d"
+                "set_doc": id
             }))
             .unwrap(),
         };
@@ -604,10 +634,11 @@ mod tests {
     #[test]
     fn frame_count_reads_doc_json_directly() {
         let s = studio("fc");
-        s.doc_create("d", 4, 4).unwrap();
-        assert_eq!(s.frame_count("d").unwrap(), 1);
-        s.doc_add_frame("d", 100, None, 4).unwrap();
-        assert_eq!(s.frame_count("d").unwrap(), 5);
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        assert_eq!(s.frame_count(id).unwrap(), 1);
+        s.doc_add_frame(id, 100, None, 4).unwrap();
+        assert_eq!(s.frame_count(id).unwrap(), 5);
         assert!(s.frame_count("ghost").is_err());
         assert!(s.frame_count("../x").is_err());
     }
@@ -615,13 +646,45 @@ mod tests {
     #[test]
     fn list_docs_filters_by_prefix_and_substring() {
         let s = studio("filters");
+        let mut ids = Vec::new();
         for name in ["hero-idle", "hero-run", "tile-grass"] {
-            s.doc_create(name, 4, 4).unwrap();
+            ids.push(
+                s.doc_new(name, 4, 4).unwrap()["doc_id"]
+                    .as_str()
+                    .unwrap()
+                    .to_string(),
+            );
         }
         assert_eq!(s.list_docs_filtered(None, None)["count"], 3);
-        assert_eq!(s.list_docs_filtered(Some("hero-"), None)["count"], 2);
-        assert_eq!(s.list_docs_filtered(None, Some("grass"))["count"], 1);
-        assert_eq!(s.list_docs_filtered(Some("hero-"), Some("run"))["count"], 1);
+        assert_eq!(s.list_docs_filtered(Some(&ids[0]), None)["count"], 1);
+        assert_eq!(
+            s.list_docs_filtered(None, Some("hero"))["count"],
+            2,
+            "contains also searches display names"
+        );
+        assert_eq!(
+            s.list_docs_filtered(None, Some(&ids[1][ids[1].len() - 6..]))["count"],
+            1
+        );
+        assert_eq!(
+            s.list_docs_filtered(Some(&ids[2]), Some(&ids[2][3..]))["count"],
+            1
+        );
+    }
+
+    #[test]
+    fn document_ids_are_opaque_and_names_may_repeat() {
+        let s = studio("opaque-ids");
+        let first = s.doc_new("same name", 4, 4).unwrap();
+        let second = s.doc_new("same name", 4, 4).unwrap();
+        let first_id = first["doc_id"].as_str().unwrap();
+        let second_id = second["doc_id"].as_str().unwrap();
+
+        assert!(Studio::valid_id(first_id), "unexpected id: {first_id}");
+        assert!(Studio::valid_id(second_id), "unexpected id: {second_id}");
+        assert_ne!(first_id, second_id);
+        assert_eq!(s.list_docs_filtered(None, Some("same name"))["count"], 2);
+        assert!(s.doc_info("same-name").is_err(), "names are never ids");
     }
 
     /// A scratch cwd with (or without) a `.atelier` for the resolver tests.
@@ -642,7 +705,7 @@ mod tests {
         let path = Studio::resolve_home(
             Some(std::ffi::OsStr::new("/custom")),
             &cwd,
-            Some(PathBuf::from("/home/u")),
+            Some(PathBuf::from("/home/u/.atelier")),
         );
         assert_eq!(path, PathBuf::from("/custom"));
         let _ = fs::remove_dir_all(&cwd);
@@ -651,7 +714,7 @@ mod tests {
     #[test]
     fn a_present_dot_atelier_marks_a_local_store() {
         let cwd = scratch_cwd("project", true);
-        let path = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
+        let path = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u/.atelier")));
         assert_eq!(path, cwd.join(".atelier"));
         let _ = fs::remove_dir_all(&cwd);
     }
@@ -659,8 +722,8 @@ mod tests {
     #[test]
     fn an_absent_dot_atelier_falls_back_to_global_and_creates_nothing() {
         let cwd = scratch_cwd("global", false);
-        let path = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u")));
-        assert_eq!(path, PathBuf::from("/home/u"));
+        let path = Studio::resolve_home(None, &cwd, Some(PathBuf::from("/home/u/.atelier")));
+        assert_eq!(path, PathBuf::from("/home/u/.atelier"));
         assert!(
             !cwd.join(".atelier").exists(),
             "resolution must never stamp a local store implicitly"

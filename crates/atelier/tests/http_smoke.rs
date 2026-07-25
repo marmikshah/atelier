@@ -219,7 +219,7 @@ fn http_server_handshakes_lists_and_calls_the_same_registry() {
         "id": 3,
         "method": "tools/call",
         "params": {
-            "name": "doc_create",
+            "name": "doc_new",
             "arguments": {"name": "smoke-http", "width": 8, "height": 8}
         }
     }));
@@ -238,27 +238,32 @@ fn http_server_handshakes_lists_and_calls_the_same_registry() {
         .and_then(|content| content.iter().find_map(|block| block.get("text")))
         .and_then(Value::as_str)
         .unwrap_or_default();
-    assert!(text.contains("\"smoke-http\""), "create payload: {text}");
+    let created: Value = serde_json::from_str(text).expect("doc_new returned JSON text");
+    let doc_id = created["doc_id"]
+        .as_str()
+        .expect("doc_new returned its opaque doc_id");
+    assert!(doc_id.starts_with("d_"), "create payload: {created}");
 
-    // Per-call context is protocol metadata, not process state. The same
-    // request works even though this smoke opens a fresh TCP connection for
-    // every POST (and the HTTP server deliberately keeps no MCP sessions).
+    // The request works even though every POST opens a fresh TCP connection:
+    // document identity lives in the explicit tool arguments, not transport
+    // or process state. Metadata names the caller for logs only.
     let info = server.post(&json!({
         "jsonrpc": "2.0",
         "id": 4,
         "method": "tools/call",
         "params": {
             "_meta": {
-                "io.github.marmikshah.atelier/context": {
-                    "doc_id": "smoke-http",
-                    "session": "http-smoke"
-                }
+                "io.github.marmikshah.atelier/session": "http-smoke"
             },
             "name": "doc_info",
-            "arguments": {}
+            "arguments": {"doc_id": doc_id}
         }
     }));
-    assert_eq!(info.status, 200, "context call response: {:?}", info.body);
+    assert_eq!(
+        info.status, 200,
+        "explicit-id call response: {:?}",
+        info.body
+    );
     let info = info.json();
     assert!(info.get("error").is_none(), "context call failed: {info}");
     let text = info["result"]["content"]
@@ -266,5 +271,5 @@ fn http_server_handshakes_lists_and_calls_the_same_registry() {
         .and_then(|content| content.iter().find_map(|block| block.get("text")))
         .and_then(Value::as_str)
         .unwrap_or_default();
-    assert!(text.contains("\"w\":8"), "context call payload: {text}");
+    assert!(text.contains("\"w\":8"), "explicit-id call payload: {text}");
 }

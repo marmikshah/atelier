@@ -4,9 +4,9 @@
 //! is scriptable from any shell — and from any agent that has one:
 //!
 //! ```text
-//! atelier call doc_create '{"name":"cat","width":32,"height":32}'
+//! atelier call doc_new '{"name":"cat","width":32,"height":32}'
 //! atelier call doc_paint_grid --file grid.json
-//! atelier call doc_look '{"doc_id":"cat","out_path":"/tmp/cat.png"}'
+//! atelier call doc_look '{"doc_id":"d_…","out_path":"/tmp/cat.png"}'
 //! ```
 //!
 //! stdout carries the tool's JSON report; the exit code carries the verdict:
@@ -15,7 +15,7 @@
 
 use serde_json::Value;
 
-use atelier_mcp::server::{self, Atelier, CallContext};
+use atelier_mcp::server::{self, Atelier};
 use atelier_studio::Studio;
 
 /// One parsed invocation: which tool, with what args, rooted where.
@@ -23,24 +23,22 @@ struct Call {
     tool: String,
     args: Value,
     home: Option<String>,
-    context: CallContext,
 }
 
-/// Parse `<tool> ['<json>' | --file PATH | --stdin] [context flags]`. The three
+/// Parse `<tool> ['<json>' | --file PATH | --stdin]`. The three
 /// arg sources are mutually exclusive — a paint_grid legend or a batch op list
 /// outgrows a comfortable shell argument, which is what --file/--stdin are for.
-/// `--doc`/`--layer`/`--frame` fill omitted tool arguments before dispatch;
-/// explicit JSON always wins and the expanded args are what the journal stores.
+/// Every tool argument is explicit JSON; the CLI carries no active document,
+/// layer, or frame.
 /// Errors are usage errors (exit 2), never tool results.
 fn parse(args: &[String]) -> Result<Call, String> {
     const USAGE: &str = "usage: atelier call <tool> ['<json>' | --file PATH | --stdin] \
-                         [--doc ID] [--layer N] [--frame N] [--home DIR]";
+                         [--home DIR]";
     let mut tool = None;
     let mut positional_json = None;
     let mut file = None;
     let mut stdin = false;
     let mut home = None;
-    let mut context = CallContext::new("cli");
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -52,26 +50,6 @@ fn parse(args: &[String]) -> Result<Call, String> {
             "--home" => {
                 i += 1;
                 home = Some(args.get(i).ok_or("--home needs a directory")?.clone());
-            }
-            "--doc" => {
-                i += 1;
-                context.doc_id = Some(args.get(i).ok_or("--doc needs a document id")?.clone());
-            }
-            "--layer" => {
-                i += 1;
-                let raw = args.get(i).ok_or("--layer needs a non-negative integer")?;
-                context.layer =
-                    Some(raw.parse().map_err(|_| {
-                        format!("--layer expects a non-negative integer, got '{raw}'")
-                    })?);
-            }
-            "--frame" => {
-                i += 1;
-                let raw = args.get(i).ok_or("--frame needs a non-negative integer")?;
-                context.frame =
-                    Some(raw.parse().map_err(|_| {
-                        format!("--frame expects a non-negative integer, got '{raw}'")
-                    })?);
             }
             other if other.starts_with("--") => return Err(format!("unknown flag '{other}'")),
             other => {
@@ -107,12 +85,7 @@ fn parse(args: &[String]) -> Result<Call, String> {
     if !args.is_object() {
         return Err("args must be a JSON object".into());
     }
-    Ok(Call {
-        tool,
-        args,
-        home,
-        context,
-    })
+    Ok(Call { tool, args, home })
 }
 
 pub(crate) async fn run(args: &[String]) -> i32 {
@@ -128,7 +101,7 @@ pub(crate) async fn run(args: &[String]) -> i32 {
         None => Atelier::new(),
     };
     let had_out_path = call.args.get("out_path").is_some();
-    match atelier.dispatch(&call.tool, call.args, call.context).await {
+    match atelier.dispatch(&call.tool, call.args, "cli").await {
         // Protocol-level failure: the call itself, not the tool, was wrong.
         Err(e) => {
             eprintln!("atelier: {e}");
@@ -172,41 +145,27 @@ mod tests {
         assert_eq!(c.tool, "list_docs");
         assert_eq!(c.args, serde_json::json!({}));
         assert!(c.home.is_none());
-        assert_eq!(c.context, CallContext::new("cli"));
     }
 
     #[test]
     fn parse_takes_positional_json_and_home() {
         let c = parse(&argv(&[
-            "doc_create",
+            "doc_new",
             "{\"name\":\"cat\"}",
             "--home",
             "/tmp/x",
         ]))
         .unwrap();
-        assert_eq!(c.tool, "doc_create");
+        assert_eq!(c.tool, "doc_new");
         assert_eq!(c.args["name"], "cat");
         assert_eq!(c.home.as_deref(), Some("/tmp/x"));
     }
 
     #[test]
-    fn parse_takes_explicit_call_context() {
-        let c = parse(&argv(&[
-            "doc_draw",
-            "{\"op\":\"clear_cel\"}",
-            "--doc",
-            "hero",
-            "--layer",
-            "2",
-            "--frame",
-            "3",
-        ]))
-        .unwrap();
-        assert_eq!(c.context.doc_id.as_deref(), Some("hero"));
-        assert_eq!(c.context.layer, Some(2));
-        assert_eq!(c.context.frame, Some(3));
-        assert!(parse(&argv(&["doc_draw", "--layer", "-1"])).is_err());
-        assert!(parse(&argv(&["doc_draw", "--frame", "x"])).is_err());
+    fn parse_rejects_removed_context_flags() {
+        for flag in ["--doc", "--layer", "--frame"] {
+            assert!(parse(&argv(&["doc_draw", "{}", flag, "x"])).is_err());
+        }
     }
 
     #[test]
@@ -230,27 +189,27 @@ mod tests {
         let atelier = Atelier::with_studio(Studio::with_docs_dir((&home).into()));
 
         let create = parse(&argv(&[
-            "doc_create",
+            "doc_new",
             "{\"name\":\"cat\",\"width\":8,\"height\":8}",
         ]))
         .unwrap();
         let result = atelier
-            .dispatch(&create.tool, create.args, CallContext::new("test"))
+            .dispatch(&create.tool, create.args, "test")
             .await
             .unwrap();
         assert!(!server::is_error_result(&result));
         let report = server::result_json(&result).unwrap();
-        assert_eq!(report["id"], "cat");
+        let doc_id = report["doc_id"].as_str().unwrap().to_string();
 
-        let info = parse(&argv(&["doc_info", "--doc", "cat"])).unwrap();
+        let info = parse(&argv(&["doc_info", &format!(r#"{{"doc_id":"{doc_id}"}}"#)])).unwrap();
         let result = atelier
-            .dispatch(&info.tool, info.args, info.context)
+            .dispatch(&info.tool, info.args, "test")
             .await
             .unwrap();
         let report = server::result_json(&result).unwrap();
         assert_eq!(report["w"], 8);
-        // doc_create is journaled: the recipe exists beside the document.
-        assert!(dir.join("cat").join("recipe.jsonl").exists());
+        // doc_new is journaled: the recipe exists beside the document.
+        assert!(dir.join(doc_id).join("recipe.jsonl").exists());
 
         let _ = std::fs::remove_dir_all(&dir);
     }

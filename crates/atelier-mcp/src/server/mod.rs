@@ -11,7 +11,6 @@ use rmcp::model::{
 };
 use rmcp::service::RequestContext;
 use rmcp::{ErrorData, RoleServer, ServerHandler, tool_handler};
-use serde::Deserialize;
 use serde_json::{Value, json};
 
 use atelier_studio::Studio;
@@ -301,120 +300,9 @@ mod tools_read;
 
 // --- server ----------------------------------------------------------------
 
-/// Optional defaults attached to one call. Context is deliberately carried by
-/// the caller, never retained in the server: stdio, HTTP, CLI, and replay
-/// therefore resolve identical arguments, and concurrent clients cannot change
-/// one another's active document.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct CallContext {
-    /// Stable name used in logs. MCP callers may override the transport-derived
-    /// identity with `session` in Atelier's namespaced request metadata.
-    pub caller: String,
-    pub doc_id: Option<String>,
-    pub layer: Option<usize>,
-    pub frame: Option<usize>,
-}
-
-impl CallContext {
-    pub fn new(caller: impl Into<String>) -> Self {
-        Self {
-            caller: caller.into(),
-            ..Self::default()
-        }
-    }
-}
-
-/// Namespaced MCP `_meta` entry carrying [`CallContext`] defaults.
-pub const CALL_CONTEXT_META_KEY: &str = "io.github.marmikshah.atelier/context";
-
-/// Expand only fields the target tool actually accepts. Explicit arguments
-/// always win. The expanded object is what dispatch logs and journals, so
-/// replay never depends on an ambient session.
-fn apply_call_context(tool: &str, mut args: Value, context: &CallContext) -> Value {
-    let operation = call_op(&args).map(str::to_owned);
-    let op = operation.as_deref();
-    let Some(obj) = args.as_object_mut() else {
-        return args;
-    };
-
-    let accepts_doc = !matches!(tool, "doc_create" | "list_docs")
-        && !matches!((tool, op), ("doc_palette", None | Some("generate")));
-    let accepts_layer = matches!(
-        tool,
-        "doc_batch"
-            | "doc_draw"
-            | "doc_fx"
-            | "doc_region"
-            | "doc_paint_grid"
-            | "doc_dither_ramp"
-            | "doc_dump_region"
-            | "doc_silhouette"
-            | "doc_components"
-            | "doc_frame_diff"
-            | "doc_seam_report"
-            | "doc_anim_audit"
-            | "doc_critique"
-    ) || matches!(
-        (tool, op),
-        ("doc_palette", Some("snap" | "swap" | "report"))
-    );
-    let accepts_layer_index = matches!(
-        (tool, op),
-        (
-            "doc_layer",
-            Some("set" | "move" | "insert" | "delete" | "rename" | "duplicate" | "merge_down")
-        )
-    );
-    let accepts_frame = matches!(
-        tool,
-        "doc_batch"
-            | "doc_draw"
-            | "doc_fx"
-            | "doc_region"
-            | "doc_paint_grid"
-            | "doc_dither_ramp"
-            | "doc_dump_region"
-            | "doc_silhouette"
-            | "doc_components"
-            | "doc_seam_report"
-            | "doc_look"
-            | "doc_critique"
-    ) || matches!(
-        (tool, op),
-        ("doc_palette", Some("snap" | "swap" | "report"))
-            | ("doc_ref", Some("compare" | "diff"))
-            | (
-                "doc_frame",
-                Some("duration" | "delete" | "insert" | "duplicate" | "move")
-            )
-    );
-
-    if accepts_doc
-        && !obj.contains_key("doc_id")
-        && let Some(doc_id) = &context.doc_id
-    {
-        obj.insert("doc_id".into(), json!(doc_id));
-    }
-    if accepts_layer
-        && !obj.contains_key("layer")
-        && let Some(layer) = context.layer
-    {
-        obj.insert("layer".into(), json!(layer));
-    }
-    if accepts_layer_index
-        && !obj.contains_key("index")
-        && let Some(layer) = context.layer
-    {
-        obj.insert("index".into(), json!(layer));
-    }
-    if accepts_frame
-        && !obj.contains_key("frame")
-        && let Some(frame) = context.frame
-    {
-        obj.insert("frame".into(), json!(frame));
-    }
-    args
-}
+/// Optional per-call log label. It never supplies tool arguments or changes
+/// execution; document, layer, and frame targets live only in the JSON call.
+pub const SESSION_META_KEY: &str = "io.github.marmikshah.atelier/session";
 
 #[derive(Clone)]
 pub struct Atelier {
@@ -506,10 +394,8 @@ impl Atelier {
         &self,
         tool: &str,
         args: Value,
-        context: CallContext,
+        caller: &str,
     ) -> Result<CallToolResult, ErrorData> {
-        let args = apply_call_context(tool, args, &context);
-        let caller = context.caller.as_str();
         // For mutations, hold the order lock from before the dispatch until
         // after the journal write, so journal order can never diverge from
         // execution order under concurrent sessions. Reads skip it.
@@ -574,7 +460,7 @@ impl Atelier {
             }};
         }
         Ok(match tool {
-            "doc_create" => call!(DocCreate, doc_create),
+            "doc_new" => call!(DocNew, doc_new),
             "list_docs" => call!(ListDocs, list_docs),
             "doc_info" => call!(DocRef, doc_info),
             "delete_doc" => call!(DocRef, delete_doc),
@@ -658,13 +544,13 @@ fn is_journaled(tool: &str, args: &Value) -> bool {
     is_store_mutation(tool, args) && !matches!(tool, "delete_doc" | "doc_checkpoint" | "doc_ref")
 }
 
-/// The document a call belongs to. `doc_create` names it in the result (the id
+/// The document a call belongs to. `doc_new` returns it in the result (the id
 /// is minted there, not passed in); everything else carries `doc_id`.
 fn journal_target(tool: &str, args: &Value, result: &CallToolResult) -> Option<String> {
     match tool {
         // The id is minted in the result, not passed in.
-        "doc_create" => result_json(result)?
-            .get("id")
+        "doc_new" => result_json(result)?
+            .get("doc_id")
             .and_then(Value::as_str)
             .map(str::to_string),
         // doc_export writes an external artifact; it does not define the
@@ -699,10 +585,10 @@ fn batch_targets(frame: usize, frames: Option<Vec<usize>>) -> Vec<usize> {
     targets
 }
 
-/// `doc_create`'s minted id exists only in its result. Stamping it into the
+/// `doc_new`'s minted id exists only in its result. Stamping it into the
 /// recorded args lets replay remap later steps when a rerun mints a new id.
 fn journal_args(tool: &str, mut args: Value, target: Option<&str>) -> Value {
-    if tool == "doc_create"
+    if tool == "doc_new"
         && let (Some(id), Some(obj)) = (target, args.as_object_mut())
     {
         obj.insert("doc_id".into(), json!(id));
@@ -710,48 +596,26 @@ fn journal_args(tool: &str, mut args: Value, target: Option<&str>) -> Value {
     args
 }
 
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct McpCallContext {
-    doc_id: Option<String>,
-    layer: Option<usize>,
-    frame: Option<usize>,
-    session: Option<String>,
-}
-
-fn context_from_meta(
+fn caller_from_meta(
     meta: Option<&rmcp::model::Meta>,
     fallback_caller: String,
-) -> Result<CallContext, ErrorData> {
-    let Some(raw) = meta.and_then(|meta| meta.0.get(CALL_CONTEXT_META_KEY)) else {
-        return Ok(CallContext::new(fallback_caller));
+) -> Result<String, ErrorData> {
+    let Some(raw) = meta.and_then(|meta| meta.0.get(SESSION_META_KEY)) else {
+        return Ok(fallback_caller);
     };
-    let parsed: McpCallContext = serde_json::from_value(raw.clone()).map_err(|error| {
+    let session = raw.as_str().ok_or_else(|| {
         ErrorData::invalid_params(
-            format!("invalid MCP _meta['{CALL_CONTEXT_META_KEY}']: {error}"),
+            format!("MCP _meta['{SESSION_META_KEY}'] must be a string"),
             None,
         )
     })?;
-    let caller = match parsed.session {
-        Some(session)
-            if session.is_empty()
-                || session.len() > 128
-                || session.chars().any(char::is_control) =>
-        {
-            return Err(ErrorData::invalid_params(
-                "atelier call-context session must be 1..=128 bytes with no control characters",
-                None,
-            ));
-        }
-        Some(session) => session,
-        None => fallback_caller,
-    };
-    Ok(CallContext {
-        caller,
-        doc_id: parsed.doc_id,
-        layer: parsed.layer,
-        frame: parsed.frame,
-    })
+    if session.is_empty() || session.len() > 128 || session.chars().any(char::is_control) {
+        return Err(ErrorData::invalid_params(
+            "atelier session must be 1..=128 bytes with no control characters",
+            None,
+        ));
+    }
+    Ok(session.to_string())
 }
 
 #[tool_handler(router = self.tool_router)]
@@ -804,20 +668,20 @@ impl ServerHandler for Atelier {
         };
         // rmcp moves protocol `_meta` out of the params and into the request
         // context before invoking the handler.
-        let call_context = context_from_meta(Some(&context.meta), caller)?;
-        self.dispatch(&tool, args, call_context).await
+        let caller = caller_from_meta(Some(&context.meta), caller)?;
+        self.dispatch(&tool, args, &caller).await
     }
 
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
         info.capabilities = ServerCapabilities::builder().enable_tools().build();
         info.instructions = Some(
-            "Atelier is a stateless, offline pixel-art editor. Keep the id returned by \
-             doc_create; use doc_batch or doc_paint_grid for a burst of marks and doc_look \
-             to inspect the result. Calls may carry {doc_id,layer,frame,session} under MCP \
-             _meta[\"io.github.marmikshah.atelier/context\"]; explicit arguments win and \
-             resolved arguments are \
-             journaled, so stdio, HTTP, CLI, and replay stay equivalent. Save a \
+            "Atelier is a stateless, offline pixel-art editor. Keep the doc_id returned \
+             by doc_new and pass it explicitly on every later document call. Use doc_batch \
+             or doc_paint_grid for a burst of marks and doc_look to inspect the result. MCP \
+             _meta may carry a log label at \"io.github.marmikshah.atelier/session\", but \
+             never tool defaults. Calls are journaled with concrete arguments, so stdio, \
+             HTTP, CLI, and replay stay equivalent. Save a \
              doc_checkpoint before destructive edits. All 26 tools are advertised."
                 .into(),
         );
@@ -837,7 +701,6 @@ mod tests {
         "doc_checkpoint",
         "doc_components",
         "doc_contact_sheet",
-        "doc_create",
         "doc_critique",
         "doc_dither_ramp",
         "doc_draw",
@@ -849,6 +712,7 @@ mod tests {
         "doc_info",
         "doc_layer",
         "doc_look",
+        "doc_new",
         "doc_paint_grid",
         "doc_palette",
         "doc_ref",
@@ -954,7 +818,7 @@ mod tests {
         let a = temp_atelier("dispatch-coverage");
         for t in Atelier::registry_tools() {
             let name = t.name.to_string();
-            if let Err(e) = a.dispatch(&name, json!({}), CallContext::new("test")).await {
+            if let Err(e) = a.dispatch(&name, json!({}), "test").await {
                 assert!(
                     !e.message.contains("unknown tool"),
                     "{name} is advertised but dispatch has no arm for it"
@@ -1094,7 +958,7 @@ mod tests {
             "export writes an artifact but does not build the document"
         );
         // Anything that marks the canvas has to be in the recipe.
-        for t in ["doc_draw", "doc_batch", "doc_fx", "doc_create"] {
+        for t in ["doc_draw", "doc_batch", "doc_fx", "doc_new"] {
             assert!(
                 is_journaled(t, &json!({"doc_id": "d"})),
                 "{t} builds the art"
@@ -1146,20 +1010,21 @@ mod tests {
     }
 
     #[test]
-    fn doc_create_is_journaled_to_the_id_it_minted() {
+    fn doc_new_is_journaled_to_the_id_it_minted() {
         // The id is in the result, not the args — journaling by args alone
-        // would file every doc_create under nothing.
+        // would file every doc_new under nothing.
+        let doc_id = "d_0000000000000000";
         let created = CallToolResult::success(vec![Content::text(
-            json!({"id": "sprite", "w": 8}).to_string(),
+            json!({"doc_id": doc_id, "w": 8}).to_string(),
         )]);
         assert_eq!(
-            journal_target("doc_create", &json!({"name": "sprite"}), &created).as_deref(),
-            Some("sprite")
+            journal_target("doc_new", &json!({"name": "sprite"}), &created).as_deref(),
+            Some(doc_id)
         );
         let drew = CallToolResult::success(vec![Content::text(json!({"ok": true}).to_string())]);
         assert_eq!(
-            journal_target("doc_draw", &json!({"doc_id": "sprite"}), &drew).as_deref(),
-            Some("sprite")
+            journal_target("doc_draw", &json!({"doc_id": doc_id}), &drew).as_deref(),
+            Some(doc_id)
         );
     }
 
@@ -1171,76 +1036,21 @@ mod tests {
     }
 
     #[test]
-    fn call_context_expands_supported_fields_without_overriding_args() {
-        let context = CallContext {
-            caller: "session-a".into(),
-            doc_id: Some("hero".into()),
-            layer: Some(2),
-            frame: Some(3),
-        };
-        assert_eq!(
-            apply_call_context("doc_draw", json!({"op": "clear_cel", "frame": 7}), &context),
-            json!({
-                "doc_id": "hero",
-                "layer": 2,
-                "frame": 7,
-                "op": "clear_cel"
-            }),
-            "explicit frame wins over the context default"
-        );
-        assert_eq!(
-            apply_call_context("doc_palette", json!({"op": "generate"}), &context),
-            json!({"op": "generate"}),
-            "unbound palette generation must not mutate the active document"
-        );
-        assert_eq!(
-            apply_call_context("list_docs", json!({}), &context),
-            json!({}),
-            "library calls do not acquire document/cel context"
-        );
-        assert_eq!(
-            apply_call_context(
-                "doc_layer",
-                json!({"op": "rename", "name": "ink"}),
-                &context
-            ),
-            json!({"doc_id": "hero", "op": "rename", "index": 2, "name": "ink"}),
-            "the layer default maps to doc_layer's index field"
-        );
-        assert_eq!(
-            apply_call_context("doc_layer", json!({"op": "add"}), &context),
-            json!({"doc_id": "hero", "op": "add"}),
-            "adding a layer has no existing-layer target"
-        );
-    }
-
-    #[test]
-    fn mcp_context_is_namespaced_strict_and_session_named() {
+    fn mcp_session_is_namespaced_and_never_carries_tool_defaults() {
         let meta: rmcp::model::Meta = serde_json::from_value(json!({
-            CALL_CONTEXT_META_KEY: {
-                "doc_id": "hero",
-                "layer": 1,
-                "frame": 2,
-                "session": "sprite-pass"
-            }
+            SESSION_META_KEY: "sprite-pass"
         }))
         .unwrap();
-        let context = context_from_meta(Some(&meta), "transport".into()).unwrap();
         assert_eq!(
-            context,
-            CallContext {
-                caller: "sprite-pass".into(),
-                doc_id: Some("hero".into()),
-                layer: Some(1),
-                frame: Some(2),
-            }
+            caller_from_meta(Some(&meta), "transport".into()).unwrap(),
+            "sprite-pass"
         );
 
         let bad: rmcp::model::Meta = serde_json::from_value(json!({
-            CALL_CONTEXT_META_KEY: {"unknown": true}
+            SESSION_META_KEY: {"doc_id": "d_0000000000000000"}
         }))
         .unwrap();
-        assert!(context_from_meta(Some(&bad), "transport".into()).is_err());
+        assert!(caller_from_meta(Some(&bad), "transport".into()).is_err());
     }
 
     #[test]
@@ -1257,17 +1067,16 @@ mod tests {
     }
 
     #[test]
-    fn doc_create_journals_the_minted_id_for_replay_remapping() {
-        // A collision mints `sprite-2`; without the stamp, replay could not
-        // tell which recorded id the later steps' `doc_id: "sprite"` meant.
+    fn doc_new_journals_the_minted_id_for_replay_remapping() {
+        let doc_id = "d_0000000000000000";
         assert_eq!(
-            journal_args("doc_create", json!({"name": "sprite"}), Some("sprite-2")),
-            json!({"name": "sprite", "doc_id": "sprite-2"})
+            journal_args("doc_new", json!({"name": "sprite"}), Some(doc_id)),
+            json!({"name": "sprite", "doc_id": doc_id})
         );
         // Every other tool records its args untouched.
         assert_eq!(
-            journal_args("doc_draw", json!({"doc_id": "sprite"}), Some("sprite")),
-            json!({"doc_id": "sprite"})
+            journal_args("doc_draw", json!({"doc_id": doc_id}), Some(doc_id)),
+            json!({"doc_id": doc_id})
         );
     }
 
@@ -1323,9 +1132,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn resolved_context_is_journaled_and_checkpoint_restore_rewinds_it() {
-        async fn ok(atelier: &Atelier, tool: &str, args: Value, context: CallContext) -> Value {
-            let result = atelier.dispatch(tool, args, context).await.unwrap();
+    async fn explicit_targets_are_journaled_and_checkpoint_restore_rewinds_them() {
+        async fn ok(atelier: &Atelier, tool: &str, args: Value) -> Value {
+            let result = atelier.dispatch(tool, args, "test").await.unwrap();
             assert!(
                 !is_error_result(&result),
                 "{tool} failed: {:?}",
@@ -1335,31 +1144,24 @@ mod tests {
         }
 
         let atelier = temp_atelier("context-checkpoint");
-        ok(
+        let created = ok(
             &atelier,
-            "doc_create",
+            "doc_new",
             json!({"name": "hero", "width": 4, "height": 4}),
-            CallContext::new("test"),
         )
         .await;
-        let cel = || CallContext {
-            caller: "test".into(),
-            doc_id: Some("hero".into()),
-            layer: Some(0),
-            frame: Some(0),
-        };
+        let doc_id = created["doc_id"].as_str().unwrap();
         ok(
             &atelier,
             "doc_draw",
-            json!({"op": "pencil", "points": [[1, 1]], "color": [200, 0, 0]}),
-            cel(),
+            json!({"doc_id": doc_id, "layer": 0, "frame": 0, "op": "pencil",
+                   "points": [[1, 1]], "color": [200, 0, 0]}),
         )
         .await;
         let saved = ok(
             &atelier,
             "doc_checkpoint",
-            json!({"action": "save", "label": "red"}),
-            cel(),
+            json!({"doc_id": doc_id, "action": "save", "label": "red"}),
         )
         .await;
         let checkpoint_id = saved["saved"].as_str().unwrap();
@@ -1367,20 +1169,19 @@ mod tests {
         ok(
             &atelier,
             "doc_draw",
-            json!({"op": "pencil", "points": [[1, 1]], "color": [0, 0, 200]}),
-            cel(),
+            json!({"doc_id": doc_id, "layer": 0, "frame": 0, "op": "pencil",
+                   "points": [[1, 1]], "color": [0, 0, 200]}),
         )
         .await;
-        assert_eq!(atelier.studio().journal("hero").unwrap().len(), 3);
+        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 3);
 
         ok(
             &atelier,
             "doc_checkpoint",
-            json!({"action": "restore", "checkpoint_id": checkpoint_id}),
-            cel(),
+            json!({"doc_id": doc_id, "action": "restore", "checkpoint_id": checkpoint_id}),
         )
         .await;
-        let journal = atelier.studio().journal("hero").unwrap();
+        let journal = atelier.studio().journal(doc_id).unwrap();
         assert_eq!(
             journal.len(),
             2,
@@ -1389,19 +1190,19 @@ mod tests {
         assert_eq!(
             Value::Object(journal[1].args.clone()),
             json!({
-                "doc_id": "hero",
+                "doc_id": doc_id,
                 "layer": 0,
                 "frame": 0,
                 "op": "pencil",
                 "points": [[1, 1]],
                 "color": [200, 0, 0]
             }),
-            "the journal stores resolved context, not ambient defaults"
+            "the journal stores the explicit target"
         );
         assert_eq!(
             atelier
                 .studio()
-                .doc_dump_region("hero", 0, Some(0), Some((1, 1, 1, 1)), "hex")
+                .doc_dump_region(doc_id, 0, Some(0), Some((1, 1, 1, 1)), "hex")
                 .unwrap()["rows"][0],
             "#c80000"
         );

@@ -40,7 +40,7 @@ fn ids(s: &Studio) -> Vec<String> {
         .and_then(|d| d.as_array())
         .map(|a| {
             a.iter()
-                .filter_map(|d| d.get("id").and_then(|i| i.as_str()).map(String::from))
+                .filter_map(|d| d.get("doc_id").and_then(|i| i.as_str()).map(String::from))
                 .collect()
         })
         .unwrap_or_default();
@@ -62,14 +62,14 @@ fn list() -> i32 {
     }
     let width = docs
         .iter()
-        .filter_map(|d| d.get("id").and_then(|i| i.as_str()))
+        .filter_map(|d| d.get("doc_id").and_then(|i| i.as_str()))
         .map(|i| i.len())
         .max()
         .unwrap_or(0);
     let num = |d: &serde_json::Value, k: &str| d.get(k).and_then(|x| x.as_u64()).unwrap_or(0);
     let mut rows: Vec<&serde_json::Value> = docs.iter().collect();
     rows.sort_by_key(|d| {
-        d.get("id")
+        d.get("doc_id")
             .and_then(|i| i.as_str())
             .unwrap_or("")
             .to_string()
@@ -77,7 +77,11 @@ fn list() -> i32 {
     let s = studio();
     let mut replayable = 0usize;
     for d in &rows {
-        let id = d.get("id").and_then(|i| i.as_str()).unwrap_or("?");
+        let id = d.get("doc_id").and_then(|i| i.as_str()).unwrap_or("?");
+        let name = d
+            .get("name")
+            .and_then(|value| value.as_str())
+            .unwrap_or("?");
         if let Some(error) = d.get("error").and_then(|value| value.as_str()) {
             println!("  {:width$}  {error}", id, width = width);
             continue;
@@ -94,12 +98,13 @@ fn list() -> i32 {
             Err(_) => "  corrupt journal".to_string(),
         };
         println!(
-            "  {:width$}  {:>3}x{:<3}  {:>2} frames  {:>2} layers  {}",
+            "  {:width$}  {:>3}x{:<3}  {:>2} frames  {:>2} layers  {:<20}  {}",
             id,
             num(d, "w"),
             num(d, "h"),
             num(d, "frames"),
             num(d, "layers"),
+            name,
             recipe,
             width = width
         );

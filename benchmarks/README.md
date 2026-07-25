@@ -32,7 +32,8 @@ benchmark runner: the agent gets the task text and the tool surface, and works.
 
 ```sh
 # the CLI path needs no setup at all — the agent's shell just runs:
-atelier call doc_create '{"name":"cat","width":32,"height":32}'
+atelier call doc_new '{"name":"cat","width":32,"height":32}'
+# then passes the returned doc_id explicitly on every document call
 # or, for an MCP-connected client:
 atelier install && claude mcp add --transport http atelier http://127.0.0.1:8765/mcp
 ```

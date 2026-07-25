@@ -2,6 +2,7 @@
 
 use serde::Deserialize;
 use serde_json::Value;
+use std::collections::HashSet;
 
 use atelier_studio::{JournalEntry, validate_journal};
 
@@ -29,8 +30,18 @@ pub struct Recipe {
 pub struct Step {
     pub tool: String,
     pub args: Value,
+    /// Authored recipes bind `doc_new`'s returned id under this name. Later
+    /// document targets refer to it explicitly as `$name`. Journals never bind:
+    /// they contain concrete ids captured from live calls.
+    pub bind: Option<String>,
     /// Optional human note, echoed alongside the step for context.
     pub note: Option<String>,
+}
+
+fn valid_binding(binding: &str) -> bool {
+    let mut chars = binding.chars();
+    chars.next().is_some_and(|first| first.is_ascii_lowercase())
+        && chars.all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '_')
 }
 
 /// True when the source is JSON Lines rather than one authored recipe object.
@@ -68,6 +79,7 @@ impl Recipe {
         if recipe.steps.is_empty() {
             return Err("recipe has no steps — add at least one {tool, args}".into());
         }
+        let mut bindings = HashSet::new();
         for (index, step) in recipe.steps.iter().enumerate() {
             if step.tool.is_empty() {
                 return Err(format!("step {} has an empty tool name", index + 1));
@@ -79,12 +91,82 @@ impl Recipe {
                     step.tool
                 ));
             }
+            if recipe.is_journal() && step.bind.is_some() {
+                return Err(format!(
+                    "journal step {} ({}) may not bind a result",
+                    index + 1,
+                    step.tool
+                ));
+            }
+            if recipe.is_journal() {
+                continue;
+            }
+            if step.tool == "doc_new" {
+                if step.args.get("doc_id").is_some() {
+                    return Err(format!(
+                        "step {} (doc_new) may not set doc_id; bind its returned id instead",
+                        index + 1
+                    ));
+                }
+                let binding = step.bind.as_deref().ok_or_else(|| {
+                    format!(
+                        "step {} (doc_new) needs `bind`; later calls use `$<bind>` as doc_id",
+                        index + 1
+                    )
+                })?;
+                if !valid_binding(binding) {
+                    return Err(format!(
+                        "step {} (doc_new) bind must match [a-z][a-z0-9_]*",
+                        index + 1
+                    ));
+                }
+                if !bindings.insert(binding) {
+                    return Err(format!("step {} repeats bind '{binding}'", index + 1));
+                }
+                continue;
+            }
+            if step.bind.is_some() {
+                return Err(format!(
+                    "step {} ({}) cannot bind a result; only doc_new can",
+                    index + 1,
+                    step.tool
+                ));
+            }
+            for key in ["doc_id", "set_doc"] {
+                let Some(target) = step.args.get(key) else {
+                    continue;
+                };
+                if target.is_null() {
+                    continue;
+                }
+                let target = target.as_str().ok_or_else(|| {
+                    format!(
+                        "step {} ({}) {key} must be a `$<bind>` string",
+                        index + 1,
+                        step.tool
+                    )
+                })?;
+                let binding = target.strip_prefix('$').ok_or_else(|| {
+                    format!(
+                        "step {} ({}) {key} must use `$<bind>`, not a concrete document id",
+                        index + 1,
+                        step.tool
+                    )
+                })?;
+                if !valid_binding(binding) || !bindings.contains(binding) {
+                    return Err(format!(
+                        "step {} ({}) {key} refers to unknown or future binding '{target}'",
+                        index + 1,
+                        step.tool
+                    ));
+                }
+            }
         }
         Ok(recipe)
     }
 
-    /// Recorded journals carry a stamped document id on `doc_create`; authored
-    /// recipes derive the id from the requested name.
+    /// Recorded journals carry concrete document ids; authored recipes bind
+    /// the opaque id returned by `doc_new`.
     pub fn is_journal(&self) -> bool {
         self.source == RecipeSource::Journal
     }
@@ -125,6 +207,7 @@ impl Recipe {
             .map(|entry| Step {
                 tool: entry.tool,
                 args: Value::Object(entry.args),
+                bind: None,
                 note: None,
             })
             .collect();
@@ -144,20 +227,20 @@ mod tests {
     #[test]
     fn reads_the_authored_object_form() {
         let r = Recipe::parse(
-            r#"{"name":"n","description":"d","steps":[{"tool":"doc_create","args":{"name":"x"}}]}"#,
+            r#"{"name":"n","description":"d","steps":[{"tool":"doc_new","bind":"doc","args":{"name":"x"}}]}"#,
         )
         .unwrap();
         assert_eq!(r.name, "n");
-        assert_eq!(r.steps[0].tool, "doc_create");
+        assert_eq!(r.steps[0].tool, "doc_new");
     }
 
     #[test]
     fn reads_a_document_journal() {
         // What journal_append writes: one call per line, no wrapper object.
         let r = Recipe::parse(
-            "{\"tool\":\"doc_create\",\"args\":{\"name\":\"x\",\"doc_id\":\"x\"}}\n\
+            "{\"tool\":\"doc_new\",\"args\":{\"name\":\"x\",\"doc_id\":\"d_0000000000000000\"}}\n\
              \n\
-             {\"tool\":\"doc_draw\",\"args\":{\"doc_id\":\"x\",\"op\":\"rect\"}}\n",
+             {\"tool\":\"doc_draw\",\"args\":{\"doc_id\":\"d_0000000000000000\",\"op\":\"rect\"}}\n",
         )
         .unwrap();
         assert!(r.is_journal());
@@ -173,7 +256,10 @@ mod tests {
         assert!(e.contains("invalid recipe JSON"), "got: {e}");
         // A journal with a torn MIDDLE line (content after it) names the line.
         let e =
-            Recipe::parse("{\"tool\":\"doc_create\",\"args\":{}}\n{\"tool\":\ntorn\n").unwrap_err();
+            Recipe::parse(
+                "{\"tool\":\"doc_new\",\"args\":{\"doc_id\":\"d_0000000000000000\"}}\n{\"tool\":\ntorn\n",
+            )
+            .unwrap_err();
         assert!(e.contains("line 2"), "got: {e}");
     }
 
@@ -182,14 +268,14 @@ mod tests {
         // A process killed mid-append leaves a partial last line; the completed
         // steps must still replay.
         let r = Recipe::parse(
-            "{\"tool\":\"doc_create\",\"args\":{\"doc_id\":\"x\"}}\n{\"tool\":\"doc_dr",
+            "{\"tool\":\"doc_new\",\"args\":{\"doc_id\":\"d_0000000000000000\"}}\n{\"tool\":\"doc_dr",
         )
         .unwrap();
         assert_eq!(r.steps.len(), 1);
-        assert_eq!(r.steps[0].tool, "doc_create");
+        assert_eq!(r.steps[0].tool, "doc_new");
 
         // Complete but invalid JSON is authoring corruption, not a torn write.
-        let invalid = "{\"tool\":\"doc_create\",\"args\":{}}\n{\"args\":{}}\n";
+        let invalid = "{\"tool\":\"doc_new\",\"args\":{}}\n{\"args\":{}}\n";
         assert!(Recipe::parse(invalid).is_err());
     }
 
@@ -212,5 +298,35 @@ mod tests {
                 "accepted obsolete shape: {src}"
             );
         }
+    }
+
+    #[test]
+    fn authored_targets_must_use_a_prior_binding() {
+        let recipe = |target: &str| {
+            format!(
+                r#"{{"name":"n","description":"d","steps":[
+                    {{"tool":"doc_new","bind":"doc","args":{{"name":"x"}}}},
+                    {{"tool":"doc_info","args":{{"doc_id":"{target}"}}}}
+                ]}}"#
+            )
+        };
+        Recipe::parse(&recipe("$doc")).unwrap();
+        for target in ["d_0000000000000000", "$missing", "$Bad"] {
+            assert!(
+                Recipe::parse(&recipe(target)).is_err(),
+                "accepted unsafe target: {target}"
+            );
+        }
+
+        let future = r#"{"name":"n","description":"d","steps":[
+            {"tool":"doc_info","args":{"doc_id":"$doc"}},
+            {"tool":"doc_new","bind":"doc","args":{"name":"x"}}
+        ]}"#;
+        assert!(Recipe::parse(future).is_err());
+
+        let stamped = r#"{"name":"n","description":"d","steps":[
+            {"tool":"doc_new","bind":"doc","args":{"name":"x","doc_id":"d_0000000000000000"}}
+        ]}"#;
+        assert!(Recipe::parse(stamped).is_err());
     }
 }

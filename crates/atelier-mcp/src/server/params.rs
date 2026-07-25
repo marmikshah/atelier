@@ -38,7 +38,7 @@ pub(crate) fn revive_params(params: &mut serde_json::Map<String, Value>) {
 
 #[derive(Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct DocCreate {
+pub(crate) struct DocNew {
     pub(crate) name: String,
     pub(crate) width: u32,
     pub(crate) height: u32,
@@ -53,9 +53,9 @@ pub(crate) struct DocRef {
 #[derive(Deserialize, JsonSchema, Default)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct ListDocs {
-    /// Keep documents whose id starts with this (family selector, e.g. "hero-").
+    /// Keep documents whose opaque id starts with this.
     pub(crate) prefix: Option<String>,
-    /// Keep documents whose id contains this substring.
+    /// Keep documents whose opaque id or display name contains this substring.
     pub(crate) contains: Option<String>,
 }
 
@@ -500,7 +500,7 @@ mod tests {
     #[test]
     fn typed_tool_params_reject_removed_or_misspelled_fields() {
         assert!(
-            serde_json::from_value::<DocCreate>(serde_json::json!({
+            serde_json::from_value::<DocNew>(serde_json::json!({
                 "name": "x",
                 "width": 8,
                 "height": 8,

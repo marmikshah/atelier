@@ -27,9 +27,9 @@ updates.
 
 - Keep the functional core independent of MCP and async.
 - Route CLI, MCP, and replay calls through the same dispatch path.
-- Keep `Studio` stateless. Call defaults must arrive explicitly and be expanded
-  before logging/journaling; never add a process-global active document,
-  selection, or clipboard.
+- Keep `Studio` stateless. Every document-bound call must carry the opaque
+  `doc_id` returned by `doc_new`; never infer targets or add a process-global
+  active document, selection, or clipboard.
 - Keep every advertised tool reachable and update the registry tests in the
   same change. `make check` verifies that tool documentation still renders.
 - Prefer `Result` to panics and keep Clippy/rustdoc warning-free.

@@ -143,10 +143,11 @@
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 
 <span class="c"># the loop: create → paint → look → fix → export</span>
-atelier call doc_create '{"name":"cat","width":32,"height":32}'
-atelier call doc_draw   '{"doc_id":"cat","layer":0,"frame":0,"op":"rect","x0":6,"y0":6,"x1":25,"y1":25,"color":[224,163,60]}'
-atelier call doc_look   '{"doc_id":"cat","out_path":"/tmp/cat.png"}'  <span class="c"># pixels to a file, then look</span>
-atelier call doc_export '{"doc_id":"cat","op":"sheet","out_path":"/tmp/cat-sheet.png"}'</pre>
+atelier call doc_new '{"name":"cat","width":32,"height":32}'
+<span class="c"># → {"doc_id":"d_7m2k9x4p6r8t3w5y", ...}; use the returned id</span>
+atelier call doc_draw   '{"doc_id":"d_7m2k9x4p6r8t3w5y","layer":0,"frame":0,"op":"rect","x0":6,"y0":6,"x1":25,"y1":25,"color":[224,163,60]}'
+atelier call doc_look   '{"doc_id":"d_7m2k9x4p6r8t3w5y","out_path":"/tmp/cat.png"}'  <span class="c"># pixels to a file, then look</span>
+atelier call doc_export '{"doc_id":"d_7m2k9x4p6r8t3w5y","op":"sheet","out_path":"/tmp/cat-sheet.png"}'</pre>
   <p>One tool call per command; stdout carries the tool's JSON report, the exit code the verdict —
   <code>0</code> ok, <code>1</code> tool error, <code>2</code> bad call. Args are positional JSON,
   <code>--file PATH</code> or <code>--stdin</code>; <code>--home DIR</code> roots an isolated store.
