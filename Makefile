@@ -8,7 +8,7 @@
 BIN := target/debug/atelier
 
 .DEFAULT_GOAL := help
-.PHONY: help build release test fmt fmt-check lint rustdoc-check check pre-commit-checks docs docs-check site clean
+.PHONY: help build release test fmt fmt-check lint rustdoc-check check pre-commit-checks showcase-check docs docs-check site clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -35,13 +35,16 @@ lint: ## Clippy with warnings denied
 rustdoc-check: ## Check public API documentation and intra-doc links
 	RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps
 
-check: pre-commit-checks test docs-check ## Complete non-mutating local/CI gate
+check: pre-commit-checks test docs-check showcase-check ## Complete non-mutating local/CI gate
 
 pre-commit-checks: ## Release metadata + format + clippy + rustdoc gate run by git hooks
 	$(MAKE) fmt-check
 	tools/release-check.sh --current
 	$(MAKE) lint
 	$(MAKE) rustdoc-check
+
+showcase-check: build ## Replay all showcase journals and compare their exported GIFs
+	tools/test-showcase-replays.sh
 
 docs: build ## Regenerate the HTML tool reference (tools.html) from the live registry
 	$(BIN) tools --html > site/tools.html

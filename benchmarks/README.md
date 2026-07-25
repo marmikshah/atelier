@@ -42,6 +42,30 @@ Then hand an agent one task file and let it work. Recorded per run: the model,
 the tool calls it made, how many times it called `doc_look`, wall-clock, and the
 exported GIF.
 
+## Committed replays
+
+Every model/task pair has a replay source at
+`benchmarks/replays/<model>/<task>.jsonl`. These are executable journals in
+Atelier's current format: minified JSON Lines, one `{tool,args}` call per line.
+They deliberately use no wrapper or benchmark-only DSL, so the files exercise
+the same parser and dispatch path as a user's own document journal.
+
+The original recorded journals were migrated only where the public API changed:
+document stamps use UUIDv4, `doc_create` is `doc_new`, and each old batch was
+expanded into its operations in execution order. One `glow` recorded at an
+intensity that rounded to no pixel changes was omitted. The resulting pixels
+are unchanged.
+
+```sh
+store=$(mktemp -d)
+atelier replay benchmarks/replays/haiku-4.5/alien.jsonl --home "$store"
+```
+
+`make showcase-check` replays all 60 sources through the current dispatch path,
+exports their animations, and requires every GIF to match its committed
+`site/showcase` counterpart byte-for-byte. The normal `make check` gate includes
+this test.
+
 ## Reading the numbers
 
 Metrics come from the client that ran the agent, so they describe **that client's

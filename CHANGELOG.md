@@ -6,6 +6,13 @@ releases.
 
 ## [1.8.0] — Unreleased
 
+### Added
+
+- Replay sources for all 60 model/task showcase runs are now committed under
+  `benchmarks/replays`. The complete gate rebuilds every document through the
+  current dispatch path and requires its exported GIF to match the committed
+  showcase artifact byte-for-byte.
+
 ### Removed
 
 - **The product surface has been narrowed back to the editor.** The unreleased
