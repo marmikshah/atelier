@@ -154,7 +154,10 @@ fn stdio_server_handshakes_lists_and_calls() {
     let doc_id = created["doc_id"]
         .as_str()
         .expect("doc_new returned its opaque doc_id");
-    assert!(doc_id.starts_with("d_"), "create payload: {created}");
+    assert!(
+        atelier_studio::DocumentId::parse(doc_id).is_ok(),
+        "create payload: {created}"
+    );
 
     let info = s.request(
         "tools/call",

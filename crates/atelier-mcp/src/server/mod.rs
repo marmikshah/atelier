@@ -919,7 +919,7 @@ mod tests {
     fn doc_new_is_journaled_to_the_id_it_minted() {
         // The id is in the result, not the args — journaling by args alone
         // would file every doc_new under nothing.
-        let doc_id = "d_0000000000000000";
+        let doc_id = "550e8400-e29b-41d4-a716-446655440000";
         let created = CallToolResult::success(vec![Content::text(
             json!({"doc_id": doc_id, "w": 8}).to_string(),
         )]);
@@ -946,7 +946,7 @@ mod tests {
         );
 
         let bad: rmcp::model::Meta = serde_json::from_value(json!({
-            SESSION_META_KEY: {"doc_id": "d_0000000000000000"}
+            SESSION_META_KEY: {"doc_id": "550e8400-e29b-41d4-a716-446655440000"}
         }))
         .unwrap();
         assert!(caller_from_meta(Some(&bad), "transport".into()).is_err());
@@ -976,7 +976,7 @@ mod tests {
 
     #[test]
     fn doc_new_journals_the_minted_id_for_replay_remapping() {
-        let doc_id = "d_0000000000000000";
+        let doc_id = "550e8400-e29b-41d4-a716-446655440000";
         assert_eq!(
             journal_args(ToolName::DocNew, json!({"name": "sprite"}), Some(doc_id)),
             json!({"name": "sprite", "doc_id": doc_id})

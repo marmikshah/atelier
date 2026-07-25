@@ -242,7 +242,10 @@ fn http_server_handshakes_lists_and_calls_the_same_registry() {
     let doc_id = created["doc_id"]
         .as_str()
         .expect("doc_new returned its opaque doc_id");
-    assert!(doc_id.starts_with("d_"), "create payload: {created}");
+    assert!(
+        atelier_studio::DocumentId::parse(doc_id).is_ok(),
+        "create payload: {created}"
+    );
 
     // The request works even though every POST opens a fresh TCP connection:
     // document identity lives in the explicit tool arguments, not transport

@@ -82,11 +82,11 @@ dependencies = [
  "atelier-core",
  "dirs",
  "fs4",
- "getrandom 0.4.3",
  "image",
  "schemars",
  "serde",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]
