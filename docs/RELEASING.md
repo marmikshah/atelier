@@ -78,13 +78,13 @@ Inspect the tagged commit carefully. Then push that one tag—never use
 git push origin "refs/tags/$ATELIER_RELEASE_TAG"
 ```
 
-That push is the only publication trigger.
+That tag push is the normal publication trigger.
 
 ## 3. Watch publication
 
 The workflow validates the tag and reruns the production gate before building.
 It creates the GitHub Release only after all three platform archives, their
-SHA-256 sidecars, and the multi-architecture container have succeeded.
+SHA-256 sidecars, and the smoke-tested amd64 container have succeeded.
 
 ```sh
 gh run list --workflow Release --limit 3
@@ -96,6 +96,17 @@ gh release view "$ATELIER_RELEASE_TAG"
 The installer requires checksums for v1.8.0 and later. The release should contain
 three archives, three matching `.sha256` files, and the GHCR image tags.
 
-Treat a pushed tag as immutable. Rerun a workflow when only infrastructure
-failed; if code or release metadata must change, prepare a new patch version
-instead of moving a published tag.
+## 4. Retry an orchestration failure
+
+Treat a pushed tag as immutable. A plain GitHub rerun uses the workflow from the
+tagged commit, so it cannot pick up a workflow-only repair. After merging such a
+repair to `master`, retry the exact immutable tag through the current workflow:
+
+```sh
+gh workflow run Release --ref master \
+  -f release_tag="$ATELIER_RELEASE_TAG"
+```
+
+Watch and verify that run exactly as above. It checks out and builds the tagged
+source; only the orchestration comes from current `master`. If code or release
+metadata must change, prepare a new patch version instead of moving the tag.

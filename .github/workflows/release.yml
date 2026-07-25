@@ -4,37 +4,49 @@ name: Release
 # must pass before any platform build starts, and GitHub Release creation waits
 # for every archive, checksum, and container so failures cannot publish a
 # user-facing partial release.
+run-name: Release ${{ inputs.release_tag || github.ref_name }}
+
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing annotated release tag to retry
+        required: true
+        type: string
 
 concurrency:
-  group: release
+  group: release-${{ inputs.release_tag || github.ref_name }}
   cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 8
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
 
       - name: Require a manual annotated tag on master
         shell: bash
         run: |
-          tag_ref="refs/tags/${GITHUB_REF_NAME}"
+          tag_ref="refs/tags/${RELEASE_TAG}"
           if [[ "$(git cat-file -t "$tag_ref" 2>/dev/null || true)" != "tag" ]]; then
-            echo "::error::$GITHUB_REF_NAME must be an annotated or signed tag"
+            echo "::error::$RELEASE_TAG must be an annotated or signed tag"
             exit 1
           fi
           tag_commit="$(git rev-list -n 1 "$tag_ref")"
           git fetch --no-tags origin master
           if ! git merge-base --is-ancestor "$tag_commit" origin/master; then
-            echo "::error::$GITHUB_REF_NAME does not point to a commit on origin/master"
+            echo "::error::$RELEASE_TAG does not point to a commit on origin/master"
             exit 1
           fi
 
@@ -45,13 +57,13 @@ jobs:
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
 
       - name: Match tag, packages, lockfile, and changelog
-        run: tools/release-check.sh "$GITHUB_REF_NAME"
+        run: tools/release-check.sh "$RELEASE_TAG"
       - name: Production gate
         run: make check
       - name: Match the binary version
         shell: bash
         run: |
-          expected="atelier ${GITHUB_REF_NAME#v}"
+          expected="atelier ${RELEASE_TAG#v}"
           actual="$(target/debug/atelier --version)"
           [[ "$actual" == "$expected" ]] || {
             echo "::error::binary reports '$actual', expected '$expected'"
@@ -63,7 +75,7 @@ jobs:
     permissions:
       contents: read
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - os: ubuntu-latest
@@ -76,9 +88,11 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_TAG }}
       - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
           toolchain: 1.97.1
@@ -91,7 +105,7 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          archive="atelier-${GITHUB_REF_NAME}-${{ matrix.target }}.tar.gz"
+          archive="atelier-${RELEASE_TAG}-${{ matrix.target }}.tar.gz"
           tar -czf "$archive" -C "target/${{ matrix.target }}/release" atelier
           shasum -a 256 "$archive" > "$archive.sha256"
 
@@ -99,7 +113,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $archive = "atelier-${env:GITHUB_REF_NAME}-${{ matrix.target }}.zip"
+          $archive = "atelier-${env:RELEASE_TAG}-${{ matrix.target }}.zip"
           Compress-Archive `
             -Path "target/${{ matrix.target }}/release/atelier.exe" `
             -DestinationPath $archive
@@ -109,7 +123,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-${{ matrix.target }}
-          path: atelier-${{ github.ref_name }}-${{ matrix.target }}.*
+          path: atelier-${{ env.RELEASE_TAG }}-${{ matrix.target }}.*
           if-no-files-found: error
           retention-days: 1
 
@@ -120,13 +134,13 @@ jobs:
       packages: write
     uses: ./.github/workflows/docker.yml
     with:
-      release_tag: ${{ github.ref_name }}
+      release_tag: ${{ inputs.release_tag || github.ref_name }}
     secrets: inherit
 
   publish_release:
     needs: [build, docker]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
@@ -147,6 +161,7 @@ jobs:
           sha256sum -c -- *.sha256
       - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: dist/*
           fail_on_unmatched_files: true
           generate_release_notes: true
