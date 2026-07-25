@@ -141,7 +141,7 @@ fn stdio_server_handshakes_lists_and_calls() {
     let created = s.request(
         "tools/call",
         json!({
-            "name": "doc_create",
+            "name": "doc_new",
             "arguments": {"name": "smoke", "width": 8, "height": 8}
         }),
     );
@@ -150,19 +150,20 @@ fn stdio_server_handshakes_lists_and_calls() {
         .and_then(|c| c.iter().find_map(|b| b.get("text")))
         .and_then(Value::as_str)
         .unwrap_or_default();
-    assert!(text.contains("\"smoke\""), "create payload: {text}");
+    let created: Value = serde_json::from_str(text).expect("doc_new returned JSON text");
+    let doc_id = created["doc_id"]
+        .as_str()
+        .expect("doc_new returned its opaque doc_id");
+    assert!(doc_id.starts_with("d_"), "create payload: {created}");
 
     let info = s.request(
         "tools/call",
         json!({
             "_meta": {
-                "io.github.marmikshah.atelier/context": {
-                    "doc_id": "smoke",
-                    "session": "stdio-smoke"
-                }
+                "io.github.marmikshah.atelier/session": "stdio-smoke"
             },
             "name": "doc_info",
-            "arguments": {}
+            "arguments": {"doc_id": doc_id}
         }),
     );
     let text = info["content"]
@@ -170,5 +171,5 @@ fn stdio_server_handshakes_lists_and_calls() {
         .and_then(|c| c.iter().find_map(|b| b.get("text")))
         .and_then(Value::as_str)
         .unwrap_or_default();
-    assert!(text.contains("\"w\":8"), "context call payload: {text}");
+    assert!(text.contains("\"w\":8"), "explicit-id call payload: {text}");
 }

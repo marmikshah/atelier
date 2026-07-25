@@ -462,8 +462,9 @@ mod tests {
     #[test]
     fn contact_sheet_returns_a_grid() {
         let s = studio("contact");
-        s.doc_create("c", 4, 4).unwrap();
-        let (png, report) = s.contact_sheet("c", 4, 8, false).unwrap();
+        let created = s.doc_new("c", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let (png, report) = s.contact_sheet(id, 4, 8, false).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         assert_eq!(report["frames"], 1);
     }
@@ -487,19 +488,20 @@ mod tests {
     #[test]
     fn look_bg_flows_through_the_options() {
         let s = studio("lookbg");
-        s.doc_create("c", 4, 4).unwrap();
+        let created = s.doc_new("c", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         let opts = LookOptions {
             scale: Some(1),
             bg: Some("dark".into()),
             ..Default::default()
         };
-        let (png, _) = s.look("c", 0, &opts).unwrap();
+        let (png, _) = s.look(id, 0, &opts).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
         let bad = LookOptions {
             bg: Some("plaid".into()),
             ..Default::default()
         };
-        assert!(s.look("c", 0, &bad).is_err());
+        assert!(s.look(id, 0, &bad).is_err());
     }
 }
 
@@ -512,11 +514,12 @@ mod hardening_tests {
         let dir = std::env::temp_dir().join("atelier-view-hard");
         let _ = fs::remove_dir_all(&dir);
         let s = Studio::with_docs_dir(dir);
-        s.doc_create("c", 8, 8).unwrap();
+        let created = s.doc_new("c", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         // tile=u32::MAX used to attempt a (8·4·4G)² buffer; now clamps to 16.
         let (_png, r) = s
             .look(
-                "c",
+                id,
                 0,
                 &LookOptions {
                     scale: Some(2),
@@ -533,7 +536,7 @@ mod hardening_tests {
         // ruler and the report used to disagree with the actual resize).
         let (_png, r) = s
             .look(
-                "c",
+                id,
                 0,
                 &LookOptions {
                     scale: Some(1_000_000),

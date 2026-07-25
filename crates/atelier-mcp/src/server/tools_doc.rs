@@ -1,4 +1,4 @@
-//! Document lifecycle + structure tools: create/list/info/delete, layers,
+//! Document lifecycle + structure tools: new/list/info/delete, layers,
 //! frames, tags, document history (`doc_checkpoint`) and the palette hub.
 
 use rmcp::handler::server::wrapper::Parameters;
@@ -12,14 +12,14 @@ use super::{Atelier, alpha_snap, edited, palette_list, region, res, rgba};
 impl Atelier {
     // -- library --
     #[tool(
-        description = "Create an editable document (layered canvas + timeline). Returns its id + structure."
+        description = "Create a persisted editable document (layered canvas + timeline). Returns an opaque `doc_id`; pass that exact id on every later document call."
     )]
-    pub(crate) async fn doc_create(&self, Parameters(p): Parameters<DocCreate>) -> CallToolResult {
-        res(self.studio().doc_create(&p.name, p.width, p.height))
+    pub(crate) async fn doc_new(&self, Parameters(p): Parameters<DocNew>) -> CallToolResult {
+        res(self.studio().doc_new(&p.name, p.width, p.height))
     }
 
     #[tool(
-        description = "List documents (id, name, size, frame/layer counts). Optional `prefix` selects a family by id start (`hero-` matches hero-idle, hero-run); `contains` filters by substring; both = AND. Omit both to list everything."
+        description = "List documents (doc_id, name, size, frame/layer counts). Optional `prefix` filters the opaque id; `contains` searches id or display name; both = AND. Omit both to list everything."
     )]
     pub(crate) async fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
         res(Ok(self.studio().list_docs_filtered(

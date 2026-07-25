@@ -615,8 +615,9 @@ mod tests {
     #[test]
     fn checkpoint_id_cannot_escape_the_store() {
         let s = studio("cp-escape");
-        s.doc_create("c", 8, 8).unwrap();
-        s.checkpoint("c", "save", None, None).unwrap();
+        let created = s.doc_new("c", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.checkpoint(id, "save", None, None).unwrap();
 
         // A directory outside the store that must survive every attempt.
         let outside = std::env::temp_dir().join("atelier-test-cp-escape-victim");
@@ -634,7 +635,7 @@ mod tests {
             "cp1x",
         ] {
             for action in ["prune", "restore"] {
-                let r = s.checkpoint("c", action, None, Some(evil));
+                let r = s.checkpoint(id, action, None, Some(evil));
                 assert!(
                     r.is_err(),
                     "{action} accepted the traversal id {evil:?}: {r:?}"
@@ -645,16 +646,17 @@ mod tests {
         let _ = std::fs::remove_dir_all(&outside);
 
         // The real id still works.
-        assert!(s.checkpoint("c", "restore", None, Some("cp1")).is_ok());
+        assert!(s.checkpoint(id, "restore", None, Some("cp1")).is_ok());
     }
 
     #[test]
     fn layer_ops_insert_and_merge() {
         let s = studio("layers");
-        s.doc_create("c", 4, 4).unwrap();
+        let created = s.doc_new("c", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         let r = s
             .layer_ops(
-                "c",
+                id,
                 "insert",
                 0,
                 None,
@@ -665,7 +667,7 @@ mod tests {
             .unwrap();
         assert_eq!(r["layers"], 2);
         let m = s
-            .layer_ops("c", "merge_down", 1, None, None, 255, "normal".into())
+            .layer_ops(id, "merge_down", 1, None, None, 255, "normal".into())
             .unwrap();
         assert_eq!(m["layers"], 1);
     }
@@ -673,53 +675,55 @@ mod tests {
     #[test]
     fn critique_flags_an_orphan_speck() {
         let s = studio("crit");
-        s.doc_create("c", 8, 8).unwrap();
+        let created = s.doc_new("c", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         draw(
             &s,
-            "c",
+            id,
             0,
             "pencil",
             json!({"points": [[1, 1]], "color": [255, 255, 255, 255]}),
         );
-        let r = s.critique("c", 0, None, None).unwrap();
+        let r = s.critique(id, 0, None, None).unwrap();
         assert_eq!(r["checks"]["orphans"]["count"], 1);
     }
 
     #[test]
     fn critique_flags_pillow_shading_via_form_audit() {
         let s = studio("critpillow");
-        s.doc_create("p", 16, 16).unwrap();
+        let created = s.doc_new("p", 16, 16).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         // Concentric squares: bright centre, dark all edges — pillow-shaded, no
         // light direction. The form-audit-backed check should warn.
         draw(
             &s,
-            "p",
+            id,
             0,
             "rect",
             json!({"x0": 2, "y0": 2, "x1": 13, "y1": 13, "color": [50, 50, 60, 255], "fill": true}),
         );
         draw(
             &s,
-            "p",
+            id,
             0,
             "rect",
             json!({"x0": 4, "y0": 4, "x1": 11, "y1": 11, "color": [90, 90, 105, 255], "fill": true}),
         );
         draw(
             &s,
-            "p",
+            id,
             0,
             "rect",
             json!({"x0": 6, "y0": 6, "x1": 9, "y1": 9, "color": [140, 140, 160, 255], "fill": true}),
         );
         draw(
             &s,
-            "p",
+            id,
             0,
             "rect",
             json!({"x0": 7, "y0": 7, "x1": 8, "y1": 8, "color": [200, 200, 225, 255], "fill": true}),
         );
-        let r = s.critique("p", 0, None, None).unwrap();
+        let r = s.critique(id, 0, None, None).unwrap();
         assert_eq!(r["checks"]["pillow_shading"]["verdict"], "warn");
         assert!(r["checks"]["pillow_shading"]["forms"].as_u64().unwrap() >= 1);
     }
@@ -727,31 +731,32 @@ mod tests {
     #[test]
     fn anim_audit_arc_reports_trajectory_shape() {
         let s = studio("arc");
-        s.doc_create("c", 16, 16).unwrap();
-        s.doc_add_frame("c", 100, None, 1).unwrap();
-        s.doc_add_frame("c", 100, None, 1).unwrap();
+        let created = s.doc_new("c", 16, 16).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_add_frame(id, 100, None, 1).unwrap();
+        s.doc_add_frame(id, 100, None, 1).unwrap();
         draw(
             &s,
-            "c",
+            id,
             0,
             "pencil",
             json!({"points": [[2, 8]], "color": [255, 255, 255, 255]}),
         );
         draw(
             &s,
-            "c",
+            id,
             1,
             "pencil",
             json!({"points": [[8, 2]], "color": [255, 255, 255, 255]}),
         );
         draw(
             &s,
-            "c",
+            id,
             2,
             "pencil",
             json!({"points": [[14, 8]], "color": [255, 255, 255, 255]}),
         );
-        let r = s.doc_anim_audit("c", None, None, "arc", None).unwrap();
+        let r = s.doc_anim_audit(id, None, None, "arc", None).unwrap();
         assert!(r["arc_residual"].as_f64().unwrap() > 0.0);
         assert_eq!(r["shape"], "arced");
     }
@@ -766,9 +771,10 @@ mod hardening_tests {
         let root = std::env::temp_dir().join("atelier-craft-restore");
         let _ = fs::remove_dir_all(&root);
         let s = Studio::with_docs_dir(root.clone());
-        s.doc_create("c", 4, 4).unwrap();
+        let created = s.doc_new("c", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         s.doc_draw(
-            "c",
+            id,
             0,
             0,
             "rect",
@@ -787,14 +793,14 @@ mod hardening_tests {
         RgbaImage::from_pixel(2, 2, image::Rgba([0, 0, 200, 255]))
             .save(&blue_ref)
             .unwrap();
-        s.set_reference("c", red_ref.to_str()).unwrap();
-        s.journal_append("c", "doc_create", &json!({"name": "c", "doc_id": "c"}));
+        s.set_reference(id, red_ref.to_str()).unwrap();
+        s.journal_append(id, "doc_new", &json!({"name": "c", "doc_id": id}));
 
-        let cp = s.checkpoint("c", "save", None, None).unwrap();
+        let cp = s.checkpoint(id, "save", None, None).unwrap();
         let cpid = cp["saved"].as_str().unwrap().to_string();
         // Wreck every checkpointed state surface, then restore.
         s.doc_draw(
-            "c",
+            id,
             0,
             0,
             "fill_cel",
@@ -804,15 +810,15 @@ mod hardening_tests {
                 .clone(),
         )
         .unwrap();
-        s.set_reference("c", blue_ref.to_str()).unwrap();
-        s.journal_append("c", "doc_draw", &json!({"op": "fill_cel"}));
+        s.set_reference(id, blue_ref.to_str()).unwrap();
+        s.journal_append(id, "doc_draw", &json!({"doc_id": id, "op": "fill_cel"}));
 
-        s.checkpoint("c", "restore", None, Some(&cpid)).unwrap();
-        let px = s.doc_get_pixel("c", Some(0), 0, 0, 0).unwrap();
+        s.checkpoint(id, "restore", None, Some(&cpid)).unwrap();
+        let px = s.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap();
         assert_eq!(px["rgba"], json!([200, 0, 0, 255]));
-        assert_eq!(s.journal("c").unwrap().len(), 1);
+        assert_eq!(s.journal(id).unwrap().len(), 1);
         assert_eq!(
-            image::open(root.join("c/reference.png"))
+            image::open(root.join(id).join("reference.png"))
                 .unwrap()
                 .to_rgba8()
                 .get_pixel(0, 0)
@@ -820,6 +826,6 @@ mod hardening_tests {
             [200, 0, 0, 255]
         );
         // The staging dir must not linger.
-        assert!(!root.join("c/.restore-staging").exists());
+        assert!(!root.join(id).join(".restore-staging").exists());
     }
 }

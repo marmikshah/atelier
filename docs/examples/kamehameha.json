@@ -3,24 +3,25 @@
   "description": "A 14-frame stickman kamehameha that demonstrates layered character animation: a background layer that camera-shakes during the blast, a body layer with a distinct pose every frame (anticipation crouch, 70ms smear-frame thrust, airborne recoil, landing), and an fx layer that grows a charge orb into a screen-crossing beam. Shows pose-per-frame animation, glow bloom, motion smears, jump physics and per-frame duration tuning for snap.",
   "steps": [
     {
-      "tool": "doc_create",
+      "tool": "doc_new",
+      "bind": "doc",
       "args": { "name": "kamehameha", "width": 96, "height": 96 },
       "note": "96x96 leaves room for a full-body character on the left third and a beam crossing the remaining two thirds."
     },
     {
       "tool": "doc_layer",
-      "args": { "op": "add", "doc_id": "kamehameha", "name": "body" },
+      "args": { "op": "add", "doc_id": "$doc", "name": "body" },
       "note": "Layer 1: the stickman. Keeping him separate from the background means each pose redraw is a cheap clear_cel + ~10 ops."
     },
     {
       "tool": "doc_layer",
-      "args": { "op": "add", "doc_id": "kamehameha", "name": "fx" },
+      "args": { "op": "add", "doc_id": "$doc", "name": "fx" },
       "note": "Layer 2: orb, beam, dust and aura. Isolated so the glow bloom only blooms the energy, never the character."
     },
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 0, "frame": 0,
+        "doc_id": "$doc", "layer": 0, "frame": 0,
         "ops": [
           { "op": "fill_cel", "color": [14, 14, 30] },
           { "op": "line", "x0": 0, "y0": 84, "x1": 95, "y1": 84, "color": [55, 55, 90], "size": 2 },
@@ -33,7 +34,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 0,
+        "doc_id": "$doc", "layer": 1, "frame": 0,
         "ops": [
           { "op": "ellipse", "cx": 31, "cy": 23, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
           { "op": "line", "x0": 27, "y0": 20, "x1": 35, "y1": 20, "color": [80, 180, 255], "size": 1 },
@@ -52,7 +53,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 0,
+        "doc_id": "$doc", "layer": 2, "frame": 0,
         "ops": [
           { "op": "pencil", "points": [[12, 40], [26, 52], [10, 50], [24, 38], [14, 56]], "color": [120, 200, 255] },
           { "op": "glow", "radius": 1, "intensity": 130, "mode": "screen", "color": [80, 160, 255] }
@@ -60,24 +61,24 @@
       },
       "note": "Loose energy motes drifting toward where the hands will cup — foreshadows the charge before any orb exists."
     },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 110 }, "note": "f1 twist-back." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 130 }, "note": "f2 deep crouch." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 130 }, "note": "f3 charge tremble." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 140 }, "note": "f4 coil deeper." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 150 }, "note": "f5 max charge — longest hold of the charge phase." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 70 }, "note": "f6 thrust smear — the shortest frame in the whole cycle; speed is what sells the snap." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 90 }, "note": "f7 beam erupts, airborne." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 100 }, "note": "f8 recoil to peak height." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 110 }, "note": "f9 hover, blast max." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 110 }, "note": "f10 hover shake." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 110 }, "note": "f11 descending." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 110 }, "note": "f12 landing." },
-    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "kamehameha", "copy_from": 0, "duration_ms": 150 }, "note": "f13 exhale — long settle before the loop restarts." },
-    { "tool": "doc_frame", "args": { "op": "duration", "doc_id": "kamehameha", "frame": 0, "duration_ms": 120 }, "note": "doc_create made f0 at the 100ms default; bring it in line with the windup pacing." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 110 }, "note": "f1 twist-back." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 130 }, "note": "f2 deep crouch." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 130 }, "note": "f3 charge tremble." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 140 }, "note": "f4 coil deeper." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 150 }, "note": "f5 max charge — longest hold of the charge phase." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 70 }, "note": "f6 thrust smear — the shortest frame in the whole cycle; speed is what sells the snap." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 90 }, "note": "f7 beam erupts, airborne." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 100 }, "note": "f8 recoil to peak height." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 110 }, "note": "f9 hover, blast max." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 110 }, "note": "f10 hover shake." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 110 }, "note": "f11 descending." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 110 }, "note": "f12 landing." },
+    { "tool": "doc_frame", "args": { "op": "add", "doc_id": "$doc", "copy_from": 0, "duration_ms": 150 }, "note": "f13 exhale — long settle before the loop restarts." },
+    { "tool": "doc_frame", "args": { "op": "duration", "doc_id": "$doc", "frame": 0, "duration_ms": 120 }, "note": "doc_new made f0 at the 100ms default; bring it in line with the windup pacing." },
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 1,
+        "doc_id": "$doc", "layer": 1, "frame": 1,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 29, "cy": 25, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -97,7 +98,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 1,
+        "doc_id": "$doc", "layer": 2, "frame": 1,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 17, "cy": 45, "rx": 2, "ry": 2, "color": [80, 180, 255], "fill": true },
@@ -111,7 +112,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 2,
+        "doc_id": "$doc", "layer": 1, "frame": 2,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 28, "cy": 27, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -131,7 +132,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 2,
+        "doc_id": "$doc", "layer": 2, "frame": 2,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 16, "cy": 46, "rx": 3, "ry": 3, "color": [40, 120, 255], "fill": true },
@@ -146,7 +147,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 3,
+        "doc_id": "$doc", "layer": 1, "frame": 3,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 29, "cy": 27, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -166,7 +167,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 3,
+        "doc_id": "$doc", "layer": 2, "frame": 3,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 17, "cy": 46, "rx": 4, "ry": 4, "color": [40, 120, 255], "fill": true },
@@ -186,7 +187,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 4,
+        "doc_id": "$doc", "layer": 1, "frame": 4,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 28, "cy": 28, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -206,7 +207,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 4,
+        "doc_id": "$doc", "layer": 2, "frame": 4,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 16, "cy": 47, "rx": 5, "ry": 5, "color": [40, 120, 255], "fill": true },
@@ -229,7 +230,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 5,
+        "doc_id": "$doc", "layer": 1, "frame": 5,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 29, "cy": 26, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -250,7 +251,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 5,
+        "doc_id": "$doc", "layer": 2, "frame": 5,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 17, "cy": 46, "rx": 6, "ry": 6, "color": [40, 120, 255], "fill": true },
@@ -278,7 +279,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 6,
+        "doc_id": "$doc", "layer": 1, "frame": 6,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 32, "cy": 23, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -298,7 +299,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 6,
+        "doc_id": "$doc", "layer": 2, "frame": 6,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 46, "cy": 31, "rx": 4, "ry": 3, "color": [80, 180, 255], "fill": true },
@@ -320,7 +321,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 7,
+        "doc_id": "$doc", "layer": 1, "frame": 7,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 35, "cy": 17, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -340,7 +341,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 7,
+        "doc_id": "$doc", "layer": 2, "frame": 7,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 52, "cy": 25, "rx": 4, "ry": 4, "color": [120, 200, 255], "fill": true },
@@ -366,7 +367,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 8,
+        "doc_id": "$doc", "layer": 1, "frame": 8,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 34, "cy": 17, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -386,7 +387,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 8,
+        "doc_id": "$doc", "layer": 2, "frame": 8,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 51, "cy": 25, "rx": 4, "ry": 4, "color": [120, 200, 255], "fill": true },
@@ -403,7 +404,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 0, "frame": 9,
+        "doc_id": "$doc", "layer": 0, "frame": 9,
         "ops": [
           { "op": "fill_cel", "color": [14, 14, 30] },
           { "op": "line", "x0": 0, "y0": 84, "x1": 95, "y1": 84, "color": [55, 55, 90], "size": 2 },
@@ -416,7 +417,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 9,
+        "doc_id": "$doc", "layer": 1, "frame": 9,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 33, "cy": 17, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -436,7 +437,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 9,
+        "doc_id": "$doc", "layer": 2, "frame": 9,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 50, "cy": 25, "rx": 5, "ry": 5, "color": [120, 200, 255], "fill": true },
@@ -459,7 +460,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 0, "frame": 10,
+        "doc_id": "$doc", "layer": 0, "frame": 10,
         "ops": [
           { "op": "fill_cel", "color": [14, 14, 30] },
           { "op": "line", "x0": 0, "y0": 85, "x1": 95, "y1": 85, "color": [55, 55, 90], "size": 2 },
@@ -472,7 +473,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 10,
+        "doc_id": "$doc", "layer": 1, "frame": 10,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 34, "cy": 18, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -492,7 +493,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 10,
+        "doc_id": "$doc", "layer": 2, "frame": 10,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 51, "cy": 26, "rx": 5, "ry": 5, "color": [120, 200, 255], "fill": true },
@@ -515,7 +516,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 0, "frame": 11,
+        "doc_id": "$doc", "layer": 0, "frame": 11,
         "ops": [
           { "op": "fill_cel", "color": [14, 14, 30] },
           { "op": "line", "x0": 0, "y0": 84, "x1": 95, "y1": 84, "color": [55, 55, 90], "size": 2 },
@@ -528,7 +529,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 11,
+        "doc_id": "$doc", "layer": 1, "frame": 11,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 33, "cy": 20, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -548,7 +549,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 11,
+        "doc_id": "$doc", "layer": 2, "frame": 11,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 50, "cy": 27, "rx": 5, "ry": 5, "color": [120, 200, 255], "fill": true },
@@ -570,7 +571,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 12,
+        "doc_id": "$doc", "layer": 1, "frame": 12,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 33, "cy": 24, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -590,7 +591,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 12,
+        "doc_id": "$doc", "layer": 2, "frame": 12,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 50, "cy": 32, "rx": 3, "ry": 3, "color": [120, 200, 255], "fill": true },
@@ -608,7 +609,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 1, "frame": 13,
+        "doc_id": "$doc", "layer": 1, "frame": 13,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 32, "cy": 23, "rx": 5, "ry": 5, "color": [235, 235, 235], "fill": true },
@@ -627,7 +628,7 @@
     {
       "tool": "doc_batch",
       "args": {
-        "doc_id": "kamehameha", "layer": 2, "frame": 13,
+        "doc_id": "$doc", "layer": 2, "frame": 13,
         "ops": [
           { "op": "clear_cel" },
           { "op": "ellipse", "cx": 47, "cy": 37, "rx": 2, "ry": 1, "color": [140, 210, 255], "fill": false },
@@ -641,12 +642,12 @@
     },
     {
       "tool": "doc_add_tag",
-      "args": { "doc_id": "kamehameha", "name": "blast", "from": 0, "to": 13, "direction": "forward" },
+      "args": { "doc_id": "$doc", "name": "blast", "from": 0, "to": 13, "direction": "forward" },
       "note": "One forward tag over the whole timeline; the 150ms exhale at the end gives the loop a beat of rest before it restarts."
     },
     {
       "tool": "doc_export",
-      "args": { "op": "anim", "doc_id": "kamehameha", "tag": "blast", "scale": 3, "out_path": "kamehameha.gif" },
+      "args": { "op": "anim", "doc_id": "$doc", "tag": "blast", "scale": 3, "out_path": "kamehameha.gif" },
       "note": "288x288 looping GIF. Total cycle ~1.6s: 660ms charge, 260ms release, 440ms blast, 260ms recovery."
     }
   ]

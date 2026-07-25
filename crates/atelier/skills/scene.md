@@ -44,10 +44,12 @@ repaint. Don't. Name which band fails, fix that band's layer, look again.
 ## The loop
 
 ```
-doc_create → layers back-to-front → lock a palette → value blocking → look → band by band → look → detail the focal area → audit → export
+doc_new → layers back-to-front → lock a palette → value blocking → look → band by band → look → detail the focal area → audit → export
 ```
 
-1. **`doc_create`**, then a layer per band (`doc_layer op=add`), back to front.
+1. **`doc_new`**, capture its returned `doc_id`, and pass that id explicitly on
+   every later document call. Then add a layer per band (`doc_layer op=add`),
+   back to front.
 2. **Lock a palette** (`doc_palette op=set` / `op=generate`). Which colours is
    the request's business.
 3. **Block values before colour.** Flat masses per band, darkest to lightest.

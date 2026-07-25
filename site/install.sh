@@ -145,7 +145,8 @@ esac
 
 say ""
 say "Try it:"
-say "  atelier call doc_create '{\"name\":\"cat\",\"width\":32,\"height\":32}'"
+say "  atelier call doc_new '{\"name\":\"cat\",\"width\":32,\"height\":32}'"
+say "  # pass the returned doc_id on every later document call"
 say ""
 say "Optional setup (nothing below runs automatically):"
 say "  atelier install   # background MCP daemon; asks for a port"

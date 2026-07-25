@@ -43,9 +43,10 @@ Installs the binary after verifying its published SHA-256. That's the
 whole setup — drive it from any shell:
 
 ```sh
-atelier call doc_create '{"name":"cat","width":32,"height":32}'
-atelier call doc_draw '{"doc_id":"cat","layer":0,"frame":0,"op":"fill_cel","color":[224,160,80]}'
-atelier call doc_look '{"doc_id":"cat","out_path":"/tmp/cat.png"}'
+atelier call doc_new '{"name":"cat","width":32,"height":32}'
+# {"doc_id":"d_7m2k9x4p6r8t3w5y", ...} — use the returned id
+atelier call doc_draw '{"doc_id":"d_7m2k9x4p6r8t3w5y","layer":0,"frame":0,"op":"fill_cel","color":[224,160,80]}'
+atelier call doc_look '{"doc_id":"d_7m2k9x4p6r8t3w5y","out_path":"/tmp/cat.png"}'
 ```
 
 Every tool is one `atelier call`: stdout gets the JSON report, the exit code
@@ -57,7 +58,7 @@ exactly this way: no registration, no daemon, no restart. Just ask:
 > *"draw me a blinking cat sprite and export it as a GIF"*
 
 <p align="center">
-  <code>doc_create</code> → <code>paint</code> → <b><code>doc_look</code></b> → <i>fix</i> → <code>doc_export</code>
+  <code>doc_new</code> → <code>paint</code> → <b><code>doc_look</code></b> → <i>fix</i> → <code>doc_export</code>
 </p>
 
 ### Other ways
@@ -150,7 +151,7 @@ deliberate act, and the context stays small enough to look often.
 ```sh
 atelier call <tool> '<json>'   # one tool call, in-process — the front door
 atelier call <tool> --file ops.json   # args from a file (or --stdin)
-atelier call doc_draw '{"op":"clear_cel"}' --doc hero --layer 1 --frame 0
+atelier call doc_draw '{"doc_id":"d_7m2k9x4p6r8t3w5y","layer":1,"frame":0,"op":"clear_cel"}'
 atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
@@ -177,30 +178,27 @@ every call logs a `caller=` identity: by default the TCP peer address; set an
 `X-Atelier-Caller` header in a client's MCP config, or the per-call `session`
 metadata below, when the name must stay stable across reconnects. (The CLI and
 replay log as `cli` / `replay`.)
-(Same-name collisions are already impossible: `doc_create` mints a unique id —
-`hero`, `hero-2`, … — and every caller must use the id it got back.)
 
-Calls remain self-contained, but clients do not have to repeat routing context
-inside every payload. `atelier call` accepts `--doc`, `--layer`, and `--frame`
-as defaults; an explicit JSON argument wins. MCP clients can attach the same
-defaults, plus a stable log name, to either stdio or HTTP:
+`doc_new` returns a fresh opaque id such as `d_7m2k9x4p6r8t3w5y`. Its `name`
+is only a display label and may repeat. Every later document call must carry
+the returned `doc_id` explicitly; layer and frame targets are explicit too.
+There is no active document, inferred name, CLI routing flag, or transport
+default. Stdio, HTTP, CLI, and replay therefore execute exactly the same
+payload.
+
+MCP callers may attach one optional stable name for logs. It never supplies or
+changes tool arguments:
 
 ```json
 {
   "_meta": {
-    "io.github.marmikshah.atelier/context": {
-      "doc_id": "hero",
-      "layer": 1,
-      "frame": 0,
-      "session": "sprite-pass"
-    }
+    "io.github.marmikshah.atelier/session": "sprite-pass"
   }
 }
 ```
 
-The server retains none of this between requests. Dispatch expands the call
-before it runs, and the journal stores those resolved arguments, so a replay
-never depends on a live session or another client's active document.
+The server retains no request context. Journals record the exact arguments that
+ran, so a replay never depends on a live session or another caller's state.
 
 **26 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
@@ -211,8 +209,8 @@ Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.h
 
 By default everything lands in the global `~/.atelier`. Run `atelier init` in
 your game or app directory and it gets its own `./.atelier`: art and recipes
-live beside the code, ids mint clean for that directory, and recipes can be
-committed with the game. Resolution per call: `--home` / `ATELIER_HOME` →
+live beside the code and recipes can be committed with the game. Resolution
+per call: `--home` / `ATELIER_HOME` →
 `./.atelier` when it exists → `~/.atelier`. Standing in `$HOME`, the two are
 the same directory.
 
@@ -250,7 +248,7 @@ journals itself as it's drawn, so anything you make can rebuild itself:
 
 ```sh
 atelier library                 # every document, with its step count
-atelier replay my-sprite        # rebuild it from its own journal
+atelier replay d_7m2k9x4p6r8t3w5y  # rebuild it from its own journal
 ```
 
 Nothing to turn on. The journal is JSON Lines beside the art
@@ -259,7 +257,7 @@ deterministic calls that *made* something, never looks, audits, external
 reference setup, or checkpoint bookkeeping. Restoring a checkpoint restores
 its journal too, so discarded edits cannot survive in provenance. Replay into
 a sandbox with `--home /tmp/demo` and you get the same pixels, anywhere.
-Current journals start with exactly one `doc_create` whose arguments include
+Current journals start with exactly one `doc_new` whose arguments include
 the minted `doc_id`, followed only by deterministic editing calls for that
 same document; replay rejects older or malformed shapes instead of guessing:
 
@@ -271,9 +269,25 @@ The recipes in [docs/examples](docs/examples) are both the brand art and the
 integration tests. MCP clients inspect live documents through `doc_info` and
 `doc_look`, the same calls used by CLI and replay.
 
-Journals deliberately stay plain and fully resolved instead of depending on a
-session codec or hidden DSL. Use `doc_batch` for many ordered edits and
-`doc_paint_grid` for dense pixel rows when a recipe needs fewer, smaller calls.
+Stored journals deliberately stay plain and fully resolved. Hand-authored
+recipe objects have one small convenience for opaque identities: bind the
+result of `doc_new`, then refer to it explicitly as `$doc`:
+
+```json
+{
+  "name": "tiny",
+  "description": "one authored document",
+  "steps": [
+    {"tool":"doc_new","bind":"doc","args":{"name":"tiny","width":8,"height":8}},
+    {"tool":"doc_draw","args":{"doc_id":"$doc","layer":0,"frame":0,"op":"fill_cel","color":[30,40,50]}}
+  ]
+}
+```
+
+That is result binding, not a second drawing language: every step is still a
+normal tool call and replay substitutes only ID-bearing fields. Use `doc_batch`
+for many ordered edits and `doc_paint_grid` for dense pixel rows when a recipe
+needs fewer, smaller calls.
 
 ## A personal note
 
