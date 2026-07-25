@@ -98,8 +98,8 @@ and delete documents.
 
 ### Docker
 
-Prefer a container? One small image — a static musl binary on Alpine (~15 MB),
-multi-arch (amd64 + arm64) — serving the same HTTP MCP endpoint:
+Prefer a container? One small image — a static amd64 musl binary on Alpine
+(~15 MB) — serving the same HTTP MCP endpoint:
 
 ```sh
 docker run -d -p 127.0.0.1:9123:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier

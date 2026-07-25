@@ -107,7 +107,7 @@ releases.
 - **Releases are maintainer-approved annotated tags.** The tag, every release package,
   `Cargo.lock`, and the changelog must agree before the production gate or any
   platform build runs. GitHub Release creation now waits for every archive and
-  the multi-architecture container.
+  the smoke-tested amd64 Alpine container.
 - **The download installer is binary-only.** Daemon setup, MCP registration,
   broad tool approval, and skill installation are now separate, explicit
   commands.
