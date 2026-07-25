@@ -1,0 +1,65 @@
+name: Pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/pages.yml"
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Check out site source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: marmikshah/atelier-site
+          ref: master
+          path: atelier-site
+
+      - id: atelier
+        name: Read pinned Atelier revision
+        shell: bash
+        run: echo "ref=$(tr -d '\n' < atelier-site/ATELIER_REF)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out pinned Atelier source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.atelier.outputs.ref }}
+          path: .atelier-source
+
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: 1.97.1
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          workspaces: .atelier-source -> target
+
+      - name: Build site
+        run: ATELIER_DIR="$GITHUB_WORKSPACE/.atelier-source" make -C atelier-site build
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: atelier-site/dist
+
+      - id: deploy
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
