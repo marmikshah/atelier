@@ -43,10 +43,11 @@ cheapest fix, and it is how a sprite oscillates instead of converging.
 ## The loop
 
 ```
-doc_create → lock a palette → silhouette → look → block → look → detail → look → audit → export
+doc_new → lock a palette → silhouette → look → block → look → detail → look → audit → export
 ```
 
-1. **`doc_create`**, then add a layer per part (`doc_layer op=add`).
+1. **`doc_new`**, capture its returned `doc_id`, and pass that id explicitly on
+   every later document call. Then add a layer per part (`doc_layer op=add`).
 2. **Lock a palette** (`doc_palette op=set`, or `op=generate` then set). Every
    later op stays inside it. Which colours is the request's business, not this
    skill's.

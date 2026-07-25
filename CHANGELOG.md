@@ -60,12 +60,17 @@ releases.
 - The retained public tool names are contract-pinned, and end-to-end stdio and
   HTTP tests require both transports to advertise that exact registry and
   successfully dispatch a real tool call.
-- **Call context is explicit and transport-independent.** `atelier call`
-  accepts `--doc`, `--layer`, and `--frame`; stdio and HTTP accept the same
-  defaults plus a stable session name under MCP
-  `_meta["io.github.marmikshah.atelier/context"]`.
-  Explicit arguments win, no context is retained server-side, and dispatch
-  journals the expanded call.
+- **Document identity is explicit and transport-independent.** `doc_create` is
+  replaced by `doc_new`, which returns a fresh opaque 80-bit Base32 `doc_id`;
+  names are display labels and may repeat. Every later document call carries
+  that id explicitly. The CLI `--doc`/`--layer`/`--frame` defaults and MCP
+  routing-context metadata are removed, so stdio, HTTP, CLI, and replay dispatch
+  the same payload. Optional
+  `_meta["io.github.marmikshah.atelier/session"]` is a log label only.
+- Authored recipe objects can bind `doc_new`'s result and use `$<bind>` in
+  later ID-bearing fields. Stored JSONL journals remain fully resolved: their
+  first `doc_new` step is stamped with the concrete minted id, and replay mints
+  a new id and remaps the remaining steps.
 - Independent CLI and daemon processes now hold an advisory store lock through
   document save and journal append, preserving mutation and provenance order.
 - `Studio` is now a cloneable store-path handle instead of a process-wide
@@ -80,7 +85,7 @@ releases.
 - Compatibility-only input paths were removed. Document JSON and recipe
   objects reject missing or unknown fields; typed tool calls reject unknown
   keys; blend modes accept only canonical spellings. A document journal must
-  begin with exactly one `doc_create` carrying its stamped `doc_id`, contain
+  begin with exactly one `doc_new` carrying its stamped `doc_id`, contain
   only deterministic editing calls for that same document, and replay no
   longer infers an old journal's id from its directory. Existing pre-1.8
   journals therefore need a one-time rewrite before replay. The installer no
@@ -108,6 +113,13 @@ releases.
 - CI now has one complete Linux gate, an explicit Rust 1.88 minimum-version
   check, and lightweight macOS and Windows checks. Local hooks remain optional
   and fast.
+
+### Fixed
+
+- CLI calls, library listing, and journal replay now resolve the documented
+  global store at `~/.atelier`. Their fallback previously passed the OS home
+  directory through as Atelier's home and therefore looked under
+  `~/documents`, while the daemon correctly used `~/.atelier`.
 
 ### Security
 

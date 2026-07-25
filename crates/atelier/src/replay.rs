@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use serde_json::{Value, json};
 
 use atelier_mcp::recipe::{Recipe, Step};
-use atelier_mcp::server::{self, Atelier, CallContext};
+use atelier_mcp::server::{self, Atelier};
 use atelier_studio::Studio;
 use rmcp::model::CallToolResult;
 
@@ -135,11 +135,11 @@ async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
 
 /// The dispatch loop: one `dispatch` per step, in recipe order.
 ///
-/// Recorded document ids never reach the server verbatim: `doc_create` re-mints
-/// its id in the destination store (a collision mints `name-2`), so every step
-/// is rewritten from the id the recipe recorded to the id this run actually
-/// got. Without that, replaying into a store where the id already exists sends
-/// every draw to the LIVE original instead of the fresh copy.
+/// Recorded document ids never reach the server verbatim: `doc_new` always
+/// mints a fresh opaque id, so every later target is rewritten to the id this
+/// run actually received. Authored recipes name the returned value with an
+/// explicit `bind` and refer to it as `$name`; journals carry the concrete id
+/// captured from the original live call.
 async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
     // Header line (to stderr, status channel) so the run is self-identifying.
     eprintln!("== {} — {}", recipe.name, recipe.description);
@@ -147,8 +147,8 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
     let mut ids: HashMap<String, String> = HashMap::new();
     for (idx, step) in recipe.steps.iter().enumerate() {
         let mut args = step.args.clone();
-        let recorded = if step.tool == "doc_create" {
-            match create_recorded_id(&mut args, recipe.is_journal()) {
+        let recorded = if step.tool == "doc_new" {
+            match new_recorded_id(step, &mut args, recipe.is_journal()) {
                 Ok(recorded) => recorded,
                 Err(error) => {
                     print_step(idx, step, &format!("ERROR {error}"));
@@ -156,13 +156,13 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
                 }
             }
         } else {
-            remap_ids(&mut args, &ids);
+            if let Err(error) = remap_ids(&mut args, &ids) {
+                print_step(idx, step, &format!("ERROR {error}"));
+                return Err(format!("step {} ({}) failed: {error}", idx + 1, step.tool));
+            }
             None
         };
-        let result = match atelier
-            .dispatch(&step.tool, args, CallContext::new("replay"))
-            .await
-        {
+        let result = match atelier.dispatch(&step.tool, args, "replay").await {
             Ok(result) => result,
             // Protocol error (unknown tool, malformed args, …) — a recipe is a
             // narrative, so the first failed step ends the run.
@@ -189,7 +189,7 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
         if let Some(recorded) = recorded {
             let Some(minted) = minted_id(&result) else {
                 return Err(format!(
-                    "step {} (doc_create) returned no document id — cannot remap later steps",
+                    "step {} (doc_new) returned no document id — cannot remap later steps",
                     idx + 1
                 ));
             };
@@ -204,56 +204,59 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
     Ok(())
 }
 
-/// Resolve the id this `doc_create` represents and remove replay-only metadata
-/// before dispatch. Current journals must carry a non-empty stamped `doc_id`;
-/// authored recipes must not, and derive the id from `name`.
-fn create_recorded_id(args: &mut Value, journal: bool) -> Result<Option<String>, String> {
+/// Resolve the identity represented by `doc_new` and remove journal-only
+/// output metadata before dispatch. A journal carries the concrete id returned
+/// by the original call. An authored recipe names that result with `bind`.
+fn new_recorded_id(step: &Step, args: &mut Value, journal: bool) -> Result<Option<String>, String> {
     let obj = args
         .as_object_mut()
-        .ok_or("doc_create args must be a JSON object")?;
+        .ok_or("doc_new args must be a JSON object")?;
     let stamped = match obj.remove("doc_id") {
         None => None,
         Some(Value::String(id)) if !id.is_empty() => Some(id),
-        Some(_) => return Err("doc_create doc_id must be a non-empty string".into()),
+        Some(_) => return Err("doc_new doc_id must be a non-empty string".into()),
     };
     if journal {
         return stamped.map(Some).ok_or_else(|| {
-            "journal doc_create is missing required args.doc_id — rewrite the journal in the current format"
+            "journal doc_new is missing required args.doc_id — rewrite the journal in the current format"
                 .into()
         });
     }
     if stamped.is_some() {
-        return Err("authored doc_create must not include journal-only args.doc_id".into());
+        return Err("authored doc_new must not include journal-only args.doc_id".into());
     }
-    Ok(obj
-        .get("name")
-        .and_then(Value::as_str)
-        .map(atelier_studio::slugify))
+    step.bind
+        .as_ref()
+        .map(|binding| Some(format!("${binding}")))
+        .ok_or_else(|| "authored doc_new needs an explicit bind".into())
 }
 
 /// Rewrite every recorded document id in `args` through the remap table.
 /// Covers each id-bearing field on the tool surface: `doc_id` everywhere,
 /// plus doc_palette's `set_doc`.
-fn remap_ids(args: &mut Value, ids: &HashMap<String, String>) {
+fn remap_ids(args: &mut Value, ids: &HashMap<String, String>) -> Result<(), String> {
     let Some(obj) = args.as_object_mut() else {
-        return;
+        return Ok(());
     };
     for key in ["doc_id", "set_doc"] {
-        if let Some(mapped) = obj
-            .get(key)
-            .and_then(Value::as_str)
-            .and_then(|v| ids.get(v))
-        {
+        let Some(recorded) = obj.get(key).and_then(Value::as_str) else {
+            continue;
+        };
+        if let Some(mapped) = ids.get(recorded) {
             obj.insert(key.into(), json!(mapped));
+        } else if recorded.starts_with('$') {
+            return Err(format!(
+                "unresolved document binding '{recorded}' in `{key}`"
+            ));
         }
     }
+    Ok(())
 }
 
-/// Pull the minted id out of a `doc_create` result: the text report's `id`
-/// field is the new id.
+/// Pull the minted id out of a `doc_new` result.
 fn minted_id(result: &CallToolResult) -> Option<String> {
     server::result_json(result)?
-        .get("id")
+        .get("doc_id")
         .and_then(Value::as_str)
         .map(str::to_string)
 }
@@ -302,14 +305,14 @@ mod tests {
             "name": "demo",
             "description": "tiny",
             "steps": [
-                {"tool": "doc_create", "args": {"name": "x", "width": 8, "height": 8}},
-                {"tool": "doc_info", "args": {"doc_id": "x"}, "note": "inspect"}
+                {"tool": "doc_new", "bind": "doc", "args": {"name": "x", "width": 8, "height": 8}},
+                {"tool": "doc_info", "args": {"doc_id": "$doc"}, "note": "inspect"}
             ]
         }"#;
         let r = Recipe::parse(src).expect("should parse");
         assert_eq!(r.name, "demo");
         assert_eq!(r.steps.len(), 2);
-        assert_eq!(r.steps[0].tool, "doc_create");
+        assert_eq!(r.steps[0].tool, "doc_new");
         assert_eq!(r.steps[1].note.as_deref(), Some("inspect"));
     }
 
@@ -337,54 +340,73 @@ mod tests {
     }
 
     #[test]
-    fn create_hint_separates_journals_from_authored_recipes() {
+    fn new_identity_separates_journals_from_authored_bindings() {
+        let journal_step = Step {
+            tool: "doc_new".into(),
+            args: json!({}),
+            bind: None,
+            note: None,
+        };
         // A current journal requires its stamp and strips it from sent args.
-        let mut args = json!({"name": "Hero", "doc_id": "hero-2"});
+        let mut args = json!({"name": "Hero", "doc_id": "d_0000000000000000"});
         assert_eq!(
-            create_recorded_id(&mut args, true).unwrap().as_deref(),
-            Some("hero-2")
+            new_recorded_id(&journal_step, &mut args, true)
+                .unwrap()
+                .as_deref(),
+            Some("d_0000000000000000")
         );
         assert_eq!(args, json!({"name": "Hero"}));
 
         // An unstamped journal is obsolete rather than inferred from location.
         let mut args = json!({"name": "Hero"});
-        assert!(create_recorded_id(&mut args, true).is_err());
+        assert!(new_recorded_id(&journal_step, &mut args, true).is_err());
 
-        // Authored recipe: predict the slug an empty store would mint.
+        // An authored recipe names the returned value rather than predicting it.
+        let authored_step = Step {
+            tool: "doc_new".into(),
+            args: json!({}),
+            bind: Some("hero".into()),
+            note: None,
+        };
         let mut args = json!({"name": "Invader March"});
         assert_eq!(
-            create_recorded_id(&mut args, false).unwrap().as_deref(),
-            Some("invader-march")
+            new_recorded_id(&authored_step, &mut args, false)
+                .unwrap()
+                .as_deref(),
+            Some("$hero")
         );
 
         // The two source forms cannot be silently mixed.
-        let mut args = json!({"name": "Hero", "doc_id": "hero"});
-        assert!(create_recorded_id(&mut args, false).is_err());
+        let mut args = json!({"name": "Hero", "doc_id": "d_0000000000000000"});
+        assert!(new_recorded_id(&authored_step, &mut args, false).is_err());
     }
 
     #[test]
     fn remap_rewrites_every_id_bearing_field() {
-        let ids: HashMap<String, String> = [("hero".to_string(), "hero-2".to_string())].into();
+        let ids: HashMap<String, String> =
+            [("$hero".to_string(), "d_0000000000000000".to_string())].into();
         let mut args = json!({
-            "doc_id": "hero",
-            "set_doc": "hero",
+            "doc_id": "$hero",
+            "set_doc": "$hero",
             "name": "hero"
         });
-        remap_ids(&mut args, &ids);
+        remap_ids(&mut args, &ids).unwrap();
         assert_eq!(
             args,
             json!({
-                "doc_id": "hero-2",
-                "set_doc": "hero-2",
+                "doc_id": "d_0000000000000000",
+                "set_doc": "d_0000000000000000",
                 "name": "hero"
             })
         );
+        let mut unresolved = json!({"doc_id": "$missing"});
+        assert!(remap_ids(&mut unresolved, &ids).is_err());
     }
 
     #[test]
-    fn minted_id_reads_the_create_payload() {
-        let result = text_result("{\"id\":\"hero-2\",\"width\":8}");
-        assert_eq!(minted_id(&result).as_deref(), Some("hero-2"));
+    fn minted_id_reads_the_new_payload() {
+        let result = text_result("{\"doc_id\":\"d_0000000000000000\",\"width\":8}");
+        assert_eq!(minted_id(&result).as_deref(), Some("d_0000000000000000"));
         let empty = CallToolResult::success(vec![]);
         assert_eq!(minted_id(&empty), None);
     }
@@ -421,9 +443,9 @@ mod tests {
     /// makes byte equality exactly pixel equality.
     #[tokio::test]
     async fn replayed_document_renders_pixel_identical_to_the_original() {
-        async fn dispatch_ok(atelier: &Atelier, tool: &str, args: Value) {
+        async fn dispatch_ok(atelier: &Atelier, tool: &str, args: Value) -> Value {
             let r = atelier
-                .dispatch(tool, args, CallContext::new("test"))
+                .dispatch(tool, args, "test")
                 .await
                 .expect("dispatch");
             assert!(
@@ -431,6 +453,7 @@ mod tests {
                 "{tool} failed: {:?}",
                 server::result_json(&r)
             );
+            server::result_json(&r).unwrap()
         }
 
         let tag = format!("atelier-test-replay-px-{}", std::process::id());
@@ -445,36 +468,37 @@ mod tests {
         // journal — palette set, index-legend grid paint, a raw draw.
         let studio_a = Studio::with_docs_dir(dir_a.clone());
         let atelier_a = Atelier::with_studio(studio_a.clone());
-        dispatch_ok(
+        let created = dispatch_ok(
             &atelier_a,
-            "doc_create",
+            "doc_new",
             json!({"name": "px", "width": 8, "height": 8}),
         )
         .await;
+        let doc_id = created["doc_id"].as_str().unwrap();
         dispatch_ok(
             &atelier_a,
             "doc_palette",
-            json!({"op": "set", "doc_id": "px", "colors": [[10, 20, 30], [200, 30, 30], [30, 30, 200]]}),
+            json!({"op": "set", "doc_id": doc_id, "colors": [[10, 20, 30], [200, 30, 30], [30, 30, 200]]}),
         )
         .await;
         dispatch_ok(
             &atelier_a,
             "doc_paint_grid",
-            json!({"doc_id": "px", "layer": 0, "frame": 0, "x": 1, "y": 1,
+            json!({"doc_id": doc_id, "layer": 0, "frame": 0, "x": 1, "y": 1,
                    "legend": {"a": 0, "b": 1}, "rows": ["aba", "bab", "aba"]}),
         )
         .await;
         dispatch_ok(
             &atelier_a,
             "doc_draw",
-            json!({"doc_id": "px", "layer": 0, "frame": 0, "op": "rect",
+            json!({"doc_id": doc_id, "layer": 0, "frame": 0, "op": "rect",
                    "x0": 5, "y0": 5, "x1": 7, "y1": 7, "color": [30, 30, 200], "fill": true}),
         )
         .await;
-        let render = |studio: &Studio| {
+        let render = |studio: &Studio, id: &str| {
             studio
                 .look(
-                    "px",
+                    id,
                     0,
                     &atelier_studio::LookOptions {
                         scale: Some(4),
@@ -484,17 +508,19 @@ mod tests {
                 .unwrap()
                 .0
         };
-        let original = render(&studio_a);
+        let original = render(&studio_a, doc_id);
 
         // Replay the journal into a fresh store and export the rebuild.
         let journal =
-            std::fs::read_to_string(dir_a.join("px").join(atelier_studio::JOURNAL_FILE)).unwrap();
+            std::fs::read_to_string(dir_a.join(doc_id).join(atelier_studio::JOURNAL_FILE)).unwrap();
         let recipe = Recipe::parse(&journal).unwrap();
         assert!(recipe.steps.len() >= 4, "the journal drives the rebuild");
         let studio_b = Studio::with_docs_dir(dir_b.clone());
         let atelier_b = Atelier::with_studio(studio_b.clone());
         run_session(&recipe, &atelier_b).await.unwrap();
-        let replayed = render(&studio_b);
+        let replayed_docs = studio_b.list_docs();
+        let replay_id = replayed_docs["documents"][0]["doc_id"].as_str().unwrap();
+        let replayed = render(&studio_b, replay_id);
 
         assert_eq!(
             original, replayed,

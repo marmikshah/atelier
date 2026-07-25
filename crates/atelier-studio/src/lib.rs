@@ -3,7 +3,7 @@
 //! State lives under ~/.atelier (override with ATELIER_HOME). Each document
 //! is a directory `documents/<id>/` with a `doc.json` (structure + cel refs) and
 //! one PNG per cel under `cels/`. There is no project/grouping layer — a document
-//! is the unit, addressed by its `id` (a slug derived from its name).
+//! is the unit, addressed by the opaque `doc_id` minted when it is created.
 //!
 //! This module is the facade: the `Studio` struct, the structure/timeline and
 //! per-cel ops, and the shared helpers. The store/journal lives in `store`,
@@ -47,7 +47,7 @@ pub(crate) const GRID_AREA_CAP: u64 = 4096;
 pub(crate) const MAX_TARGET_PIXELS: usize = 1_048_576;
 
 /// Upper bound on an export scale factor. Canvases are already capped at 4096²
-/// (`doc_create`); without a scale ceiling a `scale=64` export of that targets a
+/// (`doc_new`); without a scale ceiling a `scale=64` export of that targets a
 /// ~256 GB buffer. 16 matches the render/preview clamp.
 pub(crate) const MAX_EXPORT_SCALE: u32 = 16;
 
@@ -94,24 +94,6 @@ pub(crate) fn open_bounded(path: &Path) -> Result<image::RgbaImage, String> {
     limits.max_image_height = Some(h.max(1));
     reader.limits(limits);
     Ok(reader.decode().map_err(|e| e.to_string())?.to_rgba8())
-}
-
-/// Public because `atelier replay` predicts the id an authored recipe's
-/// `doc_create` will mint.
-pub fn slugify(name: &str) -> String {
-    let mut out = String::new();
-    let mut prev_dash = false;
-    for ch in name.trim().to_lowercase().chars() {
-        if ch.is_ascii_alphanumeric() {
-            out.push(ch);
-            prev_dash = false;
-        } else if !prev_dash {
-            out.push('-');
-            prev_dash = true;
-        }
-    }
-    let s = out.trim_matches('-').to_string();
-    if s.is_empty() { "untitled".into() } else { s }
 }
 
 #[derive(Clone)]
@@ -652,10 +634,11 @@ mod tests {
     fn frame_add_count_appends_in_one_call() {
         // "Give me my 10 frames" used to cost 9 identical round-trips.
         let s = studio("addcount");
-        s.doc_create("d", 4, 4).unwrap();
-        let out = s.doc_frame("d", "add", None, Some(0), None, Some(80), Some(9));
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let out = s.doc_frame(id, "add", None, Some(0), None, Some(80), Some(9));
         assert!(out.is_ok(), "{out:?}");
-        let info = s.doc_info("d").unwrap();
+        let info = s.doc_info(id).unwrap();
         assert_eq!(info["frames"].as_array().map(|f| f.len()), Some(10));
     }
 }
@@ -674,11 +657,12 @@ mod hardening_tests {
     #[test]
     fn paint_grid_legend_rejects_out_of_range_colours() {
         let s = studio("legend");
-        s.doc_create("d", 4, 4).unwrap();
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         let mk = |color: Value| {
             let mut legend = serde_json::Map::new();
             legend.insert("k".into(), color);
-            s.doc_paint_grid("d", 0, 0, 0, 0, legend, vec!["k".into()])
+            s.doc_paint_grid(id, 0, 0, 0, 0, legend, vec!["k".into()])
         };
         // 300 used to truncate to 44 via `as u8`; now it's a loud error.
         let e = mk(json!([255, 300, 0])).unwrap_err();

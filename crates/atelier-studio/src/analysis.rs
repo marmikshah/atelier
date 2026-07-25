@@ -1079,48 +1079,51 @@ mod tests {
     #[test]
     fn dump_region_symbol_and_hex() {
         let s = studio("dump");
-        s.doc_create("d", 4, 4).unwrap();
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         // two distinct opaque pixels, rest transparent
         draw(
             &s,
-            "d",
+            id,
             0,
             "pencil",
             json!({"points": [[0, 0]], "color": [10, 20, 30, 255]}),
         );
         draw(
             &s,
-            "d",
+            id,
             0,
             "pencil",
             json!({"points": [[1, 0]], "color": [40, 50, 60, 255]}),
         );
         let sym = s
-            .doc_dump_region("d", 0, None, Some((0, 0, 1, 0)), "symbol")
+            .doc_dump_region(id, 0, None, Some((0, 0, 1, 0)), "symbol")
             .unwrap();
         assert_eq!(sym["rows"][0], "AB"); // first-seen order
         assert_eq!(sym["legend"]["A"], "#0a141eff");
         let hx = s
-            .doc_dump_region("d", 0, None, Some((0, 0, 2, 0)), "hex")
+            .doc_dump_region(id, 0, None, Some((0, 0, 2, 0)), "hex")
             .unwrap();
         assert_eq!(hx["rows"][0], "#0a141e #28323c ."); // opaque, opaque, transparent
         // area cap rejects oversized regions
-        s.doc_create("big", 128, 128).unwrap();
-        assert!(s.doc_dump_region("big", 0, None, None, "symbol").is_err());
+        let big = s.doc_new("big", 128, 128).unwrap();
+        let big_id = big["doc_id"].as_str().unwrap();
+        assert!(s.doc_dump_region(big_id, 0, None, None, "symbol").is_err());
     }
 
     #[test]
     fn silhouette_reports_bbox_and_fill() {
         let s = studio("silo");
-        s.doc_create("d", 4, 4).unwrap();
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         draw(
             &s,
-            "d",
+            id,
             0,
             "rect",
             json!({"x0": 1, "y0": 1, "x1": 2, "y1": 2, "color": [9, 9, 9, 255], "fill": true}),
         );
-        let r = s.doc_silhouette("d", 0, None, 1).unwrap();
+        let r = s.doc_silhouette(id, 0, None, 1).unwrap();
         assert_eq!(r["bbox"], json!([1, 1, 2, 2])); // 2x2 block
         assert_eq!(r["fill_ratio"], json!(0.25)); // 4 of 16 opaque
         assert_eq!(r["grid"][0], "...."); // empty top row
@@ -1177,30 +1180,31 @@ mod tests {
     #[test]
     fn components_counts_blobs_and_specks() {
         let s = studio("comp");
-        s.doc_create("d", 8, 8).unwrap();
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         // a 3x3 blob and a single stray speck, well separated
         draw(
             &s,
-            "d",
+            id,
             0,
             "rect",
             json!({"x0": 0, "y0": 0, "x1": 2, "y1": 2, "color": [255, 0, 0, 255], "fill": true}),
         );
         draw(
             &s,
-            "d",
+            id,
             0,
             "pencil",
             json!({"points": [[7, 7]], "color": [0, 255, 0, 255]}),
         );
-        let r = s.doc_components("d", 0, None, 8, None, 1).unwrap();
+        let r = s.doc_components(id, 0, None, 8, None, 1).unwrap();
         assert_eq!(r["count"], 2);
         assert_eq!(r["components"][0]["area"], 9); // biggest first
         assert_eq!(r["components"][0]["dominant"], "#ff0000");
         assert_eq!(r["specks"].as_array().unwrap().len(), 1); // the 1px dot
         // colour filter isolates one blob
         let red = s
-            .doc_components("d", 0, None, 8, Some([255, 0, 0, 255]), 1)
+            .doc_components(id, 0, None, 8, Some([255, 0, 0, 255]), 1)
             .unwrap();
         assert_eq!(red["count"], 1);
     }
@@ -1208,18 +1212,19 @@ mod tests {
     #[test]
     fn look_grayscale_writes_file_and_reports() {
         let s = studio("renderval");
-        s.doc_create("d", 4, 4).unwrap();
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         // one black-ish and one white pixel; rest transparent
         draw(
             &s,
-            "d",
+            id,
             0,
             "pencil",
             json!({"points": [[0, 0]], "color": [0, 0, 0, 255]}),
         );
         draw(
             &s,
-            "d",
+            id,
             0,
             "pencil",
             json!({"points": [[1, 0]], "color": [255, 255, 255, 255]}),
@@ -1227,7 +1232,7 @@ mod tests {
         let out = s.docs_dir.join("val.png");
         let (png, r) = s
             .look(
-                "d",
+                id,
                 0,
                 &crate::LookOptions {
                     scale: Some(1),
@@ -1248,7 +1253,7 @@ mod tests {
         // unknown mode is an actionable error
         assert!(
             s.look(
-                "d",
+                id,
                 0,
                 &crate::LookOptions {
                     scale: Some(1),
@@ -1263,24 +1268,25 @@ mod tests {
     #[test]
     fn palette_report_counts_and_in_palette() {
         let s = studio("palrep");
-        s.doc_create("d", 4, 4).unwrap();
-        s.doc_set_palette("d", vec![[255, 0, 0, 255]]).unwrap();
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_set_palette(id, vec![[255, 0, 0, 255]]).unwrap();
         // 3 red (in palette) + 1 near-red green-stray (off palette)
         draw(
             &s,
-            "d",
+            id,
             0,
             "rect",
             json!({"x0": 0, "y0": 0, "x1": 2, "y1": 0, "color": [255, 0, 0, 255], "fill": true}),
         );
         draw(
             &s,
-            "d",
+            id,
             0,
             "pencil",
             json!({"points": [[0, 1]], "color": [250, 4, 0, 255]}),
         );
-        let r = s.doc_palette_report("d", Some(0), None, None, 8).unwrap();
+        let r = s.doc_palette_report(id, Some(0), None, None, 8).unwrap();
         assert_eq!(r["count"], 2);
         assert_eq!(r["colors"][0]["hex"], "#ff0000ff"); // most-used first
         assert_eq!(r["colors"][0]["in_palette"], json!(true));
@@ -1288,15 +1294,18 @@ mod tests {
         // the two reds are within dist 8 → flagged as near-dupes
         assert_eq!(r["near_dupes"].as_array().unwrap().len(), 1);
         // no-palette doc → in_palette null
-        s.doc_create("e", 2, 2).unwrap();
+        let empty = s.doc_new("e", 2, 2).unwrap();
+        let empty_id = empty["doc_id"].as_str().unwrap();
         draw(
             &s,
-            "e",
+            empty_id,
             0,
             "pencil",
             json!({"points": [[0, 0]], "color": [1, 2, 3, 255]}),
         );
-        let r2 = s.doc_palette_report("e", Some(0), None, None, 8).unwrap();
+        let r2 = s
+            .doc_palette_report(empty_id, Some(0), None, None, 8)
+            .unwrap();
         assert_eq!(r2["colors"][0]["in_palette"], Value::Null);
         assert_eq!(r2["off_palette_count"], Value::Null);
     }
@@ -1304,25 +1313,26 @@ mod tests {
     #[test]
     fn frame_diff_classifies_changes_and_grids() {
         let s = studio("framediff");
-        s.doc_create("d", 4, 4).unwrap();
-        s.doc_add_frame("d", 100, Some(0), 1).unwrap(); // frame 1 copies frame 0
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_add_frame(id, 100, Some(0), 1).unwrap(); // frame 1 copies frame 0
         // frame 0: a red pixel at (0,0); frame 1: move it and recolour (1,1).
         draw(
             &s,
-            "d",
+            id,
             0,
             "pencil",
             json!({"points": [[0, 0]], "color": [255, 0, 0, 255]}),
         );
         draw(
             &s,
-            "d",
+            id,
             1,
             "pencil",
             json!({"points": [[1, 1]], "color": [0, 255, 0, 255]}),
         );
         let (png, r) = s
-            .doc_frame_diff("d", 0, 1, None, None, true, "none", None, 1)
+            .doc_frame_diff(id, 0, 1, None, None, true, "none", None, 1)
             .unwrap();
         assert!(png.is_none()); // render="none" → no inline overlay
         // (0,0) opaque→transparent = removed; (1,1) transparent→opaque = added.
@@ -1336,14 +1346,14 @@ mod tests {
         // overlay render writes a PNG and returns the bytes for inlining
         let out = s.docs_dir.join("diff.png");
         let (ov_png, ov) = s
-            .doc_frame_diff("d", 0, 1, None, None, false, "overlay", out.to_str(), 1)
+            .doc_frame_diff(id, 0, 1, None, None, false, "overlay", out.to_str(), 1)
             .unwrap();
         assert!(out.exists());
         assert!(ov_png.is_some());
         assert_eq!(ov["path"], json!(out.to_string_lossy()));
         // unknown render mode is an actionable error
         assert!(
-            s.doc_frame_diff("d", 0, 1, None, None, false, "bogus", None, 1)
+            s.doc_frame_diff(id, 0, 1, None, None, false, "bogus", None, 1)
                 .is_err()
         );
     }
@@ -1353,22 +1363,23 @@ mod tests {
         // Whole-body motion repaints most pixels EVERY step; the wrap being as
         // busy as a mid-loop step must read as healthy, not a pop.
         let s = studio("seamcal");
-        s.doc_create("d", 8, 8).unwrap();
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         for f in 0..4 {
             if f > 0 {
-                s.doc_add_frame("d", 100, None, 1).unwrap();
+                s.doc_add_frame(id, 100, None, 1).unwrap();
             }
             // Every frame repaints a different column: big adjacent diffs.
             draw(
                 &s,
-                "d",
+                id,
                 f,
                 "rect",
                 json!({"x0": (f*2) as i32, "y0": 0, "x1": (f*2+1) as i32, "y1": 7,
                        "color": [200, 40, 40, 255], "fill": true}),
             );
         }
-        let seam = s.doc_anim_audit("d", None, None, "seam", None).unwrap();
+        let seam = s.doc_anim_audit(id, None, None, "seam", None).unwrap();
         // Absolute ratio is high (everything moved)…
         assert!(seam["seam_score"].as_f64().unwrap() > 0.5);
         // …but calibration says the wrap is a normal step.
@@ -1385,49 +1396,50 @@ mod tests {
     #[test]
     fn anim_audit_seam_and_spacing() {
         let s = studio("animaudit");
-        s.doc_create("d", 8, 8).unwrap();
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
         // 3 frames: a 2x2 block stepping right by 2 each frame (even spacing).
         draw(
             &s,
-            "d",
+            id,
             0,
             "rect",
             json!({"x0": 0, "y0": 0, "x1": 1, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
         );
-        s.doc_add_frame("d", 100, None, 1).unwrap();
+        s.doc_add_frame(id, 100, None, 1).unwrap();
         draw(
             &s,
-            "d",
+            id,
             1,
             "rect",
             json!({"x0": 2, "y0": 0, "x1": 3, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
         );
-        s.doc_add_frame("d", 100, None, 1).unwrap();
+        s.doc_add_frame(id, 100, None, 1).unwrap();
         draw(
             &s,
-            "d",
+            id,
             2,
             "rect",
             json!({"x0": 4, "y0": 0, "x1": 5, "y1": 1, "color": [9, 9, 9, 255], "fill": true}),
         );
         // spacing: even rightward drift → low evenness, positive total drift.
-        let sp = s.doc_anim_audit("d", None, None, "spacing", None).unwrap();
+        let sp = s.doc_anim_audit(id, None, None, "spacing", None).unwrap();
         assert_eq!(sp["per_frame_center"].as_array().unwrap().len(), 3);
         assert_eq!(sp["per_frame_offset"].as_array().unwrap().len(), 2);
         assert!(sp["total_drift"][0].as_f64().unwrap() > 0.0); // moved right
         assert_eq!(sp["evenness"], json!(0.0)); // two equal 2px steps
         // seam: last frame vs first differ → non-zero score
-        let seam = s.doc_anim_audit("d", None, None, "seam", None).unwrap();
+        let seam = s.doc_anim_audit(id, None, None, "seam", None).unwrap();
         assert!(seam["seam_score"].as_f64().unwrap() > 0.0);
         assert_eq!(seam["frames"], json!([2, 0]));
         // pingpong tag → no seam (score 0 + note)
-        s.doc_add_tag("d", "pp", 0, 2, "pingpong").unwrap();
+        s.doc_add_tag(id, "pp", 0, 2, "pingpong").unwrap();
         let pp = s
-            .doc_anim_audit("d", Some("pp"), None, "seam", None)
+            .doc_anim_audit(id, Some("pp"), None, "seam", None)
             .unwrap();
         assert_eq!(pp["seam_score"], json!(0.0));
         assert!(pp["note"].is_string());
         // bad mode errors
-        assert!(s.doc_anim_audit("d", None, None, "bogus", None).is_err());
+        assert!(s.doc_anim_audit(id, None, None, "bogus", None).is_err());
     }
 }

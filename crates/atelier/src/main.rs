@@ -2,14 +2,14 @@
 //!
 //! Agents create layered/animated documents, paint them with drawing primitives,
 //! render PNG previews to inspect, and iterate. Documents live in a flat,
-//! slug-addressed store (no projects, no baked-in style). Engine-agnostic
+//! opaque-id-addressed store (no projects, no baked-in style). Engine-agnostic
 //! PNG/sheet/GIF output.
 //!
 //! The CLI is the front door — every tool is one in-process call:
 //!
 //! ```text
-//! atelier call doc_create '{"name":"cat","width":32,"height":32}'
-//! atelier call doc_look '{"doc_id":"cat","out_path":"/tmp/cat.png"}'
+//! atelier call doc_new '{"name":"cat","width":32,"height":32}'
+//! atelier call doc_look '{"doc_id":"d_…","out_path":"/tmp/cat.png"}'
 //! ```
 //!
 //! MCP is an optional add-on transport for clients that only speak MCP:
@@ -63,7 +63,7 @@ USAGE:
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier call <tool> ['<json>' | --file PATH | --stdin]
-            [--doc ID] [--layer N] [--frame N] [--home DIR]
+            [--home DIR]
                                   run one tool call in-process — the whole op
                                   surface, scriptable from a shell. stdout gets the
                                   JSON report; exit 0 ok, 1 tool error, 2 bad call
