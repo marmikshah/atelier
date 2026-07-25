@@ -151,4 +151,24 @@ fn stdio_server_handshakes_lists_and_calls() {
         .and_then(Value::as_str)
         .unwrap_or_default();
     assert!(text.contains("\"smoke\""), "create payload: {text}");
+
+    let info = s.request(
+        "tools/call",
+        json!({
+            "_meta": {
+                "io.github.marmikshah.atelier/context": {
+                    "doc_id": "smoke",
+                    "session": "stdio-smoke"
+                }
+            },
+            "name": "doc_info",
+            "arguments": {}
+        }),
+    );
+    let text = info["content"]
+        .as_array()
+        .and_then(|c| c.iter().find_map(|b| b.get("text")))
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    assert!(text.contains("\"w\":8"), "context call payload: {text}");
 }

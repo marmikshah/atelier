@@ -193,32 +193,20 @@ pub(crate) struct DocRegion {
 #[derive(Deserialize, JsonSchema)]
 pub(crate) struct DocRefOp {
     pub(crate) doc_id: String,
-    /// set (attach/clear the comparison reference) | import (trace an external
-    /// image cleaned onto a guide layer) | analyze (decompose the reference:
-    /// background coverage, subject palette, silhouette grid) | compare (score a
-    /// frame against the reference: silhouette IoU + per-cell ΔE) | diff
-    /// (per-pixel signed error map vs the reference + worst pixels).
+    /// set (attach/clear the comparison reference) | analyze (decompose the
+    /// reference: background coverage, subject palette, silhouette grid) |
+    /// compare (score a frame against the reference: silhouette IoU + per-cell
+    /// ΔE) | diff (per-pixel signed error map vs the reference + worst pixels).
     pub(crate) op: String,
     /// `set`/`analyze`: reference image path (set: omit to clear; analyze: an
-    /// external file instead of the stored reference). `import`: source path.
+    /// external file instead of the stored reference).
     pub(crate) path: Option<String>,
-    // -- import params --
-    pub(crate) layer: Option<usize>,
+    // -- compare/diff params --
     pub(crate) frame: Option<usize>,
-    /// `import`: target width in px (required for import). `analyze`: plan width.
+    /// `analyze`: plan width.
     pub(crate) target_w: Option<u32>,
-    /// `import`: omit to derive an aspect-true height.
-    pub(crate) target_h: Option<u32>,
-    /// `import`/`analyze`: palette size (import default 16, analyze default 8).
+    /// `analyze`: subject-palette size (default 8).
     pub(crate) colors: Option<usize>,
-    pub(crate) dither: Option<bool>,
-    pub(crate) defringe: Option<bool>,
-    pub(crate) to_doc_palette: Option<bool>,
-    /// `import`: corner-seeded background removal before palette extraction.
-    pub(crate) remove_bg: Option<bool>,
-    /// `import`: colours the derived palette must keep (e.g. a black outline).
-    pub(crate) pin: Option<Vec<Vec<i64>>>,
-    // -- compare params --
     /// `compare`: "side_by_side" (default) or "overlay" (reference ghosted under).
     pub(crate) mode: Option<String>,
     /// `compare`: ΔE grid divisions per axis (default 8, clamped 2..=16).
@@ -386,8 +374,7 @@ pub(crate) struct DocContactSheet {
 pub(crate) struct DocPalette {
     /// generate (default) — synthesize a ramp/scheme · set — lock explicit
     /// `colors` on a doc · snap — snap a cel/doc to its palette · swap — recolour
-    /// `from`→`to` · report — colour-usage tally · sync — broadcast one palette
-    /// across a document set.
+    /// `from`→`to` · report — colour-usage tally.
     pub(crate) op: Option<String>,
     // -- generate --
     /// `generate`: base colour [r,g,b(,a)] the ramp is built from (required).
@@ -419,7 +406,7 @@ pub(crate) struct DocPalette {
     pub(crate) to: Option<Vec<Vec<i64>>>,
     /// `report`: max channel distance counting near-duplicates (default 8).
     pub(crate) dupe_threshold: Option<i32>,
-    /// `snap`: override palette; `sync`: palette to broadcast. List of [r,g,b(,a)].
+    /// `snap`: override palette. List of [r,g,b(,a)].
     pub(crate) palette: Option<Vec<Vec<i64>>>,
     /// `snap`: partial-alpha policy — preserve (default) | opaque | flatten.
     pub(crate) alpha: Option<String>,
@@ -427,12 +414,6 @@ pub(crate) struct DocPalette {
     pub(crate) cutoff: Option<u8>,
     /// `snap`: backdrop [r,g,b] for alpha="flatten" (default opaque black).
     pub(crate) bg: Option<Vec<i64>>,
-    /// `sync`: explicit target document ids (unioned with `prefix`).
-    pub(crate) ids: Option<Vec<String>>,
-    /// `sync`: select every document whose id starts with this.
-    pub(crate) prefix: Option<String>,
-    /// `sync`: copy the locked palette from this doc instead of passing `palette`.
-    pub(crate) from_doc: Option<String>,
 }
 
 #[derive(Deserialize, JsonSchema)]

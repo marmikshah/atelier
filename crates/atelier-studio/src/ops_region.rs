@@ -40,7 +40,7 @@ impl Studio {
         }))
     }
 
-    pub fn doc_move_region(
+    fn doc_move_region(
         &self,
         id: &str,
         layer: usize,
@@ -55,7 +55,7 @@ impl Studio {
         })
     }
 
-    pub fn doc_clear_region(
+    fn doc_clear_region(
         &self,
         id: &str,
         layer: usize,

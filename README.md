@@ -150,6 +150,7 @@ deliberate act, and the context stays small enough to look often.
 ```sh
 atelier call <tool> '<json>'   # one tool call, in-process — the front door
 atelier call <tool> --file ops.json   # args from a file (or --stdin)
+atelier call doc_draw '{"op":"clear_cel"}' --doc hero --layer 1 --frame 0
 atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
@@ -172,19 +173,39 @@ the same line to stderr: tool name, op, target document, caller, duration, and
 the error text when a call fails. The daemon collects this in
 `~/.atelier/logs/atelier.err.log`; tune verbosity with `ATELIER_LOG`
 (`RUST_LOG` syntax, default `info`). When several agents share the daemon,
-every call logs a `caller=` identity: by default the TCP peer address, which
-separates concurrent sessions — even two windows of the same client — with no
-configuration; set an `X-Atelier-Caller` header in a client's MCP config to
-use a stable name instead. (The CLI and replay log as `cli` / `replay`.)
+every call logs a `caller=` identity: by default the TCP peer address; set an
+`X-Atelier-Caller` header in a client's MCP config, or the per-call `session`
+metadata below, when the name must stay stable across reconnects. (The CLI and
+replay log as `cli` / `replay`.)
 (Same-name collisions are already impossible: `doc_create` mints a unique id —
 `hero`, `hero-2`, … — and every caller must use the id it got back.)
+
+Calls remain self-contained, but clients do not have to repeat routing context
+inside every payload. `atelier call` accepts `--doc`, `--layer`, and `--frame`
+as defaults; an explicit JSON argument wins. MCP clients can attach the same
+defaults, plus a stable log name, to either stdio or HTTP:
+
+```json
+{
+  "_meta": {
+    "io.github.marmikshah.atelier/context": {
+      "doc_id": "hero",
+      "layer": 1,
+      "frame": 0,
+      "session": "sprite-pass"
+    }
+  }
+}
+```
+
+The server retains none of this between requests. Dispatch expands the call
+before it runs, and the journal stores those resolved arguments, so a replay
+never depends on a live session or another client's active document.
 
 **26 tools**, all of them advertised — no profiles to pick, nothing hidden behind
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
 turn into an unreachable dead end.
-Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html),
-or see how a call flows through the crates in the
-[architecture guide](docs/ARCHITECTURE.md).
+Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html).
 
 ## Directory-local stores
 
@@ -234,17 +255,22 @@ atelier replay my-sprite        # rebuild it from its own journal
 
 Nothing to turn on. The journal is JSON Lines beside the art
 (`~/.atelier/documents/<id>/recipe.jsonl`), one tool call per line — only the
-calls that *made* something, never the looks and audits. Replay it into a
-sandbox with `--home /tmp/demo` and you get the same pixels, anywhere:
+deterministic calls that *made* something, never looks, audits, external
+reference setup, or checkpoint bookkeeping. Restoring a checkpoint restores
+its journal too, so discarded edits cannot survive in provenance. Replay into
+a sandbox with `--home /tmp/demo` and you get the same pixels, anywhere:
 
 ```sh
 atelier replay docs/examples/invader-march.json --home /tmp/demo
 ```
 
 The recipes in [docs/examples](docs/examples) are both the brand art and the
-integration tests. MCP clients can also read any live document directly:
-`atelier://doc/<id>` (structure JSON) and `atelier://doc/<id>/render` (frame 0
-as PNG).
+integration tests. MCP clients inspect live documents through `doc_info` and
+`doc_look`, the same calls used by CLI and replay.
+
+Journals deliberately stay plain and fully resolved instead of depending on a
+session codec or hidden DSL. Use `doc_batch` for many ordered edits and
+`doc_paint_grid` for dense pixel rows when a recipe needs fewer, smaller calls.
 
 ## A personal note
 

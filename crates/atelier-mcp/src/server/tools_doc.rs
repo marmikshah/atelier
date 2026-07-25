@@ -92,7 +92,7 @@ impl Atelier {
     }
 
     #[tool(
-        description = "The palette hub. `op`: generate (default) — synthesize a cohesive palette in OKLCh: a single shading ramp (scheme=\"mono\") or a multi-hue scheme (complementary|triadic|analogous|split|tetradic); `count` colours per ramp, `hue_shift` warms light/cools shadow, `sat_curve` (flat|arc|sat-in-shadow), `anchor_midtone` pins the base; returns ramps + flat palette + hex + evenness validation; `set_doc` locks it on a doc. set — lock explicit `colors` [[r,g,b(,a)]] on `doc_id`. snap — snap `doc_id`'s cel (or whole doc if layer/frame omitted) to its palette by perceptual nearest; `alpha` policy preserve|opaque|flatten (`cutoff`,`bg`), `palette` overrides. swap — recolour `from`→`to` across `doc_id` (optional layer/frame), updating the stored palette. report — colour-usage tally for `doc_id` (frame/layer/region, `dupe_threshold`). sync — broadcast one `palette` (or `from_doc`'s) across a document set (`ids` and/or `prefix`)."
+        description = "The palette hub. `op`: generate (default) — synthesize a cohesive palette in OKLCh: a single shading ramp (scheme=\"mono\") or a multi-hue scheme (complementary|triadic|analogous|split|tetradic); `count` colours per ramp, `hue_shift` warms light/cools shadow, `sat_curve` (flat|arc|sat-in-shadow), `anchor_midtone` pins the base; returns ramps + flat palette + hex + evenness validation; `set_doc` locks it on a doc. set — lock explicit `colors` [[r,g,b(,a)]] on `doc_id`. snap — snap `doc_id`'s cel (or whole doc if layer/frame omitted) to its palette by perceptual nearest; `alpha` policy preserve|opaque|flatten (`cutoff`,`bg`), `palette` overrides. swap — recolour `from`→`to` across `doc_id` (optional layer/frame), updating the stored palette. report — colour-usage tally for `doc_id` (frame/layer/region, `dupe_threshold`)."
     )]
     pub(crate) async fn doc_palette(
         &self,
@@ -169,20 +169,8 @@ impl Atelier {
                 );
                 edited(r)
             }
-            "sync" => {
-                let palette = match &p.palette {
-                    Some(v) => Some(try_res!(palette_list(v))),
-                    None => None,
-                };
-                res(studio.doc_set_palette_sync(
-                    p.ids.as_deref(),
-                    p.prefix.as_deref(),
-                    palette,
-                    p.from_doc.as_deref(),
-                ))
-            }
             other => res(Err(format!(
-                "doc_palette: unknown op '{other}' — use generate|set|snap|swap|report|sync"
+                "doc_palette: unknown op '{other}' — use generate|set|snap|swap|report"
             ))),
         }
     }

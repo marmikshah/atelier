@@ -8,7 +8,7 @@ use rmcp::model::CallToolResult;
 use rmcp::{tool, tool_router};
 
 use super::params::*;
-use super::{Atelier, edited, img_result, opt_img_result, palette_list, region, res, rgba};
+use super::{Atelier, img_result, opt_img_result, region, res, rgba};
 
 #[tool_router(router = read_router, vis = "pub(crate)")]
 impl Atelier {
@@ -172,39 +172,12 @@ impl Atelier {
 
     // -- reference subsystem: recreate-from-sample as a measurable loop --
     #[tool(
-        description = "Reference workflow — recreate-from-sample as a measurable loop. `op`: set — attach the ORIGINAL reference (`path`, omit to clear) so compare/diff can score likeness; returns aspect-true fit suggestions. import — trace a source image cleaned onto a guide layer: `path`, `target_w` (required), optional `target_h`, `colors`, `dither`, `defringe`, `to_doc_palette`, `remove_bg`, `pin`; returns a text report — call doc_look to SEE it. analyze — decompose the reference (inline PNG): background coverage, a frequency-weighted SUBJECT palette to lock with doc_palette op=set, and the silhouette as a text grid; `path` analyzes an external file, `target_w` plans at a size. compare — SCORE a `frame` (run after every pass): inline side-by-side (mode=\"overlay\" ghosts the reference), silhouette IoU (≥0.80 reads), per-cell OKLab ΔE with worst cells as rects, and missing palette colours; `cells` sets the grid. diff — PER-PIXEL signed error map (heat PNG: red=too light, blue=too dark, green=wrong hue) plus the `top` worst pixels each with a fix direction."
+        description = "Reference workflow — recreate-from-sample as a measurable loop. `op`: set — attach the ORIGINAL reference (`path`, omit to clear) so compare/diff can score likeness; returns aspect-true fit suggestions. analyze — decompose the reference (inline PNG): background coverage, a frequency-weighted SUBJECT palette to lock with doc_palette op=set, and the silhouette as a text grid; `path` analyzes an external file, `target_w` plans at a size. compare — SCORE a `frame` (run after every pass): inline side-by-side (mode=\"overlay\" ghosts the reference), silhouette IoU (≥0.80 reads), per-cell OKLab ΔE with worst cells as rects, and missing palette colours; `cells` sets the grid. diff — PER-PIXEL signed error map (heat PNG: red=too light, blue=too dark, green=wrong hue) plus the `top` worst pixels each with a fix direction."
     )]
     pub(crate) async fn doc_ref(&self, Parameters(p): Parameters<DocRefOp>) -> CallToolResult {
         let studio = self.studio();
         match p.op.as_str() {
             "set" => res(studio.set_reference(&p.doc_id, p.path.as_deref())),
-            "import" => {
-                let Some(path) = p.path.as_deref() else {
-                    return res(Err("doc_ref op=import needs `path`".to_string()));
-                };
-                let Some(target_w) = p.target_w else {
-                    return res(Err("doc_ref op=import needs `target_w`".to_string()));
-                };
-                let (layer, frame) = (p.layer.unwrap_or(0), p.frame.unwrap_or(0));
-                let r = studio.import_clean(
-                    &p.doc_id,
-                    layer,
-                    frame,
-                    path,
-                    target_w,
-                    p.target_h,
-                    p.colors.unwrap_or(16),
-                    p.dither,
-                    p.defringe.unwrap_or(false),
-                    p.to_doc_palette.unwrap_or(false),
-                    p.remove_bg.unwrap_or(false),
-                    match &p.pin {
-                        Some(v) => try_res!(palette_list(v)),
-                        None => Vec::new(),
-                    },
-                );
-                edited(r)
-            }
             "analyze" => img_result(studio.ref_analyze(
                 &p.doc_id,
                 p.path.as_deref(),
@@ -221,7 +194,7 @@ impl Atelier {
                 img_result(studio.diff_map(&p.doc_id, p.frame.unwrap_or(0), p.top.unwrap_or(20)))
             }
             other => res(Err(format!(
-                "doc_ref: unknown op '{other}' — use set|import|analyze|compare|diff"
+                "doc_ref: unknown op '{other}' — use set|analyze|compare|diff"
             ))),
         }
     }

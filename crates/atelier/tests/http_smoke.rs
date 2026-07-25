@@ -239,4 +239,32 @@ fn http_server_handshakes_lists_and_calls_the_same_registry() {
         .and_then(Value::as_str)
         .unwrap_or_default();
     assert!(text.contains("\"smoke-http\""), "create payload: {text}");
+
+    // Per-call context is protocol metadata, not process state. The same
+    // request works even though this smoke opens a fresh TCP connection for
+    // every POST (and the HTTP server deliberately keeps no MCP sessions).
+    let info = server.post(&json!({
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "tools/call",
+        "params": {
+            "_meta": {
+                "io.github.marmikshah.atelier/context": {
+                    "doc_id": "smoke-http",
+                    "session": "http-smoke"
+                }
+            },
+            "name": "doc_info",
+            "arguments": {}
+        }
+    }));
+    assert_eq!(info.status, 200, "context call response: {:?}", info.body);
+    let info = info.json();
+    assert!(info.get("error").is_none(), "context call failed: {info}");
+    let text = info["result"]["content"]
+        .as_array()
+        .and_then(|content| content.iter().find_map(|block| block.get("text")))
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    assert!(text.contains("\"w\":8"), "context call payload: {text}");
 }
