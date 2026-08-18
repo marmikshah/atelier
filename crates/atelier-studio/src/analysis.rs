@@ -1,7 +1,8 @@
-//! Read-only canvas analysis — the agent's other eye. These readers describe
-//! what is already on the canvas: a text-grid dump, a silhouette report, and
-//! connected components.
+//! Bounded read-only canvas analysis: text grids, silhouettes, components,
+//! colour reports, frame comparisons, and animation audits.
 
+use std::cmp::{Ordering, Reverse};
+use std::collections::{BinaryHeap, HashMap};
 use std::fs;
 use std::path::PathBuf;
 
@@ -9,6 +10,245 @@ use serde_json::{Value, json};
 
 use super::{AnimAuditMode, DiffRender, DumpMode, SeamAxis, Studio};
 use atelier_core::document::TagDirection;
+
+const MAX_COMPONENT_REPORTS: usize = 64;
+const MAX_SPECK_SAMPLE: usize = 64;
+const MAX_FORM_REPORTS: usize = 64;
+const MAX_COMPONENT_COLOR_TALLY: usize = 256;
+/// Exact distinct-colour accounting is useful for pixel art, but retaining one
+/// hash entry per pixel in a high-colour import can cost hundreds of megabytes.
+/// Reports stay exact below this point and become explicitly lower-bounded
+/// above it.
+pub(crate) const MAX_TRACKED_DISTINCT_COLORS: usize = 4096;
+/// Maximum aggregate full-canvas pixels rendered by one multi-frame palette
+/// report. `analysis_image` materializes a full frame before region inspection,
+/// so a tiny requested region must not bypass this work bound. This permits four
+/// full 4096² frames while refusing an accidental scan of a whole timeline.
+const MAX_PALETTE_REPORT_PIXELS: u64 = atelier_core::raster::MAX_OUTPUT_PIXELS;
+
+/// Bounded exact counters for the first distinct colours encountered. Counts
+/// for retained colours remain exact after the table fills; pixels belonging
+/// to further colours are rolled into an explicit untracked bucket.
+#[derive(Default)]
+struct BoundedColorCounts {
+    counts: HashMap<[u8; 4], u64>,
+    untracked_pixels: u64,
+}
+
+impl BoundedColorCounts {
+    fn add(&mut self, color: [u8; 4]) {
+        if let Some(count) = self.counts.get_mut(&color) {
+            *count += 1;
+        } else if self.counts.len() < MAX_TRACKED_DISTINCT_COLORS {
+            self.counts.insert(color, 1);
+        } else {
+            self.untracked_pixels += 1;
+        }
+    }
+
+    fn is_exact(&self) -> bool {
+        self.untracked_pixels == 0
+    }
+
+    fn distinct_lower_bound(&self) -> usize {
+        self.counts.len() + usize::from(!self.is_exact())
+    }
+}
+
+/// A bounded Misra–Gries colour tally for the component currently being walked.
+/// Solid-colour specks never allocate a map and ordinary art (up to 256 colours
+/// per component) remains exact. Beyond that, a full-table decrement discards
+/// low-frequency candidates. Those passes are amortized linear — each consumes
+/// at least 257 observations — and the map never grows with adversarial input.
+#[derive(Default)]
+struct ColorTally {
+    first: Option<([u8; 4], u32)>,
+    mixed: Option<HashMap<[u8; 4], u32>>,
+    exact: bool,
+}
+
+impl ColorTally {
+    fn add(&mut self, color: [u8; 4]) {
+        if let Some(counts) = &mut self.mixed {
+            if let Some(count) = counts.get_mut(&color) {
+                *count += 1;
+            } else if counts.len() < MAX_COMPONENT_COLOR_TALLY {
+                counts.insert(color, 1);
+            } else {
+                self.exact = false;
+                counts.retain(|_, count| {
+                    *count -= 1;
+                    *count > 0
+                });
+            }
+        } else {
+            match self.first {
+                None => {
+                    self.first = Some((color, 1));
+                    self.exact = true;
+                }
+                Some((first, count)) if first == color => {
+                    self.first = Some((first, count + 1));
+                }
+                Some((first, count)) => {
+                    let mut counts = HashMap::with_capacity(8);
+                    counts.insert(first, count);
+                    counts.insert(color, 1);
+                    self.mixed = Some(counts);
+                }
+            }
+        }
+    }
+
+    fn dominant(&self) -> [u8; 4] {
+        if let Some(counts) = &self.mixed {
+            let mut best = None;
+            for (&color, &count) in counts {
+                if best.is_none_or(|(best_color, best_count)| {
+                    count > best_count || (count == best_count && color < best_color)
+                }) {
+                    best = Some((color, count));
+                }
+            }
+            best.map(|(color, _)| color)
+                .or_else(|| self.first.map(|(color, _)| color))
+                .unwrap_or([0, 0, 0, 0])
+        } else {
+            self.first.map(|(color, _)| color).unwrap_or([0, 0, 0, 0])
+        }
+    }
+
+    fn is_exact(&self) -> bool {
+        self.exact
+    }
+}
+
+#[derive(Debug)]
+struct ComponentReport {
+    bbox: [i32; 4],
+    area: u32,
+    sx: u64,
+    sy: u64,
+    dominant: [u8; 4],
+    dominant_exact: bool,
+    ordinal: u64,
+}
+
+/// Ranking only considers the public sort keys: larger area wins, then the
+/// earlier scan-order component. Wrapping this in Reverse makes the heap root
+/// the least useful retained report, ready for O(log 64) replacement.
+struct RankedComponent(ComponentReport);
+
+impl PartialEq for RankedComponent {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.area == other.0.area && self.0.ordinal == other.0.ordinal
+    }
+}
+
+impl Eq for RankedComponent {}
+
+impl PartialOrd for RankedComponent {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for RankedComponent {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0
+            .area
+            .cmp(&other.0.area)
+            .then_with(|| other.0.ordinal.cmp(&self.0.ordinal))
+    }
+}
+
+struct FormReport {
+    bbox: [i32; 4],
+    area: u32,
+    azimuth: Option<f64>,
+    plane_r2: f64,
+    pillow_corr: f64,
+    verdict: &'static str,
+    ordinal: u64,
+}
+
+struct RankedForm(FormReport);
+
+impl PartialEq for RankedForm {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.area == other.0.area && self.0.ordinal == other.0.ordinal
+    }
+}
+
+impl Eq for RankedForm {}
+
+impl PartialOrd for RankedForm {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for RankedForm {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0
+            .area
+            .cmp(&other.0.area)
+            .then_with(|| other.0.ordinal.cmp(&self.0.ordinal))
+    }
+}
+
+/// Bounded circular statistics. The vector sum gives the exact mean for every
+/// directional form, while fixed 0.1° bins retain their observed extrema for
+/// the final spread without retaining one f64 per form.
+struct CircularTally {
+    count: u64,
+    sum_cos: f64,
+    sum_sin: f64,
+    bin_min: Box<[f32; 3600]>,
+    bin_max: Box<[f32; 3600]>,
+}
+
+impl CircularTally {
+    fn new() -> Self {
+        Self {
+            count: 0,
+            sum_cos: 0.0,
+            sum_sin: 0.0,
+            bin_min: Box::new([f32::INFINITY; 3600]),
+            bin_max: Box::new([f32::NEG_INFINITY; 3600]),
+        }
+    }
+
+    fn add(&mut self, degrees: f64) {
+        let radians = degrees.to_radians();
+        self.sum_cos += radians.cos();
+        self.sum_sin += radians.sin();
+        self.count += 1;
+        let normalized = degrees.rem_euclid(360.0);
+        let bin = ((normalized * 10.0).floor() as usize).min(self.bin_min.len() - 1);
+        self.bin_min[bin] = self.bin_min[bin].min(normalized as f32);
+        self.bin_max[bin] = self.bin_max[bin].max(normalized as f32);
+    }
+
+    fn summary(&self) -> (Option<f64>, Option<f64>) {
+        if self.count == 0 {
+            return (None, None);
+        }
+        let mean = self.sum_sin.atan2(self.sum_cos).to_degrees();
+        let spread = self
+            .bin_min
+            .iter()
+            .zip(self.bin_max.iter())
+            .filter(|(min, _)| min.is_finite())
+            .flat_map(|(min, max)| [f64::from(*min), f64::from(*max)])
+            .map(|degrees| {
+                let diff = (degrees - mean + 180.0).rem_euclid(360.0) - 180.0;
+                diff.abs()
+            })
+            .fold(0.0f64, f64::max);
+        (Some(mean), Some(spread))
+    }
+}
 
 /// Shared >4096-px area cap for the grid-emitting readers. Builds the error from
 /// a `label` ("region" / "diff region") and tail `advice`; `doc_dump_region` and
@@ -22,6 +262,150 @@ fn area_cap_check(label: &str, w: u64, h: u64, advice: &str) -> Result<(), Strin
         ));
     }
     Ok(())
+}
+
+/// Connected-component implementation factored away from storage so its
+/// output and worst-case behavior can be tested directly.
+fn components_image(
+    img: &image::RgbaImage,
+    connectivity: u8,
+    color: Option<[u8; 4]>,
+    min_area: u32,
+) -> Value {
+    let (w, h) = (img.width() as i32, img.height() as i32);
+    // membership: exact colour match if given, else any opaque pixel.
+    let member = |x: i32, y: i32| -> bool {
+        let p = img.get_pixel(x as u32, y as u32).0;
+        match color {
+            Some(c) => p == c,
+            None => p[3] > 0,
+        }
+    };
+    let neigh: &[(i32, i32)] = if connectivity == 4 {
+        &[(-1, 0), (1, 0), (0, -1), (0, 1)]
+    } else {
+        &[
+            (-1, 0),
+            (1, 0),
+            (0, -1),
+            (0, 1),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+            (1, 1),
+        ]
+    };
+    let mut seen = vec![false; (w as usize) * (h as usize)];
+    let mut retained: BinaryHeap<Reverse<RankedComponent>> = BinaryHeap::new();
+    let mut specks = Vec::with_capacity(MAX_SPECK_SAMPLE);
+    let mut total_components = 0u64;
+    let mut matching_components = 0u64;
+    let mut specks_total = 0u64;
+    let threshold = min_area.max(1);
+
+    for sy in 0..h {
+        for sx in 0..w {
+            let si = (sy as usize) * (w as usize) + (sx as usize);
+            if seen[si] || !member(sx, sy) {
+                continue;
+            }
+            // DFS the component while retaining only its scalar summary.
+            let mut stack = vec![(sx, sy)];
+            seen[si] = true;
+            let mut bbox = [sx, sy, sx, sy];
+            let mut area = 0u32;
+            let (mut sum_x, mut sum_y) = (0u64, 0u64);
+            let mut colors = ColorTally::default();
+            while let Some((x, y)) = stack.pop() {
+                area += 1;
+                sum_x += x as u64;
+                sum_y += y as u64;
+                bbox[0] = bbox[0].min(x);
+                bbox[1] = bbox[1].min(y);
+                bbox[2] = bbox[2].max(x);
+                bbox[3] = bbox[3].max(y);
+                colors.add(img.get_pixel(x as u32, y as u32).0);
+                for (ox, oy) in neigh {
+                    let (nx, ny) = (x + ox, y + oy);
+                    if nx < 0 || ny < 0 || nx >= w || ny >= h {
+                        continue;
+                    }
+                    let ni = (ny as usize) * (w as usize) + (nx as usize);
+                    if !seen[ni] && member(nx, ny) {
+                        seen[ni] = true;
+                        stack.push((nx, ny));
+                    }
+                }
+            }
+
+            let ordinal = total_components;
+            total_components += 1;
+            if area <= 2 {
+                specks_total += 1;
+                if specks.len() < MAX_SPECK_SAMPLE {
+                    specks.push(json!([bbox[0], bbox[1]]));
+                }
+            }
+            if area < threshold {
+                continue;
+            }
+            matching_components += 1;
+            let ranked = RankedComponent(ComponentReport {
+                bbox,
+                area,
+                sx: sum_x,
+                sy: sum_y,
+                dominant: colors.dominant(),
+                dominant_exact: colors.is_exact(),
+                ordinal,
+            });
+            if retained.len() < MAX_COMPONENT_REPORTS {
+                retained.push(Reverse(ranked));
+            } else if retained
+                .peek()
+                .is_some_and(|worst| ranked.cmp(&worst.0) == Ordering::Greater)
+            {
+                retained.pop();
+                retained.push(Reverse(ranked));
+            }
+        }
+    }
+
+    let mut reports: Vec<ComponentReport> = retained
+        .into_iter()
+        .map(|Reverse(ranked)| ranked.0)
+        .collect();
+    reports.sort_by(|a, b| b.area.cmp(&a.area).then_with(|| a.ordinal.cmp(&b.ordinal)));
+    let components: Vec<Value> = reports
+        .iter()
+        .map(|component| {
+            json!({
+                "bbox": component.bbox,
+                "centroid": [
+                    (component.sx / u64::from(component.area)) as i32,
+                    (component.sy / u64::from(component.area)) as i32,
+                ],
+                "area": component.area,
+                "dominant": crate::hex_rgb(&component.dominant),
+                "dominant_exact": component.dominant_exact,
+            })
+        })
+        .collect();
+    let returned = components.len();
+    json!({
+        // `count` remains as a compatibility alias for callers that only need
+        // the returned array length. The explicit fields retain the totals
+        // even when either bounded sample is shortened.
+        "count": returned,
+        "total_components": total_components,
+        "matching_components": matching_components,
+        "returned": returned,
+        "components": components,
+        "specks": specks,
+        "specks_total": specks_total,
+        "specks_truncated": specks_total > MAX_SPECK_SAMPLE as u64,
+        "truncated": matching_components > MAX_COMPONENT_REPORTS as u64,
+    })
 }
 
 impl Studio {
@@ -168,8 +552,11 @@ impl Studio {
 
     /// Connected-component report over opaque (or exact-`color`) pixels.
     /// `connectivity` 4|8; `min_area` filters the listed components (specks =
-    /// area ≤ 2 are always reported separately). Components sorted by area desc,
-    /// list capped at 64 (sets `truncated`).
+    /// area ≤ 2 are counted separately, with up to 64 sample coordinates).
+    /// Components are sorted by area desc and capped at 64; exact discovery,
+    /// match, return, and speck totals make either truncation explicit. The
+    /// dominant colour is exact up to 256 distinct colours per component and
+    /// explicitly marked approximate beyond that.
     pub fn doc_components(
         &self,
         id: &str,
@@ -179,121 +566,17 @@ impl Studio {
         color: Option<[u8; 4]>,
         min_area: u32,
     ) -> Result<Value, String> {
+        if !matches!(connectivity, 4 | 8) {
+            return Err(format!(
+                "component connectivity must be 4 or 8, got {connectivity}"
+            ));
+        }
+        if min_area == 0 {
+            return Err("component min_area must be at least 1".into());
+        }
         let (_dir, doc) = self.open(id)?;
         let img = doc.analysis_image(layer, frame)?;
-        let (w, h) = (img.width() as i32, img.height() as i32);
-        // membership: exact colour match if given, else any opaque pixel.
-        let member = |x: i32, y: i32| -> bool {
-            let p = img.get_pixel(x as u32, y as u32).0;
-            match color {
-                Some(c) => p == c,
-                None => p[3] > 0,
-            }
-        };
-        let neigh: &[(i32, i32)] = if connectivity == 4 {
-            &[(-1, 0), (1, 0), (0, -1), (0, 1)]
-        } else {
-            &[
-                (-1, 0),
-                (1, 0),
-                (0, -1),
-                (0, 1),
-                (-1, -1),
-                (1, -1),
-                (-1, 1),
-                (1, 1),
-            ]
-        };
-        let mut seen = vec![false; (w * h) as usize];
-        struct Comp {
-            bbox: [i32; 4], // tight [x0,y0,x1,y1]
-            area: u32,      // opaque pixel count
-            sx: u64,        // Σx (for the centroid)
-            sy: u64,        // Σy (for the centroid)
-            // colour → count for the dominant readout; a small Vec beats a
-            // HashMap per component (specks allocate nothing).
-            colors: Vec<([u8; 4], u32)>,
-        }
-        let mut comps: Vec<Comp> = Vec::new();
-        for sy in 0..h {
-            for sx in 0..w {
-                let si = (sy * w + sx) as usize;
-                if seen[si] || !member(sx, sy) {
-                    continue;
-                }
-                // DFS the component (Vec-as-stack).
-                let mut stack = vec![(sx, sy)];
-                seen[si] = true;
-                let mut c = Comp {
-                    bbox: [sx, sy, sx, sy],
-                    area: 0,
-                    sx: 0,
-                    sy: 0,
-                    colors: Vec::new(),
-                };
-                while let Some((x, y)) = stack.pop() {
-                    c.area += 1;
-                    c.sx += x as u64;
-                    c.sy += y as u64;
-                    c.bbox[0] = c.bbox[0].min(x);
-                    c.bbox[1] = c.bbox[1].min(y);
-                    c.bbox[2] = c.bbox[2].max(x);
-                    c.bbox[3] = c.bbox[3].max(y);
-                    let p = img.get_pixel(x as u32, y as u32).0;
-                    match c.colors.iter_mut().find(|(col, _)| *col == p) {
-                        Some((_, n)) => *n += 1,
-                        None => c.colors.push((p, 1)),
-                    }
-                    for (ox, oy) in neigh {
-                        let (nx, ny) = (x + ox, y + oy);
-                        if nx < 0 || ny < 0 || nx >= w || ny >= h {
-                            continue;
-                        }
-                        let ni = (ny * w + nx) as usize;
-                        if !seen[ni] && member(nx, ny) {
-                            seen[ni] = true;
-                            stack.push((nx, ny));
-                        }
-                    }
-                }
-                comps.push(c);
-            }
-        }
-        let specks: Vec<Value> = comps
-            .iter()
-            .filter(|c| c.area <= 2)
-            .map(|c| json!([c.bbox[0], c.bbox[1]]))
-            .collect();
-        let mut listed: Vec<&Comp> = comps.iter().filter(|c| c.area >= min_area.max(1)).collect();
-        listed.sort_by_key(|c| std::cmp::Reverse(c.area));
-        let truncated = listed.len() > 64;
-        listed.truncate(64);
-        let components: Vec<Value> = listed
-            .iter()
-            .map(|c| {
-                let dom = c
-                    .colors
-                    .iter()
-                    .max_by_key(|(_, n)| *n)
-                    .map(|(c, _)| *c)
-                    .unwrap_or([0, 0, 0, 0]);
-                json!({
-                    "bbox": c.bbox,
-                    "centroid": [
-                        (c.sx / c.area as u64) as i32,
-                        (c.sy / c.area as u64) as i32,
-                    ],
-                    "area": c.area,
-                    "dominant": crate::hex_rgb(&dom),
-                })
-            })
-            .collect();
-        Ok(json!({
-            "count": components.len(),
-            "components": components,
-            "specks": specks,
-            "truncated": truncated,
-        }))
+        Ok(components_image(&img, connectivity, color, min_area))
     }
 
     // -- value & colour feedback (read-only analysis) -----------------------
@@ -310,43 +593,72 @@ impl Studio {
         region: Option<(i32, i32, i32, i32)>,
         dupe_threshold: i32,
     ) -> Result<Value, String> {
-        use std::collections::HashMap;
         let (_dir, doc) = self.open(id)?;
         let frames: Vec<usize> = match frame {
-            Some(f) => vec![f],
+            Some(f) if f < doc.meta().frames.len() => vec![f],
+            Some(f) => {
+                return Err(format!("no frame {f} (frames={})", doc.meta().frames.len()));
+            }
             None => (0..doc.meta().frames.len()).collect(),
         };
+        let frame_count = frames.len();
         let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
-        let mut counts: HashMap<[u8; 4], u64> = HashMap::new();
-        let mut total = 0u64;
         let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
+        let region_pixels = u64::try_from(x1 - x0 + 1)
+            .unwrap_or(0)
+            .saturating_mul(u64::try_from(y1 - y0 + 1).unwrap_or(0));
+        let frame_count_u64 = u64::try_from(frame_count)
+            .map_err(|_| "palette report frame count does not fit this platform".to_string())?;
+        let inspected_pixels = region_pixels
+            .checked_mul(frame_count_u64)
+            .ok_or_else(|| "palette report inspection size overflowed".to_string())?;
+        let rendered_pixels = u64::from(doc.meta().w)
+            .checked_mul(u64::from(doc.meta().h))
+            .and_then(|pixels| pixels.checked_mul(frame_count_u64))
+            .ok_or_else(|| "palette report render size overflowed".to_string())?;
+        if rendered_pixels > MAX_PALETTE_REPORT_PIXELS {
+            return Err(format!(
+                "palette report would render {rendered_pixels} full-canvas pixels across {frame_count} frames; limit is {MAX_PALETTE_REPORT_PIXELS}. Pass `frame` to inspect one frame"
+            ));
+        }
+        let mut counts = BoundedColorCounts::default();
+        let mut total = 0u64;
         for f in frames {
             let img = doc.analysis_image(layer, f)?;
             for y in y0..=y1 {
                 for x in x0..=x1 {
                     let p = img.get_pixel(x as u32, y as u32).0;
                     if p[3] > 0 {
-                        *counts.entry(p).or_insert(0) += 1;
+                        counts.add(p);
                         total += 1;
                     }
                 }
             }
         }
+        let count_exact = counts.is_exact();
+        let count = counts.distinct_lower_bound();
+        let untracked_pixels = counts.untracked_pixels;
         // Sort by pixel count desc (ties broken by colour for stable output).
-        let mut entries: Vec<([u8; 4], u64)> = counts.into_iter().collect();
+        let mut entries: Vec<([u8; 4], u64)> = counts.counts.into_iter().collect();
         entries.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
         let has_palette = !doc.meta().palette.is_empty();
         let in_pal = |c: [u8; 4]| -> bool { doc.meta().palette.contains(&c) };
         let hex = |c: [u8; 4]| crate::hex_rgba(&c);
-        let count = entries.len();
         // Top-48 with an "others" rollup: an unquantized source has hundreds
         // of distinct colours, and 256 JSON objects of them helps nobody.
         /// The report lists at most this many colours; the tail is summarised.
         const PALETTE_LIST_CAP: usize = 48;
-        let truncated = count > PALETTE_LIST_CAP;
+        let truncated = !count_exact || entries.len() > PALETTE_LIST_CAP;
         let listed: Vec<&([u8; 4], u64)> = entries.iter().take(PALETTE_LIST_CAP).collect();
-        let others_pixels: u64 = entries.iter().skip(PALETTE_LIST_CAP).map(|(_, n)| n).sum();
-        // Off-palette tally covers EVERY distinct colour, not just the listed top.
+        let others_pixels: u64 = entries
+            .iter()
+            .skip(PALETTE_LIST_CAP)
+            .map(|(_, n)| n)
+            .sum::<u64>()
+            .saturating_add(untracked_pixels);
+        // Off-palette tally covers every retained distinct colour. Once the
+        // bounded table fills it is explicitly a lower bound, not a false exact
+        // total.
         let off_palette_count = if has_palette {
             entries.iter().filter(|(c, _)| !in_pal(*c)).count() as u32
         } else {
@@ -389,15 +701,34 @@ impl Studio {
         }
         let mut out = json!({
             "count": count,
+            "count_exact": count_exact,
+            "distinct_colors_at_least": count,
+            "returned": colors.len(),
             "colors": colors,
             "off_palette_count": if has_palette { json!(off_palette_count) } else { Value::Null },
+            "off_palette_count_exact": if has_palette { json!(count_exact) } else { Value::Null },
             "near_dupes": near_dupes,
+            "frames_scanned": frame_count,
+            "opaque_pixels": total,
+            "inspected_pixels": inspected_pixels,
+            "rendered_pixels": rendered_pixels,
+            "ranking_exact": count_exact,
+            "analysis_color_limit": MAX_TRACKED_DISTINCT_COLORS,
             "truncated": truncated,
         });
         if truncated {
+            let other_colors_at_least = entries
+                .len()
+                .saturating_sub(PALETTE_LIST_CAP)
+                .saturating_add(usize::from(!count_exact));
             out["others"] = json!({
-                "colors": count - PALETTE_LIST_CAP,
+                // Compatibility alias: exact below the analysis cap, otherwise
+                // an explicitly labelled lower bound.
+                "colors": other_colors_at_least,
+                "colors_at_least": other_colors_at_least,
+                "colors_exact": count_exact,
                 "pixels": others_pixels,
+                "untracked_pixels": untracked_pixels,
                 "note": "rolled up — quantize/snap_palette first for a readable report",
             });
         }
@@ -426,7 +757,7 @@ impl Studio {
         scale: u32,
     ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
-        let (dir, doc) = self.open(id)?;
+        let (_dir, doc) = self.open(id)?;
         let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
         let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
         let (added, removed, recolored, bbox, ia, ib) =
@@ -471,13 +802,6 @@ impl Studio {
         }
         let mut png = None;
         if render == DiffRender::Overlay {
-            let out = match out_path {
-                Some(p) => PathBuf::from(p),
-                None => dir.join(format!("diff_{}_{}.png", frame_a, frame_b)),
-            };
-            if let Some(p) = out.parent() {
-                fs::create_dir_all(p).map_err(|e| format!("cannot create {}: {e}", p.display()))?;
-            }
             // frame_b dimmed to 40%, then changed pixels in the region flagged.
             let mut img = RgbaImage::from_pixel(cw as u32, ch as u32, Rgba([0, 0, 0, 0]));
             for (x, y, p) in ib.enumerate_pixels() {
@@ -505,8 +829,15 @@ impl Studio {
             // scale_nn clamps the caller's scale (1..=16) — this resize used to
             // take it raw: `cw * sc` could overflow u32 / allocate absurdly.
             let img = crate::scale_nn(&img, scale)?;
-            img.save(&out).map_err(|e| e.to_string())?;
-            res["path"] = json!(out.to_string_lossy());
+            if let Some(out_path) = out_path {
+                let out = PathBuf::from(out_path);
+                if let Some(p) = out.parent() {
+                    fs::create_dir_all(p)
+                        .map_err(|e| format!("cannot create {}: {e}", p.display()))?;
+                }
+                img.save(&out).map_err(|e| e.to_string())?;
+                res["path"] = json!(out.to_string_lossy());
+            }
             png = Some(crate::encode_png(&img)?);
         }
         Ok((png, res))
@@ -820,7 +1151,7 @@ impl Studio {
                     .iter()
                     .map(|&f| doc.meta().frames[f].duration_ms)
                     .collect();
-                let total: u32 = durs.iter().sum();
+                let total: u64 = durs.iter().map(|duration| u64::from(*duration)).sum();
                 let uniform = durs.windows(2).all(|w| w[0] == w[1]);
                 let mut out = json!({
                     "per_frame_ms": durs,
@@ -841,6 +1172,7 @@ impl Studio {
 
 /// Mean angle and max angular spread (degrees) of a set of directions, handling
 /// the 0/360 wrap via unit-vector summation. Empty → `(None, None)`.
+#[cfg(test)]
 fn circular_summary(deg: &[f64]) -> (Option<f64>, Option<f64>) {
     if deg.is_empty() {
         return (None, None);
@@ -886,23 +1218,54 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
         (1, 1),
     ];
     let mut seen = vec![false; w * h];
-    let mut forms: Vec<Value> = Vec::new();
-    let mut azimuths: Vec<f64> = Vec::new();
-    let mut pillow_count = 0u32;
+    let mut retained: BinaryHeap<Reverse<RankedForm>> = BinaryHeap::new();
+    let mut azimuths = CircularTally::new();
+    let mut total_forms = 0u64;
+    let mut pillow_count = 0u64;
     for sy in 0..h {
         for sx in 0..w {
             let si = idx(sx, sy);
             if seen[si] || !fg[si] {
                 continue;
             }
-            // DFS the component (Vec-as-stack), gathering (x, y, lightness, interior-distance).
+            // DFS the component (Vec-as-stack). Accumulate the sufficient
+            // statistics for both regressions as pixels stream past; the old
+            // implementation retained four f64s for every component pixel.
             let mut stack = vec![(sx, sy)];
             seen[si] = true;
-            let mut px: Vec<(f64, f64, f64, f64)> = Vec::new();
             let mut bbox = [sx as i32, sy as i32, sx as i32, sy as i32];
+            let mut area = 0u32;
+            let (
+                mut sum_x,
+                mut sum_y,
+                mut sum_l,
+                mut sum_d,
+                mut sum_xx,
+                mut sum_yy,
+                mut sum_xy,
+                mut sum_xl,
+                mut sum_yl,
+                mut sum_ll,
+                mut sum_ld,
+                mut sum_dd,
+            ) = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
             while let Some((x, y)) = stack.pop() {
+                let (xf, yf) = (x as f64, y as f64);
                 let l = raster::srgb_to_oklab(img.get_pixel(x as u32, y as u32).0).0 as f64;
-                px.push((x as f64, y as f64, l, idist[idx(x, y)] as f64));
+                let d = idist[idx(x, y)] as f64;
+                area += 1;
+                sum_x += xf;
+                sum_y += yf;
+                sum_l += l;
+                sum_d += d;
+                sum_xx += xf * xf;
+                sum_yy += yf * yf;
+                sum_xy += xf * yf;
+                sum_xl += xf * l;
+                sum_yl += yf * l;
+                sum_ll += l * l;
+                sum_ld += l * d;
+                sum_dd += d * d;
                 bbox[0] = bbox[0].min(x as i32);
                 bbox[1] = bbox[1].min(y as i32);
                 bbox[2] = bbox[2].max(x as i32);
@@ -919,58 +1282,39 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
                     }
                 }
             }
-            let area = px.len() as u32;
             // Hard floor under the caller's min_area: the least-squares plane
             // fit below needs more points than unknowns to mean anything.
             const MIN_FIT_AREA: u32 = 4;
             if area < min_area.max(MIN_FIT_AREA) {
                 continue;
             }
-            let n = px.len() as f64;
-            let (mx, my, ml) = (
-                px.iter().map(|p| p.0).sum::<f64>() / n,
-                px.iter().map(|p| p.1).sum::<f64>() / n,
-                px.iter().map(|p| p.2).sum::<f64>() / n,
-            );
+            let n = f64::from(area);
             // Least-squares plane L ≈ a·x + b·y + c on centred coords: (a, b) is
-            // the lightness gradient, pointing toward the light.
-            let (mut sxx, mut syy, mut sxy, mut sxl, mut syl) = (0.0, 0.0, 0.0, 0.0, 0.0);
-            for &(x, y, l, _) in &px {
-                let (dx, dy, dl) = (x - mx, y - my, l - ml);
-                sxx += dx * dx;
-                syy += dy * dy;
-                sxy += dx * dy;
-                sxl += dx * dl;
-                syl += dy * dl;
-            }
+            // the lightness gradient, pointing toward the light. Convert the
+            // raw streaming moments to centred sums here.
+            let sxx = (sum_xx - sum_x * sum_x / n).max(0.0);
+            let syy = (sum_yy - sum_y * sum_y / n).max(0.0);
+            let sxy = sum_xy - sum_x * sum_y / n;
+            let sxl = sum_xl - sum_x * sum_l / n;
+            let syl = sum_yl - sum_y * sum_l / n;
+            let sll = (sum_ll - sum_l * sum_l / n).max(0.0);
             let det = sxx * syy - sxy * sxy;
             let (a, b) = if det.abs() > 1e-6 {
                 ((sxl * syy - syl * sxy) / det, (syl * sxx - sxl * sxy) / det)
             } else {
                 (0.0, 0.0)
             };
-            let sll: f64 = px.iter().map(|&(_, _, l, _)| (l - ml).powi(2)).sum();
-            let ss_res: f64 = px
-                .iter()
-                .map(|&(x, y, l, _)| (l - (a * (x - mx) + b * (y - my) + ml)).powi(2))
-                .sum();
             let plane_r2 = if sll > 1e-9 {
-                (1.0 - ss_res / sll).max(0.0)
+                ((a * sxl + b * syl) / sll).clamp(0.0, 1.0)
             } else {
                 0.0
             };
             // Pillow tell: lightness correlated with distance-to-edge (bright
             // centre, dark all round) rather than a direction.
-            let md = px.iter().map(|p| p.3).sum::<f64>() / n;
-            let (mut cov, mut vl, mut vd) = (0.0, 0.0, 0.0);
-            for &(_, _, l, d) in &px {
-                let (dl, dd) = (l - ml, d - md);
-                cov += dl * dd;
-                vl += dl * dl;
-                vd += dd * dd;
-            }
-            let pillow_corr = if vl > 1e-9 && vd > 1e-9 {
-                cov / (vl.sqrt() * vd.sqrt())
+            let cov = sum_ld - sum_l * sum_d / n;
+            let vd = (sum_dd - sum_d * sum_d / n).max(0.0);
+            let pillow_corr = if sll > 1e-9 && vd > 1e-9 {
+                (cov / (sll.sqrt() * vd.sqrt())).clamp(-1.0, 1.0)
             } else {
                 0.0
             };
@@ -978,9 +1322,9 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
             // Image y is down; negate it so azimuth reads maths-standard
             // (0° = right, 90° = up).
             let azimuth = if mag > 1e-6 {
-                (-b).atan2(a).to_degrees()
+                Some((-b).atan2(a).to_degrees())
             } else {
-                f64::NAN
+                None
             };
             // Verdict thresholds. The R² gap (0.35..0.4) is hysteresis: a form
             // in between is neither confidently directional nor eligible for
@@ -996,8 +1340,8 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
             if is_pillow {
                 pillow_count += 1;
             }
-            if directional && !azimuth.is_nan() {
-                azimuths.push(azimuth);
+            if directional && let Some(azimuth) = azimuth {
+                azimuths.add(azimuth);
             }
             let verdict = if is_pillow {
                 "pillow"
@@ -1006,32 +1350,67 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
             } else {
                 "flat"
             };
-            forms.push(json!({
-                "bbox": bbox,
-                "area": area,
-                "light_azimuth_deg": if azimuth.is_nan() { Value::Null } else { json!(azimuth.round()) },
-                "plane_fit_r2": (plane_r2 * 100.0).round() / 100.0,
-                "pillow_corr": (pillow_corr * 100.0).round() / 100.0,
-                "verdict": verdict,
-            }));
+            let ordinal = total_forms;
+            total_forms += 1;
+            let ranked = RankedForm(FormReport {
+                bbox,
+                area,
+                azimuth,
+                plane_r2,
+                pillow_corr,
+                verdict,
+                ordinal,
+            });
+            if retained.len() < MAX_FORM_REPORTS {
+                retained.push(Reverse(ranked));
+            } else if retained
+                .peek()
+                .is_some_and(|worst| ranked.cmp(&worst.0) == Ordering::Greater)
+            {
+                retained.pop();
+                retained.push(Reverse(ranked));
+            }
         }
     }
-    let (dominant, spread) = circular_summary(&azimuths);
-    /// Azimuth spread beyond this many degrees = the forms disagree on the light.
+    let mut reports: Vec<FormReport> = retained
+        .into_iter()
+        .map(|Reverse(ranked)| ranked.0)
+        .collect();
+    reports.sort_by(|a, b| b.area.cmp(&a.area).then_with(|| a.ordinal.cmp(&b.ordinal)));
+    let forms: Vec<Value> = reports
+        .into_iter()
+        .map(|form| {
+            json!({
+                "bbox": form.bbox,
+                "area": form.area,
+                "light_azimuth_deg": form.azimuth.map(|value| json!(value.round())).unwrap_or(Value::Null),
+                "plane_fit_r2": (form.plane_r2 * 100.0).round() / 100.0,
+                "pillow_corr": (form.pillow_corr * 100.0).round() / 100.0,
+                "verdict": form.verdict,
+            })
+        })
+        .collect();
+    let returned = forms.len();
+    let (dominant, spread) = azimuths.summary();
+    // Azimuth spread beyond this many degrees = the forms disagree on the light.
     const LIGHT_SPREAD_DEG: f64 = 45.0;
-    let inconsistent = azimuths.len() >= 2 && spread.map(|s| s > LIGHT_SPREAD_DEG).unwrap_or(false);
+    let inconsistent = azimuths.count >= 2 && spread.map(|s| s > LIGHT_SPREAD_DEG).unwrap_or(false);
     let summary_verdict = if pillow_count > 0 {
         "pillow-shading detected"
     } else if inconsistent {
         "inconsistent light direction"
-    } else if forms.is_empty() {
+    } else if total_forms == 0 {
         "no forms"
     } else {
         "ok"
     };
     json!({
         "forms": forms,
+        "total_forms": total_forms,
+        "returned": returned,
+        "truncated": total_forms > MAX_FORM_REPORTS as u64,
         "pillow_forms": pillow_count,
+        "directional_forms": azimuths.count,
         "dominant_light_azimuth_deg": dominant.map(|d| json!(d.round())).unwrap_or(Value::Null),
         "light_spread_deg": spread.map(|s| json!((s * 10.0).round() / 10.0)).unwrap_or(Value::Null),
         "verdict": summary_verdict,
@@ -1041,8 +1420,8 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
 #[cfg(test)]
 mod tests {
     use super::{
-        AnimAuditMode, DiffRender, DumpMode, Studio, TagDirection, circular_summary,
-        form_audit_image,
+        AnimAuditMode, BoundedColorCounts, DiffRender, DumpMode, MAX_TRACKED_DISTINCT_COLORS,
+        Studio, TagDirection, circular_summary, components_image, form_audit_image,
     };
     use serde_json::{Value, json};
 
@@ -1056,6 +1435,26 @@ mod tests {
     fn draw(s: &Studio, id: &str, frame: usize, op: &str, params: Value) -> Value {
         s.doc_draw(id, 0, frame, op, params.as_object().unwrap().clone())
             .unwrap()
+    }
+
+    #[test]
+    fn distinct_colour_counts_become_an_explicit_lower_bound_at_the_cap() {
+        let mut counts = BoundedColorCounts::default();
+        for value in 0..=MAX_TRACKED_DISTINCT_COLORS {
+            let value = value as u32;
+            counts.add([(value >> 16) as u8, (value >> 8) as u8, value as u8, 255]);
+        }
+        assert!(!counts.is_exact());
+        assert_eq!(counts.counts.len(), MAX_TRACKED_DISTINCT_COLORS);
+        assert_eq!(
+            counts.distinct_lower_bound(),
+            MAX_TRACKED_DISTINCT_COLORS + 1
+        );
+        assert_eq!(counts.untracked_pixels, 1);
+
+        counts.add([0, 0, 0, 255]);
+        assert_eq!(counts.counts[&[0, 0, 0, 255]], 2);
+        assert_eq!(counts.untracked_pixels, 1);
     }
 
     #[test]
@@ -1184,14 +1583,76 @@ mod tests {
         );
         let r = s.doc_components(id, 0, None, 8, None, 1).unwrap();
         assert_eq!(r["count"], 2);
+        assert_eq!(r["total_components"], 2);
+        assert_eq!(r["returned"], 2);
+        assert_eq!(r["specks_total"], 1);
+        assert_eq!(r["truncated"], false);
         assert_eq!(r["components"][0]["area"], 9); // biggest first
         assert_eq!(r["components"][0]["dominant"], "#ff0000");
+        assert_eq!(r["components"][0]["dominant_exact"], true);
         assert_eq!(r["specks"].as_array().unwrap().len(), 1); // the 1px dot
         // colour filter isolates one blob
         let red = s
             .doc_components(id, 0, None, 8, Some([255, 0, 0, 255]), 1)
             .unwrap();
         assert_eq!(red["count"], 1);
+        assert!(s.doc_components(id, 0, None, 5, None, 1).is_err());
+        assert!(s.doc_components(id, 0, None, 8, None, 0).is_err());
+    }
+
+    #[test]
+    fn components_bound_many_specks_and_preserve_totals() {
+        let mut img = image::RgbaImage::new(128, 128);
+        for y in (0..128).step_by(2) {
+            for x in (0..128).step_by(2) {
+                img.put_pixel(x, y, image::Rgba([1, 2, 3, 255]));
+            }
+        }
+        let report = components_image(&img, 4, None, 1);
+        assert_eq!(report["total_components"], 4096);
+        assert_eq!(report["matching_components"], 4096);
+        assert_eq!(report["returned"], 64);
+        assert_eq!(report["components"].as_array().unwrap().len(), 64);
+        assert_eq!(report["specks_total"], 4096);
+        assert_eq!(report["specks"].as_array().unwrap().len(), 64);
+        assert_eq!(report["specks_truncated"], true);
+        assert_eq!(report["truncated"], true);
+    }
+
+    #[test]
+    fn components_tally_high_colour_component_in_linear_space() {
+        let mut img = image::RgbaImage::new(128, 128);
+        for y in 0..128 {
+            for x in 0..128 {
+                img.put_pixel(x, y, image::Rgba([x as u8, y as u8, (x ^ y) as u8, 255]));
+            }
+        }
+        let report = components_image(&img, 8, None, 1);
+        assert_eq!(report["total_components"], 1);
+        assert_eq!(report["returned"], 1);
+        assert_eq!(report["components"][0]["area"], 128 * 128);
+        assert!(report["components"][0]["dominant"].is_string());
+        assert_eq!(report["components"][0]["dominant_exact"], false);
+    }
+
+    #[test]
+    fn form_audit_bounds_many_forms_and_preserves_totals() {
+        let mut img = image::RgbaImage::new(96, 96);
+        for y in (0..96).step_by(3) {
+            for x in (0..96).step_by(3) {
+                for dy in 0..2 {
+                    for dx in 0..2 {
+                        img.put_pixel(x + dx, y + dy, image::Rgba([80, 80, 80, 255]));
+                    }
+                }
+            }
+        }
+        let report = form_audit_image(&img, 4);
+        assert_eq!(report["total_forms"], 1024);
+        assert_eq!(report["returned"], 64);
+        assert_eq!(report["forms"].as_array().unwrap().len(), 64);
+        assert_eq!(report["truncated"], true);
+        assert_eq!(report["directional_forms"], 0);
     }
 
     #[test]
@@ -1260,6 +1721,9 @@ mod tests {
         );
         let r = s.doc_palette_report(id, Some(0), None, None, 8).unwrap();
         assert_eq!(r["count"], 2);
+        assert_eq!(r["count_exact"], true);
+        assert_eq!(r["frames_scanned"], 1);
+        assert_eq!(r["inspected_pixels"], 16);
         assert_eq!(r["colors"][0]["hex"], "#ff0000ff"); // most-used first
         assert_eq!(r["colors"][0]["in_palette"], json!(true));
         assert_eq!(r["off_palette_count"], json!(1)); // the near-red stray
@@ -1280,6 +1744,34 @@ mod tests {
             .unwrap();
         assert_eq!(r2["colors"][0]["in_palette"], Value::Null);
         assert_eq!(r2["off_palette_count"], Value::Null);
+    }
+
+    #[test]
+    fn palette_report_requires_a_frame_when_aggregate_render_work_is_too_large() {
+        let s = studio("palette-work-cap");
+        let created = s.doc_new("timeline", 1024, 1024).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_add_frame(id, 100, None, 64).unwrap();
+
+        let error = s
+            .doc_palette_report(id, None, None, Some((0, 0, 0, 0)), 8)
+            .unwrap_err();
+        assert!(error.contains("would render"), "{error}");
+        assert!(
+            error.contains("Pass `frame` to inspect one frame"),
+            "{error}"
+        );
+
+        let one = s.doc_palette_report(id, Some(0), None, None, 8).unwrap();
+        assert_eq!(one["frames_scanned"], 1);
+        assert_eq!(one["inspected_pixels"], 1024 * 1024);
+        assert_eq!(one["rendered_pixels"], 1024 * 1024);
+
+        let cropped = s
+            .doc_palette_report(id, Some(0), None, Some((0, 0, 0, 0)), 8)
+            .unwrap();
+        assert_eq!(cropped["inspected_pixels"], 1);
+        assert_eq!(cropped["rendered_pixels"], 1024 * 1024);
     }
 
     #[test]
@@ -1315,7 +1807,18 @@ mod tests {
         assert_eq!(r["change_bbox"], json!([0, 0, 1, 1]));
         assert_eq!(r["grid"][0], "-..."); // (0,0) removed
         assert_eq!(r["grid"][1], ".+.."); // (1,1) added
-        // overlay render writes a PNG and returns the bytes for inlining
+        // An inline overlay is read-only unless the caller explicitly asks
+        // for a file. It must not leave an unadvertised artifact in the
+        // document directory.
+        let implicit = s.docs_dir.join(id).join("diff_0_1.png");
+        let (inline_png, inline) = s
+            .doc_frame_diff(id, 0, 1, None, None, false, DiffRender::Overlay, None, 1)
+            .unwrap();
+        assert!(inline_png.is_some());
+        assert!(inline.get("path").is_none());
+        assert!(!implicit.exists());
+
+        // An explicit output path writes the same overlay and reports it.
         let out = s.docs_dir.join("diff.png");
         let (ov_png, ov) = s
             .doc_frame_diff(
@@ -1423,5 +1926,28 @@ mod tests {
             .unwrap();
         assert_eq!(pp["seam_score"], json!(0.0));
         assert!(pp["note"].is_string());
+    }
+
+    #[test]
+    fn timing_audit_totals_large_frame_durations_without_overflow() {
+        let s = studio("timing-total");
+        let created = s.doc_new("d", 2, 2).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_frame(
+            id,
+            crate::FrameOp::Duration,
+            Some(0),
+            None,
+            None,
+            Some(u32::MAX),
+            None,
+        )
+        .unwrap();
+        s.doc_add_frame(id, u32::MAX, None, 1).unwrap();
+
+        let audit = s
+            .doc_anim_audit(id, None, None, AnimAuditMode::Timing, None)
+            .unwrap();
+        assert_eq!(audit["total_ms"], json!(u64::from(u32::MAX) * 2));
     }
 }

@@ -1,9 +1,4 @@
-//! World-class-art tooling — the craft layer on top of the primitives.
-//!
-//! These methods exist to close the gaps the art-quality review found:
-//! let the near-blind agent actually SEE (`look`), work without fear
-//! (`checkpoint`), edit structure (`layer_ops`), and reach perceptual colour &
-//! master finish (`palette`, `snap_palette`, `critique`).
+//! Composite checkpoint, structural editing, palette, and critique operations.
 //! Image-returning methods hand back raw PNG bytes; the server wraps them as
 //! inline MCP image content so the pixels arrive in the same turn.
 
@@ -58,6 +53,10 @@ pub(super) fn crop_region(
 /// midtone, else light — the thirds look stats and critique both bin against.
 pub(super) const SHADOW_MAX: u8 = 85;
 pub(super) const MID_MAX: u8 = 170;
+
+/// More colours per ramp are not useful for indexed pixel-art workflows and
+/// turn a tiny request into disproportionate allocation and CPU work.
+const MAX_PALETTE_RAMP_COLORS: usize = 256;
 
 /// Snapshot every file that defines live document state. Checkpoint metadata
 /// itself is intentionally excluded.
@@ -291,12 +290,10 @@ impl Studio {
         Ok(json!({"ok": true, "doc_id": id, "pixels_changed": changed, "palette_len": pal.len()}))
     }
 
-    // -- doc_critique: the art-director scorecard --------------------------
+    // -- doc_critique -------------------------------------------------------
 
-    /// Aggregated craft scorecard — the named pixel-art failure modes the agent
-    /// cannot see: orphan specks, un-AA'd jaggies, low contrast, pillow-shading,
-    /// off-palette drift, and value-soup massing. Conservative verdicts so a
-    /// blind agent doesn't wreck deliberate choices chasing false defects.
+    /// Aggregate conservative checks for specks, jagged contours, contrast,
+    /// pillow shading, palette drift, and weak value grouping.
     pub fn critique(
         &self,
         id: &str,
@@ -352,6 +349,12 @@ impl Studio {
         anchor_midtone: bool,
         set_doc: Option<&str>,
     ) -> Result<Value, String> {
+        let minimum = if scheme == PaletteScheme::Mono { 1 } else { 2 };
+        if !(minimum..=MAX_PALETTE_RAMP_COLORS).contains(&count) {
+            return Err(format!(
+                "palette count for {scheme:?} must be {minimum}..={MAX_PALETTE_RAMP_COLORS}, got {count}"
+            ));
+        }
         let offsets: Vec<f32> = match scheme {
             PaletteScheme::Mono => vec![0.0],
             PaletteScheme::Complementary => vec![0.0, 180.0],
@@ -363,12 +366,7 @@ impl Studio {
         let (lb, cb, hb) = raster::oklab_to_oklch(raster::srgb_to_oklab(base));
         let lo = value_lo.unwrap_or((lb - 0.32).max(0.04));
         let hi = value_hi.unwrap_or((lb + 0.32).min(0.97));
-        // mono honours the exact count; a multi-hue scheme needs >=2 per ramp.
-        let per = if scheme == PaletteScheme::Mono {
-            count.max(1)
-        } else {
-            count.max(2)
-        };
+        let per = count;
         let mut ramps: Vec<Vec<[u8; 4]>> = Vec::new();
         for off in &offsets {
             let rgb = raster::oklab_to_srgb(raster::oklch_to_oklab((lb, cb, hb + off)));
@@ -596,6 +594,31 @@ mod tests {
     fn draw(s: &Studio, id: &str, frame: usize, op: &str, params: Value) -> Value {
         s.doc_draw(id, 0, frame, op, params.as_object().unwrap().clone())
             .unwrap()
+    }
+
+    #[test]
+    fn palette_generation_rejects_unbounded_or_ambiguous_counts() {
+        let s = studio("palette-count");
+        let generate = |scheme, count| {
+            s.palette(
+                [128, 96, 64, 255],
+                scheme,
+                count,
+                None,
+                None,
+                20.0,
+                SaturationCurve::default(),
+                false,
+                None,
+            )
+        };
+        assert!(generate(PaletteScheme::Mono, 0).is_err());
+        assert!(generate(PaletteScheme::Triadic, 1).is_err());
+        assert!(generate(PaletteScheme::Mono, MAX_PALETTE_RAMP_COLORS + 1).is_err());
+        assert_eq!(
+            generate(PaletteScheme::Mono, MAX_PALETTE_RAMP_COLORS).unwrap()["count"],
+            json!(MAX_PALETTE_RAMP_COLORS)
+        );
     }
 
     #[test]
