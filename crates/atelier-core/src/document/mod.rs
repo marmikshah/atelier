@@ -37,6 +37,15 @@ pub use operation::{color_array, draw_ops, fx_ops, validate_op};
 pub use render::{ValueView, seam_axis_img};
 pub use timeline::FrameAction;
 
+/// Current persisted `doc.json` format.
+pub const DOCUMENT_FORMAT_VERSION: u32 = 1;
+/// Maximum width or height accepted by both constructors and persisted files.
+pub const MAX_DOCUMENT_DIMENSION: u32 = 4096;
+
+const fn document_format_v1() -> u32 {
+    DOCUMENT_FORMAT_VERSION
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct LayerMeta {
@@ -102,6 +111,10 @@ pub struct CelMeta {
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct DocMeta {
+    /// Explicit on-disk contract version. Legacy pre-version files deserialize
+    /// as v1; newer unknown versions fail instead of being reinterpreted.
+    #[serde(default = "document_format_v1")]
+    pub format_version: u32,
     pub name: String,
     pub w: u32,
     pub h: u32,
@@ -145,10 +158,20 @@ fn cel_file(layer: usize, frame: usize) -> String {
 /// Validate the one current on-disk document shape. Loading does not repair,
 /// default, or reinterpret persisted metadata.
 fn validate_meta(meta: &DocMeta) -> Result<(), String> {
-    if meta.w == 0 || meta.h == 0 {
+    if meta.format_version != DOCUMENT_FORMAT_VERSION {
         return Err(format!(
-            "document dimensions must be non-zero, got {}x{}",
-            meta.w, meta.h
+            "unsupported document format {} (this build supports {})",
+            meta.format_version, DOCUMENT_FORMAT_VERSION
+        ));
+    }
+    if meta.w == 0
+        || meta.h == 0
+        || meta.w > MAX_DOCUMENT_DIMENSION
+        || meta.h > MAX_DOCUMENT_DIMENSION
+    {
+        return Err(format!(
+            "document dimensions must be 1..={MAX_DOCUMENT_DIMENSION}, got {}x{}",
+            meta.w, meta.h,
         ));
     }
     if meta.layers.is_empty() {
@@ -268,6 +291,7 @@ impl Document {
 
     pub fn new(name: &str, w: u32, h: u32) -> Document {
         let meta = DocMeta {
+            format_version: DOCUMENT_FORMAT_VERSION,
             name: name.to_string(),
             w,
             h,
@@ -303,9 +327,27 @@ impl Document {
         }
         let mut cels = HashMap::new();
         for c in &meta.cels {
-            let img = image::open(dir.join(&c.file))
+            let path = dir.join(&c.file);
+            let dimensions = image::ImageReader::open(&path)
                 .map_err(|e| e.to_string())?
-                .to_rgba8();
+                .with_guessed_format()
+                .map_err(|e| e.to_string())?
+                .into_dimensions()
+                .map_err(|e| e.to_string())?;
+            raster::checked_rgba_dimensions(
+                "stored cel",
+                dimensions.0 as u64,
+                dimensions.1 as u64,
+            )?;
+            let mut reader = image::ImageReader::open(&path)
+                .map_err(|e| e.to_string())?
+                .with_guessed_format()
+                .map_err(|e| e.to_string())?;
+            let mut limits = image::Limits::default();
+            limits.max_image_width = Some(dimensions.0);
+            limits.max_image_height = Some(dimensions.1);
+            reader.limits(limits);
+            let img = reader.decode().map_err(|e| e.to_string())?.to_rgba8();
             cels.insert((c.layer, c.frame), (c.x, c.y, img));
         }
         // Freshly loaded cels match their files — nothing is dirty yet.
@@ -330,7 +372,16 @@ impl Document {
             // a one-pixel edit used to re-encode and rewrite every cel in the
             // document, which made large animated docs crawl.
             if self.dirty.contains(&(*layer, *frame)) || !dir.join(&file).is_file() {
-                img.save(dir.join(&file)).map_err(|e| e.to_string())?;
+                let path = dir.join(&file);
+                let tmp = path.with_extension("png.tmp");
+                let write = img
+                    .save_with_format(&tmp, image::ImageFormat::Png)
+                    .map_err(|e| e.to_string())
+                    .and_then(|()| std::fs::rename(&tmp, &path).map_err(|e| e.to_string()));
+                if let Err(error) = write {
+                    let _ = std::fs::remove_file(&tmp);
+                    return Err(error);
+                }
             }
             cel_metas.push(CelMeta {
                 layer: *layer,
@@ -358,12 +409,12 @@ impl Document {
         // the doc.json rename: a crash can then only leave a harmless orphan,
         // never a structure that references a deleted file.
         let keep: HashSet<String> = self.meta.cels.iter().map(|c| c.file.clone()).collect();
-        if let Ok(rd) = std::fs::read_dir(dir.join("cels")) {
-            for ent in rd.flatten() {
-                let name = ent.file_name().to_string_lossy().into_owned();
-                if is_cel_filename(&name) && !keep.contains(&format!("cels/{name}")) {
-                    let _ = std::fs::remove_file(ent.path());
-                }
+        let rd = std::fs::read_dir(dir.join("cels")).map_err(|e| e.to_string())?;
+        for entry in rd {
+            let ent = entry.map_err(|e| e.to_string())?;
+            let name = ent.file_name().to_string_lossy().into_owned();
+            if is_cel_filename(&name) && !keep.contains(&format!("cels/{name}")) {
+                std::fs::remove_file(ent.path()).map_err(|e| e.to_string())?;
             }
         }
         self.dirty.clear();
@@ -670,6 +721,7 @@ impl Document {
             .map(|(l, f)| json!({"layer": l, "frame": f}))
             .collect();
         json!({
+            "format_version": self.meta.format_version,
             "name": self.meta.name, "w": self.meta.w, "h": self.meta.h,
             "layers": self.meta.layers.iter().enumerate().map(|(i, l)| json!({
                 "index": i, "name": l.name, "opacity": l.opacity, "visible": l.visible, "blend": l.blend

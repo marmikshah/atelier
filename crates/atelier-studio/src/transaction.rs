@@ -1,0 +1,322 @@
+//! Same-filesystem store transactions for shipped CLI and MCP mutations.
+//!
+//! A call runs against a staged document tree. Regular files are hard-linked
+//! where safe; writers replace changed files by rename, while the append-only
+//! journal is copied. The completed staged tree is then atomically exchanged
+//! with the live tree using Linux `renameat2(RENAME_EXCHANGE)`.
+
+use std::ffi::CString;
+use std::fs;
+use std::os::unix::ffi::OsStrExt;
+use std::path::{Path, PathBuf};
+
+use uuid::Uuid;
+
+use super::{JOURNAL_FILE, Studio};
+
+const TRANSACTIONS_DIR: &str = ".transactions";
+
+/// A private store on which one mutating call executes before publication.
+pub struct StoreTransaction {
+    live_docs_dir: PathBuf,
+    stage_root: PathBuf,
+    studio: Studio,
+    committed: bool,
+}
+
+impl StoreTransaction {
+    /// The isolated Studio passed to the normal shared handler path.
+    pub fn studio(&self) -> &Studio {
+        &self.studio
+    }
+
+    /// Atomically publish `id` after a successful handler and journal write.
+    ///
+    /// Existing→existing exchanges a complete document state. Missing→present
+    /// creates a document. Present→missing commits deletion. Every other shape
+    /// is an invalid transaction result.
+    pub fn commit(mut self, id: &str) -> Result<(), String> {
+        if !Studio::valid_id(id) {
+            return Err(format!("invalid transaction document id '{id}'"));
+        }
+        let live = self.live_docs_dir.join(id);
+        let staged = self.stage_root.join(id);
+        let live_exists = live.is_dir();
+        let staged_exists = staged.is_dir();
+
+        if staged_exists {
+            sync_tree(&staged)?;
+        }
+
+        match (live_exists, staged_exists) {
+            (true, true) => rename_exchange(&live, &staged)?,
+            (false, true) => fs::rename(&staged, &live)
+                .map_err(|e| format!("cannot publish new document '{id}': {e}"))?,
+            (true, false) => fs::rename(&live, &staged)
+                .map_err(|e| format!("cannot publish deletion of '{id}': {e}"))?,
+            (false, false) => {
+                return Err(format!(
+                    "transaction for '{id}' produced neither a document nor a deletion"
+                ));
+            }
+        }
+        self.committed = true;
+        sync_dir(&self.live_docs_dir)
+            .map_err(|e| format!("document '{id}' committed but store sync failed: {e}"))?;
+        // After an exchange this removes the old generation; after deletion it
+        // removes the tombstone. Cleanup is not part of the commit point.
+        let _ = fs::remove_dir_all(&self.stage_root);
+        Ok(())
+    }
+}
+
+impl Drop for StoreTransaction {
+    fn drop(&mut self) {
+        if !self.committed || self.stage_root.exists() {
+            let _ = fs::remove_dir_all(&self.stage_root);
+        }
+    }
+}
+
+impl Studio {
+    /// Remove transaction debris left by a killed process. The caller must hold
+    /// the live store's exclusive lock, so no other writer can be staging.
+    pub fn cleanup_stale_transactions(&self) -> Result<(), String> {
+        let root = self.docs_dir.join(TRANSACTIONS_DIR);
+        match fs::remove_dir_all(&root) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(format!(
+                "cannot clean stale transactions at {}: {error}",
+                root.display()
+            )),
+        }
+    }
+
+    /// Start an isolated store transaction. `id=None` creates an empty staging
+    /// store for `doc_new`; `Some(id)` snapshots that one existing document.
+    pub fn begin_transaction(&self, id: Option<&str>) -> Result<StoreTransaction, String> {
+        if let Some(id) = id
+            && !Self::valid_id(id)
+        {
+            return Err(format!("invalid document id '{id}'"));
+        }
+        let transactions = self.docs_dir.join(TRANSACTIONS_DIR);
+        fs::create_dir_all(&transactions).map_err(|e| {
+            format!(
+                "cannot create transaction directory {}: {e}",
+                transactions.display()
+            )
+        })?;
+        let stage_root = transactions.join(Uuid::new_v4().to_string());
+        fs::create_dir(&stage_root)
+            .map_err(|e| format!("cannot create transaction {}: {e}", stage_root.display()))?;
+
+        let staged = (|| -> Result<(), String> {
+            if let Some(id) = id {
+                let source = self.docs_dir.join(id);
+                if !source.join("doc.json").is_file() {
+                    return Err(format!("no document '{id}'"));
+                }
+                stage_tree(&source, &stage_root.join(id))?;
+            }
+            Ok(())
+        })();
+        if let Err(error) = staged {
+            let _ = fs::remove_dir_all(&stage_root);
+            return Err(error);
+        }
+
+        Ok(StoreTransaction {
+            live_docs_dir: self.docs_dir.clone(),
+            studio: Studio::with_docs_dir(stage_root.clone()),
+            stage_root,
+            committed: false,
+        })
+    }
+}
+
+fn stage_tree(source: &Path, destination: &Path) -> Result<(), String> {
+    fs::create_dir(destination)
+        .map_err(|e| format!("cannot stage {}: {e}", destination.display()))?;
+    for entry in fs::read_dir(source).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        let file_type = entry.file_type().map_err(|e| e.to_string())?;
+        if file_type.is_dir() {
+            stage_tree(&source_path, &destination_path)?;
+        } else if file_type.is_file() {
+            // Appending to a hard-linked journal would mutate the live recipe.
+            // Other writers replace files by rename before changing content.
+            if entry.file_name() == JOURNAL_FILE {
+                fs::copy(&source_path, &destination_path).map_err(|e| e.to_string())?;
+            } else if fs::hard_link(&source_path, &destination_path).is_err() {
+                fs::copy(&source_path, &destination_path).map_err(|e| e.to_string())?;
+            }
+        } else {
+            return Err(format!(
+                "refusing non-regular document entry {}",
+                source_path.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn sync_tree(path: &Path) -> Result<(), String> {
+    for entry in fs::read_dir(path).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let child = entry.path();
+        let file_type = entry.file_type().map_err(|e| e.to_string())?;
+        if file_type.is_dir() {
+            sync_tree(&child)?;
+        } else if file_type.is_file() {
+            fs::File::open(&child)
+                .and_then(|file| file.sync_all())
+                .map_err(|e| format!("cannot sync {}: {e}", child.display()))?;
+        } else {
+            return Err(format!("refusing non-regular staged entry {}", child.display()));
+        }
+    }
+    sync_dir(path).map_err(|e| format!("cannot sync {}: {e}", path.display()))
+}
+
+fn sync_dir(path: &Path) -> std::io::Result<()> {
+    fs::File::open(path)?.sync_all()
+}
+
+#[cfg(target_os = "linux")]
+fn rename_exchange(left: &Path, right: &Path) -> Result<(), String> {
+    use std::os::raw::{c_char, c_int};
+
+    const AT_FDCWD: c_int = -100;
+    const RENAME_EXCHANGE: u32 = 2;
+    unsafe extern "C" {
+        fn renameat2(
+            olddirfd: c_int,
+            oldpath: *const c_char,
+            newdirfd: c_int,
+            newpath: *const c_char,
+            flags: u32,
+        ) -> c_int;
+    }
+
+    let left_c = CString::new(left.as_os_str().as_bytes())
+        .map_err(|_| format!("transaction path contains NUL: {}", left.display()))?;
+    let right_c = CString::new(right.as_os_str().as_bytes())
+        .map_err(|_| format!("transaction path contains NUL: {}", right.display()))?;
+    // SAFETY: both C strings are NUL-terminated and live for the duration of
+    // the call; AT_FDCWD makes each absolute path self-contained.
+    let result = unsafe {
+        renameat2(
+            AT_FDCWD,
+            left_c.as_ptr(),
+            AT_FDCWD,
+            right_c.as_ptr(),
+            RENAME_EXCHANGE,
+        )
+    };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(format!(
+            "cannot atomically exchange {} and {}: {}",
+            left.display(),
+            right.display(),
+            std::io::Error::last_os_error()
+        ))
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn rename_exchange(_left: &Path, _right: &Path) -> Result<(), String> {
+    Err("store transactions require Linux renameat2 support".into())
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::*;
+    use crate::ToolName;
+
+    fn studio(tag: &str) -> Studio {
+        let root = std::env::temp_dir().join(format!("atelier-transaction-{tag}"));
+        let _ = fs::remove_dir_all(&root);
+        Studio::with_docs_dir(root)
+    }
+
+    #[test]
+    fn dropped_transaction_leaves_pixels_and_journal_unchanged() {
+        let live = studio("rollback");
+        let created = live.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        live.journal_append(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
+            .unwrap();
+
+        let transaction = live.begin_transaction(Some(id)).unwrap();
+        transaction
+            .studio()
+            .doc_draw(
+                id,
+                0,
+                0,
+                "fill_cel",
+                json!({"color":[9,8,7,255]}).as_object().unwrap().clone(),
+            )
+            .unwrap();
+        transaction
+            .studio()
+            .journal_append(id, ToolName::DocDraw, &json!({"doc_id":id,"op":"fill_cel"}))
+            .unwrap();
+
+        assert_eq!(live.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap()["rgba"], json!([0,0,0,0]));
+        assert_eq!(live.journal(id).unwrap().len(), 1);
+        drop(transaction);
+        assert_eq!(live.journal(id).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn commit_publishes_pixels_and_journal_together() {
+        let live = studio("commit");
+        let created = live.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        live.journal_append(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
+            .unwrap();
+        let transaction = live.begin_transaction(Some(id)).unwrap();
+        transaction
+            .studio()
+            .doc_draw(
+                id,
+                0,
+                0,
+                "fill_cel",
+                json!({"color":[9,8,7,255]}).as_object().unwrap().clone(),
+            )
+            .unwrap();
+        transaction
+            .studio()
+            .journal_append(id, ToolName::DocDraw, &json!({"doc_id":id,"op":"fill_cel"}))
+            .unwrap();
+        transaction.commit(id).unwrap();
+
+        assert_eq!(live.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap()["rgba"], json!([9,8,7,255]));
+        assert_eq!(live.journal(id).unwrap().len(), 2);
+    }
+
+    #[test]
+    fn transaction_commits_creation_and_deletion() {
+        let live = studio("lifecycle");
+        let create = live.begin_transaction(None).unwrap();
+        let report = create.studio().doc_new("d", 4, 4).unwrap();
+        let id = report["doc_id"].as_str().unwrap();
+        create.commit(id).unwrap();
+        assert!(live.exists(id));
+
+        let delete = live.begin_transaction(Some(id)).unwrap();
+        delete.studio().delete_doc(id).unwrap();
+        delete.commit(id).unwrap();
+        assert!(!live.exists(id));
+    }
+}
