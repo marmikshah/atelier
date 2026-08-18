@@ -1,11 +1,15 @@
 //! Tool parameter structs (`Deserialize` + `JsonSchema`) advertised by the
 //! `#[tool]` router in `server`.
 
-use schemars::JsonSchema;
+use std::borrow::Cow;
+
+use schemars::{JsonSchema, Schema, SchemaGenerator};
 use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
-use atelier_core::document::{DitherAxis, DitherPattern, TagDirection, draw_ops, fx_ops};
+use atelier_core::document::{
+    DitherAxis, DitherPattern, OpSide, TagDirection, draw_ops, fx_ops, operation_schema,
+};
 use atelier_core::raster::{Blend, SaturationCurve};
 use atelier_studio::{
     AlphaMode, AnimAuditMode, AnimationFormat, CheckpointAction, CompareMode, DiffRender,
@@ -13,30 +17,27 @@ use atelier_studio::{
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta,
 };
 
-/// Re-type flattened op params a strict tool-call client stringified.
+/// Preserve replay compatibility with journals produced by pre-2.0 clients
+/// that stringified flattened operation values before the schemas were typed.
 ///
-/// The single-op tools carry their op's params in a `#[serde(flatten)]` open
-/// map, so the advertised schema cannot type them per key — and some clients
-/// serialize anything the schema leaves open as a STRING: `color: [255,0,0]`
-/// arrives as `"[255, 0, 0]"` and `dx: 2` as `"2"`. The op layer then rejects
-/// the colour ("got \"[255, 0, 0]\"") or silently defaults the number — every
-/// model in the showcase benchmark hit one of the two. Anything that parses as
-/// JSON (array/object/number/bool) is parsed back; `text` is exempt because
-/// its value is legitimately prose (drawing the text "42" must stay text).
-pub(crate) fn revive_params(params: &mut serde_json::Map<String, Value>) {
-    for (key, v) in params.iter_mut() {
+/// New clients receive concrete types from the registry-derived schemas. This
+/// narrowly scoped shim remains idempotent for old recipes; drawn `text` stays
+/// prose, and values that are not complete JSON remain strings for the strict
+/// operation validator to reject.
+pub(crate) fn revive_legacy_params(params: &mut serde_json::Map<String, Value>) {
+    for (key, value) in params.iter_mut() {
         if key == "text" {
             continue;
         }
-        if let Value::String(s) = v {
-            let t = s.trim();
-            let looks_typed = t.starts_with('[')
-                || t.starts_with('{')
-                || t == "true"
-                || t == "false"
-                || t.parse::<f64>().is_ok();
-            if looks_typed && let Ok(parsed) = serde_json::from_str::<Value>(t) {
-                *v = parsed;
+        if let Value::String(raw) = value {
+            let candidate = raw.trim();
+            let was_typed = candidate.starts_with('[')
+                || candidate.starts_with('{')
+                || candidate == "true"
+                || candidate == "false"
+                || candidate.parse::<f64>().is_ok();
+            if was_typed && let Ok(parsed) = serde_json::from_str::<Value>(candidate) {
+                *value = parsed;
             }
         }
     }
@@ -65,6 +66,11 @@ pub(crate) struct ListDocs {
     pub(crate) prefix: Option<String>,
     /// Keep documents whose opaque id or display name contains this substring.
     pub(crate) contains: Option<String>,
+    /// Exclusive opaque id returned as `next_cursor` by the previous page.
+    pub(crate) cursor: Option<DocumentId>,
+    /// Page size (default 50, maximum 100).
+    #[schemars(range(min = 1, max = 100))]
+    pub(crate) limit: Option<usize>,
 }
 
 // --- document params -------------------------------------------------------
@@ -80,31 +86,6 @@ pub(crate) struct DocAddTag {
 }
 
 // --- drawing params --------------------------------------------------------
-
-fn op_name_schema(names: &[&str]) -> schemars::Schema {
-    let mut schema = schemars::json_schema!({"type": "string"});
-    schema
-        .as_object_mut()
-        .expect("a string schema is an object")
-        .insert(
-            "enum".into(),
-            Value::Array(
-                names
-                    .iter()
-                    .map(|name| Value::String((*name).into()))
-                    .collect(),
-            ),
-        );
-    schema
-}
-
-fn draw_op_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-    op_name_schema(draw_ops())
-}
-
-fn fx_op_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-    op_name_schema(fx_ops())
-}
 
 macro_rules! op_name {
     ($name:ident, $valid:path, $label:literal) => {
@@ -140,7 +121,7 @@ macro_rules! op_name {
 op_name!(DrawOpName, draw_ops, "draw");
 op_name!(FxOpName, fx_ops, "fx");
 
-#[derive(Deserialize, JsonSchema)]
+#[derive(Deserialize)]
 pub(crate) struct DocDraw {
     pub(crate) doc_id: DocumentId,
     pub(crate) layer: usize,
@@ -148,7 +129,6 @@ pub(crate) struct DocDraw {
     /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
     /// | curve | stamp | fill | bucket | gradient | scatter | noise | text |
     /// fill_cel | clear_cel.
-    #[schemars(schema_with = "draw_op_schema")]
     pub(crate) op: DrawOpName,
     /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,
     /// color, fill). Registry-backed ops also accept `opacity`, `blend_mode`,
@@ -157,7 +137,7 @@ pub(crate) struct DocDraw {
     pub(crate) params: serde_json::Map<String, serde_json::Value>,
 }
 
-#[derive(Deserialize, JsonSchema)]
+#[derive(Deserialize)]
 pub(crate) struct DocFx {
     pub(crate) doc_id: DocumentId,
     pub(crate) layer: usize,
@@ -165,12 +145,59 @@ pub(crate) struct DocFx {
     /// One transform/effect op: blur | outline | drop_shadow | bevel | shade |
     /// form | dither | pixel_perfect | flip | shift | rotate | scale | symmetry |
     /// quantize | replace_color | adjust | gradient_map.
-    #[schemars(schema_with = "fx_op_schema")]
     pub(crate) op: FxOpName,
     /// The op's own params, flattened alongside. Every op also accepts
     /// `opacity`, `blend_mode`, and `erase`.
     #[serde(flatten)]
     pub(crate) params: serde_json::Map<String, serde_json::Value>,
+}
+
+fn single_op_tool_schema(generator: &mut SchemaGenerator, side: OpSide) -> Schema {
+    let mut schema = operation_schema(side);
+    let object = schema
+        .as_object_mut()
+        .expect("the core operation schema is an object");
+    let properties = object
+        .get_mut("properties")
+        .and_then(Value::as_object_mut)
+        .expect("the core operation schema has properties");
+    properties.insert(
+        "doc_id".into(),
+        <DocumentId as JsonSchema>::json_schema(generator).to_value(),
+    );
+    properties.insert(
+        "layer".into(),
+        serde_json::json!({"type": "integer", "minimum": 0}),
+    );
+    properties.insert(
+        "frame".into(),
+        serde_json::json!({"type": "integer", "minimum": 0}),
+    );
+    object.insert(
+        "required".into(),
+        serde_json::json!(["doc_id", "layer", "frame", "op"]),
+    );
+    schema
+}
+
+impl JsonSchema for DocDraw {
+    fn schema_name() -> Cow<'static, str> {
+        "DocDraw".into()
+    }
+
+    fn json_schema(generator: &mut SchemaGenerator) -> Schema {
+        single_op_tool_schema(generator, OpSide::Draw)
+    }
+}
+
+impl JsonSchema for DocFx {
+    fn schema_name() -> Cow<'static, str> {
+        "DocFx".into()
+    }
+
+    fn json_schema(generator: &mut SchemaGenerator) -> Schema {
+        single_op_tool_schema(generator, OpSide::Fx)
+    }
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -259,6 +286,7 @@ pub(crate) struct DocRefOp {
     /// `analyze`: plan width.
     pub(crate) target_w: Option<u32>,
     /// `analyze`: subject-palette size (default 8).
+    #[schemars(range(min = 2, max = 256))]
     pub(crate) colors: Option<usize>,
     /// `compare`: "side_by_side" (default) or "overlay" (reference ghosted under).
     pub(crate) mode: Option<CompareMode>,
@@ -301,11 +329,17 @@ pub(crate) struct DocComponents {
     pub(crate) frame: Option<usize>,
     pub(crate) layer: Option<usize>,
     /// Pixel adjacency: 4 or 8 (default 8).
+    #[schemars(schema_with = "connectivity_schema")]
     pub(crate) connectivity: Option<u8>,
     /// Only components of this exact [r,g,b]/[r,g,b,a]; omit = any opaque pixel.
     pub(crate) color: Option<Vec<i64>>,
     /// Components smaller than this are dropped from the list (default 1).
+    #[schemars(range(min = 1))]
     pub(crate) min_area: Option<u32>,
+}
+
+fn connectivity_schema(_: &mut SchemaGenerator) -> Schema {
+    schemars::json_schema!({"type": "integer", "enum": [4, 8]})
 }
 
 // --- animation & tiling feedback params ------------------------------------
@@ -359,7 +393,7 @@ pub(crate) struct DocAnimAudit {
     pub(crate) region: Option<[i32; 4]>,
 }
 
-// --- world-class-art tool params (the art-quality pass) --------------------
+// --- analysis and rendering params -----------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -412,6 +446,7 @@ pub(crate) struct DocDitherRamp {
     pub(crate) layer: usize,
     pub(crate) frame: usize,
     /// The ramp to dither across (>= 2 colours), as [[r,g,b],...].
+    #[schemars(length(min = 2, max = 256))]
     pub(crate) ramp: Vec<Vec<i64>>,
     pub(crate) region: Option<[i32; 4]>,
     /// h | v | radial.
@@ -444,7 +479,8 @@ pub(crate) struct DocPalette {
     pub(crate) base: Option<Vec<i64>>,
     /// `generate`: mono | complementary | triadic | analogous | split | tetradic.
     pub(crate) scheme: Option<PaletteScheme>,
-    /// `generate`: colours per ramp (default 5).
+    /// `generate`: colours per ramp (default 5, maximum 256; multi-hue schemes require 2+).
+    #[schemars(range(min = 1, max = 256))]
     pub(crate) count: Option<usize>,
     pub(crate) value_lo: Option<f32>,
     pub(crate) value_hi: Option<f32>,
@@ -462,14 +498,18 @@ pub(crate) struct DocPalette {
     /// `report`: [x0,y0,x1,y1] to restrict the tally; omit = whole canvas.
     pub(crate) region: Option<[i32; 4]>,
     /// `set`: palette swatches, each [r,g,b]/[r,g,b,a].
+    #[schemars(length(max = 256))]
     pub(crate) colors: Option<Vec<Vec<i64>>>,
     /// `swap`: source colours to recolour (same length as `to`).
+    #[schemars(length(min = 1, max = 256))]
     pub(crate) from: Option<Vec<Vec<i64>>>,
     /// `swap`: replacement colours (same length as `from`).
+    #[schemars(length(min = 1, max = 256))]
     pub(crate) to: Option<Vec<Vec<i64>>>,
     /// `report`: max channel distance counting near-duplicates (default 8).
     pub(crate) dupe_threshold: Option<i32>,
     /// `snap`: override palette. List of [r,g,b(,a)].
+    #[schemars(length(min = 1, max = 256))]
     pub(crate) palette: Option<Vec<Vec<i64>>>,
     /// `snap`: partial-alpha policy — preserve (default) | opaque | flatten.
     pub(crate) alpha: Option<AlphaMode>,
@@ -500,28 +540,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn stringified_params_are_revived_except_text() {
-        // Every showcase model hit this: a strict client stringifies params
-        // the open flattened schema leaves untyped.
-        let mut p = serde_json::from_value::<serde_json::Map<String, Value>>(serde_json::json!({
-            "color": "[255, 0, 0]",
-            "points": "[[1,2],[3,4]]",
-            "dx": "2",
-            "wrap": "true",
-            "mode": "auto",
-            "text": "[42]",
-            "torn": "[1,"
-        }))
-        .unwrap();
-        revive_params(&mut p);
-        assert_eq!(p["color"], serde_json::json!([255, 0, 0]));
-        assert_eq!(p["points"], serde_json::json!([[1, 2], [3, 4]]));
-        assert_eq!(p["dx"], serde_json::json!(2));
-        assert_eq!(p["wrap"], serde_json::json!(true));
-        // Prose stays prose; malformed JSON stays a string for the op's error.
-        assert_eq!(p["mode"], serde_json::json!("auto"));
-        assert_eq!(p["text"], serde_json::json!("[42]"), "drawn text is prose");
-        assert_eq!(p["torn"], serde_json::json!("[1,"));
+    fn legacy_stringified_params_are_revived_except_text() {
+        let mut params =
+            serde_json::from_value::<serde_json::Map<String, Value>>(serde_json::json!({
+                "color": "[255, 0, 0]",
+                "points": "[[1,2],[3,4]]",
+                "dx": "2",
+                "wrap": "true",
+                "mode": "auto",
+                "text": "[42]",
+                "torn": "[1,"
+            }))
+            .unwrap();
+        revive_legacy_params(&mut params);
+        assert_eq!(params["color"], serde_json::json!([255, 0, 0]));
+        assert_eq!(params["points"], serde_json::json!([[1, 2], [3, 4]]));
+        assert_eq!(params["dx"], serde_json::json!(2));
+        assert_eq!(params["wrap"], serde_json::json!(true));
+        assert_eq!(params["mode"], serde_json::json!("auto"));
+        assert_eq!(params["text"], serde_json::json!("[42]"));
+        assert_eq!(params["torn"], serde_json::json!("[1,"));
     }
 
     #[test]
@@ -650,9 +688,53 @@ mod tests {
         assert_eq!(layer["$defs"]["DocumentId"]["format"], "uuid");
 
         let draw = schemars::schema_for!(DocDraw);
+        let draw = draw.as_value();
+        assert_eq!(draw["additionalProperties"], false);
+        assert_eq!(draw["properties"]["doc_id"]["format"], "uuid");
+        assert_eq!(parameter_schema(draw, "color")["$ref"], "#/$defs/c");
+        assert_eq!(parameter_schema(draw, "opacity")["maximum"], 255);
+        for op in draw_ops() {
+            assert!(
+                op_branch(draw, op).is_some(),
+                "missing draw schema for {op}"
+            );
+        }
+        let rect = op_branch(draw, "rect").unwrap();
         assert_eq!(
-            draw.as_value()["properties"]["op"]["enum"],
-            serde_json::json!(draw_ops())
+            rect["required"],
+            serde_json::json!(["x0", "y0", "x1", "y1", "color"])
         );
+        assert_eq!(draw["properties"]["octaves"]["minimum"], 1);
+        assert_eq!(
+            draw["properties"]["octaves"]["maximum"],
+            atelier_core::document::MAX_NOISE_OCTAVES
+        );
+
+        let fx = schemars::schema_for!(DocFx);
+        let fx = fx.as_value();
+        for op in fx_ops() {
+            assert!(op_branch(fx, op).is_some(), "missing fx schema for {op}");
+        }
+        assert_eq!(fx["properties"]["max_colors"]["minimum"], 1);
+        assert_eq!(
+            fx["properties"]["max_colors"]["maximum"],
+            atelier_core::document::MAX_QUANTIZE_COLORS
+        );
+    }
+
+    fn op_branch<'a>(schema: &'a Value, op: &str) -> Option<&'a Value> {
+        schema["oneOf"].as_array()?.iter().find(|branch| {
+            let selector = &branch["properties"]["op"];
+            selector["const"].as_str() == Some(op)
+                || selector["enum"]
+                    .as_array()
+                    .is_some_and(|names| names.iter().any(|name| name.as_str() == Some(op)))
+        })
+    }
+
+    fn parameter_schema<'a>(schema: &'a Value, key: &str) -> &'a Value {
+        schema["properties"]
+            .get(key)
+            .unwrap_or_else(|| panic!("schema is missing typed parameter {key}"))
     }
 }
