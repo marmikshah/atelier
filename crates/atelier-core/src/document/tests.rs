@@ -814,6 +814,111 @@ fn aggregate_cel_pixels_are_rejected_before_decoding() {
     let _ = std::fs::remove_dir_all(dir);
 }
 
+#[test]
+fn analysis_load_decodes_only_the_requested_frame_and_layer() {
+    let dir = std::env::temp_dir().join(format!(
+        "atelier-analysis-targeted-load-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut document = Document::new("targeted", 4, 4);
+    document.add_layer(Some("top".into()), 255, raster::Blend::Normal);
+    document.add_frame(DEFAULT_FRAME_MS, None);
+    for layer in 0..2 {
+        for frame in 0..2 {
+            document
+                .fill_cel(layer, frame, [layer as u8, frame as u8, 30, 255])
+                .unwrap();
+        }
+    }
+    document.save(&dir).unwrap();
+
+    let structure = AnalysisDocument::load_structure(&dir).unwrap();
+    assert!(structure.cels.is_empty());
+    assert_eq!(structure.structure()["cels"].as_array().unwrap().len(), 4);
+
+    let analysis = AnalysisDocument::load(&dir, &[1], Some(1)).unwrap();
+    assert_eq!(analysis.cels.len(), 1);
+    assert!(analysis.cels.contains_key(&(1, 1)));
+    assert_eq!(
+        analysis
+            .analysis_image(Some(1), 1)
+            .unwrap()
+            .get_pixel(0, 0)
+            .0,
+        [1, 1, 30, 255]
+    );
+    assert!(analysis.analysis_image(Some(1), 0).is_err());
+    assert!(analysis.analysis_image(Some(0), 1).is_err());
+    let duplicate_frames = vec![0; MAX_DOCUMENT_FRAMES + 1];
+    let error = AnalysisDocument::load(&dir, &duplicate_frames, None)
+        .err()
+        .expect("an oversized frame selector must fail before allocation");
+    assert!(
+        error.contains("frame entries; limit is 4096"),
+        "got: {error}"
+    );
+    let error = AnalysisDocument::load(&dir, &[7, 6], None)
+        .err()
+        .expect("the first invalid frame must fail");
+    assert!(error.contains("no frame 7"), "got: {error}");
+
+    let complete = Document::load(&dir).unwrap();
+    let frame = AnalysisDocument::load(&dir, &[0], None).unwrap();
+    assert_eq!(frame.cels.len(), 2);
+    assert_eq!(
+        frame.analysis_image(None, 0).unwrap(),
+        complete.analysis_image(None, 0).unwrap()
+    );
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[cfg(unix)]
+#[test]
+fn analysis_load_probes_unselected_cels_without_decoding_them() {
+    use std::os::unix::fs::symlink;
+
+    let dir =
+        std::env::temp_dir().join(format!("atelier-analysis-probe-all-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut document = Document::new("targeted", 4, 4);
+    document.add_frame(DEFAULT_FRAME_MS, None);
+    document.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
+    document.fill_cel(0, 1, [4, 5, 6, 255]).unwrap();
+    document.save(&dir).unwrap();
+
+    let unrelated = dir.join(cel_file(0, 1));
+    std::fs::remove_file(&unrelated).unwrap();
+    symlink("/etc/passwd", &unrelated).unwrap();
+    let error = AnalysisDocument::load(&dir, &[0], None)
+        .err()
+        .expect("every stored cel must still be nofollow-probed");
+    assert!(error.contains("regular file"), "got: {error}");
+
+    std::fs::remove_file(&unrelated).unwrap();
+    document.save(&dir).unwrap();
+    let unrelated = dir.join(cel_file(0, 1));
+    let mut bytes = std::fs::read(&unrelated).unwrap();
+    let mut offset = 8usize;
+    loop {
+        let length = u32::from_be_bytes(bytes[offset..offset + 4].try_into().unwrap()) as usize;
+        if &bytes[offset + 4..offset + 8] == b"IDAT" {
+            bytes[offset + 8] ^= 0xff;
+            break;
+        }
+        offset += 12 + length;
+    }
+    std::fs::write(&unrelated, bytes).unwrap();
+    assert!(
+        Document::load(&dir).is_err(),
+        "a complete load must decode the corrupt cel"
+    );
+    let analysis = AnalysisDocument::load(&dir, &[0], None)
+        .expect("an unselected cel payload must not be decoded");
+    assert_eq!(analysis.cels.len(), 1);
+    let _ = std::fs::remove_dir_all(dir);
+}
+
 #[cfg(unix)]
 #[test]
 fn load_rejects_symlinked_document_files() {

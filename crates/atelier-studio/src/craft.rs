@@ -122,7 +122,7 @@ impl Studio {
         layer: Option<usize>,
         region: Option<(i32, i32, i32, i32)>,
     ) -> Result<Value, String> {
-        let (_dir, doc) = self.open(id)?;
+        let (_dir, doc) = self.open_analysis(id, &[frame], layer)?;
         let full = doc.analysis_image(layer, frame)?;
         let (img, _ox, _oy) = crop_region(&full, region)?;
         let palette = doc.meta().palette.clone();

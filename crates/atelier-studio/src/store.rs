@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
-use atelier_core::document::Document;
+use atelier_core::document::{AnalysisDocument, Document};
 
 use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, REVISION_FILE, Studio, ToolName};
 
@@ -375,7 +375,7 @@ impl Studio {
         out
     }
 
-    pub(crate) fn open(&self, id: &str) -> Result<(PathBuf, Document), String> {
+    fn existing_doc_dir(&self, id: &str) -> Result<PathBuf, String> {
         if !Self::valid_id(id) {
             return Err(format!("invalid document id '{}'", id));
         }
@@ -392,8 +392,27 @@ impl Studio {
                 }
             ));
         }
-        let doc = Document::load(&dir)?;
-        Ok((dir, doc))
+        Ok(dir)
+    }
+
+    pub(crate) fn open(&self, id: &str) -> Result<(PathBuf, Document), String> {
+        let dir = self.existing_doc_dir(id)?;
+        let document = Document::load(&dir)?;
+        Ok((dir, document))
+    }
+
+    /// Load a read-only snapshot for the requested frame/layer analysis.
+    /// Every cel is still header-probed for integrity and the document-wide
+    /// memory budget, but only matching PNG payloads are decoded.
+    pub(crate) fn open_analysis(
+        &self,
+        id: &str,
+        frames: &[usize],
+        layer: Option<usize>,
+    ) -> Result<(PathBuf, AnalysisDocument), String> {
+        let dir = self.existing_doc_dir(id)?;
+        let document = AnalysisDocument::load(&dir, frames, layer)?;
+        Ok((dir, document))
     }
 
     /// Current optimistic-concurrency generation for one document.
@@ -530,7 +549,8 @@ impl Studio {
     }
 
     pub fn doc_info(&self, id: &str) -> Result<Value, String> {
-        let (_dir, doc) = self.open(id)?;
+        let dir = self.existing_doc_dir(id)?;
+        let doc = AnalysisDocument::load_structure(&dir)?;
         let mut out = doc.structure();
         out["doc_id"] = json!(id);
         Ok(out)
