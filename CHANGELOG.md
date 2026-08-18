@@ -30,6 +30,8 @@ created. Minor 1.x releases may contain breaking changes.
   and the release dependency chain.
 - All document-store mutations execute against a staged generation and publish
   atomically only after the handler and journal append succeed.
+- Multi-step replay now builds in one private generation and publishes the new
+  document only after every recipe step succeeds.
 - Tool descriptions and repository metadata use concise, factual language.
   Serialized MCP tool definitions are held to a 32 KiB regression budget.
 - `list_docs` uses bounded cursor pages over MCP while the native library

@@ -36,8 +36,6 @@ acceptable when they have one clear operation and fail atomically.
 - Keep mutation data and its journal entry in one atomic commit.
 - Provide read-only store verification with stable machine-readable output.
 - Add fault-injection coverage around staging, publication, and recovery.
-- Make a multi-step replay recipe publish as one transaction, rather than
-  leaving earlier steps visible when a later step fails.
 - Keep the enforced limits for layers, frames, tags, palette entries, cels,
   names, aggregate decoded pixels, recipe size, and recipe length under hostile
   tests. Add a checkpoint count/space quota with explicit retention feedback.

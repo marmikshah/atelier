@@ -3,8 +3,9 @@
 //!
 //! Every step goes through `Atelier::dispatch` — the same single path MCP
 //! clients and `atelier call` take, journaling and write ordering included —
-//! one call at a time, strictly in order: a recipe is a narrative, step N may
-//! depend on step N-1's mutations.
+//! one call at a time, strictly in order. The whole narrative runs in an
+//! isolated document generation and becomes visible only after every step
+//! succeeds.
 //!
 //! Output convention: the per-step log goes to stdout (scriptable, the recipe's
 //! visible result), while status/diagnostics go to stderr (header, errors, the
@@ -156,22 +157,51 @@ pub async fn run(args: &[String]) -> i32 {
 async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
     // `--home` roots an isolated store for the run; otherwise the ambient
     // ATELIER_HOME (or the default) is where the rebuild lands.
-    let atelier = match home {
-        Some(dir) => Atelier::with_studio(Studio::with_home(dir.into())),
-        None => Atelier::new(),
+    let studio = match home {
+        Some(dir) => Studio::with_home(dir.into()),
+        None => Studio::new(),
     };
-    run_session(&recipe, &atelier).await
+    run_atomic_session(&recipe, &studio).await.map(|_| ())
 }
 
-/// The dispatch loop: one `dispatch` per step, in recipe order.
+/// Replay into one private generation, then publish the completed document.
+///
+/// The outer store lock protects transaction cleanup and the final publication
+/// from other processes. Per-step dispatch still uses its normal transaction
+/// path, but those commits are visible only inside this outer generation.
+async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, String> {
+    let _store_lock = studio.lock_store_exclusive()?;
+    studio.cleanup_stale_transactions()?;
+    let transaction = studio.begin_transaction(None)?;
+    let staged = Atelier::with_studio(transaction.studio().clone());
+    let minted = run_session(recipe, &staged)
+        .await
+        .map_err(|error| format!("{error}; no replayed document was published"))?;
+
+    match transaction.commit(&minted)? {
+        atelier_studio::CommitOutcome::Durable => {}
+        atelier_studio::CommitOutcome::DurabilityUncertain { warning } => {
+            eprintln!("replay: warning: {warning}");
+        }
+    }
+    eprintln!(
+        "replay: {} step(s) committed atomically",
+        recipe.steps.len()
+    );
+    Ok(minted)
+}
+
+/// The dispatch loop: one `dispatch` per step, in recipe order, against an
+/// isolated store. Returns the newly minted document id for publication.
 ///
 /// Recorded document ids never reach the server verbatim: `doc_new` always
 /// mints a fresh opaque id, so every later target is rewritten to the id this
 /// run actually received.
-async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
+async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<String, String> {
     eprintln!("== replaying journal");
 
     let mut ids: HashMap<String, String> = HashMap::new();
+    let mut minted_document = None;
     for (idx, step) in recipe.steps.iter().enumerate() {
         let mut args = step.args.clone();
         let recorded = if step.tool == ToolName::DocNew {
@@ -227,12 +257,12 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<(), String> {
             if recorded != minted {
                 eprintln!("replay: '{recorded}' rebuilds as '{minted}'");
             }
-            ids.insert(recorded, minted);
+            ids.insert(recorded, minted.clone());
+            minted_document = Some(minted);
         }
     }
 
-    eprintln!("replay: {} step(s) ok", recipe.steps.len());
-    Ok(())
+    minted_document.ok_or_else(|| "recipe completed without creating a document".into())
 }
 
 /// Remove the concrete id stamped into the recorded `doc_new` arguments. The
@@ -431,6 +461,41 @@ mod tests {
         let _ = std::fs::remove_dir_all(home);
     }
 
+    #[tokio::test]
+    async fn failed_recipe_publishes_none_of_its_steps() {
+        let dir = std::env::temp_dir().join(format!(
+            "atelier-replay-atomic-failure-test-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+        let studio = Studio::with_docs_dir(dir.clone());
+        let recipe = Recipe::parse(&format!(
+            "{{\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"rolled-back\",\"width\":4,\"height\":4}}}}\n\
+             {{\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"not_a_real_operation\"}}}}\n"
+        ))
+        .unwrap();
+
+        let error = run_atomic_session(&recipe, &studio).await.unwrap_err();
+
+        assert!(error.contains("step 2 (doc_draw) failed"), "{error}");
+        assert!(
+            error.contains("no replayed document was published"),
+            "{error}"
+        );
+        assert_eq!(studio.list_docs()["count"], 0);
+        let transaction_root = dir.join(".transactions");
+        assert!(
+            !transaction_root.exists()
+                || std::fs::read_dir(&transaction_root)
+                    .unwrap()
+                    .next()
+                    .is_none(),
+            "failed replay must not leave a staged generation"
+        );
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
     /// The exact-pixel gate replay has always claimed but never enforced:
     /// a document rebuilt from its own journal must render byte-identical
     /// to the original. Bytes, not just structure — a deterministic encoder
@@ -511,8 +576,7 @@ mod tests {
         let recipe = Recipe::parse(&journal).unwrap();
         assert!(recipe.steps.len() >= 4, "the journal drives the rebuild");
         let studio_b = Studio::with_docs_dir(dir_b.clone());
-        let atelier_b = Atelier::with_studio(studio_b.clone());
-        run_session(&recipe, &atelier_b).await.unwrap();
+        run_atomic_session(&recipe, &studio_b).await.unwrap();
         let replayed_docs = studio_b.list_docs();
         let replay_id = replayed_docs["documents"][0]["doc_id"].as_str().unwrap();
         let replayed = render(&studio_b, replay_id);
