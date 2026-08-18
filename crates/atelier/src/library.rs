@@ -5,14 +5,19 @@
 //! in which case it refuses rather than guessing).
 
 use atelier_mcp::server::{self, Atelier};
-use atelier_studio::{Studio, ToolName};
+use atelier_studio::{IntegritySeverity, Studio, ToolName};
 use serde_json::json;
 
 /// Entry point for `atelier library [rm ...]`. Returns a process exit code.
 pub async fn run(args: &[String]) -> i32 {
     match args.first().map(|s| s.as_str()) {
         None => list(),
+        Some("verify") => verify(&args[1..]),
         Some("rm") => rm(&args[1..]).await,
+        Some("--help" | "-h" | "help") => {
+            println!("{USAGE}");
+            0
+        }
         Some(other) => {
             eprintln!("atelier library: unknown subcommand '{other}'\n\n{USAGE}");
             2
@@ -20,9 +25,12 @@ pub async fn run(args: &[String]) -> i32 {
     }
 }
 
-const USAGE: &str = "usage: atelier library [rm <id>... | rm --prefix <p> | rm --all] [--yes]
+const USAGE: &str =
+    "usage: atelier library [verify [--json] | rm <id>... | rm --prefix <p> | rm --all] [--yes]
 
   (no args)          list every document: id, size, frames, layers
+  verify             validate every document's metadata, cels, and journal
+    --json           emit a machine-readable verification report
   rm <id>...         delete the named documents
   rm --prefix <p>    delete every document whose id starts with <p>
   rm --all           delete every document
@@ -52,6 +60,13 @@ fn ids(s: &Studio) -> Vec<String> {
 
 fn list() -> i32 {
     let s = studio();
+    let _lock = match s.lock_store_shared() {
+        Ok(lock) => lock,
+        Err(error) => {
+            eprintln!("atelier library: {error}");
+            return 1;
+        }
+    };
     let v = s.list_docs();
     let docs = v.get("documents").and_then(|d| d.as_array());
     let Some(docs) = docs else {
@@ -120,6 +135,89 @@ fn list() -> i32 {
 
 fn home_display() -> String {
     std::env::var("ATELIER_HOME").unwrap_or_else(|_| "~/.atelier".into())
+}
+
+fn parse_verify(args: &[String]) -> Result<bool, String> {
+    let mut json = false;
+    for arg in args {
+        match arg.as_str() {
+            "--json" if !json => json = true,
+            "--json" => return Err("--json may only be passed once".into()),
+            option if option.starts_with('-') => {
+                return Err(format!("unknown verify option '{option}'"));
+            }
+            value => return Err(format!("unexpected verify argument '{value}'")),
+        }
+    }
+    Ok(json)
+}
+
+fn verify(args: &[String]) -> i32 {
+    let json = match parse_verify(args) {
+        Ok(json) => json,
+        Err(error) => {
+            eprintln!("atelier library: {error}\n\n{USAGE}");
+            return 2;
+        }
+    };
+    let report = match studio().verify_store() {
+        Ok(report) => report,
+        Err(error) => {
+            eprintln!("atelier library verify: {error}");
+            return 1;
+        }
+    };
+    if json {
+        let output = match serde_json::to_string_pretty(&report) {
+            Ok(output) => output,
+            Err(error) => {
+                eprintln!("atelier library verify: cannot serialize report: {error}");
+                return 1;
+            }
+        };
+        println!("{output}");
+    } else {
+        println!("document store: {}", report.documents_dir);
+        for issue in &report.issues {
+            let severity = match issue.severity {
+                IntegritySeverity::Error => "error",
+                IntegritySeverity::Warning => "warning",
+            };
+            let target = issue
+                .document_id
+                .as_deref()
+                .map(|id| format!("{id}/{}", issue.component))
+                .unwrap_or_else(|| issue.component.clone());
+            println!("{severity}: {target}: {}", issue.message);
+            println!("  action: {}", issue.action);
+        }
+        if report.issues_truncated {
+            println!(
+                "note: {} additional finding(s) omitted; summary totals include them",
+                report.omitted_issues
+            );
+        }
+        println!(
+            "checked {} document(s), {} cel(s), and {} journal entr{}",
+            report.documents,
+            report.cels,
+            report.journal_entries,
+            if report.journal_entries == 1 {
+                "y"
+            } else {
+                "ies"
+            }
+        );
+        if report.ok {
+            println!("verification passed with {} warning(s)", report.warnings);
+        } else {
+            println!(
+                "verification failed with {} error(s) and {} warning(s)",
+                report.errors, report.warnings
+            );
+        }
+    }
+    i32::from(!report.ok)
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -305,5 +403,14 @@ mod tests {
         assert!(parse_rm(&v(&["--all", "--force"])).is_err());
         assert!(parse_rm(&v(&["--all", "a"])).is_err());
         assert!(parse_rm(&v(&["--prefix", "a", "b"])).is_err());
+    }
+
+    #[test]
+    fn verification_arguments_are_strict() {
+        assert!(!parse_verify(&v(&[])).unwrap());
+        assert!(parse_verify(&v(&["--json"])).unwrap());
+        assert!(parse_verify(&v(&["--json", "--json"])).is_err());
+        assert!(parse_verify(&v(&["--pretty"])).is_err());
+        assert!(parse_verify(&v(&["document-id"])).is_err());
     }
 }

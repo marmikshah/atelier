@@ -11,10 +11,12 @@
 //! final "N step(s) ok" tally) so they don't pollute piped stdout.
 
 use std::collections::HashMap;
+use std::io::Read;
+use std::path::Path;
 
 use serde_json::{Map, Value, json};
 
-use atelier_mcp::recipe::Recipe;
+use atelier_mcp::recipe::{MAX_RECIPE_BYTES, Recipe};
 use atelier_mcp::server::{self, Atelier};
 use atelier_studio::{JournalEntry, Studio, ToolName};
 use rmcp::model::CallToolResult;
@@ -32,10 +34,38 @@ const USAGE: &str = "usage: atelier replay <recipe.jsonl | doc-id> [--home DIR]"
 /// *writes*, so `replay jt --home /tmp/sandbox` means "rebuild jt over there",
 /// and reading the journal from the destination would only ever find an empty
 /// store. Point `ATELIER_HOME` at a different store to read from one.
+fn read_source(path: &Path, label: &str) -> Result<String, String> {
+    let file =
+        std::fs::File::open(path).map_err(|error| format!("cannot read {label}: {error}"))?;
+    let metadata = file
+        .metadata()
+        .map_err(|error| format!("cannot inspect {label}: {error}"))?;
+    if !metadata.is_file() {
+        return Err(format!("cannot read {label}: source is not a regular file"));
+    }
+    let length = metadata.len();
+    if length > MAX_RECIPE_BYTES {
+        return Err(format!(
+            "cannot read {label}: source is {length} bytes, over the {MAX_RECIPE_BYTES}-byte replay limit"
+        ));
+    }
+    let capacity = usize::try_from(length.min(MAX_RECIPE_BYTES)).unwrap_or(0);
+    let mut bytes = Vec::with_capacity(capacity);
+    file.take(MAX_RECIPE_BYTES.saturating_add(1))
+        .read_to_end(&mut bytes)
+        .map_err(|error| format!("cannot read {label}: {error}"))?;
+    if bytes.len() as u64 > MAX_RECIPE_BYTES {
+        return Err(format!(
+            "cannot read {label}: source grew beyond the {MAX_RECIPE_BYTES}-byte replay limit while it was read"
+        ));
+    }
+    String::from_utf8(bytes).map_err(|error| format!("cannot read {label}: not UTF-8: {error}"))
+}
+
 fn resolve_source(path: &str) -> Result<String, String> {
-    let as_file = std::path::Path::new(path);
+    let as_file = Path::new(path);
     if as_file.is_file() {
-        return std::fs::read_to_string(as_file).map_err(|e| format!("cannot read {path}: {e}"));
+        return read_source(as_file, path);
     }
     let root = crate::service::default_home();
     let doc = root.join("documents").join(path);
@@ -51,7 +81,7 @@ fn resolve_source(path: &str) -> Result<String, String> {
             "document '{path}' has no journal — no replay source is available"
         ));
     }
-    std::fs::read_to_string(&journal).map_err(|e| format!("cannot read {path}'s journal: {e}"))
+    read_source(&journal, &format!("{path}'s journal"))
 }
 
 /// Entry point for the `replay` subcommand. Returns a process exit code.
@@ -352,6 +382,24 @@ mod tests {
         let s = summarize(&result);
         assert!(s.ends_with('…'));
         assert!(s.chars().count() <= 201);
+    }
+
+    #[test]
+    fn source_size_is_rejected_from_metadata_before_reading() {
+        let path = std::env::temp_dir().join(format!(
+            "atelier-replay-oversize-test-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_file(&path);
+        let file = std::fs::File::create(&path).unwrap();
+        file.set_len(MAX_RECIPE_BYTES + 1).unwrap();
+
+        let error = read_source(&path, "oversize recipe").unwrap_err();
+        assert!(
+            error.contains(&format!("{}-byte replay limit", MAX_RECIPE_BYTES)),
+            "{error}"
+        );
+        let _ = std::fs::remove_file(path);
     }
 
     #[tokio::test]
