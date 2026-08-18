@@ -12,18 +12,46 @@ use atelier_core::document::{DocMeta, Document};
 
 use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, Studio, ToolName};
 
+/// Current JSONL journal entry format.
+pub const JOURNAL_FORMAT_VERSION: u32 = 1;
+
+const fn journal_format_v1() -> u32 {
+    JOURNAL_FORMAT_VERSION
+}
+
 /// The one current journal-line shape, shared by the writer, store reader, and
 /// replay parser.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct JournalEntry {
+    #[serde(default = "journal_format_v1")]
+    pub format_version: u32,
     pub tool: ToolName,
     pub args: Map<String, Value>,
+}
+
+impl JournalEntry {
+    pub fn new(tool: ToolName, args: Map<String, Value>) -> Self {
+        Self {
+            format_version: JOURNAL_FORMAT_VERSION,
+            tool,
+            args,
+        }
+    }
 }
 
 /// Validate the current per-document journal contract. An absent/empty journal
 /// means "no recipe"; a non-empty one is a complete, self-identifying rebuild.
 pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
+    if let Some(entry) = entries
+        .iter()
+        .find(|entry| entry.format_version != JOURNAL_FORMAT_VERSION)
+    {
+        return Err(format!(
+            "unsupported journal format {} (this build supports {})",
+            entry.format_version, JOURNAL_FORMAT_VERSION
+        ));
+    }
     let Some(first) = entries.first() else {
         return Ok(());
     };
@@ -371,42 +399,36 @@ impl Studio {
     /// document carries its own provenance and nothing has to be turned on
     /// beforehand to get it.
     ///
-    /// JSON Lines, appended: one call per line, O(1) per write, and a killed
-    /// process still leaves every completed line intact. Best-effort by design —
-    /// a journal that cannot be written must never fail the drawing call that
-    /// was otherwise fine.
-    pub fn journal_append(&self, id: &str, tool: ToolName, args: &Value) {
+    /// JSON Lines, appended: one versioned call per line. Failure is explicit;
+    /// the dispatch transaction must not publish pixels whose recipe could not
+    /// be persisted.
+    pub fn journal_append(&self, id: &str, tool: ToolName, args: &Value) -> Result<(), String> {
         // Defence in depth: `id` is joined onto the store path, so validate it
         // here too rather than trust every caller forever — a bad id must never
         // write recipe.jsonl outside the store (the repo has had a traversal bug
         // before). `.is_dir()` alone would follow `../` through a real dir.
         if !Self::valid_id(id) {
-            return;
+            return Err(format!("invalid document id '{id}'"));
         }
         let dir = self.docs_dir.join(id);
         if !dir.is_dir() {
-            return; // no document, nothing to journal (e.g. a failed create)
+            return Err(format!("no document '{id}' to journal"));
         }
-        let Some(args) = args.as_object() else {
-            eprintln!("atelier: refusing to journal non-object args for {tool}");
-            return;
-        };
-        let entry = JournalEntry {
-            tool,
-            args: args.clone(),
-        };
-        let Ok(mut line) = serde_json::to_string(&entry) else {
-            return;
-        };
+        let args = args
+            .as_object()
+            .ok_or_else(|| format!("refusing to journal non-object args for {tool}"))?;
+        let entry = JournalEntry::new(tool, args.clone());
+        let mut line = serde_json::to_string(&entry).map_err(|e| e.to_string())?;
         line.push('\n');
-        let appended = fs::OpenOptions::new()
+        let mut file = fs::OpenOptions::new()
             .create(true)
             .append(true)
             .open(self.journal_path(id))
-            .and_then(|mut f| std::io::Write::write_all(&mut f, line.as_bytes()));
-        if let Err(e) = appended {
-            eprintln!("atelier: could not journal {tool} for '{id}': {e}");
-        }
+            .map_err(|e| format!("could not open journal for '{id}': {e}"))?;
+        std::io::Write::write_all(&mut file, line.as_bytes())
+            .map_err(|e| format!("could not journal {tool} for '{id}': {e}"))?;
+        file.sync_data()
+            .map_err(|e| format!("could not sync journal for '{id}': {e}"))
     }
 
     /// Read a document's journal back as its ordered calls.
@@ -472,8 +494,10 @@ mod tests {
         let id = created["doc_id"].as_str().unwrap();
         assert!(s.journal(id).unwrap().is_empty(), "nothing recorded yet");
 
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}));
-        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}));
+        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+            .unwrap();
+        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            .unwrap();
         let steps = s.journal(id).unwrap();
         assert_eq!(steps.len(), 2, "appends accumulate in order");
         assert_eq!(steps[0].tool, ToolName::DocNew);
@@ -481,7 +505,10 @@ mod tests {
 
         // Journaling an unknown document is a no-op, never a panic or a stray
         // directory: a failed create must not leave a journal behind.
-        s.journal_append("nope", ToolName::DocDraw, &json!({}));
+        assert!(
+            s.journal_append("nope", ToolName::DocDraw, &json!({}))
+                .is_err()
+        );
         assert!(s.journal("nope").is_err(), "no document, no journal");
     }
 
@@ -492,8 +519,10 @@ mod tests {
         let s = studio("journal-policy");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}));
-        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}));
+        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+            .unwrap();
+        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            .unwrap();
         let path = s.journal_path(id);
 
         let clean = fs::read_to_string(&path).unwrap();
@@ -535,36 +564,60 @@ mod tests {
     fn journal_contract_rejects_context_and_cross_document_steps() {
         let id = "550e8400-e29b-41d4-a716-446655440000";
         let other = "123e4567-e89b-42d3-a456-426614174000";
-        let create = JournalEntry {
-            tool: ToolName::DocNew,
-            args: serde_json::from_value(json!({"name": "d", "doc_id": id})).unwrap(),
-        };
+        let create = JournalEntry::new(
+            ToolName::DocNew,
+            serde_json::from_value(json!({"name": "d", "doc_id": id})).unwrap(),
+        );
         for entry in [
-            JournalEntry {
-                tool: ToolName::DocCheckpoint,
-                args: serde_json::from_value(json!({"doc_id": id, "action": "save"})).unwrap(),
-            },
-            JournalEntry {
-                tool: ToolName::DocDraw,
-                args: serde_json::from_value(json!({"doc_id": other, "op": "clear_cel"})).unwrap(),
-            },
-            JournalEntry {
-                tool: ToolName::DocDraw,
-                args: serde_json::from_value(json!({"op": "clear_cel"})).unwrap(),
-            },
+            JournalEntry::new(
+                ToolName::DocCheckpoint,
+                serde_json::from_value(json!({"doc_id": id, "action": "save"})).unwrap(),
+            ),
+            JournalEntry::new(
+                ToolName::DocDraw,
+                serde_json::from_value(json!({"doc_id": other, "op": "clear_cel"})).unwrap(),
+            ),
+            JournalEntry::new(
+                ToolName::DocDraw,
+                serde_json::from_value(json!({"op": "clear_cel"})).unwrap(),
+            ),
         ] {
             assert!(validate_journal(&[create.clone(), entry]).is_err());
         }
-        let palette = JournalEntry {
-            tool: ToolName::DocPalette,
-            args: serde_json::from_value(json!({
+        let palette = JournalEntry::new(
+            ToolName::DocPalette,
+            serde_json::from_value(json!({
                 "op": "generate",
                 "base": [1, 2, 3],
                 "set_doc": id
             }))
             .unwrap(),
-        };
+        );
         validate_journal(&[create, palette]).unwrap();
+    }
+
+    #[test]
+    fn journals_are_versioned_and_legacy_v1_remains_readable() {
+        let s = studio("journal-version");
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+            .unwrap();
+        let path = s.journal_path(id);
+        let current: Value = serde_json::from_str(fs::read_to_string(&path).unwrap().trim()).unwrap();
+        assert_eq!(current["format_version"], JOURNAL_FORMAT_VERSION);
+
+        let legacy = format!(
+            "{{\"tool\":\"doc_new\",\"args\":{{\"name\":\"d\",\"doc_id\":\"{id}\"}}}}\n"
+        );
+        fs::write(&path, legacy).unwrap();
+        assert_eq!(s.journal(id).unwrap()[0].format_version, JOURNAL_FORMAT_VERSION);
+
+        let mut future = current;
+        future["format_version"] = json!(JOURNAL_FORMAT_VERSION + 1);
+        fs::write(&path, format!("{}\n", serde_json::to_string(&future).unwrap())).unwrap();
+        let error = s.journal(id).unwrap_err();
+        assert!(error.contains("unsupported journal format"), "got: {error}");
     }
 
     #[test]

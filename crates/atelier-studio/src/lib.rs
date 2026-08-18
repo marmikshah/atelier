@@ -28,13 +28,15 @@ mod ops_export;
 mod ops_region;
 mod reference;
 mod store;
+mod transaction;
 mod view;
 pub use control::{
     AlphaMode, AnimAuditMode, AnimationFormat, CheckpointAction, CompareMode, DiffRender,
     DocumentId, DumpMode, ExportOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta, ToolName,
 };
-pub use store::{JournalEntry, validate_journal};
+pub use store::{JOURNAL_FORMAT_VERSION, JournalEntry, validate_journal};
+pub use transaction::StoreTransaction;
 pub use view::LookOptions;
 
 /// Hard cap on the pixel count (w×h) of an external source image. ~64 MP covers
@@ -43,8 +45,9 @@ pub use view::LookOptions;
 /// its pixels are ever allocated. Shared by every `open_bounded` caller.
 pub(crate) const MAX_SOURCE_PIXELS: u64 = 64 * 1024 * 1024;
 
-/// Hard canvas ceiling: width/height a document may have.
-pub(crate) const MAX_CANVAS: u32 = 4096;
+/// Hard canvas ceiling: owned by the persisted core contract so creation and
+/// loading cannot disagree.
+pub(crate) const MAX_CANVAS: u32 = atelier_core::document::MAX_DOCUMENT_DIMENSION;
 /// A document's journal, beside its `doc.json` and `cels/`.
 pub const JOURNAL_FILE: &str = "recipe.jsonl";
 /// Text grids (silhouette/dump/diff) stay readable only so long — shared area

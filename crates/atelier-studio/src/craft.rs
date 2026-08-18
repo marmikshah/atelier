@@ -793,7 +793,8 @@ mod hardening_tests {
             id,
             crate::ToolName::DocNew,
             &json!({"name": "c", "doc_id": id}),
-        );
+        )
+        .unwrap();
 
         let cp = s
             .checkpoint(id, CheckpointAction::Save, None, None)
@@ -816,7 +817,8 @@ mod hardening_tests {
             id,
             crate::ToolName::DocDraw,
             &json!({"doc_id": id, "op": "fill_cel"}),
-        );
+        )
+        .unwrap();
 
         s.checkpoint(id, CheckpointAction::Restore, None, Some(&cpid))
             .unwrap();
