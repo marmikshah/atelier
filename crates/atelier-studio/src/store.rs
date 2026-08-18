@@ -3,7 +3,7 @@
 //! replayable recipe.
 
 use std::fs;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
@@ -11,13 +11,15 @@ use serde_json::{Map, Value, json};
 
 use atelier_core::document::Document;
 
-use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, Studio, ToolName};
+use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, REVISION_FILE, Studio, ToolName};
 
 /// Current JSONL journal entry format.
 pub const JOURNAL_FORMAT_VERSION: u32 = 1;
 
 const MAX_JOURNAL_BYTES: u64 = 64 * 1024 * 1024;
 const MAX_JOURNAL_ENTRIES: usize = 100_000;
+/// Twenty decimal digits for `u64::MAX`, plus one trailing newline.
+const MAX_REVISION_BYTES: u64 = 21;
 
 const fn journal_format_v1() -> u32 {
     JOURNAL_FORMAT_VERSION
@@ -394,6 +396,101 @@ impl Studio {
         Ok((dir, doc))
     }
 
+    /// Current optimistic-concurrency generation for one document.
+    ///
+    /// The sidecar was added after the original v1 store format, so absence is
+    /// the compatible initial generation zero. A present file is deliberately
+    /// strict and bounded: corruption must stop guarded writes rather than
+    /// silently resetting a document to an earlier generation.
+    pub fn document_revision(&self, id: &str) -> Result<u64, String> {
+        if !Self::valid_id(id) {
+            return Err(format!("invalid document id '{id}'"));
+        }
+        if !self.exists(id) {
+            return Err(format!("no document '{id}'"));
+        }
+        let path = self.doc_dir(id).join(REVISION_FILE);
+        match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(0),
+            Err(error) => {
+                return Err(format!(
+                    "cannot inspect revision for document '{id}': {error}"
+                ));
+            }
+            Ok(metadata) if !metadata.file_type().is_file() => {
+                return Err(format!(
+                    "revision for document '{id}' must be a regular file (symlinks are refused)"
+                ));
+            }
+            Ok(_) => {}
+        }
+        let source = read_bounded_utf8(&path, REVISION_FILE, MAX_REVISION_BYTES)
+            .map_err(|error| format!("invalid revision for document '{id}': {error}"))?;
+        let digits = source.strip_suffix('\n').unwrap_or(&source);
+        if digits.is_empty() || !digits.bytes().all(|byte| byte.is_ascii_digit()) {
+            return Err(format!(
+                "invalid revision for document '{id}': expected one unsigned decimal integer"
+            ));
+        }
+        digits.parse::<u64>().map_err(|error| {
+            format!("invalid revision for document '{id}': expected a u64 integer ({error})")
+        })
+    }
+
+    /// Replace a staged document's revision without following caller-controlled
+    /// links. Dispatch calls this only inside a private store transaction; the
+    /// complete tree, including this file, is published at the existing atomic
+    /// directory-swap commit point.
+    pub fn set_document_revision(&self, id: &str, revision: u64) -> Result<(), String> {
+        if !Self::valid_id(id) {
+            return Err(format!("invalid document id '{id}'"));
+        }
+        if !self.exists(id) {
+            return Err(format!("no document '{id}'"));
+        }
+        let dir = self.doc_dir(id);
+        let path = dir.join(REVISION_FILE);
+        match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => {
+                return Err(format!(
+                    "cannot inspect revision for document '{id}': {error}"
+                ));
+            }
+            Ok(metadata) if !metadata.file_type().is_file() => {
+                return Err(format!(
+                    "revision for document '{id}' must be a regular file (symlinks are refused)"
+                ));
+            }
+            Ok(_) => {}
+        }
+
+        let tmp = dir.join(format!(".{REVISION_FILE}-{}.tmp", uuid::Uuid::new_v4()));
+        let write = (|| -> Result<(), String> {
+            let mut options = fs::OpenOptions::new();
+            options.write(true).create_new(true);
+            #[cfg(target_os = "linux")]
+            {
+                use std::os::unix::fs::OpenOptionsExt;
+
+                options.custom_flags(0o400000);
+            }
+            let mut file = options
+                .open(&tmp)
+                .map_err(|error| format!("cannot create staged revision for '{id}': {error}"))?;
+            writeln!(file, "{revision}")
+                .map_err(|error| format!("cannot write staged revision for '{id}': {error}"))?;
+            file.sync_data()
+                .map_err(|error| format!("cannot sync staged revision for '{id}': {error}"))?;
+            fs::rename(&tmp, &path)
+                .map_err(|error| format!("cannot publish staged revision for '{id}': {error}"))
+        })();
+        if write.is_err() {
+            let _ = fs::remove_file(&tmp);
+        }
+        write
+    }
+
     // -- library ------------------------------------------------------------
 
     pub fn doc_new(&self, name: &str, w: u32, h: u32) -> Result<Value, String> {
@@ -502,14 +599,21 @@ impl Studio {
                 continue;
             }
             let item = match meta {
-                Ok(meta) => json!({
-                    "doc_id": id,
-                    "name": meta.name,
-                    "w": meta.w,
-                    "h": meta.h,
-                    "frames": meta.frames.len(),
-                    "layers": meta.layers.len(),
-                }),
+                Ok(meta) => match self.document_revision(&id) {
+                    Ok(revision) => json!({
+                        "doc_id": id,
+                        "name": meta.name,
+                        "w": meta.w,
+                        "h": meta.h,
+                        "frames": meta.frames.len(),
+                        "layers": meta.layers.len(),
+                        "revision": revision,
+                    }),
+                    Err(error) => json!({
+                        "doc_id": id,
+                        "error": error,
+                    }),
+                },
                 Err(error) => json!({
                     "doc_id": id,
                     "error": format!("invalid doc.json: {error}"),
@@ -681,6 +785,56 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
         let _ = fs::remove_dir_all(&dir);
         Studio::with_docs_dir(dir)
+    }
+
+    #[test]
+    fn legacy_revision_zero_round_trips_through_the_sidecar() {
+        let s = studio("revision");
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap().to_string();
+        assert_eq!(s.document_revision(&id).unwrap(), 0);
+        assert!(!s.doc_dir(&id).join(REVISION_FILE).exists());
+
+        s.set_document_revision(&id, u64::MAX).unwrap();
+        assert_eq!(s.document_revision(&id).unwrap(), u64::MAX);
+        assert_eq!(
+            fs::read_to_string(s.doc_dir(&id).join(REVISION_FILE)).unwrap(),
+            format!("{}\n", u64::MAX)
+        );
+        assert_eq!(s.list_docs()["documents"][0]["revision"], u64::MAX);
+    }
+
+    #[test]
+    fn malformed_revision_is_never_reinterpreted_as_legacy_zero() {
+        let s = studio("revision-corrupt");
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap().to_string();
+        let path = s.doc_dir(&id).join(REVISION_FILE);
+
+        for malformed in ["", " 1\n", "1\n\n", "18446744073709551616\n"] {
+            fs::write(&path, malformed).unwrap();
+            assert!(s.document_revision(&id).is_err(), "accepted {malformed:?}");
+        }
+        fs::write(&path, "1234567890123456789012").unwrap();
+        let error = s.document_revision(&id).unwrap_err();
+        assert!(error.contains("21-byte"), "got: {error}");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn revision_io_refuses_links_without_touching_their_target() {
+        use std::os::unix::fs::symlink;
+
+        let s = studio("revision-link");
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap().to_string();
+        let outside = s.docs_dir.join("outside-revision");
+        fs::write(&outside, "41\n").unwrap();
+        symlink(&outside, s.doc_dir(&id).join(REVISION_FILE)).unwrap();
+
+        assert!(s.document_revision(&id).is_err());
+        assert!(s.set_document_revision(&id, 42).is_err());
+        assert_eq!(fs::read_to_string(outside).unwrap(), "41\n");
     }
 
     #[test]
