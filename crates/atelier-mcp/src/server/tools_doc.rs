@@ -12,23 +12,23 @@ use super::{Atelier, alpha_snap, edited, palette_list, region, res, rgba};
 impl Atelier {
     // -- library --
     #[tool(
-        description = "Create a persisted editable document (layered canvas + timeline). Returns an opaque `doc_id`; pass that exact id on every later document call."
+        description = "Create a persisted layered animation document and return its opaque `doc_id`."
     )]
     pub(crate) async fn doc_new(&self, Parameters(p): Parameters<DocNew>) -> CallToolResult {
         res(self.studio().doc_new(&p.name, p.width, p.height))
     }
 
-    #[tool(
-        description = "List documents (doc_id, name, size, frame/layer counts). Optional `prefix` filters the opaque id; `contains` searches id or display name; both = AND. Omit both to list everything."
-    )]
+    #[tool(description = "List up to 100 documents, with filters and cursor pagination.")]
     pub(crate) async fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
-        res(Ok(self.studio().list_docs_filtered(
+        res(self.studio().list_docs_page(
             p.prefix.as_deref(),
             p.contains.as_deref(),
-        )))
+            p.cursor.as_ref().map(|cursor| cursor.as_str()),
+            p.limit.unwrap_or(50),
+        ))
     }
 
-    #[tool(description = "Get a document's structure: layers, frames, cels, tags.")]
+    #[tool(description = "Get document structure: layers, frames, cels, and tags.")]
     pub(crate) async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().doc_info(&p.doc_id))
     }
@@ -39,18 +39,14 @@ impl Atelier {
     }
 
     // -- documents: editable layered/timeline sprites --
-    #[tool(
-        description = "Layer structure in one tool. `op`: add (new layer on top — name/opacity/blend) · set (change layer `index`'s visible/opacity/blend; omit a field to leave it) · move (`index`→`to_index`) · insert (new layer at `index`) · delete · rename · duplicate · merge_down (`index` onto the layer below). Blend ∈ normal/multiply/screen/add/overlay/soft-light/hard-light/darken/lighten/color-dodge/color-burn/difference/subtract/exclusion."
-    )]
+    #[tool(description = "Add, edit, reorder, duplicate, merge, or delete a layer.")]
     pub(crate) async fn doc_layer(&self, Parameters(p): Parameters<DocLayer>) -> CallToolResult {
         res(self.studio().doc_layer(
             &p.doc_id, p.op, p.index, p.to_index, p.name, p.visible, p.opacity, p.blend,
         ))
     }
 
-    #[tool(
-        description = "Frame lifecycle + timing in one tool. `op`: add (append; `copy_from` copies a frame, `count` appends several, `duration_ms` defaults to 100) · duration · insert · duplicate · delete · move. Cels reindex and tag ranges remap."
-    )]
+    #[tool(description = "Add, edit, reorder, duplicate, or delete animation frames.")]
     pub(crate) async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
         res(self.studio().doc_frame(
             &p.doc_id,
@@ -63,9 +59,7 @@ impl Atelier {
         ))
     }
 
-    #[tool(
-        description = "Add an animation tag (named frame range). direction: forward/reverse/pingpong."
-    )]
+    #[tool(description = "Add a named animation frame range.")]
     pub(crate) async fn doc_add_tag(&self, Parameters(p): Parameters<DocAddTag>) -> CallToolResult {
         res(self.studio().doc_add_tag(
             &p.doc_id,
@@ -76,9 +70,7 @@ impl Atelier {
         ))
     }
 
-    #[tool(
-        description = "Explicit document snapshots. action: save, list, restore, or prune. Save before a risky edit and restore if the result is worse."
-    )]
+    #[tool(description = "Save, list, restore, or prune document checkpoints.")]
     pub(crate) async fn doc_checkpoint(
         &self,
         Parameters(p): Parameters<DocCheckpoint>,
@@ -91,9 +83,7 @@ impl Atelier {
         ))
     }
 
-    #[tool(
-        description = "The palette hub. `op`: generate (default) — synthesize a cohesive palette in OKLCh: a single shading ramp (scheme=\"mono\") or a multi-hue scheme (complementary|triadic|analogous|split|tetradic); `count` colours per ramp, `hue_shift` warms light/cools shadow, `sat_curve` (flat|arc|sat-in-shadow), `anchor_midtone` pins the base; returns ramps + flat palette + hex + evenness validation; `set_doc` locks it on a doc. set — lock explicit `colors` [[r,g,b(,a)]] on `doc_id`. snap — snap `doc_id`'s cel (or whole doc if layer/frame omitted) to its palette by perceptual nearest; `alpha` policy preserve|opaque|flatten (`cutoff`,`bg`), `palette` overrides. swap — recolour `from`→`to` across `doc_id` (optional layer/frame), updating the stored palette. report — colour-usage tally for `doc_id` (frame/layer/region, `dupe_threshold`)."
-    )]
+    #[tool(description = "Generate, set, inspect, snap, or swap document palettes.")]
     pub(crate) async fn doc_palette(
         &self,
         Parameters(p): Parameters<DocPalette>,

@@ -9,9 +9,7 @@ use super::{Atelier, res};
 
 #[tool_router(router = export_router, vis = "pub(crate)")]
 impl Atelier {
-    #[tool(
-        description = "Export one document to a file. `op`: sheet (horizontal PNG plus JSON metadata; `meta` atelier|standard) or anim (`format` gif|apng and optional animation `tag`). `scale` defaults to 4. GIF/APNG alpha is 1-bit, so snap or flatten partial alpha first."
-    )]
+    #[tool(description = "Export a spritesheet with metadata or a GIF/APNG animation.")]
     pub(crate) async fn doc_export(&self, Parameters(p): Parameters<DocExport>) -> CallToolResult {
         res(self.studio().doc_export(
             &p.doc_id,
