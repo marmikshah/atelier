@@ -16,6 +16,7 @@ use atelier_core::raster;
 const BG_TOL: f32 = 0.08;
 /// A reference colour with no doc colour within this ΔE counts as missing.
 const MISSING_TOL: f32 = 0.12;
+const MAX_SUBJECT_PALETTE_COLORS: usize = 256;
 
 impl Studio {
     /// Attach a reference image to a document: the file is decoded (validation),
@@ -107,6 +108,11 @@ impl Studio {
         target_w: Option<u32>,
         colors: usize,
     ) -> Result<(Vec<u8>, Value), String> {
+        if !(2..=MAX_SUBJECT_PALETTE_COLORS).contains(&colors) {
+            return Err(format!(
+                "reference palette colors must be 2..={MAX_SUBJECT_PALETTE_COLORS}, got {colors}"
+            ));
+        }
         let (dir, doc) = self.open(id)?;
         let src = match path {
             Some(p) => crate::open_bounded(Path::new(p))?,
@@ -131,7 +137,7 @@ impl Studio {
         }
         let small = raster::scale(&subject, tw, th, raster::ScaleMethod::AreaAverage);
         // Frequency-weighted subject palette of the downscaled art.
-        let palette = subject_palette(&small, colors.max(2));
+        let palette = subject_palette(&small, colors);
         let pal_json: Vec<Value> = palette.iter().map(|c| json!(c)).collect();
         // Silhouette grid at target size (capped so the text stays readable).
         let silhouette: Value = if ((tw * th) as u64) <= crate::GRID_AREA_CAP {
@@ -542,6 +548,10 @@ mod tests {
         assert!(!png.is_empty());
         assert!(rep["bg_coverage_pct"].as_f64().unwrap() > 10.0);
         assert!(!rep["subject_palette"].as_array().unwrap().is_empty());
+        assert!(
+            s.ref_analyze(id, None, None, MAX_SUBJECT_PALETTE_COLORS + 1)
+                .is_err()
+        );
         // Clearing removes it.
         s.set_reference(id, None).unwrap();
         assert!(s.ref_analyze(id, None, None, 4).is_err());
