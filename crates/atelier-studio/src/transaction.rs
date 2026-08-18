@@ -42,7 +42,13 @@ pub struct StoreTransaction {
     live_docs_dir: PathBuf,
     stage_root: PathBuf,
     studio: Studio,
+    intent: TransactionIntent,
     committed: bool,
+}
+
+enum TransactionIntent {
+    Create,
+    Existing(String),
 }
 
 impl StoreTransaction {
@@ -60,10 +66,31 @@ impl StoreTransaction {
         if !Studio::valid_id(id) {
             return Err(format!("invalid transaction document id '{id}'"));
         }
+        if let TransactionIntent::Existing(expected) = &self.intent
+            && expected != id
+        {
+            return Err(format!(
+                "transaction for existing document '{expected}' cannot commit as '{id}'"
+            ));
+        }
         let live = self.live_docs_dir.join(id);
         let staged = self.stage_root.join(id);
         let live_exists = directory_state(&live, "live document")?;
         let staged_exists = directory_state(&staged, "staged document")?;
+
+        match (&self.intent, live_exists) {
+            (TransactionIntent::Create, true) => {
+                return Err(format!(
+                    "refusing to replace existing document '{id}' from a creation transaction"
+                ));
+            }
+            (TransactionIntent::Existing(expected), false) => {
+                return Err(format!(
+                    "document '{expected}' disappeared before its transaction could commit"
+                ));
+            }
+            _ => {}
+        }
 
         if staged_exists {
             sync_tree(&staged)?;
@@ -164,6 +191,9 @@ impl Studio {
             live_docs_dir: self.docs_dir.clone(),
             studio: Studio::with_docs_dir(stage_root.clone()),
             stage_root,
+            intent: id.map_or(TransactionIntent::Create, |id| {
+                TransactionIntent::Existing(id.to_owned())
+            }),
             committed: false,
         })
     }
@@ -404,6 +434,20 @@ mod tests {
         delete.studio().delete_doc(id).unwrap();
         delete.commit(id).unwrap();
         assert!(!live.exists(id));
+    }
+
+    #[test]
+    fn creation_transaction_refuses_to_replace_a_live_document() {
+        let live = studio("creation-collision");
+        let create = live.begin_transaction(None).unwrap();
+        let report = create.studio().doc_new("staged", 4, 4).unwrap();
+        let id = report["doc_id"].as_str().unwrap();
+        stage_tree(&create.studio().doc_dir(id), &live.doc_dir(id)).unwrap();
+
+        let error = create.commit(id).unwrap_err();
+
+        assert!(error.contains("refusing to replace"), "{error}");
+        assert_eq!(live.doc_info(id).unwrap()["name"], "staged");
     }
 
     #[test]
