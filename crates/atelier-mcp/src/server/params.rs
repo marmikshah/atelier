@@ -17,7 +17,7 @@ use atelier_studio::{
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta,
 };
 
-/// Preserve replay compatibility with journals produced by pre-2.0 clients
+/// Preserve replay compatibility with journals produced by earlier 1.x clients
 /// that stringified flattened operation values before the schemas were typed.
 ///
 /// New clients receive concrete types from the registry-derived schemas. This

@@ -1,8 +1,10 @@
 # Roadmap
 
-Atelier is preparing for a maintainer-reviewed 2.0 release. Work is prioritized
-around data safety, predictable automation contracts, and bounded resource use.
-The editor remains offline and headless; Ubuntu x86_64 and the Alpine amd64
+Atelier development remains on the `1.y.z` release train; feature releases
+increment `y`. A new major version is not a roadmap milestone and will not be
+created without explicit maintainer authorization. Work is prioritized around
+data safety, predictable automation contracts, and bounded resource use. The
+editor remains offline and headless; Ubuntu x86_64 and the Alpine amd64
 container are the supported runtimes.
 
 ## Surface policy
@@ -25,7 +27,7 @@ Every addition must preserve these constraints:
 Free-form batches are intentionally excluded. Bounded ranges or counts are
 acceptable when they have one clear operation and fail atomically.
 
-## 2.0 readiness
+## Current readiness
 
 ### Storage and recovery
 
@@ -91,7 +93,8 @@ acceptable when they have one clear operation and fail atomically.
   artifacts.
 - Add a locked dependency-vulnerability check and publish provenance or an
   SBOM when the release process can verify it end to end.
-- Define the 2.0 compatibility and migration policy before creating its tag.
+- Define a compatibility and migration policy before any maintainer-authorized
+  major-version change.
 
 ## Feature candidates
 

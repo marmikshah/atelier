@@ -10,7 +10,7 @@
 # commands printed after installation.
 #
 # Environment:
-#   ATELIER_VERSION      release tag to install (for example v1.8.0)
+#   ATELIER_VERSION      release tag to install (for example v1.9.0)
 #   ATELIER_INSTALL_DIR  binary directory (default: ~/.local/bin)
 #
 # Native installs support Ubuntu 22.04 or newer on x86_64. The separately

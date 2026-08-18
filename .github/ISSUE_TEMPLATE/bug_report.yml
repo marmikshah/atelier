@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Atelier is pre-2.0 and has not completed maintainer review. Please include
+        Atelier's 1.x series has not completed maintainer review. Please include
         the smallest reproducible command or tool-call sequence you can provide.
   - type: textarea
     id: what
