@@ -22,6 +22,7 @@ use atelier_core::document::{Document, FrameAction, TagDirection};
 use atelier_core::raster::Blend;
 
 mod analysis;
+mod archive;
 mod control;
 mod craft;
 mod integrity;

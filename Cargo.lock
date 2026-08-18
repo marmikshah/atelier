@@ -81,6 +81,7 @@ name = "atelier-studio"
 version = "1.9.0"
 dependencies = [
  "atelier-core",
+ "crc32fast",
  "fs4",
  "image",
  "schemars",

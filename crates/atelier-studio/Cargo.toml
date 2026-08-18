@@ -13,6 +13,7 @@ categories.workspace = true
 
 [dependencies]
 atelier-core.workspace = true
+crc32fast.workspace = true
 image.workspace = true
 schemars.workspace = true
 serde.workspace = true
