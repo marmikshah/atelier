@@ -3,6 +3,7 @@
 //! inline MCP image content so the pixels arrive in the same turn.
 
 use std::fs;
+use std::io::Write;
 use std::path::Path;
 
 use image::RgbaImage;
@@ -19,7 +20,9 @@ fn valid_checkpoint_id(cpid: &str) -> bool {
 }
 use serde_json::{Value, json};
 
-use super::{CheckpointAction, JOURNAL_FILE, LayerOp, PaletteScheme, Studio};
+use super::{
+    CheckpointAction, JOURNAL_FILE, LayerOp, PaletteScheme, Studio, store::read_bounded_utf8,
+};
 use atelier_core::document::{DitherAxis, DitherPattern};
 use atelier_core::raster::{self, Blend, SaturationCurve};
 
@@ -57,6 +60,55 @@ pub(super) const MID_MAX: u8 = 170;
 /// More colours per ramp are not useful for indexed pixel-art workflows and
 /// turn a tiny request into disproportionate allocation and CPU work.
 const MAX_PALETTE_RAMP_COLORS: usize = 256;
+
+/// Checkpoints copy the complete live document state, so an unbounded history
+/// can multiply storage unexpectedly. Callers must prune explicitly rather
+/// than having older recovery points disappear behind their backs.
+const MAX_CHECKPOINTS: usize = 32;
+
+/// Labels are persisted as UTF-8 in `label.txt`; cap their encoded size before
+/// creating the checkpoint directory or copying any document files.
+const MAX_CHECKPOINT_LABEL_BYTES: usize = 4096;
+
+fn read_checkpoint_label(path: &Path, checkpoint_id: &str) -> Result<Option<String>, String> {
+    match fs::symlink_metadata(path) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(format!(
+            "cannot inspect checkpoint '{checkpoint_id}' label: {error}"
+        )),
+        Ok(_) => read_bounded_utf8(
+            path,
+            &format!("checkpoint '{checkpoint_id}' label"),
+            MAX_CHECKPOINT_LABEL_BYTES as u64,
+        )
+        .map(Some),
+    }
+}
+
+fn write_checkpoint_label(checkpoint_dir: &Path, label: &str) -> Result<(), String> {
+    let label_path = checkpoint_dir.join("label.txt");
+    let write_result = (|| -> std::io::Result<()> {
+        // `create_new` refuses a stale file or symlink rather than following it.
+        let mut file = fs::File::options()
+            .write(true)
+            .create_new(true)
+            .open(&label_path)?;
+        file.write_all(label.as_bytes())
+    })();
+    if let Err(error) = write_result {
+        return match fs::remove_dir_all(checkpoint_dir) {
+            Ok(()) => Err(format!(
+                "cannot write checkpoint label {}: {error}; the partial checkpoint was removed",
+                label_path.display()
+            )),
+            Err(cleanup_error) => Err(format!(
+                "cannot write checkpoint label {}: {error}; also cannot remove the partial checkpoint: {cleanup_error}",
+                label_path.display()
+            )),
+        };
+    }
+    Ok(())
+}
 
 /// Snapshot every file that defines live document state. Checkpoint metadata
 /// itself is intentionally excluded.
@@ -139,12 +191,27 @@ impl Studio {
         };
         match action {
             CheckpointAction::Save => {
-                let n = list_cps()
+                if let Some(label) = label
+                    && label.len() > MAX_CHECKPOINT_LABEL_BYTES
+                {
+                    return Err(format!(
+                        "checkpoint label is {} UTF-8 bytes, over the {MAX_CHECKPOINT_LABEL_BYTES}-byte limit",
+                        label.len()
+                    ));
+                }
+                let existing = list_cps();
+                if existing.len() >= MAX_CHECKPOINTS {
+                    return Err(format!(
+                        "document '{id}' already has the maximum {MAX_CHECKPOINTS} checkpoints; prune one before saving another"
+                    ));
+                }
+                let n = existing
                     .iter()
                     .filter_map(|s| s.strip_prefix("cp").and_then(|t| t.parse::<u32>().ok()))
                     .max()
                     .unwrap_or(0)
-                    + 1;
+                    .checked_add(1)
+                    .ok_or("checkpoint id space is exhausted; prune checkpoints before saving")?;
                 let cpid = format!("cp{}", n);
                 let dst = cps.join(&cpid);
                 // A failed snapshot must not leave a partial checkpoint dir —
@@ -155,18 +222,19 @@ impl Studio {
                     return Err(e);
                 }
                 if let Some(lbl) = label {
-                    let _ = fs::write(dst.join("label.txt"), lbl);
+                    write_checkpoint_label(&dst, lbl)?;
                 }
                 Ok(json!({"saved": cpid, "label": label, "doc_id": id}))
             }
             CheckpointAction::List => {
                 let items: Vec<Value> = list_cps()
                     .into_iter()
-                    .map(|cpid| {
-                        let lbl = fs::read_to_string(cps.join(&cpid).join("label.txt")).ok();
-                        json!({"id": cpid, "label": lbl})
+                    .map(|cpid| -> Result<Value, String> {
+                        let label =
+                            read_checkpoint_label(&cps.join(&cpid).join("label.txt"), &cpid)?;
+                        Ok(json!({"id": cpid, "label": label}))
                     })
-                    .collect();
+                    .collect::<Result<_, _>>()?;
                 Ok(json!({"doc_id": id, "checkpoints": items, "count": items.len()}))
             }
             CheckpointAction::Restore => {
@@ -660,6 +728,149 @@ mod tests {
             s.checkpoint(id, CheckpointAction::Restore, None, Some("cp1"))
                 .is_ok()
         );
+    }
+
+    #[test]
+    fn checkpoint_save_requires_explicit_pruning_at_the_retention_limit() {
+        let s = studio("cp-retention");
+        let created = s.doc_new("c", 2, 2).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+
+        for n in 1..=MAX_CHECKPOINTS {
+            let saved = s
+                .checkpoint(id, CheckpointAction::Save, None, None)
+                .unwrap();
+            assert_eq!(saved["saved"], format!("cp{n}"));
+        }
+
+        let checkpoint_dir = s.doc_dir(id).join(".checkpoints");
+        let error = s
+            .checkpoint(id, CheckpointAction::Save, Some("must not evict"), None)
+            .unwrap_err();
+        assert!(error.contains("maximum 32 checkpoints"), "got: {error}");
+        assert!(checkpoint_dir.join("cp1").join("doc.json").is_file());
+        assert!(!checkpoint_dir.join("cp33").exists());
+        assert_eq!(
+            s.checkpoint(id, CheckpointAction::List, None, None)
+                .unwrap()["count"],
+            MAX_CHECKPOINTS
+        );
+
+        s.checkpoint(id, CheckpointAction::Prune, None, Some("cp1"))
+            .unwrap();
+        let saved = s
+            .checkpoint(id, CheckpointAction::Save, None, None)
+            .unwrap();
+        assert_eq!(saved["saved"], "cp33");
+        assert_eq!(
+            s.checkpoint(id, CheckpointAction::List, None, None)
+                .unwrap()["count"],
+            MAX_CHECKPOINTS
+        );
+    }
+
+    #[test]
+    fn checkpoint_labels_are_bounded_by_utf8_bytes_before_snapshot_writes() {
+        let s = studio("cp-label-limit");
+        let created = s.doc_new("c", 2, 2).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let checkpoint_dir = s.doc_dir(id).join(".checkpoints");
+        let over_limit = "é".repeat(MAX_CHECKPOINT_LABEL_BYTES / 2 + 1);
+
+        let error = s
+            .checkpoint(id, CheckpointAction::Save, Some(&over_limit), None)
+            .unwrap_err();
+        assert!(
+            error.contains("4098 UTF-8 bytes") && error.contains("4096-byte limit"),
+            "got: {error}"
+        );
+        assert!(
+            !checkpoint_dir.exists(),
+            "an oversized label created checkpoint state"
+        );
+
+        let at_limit = "é".repeat(MAX_CHECKPOINT_LABEL_BYTES / 2);
+        let saved = s
+            .checkpoint(id, CheckpointAction::Save, Some(&at_limit), None)
+            .unwrap();
+        assert_eq!(saved["saved"], "cp1");
+        assert_eq!(
+            fs::read(checkpoint_dir.join("cp1").join("label.txt"))
+                .unwrap()
+                .len(),
+            MAX_CHECKPOINT_LABEL_BYTES
+        );
+        assert_eq!(
+            s.checkpoint(id, CheckpointAction::List, None, None)
+                .unwrap()["checkpoints"][0]["label"],
+            at_limit
+        );
+    }
+
+    #[test]
+    fn checkpoint_label_write_failure_removes_the_partial_snapshot() {
+        let s = studio("cp-label-write-failure");
+        let created = s.doc_new("c", 2, 2).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let checkpoint = s.doc_dir(id).join(".checkpoints").join("cp1");
+        fs::create_dir_all(checkpoint.join("label.txt")).unwrap();
+
+        let error = s
+            .checkpoint(id, CheckpointAction::Save, Some("important"), None)
+            .unwrap_err();
+        assert!(
+            error.contains("cannot write checkpoint label")
+                && error.contains("partial checkpoint was removed"),
+            "got: {error}"
+        );
+        assert!(
+            !checkpoint.exists(),
+            "failed label persistence left a restorable snapshot"
+        );
+        assert_eq!(
+            s.checkpoint(id, CheckpointAction::List, None, None)
+                .unwrap()["count"],
+            0
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn checkpoint_list_bounds_and_refuses_untrusted_label_files() {
+        use std::os::unix::fs::symlink;
+
+        let s = studio("cp-label-read-hardening");
+        let created = s.doc_new("c", 2, 2).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.checkpoint(id, CheckpointAction::Save, Some("safe"), None)
+            .unwrap();
+        let label_path = s
+            .doc_dir(id)
+            .join(".checkpoints")
+            .join("cp1")
+            .join("label.txt");
+
+        fs::write(&label_path, vec![b'x'; MAX_CHECKPOINT_LABEL_BYTES + 1]).unwrap();
+        let oversized = s
+            .checkpoint(id, CheckpointAction::List, None, None)
+            .unwrap_err();
+        assert!(
+            oversized.contains("4097 bytes") && oversized.contains("4096-byte"),
+            "got: {oversized}"
+        );
+
+        fs::write(&label_path, [0xff]).unwrap();
+        let invalid_utf8 = s
+            .checkpoint(id, CheckpointAction::List, None, None)
+            .unwrap_err();
+        assert!(invalid_utf8.contains("not UTF-8"), "got: {invalid_utf8}");
+
+        fs::remove_file(&label_path).unwrap();
+        symlink(s.doc_dir(id).join("doc.json"), &label_path).unwrap();
+        let linked = s
+            .checkpoint(id, CheckpointAction::List, None, None)
+            .unwrap_err();
+        assert!(linked.contains("symlinks are refused"), "got: {linked}");
     }
 
     #[test]

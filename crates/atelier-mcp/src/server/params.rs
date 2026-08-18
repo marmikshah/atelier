@@ -426,6 +426,8 @@ pub(crate) struct DocCheckpoint {
     pub(crate) doc_id: DocumentId,
     /// save | list | restore | prune.
     pub(crate) action: CheckpointAction,
+    /// Optional save label. The studio enforces a 4096-byte UTF-8 limit.
+    #[schemars(length(max = 4096))]
     pub(crate) label: Option<String>,
     pub(crate) checkpoint_id: Option<String>,
 }
@@ -720,6 +722,10 @@ mod tests {
             fx["properties"]["max_colors"]["maximum"],
             atelier_core::document::MAX_QUANTIZE_COLORS
         );
+
+        let checkpoint = schemars::schema_for!(DocCheckpoint);
+        let checkpoint = checkpoint.as_value();
+        assert_eq!(checkpoint["properties"]["label"]["maxLength"], 4096);
     }
 
     fn op_branch<'a>(schema: &'a Value, op: &str) -> Option<&'a Value> {
