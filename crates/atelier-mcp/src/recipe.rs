@@ -2,6 +2,11 @@
 
 use atelier_studio::{JournalEntry, validate_journal};
 
+/// Maximum encoded size accepted for an external replay recipe.
+pub const MAX_RECIPE_BYTES: u64 = 64 * 1024 * 1024;
+/// Maximum number of non-empty JSONL entries accepted in one replay.
+pub const MAX_RECIPE_ENTRIES: usize = 100_000;
+
 /// A replayable sequence of recorded tool calls.
 #[derive(Debug)]
 pub struct Recipe {
@@ -15,43 +20,61 @@ impl Recipe {
     /// append. Completed lines remain replayable, but corruption before the
     /// final line is always an error.
     pub fn parse(src: &str) -> Result<Self, String> {
-        let nonempty: Vec<(usize, &str)> = src
-            .lines()
-            .enumerate()
-            .map(|(number, line)| (number, line.trim()))
-            .filter(|(_, line)| !line.is_empty())
-            .collect();
-        if nonempty.is_empty() {
-            return Err("recipe has no steps — expected JSON Lines of {tool,args}".into());
-        }
+        parse_with_limits(src, MAX_RECIPE_BYTES, MAX_RECIPE_ENTRIES)
+    }
+}
 
-        let last = nonempty.len() - 1;
-        let mut steps = Vec::new();
-        for (index, (number, line)) in nonempty.iter().enumerate() {
-            match serde_json::from_str::<JournalEntry>(line) {
-                Ok(entry) => steps.push(entry),
-                Err(error) if index == last && error.is_eof() => {
-                    eprintln!(
-                        "recipe: dropped a partial final line (line {}) — the last \
+fn parse_with_limits(src: &str, max_bytes: u64, max_entries: usize) -> Result<Recipe, String> {
+    let encoded_bytes = u64::try_from(src.len()).unwrap_or(u64::MAX);
+    if encoded_bytes > max_bytes {
+        return Err(format!(
+            "recipe is {encoded_bytes} bytes, over the {max_bytes}-byte replay limit"
+        ));
+    }
+
+    let final_line_was_terminated = src.ends_with('\n');
+    let mut nonempty = src
+        .lines()
+        .enumerate()
+        .map(|(number, line)| (number, line.trim()))
+        .filter(|(_, line)| !line.is_empty())
+        .peekable();
+    if nonempty.peek().is_none() {
+        return Err("recipe has no steps — expected JSON Lines of {tool,args}".into());
+    }
+
+    let mut steps = Vec::new();
+    while let Some((number, line)) = nonempty.next() {
+        let is_last = nonempty.peek().is_none();
+        match serde_json::from_str::<JournalEntry>(line) {
+            Ok(entry) if steps.len() < max_entries => steps.push(entry),
+            Ok(_) => {
+                return Err(format!(
+                    "line {}: recipe has more than {max_entries} entries; split or archive it before replay",
+                    number + 1
+                ));
+            }
+            Err(error) if is_last && error.is_eof() && !final_line_was_terminated => {
+                eprintln!(
+                    "recipe: dropped a partial final line (line {}) — the last \
                          recorded step is missing from this replay",
-                        number + 1
-                    );
-                    break;
-                }
-                Err(error) => {
-                    return Err(format!(
-                        "line {}: {error} — expected {{tool,args}}",
-                        number + 1
-                    ));
-                }
+                    number + 1
+                );
+                break;
+            }
+            Err(error) => {
+                return Err(format!(
+                    "line {}: {error} — expected {{tool,args}}",
+                    number + 1
+                ));
             }
         }
-        if steps.is_empty() {
-            return Err("recipe has no complete steps".into());
-        }
-        validate_journal(&steps)?;
-        Ok(Self { steps })
     }
+    if steps.is_empty() {
+        return Err("recipe has no complete steps".into());
+    }
+    validate_journal(&steps)?;
+    Ok(Recipe { steps })
 }
 
 #[cfg(test)]
@@ -105,5 +128,36 @@ mod tests {
         );
         assert!(Recipe::parse("\n\n").is_err());
         assert!(Recipe::parse(r#"{"name":"old","description":"wrapped","steps":[]}"#).is_err());
+    }
+
+    #[test]
+    fn encoded_size_is_checked_before_json_parsing() {
+        let error = parse_with_limits("not-json-at-all", 4, MAX_RECIPE_ENTRIES).unwrap_err();
+        assert!(error.contains("over the 4-byte replay limit"), "{error}");
+        assert!(
+            !error.contains("line 1"),
+            "size must be the first check: {error}"
+        );
+    }
+
+    #[test]
+    fn entry_count_is_bounded_with_the_overflowing_line_reported() {
+        let source = format!(
+            "{{\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
+             {{\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{ID}\",\"op\":\"rect\"}}}}\n"
+        );
+        let error = parse_with_limits(&source, MAX_RECIPE_BYTES, 1).unwrap_err();
+        assert!(error.contains("line 2"), "{error}");
+        assert!(error.contains("more than 1 entries"), "{error}");
+    }
+
+    #[test]
+    fn newline_terminated_incomplete_json_is_corruption_not_a_torn_tail() {
+        let source = format!(
+            "{{\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
+             {{\"tool\":\"doc_draw\"\n"
+        );
+        let error = Recipe::parse(&source).unwrap_err();
+        assert!(error.contains("line 2"), "{error}");
     }
 }
