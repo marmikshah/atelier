@@ -43,9 +43,183 @@ fn the_op_table_is_the_single_source_of_truth() {
 }
 
 #[test]
+fn operation_schemas_are_registry_derived_and_resource_bounded() {
+    for (side, names) in [(OpSide::Draw, draw_ops()), (OpSide::Fx, fx_ops())] {
+        let schema = operation_schema(side);
+        let value = schema.as_value();
+        let branches = value["oneOf"].as_array().unwrap();
+        assert!(branches.len() <= names.len());
+        for name in names {
+            let spec = OPS.iter().find(|spec| spec.name == *name).unwrap();
+            let matching: Vec<&Value> = branches
+                .iter()
+                .filter(|branch| schema_branch_names_op(branch, name))
+                .collect();
+            assert_eq!(matching.len(), 1, "schema must name {name} exactly once");
+            let branch = matching[0];
+            let required: Vec<&str> = branch
+                .get("required")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .collect();
+            assert_eq!(required, spec.required);
+            for key in spec.required.iter().chain(spec.optional) {
+                assert!(
+                    schema_has_operation_key(value, key),
+                    "{name}.{key} has no advertised type"
+                );
+            }
+        }
+    }
+    let draw = operation_schema(OpSide::Draw);
+    assert_eq!(
+        draw.as_value()["properties"]["octaves"]["maximum"],
+        MAX_NOISE_OCTAVES
+    );
+    let fx = operation_schema(OpSide::Fx);
+    assert_eq!(
+        fx.as_value()["properties"]["max_colors"]["maximum"],
+        MAX_QUANTIZE_COLORS
+    );
+    assert_eq!(
+        schema_for_operation_key(draw.as_value(), "size").unwrap()["minimum"],
+        1
+    );
+}
+
+fn schema_branch_names_op(branch: &Value, op: &str) -> bool {
+    let selector = &branch["properties"]["op"];
+    selector["const"].as_str() == Some(op)
+        || selector["enum"]
+            .as_array()
+            .is_some_and(|names| names.iter().any(|name| name.as_str() == Some(op)))
+}
+
+fn schema_has_operation_key(schema: &Value, key: &str) -> bool {
+    schema_for_operation_key(schema, key).is_some()
+}
+
+fn schema_for_operation_key<'a>(schema: &'a Value, key: &str) -> Option<&'a Value> {
+    if let Some(value) = schema["properties"].get(key) {
+        return Some(value);
+    }
+    schema["patternProperties"]
+        .as_object()?
+        .iter()
+        .find_map(|(pattern, value)| {
+            let body = pattern.strip_prefix('^')?.strip_suffix('$')?;
+            let body = body
+                .strip_prefix('(')
+                .and_then(|body| body.strip_suffix(')'))
+                .unwrap_or(body);
+            body.split('|')
+                .any(|candidate| candidate == key)
+                .then_some(value)
+        })
+}
+
+#[test]
+fn procedural_work_factors_are_rejected_outside_the_contract() {
+    let noise = |octaves| {
+        json!({
+            "op": "noise",
+            "stops": [{"pos": 0.0, "color": [0, 0, 0]}],
+            "x0": 0,
+            "y0": 0,
+            "x1": 1,
+            "y1": 1,
+            "octaves": octaves
+        })
+    };
+    assert!(validate_op(&noise(1)).is_ok());
+    assert!(validate_op(&noise(MAX_NOISE_OCTAVES)).is_ok());
+    assert!(validate_op(&noise(0)).unwrap_err().contains("1..=16"));
+    assert!(
+        validate_op(&noise(MAX_NOISE_OCTAVES + 1))
+            .unwrap_err()
+            .contains("1..=16")
+    );
+
+    let quantize = |max_colors| json!({"op": "quantize", "colors": [], "max_colors": max_colors});
+    assert!(validate_op(&quantize(1)).is_ok());
+    assert!(validate_op(&quantize(MAX_QUANTIZE_COLORS)).is_ok());
+    assert!(validate_op(&quantize(0)).unwrap_err().contains("1..=256"));
+    assert!(
+        validate_op(&quantize(MAX_QUANTIZE_COLORS + 1))
+            .unwrap_err()
+            .contains("1..=256")
+    );
+
+    let mut document = Document::new("bounded quantize", 1, 1);
+    document.fill_cel(0, 0, [10, 20, 30, 255]).unwrap();
+    assert!(
+        document
+            .quantize(0, 0, Vec::new(), MAX_QUANTIZE_COLORS + 1)
+            .unwrap_err()
+            .contains("1..=256")
+    );
+
+    let too_many_colors = vec![json!([0, 0, 0]); MAX_PALETTE_COLORS + 1];
+    assert!(
+        validate_op(&json!({"op": "quantize", "colors": too_many_colors, "max_colors": 16}))
+            .unwrap_err()
+            .contains("at most 256 colours")
+    );
+    assert!(
+        document
+            .quantize(0, 0, vec![[0, 0, 0, 255]; MAX_PALETTE_COLORS + 1], 16,)
+            .unwrap_err()
+            .contains("at most 256 colours")
+    );
+
+    let too_many_stops = vec![json!({"pos": 0.0, "color": [0, 0, 0]}); MAX_GRADIENT_STOPS + 1];
+    assert!(
+        validate_op(&json!({
+            "op": "gradient_map",
+            "stops": too_many_stops,
+        }))
+        .unwrap_err()
+        .contains("1..=64 entries")
+    );
+    assert!(
+        document
+            .gradient_map(
+                0,
+                0,
+                vec![(0.0, [0, 0, 0, 255]); MAX_GRADIENT_STOPS + 1],
+                None,
+            )
+            .unwrap_err()
+            .contains("1..=64 colour stops")
+    );
+}
+
+#[test]
+fn brush_size_is_positive_in_the_operation_contract() {
+    let pencil = |size| {
+        json!({
+            "op": "pencil",
+            "points": [[0, 0]],
+            "color": [1, 2, 3],
+            "size": size,
+        })
+    };
+    assert!(validate_op(&pencil(1)).is_ok());
+    for size in [0, -1] {
+        let error = validate_op(&pencil(size)).unwrap_err();
+        assert!(
+            error.contains("'size' must be an integer in 1..="),
+            "{error}"
+        );
+    }
+}
+
+#[test]
 fn palette_set_and_index() {
     let mut d = Document::new("t", 4, 4);
-    d.set_palette(vec![[1, 1, 1, 255], [2, 2, 2, 255]]);
+    d.set_palette(vec![[1, 1, 1, 255], [2, 2, 2, 255]]).unwrap();
     assert_eq!(d.meta.palette.len(), 2);
     assert_eq!(d.meta.palette[1], [2, 2, 2, 255]);
 }
@@ -312,7 +486,7 @@ fn fx_resnaps_to_locked_palette_by_default() {
     // must re-snap by default so every pixel stays on-palette.
     let mut d = Document::new("t", 4, 4);
     let pal = vec![[220, 30, 30, 255], [30, 30, 220, 255]];
-    d.set_palette(pal.clone());
+    d.set_palette(pal.clone()).unwrap();
     d.apply_op(
         0,
         0,
@@ -341,7 +515,7 @@ fn fx_snap_false_keeps_continuous_tone() {
     // allowed to stay off-palette.
     let mut d = Document::new("t", 4, 4);
     let pal = vec![[220, 30, 30, 255], [30, 30, 220, 255]];
-    d.set_palette(pal.clone());
+    d.set_palette(pal.clone()).unwrap();
     d.apply_op(
         0,
         0,
@@ -437,6 +611,231 @@ fn load_rejects_traversal_cel_paths() {
 }
 
 #[test]
+fn load_rejects_oversized_metadata_before_reading_it() {
+    let dir = std::env::temp_dir().join(format!(
+        "atelier-metadata-size-limit-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut document = Document::new("bounded", 8, 8);
+    document.save(&dir).unwrap();
+
+    let metadata = std::fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(dir.join("doc.json"))
+        .unwrap();
+    metadata.set_len(MAX_DOCUMENT_METADATA_BYTES + 1).unwrap();
+
+    let error = Document::load(&dir)
+        .err()
+        .expect("oversized metadata must fail");
+    assert!(error.contains("limit is"), "got: {error}");
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
+fn persisted_metadata_cardinality_and_name_limits_are_explicit() {
+    assert_eq!(MAX_QUANTIZE_COLORS, MAX_PALETTE_COLORS);
+    let base = Document::new("bounded", 8, 8).meta().clone();
+
+    let mut metadata = base.clone();
+    metadata.name = "n".repeat(MAX_DOCUMENT_NAME_BYTES + 1);
+    assert!(metadata.validate().unwrap_err().contains("document name"));
+
+    let mut metadata = base.clone();
+    metadata.layers[0].name = "l".repeat(MAX_DOCUMENT_NAME_BYTES + 1);
+    assert!(metadata.validate().unwrap_err().contains("layer name"));
+
+    let mut metadata = base.clone();
+    metadata.tags.push(TagMeta {
+        name: "t".repeat(MAX_DOCUMENT_NAME_BYTES + 1),
+        from: 0,
+        to: 0,
+        direction: TagDirection::Forward,
+    });
+    assert!(metadata.validate().unwrap_err().contains("tag name"));
+
+    let mut metadata = base.clone();
+    metadata.palette = vec![[0, 0, 0, 255]; MAX_PALETTE_COLORS + 1];
+    assert!(metadata.validate().unwrap_err().contains("palette"));
+
+    let mut metadata = base.clone();
+    metadata.layers = vec![metadata.layers[0].clone(); MAX_DOCUMENT_LAYERS + 1];
+    assert!(metadata.validate().unwrap_err().contains("layers"));
+
+    let mut metadata = base.clone();
+    metadata.frames = vec![metadata.frames[0].clone(); MAX_DOCUMENT_FRAMES + 1];
+    assert!(metadata.validate().unwrap_err().contains("frames"));
+
+    let mut metadata = base.clone();
+    metadata.tags = vec![
+        TagMeta {
+            name: "tag".into(),
+            from: 0,
+            to: 0,
+            direction: TagDirection::Forward,
+        };
+        MAX_DOCUMENT_TAGS + 1
+    ];
+    assert!(metadata.validate().unwrap_err().contains("tags"));
+
+    let mut metadata = base;
+    metadata.cels = vec![
+        CelMeta {
+            layer: 0,
+            frame: 0,
+            x: 0,
+            y: 0,
+            file: "cels/L0_F0.png".into(),
+        };
+        MAX_DOCUMENT_CELS + 1
+    ];
+    assert!(metadata.validate().unwrap_err().contains("cels"));
+}
+
+#[test]
+fn save_rejects_invalid_metadata_before_touching_disk() {
+    let dir = std::env::temp_dir().join(format!(
+        "atelier-save-metadata-preflight-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut document = Document::new(&"n".repeat(MAX_DOCUMENT_NAME_BYTES + 1), 8, 8);
+
+    let error = document.save(&dir).unwrap_err();
+    assert!(error.contains("document name"), "got: {error}");
+    assert!(
+        !dir.exists(),
+        "save must validate before creating the document directory"
+    );
+}
+
+#[test]
+fn aggregate_cel_pixels_are_rejected_before_decoding() {
+    const CEL_SIDE: u32 = 1024;
+    const CEL_COUNT: usize = 65;
+
+    assert_eq!(
+        checked_cel_pixel_total([(MAX_DOCUMENT_CEL_PIXELS, 1)]).unwrap(),
+        MAX_DOCUMENT_CEL_PIXELS
+    );
+    assert!(checked_cel_pixel_total([(MAX_DOCUMENT_CEL_PIXELS, 1), (1, 1)]).is_err());
+
+    let dir = std::env::temp_dir().join(format!("atelier-cel-pixel-budget-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("cels")).unwrap();
+
+    let frames = vec![
+        FrameMeta {
+            duration_ms: DEFAULT_FRAME_MS,
+        };
+        CEL_COUNT
+    ];
+    let cels: Vec<CelMeta> = (0..CEL_COUNT)
+        .map(|frame| CelMeta {
+            layer: 0,
+            frame,
+            x: 0,
+            y: 0,
+            file: cel_file(0, frame),
+        })
+        .collect();
+    let metadata = DocMeta {
+        format_version: DOCUMENT_FORMAT_VERSION,
+        name: "hostile aggregate".into(),
+        w: 8,
+        h: 8,
+        palette: Vec::new(),
+        layers: vec![LayerMeta {
+            name: "Layer 1".into(),
+            opacity: 255,
+            visible: true,
+            blend: raster::Blend::Normal,
+        }],
+        frames,
+        tags: Vec::new(),
+        cels,
+        reference: None,
+    };
+    std::fs::write(dir.join("doc.json"), serde_json::to_vec(&metadata).unwrap()).unwrap();
+
+    // One small-on-disk PNG is hard-linked under every canonical cel name. The
+    // 65th cel crosses the 64M-pixel document budget; load must reject after
+    // header probes and before retaining decoded RGBA buffers.
+    let first = dir.join(cel_file(0, 0));
+    image::GrayImage::new(CEL_SIDE, CEL_SIDE)
+        .save(&first)
+        .unwrap();
+    for frame in 1..CEL_COUNT {
+        std::fs::hard_link(&first, dir.join(cel_file(0, frame))).unwrap();
+    }
+
+    let error = Document::load(&dir)
+        .err()
+        .expect("aggregate cel pixels must be bounded");
+    assert!(error.contains("decoded pixels"), "got: {error}");
+    assert!(error.contains("256 MiB"), "got: {error}");
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[cfg(unix)]
+#[test]
+fn load_rejects_symlinked_document_files() {
+    use std::os::unix::fs::symlink;
+
+    let root = std::env::temp_dir().join(format!(
+        "atelier-document-symlink-safety-{}",
+        std::process::id()
+    ));
+    let document_dir = root.join("document");
+    let linked_dir = root.join("linked-document");
+    let _ = std::fs::remove_dir_all(&root);
+
+    let mut document = Document::new("safe", 8, 8);
+    document.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
+    document.save(&document_dir).unwrap();
+    symlink(&document_dir, &linked_dir).unwrap();
+    let error = Document::load(&linked_dir)
+        .err()
+        .expect("symlinked document directory must fail");
+    assert!(error.contains("symlinks are refused"), "got: {error}");
+
+    std::fs::remove_file(&linked_dir).unwrap();
+    let cels = document_dir.join("cels");
+    let held_cels = document_dir.join("held-cels");
+    std::fs::rename(&cels, &held_cels).unwrap();
+    symlink(&held_cels, &cels).unwrap();
+    let error = Document::load(&document_dir)
+        .err()
+        .expect("symlinked cels directory must fail");
+    assert!(error.contains("real directory"), "got: {error}");
+    assert!(document.save(&document_dir).is_err());
+    std::fs::remove_file(&cels).unwrap();
+    std::fs::rename(&held_cels, &cels).unwrap();
+
+    let cel = document_dir.join("cels/L0_F0.png");
+    std::fs::remove_file(&cel).unwrap();
+    symlink("/etc/passwd", &cel).unwrap();
+    let error = Document::load(&document_dir)
+        .err()
+        .expect("symlinked cel must fail");
+    assert!(error.contains("regular file"), "got: {error}");
+
+    std::fs::remove_file(&cel).unwrap();
+    document.save(&document_dir).unwrap();
+    let metadata = document_dir.join("doc.json");
+    std::fs::remove_file(&metadata).unwrap();
+    symlink("/etc/passwd", &metadata).unwrap();
+    let error = Document::load(&document_dir)
+        .err()
+        .expect("symlinked metadata must fail");
+    assert!(error.contains("regular file"), "got: {error}");
+
+    let _ = std::fs::remove_dir_all(root);
+}
+
+#[test]
 fn persisted_document_shape_is_strict() {
     let dir = std::env::temp_dir().join("atelier-strict-doc-shape-test");
     let _ = std::fs::remove_dir_all(&dir);
@@ -454,13 +853,19 @@ fn persisted_document_shape_is_strict() {
     let mut legacy = current.clone();
     legacy.as_object_mut().unwrap().remove("format_version");
     std::fs::write(&path, serde_json::to_vec(&legacy).unwrap()).unwrap();
-    assert!(Document::load(&dir).is_ok(), "legacy v1 must migrate on read");
+    assert!(
+        Document::load(&dir).is_ok(),
+        "legacy v1 must migrate on read"
+    );
 
     let mut future = current.clone();
     future["format_version"] = json!(DOCUMENT_FORMAT_VERSION + 1);
     std::fs::write(&path, serde_json::to_vec(&future).unwrap()).unwrap();
     let error = Document::load(&dir).err().expect("future format must fail");
-    assert!(error.contains("unsupported document format"), "got: {error}");
+    assert!(
+        error.contains("unsupported document format"),
+        "got: {error}"
+    );
 
     let mut missing = current.clone();
     missing.as_object_mut().unwrap().remove("palette");
@@ -490,7 +895,9 @@ fn persisted_documents_obey_the_core_canvas_limit() {
     let mut meta: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
     meta["w"] = json!(MAX_DOCUMENT_DIMENSION + 1);
     std::fs::write(&path, serde_json::to_vec(&meta).unwrap()).unwrap();
-    let error = Document::load(&dir).err().expect("oversized canvas must fail");
+    let error = Document::load(&dir)
+        .err()
+        .expect("oversized canvas must fail");
     assert!(error.contains("document dimensions"), "got: {error}");
     let _ = std::fs::remove_dir_all(dir);
 }

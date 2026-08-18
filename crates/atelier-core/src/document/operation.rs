@@ -1,11 +1,15 @@
 //! JSON drawing operations: dispatch, key registry, and strict validation.
 
 use image::Rgba;
-use serde_json::Value;
+use schemars::Schema;
+use serde_json::{Map, Value, json};
 
 use crate::raster;
 
-use super::{AlphaSnap, Document};
+use super::{
+    AlphaSnap, Document, MAX_GRADIENT_STOPS, MAX_NOISE_OCTAVES, MAX_PALETTE_COLORS,
+    MAX_QUANTIZE_COLORS,
+};
 
 impl Document {
     /// Apply one drawing operation described by a JSON object
@@ -394,6 +398,195 @@ pub fn draw_ops() -> &'static [&'static str] {
 /// The `doc_fx` vocabulary.
 pub fn fx_ops() -> &'static [&'static str] {
     side_ops(OpSide::Fx)
+}
+
+/// Compact JSON Schema for one side of the single-operation API.
+///
+/// The same `OPS` registry entries that dispatch and validate operations supply the
+/// discriminator branches and required keys. Parameter types are advertised
+/// once in the top-level property union, keeping both tool schemas small
+/// enough to ship on every MCP session while still preventing clients from
+/// guessing that colours, points, numbers, and booleans are strings.
+pub fn operation_schema(side: OpSide) -> Schema {
+    let specs: Vec<&OpSpec> = OPS.iter().filter(|spec| spec.side == side).collect();
+    let mut properties = Map::new();
+    properties.insert("op".into(), json!({"type": "string"}));
+    // The operation validator applies the closed Blend vocabulary. Keep the
+    // session schema compact here; the important client-side distinction is
+    // that this control is a string, not an arbitrary object or number.
+    properties.insert("blend_mode".into(), json!({"type": "string"}));
+
+    // A key can intentionally have different shapes on different operations
+    // (`horizontal` is a boolean for flip and an integer axis for symmetry;
+    // stroke points optionally carry width). Preserve that union instead of
+    // picking whichever operation happens to appear first.
+    let mut variants: std::collections::BTreeMap<&str, Vec<Value>> =
+        std::collections::BTreeMap::new();
+    variants.insert(
+        "opacity",
+        vec![json!({"type": "integer", "minimum": 0, "maximum": 255})],
+    );
+    variants.insert("erase", vec![json!({"type": "boolean"})]);
+    for spec in &specs {
+        for key in spec.required.iter().chain(spec.optional) {
+            let schema = operation_param_schema(spec.name, key);
+            let choices = variants.entry(key).or_default();
+            if !choices.contains(&schema) {
+                choices.push(schema);
+            }
+        }
+    }
+    for (key, mut choices) in variants {
+        let schema = if choices.len() == 1 {
+            choices.pop().expect("one schema variant")
+        } else {
+            json!({"anyOf": choices})
+        };
+        // Keep each field explicit. Some MCP clients ignore patternProperties,
+        // which made valid operation arguments invisible and caused avoidable
+        // schema-correction calls.
+        properties.insert(key.into(), schema);
+    }
+
+    let mut branch_groups: Vec<(&[&str], Vec<&str>)> = Vec::new();
+    for spec in specs {
+        if let Some((_, names)) = branch_groups
+            .iter_mut()
+            .find(|(required, _)| *required == spec.required)
+        {
+            names.push(spec.name);
+        } else {
+            branch_groups.push((spec.required, vec![spec.name]));
+        }
+    }
+    let branches: Vec<Value> = branch_groups
+        .into_iter()
+        .map(|(required, names)| {
+            let selector = if names.len() == 1 {
+                json!({"const": names[0]})
+            } else {
+                json!({"enum": names})
+            };
+            let mut branch = json!({"properties": {"op": selector}});
+            if !required.is_empty() {
+                branch.as_object_mut().expect("branch object").insert(
+                    "required".into(),
+                    Value::Array(
+                        required
+                            .iter()
+                            .map(|key| Value::String((*key).into()))
+                            .collect(),
+                    ),
+                );
+            }
+            branch
+        })
+        .collect();
+    json!({
+        "type": "object",
+        "$defs": {
+            "c": {
+                "type": "array",
+                "items": {"type": "integer", "minimum": 0, "maximum": 255},
+                "minItems": 3,
+                "maxItems": 4
+            },
+            "cs": {
+                "type": "array",
+                "items": {"$ref": "#/$defs/c"},
+                "maxItems": MAX_PALETTE_COLORS
+            },
+            "i": {"type": "integer"},
+            "n": {"type": "number"},
+            "b": {"type": "boolean"},
+            "s": {"type": "string"}
+        },
+        "properties": properties,
+        "oneOf": branches,
+        "required": ["op"],
+        "additionalProperties": false
+    })
+    .try_into()
+    .expect("operation schema is an object")
+}
+
+fn operation_param_schema(op: &str, key: &str) -> Value {
+    let integer = || json!({"$ref": "#/$defs/i"});
+    let number = || json!({"$ref": "#/$defs/n"});
+    let boolean = || json!({"$ref": "#/$defs/b"});
+    let string = || json!({"$ref": "#/$defs/s"});
+    let color = || json!({"$ref": "#/$defs/c"});
+    let colors = || json!({"$ref": "#/$defs/cs"});
+    match key {
+        "color" | "light" | "dark" | "color_a" | "color_b" | "from" | "to" | "colorize" => color(),
+        "colors" | "ramp" => colors(),
+        // Across the vocabulary points are integer pairs, numeric pairs, or
+        // numeric triples (stroke width). The operation validator enforces the
+        // narrower per-discriminator shape.
+        "points" => json!({
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {"type": "number"},
+                "minItems": 2,
+                "maxItems": 3
+            }
+        }),
+        "region" => json!({
+            "type": "array",
+            "items": {"type": "integer"},
+            "minItems": 4,
+            "maxItems": 4
+        }),
+        "stops" => json!({
+            "type": "array",
+            "minItems": 1,
+            "maxItems": MAX_GRADIENT_STOPS,
+            "items": {
+                "type": "object",
+                "properties": {"pos": {"type": "number"}, "color": color()},
+                "required": ["pos", "color"],
+                "additionalProperties": false
+            }
+        }),
+        "tip" => json!({
+            "type": "object",
+            "properties": {
+                "w": {"type": "integer", "minimum": 1},
+                "h": {"type": "integer", "minimum": 1},
+                "pixels": colors()
+            },
+            "required": ["w", "h", "pixels"],
+            "additionalProperties": false
+        }),
+        "opacity" | "shadow_opacity" => {
+            json!({"type": "integer", "minimum": 0, "maximum": 255})
+        }
+        "octaves" => json!({
+            "type": "integer",
+            "minimum": 1,
+            "maximum": MAX_NOISE_OCTAVES
+        }),
+        "turns" => json!({"type": "integer", "minimum": 0, "maximum": 255}),
+        "w" | "h" => json!({"type": "integer", "minimum": 1}),
+        "max_colors" => json!({
+            "type": "integer",
+            "minimum": 1,
+            "maximum": MAX_QUANTIZE_COLORS
+        }),
+        "seed" => json!({"type": "integer", "minimum": 0}),
+        "horizontal" if op == "symmetry" => integer(),
+        "size" => json!({"type": "integer", "minimum": 1}),
+        "x" | "y" | "x0" | "y0" | "x1" | "y1" | "cx" | "cy" | "rx" | "ry" | "tolerance"
+        | "radius" | "dx" | "dy" | "blur" | "depth" | "steps" | "vertical" => integer(),
+        "width" | "density" | "strength" | "hue" | "sat" | "lum" | "scale" => number(),
+        "fill" | "closed" | "aa" | "snap" | "blend" | "only_existing" | "wrap" | "keep_left"
+        | "keep_top" | "horizontal" => boolean(),
+        "kind" | "dither" | "text" | "method" | "light_dir" | "mode" | "form" | "pattern" => {
+            string()
+        }
+        _ => panic!("operation registry key '{key}' has no JSON Schema type"),
+    }
 }
 
 // -- op executors (ported 1:1 from the old dispatch match) --------------------
@@ -1003,6 +1196,12 @@ fn validate_stops(kind: &str, value: &Value) -> Result<(), String> {
     let stops = value
         .as_array()
         .ok_or_else(|| format!("operation ({kind}): 'stops' must be an array, got {value}"))?;
+    if !(1..=MAX_GRADIENT_STOPS).contains(&stops.len()) {
+        return Err(format!(
+            "operation ({kind}): 'stops' must contain 1..={MAX_GRADIENT_STOPS} entries, got {}",
+            stops.len()
+        ));
+    }
     for (index, stop) in stops.iter().enumerate() {
         let object = stop.as_object().ok_or_else(|| {
             format!("operation ({kind}): 'stops[{index}]' must be an object, got {stop}")
@@ -1201,6 +1400,14 @@ pub fn validate_op(op: &Value) -> Result<(), String> {
             validate_i32(kind, key, value)?;
         }
     }
+    if let Some(value) = obj.get("size")
+        && value.as_i64().is_none_or(|size| size < 1)
+    {
+        return Err(format!(
+            "operation ({kind}): 'size' must be an integer in 1..={}, got {value}",
+            i32::MAX
+        ));
+    }
     if let Some(value) = obj.get("steps") {
         validate_i32(kind, "steps", value)?;
     }
@@ -1234,26 +1441,27 @@ pub fn validate_op(op: &Value) -> Result<(), String> {
             u8::MAX
         ));
     }
-    if let Some(value) = obj.get("octaves")
-        && value
+    if let Some(value) = obj.get("octaves") {
+        let valid = value
             .as_u64()
             .and_then(|number| u32::try_from(number).ok())
-            .is_none()
-    {
-        return Err(format!(
-            "operation ({kind}): 'octaves' must be an integer 0..={}, got {value}",
-            u32::MAX
-        ));
+            .is_some_and(|number| (1..=MAX_NOISE_OCTAVES).contains(&number));
+        if !valid {
+            return Err(format!(
+                "operation ({kind}): 'octaves' must be an integer 1..={MAX_NOISE_OCTAVES}, got {value}"
+            ));
+        }
     }
-    if let Some(value) = obj.get("max_colors")
-        && value
+    if let Some(value) = obj.get("max_colors") {
+        let valid = value
             .as_u64()
             .and_then(|number| usize::try_from(number).ok())
-            .is_none()
-    {
-        return Err(format!(
-            "operation ({kind}): 'max_colors' must be a non-negative platform-sized integer, got {value}"
-        ));
+            .is_some_and(|number| (1..=MAX_QUANTIZE_COLORS).contains(&number));
+        if !valid {
+            return Err(format!(
+                "operation ({kind}): 'max_colors' must be an integer 1..={MAX_QUANTIZE_COLORS}, got {value}"
+            ));
+        }
     }
     if let Some(value) = obj.get("seed")
         && value.as_u64().is_none()
@@ -1329,6 +1537,12 @@ pub fn validate_op(op: &Value) -> Result<(), String> {
     for key in ["colors", "ramp"] {
         if let Some(value) = obj.get(key) {
             validate_color_list(kind, key, value)?;
+            let count = value.as_array().map_or(0, Vec::len);
+            if count > MAX_PALETTE_COLORS {
+                return Err(format!(
+                    "operation ({kind}): '{key}' may contain at most {MAX_PALETTE_COLORS} colours, got {count}"
+                ));
+            }
         }
     }
     if let Some(value) = obj.get("tip") {

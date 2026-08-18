@@ -409,10 +409,7 @@ impl Studio {
             }
         });
         if let Some(did) = set_doc {
-            self.edit(did, |d| {
-                d.set_palette(flat.clone());
-                Ok(())
-            })?;
+            self.edit(did, |d| d.set_palette(flat.clone()))?;
             out["set_doc"] = json!(did);
         }
         Ok(out)

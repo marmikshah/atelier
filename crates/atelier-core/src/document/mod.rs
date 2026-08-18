@@ -11,6 +11,8 @@
 //! (+ JSON sidecars) and animated GIF/APNG.
 
 use std::collections::{HashMap, HashSet};
+use std::fs::File;
+use std::io::{BufReader, Read};
 use std::path::Path;
 
 use image::{Rgba, RgbaImage};
@@ -33,7 +35,7 @@ mod timeline;
 mod tests;
 
 pub use fx::{DitherAxis, DitherPattern};
-pub use operation::{color_array, draw_ops, fx_ops, validate_op};
+pub use operation::{OpSide, color_array, draw_ops, fx_ops, operation_schema, validate_op};
 pub use render::{ValueView, seam_axis_img};
 pub use timeline::FrameAction;
 
@@ -41,6 +43,34 @@ pub use timeline::FrameAction;
 pub const DOCUMENT_FORMAT_VERSION: u32 = 1;
 /// Maximum width or height accepted by both constructors and persisted files.
 pub const MAX_DOCUMENT_DIMENSION: u32 = 4096;
+/// Largest accepted persisted `doc.json` file.
+pub const MAX_DOCUMENT_METADATA_BYTES: u64 = 16 * 1024 * 1024;
+/// Maximum fractal layers accepted by the procedural noise operation.
+///
+/// Work is linear in this value for every painted pixel; layers beyond this
+/// point are sub-pixel detail on the largest supported canvas.
+pub const MAX_NOISE_OCTAVES: u32 = 16;
+/// Maximum colour count accepted by palette-driven operations and documents.
+pub const MAX_PALETTE_COLORS: usize = 256;
+/// Maximum generated palette size for the quantize operation.
+pub const MAX_QUANTIZE_COLORS: usize = MAX_PALETTE_COLORS;
+/// Maximum colour stops accepted by gradient-driven operations.
+pub const MAX_GRADIENT_STOPS: usize = 64;
+/// Maximum UTF-8 byte length of document, layer, and animation-tag names.
+pub const MAX_DOCUMENT_NAME_BYTES: usize = 1024;
+/// Maximum number of layers stored in one document.
+pub const MAX_DOCUMENT_LAYERS: usize = 256;
+/// Maximum number of animation frames stored in one document.
+pub const MAX_DOCUMENT_FRAMES: usize = 4096;
+/// Maximum number of animation tags stored in one document.
+pub const MAX_DOCUMENT_TAGS: usize = 4096;
+/// Maximum number of materialized layer/frame cels stored in one document.
+pub const MAX_DOCUMENT_CELS: usize = 16_384;
+/// Maximum aggregate decoded cel pixels held by one loaded document.
+///
+/// RGBA8 uses four bytes per pixel, so this bounds the cel map itself to
+/// 256 MiB before hash-map and metadata overhead.
+pub const MAX_DOCUMENT_CEL_PIXELS: u64 = 64 * 1024 * 1024;
 
 const fn document_format_v1() -> u32 {
     DOCUMENT_FORMAT_VERSION
@@ -155,6 +185,134 @@ fn cel_file(layer: usize, frame: usize) -> String {
     format!("cels/L{}_F{}.png", layer, frame)
 }
 
+fn open_regular_file(path: &Path, label: &str) -> Result<File, String> {
+    let metadata = std::fs::symlink_metadata(path)
+        .map_err(|error| format!("cannot inspect {label} '{}': {error}", path.display()))?;
+    if !metadata.file_type().is_file() {
+        return Err(format!(
+            "{label} '{}' must be a regular file (symlinks are refused)",
+            path.display()
+        ));
+    }
+
+    let mut options = File::options();
+    options.read(true);
+    #[cfg(target_os = "linux")]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+
+        // Linux O_NOFOLLOW closes the final-component symlink race between
+        // the metadata check above and the file open.
+        options.custom_flags(0o400000);
+    }
+    let file = options
+        .open(path)
+        .map_err(|error| format!("cannot open {label} '{}': {error}", path.display()))?;
+
+    // Detect a replacement between the path check and open. The supported
+    // native target is Linux; keep a conservative fallback for library users.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+
+        let opened = file.metadata().map_err(|error| {
+            format!("cannot inspect open {label} '{}': {error}", path.display())
+        })?;
+        if metadata.dev() != opened.dev() || metadata.ino() != opened.ino() {
+            return Err(format!(
+                "{label} '{}' changed while it was being opened",
+                path.display()
+            ));
+        }
+    }
+
+    Ok(file)
+}
+
+fn read_regular_utf8_bounded(path: &Path, label: &str, max_bytes: u64) -> Result<String, String> {
+    let file = open_regular_file(path, label)?;
+    let size = file
+        .metadata()
+        .map_err(|error| format!("cannot inspect {label} '{}': {error}", path.display()))?
+        .len();
+    if size > max_bytes {
+        return Err(format!(
+            "{label} '{}' is {size} bytes; limit is {max_bytes} bytes",
+            path.display()
+        ));
+    }
+
+    let mut bytes = Vec::with_capacity(usize::try_from(size).unwrap_or(0));
+    file.take(max_bytes + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|error| format!("cannot read {label} '{}': {error}", path.display()))?;
+    if bytes.len() as u64 > max_bytes {
+        return Err(format!(
+            "{label} '{}' grew beyond the {max_bytes}-byte limit while it was read",
+            path.display()
+        ));
+    }
+    String::from_utf8(bytes)
+        .map_err(|error| format!("{label} '{}' is not UTF-8: {error}", path.display()))
+}
+
+fn require_real_directory(path: &Path, label: &str) -> Result<(), String> {
+    let metadata = std::fs::symlink_metadata(path)
+        .map_err(|error| format!("cannot inspect {label} '{}': {error}", path.display()))?;
+    if !metadata.file_type().is_dir() {
+        return Err(format!(
+            "{label} '{}' must be a real directory (symlinks are refused)",
+            path.display()
+        ));
+    }
+    Ok(())
+}
+
+fn ensure_real_directory(path: &Path, label: &str) -> Result<(), String> {
+    match std::fs::symlink_metadata(path) {
+        Ok(_) => require_real_directory(path, label),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            std::fs::create_dir_all(path)
+                .map_err(|error| format!("cannot create {label} '{}': {error}", path.display()))?;
+            require_real_directory(path, label)
+        }
+        Err(error) => Err(format!(
+            "cannot inspect {label} '{}': {error}",
+            path.display()
+        )),
+    }
+}
+
+fn check_name_size(kind: &str, name: &str) -> Result<(), String> {
+    if name.len() > MAX_DOCUMENT_NAME_BYTES {
+        return Err(format!(
+            "{kind} is {} UTF-8 bytes; limit is {MAX_DOCUMENT_NAME_BYTES} bytes",
+            name.len()
+        ));
+    }
+    Ok(())
+}
+
+fn checked_cel_pixel_total(
+    dimensions: impl IntoIterator<Item = (u64, u64)>,
+) -> Result<u64, String> {
+    let mut total = 0u64;
+    for (width, height) in dimensions {
+        let pixels = width
+            .checked_mul(height)
+            .ok_or("cel dimensions overflow the aggregate pixel count")?;
+        total = total
+            .checked_add(pixels)
+            .ok_or("aggregate cel pixel count overflowed")?;
+        if total > MAX_DOCUMENT_CEL_PIXELS {
+            return Err(format!(
+                "document cels contain {total} decoded pixels; limit is {MAX_DOCUMENT_CEL_PIXELS} pixels (256 MiB RGBA8)"
+            ));
+        }
+    }
+    Ok(total)
+}
+
 /// Validate the one current on-disk document shape. Loading does not repair,
 /// default, or reinterpret persisted metadata.
 fn validate_meta(meta: &DocMeta) -> Result<(), String> {
@@ -174,13 +332,42 @@ fn validate_meta(meta: &DocMeta) -> Result<(), String> {
             meta.w, meta.h,
         ));
     }
+    check_name_size("document name", &meta.name)?;
+    if meta.palette.len() > MAX_PALETTE_COLORS {
+        return Err(format!(
+            "document palette has {} colours; limit is {MAX_PALETTE_COLORS}",
+            meta.palette.len()
+        ));
+    }
     if meta.layers.is_empty() {
         return Err("document must contain at least one layer".into());
+    }
+    if meta.layers.len() > MAX_DOCUMENT_LAYERS {
+        return Err(format!(
+            "document has {} layers; limit is {MAX_DOCUMENT_LAYERS}",
+            meta.layers.len()
+        ));
+    }
+    for layer in &meta.layers {
+        check_name_size("layer name", &layer.name)?;
     }
     if meta.frames.is_empty() {
         return Err("document must contain at least one frame".into());
     }
+    if meta.frames.len() > MAX_DOCUMENT_FRAMES {
+        return Err(format!(
+            "document has {} frames; limit is {MAX_DOCUMENT_FRAMES}",
+            meta.frames.len()
+        ));
+    }
+    if meta.tags.len() > MAX_DOCUMENT_TAGS {
+        return Err(format!(
+            "document has {} tags; limit is {MAX_DOCUMENT_TAGS}",
+            meta.tags.len()
+        ));
+    }
     for tag in &meta.tags {
+        check_name_size("tag name", &tag.name)?;
         if tag.from > tag.to || tag.to >= meta.frames.len() {
             return Err(format!(
                 "tag '{}' range {}..{} is outside {} frame(s)",
@@ -190,6 +377,12 @@ fn validate_meta(meta: &DocMeta) -> Result<(), String> {
                 meta.frames.len()
             ));
         }
+    }
+    if meta.cels.len() > MAX_DOCUMENT_CELS {
+        return Err(format!(
+            "document has {} cels; limit is {MAX_DOCUMENT_CELS}",
+            meta.cels.len()
+        ));
     }
     let mut cel_keys = HashSet::new();
     for cel in &meta.cels {
@@ -316,39 +509,90 @@ impl Document {
         }
     }
 
-    pub fn load(dir: &Path) -> Result<Document, String> {
-        let s = std::fs::read_to_string(dir.join("doc.json")).map_err(|e| e.to_string())?;
+    /// Load and validate only `doc.json`, without decoding cel images.
+    ///
+    /// Listing and inspection paths use this to share the same bounded,
+    /// symlink-refusing persistence contract as a full document open.
+    pub fn load_metadata(dir: &Path) -> Result<DocMeta, String> {
+        let directory = std::fs::symlink_metadata(dir)
+            .map_err(|error| format!("cannot inspect document '{}': {error}", dir.display()))?;
+        if !directory.file_type().is_dir() {
+            return Err(format!(
+                "document '{}' must be a directory (symlinks are refused)",
+                dir.display()
+            ));
+        }
+
+        let s = read_regular_utf8_bounded(
+            &dir.join("doc.json"),
+            "document metadata",
+            MAX_DOCUMENT_METADATA_BYTES,
+        )?;
         let meta: DocMeta = serde_json::from_str(&s).map_err(|e| e.to_string())?;
         meta.validate()?;
-        if let Some(reference) = &meta.reference
-            && !dir.join(reference).is_file()
-        {
-            return Err(format!("stored reference file '{reference}' is missing"));
+        Ok(meta)
+    }
+
+    pub fn load(dir: &Path) -> Result<Document, String> {
+        let meta = Self::load_metadata(dir)?;
+        if let Some(reference) = &meta.reference {
+            open_regular_file(&dir.join(reference), "stored reference")?;
         }
-        let mut cels = HashMap::new();
+        let cels_dir = dir.join("cels");
+        match std::fs::symlink_metadata(&cels_dir) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound && meta.cels.is_empty() => {}
+            Err(error) => {
+                return Err(format!(
+                    "cannot inspect stored cels directory '{}': {error}",
+                    cels_dir.display()
+                ));
+            }
+            Ok(_) => require_real_directory(&cels_dir, "stored cels directory")?,
+        }
+        // Probe every cel and enforce the document-wide decoded-pixel budget
+        // before decoding even the first image. A document with many
+        // individually valid 4096px cels must not grow memory incrementally and
+        // fail only after hundreds of MiB have already been retained.
+        let mut probed_cels = Vec::with_capacity(meta.cels.len());
         for c in &meta.cels {
             let path = dir.join(&c.file);
-            let dimensions = image::ImageReader::open(&path)
-                .map_err(|e| e.to_string())?
-                .with_guessed_format()
-                .map_err(|e| e.to_string())?
-                .into_dimensions()
-                .map_err(|e| e.to_string())?;
+            let dimensions =
+                image::ImageReader::new(BufReader::new(open_regular_file(&path, "stored cel")?))
+                    .with_guessed_format()
+                    .map_err(|e| e.to_string())?
+                    .into_dimensions()
+                    .map_err(|e| e.to_string())?;
             raster::checked_rgba_dimensions(
                 "stored cel",
                 dimensions.0 as u64,
                 dimensions.1 as u64,
             )?;
-            let mut reader = image::ImageReader::open(&path)
-                .map_err(|e| e.to_string())?
-                .with_guessed_format()
-                .map_err(|e| e.to_string())?;
+            probed_cels.push((c.layer, c.frame, c.x, c.y, path, dimensions));
+        }
+        checked_cel_pixel_total(
+            probed_cels
+                .iter()
+                .map(|(_, _, _, _, _, (width, height))| (u64::from(*width), u64::from(*height))),
+        )?;
+
+        let mut cels = HashMap::with_capacity(probed_cels.len());
+        for (layer, frame, x, y, path, dimensions) in probed_cels {
+            let mut reader =
+                image::ImageReader::new(BufReader::new(open_regular_file(&path, "stored cel")?))
+                    .with_guessed_format()
+                    .map_err(|e| e.to_string())?;
             let mut limits = image::Limits::default();
             limits.max_image_width = Some(dimensions.0);
             limits.max_image_height = Some(dimensions.1);
             reader.limits(limits);
             let img = reader.decode().map_err(|e| e.to_string())?.to_rgba8();
-            cels.insert((c.layer, c.frame), (c.x, c.y, img));
+            if img.dimensions() != dimensions {
+                return Err(format!(
+                    "stored cel '{}' changed dimensions while it was loaded",
+                    path.display()
+                ));
+            }
+            cels.insert((layer, frame), (x, y, img));
         }
         // Freshly loaded cels match their files — nothing is dirty yet.
         Ok(Document {
@@ -359,19 +603,60 @@ impl Document {
     }
 
     pub fn save(&mut self, dir: &Path) -> Result<(), String> {
-        if let Some(reference) = &self.meta.reference
-            && !dir.join(reference).is_file()
-        {
-            return Err(format!("stored reference file '{reference}' is missing"));
+        // Reconcile and validate the complete in-memory generation before any
+        // directory creation or image write. Transaction callers can then rely
+        // on a rejected oversized document leaving their staged tree untouched.
+        if self.cels.len() > MAX_DOCUMENT_CELS {
+            return Err(format!(
+                "document has {} cels; limit is {MAX_DOCUMENT_CELS}",
+                self.cels.len()
+            ));
         }
-        std::fs::create_dir_all(dir.join("cels")).map_err(|e| e.to_string())?;
-        let mut cel_metas = Vec::new();
+        let mut cel_metas = Vec::with_capacity(self.cels.len());
         for ((layer, frame), (x, y, img)) in &self.cels {
+            raster::checked_rgba_dimensions(
+                "cel",
+                u64::from(img.width()),
+                u64::from(img.height()),
+            )?;
+            cel_metas.push(CelMeta {
+                layer: *layer,
+                frame: *frame,
+                x: *x,
+                y: *y,
+                file: cel_file(*layer, *frame),
+            });
+        }
+        checked_cel_pixel_total(
+            self.cels
+                .values()
+                .map(|(_, _, img)| (u64::from(img.width()), u64::from(img.height()))),
+        )?;
+        cel_metas.sort_by_key(|c| (c.layer, c.frame));
+        self.meta.cels = cel_metas;
+        self.meta.validate()?;
+        let metadata_source =
+            serde_json::to_string_pretty(&self.meta).map_err(|e| e.to_string())?;
+        if metadata_source.len() as u64 > MAX_DOCUMENT_METADATA_BYTES {
+            return Err(format!(
+                "serialized document metadata is {} bytes; limit is {MAX_DOCUMENT_METADATA_BYTES} bytes",
+                metadata_source.len()
+            ));
+        }
+
+        ensure_real_directory(dir, "document directory")?;
+        ensure_real_directory(&dir.join("cels"), "stored cels directory")?;
+        if let Some(reference) = &self.meta.reference {
+            open_regular_file(&dir.join(reference), "stored reference")?;
+        }
+        for ((layer, frame), (_, _, img)) in &self.cels {
             let file = cel_file(*layer, *frame);
             // Write only cels dirtied since load (or whose file is missing) —
             // a one-pixel edit used to re-encode and rewrite every cel in the
             // document, which made large animated docs crawl.
-            if self.dirty.contains(&(*layer, *frame)) || !dir.join(&file).is_file() {
+            let stored_is_regular = std::fs::symlink_metadata(dir.join(&file))
+                .is_ok_and(|metadata| metadata.file_type().is_file());
+            if self.dirty.contains(&(*layer, *frame)) || !stored_is_regular {
                 let path = dir.join(&file);
                 let tmp = path.with_extension("png.tmp");
                 let write = img
@@ -383,25 +668,11 @@ impl Document {
                     return Err(error);
                 }
             }
-            cel_metas.push(CelMeta {
-                layer: *layer,
-                frame: *frame,
-                x: *x,
-                y: *y,
-                file,
-            });
         }
-        cel_metas.sort_by_key(|c| (c.layer, c.frame));
-        self.meta.cels = cel_metas;
-        self.meta.validate()?;
         // Atomic-ish structure write: temp file + same-dir rename, so a crash
         // mid-write leaves the previous doc.json intact instead of a torn one.
         let tmp = dir.join("doc.json.tmp");
-        std::fs::write(
-            &tmp,
-            serde_json::to_string_pretty(&self.meta).map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())?;
+        std::fs::write(&tmp, metadata_source).map_err(|e| e.to_string())?;
         std::fs::rename(&tmp, dir.join("doc.json")).map_err(|e| e.to_string())?;
         // Delete cel files no longer referenced (cleared cels, deleted layers/
         // frames) so the store doesn't accumulate orphans. Only the L<n>_F<n>.png
