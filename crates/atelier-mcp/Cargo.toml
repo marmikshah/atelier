@@ -1,6 +1,6 @@
 [package]
 name = "atelier-mcp"
-description = "atelier MCP server: exposes the atelier studio as MCP tools over stdio and streamable HTTP."
+description = "MCP server for Atelier over stdio and Streamable HTTP."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

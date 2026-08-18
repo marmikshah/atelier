@@ -1,6 +1,6 @@
 [package]
 name = "atelier"
-description = "The pixel-art studio agents can see — a headless editor driven from the CLI or over MCP: layered/animated documents, drawing primitives, PNG/sheet/GIF export."
+description = "Offline headless pixel-art editor with CLI and MCP interfaces."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

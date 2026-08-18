@@ -5,31 +5,25 @@
   </picture>
 </p>
 
-<p align="center"><strong>The pixel-art studio agents can see.</strong><br>
-Layered, animated, game-ready art — from your CLI, or over MCP.</p>
+<p align="center">
+  Offline, headless pixel-art editing through a CLI and Model Context Protocol server.
+</p>
 
 <p align="center">
   <a href="https://github.com/marmikshah/atelier/actions/workflows/ci.yml"><img src="https://github.com/marmikshah/atelier/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/marmikshah/atelier/releases/latest"><img src="https://img.shields.io/github/v/release/marmikshah/atelier" alt="latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/code-100%25%20AI--written-e0a33c" alt="100% AI-written">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/studio-scene.gif" width="640" alt="a pixel-art studio at night: a sprite paints itself on the easel by lamplight while a cat sleeps on the desk — a full room drawn and animated entirely by agents">
+  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/studio-scene.gif" width="640" alt="Example animated pixel-art scene created with Atelier">
 </p>
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/cat.gif" width="88" alt="wizard cat casting">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/car.gif" width="88" alt="driving car">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/potion.gif" width="88" alt="bubbling potion">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/alien.gif" width="88" alt="hovering alien">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/slash.gif" width="88" alt="sword slash arc">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/showcase/gifs/fable-5/torch.gif" width="88" alt="flickering wall torch">
-</p>
-
-<p align="center"><em>Not one pixel was hand-placed. Every frame is a tool call.<br>
-<a href="https://marmikshah.github.io/atelier/">See every model draw the same ten tasks →</a></em></p>
+Atelier stores layered, animated documents locally and exposes the same 25-tool
+editing surface to shell automation and MCP clients. It includes drawing and
+region operations, palette constraints, visual analysis, checkpoints,
+replayable journals, and spritesheet, GIF, and APNG export. It does not require
+an account, API key, outbound service, or graphical environment.
 
 ---
 
@@ -52,13 +46,11 @@ atelier call doc_draw '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","layer":
 atelier call doc_look '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","out_path":"/tmp/cat.png"}'
 ```
 
-Every tool is one `atelier call`: stdout gets the JSON report, the exit code
-the verdict (0 ok, 1 tool error, 2 bad call). `atelier tools` lists the
-surface; `atelier tools --schema <name>` dumps one tool's input schema. Any
-agent with a shell — Claude Code, Codex, Kimi Code or Cursor — drives it
-exactly this way: no registration, no daemon, no restart. Just ask:
-
-> *"draw me a blinking cat sprite and export it as a GIF"*
+Every tool is available through `atelier call`: stdout contains the JSON
+result, while exit codes distinguish success, tool errors, and invalid calls.
+`atelier tools` lists the surface and `atelier tools --schema <name>` prints an
+individual input schema. Shell-based automation needs no server registration
+or background process.
 
 <p align="center">
   <code>doc_new</code> → <code>paint</code> → <b><code>doc_look</code></b> → <i>fix</i> → <code>doc_export</code>
@@ -86,8 +78,13 @@ atelier install
 
 The prompt appears on both first install and reinstall; reinstall defaults to
 the currently configured port. For scripts, use `atelier install --port 9123`.
-Advanced/LAN setups can still choose the whole address with
-`atelier install --bind 0.0.0.0:9123`.
+The installed systemd service is intentionally loopback-only. To serve another
+interface, run an authenticated foreground process or the supported container:
+
+```sh
+export ATELIER_HTTP_TOKEN="$(openssl rand -hex 32)"
+ATELIER_HTTP=0.0.0.0:9123 atelier
+```
 
 Atelier deliberately does not rewrite third-party client configuration. Point
 your MCP client at the endpoint printed by `atelier status`:
@@ -103,6 +100,19 @@ the same global or directory-local document store.
 Keep your client's normal approval prompts enabled: Atelier can write exports
 and delete documents.
 
+Non-loopback HTTP refuses to start without `ATELIER_HTTP_TOKEN`. Whenever that
+variable is set, including on loopback, clients must send
+`Authorization: Bearer <token>`. Use a TLS reverse proxy on untrusted networks;
+the built-in listener is plain HTTP. `ATELIER_ALLOWED_HOSTS` adds Host-header
+validation but does not replace authentication.
+
+HTTP external file access is off by default. Set `ATELIER_IMPORT_ROOT` and/or
+`ATELIER_EXPORT_ROOT` to existing directories to enable it, then pass only
+relative `path`/`out_path` values beneath those roots. Absolute paths, parent
+traversal, and symlink escapes are rejected. Direct CLI and stdio calls retain
+normal local filesystem access. Request bodies are capped at 1 MiB with a
+30-second upload deadline, and at most 64 requests run concurrently.
+
 ### Docker
 
 The second supported release is a small Alpine `linux/amd64` image with a
@@ -110,15 +120,21 @@ static musl binary and no runtime packages. It serves the same HTTP MCP
 endpoint:
 
 ```sh
+export ATELIER_HTTP_TOKEN="$(openssl rand -hex 32)"
 docker run -d --platform linux/amd64 \
   -p 127.0.0.1:9123:8765 \
   -v atelier-data:/data \
+  -e ATELIER_HTTP_TOKEN \
   ghcr.io/marmikshah/atelier:latest
 ```
 
 Documents persist in the `atelier-data` volume, so they survive restarts.
 Here `9123` is the configurable host port; the Alpine container keeps its
 internal endpoint on `8765`.
+Configure the same bearer token in the MCP client's HTTP headers. The image
+contains no default token and refuses to start its network listener without
+one. Optional import/export directories must be mounted and enabled with the
+corresponding root variables.
 There's a [`docker-compose.yml`](docker-compose.yml) if you'd rather keep it
 declarative.
 
@@ -139,23 +155,23 @@ declarative.
   just the daemon). Your documents in `~/.atelier` are kept; delete that
   directory too if you want them gone.
 
-## Why it's different
+## Capabilities
 
-Agents are good at *describing* art and bad at *seeing* it. So most AI pixel art
-is drawn blind — the model guesses, never looks, and ships the guess.
-
-**atelier gives the agent an eye.** `doc_look` hands back the actual frame as an
-image, plus measured stats. The agent looks at its own work, judges it, and fixes
-it — the same loop a human uses in an editor. Nothing sends pixels back unless the
-agent asks to see them: every drawing tool answers in text, so looking is a
-deliberate act, and the context stays small enough to look often.
-
-|  |  |
+| Area | Included functionality |
 |---|---|
-| 🎨 **A real editor, headless** | Layers, frames, tags, locked palettes, checkpoints. Draw with primitives or paint a whole region declaratively from a character grid. |
-| 👁 **An eye, not just a hand** | Critique, palette, silhouette and animation audits turn *"does it look right?"* into numbers an agent can act on. |
-| 🎮 **Game-ready out of the box** | Tagged spritesheets, GIF/APNG, and engine-standard JSON. |
-| 🔒 **Yours, offline** | One Ubuntu binary or Alpine container. No API keys, outbound services, or telemetry. |
+| Document model | Layers, frames, animation tags, locked palettes, and explicit checkpoints |
+| Editing | Pixel primitives, region operations, effects, grids, palette generation, and palette snapping |
+| Inspection | Rendered previews, region dumps, silhouettes, component analysis, frame diffs, seam reports, animation audits, and critique reports |
+| Output | Spritesheets with JSON metadata, GIF, APNG, and PNG previews |
+| Reproducibility | Versioned per-document JSONL journals and deterministic replay |
+| Deployment | Ubuntu x86_64 binary, static Alpine amd64 container, CLI, stdio MCP, and authenticated HTTP MCP |
+
+Image-producing inspection calls return pixels only when requested. Editing
+calls return compact structured results, which keeps automated feedback loops
+predictable without embedding a preview after every mutation. Inline MCP PNGs
+are limited to 8 MiB before base64 encoding; larger renders already written to
+`out_path` return their report without a duplicate inline image, while other
+oversized renders fail with reduction/output guidance.
 
 ## The CLI
 
@@ -166,6 +182,7 @@ atelier call doc_draw '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","layer":
 atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
+atelier library verify [--json] # validate metadata, cels, references, journals
 atelier skills install         # write the skills (--for claude|codex|kimi|cursor|all)
 ```
 
@@ -216,6 +233,9 @@ ran, so a replay never depends on a live session or another caller's state.
 a flag. Registry/dispatch lockstep is test-enforced, so an advertised tool cannot
 turn into an unreachable dead end.
 Browse them in the [tool reference](https://marmikshah.github.io/atelier/tools.html).
+`list_docs` returns at most 50 documents by default (100 when requested) and
+provides `next_cursor` for deterministic continuation, keeping large libraries
+out of a single MCP response.
 
 ## Directory-local stores
 
@@ -232,27 +252,25 @@ it). `atelier status` shows the daemon endpoint and store.
 
 ## Skills
 
-Tools are the hand; these are the craft. Three [skills](crates/atelier/skills)
-you can explicitly add to Claude Code, Codex, Kimi Code or Cursor:
+Three optional [skills](crates/atelier/skills) provide higher-level workflows
+for Claude Code, Codex, Kimi Code, and Cursor:
 
 | | |
 |---|---|
-| **atelier-sprite** | one subject — character, creature, vehicle, prop |
-| **atelier-scene** | a place — background, environment, composed picture |
-| **atelier-review** | judge finished art and say what's wrong, with a fix |
+| **atelier-sprite** | Build a character, creature, vehicle, or prop |
+| **atelier-scene** | Build a background, environment, or composed scene |
+| **atelier-review** | Review completed work and propose targeted corrections |
 
-Both drawing skills insist on the same two things: **build it in layers**, and
-**fix the region that's wrong instead of repainting the frame**. They prescribe
-no style and no palette — that's the request's business. And they're
-transport-free: every tool they name is one `atelier call`, or the same-named
-MCP tool when you're connected over MCP.
+The drawing workflows favor layered construction and localized corrections.
+They do not prescribe a style or palette. Every referenced operation works
+through either `atelier call` or its same-named MCP tool.
 
 Install or refresh them any time — `atelier skills install` (Claude Code by
 default, `--for codex|kimi|cursor|all` for the others).
 
-atelier works fine without them; they just make the art better.
+The skills are optional and do not change the tool surface.
 
-## Art is a recipe
+## Reproducible journals
 
 Every document is an ordered sequence of tool calls, so a piece of art *is* a
 replayable program — and atelier keeps that sequence for you. Every document
@@ -260,6 +278,7 @@ journals itself as it's drawn, so anything you make can rebuild itself:
 
 ```sh
 atelier library                 # every document, with its step count
+atelier library verify          # validate the complete store without changing it
 atelier replay 550e8400-e29b-41d4-a716-446655440000  # rebuild it from its own journal
 ```
 
@@ -279,22 +298,18 @@ Each `doc_draw` and `doc_fx` line applies exactly one operation to one cel.
 MCP clients inspect live documents through `doc_info` and `doc_look`, the same
 calls used by CLI and replay.
 
-## A personal note
+## Project status
 
-atelier began as one question: can agents, using only tool calls, make art good
-enough to ship in a game?
-
-**100% of this code was written by AI.** Not assisted — written. Claude Opus 4.8
-and Fable 5 did the heavy lifting, with Kimi 2.6 and Minimax 2.7 pitching in. I
-have not written a line. My part was direction, held to the standards I use where
-I *do* still write the code. If it helps you build something, the tokens were
-worth spending — and a ⭐ helps the next person find it.
+Atelier is pre-2.0. Most of the implementation was generated with AI systems
+and has not yet received a complete line-by-line maintainer review. The project
+uses tests, static analysis, locked dependencies, bounded image operations, and
+explicit release gates, but those controls are not a substitute for that
+review.
 
 > [!WARNING]
-> **Below 2.0.0, no human has reviewed this code.** Assume bugs and security
-> issues I haven't caught, and breaking changes in any release. Use at your own
-> risk. **2.0.0 is where I start reviewing in detail** — tagged by hand, the one
-> release an agent may not cut.
+> **Before 2.0.0, assume defects and breaking changes remain possible.** Review
+> the code and isolate important data before using Atelier in a production
+> workflow. Version 2.0.0 is reserved for the maintainer's manual review.
 
 ## Contributing
 
@@ -305,6 +320,8 @@ formats, or broad refactors; the full development and review expectations are in
 
 Maintainer releases are approved by a manually created annotated tag; the exact
 procedure is in [docs/RELEASING.md](docs/RELEASING.md).
+The [roadmap](docs/ROADMAP.md) records the 2.0 readiness criteria and the policy
+for adding capabilities without expanding the tool surface unnecessarily.
 
 [Contributing](.github/CONTRIBUTING.md) · [Code of Conduct](.github/CODE_OF_CONDUCT.md) · [Security](.github/SECURITY.md) · [Changelog](CHANGELOG.md)
 

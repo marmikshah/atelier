@@ -1,6 +1,6 @@
 [package]
 name = "atelier-studio"
-description = "atelier studio: drawing, procedural and analysis operations over the atelier-core document model."
+description = "Editing, analysis, and export operations for Atelier documents."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
