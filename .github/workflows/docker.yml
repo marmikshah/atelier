@@ -81,29 +81,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Smoke test — the image boots and answers MCP initialize
+      - name: Smoke test authenticated MCP persistence
         shell: bash
         env:
           IMAGE: ghcr.io/${{ github.repository }}:${{ inputs.release_tag }}
         run: |
           test "$(docker image inspect --format '{{.Architecture}}' "$IMAGE")" = "amd64"
           docker run --rm "$IMAGE" --version
-          docker run -d --name smoke -p 127.0.0.1:18765:8765 "$IMAGE"
-          trap 'docker rm -f smoke >/dev/null 2>&1 || true' EXIT
-          code=000
-          attempts=0
-          while [ "$attempts" -lt 30 ]; do
-            attempts=$((attempts + 1))
-            code=$(curl -s -o /tmp/mcp.json -w '%{http_code}' -X POST http://127.0.0.1:18765/mcp \
-              -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
-              -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"smoke","version":"0"}}}' || echo 000)
-            [ "$code" = "200" ] && break
-            sleep 1
-          done
-          docker logs smoke
-          [ "$code" = "200" ] || { echo "smoke: no HTTP 200 from /mcp (got $code)"; exit 1; }
-          grep -q '"serverInfo"' /tmp/mcp.json || { echo "smoke: no serverInfo in initialize reply"; cat /tmp/mcp.json; exit 1; }
-          echo "smoke: image answered MCP initialize with serverInfo"
+          tools/container-smoke.sh "$IMAGE"
 
       - name: Log in to GHCR
         if: inputs.publish
