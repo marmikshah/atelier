@@ -164,6 +164,7 @@ declarative.
 | Inspection | Rendered previews, region dumps, silhouettes, component analysis, frame diffs, seam reports, animation audits, and critique reports |
 | Output | Spritesheets with JSON metadata, GIF, APNG, and PNG previews |
 | Reproducibility | Versioned per-document JSONL journals and atomic deterministic replay |
+| Recovery | Bounded checkpoints and deterministic portable document archives |
 | Deployment | Ubuntu x86_64 binary, static Alpine amd64 container, CLI, stdio MCP, and authenticated HTTP MCP |
 
 Image-producing inspection calls return pixels only when requested. Editing
@@ -183,6 +184,8 @@ atelier tools [--schema <name]]       # the tool surface / one input schema
 atelier replay <recipe|id>     # rebuild a document from its journal
 atelier library                # what's in your document store
 atelier library verify [--json] # validate metadata, cels, references, journals
+atelier library pack <id> --out art.atelierpack # write a portable backup
+atelier library unpack art.atelierpack          # restore its original UUID
 atelier skills install         # write the skills (--for claude|codex|kimi|cursor|all)
 ```
 
@@ -257,6 +260,22 @@ The daemon is the exception: a shared server has no working directory, so it
 always pins the global store at install time (or whatever `--home` you give
 it). `atelier status` shows the daemon endpoint and store.
 
+## Backups and checkpoints
+
+Use `atelier library pack <id> --out <file.atelierpack>` to write a complete,
+deterministic document archive containing its cels, recipe, revision, stored
+reference, and checkpoints. Packing never overwrites an existing file. Restore
+with `atelier library unpack <file.atelierpack>`; the original document UUID is
+preserved and a collision is refused. Replacing an existing document requires
+both `--replace --yes`, and publication happens only after the complete archive
+passes checksum and content validation. Both commands accept `--home DIR` for
+an isolated store.
+
+Explicit checkpoints remain local recovery points rather than an unbounded
+history. A document may retain at most 32 checkpoints and 2 GiB of logical
+checkpoint data; labels are limited to 4096 UTF-8 bytes. Atelier never silently
+evicts an older checkpoint—prune one explicitly before saving another.
+
 ## Skills
 
 Three optional [skills](crates/atelier/skills) provide higher-level workflows
@@ -302,10 +321,14 @@ minted `doc_id`, followed only by deterministic editing calls for that same
 document. Replay accepts only this JSONL contract and rejects wrapped objects,
 bindings, older shapes, or malformed lines instead of guessing.
 
-Each `doc_draw` and `doc_fx` line applies exactly one operation to one cel.
-`doc_paint_grid` remains the single declarative operation for dense pixel rows.
-MCP clients inspect live documents through `doc_info` and `doc_look`, the same
-calls used by CLI and replay.
+Each `doc_draw` and `doc_fx` line applies exactly one operation. By default it
+targets one cel; optional inclusive `frame_to` applies that same operation and
+seed across at most 256 consecutive frame cels in one atomic call. Aggregate
+full-canvas work is capped at 16,777,216 pixels. `doc_frame op=duration` likewise
+uses optional `count` for at most 256 consecutive timings. `doc_paint_grid`
+remains the single declarative operation for dense pixel rows. MCP clients
+inspect live documents through `doc_info` and `doc_look`, the same calls used by
+CLI and replay.
 
 ## Project status
 
