@@ -18,6 +18,7 @@ path = "src/main.rs"
 [dependencies]
 atelier-mcp.workspace = true
 atelier-studio.workspace = true
+base64.workspace = true
 # The binary handles rmcp result/tool types from atelier-mcp's dispatch and
 # registry (call/replay); the crate is already in the tree via atelier-mcp.
 rmcp.workspace = true

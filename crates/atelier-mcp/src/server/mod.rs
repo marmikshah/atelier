@@ -6,8 +6,8 @@
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    CallToolResult, ContentBlock as Content, ListToolsResult, PaginatedRequestParams,
-    ServerCapabilities, ServerInfo,
+    CallToolResult, ContentBlock as Content, Implementation, ListToolsResult,
+    PaginatedRequestParams, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::RequestContext;
 use rmcp::{ErrorData, RoleServer, ServerHandler, tool_handler};
@@ -631,6 +631,10 @@ impl ServerHandler for Atelier {
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
         info.capabilities = ServerCapabilities::builder().enable_tools().build();
+        info.server_info = Implementation::new("atelier", env!("CARGO_PKG_VERSION"))
+            .with_title("Atelier")
+            .with_description("Offline, headless pixel-art editor exposed through a CLI and MCP.")
+            .with_website_url(env!("CARGO_PKG_HOMEPAGE"));
         info.instructions = Some(
             "Atelier is a stateless, offline pixel-art editor. Keep the doc_id returned \
              by doc_new and pass it explicitly on every later document call. Each doc_draw \
@@ -711,6 +715,18 @@ mod tests {
         assert!(
             instructions.contains("25 tools"),
             "get_info instructions drifted from the tool count"
+        );
+    }
+
+    #[test]
+    fn initialization_identifies_atelier_not_the_mcp_framework() {
+        let info = temp_atelier("identity").get_info();
+        assert_eq!(info.server_info.name, "atelier");
+        assert_eq!(info.server_info.title.as_deref(), Some("Atelier"));
+        assert_eq!(info.server_info.version, env!("CARGO_PKG_VERSION"));
+        assert_eq!(
+            info.server_info.website_url.as_deref(),
+            Some(env!("CARGO_PKG_HOMEPAGE"))
         );
     }
 

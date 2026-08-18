@@ -43,6 +43,7 @@ version = "1.8.0"
 dependencies = [
  "atelier-mcp",
  "atelier-studio",
+ "base64",
  "rmcp",
  "serde_json",
  "tokio",

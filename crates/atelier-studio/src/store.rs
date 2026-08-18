@@ -153,6 +153,16 @@ impl Studio {
         Studio { docs_dir }
     }
 
+    /// Build a studio rooted at an explicit Atelier home, using the same
+    /// `<home>/documents` layout as [`Self::new`] and `ATELIER_HOME`.
+    ///
+    /// CLI `--home` flags should use this constructor. Embedders and tests
+    /// that already have the documents directory itself can use
+    /// [`Self::with_docs_dir`].
+    pub fn with_home(home: PathBuf) -> Studio {
+        Self::with_docs_dir(home.join("documents"))
+    }
+
     /// Build a studio rooted at an explicit documents directory, bypassing the
     /// process-global `ATELIER_HOME` env var. Lets an embedder (or a test) point
     /// a studio at an arbitrary location without mutating process state.

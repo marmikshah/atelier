@@ -6,7 +6,7 @@
 //! ```text
 //! atelier call doc_new '{"name":"cat","width":32,"height":32}'
 //! atelier call doc_paint_grid --file grid.json
-//! atelier call doc_look '{"doc_id":"550e8400-e29b-41d4-a716-446655440000","out_path":"/tmp/cat.png"}'
+//! atelier call doc_look '{"doc_id":"550e8400-e29b-41d4-a716-446655440000"}' --image-out /tmp/cat.png
 //! ```
 //!
 //! stdout carries the tool's JSON report; the exit code carries the verdict:
@@ -14,6 +14,9 @@
 //! itself was malformed (bad JSON, unknown tool, bad params).
 
 use serde_json::Value;
+use std::path::Path;
+
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 
 use atelier_mcp::server::{self, Atelier};
 use atelier_studio::{Studio, ToolName};
@@ -23,6 +26,7 @@ struct Call {
     tool: ToolName,
     args: Value,
     home: Option<String>,
+    image_out: Option<String>,
 }
 
 /// Parse `<tool> ['<json>' | --file PATH | --stdin]`. The three
@@ -33,12 +37,13 @@ struct Call {
 /// Errors are usage errors (exit 2), never tool results.
 fn parse(args: &[String]) -> Result<Call, String> {
     const USAGE: &str = "usage: atelier call <tool> ['<json>' | --file PATH | --stdin] \
-                         [--home DIR]";
+                         [--home DIR] [--image-out PATH]";
     let mut tool = None;
     let mut positional_json = None;
     let mut file = None;
     let mut stdin = false;
     let mut home = None;
+    let mut image_out = None;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -50,6 +55,13 @@ fn parse(args: &[String]) -> Result<Call, String> {
             "--home" => {
                 i += 1;
                 home = Some(args.get(i).ok_or("--home needs a directory")?.clone());
+            }
+            "--image-out" => {
+                if image_out.is_some() {
+                    return Err("--image-out may only be passed once".into());
+                }
+                i += 1;
+                image_out = Some(args.get(i).ok_or("--image-out needs a path")?.clone());
             }
             other if other.starts_with("--") => return Err(format!("unknown flag '{other}'")),
             other => {
@@ -88,7 +100,41 @@ fn parse(args: &[String]) -> Result<Call, String> {
     if !args.is_object() {
         return Err("args must be a JSON object".into());
     }
-    Ok(Call { tool, args, home })
+    Ok(Call {
+        tool,
+        args,
+        home,
+        image_out,
+    })
+}
+
+/// Persist the single inline image in a tool result. MCP image blocks carry
+/// base64 by protocol definition; the CLI decodes that existing block rather
+/// than teaching individual visual tools a second output-path parameter.
+fn write_inline_image(result: &rmcp::model::CallToolResult, path: &Path) -> Result<bool, String> {
+    let mut images = result
+        .content
+        .iter()
+        .filter_map(|content| content.as_image());
+    let Some(image) = images.next() else {
+        return Ok(false);
+    };
+    if images.next().is_some() {
+        return Err("the result contains multiple inline images; --image-out expects one".into());
+    }
+    let bytes = STANDARD
+        .decode(&image.data)
+        .map_err(|error| format!("cannot decode the inline image: {error}"))?;
+    if let Some(parent) = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        std::fs::create_dir_all(parent)
+            .map_err(|error| format!("cannot create {}: {error}", parent.display()))?;
+    }
+    std::fs::write(path, bytes)
+        .map_err(|error| format!("cannot write {}: {error}", path.display()))?;
+    Ok(true)
 }
 
 pub(crate) async fn run(args: &[String]) -> i32 {
@@ -100,7 +146,7 @@ pub(crate) async fn run(args: &[String]) -> i32 {
         }
     };
     let atelier = match &call.home {
-        Some(dir) => Atelier::with_studio(Studio::with_docs_dir(dir.into())),
+        Some(dir) => Atelier::with_studio(Studio::with_home(dir.into())),
         None => Atelier::new(),
     };
     let had_out_path = call.args.get("out_path").is_some();
@@ -111,20 +157,35 @@ pub(crate) async fn run(args: &[String]) -> i32 {
             2
         }
         Ok(result) => {
-            // The CLI has no inline-image channel: print the text report and
-            // point at out_path when the pixels had nowhere to go.
             let has_image = result.content.iter().any(|c| c.as_image().is_some());
+            let tool_failed = server::is_error_result(&result);
+            let image_error = if !tool_failed {
+                match call.image_out.as_deref() {
+                    Some(path) => match write_inline_image(&result, Path::new(path)) {
+                        Ok(true) => None,
+                        Ok(false) => {
+                            Some(format!("the result has no inline image to write to {path}"))
+                        }
+                        Err(error) => Some(error),
+                    },
+                    None => None,
+                }
+            } else {
+                None
+            };
             for content in &result.content {
                 if let Some(t) = content.as_text() {
                     println!("{}", t.text);
                 }
             }
-            if has_image && !had_out_path {
+            if let Some(error) = &image_error {
+                eprintln!("atelier: {error}");
+            } else if has_image && call.image_out.is_none() && !had_out_path {
                 eprintln!(
-                    "atelier: the result carries an inline image — pass out_path to write it to a file"
+                    "atelier: the result carries an inline image — pass --image-out PATH to save it"
                 );
             }
-            i32::from(server::is_error_result(&result))
+            i32::from(tool_failed || image_error.is_some())
         }
     }
 }
@@ -150,20 +211,24 @@ mod tests {
         assert_eq!(c.tool, ToolName::ListDocs);
         assert_eq!(c.args, serde_json::json!({}));
         assert!(c.home.is_none());
+        assert!(c.image_out.is_none());
     }
 
     #[test]
-    fn parse_takes_positional_json_and_home() {
+    fn parse_takes_positional_json_home_and_image_output() {
         let c = parse(&argv(&[
             "doc_new",
             "{\"name\":\"cat\"}",
             "--home",
             "/tmp/x",
+            "--image-out",
+            "/tmp/cat.png",
         ]))
         .unwrap();
         assert_eq!(c.tool, ToolName::DocNew);
         assert_eq!(c.args["name"], "cat");
         assert_eq!(c.home.as_deref(), Some("/tmp/x"));
+        assert_eq!(c.image_out.as_deref(), Some("/tmp/cat.png"));
     }
 
     #[test]
@@ -181,7 +246,40 @@ mod tests {
         // An array is valid JSON but not a tool's argument shape.
         assert!(parse(&argv(&["doc_look", "[1,2]"])).is_err());
         assert!(parse(&argv(&["doc_look", "{}", "--nope"])).is_err());
+        assert!(parse(&argv(&["doc_look", "{}", "--image-out"])).is_err());
+        assert!(
+            parse(&argv(&[
+                "doc_look",
+                "{}",
+                "--image-out",
+                "a.png",
+                "--image-out",
+                "b.png"
+            ]))
+            .is_err()
+        );
         assert!(parse(&argv(&["a", "{}", "extra"])).is_err());
+    }
+
+    #[test]
+    fn image_output_decodes_the_inline_mcp_block() {
+        use rmcp::model::{CallToolResult, ContentBlock as Content};
+
+        let root =
+            std::env::temp_dir().join(format!("atelier-call-image-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let path = root.join("nested").join("result.bin");
+        let result = CallToolResult::success(vec![
+            Content::image("Zm9v", "image/png"),
+            Content::text("{\"ok\":true}"),
+        ]);
+
+        assert!(write_inline_image(&result, &path).unwrap());
+        assert_eq!(std::fs::read(&path).unwrap(), b"foo");
+        let text_only = CallToolResult::success(vec![Content::text("{}")]);
+        assert!(!write_inline_image(&text_only, &path).unwrap());
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[tokio::test]
@@ -191,7 +289,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("atelier-call-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let home = dir.to_string_lossy().to_string();
-        let atelier = Atelier::with_studio(Studio::with_docs_dir((&home).into()));
+        let atelier = Atelier::with_studio(Studio::with_home((&home).into()));
 
         let create = parse(&argv(&[
             "doc_new",
@@ -214,7 +312,16 @@ mod tests {
         let report = server::result_json(&result).unwrap();
         assert_eq!(report["w"], 8);
         // doc_new is journaled: the recipe exists beside the document.
-        assert!(dir.join(doc_id).join("recipe.jsonl").exists());
+        assert!(
+            dir.join("documents")
+                .join(&doc_id)
+                .join("recipe.jsonl")
+                .exists()
+        );
+        assert!(
+            !dir.join(doc_id).exists(),
+            "--home is the Atelier home, not the documents directory"
+        );
 
         let _ = std::fs::remove_dir_all(&dir);
     }

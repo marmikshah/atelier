@@ -4,13 +4,15 @@
 //! before deleting unless `--yes` is given (or there is no terminal to ask on,
 //! in which case it refuses rather than guessing).
 
-use atelier_studio::Studio;
+use atelier_mcp::server::{self, Atelier};
+use atelier_studio::{Studio, ToolName};
+use serde_json::json;
 
 /// Entry point for `atelier library [rm ...]`. Returns a process exit code.
-pub fn run(args: &[String]) -> i32 {
+pub async fn run(args: &[String]) -> i32 {
     match args.first().map(|s| s.as_str()) {
         None => list(),
-        Some("rm") => rm(&args[1..]),
+        Some("rm") => rm(&args[1..]).await,
         Some(other) => {
             eprintln!("atelier library: unknown subcommand '{other}'\n\n{USAGE}");
             2
@@ -120,57 +122,85 @@ fn home_display() -> String {
     std::env::var("ATELIER_HOME").unwrap_or_else(|_| "~/.atelier".into())
 }
 
-fn flag(args: &[String], f: &str) -> bool {
-    args.iter().any(|a| a == f)
+#[derive(Debug, PartialEq, Eq)]
+enum Selection {
+    All,
+    Prefix(String),
+    Named(Vec<String>),
 }
 
-/// Value of `--prefix`; an error when the flag is present without a usable value
-/// (a bare `--prefix` must never be read as "match everything").
-fn prefix_value(args: &[String]) -> Result<Option<String>, String> {
-    match args.iter().position(|a| a == "--prefix") {
-        None => Ok(None),
-        Some(i) => match args.get(i + 1).filter(|a| !a.starts_with('-')) {
-            Some(v) => Ok(Some(v.clone())),
-            None => Err("--prefix needs a value".into()),
-        },
+#[derive(Debug, PartialEq, Eq)]
+struct RmOptions {
+    yes: bool,
+    selection: Selection,
+}
+
+/// Parse deletion arguments without silently accepting options. This command
+/// destroys artwork, so every token must have one unambiguous meaning.
+fn parse_rm(args: &[String]) -> Result<RmOptions, String> {
+    let mut yes = false;
+    let mut all = false;
+    let mut prefix = None;
+    let mut named = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--yes" | "-y" => yes = true,
+            "--all" => {
+                if all {
+                    return Err("--all may only be passed once".into());
+                }
+                all = true;
+            }
+            "--prefix" => {
+                if prefix.is_some() {
+                    return Err("--prefix may only be passed once".into());
+                }
+                i += 1;
+                let value = args
+                    .get(i)
+                    .filter(|value| !value.starts_with('-'))
+                    .ok_or("--prefix needs a value")?;
+                prefix = Some(value.clone());
+            }
+            option if option.starts_with('-') => {
+                return Err(format!("unknown option '{option}'"));
+            }
+            id => named.push(id.to_string()),
+        }
+        i += 1;
     }
+
+    if all as usize + prefix.is_some() as usize + !named.is_empty() as usize != 1 {
+        return Err("give exactly one of <id>..., --prefix <p>, or --all".into());
+    }
+    let selection = if all {
+        Selection::All
+    } else if let Some(prefix) = prefix {
+        Selection::Prefix(prefix)
+    } else {
+        Selection::Named(named)
+    };
+    Ok(RmOptions { yes, selection })
 }
 
-fn rm(args: &[String]) -> i32 {
-    let yes = flag(args, "--yes") || flag(args, "-y");
-    let all = flag(args, "--all");
-    let prefix = match prefix_value(args) {
-        Ok(p) => p,
+async fn rm(args: &[String]) -> i32 {
+    let options = match parse_rm(args) {
+        Ok(options) => options,
         Err(e) => {
-            eprintln!("atelier library: {e}");
+            eprintln!("atelier library: {e}\n\n{USAGE}");
             return 2;
         }
     };
-    let named: Vec<String> = args
-        .iter()
-        .filter(|a| !a.starts_with('-'))
-        .cloned()
-        .collect();
-    // Skip the value that belongs to --prefix.
-    let named: Vec<String> = match &prefix {
-        Some(p) => named.into_iter().filter(|a| a != p).collect(),
-        None => named,
-    };
-
-    if all as usize + prefix.is_some() as usize + !named.is_empty() as usize != 1 {
-        eprintln!(
-            "atelier library: give exactly one of <id>..., --prefix <p>, or --all\n\n{USAGE}"
-        );
-        return 2;
-    }
 
     let s = studio();
-    let targets: Vec<String> = if all {
-        ids(&s)
-    } else if let Some(p) = &prefix {
-        ids(&s).into_iter().filter(|i| i.starts_with(p)).collect()
-    } else {
-        named
+    let targets: Vec<String> = match &options.selection {
+        Selection::All => ids(&s),
+        Selection::Prefix(prefix) => ids(&s)
+            .into_iter()
+            .filter(|id| id.starts_with(prefix))
+            .collect(),
+        Selection::Named(ids) => ids.clone(),
     };
 
     if targets.is_empty() {
@@ -178,7 +208,7 @@ fn rm(args: &[String]) -> i32 {
         return 0;
     }
 
-    if !yes {
+    if !options.yes {
         eprintln!("About to permanently delete {} document(s):", targets.len());
         for t in targets.iter().take(10) {
             eprintln!("  {t}");
@@ -193,11 +223,27 @@ fn rm(args: &[String]) -> i32 {
     }
 
     let (mut ok, mut failed) = (0, 0);
+    let atelier = Atelier::with_studio(s);
     for id in &targets {
-        match s.delete_doc(id) {
-            Ok(_) => ok += 1,
-            Err(e) => {
-                eprintln!("  {id}: {e}");
+        match atelier
+            .dispatch(ToolName::DeleteDoc, json!({"doc_id": id}), "cli")
+            .await
+        {
+            Ok(result) if !server::is_error_result(&result) => ok += 1,
+            Ok(result) => {
+                let error = server::result_json(&result)
+                    .and_then(|value| {
+                        value
+                            .get("error")
+                            .and_then(|e| e.as_str())
+                            .map(str::to_string)
+                    })
+                    .unwrap_or_else(|| "delete failed".into());
+                eprintln!("  {id}: {error}");
+                failed += 1;
+            }
+            Err(error) => {
+                eprintln!("  {id}: {error}");
                 failed += 1;
             }
         }
@@ -238,23 +284,26 @@ mod tests {
         a.iter().map(|s| s.to_string()).collect()
     }
 
-    /// A bare `--prefix` must error, never fall through to "match everything" —
-    /// that would silently select the whole library for deletion.
     #[test]
-    fn bare_prefix_is_an_error_not_a_wildcard() {
-        assert!(prefix_value(&v(&["rm", "--prefix"])).is_err());
-        assert!(prefix_value(&v(&["rm", "--prefix", "--yes"])).is_err());
+    fn deletion_arguments_are_explicit_and_reject_unknown_options() {
+        assert!(parse_rm(&v(&["--prefix"])).is_err());
+        assert!(parse_rm(&v(&["--prefix", "--yes"])).is_err());
         assert_eq!(
-            prefix_value(&v(&["rm", "--prefix", "hero-"])).unwrap(),
-            Some("hero-".into())
+            parse_rm(&v(&["--prefix", "hero-", "--yes"])).unwrap(),
+            RmOptions {
+                yes: true,
+                selection: Selection::Prefix("hero-".into())
+            }
         );
-        assert_eq!(prefix_value(&v(&["rm", "a", "b"])).unwrap(), None);
-    }
-
-    #[test]
-    fn flags_are_recognised_in_any_position() {
-        assert!(flag(&v(&["rm", "--all", "--yes"]), "--yes"));
-        assert!(flag(&v(&["rm", "-y", "--all"]), "-y"));
-        assert!(!flag(&v(&["rm", "--all"]), "--yes"));
+        assert_eq!(
+            parse_rm(&v(&["a", "--yes", "b"])).unwrap(),
+            RmOptions {
+                yes: true,
+                selection: Selection::Named(v(&["a", "b"]))
+            }
+        );
+        assert!(parse_rm(&v(&["--all", "--force"])).is_err());
+        assert!(parse_rm(&v(&["--all", "a"])).is_err());
+        assert!(parse_rm(&v(&["--prefix", "a", "b"])).is_err());
     }
 }
