@@ -8,7 +8,7 @@ use atelier_core::document::{DocMeta, MAX_DOCUMENT_METADATA_BYTES};
 use serde::Serialize;
 
 use super::store::{parse_journal_file, read_bounded_utf8};
-use super::{JOURNAL_FILE, Studio};
+use super::{JOURNAL_FILE, REVISION_FILE, Studio};
 
 /// Verification is routinely pointed at old or damaged data. These limits
 /// bound verifier allocations and machine-readable output.
@@ -396,6 +396,18 @@ impl Studio {
             report,
         );
 
+        if self.exists(id)
+            && let Err(error) = self.document_revision(id)
+        {
+            report.issue(
+                IntegritySeverity::Error,
+                Some(id),
+                REVISION_FILE,
+                error,
+                "restore a regular revision file containing one unsigned decimal integer",
+            );
+        }
+
         let journal_path = dir.join(JOURNAL_FILE);
         match fs::symlink_metadata(&journal_path) {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => report.issue(
@@ -699,6 +711,7 @@ impl Studio {
             };
             let name = entry.file_name().to_string_lossy().into_owned();
             if matches!(name.as_str(), "doc.json" | "recipe.jsonl" | "cels")
+                || name == REVISION_FILE
                 || (name == "reference.png" && has_reference)
             {
                 continue;
@@ -936,6 +949,48 @@ mod tests {
                 .iter()
                 .any(|issue| issue.component == JOURNAL_FILE)
         );
+    }
+
+    #[test]
+    fn verifies_revision_sidecars_without_rejecting_legacy_absence() {
+        let studio = studio("revision");
+        let created = studio.doc_new("verified", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap().to_string();
+        studio
+            .journal_append(
+                &id,
+                ToolName::DocNew,
+                &json!({"name":"verified","width":4,"height":4,"doc_id":id}),
+            )
+            .unwrap();
+
+        let legacy = studio.verify_store().unwrap();
+        assert!(
+            legacy.ok,
+            "legacy revision zero is valid: {:?}",
+            legacy.issues
+        );
+
+        studio.set_document_revision(&id, 7).unwrap();
+        let current = studio.verify_store().unwrap();
+        assert!(
+            current.ok,
+            "revision sidecar is managed: {:?}",
+            current.issues
+        );
+        assert!(
+            current
+                .issues
+                .iter()
+                .all(|issue| issue.component != REVISION_FILE)
+        );
+
+        fs::write(studio.doc_dir(&id).join(REVISION_FILE), "not-a-number\n").unwrap();
+        let corrupt = studio.verify_store().unwrap();
+        assert!(!corrupt.ok);
+        assert!(corrupt.issues.iter().any(|issue| {
+            issue.severity == IntegritySeverity::Error && issue.component == REVISION_FILE
+        }));
     }
 
     #[test]

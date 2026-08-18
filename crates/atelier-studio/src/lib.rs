@@ -52,6 +52,12 @@ pub(crate) const MAX_SOURCE_PIXELS: u64 = 64 * 1024 * 1024;
 pub(crate) const MAX_CANVAS: u32 = atelier_core::document::MAX_DOCUMENT_DIMENSION;
 /// A document's journal, beside its `doc.json` and `cels/`.
 pub const JOURNAL_FILE: &str = "recipe.jsonl";
+/// Store-owned optimistic-concurrency generation, beside `doc.json`.
+///
+/// This stays outside the core document format: older 1.x documents have no
+/// sidecar and therefore begin at revision zero when first opened by a build
+/// that supports guarded writes.
+pub const REVISION_FILE: &str = "revision";
 /// Text grids (silhouette/dump/diff) stay readable only so long — shared area
 /// cap for every grid-emitting reader.
 pub(crate) const GRID_AREA_CAP: u64 = 4096;
