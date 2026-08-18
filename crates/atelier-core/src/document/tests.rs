@@ -371,6 +371,41 @@ fn clear_cel_rejects_a_target_that_does_not_exist() {
 }
 
 #[test]
+fn cel_change_summary_matches_materialized_diffs_for_sparse_and_absent_cels() {
+    fn materialized_summary(before: &RgbaImage, after: &RgbaImage) -> (u64, Option<[u32; 4]>) {
+        let (mut changed, mut bbox): (u64, Option<[u32; 4]>) = (0, None);
+        for (before_pixel, (x, y, after_pixel)) in before.pixels().zip(after.enumerate_pixels()) {
+            if before_pixel == after_pixel {
+                continue;
+            }
+            changed += 1;
+            bbox = Some(match bbox {
+                None => [x, y, x, y],
+                Some([x0, y0, x1, y1]) => [x0.min(x), y0.min(y), x1.max(x), y1.max(y)],
+            });
+        }
+        (changed, bbox)
+    }
+
+    let mut document = Document::new("t", 4, 4);
+    let empty = document.cel_full(0, 0);
+    let sparse = RgbaImage::from_pixel(2, 2, Rgba([1, 2, 3, 255]));
+    document.set_cel(0, 0, 1, 1, sparse).unwrap();
+    let materialized = document.cel_full(0, 0);
+    assert_eq!(
+        document.cel_change_summary(0, 0, &empty).unwrap(),
+        materialized_summary(&empty, &materialized)
+    );
+
+    document.clear_cel(0, 0).unwrap();
+    let empty_again = document.cel_full(0, 0);
+    assert_eq!(
+        document.cel_change_summary(0, 0, &materialized).unwrap(),
+        materialized_summary(&materialized, &empty_again)
+    );
+}
+
+#[test]
 fn snap_to_palette_picks_perceptual_nearest() {
     let mut d = Document::new("t", 4, 4);
     d.pencil(0, 0, &[(0, 0)], [200, 10, 10, 255], 1).unwrap();
