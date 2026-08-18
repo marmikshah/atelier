@@ -34,8 +34,19 @@ impl Studio {
         };
         let img = crate::open_bounded(Path::new(path))?;
         let (rw, rh) = (img.width(), img.height());
-        img.save(dir.join("reference.png"))
-            .map_err(|e| e.to_string())?;
+        // Replace instead of truncating the live inode. Store transactions
+        // hard-link unchanged files into their staging tree; a temp+rename
+        // keeps the live generation untouched until the transaction commits.
+        let reference = dir.join("reference.png");
+        let temporary = dir.join("reference.png.tmp");
+        let write = img
+            .save_with_format(&temporary, image::ImageFormat::Png)
+            .map_err(|e| e.to_string())
+            .and_then(|()| std::fs::rename(&temporary, &reference).map_err(|e| e.to_string()));
+        if let Err(error) = write {
+            let _ = std::fs::remove_file(&temporary);
+            return Err(error);
+        }
         doc.set_reference_file(Some("reference.png".into()));
         doc.save(&dir)?;
         let (cw, ch) = (doc.meta().w, doc.meta().h);

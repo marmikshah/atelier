@@ -448,6 +448,19 @@ fn persisted_document_shape_is_strict() {
         current.get("reference").is_some_and(Value::is_null),
         "the current optional field is explicit, not inferred when absent"
     );
+    assert_eq!(current["format_version"], json!(DOCUMENT_FORMAT_VERSION));
+
+    // Pre-version files are the v1 legacy shape and remain readable.
+    let mut legacy = current.clone();
+    legacy.as_object_mut().unwrap().remove("format_version");
+    std::fs::write(&path, serde_json::to_vec(&legacy).unwrap()).unwrap();
+    assert!(Document::load(&dir).is_ok(), "legacy v1 must migrate on read");
+
+    let mut future = current.clone();
+    future["format_version"] = json!(DOCUMENT_FORMAT_VERSION + 1);
+    std::fs::write(&path, serde_json::to_vec(&future).unwrap()).unwrap();
+    let error = Document::load(&dir).err().expect("future format must fail");
+    assert!(error.contains("unsupported document format"), "got: {error}");
 
     let mut missing = current.clone();
     missing.as_object_mut().unwrap().remove("palette");
@@ -465,6 +478,21 @@ fn persisted_document_shape_is_strict() {
     let error = Document::load(&dir).err().expect("invalid blend must fail");
     assert!(error.contains("source-over"), "got: {error}");
     let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn persisted_documents_obey_the_core_canvas_limit() {
+    let dir = std::env::temp_dir().join("atelier-stored-canvas-limit-test");
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut document = Document::new("bounded", 8, 8);
+    document.save(&dir).unwrap();
+    let path = dir.join("doc.json");
+    let mut meta: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    meta["w"] = json!(MAX_DOCUMENT_DIMENSION + 1);
+    std::fs::write(&path, serde_json::to_vec(&meta).unwrap()).unwrap();
+    let error = Document::load(&dir).err().expect("oversized canvas must fail");
+    assert!(error.contains("document dimensions"), "got: {error}");
+    let _ = std::fs::remove_dir_all(dir);
 }
 
 #[test]
