@@ -192,6 +192,15 @@ fn http_server_handshakes_lists_and_calls_the_same_registry() {
         init["result"]["capabilities"]["tools"].is_object(),
         "tools capability advertised: {init}"
     );
+    assert_eq!(
+        init["result"]["serverInfo"]["name"], "atelier",
+        "server identity: {init}"
+    );
+    assert_eq!(
+        init["result"]["serverInfo"]["version"],
+        env!("CARGO_PKG_VERSION"),
+        "server version: {init}"
+    );
 
     let initialized = server.post(&json!({
         "jsonrpc": "2.0",

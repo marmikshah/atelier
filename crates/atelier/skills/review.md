@@ -77,5 +77,5 @@ A finding at level 4 on art that fails level 1 is noise.
 
 Then you are no longer reviewing. Fix **one finding at a time**, `doc_look`
 after each, and confine every change to the region and layer you named —
-`doc_checkpoint op=save` first. Re-run the audit that produced the finding to
+`doc_checkpoint action=save` first. Re-run the audit that produced the finding to
 prove it is gone; a fix you did not verify is a claim, not a fix.

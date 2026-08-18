@@ -114,7 +114,7 @@ thing, and the wrong choice fails quietly.
 
 ## Before you touch anything risky
 
-`doc_checkpoint op=save`. Quantising, palette snapping and large fills are hard
+`doc_checkpoint action=save`. Quantising, palette snapping and large fills are hard
 to undo by hand and trivial to roll back.
 
 ## Failure modes

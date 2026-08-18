@@ -127,7 +127,7 @@ async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
     // `--home` roots an isolated store for the run; otherwise the ambient
     // ATELIER_HOME (or the default) is where the rebuild lands.
     let atelier = match home {
-        Some(dir) => Atelier::with_studio(Studio::with_docs_dir(dir.into())),
+        Some(dir) => Atelier::with_studio(Studio::with_home(dir.into())),
         None => Atelier::new(),
     };
     run_session(&recipe, &atelier).await
@@ -352,6 +352,35 @@ mod tests {
         let s = summarize(&result);
         assert!(s.ends_with('…'));
         assert!(s.chars().count() <= 201);
+    }
+
+    #[tokio::test]
+    async fn explicit_home_uses_the_same_documents_layout_as_atelier_home() {
+        let home =
+            std::env::temp_dir().join(format!("atelier-replay-home-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&home);
+        let recipe = Recipe::parse(&format!(
+            "{{\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"home-layout\",\"width\":4,\"height\":4}}}}\n"
+        ))
+        .unwrap();
+
+        drive(recipe, Some(home.to_string_lossy().as_ref()))
+            .await
+            .unwrap();
+
+        let studio = Studio::with_home(home.clone());
+        assert_eq!(studio.list_docs()["count"], 1);
+        assert!(home.join("documents").is_dir());
+        assert!(
+            std::fs::read_dir(&home)
+                .unwrap()
+                .filter_map(Result::ok)
+                .filter(|entry| entry.path().is_dir())
+                .all(|entry| entry.file_name() == "documents"),
+            "--home must not place document ids directly below the home"
+        );
+
+        let _ = std::fs::remove_dir_all(home);
     }
 
     /// The exact-pixel gate replay has always claimed but never enforced:
