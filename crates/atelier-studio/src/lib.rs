@@ -393,32 +393,6 @@ impl Studio {
         Ok(json!({"ok": true, "doc_id": id}))
     }
 
-    /// Diff two canvas-sized snapshots into a mutation ack: pixel count + bbox
-    /// of every change, and an explicit warning when NOTHING changed — the
-    /// usual symptom of coordinates that ran off-canvas or hit the wrong cel.
-    /// Blind `{ok:true}` acks let those mistakes compound between renders.
-    fn change_summary(
-        before: &image::RgbaImage,
-        after: &image::RgbaImage,
-    ) -> (u64, Option<[u32; 4]>) {
-        let (mut changed, mut bbox): (u64, Option<[u32; 4]>) = (0, None);
-        for (b, (x, y, a)) in before.pixels().zip(after.enumerate_pixels()) {
-            if b != a {
-                changed += 1;
-                bbox = Some(match bbox {
-                    None => [x, y, x, y],
-                    Some([a0, b0, c0, d0]) => [a0.min(x), b0.min(y), c0.max(x), d0.max(y)],
-                });
-            }
-        }
-        (changed, bbox)
-    }
-
-    fn change_ack(id: &str, before: &image::RgbaImage, after: &image::RgbaImage) -> Value {
-        let (changed, bbox) = Self::change_summary(before, after);
-        Self::change_ack_summary(id, changed, bbox)
-    }
-
     fn change_ack_summary(id: &str, changed: u64, bbox: Option<[u32; 4]>) -> Value {
         let mut out = json!({
             "ok": true,
@@ -489,9 +463,10 @@ impl Studio {
         let (dir, mut doc) = self.open(id)?;
         let before = doc.cel_full(layer, frame);
         f(&mut doc)?;
-        let after = doc.cel_full(layer, frame);
+        let (changed, bbox) = doc.cel_change_summary(layer, frame, &before)?;
+        drop(before);
         doc.save(&dir)?;
-        Ok(Self::change_ack(id, &before, &after))
+        Ok(Self::change_ack_summary(id, changed, bbox))
     }
 
     /// Timeline lifecycle (delete | insert | duplicate | move) with cel
@@ -658,8 +633,8 @@ impl Studio {
                 for current in frame..=frame_to {
                     let before = doc.cel_full(layer, current);
                     doc.apply_op(layer, current, &operation)?;
-                    let after = doc.cel_full(layer, current);
-                    let (frame_changed, frame_bbox) = Self::change_summary(&before, &after);
+                    let (frame_changed, frame_bbox) =
+                        doc.cel_change_summary(layer, current, &before)?;
                     changed += frame_changed;
                     if frame_changed > 0 {
                         frames_changed += 1;
@@ -987,6 +962,78 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn edit_acks_stay_exact_for_smaller_and_absent_result_cels() {
+        let s = studio("borrowed-edit-ack");
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_draw(
+            id,
+            0,
+            0,
+            None,
+            "fill_cel",
+            json!({"color": [7, 8, 9, 255]})
+                .as_object()
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
+
+        let scaled = s
+            .doc_fx(
+                id,
+                0,
+                0,
+                None,
+                "scale",
+                json!({"w": 2, "h": 2, "method": "nearest"})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            )
+            .unwrap();
+        assert_eq!(
+            scaled,
+            json!({
+                "ok": true,
+                "doc_id": id,
+                "op": "scale",
+                "pixels_changed": 12,
+                "change_bbox": [0, 0, 3, 3],
+            })
+        );
+
+        let cleared = s
+            .doc_draw(id, 0, 0, None, "clear_cel", serde_json::Map::new())
+            .unwrap();
+        assert_eq!(
+            cleared,
+            json!({
+                "ok": true,
+                "doc_id": id,
+                "op": "clear_cel",
+                "pixels_changed": 4,
+                "change_bbox": [0, 0, 1, 1],
+            })
+        );
+
+        let no_op = s
+            .doc_draw(id, 0, 0, None, "clear_cel", serde_json::Map::new())
+            .unwrap();
+        assert_eq!(
+            no_op,
+            json!({
+                "ok": true,
+                "doc_id": id,
+                "op": "clear_cel",
+                "pixels_changed": 0,
+                "change_bbox": null,
+                "warning": "no pixels changed — coordinates may be off-canvas or the edit may match what's already there (a no-op, not a failure)",
+            })
+        );
     }
 
     #[test]

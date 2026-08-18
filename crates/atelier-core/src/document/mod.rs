@@ -1095,6 +1095,73 @@ impl Document {
         img
     }
 
+    /// Compare a full-canvas snapshot with the current cel without copying the
+    /// current cel. Returns the changed-pixel count and its inclusive canvas
+    /// bounding box.
+    ///
+    /// The current cel may be absent, offset, or a different size from the
+    /// document canvas. Pixels outside it are compared as transparent, exactly
+    /// as they are in [`Self::cel_full`].
+    pub fn cel_change_summary(
+        &self,
+        layer: usize,
+        frame: usize,
+        before: &RgbaImage,
+    ) -> Result<(u64, Option<[u32; 4]>), String> {
+        self.check_cel(layer, frame)?;
+        if before.dimensions() != (self.meta.w, self.meta.h) {
+            return Err(format!(
+                "cel snapshot is {}x{}; document canvas is {}x{}",
+                before.width(),
+                before.height(),
+                self.meta.w,
+                self.meta.h
+            ));
+        }
+
+        let after = self.cels.get(&(layer, frame));
+        let (mut changed, mut bbox): (u64, Option<[u32; 4]>) = (0, None);
+        if let Some((0, 0, image)) = after
+            && image.dimensions() == before.dimensions()
+        {
+            for (before_pixel, (x, y, after_pixel)) in before.pixels().zip(image.enumerate_pixels())
+            {
+                if before_pixel == after_pixel {
+                    continue;
+                }
+                changed += 1;
+                bbox = Some(match bbox {
+                    None => [x, y, x, y],
+                    Some([x0, y0, x1, y1]) => [x0.min(x), y0.min(y), x1.max(x), y1.max(y)],
+                });
+            }
+            return Ok((changed, bbox));
+        }
+
+        for (x, y, before_pixel) in before.enumerate_pixels() {
+            let after_pixel = after
+                .and_then(|(cel_x, cel_y, image)| {
+                    let local_x = i64::from(x) - i64::from(*cel_x);
+                    let local_y = i64::from(y) - i64::from(*cel_y);
+                    (local_x >= 0
+                        && local_y >= 0
+                        && local_x < i64::from(image.width())
+                        && local_y < i64::from(image.height()))
+                    .then(|| image.get_pixel(local_x as u32, local_y as u32))
+                })
+                .map_or([0, 0, 0, 0], |pixel| pixel.0);
+            if before_pixel.0 == after_pixel {
+                continue;
+            }
+            changed += 1;
+            bbox = Some(match bbox {
+                None => [x, y, x, y],
+                Some([x0, y0, x1, y1]) => [x0.min(x), y0.min(y), x1.max(x), y1.max(y)],
+            });
+        }
+        Ok((changed, bbox))
+    }
+
     /// Full-canvas RGBA image of one layer's cel at `frame` (anchored at 0,0,
     /// transparent where the cel is empty/outside). Read-only sibling of
     /// `flatten` for analysis tools that want a single layer instead of the
