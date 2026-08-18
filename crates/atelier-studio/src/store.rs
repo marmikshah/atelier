@@ -3,17 +3,21 @@
 //! replayable recipe.
 
 use std::fs;
+use std::io::Read;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
-use atelier_core::document::{DocMeta, Document};
+use atelier_core::document::Document;
 
 use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, Studio, ToolName};
 
 /// Current JSONL journal entry format.
 pub const JOURNAL_FORMAT_VERSION: u32 = 1;
+
+const MAX_JOURNAL_BYTES: u64 = 64 * 1024 * 1024;
+const MAX_JOURNAL_ENTRIES: usize = 100_000;
 
 const fn journal_format_v1() -> u32 {
     JOURNAL_FORMAT_VERSION
@@ -108,6 +112,108 @@ pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+pub(crate) fn read_bounded_utf8(
+    path: &std::path::Path,
+    label: &str,
+    max_bytes: u64,
+) -> Result<String, String> {
+    let path_metadata = fs::symlink_metadata(path).map_err(|error| error.to_string())?;
+    if !path_metadata.file_type().is_file() {
+        return Err(format!(
+            "{label} must be a regular file (symlinks are refused)"
+        ));
+    }
+    let mut options = fs::File::options();
+    options.read(true);
+    #[cfg(target_os = "linux")]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+
+        options.custom_flags(0o400000);
+    }
+    let file = options.open(path).map_err(|error| error.to_string())?;
+    let file_metadata = file.metadata().map_err(|error| error.to_string())?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+
+        if path_metadata.dev() != file_metadata.dev() || path_metadata.ino() != file_metadata.ino()
+        {
+            return Err(format!("{label} changed while it was being opened"));
+        }
+    }
+    let length = file_metadata.len();
+    if length > max_bytes {
+        return Err(format!(
+            "{label} is {length} bytes, over the {max_bytes}-byte verification limit"
+        ));
+    }
+    let capacity = usize::try_from(length.min(max_bytes)).unwrap_or(0);
+    let mut bytes = Vec::with_capacity(capacity);
+    file.take(max_bytes.saturating_add(1))
+        .read_to_end(&mut bytes)
+        .map_err(|error| error.to_string())?;
+    if bytes.len() as u64 > max_bytes {
+        return Err(format!(
+            "{label} grew beyond the {max_bytes}-byte verification limit while it was read"
+        ));
+    }
+    String::from_utf8(bytes).map_err(|error| format!("{label} is not UTF-8: {error}"))
+}
+
+pub(crate) struct ParsedJournal {
+    pub(crate) entries: Vec<JournalEntry>,
+    pub(crate) torn_tail: bool,
+}
+
+pub(crate) fn parse_journal_file(
+    id: &str,
+    path: &std::path::Path,
+) -> Result<ParsedJournal, String> {
+    let body = read_bounded_utf8(path, JOURNAL_FILE, MAX_JOURNAL_BYTES)?;
+    let final_line_was_terminated = body.ends_with('\n');
+    let mut lines = body
+        .lines()
+        .enumerate()
+        .map(|(line, value)| (line, value.trim()))
+        .filter(|(_, value)| !value.is_empty())
+        .peekable();
+    let mut entries = Vec::new();
+    let mut torn_tail = false;
+    while let Some((line, value)) = lines.next() {
+        let is_last = lines.peek().is_none();
+        match serde_json::from_str::<JournalEntry>(value) {
+            Ok(entry) if entries.len() < MAX_JOURNAL_ENTRIES => entries.push(entry),
+            Ok(_) => {
+                return Err(format!(
+                    "journal has more than {MAX_JOURNAL_ENTRIES} entries; split or archive its recipe before verification"
+                ));
+            }
+            Err(error) if is_last && error.is_eof() && !final_line_was_terminated => {
+                torn_tail = true;
+                break;
+            }
+            Err(error) => return Err(format!("journal line {}: {error}", line + 1)),
+        }
+    }
+    validate_journal(&entries).map_err(|error| format!("journal: {error}"))?;
+    if let Some(recorded_id) = entries
+        .first()
+        .and_then(|entry| entry.args.get("doc_id"))
+        .and_then(Value::as_str)
+        && recorded_id != id
+    {
+        return Err(format!(
+            "journal: doc_new stamp '{recorded_id}' does not match document '{id}'"
+        ));
+    }
+    Ok(ParsedJournal { entries, torn_tail })
+}
+
+fn read_journal_file(id: &str, path: &std::path::Path) -> Result<Vec<JournalEntry>, String> {
+    parse_journal_file(id, path).map(|journal| journal.entries)
 }
 
 /// An advisory cross-process lock for one document store.
@@ -239,7 +345,13 @@ impl Studio {
     }
 
     pub(crate) fn exists(&self, id: &str) -> bool {
-        Self::valid_id(id) && self.doc_dir(id).join("doc.json").exists()
+        if !Self::valid_id(id) {
+            return false;
+        }
+        let dir = self.doc_dir(id);
+        fs::symlink_metadata(&dir).is_ok_and(|metadata| metadata.file_type().is_dir())
+            && fs::symlink_metadata(dir.join("doc.json"))
+                .is_ok_and(|metadata| metadata.file_type().is_file())
     }
 
     /// All document ids on disk (directories with a doc.json), sorted.
@@ -248,7 +360,11 @@ impl Studio {
         if let Ok(rd) = fs::read_dir(&self.docs_dir) {
             for e in rd.flatten() {
                 let id = e.file_name().to_string_lossy().to_string();
-                if Self::valid_id(&id) && e.path().join("doc.json").exists() {
+                if Self::valid_id(&id)
+                    && e.file_type().is_ok_and(|kind| kind.is_dir())
+                    && fs::symlink_metadata(e.path().join("doc.json"))
+                        .is_ok_and(|metadata| metadata.file_type().is_file())
+                {
                     out.push(id);
                 }
             }
@@ -262,7 +378,7 @@ impl Studio {
             return Err(format!("invalid document id '{}'", id));
         }
         let dir = self.doc_dir(id);
-        if !dir.join("doc.json").exists() {
+        if !self.exists(id) {
             let existing = self.doc_ids().join(", ");
             return Err(format!(
                 "no document '{}'. existing: {}",
@@ -330,29 +446,59 @@ impl Studio {
     /// `prefix` keeps opaque ids starting with it; `contains` searches either
     /// the id or the display name. Both are case-sensitive; combined = AND.
     pub fn list_docs_filtered(&self, prefix: Option<&str>, contains: Option<&str>) -> Value {
+        self.list_docs_inner(prefix, contains, None, usize::MAX)
+    }
+
+    /// Return a bounded page of the filtered library. `cursor` is the last
+    /// opaque id returned by the previous page and is exclusive.
+    pub fn list_docs_page(
+        &self,
+        prefix: Option<&str>,
+        contains: Option<&str>,
+        cursor: Option<&str>,
+        limit: usize,
+    ) -> Result<Value, String> {
+        const MAX_PAGE: usize = 100;
+        if !(1..=MAX_PAGE).contains(&limit) {
+            return Err(format!("list limit must be 1..={MAX_PAGE}, got {limit}"));
+        }
+        if let Some(cursor) = cursor
+            && !Self::valid_id(cursor)
+        {
+            return Err(format!("invalid list cursor '{cursor}'"));
+        }
+        Ok(self.list_docs_inner(prefix, contains, cursor, limit))
+    }
+
+    fn list_docs_inner(
+        &self,
+        prefix: Option<&str>,
+        contains: Option<&str>,
+        cursor: Option<&str>,
+        limit: usize,
+    ) -> Value {
         let mut items = Vec::new();
+        let mut total = 0usize;
+        let mut has_more = false;
         for id in self.doc_ids() {
             if let Some(p) = prefix
                 && !id.starts_with(p)
             {
                 continue;
             }
-            // Read doc.json directly (don't load cel images just to list).
-            let meta = fs::read_to_string(self.doc_dir(&id).join("doc.json"))
-                .map_err(|error| error.to_string())
-                .and_then(|source| {
-                    serde_json::from_str::<DocMeta>(&source).map_err(|error| error.to_string())
-                })
-                .and_then(|meta| {
-                    meta.validate()?;
-                    Ok(meta)
-                });
+            // Share the normal open path's bounded, symlink-refusing metadata
+            // loader without decoding cel images just to list documents.
+            let meta = Document::load_metadata(&self.doc_dir(&id));
             if let Some(c) = contains
                 && !id.contains(c)
                 && !meta
                     .as_ref()
                     .is_ok_and(|document| document.name.contains(c))
             {
+                continue;
+            }
+            total += 1;
+            if cursor.is_some_and(|cursor| id.as_str() <= cursor) {
                 continue;
             }
             let item = match meta {
@@ -369,9 +515,28 @@ impl Studio {
                     "error": format!("invalid doc.json: {error}"),
                 }),
             };
-            items.push(item);
+            if items.len() < limit {
+                items.push(item);
+            } else {
+                has_more = true;
+            }
         }
-        json!({"count": items.len(), "documents": items})
+        let next_cursor = has_more
+            .then(|| {
+                items
+                    .last()
+                    .and_then(|item| item.get("doc_id"))
+                    .and_then(Value::as_str)
+                    .map(str::to_owned)
+            })
+            .flatten();
+        json!({
+            "count": items.len(),
+            "total": total,
+            "truncated": has_more,
+            "next_cursor": next_cursor,
+            "documents": items,
+        })
     }
 
     pub fn delete_doc(&self, id: &str) -> Result<Value, String> {
@@ -410,20 +575,71 @@ impl Studio {
         if !Self::valid_id(id) {
             return Err(format!("invalid document id '{id}'"));
         }
-        let dir = self.docs_dir.join(id);
-        if !dir.is_dir() {
+        if !self.exists(id) {
             return Err(format!("no document '{id}' to journal"));
         }
         let args = args
             .as_object()
             .ok_or_else(|| format!("refusing to journal non-object args for {tool}"))?;
         let entry = JournalEntry::new(tool, args.clone());
+        let path = self.journal_path(id);
+        let (mut existing_entries, existing_bytes) = match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (Vec::new(), 0),
+            Err(error) => return Err(format!("cannot inspect journal for '{id}': {error}")),
+            Ok(metadata) if !metadata.file_type().is_file() => {
+                return Err(format!(
+                    "journal for '{id}' must be a regular file (symlinks are refused)"
+                ));
+            }
+            Ok(metadata) => {
+                let parsed = parse_journal_file(id, &path)?;
+                if parsed.torn_tail {
+                    return Err(format!(
+                        "journal for '{id}' has an incomplete final line; run `atelier library verify` and repair it before editing"
+                    ));
+                }
+                (parsed.entries, metadata.len())
+            }
+        };
+        if existing_entries.len() >= MAX_JOURNAL_ENTRIES {
+            return Err(format!(
+                "journal for '{id}' reached the {MAX_JOURNAL_ENTRIES}-entry safety limit"
+            ));
+        }
+        existing_entries.push(entry.clone());
+        validate_journal(&existing_entries)
+            .map_err(|error| format!("refusing journal append: {error}"))?;
+        if existing_entries
+            .first()
+            .and_then(|first| first.args.get("doc_id"))
+            .and_then(Value::as_str)
+            != Some(id)
+        {
+            return Err(format!(
+                "refusing journal append: doc_new stamp does not match document '{id}'"
+            ));
+        }
+
         let mut line = serde_json::to_string(&entry).map_err(|e| e.to_string())?;
         line.push('\n');
-        let mut file = fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(self.journal_path(id))
+        let line_bytes = u64::try_from(line.len()).unwrap_or(u64::MAX);
+        if existing_bytes > MAX_JOURNAL_BYTES.saturating_sub(line_bytes) {
+            return Err(format!(
+                "journal for '{id}' would exceed the {MAX_JOURNAL_BYTES}-byte safety limit"
+            ));
+        }
+
+        let mut options = fs::OpenOptions::new();
+        options.create(true).append(true);
+        #[cfg(target_os = "linux")]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+
+            // Linux O_NOFOLLOW: refuse a final-component symlink atomically.
+            options.custom_flags(0o400000);
+        }
+        let mut file = options
+            .open(&path)
             .map_err(|e| format!("could not open journal for '{id}': {e}"))?;
         std::io::Write::write_all(&mut file, line.as_bytes())
             .map_err(|e| format!("could not journal {tool} for '{id}': {e}"))?;
@@ -443,37 +659,17 @@ impl Studio {
             return Err(format!("no document '{id}'"));
         }
         let path = self.journal_path(id);
-        if !path.is_file() {
-            return Ok(Vec::new());
-        }
-        let body = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-        let nonempty: Vec<(usize, &str)> = body
-            .lines()
-            .enumerate()
-            .map(|(n, l)| (n, l.trim()))
-            .filter(|(_, l)| !l.is_empty())
-            .collect();
-        let last = nonempty.len().saturating_sub(1);
-        let mut out = Vec::new();
-        for (idx, (n, line)) in nonempty.iter().enumerate() {
-            match serde_json::from_str::<JournalEntry>(line) {
-                Ok(entry) => out.push(entry),
-                Err(error) if idx == last && error.is_eof() => break,
-                Err(e) => return Err(format!("journal line {}: {e}", n + 1)),
+        match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(error) => return Err(format!("cannot inspect journal for '{id}': {error}")),
+            Ok(metadata) if !metadata.file_type().is_file() => {
+                return Err(format!(
+                    "journal for '{id}' must be a regular file (symlinks are refused)"
+                ));
             }
+            Ok(_) => {}
         }
-        validate_journal(&out).map_err(|error| format!("journal: {error}"))?;
-        if let Some(recorded_id) = out
-            .first()
-            .and_then(|entry| entry.args.get("doc_id"))
-            .and_then(Value::as_str)
-            && recorded_id != id
-        {
-            return Err(format!(
-                "journal: doc_new stamp '{recorded_id}' does not match document '{id}'"
-            ));
-        }
-        Ok(out)
+        read_journal_file(id, &path)
     }
 }
 
@@ -493,6 +689,11 @@ mod tests {
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
         assert!(s.journal(id).unwrap().is_empty(), "nothing recorded yet");
+        assert!(
+            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+                .is_err(),
+            "a recipe cannot begin with an edit"
+        );
 
         s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
@@ -528,6 +729,18 @@ mod tests {
         let clean = fs::read_to_string(&path).unwrap();
         fs::write(&path, format!("{clean}{{\"tool\":\"doc_")).unwrap();
         assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
+        assert!(
+            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+                .is_err(),
+            "new writes must not cement a torn tail into the journal"
+        );
+
+        fs::write(&path, format!("{clean}{{\"tool\":\n")).unwrap();
+        let err = s.journal(id).unwrap_err();
+        assert!(
+            err.contains("line 3"),
+            "a newline-terminated incomplete object is corruption: {err}"
+        );
 
         fs::write(&path, format!("not json\n{clean}")).unwrap();
         let err = s.journal(id).unwrap_err();
@@ -604,18 +817,25 @@ mod tests {
         s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
         let path = s.journal_path(id);
-        let current: Value = serde_json::from_str(fs::read_to_string(&path).unwrap().trim()).unwrap();
+        let current: Value =
+            serde_json::from_str(fs::read_to_string(&path).unwrap().trim()).unwrap();
         assert_eq!(current["format_version"], JOURNAL_FORMAT_VERSION);
 
-        let legacy = format!(
-            "{{\"tool\":\"doc_new\",\"args\":{{\"name\":\"d\",\"doc_id\":\"{id}\"}}}}\n"
-        );
+        let legacy =
+            format!("{{\"tool\":\"doc_new\",\"args\":{{\"name\":\"d\",\"doc_id\":\"{id}\"}}}}\n");
         fs::write(&path, legacy).unwrap();
-        assert_eq!(s.journal(id).unwrap()[0].format_version, JOURNAL_FORMAT_VERSION);
+        assert_eq!(
+            s.journal(id).unwrap()[0].format_version,
+            JOURNAL_FORMAT_VERSION
+        );
 
         let mut future = current;
         future["format_version"] = json!(JOURNAL_FORMAT_VERSION + 1);
-        fs::write(&path, format!("{}\n", serde_json::to_string(&future).unwrap())).unwrap();
+        fs::write(
+            &path,
+            format!("{}\n", serde_json::to_string(&future).unwrap()),
+        )
+        .unwrap();
         let error = s.journal(id).unwrap_err();
         assert!(error.contains("unsupported journal format"), "got: {error}");
     }
@@ -666,6 +886,82 @@ mod tests {
             s.list_docs_filtered(Some(&ids[2]), Some(&ids[2][3..]))["count"],
             1
         );
+    }
+
+    #[test]
+    fn document_pages_are_bounded_and_cursor_stable() {
+        let s = studio("pages");
+        for name in ["one", "two", "three"] {
+            s.doc_new(name, 4, 4).unwrap();
+        }
+
+        let first = s.list_docs_page(None, None, None, 1).unwrap();
+        assert_eq!(first["count"], 1);
+        assert_eq!(first["total"], 3);
+        assert_eq!(first["truncated"], true);
+        let first_id = first["documents"][0]["doc_id"].as_str().unwrap();
+        assert_eq!(first["next_cursor"], first_id);
+
+        let second = s
+            .list_docs_page(None, None, first["next_cursor"].as_str(), 1)
+            .unwrap();
+        let second_id = second["documents"][0]["doc_id"].as_str().unwrap();
+        assert!(second_id > first_id);
+        assert_eq!(second["total"], 3);
+        assert_eq!(second["truncated"], true);
+
+        let final_page = s.list_docs_page(None, None, Some(second_id), 1).unwrap();
+        assert_eq!(final_page["count"], 1);
+        assert_eq!(final_page["truncated"], false);
+        assert!(final_page["next_cursor"].is_null());
+
+        assert!(s.list_docs_page(None, None, None, 0).is_err());
+        assert!(s.list_docs_page(None, None, Some("not-a-uuid"), 1).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn normal_store_access_refuses_symlinked_documents_and_files() {
+        use std::os::unix::fs::symlink;
+
+        let s = studio("store-symlink-safety");
+        let created = s.doc_new("safe", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let document = s.doc_dir(id);
+        let held = s.docs_dir.join("held-document");
+
+        fs::rename(&document, &held).unwrap();
+        symlink(&held, &document).unwrap();
+        assert!(!s.exists(id));
+        assert!(!s.doc_ids().iter().any(|candidate| candidate == id));
+        assert!(s.open(id).is_err());
+        assert!(s.delete_doc(id).is_err());
+
+        fs::remove_file(&document).unwrap();
+        fs::rename(&held, &document).unwrap();
+        let metadata = document.join("doc.json");
+        let held_metadata = document.join("held-doc.json");
+        fs::rename(&metadata, &held_metadata).unwrap();
+        symlink(&held_metadata, &metadata).unwrap();
+        assert!(!s.exists(id));
+        assert!(s.open(id).is_err());
+
+        fs::remove_file(&metadata).unwrap();
+        fs::rename(&held_metadata, &metadata).unwrap();
+        s.journal_append(id, ToolName::DocNew, &json!({"name": "safe", "doc_id": id}))
+            .unwrap();
+        let journal = s.journal_path(id);
+        let held_journal = document.join("held-recipe.jsonl");
+        fs::rename(&journal, &held_journal).unwrap();
+        symlink(&held_journal, &journal).unwrap();
+        assert!(
+            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+                .is_err()
+        );
+        let error = s.journal(id).unwrap_err();
+        assert!(error.contains("regular file"), "got: {error}");
+
+        let _ = fs::remove_dir_all(&s.docs_dir);
     }
 
     #[test]

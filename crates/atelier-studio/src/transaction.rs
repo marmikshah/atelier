@@ -16,6 +16,27 @@ use super::{JOURNAL_FILE, Studio};
 
 const TRANSACTIONS_DIR: &str = ".transactions";
 
+/// Result after a transaction has crossed its atomic visibility point.
+///
+/// `DurabilityUncertain` is still a successful commit: reporting it as a
+/// failed mutation would invite a retry that could duplicate a non-idempotent
+/// edit. The warning tells the caller that the new generation was published,
+/// but the final parent-directory fsync could not be confirmed.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CommitOutcome {
+    Durable,
+    DurabilityUncertain { warning: String },
+}
+
+impl CommitOutcome {
+    pub fn warning(&self) -> Option<&str> {
+        match self {
+            Self::Durable => None,
+            Self::DurabilityUncertain { warning } => Some(warning),
+        }
+    }
+}
+
 /// A private store on which one mutating call executes before publication.
 pub struct StoreTransaction {
     live_docs_dir: PathBuf,
@@ -35,14 +56,14 @@ impl StoreTransaction {
     /// Existing→existing exchanges a complete document state. Missing→present
     /// creates a document. Present→missing commits deletion. Every other shape
     /// is an invalid transaction result.
-    pub fn commit(mut self, id: &str) -> Result<(), String> {
+    pub fn commit(mut self, id: &str) -> Result<CommitOutcome, String> {
         if !Studio::valid_id(id) {
             return Err(format!("invalid transaction document id '{id}'"));
         }
         let live = self.live_docs_dir.join(id);
         let staged = self.stage_root.join(id);
-        let live_exists = live.is_dir();
-        let staged_exists = staged.is_dir();
+        let live_exists = directory_state(&live, "live document")?;
+        let staged_exists = directory_state(&staged, "staged document")?;
 
         if staged_exists {
             sync_tree(&staged)?;
@@ -61,12 +82,15 @@ impl StoreTransaction {
             }
         }
         self.committed = true;
-        sync_dir(&self.live_docs_dir)
-            .map_err(|e| format!("document '{id}' committed but store sync failed: {e}"))?;
+        // Rename/exchange crosses two parent directories. Both directory-entry
+        // updates must reach stable storage before the commit is Durable.
+        let live_sync = sync_dir(&self.live_docs_dir);
+        let stage_sync = sync_dir(&self.stage_root);
+        let outcome = commit_outcome(id, live_sync.and(stage_sync));
         // After an exchange this removes the old generation; after deletion it
         // removes the tombstone. Cleanup is not part of the commit point.
         let _ = fs::remove_dir_all(&self.stage_root);
-        Ok(())
+        Ok(outcome)
     }
 }
 
@@ -83,14 +107,28 @@ impl Studio {
     /// the live store's exclusive lock, so no other writer can be staging.
     pub fn cleanup_stale_transactions(&self) -> Result<(), String> {
         let root = self.docs_dir.join(TRANSACTIONS_DIR);
-        match fs::remove_dir_all(&root) {
-            Ok(()) => Ok(()),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(error) => Err(format!(
+        match fs::symlink_metadata(&root) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(error) => {
+                return Err(format!(
+                    "cannot inspect stale transactions at {}: {error}",
+                    root.display()
+                ));
+            }
+            Ok(metadata) if !metadata.file_type().is_dir() => {
+                return Err(format!(
+                    "refusing non-directory transaction path {}",
+                    root.display()
+                ));
+            }
+            Ok(_) => {}
+        }
+        fs::remove_dir_all(&root).map_err(|error| {
+            format!(
                 "cannot clean stale transactions at {}: {error}",
                 root.display()
-            )),
-        }
+            )
+        })
     }
 
     /// Start an isolated store transaction. `id=None` creates an empty staging
@@ -102,12 +140,7 @@ impl Studio {
             return Err(format!("invalid document id '{id}'"));
         }
         let transactions = self.docs_dir.join(TRANSACTIONS_DIR);
-        fs::create_dir_all(&transactions).map_err(|e| {
-            format!(
-                "cannot create transaction directory {}: {e}",
-                transactions.display()
-            )
-        })?;
+        ensure_directory(&transactions, "transaction directory")?;
         let stage_root = transactions.join(Uuid::new_v4().to_string());
         fs::create_dir(&stage_root)
             .map_err(|e| format!("cannot create transaction {}: {e}", stage_root.display()))?;
@@ -115,7 +148,7 @@ impl Studio {
         let staged = (|| -> Result<(), String> {
             if let Some(id) = id {
                 let source = self.docs_dir.join(id);
-                if !source.join("doc.json").is_file() {
+                if !self.exists(id) {
                     return Err(format!("no document '{id}'"));
                 }
                 stage_tree(&source, &stage_root.join(id))?;
@@ -136,7 +169,42 @@ impl Studio {
     }
 }
 
+fn directory_state(path: &Path, label: &str) -> Result<bool, String> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_dir() => Ok(true),
+        Ok(_) => Err(format!(
+            "{label} {} must be a real directory (symlinks are refused)",
+            path.display()
+        )),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(format!(
+            "cannot inspect {label} {}: {error}",
+            path.display()
+        )),
+    }
+}
+
+fn ensure_directory(path: &Path, label: &str) -> Result<(), String> {
+    match directory_state(path, label)? {
+        true => Ok(()),
+        false => match fs::create_dir(path) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                directory_state(path, label).and_then(|is_dir| {
+                    is_dir
+                        .then_some(())
+                        .ok_or_else(|| format!("{label} {} is not a directory", path.display()))
+                })
+            }
+            Err(error) => Err(format!("cannot create {label} {}: {error}", path.display())),
+        },
+    }
+}
+
 fn stage_tree(source: &Path, destination: &Path) -> Result<(), String> {
+    if !directory_state(source, "document source")? {
+        return Err(format!("document source {} is missing", source.display()));
+    }
     fs::create_dir(destination)
         .map_err(|e| format!("cannot stage {}: {e}", destination.display()))?;
     for entry in fs::read_dir(source).map_err(|e| e.to_string())? {
@@ -176,7 +244,10 @@ fn sync_tree(path: &Path) -> Result<(), String> {
                 .and_then(|file| file.sync_all())
                 .map_err(|e| format!("cannot sync {}: {e}", child.display()))?;
         } else {
-            return Err(format!("refusing non-regular staged entry {}", child.display()));
+            return Err(format!(
+                "refusing non-regular staged entry {}",
+                child.display()
+            ));
         }
     }
     sync_dir(path).map_err(|e| format!("cannot sync {}: {e}", path.display()))
@@ -186,20 +257,26 @@ fn sync_dir(path: &Path) -> std::io::Result<()> {
     fs::File::open(path)?.sync_all()
 }
 
-#[cfg(target_os = "linux")]
+fn commit_outcome(id: &str, store_sync: std::io::Result<()>) -> CommitOutcome {
+    match store_sync {
+        Ok(()) => CommitOutcome::Durable,
+        Err(error) => CommitOutcome::DurabilityUncertain {
+            warning: format!(
+                "document '{id}' was committed, but the store directory sync failed ({error}); do not retry this mutation automatically"
+            ),
+        },
+    }
+}
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 fn rename_exchange(left: &Path, right: &Path) -> Result<(), String> {
-    use std::os::raw::{c_char, c_int};
+    use std::os::raw::{c_int, c_long};
 
     const AT_FDCWD: c_int = -100;
+    const SYS_RENAMEAT2: c_long = 316;
     const RENAME_EXCHANGE: u32 = 2;
     unsafe extern "C" {
-        fn renameat2(
-            olddirfd: c_int,
-            oldpath: *const c_char,
-            newdirfd: c_int,
-            newpath: *const c_char,
-            flags: u32,
-        ) -> c_int;
+        fn syscall(number: c_long, ...) -> c_long;
     }
 
     let left_c = CString::new(left.as_os_str().as_bytes())
@@ -207,9 +284,12 @@ fn rename_exchange(left: &Path, right: &Path) -> Result<(), String> {
     let right_c = CString::new(right.as_os_str().as_bytes())
         .map_err(|_| format!("transaction path contains NUL: {}", right.display()))?;
     // SAFETY: both C strings are NUL-terminated and live for the duration of
-    // the call; AT_FDCWD makes each absolute path self-contained.
+    // the call; AT_FDCWD makes each absolute path self-contained. Calling the
+    // kernel interface avoids depending on a glibc-only `renameat2` symbol and
+    // therefore keeps the same operation available in the static musl image.
     let result = unsafe {
-        renameat2(
+        syscall(
+            SYS_RENAMEAT2,
             AT_FDCWD,
             left_c.as_ptr(),
             AT_FDCWD,
@@ -229,9 +309,9 @@ fn rename_exchange(left: &Path, right: &Path) -> Result<(), String> {
     }
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
 fn rename_exchange(_left: &Path, _right: &Path) -> Result<(), String> {
-    Err("store transactions require Linux renameat2 support".into())
+    Err("store transactions require Linux x86_64 renameat2 support".into())
 }
 
 #[cfg(test)]
@@ -271,7 +351,10 @@ mod tests {
             .journal_append(id, ToolName::DocDraw, &json!({"doc_id":id,"op":"fill_cel"}))
             .unwrap();
 
-        assert_eq!(live.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap()["rgba"], json!([0,0,0,0]));
+        assert_eq!(
+            live.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
         assert_eq!(live.journal(id).unwrap().len(), 1);
         drop(transaction);
         assert_eq!(live.journal(id).unwrap().len(), 1);
@@ -301,7 +384,10 @@ mod tests {
             .unwrap();
         transaction.commit(id).unwrap();
 
-        assert_eq!(live.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap()["rgba"], json!([9,8,7,255]));
+        assert_eq!(
+            live.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap()["rgba"],
+            json!([9, 8, 7, 255])
+        );
         assert_eq!(live.journal(id).unwrap().len(), 2);
     }
 
@@ -318,5 +404,36 @@ mod tests {
         delete.studio().delete_doc(id).unwrap();
         delete.commit(id).unwrap();
         assert!(!live.exists(id));
+    }
+
+    #[test]
+    fn post_commit_sync_failure_is_success_with_a_no_retry_warning() {
+        let outcome = commit_outcome("doc", Err(std::io::Error::other("sync unavailable")));
+        let warning = outcome.warning().expect("uncertain durability warning");
+        assert!(warning.contains("was committed"));
+        assert!(warning.contains("do not retry"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn transaction_roots_and_documents_refuse_symlinks() {
+        use std::os::unix::fs::symlink;
+
+        let live = studio("symlink-safety");
+        let external = live.docs_dir.join("external");
+        fs::create_dir(&external).unwrap();
+        let transactions = live.docs_dir.join(TRANSACTIONS_DIR);
+        symlink(&external, &transactions).unwrap();
+        assert!(live.cleanup_stale_transactions().is_err());
+        assert!(live.begin_transaction(None).is_err());
+        fs::remove_file(&transactions).unwrap();
+
+        let created = live.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let document = live.doc_dir(id);
+        let held = live.docs_dir.join("held-document");
+        fs::rename(&document, &held).unwrap();
+        symlink(&held, &document).unwrap();
+        assert!(live.begin_transaction(Some(id)).is_err());
     }
 }

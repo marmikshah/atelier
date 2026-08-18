@@ -36,7 +36,7 @@ pub use control::{
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta, ToolName,
 };
 pub use store::{JOURNAL_FORMAT_VERSION, JournalEntry, validate_journal};
-pub use transaction::StoreTransaction;
+pub use transaction::{CommitOutcome, StoreTransaction};
 pub use view::LookOptions;
 
 /// Hard cap on the pixel count (w×h) of an external source image. ~64 MP covers
