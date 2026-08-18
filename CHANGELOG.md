@@ -56,6 +56,15 @@ created. Minor 1.x releases may contain breaking changes.
 - Persisted documents now enforce structural, name, palette, cel-count, and
   aggregate decoded-pixel budgets before decoding or writing data. Replay
   inputs are limited to 64 MiB and 100,000 entries.
+- MCP calls run synchronous image and filesystem work on a bounded blocking
+  pool. Cancellation retains mutation ordering until the in-flight operation
+  finishes, so later writes cannot overtake abandoned requests.
+- `doc_info` validates cel headers without decoding pixel payloads. Single-frame
+  analysis decodes only the requested frame and optional layer after probing
+  every stored cel for path, dimension, and aggregate-pixel safety.
+- Edit acknowledgements compare the current cel in place and retain one
+  full-canvas snapshot instead of two. Transaction staging hard-links immutable
+  checkpoint journals while keeping the live appendable journal isolated.
 
 ### Fixed
 
