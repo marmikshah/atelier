@@ -361,6 +361,7 @@ impl Document {
         if w == 0 || h == 0 {
             return Err(format!("scale_cel needs w/h >= 1 (got {w}x{h})"));
         }
+        raster::checked_rgba_dimensions("scaled cel", w as u64, h as u64)?;
         let Some((_, _, img)) = self.cels.get_mut(&(layer, frame)) else {
             return Err(format!("no cel at layer {layer} frame {frame} to scale"));
         };
@@ -426,7 +427,7 @@ impl Document {
         let img = self.cel_canvas(layer, frame)?;
         raster::stroke_ribbon(img, &f, color, aa);
         if snap {
-            self.snap_cel_to_own_palette(layer, frame, AlphaSnap::Preserve);
+            self.snap_cel_to_own_palette(layer, frame, AlphaSnap::Preserve)?;
         }
         Ok(())
     }

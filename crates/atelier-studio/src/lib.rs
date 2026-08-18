@@ -427,7 +427,7 @@ impl Studio {
         }
         let pairs: Vec<([u8; 4], [u8; 4])> = from.into_iter().zip(to).collect();
         let (dir, mut doc) = self.open(id)?;
-        let changed = doc.palette_swap(&pairs, layer, frame);
+        let changed = doc.palette_swap(&pairs, layer, frame)?;
         doc.save(&dir)?;
         Ok(json!({"doc_id": id, "changed": changed}))
     }
@@ -528,7 +528,6 @@ impl Studio {
     ) -> Result<Value, String> {
         params.insert("op".into(), json!(op));
         let operation = Value::Object(params);
-        atelier_core::document::validate_op(&operation)?;
         let mut ack = self.edit_with_ack(id, layer, frame, |doc| {
             doc.apply_op(layer, frame, &operation)
         })?;
@@ -599,17 +598,22 @@ pub(crate) fn hex_rgba(c: &[u8]) -> String {
 /// preview, contact-sheet, and diff caller. A `scale: 1000000000`
 /// overflowed the dimension multiply — a panic in debug or a multi-terabyte
 /// allocation in release. One choke point cannot be forgotten.
-pub(crate) fn scale_nn(img: &image::RgbaImage, scale: u32) -> image::RgbaImage {
+pub(crate) fn scale_nn(img: &image::RgbaImage, scale: u32) -> Result<image::RgbaImage, String> {
     let scale = export_scale(scale);
+    let (width, height) = atelier_core::raster::checked_rgba_dimensions(
+        "scaled preview",
+        img.width() as u64 * scale as u64,
+        img.height() as u64 * scale as u64,
+    )?;
     if scale <= 1 {
-        return img.clone();
+        return Ok(img.clone());
     }
-    image::imageops::resize(
+    Ok(image::imageops::resize(
         img,
-        img.width() * scale,
-        img.height() * scale,
+        width,
+        height,
         image::imageops::FilterType::Nearest,
-    )
+    ))
 }
 
 /// Encode an RGBA image to in-memory PNG bytes.
@@ -672,5 +676,41 @@ mod hardening_tests {
         assert!(mk(json!([255, 128, 0, 200])).is_ok());
         assert!(mk(json!([1, 2])).is_err(), "too short must error");
         assert!(mk(json!([1, 2, 3, 4, 5])).is_err(), "too long must error");
+    }
+
+    #[test]
+    fn optional_palette_scopes_reject_missing_layers_and_frames() {
+        let s = studio("palette-scope");
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_set_palette(id, vec![[1, 2, 3, 255]]).unwrap();
+
+        let swap = |layer, frame| {
+            s.doc_palette_swap(id, vec![[1, 2, 3, 255]], vec![[4, 5, 6, 255]], layer, frame)
+        };
+        assert!(swap(Some(1), None).unwrap_err().contains("no layer 1"));
+        assert!(swap(None, Some(1)).unwrap_err().contains("no frame 1"));
+        assert!(
+            s.snap_palette(
+                id,
+                Some(1),
+                None,
+                None,
+                atelier_core::document::AlphaSnap::Preserve,
+            )
+            .unwrap_err()
+            .contains("no layer 1")
+        );
+        assert!(
+            s.snap_palette(
+                id,
+                None,
+                Some(1),
+                None,
+                atelier_core::document::AlphaSnap::Preserve,
+            )
+            .unwrap_err()
+            .contains("no frame 1")
+        );
     }
 }

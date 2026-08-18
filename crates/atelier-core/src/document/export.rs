@@ -15,23 +15,15 @@ impl Document {
     /// error if the strip's dimensions overflow `u32` — a many-frames × high
     /// scale sheet can otherwise wrap to a garbage-sized buffer.
     pub(super) fn sheet_image(&self, scale: u32) -> Result<(RgbaImage, u32, u32), String> {
-        let n = self.meta.frames.len() as u32;
-        let fw = self
-            .meta
-            .w
-            .checked_mul(scale)
-            .ok_or("sheet scale overflow")?;
-        let fh = self
-            .meta
-            .h
-            .checked_mul(scale)
-            .ok_or("sheet scale overflow")?;
-        let strip_w = fw.checked_mul(n).ok_or_else(|| {
-            format!(
-                "spritesheet is too large: {n} frames × {fw}px wide overflows — \
-                 export fewer frames or a lower scale"
-            )
-        })?;
+        let n = self.meta.frames.len() as u64;
+        let scale = scale.max(1) as u64;
+        let frame_w = self.meta.w as u64 * scale;
+        let frame_h = self.meta.h as u64 * scale;
+        let strip_w = frame_w
+            .checked_mul(n)
+            .ok_or_else(|| format!("spritesheet width overflows: {n} frames × {frame_w}px"))?;
+        let (strip_w, fh) = raster::checked_rgba_dimensions("spritesheet", strip_w, frame_h)?;
+        let fw = u32::try_from(frame_w).map_err(|_| "spritesheet frame width overflows")?;
         let mut sheet = RgbaImage::from_pixel(strip_w, fh, Rgba([0, 0, 0, 0]));
         for f in 0..self.meta.frames.len() {
             let mut img = self.flatten(f);
@@ -44,7 +36,7 @@ impl Document {
     }
 
     pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
-        let n = self.meta.frames.len() as u32;
+        let n = self.meta.frames.len();
         let (sheet, fw, fh) = self.sheet_image(scale)?;
         sheet.save(out).map_err(|e| e.to_string())?;
         let frames: Vec<Value> = self
@@ -148,6 +140,12 @@ impl Document {
         use image::codecs::gif::{GifEncoder, Repeat};
         use image::{Delay, Frame};
         let seq = self.play_sequence(tag)?;
+        let scale = scale.max(1) as u64;
+        let (frame_w, frame_h) = raster::checked_rgba_dimensions(
+            "GIF frame",
+            self.meta.w as u64 * scale,
+            self.meta.h as u64 * scale,
+        )?;
         // Build ONE palette across every frame and snap each frame to it before
         // encoding. The image crate quantizes each frame independently, so on
         // multi-colour art it picks a different 256-subset per frame — the
@@ -194,13 +192,12 @@ impl Document {
                 }
             }
             if scale > 1 {
-                // Same checked math as sheet_image: studio clamps scale, but a
-                // library caller can pass anything.
-                let (fw, fh) = (
-                    self.meta.w.checked_mul(scale).ok_or("gif scale overflow")?,
-                    self.meta.h.checked_mul(scale).ok_or("gif scale overflow")?,
+                img = image::imageops::resize(
+                    &img,
+                    frame_w,
+                    frame_h,
+                    image::imageops::FilterType::Nearest,
                 );
-                img = image::imageops::resize(&img, fw, fh, image::imageops::FilterType::Nearest);
             }
             // GIF frame delay is u16 centiseconds — cap at the format's ceiling
             // (~655s) instead of truncating into a wrapped, faster frame.
@@ -223,18 +220,19 @@ impl Document {
         if seq.is_empty() {
             return Err("nothing to export: document has no frames".into());
         }
-        let sc = scale.max(1);
-        // Same checked math as sheet_image: studio clamps scale, but a library
-        // caller can pass anything.
-        let (w, h) = (
-            self.meta.w.checked_mul(sc).ok_or("apng scale overflow")?,
-            self.meta.h.checked_mul(sc).ok_or("apng scale overflow")?,
-        );
+        let sc = scale.max(1) as u64;
+        let (w, h) = raster::checked_rgba_dimensions(
+            "APNG frame",
+            self.meta.w as u64 * sc,
+            self.meta.h as u64 * sc,
+        )?;
+        let frame_count = u32::try_from(seq.len())
+            .map_err(|_| format!("APNG has too many frames: {}", seq.len()))?;
         let file = std::fs::File::create(out).map_err(|e| e.to_string())?;
         let mut enc = png::Encoder::new(std::io::BufWriter::new(file), w, h);
         enc.set_color(png::ColorType::Rgba);
         enc.set_depth(png::BitDepth::Eight);
-        enc.set_animated(seq.len() as u32, 0)
+        enc.set_animated(frame_count, 0)
             .map_err(|e| e.to_string())?;
         let mut writer = enc.write_header().map_err(|e| e.to_string())?;
         for &f in &seq {
