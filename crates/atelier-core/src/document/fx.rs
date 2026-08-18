@@ -64,8 +64,12 @@ impl Document {
         pattern: DitherPattern,
         only_existing: bool,
     ) -> Result<u32, String> {
-        if ramp.len() < 2 {
-            return Err("dither_ramp needs a ramp of >= 2 colours".into());
+        if !(2..=super::MAX_PALETTE_COLORS).contains(&ramp.len()) {
+            return Err(format!(
+                "dither_ramp needs 2..={} colours (got {})",
+                super::MAX_PALETTE_COLORS,
+                ramp.len()
+            ));
         }
         let (w, h) = (self.meta.w, self.meta.h);
         let (ax, ay, bx, by) = resolve_region(region, w, h)?;
@@ -398,8 +402,12 @@ impl Document {
         mut stops: Vec<(f32, [u8; 4])>,
         blend: bool,
     ) -> Result<(), String> {
-        if stops.is_empty() {
-            return Err("noise needs at least one colour stop".into());
+        if !(1..=super::MAX_GRADIENT_STOPS).contains(&stops.len()) {
+            return Err(format!(
+                "noise needs 1..={} colour stops (got {})",
+                super::MAX_GRADIENT_STOPS,
+                stops.len()
+            ));
         }
         stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
         stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
@@ -409,7 +417,7 @@ impl Document {
         let freq = 1.0 / scale.max(0.0001);
         // fBm cost is linear in octaves and each octave beyond ~16 adds
         // sub-pixel detail nobody reads at canvas scale — cap the raw value.
-        let octaves = octaves.clamp(1, 16);
+        let octaves = octaves.clamp(1, super::MAX_NOISE_OCTAVES);
         let img = self.cel_canvas(layer, frame)?;
         for y in ay..=by {
             for x in ax..=bx {
@@ -841,6 +849,19 @@ impl Document {
         palette: Vec<[u8; 4]>,
         max_colors: usize,
     ) -> Result<Vec<[u8; 4]>, String> {
+        if palette.len() > super::MAX_PALETTE_COLORS {
+            return Err(format!(
+                "quantize palette may contain at most {} colours (got {})",
+                super::MAX_PALETTE_COLORS,
+                palette.len()
+            ));
+        }
+        if palette.is_empty() && !(1..=super::MAX_QUANTIZE_COLORS).contains(&max_colors) {
+            return Err(format!(
+                "quantize max_colors must be in 1..={} (got {max_colors})",
+                super::MAX_QUANTIZE_COLORS
+            ));
+        }
         let img = self.cel_canvas(layer, frame)?;
         let pal = if !palette.is_empty() {
             palette
@@ -883,8 +904,12 @@ impl Document {
         mut stops: Vec<(f32, [u8; 4])>,
         region: Option<(i32, i32, i32, i32)>,
     ) -> Result<(), String> {
-        if stops.is_empty() {
-            return Err("gradient_map needs at least one colour stop".into());
+        if !(1..=super::MAX_GRADIENT_STOPS).contains(&stops.len()) {
+            return Err(format!(
+                "gradient_map needs 1..={} colour stops (got {})",
+                super::MAX_GRADIENT_STOPS,
+                stops.len()
+            ));
         }
         stops.iter_mut().for_each(|s| s.0 = s.0.clamp(0.0, 1.0));
         stops.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
