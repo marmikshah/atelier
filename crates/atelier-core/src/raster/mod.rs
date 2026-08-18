@@ -73,15 +73,42 @@ pub fn put(img: &mut RgbaImage, x: i32, y: i32, color: [u8; 4]) {
 
 /// Stamp a `size`×`size` square brush centred at (cx, cy).
 pub fn brush(img: &mut RgbaImage, cx: i32, cy: i32, color: [u8; 4], size: i32) {
-    // A brush bigger than the canvas covers it — the size is raw caller input,
-    // and a size×size inner loop over billions of cells hung the server.
-    let size = size.min(img.width().max(img.height()) as i32);
-    let o = size / 2;
-    for dy in 0..size {
-        for dx in 0..size {
-            put(img, cx - o + dx, cy - o + dy, color);
+    let Some(size) = bounded_brush_size(img, size) else {
+        return;
+    };
+    // Work in i64 and intersect the stamp with the image before iterating.
+    // Besides avoiding signed overflow at i32::MIN/MAX, this means an
+    // off-canvas brush does no work and a partially visible one only visits
+    // pixels it can actually change.
+    let offset = i64::from(size / 2);
+    let left = i64::from(cx) - offset;
+    let top = i64::from(cy) - offset;
+    let right = left + i64::from(size) - 1;
+    let bottom = top + i64::from(size) - 1;
+    let x0 = left.max(0);
+    let y0 = top.max(0);
+    let x1 = right.min(i64::from(img.width()) - 1);
+    let y1 = bottom.min(i64::from(img.height()) - 1);
+    if x0 > x1 || y0 > y1 {
+        return;
+    }
+    for y in y0..=y1 {
+        for x in x0..=x1 {
+            img.put_pixel(x as u32, y as u32, Rgba(color));
         }
     }
+}
+
+/// Normalize raw caller brush input once, before it is used for padding,
+/// arithmetic, or loops. No visible square brush needs to be wider than the
+/// canvas' larger axis; larger values only repeat already-covered pixels.
+fn bounded_brush_size(img: &RgbaImage, size: i32) -> Option<i32> {
+    let extent = img.width().max(img.height());
+    if extent == 0 || size < 1 {
+        return None;
+    }
+    let extent = i32::try_from(extent).unwrap_or(i32::MAX);
+    Some(size.min(extent))
 }
 
 /// Clip a segment to a rectangle (Liang–Barsky), returning the visible portion.
@@ -144,13 +171,16 @@ pub fn draw_line(
     color: [u8; 4],
     size: i32,
 ) {
+    let Some(size) = bounded_brush_size(img, size) else {
+        return;
+    };
     // Clip to the canvas (padded by the brush radius) before walking: the raw
     // endpoints could span ~2^32 steps — and `(x1 - x0).abs()` overflowed i32 —
     // so one bad call wedged the server drawing nothing visible. In-canvas
     // output matches the unclipped walk to within a pixel at the clip boundary
     // (a re-anchored Bresenham can deviate by one step on rare near-diagonals)
     // — cosmetic, and the unclipped walk hung on exactly these inputs.
-    let pad = (size.max(1) / 2 + 1) as f64;
+    let pad = f64::from(size / 2) + 1.0;
     let lo = -pad;
     let (hi_x, hi_y) = (
         img.width() as f64 - 1.0 + pad,
@@ -161,14 +191,23 @@ pub fn draw_line(
     else {
         return; // entirely off-canvas
     };
-    let (mut x0, mut y0) = (x0, y0);
+    // Keep Bresenham's deltas and error term wider than the public i32
+    // coordinates. Clipping normally leaves a canvas-sized span, but i64 also
+    // makes the invariant explicit for enormous raw endpoints and dimensions.
+    let (mut x0, mut y0) = (i64::from(x0), i64::from(y0));
+    let (x1, y1) = (i64::from(x1), i64::from(y1));
     let dx = (x1 - x0).abs();
     let dy = -(y1 - y0).abs();
     let sx = if x0 < x1 { 1 } else { -1 };
     let sy = if y0 < y1 { 1 } else { -1 };
     let mut err = dx + dy;
     loop {
-        brush(img, x0, y0, color, size);
+        // The clip result is represented by i32, and the walk stays between
+        // those endpoints, so these checked conversions cannot fail.
+        let (Ok(bx), Ok(by)) = (i32::try_from(x0), i32::try_from(y0)) else {
+            return;
+        };
+        brush(img, bx, by, color, size);
         if x0 == x1 && y0 == y1 {
             break;
         }
@@ -1085,5 +1124,42 @@ mod hardening_tests {
         let mut img3 = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 0]));
         draw_line(&mut img3, i32::MIN, 0, i32::MAX, 7, [9, 9, 9, 255], 1);
         assert!(img3.pixels().any(|p| p.0[3] > 0));
+
+        // Brush size is raw protocol input as well. Its padding and square
+        // coordinates used to overflow before the brush helper could clamp it.
+        let mut img4 = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 0]));
+        draw_line(
+            &mut img4,
+            i32::MIN,
+            i32::MIN,
+            i32::MAX,
+            i32::MAX,
+            [7, 8, 9, 255],
+            i32::MAX,
+        );
+        assert_eq!(img4.get_pixel(0, 0).0, [7, 8, 9, 255]);
+        assert_eq!(img4.get_pixel(7, 7).0, [7, 8, 9, 255]);
+
+        // A far-away enormous brush is clipped without overflowing or
+        // iterating over its caller-supplied area.
+        let mut img5 = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 0]));
+        draw_line(
+            &mut img5,
+            i32::MIN,
+            i32::MAX,
+            i32::MIN + 1,
+            i32::MAX - 1,
+            [7, 8, 9, 255],
+            i32::MAX,
+        );
+        assert!(img5.pixels().all(|p| p.0[3] == 0));
+    }
+
+    #[test]
+    fn non_positive_brush_sizes_are_rejected_as_no_ops() {
+        let mut image = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 0]));
+        brush(&mut image, 4, 4, [1, 2, 3, 255], 0);
+        draw_line(&mut image, 0, 0, 7, 7, [1, 2, 3, 255], -1);
+        assert!(image.pixels().all(|pixel| pixel.0[3] == 0));
     }
 }

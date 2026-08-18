@@ -404,7 +404,7 @@ impl Studio {
     pub fn doc_set_palette(&self, id: &str, colors: Vec<[u8; 4]>) -> Result<Value, String> {
         let (dir, mut doc) = self.open(id)?;
         let count = colors.len();
-        doc.set_palette(colors);
+        doc.set_palette(colors)?;
         doc.save(&dir)?;
         Ok(json!({
             "ok": true,

@@ -4,14 +4,21 @@ use image::Rgba;
 
 use crate::raster;
 
-use super::{AlphaSnap, Document};
+use super::{AlphaSnap, Document, MAX_PALETTE_COLORS};
 
 impl Document {
     // -- palette (indexed-friendly swatch list) -----------------------------
 
     /// Replace the document's palette swatch list.
-    pub fn set_palette(&mut self, colors: Vec<[u8; 4]>) {
+    pub fn set_palette(&mut self, colors: Vec<[u8; 4]>) -> Result<(), String> {
+        if colors.len() > MAX_PALETTE_COLORS {
+            return Err(format!(
+                "palette may contain at most {MAX_PALETTE_COLORS} colours (got {})",
+                colors.len()
+            ));
+        }
         self.meta.palette = colors;
+        Ok(())
     }
 
     /// Swap a set of colours across the whole document in one pass — the
@@ -25,6 +32,12 @@ impl Document {
         layer: Option<usize>,
         frame: Option<usize>,
     ) -> Result<u32, String> {
+        if pairs.len() > MAX_PALETTE_COLORS {
+            return Err(format!(
+                "palette swap may contain at most {MAX_PALETTE_COLORS} pairs (got {})",
+                pairs.len()
+            ));
+        }
         self.check_palette_scope(layer, frame)?;
         let mut changed = 0;
         for ((l, f), (_x, _y, img)) in self.cels.iter_mut() {
@@ -76,6 +89,12 @@ impl Document {
         frame: Option<usize>,
         alpha: AlphaSnap,
     ) -> Result<u32, String> {
+        if palette.len() > MAX_PALETTE_COLORS {
+            return Err(format!(
+                "snap palette may contain at most {MAX_PALETTE_COLORS} colours (got {})",
+                palette.len()
+            ));
+        }
         self.check_palette_scope(layer, frame)?;
         if palette.is_empty() {
             return Ok(0);
