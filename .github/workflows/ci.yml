@@ -70,5 +70,7 @@ jobs:
           tags: atelier:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Smoke test the packaged binary
-        run: docker run --rm atelier:ci --version
+      - name: Smoke test authenticated MCP persistence
+        run: |
+          docker run --rm atelier:ci --version
+          tools/container-smoke.sh atelier:ci

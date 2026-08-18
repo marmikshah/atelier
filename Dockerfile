@@ -4,6 +4,8 @@
 # One static musl binary, a non-root account, and no runtime packages.
 # Runs the streamable-HTTP transport (container-native); point an MCP client at
 #   http://<host>:8765/mcp
+# The 0.0.0.0 listener requires a user-supplied ATELIER_HTTP_TOKEN. No token is
+# embedded in the image.
 # Persist documents by mounting a volume at /data (ATELIER_HOME).
 
 # ---- build -------------------------------------------------------------------
