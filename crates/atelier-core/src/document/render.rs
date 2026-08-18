@@ -4,7 +4,73 @@ use image::{Rgba, RgbaImage};
 
 use crate::raster;
 
-use super::{Document, FrameDiff};
+use super::{AnalysisDocument, CelMap, DocMeta, Document, FrameDiff};
+
+pub(super) fn cel_image_from(
+    meta: &DocMeta,
+    cels: &CelMap,
+    layer: usize,
+    frame: usize,
+) -> Result<RgbaImage, String> {
+    if layer >= meta.layers.len() {
+        return Err(format!("no layer {layer}"));
+    }
+    if frame >= meta.frames.len() {
+        return Err(format!("no frame {frame}"));
+    }
+    let (width, height) = (meta.w, meta.h);
+    let mut out = RgbaImage::from_pixel(width, height, Rgba([0, 0, 0, 0]));
+    if let Some((cel_x, cel_y, image)) = cels.get(&(layer, frame)) {
+        for y in 0..image.height() {
+            for x in 0..image.width() {
+                let (target_x, target_y) = (*cel_x + x as i32, *cel_y + y as i32);
+                if target_x >= 0
+                    && target_y >= 0
+                    && (target_x as u32) < width
+                    && (target_y as u32) < height
+                {
+                    out.put_pixel(target_x as u32, target_y as u32, *image.get_pixel(x, y));
+                }
+            }
+        }
+    }
+    Ok(out)
+}
+
+pub(super) fn flatten_cels(meta: &DocMeta, cels: &CelMap, frame: usize) -> RgbaImage {
+    let mut out = RgbaImage::from_pixel(meta.w, meta.h, Rgba([0, 0, 0, 0]));
+    for (layer_index, layer) in meta.layers.iter().enumerate() {
+        if !layer.visible || layer.opacity == 0 {
+            continue;
+        }
+        if let Some((cel_x, cel_y, image)) = cels.get(&(layer_index, frame)) {
+            raster::composite(&mut out, image, *cel_x, *cel_y, layer.opacity, layer.blend);
+        }
+    }
+    out
+}
+
+impl AnalysisDocument {
+    /// Render one frame from the cels selected when this snapshot was loaded.
+    /// Requests outside that selection fail instead of returning an incomplete
+    /// image.
+    pub fn analysis_image(&self, layer: Option<usize>, frame: usize) -> Result<RgbaImage, String> {
+        if !self.frames.contains(&frame) {
+            return Err(format!("frame {frame} was not loaded for analysis"));
+        }
+        if let Some(loaded_layer) = self.layer
+            && layer != Some(loaded_layer)
+        {
+            return Err(format!(
+                "analysis snapshot contains only layer {loaded_layer}"
+            ));
+        }
+        match layer {
+            Some(layer) => cel_image_from(&self.meta, &self.cels, layer, frame),
+            None => Ok(flatten_cels(&self.meta, &self.cels, frame)),
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ValueView {
@@ -75,16 +141,7 @@ impl Document {
     }
 
     pub fn flatten(&self, frame: usize) -> RgbaImage {
-        let mut out = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
-        for (li, layer) in self.meta.layers.iter().enumerate() {
-            if !layer.visible || layer.opacity == 0 {
-                continue;
-            }
-            if let Some((cx, cy, img)) = self.cels.get(&(li, frame)) {
-                raster::composite(&mut out, img, *cx, *cy, layer.opacity, layer.blend);
-            }
-        }
-        out
+        flatten_cels(&self.meta, &self.cels, frame)
     }
 
     /// Flatten `frame` with onion-skin ghosts of the neighbours behind it: the

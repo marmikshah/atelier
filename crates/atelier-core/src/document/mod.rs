@@ -169,11 +169,26 @@ impl DocMeta {
 pub struct Document {
     pub(crate) meta: DocMeta,
     /// (layer, frame) -> (x, y, image)
-    cels: HashMap<(usize, usize), (i32, i32, RgbaImage)>,
+    cels: CelMap,
     /// Cels whose pixels changed since load (or that were re-keyed by a
     /// structural op). `save` writes only these — plus any cel whose file is
     /// missing — instead of re-encoding the whole document per tool call.
     dirty: HashSet<(usize, usize)>,
+}
+
+type CelMap = HashMap<(usize, usize), (i32, i32, RgbaImage)>;
+
+/// A read-only document snapshot containing only the cels requested for
+/// analysis.
+///
+/// Unlike [`Document`], this type cannot be mutated or saved. That keeps a
+/// partial cel set from ever replacing the complete persisted document while
+/// allowing one-frame and one-layer readers to avoid decoding unrelated PNGs.
+pub struct AnalysisDocument {
+    meta: DocMeta,
+    cels: CelMap,
+    frames: HashSet<usize>,
+    layer: Option<usize>,
 }
 
 /// Result of `frame_diff_region`: `(added, removed, recolored, change_bbox,
@@ -313,6 +328,86 @@ fn checked_cel_pixel_total(
     Ok(total)
 }
 
+type ProbedCel = (usize, usize, i32, i32, std::path::PathBuf, (u32, u32), bool);
+
+/// Validate every stored cel while decoding only metadata entries accepted by
+/// `select`. Header probes retain the complete document's nofollow, dimension,
+/// and aggregate decoded-pixel checks before any selected image is retained.
+fn load_stored_cels(
+    dir: &Path,
+    meta: &DocMeta,
+    select: impl Fn(&CelMeta) -> bool,
+) -> Result<CelMap, String> {
+    if let Some(reference) = &meta.reference {
+        open_regular_file(&dir.join(reference), "stored reference")?;
+    }
+    let cels_dir = dir.join("cels");
+    match std::fs::symlink_metadata(&cels_dir) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound && meta.cels.is_empty() => {}
+        Err(error) => {
+            return Err(format!(
+                "cannot inspect stored cels directory '{}': {error}",
+                cels_dir.display()
+            ));
+        }
+        Ok(_) => require_real_directory(&cels_dir, "stored cels directory")?,
+    }
+
+    let mut probed_cels: Vec<ProbedCel> = Vec::with_capacity(meta.cels.len());
+    let mut selected_count = 0usize;
+    for cel in &meta.cels {
+        let selected = select(cel);
+        selected_count += usize::from(selected);
+        let path = dir.join(&cel.file);
+        let dimensions =
+            image::ImageReader::new(BufReader::new(open_regular_file(&path, "stored cel")?))
+                .with_guessed_format()
+                .map_err(|error| error.to_string())?
+                .into_dimensions()
+                .map_err(|error| error.to_string())?;
+        raster::checked_rgba_dimensions(
+            "stored cel",
+            u64::from(dimensions.0),
+            u64::from(dimensions.1),
+        )?;
+        probed_cels.push((
+            cel.layer, cel.frame, cel.x, cel.y, path, dimensions, selected,
+        ));
+    }
+    checked_cel_pixel_total(
+        probed_cels
+            .iter()
+            .map(|(_, _, _, _, _, (width, height), _)| (u64::from(*width), u64::from(*height))),
+    )?;
+
+    let mut cels = HashMap::with_capacity(selected_count);
+    for (layer, frame, x, y, path, dimensions, selected) in probed_cels {
+        if !selected {
+            continue;
+        }
+        let mut reader =
+            image::ImageReader::new(BufReader::new(open_regular_file(&path, "stored cel")?))
+                .with_guessed_format()
+                .map_err(|error| error.to_string())?;
+        let mut limits = image::Limits::default();
+        limits.max_image_width = Some(dimensions.0);
+        limits.max_image_height = Some(dimensions.1);
+        reader.limits(limits);
+        let image = reader
+            .decode()
+            .map_err(|error| error.to_string())?
+            .to_rgba8();
+        if image.dimensions() != dimensions {
+            return Err(format!(
+                "stored cel '{}' changed dimensions while it was loaded",
+                path.display()
+            ));
+        }
+        cels.insert((layer, frame), (x, y, image));
+    }
+    Ok(cels)
+}
+
 /// Validate the one current on-disk document shape. Loading does not repair,
 /// default, or reinterpret persisted metadata.
 fn validate_meta(meta: &DocMeta) -> Result<(), String> {
@@ -416,6 +511,32 @@ fn validate_meta(meta: &DocMeta) -> Result<(), String> {
     Ok(())
 }
 
+fn structure_value(meta: &DocMeta, mut cel_keys: Vec<(usize, usize)>) -> Value {
+    cel_keys.sort_unstable();
+    let cels: Vec<Value> = cel_keys
+        .into_iter()
+        .map(|(layer, frame)| json!({"layer": layer, "frame": frame}))
+        .collect();
+    json!({
+        "format_version": meta.format_version,
+        "name": meta.name, "w": meta.w, "h": meta.h,
+        "layers": meta.layers.iter().enumerate().map(|(index, layer)| json!({
+            "index": index, "name": layer.name, "opacity": layer.opacity,
+            "visible": layer.visible, "blend": layer.blend
+        })).collect::<Vec<_>>(),
+        "frames": meta.frames.iter().enumerate().map(|(index, frame)| json!({
+            "index": index, "duration_ms": frame.duration_ms,
+        })).collect::<Vec<_>>(),
+        "tags": meta.tags.iter().map(|tag| json!({
+            "name": tag.name, "from": tag.from, "to": tag.to, "direction": tag.direction
+        })).collect::<Vec<_>>(),
+        "cels": cels,
+        "palette": meta.palette,
+        "palette_len": meta.palette.len(),
+        "reference": meta.reference,
+    })
+}
+
 /// True for the `L<layer>_F<frame>.png` shape `save` writes — the only files
 /// the stale-cel sweep may remove.
 fn is_cel_filename(name: &str) -> bool {
@@ -465,6 +586,78 @@ fn remap_move(old: usize, from: usize, to: usize) -> usize {
 
 /// Default per-frame duration for a freshly created frame (milliseconds).
 pub const DEFAULT_FRAME_MS: u32 = 100;
+
+impl AnalysisDocument {
+    /// Validate a document's metadata, reference, cel container, and every cel
+    /// header without decoding pixel payloads. Used by structure-only reads.
+    pub fn load_structure(dir: &Path) -> Result<AnalysisDocument, String> {
+        let meta = Document::load_metadata(dir)?;
+        let cels = load_stored_cels(dir, &meta, |_| false)?;
+        Ok(AnalysisDocument {
+            meta,
+            cels,
+            frames: HashSet::new(),
+            layer: None,
+        })
+    }
+
+    /// Load only the cels needed to analyze `frames` and, when present, one
+    /// `layer`. Frame and layer indices are validated against the complete
+    /// metadata before any cel is decoded.
+    pub fn load(
+        dir: &Path,
+        frames: &[usize],
+        layer: Option<usize>,
+    ) -> Result<AnalysisDocument, String> {
+        let meta = Document::load_metadata(dir)?;
+        if frames.is_empty() {
+            return Err("analysis requires at least one frame".into());
+        }
+        if frames.len() > MAX_DOCUMENT_FRAMES {
+            return Err(format!(
+                "analysis requested {} frame entries; limit is {MAX_DOCUMENT_FRAMES}",
+                frames.len()
+            ));
+        }
+        for &frame in frames {
+            if frame >= meta.frames.len() {
+                return Err(format!("no frame {frame} (frames={})", meta.frames.len()));
+            }
+        }
+        let frames: HashSet<usize> = frames.iter().copied().collect();
+        if let Some(layer) = layer
+            && layer >= meta.layers.len()
+        {
+            return Err(format!("no layer {layer}"));
+        }
+        let cels = load_stored_cels(dir, &meta, |cel| {
+            frames.contains(&cel.frame) && layer.is_none_or(|layer| cel.layer == layer)
+        })?;
+        Ok(AnalysisDocument {
+            meta,
+            cels,
+            frames,
+            layer,
+        })
+    }
+
+    /// Read-only view of the complete document metadata.
+    pub fn meta(&self) -> &DocMeta {
+        &self.meta
+    }
+
+    /// JSON document structure derived from the complete validated metadata.
+    pub fn structure(&self) -> Value {
+        structure_value(
+            &self.meta,
+            self.meta
+                .cels
+                .iter()
+                .map(|cel| (cel.layer, cel.frame))
+                .collect(),
+        )
+    }
+}
 
 impl Document {
     /// Read-only view of the document metadata. The field itself is
@@ -535,65 +728,11 @@ impl Document {
 
     pub fn load(dir: &Path) -> Result<Document, String> {
         let meta = Self::load_metadata(dir)?;
-        if let Some(reference) = &meta.reference {
-            open_regular_file(&dir.join(reference), "stored reference")?;
-        }
-        let cels_dir = dir.join("cels");
-        match std::fs::symlink_metadata(&cels_dir) {
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound && meta.cels.is_empty() => {}
-            Err(error) => {
-                return Err(format!(
-                    "cannot inspect stored cels directory '{}': {error}",
-                    cels_dir.display()
-                ));
-            }
-            Ok(_) => require_real_directory(&cels_dir, "stored cels directory")?,
-        }
         // Probe every cel and enforce the document-wide decoded-pixel budget
         // before decoding even the first image. A document with many
         // individually valid 4096px cels must not grow memory incrementally and
         // fail only after hundreds of MiB have already been retained.
-        let mut probed_cels = Vec::with_capacity(meta.cels.len());
-        for c in &meta.cels {
-            let path = dir.join(&c.file);
-            let dimensions =
-                image::ImageReader::new(BufReader::new(open_regular_file(&path, "stored cel")?))
-                    .with_guessed_format()
-                    .map_err(|e| e.to_string())?
-                    .into_dimensions()
-                    .map_err(|e| e.to_string())?;
-            raster::checked_rgba_dimensions(
-                "stored cel",
-                dimensions.0 as u64,
-                dimensions.1 as u64,
-            )?;
-            probed_cels.push((c.layer, c.frame, c.x, c.y, path, dimensions));
-        }
-        checked_cel_pixel_total(
-            probed_cels
-                .iter()
-                .map(|(_, _, _, _, _, (width, height))| (u64::from(*width), u64::from(*height))),
-        )?;
-
-        let mut cels = HashMap::with_capacity(probed_cels.len());
-        for (layer, frame, x, y, path, dimensions) in probed_cels {
-            let mut reader =
-                image::ImageReader::new(BufReader::new(open_regular_file(&path, "stored cel")?))
-                    .with_guessed_format()
-                    .map_err(|e| e.to_string())?;
-            let mut limits = image::Limits::default();
-            limits.max_image_width = Some(dimensions.0);
-            limits.max_image_height = Some(dimensions.1);
-            reader.limits(limits);
-            let img = reader.decode().map_err(|e| e.to_string())?.to_rgba8();
-            if img.dimensions() != dimensions {
-                return Err(format!(
-                    "stored cel '{}' changed dimensions while it was loaded",
-                    path.display()
-                ));
-            }
-            cels.insert((layer, frame), (x, y, img));
-        }
+        let cels = load_stored_cels(dir, &meta, |_| true)?;
         // Freshly loaded cels match their files — nothing is dirty yet.
         Ok(Document {
             meta,
@@ -985,29 +1124,7 @@ impl Document {
     /// JSON snapshot of the document structure (layers, frames, tags, cels,
     /// palette) for inspection — no pixel data.
     pub fn structure(&self) -> Value {
-        let mut keys: Vec<(usize, usize)> = self.cels.keys().copied().collect();
-        keys.sort_unstable();
-        let cels: Vec<Value> = keys
-            .into_iter()
-            .map(|(l, f)| json!({"layer": l, "frame": f}))
-            .collect();
-        json!({
-            "format_version": self.meta.format_version,
-            "name": self.meta.name, "w": self.meta.w, "h": self.meta.h,
-            "layers": self.meta.layers.iter().enumerate().map(|(i, l)| json!({
-                "index": i, "name": l.name, "opacity": l.opacity, "visible": l.visible, "blend": l.blend
-            })).collect::<Vec<_>>(),
-            "frames": self.meta.frames.iter().enumerate().map(|(i, f)| json!({
-                "index": i, "duration_ms": f.duration_ms,
-            })).collect::<Vec<_>>(),
-            "tags": self.meta.tags.iter().map(|t| json!({
-                "name": t.name, "from": t.from, "to": t.to, "direction": t.direction
-            })).collect::<Vec<_>>(),
-            "cels": cels,
-            "palette": self.meta.palette,
-            "palette_len": self.meta.palette.len(),
-            "reference": self.meta.reference,
-        })
+        structure_value(&self.meta, self.cels.keys().copied().collect())
     }
 
     /// Test-only view of the live cel keys — the meta↔cel lock-step invariant
@@ -1167,19 +1284,6 @@ impl Document {
     /// `flatten` for analysis tools that want a single layer instead of the
     /// composite. Out-of-range layer/frame → error.
     fn cel_image(&self, layer: usize, frame: usize) -> Result<RgbaImage, String> {
-        self.check_cel(layer, frame)?;
-        let (w, h) = (self.meta.w, self.meta.h);
-        let mut out = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
-        if let Some((cx, cy, img)) = self.cels.get(&(layer, frame)) {
-            for yy in 0..img.height() {
-                for xx in 0..img.width() {
-                    let (tx, ty) = (*cx + xx as i32, *cy + yy as i32);
-                    if tx >= 0 && ty >= 0 && (tx as u32) < w && (ty as u32) < h {
-                        out.put_pixel(tx as u32, ty as u32, *img.get_pixel(xx, yy));
-                    }
-                }
-            }
-        }
-        Ok(out)
+        render::cel_image_from(&self.meta, &self.cels, layer, frame)
     }
 }
