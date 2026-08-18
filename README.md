@@ -159,7 +159,7 @@ declarative.
 
 | Area | Included functionality |
 |---|---|
-| Document model | Layers, frames, animation tags, locked palettes, and explicit checkpoints |
+| Document model | Layers, frames, animation tags, locked palettes, explicit checkpoints, and persisted revisions |
 | Editing | Pixel primitives, region operations, effects, grids, palette generation, and palette snapping |
 | Inspection | Rendered previews, region dumps, silhouettes, component analysis, frame diffs, seam reports, animation audits, and critique reports |
 | Output | Spritesheets with JSON metadata, GIF, APNG, and PNG previews |
@@ -214,6 +214,13 @@ the returned `doc_id` explicitly; layer and frame targets are explicit too.
 There is no active document, inferred name, CLI routing flag, or transport
 default. Stdio, HTTP, CLI, and replay therefore execute exactly the same
 payload.
+
+Successful document calls include a persisted `revision`. An existing-document
+mutation may pass that value as `expected_revision`; if another writer has
+committed since the read, Atelier returns `revision_conflict` without running
+the operation or changing its journal. Omitting the guard keeps last-write-wins
+behavior. Revisions are concurrency metadata and are not recorded in replay
+recipes.
 
 MCP callers may attach one optional stable name for logs. It never supplies or
 changes tool arguments:
