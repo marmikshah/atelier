@@ -279,26 +279,61 @@ fn ensure_directory(path: &Path, label: &str) -> Result<(), String> {
     }
 }
 
+#[derive(Clone, Copy)]
+enum TreeIoEvent {
+    VisitDirectory,
+    VisitFile,
+    LinkFile,
+    CopyFile,
+    SyncDirectory,
+    SyncFile,
+}
+
 fn stage_tree(source: &Path, destination: &Path) -> Result<(), String> {
+    stage_tree_inner(source, destination, true, &mut |_| {})
+}
+
+fn stage_tree_inner<F>(
+    source: &Path,
+    destination: &Path,
+    copy_root_journal: bool,
+    observe: &mut F,
+) -> Result<(), String>
+where
+    F: FnMut(TreeIoEvent),
+{
     if !directory_state(source, "document source")? {
         return Err(format!("document source {} is missing", source.display()));
     }
     fs::create_dir(destination)
         .map_err(|e| format!("cannot stage {}: {e}", destination.display()))?;
+    observe(TreeIoEvent::VisitDirectory);
     for entry in fs::read_dir(source).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
         let source_path = entry.path();
         let destination_path = destination.join(entry.file_name());
         let file_type = entry.file_type().map_err(|e| e.to_string())?;
         if file_type.is_dir() {
-            stage_tree(&source_path, &destination_path)?;
+            // Only the live document's root recipe is appendable. Recipes in
+            // immutable checkpoint snapshots are never edited in place:
+            // restore copies one out, prune unlinks the staged directory, and
+            // save creates a new snapshot. Hard-linking those nested journals
+            // avoids copying up to the entire retained checkpoint quota on
+            // every otherwise-small document mutation.
+            stage_tree_inner(&source_path, &destination_path, false, observe)?;
         } else if file_type.is_file() {
+            observe(TreeIoEvent::VisitFile);
             // Appending to a hard-linked journal would mutate the live recipe.
-            // Other writers replace files by rename before changing content.
-            if entry.file_name() == JOURNAL_FILE {
+            // Other writers replace files by rename before changing content;
+            // nested checkpoint recipes are immutable snapshots (above).
+            if copy_root_journal && entry.file_name() == JOURNAL_FILE {
                 fs::copy(&source_path, &destination_path).map_err(|e| e.to_string())?;
-            } else if fs::hard_link(&source_path, &destination_path).is_err() {
+                observe(TreeIoEvent::CopyFile);
+            } else if fs::hard_link(&source_path, &destination_path).is_ok() {
+                observe(TreeIoEvent::LinkFile);
+            } else {
                 fs::copy(&source_path, &destination_path).map_err(|e| e.to_string())?;
+                observe(TreeIoEvent::CopyFile);
             }
         } else {
             return Err(format!(
@@ -311,16 +346,26 @@ fn stage_tree(source: &Path, destination: &Path) -> Result<(), String> {
 }
 
 fn sync_tree(path: &Path) -> Result<(), String> {
+    sync_tree_inner(path, &mut |_| {})
+}
+
+fn sync_tree_inner<F>(path: &Path, observe: &mut F) -> Result<(), String>
+where
+    F: FnMut(TreeIoEvent),
+{
+    observe(TreeIoEvent::VisitDirectory);
     for entry in fs::read_dir(path).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
         let child = entry.path();
         let file_type = entry.file_type().map_err(|e| e.to_string())?;
         if file_type.is_dir() {
-            sync_tree(&child)?;
+            sync_tree_inner(&child, observe)?;
         } else if file_type.is_file() {
+            observe(TreeIoEvent::VisitFile);
             fs::File::open(&child)
                 .and_then(|file| file.sync_all())
                 .map_err(|e| format!("cannot sync {}: {e}", child.display()))?;
+            observe(TreeIoEvent::SyncFile);
         } else {
             return Err(format!(
                 "refusing non-regular staged entry {}",
@@ -328,7 +373,9 @@ fn sync_tree(path: &Path) -> Result<(), String> {
             ));
         }
     }
-    sync_dir(path).map_err(|e| format!("cannot sync {}: {e}", path.display()))
+    sync_dir(path).map_err(|e| format!("cannot sync {}: {e}", path.display()))?;
+    observe(TreeIoEvent::SyncDirectory);
+    Ok(())
 }
 
 fn sync_dir(path: &Path) -> std::io::Result<()> {
@@ -397,12 +444,49 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::ToolName;
+    use crate::{CheckpointAction, ToolName};
 
     fn studio(tag: &str) -> Studio {
         let root = std::env::temp_dir().join(format!("atelier-transaction-{tag}"));
         let _ = fs::remove_dir_all(&root);
         Studio::with_docs_dir(root)
+    }
+
+    #[derive(Default)]
+    struct TreeIoStats {
+        visited_directories: usize,
+        visited_files: usize,
+        linked_files: usize,
+        copied_files: usize,
+        synced_directories: usize,
+        synced_files: usize,
+    }
+
+    impl TreeIoStats {
+        fn observe(&mut self, event: TreeIoEvent) {
+            match event {
+                TreeIoEvent::VisitDirectory => self.visited_directories += 1,
+                TreeIoEvent::VisitFile => self.visited_files += 1,
+                TreeIoEvent::LinkFile => self.linked_files += 1,
+                TreeIoEvent::CopyFile => self.copied_files += 1,
+                TreeIoEvent::SyncDirectory => self.synced_directories += 1,
+                TreeIoEvent::SyncFile => self.synced_files += 1,
+            }
+        }
+    }
+
+    fn measure_stage_tree(source: &Path, destination: &Path) -> Result<TreeIoStats, String> {
+        let mut stats = TreeIoStats::default();
+        stage_tree_inner(source, destination, true, &mut |event| {
+            stats.observe(event);
+        })?;
+        Ok(stats)
+    }
+
+    fn measure_sync_tree(path: &Path) -> Result<TreeIoStats, String> {
+        let mut stats = TreeIoStats::default();
+        sync_tree_inner(path, &mut |event| stats.observe(event))?;
+        Ok(stats)
     }
 
     #[test]
@@ -484,6 +568,52 @@ mod tests {
         delete.studio().delete_doc(id).unwrap();
         delete.commit(id).unwrap();
         assert!(!live.exists(id));
+    }
+
+    #[test]
+    fn staging_links_checkpoint_recipes_but_syncs_the_complete_generation() {
+        let live = studio("checkpoint-io-profile");
+        let created = live.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        live.journal_append(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
+            .unwrap();
+        for label in ["first", "second"] {
+            live.checkpoint(id, CheckpointAction::Save, Some(label), None)
+                .unwrap();
+        }
+
+        let source = live.doc_dir(id);
+        let stage_root = live.docs_dir.join("measured-stage");
+        fs::create_dir(&stage_root).unwrap();
+        let staged = stage_root.join(id);
+        let stage_stats = measure_stage_tree(&source, &staged).unwrap();
+
+        // Empty canvas: root+root-cels+checkpoint-root+2*(cp+cp-cels),
+        // with doc/recipe at the root and doc/recipe/label per checkpoint.
+        assert_eq!(stage_stats.visited_directories, 7);
+        assert_eq!(stage_stats.visited_files, 8);
+        assert_eq!(stage_stats.copied_files, 1);
+        assert_eq!(stage_stats.linked_files, 7);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::MetadataExt;
+
+            let source_root_recipe = fs::metadata(source.join(JOURNAL_FILE)).unwrap();
+            let staged_root_recipe = fs::metadata(staged.join(JOURNAL_FILE)).unwrap();
+            assert_ne!(source_root_recipe.ino(), staged_root_recipe.ino());
+
+            let checkpoint_recipe = Path::new(".checkpoints/cp1").join(JOURNAL_FILE);
+            let source_checkpoint = fs::metadata(source.join(&checkpoint_recipe)).unwrap();
+            let staged_checkpoint = fs::metadata(staged.join(&checkpoint_recipe)).unwrap();
+            assert_eq!(source_checkpoint.ino(), staged_checkpoint.ino());
+            assert_eq!(source_checkpoint.dev(), staged_checkpoint.dev());
+        }
+
+        let sync_stats = measure_sync_tree(&staged).unwrap();
+        assert_eq!(sync_stats.visited_directories, 7);
+        assert_eq!(sync_stats.synced_directories, 7);
+        assert_eq!(sync_stats.visited_files, 8);
+        assert_eq!(sync_stats.synced_files, 8);
     }
 
     #[test]
