@@ -23,6 +23,7 @@ use atelier_core::raster::Blend;
 
 mod analysis;
 mod archive;
+mod checkpoint;
 mod control;
 mod craft;
 mod integrity;
