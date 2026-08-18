@@ -30,7 +30,7 @@
 //! atelier status
 //! atelier uninstall
 //! atelier tools [--html]         # the tool surface / the reference page
-//! atelier library [rm ...]       # inspect or prune the document store
+//! atelier library [COMMAND]      # inspect, archive, or prune the document store
 //! atelier replay <journal|id>    # rebuild a document from its journal
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
 //! atelier init                   # stamp a directory-local ./.atelier store
@@ -61,6 +61,10 @@ USAGE:
     atelier uninstall             stop + remove the daemon
     atelier library               list the documents in the store (ATELIER_HOME)
             verify [--json]       validate stored metadata, cels, references, and journals
+            pack <id> --out FILE [--home DIR]
+                                  write a portable archive; never overwrites FILE
+            unpack FILE [--home DIR] [--replace --yes]
+                                  restore its UUID; replacement needs both flags
             rm <id>... | rm --prefix <p> | rm --all [--yes]
                                   delete documents — permanent, confirms first
     atelier replay <journal|id>   replay a JSONL journal, or rebuild a document from its
@@ -347,6 +351,8 @@ mod tests {
         for cmd in ["atelier call", "atelier init", "atelier replay"] {
             assert!(HELP.contains(cmd), "USAGE must list the {cmd} subcommand");
         }
+        assert!(HELP.contains("pack <id> --out FILE"));
+        assert!(HELP.contains("unpack FILE [--home DIR] [--replace --yes]"));
     }
 
     #[test]

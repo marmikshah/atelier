@@ -1,4 +1,4 @@
-//! `atelier library` — inspect and prune the document store (`ATELIER_HOME`).
+//! `atelier library` — inspect, archive, and prune the document store.
 //!
 //! Documents are the user's ART, not a cache: `rm` is destructive and confirms
 //! before deleting unless `--yes` is given (or there is no terminal to ask on,
@@ -8,11 +8,15 @@ use atelier_mcp::server::{self, Atelier};
 use atelier_studio::{IntegritySeverity, Studio, ToolName};
 use serde_json::json;
 
-/// Entry point for `atelier library [rm ...]`. Returns a process exit code.
+use std::path::{Path, PathBuf};
+
+/// Entry point for `atelier library <command>`. Returns a process exit code.
 pub async fn run(args: &[String]) -> i32 {
     match args.first().map(|s| s.as_str()) {
         None => list(),
         Some("verify") => verify(&args[1..]),
+        Some("pack") => pack(&args[1..]),
+        Some("unpack") => unpack(&args[1..]),
         Some("rm") => rm(&args[1..]).await,
         Some("--help" | "-h" | "help") => {
             println!("{USAGE}");
@@ -25,12 +29,23 @@ pub async fn run(args: &[String]) -> i32 {
     }
 }
 
-const USAGE: &str =
-    "usage: atelier library [verify [--json] | rm <id>... | rm --prefix <p> | rm --all] [--yes]
+const USAGE: &str = "usage:
+  atelier library
+  atelier library verify [--json]
+  atelier library pack <doc-id> --out <file.atelierpack> [--home DIR]
+  atelier library unpack <file.atelierpack> [--home DIR] [--replace --yes]
+  atelier library rm <id>... [--yes]
+  atelier library rm --prefix <p> [--yes]
+  atelier library rm --all [--yes]
 
   (no args)          list every document: id, size, frames, layers
   verify             validate every document's metadata, cels, and journal
     --json           emit a machine-readable verification report
+  pack               write a portable archive without overwriting an existing file
+    --out FILE       required archive destination
+  unpack             restore an archive while preserving its document UUID
+    --replace --yes  replace an existing UUID; both flags are required together
+  --home DIR         use an isolated Atelier home for pack or unpack
   rm <id>...         delete the named documents
   rm --prefix <p>    delete every document whose id starts with <p>
   rm --all           delete every document
@@ -40,6 +55,160 @@ Documents are your artwork, not a cache — deleting them cannot be undone.";
 
 fn studio() -> Studio {
     Studio::new()
+}
+
+fn studio_at(home: Option<&Path>) -> Studio {
+    home.map(|path| Studio::with_home(path.to_path_buf()))
+        .unwrap_or_else(Studio::new)
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct PackOptions {
+    doc_id: String,
+    output: PathBuf,
+    home: Option<PathBuf>,
+}
+
+fn option_value(args: &[String], index: &mut usize, option: &str) -> Result<String, String> {
+    *index += 1;
+    args.get(*index)
+        .filter(|value| !value.starts_with('-'))
+        .cloned()
+        .ok_or_else(|| format!("{option} needs a value"))
+}
+
+fn parse_pack(args: &[String]) -> Result<PackOptions, String> {
+    let mut doc_id = None;
+    let mut output = None;
+    let mut home = None;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--out" => {
+                if output.is_some() {
+                    return Err("--out may only be passed once".into());
+                }
+                output = Some(PathBuf::from(option_value(args, &mut index, "--out")?));
+            }
+            "--home" => {
+                if home.is_some() {
+                    return Err("--home may only be passed once".into());
+                }
+                home = Some(PathBuf::from(option_value(args, &mut index, "--home")?));
+            }
+            option if option.starts_with('-') => {
+                return Err(format!("unknown pack option '{option}'"));
+            }
+            value => {
+                if doc_id.is_some() {
+                    return Err(format!("unexpected pack argument '{value}'"));
+                }
+                doc_id = Some(value.to_string());
+            }
+        }
+        index += 1;
+    }
+
+    Ok(PackOptions {
+        doc_id: doc_id.ok_or("pack needs one <doc-id>")?,
+        output: output.ok_or("pack needs --out <file.atelierpack>")?,
+        home,
+    })
+}
+
+fn print_report(command: &str, report: &serde_json::Value) -> i32 {
+    match serde_json::to_string_pretty(report) {
+        Ok(output) => {
+            println!("{output}");
+            0
+        }
+        Err(error) => {
+            eprintln!("atelier library {command}: cannot serialize report: {error}");
+            1
+        }
+    }
+}
+
+fn pack(args: &[String]) -> i32 {
+    let options = match parse_pack(args) {
+        Ok(options) => options,
+        Err(error) => {
+            eprintln!("atelier library: {error}\n\n{USAGE}");
+            return 2;
+        }
+    };
+    match studio_at(options.home.as_deref()).pack_document(&options.doc_id, &options.output) {
+        Ok(report) => print_report("pack", &report),
+        Err(error) => {
+            eprintln!("atelier library pack: {error}");
+            1
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct UnpackOptions {
+    input: PathBuf,
+    home: Option<PathBuf>,
+    replace: bool,
+}
+
+fn parse_unpack(args: &[String]) -> Result<UnpackOptions, String> {
+    let mut input = None;
+    let mut home = None;
+    let mut replace = false;
+    let mut yes = false;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--home" => {
+                if home.is_some() {
+                    return Err("--home may only be passed once".into());
+                }
+                home = Some(PathBuf::from(option_value(args, &mut index, "--home")?));
+            }
+            "--replace" if !replace => replace = true,
+            "--replace" => return Err("--replace may only be passed once".into()),
+            "--yes" if !yes => yes = true,
+            "--yes" => return Err("--yes may only be passed once".into()),
+            option if option.starts_with('-') => {
+                return Err(format!("unknown unpack option '{option}'"));
+            }
+            value => {
+                if input.is_some() {
+                    return Err(format!("unexpected unpack argument '{value}'"));
+                }
+                input = Some(PathBuf::from(value));
+            }
+        }
+        index += 1;
+    }
+    if replace != yes {
+        return Err("--replace and --yes must be passed together".into());
+    }
+
+    Ok(UnpackOptions {
+        input: input.ok_or("unpack needs one <file.atelierpack>")?,
+        home,
+        replace,
+    })
+}
+
+fn unpack(args: &[String]) -> i32 {
+    let options = match parse_unpack(args) {
+        Ok(options) => options,
+        Err(error) => {
+            eprintln!("atelier library: {error}\n\n{USAGE}");
+            return 2;
+        }
+    };
+    match studio_at(options.home.as_deref()).unpack_document(&options.input, options.replace) {
+        Ok(report) => print_report("unpack", &report),
+        Err(error) => {
+            eprintln!("atelier library unpack: {error}");
+            1
+        }
+    }
 }
 
 /// The document ids the studio knows about, sorted.
@@ -412,5 +581,58 @@ mod tests {
         assert!(parse_verify(&v(&["--json", "--json"])).is_err());
         assert!(parse_verify(&v(&["--pretty"])).is_err());
         assert!(parse_verify(&v(&["document-id"])).is_err());
+    }
+
+    #[test]
+    fn pack_arguments_require_one_id_output_and_optional_home() {
+        assert_eq!(
+            parse_pack(&v(&[
+                "123e4567-e89b-42d3-a456-426614174000",
+                "--out",
+                "art.atelierpack",
+                "--home",
+                "/tmp/atelier-test",
+            ]))
+            .unwrap(),
+            PackOptions {
+                doc_id: "123e4567-e89b-42d3-a456-426614174000".into(),
+                output: PathBuf::from("art.atelierpack"),
+                home: Some(PathBuf::from("/tmp/atelier-test")),
+            }
+        );
+        assert!(parse_pack(&v(&[])).is_err());
+        assert!(parse_pack(&v(&["id", "--out"])).is_err());
+        assert!(parse_pack(&v(&["id", "--out", "one", "--out", "two"])).is_err());
+        assert!(parse_pack(&v(&["id", "other", "--out", "one"])).is_err());
+        assert!(parse_pack(&v(&["id", "--out", "one", "--unknown"])).is_err());
+        assert!(parse_pack(&v(&["id", "--out", "one", "--home"])).is_err());
+    }
+
+    #[test]
+    fn unpack_arguments_require_paired_replacement_confirmation() {
+        assert_eq!(
+            parse_unpack(&v(&[
+                "art.atelierpack",
+                "--yes",
+                "--home",
+                "/tmp/atelier-test",
+                "--replace",
+            ]))
+            .unwrap(),
+            UnpackOptions {
+                input: PathBuf::from("art.atelierpack"),
+                home: Some(PathBuf::from("/tmp/atelier-test")),
+                replace: true,
+            }
+        );
+        assert!(parse_unpack(&v(&[])).is_err());
+        assert!(parse_unpack(&v(&["art.atelierpack", "--replace"])).is_err());
+        assert!(parse_unpack(&v(&["art.atelierpack", "--yes"])).is_err());
+        assert!(
+            parse_unpack(&v(&["art.atelierpack", "--replace", "--replace", "--yes",])).is_err()
+        );
+        assert!(parse_unpack(&v(&["art.atelierpack", "--replace", "--yes", "--yes",])).is_err());
+        assert!(parse_unpack(&v(&["one", "two"])).is_err());
+        assert!(parse_unpack(&v(&["art.atelierpack", "--force"])).is_err());
     }
 }
