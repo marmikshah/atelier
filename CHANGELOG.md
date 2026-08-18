@@ -1,8 +1,87 @@
 # Changelog
 
-Format follows [Keep a Changelog](https://keepachangelog.com/); versions follow
-[SemVer](https://semver.org/). Below 2.0.0, breaking changes ship in minor
-releases.
+Format follows [Keep a Changelog](https://keepachangelog.com/). Version numbers
+use `MAJOR.MINOR.PATCH`, but the compatibility guarantee begins at 2.0.0;
+pre-2.0 minor releases may contain breaking changes.
+
+## [Unreleased]
+
+### Added
+
+- `atelier call --image-out PATH` saves an inline image from any image-producing
+  tool, including contact sheets and reference analysis.
+- `atelier library verify [--json]` performs read-only, actionable validation of
+  document metadata, cel PNGs, stored references, and replay journals.
+- Document metadata and journal entries now carry explicit format versions;
+  legacy versionless v1 data remains readable and unknown future versions fail
+  explicitly.
+- Every MCP tool now publishes conservative read-only, destructive,
+  idempotent, and open-world annotations. JSON results include structured
+  content while retaining their compatible text representation.
+
+### Changed
+
+- Native build, CI, installer, documentation, and release support is limited to
+  Ubuntu 22.04 or newer on x86_64. The supported container is a static,
+  non-root Alpine `linux/amd64` image with no runtime packages.
+- Ubuntu release archives now include the binary, README, and MIT license and
+  are smoke-tested after unpacking. The Alpine image is tested as part of CI
+  and the release dependency chain.
+- All document-store mutations execute against a staged generation and publish
+  atomically only after the handler and journal append succeed.
+- Tool descriptions and repository metadata use concise, factual language.
+  Serialized MCP tool definitions are held to a 32 KiB regression budget.
+- `list_docs` uses bounded cursor pages over MCP while the native library
+  command retains its complete local listing.
+- Drawing and effect schemas are generated from the operation registry and
+  advertise typed, explicitly discoverable operation inputs without adding
+  tools. Palette arrays, gradient stops, brush sizes, and procedural controls
+  carry matching schema and runtime bounds.
+- Persisted documents now enforce structural, name, palette, cel-count, and
+  aggregate decoded-pixel budgets before decoding or writing data. Replay
+  inputs are limited to 64 MiB and 100,000 entries.
+
+### Fixed
+
+- `atelier call --home` and `atelier replay --home` now use the same
+  `<home>/documents` layout as `ATELIER_HOME`.
+- MCP initialization identifies Atelier and its package version instead of the
+  underlying framework.
+- `library rm` now rejects unknown options and routes deletion through the same
+  dispatch, locking, and logging path as other callers.
+- Output dimensions and allocations are bounded across previews, contact
+  sheets, sheets, animations, transforms, diffs, references, and stored cels.
+- Public document operations receive strict nested parameter validation;
+  out-of-range casts, invalid palette scopes, and extreme clear regions fail or
+  clip safely.
+- Overlay and bevel alpha is applied once instead of being squared.
+- Frame-diff overlays no longer write an implicit file when `out_path` is
+  omitted.
+- Extreme line brushes, procedural octaves, palette sizes, reference colour
+  counts, component reports, and form audits now have explicit work and output
+  bounds.
+- Colour analysis uses bounded state and labels lower-bound/truncated results;
+  multi-frame palette reports reject work beyond the aggregate scan budget.
+- Normal document opens use the same bounded metadata policy as store
+  verification and refuse symlinked document directories or persisted files.
+- Store verification reports hidden links, special files, stale transaction
+  data, and unrecognized cel entries that would prevent a later transaction.
+
+### Security
+
+- Non-loopback HTTP requires `ATELIER_HTTP_TOKEN`; configured tokens are
+  required on every MCP request. Background systemd installs remain
+  loopback-only.
+- HTTP import and export paths are disabled by default and, when enabled, are
+  confined to canonical `ATELIER_IMPORT_ROOT` and `ATELIER_EXPORT_ROOT`
+  directories with traversal and symlink-escape checks.
+- HTTP request bodies are limited to 1 MiB for both fixed-length and chunked
+  transfers, with a 30-second upload deadline and 64-request concurrency cap.
+- MCP inline PNGs are limited to 8 MiB before base64 encoding; oversized saved
+  outputs omit the duplicate inline copy and other oversized renders fail with
+  actionable guidance.
+- Journal writes are synced before atomic document publication, so failed
+  handlers or journal appends cannot expose an unrecorded pixel generation.
 
 ## [1.8.0] — 2026-07-25
 
