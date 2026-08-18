@@ -423,7 +423,7 @@ impl Studio {
         region: Option<(i32, i32, i32, i32)>,
         mode: DumpMode,
     ) -> Result<Value, String> {
-        let (_dir, doc) = self.open(id)?;
+        let (_dir, doc) = self.open_analysis(id, &[frame], layer)?;
         let img = doc.analysis_image(layer, frame)?;
         let (cw, ch) = (doc.meta().w as i32, doc.meta().h as i32);
         let (x0, y0, x1, y1) = atelier_core::raster::resolve_region(region, cw as u32, ch as u32)?;
@@ -504,7 +504,7 @@ impl Studio {
         layer: Option<usize>,
         alpha_threshold: u8,
     ) -> Result<Value, String> {
-        let (_dir, doc) = self.open(id)?;
+        let (_dir, doc) = self.open_analysis(id, &[frame], layer)?;
         let img = doc.analysis_image(layer, frame)?;
         let (w, h) = (img.width(), img.height());
         let mut bbox: Option<[i32; 4]> = None;
@@ -574,7 +574,7 @@ impl Studio {
         if min_area == 0 {
             return Err("component min_area must be at least 1".into());
         }
-        let (_dir, doc) = self.open(id)?;
+        let (_dir, doc) = self.open_analysis(id, &[frame], layer)?;
         let img = doc.analysis_image(layer, frame)?;
         Ok(components_image(&img, connectivity, color, min_area))
     }
@@ -860,7 +860,7 @@ impl Studio {
         out_path: Option<&str>,
     ) -> Result<(Option<Vec<u8>>, Value), String> {
         use image::{Rgba, RgbaImage};
-        let (_dir, doc) = self.open(id)?;
+        let (_dir, doc) = self.open_analysis(id, &[frame], layer)?;
         let (want_h, want_v) = match axis {
             SeamAxis::Both => (true, true),
             SeamAxis::Horizontal => (true, false),
