@@ -247,7 +247,8 @@ pub(crate) struct DocFrame {
     pub(crate) frame: Option<usize>,
     /// For `add`: duplicate this frame's cels into the new frame.
     pub(crate) copy_from: Option<usize>,
-    /// For `add`: append this many frames in one call (default 1, max 256).
+    /// For add/duration: consecutive frame count (default 1, max 256).
+    #[schemars(range(min = 1, max = 256))]
     pub(crate) count: Option<usize>,
     /// Destination index for `move`.
     pub(crate) to_index: Option<usize>,
@@ -726,6 +727,11 @@ mod tests {
         let checkpoint = schemars::schema_for!(DocCheckpoint);
         let checkpoint = checkpoint.as_value();
         assert_eq!(checkpoint["properties"]["label"]["maxLength"], 4096);
+
+        let frame = schemars::schema_for!(DocFrame);
+        let frame = frame.as_value();
+        assert_eq!(frame["properties"]["count"]["minimum"], 1);
+        assert_eq!(frame["properties"]["count"]["maximum"], 256);
     }
 
     fn op_branch<'a>(schema: &'a Value, op: &str) -> Option<&'a Value> {
