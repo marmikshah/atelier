@@ -26,7 +26,7 @@
 //! Daemon (background HTTP server, survives logout/reboot), and the store:
 //!
 //! ```text
-//! atelier install                # asks for port; launchd / systemd --user
+//! atelier install                # asks for port; systemd --user
 //! atelier status
 //! atelier uninstall
 //! atelier tools [--html]         # the tool surface / the reference page
@@ -36,6 +36,9 @@
 //! atelier init                   # stamp a directory-local ./.atelier store
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! ```
+
+#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+compile_error!("atelier supports only Linux x86_64 (Ubuntu natively or the Alpine container)");
 
 use atelier_mcp::server;
 
@@ -233,7 +236,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Subcommands / flags that don't start the server.
     match args.get(1).map(|s| s.as_str()) {
-        // Background daemon management (launchd / systemd --user). The verb is
+        // Background daemon management (systemd --user). The verb is
         // args[1], which service::run dispatches on directly.
         Some("install") | Some("uninstall") | Some("status") => {
             std::process::exit(service::run(&args[1..]))

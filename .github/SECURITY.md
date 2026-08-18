@@ -24,4 +24,6 @@ timeline.
 ## Supported versions
 
 Only the latest release receives fixes. There are no backports below the latest
-tag while the project is pre-2.0.0.
+tag while the project is pre-2.0.0. Native support is limited to Ubuntu 22.04 or
+newer on x86_64; the Alpine linux/amd64 container is the only other supported
+runtime.

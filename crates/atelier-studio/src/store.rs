@@ -125,7 +125,7 @@ impl Studio {
         Self::resolve_home(
             std::env::var_os("ATELIER_HOME").as_deref(),
             &std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
-            dirs::home_dir().map(|home| home.join(".atelier")),
+            std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".atelier")),
         )
     }
 
@@ -140,8 +140,8 @@ impl Studio {
                 // No resolvable home = a deliberate, visible choice of the temp
                 // dir — not a silent relative "./.atelier" wherever the process
                 // happens to run.
-                dirs::home_dir()
-                    .map(|h| h.join(".atelier"))
+                std::env::var_os("HOME")
+                    .map(|home| PathBuf::from(home).join(".atelier"))
                     .unwrap_or_else(|| std::env::temp_dir().join("atelier"))
             })
     }

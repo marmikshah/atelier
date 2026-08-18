@@ -1,8 +1,8 @@
 name: Release
 
 # A maintainer-created annotated tag is the release approval. The verify job
-# must pass before any platform build starts, and GitHub Release creation waits
-# for every archive, checksum, and container so failures cannot publish a
+# must pass before the Ubuntu build starts, and GitHub Release creation waits
+# for its archive, checksum, and the Alpine container so failures cannot publish a
 # user-facing partial release.
 run-name: Release ${{ inputs.release_tag || github.ref_name }}
 
@@ -25,7 +25,7 @@ env:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 8
     permissions:
       contents: read
@@ -70,24 +70,12 @@ jobs:
             exit 1
           }
 
-  build:
+  native:
+    name: Ubuntu 22.04+ x86_64 archive
     needs: verify
     permissions:
       contents: read
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          # One macOS build: Apple Silicon on the latest runner. Intel users
-          # build from source (`cargo install --locked --git
-          # https://github.com/marmikshah/atelier --package atelier`).
-          - os: macos-latest
-            target: aarch64-apple-darwin
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -96,39 +84,50 @@ jobs:
       - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
           toolchain: 1.97.1
-          targets: ${{ matrix.target }}
 
       # Name and lock the release package explicitly.
-      - run: cargo build --release --locked -p atelier --target ${{ matrix.target }}
+      - run: cargo build --release --locked -p atelier
 
-      - name: Archive and checksum (unix)
-        if: runner.os != 'Windows'
+      - name: Package binary, documentation, and license
         shell: bash
         run: |
-          archive="atelier-${RELEASE_TAG}-${{ matrix.target }}.tar.gz"
-          tar -czf "$archive" -C "target/${{ matrix.target }}/release" atelier
-          shasum -a 256 "$archive" > "$archive.sha256"
+          package="atelier-${RELEASE_TAG}-ubuntu-x86_64"
+          archive="$package.tar.gz"
+          mkdir -p "dist/$package"
+          install -m 755 target/release/atelier "dist/$package/atelier"
+          install -m 644 LICENSE README.md "dist/$package/"
+          tar -czf "$archive" -C dist "$package"
+          sha256sum "$archive" > "$archive.sha256"
 
-      - name: Archive and checksum (windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
+      - name: Smoke test the packaged artifact
+        shell: bash
         run: |
-          $archive = "atelier-${env:RELEASE_TAG}-${{ matrix.target }}.zip"
-          Compress-Archive `
-            -Path "target/${{ matrix.target }}/release/atelier.exe" `
-            -DestinationPath $archive
-          $hash = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
-          "$hash  $archive" | Set-Content -Encoding ascii "$archive.sha256"
+          package="atelier-${RELEASE_TAG}-ubuntu-x86_64"
+          archive="$package.tar.gz"
+          expected="atelier ${RELEASE_TAG#v}"
+          smoke="$(mktemp -d)"
+          trap 'rm -rf "$smoke"' EXIT
+          sha256sum -c "$archive.sha256"
+          tar -xzf "$archive" -C "$smoke"
+          test -x "$smoke/$package/atelier"
+          test -f "$smoke/$package/LICENSE"
+          test -f "$smoke/$package/README.md"
+          test "$("$smoke/$package/atelier" --version)" = "$expected"
+          "$smoke/$package/atelier" tools --schema doc_new >/dev/null
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"package-smoke","version":"0"}}}' |
+            ATELIER_HOME="$smoke/home" ATELIER_LOG=off timeout 10 \
+              "$smoke/$package/atelier" >"$smoke/initialize.json"
+          grep -q '"serverInfo":{"name":"atelier"' "$smoke/initialize.json"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: release-${{ matrix.target }}
-          path: atelier-${{ env.RELEASE_TAG }}-${{ matrix.target }}.*
+          name: release-ubuntu-x86_64
+          path: atelier-${{ env.RELEASE_TAG }}-ubuntu-x86_64.tar.gz*
           if-no-files-found: error
           retention-days: 1
 
   docker:
-    needs: build
+    needs: native
     permissions:
       contents: read
       packages: write
@@ -138,8 +137,8 @@ jobs:
     secrets: inherit
 
   publish_release:
-    needs: [build, docker]
-    runs-on: ubuntu-latest
+    needs: [native, docker]
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: write
@@ -152,8 +151,8 @@ jobs:
       - name: Verify the complete artifact set
         shell: bash
         run: |
-          [[ "$(find dist -maxdepth 1 -type f | wc -l)" -eq 6 ]] || {
-            echo "::error::expected three archives and three checksums"
+          [[ "$(find dist -maxdepth 1 -type f | wc -l)" -eq 2 ]] || {
+            echo "::error::expected one Ubuntu archive and one checksum"
             find dist -maxdepth 1 -type f -print
             exit 1
           }
