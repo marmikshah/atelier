@@ -197,6 +197,54 @@ impl Studio {
             committed: false,
         })
     }
+
+    /// Start an empty transaction for a portable document import.
+    ///
+    /// Unlike [`Self::begin_transaction`], replacement does not snapshot the
+    /// generation that is about to be superseded: the archive is a complete
+    /// document tree and is validated in isolation before commit. The caller
+    /// must hold the store's exclusive lock across this call and commit.
+    pub(crate) fn begin_import_transaction(
+        &self,
+        id: &str,
+        replace: bool,
+    ) -> Result<(StoreTransaction, bool), String> {
+        if !Self::valid_id(id) {
+            return Err(format!("invalid imported document id '{id}'"));
+        }
+
+        let live = self.docs_dir.join(id);
+        let live_exists = directory_state(&live, "archive destination")?;
+        if live_exists && !replace {
+            return Err(format!(
+                "document '{id}' already exists; pass replace=true to replace it atomically"
+            ));
+        }
+        let transactions = self.docs_dir.join(TRANSACTIONS_DIR);
+        ensure_directory(&transactions, "transaction directory")?;
+        let stage_root = transactions.join(Uuid::new_v4().to_string());
+        fs::create_dir(&stage_root).map_err(|e| {
+            format!(
+                "cannot create import transaction {}: {e}",
+                stage_root.display()
+            )
+        })?;
+
+        Ok((
+            StoreTransaction {
+                live_docs_dir: self.docs_dir.clone(),
+                studio: Studio::with_docs_dir(stage_root.clone()),
+                stage_root,
+                intent: if live_exists {
+                    TransactionIntent::Existing(id.to_owned())
+                } else {
+                    TransactionIntent::Create
+                },
+                committed: false,
+            },
+            live_exists,
+        ))
+    }
 }
 
 fn directory_state(path: &Path, label: &str) -> Result<bool, String> {
