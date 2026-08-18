@@ -38,9 +38,10 @@ acceptable when they have one clear operation and fail atomically.
 - Add fault-injection coverage around staging, publication, and recovery.
 - Keep the enforced limits for layers, frames, tags, palette entries, cels,
   names, aggregate decoded pixels, recipe size, and recipe length under hostile
-  tests. Add a checkpoint count/space quota with explicit retention feedback.
-- Document and test a portable backup/restore format before promising format
-  stability across major versions.
+  tests. Keep checkpoint count, label, and logical-space quotas covered by the
+  same hostile tests.
+- Keep the deterministic `.atelierpack` v1 contract covered by round-trip,
+  corruption, traversal, collision, and atomic-replacement tests.
 
 ### Protocol and security
 
@@ -98,15 +99,11 @@ These candidates improve common workflows without increasing the MCP tool
 count:
 
 - `doc_region`: bounded copy and quarter-turn/flip operations within a region;
-- `doc_frame`: tag- or range-scoped timing updates and bounded duplication;
-- `doc_draw` / `doc_fx`: bounded same-operation frame ranges with one atomic
-  result, never a free-form batch;
+- `doc_frame`: tag-scoped timing updates and bounded duplication;
 - `doc_critique`: optional concise and full profiles over the existing checks;
 - `doc_export`: a bundle operation for a sheet, metadata, and selected
   animations in one atomic output directory;
 - `doc_palette`: named palette import/export through explicit rooted files;
-- CLI `library`: portable pack/unpack after the archive and migration contract
-  is specified.
 
 Candidates are not compatibility commitments. Each needs a concrete use case,
 schema and output budgets, replay semantics, and tests before implementation.

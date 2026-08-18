@@ -13,6 +13,10 @@ created. Minor 1.x releases may contain breaking changes.
   tool, including contact sheets and reference analysis.
 - `atelier library verify [--json]` performs read-only, actionable validation of
   document metadata, cel PNGs, stored references, and replay journals.
+- `atelier library pack` and `library unpack` provide deterministic, bounded
+  `.atelierpack` backups that preserve document UUIDs, recipes, revisions,
+  references, and checkpoints. Restore collisions fail unless replacement is
+  explicitly confirmed with `--replace --yes`.
 - Successful document calls return a persisted revision. Existing-document
   mutations accept `expected_revision` and reject stale writes without changing
   pixels, checkpoints, or journals.
@@ -35,6 +39,12 @@ created. Minor 1.x releases may contain breaking changes.
   atomically only after the handler and journal append succeed.
 - Multi-step replay now builds in one private generation and publishes the new
   document only after every recipe step succeeds.
+- `doc_draw` and `doc_fx` accept an inclusive `frame_to` for one bounded,
+  atomic same-operation frame range. `doc_frame op=duration` uses `count` for
+  bounded consecutive timing updates.
+- Checkpoint retention is limited to 32 snapshots and 2 GiB of logical data per
+  document. Atelier reports exact quota use and requires explicit pruning; it
+  never silently evicts recovery points.
 - Tool descriptions and repository metadata use concise, factual language.
   Serialized MCP tool definitions are held to a 32 KiB regression budget.
 - `list_docs` uses bounded cursor pages over MCP while the native library
