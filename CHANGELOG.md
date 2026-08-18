@@ -1,10 +1,11 @@
 # Changelog
 
-Format follows [Keep a Changelog](https://keepachangelog.com/). Version numbers
-use `MAJOR.MINOR.PATCH`, but the compatibility guarantee begins at 2.0.0;
-pre-2.0 minor releases may contain breaking changes.
+Format follows [Keep a Changelog](https://keepachangelog.com/). Active
+development stays on the `1.y.z` release train: feature releases increment
+`y`, and the maintainer decides explicitly if a new major version will ever be
+created. Minor 1.x releases may contain breaking changes.
 
-## [Unreleased]
+## [1.9.0] — Unreleased
 
 ### Added
 

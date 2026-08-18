@@ -300,16 +300,17 @@ calls used by CLI and replay.
 
 ## Project status
 
-Atelier is pre-2.0. Most of the implementation was generated with AI systems
-and has not yet received a complete line-by-line maintainer review. The project
-uses tests, static analysis, locked dependencies, bounded image operations, and
-explicit release gates, but those controls are not a substitute for that
-review.
+Atelier currently follows a `1.y.z` release train. Feature releases increment
+`y`; no 2.0 release is planned, versioned, or tagged unless the maintainer
+explicitly authorizes it. Most of the implementation was generated with AI
+systems and has not yet received a complete line-by-line maintainer review.
+Tests, static analysis, locked dependencies, bounded image operations, and
+release gates are not a substitute for that review.
 
 > [!WARNING]
-> **Before 2.0.0, assume defects and breaking changes remain possible.** Review
-> the code and isolate important data before using Atelier in a production
-> workflow. Version 2.0.0 is reserved for the maintainer's manual review.
+> **During the 1.x series, assume defects and breaking changes remain
+> possible.** Review the code and isolate important data before using Atelier
+> in a production workflow.
 
 ## Contributing
 
@@ -320,8 +321,8 @@ formats, or broad refactors; the full development and review expectations are in
 
 Maintainer releases are approved by a manually created annotated tag; the exact
 procedure is in [docs/RELEASING.md](docs/RELEASING.md).
-The [roadmap](docs/ROADMAP.md) records the 2.0 readiness criteria and the policy
-for adding capabilities without expanding the tool surface unnecessarily.
+The [roadmap](docs/ROADMAP.md) records current readiness work and the policy for
+adding capabilities without expanding the tool surface unnecessarily.
 
 [Contributing](.github/CONTRIBUTING.md) · [Code of Conduct](.github/CODE_OF_CONDUCT.md) · [Security](.github/SECURITY.md) · [Changelog](CHANGELOG.md)
 
