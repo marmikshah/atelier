@@ -9,6 +9,7 @@ use std::fs;
 use image::{Rgba, RgbaImage};
 use serde_json::{Value, json};
 
+use super::analysis::MAX_TRACKED_DISTINCT_COLORS;
 use super::craft::{MID_MAX, SHADOW_MAX, crop_region};
 use super::{LookBackground, LookMode, Studio, encode_png, scale_nn};
 use atelier_core::document::ValueView;
@@ -92,6 +93,7 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
     let (mut min, mut max, mut sum, mut n) = (255u8, 0u8, 0u64, 0u64);
     let (mut shadow, mut mid, mut light) = (0u64, 0u64, 0u64);
     let mut distinct = std::collections::HashSet::new();
+    let mut distinct_truncated = false;
     // Optional per-band value coverage (the structure read for `bands`/`notan`,
     // carried over from the retired doc_render_value `band_pcts`).
     let nb = bands.map(|b| b.max(2) as usize);
@@ -115,15 +117,35 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
         if let (Some(b), Some(counts)) = (nb, band_counts.as_mut()) {
             counts[(v as usize * b / 256).min(b - 1)] += 1;
         }
-        distinct.insert([p.0[0], p.0[1], p.0[2], p.0[3]]);
+        let color = [p.0[0], p.0[1], p.0[2], p.0[3]];
+        if distinct.len() < MAX_TRACKED_DISTINCT_COLORS {
+            distinct.insert(color);
+        } else if !distinct.contains(&color) {
+            distinct_truncated = true;
+        }
     }
     if n == 0 {
-        return json!({"opaque_pixels": 0, "note": "empty — nothing opaque in view"});
+        return json!({
+            "opaque_pixels": 0,
+            "distinct_colors": 0,
+            "distinct_colors_at_least": 0,
+            "distinct_colors_exact": true,
+            "distinct_colors_truncated": false,
+            "analysis_color_limit": MAX_TRACKED_DISTINCT_COLORS,
+            "note": "empty — nothing opaque in view",
+        });
     }
     let pct = |c: u64| (c as f64 / n as f64 * 1000.0).round() / 10.0;
+    let distinct_colors = distinct.len() + usize::from(distinct_truncated);
     let mut out = json!({
         "opaque_pixels": n,
-        "distinct_colors": distinct.len(),
+        // Compatibility alias: exact for ordinary pixel art; once the bounded
+        // set fills it is an explicitly labelled lower bound.
+        "distinct_colors": distinct_colors,
+        "distinct_colors_at_least": distinct_colors,
+        "distinct_colors_exact": !distinct_truncated,
+        "distinct_colors_truncated": distinct_truncated,
+        "analysis_color_limit": MAX_TRACKED_DISTINCT_COLORS,
         "value": {
             "min": min, "max": max,
             "mean": (sum as f64 / n as f64).round() as u32,
@@ -538,6 +560,26 @@ mod tests {
 #[cfg(test)]
 mod hardening_tests {
     use super::*;
+
+    #[test]
+    fn look_stats_bounds_distinct_colours_and_marks_the_lower_bound() {
+        let empty = look_stats(&RgbaImage::new(1, 1), None);
+        assert_eq!(empty["distinct_colors"], 0);
+        assert_eq!(empty["distinct_colors_exact"], true);
+
+        let width = (MAX_TRACKED_DISTINCT_COLORS + 1) as u32;
+        let mut image = RgbaImage::new(width, 1);
+        for (index, pixel) in image.pixels_mut().enumerate() {
+            let value = index as u32;
+            *pixel = Rgba([(value >> 16) as u8, (value >> 8) as u8, value as u8, 255]);
+        }
+
+        let stats = look_stats(&image, None);
+        assert_eq!(stats["distinct_colors"], MAX_TRACKED_DISTINCT_COLORS + 1);
+        assert_eq!(stats["distinct_colors_exact"], false);
+        assert_eq!(stats["distinct_colors_truncated"], true);
+        assert_eq!(stats["opaque_pixels"], width);
+    }
 
     #[test]
     fn look_tile_and_scale_are_capped_not_fatal() {
