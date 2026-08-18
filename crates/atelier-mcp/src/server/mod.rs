@@ -578,6 +578,11 @@ mod tools_read;
 /// execution; document, layer, and frame targets live only in the JSON call.
 pub const SESSION_META_KEY: &str = "io.github.marmikshah.atelier/session";
 
+/// Limit simultaneous CPU/disk-heavy editor calls independently of the
+/// transport's request-body limit. Mutations remain serial; this primarily
+/// bounds concurrent read renders and analyses on the blocking pool.
+const MAX_BLOCKING_TOOL_CALLS: usize = 16;
+
 #[derive(Clone)]
 pub struct Atelier {
     /// A cheap path handle, not editor state. Documents are opened from disk
@@ -592,6 +597,9 @@ pub struct Atelier {
     /// sessions could execute A→B and journal B→A, and the recipe would
     /// silently rebuild different art.
     write_order: std::sync::Arc<tokio::sync::Mutex<()>>,
+    /// Shared by every transport clone so synchronous editor work cannot fill
+    /// Tokio's much larger default blocking-thread allowance.
+    work_permits: std::sync::Arc<tokio::sync::Semaphore>,
     /// Present only on the Streamable HTTP service. Its presence is the
     /// transport boundary for external path policy; direct dispatch remains
     /// unrestricted for CLI/replay and stdio callers.
@@ -609,6 +617,7 @@ impl Atelier {
             studio,
             tool_router: std::sync::Arc::new(Self::tool_router()),
             write_order: std::sync::Arc::new(tokio::sync::Mutex::new(())),
+            work_permits: std::sync::Arc::new(tokio::sync::Semaphore::new(MAX_BLOCKING_TOOL_CALLS)),
             http_paths: None,
         }
     }
@@ -621,6 +630,7 @@ impl Atelier {
             studio,
             tool_router: self.tool_router.clone(),
             write_order: self.write_order.clone(),
+            work_permits: self.work_permits.clone(),
             http_paths: self.http_paths.clone(),
         }
     }
@@ -728,14 +738,57 @@ impl Atelier {
             ));
         }
         let write_order = self.write_order.clone();
-        let _order = if store_mutation {
-            Some(write_order.lock().await)
+        let order = if store_mutation {
+            Some(write_order.lock_owned().await)
         } else {
             None
         };
+        let work = self
+            .work_permits
+            .clone()
+            .acquire_owned()
+            .await
+            .map_err(|_| ErrorData::internal_error("tool worker pool closed", None))?;
+        let worker = self.clone();
+        let caller = caller.to_owned();
+        tokio::task::spawn_blocking(move || {
+            // Cancellation of the HTTP/request future cannot cancel a running
+            // blocking task. Keep both guards inside that task so a dropped
+            // request never lets a later mutation overtake unfinished work.
+            let _order = order;
+            let _work = work;
+            worker.dispatch_blocking(
+                tool,
+                args,
+                &caller,
+                journaled,
+                store_mutation,
+                expected_revision,
+            )
+        })
+        .await
+        .map_err(|error| {
+            ErrorData::internal_error(format!("tool worker failed unexpectedly: {error}"), None)
+        })?
+    }
+
+    /// Run synchronous image and filesystem work away from Tokio's async
+    /// workers. Tool handlers are deliberately synchronous: async belongs to
+    /// the transport and ordering shell, while the editor core performs
+    /// bounded CPU and disk work on the blocking pool.
+    fn dispatch_blocking(
+        &self,
+        tool: ToolName,
+        args: Value,
+        caller: &str,
+        journaled: bool,
+        store_mutation: bool,
+        expected_revision: Option<u64>,
+    ) -> Result<CallToolResult, ErrorData> {
         // The async order lock coordinates sessions in this server; the file
-        // lock also coordinates separate CLI and daemon processes. Keep it
-        // through journaling so pixels and provenance commit in one order.
+        // lock also coordinates separate CLI and daemon processes. The caller
+        // keeps the order guard through this complete blocking operation, so
+        // pixels and provenance still commit in one order.
         let _store_lock = {
             let studio = self.studio();
             if store_mutation {
@@ -749,9 +802,8 @@ impl Atelier {
         let started = std::time::Instant::now();
         let mut result = match if store_mutation {
             self.invoke_transaction(tool, args.clone(), journaled, expected_revision)
-                .await
         } else {
-            self.invoke(tool, args.clone()).await
+            self.invoke(tool, args.clone())
         } {
             Ok(r) => r,
             // Protocol-level failure (malformed params): the caller sees the
@@ -779,7 +831,7 @@ impl Atelier {
     /// made visible until both the handler and its recipe append have
     /// succeeded; dropping the transaction rolls back application and
     /// protocol failures as well as journal failures.
-    async fn invoke_transaction(
+    fn invoke_transaction(
         &self,
         tool: ToolName,
         args: Value,
@@ -823,7 +875,7 @@ impl Atelier {
             Err(error) => return Ok(res(Err(error))),
         };
         let staged = self.with_dispatch_studio(transaction.studio().clone());
-        let mut result = staged.invoke(tool, args.clone()).await?;
+        let mut result = staged.invoke(tool, args.clone())?;
         if is_error_result(&result) {
             return Ok(result);
         }
@@ -886,7 +938,7 @@ impl Atelier {
     /// The router is now only the schema registry (it advertises the surface);
     /// this match is the dispatch — one path for every transport. The
     /// count-pin and dispatch-coverage tests keep the two in lockstep.
-    async fn invoke(&self, tool: ToolName, args: Value) -> Result<CallToolResult, ErrorData> {
+    fn invoke(&self, tool: ToolName, args: Value) -> Result<CallToolResult, ErrorData> {
         /// Deserialize `args` into the tool's param struct and call its
         /// handler, mirroring rmcp's extractor: a param mismatch is a
         /// protocol-level invalid_params, never a tool result.
@@ -895,7 +947,7 @@ impl Atelier {
                 let p = serde_json::from_value::<$ty>(args).map_err(|e| {
                     ErrorData::invalid_params(format!("bad params for tool '{tool}': {e}"), None)
                 })?;
-                self.$handler(Parameters(p)).await
+                self.$handler(Parameters(p))
             }};
         }
         Ok(match tool {
@@ -2154,6 +2206,107 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir);
         Atelier::with_studio(studio)
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn contended_store_io_does_not_block_the_async_runtime() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+
+        let atelier = temp_atelier("blocking-pool");
+        let lock_studio = atelier.studio().clone();
+        let released = std::sync::Arc::new(AtomicBool::new(false));
+        let released_by_thread = released.clone();
+        let (ready_tx, ready_rx) = std::sync::mpsc::channel();
+        let blocker = std::thread::spawn(move || {
+            let _lock = lock_studio.lock_store_exclusive().unwrap();
+            ready_tx.send(()).unwrap();
+            std::thread::sleep(std::time::Duration::from_millis(250));
+            released_by_thread.store(true, Ordering::SeqCst);
+        });
+        ready_rx.recv().unwrap();
+
+        let timer = async {
+            tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+            assert!(
+                !released.load(Ordering::SeqCst),
+                "the runtime timer did not run until blocking store I/O completed"
+            );
+        };
+        let call = atelier.dispatch(ToolName::ListDocs, json!({}), "test");
+        let ((), result) = tokio::join!(timer, call);
+        assert!(!is_error_result(&result.unwrap()));
+        blocker.join().unwrap();
+    }
+
+    #[tokio::test]
+    async fn cancelled_requests_keep_mutation_order_until_blocking_work_finishes() {
+        let atelier = temp_atelier("cancelled-blocking-call");
+        let lock_studio = atelier.studio().clone();
+        let (ready_tx, ready_rx) = std::sync::mpsc::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let blocker = std::thread::spawn(move || {
+            let _lock = lock_studio.lock_store_exclusive().unwrap();
+            ready_tx.send(()).unwrap();
+            release_rx.recv().unwrap();
+        });
+        ready_rx.recv().unwrap();
+
+        let worker = atelier.clone();
+        let request = tokio::spawn(async move {
+            worker
+                .dispatch(
+                    ToolName::DocNew,
+                    json!({"name": "survives cancellation", "width": 2, "height": 2}),
+                    "test",
+                )
+                .await
+        });
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            loop {
+                if atelier.work_permits.available_permits() == MAX_BLOCKING_TOOL_CALLS - 1
+                    && atelier.write_order.try_lock().is_err()
+                {
+                    break;
+                }
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .expect("the blocking mutation started");
+
+        request.abort();
+        assert!(request.await.unwrap_err().is_cancelled());
+        assert!(
+            atelier.write_order.try_lock().is_err(),
+            "request cancellation released mutation ordering while its worker was active"
+        );
+        assert_eq!(
+            atelier.work_permits.available_permits(),
+            MAX_BLOCKING_TOOL_CALLS - 1
+        );
+
+        release_tx.send(()).unwrap();
+        blocker.join().unwrap();
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            loop {
+                if atelier.work_permits.available_permits() == MAX_BLOCKING_TOOL_CALLS
+                    && atelier.write_order.try_lock().is_ok()
+                {
+                    break;
+                }
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .expect("the cancelled request's blocking mutation finished");
+        assert_eq!(
+            atelier.studio().list_docs()["documents"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1,
+            "cancelling the transport future must not leave a half-run mutation"
+        );
     }
 
     fn transactions_empty(documents: &std::path::Path) -> bool {

@@ -11,7 +11,7 @@ use super::{Atelier, img_result, opt_img_result, region, res, rgba};
 #[tool_router(router = read_router, vis = "pub(crate)")]
 impl Atelier {
     #[tool(description = "Render and measure a frame using configurable analysis views.")]
-    pub(crate) async fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
+    pub(crate) fn doc_look(&self, Parameters(p): Parameters<DocLook>) -> CallToolResult {
         let opts = atelier_studio::LookOptions {
             scale: p.scale,
             region: region(p.region),
@@ -29,7 +29,7 @@ impl Atelier {
     }
 
     #[tool(description = "Return up to 4096 exact pixels as a symbol or hexadecimal grid.")]
-    pub(crate) async fn doc_dump_region(
+    pub(crate) fn doc_dump_region(
         &self,
         Parameters(p): Parameters<DocDumpRegion>,
     ) -> CallToolResult {
@@ -43,7 +43,7 @@ impl Atelier {
     }
 
     #[tool(description = "Report opaque bounds, fill ratio, and a silhouette grid.")]
-    pub(crate) async fn doc_silhouette(
+    pub(crate) fn doc_silhouette(
         &self,
         Parameters(p): Parameters<DocSilhouette>,
     ) -> CallToolResult {
@@ -56,7 +56,7 @@ impl Atelier {
     }
 
     #[tool(description = "Measure up to 64 connected components and small specks.")]
-    pub(crate) async fn doc_components(
+    pub(crate) fn doc_components(
         &self,
         Parameters(p): Parameters<DocComponents>,
     ) -> CallToolResult {
@@ -75,10 +75,7 @@ impl Atelier {
     }
 
     #[tool(description = "Compare two frames or cels, with optional grid or overlay.")]
-    pub(crate) async fn doc_frame_diff(
-        &self,
-        Parameters(p): Parameters<DocFrameDiff>,
-    ) -> CallToolResult {
+    pub(crate) fn doc_frame_diff(&self, Parameters(p): Parameters<DocFrameDiff>) -> CallToolResult {
         opt_img_result(self.studio().doc_frame_diff(
             &p.doc_id,
             p.frame_a,
@@ -93,7 +90,7 @@ impl Atelier {
     }
 
     #[tool(description = "Measure horizontal or vertical tiling seams and mismatches.")]
-    pub(crate) async fn doc_seam_report(
+    pub(crate) fn doc_seam_report(
         &self,
         Parameters(p): Parameters<DocSeamReport>,
     ) -> CallToolResult {
@@ -108,10 +105,7 @@ impl Atelier {
     }
 
     #[tool(description = "Audit animation loops, motion spacing, arcs, or timing.")]
-    pub(crate) async fn doc_anim_audit(
-        &self,
-        Parameters(p): Parameters<DocAnimAudit>,
-    ) -> CallToolResult {
+    pub(crate) fn doc_anim_audit(&self, Parameters(p): Parameters<DocAnimAudit>) -> CallToolResult {
         res(self.studio().doc_anim_audit(
             &p.doc_id,
             p.tag.as_deref(),
@@ -122,17 +116,14 @@ impl Atelier {
     }
 
     #[tool(description = "Report common contour, lighting, value, and palette problems.")]
-    pub(crate) async fn doc_critique(
-        &self,
-        Parameters(p): Parameters<DocCritique>,
-    ) -> CallToolResult {
+    pub(crate) fn doc_critique(&self, Parameters(p): Parameters<DocCritique>) -> CallToolResult {
         res(self
             .studio()
             .critique(&p.doc_id, p.frame.unwrap_or(0), p.layer, region(p.region)))
     }
 
     #[tool(description = "Render all frames as a labelled inline contact sheet.")]
-    pub(crate) async fn doc_contact_sheet(
+    pub(crate) fn doc_contact_sheet(
         &self,
         Parameters(p): Parameters<DocContactSheet>,
     ) -> CallToolResult {
@@ -145,7 +136,7 @@ impl Atelier {
     }
 
     #[tool(description = "Set, analyze, compare, or diff a document reference image.")]
-    pub(crate) async fn doc_ref(&self, Parameters(p): Parameters<DocRefOp>) -> CallToolResult {
+    pub(crate) fn doc_ref(&self, Parameters(p): Parameters<DocRefOp>) -> CallToolResult {
         let studio = self.studio();
         match p.op {
             atelier_studio::ReferenceOp::Set => {
