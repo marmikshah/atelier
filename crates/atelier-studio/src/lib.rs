@@ -72,6 +72,9 @@ pub(crate) const MAX_EXPORT_SCALE: u32 = 16;
 /// Export scale when the caller leaves it unset.
 pub(crate) const DEFAULT_EXPORT_SCALE: u32 = 4;
 
+/// Largest consecutive frame count accepted by one timeline call.
+const MAX_FRAME_COUNT: usize = 256;
+
 /// Clamp an export scale into `1..=MAX_EXPORT_SCALE`.
 pub(crate) fn export_scale(scale: u32) -> u32 {
     scale.clamp(1, MAX_EXPORT_SCALE)
@@ -215,7 +218,7 @@ impl Studio {
         copy_from: Option<usize>,
         count: usize,
     ) -> Result<Value, String> {
-        let count = count.clamp(1, 256);
+        let count = Self::checked_frame_count(count)?;
         let (dir, mut doc) = self.open(id)?;
         if let Some(src) = copy_from
             && src >= doc.meta().frames.len()
@@ -243,16 +246,49 @@ impl Studio {
         }))
     }
 
-    fn doc_set_frame_duration(&self, id: &str, frame: usize, ms: u32) -> Result<Value, String> {
+    fn checked_frame_count(count: usize) -> Result<usize, String> {
+        if !(1..=MAX_FRAME_COUNT).contains(&count) {
+            return Err(format!(
+                "frame count must be 1..={MAX_FRAME_COUNT}, got {count}"
+            ));
+        }
+        Ok(count)
+    }
+
+    fn doc_set_frame_duration(
+        &self,
+        id: &str,
+        frame: usize,
+        ms: u32,
+        count: usize,
+    ) -> Result<Value, String> {
+        let count = Self::checked_frame_count(count)?;
         let (dir, mut doc) = self.open(id)?;
-        doc.set_frame_duration(frame, ms)?;
+        let frame_to = frame
+            .checked_add(count - 1)
+            .ok_or_else(|| format!("duration frame range from {frame} overflowed"))?;
+        if frame_to >= doc.meta().frames.len() {
+            return Err(format!(
+                "duration frame range {frame}..={frame_to} out of range — document has {} frame(s) (0..={})",
+                doc.meta().frames.len(),
+                doc.meta().frames.len().saturating_sub(1)
+            ));
+        }
+        for index in frame..=frame_to {
+            doc.set_frame_duration(index, ms)?;
+        }
         doc.save(&dir)?;
-        Ok(json!({
+        let mut out = json!({
             "ok": true,
             "doc_id": id,
             "frame": frame,
             "duration_ms": ms,
-        }))
+        });
+        if count > 1 {
+            out["frame_to"] = json!(frame_to);
+            out["frames_updated"] = json!(count);
+        }
+        Ok(out)
     }
 
     /// One-tool dispatch over frame lifecycle + timing — `op`: `add` (append,
@@ -281,6 +317,7 @@ impl Studio {
                 id,
                 Self::required_index(op, frame)?,
                 duration_ms.unwrap_or(atelier_core::document::DEFAULT_FRAME_MS),
+                count.unwrap_or(1),
             ),
             FrameOp::Delete => self.doc_frame_ops(
                 id,
@@ -646,6 +683,33 @@ mod tests {
         Studio::with_docs_dir(dir)
     }
 
+    fn set_duration(
+        studio: &Studio,
+        id: &str,
+        frame: usize,
+        count: Option<usize>,
+        duration_ms: u32,
+    ) -> Result<Value, String> {
+        studio.doc_frame(
+            id,
+            FrameOp::Duration,
+            Some(frame),
+            None,
+            None,
+            Some(duration_ms),
+            count,
+        )
+    }
+
+    fn frame_durations(studio: &Studio, id: &str) -> Vec<u64> {
+        studio.doc_info(id).unwrap()["frames"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|frame| frame["duration_ms"].as_u64().unwrap())
+            .collect()
+    }
+
     #[test]
     fn frame_add_count_appends_in_one_call() {
         // "Give me my 10 frames" used to cost 9 identical round-trips.
@@ -656,6 +720,62 @@ mod tests {
         assert!(out.is_ok(), "{out:?}");
         let info = s.doc_info(id).unwrap();
         assert_eq!(info["frames"].as_array().map(|f| f.len()), Some(10));
+    }
+
+    #[test]
+    fn frame_duration_count_updates_one_validated_range() {
+        let s = studio("duration-count");
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_frame(id, FrameOp::Add, None, None, None, Some(80), Some(3))
+            .unwrap();
+
+        let single = set_duration(&s, id, 0, None, 120).unwrap();
+        assert_eq!(
+            single,
+            json!({
+                "ok": true,
+                "doc_id": id,
+                "frame": 0,
+                "duration_ms": 120,
+            })
+        );
+
+        let out = set_duration(&s, id, 1, Some(2), 240).unwrap();
+        assert_eq!(out["frame"], 1);
+        assert_eq!(out["frame_to"], 2);
+        assert_eq!(out["frames_updated"], 2);
+        assert_eq!(out["duration_ms"], 240);
+        assert_eq!(frame_durations(&s, id), vec![120, 240, 240, 80]);
+    }
+
+    #[test]
+    fn frame_counts_and_duration_ranges_fail_without_partial_changes() {
+        let s = studio("duration-count-errors");
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_frame(id, FrameOp::Add, None, None, None, Some(80), Some(3))
+            .unwrap();
+
+        for count in [0, MAX_FRAME_COUNT + 1] {
+            let add = s
+                .doc_frame(id, FrameOp::Add, None, None, None, Some(90), Some(count))
+                .unwrap_err();
+            assert!(add.contains("frame count must be"), "{add}");
+
+            let duration = set_duration(&s, id, 1, Some(count), 240).unwrap_err();
+            assert!(duration.contains("frame count must be"), "{duration}");
+        }
+
+        let out_of_range = set_duration(&s, id, 1, Some(4), 240).unwrap_err();
+        assert!(
+            out_of_range.contains("1..=4 out of range"),
+            "{out_of_range}"
+        );
+
+        let overflow = set_duration(&s, id, usize::MAX, Some(2), 240).unwrap_err();
+        assert!(overflow.contains("overflowed"), "{overflow}");
+        assert_eq!(frame_durations(&s, id), vec![100, 80, 80, 80]);
     }
 }
 
