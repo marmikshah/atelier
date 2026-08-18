@@ -14,12 +14,12 @@ impl Atelier {
     #[tool(
         description = "Create a persisted layered animation document and return its opaque `doc_id`."
     )]
-    pub(crate) async fn doc_new(&self, Parameters(p): Parameters<DocNew>) -> CallToolResult {
+    pub(crate) fn doc_new(&self, Parameters(p): Parameters<DocNew>) -> CallToolResult {
         res(self.studio().doc_new(&p.name, p.width, p.height))
     }
 
     #[tool(description = "List up to 100 documents, with filters and cursor pagination.")]
-    pub(crate) async fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
+    pub(crate) fn list_docs(&self, Parameters(p): Parameters<ListDocs>) -> CallToolResult {
         res(self.studio().list_docs_page(
             p.prefix.as_deref(),
             p.contains.as_deref(),
@@ -29,25 +29,25 @@ impl Atelier {
     }
 
     #[tool(description = "Get document structure: layers, frames, cels, and tags.")]
-    pub(crate) async fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
+    pub(crate) fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().doc_info(&p.doc_id))
     }
 
     #[tool(description = "Delete a document and all its files.")]
-    pub(crate) async fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
+    pub(crate) fn delete_doc(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().delete_doc(&p.doc_id))
     }
 
     // -- documents: editable layered/timeline sprites --
     #[tool(description = "Add, edit, reorder, duplicate, merge, or delete a layer.")]
-    pub(crate) async fn doc_layer(&self, Parameters(p): Parameters<DocLayer>) -> CallToolResult {
+    pub(crate) fn doc_layer(&self, Parameters(p): Parameters<DocLayer>) -> CallToolResult {
         res(self.studio().doc_layer(
             &p.doc_id, p.op, p.index, p.to_index, p.name, p.visible, p.opacity, p.blend,
         ))
     }
 
     #[tool(description = "Add, edit, reorder, duplicate, or delete animation frames.")]
-    pub(crate) async fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
+    pub(crate) fn doc_frame(&self, Parameters(p): Parameters<DocFrame>) -> CallToolResult {
         res(self.studio().doc_frame(
             &p.doc_id,
             p.op,
@@ -60,7 +60,7 @@ impl Atelier {
     }
 
     #[tool(description = "Add a named animation frame range.")]
-    pub(crate) async fn doc_add_tag(&self, Parameters(p): Parameters<DocAddTag>) -> CallToolResult {
+    pub(crate) fn doc_add_tag(&self, Parameters(p): Parameters<DocAddTag>) -> CallToolResult {
         res(self.studio().doc_add_tag(
             &p.doc_id,
             &p.name,
@@ -71,7 +71,7 @@ impl Atelier {
     }
 
     #[tool(description = "Save, list, restore, or prune document checkpoints.")]
-    pub(crate) async fn doc_checkpoint(
+    pub(crate) fn doc_checkpoint(
         &self,
         Parameters(p): Parameters<DocCheckpoint>,
     ) -> CallToolResult {
@@ -84,10 +84,7 @@ impl Atelier {
     }
 
     #[tool(description = "Generate, set, inspect, snap, or swap document palettes.")]
-    pub(crate) async fn doc_palette(
-        &self,
-        Parameters(p): Parameters<DocPalette>,
-    ) -> CallToolResult {
+    pub(crate) fn doc_palette(&self, Parameters(p): Parameters<DocPalette>) -> CallToolResult {
         let studio = self.studio();
         match p.op.unwrap_or_default() {
             atelier_studio::PaletteOp::Generate => {

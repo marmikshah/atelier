@@ -10,7 +10,7 @@ use rmcp::{tool, tool_router};
 #[tool_router(router = draw_router, vis = "pub(crate)")]
 impl Atelier {
     #[tool(description = "Apply one typed drawing operation across frame cels.")]
-    pub(crate) async fn doc_draw(&self, Parameters(mut p): Parameters<DocDraw>) -> CallToolResult {
+    pub(crate) fn doc_draw(&self, Parameters(mut p): Parameters<DocDraw>) -> CallToolResult {
         revive_legacy_params(&mut p.params);
         res(self.studio().doc_draw(
             &p.doc_id,
@@ -25,7 +25,7 @@ impl Atelier {
     #[tool(
         description = "Apply one typed effect, transform, or colour operation across frame cels."
     )]
-    pub(crate) async fn doc_fx(&self, Parameters(mut p): Parameters<DocFx>) -> CallToolResult {
+    pub(crate) fn doc_fx(&self, Parameters(mut p): Parameters<DocFx>) -> CallToolResult {
         revive_legacy_params(&mut p.params);
         res(self.studio().doc_fx(
             &p.doc_id,
@@ -38,7 +38,7 @@ impl Atelier {
     }
 
     #[tool(description = "Clear or move a rectangular cel region.")]
-    pub(crate) async fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
+    pub(crate) fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
         edited(
             self.studio()
                 .doc_region(&p.doc_id, p.op, p.layer, p.frame, Some(p.rect), p.offset),
@@ -46,10 +46,7 @@ impl Atelier {
     }
 
     #[tool(description = "Paint a region from character rows and a colour legend.")]
-    pub(crate) async fn doc_paint_grid(
-        &self,
-        Parameters(p): Parameters<DocPaintGrid>,
-    ) -> CallToolResult {
+    pub(crate) fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
         let studio = self.studio();
         let r = studio.doc_paint_grid(
             &p.doc_id,
@@ -64,7 +61,7 @@ impl Atelier {
     }
 
     #[tool(description = "Dither a colour ramp horizontally, vertically, or radially.")]
-    pub(crate) async fn doc_dither_ramp(
+    pub(crate) fn doc_dither_ramp(
         &self,
         Parameters(p): Parameters<DocDitherRamp>,
     ) -> CallToolResult {
@@ -87,8 +84,8 @@ mod tests {
     use atelier_studio::{DumpMode, FrameOp, Studio};
     use serde_json::json;
 
-    #[tokio::test]
-    async fn draw_and_fx_handlers_forward_inclusive_frame_ranges() {
+    #[test]
+    fn draw_and_fx_handlers_forward_inclusive_frame_ranges() {
         let root = std::env::temp_dir().join("atelier-mcp-draw-frame-range");
         let _ = std::fs::remove_dir_all(&root);
         let studio = Studio::with_docs_dir(root);
@@ -99,38 +96,34 @@ mod tests {
             .unwrap();
         let atelier = Atelier::with_studio(studio.clone());
 
-        let draw = atelier
-            .doc_draw(Parameters(
-                serde_json::from_value(json!({
-                    "doc_id": doc_id,
-                    "layer": 0,
-                    "frame": 0,
-                    "frame_to": 2,
-                    "op": "fill_cel",
-                    "color": [9, 8, 7, 255]
-                }))
-                .unwrap(),
-            ))
-            .await;
+        let draw = atelier.doc_draw(Parameters(
+            serde_json::from_value(json!({
+                "doc_id": doc_id,
+                "layer": 0,
+                "frame": 0,
+                "frame_to": 2,
+                "op": "fill_cel",
+                "color": [9, 8, 7, 255]
+            }))
+            .unwrap(),
+        ));
         assert_ne!(draw.is_error, Some(true));
         let draw = crate::server::result_json(&draw).unwrap();
         assert_eq!(draw["frames_targeted"], 3);
         assert_eq!(draw["pixels_changed"], 12);
 
-        let fx = atelier
-            .doc_fx(Parameters(
-                serde_json::from_value(json!({
-                    "doc_id": doc_id,
-                    "layer": 0,
-                    "frame": 0,
-                    "frame_to": 2,
-                    "op": "replace_color",
-                    "from": [9, 8, 7, 255],
-                    "to": [1, 2, 3, 255]
-                }))
-                .unwrap(),
-            ))
-            .await;
+        let fx = atelier.doc_fx(Parameters(
+            serde_json::from_value(json!({
+                "doc_id": doc_id,
+                "layer": 0,
+                "frame": 0,
+                "frame_to": 2,
+                "op": "replace_color",
+                "from": [9, 8, 7, 255],
+                "to": [1, 2, 3, 255]
+            }))
+            .unwrap(),
+        ));
         assert_ne!(fx.is_error, Some(true));
         let fx = crate::server::result_json(&fx).unwrap();
         assert_eq!(fx["frames_targeted"], 3);
