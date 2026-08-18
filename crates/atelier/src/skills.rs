@@ -35,7 +35,7 @@ pub const SCENE: Skill = Skill {
 pub const REVIEW: Skill = Skill {
     name: "atelier-review",
     short: "review",
-    description: "Review finished or in-progress pixel art in an atelier document and report what is wrong with it. Use to judge a sprite, scene, animation or document set — an art-director pass that measures rather than guesses, and names a localised fix for every finding. Read-only by default: it reports, it does not repaint. Driven through the atelier CLI (`atelier call`) or over MCP. To make the art in the first place use atelier-sprite or atelier-scene.",
+    description: "Review finished or in-progress pixel art in an Atelier document. Use it to measure a sprite, scene, animation, or document set and propose a localized fix for each finding. It is read-only by default and works through `atelier call` or MCP. Use atelier-sprite or atelier-scene for creation workflows.",
     body: include_str!("../skills/review.md"),
 };
 

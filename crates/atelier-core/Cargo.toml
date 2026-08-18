@@ -1,6 +1,6 @@
 [package]
 name = "atelier-core"
-description = "atelier core: the layered/animated pixel-art document model and raster primitives (no MCP, no async)."
+description = "Layered pixel-art document model and synchronous raster operations."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

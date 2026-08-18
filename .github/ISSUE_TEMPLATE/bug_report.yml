@@ -1,12 +1,12 @@
 name: Bug report
-description: Something's broken — help me reproduce it.
+description: Report reproducible incorrect behavior.
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the report. atelier below v2.0.0 is AI-generated and not fully
-        reviewed, so bug reports are genuinely valuable. A clean repro helps most.
+        Atelier is pre-2.0 and has not completed maintainer review. Please include
+        the smallest reproducible command or tool-call sequence you can provide.
   - type: textarea
     id: what
     attributes:
@@ -50,7 +50,7 @@ body:
     id: client
     attributes:
       label: MCP client
-      description: e.g. Claude Code, Cursor, Cline, Gemini CLI…
+      description: For example, Claude Code, Cursor, Cline, or Gemini CLI.
   - type: input
     id: os
     attributes:

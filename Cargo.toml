@@ -9,7 +9,7 @@ members = [
 # Shared package metadata — each crate inherits with `field.workspace = true`.
 [workspace.package]
 version = "1.8.0"
-description = "The pixel-art studio agents can see — layered, animated, game-ready art from the CLI or over MCP."
+description = "Offline, headless pixel-art editor with CLI and MCP interfaces."
 edition = "2024"
 rust-version = "1.88"
 license = "MIT"
