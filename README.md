@@ -163,7 +163,7 @@ declarative.
 | Editing | Pixel primitives, region operations, effects, grids, palette generation, and palette snapping |
 | Inspection | Rendered previews, region dumps, silhouettes, component analysis, frame diffs, seam reports, animation audits, and critique reports |
 | Output | Spritesheets with JSON metadata, GIF, APNG, and PNG previews |
-| Reproducibility | Versioned per-document JSONL journals and deterministic replay |
+| Reproducibility | Versioned per-document JSONL journals and atomic deterministic replay |
 | Deployment | Ubuntu x86_64 binary, static Alpine amd64 container, CLI, stdio MCP, and authenticated HTTP MCP |
 
 Image-producing inspection calls return pixels only when requested. Editing
@@ -287,7 +287,9 @@ Nothing to turn on. The journal is JSON Lines beside the art
 deterministic calls that *made* something, never looks, audits, external
 reference setup, or checkpoint bookkeeping. Restoring a checkpoint restores
 its journal too, so discarded edits cannot survive in provenance. Replay into
-a sandbox with `--home /tmp/demo` and you get the same pixels, anywhere.
+a sandbox with `--home /tmp/demo` and you get the same pixels, anywhere. The
+rebuilt document is published only after every recipe step succeeds; a failed
+step discards the entire staged replay.
 Current journals start with exactly one `doc_new` whose arguments include the
 minted `doc_id`, followed only by deterministic editing calls for that same
 document. Replay accepts only this JSONL contract and rejects wrapped objects,
