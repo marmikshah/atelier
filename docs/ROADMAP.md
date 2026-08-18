@@ -57,15 +57,17 @@ acceptable when they have one clear operation and fail atomically.
 
 ### Performance
 
-- Load only the cels required by an operation instead of decoding an entire
-  animation for every call.
-- Replace full-canvas before/after snapshots with bounded edit-delta tracking.
-- Avoid walking and syncing unchanged checkpoint history for ordinary edits.
+- Expand targeted cel loading from structure and single-frame analysis reads to
+  the remaining multi-frame, render, and reference paths.
+- Replace the remaining single full-canvas pre-edit snapshot with exact,
+  bounded edit-delta tracking.
+- Avoid walking and syncing unchanged checkpoint history for ordinary edits;
+  immutable checkpoint journals are already linked instead of copied.
 - Introduce representative large-document benchmarks and enforce regression
   budgets only after their workload is stable.
-- Move blocking filesystem and image work away from asynchronous HTTP workers
-  while retaining cross-process store ordering; replace the global mutation
-  queue with per-document ordering once the store-index lock is separable.
+- Keep synchronous filesystem and image work on the bounded blocking pool;
+  replace the global mutation queue with per-document ordering once the
+  store-index lock is separable.
 - Segment or compact growing journals and keep immutable checkpoint history out
   of ordinary mutation staging.
 
