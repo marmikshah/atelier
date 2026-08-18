@@ -51,8 +51,6 @@ acceptable when they have one clear operation and fail atomically.
   HTTP file access covered by real transport tests.
 - Replace pathname revalidation with directory-handle-relative file access for
   rooted HTTP imports/exports, closing the remaining check/use race.
-- Add document revisions and optional `expected_revision` checks so concurrent
-  agents can detect stale writes and safely cache read results.
 - Separate protocol presentation from editor outcomes so native CLI image
   calls do not perform unnecessary base64 encoding.
 

@@ -579,9 +579,15 @@ mod tests {
         let recipe = Recipe::parse(&journal).unwrap();
         assert!(recipe.steps.len() >= 4, "the journal drives the rebuild");
         let studio_b = Studio::with_docs_dir(dir_b.clone());
-        run_atomic_session(&recipe, &studio_b).await.unwrap();
+        let committed_id = run_atomic_session(&recipe, &studio_b).await.unwrap();
         let replayed_docs = studio_b.list_docs();
         let replay_id = replayed_docs["documents"][0]["doc_id"].as_str().unwrap();
+        assert_eq!(committed_id, replay_id);
+        assert_eq!(
+            studio_b.document_revision(replay_id).unwrap(),
+            recipe.steps.len() as u64,
+            "the outer atomic publication must preserve inner step revisions without adding one"
+        );
         let replayed = render(&studio_b, replay_id);
 
         assert_eq!(
