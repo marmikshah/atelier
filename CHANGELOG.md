@@ -13,6 +13,9 @@ created. Minor 1.x releases may contain breaking changes.
   tool, including contact sheets and reference analysis.
 - `atelier library verify [--json]` performs read-only, actionable validation of
   document metadata, cel PNGs, stored references, and replay journals.
+- Successful document calls return a persisted revision. Existing-document
+  mutations accept `expected_revision` and reject stale writes without changing
+  pixels, checkpoints, or journals.
 - Document metadata and journal entries now carry explicit format versions;
   legacy versionless v1 data remains readable and unknown future versions fail
   explicitly.

@@ -132,20 +132,31 @@ fn edited(r: Result<Value, String>) -> CallToolResult {
 /// warning visible to both structured MCP clients and text-compatible clients.
 /// The mutation is already visible at this point, so this must stay a success:
 /// treating it as a failure would invite a duplicate retry.
-fn attach_commit_warning(mut result: CallToolResult, warning: &str) -> CallToolResult {
+fn attach_commit_warning(result: CallToolResult, warning: &str) -> CallToolResult {
     let detail = json!({
         "committed": true,
         "durability": "uncertain",
         "retry": false,
         "message": warning,
     });
+    attach_result_field(result, "commit_warning", detail)
+}
+
+/// Add one field to the JSON result while keeping structured MCP clients and
+/// text-compatible clients byte-for-byte aligned. Image blocks, when present,
+/// remain untouched.
+fn attach_result_field(mut result: CallToolResult, key: &str, value: Value) -> CallToolResult {
     let mut payload = result_json(&result).unwrap_or_else(|| json!({"ok": true}));
     match &mut payload {
         Value::Object(report) => {
-            report.insert("commit_warning".into(), detail);
+            report.insert(key.into(), value);
         }
         _ => {
-            payload = json!({"result": payload, "commit_warning": detail});
+            let original = std::mem::replace(&mut payload, json!({}));
+            let mut report = serde_json::Map::new();
+            report.insert("result".into(), original);
+            report.insert(key.into(), value);
+            payload = Value::Object(report);
         }
     }
     let encoded = payload.to_string();
@@ -159,6 +170,27 @@ fn attach_commit_warning(mut result: CallToolResult, warning: &str) -> CallToolR
         result.content.push(Content::text(encoded));
     }
     result
+}
+
+/// Existing-document tools on which an optimistic write guard is meaningful.
+/// Hubs remain in this list even though some of their operations are reads; the
+/// dispatch classifier accepts the guard only when that concrete call mutates.
+const fn supports_expected_revision(tool: ToolName) -> bool {
+    matches!(
+        tool,
+        ToolName::DeleteDoc
+            | ToolName::DocAddTag
+            | ToolName::DocCheckpoint
+            | ToolName::DocDitherRamp
+            | ToolName::DocDraw
+            | ToolName::DocFrame
+            | ToolName::DocFx
+            | ToolName::DocLayer
+            | ToolName::DocPaintGrid
+            | ToolName::DocPalette
+            | ToolName::DocRef
+            | ToolName::DocRegion
+    )
 }
 
 /// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
@@ -635,6 +667,19 @@ impl Atelier {
             .map(|mut t| {
                 let mut schema = Value::Object((*t.input_schema).clone());
                 strip_nonstandard_formats(&mut schema);
+                if let Ok(tool) = t.name.parse::<ToolName>()
+                    && supports_expected_revision(tool)
+                    && let Some(properties) =
+                        schema.get_mut("properties").and_then(Value::as_object_mut)
+                {
+                    // Keep this deliberately description-free: the same compact
+                    // property appears on twelve schemas and must fit the fixed
+                    // 32 KiB registry budget. Server instructions explain it once.
+                    properties.insert(
+                        "expected_revision".into(),
+                        json!({"type": "integer", "minimum": 0}),
+                    );
+                }
                 if let Value::Object(obj) = schema {
                     t.input_schema = std::sync::Arc::new(obj);
                 }
@@ -664,14 +709,24 @@ impl Atelier {
     pub async fn dispatch(
         &self,
         tool: ToolName,
-        args: Value,
+        mut args: Value,
         caller: &str,
     ) -> Result<CallToolResult, ErrorData> {
+        let expected_revision = take_expected_revision(tool, &mut args)?;
         // For mutations, hold the order lock from before the dispatch until
         // after the journal write, so journal order can never diverge from
         // execution order under concurrent sessions. Reads skip it.
         let journaled = is_journaled(tool, &args);
         let store_mutation = is_store_mutation(tool, &args);
+        if expected_revision.is_some() && !store_mutation {
+            return Err(ErrorData::invalid_params(
+                format!(
+                    "expected_revision is only valid when '{}' performs a document mutation",
+                    tool.as_str()
+                ),
+                None,
+            ));
+        }
         let write_order = self.write_order.clone();
         let _order = if store_mutation {
             Some(write_order.lock().await)
@@ -692,8 +747,9 @@ impl Atelier {
         .map_err(|error| ErrorData::internal_error(error, None))?;
 
         let started = std::time::Instant::now();
-        let result = match if store_mutation {
-            self.invoke_transaction(tool, args.clone(), journaled).await
+        let mut result = match if store_mutation {
+            self.invoke_transaction(tool, args.clone(), journaled, expected_revision)
+                .await
         } else {
             self.invoke(tool, args.clone()).await
         } {
@@ -706,6 +762,15 @@ impl Atelier {
                 return Err(e);
             }
         };
+        if !store_mutation
+            && !is_error_result(&result)
+            && let Some(target) = result_document_target(tool, &args, &result)
+        {
+            result = match self.studio().document_revision(&target) {
+                Ok(revision) => attach_result_field(result, "revision", json!(revision)),
+                Err(error) => res(Err(error)),
+            };
+        }
         log_call(tool, &args, caller, &result, started.elapsed());
         Ok(result)
     }
@@ -719,6 +784,7 @@ impl Atelier {
         tool: ToolName,
         args: Value,
         journaled: bool,
+        expected_revision: Option<u64>,
     ) -> Result<CallToolResult, ErrorData> {
         if let Err(error) = self.studio().cleanup_stale_transactions() {
             return Ok(res(Err(error)));
@@ -727,6 +793,31 @@ impl Atelier {
         let initial_target = mutation_target(tool, &args).map_err(|error| {
             ErrorData::invalid_params(format!("bad params for tool '{tool}': {error}"), None)
         })?;
+        let current_revision = match initial_target.as_deref() {
+            Some(target) => match self.studio().document_revision(target) {
+                Ok(revision) => revision,
+                Err(error) => return Ok(res(Err(error))),
+            },
+            None => 0,
+        };
+        if let (Some(expected), Some(target)) = (expected_revision, initial_target.as_deref())
+            && expected != current_revision
+        {
+            return Ok(revision_conflict(target, expected, current_revision));
+        }
+        let next_revision = if tool == ToolName::DeleteDoc {
+            None
+        } else {
+            match current_revision.checked_add(1) {
+                Some(revision) => Some(revision),
+                None => {
+                    return Ok(res(Err(format!(
+                        "document revision overflow for {}; no mutation was applied",
+                        initial_target.as_deref().unwrap_or("new document")
+                    ))));
+                }
+            }
+        };
         let transaction = match self.studio().begin_transaction(initial_target.as_deref()) {
             Ok(transaction) => transaction,
             Err(error) => return Ok(res(Err(error))),
@@ -760,8 +851,15 @@ impl Atelier {
                 return Ok(res(Err(error)));
             }
         }
-        match transaction.commit(&target) {
-            Ok(atelier_studio::CommitOutcome::Durable) => {}
+        if let Some(revision) = next_revision
+            && let Err(error) = transaction
+                .studio()
+                .set_document_revision(&target, revision)
+        {
+            return Ok(res(Err(error)));
+        }
+        let commit_warning = match transaction.commit(&target) {
+            Ok(atelier_studio::CommitOutcome::Durable) => None,
             Ok(atelier_studio::CommitOutcome::DurabilityUncertain { warning }) => {
                 tracing::warn!(
                     tool = tool.as_str(),
@@ -769,9 +867,16 @@ impl Atelier {
                     warning = %warning,
                     "mutation committed with uncertain durability; do not retry automatically"
                 );
-                result = attach_commit_warning(result, &warning);
+                Some(warning)
             }
             Err(error) => return Ok(res(Err(error))),
+        };
+        result = match next_revision {
+            Some(revision) => attach_result_field(result, "revision", json!(revision)),
+            None => attach_result_field(result, "deleted_revision", json!(current_revision)),
+        };
+        if let Some(warning) = commit_warning {
+            result = attach_commit_warning(result, &warning);
         }
         Ok(result)
     }
@@ -841,6 +946,59 @@ fn is_store_mutation(tool: ToolName, args: &Value) -> bool {
         (ToolName::DocPalette, None | Some("generate"))
             if args.get("set_doc").and_then(Value::as_str).is_none()
     )
+}
+
+/// Remove the dispatch-owned optimistic guard before the strict typed handler
+/// sees its arguments. Keeping it out of the parameter structs avoids twelve
+/// duplicate schema descriptions and ensures it never reaches draw/FX's
+/// flattened operation validator.
+fn take_expected_revision(tool: ToolName, args: &mut Value) -> Result<Option<u64>, ErrorData> {
+    if !supports_expected_revision(tool) {
+        return Ok(None);
+    }
+    let Some(value) = args
+        .as_object_mut()
+        .and_then(|fields| fields.remove("expected_revision"))
+    else {
+        return Ok(None);
+    };
+    value.as_u64().map(Some).ok_or_else(|| {
+        ErrorData::invalid_params("expected_revision must be an unsigned 64-bit integer", None)
+    })
+}
+
+fn revision_conflict(id: &str, expected: u64, actual: u64) -> CallToolResult {
+    CallToolResult::structured_error(json!({
+        "error": format!(
+            "document changed since revision {expected}; current revision is {actual}"
+        ),
+        "code": "revision_conflict",
+        "doc_id": id,
+        "expected_revision": expected,
+        "actual_revision": actual,
+    }))
+}
+
+/// Resolve the document generation represented by a successful result. This is
+/// intentionally broader than `journal_target`: exports and reads are not
+/// recipe steps, but their reports still need a revision so callers can safely
+/// cache them and guard the next write.
+fn result_document_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Option<String> {
+    match tool {
+        ToolName::ListDocs => None,
+        ToolName::DocNew => result_json(result)?
+            .get("doc_id")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+        ToolName::DocPalette if matches!(call_op(args), None | Some("generate")) => args
+            .get("set_doc")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+        _ => args
+            .get("doc_id")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+    }
 }
 
 /// Resolve the document generation to stage before a mutating handler runs.
@@ -914,6 +1072,11 @@ fn journal_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Opti
 /// `doc_new`'s minted id exists only in its result. Stamping it into the
 /// recorded args lets replay remap later steps when a rerun mints a new id.
 fn journal_args(tool: ToolName, mut args: Value, target: Option<&str>) -> Value {
+    if let Some(obj) = args.as_object_mut() {
+        // A replay recipe describes deterministic document operations, not the
+        // caller's transient concurrency observation.
+        obj.remove("expected_revision");
+    }
     if tool == ToolName::DocNew
         && let (Some(id), Some(obj)) = (target, args.as_object_mut())
     {
@@ -1019,7 +1182,9 @@ impl ServerHandler for Atelier {
              _meta may carry a log label at \"io.github.marmikshah.atelier/session\", but \
              never tool defaults. Calls are journaled with concrete arguments, so stdio, \
              HTTP, CLI, and replay stay equivalent. Save a \
-             doc_checkpoint before destructive edits. All 25 tools are advertised."
+             doc_checkpoint before destructive edits. Successful document calls return a \
+             revision; pass it as expected_revision on a later mutation to reject stale writes. \
+             All 25 tools are advertised."
                 .into(),
         );
         info
@@ -1104,6 +1269,73 @@ mod tests {
             bytes.len(),
             MAX_TOOL_DEFINITION_BYTES
         );
+    }
+
+    #[test]
+    fn exactly_existing_document_mutations_advertise_revision_guards() {
+        let tools = Atelier::registry_tools();
+        let mut advertised = Vec::new();
+        for definition in &tools {
+            let has_guard = definition
+                .input_schema
+                .get("properties")
+                .and_then(Value::as_object)
+                .is_some_and(|properties| properties.contains_key("expected_revision"));
+            let tool = definition.name.parse::<ToolName>().unwrap();
+            assert_eq!(
+                has_guard,
+                supports_expected_revision(tool),
+                "{} guard schema disagrees with dispatch",
+                definition.name
+            );
+            if has_guard {
+                assert_eq!(
+                    definition.input_schema["properties"]["expected_revision"],
+                    json!({"type": "integer", "minimum": 0})
+                );
+                advertised.push(definition.name.to_string());
+            }
+        }
+        advertised.sort();
+        assert_eq!(
+            advertised,
+            [
+                "delete_doc",
+                "doc_add_tag",
+                "doc_checkpoint",
+                "doc_dither_ramp",
+                "doc_draw",
+                "doc_frame",
+                "doc_fx",
+                "doc_layer",
+                "doc_paint_grid",
+                "doc_palette",
+                "doc_ref",
+                "doc_region",
+            ]
+        );
+    }
+
+    #[test]
+    fn revision_guards_are_u64_dispatch_metadata() {
+        let mut guarded = json!({"doc_id": "x", "expected_revision": 7});
+        assert_eq!(
+            take_expected_revision(ToolName::DocDraw, &mut guarded).unwrap(),
+            Some(7)
+        );
+        assert!(guarded.get("expected_revision").is_none());
+
+        for invalid in [json!(-1), json!(1.5), json!("7")] {
+            let mut args = json!({"expected_revision": invalid});
+            assert!(take_expected_revision(ToolName::DocDraw, &mut args).is_err());
+        }
+
+        let mut creation = json!({"expected_revision": 0});
+        assert_eq!(
+            take_expected_revision(ToolName::DocNew, &mut creation).unwrap(),
+            None
+        );
+        assert_eq!(creation["expected_revision"], 0);
     }
 
     #[test]
@@ -1435,7 +1667,11 @@ mod tests {
         );
         // Every other tool records its args untouched.
         assert_eq!(
-            journal_args(ToolName::DocDraw, json!({"doc_id": doc_id}), Some(doc_id)),
+            journal_args(
+                ToolName::DocDraw,
+                json!({"doc_id": doc_id, "expected_revision": 12}),
+                Some(doc_id)
+            ),
             json!({"doc_id": doc_id})
         );
     }
@@ -1637,6 +1873,196 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn revisions_tag_reads_chain_writes_and_reject_stale_mutations() {
+        let atelier = temp_atelier("revision-contract");
+        let created = atelier
+            .dispatch(
+                ToolName::DocNew,
+                json!({"name": "guarded", "width": 2, "height": 2}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let created = result_json(&created).unwrap();
+        let doc_id = created["doc_id"].as_str().unwrap().to_string();
+        assert_eq!(created["revision"], 1);
+
+        let info = atelier
+            .dispatch(ToolName::DocInfo, json!({"doc_id": doc_id}), "test")
+            .await
+            .unwrap();
+        assert_eq!(result_json(&info).unwrap()["revision"], 1);
+        let listed = atelier
+            .dispatch(ToolName::ListDocs, json!({}), "test")
+            .await
+            .unwrap();
+        assert_eq!(result_json(&listed).unwrap()["documents"][0]["revision"], 1);
+        let guarded_read = atelier
+            .dispatch(
+                ToolName::DocCheckpoint,
+                json!({
+                    "doc_id": doc_id,
+                    "action": "list",
+                    "expected_revision": 1
+                }),
+                "test",
+            )
+            .await
+            .unwrap_err();
+        assert!(
+            guarded_read
+                .message
+                .contains("only valid when 'doc_checkpoint' performs a document mutation")
+        );
+
+        let drew = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({
+                    "doc_id": doc_id,
+                    "expected_revision": 1,
+                    "layer": 0,
+                    "frame": 0,
+                    "op": "pencil",
+                    "points": [[0, 0]],
+                    "color": [12, 34, 56, 255]
+                }),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert_eq!(result_json(&drew).unwrap()["revision"], 2);
+        assert_eq!(atelier.studio().document_revision(&doc_id).unwrap(), 2);
+        let journal = atelier.studio().journal(&doc_id).unwrap();
+        assert_eq!(journal.len(), 2);
+        assert!(!journal[1].args.contains_key("expected_revision"));
+
+        let stale = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({
+                    "doc_id": doc_id,
+                    "expected_revision": 1,
+                    "layer": 0,
+                    "frame": 0,
+                    "op": "pencil",
+                    "points": [[1, 1]],
+                    "color": [255, 0, 0, 255]
+                }),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(is_error_result(&stale));
+        let stale = result_json(&stale).unwrap();
+        assert_eq!(stale["code"], "revision_conflict");
+        assert_eq!(stale["expected_revision"], 1);
+        assert_eq!(stale["actual_revision"], 2);
+        assert_eq!(atelier.studio().document_revision(&doc_id).unwrap(), 2);
+        assert_eq!(atelier.studio().journal(&doc_id).unwrap().len(), 2);
+        assert_eq!(pixel_hex(&atelier, &doc_id, 1, 1), ".");
+
+        // A successful no-op still publishes a new provenance generation.
+        let no_op = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({
+                    "doc_id": doc_id,
+                    "expected_revision": 2,
+                    "layer": 0,
+                    "frame": 0,
+                    "op": "pencil",
+                    "points": [[0, 0]],
+                    "color": [12, 34, 56, 255]
+                }),
+                "test",
+            )
+            .await
+            .unwrap();
+        let no_op = result_json(&no_op).unwrap();
+        assert_eq!(no_op["pixels_changed"], 0);
+        assert_eq!(no_op["revision"], 3);
+
+        let stale_delete = atelier
+            .dispatch(
+                ToolName::DeleteDoc,
+                json!({"doc_id": doc_id, "expected_revision": 2}),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            result_json(&stale_delete).unwrap()["code"],
+            "revision_conflict"
+        );
+        let deleted = atelier
+            .dispatch(
+                ToolName::DeleteDoc,
+                json!({"doc_id": doc_id, "expected_revision": 3}),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert_eq!(result_json(&deleted).unwrap()["deleted_revision"], 3);
+        assert!(atelier.studio().doc_info(&doc_id).is_err());
+    }
+
+    #[tokio::test]
+    async fn concurrent_writers_with_one_revision_cannot_both_commit() {
+        let atelier = temp_atelier("revision-race");
+        let created = atelier
+            .dispatch(
+                ToolName::DocNew,
+                json!({"name": "guarded", "width": 2, "height": 2}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let doc_id = result_json(&created).unwrap()["doc_id"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        let args = |point: [u8; 2], color: [u8; 4]| {
+            json!({
+                "doc_id": doc_id,
+                "expected_revision": 1,
+                "layer": 0,
+                "frame": 0,
+                "op": "pencil",
+                "points": [point],
+                "color": color,
+            })
+        };
+        let left = atelier.clone();
+        let right = atelier.clone();
+        let (first, second) = tokio::join!(
+            left.dispatch(ToolName::DocDraw, args([0, 0], [255, 0, 0, 255]), "left"),
+            right.dispatch(ToolName::DocDraw, args([1, 1], [0, 0, 255, 255]), "right")
+        );
+        let results = [first.unwrap(), second.unwrap()];
+        assert_eq!(
+            results
+                .iter()
+                .filter(|result| !is_error_result(result))
+                .count(),
+            1
+        );
+        assert_eq!(
+            results
+                .iter()
+                .filter(|result| {
+                    result_json(result).as_ref().is_some_and(|payload| {
+                        payload.get("code") == Some(&json!("revision_conflict"))
+                    })
+                })
+                .count(),
+            1
+        );
+        assert_eq!(atelier.studio().document_revision(&doc_id).unwrap(), 2);
+        assert_eq!(atelier.studio().journal(&doc_id).unwrap().len(), 2);
+    }
+
+    #[tokio::test]
     async fn explicit_targets_are_journaled_and_checkpoint_restore_rewinds_them() {
         async fn ok(atelier: &Atelier, tool: &str, args: Value) -> Value {
             let tool = tool.parse::<ToolName>().unwrap();
@@ -1670,6 +2096,7 @@ mod tests {
             json!({"doc_id": doc_id, "action": "save", "label": "red"}),
         )
         .await;
+        assert_eq!(saved["revision"], 3);
         let checkpoint_id = saved["saved"].as_str().unwrap();
 
         ok(
@@ -1681,12 +2108,13 @@ mod tests {
         .await;
         assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 3);
 
-        ok(
+        let restored = ok(
             &atelier,
             "doc_checkpoint",
             json!({"doc_id": doc_id, "action": "restore", "checkpoint_id": checkpoint_id}),
         )
         .await;
+        assert_eq!(restored["revision"], 5);
         let journal = atelier.studio().journal(doc_id).unwrap();
         assert_eq!(
             journal.len(),
