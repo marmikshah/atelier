@@ -178,7 +178,10 @@ async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, 
         .await
         .map_err(|error| format!("{error}; no replayed document was published"))?;
 
-    match transaction.commit(&minted)? {
+    let commit = transaction
+        .commit(&minted)
+        .map_err(|error| format!("{error}; no replayed document was published"))?;
+    match commit {
         atelier_studio::CommitOutcome::Durable => {}
         atelier_studio::CommitOutcome::DurabilityUncertain { warning } => {
             eprintln!("replay: warning: {warning}");

@@ -69,6 +69,8 @@ created. Minor 1.x releases may contain breaking changes.
   verification and refuse symlinked document directories or persisted files.
 - Store verification reports hidden links, special files, stale transaction
   data, and unrecognized cel entries that would prevent a later transaction.
+- Creation transactions refuse to replace an existing document if an opaque id
+  collision is detected.
 
 ### Security
 
