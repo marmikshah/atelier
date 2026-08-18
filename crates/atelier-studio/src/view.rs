@@ -21,7 +21,10 @@ fn blend_put(img: &mut RgbaImage, x: i32, y: i32, c: [u8; 4]) {
         return;
     }
     let d = img.get_pixel(x as u32, y as u32).0;
-    let out = raster::composite_px(d, c, c[3] as f32 / 255.0, raster::Blend::Normal);
+    // `composite_px` already applies the source pixel's alpha. The opacity
+    // multiplier is an independent effect-level control, so using `c[3]` for
+    // both squared translucent alpha (128 became roughly 64).
+    let out = raster::composite_px(d, c, 1.0, raster::Blend::Normal);
     img.put_pixel(x as u32, y as u32, Rgba(out));
 }
 
@@ -141,15 +144,17 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
 /// (w·n)×(h·n), and an unclamped N was a memory-exhaustion abort.
 pub(crate) const MAX_TILE: u32 = 16;
 
-fn tile_image(img: &RgbaImage, n: u32) -> RgbaImage {
+fn tile_image(img: &RgbaImage, n: u32) -> Result<RgbaImage, String> {
     let (w, h) = (img.width(), img.height());
-    let mut out = RgbaImage::new(w * n, h * n);
+    let (out_w, out_h) =
+        raster::checked_rgba_dimensions("tiled preview", w as u64 * n as u64, h as u64 * n as u64)?;
+    let mut out = RgbaImage::new(out_w, out_h);
     for ty in 0..n {
         for tx in 0..n {
             image::imageops::replace(&mut out, img, (tx * w) as i64, (ty * h) as i64);
         }
     }
-    out
+    Ok(out)
 }
 
 /// Options for [`Studio::look`] — every knob has a sane default, so callers
@@ -291,6 +296,25 @@ impl Studio {
         // image came out at 16×).
         let mut out;
         let mut applied_scale = crate::export_scale(scale);
+        let (planned_w, planned_h) = match max_size {
+            Some(ms) if view.width().max(view.height()) > ms && ms > 0 => {
+                let factor = ms as f32 / view.width().max(view.height()) as f32;
+                (
+                    (view.width() as f32 * factor).round().max(1.0) as u64,
+                    (view.height() as f32 * factor).round().max(1.0) as u64,
+                )
+            }
+            _ => (
+                view.width() as u64 * applied_scale as u64,
+                view.height() as u64 * applied_scale as u64,
+            ),
+        };
+        let tile_factor = tile.map(|value| value.min(MAX_TILE)).unwrap_or(1).max(1) as u64;
+        raster::checked_rgba_dimensions(
+            "look preview",
+            planned_w * tile_factor,
+            planned_h * tile_factor,
+        )?;
         if let Some(ms) = max_size {
             let long = view.width().max(view.height());
             if long > ms && ms > 0 {
@@ -303,10 +327,10 @@ impl Studio {
                 );
                 applied_scale = 1; // thumbnail; grid would be meaningless
             } else {
-                out = scale_nn(&view, applied_scale);
+                out = scale_nn(&view, applied_scale)?;
             }
         } else {
-            out = scale_nn(&view, applied_scale);
+            out = scale_nn(&view, applied_scale)?;
         }
         // Matte transparency on request — a white viewer backdrop (the common
         // default) makes white-hot FX pixels invisible; checker/dark keep the
@@ -325,7 +349,7 @@ impl Studio {
         if let Some(t) = tile {
             let t = t.min(MAX_TILE);
             if t > 1 {
-                out = tile_image(&out, t);
+                out = tile_image(&out, t)?;
             }
         }
         // Optional file write for export/file workflows (the retired doc_render's
@@ -382,23 +406,37 @@ impl Studio {
         // (and an extreme value overflowed the sheet dimensions entirely).
         let s = crate::export_scale(scale);
         let (pad, label_h) = (3u32, raster::GLYPH_H as u32 + 1);
-        let cellw = w * s;
-        let cellh = h * s + label_h;
-        let sheetw = cols as u32 * (cellw + pad) + pad;
-        let sheeth = rows as u32 * (cellh + pad) + pad;
+        let (cellw, scaled_h) = raster::checked_rgba_dimensions(
+            "contact-sheet frame",
+            w as u64 * s as u64,
+            h as u64 * s as u64,
+        )?;
+        let cellh = scaled_h
+            .checked_add(label_h)
+            .ok_or("contact-sheet cell height overflows")?;
+        let sheetw = (cols as u64)
+            .checked_mul((cellw + pad) as u64)
+            .and_then(|v| v.checked_add(pad as u64))
+            .ok_or("contact-sheet width overflows")?;
+        let sheeth = (rows as u64)
+            .checked_mul((cellh + pad) as u64)
+            .and_then(|v| v.checked_add(pad as u64))
+            .ok_or("contact-sheet height overflows")?;
+        let (sheetw, sheeth) = raster::checked_rgba_dimensions("contact sheet", sheetw, sheeth)?;
         let mut sheet = RgbaImage::from_pixel(sheetw, sheeth, Rgba([20, 20, 26, 255]));
         // Carry each frame's scaled render into the next iteration — the onion
         // ghost is the previous cell, not a second flatten+scale.
         let mut prev_scaled: Option<RgbaImage> = None;
         for f in 0..n {
-            let scaled = scale_nn(&doc.flatten(f), s);
+            let scaled = scale_nn(&doc.flatten(f), s)?;
             let (col, row) = ((f % cols) as u32, (f / cols) as u32);
             let ox = pad + col * (cellw + pad);
             let oy = pad + row * (cellh + pad) + label_h;
             if onion && f > 0 {
-                let ghost = prev_scaled
-                    .take()
-                    .unwrap_or_else(|| scale_nn(&doc.flatten(f - 1), s));
+                let ghost = match prev_scaled.take() {
+                    Some(ghost) => ghost,
+                    None => scale_nn(&doc.flatten(f - 1), s)?,
+                };
                 for (x, y, p) in ghost.enumerate_pixels() {
                     if p.0[3] > 0 {
                         let a = (p.0[3] as u32 * 35 / 100) as u8;
@@ -476,6 +514,13 @@ mod tests {
     }
 
     #[test]
+    fn overlay_pixel_applies_source_alpha_once() {
+        let mut image = RgbaImage::from_pixel(1, 1, Rgba([0, 0, 0, 0]));
+        blend_put(&mut image, 0, 0, [10, 20, 30, 128]);
+        assert_eq!(image.get_pixel(0, 0).0, [10, 20, 30, 128]);
+    }
+
+    #[test]
     fn look_bg_flows_through_the_options() {
         let s = studio("lookbg");
         let created = s.doc_new("c", 4, 4).unwrap();
@@ -531,5 +576,29 @@ mod hardening_tests {
             .unwrap();
         assert_eq!(r["scale"], json!(16));
         assert_eq!(r["render_size"], json!([128, 128]));
+    }
+
+    #[test]
+    fn previews_and_contact_sheets_obey_the_shared_output_budget() {
+        let dir = std::env::temp_dir().join("atelier-view-output-cap");
+        let _ = fs::remove_dir_all(&dir);
+        let s = Studio::with_docs_dir(dir);
+        let created = s.doc_new("large", 1024, 1024).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+
+        let look_error = s
+            .look(
+                id,
+                0,
+                &LookOptions {
+                    scale: Some(16),
+                    ..Default::default()
+                },
+            )
+            .unwrap_err();
+        assert!(look_error.contains("output safety cap"), "{look_error}");
+
+        let sheet_error = s.contact_sheet(id, 16, 1, false).unwrap_err();
+        assert!(sheet_error.contains("output safety cap"), "{sheet_error}");
     }
 }

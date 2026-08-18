@@ -24,6 +24,44 @@ pub use noise::{
 };
 pub use transform::{ScaleMethod, interior_distance, remove_background, rotate_quarters, scale};
 
+/// Per-image ceiling for generated RGBA output. A maximum-size document is
+/// 4096² pixels; this budget still permits several frames in a modest sheet or
+/// a 2× preview while refusing allocations in the multi-gigabyte range.
+pub const MAX_OUTPUT_PIXELS: u64 = 64 * 1024 * 1024;
+
+/// Matching byte ceiling for an 8-bit RGBA output buffer.
+pub const MAX_OUTPUT_BYTES: u64 = MAX_OUTPUT_PIXELS * 4;
+
+/// Validate generated RGBA dimensions before an image buffer is allocated.
+///
+/// The calculation is performed in `u64`, checks both pixel and byte counts,
+/// and only then narrows dimensions to the `u32` representation used by
+/// `image::RgbaImage`. Every preview/export surface uses this same budget.
+pub fn checked_rgba_dimensions(label: &str, width: u64, height: u64) -> Result<(u32, u32), String> {
+    if width == 0 || height == 0 {
+        return Err(format!(
+            "{label} dimensions must be non-zero (got {width}x{height})"
+        ));
+    }
+    let pixels = width
+        .checked_mul(height)
+        .ok_or_else(|| format!("{label} pixel count overflows ({width}x{height})"))?;
+    let bytes = pixels
+        .checked_mul(4)
+        .ok_or_else(|| format!("{label} byte count overflows ({pixels} RGBA pixels)"))?;
+    if pixels > MAX_OUTPUT_PIXELS || bytes > MAX_OUTPUT_BYTES {
+        return Err(format!(
+            "{label} is {width}x{height} = {pixels} pixels ({bytes} bytes), over the \
+             {MAX_OUTPUT_PIXELS}-pixel/{MAX_OUTPUT_BYTES}-byte output safety cap"
+        ));
+    }
+    let width = u32::try_from(width)
+        .map_err(|_| format!("{label} width {width} exceeds the image dimension limit"))?;
+    let height = u32::try_from(height)
+        .map_err(|_| format!("{label} height {height} exceeds the image dimension limit"))?;
+    Ok((width, height))
+}
+
 // -- drawing helpers (overwrite semantics; alpha 0 = erase) -----------------
 
 /// Overwrite a single pixel if (x,y) is inside the image bounds.
@@ -890,6 +928,18 @@ mod tests {
         // colour, not go black.
         let out = composite_px([0, 0, 0, 0], [200, 120, 40, 255], 1.0, Blend::Multiply);
         assert_eq!(out, [200, 120, 40, 255]);
+    }
+
+    #[test]
+    fn generated_rgba_dimensions_are_checked_before_narrowing() {
+        assert_eq!(
+            checked_rgba_dimensions("preview", 4096, 4096),
+            Ok((4096, 4096))
+        );
+        let error = checked_rgba_dimensions("preview", 65_536, 65_536).unwrap_err();
+        assert!(error.contains("output safety cap"), "{error}");
+        assert!(checked_rgba_dimensions("preview", u64::MAX, 2).is_err());
+        assert!(checked_rgba_dimensions("preview", 0, 10).is_err());
     }
 
     #[test]

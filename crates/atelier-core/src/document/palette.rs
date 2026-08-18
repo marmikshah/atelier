@@ -24,7 +24,8 @@ impl Document {
         pairs: &[([u8; 4], [u8; 4])],
         layer: Option<usize>,
         frame: Option<usize>,
-    ) -> u32 {
+    ) -> Result<u32, String> {
+        self.check_palette_scope(layer, frame)?;
         let mut changed = 0;
         for ((l, f), (_x, _y, img)) in self.cels.iter_mut() {
             if layer.is_some_and(|sel| sel != *l) || frame.is_some_and(|sel| sel != *f) {
@@ -49,15 +50,17 @@ impl Document {
                 *c = *to;
             }
         }
-        changed
+        Ok(changed)
     }
 
     /// Snap one cel back to the document's own locked palette — the
     /// post-generator discipline pass every craft tool runs. No palette = no-op.
-    pub fn snap_cel_to_own_palette(&mut self, layer: usize, frame: usize, alpha: AlphaSnap) -> u32 {
-        if self.meta.palette.is_empty() {
-            return 0;
-        }
+    pub fn snap_cel_to_own_palette(
+        &mut self,
+        layer: usize,
+        frame: usize,
+        alpha: AlphaSnap,
+    ) -> Result<u32, String> {
         let pal = self.meta.palette.clone();
         self.snap_to_palette(&pal, Some(layer), Some(frame), alpha)
     }
@@ -72,9 +75,10 @@ impl Document {
         layer: Option<usize>,
         frame: Option<usize>,
         alpha: AlphaSnap,
-    ) -> u32 {
+    ) -> Result<u32, String> {
+        self.check_palette_scope(layer, frame)?;
         if palette.is_empty() {
-            return 0;
+            return Ok(0);
         }
         let mut changed = 0;
         let mut lab = raster::PaletteLab::new(palette);
@@ -114,6 +118,30 @@ impl Document {
                 self.dirty.insert((*l, *f));
             }
         }
-        changed
+        Ok(changed)
+    }
+
+    fn check_palette_scope(
+        &self,
+        layer: Option<usize>,
+        frame: Option<usize>,
+    ) -> Result<(), String> {
+        if let Some(layer) = layer
+            && layer >= self.meta.layers.len()
+        {
+            return Err(format!(
+                "no layer {layer} (layers={})",
+                self.meta.layers.len()
+            ));
+        }
+        if let Some(frame) = frame
+            && frame >= self.meta.frames.len()
+        {
+            return Err(format!(
+                "no frame {frame} (frames={})",
+                self.meta.frames.len()
+            ));
+        }
+        Ok(())
     }
 }

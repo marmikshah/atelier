@@ -20,6 +20,10 @@ impl Document {
     /// punch a hole, which no colour trick could do (drawing `[0,0,0,0]` is a
     /// no-op under source-over).
     pub fn apply_op(&mut self, layer: usize, frame: usize, op: &Value) -> Result<(), String> {
+        // `Document` is a public core API, not merely an implementation detail
+        // behind Studio. Enforce the same strict contract here so direct users
+        // cannot bypass validation and reach the lossy parsing helpers below.
+        validate_op(op)?;
         let opacity = op.get("opacity").and_then(|v| v.as_u64()).map(|v| v as u8);
         let mode = match op.get("blend_mode") {
             None => None,
@@ -84,7 +88,7 @@ impl Document {
         if matches!(name, "blur" | "drop_shadow" | "bevel" | "form" | "shade")
             && gb(op, "snap", true)
         {
-            self.snap_cel_to_own_palette(layer, frame, AlphaSnap::Preserve);
+            self.snap_cel_to_own_palette(layer, frame, AlphaSnap::Preserve)?;
         }
         Ok(())
     }
@@ -571,7 +575,7 @@ fn op_gradient(d: &mut Document, l: usize, f: usize, op: &Value) -> Result<(), S
     )?;
     // Re-snap on-palette by default when a palette is locked.
     if gb(op, "snap", true) {
-        d.snap_cel_to_own_palette(l, f, AlphaSnap::Preserve);
+        d.snap_cel_to_own_palette(l, f, AlphaSnap::Preserve)?;
     }
     Ok(())
 }
@@ -910,6 +914,173 @@ pub fn color_array(v: &Value) -> Option<[u8; 4]> {
     Some(out)
 }
 
+fn validate_i32(kind: &str, key: &str, value: &Value) -> Result<(), String> {
+    let Some(number) = value.as_i64() else {
+        return Err(format!(
+            "operation ({kind}): '{key}' must be a 32-bit integer, got {value}"
+        ));
+    };
+    i32::try_from(number).map(|_| ()).map_err(|_| {
+        format!("operation ({kind}): '{key}' is outside the 32-bit integer range: {number}")
+    })
+}
+
+fn validate_f32(kind: &str, key: &str, value: &Value) -> Result<(), String> {
+    let Some(number) = value.as_f64() else {
+        return Err(format!(
+            "operation ({kind}): '{key}' must be a number, got {value}"
+        ));
+    };
+    if !number.is_finite() || number.abs() > f32::MAX as f64 {
+        return Err(format!(
+            "operation ({kind}): '{key}' is outside the finite 32-bit float range: {number}"
+        ));
+    }
+    Ok(())
+}
+
+fn validate_color_list(kind: &str, key: &str, value: &Value) -> Result<(), String> {
+    let colors = value.as_array().ok_or_else(|| {
+        format!("operation ({kind}): '{key}' must be an array of colour arrays, got {value}")
+    })?;
+    for (index, color) in colors.iter().enumerate() {
+        if color_array(color).is_none() {
+            return Err(format!(
+                "operation ({kind}): '{key}[{index}]' must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {color}"
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_region_value(kind: &str, value: &Value) -> Result<(), String> {
+    let region = value
+        .as_array()
+        .filter(|items| items.len() == 4)
+        .ok_or_else(|| {
+            format!("operation ({kind}): 'region' must be exactly [x0,y0,x1,y1], got {value}")
+        })?;
+    for (index, coordinate) in region.iter().enumerate() {
+        validate_i32(kind, &format!("region[{index}]"), coordinate)?;
+    }
+    Ok(())
+}
+
+fn validate_points(kind: &str, value: &Value) -> Result<(), String> {
+    let points = value
+        .as_array()
+        .ok_or_else(|| format!("operation ({kind}): 'points' must be an array, got {value}"))?;
+    let floating = matches!(kind, "stroke" | "curve");
+    for (point_index, point) in points.iter().enumerate() {
+        let point = point.as_array().ok_or_else(|| {
+            format!("operation ({kind}): 'points[{point_index}]' must be an array, got {point}")
+        })?;
+        let valid_len = if kind == "stroke" {
+            (2..=3).contains(&point.len())
+        } else {
+            point.len() == 2
+        };
+        if !valid_len {
+            return Err(format!(
+                "operation ({kind}): 'points[{point_index}]' must contain {} values, got {}",
+                if kind == "stroke" { "2 or 3" } else { "2" },
+                point.len()
+            ));
+        }
+        for (coordinate_index, coordinate) in point.iter().enumerate() {
+            let key = format!("points[{point_index}][{coordinate_index}]");
+            if floating {
+                validate_f32(kind, &key, coordinate)?;
+            } else {
+                validate_i32(kind, &key, coordinate)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_stops(kind: &str, value: &Value) -> Result<(), String> {
+    let stops = value
+        .as_array()
+        .ok_or_else(|| format!("operation ({kind}): 'stops' must be an array, got {value}"))?;
+    for (index, stop) in stops.iter().enumerate() {
+        let object = stop.as_object().ok_or_else(|| {
+            format!("operation ({kind}): 'stops[{index}]' must be an object, got {stop}")
+        })?;
+        let unexpected: Vec<&str> = object
+            .keys()
+            .map(String::as_str)
+            .filter(|key| !matches!(*key, "pos" | "color"))
+            .collect();
+        if !unexpected.is_empty() {
+            return Err(format!(
+                "operation ({kind}): 'stops[{index}]' has unknown keys {}",
+                unexpected.join(",")
+            ));
+        }
+        let position = object
+            .get("pos")
+            .ok_or_else(|| format!("operation ({kind}): 'stops[{index}]' is missing 'pos'"))?;
+        validate_f32(kind, &format!("stops[{index}].pos"), position)?;
+        let color = object
+            .get("color")
+            .ok_or_else(|| format!("operation ({kind}): 'stops[{index}]' is missing 'color'"))?;
+        if color_array(color).is_none() {
+            return Err(format!(
+                "operation ({kind}): 'stops[{index}].color' must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {color}"
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_tip(kind: &str, value: &Value) -> Result<(), String> {
+    let object = value
+        .as_object()
+        .ok_or_else(|| format!("operation ({kind}): 'tip' must be an object, got {value}"))?;
+    let unexpected: Vec<&str> = object
+        .keys()
+        .map(String::as_str)
+        .filter(|key| !matches!(*key, "w" | "h" | "pixels"))
+        .collect();
+    if !unexpected.is_empty() {
+        return Err(format!(
+            "operation ({kind}): 'tip' has unknown keys {}",
+            unexpected.join(",")
+        ));
+    }
+    let dimension = |key: &str| -> Result<u32, String> {
+        let value = object
+            .get(key)
+            .ok_or_else(|| format!("operation ({kind}): 'tip' is missing '{key}'"))?;
+        let raw = value.as_u64().ok_or_else(|| {
+            format!("operation ({kind}): 'tip.{key}' must be a positive integer, got {value}")
+        })?;
+        let out = u32::try_from(raw)
+            .map_err(|_| format!("operation ({kind}): 'tip.{key}' exceeds u32: {raw}"))?;
+        if out == 0 {
+            return Err(format!(
+                "operation ({kind}): 'tip.{key}' must be at least 1"
+            ));
+        }
+        Ok(out)
+    };
+    let (width, height) = (dimension("w")?, dimension("h")?);
+    raster::checked_rgba_dimensions("stamp tip", width as u64, height as u64)?;
+    let pixels = object
+        .get("pixels")
+        .ok_or_else(|| format!("operation ({kind}): 'tip' is missing 'pixels'"))?;
+    validate_color_list(kind, "tip.pixels", pixels)?;
+    let actual = pixels.as_array().map_or(0, Vec::len);
+    let expected = width as usize * height as usize;
+    if actual != expected {
+        return Err(format!(
+            "operation ({kind}): 'tip.pixels' must have w*h={expected} colors, got {actual}"
+        ));
+    }
+    Ok(())
+}
+
 /// Strictly validate one operation object before it runs: the `op` key must name
 /// a known kind, every required key must be present, and no unrecognized keys
 /// may appear (typos / wrong-shape params would otherwise be silently defaulted).
@@ -1001,6 +1172,167 @@ pub fn validate_op(op: &Value) -> Result<(), String> {
         return Err(format!(
             "operation ({kind}): 'erase' must be a boolean, got {value}"
         ));
+    }
+
+    // Scalar values consumed through the compact parsing helpers must match
+    // their actual executor type. Previously a string silently became the
+    // helper's default and an i64 outside i32 wrapped through `as i32`.
+    const I32_KEYS: [&str; 17] = [
+        "x",
+        "y",
+        "x0",
+        "y0",
+        "x1",
+        "y1",
+        "cx",
+        "cy",
+        "rx",
+        "ry",
+        "size",
+        "tolerance",
+        "radius",
+        "dx",
+        "dy",
+        "blur",
+        "depth",
+    ];
+    for key in I32_KEYS {
+        if let Some(value) = obj.get(key) {
+            validate_i32(kind, key, value)?;
+        }
+    }
+    if let Some(value) = obj.get("steps") {
+        validate_i32(kind, "steps", value)?;
+    }
+    if kind == "symmetry" {
+        for key in ["vertical", "horizontal"] {
+            if let Some(value) = obj.get(key) {
+                validate_i32(kind, key, value)?;
+            }
+        }
+    }
+    for key in ["w", "h"] {
+        if let Some(value) = obj.get(key) {
+            let raw = value.as_i64().ok_or_else(|| {
+                format!(
+                    "operation ({kind}): '{key}' must be a positive 32-bit integer, got {value}"
+                )
+            })?;
+            if !(1..=i32::MAX as i64).contains(&raw) {
+                return Err(format!(
+                    "operation ({kind}): '{key}' must be in 1..={}, got {raw}",
+                    i32::MAX
+                ));
+            }
+        }
+    }
+    if let Some(value) = obj.get("turns")
+        && value.as_u64().is_none_or(|number| number > u8::MAX as u64)
+    {
+        return Err(format!(
+            "operation ({kind}): 'turns' must be an integer 0..={}, got {value}",
+            u8::MAX
+        ));
+    }
+    if let Some(value) = obj.get("octaves")
+        && value
+            .as_u64()
+            .and_then(|number| u32::try_from(number).ok())
+            .is_none()
+    {
+        return Err(format!(
+            "operation ({kind}): 'octaves' must be an integer 0..={}, got {value}",
+            u32::MAX
+        ));
+    }
+    if let Some(value) = obj.get("max_colors")
+        && value
+            .as_u64()
+            .and_then(|number| usize::try_from(number).ok())
+            .is_none()
+    {
+        return Err(format!(
+            "operation ({kind}): 'max_colors' must be a non-negative platform-sized integer, got {value}"
+        ));
+    }
+    if let Some(value) = obj.get("seed")
+        && value.as_u64().is_none()
+    {
+        return Err(format!(
+            "operation ({kind}): 'seed' must be a non-negative integer, got {value}"
+        ));
+    }
+
+    for key in ["width", "density", "strength", "hue", "sat", "lum"] {
+        if let Some(value) = obj.get(key) {
+            validate_f32(kind, key, value)?;
+        }
+    }
+    if kind == "noise"
+        && let Some(value) = obj.get("scale")
+    {
+        validate_f32(kind, "scale", value)?;
+    }
+
+    const BOOL_KEYS: [&str; 10] = [
+        "fill",
+        "closed",
+        "aa",
+        "snap",
+        "blend",
+        "only_existing",
+        "wrap",
+        "keep_left",
+        "keep_top",
+        "horizontal",
+    ];
+    for key in BOOL_KEYS {
+        if key == "horizontal" && kind == "symmetry" {
+            continue;
+        }
+        if let Some(value) = obj.get(key)
+            && !value.is_boolean()
+        {
+            return Err(format!(
+                "operation ({kind}): '{key}' must be a boolean, got {value}"
+            ));
+        }
+    }
+    for key in [
+        "kind",
+        "dither",
+        "text",
+        "method",
+        "light_dir",
+        "mode",
+        "form",
+        "pattern",
+    ] {
+        if let Some(value) = obj.get(key)
+            && !value.is_string()
+        {
+            return Err(format!(
+                "operation ({kind}): '{key}' must be a string, got {value}"
+            ));
+        }
+    }
+
+    if let Some(value) = obj.get("points") {
+        validate_points(kind, value)?;
+    }
+    if let Some(value) = obj.get("region") {
+        validate_region_value(kind, value)?;
+    }
+    if let Some(value) = obj.get("stops") {
+        validate_stops(kind, value)?;
+    }
+    for key in ["colors", "ramp"] {
+        if let Some(value) = obj.get(key) {
+            validate_color_list(kind, key, value)?;
+        }
+    }
+    if let Some(value) = obj.get("tip") {
+        validate_tip(kind, value)?;
     }
     Ok(())
 }

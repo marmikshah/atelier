@@ -283,7 +283,7 @@ impl Studio {
                 out
             }
         };
-        let scaled = super::scale_nn(&img, sc);
+        let scaled = super::scale_nn(&img, sc)?;
         let mean_delta = if total_n == 0 {
             Value::Null
         } else {
@@ -409,7 +409,7 @@ impl Studio {
             })
             .collect();
         let sc = preview_scale(cw, ch);
-        let scaled = super::scale_nn(&heat, sc);
+        let scaled = super::scale_nn(&heat, sc)?;
         let mean = if n == 0 {
             Value::Null
         } else {
