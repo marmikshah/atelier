@@ -152,9 +152,24 @@ impl Document {
         // caller passing tile=100000 would otherwise ask for an absurd buffer
         // (and `tw * tile` can wrap u32).
         let tile = tile.clamp(1, 16);
+        let sc = scale.clamp(1, 16);
+        // Preflight the combined tile×scale target before allocating either
+        // intermediate. Each intermediate is also checked below, but without
+        // this a request that must ultimately fail could first allocate the
+        // entire 256 MiB per-image allowance for its tiled stage.
+        raster::checked_rgba_dimensions(
+            "preview",
+            base.width() as u64 * tile as u64 * sc as u64,
+            base.height() as u64 * tile as u64 * sc as u64,
+        )?;
         if tile > 1 {
             let (tw, th) = (base.width(), base.height());
-            let mut t = RgbaImage::from_pixel(tw * tile, th * tile, Rgba([0, 0, 0, 0]));
+            let (out_w, out_h) = raster::checked_rgba_dimensions(
+                "tiled preview",
+                tw as u64 * tile as u64,
+                th as u64 * tile as u64,
+            )?;
+            let mut t = RgbaImage::from_pixel(out_w, out_h, Rgba([0, 0, 0, 0]));
             for ty in 0..tile {
                 for tx in 0..tile {
                     image::imageops::replace(&mut t, &base, (tx * tw) as i64, (ty * th) as i64);
@@ -162,14 +177,14 @@ impl Document {
             }
             base = t;
         }
-        let sc = scale.clamp(1, 16);
         if sc > 1 {
-            base = image::imageops::resize(
-                &base,
-                base.width() * sc,
-                base.height() * sc,
-                image::imageops::FilterType::Nearest,
-            );
+            let (out_w, out_h) = raster::checked_rgba_dimensions(
+                "scaled preview",
+                base.width() as u64 * sc as u64,
+                base.height() as u64 * sc as u64,
+            )?;
+            base =
+                image::imageops::resize(&base, out_w, out_h, image::imageops::FilterType::Nearest);
         }
         if let Some(ms) = max_size {
             let long = base.width().max(base.height());

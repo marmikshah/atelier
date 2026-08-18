@@ -504,7 +504,7 @@ impl Studio {
             }
             // scale_nn clamps the caller's scale (1..=16) — this resize used to
             // take it raw: `cw * sc` could overflow u32 / allocate absurdly.
-            let img = crate::scale_nn(&img, scale);
+            let img = crate::scale_nn(&img, scale)?;
             img.save(&out).map_err(|e| e.to_string())?;
             res["path"] = json!(out.to_string_lossy());
             png = Some(crate::encode_png(&img)?);
@@ -573,16 +573,7 @@ impl Studio {
                 canvas.put_pixel(w[0] as u32, w[1] as u32, Rgba([255, 0, 0, 255]));
             }
             let sc = crate::preview_scale(canvas.width(), canvas.height());
-            let scaled = if sc > 1 {
-                image::imageops::resize(
-                    &canvas,
-                    canvas.width() * sc,
-                    canvas.height() * sc,
-                    image::imageops::FilterType::Nearest,
-                )
-            } else {
-                canvas
-            };
+            let scaled = crate::scale_nn(&canvas, sc)?;
             if let Some(p) = out_path {
                 let out_p = PathBuf::from(p);
                 if let Some(parent) = out_p.parent() {

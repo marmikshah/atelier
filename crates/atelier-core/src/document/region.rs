@@ -155,8 +155,11 @@ impl Document {
         y1: i32,
     ) -> Result<(), String> {
         let img = self.cel_canvas(layer, frame)?;
-        let (ax, bx) = (x0.min(x1), x0.max(x1));
-        let (ay, by) = (y0.min(y1), y0.max(y1));
+        let Some((ax, ay, bx, by)) =
+            raster::clamp_region(x0, y0, x1, y1, img.width(), img.height())
+        else {
+            return Ok(());
+        };
         for y in ay..=by {
             for x in ax..=bx {
                 raster::put(img, x, y, [0, 0, 0, 0]);
@@ -304,5 +307,19 @@ mod tests {
         assert!(d.cel_keys().is_empty());
         // But a bad target still fails loudly, like every sibling region op.
         assert!(d.stamp_tip(9, 0, &[], &tip, None).is_err());
+    }
+
+    #[test]
+    fn clear_region_clamps_extreme_coordinates_before_iteration() {
+        let mut d = Document::new("t", 4, 4);
+        d.fill_cel(0, 0, [9, 8, 7, 255]).unwrap();
+        d.clear_region(0, 0, i32::MIN, i32::MIN, i32::MAX, i32::MAX)
+            .unwrap();
+        assert_eq!(d.opaque_count(None, 0).unwrap(), 0);
+
+        d.fill_cel(0, 0, [9, 8, 7, 255]).unwrap();
+        d.clear_region(0, 0, i32::MAX - 1, i32::MAX - 1, i32::MAX, i32::MAX)
+            .unwrap();
+        assert_eq!(d.opaque_count(None, 0).unwrap(), 16);
     }
 }

@@ -286,7 +286,7 @@ impl Studio {
                 "no palette to snap to — pass `palette` or use doc_palette op=set first".into(),
             );
         }
-        let changed = doc.snap_to_palette(&pal, layer, frame, alpha);
+        let changed = doc.snap_to_palette(&pal, layer, frame, alpha)?;
         doc.save(&dir)?;
         Ok(json!({"ok": true, "doc_id": id, "pixels_changed": changed, "palette_len": pal.len()}))
     }

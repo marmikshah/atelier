@@ -224,18 +224,8 @@ impl Document {
                 }
                 let base = orig.get_pixel(x as u32, y as u32).0;
                 let np = match (lit, shd) {
-                    (true, false) => raster::composite_px(
-                        base,
-                        light,
-                        light[3] as f32 / 255.0,
-                        raster::Blend::Normal,
-                    ),
-                    (false, true) => raster::composite_px(
-                        base,
-                        dark,
-                        dark[3] as f32 / 255.0,
-                        raster::Blend::Normal,
-                    ),
+                    (true, false) => raster::composite_px(base, light, 1.0, raster::Blend::Normal),
+                    (false, true) => raster::composite_px(base, dark, 1.0, raster::Blend::Normal),
                     _ => base,
                 };
                 img.put_pixel(x as u32, y as u32, Rgba(np));

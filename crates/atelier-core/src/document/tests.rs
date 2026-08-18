@@ -200,12 +200,14 @@ fn clear_cel_rejects_a_target_that_does_not_exist() {
 fn snap_to_palette_picks_perceptual_nearest() {
     let mut d = Document::new("t", 4, 4);
     d.pencil(0, 0, &[(0, 0)], [200, 10, 10, 255], 1).unwrap();
-    let changed = d.snap_to_palette(
-        &[[255, 0, 0, 255], [0, 0, 255, 255]],
-        None,
-        None,
-        AlphaSnap::Preserve,
-    );
+    let changed = d
+        .snap_to_palette(
+            &[[255, 0, 0, 255], [0, 0, 255, 255]],
+            None,
+            None,
+            AlphaSnap::Preserve,
+        )
+        .unwrap();
     assert_eq!(changed, 1);
     assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]);
 }
@@ -297,7 +299,8 @@ fn snap_opaque_collapses_bloom_to_crisp_palette() {
     let pal = [[255, 0, 0, 255], [0, 0, 255, 255]];
     d.pencil(0, 0, &[(0, 0)], [200, 12, 12, 200], 1).unwrap(); // bright core
     d.pencil(0, 0, &[(1, 0)], [180, 30, 30, 30], 1).unwrap(); // faint halo
-    d.snap_to_palette(&pal, None, None, AlphaSnap::Opaque(128));
+    d.snap_to_palette(&pal, None, None, AlphaSnap::Opaque(128))
+        .unwrap();
     assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [255, 0, 0, 255]); // core → solid
     assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]); // halo → cleared
 }
@@ -474,6 +477,42 @@ fn sheet_image_errors_on_dimension_overflow() {
 }
 
 #[test]
+fn oversized_generated_outputs_are_rejected_before_writing_files() {
+    let d = Document::new("t", 1024, 1024);
+    assert!(
+        d.render_preview(0, 16, None, false, 1, None)
+            .unwrap_err()
+            .contains("output safety cap")
+    );
+
+    let dir = std::env::temp_dir().join(format!("atelier-output-cap-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    for (name, result) in [
+        (
+            "sheet.png",
+            d.export_sheet(&dir.join("sheet.png"), 16).map(|_| ()),
+        ),
+        (
+            "anim.gif",
+            d.export_gif(&dir.join("anim.gif"), 16, None).map(|_| ()),
+        ),
+        (
+            "anim.png",
+            d.export_apng(&dir.join("anim.png"), 16, None).map(|_| ()),
+        ),
+    ] {
+        let error = result.unwrap_err();
+        assert!(error.contains("output safety cap"), "{name}: {error}");
+        assert!(
+            !dir.join(name).exists(),
+            "{name} was created before validation"
+        );
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn export_sheet_std_writes_engine_parsable_json() {
     let mut d = Document::new("runner", 8, 8);
     d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
@@ -533,7 +572,8 @@ fn snap_flatten_melts_partial_alpha_onto_backdrop() {
     let mut d = Document::new("t", 4, 4);
     let pal = [[20, 20, 40, 255], [120, 140, 255, 255]];
     d.pencil(0, 0, &[(0, 0)], [168, 207, 255, 60], 1).unwrap();
-    d.snap_to_palette(&pal, None, None, AlphaSnap::Flatten([20, 20, 40, 255]));
+    d.snap_to_palette(&pal, None, None, AlphaSnap::Flatten([20, 20, 40, 255]))
+        .unwrap();
     let p = d.get_pixel(0, 0, 0, 0).unwrap();
     assert_eq!(p[3], 255); // fully opaque after flatten
     assert!(pal.contains(&p)); // and on-palette
@@ -1376,6 +1416,17 @@ fn fx_parameters_are_clamped_to_sane_bounds() {
 }
 
 #[test]
+fn bevel_applies_its_color_alpha_once() {
+    let mut d = Document::new("t", 5, 5);
+    d.fill_cel(0, 0, [0, 0, 0, 255]).unwrap();
+    d.bevel(0, 0, [255, 255, 255, 128], [0, 0, 0, 128], 1)
+        .unwrap();
+    // Top-centre is a light-only edge. Source alpha 128 over opaque black is
+    // half white; passing that alpha as a second opacity used to yield ~64.
+    assert_eq!(d.get_pixel(0, 0, 2, 0).unwrap(), [128, 128, 128, 255]);
+}
+
+#[test]
 fn operation_wrapper_scalars_reject_out_of_range_values() {
     // 300 as u8 == 44: truncation used to silently apply a wrong opacity.
     let e = validate_op(&json!({"op": "rect", "x0": 0, "y0": 0, "x1": 1, "y1": 1,
@@ -1396,6 +1447,25 @@ fn operation_wrapper_scalars_reject_out_of_range_values() {
     assert!(
         validate_op(&json!({"op": "drop_shadow", "color": [1, 2, 3], "shadow_opacity": 255}))
             .is_ok()
+    );
+}
+
+#[test]
+fn public_apply_op_enforces_strict_value_types_and_ranges() {
+    let mut d = Document::new("t", 4, 4);
+    for bad in [
+        json!({"op": "rect", "x0": "0", "y0": 0, "x1": 1, "y1": 1, "color": [1, 2, 3]}),
+        json!({"op": "line", "x0": i64::MAX, "y0": 0, "x1": 1, "y1": 1, "color": [1, 2, 3]}),
+        json!({"op": "scale", "w": -1, "h": 4}),
+        json!({"op": "pencil", "points": [[0]], "color": [1, 2, 3]}),
+        json!({"op": "gradient", "stops": [{"pos": 0.0, "color": "#000"}]}),
+        json!({"op": "flip", "horizontal": 1}),
+    ] {
+        assert!(d.apply_op(0, 0, &bad).is_err(), "accepted {bad}");
+    }
+    assert!(
+        d.cel_keys().is_empty(),
+        "rejected operations must not paint"
     );
 }
 
