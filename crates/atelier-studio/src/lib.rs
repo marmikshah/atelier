@@ -77,6 +77,12 @@ pub(crate) const DEFAULT_EXPORT_SCALE: u32 = 4;
 /// Largest consecutive frame count accepted by one timeline call.
 const MAX_FRAME_COUNT: usize = 256;
 
+/// Aggregate full-canvas work allowed for one ranged draw/effect call.
+///
+/// This equals one maximum-size document canvas, so a range never scans more
+/// pixels than the largest already-supported single-frame edit.
+const MAX_FRAME_EDIT_PIXELS: u64 = MAX_CANVAS as u64 * MAX_CANVAS as u64;
+
 /// Clamp an export scale into `1..=MAX_EXPORT_SCALE`.
 pub(crate) fn export_scale(scale: u32) -> u32 {
     scale.clamp(1, MAX_EXPORT_SCALE)
@@ -391,7 +397,10 @@ impl Studio {
     /// of every change, and an explicit warning when NOTHING changed — the
     /// usual symptom of coordinates that ran off-canvas or hit the wrong cel.
     /// Blind `{ok:true}` acks let those mistakes compound between renders.
-    fn change_ack(id: &str, before: &image::RgbaImage, after: &image::RgbaImage) -> Value {
+    fn change_summary(
+        before: &image::RgbaImage,
+        after: &image::RgbaImage,
+    ) -> (u64, Option<[u32; 4]>) {
         let (mut changed, mut bbox): (u64, Option<[u32; 4]>) = (0, None);
         for (b, (x, y, a)) in before.pixels().zip(after.enumerate_pixels()) {
             if b != a {
@@ -402,6 +411,15 @@ impl Studio {
                 });
             }
         }
+        (changed, bbox)
+    }
+
+    fn change_ack(id: &str, before: &image::RgbaImage, after: &image::RgbaImage) -> Value {
+        let (changed, bbox) = Self::change_summary(before, after);
+        Self::change_ack_summary(id, changed, bbox)
+    }
+
+    fn change_ack_summary(id: &str, changed: u64, bbox: Option<[u32; 4]>) -> Value {
         let mut out = json!({
             "ok": true,
             "doc_id": id,
@@ -414,6 +432,53 @@ impl Studio {
             );
         }
         out
+    }
+
+    fn checked_edit_frame_range(
+        doc: &Document,
+        layer: usize,
+        frame: usize,
+        frame_to: usize,
+    ) -> Result<usize, String> {
+        if layer >= doc.meta().layers.len() {
+            return Err(format!("no layer {layer}"));
+        }
+        if frame > frame_to {
+            return Err(format!(
+                "frame range start {frame} is after inclusive end {frame_to}"
+            ));
+        }
+        if frame_to >= doc.meta().frames.len() {
+            return Err(format!(
+                "frame range {frame}..={frame_to} out of range — document has {} frame(s) (0..={})",
+                doc.meta().frames.len(),
+                doc.meta().frames.len().saturating_sub(1)
+            ));
+        }
+        let count = frame_to
+            .checked_sub(frame)
+            .and_then(|span| span.checked_add(1))
+            .ok_or_else(|| format!("frame range {frame}..={frame_to} overflowed"))?;
+        if count > MAX_FRAME_COUNT {
+            return Err(format!(
+                "frame range {frame}..={frame_to} targets {count} frames; limit is {MAX_FRAME_COUNT}"
+            ));
+        }
+        let canvas_pixels = u64::from(doc.meta().w)
+            .checked_mul(u64::from(doc.meta().h))
+            .ok_or("frame range canvas size overflowed")?;
+        let work =
+            canvas_pixels
+                .checked_mul(u64::try_from(count).map_err(|_| {
+                    format!("frame range count {count} does not fit the work budget")
+                })?)
+                .ok_or_else(|| format!("frame range {frame}..={frame_to} work overflowed"))?;
+        if work > MAX_FRAME_EDIT_PIXELS {
+            return Err(format!(
+                "frame range {frame}..={frame_to} would scan {work} full-canvas pixels; limit is {MAX_FRAME_EDIT_PIXELS}; split the range"
+            ));
+        }
+        Ok(count)
     }
 
     /// Apply a cel edit and return its changed-pixel count and bounding box.
@@ -573,14 +638,50 @@ impl Studio {
         id: &str,
         layer: usize,
         frame: usize,
+        frame_to: Option<usize>,
         op: &str,
         mut params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
         params.insert("op".into(), json!(op));
         let operation = Value::Object(params);
-        let mut ack = self.edit_with_ack(id, layer, frame, |doc| {
-            doc.apply_op(layer, frame, &operation)
-        })?;
+        let mut ack = match frame_to {
+            None => self.edit_with_ack(id, layer, frame, |doc| {
+                doc.apply_op(layer, frame, &operation)
+            })?,
+            Some(frame_to) => {
+                let (dir, mut doc) = self.open(id)?;
+                let count = Self::checked_edit_frame_range(&doc, layer, frame, frame_to)?;
+                atelier_core::document::validate_op(&operation)?;
+
+                let (mut changed, mut bbox, mut frames_changed): (u64, Option<[u32; 4]>, usize) =
+                    (0, None, 0);
+                for current in frame..=frame_to {
+                    let before = doc.cel_full(layer, current);
+                    doc.apply_op(layer, current, &operation)?;
+                    let after = doc.cel_full(layer, current);
+                    let (frame_changed, frame_bbox) = Self::change_summary(&before, &after);
+                    changed += frame_changed;
+                    if frame_changed > 0 {
+                        frames_changed += 1;
+                    }
+                    if let Some([x0, y0, x1, y1]) = frame_bbox {
+                        bbox = Some(match bbox {
+                            None => [x0, y0, x1, y1],
+                            Some([a0, b0, a1, b1]) => {
+                                [a0.min(x0), b0.min(y0), a1.max(x1), b1.max(y1)]
+                            }
+                        });
+                    }
+                }
+                doc.save(&dir)?;
+                let mut ack = Self::change_ack_summary(id, changed, bbox);
+                ack["frame"] = json!(frame);
+                ack["frame_to"] = json!(frame_to);
+                ack["frames_targeted"] = json!(count);
+                ack["frames_changed"] = json!(frames_changed);
+                ack
+            }
+        };
         ack["op"] = json!(op);
         Ok(ack)
     }
@@ -592,6 +693,7 @@ impl Studio {
         id: &str,
         layer: usize,
         frame: usize,
+        frame_to: Option<usize>,
         op: &str,
         params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
@@ -602,7 +704,7 @@ impl Studio {
                 draw_ops.join(", ")
             ));
         }
-        self.edit_operation(id, layer, frame, op, params)
+        self.edit_operation(id, layer, frame, frame_to, op, params)
     }
 
     /// Apply one transform/effect operation to a cel. These operations rework
@@ -612,6 +714,7 @@ impl Studio {
         id: &str,
         layer: usize,
         frame: usize,
+        frame_to: Option<usize>,
         op: &str,
         params: serde_json::Map<String, Value>,
     ) -> Result<Value, String> {
@@ -622,7 +725,7 @@ impl Studio {
                 fx_ops.join(", ")
             ));
         }
-        self.edit_operation(id, layer, frame, op, params)
+        self.edit_operation(id, layer, frame, frame_to, op, params)
     }
 }
 
@@ -778,6 +881,169 @@ mod tests {
         let overflow = set_duration(&s, id, usize::MAX, Some(2), 240).unwrap_err();
         assert!(overflow.contains("overflowed"), "{overflow}");
         assert_eq!(frame_durations(&s, id), vec![100, 80, 80, 80]);
+    }
+
+    #[test]
+    fn draw_and_fx_ranges_return_one_bounded_aggregate() {
+        let s = studio("draw-fx-range");
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_frame(id, FrameOp::Add, None, None, None, None, Some(2))
+            .unwrap();
+
+        let legacy = s
+            .doc_draw(
+                id,
+                0,
+                0,
+                None,
+                "fill_cel",
+                json!({"color": [200, 0, 0, 255]})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            )
+            .unwrap();
+        assert_eq!(
+            legacy,
+            json!({
+                "ok": true,
+                "doc_id": id,
+                "op": "fill_cel",
+                "pixels_changed": 16,
+                "change_bbox": [0, 0, 3, 3],
+            })
+        );
+
+        let draw = s
+            .doc_draw(
+                id,
+                0,
+                0,
+                Some(2),
+                "fill_cel",
+                json!({"color": [20, 30, 40, 255]})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            )
+            .unwrap();
+        assert_eq!(draw["frame"], 0);
+        assert_eq!(draw["frame_to"], 2);
+        assert_eq!(draw["frames_targeted"], 3);
+        assert_eq!(draw["frames_changed"], 3);
+        assert_eq!(draw["pixels_changed"], 48);
+        assert_eq!(draw["change_bbox"], json!([0, 0, 3, 3]));
+
+        let fx = s
+            .doc_fx(
+                id,
+                0,
+                0,
+                Some(2),
+                "replace_color",
+                json!({"from": [20, 30, 40, 255], "to": [1, 2, 3, 255]})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            )
+            .unwrap();
+        assert_eq!(fx["frames_targeted"], 3);
+        assert_eq!(fx["frames_changed"], 3);
+        assert_eq!(fx["pixels_changed"], 48);
+        for frame in 0..=2 {
+            assert_eq!(
+                s.doc_get_pixel(id, Some(0), frame, 0, 0).unwrap()["rgba"],
+                json!([1, 2, 3, 255])
+            );
+        }
+
+        let seeded = s
+            .doc_draw(
+                id,
+                0,
+                0,
+                Some(2),
+                "scatter",
+                json!({
+                    "colors": [[40, 50, 60, 255], [70, 80, 90, 255]],
+                    "x0": 0, "y0": 0, "x1": 3, "y1": 3,
+                    "density": 0.5, "seed": 42
+                })
+                .as_object()
+                .unwrap()
+                .clone(),
+            )
+            .unwrap();
+        assert_eq!(seeded["frames_targeted"], 3);
+        for frame in 1..=2 {
+            for y in 0..4 {
+                for x in 0..4 {
+                    assert_eq!(
+                        s.doc_get_pixel(id, Some(0), frame, x, y).unwrap()["rgba"],
+                        s.doc_get_pixel(id, Some(0), 0, x, y).unwrap()["rgba"],
+                        "the same seed and params must produce the same marks on frame {frame}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn draw_ranges_reject_invalid_targets_and_work_before_editing() {
+        let s = studio("draw-range-limits");
+        let created = s.doc_new("d", 1, 1).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_frame(
+            id,
+            FrameOp::Add,
+            None,
+            None,
+            None,
+            None,
+            Some(MAX_FRAME_COUNT),
+        )
+        .unwrap();
+        let initial = json!({"color": [9, 8, 7, 255]})
+            .as_object()
+            .unwrap()
+            .clone();
+        let params = || {
+            json!({"color": [1, 2, 3, 255]})
+                .as_object()
+                .unwrap()
+                .clone()
+        };
+        s.doc_draw(id, 0, 0, None, "fill_cel", initial).unwrap();
+
+        for (from, to, message) in [
+            (2, 1, "after inclusive end"),
+            (0, MAX_FRAME_COUNT + 1, "out of range"),
+            (0, MAX_FRAME_COUNT, "targets 257 frames"),
+        ] {
+            let error = s
+                .doc_draw(id, 0, from, Some(to), "fill_cel", params())
+                .unwrap_err();
+            assert!(error.contains(message), "{error}");
+        }
+        assert_eq!(
+            s.doc_get_pixel(id, Some(0), 0, 0, 0).unwrap()["rgba"],
+            json!([9, 8, 7, 255])
+        );
+        assert_eq!(
+            s.doc_get_pixel(id, Some(0), 1, 0, 0).unwrap()["rgba"],
+            json!([0, 0, 0, 0])
+        );
+
+        let large = s.doc_new("large", 1024, 1024).unwrap();
+        let large_id = large["doc_id"].as_str().unwrap();
+        s.doc_frame(large_id, FrameOp::Add, None, None, None, None, Some(16))
+            .unwrap();
+        let error = s
+            .doc_draw(large_id, 0, 0, Some(16), "fill_cel", params())
+            .unwrap_err();
+        assert!(error.contains("full-canvas pixels"), "{error}");
+        assert_eq!(s.doc_info(large_id).unwrap()["cels"], json!([]));
     }
 }
 

@@ -510,6 +510,7 @@ mod tests {
             id,
             0,
             0,
+            None,
             "rect",
             json!({"x0": 4, "y0": 0, "x1": 11, "y1": 7, "color": color, "fill": true})
                 .as_object()

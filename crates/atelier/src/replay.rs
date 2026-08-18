@@ -528,7 +528,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir_b);
 
         // Build a document through dispatch, so every mutation lands in its
-        // journal — palette set, index-legend grid paint, a raw draw.
+        // journal — palette set, index-legend grid paint, and ranged edits.
         let studio_a = Studio::with_docs_dir(dir_a.clone());
         let atelier_a = Atelier::with_studio(studio_a.clone());
         let created = dispatch_ok(
@@ -540,8 +540,41 @@ mod tests {
         let doc_id = created["doc_id"].as_str().unwrap();
         dispatch_ok(
             &atelier_a,
+            "doc_frame",
+            json!({"doc_id": doc_id, "op": "add", "count": 2}),
+        )
+        .await;
+        dispatch_ok(
+            &atelier_a,
             "doc_palette",
             json!({"op": "set", "doc_id": doc_id, "colors": [[10, 20, 30], [200, 30, 30], [30, 30, 200]]}),
+        )
+        .await;
+        let revision_before_range = studio_a.document_revision(doc_id).unwrap();
+        let journal_before_range = studio_a.journal(doc_id).unwrap().len();
+        let ranged = dispatch_ok(
+            &atelier_a,
+            "doc_draw",
+            json!({"doc_id": doc_id, "layer": 0, "frame": 0, "frame_to": 2,
+                   "op": "pencil", "points": [[0, 0]], "color": [200, 30, 30]}),
+        )
+        .await;
+        assert_eq!(ranged["frames_targeted"], 3);
+        assert_eq!(ranged["revision"], revision_before_range + 1);
+        let journal_after_range = studio_a.journal(doc_id).unwrap();
+        assert_eq!(journal_after_range.len(), journal_before_range + 1);
+        assert_eq!(journal_after_range.last().unwrap().tool, ToolName::DocDraw);
+        assert_eq!(journal_after_range.last().unwrap().args["frame_to"], 2);
+        assert_eq!(
+            studio_a.document_revision(doc_id).unwrap(),
+            revision_before_range + 1,
+            "one ranged call increments the document revision once"
+        );
+        dispatch_ok(
+            &atelier_a,
+            "doc_fx",
+            json!({"doc_id": doc_id, "layer": 0, "frame": 0, "frame_to": 2,
+                   "op": "shift", "dx": 1, "dy": 0}),
         )
         .await;
         dispatch_ok(
@@ -558,11 +591,11 @@ mod tests {
                    "x0": 5, "y0": 5, "x1": 7, "y1": 7, "color": [30, 30, 200], "fill": true}),
         )
         .await;
-        let render = |studio: &Studio, id: &str| {
+        let render = |studio: &Studio, id: &str, frame: usize| {
             studio
                 .look(
                     id,
-                    0,
+                    frame,
                     &atelier_studio::LookOptions {
                         scale: Some(4),
                         ..Default::default()
@@ -571,13 +604,15 @@ mod tests {
                 .unwrap()
                 .0
         };
-        let original = render(&studio_a, doc_id);
+        let original: Vec<Vec<u8>> = (0..=2)
+            .map(|frame| render(&studio_a, doc_id, frame))
+            .collect();
 
         // Replay the journal into a fresh store and export the rebuild.
         let journal =
             std::fs::read_to_string(dir_a.join(doc_id).join(atelier_studio::JOURNAL_FILE)).unwrap();
         let recipe = Recipe::parse(&journal).unwrap();
-        assert!(recipe.steps.len() >= 4, "the journal drives the rebuild");
+        assert!(recipe.steps.len() >= 7, "the journal drives the rebuild");
         let studio_b = Studio::with_docs_dir(dir_b.clone());
         let committed_id = run_atomic_session(&recipe, &studio_b).await.unwrap();
         let replayed_docs = studio_b.list_docs();
@@ -588,7 +623,9 @@ mod tests {
             recipe.steps.len() as u64,
             "the outer atomic publication must preserve inner step revisions without adding one"
         );
-        let replayed = render(&studio_b, replay_id);
+        let replayed: Vec<Vec<u8>> = (0..=2)
+            .map(|frame| render(&studio_b, replay_id, frame))
+            .collect();
 
         assert_eq!(
             original, replayed,

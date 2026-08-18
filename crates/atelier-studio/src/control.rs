@@ -51,6 +51,10 @@ impl JsonSchema for DocumentId {
         "atelier_studio::DocumentId".into()
     }
 
+    fn inline_schema() -> bool {
+        true
+    }
+
     fn json_schema(_: &mut SchemaGenerator) -> Schema {
         json_schema!({
             "type": "string",
