@@ -7,7 +7,7 @@ use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
     CallToolResult, ContentBlock as Content, Implementation, ListToolsResult,
-    PaginatedRequestParams, ServerCapabilities, ServerInfo,
+    PaginatedRequestParams, ServerCapabilities, ServerInfo, ToolAnnotations,
 };
 use rmcp::service::RequestContext;
 use rmcp::{ErrorData, RoleServer, ServerHandler, tool_handler};
@@ -24,9 +24,9 @@ pub use transport::{run, run_http};
 
 use params::*;
 
-fn j(v: Value) -> String {
-    serde_json::to_string(&v).unwrap_or_else(|_| "{}".into())
-}
+/// Encoded PNG bytes accepted for an inline MCP image. Base64 expands this by
+/// another third, so keep the pre-encoding cap deliberately conservative.
+const MAX_INLINE_PNG_BYTES: usize = 8 * 1024 * 1024;
 
 /// Standard base64 for MCP image blocks. Kept here because inline images are
 /// part of tool results; Atelier no longer exposes a second, duplicate resource
@@ -62,8 +62,8 @@ fn base64(bytes: &[u8]) -> String {
 /// caller gets the same failure.
 fn res(r: Result<Value, String>) -> CallToolResult {
     match r {
-        Ok(v) => CallToolResult::success(vec![Content::text(j(v))]),
-        Err(e) => CallToolResult::error(vec![Content::text(j(json!({"error": e})))]),
+        Ok(v) => CallToolResult::structured(v),
+        Err(e) => CallToolResult::structured_error(json!({"error": e})),
     }
 }
 
@@ -73,11 +73,39 @@ fn res(r: Result<Value, String>) -> CallToolResult {
 /// text part with `is_error` set, matching `res`.
 fn img_result(r: Result<(Vec<u8>, Value), String>) -> CallToolResult {
     match r {
-        Ok((png, report)) => CallToolResult::success(vec![
-            Content::image(base64(&png), "image/png"),
-            Content::text(j(report)),
-        ]),
-        Err(e) => CallToolResult::error(vec![Content::text(j(json!({"error": e})))]),
+        Ok((png, mut report)) if png.len() > MAX_INLINE_PNG_BYTES => {
+            if report.get("path").and_then(Value::as_str).is_some() {
+                if let Value::Object(fields) = &mut report {
+                    fields.insert(
+                        "inline_image_omitted".into(),
+                        json!({
+                            "bytes": png.len(),
+                            "limit": MAX_INLINE_PNG_BYTES,
+                            "reason": "saved image exceeds the MCP inline-image limit",
+                        }),
+                    );
+                }
+                res(Ok(report))
+            } else {
+                CallToolResult::structured_error(json!({
+                    "error": format!(
+                        "inline PNG is {} bytes; limit is {} bytes. Reduce the render size, use a tool out_path where available, or use `atelier call --image-out PATH`",
+                        png.len(),
+                        MAX_INLINE_PNG_BYTES,
+                    ),
+                    "inline_bytes": png.len(),
+                    "max_inline_bytes": MAX_INLINE_PNG_BYTES,
+                }))
+            }
+        }
+        Ok((png, report)) => {
+            let mut result = CallToolResult::structured(report);
+            result
+                .content
+                .insert(0, Content::image(base64(&png), "image/png"));
+            result
+        }
+        Err(e) => CallToolResult::structured_error(json!({"error": e})),
     }
 }
 
@@ -98,6 +126,39 @@ fn opt_img_result(r: Result<(Option<Vec<u8>>, Value), String>) -> CallToolResult
 /// agent needs to see the result, it calls doc_look.
 fn edited(r: Result<Value, String>) -> CallToolResult {
     res(r)
+}
+
+/// Preserve a successful handler result while making a post-commit durability
+/// warning visible to both structured MCP clients and text-compatible clients.
+/// The mutation is already visible at this point, so this must stay a success:
+/// treating it as a failure would invite a duplicate retry.
+fn attach_commit_warning(mut result: CallToolResult, warning: &str) -> CallToolResult {
+    let detail = json!({
+        "committed": true,
+        "durability": "uncertain",
+        "retry": false,
+        "message": warning,
+    });
+    let mut payload = result_json(&result).unwrap_or_else(|| json!({"ok": true}));
+    match &mut payload {
+        Value::Object(report) => {
+            report.insert("commit_warning".into(), detail);
+        }
+        _ => {
+            payload = json!({"result": payload, "commit_warning": detail});
+        }
+    }
+    let encoded = payload.to_string();
+    result.structured_content = Some(payload);
+    if let Some(text) = result.content.iter_mut().find_map(|content| match content {
+        Content::Text(text) => Some(text),
+        _ => None,
+    }) {
+        text.text = encoded;
+    } else {
+        result.content.push(Content::text(encoded));
+    }
+    result
 }
 
 /// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
@@ -163,11 +224,13 @@ macro_rules! try_res {
 /// stats after it. Public so the binary's CLI/replay paths read results the
 /// same way the server does.
 pub fn result_json(result: &rmcp::model::CallToolResult) -> Option<Value> {
-    result
-        .content
-        .iter()
-        .filter_map(|c| c.as_text())
-        .find_map(|t| serde_json::from_str::<Value>(&t.text).ok())
+    result.structured_content.clone().or_else(|| {
+        result
+            .content
+            .iter()
+            .filter_map(|c| c.as_text())
+            .find_map(|t| serde_json::from_str::<Value>(&t.text).ok())
+    })
 }
 
 /// Remove schemars' Rust-type `format` annotations (`uint32`, `int64`,
@@ -210,6 +273,195 @@ fn strip_nonstandard_formats(schema: &mut Value) {
             }
         }
         _ => {}
+    }
+}
+
+/// Conservative MCP hints for clients that show approval UI. Hubs with both
+/// read and write operations advertise the more permissive behavior; hints
+/// never replace Atelier's own validation or authorization.
+fn tool_annotations(tool: ToolName) -> ToolAnnotations {
+    let read_only = matches!(
+        tool,
+        ToolName::ListDocs
+            | ToolName::DocInfo
+            | ToolName::DocDumpRegion
+            | ToolName::DocSilhouette
+            | ToolName::DocComponents
+            | ToolName::DocAnimAudit
+            | ToolName::DocCritique
+            | ToolName::DocContactSheet
+    );
+    let open_world = matches!(
+        tool,
+        ToolName::DocLook
+            | ToolName::DocFrameDiff
+            | ToolName::DocSeamReport
+            | ToolName::DocRef
+            | ToolName::DocExport
+    );
+    let destructive = !read_only && !matches!(tool, ToolName::DocNew | ToolName::DocAddTag);
+    let idempotent = read_only
+        || matches!(
+            tool,
+            ToolName::DeleteDoc
+                | ToolName::DocLook
+                | ToolName::DocFrameDiff
+                | ToolName::DocSeamReport
+                | ToolName::DocExport
+        );
+    ToolAnnotations::new()
+        .read_only(read_only)
+        .destructive(destructive)
+        .idempotent(idempotent)
+        .open_world(open_world)
+}
+
+#[derive(Clone, Debug, Default)]
+struct HttpPathRoots {
+    import: Option<std::path::PathBuf>,
+    export: Option<std::path::PathBuf>,
+}
+
+impl HttpPathRoots {
+    fn new(import: Option<std::path::PathBuf>, export: Option<std::path::PathBuf>) -> Self {
+        Self { import, export }
+    }
+
+    /// Resolve only the parameters that can touch files outside the document
+    /// store. HTTP callers submit relative paths; CLI, replay, and stdio never
+    /// enter this policy and retain their native filesystem behavior.
+    fn rewrite(&self, tool: ToolName, args: &mut Value) -> Result<(), ErrorData> {
+        match tool {
+            ToolName::DocRef => rewrite_http_path(
+                args,
+                "path",
+                self.import.as_deref(),
+                "ATELIER_IMPORT_ROOT",
+                true,
+            ),
+            ToolName::DocLook | ToolName::DocFrameDiff | ToolName::DocSeamReport => {
+                rewrite_http_path(
+                    args,
+                    "out_path",
+                    self.export.as_deref(),
+                    "ATELIER_EXPORT_ROOT",
+                    false,
+                )
+            }
+            ToolName::DocExport => rewrite_http_path(
+                args,
+                "out_path",
+                self.export.as_deref(),
+                "ATELIER_EXPORT_ROOT",
+                false,
+            ),
+            _ => Ok(()),
+        }
+    }
+}
+
+fn rewrite_http_path(
+    args: &mut Value,
+    field: &str,
+    root: Option<&std::path::Path>,
+    root_env: &str,
+    must_exist: bool,
+) -> Result<(), ErrorData> {
+    let Some(slot) = args.get_mut(field) else {
+        return Ok(());
+    };
+    if slot.is_null() {
+        return Ok(());
+    }
+    let raw = slot.as_str().ok_or_else(|| {
+        ErrorData::invalid_params(
+            format!("HTTP `{field}` must be a relative path string"),
+            None,
+        )
+    })?;
+    let resolved = resolve_http_path(root, raw, root_env, must_exist)
+        .map_err(|error| ErrorData::invalid_params(error, None))?;
+    *slot = Value::String(resolved.to_string_lossy().into_owned());
+    Ok(())
+}
+
+fn resolve_http_path(
+    root: Option<&std::path::Path>,
+    raw: &str,
+    root_env: &str,
+    must_exist: bool,
+) -> Result<std::path::PathBuf, String> {
+    use std::path::Component;
+
+    let Some(root) = root else {
+        return Err(format!(
+            "external file paths are disabled over HTTP; configure {root_env} and pass a relative path"
+        ));
+    };
+    let relative = std::path::Path::new(raw);
+    if raw.is_empty() || relative.is_absolute() {
+        return Err(format!(
+            "HTTP file path must be non-empty and relative, got `{raw}`"
+        ));
+    }
+    if relative.components().any(|component| {
+        matches!(
+            component,
+            Component::ParentDir | Component::RootDir | Component::Prefix(_)
+        )
+    }) {
+        return Err(format!(
+            "HTTP file path cannot be absolute or contain parent traversal, got `{raw}`"
+        ));
+    }
+
+    let joined = root.join(relative);
+    let resolved = if must_exist {
+        std::fs::canonicalize(&joined)
+            .map_err(|error| format!("cannot access HTTP input `{raw}`: {error}"))?
+    } else {
+        canonical_output_path(&joined)?
+    };
+    if !resolved.starts_with(root) {
+        return Err(format!("HTTP file path escapes configured {root_env}"));
+    }
+    Ok(resolved)
+}
+
+/// Resolve the nearest existing output ancestor, then append the missing
+/// suffix to its canonical path. Returning this path (rather than the original
+/// lexical path) prevents an already-present symlink from being followed a
+/// second time after validation.
+fn canonical_output_path(path: &std::path::Path) -> Result<std::path::PathBuf, String> {
+    let mut current = path;
+    let mut suffix = Vec::new();
+    loop {
+        match std::fs::symlink_metadata(current) {
+            Ok(_) => {
+                let mut resolved = std::fs::canonicalize(current).map_err(|error| {
+                    format!("cannot resolve HTTP output `{}`: {error}", path.display())
+                })?;
+                for component in suffix.iter().rev() {
+                    resolved.push(component);
+                }
+                return Ok(resolved);
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                let name = current
+                    .file_name()
+                    .ok_or_else(|| format!("HTTP output `{}` has no file name", path.display()))?;
+                suffix.push(name.to_os_string());
+                current = current.parent().ok_or_else(|| {
+                    format!("HTTP output `{}` has no existing ancestor", path.display())
+                })?;
+            }
+            Err(error) => {
+                return Err(format!(
+                    "cannot inspect HTTP output `{}`: {error}",
+                    path.display()
+                ));
+            }
+        }
     }
 }
 
@@ -308,6 +560,10 @@ pub struct Atelier {
     /// sessions could execute A→B and journal B→A, and the recipe would
     /// silently rebuild different art.
     write_order: std::sync::Arc<tokio::sync::Mutex<()>>,
+    /// Present only on the Streamable HTTP service. Its presence is the
+    /// transport boundary for external path policy; direct dispatch remains
+    /// unrestricted for CLI/replay and stdio callers.
+    http_paths: Option<std::sync::Arc<HttpPathRoots>>,
 }
 
 impl Atelier {
@@ -321,7 +577,29 @@ impl Atelier {
             studio,
             tool_router: std::sync::Arc::new(Self::tool_router()),
             write_order: std::sync::Arc::new(tokio::sync::Mutex::new(())),
+            http_paths: None,
         }
+    }
+
+    /// Rebind the shared handler path to a transaction's isolated store while
+    /// retaining the immutable registry, process-wide write ordering, and the
+    /// transport policy attached to this server.
+    fn with_dispatch_studio(&self, studio: Studio) -> Self {
+        Self {
+            studio,
+            tool_router: self.tool_router.clone(),
+            write_order: self.write_order.clone(),
+            http_paths: self.http_paths.clone(),
+        }
+    }
+
+    fn with_http_paths(
+        mut self,
+        import: Option<std::path::PathBuf>,
+        export: Option<std::path::PathBuf>,
+    ) -> Self {
+        self.http_paths = Some(std::sync::Arc::new(HttpPathRoots::new(import, export)));
+        self
     }
 
     /// The whole tool surface: the per-domain routers (`tools_doc`, `tools_draw`,
@@ -359,6 +637,9 @@ impl Atelier {
                 strip_nonstandard_formats(&mut schema);
                 if let Value::Object(obj) = schema {
                     t.input_schema = std::sync::Arc::new(obj);
+                }
+                if let Ok(tool) = t.name.parse::<ToolName>() {
+                    t.annotations = Some(tool_annotations(tool));
                 }
                 t
             })
@@ -411,7 +692,11 @@ impl Atelier {
         .map_err(|error| ErrorData::internal_error(error, None))?;
 
         let started = std::time::Instant::now();
-        let result = match self.invoke(tool, args.clone()).await {
+        let result = match if store_mutation {
+            self.invoke_transaction(tool, args.clone(), journaled).await
+        } else {
+            self.invoke(tool, args.clone()).await
+        } {
             Ok(r) => r,
             // Protocol-level failure (malformed params): the caller sees the
             // error; make sure the operator does too. Unknown names are
@@ -422,13 +707,71 @@ impl Atelier {
             }
         };
         log_call(tool, &args, caller, &result, started.elapsed());
+        Ok(result)
+    }
 
-        if !is_error_result(&result) && journaled {
-            let target = journal_target(tool, &args, &result);
-            let args = journal_args(tool, args, target.as_deref());
-            if let Some(id) = &target {
-                self.studio().journal_append(id, tool, &args);
+    /// Execute a store mutation on a private document generation. Nothing is
+    /// made visible until both the handler and its recipe append have
+    /// succeeded; dropping the transaction rolls back application and
+    /// protocol failures as well as journal failures.
+    async fn invoke_transaction(
+        &self,
+        tool: ToolName,
+        args: Value,
+        journaled: bool,
+    ) -> Result<CallToolResult, ErrorData> {
+        if let Err(error) = self.studio().cleanup_stale_transactions() {
+            return Ok(res(Err(error)));
+        }
+
+        let initial_target = mutation_target(tool, &args).map_err(|error| {
+            ErrorData::invalid_params(format!("bad params for tool '{tool}': {error}"), None)
+        })?;
+        let transaction = match self.studio().begin_transaction(initial_target.as_deref()) {
+            Ok(transaction) => transaction,
+            Err(error) => return Ok(res(Err(error))),
+        };
+        let staged = self.with_dispatch_studio(transaction.studio().clone());
+        let mut result = staged.invoke(tool, args.clone()).await?;
+        if is_error_result(&result) {
+            return Ok(result);
+        }
+
+        // doc_new mints its target inside the staged handler. Every other
+        // mutation has already resolved its explicit document argument.
+        let target = if tool == ToolName::DocNew {
+            journal_target(tool, &args, &result)
+        } else {
+            initial_target
+        };
+        let Some(target) = target else {
+            return Ok(res(Err(format!(
+                "successful {} mutation did not identify a document",
+                tool.as_str()
+            ))));
+        };
+
+        if journaled {
+            let recorded = journal_args(tool, args, Some(&target));
+            if let Err(error) = transaction
+                .studio()
+                .journal_append(&target, tool, &recorded)
+            {
+                return Ok(res(Err(error)));
             }
+        }
+        match transaction.commit(&target) {
+            Ok(atelier_studio::CommitOutcome::Durable) => {}
+            Ok(atelier_studio::CommitOutcome::DurabilityUncertain { warning }) => {
+                tracing::warn!(
+                    tool = tool.as_str(),
+                    doc = %target,
+                    warning = %warning,
+                    "mutation committed with uncertain durability; do not retry automatically"
+                );
+                result = attach_commit_warning(result, &warning);
+            }
+            Err(error) => return Ok(res(Err(error))),
         }
         Ok(result)
     }
@@ -495,8 +838,35 @@ fn is_store_mutation(tool: ToolName, args: &Value) -> bool {
             | (ToolName::DocCheckpoint, Some("list"))
     ) && !matches!(
         (tool, op),
-        (ToolName::DocPalette, None | Some("generate")) if args.get("set_doc").is_none()
+        (ToolName::DocPalette, None | Some("generate"))
+            if args.get("set_doc").and_then(Value::as_str).is_none()
     )
+}
+
+/// Resolve the document generation to stage before a mutating handler runs.
+/// `doc_new` deliberately has no target yet; palette generation uses
+/// `set_doc` instead of the usual `doc_id`.
+fn mutation_target(tool: ToolName, args: &Value) -> Result<Option<String>, String> {
+    let raw = match tool {
+        ToolName::DocNew => None,
+        ToolName::DocPalette if matches!(call_op(args), None | Some("generate")) => {
+            args.get("set_doc")
+        }
+        ToolName::DocPalette => args.get("doc_id"),
+        _ => args.get("doc_id"),
+    };
+    let Some(Value::String(id)) = raw else {
+        // Leave missing and wrong-typed values to the normal typed
+        // deserializer so callers retain the established invalid_params
+        // diagnostics. The empty staging store still makes that path safe.
+        return Ok(None);
+    };
+    if !atelier_studio::DocumentId::is_valid(id) {
+        return Err(format!(
+            "invalid document id '{id}' — expected a canonical lowercase UUIDv4"
+        ));
+    }
+    Ok(Some(id.clone()))
 }
 
 /// True when a successful mutation is one deterministic step in rebuilding the
@@ -527,8 +897,11 @@ fn journal_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Opti
         // without this the lock is silently dropped from the recipe and replay
         // rebuilds the document off-palette.
         ToolName::DocPalette => args
-            .get("doc_id")
-            .or_else(|| args.get("set_doc"))
+            .get(if matches!(call_op(args), None | Some("generate")) {
+                "set_doc"
+            } else {
+                "doc_id"
+            })
             .and_then(Value::as_str)
             .map(str::to_string),
         _ => args
@@ -598,11 +971,14 @@ impl ServerHandler for Atelier {
             .name
             .parse::<ToolName>()
             .map_err(|error| ErrorData::invalid_params(error, None))?;
-        let args = request
+        let mut args = request
             .arguments
             .clone()
             .map(Value::Object)
             .unwrap_or_else(|| json!({}));
+        if let Some(paths) = &self.http_paths {
+            paths.rewrite(tool, &mut args)?;
+        }
         // Fallback caller identity for the log line: configured HTTP header,
         // then TCP peer, then `-` for stdio. A per-call `session` in the
         // namespaced MCP metadata overrides it and survives HTTP reconnects.
@@ -716,6 +1092,62 @@ mod tests {
             instructions.contains("25 tools"),
             "get_info instructions drifted from the tool count"
         );
+    }
+
+    #[test]
+    fn advertised_tool_definitions_fit_the_context_budget() {
+        const MAX_TOOL_DEFINITION_BYTES: usize = 32 * 1024;
+        let bytes = serde_json::to_vec(&Atelier::registry_tools()).unwrap();
+        assert!(
+            bytes.len() <= MAX_TOOL_DEFINITION_BYTES,
+            "serialized tool definitions are {} bytes, over the {}-byte budget",
+            bytes.len(),
+            MAX_TOOL_DEFINITION_BYTES
+        );
+    }
+
+    #[test]
+    fn every_tool_advertises_explicit_conservative_hints() {
+        let tools = Atelier::registry_tools();
+        for tool in &tools {
+            let hints = tool
+                .annotations
+                .as_ref()
+                .unwrap_or_else(|| panic!("{} has no annotations", tool.name));
+            assert!(
+                hints.read_only_hint.is_some(),
+                "{} read-only hint",
+                tool.name
+            );
+            assert!(
+                hints.destructive_hint.is_some(),
+                "{} destructive hint",
+                tool.name
+            );
+            assert!(
+                hints.idempotent_hint.is_some(),
+                "{} idempotent hint",
+                tool.name
+            );
+            assert!(
+                hints.open_world_hint.is_some(),
+                "{} open-world hint",
+                tool.name
+            );
+        }
+        let hints = |name: &str| {
+            tools
+                .iter()
+                .find(|tool| tool.name == name)
+                .unwrap()
+                .annotations
+                .as_ref()
+                .unwrap()
+        };
+        assert_eq!(hints("list_docs").read_only_hint, Some(true));
+        assert_eq!(hints("delete_doc").destructive_hint, Some(true));
+        assert_eq!(hints("doc_export").open_world_hint, Some(true));
+        assert_eq!(hints("doc_new").destructive_hint, Some(false));
     }
 
     #[test]
@@ -906,6 +1338,10 @@ mod tests {
             ToolName::DocPalette,
             &json!({"op": "generate"})
         ));
+        assert!(!is_store_mutation(
+            ToolName::DocPalette,
+            &json!({"op": "generate", "set_doc": null})
+        ));
         assert!(is_journaled(
             ToolName::DocPalette,
             &json!({"op": "generate", "set_doc": "hero"})
@@ -1033,6 +1469,24 @@ mod tests {
             .as_deref(),
             Some("hero")
         );
+
+        // `doc_id` is a valid parameter for the other palette ops, but it is
+        // irrelevant to generate. If both are present, the staged generation
+        // and journal must still follow the document the handler actually
+        // edits (`set_doc`).
+        let doc_id = "550e8400-e29b-41d4-a716-446655440000";
+        let set_doc = "6ba7b810-9dad-41d1-80b4-00c04fd430c8";
+        let args = json!({"op": "generate", "doc_id": doc_id, "set_doc": set_doc});
+        assert_eq!(
+            mutation_target(ToolName::DocPalette, &args)
+                .unwrap()
+                .as_deref(),
+            Some(set_doc)
+        );
+        assert_eq!(
+            journal_target(ToolName::DocPalette, &args, &ok).as_deref(),
+            Some(set_doc)
+        );
     }
 
     #[test]
@@ -1047,6 +1501,129 @@ mod tests {
             result_json(&looked).unwrap().get("doc_id").unwrap(),
             &json!("x")
         );
+    }
+
+    #[test]
+    fn json_results_have_structured_and_text_compatible_forms() {
+        let payload = json!({"ok": true, "count": 3});
+        let result = res(Ok(payload.clone()));
+        assert_eq!(result.structured_content, Some(payload.clone()));
+        let text = result
+            .content
+            .iter()
+            .find_map(|content| content.as_text())
+            .unwrap();
+        assert_eq!(serde_json::from_str::<Value>(&text.text).unwrap(), payload);
+
+        let visual = img_result(Ok((vec![1, 2, 3], json!({"pixels": 1}))));
+        assert_eq!(visual.structured_content, Some(json!({"pixels": 1})));
+        assert!(matches!(visual.content[0], Content::Image(_)));
+
+        let oversized = vec![0; MAX_INLINE_PNG_BYTES + 1];
+        let rejected = img_result(Ok((oversized.clone(), json!({"pixels": 1}))));
+        assert_eq!(rejected.is_error, Some(true));
+        assert_eq!(
+            rejected.structured_content.as_ref().unwrap()["inline_bytes"],
+            oversized.len()
+        );
+        assert!(
+            !rejected
+                .content
+                .iter()
+                .any(|content| matches!(content, Content::Image(_)))
+        );
+
+        let saved = img_result(Ok((
+            oversized,
+            json!({"path": "/tmp/render.png", "pixels": 1}),
+        )));
+        assert_ne!(saved.is_error, Some(true));
+        assert!(saved.structured_content.as_ref().unwrap()["inline_image_omitted"].is_object());
+        assert!(
+            !saved
+                .content
+                .iter()
+                .any(|content| matches!(content, Content::Image(_)))
+        );
+
+        let error = res(Err("bad input".into()));
+        assert_eq!(error.is_error, Some(true));
+        assert_eq!(
+            error.structured_content,
+            Some(json!({"error": "bad input"}))
+        );
+
+        let warned = attach_commit_warning(res(Ok(json!({"ok": true}))), "committed; do not retry");
+        assert!(!is_error_result(&warned));
+        let warned_payload = result_json(&warned).unwrap();
+        assert_eq!(warned_payload["commit_warning"]["committed"], true);
+        assert_eq!(warned_payload["commit_warning"]["retry"], false);
+        let compatible = warned
+            .content
+            .iter()
+            .find_map(|content| content.as_text())
+            .unwrap();
+        assert_eq!(
+            serde_json::from_str::<Value>(&compatible.text).unwrap(),
+            warned_payload
+        );
+    }
+
+    #[test]
+    fn http_paths_are_disabled_or_confined_to_configured_roots() {
+        let root =
+            std::env::temp_dir().join(format!("atelier-http-path-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let import = root.join("import");
+        let export = root.join("export");
+        std::fs::create_dir_all(&import).unwrap();
+        std::fs::create_dir_all(&export).unwrap();
+        std::fs::write(import.join("sample.png"), b"not decoded in this test").unwrap();
+        let import = std::fs::canonicalize(import).unwrap();
+        let export = std::fs::canonicalize(export).unwrap();
+        let paths = HttpPathRoots::new(Some(import.clone()), Some(export.clone()));
+
+        let mut input = json!({"path": "sample.png"});
+        paths.rewrite(ToolName::DocRef, &mut input).unwrap();
+        assert_eq!(input["path"], json!(import.join("sample.png")));
+
+        let mut output = json!({"out_path": "nested/sheet.png"});
+        paths.rewrite(ToolName::DocExport, &mut output).unwrap();
+        assert_eq!(output["out_path"], json!(export.join("nested/sheet.png")));
+
+        for forbidden in ["../outside.png", "/tmp/outside.png"] {
+            let mut args = json!({"out_path": forbidden});
+            assert!(paths.rewrite(ToolName::DocExport, &mut args).is_err());
+        }
+        let mut disabled = json!({"out_path": "sheet.png"});
+        assert!(
+            HttpPathRoots::default()
+                .rewrite(ToolName::DocExport, &mut disabled)
+                .unwrap_err()
+                .message
+                .contains("ATELIER_EXPORT_ROOT")
+        );
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn http_output_rejects_symlink_escape() {
+        use std::os::unix::fs::symlink;
+
+        let root =
+            std::env::temp_dir().join(format!("atelier-http-symlink-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let export = root.join("export");
+        let outside = root.join("outside");
+        std::fs::create_dir_all(&export).unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+        symlink(&outside, export.join("redirect")).unwrap();
+        let export = std::fs::canonicalize(export).unwrap();
+        let paths = HttpPathRoots::new(None, Some(export));
+        let mut args = json!({"out_path": "redirect/escaped.png"});
+        assert!(paths.rewrite(ToolName::DocExport, &mut args).is_err());
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
@@ -1149,6 +1726,193 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir);
         Atelier::with_studio(studio)
+    }
+
+    fn transactions_empty(documents: &std::path::Path) -> bool {
+        let transactions = documents.join(".transactions");
+        !transactions.exists()
+            || std::fs::read_dir(transactions).is_ok_and(|mut entries| entries.next().is_none())
+    }
+
+    fn pixel_hex(atelier: &Atelier, doc_id: &str, x: i32, y: i32) -> String {
+        atelier
+            .studio()
+            .doc_dump_region(
+                doc_id,
+                0,
+                Some(0),
+                Some((x, y, x, y)),
+                atelier_studio::DumpMode::Hex,
+            )
+            .unwrap()["rows"][0]
+            .as_str()
+            .unwrap()
+            .to_string()
+    }
+
+    #[tokio::test]
+    async fn mutation_commit_publishes_pixels_and_recipe_together() {
+        let documents = std::env::temp_dir().join(format!(
+            "atelier-srv-test-transaction-commit-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&documents);
+        let atelier = Atelier::with_studio(Studio::with_docs_dir(documents.clone()));
+
+        let created = atelier
+            .dispatch(
+                ToolName::DocNew,
+                json!({"name": "atomic", "width": 2, "height": 2}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let created = result_json(&created).unwrap();
+        let doc_id = created["doc_id"].as_str().unwrap();
+        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 1);
+
+        let drew = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({
+                    "doc_id": doc_id,
+                    "layer": 0,
+                    "frame": 0,
+                    "op": "pencil",
+                    "points": [[1, 1]],
+                    "color": [12, 34, 56, 255]
+                }),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(!is_error_result(&drew));
+        assert_eq!(pixel_hex(&atelier, doc_id, 1, 1), "#0c2238");
+        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 2);
+        assert!(transactions_empty(&documents));
+        let _ = std::fs::remove_dir_all(documents);
+    }
+
+    #[tokio::test]
+    async fn handler_and_protocol_failures_drop_the_staged_generation() {
+        let documents = std::env::temp_dir().join(format!(
+            "atelier-srv-test-transaction-protocol-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&documents);
+        let atelier = Atelier::with_studio(Studio::with_docs_dir(documents.clone()));
+        let created = atelier
+            .dispatch(
+                ToolName::DocNew,
+                json!({"name": "rollback", "width": 2, "height": 2}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let created = result_json(&created).unwrap();
+        let doc_id = created["doc_id"].as_str().unwrap();
+
+        let handler_failed = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({
+                    "doc_id": doc_id,
+                    "layer": 0,
+                    "frame": 0,
+                    "op": "pencil",
+                    "points": [[0, 0]],
+                    "color": [999, 0, 0, 255]
+                }),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(is_error_result(&handler_failed));
+        assert_eq!(pixel_hex(&atelier, doc_id, 0, 0), ".");
+        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 1);
+        assert!(transactions_empty(&documents));
+
+        // `op` is required, so deserialization fails after the target has
+        // already been staged but before any generation can be published.
+        let failed = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({"doc_id": doc_id, "layer": 0, "frame": 0}),
+                "test",
+            )
+            .await;
+        assert!(failed.is_err());
+        assert_eq!(pixel_hex(&atelier, doc_id, 0, 0), ".");
+        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 1);
+        assert!(transactions_empty(&documents));
+
+        let invalid_id = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({
+                    "doc_id": "../not-a-document",
+                    "layer": 0,
+                    "frame": 0,
+                    "op": "clear_cel"
+                }),
+                "test",
+            )
+            .await
+            .unwrap_err();
+        assert!(invalid_id.message.contains("invalid document id"));
+        assert!(transactions_empty(&documents));
+        let _ = std::fs::remove_dir_all(documents);
+    }
+
+    #[tokio::test]
+    async fn journal_failure_rolls_back_a_successful_handler() {
+        let documents = std::env::temp_dir().join(format!(
+            "atelier-srv-test-transaction-journal-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&documents);
+        let atelier = Atelier::with_studio(Studio::with_docs_dir(documents.clone()));
+        let created = atelier
+            .dispatch(
+                ToolName::DocNew,
+                json!({"name": "rollback", "width": 2, "height": 2}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let created = result_json(&created).unwrap();
+        let doc_id = created["doc_id"].as_str().unwrap();
+
+        // A directory at the journal path deterministically makes append fail
+        // even when tests run as root. The staged draw itself succeeds, but it
+        // must never replace the live generation without provenance.
+        let journal = documents.join(doc_id).join(atelier_studio::JOURNAL_FILE);
+        std::fs::remove_file(&journal).unwrap();
+        std::fs::create_dir(&journal).unwrap();
+        let failed = atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({
+                    "doc_id": doc_id,
+                    "layer": 0,
+                    "frame": 0,
+                    "op": "pencil",
+                    "points": [[0, 0]],
+                    "color": [255, 0, 0, 255]
+                }),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(is_error_result(&failed));
+        let error = result_json(&failed).unwrap()["error"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        assert!(error.contains("journal"), "got: {error}");
+        assert_eq!(pixel_hex(&atelier, doc_id, 0, 0), ".");
+        assert!(transactions_empty(&documents));
+        let _ = std::fs::remove_dir_all(documents);
     }
 
     /// doc_look is the agent's only eye: an edit op acknowledges with text only.
