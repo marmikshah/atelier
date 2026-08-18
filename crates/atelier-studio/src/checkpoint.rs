@@ -1104,6 +1104,7 @@ mod hardening_tests {
             id,
             0,
             0,
+            None,
             "rect",
             json!({"x0": 0, "y0": 0, "x1": 1, "y1": 1, "color": [200, 0, 0, 255], "fill": true})
                 .as_object()
@@ -1137,6 +1138,7 @@ mod hardening_tests {
             id,
             0,
             0,
+            None,
             "fill_cel",
             json!({"color": [0, 0, 0, 255]})
                 .as_object()

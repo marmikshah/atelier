@@ -420,6 +420,7 @@ mod tests {
                 id,
                 0,
                 0,
+                None,
                 "fill_cel",
                 json!({"color":[9,8,7,255]}).as_object().unwrap().clone(),
             )
@@ -452,6 +453,7 @@ mod tests {
                 id,
                 0,
                 0,
+                None,
                 "fill_cel",
                 json!({"color":[9,8,7,255]}).as_object().unwrap().clone(),
             )

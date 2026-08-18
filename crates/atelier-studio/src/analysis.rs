@@ -1433,7 +1433,7 @@ mod tests {
 
     /// Single draw-op shorthand: `params` is the op's JSON object (as `json!`).
     fn draw(s: &Studio, id: &str, frame: usize, op: &str, params: Value) -> Value {
-        s.doc_draw(id, 0, frame, op, params.as_object().unwrap().clone())
+        s.doc_draw(id, 0, frame, None, op, params.as_object().unwrap().clone())
             .unwrap()
     }
 
