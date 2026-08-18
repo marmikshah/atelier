@@ -126,6 +126,7 @@ pub(crate) struct DocDraw {
     pub(crate) doc_id: DocumentId,
     pub(crate) layer: usize,
     pub(crate) frame: usize,
+    pub(crate) frame_to: Option<usize>,
     /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
     /// | curve | stamp | fill | bucket | gradient | scatter | noise | text |
     /// fill_cel | clear_cel.
@@ -142,6 +143,7 @@ pub(crate) struct DocFx {
     pub(crate) doc_id: DocumentId,
     pub(crate) layer: usize,
     pub(crate) frame: usize,
+    pub(crate) frame_to: Option<usize>,
     /// One transform/effect op: blur | outline | drop_shadow | bevel | shade |
     /// form | dither | pixel_perfect | flip | shift | rotate | scale | symmetry |
     /// quantize | replace_color | adjust | gradient_map.
@@ -171,6 +173,10 @@ fn single_op_tool_schema(generator: &mut SchemaGenerator, side: OpSide) -> Schem
     );
     properties.insert(
         "frame".into(),
+        serde_json::json!({"type": "integer", "minimum": 0}),
+    );
+    properties.insert(
+        "frame_to".into(),
         serde_json::json!({"type": "integer", "minimum": 0}),
     );
     object.insert(
@@ -618,16 +624,17 @@ mod tests {
                 "accepted a non-contract control value"
             );
         }
-        assert!(
-            serde_json::from_value::<DocDraw>(serde_json::json!({
-                "doc_id": id,
-                "layer": 0,
-                "frame": 0,
-                "op": "rect",
-                "x0": 0
-            }))
-            .is_ok()
-        );
+        let draw = serde_json::from_value::<DocDraw>(serde_json::json!({
+            "doc_id": id,
+            "layer": 0,
+            "frame": 0,
+            "frame_to": 2,
+            "op": "rect",
+            "x0": 0
+        }))
+        .unwrap();
+        assert_eq!(draw.frame_to, Some(2));
+        assert!(!draw.params.contains_key("frame_to"));
         assert!(
             serde_json::from_value::<DocDraw>(serde_json::json!({
                 "doc_id": id,
@@ -686,14 +693,22 @@ mod tests {
                 "merge_down"
             ])
         );
-        assert_eq!(layer["properties"]["doc_id"]["$ref"], "#/$defs/DocumentId");
-        assert_eq!(layer["$defs"]["DocumentId"]["type"], "string");
-        assert_eq!(layer["$defs"]["DocumentId"]["format"], "uuid");
+        assert_eq!(layer["properties"]["doc_id"]["type"], "string");
+        assert_eq!(layer["properties"]["doc_id"]["format"], "uuid");
+        assert!(layer["$defs"].get("DocumentId").is_none());
 
         let draw = schemars::schema_for!(DocDraw);
         let draw = draw.as_value();
         assert_eq!(draw["additionalProperties"], false);
+        assert_eq!(draw["properties"]["doc_id"]["type"], "string");
         assert_eq!(draw["properties"]["doc_id"]["format"], "uuid");
+        assert_eq!(draw["properties"]["frame_to"]["minimum"], 0);
+        assert!(
+            !draw["required"]
+                .as_array()
+                .unwrap()
+                .contains(&serde_json::json!("frame_to"))
+        );
         assert_eq!(parameter_schema(draw, "color")["$ref"], "#/$defs/c");
         assert_eq!(parameter_schema(draw, "opacity")["maximum"], 255);
         for op in draw_ops() {
@@ -715,6 +730,7 @@ mod tests {
 
         let fx = schemars::schema_for!(DocFx);
         let fx = fx.as_value();
+        assert_eq!(fx["properties"]["frame_to"]["minimum"], 0);
         for op in fx_ops() {
             assert!(op_branch(fx, op).is_some(), "missing fx schema for {op}");
         }
