@@ -1,6 +1,7 @@
 # Persistent atelier HTTP MCP server. Point any MCP client at
 #   http://127.0.0.1:8765/mcp
 # Documents survive restarts in the named volume.
+# Set ATELIER_HTTP_TOKEN in the shell or a local ignored .env before starting.
 services:
   atelier:
     image: ghcr.io/marmikshah/atelier:latest
@@ -11,9 +12,19 @@ services:
       - "127.0.0.1:8765:8765"
     volumes:
       - atelier-data:/data
-    # Only needed to reach the server from another host/LAN:
-    # environment:
-    #   ATELIER_ALLOWED_HOSTS: "atelier.local,10.0.0.5:8765"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      ATELIER_HTTP_TOKEN: "${ATELIER_HTTP_TOKEN:?set ATELIER_HTTP_TOKEN before starting Atelier}"
+    # Optional HTTP file access remains rooted and relative:
+    #   ATELIER_IMPORT_ROOT: /imports
+    #   ATELIER_EXPORT_ROOT: /exports
+    # Add matching read-only/read-write bind mounts when enabling those roots.
     restart: unless-stopped
 
 volumes:

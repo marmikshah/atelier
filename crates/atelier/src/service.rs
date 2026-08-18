@@ -20,7 +20,9 @@ struct InstallOptions {
 
 /// Entry point for `atelier <install|uninstall|status>`. Returns a process exit
 /// code. Interactive installs ask for a port; scripts can pass `--port`, while
-/// `--bind` remains the advanced host-and-port override.
+/// `--bind` remains a loopback-only host-and-port override. Network-facing
+/// servers require bearer authentication and must be run explicitly instead
+/// of persisting a secret in a systemd command or unit.
 pub fn run(args: &[String]) -> i32 {
     let cmd = args.first().map(|s| s.as_str());
     match cmd {
@@ -72,7 +74,7 @@ pub fn run(args: &[String]) -> i32 {
         Some("status") if args.len() == 1 => status(),
         _ => {
             eprintln!(
-                "usage: atelier install [--port PORT | --bind ADDR] [--home DIR]\n\
+                "usage: atelier install [--port PORT | --bind LOOPBACK_ADDR] [--home DIR]\n\
                  \x20      atelier <uninstall|status>\n\
                  \n\
                  install    set up or reconfigure the background daemon; asks for a port\n\
@@ -127,7 +129,7 @@ fn parse_install_options(args: &[String]) -> Result<InstallOptions, String> {
         return Err("--port and --bind are mutually exclusive".into());
     }
     if let Some(bind) = &options.bind {
-        validate_bind(bind)?;
+        validate_daemon_bind(bind)?;
     }
     Ok(options)
 }
@@ -155,6 +157,28 @@ fn validate_bind(bind: &str) -> Result<(), String> {
     })
 }
 
+fn validate_daemon_bind(bind: &str) -> Result<(), String> {
+    validate_bind(bind)?;
+    let host = bind
+        .rsplit_once(':')
+        .map(|(host, _)| host)
+        .unwrap_or_default();
+    let ip_host = host
+        .strip_prefix('[')
+        .and_then(|host| host.strip_suffix(']'))
+        .unwrap_or(host);
+    let loopback = host.eq_ignore_ascii_case("localhost")
+        || ip_host
+            .parse::<std::net::IpAddr>()
+            .is_ok_and(|address| address.is_loopback());
+    if !loopback {
+        return Err(format!(
+            "background daemon bind '{bind}' is not loopback; run `ATELIER_HTTP_TOKEN=... atelier --http {bind}` explicitly for network access"
+        ));
+    }
+    Ok(())
+}
+
 fn replace_port(bind: &str, port: u16) -> String {
     let host = bind
         .rsplit_once(':')
@@ -179,7 +203,7 @@ fn select_bind(
         .or_else(|| bind_port(base))
         .unwrap_or(DEFAULT_PORT);
     let bind = replace_port(base, port);
-    validate_bind(&bind)?;
+    validate_daemon_bind(&bind)?;
     Ok(bind)
 }
 
@@ -433,7 +457,7 @@ mod tests {
     }
 
     #[test]
-    fn install_options_accept_port_or_bind_but_not_both() {
+    fn install_options_accept_port_or_loopback_bind_but_not_both() {
         assert_eq!(
             parse_install_options(&install_args(&["--port", "9123", "--home", "/tmp/art"]))
                 .unwrap(),
@@ -444,9 +468,9 @@ mod tests {
             }
         );
         assert_eq!(
-            parse_install_options(&install_args(&["--bind", "0.0.0.0:9010"])).unwrap(),
+            parse_install_options(&install_args(&["--bind", "127.0.0.2:9010"])).unwrap(),
             InstallOptions {
-                bind: Some("0.0.0.0:9010".into()),
+                bind: Some("127.0.0.2:9010".into()),
                 port: None,
                 home: None,
             }
@@ -459,6 +483,11 @@ mod tests {
                 "127.0.0.1:9000"
             ]))
             .is_err()
+        );
+        assert!(
+            parse_install_options(&install_args(&["--bind", "0.0.0.0:9010"]))
+                .unwrap_err()
+                .contains("not loopback")
         );
     }
 
@@ -478,20 +507,21 @@ mod tests {
     fn bind_selection_reuses_reinstall_host_and_port() {
         let defaults = parse_install_options(&install_args(&[])).unwrap();
         assert_eq!(
-            select_bind(&defaults, Some("0.0.0.0:9010"), None).unwrap(),
-            "0.0.0.0:9010"
+            select_bind(&defaults, Some("127.0.0.2:9010"), None).unwrap(),
+            "127.0.0.2:9010"
         );
 
         let changed = parse_install_options(&install_args(&["--port", "9123"])).unwrap();
         assert_eq!(
-            select_bind(&changed, Some("0.0.0.0:9010"), None).unwrap(),
-            "0.0.0.0:9123"
+            select_bind(&changed, Some("127.0.0.2:9010"), None).unwrap(),
+            "127.0.0.2:9123"
         );
         assert_eq!(
             select_bind(&defaults, Some("127.0.0.1:9010"), Some(9456)).unwrap(),
             "127.0.0.1:9456"
         );
         assert_eq!(select_bind(&defaults, None, None).unwrap(), DEFAULT_BIND);
+        assert!(select_bind(&defaults, Some("0.0.0.0:9010"), None).is_err());
     }
 
     #[test]
