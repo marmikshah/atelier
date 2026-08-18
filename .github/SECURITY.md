@@ -29,13 +29,12 @@ timeline.
   uploads time out after 30 seconds and at most 64 requests run concurrently.
   Persisted document metadata is bounded, and normal store reads refuse
   symlinked document directories, metadata, cels, references, and journals.
-- Below **v2.0.0** the code is AI-generated and has not been fully reviewed by
-  the maintainer. Assume bugs — including security bugs — may exist, and use at
-  your own risk (see the README notice).
+- During the **1.x** release train, much of the code remains AI-generated and
+  has not been fully reviewed by the maintainer. Assume bugs — including
+  security bugs — may exist, and use at your own risk (see the README notice).
 
 ## Supported versions
 
 Only the latest release receives fixes. There are no backports below the latest
-tag while the project is pre-2.0.0. Native support is limited to Ubuntu 22.04 or
-newer on x86_64; the Alpine linux/amd64 container is the only other supported
-runtime.
+1.x tag. Native support is limited to Ubuntu 22.04 or newer on x86_64; the
+Alpine linux/amd64 container is the only other supported runtime.
