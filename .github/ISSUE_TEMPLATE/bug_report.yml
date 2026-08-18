@@ -54,5 +54,5 @@ body:
   - type: input
     id: os
     attributes:
-      label: OS / arch
-      description: e.g. macOS 15 arm64, Ubuntu 24.04 x86_64.
+      label: Supported runtime
+      description: e.g. Ubuntu 24.04 x86_64 or the Alpine linux/amd64 image.

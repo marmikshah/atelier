@@ -35,6 +35,9 @@ Layered, animated, game-ready art — from your CLI, or over MCP.</p>
 
 ## Install
 
+The native release supports Ubuntu 22.04 or newer on x86_64. The supported
+container release is an Alpine-based `linux/amd64` image.
+
 ```sh
 curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
 ```
@@ -63,14 +66,18 @@ exactly this way: no registration, no daemon, no restart. Just ask:
 
 ### Other ways
 
-- **Binaries** — macOS (ARM), Linux x86_64, Windows: [latest release](https://github.com/marmikshah/atelier/releases/latest)
-- **Source** — `cargo install --locked --path crates/atelier`, or `tools/install.sh --source`
-  to build this checkout and install it
+- **Ubuntu archive** — binary, README, license, and checksum on the
+  [latest release](https://github.com/marmikshah/atelier/releases/latest)
+- **Source on Ubuntu x86_64** — `cargo install --locked --path crates/atelier`,
+  or `tools/install.sh --source` to build this checkout and install it
+
+Native installations on macOS, Windows, Linux distributions other than Ubuntu,
+and non-x86_64 processors are not supported.
 
 ## Optional: run as an MCP server
 
 For clients that only speak MCP, the same binary is an MCP server — one
-command sets up a shared background daemon (launchd / systemd):
+command sets up a shared background daemon (`systemd --user`):
 
 ```sh
 atelier install
@@ -98,11 +105,15 @@ and delete documents.
 
 ### Docker
 
-Prefer a container? One small image — a static amd64 musl binary on Alpine
-(~15 MB) — serving the same HTTP MCP endpoint:
+The second supported release is a small Alpine `linux/amd64` image with a
+static musl binary and no runtime packages. It serves the same HTTP MCP
+endpoint:
 
 ```sh
-docker run -d -p 127.0.0.1:9123:8765 -v atelier-data:/data ghcr.io/marmikshah/atelier
+docker run -d --platform linux/amd64 \
+  -p 127.0.0.1:9123:8765 \
+  -v atelier-data:/data \
+  ghcr.io/marmikshah/atelier:latest
 ```
 
 Documents persist in the `atelier-data` volume, so they survive restarts.
@@ -121,9 +132,9 @@ declarative.
 - **The selected port is already in use** — rerun `atelier install` and choose
   another port (`--port PORT` in scripts). `atelier status` prints the installed
   endpoint; `atelier uninstall` stops the daemon.
-- **Where are the logs?** The daemon writes `~/.atelier/logs/atelier.{out,err}.log`;
-  verbosity via `ATELIER_LOG` (`RUST_LOG` syntax). In stdio mode the same log
-  goes to the spawning client's stderr.
+- **Where are the logs?** Use `journalctl --user -u atelier -f` for the Ubuntu
+  daemon. Verbosity is controlled by `ATELIER_LOG` (`RUST_LOG` syntax). In
+  stdio mode the same log goes to the spawning client's stderr.
 - **Uninstall everything** — `install.sh uninstall` (or `atelier uninstall` for
   just the daemon). Your documents in `~/.atelier` are kept; delete that
   directory too if you want them gone.
@@ -144,7 +155,7 @@ deliberate act, and the context stays small enough to look often.
 | 🎨 **A real editor, headless** | Layers, frames, tags, locked palettes, checkpoints. Draw with primitives or paint a whole region declaratively from a character grid. |
 | 👁 **An eye, not just a hand** | Critique, palette, silhouette and animation audits turn *"does it look right?"* into numbers an agent can act on. |
 | 🎮 **Game-ready out of the box** | Tagged spritesheets, GIF/APNG, and engine-standard JSON. |
-| 🔒 **Yours, offline** | One self-contained Rust binary. No API keys, no network, no telemetry. Fully deterministic. |
+| 🔒 **Yours, offline** | One Ubuntu binary or Alpine container. No API keys, outbound services, or telemetry. |
 
 ## The CLI
 
@@ -171,8 +182,8 @@ atelier uninstall          # stop and remove the daemon
 
 Every call — CLI, replay, stdio or HTTP — travels one dispatch path, so it logs
 the same line to stderr: tool name, op, target document, caller, duration, and
-the error text when a call fails. The daemon collects this in
-`~/.atelier/logs/atelier.err.log`; tune verbosity with `ATELIER_LOG`
+the error text when a call fails. The Ubuntu daemon collects this in the user
+journal; tune verbosity with `ATELIER_LOG`
 (`RUST_LOG` syntax, default `info`). When several agents share the daemon,
 every call logs a `caller=` identity: by default the TCP peer address; set an
 `X-Atelier-Caller` header in a client's MCP config, or the per-call `session`

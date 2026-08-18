@@ -24,6 +24,9 @@ repository, and run:
 make check
 ```
 
+The supported native development and release environment is Ubuntu 22.04 or
+newer on x86_64. The supported container target is Alpine linux/amd64.
+
 That non-mutating gate checks release metadata, formatting, Clippy, rustdoc,
 tests, and tool-reference rendering.
 

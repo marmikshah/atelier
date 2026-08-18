@@ -4,6 +4,7 @@
 services:
   atelier:
     image: ghcr.io/marmikshah/atelier:latest
+    platform: linux/amd64
     # Or build locally instead of pulling:
     # build: .
     ports:
