@@ -24,6 +24,7 @@ use atelier_core::raster::Blend;
 mod analysis;
 mod control;
 mod craft;
+mod integrity;
 mod ops_export;
 mod ops_region;
 mod reference;
@@ -35,6 +36,7 @@ pub use control::{
     DocumentId, DumpMode, ExportOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta, ToolName,
 };
+pub use integrity::{IntegrityIssue, IntegritySeverity, StoreIntegrityReport};
 pub use store::{JOURNAL_FORMAT_VERSION, JournalEntry, validate_journal};
 pub use transaction::{CommitOutcome, StoreTransaction};
 pub use view::LookOptions;

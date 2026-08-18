@@ -1,9 +1,9 @@
-//! atelier: the pixel-art studio agents can see — a headless editor.
+//! Atelier: an offline, headless pixel-art editor.
 //!
-//! Agents create layered/animated documents, paint them with drawing primitives,
-//! render PNG previews to inspect, and iterate. Documents live in a flat,
-//! opaque-id-addressed store (no projects, no baked-in style). Engine-agnostic
-//! PNG/sheet/GIF output.
+//! Automation clients create layered and animated documents, apply drawing
+//! operations, inspect PNG previews and measurements, and export assets.
+//! Documents live in a flat, opaque-id-addressed store without process-global
+//! selection state or a prescribed visual style.
 //!
 //! The CLI is the front door — every tool is one in-process call:
 //!
@@ -17,7 +17,7 @@
 //! ```text
 //! atelier                        # stdio (a client spawns it)
 //! atelier --http [ADDR]          # Streamable HTTP, default 127.0.0.1:8765
-//! ATELIER_HTTP=0.0.0.0:8765 atelier
+//! ATELIER_HTTP=0.0.0.0:8765 ATELIER_HTTP_TOKEN=secret atelier
 //!
 //! # Extra allowed Host headers for LAN/remote use (DNS-rebind guard):
 //! ATELIER_ALLOWED_HOSTS="my-workstation.local,192.168.1.20:8765"
@@ -50,16 +50,17 @@ mod replay;
 mod service;
 mod skills;
 
-const HELP: &str = "atelier — the pixel-art studio agents can see (headless; CLI-first, MCP optional).
+const HELP: &str = "atelier — offline, headless pixel-art editing through a CLI and MCP server.
 
 USAGE:
     atelier                       run the MCP server over stdio (for clients that spawn it)
     atelier --http [ADDR]         run the streamable-HTTP MCP server (default 127.0.0.1:8765, endpoint /mcp)
     atelier install               install/reconfigure the background daemon; asks for port
-            [--port PORT | --bind ADDR] [--home DIR]
+            [--port PORT | --bind LOOPBACK_ADDR] [--home DIR]
     atelier status                show daemon state and log locations
     atelier uninstall             stop + remove the daemon
     atelier library               list the documents in the store (ATELIER_HOME)
+            verify [--json]       validate stored metadata, cels, references, and journals
             rm <id>... | rm --prefix <p> | rm --all [--yes]
                                   delete documents — permanent, confirms first
     atelier replay <journal|id>   replay a JSONL journal, or rebuild a document from its
@@ -84,7 +85,10 @@ USAGE:
 ENVIRONMENT:
     ATELIER_HOME             where documents/exports live (default ~/.atelier)
     ATELIER_HTTP             HTTP bind address (alternative to --http)
-    ATELIER_ALLOWED_HOSTS    extra allowed Host headers for LAN/remote use
+    ATELIER_HTTP_TOKEN       bearer token; required for non-loopback HTTP
+    ATELIER_ALLOWED_HOSTS    extra allowed Host headers (DNS-rebinding guard)
+    ATELIER_IMPORT_ROOT      HTTP-only root for relative reference-image paths
+    ATELIER_EXPORT_ROOT      HTTP-only root for relative output paths
     ATELIER_LOG              log filter (RUST_LOG syntax; default info, output on stderr)
 ";
 
