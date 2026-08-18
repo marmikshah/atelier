@@ -63,10 +63,11 @@ USAGE:
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier call <tool> ['<json>' | --file PATH | --stdin]
-            [--home DIR]
+            [--home DIR] [--image-out PATH]
                                   run one tool call in-process — the whole op
-                                  surface, scriptable from a shell. stdout gets the
-                                  JSON report; exit 0 ok, 1 tool error, 2 bad call
+                                  surface, scriptable from a shell. --image-out saves
+                                  an inline image; stdout gets the JSON report.
+                                  exit 0 ok, 1 tool/output error, 2 bad call
     atelier init                  stamp ./.atelier so this directory keeps its
                                   own art and recipes
     atelier tools [--html|--schema <name>]
@@ -238,7 +239,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(service::run(&args[1..]))
         }
         // Inspect / prune the document store.
-        Some("library") => std::process::exit(library::run(&args[2..])),
+        Some("library") => std::process::exit(library::run(&args[2..]).await),
         // The CLI front door: one tool call, in-process, through dispatch.
         Some("call") => std::process::exit(call::run(&args[2..]).await),
         // Stamp ./.atelier, opting into a directory-local store.

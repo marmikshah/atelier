@@ -90,7 +90,7 @@ doc_new → layers back-to-front → lock a palette → value blocking → look 
 
 ## Before you touch anything risky
 
-`doc_checkpoint op=save`. A palette snap or a full-canvas fill across a
+`doc_checkpoint action=save`. A palette snap or a full-canvas fill across a
 multi-band scene is exactly the op you will want to undo.
 
 ## Failure modes

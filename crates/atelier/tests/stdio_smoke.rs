@@ -129,6 +129,15 @@ fn stdio_server_handshakes_lists_and_calls() {
         init["capabilities"]["tools"].is_object(),
         "tools capability advertised: {init}"
     );
+    assert_eq!(
+        init["serverInfo"]["name"], "atelier",
+        "server identity: {init}"
+    );
+    assert_eq!(
+        init["serverInfo"]["version"],
+        env!("CARGO_PKG_VERSION"),
+        "server version: {init}"
+    );
     s.notify("notifications/initialized");
 
     let list = s.request("tools/list", json!({}));

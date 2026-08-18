@@ -90,4 +90,20 @@ mod tests {
         assert!(Skill::by_short("nope").is_none());
         assert_eq!(ALL.len(), 3);
     }
+
+    #[test]
+    fn checkpoint_examples_use_the_advertised_action_field() {
+        for skill in ALL {
+            assert!(
+                !skill.body.contains("doc_checkpoint op="),
+                "{} uses the unsupported checkpoint op field",
+                skill.name
+            );
+            assert!(
+                skill.body.contains("doc_checkpoint action=save"),
+                "{} should show the safe checkpoint form",
+                skill.name
+            );
+        }
+    }
 }
