@@ -17,9 +17,8 @@ fn sibling_with_suffix(path: &Path, suffix: &str) -> Result<PathBuf, String> {
 
 /// Write text through a same-directory temporary file.
 ///
-/// Existing content is copied to `<name>.atelier-backup` first. Unix renames
-/// replace atomically; Windows cannot replace an existing file with `std`, so
-/// the backup remains the recovery point across its remove-then-rename step.
+/// Existing content is copied to `<name>.atelier-backup` first. The
+/// same-filesystem rename atomically replaces the destination on Linux.
 pub(crate) fn write_text(path: &Path, body: &str) -> Result<(), String> {
     if fs::read_to_string(path).ok().as_deref() == Some(body) {
         return Ok(());
@@ -73,11 +72,6 @@ pub(crate) fn write_text(path: &Path, body: &str) -> Result<(), String> {
             })?;
         }
 
-        #[cfg(windows)]
-        if path.exists() {
-            fs::remove_file(path)
-                .map_err(|error| format!("cannot replace {}: {error}", path.display()))?;
-        }
         fs::rename(&temporary, path)
             .map_err(|error| format!("cannot replace {}: {error}", path.display()))
     })();

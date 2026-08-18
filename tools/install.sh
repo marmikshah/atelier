@@ -12,6 +12,9 @@
 # Environment:
 #   ATELIER_VERSION      release tag to install (for example v1.8.0)
 #   ATELIER_INSTALL_DIR  binary directory (default: ~/.local/bin)
+#
+# Native installs support Ubuntu 22.04 or newer on x86_64. The separately
+# published Alpine image is the only other supported runtime.
 set -eu
 
 REPO="marmikshah/atelier"
@@ -46,6 +49,21 @@ if [ -x "$BIN" ]; then
   say "Updating $("$BIN" --version 2>/dev/null || printf 'the existing atelier installation') at $BIN."
 fi
 
+OS="$(uname -s)"
+ARCH="$(uname -m)"
+if [ "$OS" != "Linux" ] || [ "$ARCH" != "x86_64" ]; then
+  fail "native installs support Ubuntu x86_64 only; use the linux/amd64 Alpine image from ghcr.io/$REPO"
+fi
+[ -r /etc/os-release ] || fail "cannot identify this system as Ubuntu (/etc/os-release is missing)"
+DISTRO_ID="$(awk -F= '$1 == "ID" {gsub(/\"/, "", $2); print $2; exit}' /etc/os-release)"
+if [ "$DISTRO_ID" != "ubuntu" ]; then
+  fail "native installs support Ubuntu x86_64 only (found '${DISTRO_ID:-unknown}'); use ghcr.io/$REPO"
+fi
+DISTRO_VERSION="$(awk -F= '$1 == "VERSION_ID" {gsub(/\"/, "", $2); print $2; exit}' /etc/os-release)"
+if ! awk -v version="$DISTRO_VERSION" 'BEGIN { exit !(version + 0 >= 22.04) }'; then
+  fail "native installs require Ubuntu 22.04 or newer (found '${DISTRO_VERSION:-unknown}')"
+fi
+
 if [ -n "$FROM_SOURCE" ]; then
   command -v cargo >/dev/null 2>&1 || fail "--source needs cargo (https://rustup.rs)"
   [ -f Cargo.toml ] || fail "--source must run from inside an atelier checkout"
@@ -57,31 +75,6 @@ if [ -n "$FROM_SOURCE" ]; then
 else
   command -v curl >/dev/null 2>&1 || fail "curl is required"
   command -v tar >/dev/null 2>&1 || fail "tar is required"
-
-  OS="$(uname -s)"
-  ARCH="$(uname -m)"
-  case "$OS" in
-    Darwin)
-      case "$ARCH" in
-        arm64) TARGET="aarch64-apple-darwin" ;;
-        *)
-          fail "Intel macOS binaries are not published — use: cargo install --locked --git https://github.com/$REPO --package atelier"
-          ;;
-      esac
-      ;;
-    Linux)
-      case "$ARCH" in
-        x86_64) TARGET="x86_64-unknown-linux-gnu" ;;
-        *)
-          fail "no binary for Linux/$ARCH — use: cargo install --locked --git https://github.com/$REPO --package atelier"
-          ;;
-      esac
-      ;;
-    MINGW*|MSYS*|CYGWIN*)
-      fail "on Windows, download the .zip from https://github.com/$REPO/releases/latest"
-      ;;
-    *) fail "unsupported platform: $OS/$ARCH" ;;
-  esac
 
   VERSION="${ATELIER_VERSION:-}"
   if [ -z "$VERSION" ]; then
@@ -97,14 +90,15 @@ else
     grep -Eq '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' ||
     fail "invalid release version '$VERSION' (expected vMAJOR.MINOR.PATCH)"
 
-  URL="https://github.com/$REPO/releases/download/$VERSION/atelier-$VERSION-$TARGET.tar.gz"
+  PACKAGE="atelier-$VERSION-ubuntu-x86_64"
+  URL="https://github.com/$REPO/releases/download/$VERSION/$PACKAGE.tar.gz"
   CHECKSUM_URL="$URL.sha256"
   TMP="$(mktemp -d)"
   trap 'rm -rf "$TMP"' EXIT
   ARCHIVE="$TMP/atelier.tar.gz"
   CHECKSUM="$TMP/atelier.tar.gz.sha256"
 
-  say "Downloading atelier $VERSION ($TARGET)..."
+  say "Downloading atelier $VERSION for Ubuntu x86_64..."
   curl -fsSL "$URL" -o "$ARCHIVE" || fail "download failed: $URL"
 
   curl -fsSL "$CHECKSUM_URL" -o "$CHECKSUM" ||
@@ -130,7 +124,7 @@ else
 
   tar -xzf "$ARCHIVE" -C "$TMP"
   mkdir -p "$INSTALL_DIR"
-  install -m 755 "$TMP/atelier" "$BIN"
+  install -m 755 "$TMP/$PACKAGE/atelier" "$BIN"
   say "Installed: $BIN ($("$BIN" --version))"
 fi
 

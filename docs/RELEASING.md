@@ -83,8 +83,11 @@ That tag push is the normal publication trigger.
 ## 3. Watch publication
 
 The workflow validates the tag and reruns the production gate before building.
-It creates the GitHub Release only after all three platform archives, their
-SHA-256 sidecars, and the smoke-tested amd64 container have succeeded.
+It creates the GitHub Release only after the Ubuntu 22.04+ x86_64 archive, its
+SHA-256 sidecar, and the smoke-tested Alpine linux/amd64 image have succeeded.
+The native archive is built on Ubuntu 22.04 so its glibc baseline is deliberate;
+it contains the executable, `README.md`, and `LICENSE` and is smoke-tested only
+after extraction.
 
 ```sh
 gh run list --workflow Release --limit 3
@@ -93,8 +96,9 @@ gh run watch "$ATELIER_RELEASE_RUN_ID" --exit-status
 gh release view "$ATELIER_RELEASE_TAG"
 ```
 
-The installer requires checksums for v1.8.0 and later. The release should contain
-three archives, three matching `.sha256` files, and the GHCR image tags.
+The installer requires checksums for v1.8.0 and later. The release should
+contain `atelier-$ATELIER_RELEASE_TAG-ubuntu-x86_64.tar.gz`, its matching
+`.sha256` file, and the GHCR image tags.
 
 ## 4. Retry an orchestration failure
 

@@ -1,4 +1,4 @@
-name: Docker
+name: Alpine image
 
 # Release tags reach this workflow after archive builds succeed and before the
 # GitHub Release becomes public. Docker deliberately ships only linux/amd64:
@@ -33,7 +33,8 @@ concurrency:
 
 jobs:
   image:
-    runs-on: ubuntu-latest
+    name: Alpine linux/amd64
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     permissions:
       contents: read
@@ -85,6 +86,8 @@ jobs:
         env:
           IMAGE: ghcr.io/${{ github.repository }}:${{ inputs.release_tag }}
         run: |
+          test "$(docker image inspect --format '{{.Architecture}}' "$IMAGE")" = "amd64"
+          docker run --rm "$IMAGE" --version
           docker run -d --name smoke -p 127.0.0.1:18765:8765 "$IMAGE"
           trap 'docker rm -f smoke >/dev/null 2>&1 || true' EXIT
           code=000

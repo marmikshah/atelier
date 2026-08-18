@@ -1,5 +1,5 @@
-# Keep the build context small — only Cargo manifests + crate sources are needed.
-# NOTE: crates/atelier/skills/*.md MUST stay in context (include_str!'d into the binary).
+# Keep local and derived content out of the release image build context.
+# Crate skills and the root LICENSE must stay available to the Dockerfile.
 target
 .git
 .github
