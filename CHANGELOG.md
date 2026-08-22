@@ -5,7 +5,7 @@ development stays on the `1.y.z` release train: feature releases increment
 `y`, and the maintainer decides explicitly if a new major version will ever be
 created. Minor 1.x releases may contain breaking changes.
 
-## [1.9.0] — Unreleased
+## [1.9.0] — 2026-08-22
 
 ### Added
 
