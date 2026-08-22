@@ -5,27 +5,28 @@ development stays on the `1.y.z` release train: feature releases increment
 `y`, and the maintainer decides explicitly if a new major version will ever be
 created. Minor 1.x releases may contain breaking changes.
 
-## [Unreleased]
+## [1.9.1] — 2026-08-23
 
-### Added
+Build-system fixes only. The editor, the tool surface, the document format,
+and the shipped `linux/amd64` container are unchanged from 1.9.0.
 
-- macOS now builds and passes the complete test suite. The store's atomic
-  publication step is expressed as two operations — exchange, and create
-  without replacing — implemented with `renameat2` on Linux and `renamex_np`
-  on macOS. Releases remain Ubuntu x86_64 and the `linux/amd64` container;
-  macOS ships no binary and has no daemon, because `atelier install` needs
-  `systemd --user` and now says so instead of failing on a missing
-  `systemctl`.
-- Releases now publish an Ubuntu `aarch64` archive alongside `x86_64`, each
-  built and smoke-tested natively on a runner of its own architecture.
-  `tools/install.sh` detects the architecture and fetches the matching
-  archive. Docker still publishes `linux/amd64` only.
+### Fixed
 
-### Changed
-
-- Platforms without an atomic directory exchange are still refused at compile
-  time, but the check now names the capability rather than the operating
-  system.
+- The build refused to compile anywhere except Linux x86_64, so the crate
+  could not be built or tested on macOS even though almost nothing in it is
+  platform-bound. The one part that is — publishing a document generation
+  atomically — is now expressed as two operations, exchange and
+  create-without-replacing, implemented with `renameat2` on Linux and
+  `renamex_np` on macOS. Targets offering neither are still refused at compile
+  time, now by naming the missing capability rather than the operating system.
+  macOS still ships no release binary and has no daemon: `atelier install`
+  needs `systemd --user`, and `install`, `uninstall`, and `status` now say so
+  instead of failing on a missing `systemctl`.
+- Release builds covered only `x86_64`, and `tools/install.sh` rejected every
+  other architecture outright. Releases now also publish an Ubuntu `aarch64`
+  archive — a new download alongside the existing one — built and smoke-tested
+  natively on a runner of its own architecture, and the installer selects the
+  archive matching `uname -m`. Docker still publishes `linux/amd64` only.
 
 ## [1.9.0] — 2026-08-22
 
