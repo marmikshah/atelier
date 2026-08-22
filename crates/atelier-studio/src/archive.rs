@@ -6,10 +6,8 @@
 //! including its recipe, revision, reference, and bounded checkpoint history.
 
 use std::collections::HashSet;
-use std::ffi::CString;
 use std::fs;
 use std::io::{BufReader, Read, Write};
-use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
 use atelier_core::document::Document;
@@ -17,6 +15,7 @@ use crc32fast::Hasher;
 use serde_json::{Value, json};
 use uuid::Uuid;
 
+use super::renameat2::{RENAME_NOREPLACE, renameat2};
 use super::store::{parse_journal_file, read_bounded_utf8};
 use super::{CommitOutcome, JOURNAL_FILE, REVISION_FILE, Studio};
 
@@ -1049,48 +1048,14 @@ fn sync_directory(path: &Path) -> std::io::Result<()> {
     fs::File::open(path)?.sync_all()
 }
 
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 fn rename_noreplace(source: &Path, destination: &Path) -> Result<(), String> {
-    use std::os::raw::{c_int, c_long};
-
-    const AT_FDCWD: c_int = -100;
-    const SYS_RENAMEAT2: c_long = 316;
-    const RENAME_NOREPLACE: u32 = 1;
-    unsafe extern "C" {
-        fn syscall(number: c_long, ...) -> c_long;
-    }
-
-    let source_c = CString::new(source.as_os_str().as_bytes())
-        .map_err(|_| format!("archive path contains NUL: {}", source.display()))?;
-    let destination_c = CString::new(destination.as_os_str().as_bytes())
-        .map_err(|_| format!("archive path contains NUL: {}", destination.display()))?;
-    // SAFETY: both paths are NUL-terminated for the duration of the syscall.
-    // RENAME_NOREPLACE makes the publication race-free without following or
-    // replacing any destination object.
-    let result = unsafe {
-        syscall(
-            SYS_RENAMEAT2,
-            AT_FDCWD,
-            source_c.as_ptr(),
-            AT_FDCWD,
-            destination_c.as_ptr(),
-            RENAME_NOREPLACE,
-        )
-    };
-    if result == 0 {
-        Ok(())
-    } else {
-        Err(format!(
+    renameat2(source, destination, RENAME_NOREPLACE).map_err(|error| {
+        format!(
             "cannot publish archive '{}' without replacement: {}",
             destination.display(),
-            std::io::Error::last_os_error()
-        ))
-    }
-}
-
-#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
-fn rename_noreplace(_source: &Path, _destination: &Path) -> Result<(), String> {
-    Err("portable archive publication requires Linux x86_64 renameat2 support".into())
+            error
+        )
+    })
 }
 
 #[cfg(test)]

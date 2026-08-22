@@ -5,7 +5,11 @@
 services:
   atelier:
     image: ghcr.io/marmikshah/atelier:latest
-    platform: linux/amd64
+    # Released images are published for linux/amd64 only, so that is the
+    # default. When you build locally instead, set ATELIER_PLATFORM to your own
+    # platform (linux/arm64 on Apple Silicon, Graviton, or a Pi 5) to get a
+    # native image rather than an emulated one.
+    platform: ${ATELIER_PLATFORM:-linux/amd64}
     # Or build locally instead of pulling:
     # build: .
     ports:
