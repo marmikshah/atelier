@@ -25,6 +25,16 @@ struct InstallOptions {
 /// of persisting a secret in a systemd command or unit.
 pub fn run(args: &[String]) -> i32 {
     let cmd = args.first().map(|s| s.as_str());
+    // The daemon is a `systemd --user` unit. Say so plainly rather than letting
+    // a missing `systemctl` surface as a confusing spawn failure.
+    if !cfg!(target_os = "linux") && matches!(cmd, Some("install" | "uninstall" | "status")) {
+        eprintln!(
+            "atelier: `atelier {}` needs systemd and is available on Linux only. \
+             The CLI and the stdio/HTTP MCP server work on this platform.",
+            cmd.unwrap_or("install")
+        );
+        return 2;
+    }
     match cmd {
         Some("install") => {
             let options = match parse_install_options(args) {

@@ -913,7 +913,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn checkpoint_space_scan_refuses_linked_and_special_managed_files() {
-        use std::os::unix::{fs::symlink, net::UnixListener};
+        use std::os::unix::fs::symlink;
 
         let s = studio("cp-space-managed-files");
         let created = s.doc_new("c", 2, 2).unwrap();
@@ -952,8 +952,15 @@ mod tests {
         assert!(!doc_dir.join(".checkpoints/cp2").exists());
         fs::remove_file(checkpoint_link).unwrap();
 
-        let socket_path = cels.join("special.socket");
-        let socket = UnixListener::bind(&socket_path).unwrap();
+        // A FIFO rather than a Unix socket: the scanner refuses anything that
+        // is not a regular file, and a socket path must fit in `sun_path`,
+        // which macOS caps well below the length of its own temp directories.
+        let special_path = cels.join("special.fifo");
+        let made = std::process::Command::new("mkfifo")
+            .arg(&special_path)
+            .status()
+            .expect("mkfifo is available");
+        assert!(made.success(), "could not create a FIFO to test with");
         let special_error = s
             .checkpoint(id, CheckpointAction::Save, None, None)
             .unwrap_err();
@@ -962,7 +969,7 @@ mod tests {
             "got: {special_error}"
         );
         assert!(!doc_dir.join(".checkpoints/cp2").exists());
-        drop(socket);
+        fs::remove_file(&special_path).unwrap();
     }
 
     #[test]
