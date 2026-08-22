@@ -87,10 +87,11 @@ That tag push is the normal publication trigger.
 ## 3. Watch publication
 
 The workflow validates the tag and reruns the production gate before building.
-It creates the GitHub Release only after the Ubuntu 22.04+ x86_64 archive, its
-SHA-256 sidecar, and the smoke-tested Alpine linux/amd64 image have succeeded.
-The native archive is built on Ubuntu 22.04 so its glibc baseline is deliberate;
-it contains the executable, `README.md`, and `LICENSE` and is smoke-tested only
+It creates the GitHub Release only after both Ubuntu 22.04+ archives (x86_64
+and aarch64), their SHA-256 sidecars, and the smoke-tested Alpine linux/amd64
+image have succeeded. Each native archive is built on Ubuntu 22.04, natively on
+a runner of its own architecture, so its glibc baseline is deliberate; it
+contains the executable, `README.md`, and `LICENSE` and is smoke-tested only
 after extraction.
 
 ```sh
@@ -101,8 +102,10 @@ gh release view "$ATELIER_RELEASE_TAG"
 ```
 
 The installer requires checksums for v1.8.0 and later. The release should
-contain `atelier-$ATELIER_RELEASE_TAG-ubuntu-x86_64.tar.gz`, its matching
-`.sha256` file, and the GHCR image tags.
+contain `atelier-$ATELIER_RELEASE_TAG-ubuntu-x86_64.tar.gz` and
+`atelier-$ATELIER_RELEASE_TAG-ubuntu-aarch64.tar.gz`, each with its matching
+`.sha256` file, plus the GHCR image tags. Docker still publishes linux/amd64
+only.
 
 ## 4. Retry an orchestration failure
 
