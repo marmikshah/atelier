@@ -115,9 +115,10 @@ normal local filesystem access. Request bodies are capped at 1 MiB with a
 
 ### Docker
 
-The second supported release is a small Alpine `linux/amd64` image with a
-static musl binary and no runtime packages. It serves the same HTTP MCP
-endpoint:
+The second supported release is a small Alpine image with a static musl binary
+and no runtime packages. Because native installation is Ubuntu x86_64 only, the
+container is also the practical way to run Atelier on macOS, Windows, and other
+Linux distributions. It serves the same HTTP MCP endpoint:
 
 ```sh
 export ATELIER_HTTP_TOKEN="$(openssl rand -hex 32)"
@@ -137,6 +138,42 @@ one. Optional import/export directories must be mounted and enabled with the
 corresponding root variables.
 There's a [`docker-compose.yml`](docker-compose.yml) if you'd rather keep it
 declarative.
+
+#### Building the image on another architecture
+
+Published images are `linux/amd64` only, which is why the `docker run` above
+pins that platform; elsewhere Docker runs them under emulation. Building from a
+clone avoids that. Nothing in the `Dockerfile` is architecture-specific, so a
+plain build produces a native image — this is the route for an Apple Silicon
+Mac, a Graviton instance, or a Raspberry Pi 5:
+
+```sh
+docker build -t atelier:local .
+docker run -d \
+  -p 127.0.0.1:9123:8765 \
+  -v atelier-data:/data \
+  -e ATELIER_HTTP_TOKEN \
+  atelier:local
+```
+
+Docker builds for the host platform by default; add `--platform` to pick a
+different one (`docker build --platform linux/amd64 .` reproduces the released
+image, emulated and therefore slow). With Compose, uncomment `build: .` and set
+`ATELIER_PLATFORM` to your own platform so the service is not pinned to amd64:
+
+```sh
+ATELIER_PLATFORM=linux/arm64 docker compose up -d --build
+```
+
+Two things bound which architectures work. The image needs a Rust Alpine base,
+published for `amd64`, `arm64`, and `ppc64le`; and the document store publishes
+each generation with a `renameat2` syscall whose number differs per
+architecture, so the build refuses any target Atelier has no number for rather
+than falling back to a non-atomic rename. `linux/amd64` is built and
+smoke-tested in CI and is the only released image, `linux/arm64` is verified by
+hand with `tools/container-smoke.sh`, and anything else is yours to build and
+test. Non-Linux targets do not compile at all: the store's atomicity and the
+daemon both depend on Linux.
 
 ### MCP notes
 

@@ -5,13 +5,12 @@
 //! journal is copied. The completed staged tree is then atomically exchanged
 //! with the live tree using Linux `renameat2(RENAME_EXCHANGE)`.
 
-use std::ffi::CString;
 use std::fs;
-use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
 use uuid::Uuid;
 
+use super::renameat2::{RENAME_EXCHANGE, renameat2};
 use super::{JOURNAL_FILE, Studio};
 
 const TRANSACTIONS_DIR: &str = ".transactions";
@@ -393,50 +392,15 @@ fn commit_outcome(id: &str, store_sync: std::io::Result<()>) -> CommitOutcome {
     }
 }
 
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 fn rename_exchange(left: &Path, right: &Path) -> Result<(), String> {
-    use std::os::raw::{c_int, c_long};
-
-    const AT_FDCWD: c_int = -100;
-    const SYS_RENAMEAT2: c_long = 316;
-    const RENAME_EXCHANGE: u32 = 2;
-    unsafe extern "C" {
-        fn syscall(number: c_long, ...) -> c_long;
-    }
-
-    let left_c = CString::new(left.as_os_str().as_bytes())
-        .map_err(|_| format!("transaction path contains NUL: {}", left.display()))?;
-    let right_c = CString::new(right.as_os_str().as_bytes())
-        .map_err(|_| format!("transaction path contains NUL: {}", right.display()))?;
-    // SAFETY: both C strings are NUL-terminated and live for the duration of
-    // the call; AT_FDCWD makes each absolute path self-contained. Calling the
-    // kernel interface avoids depending on a glibc-only `renameat2` symbol and
-    // therefore keeps the same operation available in the static musl image.
-    let result = unsafe {
-        syscall(
-            SYS_RENAMEAT2,
-            AT_FDCWD,
-            left_c.as_ptr(),
-            AT_FDCWD,
-            right_c.as_ptr(),
-            RENAME_EXCHANGE,
-        )
-    };
-    if result == 0 {
-        Ok(())
-    } else {
-        Err(format!(
+    renameat2(left, right, RENAME_EXCHANGE).map_err(|error| {
+        format!(
             "cannot atomically exchange {} and {}: {}",
             left.display(),
             right.display(),
-            std::io::Error::last_os_error()
-        ))
-    }
-}
-
-#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
-fn rename_exchange(_left: &Path, _right: &Path) -> Result<(), String> {
-    Err("store transactions require Linux x86_64 renameat2 support".into())
+            error
+        )
+    })
 }
 
 #[cfg(test)]

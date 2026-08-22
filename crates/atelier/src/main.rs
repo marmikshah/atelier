@@ -37,8 +37,12 @@
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! ```
 
-#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
-compile_error!("atelier supports only Linux x86_64 (Ubuntu natively or the Alpine container)");
+// Linux only: the store's atomic publication step is a `renameat2` syscall and
+// the daemon is a `systemd --user` unit. Ubuntu x86_64 and the released
+// `linux/amd64` container are the supported targets; other Linux
+// architectures build from a clone (see the README) but are not release-tested.
+#[cfg(not(target_os = "linux"))]
+compile_error!("atelier supports only Linux (Ubuntu x86_64 natively or the Alpine container)");
 
 use atelier_mcp::server;
 

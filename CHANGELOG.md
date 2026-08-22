@@ -32,6 +32,15 @@ created. Minor 1.x releases may contain breaking changes.
 - Native build, CI, installer, documentation, and release support is limited to
   Ubuntu 22.04 or newer on x86_64. The supported container is a static,
   non-root Alpine `linux/amd64` image with no runtime packages.
+- The container image builds on any Linux architecture Atelier knows a
+  `renameat2` syscall number for, so a clone produces a native image on
+  `linux/arm64` (Apple Silicon, Graviton, Pi 5) instead of an emulated amd64
+  one. The store's two duplicated syscall wrappers are now one shared
+  `renameat2` helper that selects the number per architecture and reports
+  `Unsupported` on targets it does not know. Compose no longer hard-pins the
+  platform: `ATELIER_PLATFORM` overrides the `linux/amd64` default. CI and
+  releases still build, smoke-test, and publish `linux/amd64` only, and
+  non-Linux targets are still refused at compile time.
 - Ubuntu release archives now include the binary, README, and MIT license and
   are smoke-tested after unpacking. The Alpine image is tested as part of CI
   and the release dependency chain.
