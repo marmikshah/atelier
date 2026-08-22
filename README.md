@@ -58,13 +58,15 @@ or background process.
 
 ### Other ways
 
-- **Ubuntu archive** — binary, README, license, and checksum on the
+- **Ubuntu archive** — binary, README, license, and checksum for x86_64 and
+  aarch64 on the
   [latest release](https://github.com/marmikshah/atelier/releases/latest)
-- **Source on Ubuntu x86_64** — `cargo install --locked --path crates/atelier`,
+- **Source on Ubuntu** — `cargo install --locked --path crates/atelier`,
   or `tools/install.sh --source` to build this checkout and install it
 
-Native installations on macOS, Windows, Linux distributions other than Ubuntu,
-and non-x86_64 processors are not supported.
+Native installations on Windows and on Linux distributions other than Ubuntu
+are not supported. macOS builds and passes the test suite from source, but
+ships no release binary and has no daemon.
 
 ## Optional: run as an MCP server
 

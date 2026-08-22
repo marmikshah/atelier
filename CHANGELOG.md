@@ -16,6 +16,10 @@ created. Minor 1.x releases may contain breaking changes.
   macOS ships no binary and has no daemon, because `atelier install` needs
   `systemd --user` and now says so instead of failing on a missing
   `systemctl`.
+- Releases now publish an Ubuntu `aarch64` archive alongside `x86_64`, each
+  built and smoke-tested natively on a runner of its own architecture.
+  `tools/install.sh` detects the architecture and fetches the matching
+  archive. Docker still publishes `linux/amd64` only.
 
 ### Changed
 
