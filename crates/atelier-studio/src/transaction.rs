@@ -3,14 +3,14 @@
 //! A call runs against a staged document tree. Regular files are hard-linked
 //! where safe; writers replace changed files by rename, while the append-only
 //! journal is copied. The completed staged tree is then atomically exchanged
-//! with the live tree using Linux `renameat2(RENAME_EXCHANGE)`.
+//! with the live tree using the platform's atomic directory exchange.
 
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use uuid::Uuid;
 
-use super::renameat2::{RENAME_EXCHANGE, renameat2};
+use super::atomic_rename::exchange;
 use super::{JOURNAL_FILE, Studio};
 
 const TRANSACTIONS_DIR: &str = ".transactions";
@@ -393,7 +393,7 @@ fn commit_outcome(id: &str, store_sync: std::io::Result<()>) -> CommitOutcome {
 }
 
 fn rename_exchange(left: &Path, right: &Path) -> Result<(), String> {
-    renameat2(left, right, RENAME_EXCHANGE).map_err(|error| {
+    exchange(left, right).map_err(|error| {
         format!(
             "cannot atomically exchange {} and {}: {}",
             left.display(),

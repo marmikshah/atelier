@@ -15,7 +15,7 @@ use crc32fast::Hasher;
 use serde_json::{Value, json};
 use uuid::Uuid;
 
-use super::renameat2::{RENAME_NOREPLACE, renameat2};
+use super::atomic_rename::rename_no_replace;
 use super::store::{parse_journal_file, read_bounded_utf8};
 use super::{CommitOutcome, JOURNAL_FILE, REVISION_FILE, Studio};
 
@@ -1049,7 +1049,7 @@ fn sync_directory(path: &Path) -> std::io::Result<()> {
 }
 
 fn rename_noreplace(source: &Path, destination: &Path) -> Result<(), String> {
-    renameat2(source, destination, RENAME_NOREPLACE).map_err(|error| {
+    rename_no_replace(source, destination).map_err(|error| {
         format!(
             "cannot publish archive '{}' without replacement: {}",
             destination.display(),
