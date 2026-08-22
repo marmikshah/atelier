@@ -5,6 +5,24 @@ development stays on the `1.y.z` release train: feature releases increment
 `y`, and the maintainer decides explicitly if a new major version will ever be
 created. Minor 1.x releases may contain breaking changes.
 
+## [Unreleased]
+
+### Added
+
+- macOS now builds and passes the complete test suite. The store's atomic
+  publication step is expressed as two operations — exchange, and create
+  without replacing — implemented with `renameat2` on Linux and `renamex_np`
+  on macOS. Releases remain Ubuntu x86_64 and the `linux/amd64` container;
+  macOS ships no binary and has no daemon, because `atelier install` needs
+  `systemd --user` and now says so instead of failing on a missing
+  `systemctl`.
+
+### Changed
+
+- Platforms without an atomic directory exchange are still refused at compile
+  time, but the check now names the capability rather than the operating
+  system.
+
 ## [1.9.0] — 2026-08-22
 
 ### Added

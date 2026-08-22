@@ -37,12 +37,17 @@
 //! atelier skills [install|show]  # the shipped skills, for your agent
 //! ```
 
-// Linux only: the store's atomic publication step is a `renameat2` syscall and
-// the daemon is a `systemd --user` unit. Ubuntu x86_64 and the released
-// `linux/amd64` container are the supported targets; other Linux
-// architectures build from a clone (see the README) but are not release-tested.
-#[cfg(not(target_os = "linux"))]
-compile_error!("atelier supports only Linux (Ubuntu x86_64 natively or the Alpine container)");
+// The store publishes each generation with an atomic directory exchange, which
+// only some platforms provide (see `atelier-studio`'s `atomic_rename`). Linux
+// and macOS both do; anything else is refused here rather than at the first
+// mutation.
+//
+// Ubuntu x86_64 and the released `linux/amd64` container remain the supported
+// targets. macOS builds and passes the test suite so the crate can be developed
+// and tested there, but ships no binary and has no daemon: `atelier install`
+// needs `systemd --user`.
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+compile_error!("atelier needs an atomic directory exchange; only Linux and macOS provide one");
 
 use atelier_mcp::server;
 

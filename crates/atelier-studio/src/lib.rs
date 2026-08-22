@@ -23,6 +23,7 @@ use atelier_core::raster::Blend;
 
 mod analysis;
 mod archive;
+mod atomic_rename;
 mod checkpoint;
 mod control;
 mod craft;
@@ -30,7 +31,6 @@ mod integrity;
 mod ops_export;
 mod ops_region;
 mod reference;
-mod renameat2;
 mod store;
 mod transaction;
 mod view;
