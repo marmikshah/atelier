@@ -13,7 +13,7 @@
 #   ATELIER_VERSION      release tag to install (for example v1.9.0)
 #   ATELIER_INSTALL_DIR  binary directory (default: ~/.local/bin)
 #
-# Native installs support Ubuntu 22.04 or newer on x86_64. The separately
+# Native installs support Ubuntu 22.04 or newer on x86_64 or aarch64. The separately
 # published Alpine image is the only other supported runtime.
 set -eu
 
@@ -51,13 +51,20 @@ fi
 
 OS="$(uname -s)"
 ARCH="$(uname -m)"
-if [ "$OS" != "Linux" ] || [ "$ARCH" != "x86_64" ]; then
-  fail "native installs support Ubuntu x86_64 only; use the linux/amd64 Alpine image from ghcr.io/$REPO"
+# Releases publish one archive per architecture. `uname -m` reports aarch64 on
+# Ubuntu and arm64 on some other userlands; both mean the same release.
+case "$ARCH" in
+  x86_64) RELEASE_ARCH="x86_64" ;;
+  aarch64 | arm64) RELEASE_ARCH="aarch64" ;;
+  *) RELEASE_ARCH="" ;;
+esac
+if [ "$OS" != "Linux" ] || [ -z "$RELEASE_ARCH" ]; then
+  fail "native installs support Ubuntu x86_64 and aarch64 only; use the linux/amd64 Alpine image from ghcr.io/$REPO"
 fi
 [ -r /etc/os-release ] || fail "cannot identify this system as Ubuntu (/etc/os-release is missing)"
 DISTRO_ID="$(awk -F= '$1 == "ID" {gsub(/\"/, "", $2); print $2; exit}' /etc/os-release)"
 if [ "$DISTRO_ID" != "ubuntu" ]; then
-  fail "native installs support Ubuntu x86_64 only (found '${DISTRO_ID:-unknown}'); use ghcr.io/$REPO"
+  fail "native installs support Ubuntu only (found '${DISTRO_ID:-unknown}'); use ghcr.io/$REPO"
 fi
 DISTRO_VERSION="$(awk -F= '$1 == "VERSION_ID" {gsub(/\"/, "", $2); print $2; exit}' /etc/os-release)"
 if ! awk -v version="$DISTRO_VERSION" 'BEGIN { exit !(version + 0 >= 22.04) }'; then
@@ -90,7 +97,7 @@ else
     grep -Eq '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' ||
     fail "invalid release version '$VERSION' (expected vMAJOR.MINOR.PATCH)"
 
-  PACKAGE="atelier-$VERSION-ubuntu-x86_64"
+  PACKAGE="atelier-$VERSION-ubuntu-$RELEASE_ARCH"
   URL="https://github.com/$REPO/releases/download/$VERSION/$PACKAGE.tar.gz"
   CHECKSUM_URL="$URL.sha256"
   TMP="$(mktemp -d)"
@@ -98,7 +105,7 @@ else
   ARCHIVE="$TMP/atelier.tar.gz"
   CHECKSUM="$TMP/atelier.tar.gz.sha256"
 
-  say "Downloading atelier $VERSION for Ubuntu x86_64..."
+  say "Downloading atelier $VERSION for Ubuntu $RELEASE_ARCH..."
   curl -fsSL "$URL" -o "$ARCHIVE" || fail "download failed: $URL"
 
   curl -fsSL "$CHECKSUM_URL" -o "$CHECKSUM" ||
