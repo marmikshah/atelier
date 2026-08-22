@@ -30,6 +30,7 @@ mod integrity;
 mod ops_export;
 mod ops_region;
 mod reference;
+mod renameat2;
 mod store;
 mod transaction;
 mod view;
