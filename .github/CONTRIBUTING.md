@@ -1,30 +1,37 @@
 # Contributing
 
-**Atelier is closed to outside pull requests.** They will be declined without
-review, regardless of quality. This is not a judgment of any contribution; it
-is a consequence of how the repository is built. Please do not spend your time
-on a change here.
+First, thank you for wanting to. It genuinely means something that you got far
+enough into this project to consider improving it.
 
-Bug reports and questions are still welcome. Open an issue, or follow
+**That said, Atelier is closed to outside pull requests.** They will be
+declined without review, regardless of how good they are. That is not a
+judgment of your work — it is a consequence of what this project is, and I would
+rather say so plainly here than let you find out after writing the patch.
+
+Bug reports and questions are very welcome. Open an issue, or follow
 [SECURITY.md](SECURITY.md) to disclose a vulnerability privately — never in a
-public issue.
-
-The project is MIT licensed. Fork it and take it wherever you like.
+public issue. And the project is MIT licensed, so fork it and take it wherever
+you like; you do not need my permission for any of it.
 
 ## Why pull requests are closed
 
-100% of this repository is AI-generated. The maintainer has written none of it
-by hand and has not performed a line-by-line review of any of it.
+Atelier is an experiment. I wanted to find out how far a real, useful piece of
+software could get when it is written entirely by AI models, with a human
+steering the direction but never the code.
 
-What the code has had instead is several rounds of AI review and revision,
-across models: GPT 5.6 Sol, Fable 5, and Opus 4.8. The majority of the early
-code came from Opus; the newer work came from GPT and Fable.
+So: 100% of this repository is AI-generated. I have written none of it by hand
+and have not reviewed a line of it. What it has had instead is several rounds
+of AI review and revision, across models — GPT 5.6 Sol, Fable 5, and Opus 4.8.
+The majority of the early code came from Opus; the newer work came from GPT and
+Fable. My part was deciding what should exist, what should not, and when
+something was not good enough yet.
 
 Tests, Clippy, rustdoc, locked dependencies, bounded image operations, and the
-release gates all pass, and none of that is a substitute for human review. A
-human contribution merged into an unreviewed AI-generated codebase would be
-reviewed by nobody who understands the surrounding code — including the
-maintainer. Accepting one would be dishonest about what happens to it.
+release gates all pass, and none of that is the same as a person having read
+the code. Which is where your pull request would land: merged into a codebase
+nobody understands well enough to review it against, me included. You would
+deserve a better review than I could honestly give, and accepting the change
+anyway would quietly break the one rule the experiment runs on.
 
 ## Building it yourself
 

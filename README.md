@@ -369,17 +369,24 @@ remains the single declarative operation for dense pixel rows. MCP clients
 inspect live documents through `doc_info` and `doc_look`, the same calls used by
 CLI and replay.
 
-## Project status
+## Project status — this is an experiment
 
-**100% of this repository is AI-generated, and no line-by-line human review has
-been done.** Not some of it — none of it. What it has had instead is several
-rounds of AI review and revision, across models: GPT 5.6 Sol, Fable 5, and
-Opus 4.8. The majority of the early code came from Opus; the newer work came
-from GPT and Fable.
+Atelier exists to answer a question I was curious about: how far can a real,
+useful piece of software get when it is written entirely by AI models, with a
+human steering the direction but never the code?
 
-Tests, static analysis, locked dependencies, bounded image operations, and
-release gates all pass. None of that is a substitute for a human reading the
-code.
+So that is what this is. **100% of this repository is AI-generated, and no
+line-by-line human review has been done.** Not some of it — none of it. What it
+has had instead is several rounds of AI review and revision, across models:
+GPT 5.6 Sol, Fable 5, and Opus 4.8. The majority of the early code came from
+Opus; the newer work came from GPT and Fable. My part was deciding what should
+exist, what should not, and when something was not good enough yet.
+
+The result surprised me, which is the fun bit. Tests, static analysis, locked
+dependencies, bounded image operations, and release gates all pass, and the
+editor genuinely works. None of that is the same as a person having read the
+code, and I would rather tell you that up front than let a green badge imply
+otherwise.
 
 > [!WARNING]
 > **Assume defects and breaking changes remain possible in any release.**
@@ -423,5 +430,8 @@ procedure is in [docs/RELEASING.md](docs/RELEASING.md).
 
 ---
 
-A friendly note to close on: if any of this is useful to you, the tokens were
-worth spending.
+A friendly note to close on. Atelier was built to find out whether an
+experiment like this could produce something real, so I am genuinely glad it is
+out here rather than sitting in a folder. If it turns out to be useful to you —
+if it saves you an afternoon, or draws you a sprite you actually keep — then
+every token spent getting here was worth it. Thanks for taking a look.
