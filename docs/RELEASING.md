@@ -8,10 +8,10 @@ starts publication.
 explicit maintainer instruction.
 
 Only one release exists at a time. Publishing a new one removes the release
-page and archives of the release before it — releases break, and maintaining
-several in parallel is out of scope for now. The git tag always stays, so any
-past version can still be checked out and built. Ship migration steps in the
-release that requires them.
+before it completely — its page, its archives, its tag, and its container
+images — because releases break and maintaining several in parallel is out of
+scope for now. Nothing of a superseded release is kept, so ship migration steps
+in the release that requires them.
 
 The release workflow accepts only a `vMAJOR.MINOR.PATCH` tag such as
 `v0.1.0`, with no pre-release or build suffix. It must
@@ -107,7 +107,7 @@ gh run watch "$ATELIER_RELEASE_RUN_ID" --exit-status
 gh release view "$ATELIER_RELEASE_TAG"
 ```
 
-The installer requires checksums for v1.8.0 and later. The release should
+The installer requires a checksum beside every archive. The release should
 contain `atelier-$ATELIER_RELEASE_TAG-ubuntu-x86_64.tar.gz` and
 `atelier-$ATELIER_RELEASE_TAG-ubuntu-aarch64.tar.gz`, each with its matching
 `.sha256` file, plus the GHCR image tags. Docker still publishes linux/amd64
@@ -115,18 +115,24 @@ only.
 
 ## 4. Remove the previous release
 
-Once the new release is published and verified, delete the one it replaces.
-Delete the release page and its archives only — never the tag, which is the
-sole remaining record of that version:
+Once the new release is published and verified, delete the one it replaces —
+its page, its archives, and its tag:
 
 ```sh
-gh release delete "$ATELIER_PREVIOUS_TAG" --yes
-git ls-remote --tags origin "$ATELIER_PREVIOUS_TAG"   # the tag must survive
+gh release delete "$ATELIER_PREVIOUS_TAG" --cleanup-tag --yes
+git ls-remote --tags origin "$ATELIER_PREVIOUS_TAG"   # must print nothing
 ```
 
-`gh release delete` leaves the tag in place unless `--cleanup-tag` is passed.
-Never pass it. Old GHCR image tags are untouched by this and are pruned
-separately when they accumulate.
+Then prune that version's container images, which `gh release delete` does not
+touch:
+
+```sh
+gh api --paginate "user/packages/container/atelier/versions?per_page=100" \
+  --jq ".[] | select(.metadata.container.tags | index(\"$ATELIER_PREVIOUS_TAG\")) | .id"
+# then DELETE each id under user/packages/container/atelier/versions/<id>
+```
+
+Never prune the version holding `latest` before the new release carries it.
 
 Do this after verification, not before: until the new archives are confirmed
 downloadable, the previous release is the only installable version, and

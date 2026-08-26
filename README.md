@@ -145,10 +145,11 @@ can do is be useful to you too.
 > which claimed a stability it never had. `0.y` says what is actually true:
 > this may break.
 >
-> Publishing a new release removes the one before it — maintaining several
-> broken versions at once is not something I want to take on right now. Nothing
-> is lost: every version keeps its git tag and can still be checked out and
-> built, and migration steps ship with the release that needs them.
+> Publishing a new release removes the one before it, along with its tag and
+> its container images — maintaining several broken versions at once is not
+> something I want to take on right now. Superseded releases are not archived
+> and cannot be recovered, so when an upgrade needs migration steps, those
+> steps ship with the release that requires them.
 
 ## Contributing
 

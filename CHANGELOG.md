@@ -1,10 +1,7 @@
 # Changelog
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Any release
-may contain breaking changes.
-
-Releases before this train are archived in
-[docs/CHANGELOG-1.x.md](docs/CHANGELOG-1.x.md).
+may contain breaking changes, and only the newest release is ever available.
 
 ## [0.1.0] — Unreleased
 
@@ -24,14 +21,13 @@ the version number and the release policy changed.
   questions, and private security disclosures are still welcome, and the MIT
   licence still permits any fork.
 - Only one release exists at a time. Publishing a new release now removes the
-  previous release's page and archives, because releases break and maintaining
-  several in parallel is out of scope for now. Git tags always survive, so any
-  past version can be checked out and built from source, and migration steps
-  ship with the release that requires them.
-- Release pages for `v1.0.0` through `v1.9.1` were removed along with their
-  archives. Their git tags remain, so any of those versions can still be
-  checked out and built from source; `ATELIER_VERSION` pins to a `v1.x` tag no
-  longer resolve, and `tools/install.sh` installs the latest release.
+  previous one entirely — its release page, its archives, its tag, and its
+  container images — because releases break and maintaining several in parallel
+  is out of scope for now. Superseded releases are not archived, so migration
+  steps ship with the release that requires them.
+- Every release predating this reset was removed under that policy, along with
+  its tag and images. `tools/install.sh` installs whatever the current release
+  is.
 - Every `library` subcommand now accepts `--home DIR`, not just `pack` and
   `unpack`. Listing, verifying, and deleting an isolated store previously
   needed `ATELIER_HOME`, so `--home` meant different things depending on the
