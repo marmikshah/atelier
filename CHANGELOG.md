@@ -32,6 +32,10 @@ the version number and the release policy changed.
   archives. Their git tags remain, so any of those versions can still be
   checked out and built from source; `ATELIER_VERSION` pins to a `v1.x` tag no
   longer resolve, and `tools/install.sh` installs the latest release.
+- The README was rewritten to roughly a third of its length. It now covers what
+  Atelier is, how to install it, a thirty-second example, and the experiment
+  behind it; the reference material it used to carry moved to
+  [docs/cli.md](docs/cli.md) and [docs/mcp.md](docs/mcp.md) unchanged.
 - The Rust toolchain moved from 1.97.1 to 1.98.0 across `rust-toolchain.toml`,
   the `Dockerfile` build stage, and every CI, Pages, and release workflow. The
   tested minimum supported compiler is unchanged at 1.88.
