@@ -1,3 +1,8 @@
+<!--
+  Atelier is closed to outside pull requests; they are declined without review.
+  See .github/CONTRIBUTING.md for why. This template is for maintainer use.
+-->
+
 ## Summary
 
 <!-- What problem does this solve, and what is intentionally out of scope? -->
