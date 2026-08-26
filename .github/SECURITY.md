@@ -29,8 +29,10 @@ timeline.
   uploads time out after 30 seconds and at most 64 requests run concurrently.
   Persisted document metadata is bounded, and normal store reads refuse
   symlinked document directories, metadata, cels, references, and journals.
-- Much of the code remains AI-generated and has not been fully reviewed by the maintainer. Assume bugs — including
-  security bugs — may exist, and use at your own risk (see the README notice).
+- **100% of the code is AI-generated and has had no line-by-line human
+  review.** It has been through several rounds of AI review and revision, which
+  is not the same thing. Assume bugs — including security bugs — exist, and use
+  at your own risk (see the README notice).
 
 ## Supported versions
 

@@ -371,20 +371,28 @@ CLI and replay.
 
 ## Project status
 
-Most of the implementation was generated with AI systems and has not yet received a complete line-by-line maintainer review.
+**100% of this repository is AI-generated, and no line-by-line human review has
+been done.** Not part of it — none of it. What it has had instead is several
+rounds of AI review and revision, across models: GPT 5.6 Sol, Fable 5, and
+Opus 4.8. The majority of the early code came from Opus; the newer work came
+from GPT and Fable.
+
 Tests, static analysis, locked dependencies, bounded image operations, and
-release gates are not a substitute for that review.
+release gates all pass. None of that is a substitute for a human reading the
+code.
 
 > [!WARNING]
-> **Assume defects and breaking changes remain possible in any release.** Review the code and isolate important data before using Atelier
-> in a production workflow.
+> **Assume defects and breaking changes remain possible in any release.**
+> Review the code and isolate important data before using Atelier in a
+> production workflow.
 
 ## Contributing
 
-Bug reports, ideas, documentation improvements, and focused pull requests are
-welcome. Open an issue first for new tools, public API changes, dependencies,
-formats, or broad refactors; the full development and review expectations are in
-[CONTRIBUTING.md](.github/CONTRIBUTING.md).
+**Atelier is closed to outside pull requests.** They will be declined without
+review — see [CONTRIBUTING.md](.github/CONTRIBUTING.md) for why. Bug reports
+and questions are welcome as issues, and vulnerabilities should go through
+[SECURITY.md](.github/SECURITY.md) privately. The project is MIT licensed, so
+fork it and take it wherever you like.
 
 Maintainer releases are approved by a manually created annotated tag; the exact
 procedure is in [docs/RELEASING.md](docs/RELEASING.md).
@@ -394,3 +402,10 @@ procedure is in [docs/RELEASING.md](docs/RELEASING.md).
 ## License
 
 [MIT](LICENSE) © Marmik Shah
+
+---
+
+A friendly note to close on: `1.0.0` and everything above it will be written
+and reviewed by me, by hand. That is what the version number will mean when it
+arrives. Until then, if any of this is useful to you, the tokens were worth
+spending.

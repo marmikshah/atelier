@@ -18,6 +18,11 @@ the version number and the release policy changed.
   project never had; every release in that series was free to break the tool
   surface. `1.0.0` now marks the point at which breaking changes stop being
   routine, replacing `2.0.0` as the maintainer's manual-review milestone.
+- Atelier is closed to outside pull requests. The repository is entirely
+  AI-generated with no line-by-line human review, so a merged contribution
+  would be reviewed by nobody who understands the code around it. Bug reports,
+  questions, and private security disclosures are still welcome, and the MIT
+  licence still permits any fork.
 - Release pages for `v1.0.0` through `v1.9.1` were removed along with their
   archives. Their git tags remain, so any of those versions can still be
   checked out and built from source; `ATELIER_VERSION` pins to a `v1.x` tag no
