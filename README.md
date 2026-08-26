@@ -393,8 +393,8 @@ code.
 > The project previously numbered its releases `1.0.0` through `1.9.1`. That
 > claimed a stability it never had — every one of those releases was free to
 > break the tool surface — so the version reset to `0.1.0`, where a `0.y`
-> bump saying "this may break" is the point. `1.0.0` will mean something
-> different when it arrives: hand-written and human-reviewed.
+> bump saying "this may break" is the point. `1.0.0` is not planned and will
+> not be tagged without an explicit decision.
 >
 > Because releases break and maintaining several at once is not something I
 > want to take on right now, **publishing a new release removes the previous
@@ -423,7 +423,5 @@ procedure is in [docs/RELEASING.md](docs/RELEASING.md).
 
 ---
 
-A friendly note to close on: `1.0.0` and everything above it will be written
-and reviewed by me, by hand. That is what the version number will mean when it
-arrives. Until then, if any of this is useful to you, the tokens were worth
-spending.
+A friendly note to close on: if any of this is useful to you, the tokens were
+worth spending.

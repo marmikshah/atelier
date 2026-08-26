@@ -16,8 +16,8 @@ the version number and the release policy changed.
 
 - Versions restarted at `0.1.0`. The `1.9.1` number claimed a stability the
   project never had; every release in that series was free to break the tool
-  surface. `1.0.0` now marks the point at which breaking changes stop being
-  routine, replacing `2.0.0` as the maintainer's manual-review milestone.
+  surface. `1.0.0` replaces `2.0.0` as the version reserved for an explicit
+  maintainer decision; it is not planned.
 - Atelier is closed to outside pull requests. The repository is entirely
   AI-generated with no line-by-line human review, so a merged contribution
   would be reviewed by nobody who understands the code around it. Bug reports,

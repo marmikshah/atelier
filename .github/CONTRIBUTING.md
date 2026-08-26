@@ -64,7 +64,5 @@ CI is authoritative even when the hooks are enabled.
 
 ---
 
-A friendly note to close on: `1.0.0` and everything above it will be written
-and reviewed by me, by hand. That is what the version number will mean when it
-arrives. Until then, if any of this is useful to you, the tokens were worth
-spending.
+A friendly note to close on: if any of this is useful to you, the tokens were
+worth spending.
