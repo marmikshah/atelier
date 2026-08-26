@@ -32,6 +32,8 @@ the version number and the release policy changed.
   archives. Their git tags remain, so any of those versions can still be
   checked out and built from source; `ATELIER_VERSION` pins to a `v1.x` tag no
   longer resolve, and `tools/install.sh` installs the latest release.
+- `AGENTS.md` and `CLAUDE.md` were removed. The repository no longer carries
+  agent instructions of its own.
 - The README was rewritten to roughly a third of its length. It now covers what
   Atelier is, how to install it, a thirty-second example, and the experiment
   behind it; the reference material it used to carry moved to
