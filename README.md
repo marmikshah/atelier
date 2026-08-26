@@ -388,8 +388,6 @@ formats, or broad refactors; the full development and review expectations are in
 
 Maintainer releases are approved by a manually created annotated tag; the exact
 procedure is in [docs/RELEASING.md](docs/RELEASING.md).
-The [roadmap](docs/ROADMAP.md) records current readiness work and the policy for
-adding capabilities without expanding the tool surface unnecessarily.
 
 [Contributing](.github/CONTRIBUTING.md) · [Code of Conduct](.github/CODE_OF_CONDUCT.md) · [Security](.github/SECURITY.md) · [Changelog](CHANGELOG.md)
 
