@@ -68,13 +68,14 @@ USAGE:
             [--port PORT | --bind LOOPBACK_ADDR] [--home DIR]
     atelier status                show daemon state and log locations
     atelier uninstall             stop + remove the daemon
-    atelier library               list the documents in the store (ATELIER_HOME)
-            verify [--json]       validate stored metadata, cels, references, and journals
+    atelier library [--home DIR]  list the documents in the store
+            verify [--json] [--home DIR]
+                                  validate stored metadata, cels, references, and journals
             pack <id> --out FILE [--home DIR]
                                   write a portable archive; never overwrites FILE
             unpack FILE [--home DIR] [--replace --yes]
                                   restore its UUID; replacement needs both flags
-            rm <id>... | rm --prefix <p> | rm --all [--yes]
+            rm <id>... | rm --prefix <p> | rm --all [--yes] [--home DIR]
                                   delete documents — permanent, confirms first
     atelier replay <journal|id>   replay a JSONL journal, or rebuild a document from its
                                   own journal (every document records one)

@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 /// Entry point for `atelier library <command>`. Returns a process exit code.
 pub async fn run(args: &[String]) -> i32 {
     match args.first().map(|s| s.as_str()) {
-        None => list(),
+        None => list(&[]),
         Some("verify") => verify(&args[1..]),
         Some("pack") => pack(&args[1..]),
         Some("unpack") => unpack(&args[1..]),
@@ -22,6 +22,8 @@ pub async fn run(args: &[String]) -> i32 {
             println!("{USAGE}");
             0
         }
+        // `atelier library --home DIR` lists that store; no subcommand needed.
+        Some(option) if option.starts_with('-') => list(args),
         Some(other) => {
             eprintln!("atelier library: unknown subcommand '{other}'\n\n{USAGE}");
             2
@@ -30,13 +32,13 @@ pub async fn run(args: &[String]) -> i32 {
 }
 
 const USAGE: &str = "usage:
-  atelier library
-  atelier library verify [--json]
+  atelier library [--home DIR]
+  atelier library verify [--json] [--home DIR]
   atelier library pack <doc-id> --out <file.atelierpack> [--home DIR]
   atelier library unpack <file.atelierpack> [--home DIR] [--replace --yes]
-  atelier library rm <id>... [--yes]
-  atelier library rm --prefix <p> [--yes]
-  atelier library rm --all [--yes]
+  atelier library rm <id>... [--yes] [--home DIR]
+  atelier library rm --prefix <p> [--yes] [--home DIR]
+  atelier library rm --all [--yes] [--home DIR]
 
   (no args)          list every document: id, size, frames, layers
   verify             validate every document's metadata, cels, and journal
@@ -45,7 +47,7 @@ const USAGE: &str = "usage:
     --out FILE       required archive destination
   unpack             restore an archive while preserving its document UUID
     --replace --yes  replace an existing UUID; both flags are required together
-  --home DIR         use an isolated Atelier home for pack or unpack
+  --home DIR         use an isolated Atelier home; overrides ATELIER_HOME
   rm <id>...         delete the named documents
   rm --prefix <p>    delete every document whose id starts with <p>
   rm --all           delete every document
@@ -53,13 +55,21 @@ const USAGE: &str = "usage:
 
 Documents are your artwork, not a cache — deleting them cannot be undone.";
 
-fn studio() -> Studio {
-    Studio::new()
-}
-
+/// The store every `library` subcommand acts on: `--home` when given,
+/// otherwise the ambient resolution (`ATELIER_HOME`, `./.atelier`, `~/.atelier`).
 fn studio_at(home: Option<&Path>) -> Studio {
     home.map(|path| Studio::with_home(path.to_path_buf()))
         .unwrap_or_else(Studio::new)
+}
+
+/// Consume one `--home DIR` at `args[*index]`, rejecting a repeat. Shared by
+/// every `library` subcommand so the flag means the same thing throughout.
+fn take_home(args: &[String], index: &mut usize, home: &mut Option<PathBuf>) -> Result<(), String> {
+    if home.is_some() {
+        return Err("--home may only be passed once".into());
+    }
+    *home = Some(PathBuf::from(option_value(args, index, "--home")?));
+    Ok(())
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -227,8 +237,31 @@ fn ids(s: &Studio) -> Vec<String> {
     out
 }
 
-fn list() -> i32 {
-    let s = studio();
+fn parse_list(args: &[String]) -> Result<Option<PathBuf>, String> {
+    let mut home = None;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--home" => take_home(args, &mut index, &mut home)?,
+            option if option.starts_with('-') => {
+                return Err(format!("unknown option '{option}'"));
+            }
+            value => return Err(format!("unexpected argument '{value}'")),
+        }
+        index += 1;
+    }
+    Ok(home)
+}
+
+fn list(args: &[String]) -> i32 {
+    let home = match parse_list(args) {
+        Ok(home) => home,
+        Err(error) => {
+            eprintln!("atelier library: {error}\n\n{USAGE}");
+            return 2;
+        }
+    };
+    let s = studio_at(home.as_deref());
     let _lock = match s.lock_store_shared() {
         Ok(lock) => lock,
         Err(error) => {
@@ -243,7 +276,7 @@ fn list() -> i32 {
         return 0;
     };
     if docs.is_empty() {
-        println!("no documents in {}", home_display());
+        println!("no documents in {}", home_display(home.as_deref()));
         return 0;
     }
     let width = docs
@@ -260,7 +293,6 @@ fn list() -> i32 {
             .unwrap_or("")
             .to_string()
     });
-    let s = studio();
     let mut replayable = 0usize;
     for d in &rows {
         let id = d.get("doc_id").and_then(|i| i.as_str()).unwrap_or("?");
@@ -295,41 +327,61 @@ fn list() -> i32 {
             width = width
         );
     }
-    println!("\n{} documents in {}", rows.len(), home_display());
+    println!(
+        "\n{} documents in {}",
+        rows.len(),
+        home_display(home.as_deref())
+    );
     if replayable > 0 {
         println!("{replayable} replayable — atelier replay <id>");
     }
     0
 }
 
-fn home_display() -> String {
-    std::env::var("ATELIER_HOME").unwrap_or_else(|_| "~/.atelier".into())
+/// The store path to name in listing output: the `--home` the caller gave,
+/// then `ATELIER_HOME`, then the default. Must agree with `studio_at`.
+fn home_display(home: Option<&Path>) -> String {
+    match home {
+        Some(path) => path.display().to_string(),
+        None => std::env::var("ATELIER_HOME").unwrap_or_else(|_| "~/.atelier".into()),
+    }
 }
 
-fn parse_verify(args: &[String]) -> Result<bool, String> {
+#[derive(Debug, PartialEq, Eq)]
+struct VerifyOptions {
+    json: bool,
+    home: Option<PathBuf>,
+}
+
+fn parse_verify(args: &[String]) -> Result<VerifyOptions, String> {
     let mut json = false;
-    for arg in args {
-        match arg.as_str() {
+    let mut home = None;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
             "--json" if !json => json = true,
             "--json" => return Err("--json may only be passed once".into()),
+            "--home" => take_home(args, &mut index, &mut home)?,
             option if option.starts_with('-') => {
                 return Err(format!("unknown verify option '{option}'"));
             }
             value => return Err(format!("unexpected verify argument '{value}'")),
         }
+        index += 1;
     }
-    Ok(json)
+    Ok(VerifyOptions { json, home })
 }
 
 fn verify(args: &[String]) -> i32 {
-    let json = match parse_verify(args) {
-        Ok(json) => json,
+    let options = match parse_verify(args) {
+        Ok(options) => options,
         Err(error) => {
             eprintln!("atelier library: {error}\n\n{USAGE}");
             return 2;
         }
     };
-    let report = match studio().verify_store() {
+    let json = options.json;
+    let report = match studio_at(options.home.as_deref()).verify_store() {
         Ok(report) => report,
         Err(error) => {
             eprintln!("atelier library verify: {error}");
@@ -400,6 +452,7 @@ enum Selection {
 struct RmOptions {
     yes: bool,
     selection: Selection,
+    home: Option<PathBuf>,
 }
 
 /// Parse deletion arguments without silently accepting options. This command
@@ -408,11 +461,13 @@ fn parse_rm(args: &[String]) -> Result<RmOptions, String> {
     let mut yes = false;
     let mut all = false;
     let mut prefix = None;
+    let mut home = None;
     let mut named = Vec::new();
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--yes" | "-y" => yes = true,
+            "--home" => take_home(args, &mut i, &mut home)?,
             "--all" => {
                 if all {
                     return Err("--all may only be passed once".into());
@@ -448,7 +503,11 @@ fn parse_rm(args: &[String]) -> Result<RmOptions, String> {
     } else {
         Selection::Named(named)
     };
-    Ok(RmOptions { yes, selection })
+    Ok(RmOptions {
+        yes,
+        selection,
+        home,
+    })
 }
 
 async fn rm(args: &[String]) -> i32 {
@@ -460,7 +519,7 @@ async fn rm(args: &[String]) -> i32 {
         }
     };
 
-    let s = studio();
+    let s = studio_at(options.home.as_deref());
     let targets: Vec<String> = match &options.selection {
         Selection::All => ids(&s),
         Selection::Prefix(prefix) => ids(&s)
@@ -559,28 +618,68 @@ mod tests {
             parse_rm(&v(&["--prefix", "hero-", "--yes"])).unwrap(),
             RmOptions {
                 yes: true,
-                selection: Selection::Prefix("hero-".into())
+                selection: Selection::Prefix("hero-".into()),
+                home: None
             }
         );
         assert_eq!(
             parse_rm(&v(&["a", "--yes", "b"])).unwrap(),
             RmOptions {
                 yes: true,
-                selection: Selection::Named(v(&["a", "b"]))
+                selection: Selection::Named(v(&["a", "b"])),
+                home: None
+            }
+        );
+        assert_eq!(
+            parse_rm(&v(&["--all", "--yes", "--home", "/tmp/store"])).unwrap(),
+            RmOptions {
+                yes: true,
+                selection: Selection::All,
+                home: Some(PathBuf::from("/tmp/store"))
             }
         );
         assert!(parse_rm(&v(&["--all", "--force"])).is_err());
         assert!(parse_rm(&v(&["--all", "a"])).is_err());
         assert!(parse_rm(&v(&["--prefix", "a", "b"])).is_err());
+        assert!(parse_rm(&v(&["--all", "--home"])).is_err());
+        assert!(
+            parse_rm(&v(&["--all", "--home", "a", "--home", "b"])).is_err(),
+            "--home may only be passed once"
+        );
     }
 
     #[test]
     fn verification_arguments_are_strict() {
-        assert!(!parse_verify(&v(&[])).unwrap());
-        assert!(parse_verify(&v(&["--json"])).unwrap());
+        assert_eq!(
+            parse_verify(&v(&[])).unwrap(),
+            VerifyOptions {
+                json: false,
+                home: None
+            }
+        );
+        assert_eq!(
+            parse_verify(&v(&["--json", "--home", "/tmp/store"])).unwrap(),
+            VerifyOptions {
+                json: true,
+                home: Some(PathBuf::from("/tmp/store"))
+            }
+        );
         assert!(parse_verify(&v(&["--json", "--json"])).is_err());
         assert!(parse_verify(&v(&["--pretty"])).is_err());
         assert!(parse_verify(&v(&["document-id"])).is_err());
+        assert!(parse_verify(&v(&["--home"])).is_err());
+    }
+
+    #[test]
+    fn listing_accepts_only_an_optional_home() {
+        assert_eq!(parse_list(&v(&[])).unwrap(), None);
+        assert_eq!(
+            parse_list(&v(&["--home", "/tmp/store"])).unwrap(),
+            Some(PathBuf::from("/tmp/store"))
+        );
+        assert!(parse_list(&v(&["--home"])).is_err());
+        assert!(parse_list(&v(&["--json"])).is_err());
+        assert!(parse_list(&v(&["document-id"])).is_err());
     }
 
     #[test]

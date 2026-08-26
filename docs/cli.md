@@ -15,12 +15,14 @@ atelier library verify [--json]       # validate metadata, cels, references, jou
 atelier library pack <id> --out art.atelierpack   # write a portable backup
 atelier library unpack art.atelierpack            # restore its original UUID
 atelier library rm <id>... | --prefix <p> | --all [--yes]   # delete documents, permanently
+atelier library --home /tmp/store     # …and any of the above against an isolated store
 atelier skills [show <name>]          # list the shipped skills, or print one
 atelier skills install                # write them (--for claude|codex|kimi|cursor|all, or --dir DIR)
 ```
 
-`--home DIR` selects an isolated store for `call`, `replay`, `library pack`,
-and `library unpack`. The other `library` subcommands read `ATELIER_HOME`.
+`--home DIR` selects an isolated store, and every command that touches one
+accepts it: `call`, `replay`, and all of `library`. Without it the store is
+`ATELIER_HOME`, then a directory-local `./.atelier`, then `~/.atelier`.
 
 And the MCP add-on, covered in [mcp.md](mcp.md):
 

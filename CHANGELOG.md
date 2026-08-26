@@ -32,6 +32,19 @@ the version number and the release policy changed.
   archives. Their git tags remain, so any of those versions can still be
   checked out and built from source; `ATELIER_VERSION` pins to a `v1.x` tag no
   longer resolve, and `tools/install.sh` installs the latest release.
+- Every `library` subcommand now accepts `--home DIR`, not just `pack` and
+  `unpack`. Listing, verifying, and deleting an isolated store previously
+  needed `ATELIER_HOME`, so `--home` meant different things depending on the
+  subcommand. `atelier library --home DIR` lists that store directly.
+- `atelier replay <doc-id> --home DIR` read the document's journal from the
+  default store and rebuilt it in `--home`, so a bare document id silently
+  replayed the wrong document — or failed with `no file or document` when the
+  id existed only in the isolated store. Both the source journal and the
+  rebuilt document now come from the same store.
+- `.env.example` was removed. It listed variables for three unrelated scopes —
+  the binary, `tools/install.sh`, and `docker-compose.yml` — and nothing loaded
+  it, so it drifted instead of documenting. Each of those three documents its
+  own variables.
 - `AGENTS.md` and `CLAUDE.md` were removed. The repository no longer carries
   agent instructions of its own.
 - The README was rewritten to roughly a third of its length. It now covers what
