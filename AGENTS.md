@@ -38,5 +38,5 @@ updates.
 ## Releases
 
 Only the maintainer creates or pushes version tags. Agents may prepare a version
-PR but must not publish a release. Never bump or tag `2.0.0`; that is the
+PR but must not publish a release. Never bump or tag `1.0.0`; that is the
 maintainer's manual-review milestone. Follow `docs/RELEASING.md`.

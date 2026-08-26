@@ -4,11 +4,11 @@ Only the maintainer creates version tags. An agent may prepare and review the
 version-change pull request, but pushing the tag is the human approval that
 starts publication.
 
-Active development stays on `1.y.z`. Normal feature releases increment `y`
-and reset `z` to zero; a new major version must never be prepared, tagged, or
-described as planned without explicit maintainer instruction.
+`1.0.0` must never be prepared, tagged, or described as planned without
+explicit maintainer instruction.
 
-The release workflow accepts only a stable SemVer tag such as `v1.9.0`. It must
+The release workflow accepts only a `vMAJOR.MINOR.PATCH` tag such as
+`v0.1.0`, with no pre-release or build suffix. It must
 be annotated or signed, match every release package and a dated changelog
 heading, and point to a commit on `master`. A version-preparation PR keeps its
 changelog heading marked `Unreleased`; dating it is a separate, explicit part
@@ -49,7 +49,7 @@ Then start from a clean, current `master`:
 git checkout master
 git pull --ff-only origin master
 git status --short
-ATELIER_RELEASE_TAG=v1.9.0
+ATELIER_RELEASE_TAG=v0.1.0
 tools/release-check.sh "$ATELIER_RELEASE_TAG"
 ```
 

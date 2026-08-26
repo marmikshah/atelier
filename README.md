@@ -371,16 +371,12 @@ CLI and replay.
 
 ## Project status
 
-Atelier currently follows a `1.y.z` release train. Feature releases increment
-`y`; no 2.0 release is planned, versioned, or tagged unless the maintainer
-explicitly authorizes it. Most of the implementation was generated with AI
-systems and has not yet received a complete line-by-line maintainer review.
+Most of the implementation was generated with AI systems and has not yet received a complete line-by-line maintainer review.
 Tests, static analysis, locked dependencies, bounded image operations, and
 release gates are not a substitute for that review.
 
 > [!WARNING]
-> **During the 1.x series, assume defects and breaking changes remain
-> possible.** Review the code and isolate important data before using Atelier
+> **Assume defects and breaking changes remain possible in any release.** Review the code and isolate important data before using Atelier
 > in a production workflow.
 
 ## Contributing

@@ -1,9 +1,8 @@
 # Roadmap
 
-Atelier development remains on the `1.y.z` release train; feature releases
-increment `y`. A new major version is not a roadmap milestone and will not be
-created without explicit maintainer authorization. Work is prioritized around
-data safety, predictable automation contracts, and bounded resource use. The
+`1.0.0` is not a roadmap milestone and will not be created without explicit
+maintainer authorization. Work is prioritized around data safety, predictable
+automation contracts, and bounded resource use. The
 editor remains offline and headless; Ubuntu x86_64 and the Alpine amd64
 container are the supported runtimes.
 
