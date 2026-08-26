@@ -110,26 +110,13 @@ ENVIRONMENT:
 /// skill directories; that is what `--dir` is for.
 const SKILL_TARGETS: &[&str] = &["claude", "codex", "kimi", "cursor"];
 
-/// Root directory for one client's skills. Kimi's config and skills share the
-/// same overridable home.
+/// Root directory for one client's skills, under the user's home. `--dir`
+/// writes them anywhere else.
 fn skill_target_root(target: &str, home: &std::path::Path) -> Option<std::path::PathBuf> {
-    let kimi_home = std::env::var_os("KIMI_CODE_HOME");
-    skill_target_root_with_kimi_home(target, home, kimi_home.as_deref())
-}
-
-fn skill_target_root_with_kimi_home(
-    target: &str,
-    home: &std::path::Path,
-    kimi_home: Option<&std::ffi::OsStr>,
-) -> Option<std::path::PathBuf> {
     match target {
         "claude" => Some(home.join(".claude")),
         "codex" => Some(home.join(".agents")),
-        "kimi" => Some(
-            kimi_home
-                .map(std::path::PathBuf::from)
-                .unwrap_or_else(|| home.join(".kimi-code")),
-        ),
+        "kimi" => Some(home.join(".kimi-code")),
         "cursor" => Some(home.join(".cursor")),
         _ => None,
     }
@@ -347,9 +334,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{HELP, skill_target_root_with_kimi_home};
-    use std::ffi::OsStr;
-    use std::path::{Path, PathBuf};
+    use super::{HELP, skill_target_root};
+    use std::path::Path;
 
     #[test]
     fn core_commands_are_listed() {
@@ -365,23 +351,21 @@ mod tests {
     }
 
     #[test]
-    fn skill_targets_share_kimis_overridable_home() {
+    fn each_skill_target_resolves_under_the_user_home() {
         let home = Path::new("user-home");
         assert_eq!(
-            skill_target_root_with_kimi_home("kimi", home, None),
+            skill_target_root("claude", home),
+            Some(home.join(".claude"))
+        );
+        assert_eq!(skill_target_root("codex", home), Some(home.join(".agents")));
+        assert_eq!(
+            skill_target_root("kimi", home),
             Some(home.join(".kimi-code"))
         );
         assert_eq!(
-            skill_target_root_with_kimi_home("kimi", home, Some(OsStr::new("custom-kimi"))),
-            Some(PathBuf::from("custom-kimi"))
+            skill_target_root("cursor", home),
+            Some(home.join(".cursor"))
         );
-        assert_eq!(
-            skill_target_root_with_kimi_home("codex", home, Some(OsStr::new("ignored"))),
-            Some(home.join(".agents"))
-        );
-        assert_eq!(
-            skill_target_root_with_kimi_home("unknown", home, None),
-            None
-        );
+        assert_eq!(skill_target_root("unknown", home), None);
     }
 }
