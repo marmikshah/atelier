@@ -372,7 +372,7 @@ CLI and replay.
 ## Project status
 
 **100% of this repository is AI-generated, and no line-by-line human review has
-been done.** Not part of it — none of it. What it has had instead is several
+been done.** Not some of it — none of it. What it has had instead is several
 rounds of AI review and revision, across models: GPT 5.6 Sol, Fable 5, and
 Opus 4.8. The majority of the early code came from Opus; the newer work came
 from GPT and Fable.
@@ -385,6 +385,24 @@ code.
 > **Assume defects and breaking changes remain possible in any release.**
 > Review the code and isolate important data before using Atelier in a
 > production workflow.
+
+> [!NOTE]
+> **Versions restarted at `0.1.0`, and only the newest release is ever
+> available.**
+>
+> The project previously numbered its releases `1.0.0` through `1.9.1`. That
+> claimed a stability it never had — every one of those releases was free to
+> break the tool surface — so the version reset to `0.1.0`, where a `0.y`
+> bump saying "this may break" is the point. `1.0.0` will mean something
+> different when it arrives: hand-written and human-reviewed.
+>
+> Because releases break and maintaining several at once is not something I
+> want to take on right now, **publishing a new release removes the previous
+> one.** At any moment there is exactly one release to download, and it is the
+> current one. Nothing is lost: every version remains in the git history under
+> its tag, so any past release can still be checked out and built from source.
+> When an upgrade needs migration steps, those steps ship with the release that
+> requires them.
 
 ## Contributing
 

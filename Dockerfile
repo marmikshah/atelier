@@ -17,7 +17,7 @@
 # Persist documents by mounting a volume at /data (ATELIER_HOME).
 
 # ---- build -------------------------------------------------------------------
-FROM rust:1.97.1-alpine3.22 AS build
+FROM rust:1.98.0-alpine3.22 AS build
 # musl is the default target here, so the binary is fully static — no package
 # installs at all (the default build links no openssl, no C deps).
 WORKDIR /src

@@ -36,5 +36,8 @@ timeline.
 
 ## Supported versions
 
-Only the latest release receives fixes. There are no backports. Native support is limited to Ubuntu 22.04 or newer on x86_64; the
+Only the latest release receives fixes. There are no backports, and only one
+release exists at a time — publishing a new one removes the previous release's
+downloads. Its git tag remains, so any past version can still be built from
+source, but it will receive no fixes. Native support is limited to Ubuntu 22.04 or newer on x86_64; the
 Alpine linux/amd64 container is the only other supported runtime.
