@@ -23,7 +23,7 @@ categories = ["command-line-utilities", "multimedia::images", "game-development"
 
 # Single source of truth for dependency versions across the workspace.
 [workspace.dependencies]
-base64 = "0.22.1"
+base64 = "0.23.1"
 crc32fast = "1.5.0"
 image = { version = "0.25.10", default-features = false, features = ["png", "gif"] }
 png = "0.18.1" # direct: APNG animation encoder (already in the tree via image)
