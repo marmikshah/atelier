@@ -13,7 +13,7 @@
 
 use std::collections::HashMap;
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value, json};
 
@@ -63,12 +63,19 @@ fn read_source(path: &Path, label: &str) -> Result<String, String> {
     String::from_utf8(bytes).map_err(|error| format!("cannot read {label}: not UTF-8: {error}"))
 }
 
-fn resolve_source(path: &str) -> Result<String, String> {
+/// Resolve the recipe text: a readable file wins, otherwise the path is a
+/// document id whose own journal is the source. `home` must be the same store
+/// the replay writes into, or a bare id would be read from one store and
+/// rebuilt in another.
+fn resolve_source(path: &str, home: Option<&str>) -> Result<String, String> {
     let as_file = Path::new(path);
     if as_file.is_file() {
         return read_source(as_file, path);
     }
-    let root = crate::service::default_home();
+    let root = match home {
+        Some(dir) => PathBuf::from(dir),
+        None => crate::service::default_home(),
+    };
     let doc = root.join("documents").join(path);
     if !doc.is_dir() {
         return Err(format!(
@@ -129,7 +136,7 @@ pub async fn run(args: &[String]) -> i32 {
 
     // A bare document id replays that document's own journal — the whole point
     // of journaling by default is that you never had to keep a recipe file.
-    let src = match resolve_source(path) {
+    let src = match resolve_source(path, home) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("replay: {e}");

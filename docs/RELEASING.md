@@ -4,11 +4,17 @@ Only the maintainer creates version tags. An agent may prepare and review the
 version-change pull request, but pushing the tag is the human approval that
 starts publication.
 
-Active development stays on `1.y.z`. Normal feature releases increment `y`
-and reset `z` to zero; a new major version must never be prepared, tagged, or
-described as planned without explicit maintainer instruction.
+`1.0.0` must never be prepared, tagged, or described as planned without
+explicit maintainer instruction.
 
-The release workflow accepts only a stable SemVer tag such as `v1.9.0`. It must
+Only one release exists at a time. Publishing a new one removes the release
+page and archives of the release before it — releases break, and maintaining
+several in parallel is out of scope for now. The git tag always stays, so any
+past version can still be checked out and built. Ship migration steps in the
+release that requires them.
+
+The release workflow accepts only a `vMAJOR.MINOR.PATCH` tag such as
+`v0.1.0`, with no pre-release or build suffix. It must
 be annotated or signed, match every release package and a dated changelog
 heading, and point to a commit on `master`. A version-preparation PR keeps its
 changelog heading marked `Unreleased`; dating it is a separate, explicit part
@@ -49,7 +55,7 @@ Then start from a clean, current `master`:
 git checkout master
 git pull --ff-only origin master
 git status --short
-ATELIER_RELEASE_TAG=v1.9.0
+ATELIER_RELEASE_TAG=v0.1.0
 tools/release-check.sh "$ATELIER_RELEASE_TAG"
 ```
 
@@ -107,7 +113,26 @@ contain `atelier-$ATELIER_RELEASE_TAG-ubuntu-x86_64.tar.gz` and
 `.sha256` file, plus the GHCR image tags. Docker still publishes linux/amd64
 only.
 
-## 4. Retry an orchestration failure
+## 4. Remove the previous release
+
+Once the new release is published and verified, delete the one it replaces.
+Delete the release page and its archives only — never the tag, which is the
+sole remaining record of that version:
+
+```sh
+gh release delete "$ATELIER_PREVIOUS_TAG" --yes
+git ls-remote --tags origin "$ATELIER_PREVIOUS_TAG"   # the tag must survive
+```
+
+`gh release delete` leaves the tag in place unless `--cleanup-tag` is passed.
+Never pass it. Old GHCR image tags are untouched by this and are pruned
+separately when they accumulate.
+
+Do this after verification, not before: until the new archives are confirmed
+downloadable, the previous release is the only installable version, and
+`tools/install.sh` resolves whatever `/releases/latest` returns.
+
+## 5. Retry an orchestration failure
 
 Treat a pushed tag as immutable. A plain GitHub rerun uses the workflow from the
 tagged commit, so it cannot pick up a workflow-only repair. After merging such a

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Validate the immutable inputs to a release before a tag can publish anything.
-# Usage: tools/release-check.sh v1.9.0
+# Usage: tools/release-check.sh v0.1.0
 #        tools/release-check.sh --current
 set -eu
 
@@ -23,10 +23,10 @@ if [ "$RELEASE_TAG" = "--current" ]; then
   current_version="${current_version##*@}"
   RELEASE_TAG="v$current_version"
 fi
-[ -n "$RELEASE_TAG" ] || fail "pass a tag such as v1.9.0"
+[ -n "$RELEASE_TAG" ] || fail "pass a tag such as v0.1.0"
 printf '%s\n' "$RELEASE_TAG" \
   | grep -Eq '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' \
-  || fail "tag must be stable SemVer in the form vMAJOR.MINOR.PATCH"
+  || fail "tag must be a stable version in the form vMAJOR.MINOR.PATCH"
 
 RELEASE_VERSION="${RELEASE_TAG#v}"
 cargo metadata --locked --no-deps --format-version 1 >/dev/null \
