@@ -6,15 +6,21 @@ Shell-based automation needs no server registration or background process.
 
 ```sh
 atelier call <tool> '<json>'          # one tool call, in-process — the front door
-atelier call <tool> --file ops.json   # args from a file (or --stdin)
-atelier tools [--schema <name>]       # the tool surface / one input schema
+atelier call <tool> --file ops.json   # args from a file (or --stdin, --image-out PATH)
+atelier tools [--html|--schema <name>]  # the tool surface / reference page / one schema
+atelier init                          # stamp ./.atelier for a directory-local store
 atelier replay <recipe|id>            # rebuild a document from its journal
 atelier library                       # what's in your document store
 atelier library verify [--json]       # validate metadata, cels, references, journals
 atelier library pack <id> --out art.atelierpack   # write a portable backup
 atelier library unpack art.atelierpack            # restore its original UUID
-atelier skills install                # write the skills (--for claude|codex|kimi|cursor|all)
+atelier library rm <id>... | --prefix <p> | --all [--yes]   # delete documents, permanently
+atelier skills [show <name>]          # list the shipped skills, or print one
+atelier skills install                # write them (--for claude|codex|kimi|cursor|all, or --dir DIR)
 ```
+
+`--home DIR` selects an isolated store for `call`, `replay`, `library pack`,
+and `library unpack`. The other `library` subcommands read `ATELIER_HOME`.
 
 And the MCP add-on, covered in [mcp.md](mcp.md):
 
