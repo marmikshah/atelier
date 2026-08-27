@@ -4,14 +4,13 @@
 # Set ATELIER_HTTP_TOKEN in the shell or a local ignored .env before starting.
 services:
   atelier:
-    image: ghcr.io/marmikshah/atelier:latest
-    # Released images are published for linux/amd64 only, so that is the
-    # default. When you build locally instead, set ATELIER_PLATFORM to your own
-    # platform (linux/arm64 on Apple Silicon, Graviton, or a Pi 5) to get a
-    # native image rather than an emulated one.
-    platform: ${ATELIER_PLATFORM:-linux/amd64}
-    # Or build locally instead of pulling:
-    # build: .
+    # No images are published, so the image is built from this checkout.
+    build: .
+    image: atelier:local
+    # Docker builds for the host platform by default. Set ATELIER_PLATFORM to
+    # pick another (linux/amd64, or linux/arm64 on Apple Silicon, Graviton, or
+    # a Pi 5).
+    platform: ${ATELIER_PLATFORM:-}
     ports:
       - "127.0.0.1:8765:8765"
     volumes:

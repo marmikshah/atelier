@@ -11,7 +11,6 @@
 
 <p align="center">
   <a href="https://github.com/marmikshah/atelier/actions/workflows/ci.yml"><img src="https://github.com/marmikshah/atelier/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/marmikshah/atelier/releases/latest"><img src="https://img.shields.io/github/v/release/marmikshah/atelier" alt="latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
 </p>
 
@@ -29,28 +28,28 @@ It is also an experiment — [see below](#a-personal-note).
 
 ---
 
-## Install
+## Build it
+
+There are no releases yet — no published binaries, archives, or container
+images. Clone the repository and build it:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/marmikshah/atelier/master/tools/install.sh | sh
+git clone https://github.com/marmikshah/atelier.git
+cd atelier
+cargo install --locked --path crates/atelier
 ```
 
-Installs the binary after verifying its published SHA-256. Ubuntu 22.04+ on
-x86_64 or aarch64. Elsewhere, run the [container](docs/mcp.md#docker) — it is
-the practical route on macOS, Windows, and other Linux distributions.
+That puts `atelier` on your `PATH`. `make release` builds
+`target/release/atelier` in place instead.
 
-<details>
-<summary>Other ways to install</summary>
+Linux x86_64 and aarch64 are the supported targets, and the daemon needs
+`systemd --user`. macOS builds and passes the test suite, but has no daemon.
+Windows does not build: the document store's atomicity and the daemon both
+depend on Linux. The [container](docs/mcp.md#docker) is the route on Windows,
+and a convenient one on macOS.
 
-- **Ubuntu archive** — binary, README, license, and checksum for x86_64 and
-  aarch64 on the [latest release](https://github.com/marmikshah/atelier/releases/latest)
-- **From source** — `cargo install --locked --path crates/atelier`, or
-  `tools/install.sh --source` to build this checkout and install it
-
-Native installation on Windows and on non-Ubuntu Linux is unsupported. macOS
-builds and passes the test suite from source, but ships no release binary and
-has no daemon.
-</details>
+Releases will come back when the editor has earned them. Until then, pull and
+build — the gate is `make check`.
 
 ## The first thirty seconds
 
@@ -135,22 +134,20 @@ can do is be useful to you too.
 
 > [!WARNING]
 > **No human has reviewed this code, line by line — not any of it.** Tests,
-> static analysis, locked dependencies, and release gates all pass, and none of
-> that is the same as a person having read it. Assume bugs and security issues
-> I haven't caught, and breaking changes in any release. Review the code and
-> isolate important data before using Atelier in a production workflow.
+> static analysis, and locked dependencies all pass, and none of that is the
+> same as a person having read it. Assume bugs and security issues I haven't
+> caught, and breaking changes at any commit. Review the code and isolate
+> important data before using Atelier in a production workflow.
 
 > [!NOTE]
-> **Versions restarted at `0.1.0`, and only the newest release is ever
-> available.** The project used to number releases `1.0.0` through `1.9.1`,
-> which claimed a stability it never had. `0.y` says what is actually true:
-> this may break.
+> **There are no releases, and `master` is the version.** The project used to
+> publish `1.0.0` through `1.9.1`, numbering that claimed a stability it never
+> had — every one of those releases was free to break the tool surface.
 >
-> Publishing a new release removes the one before it, along with its tag and
-> its container images — maintaining several broken versions at once is not
-> something I want to take on right now. Superseded releases are not archived
-> and cannot be recovered, so when an upgrade needs migration steps, those
-> steps ship with the release that requires them.
+> Rather than keep shipping breakage on a schedule, releasing is off: no
+> binaries, no archives, no container images, no tags. Building from a clone is
+> the only way to run Atelier, which suits a project with one user and maybe
+> two. Releases return when the editor has earned them.
 
 ## Contributing
 

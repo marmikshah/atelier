@@ -80,18 +80,19 @@ ran, so a replay never depends on a live session or another caller's state.
 
 ## Docker
 
-The second supported release is a small Alpine image with a static musl binary
-and no runtime packages. Because native installation is Ubuntu x86_64 only, the
-container is also the practical way to run Atelier on macOS, Windows, and other
-Linux distributions. It serves the same HTTP MCP endpoint:
+The `Dockerfile` builds a small Alpine image with a static musl binary and no
+runtime packages. Nothing is published, so build it from a checkout — which is
+also the practical way to run Atelier on Windows, and a convenient one on
+macOS. It serves the same HTTP MCP endpoint:
 
 ```sh
 export ATELIER_HTTP_TOKEN="$(openssl rand -hex 32)"
-docker run -d --platform linux/amd64 \
+docker build -t atelier:local .
+docker run -d \
   -p 127.0.0.1:9123:8765 \
   -v atelier-data:/data \
   -e ATELIER_HTTP_TOKEN \
-  ghcr.io/marmikshah/atelier:latest
+  atelier:local
 ```
 
 Documents persist in the `atelier-data` volume, so they survive restarts. Here
@@ -104,41 +105,26 @@ enabled with the corresponding root variables.
 There's a [`docker-compose.yml`](../docker-compose.yml) if you'd rather keep it
 declarative.
 
-### Building the image on another architecture
+### Which architectures work
 
-Published images are `linux/amd64` only, which is why the `docker run` above
-pins that platform; elsewhere Docker runs them under emulation. Building from a
-clone avoids that. Nothing in the `Dockerfile` is architecture-specific, so a
-plain build produces a native image — this is the route for an Apple Silicon
-Mac, a Graviton instance, or a Raspberry Pi 5:
-
-```sh
-docker build -t atelier:local .
-docker run -d \
-  -p 127.0.0.1:9123:8765 \
-  -v atelier-data:/data \
-  -e ATELIER_HTTP_TOKEN \
-  atelier:local
-```
-
-Docker builds for the host platform by default; add `--platform` to pick a
-different one (`docker build --platform linux/amd64 .` reproduces the released
-image, emulated and therefore slow). With Compose, uncomment `build: .` and set
-`ATELIER_PLATFORM` to your own platform so the service is not pinned to amd64:
+Nothing in the `Dockerfile` is architecture-specific, so a plain `docker build`
+produces a native image — including on an Apple Silicon Mac, a Graviton
+instance, or a Raspberry Pi 5. Add `--platform` to build for a different one,
+which runs under emulation and is therefore slow. With Compose, set
+`ATELIER_PLATFORM`:
 
 ```sh
 ATELIER_PLATFORM=linux/arm64 docker compose up -d --build
 ```
 
-Two things bound which architectures work. The image needs a Rust Alpine base,
-published for `amd64`, `arm64`, and `ppc64le`; and the document store publishes
-each generation with a `renameat2` syscall whose number differs per
-architecture, so the build refuses any target Atelier has no number for rather
-than falling back to a non-atomic rename. `linux/amd64` is built and
-smoke-tested in CI and is the only released image, `linux/arm64` is verified by
-hand with `tools/container-smoke.sh`, and anything else is yours to build and
-test. Non-Linux targets do not compile at all: the store's atomicity and the
-daemon both depend on Linux.
+Two things bound the options. The image needs a Rust Alpine base, published for
+`amd64`, `arm64`, and `ppc64le`; and the document store publishes each
+generation with a `renameat2` syscall whose number differs per architecture, so
+the build refuses any target Atelier has no number for rather than falling back
+to a non-atomic rename. `linux/amd64` is built and smoke-tested in CI,
+`linux/arm64` is verified by hand with `tools/container-smoke.sh`, and anything
+else is yours to build and test. Non-Linux targets do not compile at all: the
+store's atomicity and the daemon both depend on Linux.
 
 ## Troubleshooting
 
@@ -153,6 +139,6 @@ daemon both depend on Linux.
 - **Where are the logs?** Use `journalctl --user -u atelier -f` for the Ubuntu
   daemon. Verbosity is controlled by `ATELIER_LOG` (`RUST_LOG` syntax). In
   stdio mode the same log goes to the spawning client's stderr.
-- **Uninstall everything** — `install.sh uninstall` (or `atelier uninstall` for
-  just the daemon). Your documents in `~/.atelier` are kept; delete that
-  directory too if you want them gone.
+- **Uninstall the daemon** — `atelier uninstall`. Your documents in
+  `~/.atelier` are kept; delete that directory too if you want them gone, and
+  remove the binary with `cargo uninstall atelier`.

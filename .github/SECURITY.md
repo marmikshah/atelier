@@ -36,7 +36,7 @@ timeline.
 
 ## Supported versions
 
-Only the latest release receives fixes. There are no backports, and only one
-release exists at a time: publishing a new release removes the previous one
-entirely. Superseded versions are not archived and cannot be obtained. Native support is limited to Ubuntu 22.04 or newer on x86_64; the
+Atelier publishes no releases. `master` is the only supported version, it is
+the only thing fixes land on, and running Atelier means building it from a
+clone. There is nothing older to back-port to. Native support is limited to Ubuntu 22.04 or newer on x86_64; the
 Alpine linux/amd64 container is the only other supported runtime.

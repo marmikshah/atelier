@@ -15,7 +15,7 @@
 - [ ] Tests cover behavior changes
 - [ ] User-facing changes are documented
 - [ ] Tool descriptions/docs were regenerated when applicable
-- [ ] No release tag was created or pushed
+- [ ] `docs/tools.md` regenerated if the tool surface changed
 
 ## Related issue
 
