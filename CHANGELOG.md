@@ -3,24 +3,14 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 Atelier does not publish releases. There are no binaries, archives, or
-container images — clone the repository and build it. Every change below is on
-`master` and lands there through a pull request, so `master` is the version.
-Releases will return when the editor has earned them; until then this file
-records what changed and why.
+container images — clone the repository and build it. Every change lands on
+`master` through a pull request, so `master` is the version. This file records
+what changed and why.
 
 ## Unreleased
 
-The repository was reset: version numbering restarted, the companion site was
-folded back in, and the release machinery was retired. The editor itself, the
-tool surface, and the document format are unchanged apart from the `--home`
-fixes below.
-
 ### Changed
 
-- Versions restarted at `0.1.0`. The `1.9.1` number claimed a stability the
-  project never had; every release in that series was free to break the tool
-  surface. `1.0.0` is reserved for an explicit maintainer decision and is not
-  planned.
 - Atelier is closed to outside pull requests. The repository is entirely
   AI-generated with no line-by-line human review, so a merged contribution
   would be reviewed by nobody who understands the code around it. Bug reports,
@@ -28,9 +18,9 @@ fixes below.
   licence still permits any fork.
 - Releasing is switched off entirely. The release and container-publishing
   workflows, `tools/install.sh`, `tools/release-check.sh`, and
-  `docs/RELEASING.md` are all removed, along with every published release, tag,
-  and container image. Building from a clone is the only way to run Atelier,
-  which is honest about where the project is: one user, maybe two.
+  `docs/RELEASING.md` are all removed. Building from a clone is the only way to
+  run Atelier, which is honest about where the project is: one user, maybe
+  two.
 - The companion `atelier-site` repository was folded back in and GitHub Pages
   was switched off. The site's logos and demo animation now live in `assets/`,
   its seventy-run model showcase in `showcase/` with a generated

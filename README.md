@@ -140,14 +140,10 @@ can do is be useful to you too.
 > important data before using Atelier in a production workflow.
 
 > [!NOTE]
-> **There are no releases, and `master` is the version.** The project used to
-> publish `1.0.0` through `1.9.1`, numbering that claimed a stability it never
-> had — every one of those releases was free to break the tool surface.
->
-> Rather than keep shipping breakage on a schedule, releasing is off: no
-> binaries, no archives, no container images, no tags. Building from a clone is
-> the only way to run Atelier, which suits a project with one user and maybe
-> two. Releases return when the editor has earned them.
+> **There are no releases, and `master` is the version.** No binaries, no
+> archives, no container images, no tags — building from a clone is the only
+> way to run Atelier, which suits a project with one user and maybe two.
+> Releases arrive when the editor has earned them.
 
 ## Contributing
 
