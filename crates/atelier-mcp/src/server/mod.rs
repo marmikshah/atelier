@@ -19,7 +19,7 @@ mod params;
 mod toolsdoc;
 mod transport;
 
-pub use toolsdoc::{tools_html, tools_text};
+pub use toolsdoc::{tools_markdown, tools_text};
 pub use transport::{run, run_http};
 
 use params::*;
@@ -1468,7 +1468,7 @@ mod tests {
         // work. The router is an associated fn, so nothing here touches disk.
         assert_eq!(Atelier::registry_tools().len(), 25);
         assert!(tools_text().starts_with("atelier tools — 25 tools\n"));
-        assert!(tools_html().contains("25</strong> tools"));
+        assert!(tools_markdown().contains("**25** tools"));
     }
 
     #[test]

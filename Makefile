@@ -6,10 +6,10 @@
 # subcommands are the interface (an installed user has no Makefile).
 
 BIN := target/debug/atelier
-DOC_HTML := target/atelier-tools.html
+DOC_MD := docs/tools.md
 
 .DEFAULT_GOAL := help
-.PHONY: help build release test fmt fmt-check lint rustdoc-check check pre-commit-checks docs docs-check clean
+.PHONY: help build release test fmt fmt-check lint rustdoc-check check pre-commit-checks docs docs-check showcase-check clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -44,12 +44,16 @@ pre-commit-checks: ## Release metadata + format + clippy + rustdoc gate run by g
 	$(MAKE) lint
 	$(MAKE) rustdoc-check
 
-docs: build ## Generate a local HTML tool reference under target/
-	$(BIN) tools --html > $(DOC_HTML)
-	@echo "wrote $(DOC_HTML)"
+docs: build ## Regenerate the committed Markdown tool reference
+	$(BIN) tools --markdown > $(DOC_MD)
+	@echo "wrote $(DOC_MD)"
 
-docs-check: build ## Verify that the generated HTML tool reference renders
-	@$(BIN) tools --html >/dev/null
+docs-check: build ## Verify the committed tool reference matches the registry
+	@$(BIN) tools --markdown | diff -u $(DOC_MD) - \
+		|| { echo "docs/tools.md is stale — run 'make docs'"; exit 1; }
+
+showcase-check: build ## Replay all 70 showcase recipes and compare GIFs byte-for-byte
+	tools/showcase-check.sh
 
 clean: ## Remove build artifacts
 	cargo clean

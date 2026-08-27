@@ -1,0 +1,40 @@
+name: Showcase
+
+# The showcase claims every GIF is reproducible from the replay beside it.
+# This proves it. It replays all 70 recipes and requires byte-identical GIFs,
+# which takes ~10 minutes — too slow for every pull request, so it runs on
+# demand and weekly, and on any change to the showcase or the editor's export
+# and replay paths.
+on:
+  push:
+    branches: [master]
+    paths:
+      - "showcase/**"
+      - "tools/showcase-check.sh"
+      - ".github/workflows/showcase.yml"
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  replays:
+    name: Replay every showcase recipe
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: 1.98.0
+
+      - uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
+
+      - name: Build the editor
+        run: cargo build --locked -p atelier
+
+      - name: Replay all 70 recipes
+        run: tools/showcase-check.sh

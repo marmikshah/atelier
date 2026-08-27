@@ -25,6 +25,17 @@ the version number and the release policy changed.
   container images — because releases break and maintaining several in parallel
   is out of scope for now. Superseded releases are not archived, so migration
   steps ship with the release that requires them.
+- The companion `atelier-site` repository was folded back in and GitHub Pages
+  was switched off. The site's logos and demo animation now live in `assets/`,
+  its seventy-run model showcase in `showcase/` with a generated
+  `showcase/README.md`, and its replay verification in
+  `tools/showcase-check.sh`, run by a new on-demand `Showcase` workflow.
+- The tool reference is Markdown instead of a published HTML page. `atelier
+  tools --markdown` replaces `--html`, `make docs` writes the committed
+  `docs/tools.md`, and `make docs-check` now fails when that file drifts from
+  the registry rather than only checking that it renders.
+- The installer is served from `raw.githubusercontent.com` rather than the
+  retired Pages site, so the one-liner in the README changed.
 - Every release predating this reset was removed under that policy, along with
   its tag and images. `tools/install.sh` installs whatever the current release
   is.

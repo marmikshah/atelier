@@ -7,7 +7,7 @@ Shell-based automation needs no server registration or background process.
 ```sh
 atelier call <tool> '<json>'          # one tool call, in-process — the front door
 atelier call <tool> --file ops.json   # args from a file (or --stdin, --image-out PATH)
-atelier tools [--html|--schema <name>]  # the tool surface / reference page / one schema
+atelier tools [--markdown|--schema <name>]   # the surface / full reference / one schema
 atelier init                          # stamp ./.atelier for a directory-local store
 atelier replay <recipe|id>            # rebuild a document from its journal
 atelier library                       # what's in your document store
@@ -60,7 +60,7 @@ recipes.
 **25 tools**, all of them advertised — no profiles to pick, nothing hidden
 behind a flag. Registry/dispatch lockstep is test-enforced, so an advertised
 tool cannot turn into an unreachable dead end. Browse them in the
-[tool reference](https://marmikshah.github.io/atelier/tools.html).
+[tool reference](tools.md).
 
 `list_docs` returns at most 50 documents by default (100 when requested) and
 provides `next_cursor` for deterministic continuation, keeping large libraries

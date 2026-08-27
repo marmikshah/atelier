@@ -53,7 +53,8 @@ Useful commands:
 ```sh
 make fmt          # apply formatting
 make test         # complete Rust test suite
-make docs         # generate target/atelier-tools.html
+make docs         # regenerate docs/tools.md
+make showcase-check  # replay all 70 showcase recipes (~10 min)
 make release      # optimized binary
 ```
 
