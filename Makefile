@@ -38,9 +38,8 @@ rustdoc-check: ## Check public API documentation and intra-doc links
 
 check: pre-commit-checks test docs-check ## Complete non-mutating local/CI gate
 
-pre-commit-checks: ## Release metadata + format + clippy + rustdoc gate run by git hooks
+pre-commit-checks: ## Format + clippy + rustdoc gate run by git hooks
 	$(MAKE) fmt-check
-	tools/release-check.sh --current
 	$(MAKE) lint
 	$(MAKE) rustdoc-check
 

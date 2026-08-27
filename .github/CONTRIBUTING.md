@@ -26,9 +26,8 @@ The majority of the early code came from Opus; the newer work came from GPT and
 Fable. My part was deciding what should exist, what should not, and when
 something was not good enough yet.
 
-Tests, Clippy, rustdoc, locked dependencies, bounded image operations, and the
-release gates all pass, and none of that is the same as a person having read
-the code. Which is where your pull request would land: merged into a codebase
+Tests, Clippy, rustdoc, locked dependencies, and bounded image operations all
+pass, and none of that is the same as a person having read the code. Which is where your pull request would land: merged into a codebase
 nobody understands well enough to review it against, me included. You would
 deserve a better review than I could honestly give, and accepting the change
 anyway would quietly break the one rule the experiment runs on.
@@ -45,8 +44,8 @@ make check
 The supported native development environment is Ubuntu 22.04 or newer on
 x86_64. The supported container target is Alpine linux/amd64.
 
-That non-mutating gate checks release metadata, formatting, Clippy, rustdoc,
-tests, and tool-reference rendering.
+That non-mutating gate checks formatting, Clippy, rustdoc, tests, and the
+committed tool reference.
 
 Useful commands:
 
