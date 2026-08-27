@@ -1,8 +1,7 @@
-//! Self-contained HTML tool reference, generated from the live tool registry so
-//! it can never drift from the actual `#[tool]` descriptions. Emitted by the
-//! `atelier tools` subcommand, generated locally by `make docs`, and published
-//! by the companion `atelier-site` repository. No hand-maintained tool list to
-//! keep in sync.
+//! Tool reference, generated from the live tool registry so it can never drift
+//! from the actual `#[tool]` descriptions. Emitted by the `atelier tools`
+//! subcommand and written to `docs/tools.md` by `make docs`. No hand-maintained
+//! tool list to keep in sync.
 
 use super::Atelier;
 
@@ -26,112 +25,41 @@ pub fn tools_text() -> String {
 
     format!(
         "atelier tools — {} tools\n\n{}\n\
-         HTML reference: atelier tools --html  (or `make docs`)\n",
+         Full reference: atelier tools --markdown  (or `make docs`)\n",
         tools.len(),
         list,
     )
 }
 
-/// Render the full tool surface as one static HTML page.
-pub fn tools_html() -> String {
+/// Render the full tool surface as one Markdown document. Committed as
+/// `docs/tools.md` so the reference is browsable in the repository itself.
+pub fn tools_markdown() -> String {
     let mut tools = Atelier::registry_tools();
     tools.sort_by(|a, b| a.name.cmp(&b.name));
 
-    let total = tools.len();
-
-    let mut cards = String::new();
+    let mut body = String::new();
     for t in &tools {
-        let desc = esc(t.description.as_deref().unwrap_or(""));
+        body.push_str(&format!("## `{}`\n\n", t.name));
+        body.push_str(t.description.as_deref().unwrap_or("").trim());
+        body.push_str("\n\n");
         let params: Vec<String> = t
             .input_schema
             .get("properties")
             .and_then(|v| v.as_object())
-            .map(|m| {
-                m.keys()
-                    .map(|k| format!("<code>{}</code>", esc(k)))
-                    .collect()
-            })
+            .map(|m| m.keys().map(|k| format!("`{k}`")).collect())
             .unwrap_or_default();
-        let params = if params.is_empty() {
-            String::new()
-        } else {
-            format!(r#"<div class="params">{}</div>"#, params.join(" "))
-        };
-        cards.push_str(&format!(
-            r#"<div class="tool" id="{name}"><h3>{name}</h3><p>{desc}</p>{params}</div>"#,
-            name = t.name,
-        ));
+        if !params.is_empty() {
+            body.push_str(&format!("Parameters: {}\n\n", params.join(", ")));
+        }
     }
 
-    format!(
-        r##"<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>atelier — tool reference</title>
-<meta name="description" content="The complete atelier MCP tool surface, generated from the live server registry.">
-<style>
-  :root{{--bg:#14161d;--card:#1b1e28;--ink:#e8e9f0;--muted:#a7abbb;--line:#2c3040;
-    --accent:#e0a33c;--teal:#57b4c4;--code-bg:#101219;--code-ink:#c9ccd9;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}}
-  @media (prefers-color-scheme:light){{:root{{--bg:#f0f1ec;--card:#e7e8e1;--ink:#191b14;
-    --muted:#4c4f43;--line:#c9cbbd;--accent:#7d550e;--teal:#256875;--code-bg:#191b14;--code-ink:#e7e8e1;}}}}
-  *{{box-sizing:border-box}}
-  body{{background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);margin:0;padding:0 20px 96px;-webkit-font-smoothing:antialiased}}
-  .wrap{{max-width:900px;margin:0 auto}}
-  h1{{font-family:var(--mono);font-size:1.9rem;margin:2.5rem 0 .3rem}}
-  .sub{{color:var(--muted);margin:0 0 1.5rem}}
-  .controls{{position:sticky;top:0;background:var(--bg);padding:1rem 0;border-bottom:1px solid var(--line);display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;z-index:2}}
-  input[type=search]{{flex:1;min-width:200px;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:.5rem .8rem;font:14px var(--sans)}}
-  .filter{{font-family:var(--mono);font-size:.8rem;background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:.4rem .9rem;cursor:pointer}}
-  .filter.on{{color:var(--ink);border-color:var(--accent)}}
-  .tool{{border:1px solid var(--line);border-radius:10px;padding:1rem 1.2rem;margin:.8rem 0;background:var(--card)}}
-  .tool h3{{font-family:var(--mono);font-size:1rem;margin:0 0 .5rem;display:flex;gap:.6rem;align-items:center}}
-  .tool p{{margin:.3rem 0;color:var(--ink)}}
-  .params{{margin-top:.6rem}}
-  code{{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);font-size:.78rem;padding:.1rem .4rem;border-radius:4px;margin:.1rem}}
-  .hide{{display:none}}
-  footer{{color:var(--muted);font-size:.8rem;margin-top:3rem;border-top:1px solid var(--line);padding-top:1rem}}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>atelier tool reference</h1>
-  <p class="sub"><strong>{total}</strong> tools — every one advertised, no profiles.
-     Generated from the live registry; do not edit by hand.</p>
-  <div class="controls">
-    <input type="search" id="q" placeholder="filter tools…" autocomplete="off">
-  </div>
-  <div id="list">
-    {cards}
-  </div>
-  <footer>Generated by <code>atelier tools</code> · regenerate with <code>make docs</code>.</footer>
-</div>
-<script>
-  const q=document.getElementById('q'),tools=[...document.querySelectorAll('.tool')];
-  let f='all';
-  function apply(){{
-    const s=q.value.toLowerCase();
-    for(const t of tools){{
-      const okF=f==='all'||t.classList.contains(f);
-      const okS=!s||t.textContent.toLowerCase().includes(s);
-      t.classList.toggle('hide',!(okF&&okS));
-    }}
-  }}
-  q.addEventListener('input',apply);
-  for(const b of document.querySelectorAll('.filter')){{
-    b.addEventListener('click',()=>{{
-      f=b.dataset.f;
-      document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('on',x===b));
-      apply();
-    }});
-  }}
-</script>
-</body>
-</html>
-"##
-    )
+    let header = format!(
+        "# atelier tool reference\n\n**{}** tools — every one advertised, no profiles to pick.\n\n",
+        tools.len()
+    );
+    let note = "Generated from the live registry by `atelier tools --markdown`; regenerate with `make docs`. Do not edit by hand.\n\n";
+
+    format!("{header}{note}{body}")
 }
 
 /// First clause of a tool description for the terminal listing: cut at the first
@@ -154,11 +82,4 @@ fn summarize(desc: &str) -> String {
     } else {
         clause.to_string()
     }
-}
-
-/// Minimal HTML escaping for tool text embedded in the page.
-fn esc(s: &str) -> String {
-    s.replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
 }

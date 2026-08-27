@@ -29,7 +29,7 @@
 //! atelier install                # asks for port; systemd --user
 //! atelier status
 //! atelier uninstall
-//! atelier tools [--html]         # the tool surface / the reference page
+//! atelier tools [--markdown]     # the tool surface / the full reference
 //! atelier library [COMMAND]      # inspect, archive, or prune the document store
 //! atelier replay <journal|id>    # rebuild a document from its journal
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
@@ -88,9 +88,9 @@ USAGE:
                                   exit 0 ok, 1 tool/output error, 2 bad call
     atelier init                  stamp ./.atelier so this directory keeps its
                                   own art and recipes
-    atelier tools [--html|--schema <name>]
-                                  list the tools (plain text; --html emits the
-                                  reference page; --schema dumps one input schema)
+    atelier tools [--markdown|--schema <name>]
+                                  list the tools (plain text; --markdown emits the
+                                  full reference; --schema dumps one input schema)
     atelier skills                the shipped skills; `skills install [--for claude|codex|kimi|cursor|all]`
                                   writes them for your agent (~/.claude/skills by default, --dir DIR
                                   for anywhere else), `skills show <name>` prints one
@@ -259,7 +259,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
         // List the tools (generated from the live registry). Plain text by
-        // default; `--html` emits the reference page `make docs` publishes;
+        // default; `--markdown` emits the reference `make docs` writes;
         // `--schema <name>` dumps one tool's input JSON schema.
         Some("tools") => {
             let rest = &args[2..];
@@ -277,8 +277,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         std::process::exit(2);
                     }
                 }
-            } else if rest.iter().any(|a| a == "--html") {
-                print!("{}", server::tools_html());
+            } else if rest.iter().any(|a| a == "--markdown") {
+                print!("{}", server::tools_markdown());
             } else {
                 print!("{}", server::tools_text());
             }

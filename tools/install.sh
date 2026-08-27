@@ -1,8 +1,8 @@
 #!/bin/sh
 # atelier binary installer
 #
-#   curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
-#   curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh -s -- uninstall
+#   curl -fsSL https://raw.githubusercontent.com/marmikshah/atelier/master/tools/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/marmikshah/atelier/master/tools/install.sh | sh -s -- uninstall
 #   ./tools/install.sh --source
 #
 # The script only installs or removes the binary. Daemon setup, MCP client

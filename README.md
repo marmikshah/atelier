@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/logo-wordmark-dark.png">
-    <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/logo-wordmark.png" width="384" alt="atelier">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-wordmark-dark.png">
+    <img src="assets/logo-wordmark.png" width="384" alt="atelier">
   </picture>
 </p>
 
@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/marmikshah/atelier-site/master/src/assets/studio-scene.gif" width="640" alt="Example animated pixel-art scene created with Atelier">
+  <img src="assets/studio-scene.gif" width="640" alt="Example animated pixel-art scene created with Atelier">
 </p>
 
 Atelier stores layered, animated documents locally and gives shell automation
@@ -32,7 +32,7 @@ It is also an experiment — [see below](#a-personal-note).
 ## Install
 
 ```sh
-curl -fsSL https://marmikshah.github.io/atelier/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/marmikshah/atelier/master/tools/install.sh | sh
 ```
 
 Installs the binary after verifying its published SHA-256. Ubuntu 22.04+ on
@@ -111,7 +111,8 @@ Docker, remote access, and troubleshooting are in **[docs/mcp.md](docs/mcp.md)**
 
 - **[docs/cli.md](docs/cli.md)** — the complete CLI, journals, stores, backups, skills
 - **[docs/mcp.md](docs/mcp.md)** — MCP daemon, auth, Docker, troubleshooting
-- **[tool reference](https://marmikshah.github.io/atelier/tools.html)** — all 25 tools
+- **[docs/tools.md](docs/tools.md)** — the complete 25-tool reference
+- **[showcase/](showcase/)** — the same ten briefs drawn by seven models
 - **[CHANGELOG.md](CHANGELOG.md)** — what changed, and when
 
 ## A personal note
