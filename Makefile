@@ -51,7 +51,7 @@ docs-check: build ## Verify the committed tool reference matches the registry
 	@$(BIN) tools --markdown | diff -u $(DOC_MD) - \
 		|| { echo "docs/tools.md is stale — run 'make docs'"; exit 1; }
 
-showcase-check: build ## Replay all 70 showcase recipes and compare GIFs byte-for-byte
+showcase-check: build ## Replay all 80 showcase recipes and compare GIFs byte-for-byte
 	tools/showcase-check.sh
 
 clean: ## Remove build artifacts

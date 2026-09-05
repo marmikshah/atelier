@@ -1,7 +1,7 @@
 {
-  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code, kimi-k3 via Kimi Code, and gpt-5.6-sol-max via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and Codex runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work.",
-  "server": "The original 50 runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which is the build the committed replays are verified against. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so two pre-existing replays (gpt-5.6-sol-max/slash, haiku-4.5/ball) had 5 and 11 fractional arguments rounded to integers and their GIFs regenerated; the calls are otherwise the models' own. Each changed under 1% of that animation's pixels.",
-  "verified": "Every GIF parsed from disk: all 70 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, with the requested palette cardinality and transparency. CI replays all 70 committed JSONL files through the pinned binary and requires the exported GIFs to match byte-for-byte.",
+  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and gpt-5.6-sol-max via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and Codex runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call.",
+  "server": "The original 50 runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which is the build the committed replays are verified against. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so two pre-existing replays (gpt-5.6-sol-max/slash, haiku-4.5/ball) had 5 and 11 fractional arguments rounded to integers and their GIFs regenerated; the calls are otherwise the models' own. Each changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task.",
+  "verified": "Every GIF parsed from disk: all 80 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, with the requested palette cardinality and transparency. CI replays all 80 committed JSONL files through the pinned binary and requires the exported GIFs to match byte-for-byte.",
   "tasks": [
     "alien",
     "ball",
@@ -33,7 +33,8 @@
     "fable-5",
     "kimi-k3",
     "gpt-5.6-sol-max",
-    "opus-5"
+    "opus-5",
+    "fable-5.1"
   ],
   "runs": [
     {
@@ -805,6 +806,116 @@
       "tokens": 91949,
       "frames": 10,
       "replay": "replays/opus-5/torch.jsonl"
+    },
+    {
+      "task": "alien",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/alien.gif",
+      "tool_calls": 15,
+      "looks": 2,
+      "tokens": 74403,
+      "frames": 10,
+      "replay": "replays/fable-5.1/alien.jsonl"
+    },
+    {
+      "task": "ball",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/ball.gif",
+      "tool_calls": 12,
+      "looks": 2,
+      "tokens": 62652,
+      "frames": 10,
+      "replay": "replays/fable-5.1/ball.jsonl"
+    },
+    {
+      "task": "beam",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/beam.gif",
+      "tool_calls": 15,
+      "looks": 3,
+      "tokens": 68899,
+      "frames": 10,
+      "replay": "replays/fable-5.1/beam.jsonl"
+    },
+    {
+      "task": "car",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/car.gif",
+      "tool_calls": 21,
+      "looks": 4,
+      "tokens": 77672,
+      "frames": 10,
+      "replay": "replays/fable-5.1/car.jsonl"
+    },
+    {
+      "task": "cat",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/cat.gif",
+      "tool_calls": 13,
+      "looks": 3,
+      "tokens": 80639,
+      "frames": 10,
+      "replay": "replays/fable-5.1/cat.jsonl"
+    },
+    {
+      "task": "explosion",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/explosion.gif",
+      "tool_calls": 19,
+      "looks": 2,
+      "tokens": 70105,
+      "frames": 10,
+      "replay": "replays/fable-5.1/explosion.jsonl"
+    },
+    {
+      "task": "person",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/person.gif",
+      "tool_calls": 19,
+      "looks": 3,
+      "tokens": 87389,
+      "frames": 10,
+      "replay": "replays/fable-5.1/person.jsonl"
+    },
+    {
+      "task": "potion",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/potion.gif",
+      "tool_calls": 17,
+      "looks": 3,
+      "tokens": 66817,
+      "frames": 10,
+      "replay": "replays/fable-5.1/potion.jsonl"
+    },
+    {
+      "task": "slash",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/slash.gif",
+      "tool_calls": 13,
+      "looks": 2,
+      "tokens": 65920,
+      "frames": 10,
+      "replay": "replays/fable-5.1/slash.jsonl"
+    },
+    {
+      "task": "torch",
+      "model": "fable-5.1",
+      "vendor": "Anthropic",
+      "gif": "gifs/fable-5.1/torch.gif",
+      "tool_calls": 18,
+      "looks": 4,
+      "tokens": 67720,
+      "frames": 10,
+      "replay": "replays/fable-5.1/torch.jsonl"
     }
   ]
 }
