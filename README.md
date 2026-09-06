@@ -111,7 +111,7 @@ Docker, remote access, and troubleshooting are in **[docs/mcp.md](docs/mcp.md)**
 - **[docs/cli.md](docs/cli.md)** — the complete CLI, journals, stores, backups, skills
 - **[docs/mcp.md](docs/mcp.md)** — MCP daemon, auth, Docker, troubleshooting
 - **[docs/tools.md](docs/tools.md)** — the complete 25-tool reference
-- **[showcase/](showcase/)** — the same ten briefs drawn by seven models
+- **[showcase/](showcase/)** — the same ten briefs drawn by nine models
 - **[CHANGELOG.md](CHANGELOG.md)** — what changed, and when
 
 ## A personal note

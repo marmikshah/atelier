@@ -55,8 +55,8 @@ while IFS= read -r recipe; do
   count=$((count + 1))
 done < <(find "$repo/showcase/replays" -type f -name '*.jsonl' -print | sort)
 
-if [[ $count -ne 80 ]]; then
-  echo "replay-check: verified $count replay files, expected 80" >&2
+if [[ $count -ne 90 ]]; then
+  echo "replay-check: verified $count replay files, expected 90" >&2
   exit 1
 fi
 echo "replay-check: all $count replays match their committed GIFs"
