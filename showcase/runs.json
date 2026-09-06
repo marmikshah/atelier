@@ -1,7 +1,7 @@
 {
-  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and gpt-5.6-sol-max via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and Codex runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call.",
-  "server": "The original 50 runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which is the build the committed replays are verified against. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so two pre-existing replays (gpt-5.6-sol-max/slash, haiku-4.5/ball) had 5 and 11 fractional arguments rounded to integers and their GIFs regenerated; the calls are otherwise the models' own. Each changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task.",
-  "verified": "Every GIF parsed from disk: all 80 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, with the requested palette cardinality and transparency. CI replays all 80 committed JSONL files through the pinned binary and requires the exported GIFs to match byte-for-byte.",
+  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and the OpenAI models via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and gpt-5.6-sol-max runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call. For gpt-6-astra-xhigh, each fresh agent uses gpt-6-astra with xhigh reasoning. Its tool-call and doc_look counts are recorded by the CLI wrapper, including failed calls and excluding harness export and verification; per-agent tokens are unavailable and remain null.",
+  "server": "The original 50 runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which was used to verify the original 70 committed replays. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so two pre-existing replays (gpt-5.6-sol-max/slash, haiku-4.5/ball) had 5 and 11 fractional arguments rounded to integers and their GIFs regenerated; the calls are otherwise the models' own. Each changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task. The 10 gpt-6-astra-xhigh runs used the repository build at 2c1ec81c837b390f23f433c2502e5704bda7c23e (reported version 0.1.0, 25-tool surface), through isolated CLI dispatch with one store per task. All 90 replays were verified against that build.",
+  "verified": "Every GIF parsed from disk: all 90 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, within the requested colour limits and with transparency. CI replays all 90 committed JSONL files through the repository build and requires the exported GIFs to match byte-for-byte.",
   "tasks": [
     "alien",
     "ball",
@@ -34,7 +34,8 @@
     "kimi-k3",
     "gpt-5.6-sol-max",
     "opus-5",
-    "fable-5.1"
+    "fable-5.1",
+    "gpt-6-astra-xhigh"
   ],
   "runs": [
     {
@@ -916,6 +917,136 @@
       "tokens": 67720,
       "frames": 10,
       "replay": "replays/fable-5.1/torch.jsonl"
+    },
+    {
+      "task": "alien",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/alien.gif",
+      "tool_calls": 212,
+      "looks": 5,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/alien.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "ball",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/ball.gif",
+      "tool_calls": 98,
+      "looks": 15,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/ball.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "beam",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/beam.gif",
+      "tool_calls": 181,
+      "looks": 6,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/beam.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "car",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/car.gif",
+      "tool_calls": 92,
+      "looks": 7,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/car.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "cat",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/cat.gif",
+      "tool_calls": 147,
+      "looks": 6,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/cat.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "explosion",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/explosion.gif",
+      "tool_calls": 102,
+      "looks": 12,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/explosion.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "person",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/person.gif",
+      "tool_calls": 187,
+      "looks": 14,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/person.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "potion",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/potion.gif",
+      "tool_calls": 93,
+      "looks": 5,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/potion.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "slash",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/slash.gif",
+      "tool_calls": 73,
+      "looks": 12,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/slash.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "torch",
+      "model": "gpt-6-astra-xhigh",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6-astra-xhigh/torch.gif",
+      "tool_calls": 133,
+      "looks": 7,
+      "tokens": null,
+      "frames": 10,
+      "replay": "replays/gpt-6-astra-xhigh/torch.jsonl",
+      "model_id": "gpt-6-astra",
+      "reasoning_effort": "xhigh"
     }
   ]
 }

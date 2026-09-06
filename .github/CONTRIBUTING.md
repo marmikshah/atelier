@@ -53,7 +53,7 @@ Useful commands:
 make fmt          # apply formatting
 make test         # complete Rust test suite
 make docs         # regenerate docs/tools.md
-make showcase-check  # replay all 80 showcase recipes (~10 min)
+make showcase-check  # replay all 90 showcase recipes (~10 min)
 make release      # optimized binary
 ```
 

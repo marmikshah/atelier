@@ -1,7 +1,7 @@
 name: Showcase
 
 # The showcase claims every GIF is reproducible from the replay beside it.
-# This proves it. It replays all 80 recipes and requires byte-identical GIFs,
+# This proves it. It replays all 90 recipes and requires byte-identical GIFs,
 # which takes ~10 minutes — too slow for every pull request, so it runs on
 # demand and weekly, and on any change to the showcase or the editor's export
 # and replay paths.
@@ -36,5 +36,5 @@ jobs:
       - name: Build the editor
         run: cargo build --locked -p atelier
 
-      - name: Replay all 80 recipes
+      - name: Replay all 90 recipes
         run: tools/showcase-check.sh
