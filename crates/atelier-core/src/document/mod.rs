@@ -22,6 +22,7 @@ use serde_json::{Value, json};
 
 use crate::raster;
 
+mod budget;
 mod draw;
 mod export;
 mod fx;
@@ -975,6 +976,10 @@ impl Document {
         if index >= n {
             return Err(format!("no layer {} (layers={})", index, n));
         }
+        if n >= MAX_DOCUMENT_LAYERS {
+            return Err(format!("document layer limit is {MAX_DOCUMENT_LAYERS}"));
+        }
+        self.check_cel_copies(|layer, _| layer == index, 1)?;
         let mut lm = self.meta.layers[index].clone();
         lm.name = format!("{} copy", lm.name);
         let new_index = index + 1;
@@ -1038,23 +1043,50 @@ impl Document {
     }
 
     /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
-    pub fn add_frame(&mut self, duration_ms: u32, copy_from: Option<usize>) -> usize {
-        let idx = self.meta.frames.len();
-        self.meta.frames.push(FrameMeta { duration_ms });
+    pub fn add_frame(
+        &mut self,
+        duration_ms: u32,
+        copy_from: Option<usize>,
+    ) -> Result<usize, String> {
+        self.add_frames(duration_ms, copy_from, 1)
+    }
+
+    /// Append a batch after validating its complete frame and cel allocation.
+    /// Returns the last added frame's index; rejected batches change nothing.
+    pub fn add_frames(
+        &mut self,
+        duration_ms: u32,
+        copy_from: Option<usize>,
+        count: usize,
+    ) -> Result<usize, String> {
+        if count == 0 {
+            return Err("frame count must be positive".into());
+        }
+        self.check_frame_growth(count)?;
         if let Some(src) = copy_from {
-            // duplicate every cel of frame `src` into the new frame
-            let to_copy: Vec<(usize, (i32, i32, RgbaImage))> = self
-                .cels
-                .iter()
-                .filter(|((_, f), _)| *f == src)
-                .map(|((l, _), v)| (*l, (v.0, v.1, v.2.clone())))
-                .collect();
-            for (l, v) in to_copy {
-                self.cels.insert((l, idx), v);
-                self.mark_dirty(l, idx);
+            if src >= self.meta.frames.len() {
+                return Err(format!("no source frame {src}"));
+            }
+            self.check_cel_copies(|_, frame| frame == src, count)?;
+        }
+        let last = self.meta.frames.len() + count - 1;
+        for _ in 0..count {
+            let idx = self.meta.frames.len();
+            self.meta.frames.push(FrameMeta { duration_ms });
+            if let Some(src) = copy_from {
+                let to_copy: Vec<(usize, (i32, i32, RgbaImage))> = self
+                    .cels
+                    .iter()
+                    .filter(|((_, f), _)| *f == src)
+                    .map(|((l, _), v)| (*l, (v.0, v.1, v.2.clone())))
+                    .collect();
+                for (l, v) in to_copy {
+                    self.cels.insert((l, idx), v);
+                    self.mark_dirty(l, idx);
+                }
             }
         }
-        idx
+        Ok(last)
     }
 
     /// Add a named animation tag over an inclusive frame range.
@@ -1102,6 +1134,7 @@ impl Document {
         img: RgbaImage,
     ) -> Result<(), String> {
         self.check_cel(layer, frame)?;
+        self.check_cel_replacement(layer, frame, img.width(), img.height())?;
         self.cels.insert((layer, frame), (x, y, img));
         self.mark_dirty(layer, frame);
         Ok(())
@@ -1163,6 +1196,7 @@ impl Document {
             None => true,
         };
         if needs {
+            self.check_cel_replacement(layer, frame, w, h)?;
             let mut full = RgbaImage::from_pixel(w, h, Rgba([0, 0, 0, 0]));
             if let Some((x, y, img)) = self.cels.get(&key) {
                 for yy in 0..img.height() {
@@ -1188,6 +1222,7 @@ impl Document {
 
     pub fn fill_cel(&mut self, layer: usize, frame: usize, color: [u8; 4]) -> Result<(), String> {
         self.check_cel(layer, frame)?;
+        self.check_cel_replacement(layer, frame, self.meta.w, self.meta.h)?;
         let img = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba(color));
         self.cels.insert((layer, frame), (0, 0, img));
         self.mark_dirty(layer, frame);

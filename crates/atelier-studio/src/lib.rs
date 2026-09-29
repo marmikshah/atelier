@@ -240,10 +240,7 @@ impl Studio {
         }
         // Appending N identical frames used to cost N round-trips; `count`
         // makes "give me my 10 frames" one call.
-        let mut idx = doc.add_frame(duration_ms, copy_from);
-        for _ in 1..count {
-            idx = doc.add_frame(duration_ms, copy_from);
-        }
+        let idx = doc.add_frames(duration_ms, copy_from, count)?;
         doc.save(&dir)?;
         // Slim ack — echoing the whole structure() grew O(layers×frames) per
         // call during walk-cycle work; doc_info has the full picture.

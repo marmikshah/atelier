@@ -362,6 +362,7 @@ impl Document {
             return Err(format!("scale_cel needs w/h >= 1 (got {w}x{h})"));
         }
         raster::checked_rgba_dimensions("scaled cel", w as u64, h as u64)?;
+        self.check_cel_replacement(layer, frame, w, h)?;
         let Some((_, _, img)) = self.cels.get_mut(&(layer, frame)) else {
             return Err(format!("no cel at layer {layer} frame {frame} to scale"));
         };
