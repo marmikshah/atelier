@@ -109,6 +109,7 @@ impl Document {
                     .collect();
                 for (l, v) in to_copy {
                     self.cels.insert((l, frame + 1), v);
+                    self.mark_dirty(l, frame + 1);
                 }
                 // A tag ending on the duplicated frame grows to cover the copy.
                 for t in &mut self.meta.tags {
