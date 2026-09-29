@@ -11,6 +11,12 @@ what changed and why.
 
 ### Changed
 
+- Normal editing now maintains a structured TOML replay grouped by layer and
+  frame, replacing JSONL history. Small art uses readable grids, economical
+  drawing operations stay procedural, and large pixels use lossless PNGs.
+  `atelier migrate` and `tools/migrate-recipes.py` import old recipes without
+  changing their pixels; all 80 showcase recipes now use this structure.
+
 - Atelier is closed to outside pull requests. The repository is entirely
   AI-generated with no line-by-line human review, so a merged contribution
   would be reviewed by nobody who understands the code around it. Bug reports,

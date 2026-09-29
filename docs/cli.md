@@ -9,10 +9,10 @@ atelier call <tool> '<json>'          # one tool call, in-process — the front 
 atelier call <tool> --file ops.json   # args from a file (or --stdin, --image-out PATH)
 atelier tools [--markdown|--schema <name>]   # the surface / full reference / one schema
 atelier init                          # stamp ./.atelier for a directory-local store
-atelier replay <source|recipe|id>     # compile source or replay a journal
-atelier source --help                # inspect, edit, check, and migrate source bundles
+atelier replay <recipe|id>           # rebuild a TOML recipe or working document
+atelier migrate <old|id> <new-dir>   # import legacy JSONL or export a document recipe
 atelier library                       # what's in your document store
-atelier library verify [--json]       # validate metadata, cels, references, journals
+atelier library verify [--json]       # validate metadata, cels, references, recipes
 atelier library pack <id> --out art.atelierpack   # write a portable backup
 atelier library unpack art.atelierpack            # restore its original UUID
 atelier library rm <id>... | --prefix <p> | --all [--yes]   # delete documents, permanently
@@ -22,7 +22,7 @@ atelier skills install                # write them (--for claude|codex|kimi|curs
 ```
 
 `--home DIR` selects an isolated store, and every command that touches one
-accepts it: `call`, `replay`, and all of `library`. Without it the store is
+accepts it: `call`, `replay`, `migrate`, and all of `library`. Without it the store is
 `ATELIER_HOME`, then a directory-local `./.atelier`, then `~/.atelier`.
 
 And the MCP add-on, covered in [mcp.md](mcp.md):
@@ -44,15 +44,15 @@ may repeat. Every later document call must carry the returned `doc_id`
 explicitly; layer and frame targets are explicit too.
 
 There is no active document, inferred name, CLI routing flag, or transport
-default. Stdio, HTTP, CLI, and replay therefore execute exactly the same
-payload.
+default. Stdio, HTTP, CLI therefore execute exactly the same
+payload. Replay uses the same rendering operations.
 
 ## Revisions and concurrent writers
 
 Successful document calls include a persisted `revision`. An existing-document
 mutation may pass that value as `expected_revision`; if another writer has
 committed since the read, Atelier returns `revision_conflict` without running
-the operation or changing its journal. Omitting the guard keeps last-write-wins
+the operation or changing its recipe. Omitting the guard keeps last-write-wins
 behavior. Revisions are concurrency metadata and are not recorded in replay
 recipes.
 
@@ -74,7 +74,7 @@ are limited to 8 MiB before base64 encoding; larger renders already written to
 `out_path` return their report without a duplicate inline image, while other
 oversized renders fail with reduction/output guidance.
 
-Each `doc_draw` and `doc_fx` line applies exactly one operation. By default it
+Each `doc_draw` and `doc_fx` call applies exactly one operation. By default it
 targets one cel; optional inclusive `frame_to` applies that same operation and
 seed across at most 256 consecutive frame cels in one atomic call. Aggregate
 full-canvas work is capped at 16,777,216 pixels. `doc_frame op=duration`
@@ -100,38 +100,34 @@ The daemon is the exception: a shared server has no working directory, so it
 always pins the global store at install time (or whatever `--home` you give
 it). `atelier status` shows the daemon endpoint and store.
 
-## Reproducible journals
+## Structured replay files
 
-For the authored form of an asset, use [TOML source bundles](sources.md).
-`atelier replay source.toml` compiles a complete source into a fresh working
-document. Its journal begins with a reference to a bundled `source/source.toml`
-snapshot, followed by local edits. Keep that whole directory or use `library
-pack`; copying just this journal omits its starting artwork. Existing standalone
-JSONL journals remain supported.
-
-Every document is an ordered sequence of tool calls, so a piece of art *is* a
-replayable program — and atelier keeps that sequence for you. Every document
-journals itself as it's drawn, so anything you make can rebuild itself:
+Normal calls automatically update `documents/<id>/recipe/recipe.toml` inside
+the selected store. The [recipe format](recipes.md) groups current artwork by
+layer and frame, with document settings written once. It has no working UUIDs,
+tool-call envelopes, or edit history. Repeated pixels are stored once when
+multiple frames of a layer share the same cel.
 
 ```sh
-atelier library     # every document, with its step count
-atelier library verify   # validate the complete store without changing it
-atelier replay 550e8400-e29b-41d4-a716-446655440000   # rebuild it from its own journal
+atelier library                         # documents and current recipe sizes
+atelier library verify                  # verify pixels, metadata and replay agree
+atelier replay <doc-id>                  # rebuild that document's current recipe
+atelier replay art/lantern/recipe.toml --home target/art-review
+atelier migrate <doc-id> art/lantern     # export a portable recipe bundle
+atelier migrate old.jsonl art/lantern   # import a legacy command log once
 ```
 
-Nothing to turn on. The journal is JSON Lines beside the art
-(`~/.atelier/documents/<id>/recipe.jsonl`), one tool call per line — only the
-deterministic calls that *made* something, never looks, audits, external
-reference setup, or checkpoint bookkeeping. Restoring a checkpoint restores its
-journal too, so discarded edits cannot survive in provenance. Replay into a
-sandbox with `--home /tmp/demo` and you get the same pixels, anywhere.
+A bundle contains `recipe.toml` and any `pixels/*.png` resources it references.
+Commit the whole bundle. Edit TOML with an ordinary editor, then replay it into
+a fresh working document. Replay publishes only a complete, validated document.
+The native `doc.json` and `cels/` remain the working cache; edit through tools
+or rebuild from the recipe to keep both in agreement.
 
-The rebuilt document is published only after every recipe step succeeds; a
-failed step discards the entire staged replay. Current journals start with
-exactly one `doc_new` whose arguments include the minted `doc_id`, followed only
-by deterministic editing calls for that same document. Replay accepts only this
-JSONL contract and rejects wrapped objects, bindings, older shapes, or malformed
-lines instead of guessing.
+`replay` accepts structured recipes only. `migrate` is the sole legacy JSONL
+entry point; it verifies metadata, cel bounds, offsets and every RGBA pixel,
+writes to a new directory, and leaves the input untouched. Editing an older
+working document also replaces its live JSONL with a structured recipe.
+Checkpoint restore brings back the matching recipe and pixels.
 
 ## Backups and checkpoints
 

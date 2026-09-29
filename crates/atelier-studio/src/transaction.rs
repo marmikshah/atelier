@@ -1,8 +1,8 @@
 //! Same-filesystem store transactions for shipped CLI and MCP mutations.
 //!
 //! A call runs against a staged document tree. Regular files are hard-linked
-//! where safe; writers replace changed files by rename, while the append-only
-//! journal is copied. The completed staged tree is then atomically exchanged
+//! where safe; writers replace changed files by rename, while legacy
+//! journal fixtures are copied. The completed staged tree is then atomically exchanged
 //! with the live tree using the platform's atomic directory exchange.
 
 use std::fs;
@@ -56,7 +56,7 @@ impl StoreTransaction {
         &self.studio
     }
 
-    /// Atomically publish `id` after a successful handler and journal write.
+    /// Atomically publish `id` after a successful handler and recipe replacement.
     ///
     /// Existing→existing exchanges a complete document state. Missing→present
     /// creates a document. Present→missing commits deletion. Every other shape

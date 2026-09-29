@@ -1,4 +1,4 @@
-//! Replay recipes: the current per-document JSON Lines journal contract.
+//! Import-only parser for legacy JSON Lines recipes.
 
 use atelier_studio::{JournalEntry, validate_journal};
 

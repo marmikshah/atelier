@@ -31,7 +31,7 @@
 //! atelier uninstall
 //! atelier tools [--markdown]     # the tool surface / the full reference
 //! atelier library [COMMAND]      # inspect, archive, or prune the document store
-//! atelier replay <journal|id>    # rebuild a document from its journal
+//! atelier replay <recipe|id>     # rebuild a structured recipe
 //! atelier call <tool> '<json>'   # one tool call, in-process (the CLI front door)
 //! atelier init                   # stamp a directory-local ./.atelier store
 //! atelier skills [install|show]  # the shipped skills, for your agent
@@ -54,11 +54,12 @@ use atelier_mcp::server;
 mod call;
 mod fsutil;
 mod init;
+mod legacy;
 mod library;
+mod migrate;
 mod replay;
 mod service;
 mod skills;
-mod source;
 
 const HELP: &str = "atelier — offline, headless pixel-art editing through a CLI and MCP server.
 
@@ -71,16 +72,15 @@ USAGE:
     atelier uninstall             stop + remove the daemon
     atelier library [--home DIR]  list the documents in the store
             verify [--json] [--home DIR]
-                                  validate stored metadata, cels, references, and journals
+                                  validate stored metadata, cels, references, and recipes
             pack <id> --out FILE [--home DIR]
                                   write a portable archive; never overwrites FILE
             unpack FILE [--home DIR] [--replace --yes]
                                   restore its UUID; replacement needs both flags
             rm <id>... | rm --prefix <p> | rm --all [--yes] [--home DIR]
                                   delete documents — permanent, confirms first
-    atelier source ...           inspect, edit, check, or migrate artwork source (source --help)
-    atelier replay <source|id>    compile TOML artwork, replay JSONL, or rebuild from its
-                                  own journal (every document records one)
+    atelier migrate <old> <new>   convert an old replay or export a working recipe
+    atelier replay <recipe|id>    rebuild a structured recipe or working document
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier call <tool> ['<json>' | --file PATH | --stdin]
             [--home DIR] [--image-out PATH]
@@ -256,7 +256,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("init") => std::process::exit(init::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
-        Some("source") => std::process::exit(source::run(&args[2..]).await),
+        Some("migrate") => std::process::exit(migrate::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
             return Ok(());

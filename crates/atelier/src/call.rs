@@ -311,11 +311,11 @@ mod tests {
             .unwrap();
         let report = server::result_json(&result).unwrap();
         assert_eq!(report["w"], 8);
-        // doc_new is journaled: the recipe exists beside the document.
+        // doc_new creates a structured replay beside the working document.
         assert!(
             dir.join("documents")
                 .join(&doc_id)
-                .join("recipe.jsonl")
+                .join("recipe/recipe.toml")
                 .exists()
         );
         assert!(

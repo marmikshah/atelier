@@ -499,7 +499,7 @@ fn canonical_output_path(path: &std::path::Path) -> Result<std::path::PathBuf, S
 
 /// True when a result is a failure — either flagged `is_error` or carrying a
 /// `{"error": ...}` text payload. Public so CLI/replay exit codes and fail-fast
-/// agree with the server's journaling decision.
+/// agree with the server's publication decision.
 pub fn is_error_result(result: &rmcp::model::CallToolResult) -> bool {
     if result.is_error == Some(true) {
         return true;
@@ -533,7 +533,7 @@ fn log_call(
     elapsed: std::time::Duration,
 ) {
     let op = call_op(args).unwrap_or("-");
-    let doc = journal_target(tool, args, result)
+    let doc = edited_document_target(tool, args, result)
         .or_else(|| {
             args.get("doc_id")
                 .and_then(Value::as_str)
@@ -592,10 +592,9 @@ pub struct Atelier {
     /// Immutable after startup and shared by cheap `Atelier` clones (notably
     /// the stateless HTTP service's per-request handlers).
     tool_router: std::sync::Arc<ToolRouter<Self>>,
-    /// Held across dispatch + journal for every mutating call (an async lock,
+    /// Held across dispatch + recipe persistence for every mutating call (an async lock,
     /// because it spans the dispatcher's await). Without it two concurrent
-    /// sessions could execute A→B and journal B→A, and the recipe would
-    /// silently rebuild different art.
+    /// sessions could publish pixels and recipes from different generations.
     write_order: std::sync::Arc<tokio::sync::Mutex<()>>,
     /// Shared by every transport clone so synchronous editor work cannot fill
     /// Tokio's much larger default blocking-thread allowance.
@@ -709,7 +708,7 @@ impl Atelier {
 
     /// THE one dispatch path every caller funnels through — the MCP handler
     /// (`call_tool`), and the binary's own `atelier call` / `replay`.
-    /// Logging, journaling, and write ordering live here so
+    /// Logging, recipe persistence, and write ordering live here so
     /// no caller can dodge them; transport-specific work (caller identity from
     /// HTTP headers) belongs to the transport above this.
     ///
@@ -724,9 +723,8 @@ impl Atelier {
     ) -> Result<CallToolResult, ErrorData> {
         let expected_revision = take_expected_revision(tool, &mut args)?;
         // For mutations, hold the order lock from before the dispatch until
-        // after the journal write, so journal order can never diverge from
+        // after the recipe write, so the recipe can never diverge from
         // execution order under concurrent sessions. Reads skip it.
-        let journaled = is_journaled(tool, &args);
         let store_mutation = is_store_mutation(tool, &args);
         if expected_revision.is_some() && !store_mutation {
             return Err(ErrorData::invalid_params(
@@ -757,14 +755,7 @@ impl Atelier {
             // request never lets a later mutation overtake unfinished work.
             let _order = order;
             let _work = work;
-            worker.dispatch_blocking(
-                tool,
-                args,
-                &caller,
-                journaled,
-                store_mutation,
-                expected_revision,
-            )
+            worker.dispatch_blocking(tool, args, &caller, store_mutation, expected_revision)
         })
         .await
         .map_err(|error| {
@@ -781,7 +772,6 @@ impl Atelier {
         tool: ToolName,
         args: Value,
         caller: &str,
-        journaled: bool,
         store_mutation: bool,
         expected_revision: Option<u64>,
     ) -> Result<CallToolResult, ErrorData> {
@@ -801,7 +791,7 @@ impl Atelier {
 
         let started = std::time::Instant::now();
         let mut result = match if store_mutation {
-            self.invoke_transaction(tool, args.clone(), journaled, expected_revision)
+            self.invoke_transaction(tool, args.clone(), expected_revision)
         } else {
             self.invoke(tool, args.clone())
         } {
@@ -828,14 +818,13 @@ impl Atelier {
     }
 
     /// Execute a store mutation on a private document generation. Nothing is
-    /// made visible until both the handler and its recipe append have
+    /// made visible until both the handler and its recipe replacement have
     /// succeeded; dropping the transaction rolls back application and
-    /// protocol failures as well as journal failures.
+    /// protocol failures as well as recipe failures.
     fn invoke_transaction(
         &self,
         tool: ToolName,
         args: Value,
-        journaled: bool,
         expected_revision: Option<u64>,
     ) -> Result<CallToolResult, ErrorData> {
         if let Err(error) = self.studio().cleanup_stale_transactions() {
@@ -883,7 +872,7 @@ impl Atelier {
         // doc_new mints its target inside the staged handler. Every other
         // mutation has already resolved its explicit document argument.
         let target = if tool == ToolName::DocNew {
-            journal_target(tool, &args, &result)
+            edited_document_target(tool, &args, &result)
         } else {
             initial_target
         };
@@ -894,14 +883,12 @@ impl Atelier {
             ))));
         };
 
-        if journaled {
-            let recorded = journal_args(tool, args, Some(&target));
-            if let Err(error) = transaction
+        if tool != ToolName::DeleteDoc
+            && let Err(error) = transaction
                 .studio()
-                .journal_append(&target, tool, &recorded)
-            {
-                return Ok(res(Err(error)));
-            }
+                .save_recipe(&target, Some((tool, &args)))
+        {
+            return Ok(res(Err(error)));
         }
         if let Some(revision) = next_revision
             && let Err(error) = transaction
@@ -981,8 +968,8 @@ impl Atelier {
 }
 
 /// Whether a call changes files in the document store. Kept separate from
-/// journaling: checkpoints and reference setup mutate working state but are
-/// session context, not deterministic recipe steps.
+/// recipe content: checkpoints mutate the store while reference setup changes
+/// the document's comparison context.
 fn is_store_mutation(tool: ToolName, args: &Value) -> bool {
     if tool.is_read_only() {
         return false;
@@ -1032,7 +1019,7 @@ fn revision_conflict(id: &str, expected: u64, actual: u64) -> CallToolResult {
 }
 
 /// Resolve the document generation represented by a successful result. This is
-/// intentionally broader than `journal_target`: exports and reads are not
+/// intentionally broader than `edited_document_target`: exports and reads are not
 /// recipe steps, but their reports still need a revision so callers can safely
 /// cache them and guard the next write.
 fn result_document_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Option<String> {
@@ -1079,19 +1066,9 @@ fn mutation_target(tool: ToolName, args: &Value) -> Result<Option<String>, Strin
     Ok(Some(id.clone()))
 }
 
-/// True when a successful mutation is one deterministic step in rebuilding the
-/// document. A checkpoint restore replaces the journal with its snapshot;
-/// recording save/restore/prune would make checkpoint ids part of the recipe.
-/// Reference files are external working context, so no `doc_ref` op is
-/// journaled. [`ToolName`] is closed, so every new tool must make its replay
-/// policy explicit before it can be dispatched.
-fn is_journaled(tool: ToolName, args: &Value) -> bool {
-    tool.is_recipe_step() && is_store_mutation(tool, args)
-}
-
 /// The document a call belongs to. `doc_new` returns it in the result (the id
 /// is minted there, not passed in); everything else carries `doc_id`.
-fn journal_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Option<String> {
+fn edited_document_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Option<String> {
     match tool {
         // The id is minted in the result, not passed in.
         ToolName::DocNew => result_json(result)?
@@ -1119,22 +1096,6 @@ fn journal_target(tool: ToolName, args: &Value, result: &CallToolResult) -> Opti
             .and_then(Value::as_str)
             .map(str::to_string),
     }
-}
-
-/// `doc_new`'s minted id exists only in its result. Stamping it into the
-/// recorded args lets replay remap later steps when a rerun mints a new id.
-fn journal_args(tool: ToolName, mut args: Value, target: Option<&str>) -> Value {
-    if let Some(obj) = args.as_object_mut() {
-        // A replay recipe describes deterministic document operations, not the
-        // caller's transient concurrency observation.
-        obj.remove("expected_revision");
-    }
-    if tool == ToolName::DocNew
-        && let (Some(id), Some(obj)) = (target, args.as_object_mut())
-    {
-        obj.insert("doc_id".into(), json!(id));
-    }
-    args
 }
 
 fn caller_from_meta(
@@ -1232,7 +1193,7 @@ impl ServerHandler for Atelier {
              or doc_fx call applies exactly one operation; use doc_paint_grid for dense pixel \
              rows and doc_look to inspect the result. MCP \
              _meta may carry a log label at \"io.github.marmikshah.atelier/session\", but \
-             never tool defaults. Calls are journaled with concrete arguments, so stdio, \
+             never tool defaults. Calls update the structured recipe, so stdio, \
              HTTP, CLI, and replay stay equivalent. Save a \
              doc_checkpoint before destructive edits. Successful document calls return a \
              revision; pass it as expected_revision on a later mutation to reject stale writes. \
@@ -1577,22 +1538,22 @@ mod tests {
     }
 
     #[test]
-    fn the_eye_is_never_journaled_but_the_hand_always_is() {
+    fn reads_do_not_mutate_document_state() {
         // Reads rebuild nothing; replaying them is noise.
         for t in ["doc_look", "doc_info", "doc_critique", "doc_silhouette"] {
             assert!(
-                !is_journaled(tool(t), &json!({"doc_id": "d"})),
+                !is_store_mutation(tool(t), &json!({"doc_id": "d"})),
                 "{t} is a read"
             );
         }
         assert!(
-            !is_journaled(ToolName::DocExport, &json!({"doc_id": "d"})),
+            !is_store_mutation(ToolName::DocExport, &json!({"doc_id": "d"})),
             "export writes an artifact but does not build the document"
         );
         // Anything that marks the canvas has to be in the recipe.
         for t in ["doc_draw", "doc_fx", "doc_new"] {
             assert!(
-                is_journaled(tool(t), &json!({"doc_id": "d"})),
+                is_store_mutation(tool(t), &json!({"doc_id": "d"})),
                 "{t} builds the art"
             );
         }
@@ -1600,24 +1561,28 @@ mod tests {
 
     #[test]
     fn hub_tools_are_classified_by_op_not_by_name() {
-        // Reference setup changes working state but is external context, not a
-        // deterministic recipe step.
-        assert!(!is_journaled(ToolName::DocRef, &json!({"op": "compare"})));
-        assert!(!is_journaled(ToolName::DocRef, &json!({"op": "diff"})));
+        // Reference setup changes the stored document; comparisons are reads.
+        assert!(!is_store_mutation(
+            ToolName::DocRef,
+            &json!({"op": "compare"})
+        ));
+        assert!(!is_store_mutation(ToolName::DocRef, &json!({"op": "diff"})));
         assert!(!is_store_mutation(
             ToolName::DocRef,
             &json!({"op": "compare"})
         ));
         assert!(is_store_mutation(ToolName::DocRef, &json!({"op": "set"})));
-        assert!(!is_journaled(ToolName::DocRef, &json!({"op": "set"})));
 
         // Palette reports and unbound generation are reads; document-targeted
         // palette ops remain deterministic mutations.
-        assert!(!is_journaled(
+        assert!(!is_store_mutation(
             ToolName::DocPalette,
             &json!({"op": "report"})
         ));
-        assert!(is_journaled(ToolName::DocPalette, &json!({"op": "set"})));
+        assert!(is_store_mutation(
+            ToolName::DocPalette,
+            &json!({"op": "set"})
+        ));
         assert!(!is_store_mutation(
             ToolName::DocPalette,
             &json!({"op": "generate"})
@@ -1626,14 +1591,14 @@ mod tests {
             ToolName::DocPalette,
             &json!({"op": "generate", "set_doc": null})
         ));
-        assert!(is_journaled(
+        assert!(is_store_mutation(
             ToolName::DocPalette,
             &json!({"op": "generate", "set_doc": "hero"})
         ));
 
         // Checkpoint files mutate the store, but restore replaces the live
-        // journal with the checkpointed one instead of recording checkpoint ids.
-        assert!(!is_journaled(
+        // recipe with the checkpointed one.
+        assert!(!is_store_mutation(
             ToolName::DocCheckpoint,
             &json!({"action": "list"})
         ));
@@ -1645,27 +1610,23 @@ mod tests {
             ToolName::DocCheckpoint,
             &json!({"action": "restore"})
         ));
-        assert!(!is_journaled(
-            ToolName::DocCheckpoint,
-            &json!({"action": "restore"})
-        ));
     }
 
     #[test]
-    fn doc_new_is_journaled_to_the_id_it_minted() {
-        // The id is in the result, not the args — journaling by args alone
-        // would file every doc_new under nothing.
+    fn doc_new_is_store_mutation_to_the_id_it_minted() {
+        // Creation returns its new identity; it cannot be resolved from args.
         let doc_id = "550e8400-e29b-41d4-a716-446655440000";
         let created = CallToolResult::success(vec![Content::text(
             json!({"doc_id": doc_id, "w": 8}).to_string(),
         )]);
         assert_eq!(
-            journal_target(ToolName::DocNew, &json!({"name": "sprite"}), &created).as_deref(),
+            edited_document_target(ToolName::DocNew, &json!({"name": "sprite"}), &created)
+                .as_deref(),
             Some(doc_id)
         );
         let drew = CallToolResult::success(vec![Content::text(json!({"ok": true}).to_string())]);
         assert_eq!(
-            journal_target(ToolName::DocDraw, &json!({"doc_id": doc_id}), &drew).as_deref(),
+            edited_document_target(ToolName::DocDraw, &json!({"doc_id": doc_id}), &drew).as_deref(),
             Some(doc_id)
         );
     }
@@ -1690,8 +1651,8 @@ mod tests {
 
     #[test]
     fn store_mutations_are_classified_for_locking() {
-        // Its own journal dies with the doc dir, so journaling delete is moot.
-        assert!(!is_journaled(ToolName::DeleteDoc, &json!({"doc_id": "x"})));
+        // Deletion is a store mutation even though no recipe remains.
+
         assert!(is_store_mutation(
             ToolName::DeleteDoc,
             &json!({"doc_id": "x"})
@@ -1711,45 +1672,27 @@ mod tests {
     }
 
     #[test]
-    fn doc_new_journals_the_minted_id_for_replay_remapping() {
-        let doc_id = "550e8400-e29b-41d4-a716-446655440000";
-        assert_eq!(
-            journal_args(ToolName::DocNew, json!({"name": "sprite"}), Some(doc_id)),
-            json!({"name": "sprite", "doc_id": doc_id})
-        );
-        // Every other tool records its args untouched.
-        assert_eq!(
-            journal_args(
-                ToolName::DocDraw,
-                json!({"doc_id": doc_id, "expected_revision": 12}),
-                Some(doc_id)
-            ),
-            json!({"doc_id": doc_id})
-        );
-    }
-
-    #[test]
-    fn replay_fidelity_edges_are_journaled_correctly() {
+    fn palette_generation_targets_the_document_it_edits() {
         let ok = CallToolResult::success(vec![Content::text(json!({"ok": true}).to_string())]);
         // doc_export writes an artifact, not document state — replaying a rebuild
         // must not re-run it, so it belongs to no document's recipe.
-        assert!(!is_journaled(
+        assert!(!is_store_mutation(
             ToolName::DocExport,
             &json!({"doc_id": "hero", "op": "sheet"})
         ));
         assert_eq!(
-            journal_target(
+            edited_document_target(
                 ToolName::DocExport,
                 &json!({"doc_id": "hero", "op": "sheet"}),
                 &ok
             ),
             None,
-            "export must not enter the per-document journal"
+            "export must not enter the document recipe"
         );
         // doc_palette op=generate locks a palette onto `set_doc`, carrying no
         // `doc_id`; the recipe must still capture it or replay rebuilds off-palette.
         assert_eq!(
-            journal_target(
+            edited_document_target(
                 ToolName::DocPalette,
                 &json!({"op": "generate", "set_doc": "hero"}),
                 &ok
@@ -1760,7 +1703,7 @@ mod tests {
 
         // `doc_id` is a valid parameter for the other palette ops, but it is
         // irrelevant to generate. If both are present, the staged generation
-        // and journal must still follow the document the handler actually
+        // and recipe must still follow the document the handler actually
         // edits (`set_doc`).
         let doc_id = "550e8400-e29b-41d4-a716-446655440000";
         let set_doc = "6ba7b810-9dad-41d1-80b4-00c04fd430c8";
@@ -1772,7 +1715,7 @@ mod tests {
             Some(set_doc)
         );
         assert_eq!(
-            journal_target(ToolName::DocPalette, &args, &ok).as_deref(),
+            edited_document_target(ToolName::DocPalette, &args, &ok).as_deref(),
             Some(set_doc)
         );
     }
@@ -1985,9 +1928,8 @@ mod tests {
             .unwrap();
         assert_eq!(result_json(&drew).unwrap()["revision"], 2);
         assert_eq!(atelier.studio().document_revision(&doc_id).unwrap(), 2);
-        let journal = atelier.studio().journal(&doc_id).unwrap();
-        assert_eq!(journal.len(), 2);
-        assert!(!journal[1].args.contains_key("expected_revision"));
+        let before_stale = recipe(&atelier, &doc_id);
+        assert!(!before_stale.contains("expected_revision"));
 
         let stale = atelier
             .dispatch(
@@ -2011,7 +1953,8 @@ mod tests {
         assert_eq!(stale["expected_revision"], 1);
         assert_eq!(stale["actual_revision"], 2);
         assert_eq!(atelier.studio().document_revision(&doc_id).unwrap(), 2);
-        assert_eq!(atelier.studio().journal(&doc_id).unwrap().len(), 2);
+        recipe(&atelier, &doc_id);
+        assert_eq!(recipe(&atelier, &doc_id), before_stale);
         assert_eq!(pixel_hex(&atelier, &doc_id, 1, 1), ".");
 
         // A successful no-op still publishes a new provenance generation.
@@ -2111,11 +2054,11 @@ mod tests {
             1
         );
         assert_eq!(atelier.studio().document_revision(&doc_id).unwrap(), 2);
-        assert_eq!(atelier.studio().journal(&doc_id).unwrap().len(), 2);
+        recipe(&atelier, &doc_id);
     }
 
     #[tokio::test]
-    async fn explicit_targets_are_journaled_and_checkpoint_restore_rewinds_them() {
+    async fn checkpoint_restore_restores_the_complete_recipe() {
         async fn ok(atelier: &Atelier, tool: &str, args: Value) -> Value {
             let tool = tool.parse::<ToolName>().unwrap();
             let result = atelier.dispatch(tool, args, "test").await.unwrap();
@@ -2142,6 +2085,7 @@ mod tests {
                    "points": [[1, 1]], "color": [200, 0, 0]}),
         )
         .await;
+        let checkpoint_recipe = recipe(&atelier, doc_id);
         let saved = ok(
             &atelier,
             "doc_checkpoint",
@@ -2158,7 +2102,7 @@ mod tests {
                    "points": [[1, 1]], "color": [0, 0, 200]}),
         )
         .await;
-        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 3);
+        assert_ne!(recipe(&atelier, doc_id), checkpoint_recipe);
 
         let restored = ok(
             &atelier,
@@ -2167,24 +2111,7 @@ mod tests {
         )
         .await;
         assert_eq!(restored["revision"], 5);
-        let journal = atelier.studio().journal(doc_id).unwrap();
-        assert_eq!(
-            journal.len(),
-            2,
-            "restore must discard post-checkpoint provenance"
-        );
-        assert_eq!(
-            Value::Object(journal[1].args.clone()),
-            json!({
-                "doc_id": doc_id,
-                "layer": 0,
-                "frame": 0,
-                "op": "pencil",
-                "points": [[1, 1]],
-                "color": [200, 0, 0]
-            }),
-            "the journal stores the explicit target"
-        );
+        assert_eq!(recipe(&atelier, doc_id), checkpoint_recipe);
         assert_eq!(
             atelier
                 .studio()
@@ -2331,6 +2258,31 @@ mod tests {
             .to_string()
     }
 
+    fn recipe(atelier: &Atelier, id: &str) -> String {
+        let path = atelier.studio().recipe_path(id).unwrap();
+        let source = atelier_studio::source::Source::load(&path).unwrap();
+        let rebuilt = source.compile().unwrap();
+        let native =
+            atelier_core::document::Document::load(path.parent().unwrap().parent().unwrap())
+                .unwrap();
+        assert_eq!(native.structure(), rebuilt.structure());
+        for l in 0..native.meta().layers.len() {
+            for f in 0..native.meta().frames.len() {
+                assert_eq!(native.cel(l, f), rebuilt.cel(l, f));
+            }
+        }
+        assert!(
+            !path
+                .parent()
+                .unwrap()
+                .parent()
+                .unwrap()
+                .join("recipe.jsonl")
+                .exists()
+        );
+        std::fs::read_to_string(path).unwrap()
+    }
+
     #[tokio::test]
     async fn mutation_commit_publishes_pixels_and_recipe_together() {
         let documents = std::env::temp_dir().join(format!(
@@ -2350,7 +2302,7 @@ mod tests {
             .unwrap();
         let created = result_json(&created).unwrap();
         let doc_id = created["doc_id"].as_str().unwrap();
-        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 1);
+        recipe(&atelier, doc_id);
 
         let drew = atelier
             .dispatch(
@@ -2369,7 +2321,7 @@ mod tests {
             .unwrap();
         assert!(!is_error_result(&drew));
         assert_eq!(pixel_hex(&atelier, doc_id, 1, 1), "#0c2238");
-        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 2);
+        recipe(&atelier, doc_id);
         assert!(transactions_empty(&documents));
         let _ = std::fs::remove_dir_all(documents);
     }
@@ -2410,7 +2362,7 @@ mod tests {
             .unwrap();
         assert!(is_error_result(&handler_failed));
         assert_eq!(pixel_hex(&atelier, doc_id, 0, 0), ".");
-        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 1);
+        recipe(&atelier, doc_id);
         assert!(transactions_empty(&documents));
 
         // `op` is required, so deserialization fails after the target has
@@ -2424,7 +2376,7 @@ mod tests {
             .await;
         assert!(failed.is_err());
         assert_eq!(pixel_hex(&atelier, doc_id, 0, 0), ".");
-        assert_eq!(atelier.studio().journal(doc_id).unwrap().len(), 1);
+        recipe(&atelier, doc_id);
         assert!(transactions_empty(&documents));
 
         let invalid_id = atelier
@@ -2446,9 +2398,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn journal_failure_rolls_back_a_successful_handler() {
+    async fn recipe_failure_rolls_back_a_successful_handler() {
         let documents = std::env::temp_dir().join(format!(
-            "atelier-srv-test-transaction-journal-{}",
+            "atelier-srv-test-transaction-recipe-{}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&documents);
@@ -2464,12 +2416,9 @@ mod tests {
         let created = result_json(&created).unwrap();
         let doc_id = created["doc_id"].as_str().unwrap();
 
-        // A directory at the journal path deterministically makes append fail
-        // even when tests run as root. The staged draw itself succeeds, but it
-        // must never replace the live generation without provenance.
-        let journal = documents.join(doc_id).join(atelier_studio::JOURNAL_FILE);
-        std::fs::remove_file(&journal).unwrap();
-        std::fs::create_dir(&journal).unwrap();
+        // A malformed recipe must prevent publishing pixels without a replay.
+        let path = atelier.studio().recipe_path(doc_id).unwrap();
+        std::fs::write(&path, "invalid recipe").unwrap();
         let failed = atelier
             .dispatch(
                 ToolName::DocDraw,
@@ -2490,7 +2439,7 @@ mod tests {
             .as_str()
             .unwrap()
             .to_string();
-        assert!(error.contains("journal"), "got: {error}");
+        assert!(error.contains("recipe"), "got: {error}");
         assert_eq!(pixel_hex(&atelier, doc_id, 0, 0), ".");
         assert!(transactions_empty(&documents));
         let _ = std::fs::remove_dir_all(documents);

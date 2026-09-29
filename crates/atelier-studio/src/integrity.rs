@@ -7,8 +7,8 @@ use std::path::Path;
 use atelier_core::document::{DocMeta, MAX_DOCUMENT_METADATA_BYTES};
 use serde::Serialize;
 
-use super::store::{parse_journal_file, read_bounded_utf8};
-use super::{JOURNAL_FILE, REVISION_FILE, Studio};
+use super::store::read_bounded_utf8;
+use super::{REVISION_FILE, Studio};
 
 /// Verification is routinely pointed at old or damaged data. These limits
 /// bound verifier allocations and machine-readable output.
@@ -44,7 +44,7 @@ pub struct StoreIntegrityReport {
     pub documents_dir: String,
     pub documents: usize,
     pub cels: usize,
-    pub journal_entries: usize,
+    pub recipes: usize,
     pub errors: usize,
     pub warnings: usize,
     pub issues_truncated: bool,
@@ -59,7 +59,7 @@ impl StoreIntegrityReport {
             documents_dir: documents_dir.display().to_string(),
             documents: 0,
             cels: 0,
-            journal_entries: 0,
+            recipes: 0,
             errors: 0,
             warnings: 0,
             issues_truncated: false,
@@ -408,63 +408,37 @@ impl Studio {
             );
         }
 
-        let journal_path = dir.join(JOURNAL_FILE);
-        match fs::symlink_metadata(&journal_path) {
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => report.issue(
+        match crate::source::stored_source(dir) {
+            Ok(Some(source)) => {
+                report.recipes += 1;
+                match source.compile().and_then(|rebuilt| {
+                    self.open(id)
+                        .and_then(|(_, native)| crate::source::equivalent(&native, &rebuilt))
+                }) {
+                    Ok(_) => {}
+                    Err(error) => report.issue(
+                        IntegritySeverity::Error,
+                        Some(id),
+                        "recipe",
+                        error,
+                        "restore the complete recipe bundle from backup",
+                    ),
+                }
+            }
+            Ok(None) => report.issue(
                 IntegritySeverity::Warning,
                 Some(id),
-                JOURNAL_FILE,
-                "journal is missing; the current document can be edited but not replayed",
-                "restore recipe.jsonl from backup, or keep the document as an intentionally non-replayable asset",
+                "recipe",
+                "structured recipe is missing",
+                "run atelier migrate <doc-id> <new-directory> to capture a replayable recipe",
             ),
             Err(error) => report.issue(
                 IntegritySeverity::Error,
                 Some(id),
-                JOURNAL_FILE,
-                format!("cannot inspect journal: {error}"),
-                "check ownership and permissions for recipe.jsonl",
+                "recipe",
+                error,
+                "restore the complete recipe bundle from backup",
             ),
-            Ok(metadata) if metadata.file_type().is_symlink() => report.issue(
-                IntegritySeverity::Error,
-                Some(id),
-                JOURNAL_FILE,
-                "journal is a symbolic link",
-                "replace the link with a regular recipe.jsonl inside the document directory",
-            ),
-            Ok(metadata) if !metadata.is_file() => report.issue(
-                IntegritySeverity::Error,
-                Some(id),
-                JOURNAL_FILE,
-                "journal is not a regular file",
-                "restore a regular recipe.jsonl or remove it if replay history is intentionally discarded",
-            ),
-            Ok(_) => match parse_journal_file(id, &journal_path) {
-                Ok(journal) => {
-                    report.journal_entries += journal.entries.len();
-                    if journal.entries.first().is_some_and(|e| e.args.contains_key("source")) {
-                        match crate::source::stored_source(dir) {
-                            Ok(Some(_)) => {},
-                            result => report.issue(IntegritySeverity::Error, Some(id), "source", result.err().unwrap_or_else(|| "journal's source snapshot is missing".into()), "restore the complete source directory from backup"),
-                        }
-                    }
-                    if journal.torn_tail {
-                        report.issue(
-                            IntegritySeverity::Warning,
-                            Some(id),
-                            JOURNAL_FILE,
-                            "incomplete final journal line was ignored",
-                            "truncate the incomplete final line after confirming the preceding recipe is complete",
-                        );
-                    }
-                }
-                Err(error) => report.issue(
-                    IntegritySeverity::Error,
-                    Some(id),
-                    JOURNAL_FILE,
-                    error,
-                    "restore recipe.jsonl from backup, or remove it if replay history is intentionally discarded",
-                ),
-            },
         }
     }
 
@@ -722,7 +696,7 @@ impl Studio {
             {
                 continue;
             }
-            if name == "source" {
+            if name == "recipe" {
                 if let Err(error) = crate::source::stored_source(dir) {
                     report.issue(
                         IntegritySeverity::Error,
@@ -895,7 +869,6 @@ fn verify_tree_types(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ToolName;
     use serde_json::json;
 
     fn studio(tag: &str) -> Studio {
@@ -904,12 +877,8 @@ mod tests {
         Studio::with_docs_dir(dir)
     }
 
-    fn journal_path(studio: &Studio, id: &str) -> std::path::PathBuf {
-        studio.doc_dir(id).join(JOURNAL_FILE)
-    }
-
     #[test]
-    fn checks_metadata_cels_journals_and_orphans() {
+    fn checks_metadata_cels_recipes_and_orphans() {
         let studio = studio("store");
         let created = studio.doc_new("verified", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
@@ -923,27 +892,12 @@ mod tests {
                 json!({"color":[9,8,7,255]}).as_object().unwrap().clone(),
             )
             .unwrap();
-        studio
-            .journal_append(
-                &id,
-                ToolName::DocNew,
-                &json!({"name":"verified","width":4,"height":4,"doc_id":id}),
-            )
-            .unwrap();
-        studio
-            .journal_append(
-                &id,
-                ToolName::DocDraw,
-                &json!({"doc_id":id,"op":"fill_cel","color":[9,8,7,255]}),
-            )
-            .unwrap();
+        studio.save_recipe(&id, None).unwrap();
+        studio.save_recipe(&id, None).unwrap();
 
         let clean = studio.verify_store().unwrap();
         assert!(clean.ok, "unexpected findings: {:?}", clean.issues);
-        assert_eq!(
-            (clean.documents, clean.cels, clean.journal_entries),
-            (1, 1, 2)
-        );
+        assert_eq!((clean.documents, clean.cels, clean.recipes), (1, 1, 1));
 
         fs::write(studio.doc_dir(&id).join("cels/L9_F9.png"), b"orphan").unwrap();
         let warned = studio.verify_store().unwrap();
@@ -953,7 +907,7 @@ mod tests {
         }));
 
         fs::write(studio.doc_dir(&id).join("cels/L0_F0.png"), b"not a png").unwrap();
-        fs::write(journal_path(&studio, &id), "not json\n").unwrap();
+        fs::write(studio.recipe_path(&id).unwrap(), "not toml\n").unwrap();
         let broken = studio.verify_store().unwrap();
         assert!(!broken.ok);
         assert!(broken.errors >= 2, "findings: {:?}", broken.issues);
@@ -967,7 +921,7 @@ mod tests {
             broken
                 .issues
                 .iter()
-                .any(|issue| issue.component == JOURNAL_FILE)
+                .any(|issue| issue.component == "recipe")
         );
     }
 
@@ -976,13 +930,7 @@ mod tests {
         let studio = studio("revision");
         let created = studio.doc_new("verified", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
-        studio
-            .journal_append(
-                &id,
-                ToolName::DocNew,
-                &json!({"name":"verified","width":4,"height":4,"doc_id":id}),
-            )
-            .unwrap();
+        studio.save_recipe(&id, None).unwrap();
 
         let legacy = studio.verify_store().unwrap();
         assert!(
@@ -1014,29 +962,24 @@ mod tests {
     }
 
     #[test]
-    fn reports_a_recovered_torn_journal_tail() {
-        let studio = studio("torn-journal");
+    fn detects_a_recipe_that_disagrees_with_the_working_document() {
+        let studio = studio("stale-recipe");
         let created = studio.doc_new("verified", 4, 4).unwrap();
-        let id = created["doc_id"].as_str().unwrap().to_string();
-        studio
-            .journal_append(
-                &id,
-                ToolName::DocNew,
-                &json!({"name":"verified","width":4,"height":4,"doc_id":id}),
-            )
-            .unwrap();
-        let path = journal_path(&studio, &id);
-        let mut journal = fs::read_to_string(&path).unwrap();
-        journal.push_str("{\"format_version\":1,\"tool\":\"doc_draw\"");
-        fs::write(path, journal).unwrap();
-
+        let id = created["doc_id"].as_str().unwrap();
+        studio.save_recipe(id, None).unwrap();
+        let path = studio.recipe_path(id).unwrap();
+        let text = fs::read_to_string(&path)
+            .unwrap()
+            .replace("verified", "stale");
+        fs::write(path, text).unwrap();
         let report = studio.verify_store().unwrap();
-        assert!(report.ok);
-        assert_eq!(report.journal_entries, 1);
-        assert!(report.issues.iter().any(|issue| {
-            issue.severity == IntegritySeverity::Warning
-                && issue.message.contains("incomplete final journal line")
-        }));
+        assert!(!report.ok);
+        assert!(
+            report
+                .issues
+                .iter()
+                .any(|i| i.component == "recipe" && i.message.contains("structure"))
+        );
     }
 
     #[test]
@@ -1058,13 +1001,7 @@ mod tests {
         let studio = studio("issue-cap");
         let created = studio.doc_new("bounded", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
-        studio
-            .journal_append(
-                &id,
-                ToolName::DocNew,
-                &json!({"name":"bounded","width":4,"height":4,"doc_id":id}),
-            )
-            .unwrap();
+        studio.save_recipe(&id, None).unwrap();
         let total = MAX_RETAINED_ISSUES + 20;
         for index in 0..total {
             fs::write(
@@ -1098,13 +1035,7 @@ mod tests {
         let studio = studio("hidden-links");
         let created = studio.doc_new("linked", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
-        studio
-            .journal_append(
-                &id,
-                ToolName::DocNew,
-                &json!({"name":"linked","width":4,"height":4,"doc_id":id}),
-            )
-            .unwrap();
+        studio.save_recipe(&id, None).unwrap();
 
         let outside = studio.docs_dir.join("outside.txt");
         fs::write(&outside, b"outside").unwrap();

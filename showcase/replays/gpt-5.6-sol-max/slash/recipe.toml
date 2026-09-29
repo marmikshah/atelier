@@ -1,0 +1,241 @@
+# Atelier replay. Rebuild with: atelier replay <this-file>
+format = 1
+renderer = 1
+name = "gpt56-slash"
+canvas = [32, 32]
+frames = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+palette = ["#272f5b", "#3065b0", "#36c4da", "#a4ebfa", "#ffcf4c", "#fffae2"]
+tags = [{ direction = "forward", from = 0, name = "slash", to = 9 }]
+
+[[layers]]
+name = "arc trail"
+
+[[layers.cels]]
+frames = [1]
+origin = [2, 3]
+legend = { 1 = "#3065b0", 2 = "#36c4da" }
+grid = '''
+....11111..
+..11122221.
+.1122222221
+1122221121.
+.1121...1..
+..1........
+'''
+
+[[layers.cels]]
+frames = [2]
+origin = [1, 2]
+legend = { 1 = "#272f5b", 2 = "#3065b0", 3 = "#36c4da" }
+grid = '''
+.....11111........
+...1111111111.....
+.11123333322111...
+.1123333333332211.
+11222322223333321.
+.11222222222333321
+.111211..11122321.
+...1........11211.
+..............1...
+'''
+
+[[layers.cels]]
+frames = [3]
+draw = [
+  { aa = false, color = [39, 47, 91, 255], op = "curve", points = [[4, 6], [12, 2], [21, 11]], snap = true, width = 7 },
+  { aa = false, color = [48, 101, 176, 255], op = "curve", points = [[5, 6], [12, 3], [21, 11]], snap = true, width = 5 },
+  { aa = false, color = [54, 196, 218, 255], op = "curve", points = [[7, 5], [14, 4], [21, 11]], snap = true, width = 3 },
+]
+
+[[layers.cels]]
+frames = [4]
+draw = [
+  { aa = false, color = [39, 47, 91, 255], op = "curve", points = [[5, 6], [16, 2], [27, 16]], snap = true, width = 9 },
+  { aa = false, color = [48, 101, 176, 255], op = "curve", points = [[6, 6], [16, 3], [27, 16]], snap = true, width = 7 },
+  { aa = false, color = [54, 196, 218, 255], op = "curve", points = [[8, 5], [18, 5], [27, 16]], snap = true, width = 4 },
+]
+
+[[layers.cels]]
+frames = [5]
+draw = [
+  { aa = false, color = [39, 47, 91, 255], op = "curve", points = [[6, 7], [18, 3], [29, 22]], snap = true, width = 10 },
+  { aa = false, color = [48, 101, 176, 255], op = "curve", points = [[7, 7], [18, 4], [29, 22]], snap = true, width = 8 },
+  { aa = false, color = [54, 196, 218, 255], op = "curve", points = [[9, 6], [20, 6], [29, 22]], snap = true, width = 5 },
+]
+
+[[layers.cels]]
+frames = [6]
+draw = [
+  { aa = false, color = [39, 47, 91, 255], op = "curve", points = [[9, 9], [21, 7], [28, 24]], snap = true, width = 7 },
+  { aa = false, color = [48, 101, 176, 255], op = "curve", points = [[11, 9], [22, 9], [28, 24]], snap = true, width = 5 },
+  { aa = false, color = [54, 196, 218, 255], op = "curve", points = [[15, 10], [24, 12], [28, 24]], snap = true, width = 3 },
+]
+
+[[layers.cels]]
+frames = [7]
+draw = [
+  { aa = false, color = [39, 47, 91, 255], op = "curve", points = [[14, 13], [24, 13], [29, 24]], snap = true, width = 4 },
+  { aa = false, color = [48, 101, 176, 255], op = "curve", points = [[18, 14], [26, 16], [29, 24]], snap = true, width = 2 },
+]
+
+[[layers]]
+name = "hot edge"
+
+[[layers.cels]]
+frames = [1]
+origin = [5, 4]
+legend = { 1 = "#a4ebfa", 2 = "#fffae2" }
+grid = '''
+.11111.
+1111121
+.1...1.
+'''
+
+[[layers.cels]]
+frames = [2]
+origin = [6, 4]
+legend = { 1 = "#a4ebfa", 2 = "#fffae2" }
+grid = '''
+.11111.....
+11111111...
+.1...11121.
+........121
+.........12
+'''
+
+[[layers.cels]]
+frames = [3]
+origin = [7, 5]
+legend = { 1 = "#a4ebfa", 2 = "#fffae2" }
+grid = '''
+.1111...........
+1111111112......
+.1...1111122....
+........11112...
+..........11122.
+............112.
+.............112
+..............1.
+'''
+
+[[layers.cels]]
+frames = [4]
+draw = [
+  { aa = false, color = [164, 235, 250, 255], op = "curve", points = [[9, 7], [19, 6], [27, 16]], snap = true, width = 2 },
+  { aa = false, color = [255, 250, 226, 255], op = "curve", points = [[20, 7], [25, 11], [28, 17]], snap = true, width = 2 },
+  { color = [255, 207, 76, 255], op = "pencil", points = [[28, 17]], size = 2 },
+]
+
+[[layers.cels]]
+frames = [5]
+draw = [
+  { aa = false, color = [164, 235, 250, 255], op = "curve", points = [[10, 9], [21, 8], [29, 22]], snap = true, width = 3 },
+  { aa = false, color = [255, 250, 226, 255], op = "curve", points = [[20, 8], [27, 15], [30, 23]], snap = true, width = 2 },
+  { color = [255, 207, 76, 255], op = "line", size = 2, x0 = 28, x1 = 30, y0 = 20, y1 = 23 },
+  { color = [255, 250, 226, 255], op = "pencil", points = [[30, 23]], size = 2 },
+]
+
+[[layers.cels]]
+frames = [6]
+origin = [16, 11]
+legend = { 1 = "#a4ebfa", 2 = "#fffae2", 3 = "#ffcf4c" }
+grid = '''
+.1............
+1111..........
+.11111........
+...1111.......
+.....111......
+......111.....
+.......111....
+........111...
+.........11...
+..........21..
+..........12..
+...........21.
+...........12.
+...........133
+............33
+'''
+
+[[layers]]
+name = "impact sparks"
+
+[[layers.cels]]
+frames = [4]
+origin = [27, 15]
+legend = { 1 = "#ffcf4c", 2 = "#fffae2" }
+grid = '''
+1..
+.1.
+.21
+'''
+
+[[layers.cels]]
+frames = [5]
+origin = [23, 18]
+legend = { 1 = "#ffcf4c", 2 = "#fffae2" }
+grid = '''
+........1
+1......1.
+.11...1..
+...1222..
+...22222.
+...222222
+...22222.
+...12221.
+...1.2.1.
+..1..2..1
+.1.......
+'''
+
+[[layers.cels]]
+frames = [6]
+origin = [21, 18]
+legend = { 1 = "#36c4da", 2 = "#a4ebfa", 3 = "#ffcf4c", 4 = "#fffae2" }
+grid = '''
+..........1
+..2........
+...2......3
+....2....3.
+.....24443.
+.....44444.
+.....44444.
+.....44444.
+....3.444..
+...3.....3.
+..3......3.
+.3........3
+1..........
+'''
+
+[[layers.cels]]
+frames = [7]
+origin = [21, 21]
+legend = { 1 = "#a4ebfa", 2 = "#36c4da", 3 = "#3065b0", 4 = "#ffcf4c" }
+grid = '''
+.........1.
+...........
+...........
+.......2...
+.....3.42..
+....3....2.
+...3.....2.
+...3......2
+..3.......1
+1..........
+'''
+
+[[layers.cels]]
+frames = [8]
+origin = [24, 23]
+legend = { 1 = "#272f5b", 2 = "#3065b0", 3 = "#36c4da" }
+grid = '''
+......1.
+........
+........
+.....2..
+......2.
+......2.
+1......2
+.......3
+'''

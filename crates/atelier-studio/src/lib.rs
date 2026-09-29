@@ -6,7 +6,7 @@
 //! is the unit, addressed by the opaque `doc_id` minted when it is created.
 //!
 //! This module is the facade: the `Studio` struct, the structure/timeline and
-//! per-cel ops, and the shared helpers. The store/journal lives in `store`,
+//! per-cel ops, and the shared helpers. The store lives in `store`,
 //! file exports in `ops_export`, rectangular edits in `ops_region`, and the
 //! themed readers/crafters in their own modules.
 
@@ -54,7 +54,7 @@ pub(crate) const MAX_SOURCE_PIXELS: u64 = 64 * 1024 * 1024;
 /// Hard canvas ceiling: owned by the persisted core contract so creation and
 /// loading cannot disagree.
 pub(crate) const MAX_CANVAS: u32 = atelier_core::document::MAX_DOCUMENT_DIMENSION;
-/// A document's journal, beside its `doc.json` and `cels/`.
+/// Legacy JSONL file, read only when importing older documents and archives.
 pub const JOURNAL_FILE: &str = "recipe.jsonl";
 /// Store-owned optimistic-concurrency generation, beside `doc.json`.
 ///

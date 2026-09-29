@@ -515,7 +515,6 @@ fn collect_state_entries(
         .map(|cel| cel.file.clone())
         .collect();
     let expects_reference = document.meta().reference.as_deref() == Some("reference.png");
-    drop(document);
 
     let mut saw_doc = false;
     let mut saw_reference = false;
@@ -546,14 +545,6 @@ fn collect_state_entries(
                         root.display()
                     ));
                 }
-                if parsed
-                    .entries
-                    .first()
-                    .is_some_and(|e| e.args.contains_key("source"))
-                    && crate::source::stored_source(root)?.is_none()
-                {
-                    return Err("journal's source snapshot is missing".into());
-                }
                 push_source(entries, archive_prefix, &name, entry.path())?;
             }
             REVISION_FILE if kind == StateKind::Main && file_type.is_file() => {
@@ -583,19 +574,20 @@ fn collect_state_entries(
                 saw_cels = true;
                 collect_cels(&entry.path(), archive_prefix, &expected_cels, entries)?;
             }
-            "source" if file_type.is_dir() => {
-                let source = crate::source::stored_source(root)?.ok_or("missing source")?;
+            "recipe" if file_type.is_dir() => {
+                let source = crate::source::stored_source(root)?.ok_or("missing recipe")?;
+                crate::source::equivalent(&document, &source.compile()?)?;
                 push_source(
                     entries,
                     archive_prefix,
-                    crate::source::JOURNAL_SOURCE,
-                    entry.path().join("source.toml"),
+                    crate::source::RECIPE_PATH,
+                    entry.path().join("recipe.toml"),
                 )?;
                 for name in source.resource_names() {
                     push_source(
                         entries,
                         archive_prefix,
-                        &format!("source/{name}"),
+                        &format!("recipe/{name}"),
                         entry.path().join(name),
                     )?;
                 }
@@ -793,8 +785,8 @@ fn is_checkpoint_id(value: &str) -> bool {
 }
 
 fn is_source_path(path: &str) -> bool {
-    path == crate::source::JOURNAL_SOURCE
-        || path.strip_prefix("source/").is_some_and(|p| {
+    path == crate::source::RECIPE_PATH
+        || path.strip_prefix("recipe/").is_some_and(|p| {
             p.ends_with(".png")
                 && p.len() <= 200
                 && !p.contains('\\')

@@ -41,7 +41,7 @@ const USAGE: &str = "usage:
   atelier library rm --all [--yes] [--home DIR]
 
   (no args)          list every document: id, size, frames, layers
-  verify             validate every document's metadata, cels, and journal
+  verify             validate every document's metadata, cels, and recipe
     --json           emit a machine-readable verification report
   pack               write a portable archive without overwriting an existing file
     --out FILE       required archive destination
@@ -304,16 +304,15 @@ fn list(args: &[String]) -> i32 {
             println!("  {:width$}  {error}", id, width = width);
             continue;
         }
-        // The journal is the document's provenance — show it, so `replay <id>`
-        // is discoverable from the listing rather than only from the docs.
-        // A corrupt journal must not be listed as replayable steps — say so.
-        let recipe = match s.journal(id) {
-            Ok(j) if j.is_empty() => "  no recipe".to_string(),
-            Ok(j) => {
+        let recipe = match s
+            .recipe_path(id)
+            .and_then(|path| atelier_studio::source::Source::load(&path))
+        {
+            Ok(source) => {
                 replayable += 1;
-                format!("{:>4} steps", j.len())
+                format!("{} B recipe", source.encoded_bytes())
             }
-            Err(_) => "  corrupt journal".to_string(),
+            Err(_) => "  no valid recipe".into(),
         };
         println!(
             "  {:width$}  {:>3}x{:<3}  {:>2} frames  {:>2} layers  {:<20}  {}",
@@ -419,15 +418,11 @@ fn verify(args: &[String]) -> i32 {
             );
         }
         println!(
-            "checked {} document(s), {} cel(s), and {} journal entr{}",
+            "checked {} document(s), {} cel(s), and {} recipe{}",
             report.documents,
             report.cels,
-            report.journal_entries,
-            if report.journal_entries == 1 {
-                "y"
-            } else {
-                "ies"
-            }
+            report.recipes,
+            if report.recipes == 1 { "" } else { "s" }
         );
         if report.ok {
             println!("verification passed with {} warning(s)", report.warnings);

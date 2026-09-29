@@ -1,6 +1,5 @@
 //! The store itself: where documents live on disk, the `ATELIER_HOME` policy,
-//! and the per-document journal (`recipe.jsonl`) that makes every document a
-//! replayable recipe.
+//! and legacy journal import for older working documents.
 
 use std::fs;
 use std::io::{Read, Write};
@@ -13,7 +12,7 @@ use atelier_core::document::{AnalysisDocument, Document};
 
 use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, REVISION_FILE, Studio, ToolName};
 
-/// Current JSONL journal entry format.
+/// Legacy JSONL import format. New editing writes structured recipes.
 pub const JOURNAL_FORMAT_VERSION: u32 = 1;
 
 const MAX_JOURNAL_BYTES: u64 = 64 * 1024 * 1024;
@@ -25,8 +24,7 @@ const fn journal_format_v1() -> u32 {
     JOURNAL_FORMAT_VERSION
 }
 
-/// The one current journal-line shape, shared by the writer, store reader, and
-/// replay parser.
+/// Legacy journal-line shape used by import and old archive validation.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct JournalEntry {
@@ -46,7 +44,7 @@ impl JournalEntry {
     }
 }
 
-/// Validate the current per-document journal contract. An absent/empty journal
+/// Validate the legacy per-document journal contract. An absent/empty journal
 /// means "no recipe"; a non-empty one is a complete, self-identifying rebuild.
 pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
     if let Some(entry) = entries
@@ -63,11 +61,6 @@ pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
     };
     if first.tool != ToolName::DocNew {
         return Err("journal must start with doc_new".into());
-    }
-    if let Some(source) = first.args.get("source")
-        && source.as_str() != Some(crate::source::JOURNAL_SOURCE)
-    {
-        return Err("journal source must be source/source.toml".into());
     }
     if entries
         .iter()
@@ -688,7 +681,7 @@ impl Studio {
 
     /// Append one call to `id`'s journal.
     ///
-    /// The journal is what makes "every document is a replayable recipe" true
+    /// Test fixture writer for legacy import and archive coverage.
     /// rather than aspirational: it lives beside the art it produced, so a
     /// document carries its own provenance and nothing has to be turned on
     /// beforehand to get it.
@@ -696,6 +689,7 @@ impl Studio {
     /// JSON Lines, appended: one versioned call per line. Failure is explicit;
     /// the dispatch transaction must not publish pixels whose recipe could not
     /// be persisted.
+    #[cfg(test)]
     pub fn journal_append(&self, id: &str, tool: ToolName, args: &Value) -> Result<(), String> {
         // Defence in depth: `id` is joined onto the store path, so validate it
         // here too rather than trust every caller forever — a bad id must never

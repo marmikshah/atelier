@@ -1,14 +1,12 @@
-use std::collections::BTreeMap;
-
+use crate::document::{DocMeta, FrameMeta, LayerMeta, TagMeta};
+use crate::raster::Blend;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 
-use crate::document::{DocMeta, FrameMeta, LayerMeta, TagMeta};
-use crate::raster::Blend;
-
-/// The on-disk source contract. Unlike the document's working UUID, part and
-/// layer names are stable identities chosen by the author.
+/// A replay describes the current document, grouped by layer and frame.
+/// Drawing operations reuse the renderer's existing parameter schemas.
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Asset {
@@ -20,26 +18,19 @@ pub struct Asset {
     pub frames: Vec<u32>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub palette: Vec<String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub inks: BTreeMap<String, String>,
-    pub layers: Vec<Layer>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tags: Vec<TagMeta>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference: Option<String>,
-    #[serde(default)]
-    pub parts: BTreeMap<String, Part>,
-    #[serde(default)]
-    pub cels: Vec<Cel>,
+    pub layers: Vec<Layer>,
 }
-
 fn frames() -> Vec<u32> {
     vec![100]
 }
-pub(super) fn one() -> u32 {
-    1
+fn first() -> Vec<usize> {
+    vec![0]
 }
-pub(super) fn opaque() -> u8 {
+fn opaque() -> u8 {
     255
 }
 fn yes() -> bool {
@@ -51,20 +42,11 @@ fn is_zero(v: &[i32; 2]) -> bool {
 fn is_origin(v: &[u32; 2]) -> bool {
     *v == [0, 0]
 }
-fn is_one(v: &u32) -> bool {
-    *v == 1
-}
 fn is_opaque(v: &u8) -> bool {
     *v == 255
 }
-fn is_false(v: &bool) -> bool {
-    !v
-}
 fn is_true(v: &bool) -> bool {
     *v
-}
-fn no_turn(v: &u8) -> bool {
-    *v == 0
 }
 fn normal(v: &Blend) -> bool {
     *v == Blend::Normal
@@ -73,7 +55,6 @@ fn normal(v: &Blend) -> bool {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Layer {
-    pub id: String,
     pub name: String,
     #[serde(default = "opaque", skip_serializing_if = "is_opaque")]
     pub opacity: u8,
@@ -81,14 +62,22 @@ pub struct Layer {
     pub visible: bool,
     #[serde(default, skip_serializing_if = "normal")]
     pub blend: Blend,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub cels: Vec<Cel>,
 }
 
-/// Exactly one of `grid`, `image`, `items`, or `draw` defines a part. Explicit
-/// logical size remains fixed when an image or grid is cropped inside it.
-#[derive(Clone, Default, Serialize, Deserialize)]
+/// One independent cel or several identical frames. A grid/image supplies
+/// optional starting pixels; `draw` contains only operations still needed to
+/// reproduce this cel. No UUIDs, API envelopes, or editing history are stored.
+#[derive(Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Part {
-    pub size: [u32; 2],
+pub struct Cel {
+    #[serde(default = "first")]
+    pub frames: Vec<usize>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub size: Option<[u32; 2]>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub at: [i32; 2],
     #[serde(default, skip_serializing_if = "is_origin")]
     pub origin: [u32; 2],
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -97,110 +86,20 @@ pub struct Part {
     pub legend: BTreeMap<String, String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub items: Option<Vec<Instance>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub draw: Option<Vec<Value>>,
-    /// Optional initial pixels for a sequence of existing core drawing ops.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub base: Option<String>,
-    /// A procedure can preserve its palette at the time it was authored.
-    /// Omitted inherits the asset palette; an empty array means unlocked.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub draw: Vec<Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub palette: Option<Vec<String>>,
 }
-
-impl Part {
-    pub fn kind(&self) -> &'static str {
-        if self.grid.is_some() {
-            "grid"
-        } else if self.image.is_some() {
-            "image"
-        } else if self.items.is_some() {
-            "group"
-        } else {
-            "draw"
-        }
-    }
-
-    pub fn dependencies(&self) -> Vec<&str> {
-        self.base
-            .iter()
-            .map(String::as_str)
-            .chain(self.items.iter().flatten().map(|i| i.part.as_str()))
-            .collect()
+impl Cel {
+    pub fn size(&self, canvas: [u32; 2]) -> [u32; 2] {
+        self.size.unwrap_or(canvas)
     }
 }
-
-#[derive(Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Placement {
-    /// Copy all RGBA tuples, including transparent pixels and transparent RGB.
-    #[default]
-    Replace,
-    /// Standard Atelier source-over compositing with opacity and blend.
-    Over,
-}
-
-fn replace(v: &Placement) -> bool {
-    *v == Placement::Replace
-}
-
-/// Integer transformations are applied about the logical rectangle: flips,
-/// clockwise quarter turns, then scale, then translation. No resampling.
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Instance {
-    pub part: String,
-    #[serde(default, skip_serializing_if = "is_zero")]
-    pub at: [i32; 2],
-    #[serde(default = "one", skip_serializing_if = "is_one")]
-    pub scale: u32,
-    #[serde(default, skip_serializing_if = "is_false")]
-    pub flip_x: bool,
-    #[serde(default, skip_serializing_if = "is_false")]
-    pub flip_y: bool,
-    #[serde(default, skip_serializing_if = "no_turn")]
-    pub turns: u8,
-    #[serde(default, skip_serializing_if = "replace")]
-    pub mode: Placement,
-    #[serde(default = "opaque", skip_serializing_if = "is_opaque")]
-    pub opacity: u8,
-    #[serde(default, skip_serializing_if = "normal")]
-    pub blend: Blend,
-    /// Rebind named inks for this instance, without merging equal-colour roles.
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub bindings: BTreeMap<String, String>,
-}
-
-impl Instance {
-    pub fn new(part: impl Into<String>) -> Self {
-        Self {
-            part: part.into(),
-            at: [0, 0],
-            scale: 1,
-            flip_x: false,
-            flip_y: false,
-            turns: 0,
-            mode: Placement::Replace,
-            opacity: 255,
-            blend: Blend::Normal,
-            bindings: BTreeMap::new(),
-        }
-    }
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Cel {
-    pub layer: String,
-    pub frames: Vec<usize>,
-    pub part: String,
-    #[serde(default, skip_serializing_if = "is_zero")]
-    pub at: [i32; 2],
-}
-
 impl Asset {
+    pub fn cels(&self) -> impl Iterator<Item = &Cel> {
+        self.layers.iter().flat_map(|l| &l.cels)
+    }
     pub fn metadata(&self) -> Result<DocMeta, String> {
         Ok(DocMeta {
             format_version: 1,
@@ -231,13 +130,6 @@ impl Asset {
             cels: vec![],
             reference: self.reference.as_ref().map(|_| "reference.png".into()),
         })
-    }
-
-    pub fn ink(&self, name: &str, bindings: &BTreeMap<String, String>) -> Result<[u8; 4], String> {
-        // Bindings are one level, not aliases that can form another graph.
-        let value = bindings.get(name).map_or(name, String::as_str);
-        color(self.inks.get(value).map_or(value, String::as_str))
-            .map_err(|_| format!("unknown ink or invalid colour '{value}'"))
     }
 }
 

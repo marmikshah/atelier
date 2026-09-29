@@ -1,7 +1,7 @@
 {
-  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and the OpenAI models via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and gpt-5.6-sol-max runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call. For gpt-6-astra-xhigh, each fresh agent uses gpt-6-astra with xhigh reasoning. Its tool-call and doc_look counts are recorded by the CLI wrapper, including failed calls and excluding harness export and verification; per-agent tokens are unavailable and remain null.",
+  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and the OpenAI models via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and gpt-5.6-sol-max runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the recipe beside each GIF describes the final artwork; historical command logs remain in Git. For gpt-6-astra-xhigh, each fresh agent uses gpt-6-astra with xhigh reasoning. Its tool-call and doc_look counts are recorded by the CLI wrapper, including failed calls and excluding harness export and verification; per-agent tokens are unavailable and remain null.",
   "server": "The first 40 retained runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which was used to verify the first 60 retained replays. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so the gpt-5.6-sol-max/slash replay had 5 fractional arguments rounded to integers and its GIF regenerated; the calls are otherwise the model's own. This changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task. The 10 gpt-6-astra-xhigh runs used the repository build at 2c1ec81c837b390f23f433c2502e5704bda7c23e (reported version 0.1.0, 25-tool surface), through isolated CLI dispatch with one store per task. All 80 replays were verified against that build.",
-  "verified": "Every GIF parsed from disk: all 80 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, within the requested colour limits and with transparency. CI replays all 80 committed JSONL files through the repository build and requires the exported GIFs to match byte-for-byte.",
+  "verified": "Every GIF parsed from disk: all 80 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, within the requested colour limits and with transparency. CI replays all 80 committed structured recipes through the repository build and requires the exported GIFs to match byte-for-byte.",
   "tasks": [
     "alien",
     "ball",
@@ -46,7 +46,7 @@
       "looks": 3,
       "tokens": 92909,
       "frames": 10,
-      "replay": "replays/sonnet-5/alien.jsonl"
+      "replay": "replays/sonnet-5/alien/recipe.toml"
     },
     {
       "task": "ball",
@@ -57,7 +57,7 @@
       "looks": 3,
       "tokens": 85130,
       "frames": 10,
-      "replay": "replays/sonnet-5/ball.jsonl"
+      "replay": "replays/sonnet-5/ball/recipe.toml"
     },
     {
       "task": "beam",
@@ -68,7 +68,7 @@
       "looks": 4,
       "tokens": 80375,
       "frames": 10,
-      "replay": "replays/sonnet-5/beam.jsonl"
+      "replay": "replays/sonnet-5/beam/recipe.toml"
     },
     {
       "task": "car",
@@ -79,7 +79,7 @@
       "looks": 2,
       "tokens": 87236,
       "frames": 10,
-      "replay": "replays/sonnet-5/car.jsonl"
+      "replay": "replays/sonnet-5/car/recipe.toml"
     },
     {
       "task": "cat",
@@ -90,7 +90,7 @@
       "looks": 6,
       "tokens": 140571,
       "frames": 10,
-      "replay": "replays/sonnet-5/cat.jsonl"
+      "replay": "replays/sonnet-5/cat/recipe.toml"
     },
     {
       "task": "explosion",
@@ -101,7 +101,7 @@
       "looks": 7,
       "tokens": 84500,
       "frames": 10,
-      "replay": "replays/sonnet-5/explosion.jsonl"
+      "replay": "replays/sonnet-5/explosion/recipe.toml"
     },
     {
       "task": "person",
@@ -112,7 +112,7 @@
       "looks": 2,
       "tokens": 98958,
       "frames": 10,
-      "replay": "replays/sonnet-5/person.jsonl"
+      "replay": "replays/sonnet-5/person/recipe.toml"
     },
     {
       "task": "potion",
@@ -123,7 +123,7 @@
       "looks": 4,
       "tokens": 126592,
       "frames": 10,
-      "replay": "replays/sonnet-5/potion.jsonl"
+      "replay": "replays/sonnet-5/potion/recipe.toml"
     },
     {
       "task": "slash",
@@ -134,7 +134,7 @@
       "looks": 4,
       "tokens": 86938,
       "frames": 10,
-      "replay": "replays/sonnet-5/slash.jsonl"
+      "replay": "replays/sonnet-5/slash/recipe.toml"
     },
     {
       "task": "torch",
@@ -145,7 +145,7 @@
       "looks": 3,
       "tokens": 122338,
       "frames": 10,
-      "replay": "replays/sonnet-5/torch.jsonl"
+      "replay": "replays/sonnet-5/torch/recipe.toml"
     },
     {
       "task": "alien",
@@ -156,7 +156,7 @@
       "looks": 5,
       "tokens": 91970,
       "frames": 10,
-      "replay": "replays/opus-4.8/alien.jsonl"
+      "replay": "replays/opus-4.8/alien/recipe.toml"
     },
     {
       "task": "ball",
@@ -167,7 +167,7 @@
       "looks": 2,
       "tokens": 77789,
       "frames": 10,
-      "replay": "replays/opus-4.8/ball.jsonl"
+      "replay": "replays/opus-4.8/ball/recipe.toml"
     },
     {
       "task": "beam",
@@ -178,7 +178,7 @@
       "looks": 3,
       "tokens": 77010,
       "frames": 10,
-      "replay": "replays/opus-4.8/beam.jsonl"
+      "replay": "replays/opus-4.8/beam/recipe.toml"
     },
     {
       "task": "car",
@@ -189,7 +189,7 @@
       "looks": 3,
       "tokens": 94500,
       "frames": 10,
-      "replay": "replays/opus-4.8/car.jsonl"
+      "replay": "replays/opus-4.8/car/recipe.toml"
     },
     {
       "task": "cat",
@@ -200,7 +200,7 @@
       "looks": 3,
       "tokens": 89721,
       "frames": 10,
-      "replay": "replays/opus-4.8/cat.jsonl"
+      "replay": "replays/opus-4.8/cat/recipe.toml"
     },
     {
       "task": "explosion",
@@ -211,7 +211,7 @@
       "looks": 3,
       "tokens": 68110,
       "frames": 10,
-      "replay": "replays/opus-4.8/explosion.jsonl"
+      "replay": "replays/opus-4.8/explosion/recipe.toml"
     },
     {
       "task": "person",
@@ -222,7 +222,7 @@
       "looks": 3,
       "tokens": 67559,
       "frames": 10,
-      "replay": "replays/opus-4.8/person.jsonl"
+      "replay": "replays/opus-4.8/person/recipe.toml"
     },
     {
       "task": "potion",
@@ -233,7 +233,7 @@
       "looks": 4,
       "tokens": 83419,
       "frames": 10,
-      "replay": "replays/opus-4.8/potion.jsonl"
+      "replay": "replays/opus-4.8/potion/recipe.toml"
     },
     {
       "task": "slash",
@@ -244,7 +244,7 @@
       "looks": 5,
       "tokens": 85473,
       "frames": 10,
-      "replay": "replays/opus-4.8/slash.jsonl"
+      "replay": "replays/opus-4.8/slash/recipe.toml"
     },
     {
       "task": "torch",
@@ -255,7 +255,7 @@
       "looks": 4,
       "tokens": 83240,
       "frames": 10,
-      "replay": "replays/opus-4.8/torch.jsonl"
+      "replay": "replays/opus-4.8/torch/recipe.toml"
     },
     {
       "task": "alien",
@@ -266,7 +266,7 @@
       "looks": 3,
       "tokens": 76602,
       "frames": 10,
-      "replay": "replays/fable-5/alien.jsonl"
+      "replay": "replays/fable-5/alien/recipe.toml"
     },
     {
       "task": "ball",
@@ -277,7 +277,7 @@
       "looks": 2,
       "tokens": 68817,
       "frames": 10,
-      "replay": "replays/fable-5/ball.jsonl"
+      "replay": "replays/fable-5/ball/recipe.toml"
     },
     {
       "task": "beam",
@@ -288,7 +288,7 @@
       "looks": 6,
       "tokens": 102543,
       "frames": 10,
-      "replay": "replays/fable-5/beam.jsonl"
+      "replay": "replays/fable-5/beam/recipe.toml"
     },
     {
       "task": "car",
@@ -299,7 +299,7 @@
       "looks": 3,
       "tokens": 79945,
       "frames": 10,
-      "replay": "replays/fable-5/car.jsonl"
+      "replay": "replays/fable-5/car/recipe.toml"
     },
     {
       "task": "cat",
@@ -310,7 +310,7 @@
       "looks": 3,
       "tokens": 85661,
       "frames": 10,
-      "replay": "replays/fable-5/cat.jsonl"
+      "replay": "replays/fable-5/cat/recipe.toml"
     },
     {
       "task": "explosion",
@@ -321,7 +321,7 @@
       "looks": 6,
       "tokens": 65646,
       "frames": 10,
-      "replay": "replays/fable-5/explosion.jsonl"
+      "replay": "replays/fable-5/explosion/recipe.toml"
     },
     {
       "task": "person",
@@ -332,7 +332,7 @@
       "looks": 6,
       "tokens": 82198,
       "frames": 10,
-      "replay": "replays/fable-5/person.jsonl"
+      "replay": "replays/fable-5/person/recipe.toml"
     },
     {
       "task": "potion",
@@ -343,7 +343,7 @@
       "looks": 3,
       "tokens": 93681,
       "frames": 10,
-      "replay": "replays/fable-5/potion.jsonl"
+      "replay": "replays/fable-5/potion/recipe.toml"
     },
     {
       "task": "slash",
@@ -354,7 +354,7 @@
       "looks": 6,
       "tokens": 70833,
       "frames": 10,
-      "replay": "replays/fable-5/slash.jsonl"
+      "replay": "replays/fable-5/slash/recipe.toml"
     },
     {
       "task": "torch",
@@ -365,7 +365,7 @@
       "looks": 3,
       "tokens": 76229,
       "frames": 10,
-      "replay": "replays/fable-5/torch.jsonl"
+      "replay": "replays/fable-5/torch/recipe.toml"
     },
     {
       "task": "alien",
@@ -376,7 +376,7 @@
       "looks": 3,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/alien.jsonl"
+      "replay": "replays/kimi-k3/alien/recipe.toml"
     },
     {
       "task": "ball",
@@ -387,7 +387,7 @@
       "looks": 2,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/ball.jsonl"
+      "replay": "replays/kimi-k3/ball/recipe.toml"
     },
     {
       "task": "beam",
@@ -398,7 +398,7 @@
       "looks": 4,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/beam.jsonl"
+      "replay": "replays/kimi-k3/beam/recipe.toml"
     },
     {
       "task": "car",
@@ -409,7 +409,7 @@
       "looks": 5,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/car.jsonl"
+      "replay": "replays/kimi-k3/car/recipe.toml"
     },
     {
       "task": "cat",
@@ -420,7 +420,7 @@
       "looks": 2,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/cat.jsonl"
+      "replay": "replays/kimi-k3/cat/recipe.toml"
     },
     {
       "task": "explosion",
@@ -431,7 +431,7 @@
       "looks": 9,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/explosion.jsonl"
+      "replay": "replays/kimi-k3/explosion/recipe.toml"
     },
     {
       "task": "person",
@@ -442,7 +442,7 @@
       "looks": 9,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/person.jsonl"
+      "replay": "replays/kimi-k3/person/recipe.toml"
     },
     {
       "task": "potion",
@@ -453,7 +453,7 @@
       "looks": 4,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/potion.jsonl"
+      "replay": "replays/kimi-k3/potion/recipe.toml"
     },
     {
       "task": "slash",
@@ -464,7 +464,7 @@
       "looks": 11,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/slash.jsonl"
+      "replay": "replays/kimi-k3/slash/recipe.toml"
     },
     {
       "task": "torch",
@@ -475,7 +475,7 @@
       "looks": 5,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/kimi-k3/torch.jsonl"
+      "replay": "replays/kimi-k3/torch/recipe.toml"
     },
     {
       "task": "alien",
@@ -486,7 +486,7 @@
       "looks": 5,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/alien.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/alien/recipe.toml"
     },
     {
       "task": "ball",
@@ -497,7 +497,7 @@
       "looks": 3,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/ball.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/ball/recipe.toml"
     },
     {
       "task": "beam",
@@ -508,7 +508,7 @@
       "looks": 4,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/beam.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/beam/recipe.toml"
     },
     {
       "task": "car",
@@ -519,7 +519,7 @@
       "looks": 7,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/car.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/car/recipe.toml"
     },
     {
       "task": "cat",
@@ -530,7 +530,7 @@
       "looks": 4,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/cat.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/cat/recipe.toml"
     },
     {
       "task": "explosion",
@@ -541,7 +541,7 @@
       "looks": 10,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/explosion.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/explosion/recipe.toml"
     },
     {
       "task": "person",
@@ -552,7 +552,7 @@
       "looks": 6,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/person.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/person/recipe.toml"
     },
     {
       "task": "potion",
@@ -563,7 +563,7 @@
       "looks": 6,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/potion.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/potion/recipe.toml"
     },
     {
       "task": "slash",
@@ -574,7 +574,7 @@
       "looks": 4,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/slash.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/slash/recipe.toml"
     },
     {
       "task": "torch",
@@ -585,7 +585,7 @@
       "looks": 3,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-5.6-sol-max/torch.jsonl"
+      "replay": "replays/gpt-5.6-sol-max/torch/recipe.toml"
     },
     {
       "task": "alien",
@@ -596,7 +596,7 @@
       "looks": 5,
       "tokens": 111729,
       "frames": 10,
-      "replay": "replays/opus-5/alien.jsonl"
+      "replay": "replays/opus-5/alien/recipe.toml"
     },
     {
       "task": "ball",
@@ -607,7 +607,7 @@
       "looks": 34,
       "tokens": 104543,
       "frames": 10,
-      "replay": "replays/opus-5/ball.jsonl"
+      "replay": "replays/opus-5/ball/recipe.toml"
     },
     {
       "task": "beam",
@@ -618,7 +618,7 @@
       "looks": 8,
       "tokens": 138204,
       "frames": 10,
-      "replay": "replays/opus-5/beam.jsonl"
+      "replay": "replays/opus-5/beam/recipe.toml"
     },
     {
       "task": "car",
@@ -629,7 +629,7 @@
       "looks": 16,
       "tokens": 121096,
       "frames": 10,
-      "replay": "replays/opus-5/car.jsonl"
+      "replay": "replays/opus-5/car/recipe.toml"
     },
     {
       "task": "cat",
@@ -640,7 +640,7 @@
       "looks": 9,
       "tokens": 144998,
       "frames": 10,
-      "replay": "replays/opus-5/cat.jsonl"
+      "replay": "replays/opus-5/cat/recipe.toml"
     },
     {
       "task": "explosion",
@@ -651,7 +651,7 @@
       "looks": 47,
       "tokens": 120836,
       "frames": 10,
-      "replay": "replays/opus-5/explosion.jsonl"
+      "replay": "replays/opus-5/explosion/recipe.toml"
     },
     {
       "task": "person",
@@ -662,7 +662,7 @@
       "looks": 7,
       "tokens": 113512,
       "frames": 10,
-      "replay": "replays/opus-5/person.jsonl"
+      "replay": "replays/opus-5/person/recipe.toml"
     },
     {
       "task": "potion",
@@ -673,7 +673,7 @@
       "looks": 24,
       "tokens": 101757,
       "frames": 10,
-      "replay": "replays/opus-5/potion.jsonl"
+      "replay": "replays/opus-5/potion/recipe.toml"
     },
     {
       "task": "slash",
@@ -684,7 +684,7 @@
       "looks": 12,
       "tokens": 102161,
       "frames": 10,
-      "replay": "replays/opus-5/slash.jsonl"
+      "replay": "replays/opus-5/slash/recipe.toml"
     },
     {
       "task": "torch",
@@ -695,7 +695,7 @@
       "looks": 7,
       "tokens": 91949,
       "frames": 10,
-      "replay": "replays/opus-5/torch.jsonl"
+      "replay": "replays/opus-5/torch/recipe.toml"
     },
     {
       "task": "alien",
@@ -706,7 +706,7 @@
       "looks": 2,
       "tokens": 74403,
       "frames": 10,
-      "replay": "replays/fable-5.1/alien.jsonl"
+      "replay": "replays/fable-5.1/alien/recipe.toml"
     },
     {
       "task": "ball",
@@ -717,7 +717,7 @@
       "looks": 2,
       "tokens": 62652,
       "frames": 10,
-      "replay": "replays/fable-5.1/ball.jsonl"
+      "replay": "replays/fable-5.1/ball/recipe.toml"
     },
     {
       "task": "beam",
@@ -728,7 +728,7 @@
       "looks": 3,
       "tokens": 68899,
       "frames": 10,
-      "replay": "replays/fable-5.1/beam.jsonl"
+      "replay": "replays/fable-5.1/beam/recipe.toml"
     },
     {
       "task": "car",
@@ -739,7 +739,7 @@
       "looks": 4,
       "tokens": 77672,
       "frames": 10,
-      "replay": "replays/fable-5.1/car.jsonl"
+      "replay": "replays/fable-5.1/car/recipe.toml"
     },
     {
       "task": "cat",
@@ -750,7 +750,7 @@
       "looks": 3,
       "tokens": 80639,
       "frames": 10,
-      "replay": "replays/fable-5.1/cat.jsonl"
+      "replay": "replays/fable-5.1/cat/recipe.toml"
     },
     {
       "task": "explosion",
@@ -761,7 +761,7 @@
       "looks": 2,
       "tokens": 70105,
       "frames": 10,
-      "replay": "replays/fable-5.1/explosion.jsonl"
+      "replay": "replays/fable-5.1/explosion/recipe.toml"
     },
     {
       "task": "person",
@@ -772,7 +772,7 @@
       "looks": 3,
       "tokens": 87389,
       "frames": 10,
-      "replay": "replays/fable-5.1/person.jsonl"
+      "replay": "replays/fable-5.1/person/recipe.toml"
     },
     {
       "task": "potion",
@@ -783,7 +783,7 @@
       "looks": 3,
       "tokens": 66817,
       "frames": 10,
-      "replay": "replays/fable-5.1/potion.jsonl"
+      "replay": "replays/fable-5.1/potion/recipe.toml"
     },
     {
       "task": "slash",
@@ -794,7 +794,7 @@
       "looks": 2,
       "tokens": 65920,
       "frames": 10,
-      "replay": "replays/fable-5.1/slash.jsonl"
+      "replay": "replays/fable-5.1/slash/recipe.toml"
     },
     {
       "task": "torch",
@@ -805,7 +805,7 @@
       "looks": 4,
       "tokens": 67720,
       "frames": 10,
-      "replay": "replays/fable-5.1/torch.jsonl"
+      "replay": "replays/fable-5.1/torch/recipe.toml"
     },
     {
       "task": "alien",
@@ -816,7 +816,7 @@
       "looks": 5,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/alien.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/alien/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -829,7 +829,7 @@
       "looks": 15,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/ball.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/ball/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -842,7 +842,7 @@
       "looks": 6,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/beam.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/beam/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -855,7 +855,7 @@
       "looks": 7,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/car.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/car/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -868,7 +868,7 @@
       "looks": 6,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/cat.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/cat/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -881,7 +881,7 @@
       "looks": 12,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/explosion.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/explosion/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -894,7 +894,7 @@
       "looks": 14,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/person.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/person/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -907,7 +907,7 @@
       "looks": 5,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/potion.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/potion/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -920,7 +920,7 @@
       "looks": 12,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/slash.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/slash/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     },
@@ -933,7 +933,7 @@
       "looks": 7,
       "tokens": null,
       "frames": 10,
-      "replay": "replays/gpt-6-astra-xhigh/torch.jsonl",
+      "replay": "replays/gpt-6-astra-xhigh/torch/recipe.toml",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
     }

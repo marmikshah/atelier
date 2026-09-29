@@ -1,15 +1,10 @@
-//! Retained artwork: named parts, exact pixel resources and ordered composition.
-//!
-//! Parsing and file access live in Studio. This module accepts decoded resources
-//! and builds a document without a store, a journal, or a protocol server.
-
+//! Structured replay: document settings, ordered layers, frame cels and drawing data.
+//! File access lives in Studio; this compiler has no store or protocol dependency.
 mod evaluate;
 mod model;
 mod validate;
-
 pub use evaluate::compile;
-pub use model::{Asset, Cel, Instance, Layer, Part, Placement, color, hex};
-pub use validate::{MAX_PARTS, MAX_SOURCE_BYTES};
-
+pub use model::{Asset, Cel, Layer, color, hex};
+pub use validate::MAX_SOURCE_BYTES;
 #[cfg(test)]
 mod tests;

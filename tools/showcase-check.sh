@@ -15,8 +15,8 @@ count=0
 while IFS= read -r recipe; do
   relative=${recipe#"$repo/showcase/replays/"}
   model=${relative%%/*}
-  task=${relative##*/}
-  task=${task%.jsonl}
+  task=${relative#*/}
+  task=${task%/recipe.toml}
   home="$verify_root/homes/$model/$task"
   actual="$verify_root/gifs/$model/$task.gif"
   log="$verify_root/atelier.log"
@@ -53,7 +53,7 @@ while IFS= read -r recipe; do
     exit 1
   fi
   count=$((count + 1))
-done < <(find "$repo/showcase/replays" -type f -name '*.jsonl' -print | sort)
+done < <(find "$repo/showcase/replays" -type f -name 'recipe.toml' -print | sort)
 
 if [[ $count -ne 80 ]]; then
   echo "replay-check: verified $count replay files, expected 80" >&2

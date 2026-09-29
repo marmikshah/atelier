@@ -609,15 +609,15 @@ impl Studio {
                 // doc without a doc.json (headless) — re-run restore to finish
                 // the swap; the checkpoint itself is untouched.
                 let _ = fs::remove_dir_all(dir.join("cels"));
-                let _ = fs::remove_dir_all(dir.join("source"));
+                let _ = fs::remove_dir_all(dir.join("recipe"));
                 for name in ["doc.json", JOURNAL_FILE, "reference.png"] {
                     let _ = fs::remove_file(dir.join(name));
                 }
                 let swapped = (|| -> std::io::Result<()> {
                     fs::rename(staging.join("cels"), dir.join("cels"))?;
                     fs::rename(staging.join("doc.json"), dir.join("doc.json"))?;
-                    if staging.join("source").is_dir() {
-                        fs::rename(staging.join("source"), dir.join("source"))?;
+                    if staging.join("recipe").is_dir() {
+                        fs::rename(staging.join("recipe"), dir.join("recipe"))?;
                     }
                     for name in [JOURNAL_FILE, "reference.png"] {
                         let staged = staging.join(name);

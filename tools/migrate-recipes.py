@@ -53,7 +53,7 @@ def identify(path):
     if not entries or any(not isinstance(e, dict) or not isinstance(e.get("args"), dict) for e in entries) or entries[0].get("tool") != "doc_new":
         raise ValueError(f"{path}: expected a complete JSONL journal beginning with doc_new")
     if "source" in entries[0].get("args", {}):
-        raise ValueError(f"{path}: source-backed journal; migrate it individually with atelier source migrate")
+        raise ValueError(f"{path}: expected a legacy log with document creation settings")
     original = entries[0]["args"].get("doc_id")
     if not isinstance(original, str):
         raise ValueError(f"{path}: doc_new needs a canonical UUIDv4 stamp")
@@ -88,7 +88,6 @@ def main():
     parser.add_argument("inputs", nargs="+", type=Path, help="JSONL files or directories searched recursively")
     parser.add_argument("--out", required=True, type=Path, help="new output directory for bundles and migration.json")
     parser.add_argument("--atelier", default="atelier", help="Atelier executable (default: atelier on PATH)")
-    parser.add_argument("--mode", choices=("auto", "pixels", "procedural"), default="auto")
     args = parser.parse_args()
     if args.out.exists():
         parser.error("--out must not exist; originals and previous migrations are never overwritten")
@@ -117,7 +116,7 @@ def main():
             raise ValueError(f"{path}: changed during migration; stopped")
         if identity not in report["bundles"]:
             destination = args.out / name
-            completed = subprocess.run([args.atelier, "source", "migrate", str(path), str(destination), "--mode", args.mode], text=True, capture_output=True)
+            completed = subprocess.run([args.atelier, "migrate", str(path), str(destination)], text=True, capture_output=True)
             if completed.returncode:
                 report["error"] = {"input": str(path), "message": completed.stderr.strip()}
                 save_report()
@@ -125,7 +124,7 @@ def main():
             result = json.loads(completed.stdout)
             if digest(path) != source_hash:
                 raise ValueError(f"{path}: changed while Atelier replayed it; stopped")
-            result["source"] = f"{name}/source.toml"
+            result["source"] = f"{name}/recipe.toml"
             report["bundles"][identity] = result
             print(f"{name}: {result['manifest_bytes'] + result['resource_bytes']:,} bytes, pixels verified", file=sys.stderr)
         report["recipes"].append({"original": str(path), "sha256": source_hash, "source": report["bundles"][identity]["source"]})
