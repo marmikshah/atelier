@@ -28,8 +28,13 @@ impl Document {
         if let Some((cx, cy, img)) = self.cels.get(&(layer, frame)) {
             for ry in 0..rh as i32 {
                 for rx in 0..rw as i32 {
-                    let (lx, ly) = (ax + rx - cx, ay + ry - cy);
-                    if lx < 0 || ly < 0 || lx as u32 >= img.width() || ly as u32 >= img.height() {
+                    let lx = i64::from(ax) + i64::from(rx) - i64::from(*cx);
+                    let ly = i64::from(ay) + i64::from(ry) - i64::from(*cy);
+                    if lx < 0
+                        || ly < 0
+                        || lx >= i64::from(img.width())
+                        || ly >= i64::from(img.height())
+                    {
                         continue;
                     }
                     let p = img.get_pixel(lx as u32, ly as u32).0;
@@ -47,8 +52,8 @@ impl Document {
         &mut self,
         layer: usize,
         frame: usize,
-        x: i32,
-        y: i32,
+        x: i64,
+        y: i64,
         rw: u32,
         rh: u32,
         buf: &[u8],
@@ -57,14 +62,20 @@ impl Document {
             return Err(format!("buffer length {} != {}x{}x4", buf.len(), rw, rh));
         }
         let img = self.cel_canvas(layer, frame)?;
-        for ry in 0..rh as i32 {
-            for rx in 0..rw as i32 {
+        // Clip in wide coordinates before walking or narrowing destinations.
+        // A valid i32 offset plus a block's origin/extent can exceed i32.
+        let x0 = (-x).clamp(0, i64::from(rw));
+        let y0 = (-y).clamp(0, i64::from(rh));
+        let x1 = (i64::from(img.width()) - x).clamp(0, i64::from(rw));
+        let y1 = (i64::from(img.height()) - y).clamp(0, i64::from(rh));
+        for ry in y0..y1 {
+            for rx in x0..x1 {
                 let i = ((ry as u32 * rw + rx as u32) * 4) as usize;
                 let p = [buf[i], buf[i + 1], buf[i + 2], buf[i + 3]];
                 if p[3] == 0 {
                     continue;
                 }
-                raster::put(img, x + rx, y + ry, p);
+                img.put_pixel((x + rx) as u32, (y + ry) as u32, image::Rgba(p));
             }
         }
         Ok(())
@@ -116,22 +127,15 @@ impl Document {
             Some(t) => t,
             None => tip.as_raw(),
         };
-        let (cw, ch) = (self.meta.w as i32, self.meta.h as i32);
+        let (cw, ch) = (i64::from(self.meta.w), i64::from(self.meta.h));
         let mut painted = 0usize;
         for &(px, py) in points {
-            // Saturate the origin (i64 math, like move_region) so neither this
-            // offset nor write_block's `x + rx` walk can overflow i32 on an
-            // absurd point — a dab that far out clips to nothing anyway.
-            let ox = (px as i64 - tw as i64 / 2)
-                .clamp(i32::MIN as i64, i32::MAX as i64 - tw as i64 + 1)
-                as i32;
-            let oy = (py as i64 - th as i64 / 2)
-                .clamp(i32::MIN as i64, i32::MAX as i64 - th as i64 + 1)
-                as i32;
+            let ox = i64::from(px) - i64::from(tw) / 2;
+            let oy = i64::from(py) - i64::from(th) / 2;
             // write_block reports nothing, so tally its writes up front: the
             // alpha>0 source pixels that land inside the canvas.
-            for ry in 0..th as i32 {
-                for rx in 0..tw as i32 {
+            for ry in 0..i64::from(th) {
+                for rx in 0..i64::from(tw) {
                     let a = buf[((ry as u32 * tw + rx as u32) * 4 + 3) as usize];
                     let (tx, ty) = (ox + rx, oy + ry);
                     if a > 0 && tx >= 0 && ty >= 0 && tx < cw && ty < ch {
@@ -186,10 +190,8 @@ impl Document {
         let (rw, rh, buf) = self.read_block(layer, frame, x0, y0, x1, y1)?;
         let (ax, ay) = (x0.min(x1).max(0), y0.min(y1).max(0));
         self.clear_region(layer, frame, x0, y0, x1, y1)?;
-        // i64 math: `ax + dx` overflows i32 for an absurd (but accepted) delta;
-        // saturate instead of panicking in debug / wrapping in release.
-        let px = (ax as i64 + dx as i64).clamp(i32::MIN as i64, i32::MAX as i64) as i32;
-        let py = (ay as i64 + dy as i64).clamp(i32::MIN as i64, i32::MAX as i64) as i32;
+        let px = i64::from(ax) + i64::from(dx);
+        let py = i64::from(ay) + i64::from(dy);
         self.write_block(layer, frame, px, py, rw, rh, &buf)
     }
 }
@@ -198,6 +200,47 @@ impl Document {
 mod tests {
     use super::*;
     use image::Rgba;
+
+    #[test]
+    fn move_region_clips_extreme_offsets_without_overflow() {
+        for (dx, dy) in [
+            (i32::MAX, 0),
+            (0, i32::MAX),
+            (i32::MIN, 0),
+            (0, i32::MIN),
+            (i32::MAX, i32::MIN),
+        ] {
+            let mut document = Document::new("offset", 4, 4);
+            document.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
+            document.move_region(0, 0, 1, 1, 2, 2, dx, dy).unwrap();
+            for y in 0..4 {
+                for x in 0..4 {
+                    let expected = if (1..=2).contains(&x) && (1..=2).contains(&y) {
+                        [0, 0, 0, 0]
+                    } else {
+                        [255, 0, 0, 255]
+                    };
+                    assert_eq!(document.get_pixel(0, 0, x, y).unwrap(), expected);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn move_region_preserves_partially_clipped_pixels() {
+        let mut document = Document::new("clipped", 4, 2);
+        document
+            .pencil(0, 0, &[(1, 0)], [255, 0, 0, 255], 1)
+            .unwrap();
+        document
+            .pencil(0, 0, &[(2, 0)], [0, 0, 255, 255], 1)
+            .unwrap();
+        document.move_region(0, 0, 1, 0, 2, 0, -2, 1).unwrap();
+        assert_eq!(document.get_pixel(0, 0, 0, 1).unwrap(), [0, 0, 255, 255]);
+        assert_eq!(document.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]);
+        assert_eq!(document.get_pixel(0, 0, 2, 0).unwrap(), [0, 0, 0, 0]);
+        assert_eq!(document.get_pixel(0, 0, 1, 1).unwrap(), [0, 0, 0, 0]);
+    }
 
     #[test]
     fn stamp_tip_paints_every_point_verbatim() {
