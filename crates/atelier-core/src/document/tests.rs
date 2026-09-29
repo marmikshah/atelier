@@ -291,6 +291,52 @@ fn frame_ops_move_and_duplicate() {
 }
 
 #[test]
+fn duplicate_frame_persists_copied_cels_over_existing_successor_files() {
+    let dir = std::env::temp_dir().join(format!(
+        "atelier-duplicate-frame-persistence-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    let mut document = Document::new("duplicate", 2, 2);
+    document.add_layer(None, 255, raster::Blend::Normal);
+    document
+        .frame_ops(FrameAction::Insert, 1, None, Some(200))
+        .unwrap();
+    let colors = [
+        [[255, 0, 0, 255], [0, 0, 255, 255]],
+        [[0, 255, 0, 255], [255, 255, 0, 255]],
+    ];
+    for (layer, frames) in colors.iter().enumerate() {
+        for (frame, color) in frames.iter().enumerate() {
+            document.fill_cel(layer, frame, *color).unwrap();
+        }
+    }
+    document.save(&dir).unwrap();
+
+    // Match separate CLI/MCP calls: load a clean generation whose successor
+    // PNGs already exist, duplicate, save, and inspect a fresh load.
+    let mut document = Document::load(&dir).unwrap();
+    document
+        .frame_ops(FrameAction::Duplicate, 0, None, None)
+        .unwrap();
+    document.save(&dir).unwrap();
+    let loaded = Document::load(&dir).unwrap();
+    assert_eq!(loaded.meta.frames.len(), 3);
+    for (layer, frames) in colors.iter().enumerate() {
+        for (frame, expected) in [frames[0], frames[0], frames[1]].iter().enumerate() {
+            assert_eq!(
+                loaded.get_pixel(layer, frame, 0, 0).unwrap(),
+                *expected,
+                "layer {layer}, frame {frame}"
+            );
+        }
+    }
+    assert_eq!(loaded.meta.frames[1].duration_ms, 100);
+    assert_eq!(loaded.meta.frames[2].duration_ms, 200);
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
 fn move_layer_reorders_and_cels_follow() {
     let mut d = Document::new("t", 4, 4);
     d.add_layer(None, 255, raster::Blend::Normal); // layer 1
