@@ -273,6 +273,7 @@ fn managed_snapshot_logical_bytes(
             context,
         )?;
     }
+    total = checked_logical_add(total, crate::source::stored_source_bytes(root)?, context)?;
     Ok(total)
 }
 
@@ -486,6 +487,7 @@ fn snapshot_files(src: &Path, dst: &Path) -> Result<(), String> {
     for name in [JOURNAL_FILE, "reference.png"] {
         copy_optional_managed_file(&src.join(name), &dst.join(name), name)?;
     }
+    crate::source::copy_stored_source(src, dst)?;
     Ok(())
 }
 
@@ -607,12 +609,16 @@ impl Studio {
                 // doc without a doc.json (headless) — re-run restore to finish
                 // the swap; the checkpoint itself is untouched.
                 let _ = fs::remove_dir_all(dir.join("cels"));
+                let _ = fs::remove_dir_all(dir.join("source"));
                 for name in ["doc.json", JOURNAL_FILE, "reference.png"] {
                     let _ = fs::remove_file(dir.join(name));
                 }
                 let swapped = (|| -> std::io::Result<()> {
                     fs::rename(staging.join("cels"), dir.join("cels"))?;
                     fs::rename(staging.join("doc.json"), dir.join("doc.json"))?;
+                    if staging.join("source").is_dir() {
+                        fs::rename(staging.join("source"), dir.join("source"))?;
+                    }
                     for name in [JOURNAL_FILE, "reference.png"] {
                         let staged = staging.join(name);
                         if staged.is_file() {

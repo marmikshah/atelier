@@ -546,6 +546,14 @@ fn collect_state_entries(
                         root.display()
                     ));
                 }
+                if parsed
+                    .entries
+                    .first()
+                    .is_some_and(|e| e.args.contains_key("source"))
+                    && crate::source::stored_source(root)?.is_none()
+                {
+                    return Err("journal's source snapshot is missing".into());
+                }
                 push_source(entries, archive_prefix, &name, entry.path())?;
             }
             REVISION_FILE if kind == StateKind::Main && file_type.is_file() => {
@@ -574,6 +582,23 @@ fn collect_state_entries(
             "cels" if file_type.is_dir() => {
                 saw_cels = true;
                 collect_cels(&entry.path(), archive_prefix, &expected_cels, entries)?;
+            }
+            "source" if file_type.is_dir() => {
+                let source = crate::source::stored_source(root)?.ok_or("missing source")?;
+                push_source(
+                    entries,
+                    archive_prefix,
+                    crate::source::JOURNAL_SOURCE,
+                    entry.path().join("source.toml"),
+                )?;
+                for name in source.resource_names() {
+                    push_source(
+                        entries,
+                        archive_prefix,
+                        &format!("source/{name}"),
+                        entry.path().join(name),
+                    )?;
+                }
             }
             ".checkpoints" if kind == StateKind::Main && file_type.is_dir() => {
                 collect_checkpoints(&entry.path(), id, entries)?;
@@ -730,6 +755,9 @@ fn validate_archive_path(path: &str) -> Result<Option<&str>, String> {
     ) {
         return Ok(None);
     }
+    if is_source_path(path) {
+        return Ok(None);
+    }
     if let Some(name) = path.strip_prefix("cels/")
         && !name.contains('/')
         && is_cel_name(name)
@@ -748,7 +776,8 @@ fn validate_archive_path(path: &str) -> Result<Option<&str>, String> {
                 _,
                 "doc.json" | "recipe.jsonl" | "reference.png" | "label.txt"
             ]
-        ) || (parts.len() == 4 && parts[2] == "cels" && is_cel_name(parts[3])))
+        ) || (parts.len() == 4 && parts[2] == "cels" && is_cel_name(parts[3]))
+            || is_source_path(&parts[2..].join("/")))
     {
         return Ok(Some(parts[1]));
     }
@@ -761,6 +790,16 @@ fn is_checkpoint_id(value: &str) -> bool {
     value
         .strip_prefix("cp")
         .is_some_and(|number| is_canonical_decimal(number) && number != "0")
+}
+
+fn is_source_path(path: &str) -> bool {
+    path == crate::source::JOURNAL_SOURCE
+        || path.strip_prefix("source/").is_some_and(|p| {
+            p.ends_with(".png")
+                && p.len() <= 200
+                && !p.contains('\\')
+                && p.split('/').all(|s| !s.is_empty() && s != "." && s != "..")
+        })
 }
 
 fn is_cel_name(value: &str) -> bool {

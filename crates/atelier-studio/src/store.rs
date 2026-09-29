@@ -64,6 +64,11 @@ pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
     if first.tool != ToolName::DocNew {
         return Err("journal must start with doc_new".into());
     }
+    if let Some(source) = first.args.get("source")
+        && source.as_str() != Some(crate::source::JOURNAL_SOURCE)
+    {
+        return Err("journal source must be source/source.toml".into());
+    }
     if entries
         .iter()
         .skip(1)

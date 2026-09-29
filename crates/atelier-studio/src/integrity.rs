@@ -441,6 +441,12 @@ impl Studio {
             Ok(_) => match parse_journal_file(id, &journal_path) {
                 Ok(journal) => {
                     report.journal_entries += journal.entries.len();
+                    if journal.entries.first().is_some_and(|e| e.args.contains_key("source")) {
+                        match crate::source::stored_source(dir) {
+                            Ok(Some(_)) => {},
+                            result => report.issue(IntegritySeverity::Error, Some(id), "source", result.err().unwrap_or_else(|| "journal's source snapshot is missing".into()), "restore the complete source directory from backup"),
+                        }
+                    }
                     if journal.torn_tail {
                         report.issue(
                             IntegritySeverity::Warning,
@@ -714,6 +720,19 @@ impl Studio {
                 || name == REVISION_FILE
                 || (name == "reference.png" && has_reference)
             {
+                continue;
+            }
+            if name == "source" {
+                if let Err(error) = crate::source::stored_source(dir) {
+                    report.issue(
+                        IntegritySeverity::Error,
+                        Some(id),
+                        "source",
+                        error,
+                        "restore the complete source directory from backup",
+                    );
+                }
+                verify_tree_types(Some(id), dir, &entry.path(), report);
                 continue;
             }
             if name == ".checkpoints" {

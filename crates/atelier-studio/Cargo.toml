@@ -20,3 +20,6 @@ serde.workspace = true
 serde_json.workspace = true
 fs4.workspace = true
 uuid.workspace = true
+png.workspace = true
+toml_edit.workspace = true
+sha2.workspace = true

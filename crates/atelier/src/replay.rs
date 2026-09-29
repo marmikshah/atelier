@@ -19,11 +19,13 @@ use serde_json::{Map, Value, json};
 
 use atelier_mcp::recipe::{MAX_RECIPE_BYTES, Recipe};
 use atelier_mcp::server::{self, Atelier};
+use atelier_studio::source::Source;
 use atelier_studio::{JournalEntry, Studio, ToolName};
 use rmcp::model::CallToolResult;
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
-const USAGE: &str = "usage: atelier replay <recipe.jsonl | doc-id> [--home DIR]";
+const USAGE: &str =
+    "usage: atelier replay <source.toml | bundle | recipe.jsonl | doc-id> [--home DIR]";
 
 /// Read the recipe to replay: either a file, or the journal of a document in
 /// the store.
@@ -31,11 +33,8 @@ const USAGE: &str = "usage: atelier replay <recipe.jsonl | doc-id> [--home DIR]"
 /// A path wins over an id, so a file named like a document still replays as the
 /// file the user pointed at.
 ///
-/// The lookup deliberately ignores `--home`: that flag names where the replay
-/// *writes*, so `replay jt --home /tmp/sandbox` means "rebuild jt over there",
-/// and reading the journal from the destination would only ever find an empty
-/// store. Point `ATELIER_HOME` at a different store to read from one.
-fn read_source(path: &Path, label: &str) -> Result<String, String> {
+/// A file is read where named; a bare document id uses the selected store.
+pub(crate) fn read_source(path: &Path, label: &str) -> Result<String, String> {
     let file =
         std::fs::File::open(path).map_err(|error| format!("cannot read {label}: {error}"))?;
     let metadata = file
@@ -67,10 +66,10 @@ fn read_source(path: &Path, label: &str) -> Result<String, String> {
 /// document id whose own journal is the source. `home` must be the same store
 /// the replay writes into, or a bare id would be read from one store and
 /// rebuilt in another.
-fn resolve_source(path: &str, home: Option<&str>) -> Result<String, String> {
+fn resolve_path(path: &str, home: Option<&str>) -> Result<PathBuf, String> {
     let as_file = Path::new(path);
     if as_file.is_file() {
-        return read_source(as_file, path);
+        return Ok(as_file.into());
     }
     let root = match home {
         Some(dir) => PathBuf::from(dir),
@@ -89,7 +88,26 @@ fn resolve_source(path: &str, home: Option<&str>) -> Result<String, String> {
             "document '{path}' has no journal — no replay source is available"
         ));
     }
-    read_source(&journal, &format!("{path}'s journal"))
+    Ok(journal)
+}
+
+pub(crate) fn load_recipe(
+    path: &str,
+    home: Option<&str>,
+) -> Result<(Recipe, Option<Source>), String> {
+    let journal = resolve_path(path, home)?;
+    let recipe = Recipe::parse(&read_source(&journal, path)?)?;
+    let baseline = if recipe.steps[0].args.contains_key("source") {
+        Some(Source::load(
+            &journal
+                .parent()
+                .unwrap_or(Path::new("."))
+                .join(atelier_studio::source::JOURNAL_SOURCE),
+        )?)
+    } else {
+        None
+    };
+    Ok((recipe, baseline))
 }
 
 /// Entry point for the `replay` subcommand. Returns a process exit code.
@@ -136,23 +154,29 @@ pub async fn run(args: &[String]) -> i32 {
 
     // A bare document id replays that document's own journal — the whole point
     // of journaling by default is that you never had to keep a recipe file.
-    let src = match resolve_source(path, home) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("replay: {e}");
-            return 2;
-        }
-    };
-    let recipe = match Recipe::parse(&src) {
+    if Path::new(path).is_dir() || Path::new(path).extension().is_some_and(|e| e == "toml") {
+        let studio = home.map_or_else(Studio::new, |h| Studio::with_home(h.into()));
+        return match Source::load(Path::new(path)).and_then(|source| studio.build_source(&source)) {
+            Ok(result) => {
+                println!("{result}");
+                0
+            }
+            Err(error) => {
+                eprintln!("replay: {error}");
+                1
+            }
+        };
+    }
+    let (recipe, baseline) = match load_recipe(path, home) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("replay: {e}");
             return 2;
         }
     };
-
-    match drive(recipe, home).await {
-        Ok(()) => 0,
+    let studio = home.map_or_else(Studio::new, |h| Studio::with_home(h.into()));
+    match rebuild(&recipe, &studio, baseline.as_ref(), false).await {
+        Ok(_) => 0,
         Err(e) => {
             eprintln!("replay: {e}");
             1
@@ -160,28 +184,22 @@ pub async fn run(args: &[String]) -> i32 {
     }
 }
 
-/// Build the in-process tool server and run every step in order.
-async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
-    // `--home` roots an isolated store for the run; otherwise the ambient
-    // ATELIER_HOME (or the default) is where the rebuild lands.
-    let studio = match home {
-        Some(dir) => Studio::with_home(dir.into()),
-        None => Studio::new(),
-    };
-    run_atomic_session(&recipe, &studio).await.map(|_| ())
-}
-
 /// Replay into one private generation, then publish the completed document.
 ///
 /// The outer store lock protects transaction cleanup and the final publication
 /// from other processes. Per-step dispatch still uses its normal transaction
 /// path, but those commits are visible only inside this outer generation.
-async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, String> {
+pub(crate) async fn rebuild(
+    recipe: &Recipe,
+    studio: &Studio,
+    baseline: Option<&Source>,
+    quiet: bool,
+) -> Result<String, String> {
     let _store_lock = studio.lock_store_exclusive()?;
     studio.cleanup_stale_transactions()?;
     let transaction = studio.begin_transaction(None)?;
     let staged = Atelier::with_studio(transaction.studio().clone());
-    let minted = run_session(recipe, &staged)
+    let minted = run_session(recipe, &staged, transaction.studio(), baseline, quiet)
         .await
         .map_err(|error| format!("{error}; no replayed document was published"))?;
 
@@ -194,10 +212,12 @@ async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, 
             eprintln!("replay: warning: {warning}");
         }
     }
-    eprintln!(
-        "replay: {} step(s) committed atomically",
-        recipe.steps.len()
-    );
+    if !quiet {
+        eprintln!(
+            "replay: {} step(s) committed atomically",
+            recipe.steps.len()
+        );
+    }
     Ok(minted)
 }
 
@@ -207,8 +227,16 @@ async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, 
 /// Recorded document ids never reach the server verbatim: `doc_new` always
 /// mints a fresh opaque id, so every later target is rewritten to the id this
 /// run actually received.
-async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<String, String> {
-    eprintln!("== replaying journal");
+async fn run_session(
+    recipe: &Recipe,
+    atelier: &Atelier,
+    studio: &Studio,
+    baseline: Option<&Source>,
+    quiet: bool,
+) -> Result<String, String> {
+    if !quiet {
+        eprintln!("== replaying journal");
+    }
 
     let mut ids: HashMap<String, String> = HashMap::new();
     let mut minted_document = None;
@@ -218,35 +246,49 @@ async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<String, Strin
             match take_recorded_id(&mut args) {
                 Ok(recorded) => Some(recorded),
                 Err(error) => {
-                    print_step(idx, step, &format!("ERROR {error}"));
+                    if !quiet {
+                        print_step(idx, step, &format!("ERROR {error}"));
+                    }
                     return Err(format!("step {} ({}) failed: {error}", idx + 1, step.tool));
                 }
             }
         } else {
             if let Err(error) = remap_ids(&mut args, &ids) {
-                print_step(idx, step, &format!("ERROR {error}"));
+                if !quiet {
+                    print_step(idx, step, &format!("ERROR {error}"));
+                }
                 return Err(format!("step {} ({}) failed: {error}", idx + 1, step.tool));
             }
             None
         };
-        let result = match atelier
-            .dispatch(step.tool, Value::Object(args), "replay")
-            .await
-        {
-            Ok(result) => result,
-            // Protocol error (malformed args) — recipe parsing already rejects
-            // unknown tools. A recipe is a narrative, so the first failed step
-            // ends the run.
-            Err(e) => {
-                print_step(idx, step, &format!("ERROR {e}"));
-                return Err(format!("step {} ({}) failed: {e}", idx + 1, step.tool));
+        let result = if step.tool == ToolName::DocNew && args.contains_key("source") {
+            let source = baseline.ok_or("journal needs its bundled source/source.toml")?;
+            let value = studio.build_source(source)?;
+            CallToolResult::success(vec![rmcp::model::ContentBlock::text(value.to_string())])
+        } else {
+            match atelier
+                .dispatch(step.tool, Value::Object(args), "replay")
+                .await
+            {
+                Ok(result) => result,
+                // Protocol error (malformed args) — recipe parsing already rejects
+                // unknown tools. A recipe is a narrative, so the first failed step
+                // ends the run.
+                Err(e) => {
+                    if !quiet {
+                        print_step(idx, step, &format!("ERROR {e}"));
+                    }
+                    return Err(format!("step {} ({}) failed: {e}", idx + 1, step.tool));
+                }
             }
         };
         // atelier tools surface their own errors as a {"error": ...} text
         // payload with isError set; treat that as a failed step too.
         let is_error = server::is_error_result(&result);
         let summary = summarize(&result);
-        print_step(idx, step, &summary);
+        if !quiet {
+            print_step(idx, step, &summary);
+        }
         if is_error {
             return Err(format!(
                 "step {} ({}) failed: {summary}",
@@ -452,7 +494,7 @@ mod tests {
         ))
         .unwrap();
 
-        drive(recipe, Some(home.to_string_lossy().as_ref()))
+        rebuild(&recipe, &Studio::with_home(home.clone()), None, false)
             .await
             .unwrap();
 
@@ -485,7 +527,7 @@ mod tests {
         ))
         .unwrap();
 
-        let error = run_atomic_session(&recipe, &studio).await.unwrap_err();
+        let error = rebuild(&recipe, &studio, None, false).await.unwrap_err();
 
         assert!(error.contains("step 2 (doc_draw) failed"), "{error}");
         assert!(
@@ -621,7 +663,7 @@ mod tests {
         let recipe = Recipe::parse(&journal).unwrap();
         assert!(recipe.steps.len() >= 7, "the journal drives the rebuild");
         let studio_b = Studio::with_docs_dir(dir_b.clone());
-        let committed_id = run_atomic_session(&recipe, &studio_b).await.unwrap();
+        let committed_id = rebuild(&recipe, &studio_b, None, false).await.unwrap();
         let replayed_docs = studio_b.list_docs();
         let replay_id = replayed_docs["documents"][0]["doc_id"].as_str().unwrap();
         assert_eq!(committed_id, replay_id);

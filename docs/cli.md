@@ -9,7 +9,8 @@ atelier call <tool> '<json>'          # one tool call, in-process — the front 
 atelier call <tool> --file ops.json   # args from a file (or --stdin, --image-out PATH)
 atelier tools [--markdown|--schema <name>]   # the surface / full reference / one schema
 atelier init                          # stamp ./.atelier for a directory-local store
-atelier replay <recipe|id>            # rebuild a document from its journal
+atelier replay <source|recipe|id>     # compile source or replay a journal
+atelier source --help                # inspect, edit, check, and migrate source bundles
 atelier library                       # what's in your document store
 atelier library verify [--json]       # validate metadata, cels, references, journals
 atelier library pack <id> --out art.atelierpack   # write a portable backup
@@ -100,6 +101,13 @@ always pins the global store at install time (or whatever `--home` you give
 it). `atelier status` shows the daemon endpoint and store.
 
 ## Reproducible journals
+
+For the authored form of an asset, use [TOML source bundles](sources.md).
+`atelier replay source.toml` compiles a complete source into a fresh working
+document. Its journal begins with a reference to a bundled `source/source.toml`
+snapshot, followed by local edits. Keep that whole directory or use `library
+pack`; copying just this journal omits its starting artwork. Existing standalone
+JSONL journals remain supported.
 
 Every document is an ordered sequence of tool calls, so a piece of art *is* a
 replayable program — and atelier keeps that sequence for you. Every document

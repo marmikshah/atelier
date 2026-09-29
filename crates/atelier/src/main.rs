@@ -58,6 +58,7 @@ mod library;
 mod replay;
 mod service;
 mod skills;
+mod source;
 
 const HELP: &str = "atelier — offline, headless pixel-art editing through a CLI and MCP server.
 
@@ -77,7 +78,8 @@ USAGE:
                                   restore its UUID; replacement needs both flags
             rm <id>... | rm --prefix <p> | rm --all [--yes] [--home DIR]
                                   delete documents — permanent, confirms first
-    atelier replay <journal|id>   replay a JSONL journal, or rebuild a document from its
+    atelier source ...           inspect, edit, check, or migrate artwork source (source --help)
+    atelier replay <source|id>    compile TOML artwork, replay JSONL, or rebuild from its
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier call <tool> ['<json>' | --file PATH | --stdin]
@@ -254,6 +256,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("init") => std::process::exit(init::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
+        Some("source") => std::process::exit(source::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
             return Ok(());

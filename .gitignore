@@ -23,3 +23,6 @@ docs/ART-QUALITY-REVIEW.md
 # Legacy benchmark run artifacts (transcripts, isolated homes, exported art).
 benchmarks/runs/
 __pycache__/
+.atelier-source.lock
+.atelier-source-*.tmp
+.atelier-migrate-*/

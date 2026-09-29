@@ -703,6 +703,25 @@ impl Document {
         }
     }
 
+    /// Create an empty document with validated authored structure. Cel storage
+    /// records are supplied by `set_cel` and rebuilt by `save`, never trusted.
+    pub fn from_metadata(mut meta: DocMeta) -> Result<Document, String> {
+        meta.cels.clear();
+        meta.validate()?;
+        Ok(Document {
+            meta,
+            cels: HashMap::new(),
+            dirty: HashSet::new(),
+        })
+    }
+
+    /// Borrow an exact cel, including its logical extent and off-canvas pixels.
+    pub fn cel(&self, layer: usize, frame: usize) -> Option<(i32, i32, &RgbaImage)> {
+        self.cels
+            .get(&(layer, frame))
+            .map(|(x, y, img)| (*x, *y, img))
+    }
+
     /// Load and validate only `doc.json`, without decoding cel images.
     ///
     /// Listing and inspection paths use this to share the same bounded,

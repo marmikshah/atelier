@@ -31,6 +31,7 @@ mod integrity;
 mod ops_export;
 mod ops_region;
 mod reference;
+pub mod source;
 mod store;
 mod transaction;
 mod view;

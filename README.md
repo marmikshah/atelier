@@ -74,7 +74,7 @@ That's the whole setup. No server, no daemon, no registration.
 | Editing | Pixel primitives, region operations, effects, grids, palette generation and snapping |
 | Inspection | Rendered previews, region dumps, silhouettes, component analysis, frame diffs, seam reports, animation audits, critique |
 | Output | Spritesheets with JSON metadata, GIF, APNG, PNG previews |
-| Reproducibility | Versioned per-document JSONL journals, atomic deterministic replay |
+| Reproducibility | Named TOML artwork sources, lossless recipe migration, atomic builds and JSONL edit history |
 | Recovery | Bounded checkpoints, deterministic portable document archives |
 | Deployment | Ubuntu binary, static Alpine container, CLI, stdio MCP, authenticated HTTP MCP |
 
@@ -90,6 +90,18 @@ and log the same line. Anything you can do in a shell, an agent can do over MCP.
 **Art rebuilds itself.** Every document journals the deterministic calls that
 made it, so `atelier replay <id>` reproduces the same pixels anywhere. Nothing
 to enable.
+
+For maintainable artwork, keep a [source bundle](docs/sources.md): small grids,
+named reusable parts, drawing operations, and PNG resources for large pixel
+regions. Compile once into a working document; later tool edits remain in its
+local journal. Source files contain no working document UUIDs.
+
+```sh
+atelier source migrate old-recipe.jsonl art/lantern
+atelier replay art/lantern --home target/art-review
+atelier source inspect art/lantern
+python3 tools/migrate-recipes.py path/to/recipes --out target/migrated-art
+```
 
 **Agents can see.** `doc_look` returns rendered pixels, and the analysis tools
 return structured critique — so the loop is draw, look, fix, rather than draw
@@ -109,6 +121,7 @@ Docker, remote access, and troubleshooting are in **[docs/mcp.md](docs/mcp.md)**
 ## Documentation
 
 - **[docs/cli.md](docs/cli.md)** — the complete CLI, journals, stores, backups, skills
+- **[docs/sources.md](docs/sources.md)** — artwork source format, editing and migration
 - **[docs/mcp.md](docs/mcp.md)** — MCP daemon, auth, Docker, troubleshooting
 - **[docs/tools.md](docs/tools.md)** — the complete 25-tool reference
 - **[showcase/](showcase/)** — the same ten briefs drawn by eight models

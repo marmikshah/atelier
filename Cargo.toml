@@ -29,6 +29,8 @@ image = { version = "0.25.10", default-features = false, features = ["png", "gif
 png = "0.18.1" # direct: APNG animation encoder (already in the tree via image)
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
+toml_edit = { version = "0.25.15", features = ["serde"] }
+sha2 = "0.10.9"
 # Coordinates independent CLI and daemon processes that share a document store.
 fs4 = { version = "1.1.0", features = ["sync"] }
 # Canonical UUIDv4 document ids. UUID is already present through the MCP stack;
