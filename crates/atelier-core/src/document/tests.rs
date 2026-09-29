@@ -228,9 +228,9 @@ fn palette_set_and_index() {
 fn frame_ops_delete_reindexes_and_protects_last() {
     let mut d = Document::new("t", 2, 2);
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
-    d.add_frame(100, None);
+    d.add_frame(100, None).unwrap();
     d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
-    d.add_frame(100, None);
+    d.add_frame(100, None).unwrap();
     d.pencil(0, 2, &[(0, 0)], [3, 3, 3, 255], 1).unwrap();
     d.add_tag("mid", 1, 1, TagDirection::Forward).unwrap();
     d.add_tag("all", 0, 2, TagDirection::Forward).unwrap();
@@ -251,7 +251,7 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
     // untagged frames).
     let mut d = Document::new("t", 2, 2);
     for _ in 0..3 {
-        d.add_frame(100, None);
+        d.add_frame(100, None).unwrap();
     }
     d.add_tag("walk", 0, 1, TagDirection::Forward).unwrap();
     d.frame_ops(FrameAction::Move, 1, Some(3), None).unwrap();
@@ -259,8 +259,8 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
 
     // A reorder entirely INSIDE a tag keeps the tag's full coverage.
     let mut e = Document::new("t", 2, 2);
-    e.add_frame(100, None);
-    e.add_frame(100, None);
+    e.add_frame(100, None).unwrap();
+    e.add_frame(100, None).unwrap();
     e.add_tag("all", 0, 2, TagDirection::Forward).unwrap();
     e.frame_ops(FrameAction::Move, 1, Some(2), None).unwrap();
     assert_eq!((e.meta.tags[0].from, e.meta.tags[0].to), (0, 2));
@@ -268,7 +268,7 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
     // A single-frame tag follows its frame.
     let mut s = Document::new("t", 2, 2);
     for _ in 0..3 {
-        s.add_frame(100, None);
+        s.add_frame(100, None).unwrap();
     }
     s.add_tag("pose", 1, 1, TagDirection::Forward).unwrap();
     s.frame_ops(FrameAction::Move, 1, Some(3), None).unwrap();
@@ -279,7 +279,7 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
 fn frame_ops_move_and_duplicate() {
     let mut d = Document::new("t", 2, 2);
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
-    d.add_frame(100, None);
+    d.add_frame(100, None).unwrap();
     d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
     d.frame_ops(FrameAction::Move, 0, Some(1), None).unwrap();
     assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [2, 2, 2, 255]);
@@ -869,7 +869,7 @@ fn analysis_load_decodes_only_the_requested_frame_and_layer() {
     let _ = std::fs::remove_dir_all(&dir);
     let mut document = Document::new("targeted", 4, 4);
     document.add_layer(Some("top".into()), 255, raster::Blend::Normal);
-    document.add_frame(DEFAULT_FRAME_MS, None);
+    document.add_frame(DEFAULT_FRAME_MS, None).unwrap();
     for layer in 0..2 {
         for frame in 0..2 {
             document
@@ -928,7 +928,7 @@ fn analysis_load_probes_unselected_cels_without_decoding_them() {
         std::env::temp_dir().join(format!("atelier-analysis-probe-all-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     let mut document = Document::new("targeted", 4, 4);
-    document.add_frame(DEFAULT_FRAME_MS, None);
+    document.add_frame(DEFAULT_FRAME_MS, None).unwrap();
     document.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
     document.fill_cel(0, 1, [4, 5, 6, 255]).unwrap();
     document.save(&dir).unwrap();
@@ -1137,7 +1137,7 @@ fn oversized_generated_outputs_are_rejected_before_writing_files() {
 fn export_sheet_std_writes_engine_parsable_json() {
     let mut d = Document::new("runner", 8, 8);
     d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
-    d.add_frame(80, Some(0));
+    d.add_frame(80, Some(0)).unwrap();
     d.add_tag("run", 0, 1, TagDirection::Forward).unwrap();
     let dir = std::env::temp_dir().join("atelier-std-json-test");
     let _ = std::fs::create_dir_all(&dir);
@@ -1751,7 +1751,7 @@ fn adjust_hue_rotates_red_toward_green() {
 fn doc_with_frames(n: usize) -> Document {
     let mut d = Document::new("t", 4, 4);
     while d.meta.frames.len() < n {
-        d.add_frame(100, None);
+        d.add_frame(100, None).unwrap();
     }
     d
 }
@@ -2096,7 +2096,7 @@ fn save_writes_only_dirtied_cels_and_sweeps_stale_files() {
     let _ = std::fs::remove_dir_all(&dir);
     let modified = |p: &std::path::Path| std::fs::metadata(p).unwrap().modified().unwrap();
     let mut d = Document::new("t", 4, 4);
-    d.add_frame(100, None);
+    d.add_frame(100, None).unwrap();
     d.rect(0, 0, 0, 0, 1, 1, [1, 1, 1, 255], true, 1).unwrap();
     d.rect(0, 1, 0, 0, 1, 1, [2, 2, 2, 255], true, 1).unwrap();
     d.save(&dir).unwrap();
@@ -2124,7 +2124,7 @@ fn save_load_round_trip_still_recovers_every_cel() {
     let dir = std::env::temp_dir().join(format!("atelier-dirty-rt-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     let mut d = Document::new("t", 4, 4);
-    d.add_frame(100, Some(0));
+    d.add_frame(100, Some(0)).unwrap();
     d.rect(0, 0, 0, 0, 1, 1, [10, 0, 0, 255], true, 1).unwrap();
     d.rect(0, 1, 2, 2, 3, 3, [0, 0, 10, 255], true, 1).unwrap();
     d.save(&dir).unwrap();

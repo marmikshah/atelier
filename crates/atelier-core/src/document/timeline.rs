@@ -78,6 +78,7 @@ impl Document {
                         frame, n
                     ));
                 }
+                self.check_frame_growth(1)?;
                 self.meta.frames.insert(
                     frame,
                     FrameMeta {
@@ -98,6 +99,8 @@ impl Document {
                 if frame >= n {
                     return Err(format!("no frame {} (frames={})", frame, n));
                 }
+                self.check_frame_growth(1)?;
+                self.check_cel_copies(|_, source| source == frame, 1)?;
                 let meta = self.meta.frames[frame].clone();
                 self.meta.frames.insert(frame + 1, meta);
                 self.shift_cel_frames(frame + 1, 1);
