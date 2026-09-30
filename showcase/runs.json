@@ -1,7 +1,7 @@
 {
-  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and the OpenAI models via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and gpt-5.6-sol-max runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call. For gpt-6-astra-xhigh, each fresh agent uses gpt-6-astra with xhigh reasoning. Its tool-call and doc_look counts are recorded by the CLI wrapper, including failed calls and excluding harness export and verification; per-agent tokens are unavailable and remain null.",
-  "server": "The first 40 retained runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which was used to verify the first 60 retained replays. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so the gpt-5.6-sol-max/slash replay had 5 fractional arguments rounded to integers and its GIF regenerated; the calls are otherwise the model's own. This changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task. The 10 gpt-6-astra-xhigh runs used the repository build at 2c1ec81c837b390f23f433c2502e5704bda7c23e (reported version 0.1.0, 25-tool surface), through isolated CLI dispatch with one store per task. All 80 replays were verified against that build.",
-  "verified": "Every GIF parsed from disk: all 80 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, within the requested colour limits and with transparency. CI replays all 80 committed JSONL files through the repository build and requires the exported GIFs to match byte-for-byte.",
+  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and the OpenAI models via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and gpt-5.6-sol-max runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call. For gpt-6-astra-xhigh, each fresh agent uses gpt-6-astra with xhigh reasoning. Its tool-call and doc_look counts are recorded by the CLI wrapper, including failed calls and excluding harness export and verification; per-agent tokens are unavailable and remain null. For gpt-6.1-sol-max, each fresh Codex session uses gpt-6.1-sol with max reasoning. The runner records every Atelier call, including failed calls and excluding harness verification. Interrupted sessions are resumed with their original stores and artwork. Tokens are cumulative input plus output from Codex session usage, including cached input; each run also records the separate token-usage fields. All session turns were checked for the requested model and effort.",
+  "server": "The first 40 retained runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which was used to verify the first 60 retained replays. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so the gpt-5.6-sol-max/slash replay had 5 fractional arguments rounded to integers and its GIF regenerated; the calls are otherwise the model's own. This changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task. The 10 gpt-6-astra-xhigh runs used the repository build at 2c1ec81c837b390f23f433c2502e5704bda7c23e (reported version 0.1.0, 25-tool surface), through isolated CLI dispatch with one store per task. All 80 replays were verified against that build. The 10 gpt-6.1-sol-max runs used the repository build at 225b07cda54688473df7c0310c59e1ee00ce4eb2 (reported version 0.1.0, 25-tool surface) through isolated CLI dispatch, one store per task, using codex-cli 0.159.2. All 90 replays were verified against that build.",
+  "verified": "Every GIF parsed from disk: all 90 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, within the requested colour limits and with transparency. CI replays all 90 committed JSONL files through the repository build and requires the exported GIFs to match byte-for-byte.",
   "tasks": [
     "alien",
     "ball",
@@ -34,7 +34,8 @@
     "gpt-5.6-sol-max",
     "opus-5",
     "fable-5.1",
-    "gpt-6-astra-xhigh"
+    "gpt-6-astra-xhigh",
+    "gpt-6.1-sol-max"
   ],
   "runs": [
     {
@@ -936,6 +937,216 @@
       "replay": "replays/gpt-6-astra-xhigh/torch.jsonl",
       "model_id": "gpt-6-astra",
       "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "alien",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/alien.gif",
+      "replay": "replays/gpt-6.1-sol-max/alien.jsonl",
+      "frames": 10,
+      "tool_calls": 123,
+      "looks": 6,
+      "tokens": 1315597,
+      "token_usage": {
+        "input_tokens": 1296252,
+        "cached_input_tokens": 1219456,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 19345,
+        "reasoning_output_tokens": 12138,
+        "total_tokens": 1315597
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "ball",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/ball.gif",
+      "replay": "replays/gpt-6.1-sol-max/ball.jsonl",
+      "frames": 10,
+      "tool_calls": 96,
+      "looks": 8,
+      "tokens": 1334243,
+      "token_usage": {
+        "input_tokens": 1318524,
+        "cached_input_tokens": 1248512,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 15719,
+        "reasoning_output_tokens": 8350,
+        "total_tokens": 1334243
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "beam",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/beam.gif",
+      "replay": "replays/gpt-6.1-sol-max/beam.jsonl",
+      "frames": 10,
+      "tool_calls": 172,
+      "looks": 11,
+      "tokens": 1644909,
+      "token_usage": {
+        "input_tokens": 1622441,
+        "cached_input_tokens": 1468800,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22468,
+        "reasoning_output_tokens": 14037,
+        "total_tokens": 1644909
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "car",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/car.gif",
+      "replay": "replays/gpt-6.1-sol-max/car.jsonl",
+      "frames": 10,
+      "tool_calls": 219,
+      "looks": 9,
+      "tokens": 1208583,
+      "token_usage": {
+        "input_tokens": 1184544,
+        "cached_input_tokens": 1003648,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 24039,
+        "reasoning_output_tokens": 13951,
+        "total_tokens": 1208583
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "cat",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/cat.gif",
+      "replay": "replays/gpt-6.1-sol-max/cat.jsonl",
+      "frames": 10,
+      "tool_calls": 207,
+      "looks": 8,
+      "tokens": 1192205,
+      "token_usage": {
+        "input_tokens": 1163271,
+        "cached_input_tokens": 1085184,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 28934,
+        "reasoning_output_tokens": 19226,
+        "total_tokens": 1192205
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "explosion",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/explosion.gif",
+      "replay": "replays/gpt-6.1-sol-max/explosion.jsonl",
+      "frames": 10,
+      "tool_calls": 161,
+      "looks": 15,
+      "tokens": 1404878,
+      "token_usage": {
+        "input_tokens": 1387129,
+        "cached_input_tokens": 1295616,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 17749,
+        "reasoning_output_tokens": 9746,
+        "total_tokens": 1404878
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "person",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/person.gif",
+      "replay": "replays/gpt-6.1-sol-max/person.jsonl",
+      "frames": 10,
+      "tool_calls": 211,
+      "looks": 14,
+      "tokens": 1332145,
+      "token_usage": {
+        "input_tokens": 1308223,
+        "cached_input_tokens": 1219584,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 23922,
+        "reasoning_output_tokens": 14020,
+        "total_tokens": 1332145
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "potion",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/potion.gif",
+      "replay": "replays/gpt-6.1-sol-max/potion.jsonl",
+      "frames": 10,
+      "tool_calls": 156,
+      "looks": 9,
+      "tokens": 2275883,
+      "token_usage": {
+        "input_tokens": 2250513,
+        "cached_input_tokens": 2177664,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 25370,
+        "reasoning_output_tokens": 14970,
+        "total_tokens": 2275883
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "slash",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/slash.gif",
+      "replay": "replays/gpt-6.1-sol-max/slash.jsonl",
+      "frames": 10,
+      "tool_calls": 78,
+      "looks": 14,
+      "tokens": 1325258,
+      "token_usage": {
+        "input_tokens": 1305909,
+        "cached_input_tokens": 1218048,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 19349,
+        "reasoning_output_tokens": 11652,
+        "total_tokens": 1325258
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
+    },
+    {
+      "task": "torch",
+      "model": "gpt-6.1-sol-max",
+      "vendor": "OpenAI",
+      "gif": "gifs/gpt-6.1-sol-max/torch.gif",
+      "replay": "replays/gpt-6.1-sol-max/torch.jsonl",
+      "frames": 10,
+      "tool_calls": 118,
+      "looks": 6,
+      "tokens": 1052574,
+      "token_usage": {
+        "input_tokens": 1033701,
+        "cached_input_tokens": 963456,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 18873,
+        "reasoning_output_tokens": 8689,
+        "total_tokens": 1052574
+      },
+      "model_id": "gpt-6.1-sol",
+      "reasoning_effort": "max"
     }
   ]
 }
