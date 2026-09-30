@@ -3,23 +3,15 @@
 .DS_Store
 *.swp
 .claude/
+.claude/settings.local.json
 .venv/
-resume.sh
-docs/ART-QUALITY-REVIEW.md
 .env
+.env.*
+!.env.example
+*.p8
 
-# recipe-output art lands at repo root on replay; never commit it (docs/ art is tracked)
+# Local exports are build outputs; source art lives in assets/ and showcase/.
 /*.gif
 /*.png
 
-# This workspace ships an executable, so Cargo.lock is committed. Release,
-# Docker, CI, and source-install builds use --locked.
-
-# Legacy local Pages outputs from pre-extraction checkouts. The canonical site
-# and benchmark corpus now live in marmikshah/atelier-site.
-/site/tools.html
-/site/showcase/runs.json
-
-# Legacy benchmark run artifacts (transcripts, isolated homes, exported art).
-benchmarks/runs/
 __pycache__/

@@ -1,5 +1,5 @@
 #!/bin/sh
 # Fast optional pre-commit hook. CI remains the authoritative full gate.
-# Enable once with: git config core.hooksPath .githooks .
+# Enable once with: git config core.hooksPath .githooks
 # Bypass in an emergency with --no-verify.
-exec make fmt-check
+exec cargo fmt --all -- --check

@@ -11,11 +11,10 @@
 
 <!-- List the commands run and any manual evidence. -->
 
-- [ ] `make check`
+- [ ] `tools/check.sh`
 - [ ] Tests cover behavior changes
 - [ ] User-facing changes are documented
-- [ ] Tool descriptions/docs were regenerated when applicable
-- [ ] `docs/tools.md` regenerated if the tool surface changed
+- [ ] Tool descriptions match the tool surface
 
 ## Related issue
 

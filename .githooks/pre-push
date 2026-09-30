@@ -1,7 +1,6 @@
 #!/bin/sh
-# Optional pre-push hook: static checks plus a direct-master guard. Full tests
-# and generated-doc verification remain authoritative in CI.
-# Enable once with: git config core.hooksPath .githooks .
+# Optional pre-push hook: repository checks plus a direct-master guard.
+# Enable once with: git config core.hooksPath .githooks
 # Bypass in an emergency with --no-verify.
 set -e
 while read -r _local_ref _local_sha remote_ref _remote_sha; do
@@ -10,4 +9,4 @@ while read -r _local_ref _local_sha remote_ref _remote_sha; do
     exit 1
   fi
 done
-make pre-commit-checks
+exec tools/check.sh
