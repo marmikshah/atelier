@@ -111,8 +111,22 @@ Docker, remote access, and troubleshooting are in **[docs/mcp.md](docs/mcp.md)**
 - **[docs/cli.md](docs/cli.md)** — the complete CLI, journals, stores, backups, skills
 - **[docs/mcp.md](docs/mcp.md)** — MCP daemon, auth, Docker, troubleshooting
 - **[docs/tools.md](docs/tools.md)** — the complete 25-tool reference
-- **[showcase/](showcase/)** — the same ten briefs drawn by eight models
+- **[showcase/](showcase/)** — the same ten briefs drawn by nine models
 - **[CHANGELOG.md](CHANGELOG.md)** — what changed, and when
+
+Run the ten showcase briefs with an authenticated Codex CLI:
+
+```sh
+cargo build --locked -p atelier
+python3 tools/run-showcase.py --model gpt-6.1-sol --effort max
+```
+
+Each fresh session uses an isolated store and the shipped sprite skill. Prompts,
+transcripts, recorded calls, replay recipes, GIFs, and token usage go into
+`target/showcase/gpt-6.1-sol-max/`. The runner checks that each replay reproduces
+its GIF byte-for-byte. `python3 tools/build-showcase.py` regenerates the comparison
+table from `showcase/runs.json`; `make showcase-check` verifies the full matrix.
+Use `--resume` to retain completed runs and continue interrupted sessions.
 
 ## A personal note
 

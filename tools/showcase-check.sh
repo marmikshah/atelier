@@ -11,6 +11,34 @@ if [[ ! -x $binary ]]; then
   exit 1
 fi
 
+expected_count=$(python3 - "$repo" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1]) / "showcase"
+data = json.loads((root / "runs.json").read_text())
+models, tasks = data["models"], data["tasks"]
+if not models or not tasks or len(set(models)) != len(models) or len(set(tasks)) != len(tasks):
+    sys.exit("replay-check: expected unique, non-empty models and tasks")
+expected = {(model, task) for model in models for task in tasks}
+runs = [(run["model"], run["task"]) for run in data["runs"]]
+if len(runs) != len(expected) or set(runs) != expected:
+    sys.exit("replay-check: runs.json does not contain exactly the declared model/task matrix")
+for run in data["runs"]:
+    stem = f'{run["model"]}/{run["task"]}'
+    if run["replay"] != f"replays/{stem}.jsonl" or run["gif"] != f"gifs/{stem}.gif":
+        sys.exit(f"replay-check: incorrect artifact paths for {stem}")
+for directory, extension in [("replays", "jsonl"), ("gifs", "gif")]:
+    paths = {str(path.relative_to(root / directory))
+             for path in (root / directory).rglob(f"*.{extension}")}
+    required = {f"{model}/{task}.{extension}" for model, task in expected}
+    if paths != required:
+        sys.exit(f"replay-check: {directory} differs from the declared model/task matrix")
+print(len(expected))
+PY
+)
+
 count=0
 while IFS= read -r recipe; do
   relative=${recipe#"$repo/showcase/replays/"}
@@ -55,8 +83,8 @@ while IFS= read -r recipe; do
   count=$((count + 1))
 done < <(find "$repo/showcase/replays" -type f -name '*.jsonl' -print | sort)
 
-if [[ $count -ne 80 ]]; then
-  echo "replay-check: verified $count replay files, expected 80" >&2
+if [[ $count -ne $expected_count ]]; then
+  echo "replay-check: verified $count replay files, expected $expected_count" >&2
   exit 1
 fi
 echo "replay-check: all $count replays match their committed GIFs"
