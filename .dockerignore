@@ -7,12 +7,14 @@ target
 .claude
 .venv
 benchmarks
-docs
 site
+showcase
 tools
 *.gif
 *.png
 *.tar.gz
 *.zip
 .env
+.env.*
+*.p8
 .DS_Store

@@ -1287,10 +1287,8 @@ mod tests {
     }
 
     #[test]
-    fn the_tool_surface_is_the_size_the_docs_claim() {
+    fn the_tool_registry_and_dispatch_have_the_same_surface() {
         let n = Atelier::tool_router().list_all().len();
-        // Written into README and tools.html (regen: make docs).
-        // Change the surface, update them in the same commit — this is the reminder.
         assert_eq!(
             n,
             ToolName::ALL.len(),

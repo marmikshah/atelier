@@ -259,7 +259,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
         // List the tools (generated from the live registry). Plain text by
-        // default; `--markdown` emits the reference `make docs` writes;
+        // default; `--markdown` emits the complete reference;
         // `--schema <name>` dumps one tool's input JSON schema.
         Some("tools") => {
             let rest = &args[2..];

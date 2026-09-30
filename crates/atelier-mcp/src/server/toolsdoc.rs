@@ -1,7 +1,6 @@
 //! Tool reference, generated from the live tool registry so it can never drift
 //! from the actual `#[tool]` descriptions. Emitted by the `atelier tools`
-//! subcommand and written to `docs/tools.md` by `make docs`. No hand-maintained
-//! tool list to keep in sync.
+//! subcommand. No hand-maintained tool list to keep in sync.
 
 use super::Atelier;
 
@@ -25,14 +24,13 @@ pub fn tools_text() -> String {
 
     format!(
         "atelier tools — {} tools\n\n{}\n\
-         Full reference: atelier tools --markdown  (or `make docs`)\n",
+         Full reference: atelier tools --markdown\n",
         tools.len(),
         list,
     )
 }
 
-/// Render the full tool surface as one Markdown document. Committed as
-/// `docs/tools.md` so the reference is browsable in the repository itself.
+/// Render the full tool surface as one Markdown document.
 pub fn tools_markdown() -> String {
     let mut tools = Atelier::registry_tools();
     tools.sort_by(|a, b| a.name.cmp(&b.name));
@@ -57,9 +55,7 @@ pub fn tools_markdown() -> String {
         "# atelier tool reference\n\n**{}** tools — every one advertised, no profiles to pick.\n\n",
         tools.len()
     );
-    let note = "Generated from the live registry by `atelier tools --markdown`; regenerate with `make docs`. Do not edit by hand.\n\n";
-
-    format!("{header}{note}{body}")
+    format!("{header}{body}")
 }
 
 /// First clause of a tool description for the terminal listing: cut at the first
