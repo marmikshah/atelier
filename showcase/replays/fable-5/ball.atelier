@@ -1,0 +1,98 @@
+atelier "sc-fable-ball" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#e04e46" "#ffa896" "#802238" "#1e1828"
+
+layer "shadow" {
+  frame 0 1 8 9 {
+    ellipse color="#1e1828" cx=16 cy=28 fill=#true rx=3 ry=1
+  }
+  frame 2 7 {
+    ellipse color="#1e1828" cx=16 cy=28 fill=#true rx=4 ry=1
+  }
+  frame 3 5 {
+    ellipse color="#1e1828" cx=16 cy=28 fill=#true rx=6 ry=1
+  }
+  frame 4 {
+    ellipse color="#1e1828" cx=16 cy=28 fill=#true rx=9 ry=1
+  }
+  frame 6 {
+    ellipse color="#1e1828" cx=16 cy=28 fill=#true rx=5 ry=1
+  }
+}
+
+layer "ball" {
+  frame 0 9 {
+    ellipse color="#802238" cx=16 cy=7 fill=#true rx=5 ry=5
+    ellipse color="#e04e46" cx=15 cy=6 fill=#true rx=4 ry=4
+    ellipse color="#ffa896" cx=14 cy=5 fill=#true rx=1 ry=1
+    pencil color="#00000000" {
+      points {
+        point 13 2
+        point 12 3
+        point 11 4
+      }
+    }
+  }
+  frame 1 {
+    ellipse color="#802238" cx=16 cy=10 fill=#true rx=5 ry=5
+    ellipse color="#e04e46" cx=15 cy=9 fill=#true rx=4 ry=4
+    ellipse color="#ffa896" cx=14 cy=8 fill=#true rx=1 ry=1
+    pencil color="#00000000" {
+      points {
+        point 13 5
+        point 12 6
+        point 11 7
+      }
+    }
+  }
+  frame 2 {
+    ellipse color="#802238" cx=16 cy=15 fill=#true rx=4 ry=6
+    ellipse color="#e04e46" cx=15 cy=14 fill=#true rx=3 ry=5
+    ellipse color="#ffa896" cx=14 cy=12 fill=#true rx=1 ry=1
+  }
+  frame 3 {
+    ellipse color="#802238" cx=16 cy=21 fill=#true rx=4 ry=6
+    ellipse color="#e04e46" cx=15 cy=20 fill=#true rx=3 ry=5
+    ellipse color="#ffa896" cx=14 cy=18 fill=#true rx=1 ry=1
+  }
+  frame 4 {
+    ellipse color="#802238" cx=16 cy=25 fill=#true rx=7 ry=3
+    ellipse color="#e04e46" cx=15 cy=24 fill=#true rx=6 ry=2
+    ellipse color="#ffa896" cx=12 cy=23 fill=#true rx=1 ry=1
+  }
+  frame 5 {
+    ellipse color="#802238" cx=16 cy=21 fill=#true rx=4 ry=7
+    ellipse color="#e04e46" cx=15 cy=20 fill=#true rx=3 ry=6
+    ellipse color="#ffa896" cx=14 cy=17 fill=#true rx=1 ry=1
+  }
+  frame 6 {
+    ellipse color="#802238" cx=16 cy=16 fill=#true rx=4 ry=6
+    ellipse color="#e04e46" cx=15 cy=15 fill=#true rx=3 ry=5
+    ellipse color="#ffa896" cx=14 cy=13 fill=#true rx=1 ry=1
+  }
+  frame 7 {
+    ellipse color="#802238" cx=16 cy=11 fill=#true rx=5 ry=5
+    ellipse color="#e04e46" cx=15 cy=10 fill=#true rx=4 ry=4
+    ellipse color="#ffa896" cx=14 cy=9 fill=#true rx=1 ry=1
+    pencil color="#00000000" {
+      points {
+        point 13 6
+        point 12 7
+        point 11 8
+      }
+    }
+  }
+  frame 8 {
+    ellipse color="#802238" cx=16 cy=8 fill=#true rx=5 ry=5
+    ellipse color="#e04e46" cx=15 cy=7 fill=#true rx=4 ry=4
+    ellipse color="#ffa896" cx=14 cy=6 fill=#true rx=1 ry=1
+    pencil color="#00000000" {
+      points {
+        point 13 3
+        point 12 4
+        point 11 5
+      }
+    }
+  }
+}

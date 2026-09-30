@@ -12,7 +12,7 @@ tools, one agent per task, with no human touching the pixels.
 Each GIF is reproducible from the replay beside it:
 
 ```sh
-atelier replay showcase/replays/<model>/<task>/recipe.toml --home /tmp/demo
+atelier replay showcase/replays/<model>/<task>.atelier --home /tmp/demo
 ```
 
 ## alien

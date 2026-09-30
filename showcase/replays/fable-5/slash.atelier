@@ -1,0 +1,240 @@
+atelier "sc-fable-slash" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#ffffff" "#c8f0ff" "#ffe080" "#ff9830" "#d84820" "#7a2430"
+tag "slash" direction="forward" from=0 to=9
+
+layer "arc" {
+  frame 0 {
+    polyline color="#ff9830" size=2 {
+      points {
+        point 6 2
+        point 6 5
+        point 7 8
+      }
+    }
+    polyline color="#ffe080" size=1 {
+      points {
+        point 6 4
+        point 7 7
+      }
+    }
+  }
+  frame 1 {
+    pixels x=5 y=1 {
+      legend {
+        color "1" "#ff9830"
+        color "2" "#d84820"
+        color "3" "#ffe080"
+        color "4" "#ffffff"
+      }
+      grid """
+        111
+        121
+        321
+        331
+        333
+        1331
+        1331
+        .331
+        .3331
+        .1331
+        ..343
+        ..1431
+        ..1341
+        ...141
+        ...111
+        """
+    }
+  }
+  frame 2 {
+    pixels x=4 y=3 {
+      legend {
+        color "1" "#ff9830"
+        color "2" "#d84820"
+        color "3" "#ffe080"
+        color "4" "#ffffff"
+      }
+      grid """
+        1111
+        1121
+        11211
+        11211
+        11211
+        .13311
+        .13311
+        .13331
+        ..13311
+        ..13331
+        ..113311
+        ...133311
+        ...1134411
+        ....1144411
+        .....114441
+        ......11441
+        .......1111
+        """
+    }
+  }
+  frame 3 {
+    pixels x=6 y=9 {
+      legend {
+        color "1" "#ff9830"
+        color "2" "#d84820"
+        color "3" "#ffe080"
+        color "4" "#ffffff"
+      }
+      grid """
+        1111
+        11112
+        11211
+        112332
+        1132332
+        21323312
+        .11333312
+        .213333312
+        ..2133333112
+        ...2133333112
+        .....13333331
+        ......133333331
+        ........333444331
+        .........13444441
+        ..........1134441
+        ............11111
+        """
+    }
+  }
+  frame 4 {
+    pixels x=12 y=17 {
+      legend {
+        color "1" "#ff9830"
+        color "2" "#d84820"
+        color "3" "#ffe080"
+      }
+      grid """
+        1112
+        121112
+        1122312
+        21133332
+        ..21333332
+        ...211333333
+        .....111333333
+        .......1111333
+        ..........1111
+        """
+    }
+  }
+  frame 5 {
+    pixels x=16 y=21 {
+      legend {
+        color "1" "#d84820"
+        color "2" "#ff9830"
+        color "3" "#ffe080"
+      }
+      grid """
+        1222
+        .112222
+        ...222332
+        ......2233
+        """
+    }
+  }
+  frame 6 {
+    pixels x=20 y=22 {
+      legend {
+        color "1" "#d84820"
+        color "2" "#ff9830"
+      }
+      grid """
+        111
+        11111111
+        ..122221
+        """
+    }
+  }
+  frame 7 {
+    pixels x=22 y=23 {
+      legend {
+        color "1" "#d84820"
+        color "2" "#7a2430"
+      }
+      grid """
+        ...1
+        22..22
+        """
+    }
+  }
+  frame 8 {
+    pencil color="#7a2430" size=1 {
+      points {
+        point 24 24
+        point 27 23
+      }
+    }
+  }
+}
+
+layer "flash" {
+  frame 4 {
+    pixels x=21 y=19 {
+      legend {
+        color "1" "#c8f0ff"
+        color "2" "#ffe080"
+        color "3" "#ffffff"
+      }
+      grid """
+        .....1
+        ....111
+        ...12221
+        ...23332
+        ..2333332
+        11233333211
+        ..2333332
+        ...23332
+        ....222
+        .....1
+        .....1
+        """
+    }
+  }
+  frame 5 {
+    ellipse color="#ffffff" cx=26 cy=24 fill=#true rx=1 ry=1
+    pencil color="#c8f0ff" size=1 {
+      points {
+        point 26 21
+        point 29 24
+        point 26 27
+        point 23 24
+      }
+    }
+  }
+}
+
+layer "sparks" {
+  frame 6 {
+    pencil color="#c8f0ff" size=1 {
+      points {
+        point 25 20
+        point 29 22
+        point 22 26
+      }
+    }
+    pencil color="#7a2430" size=1 {
+      points {
+        point 19 23
+      }
+    }
+  }
+  frame 7 {
+    pencil color="#c8f0ff" size=1 {
+      points {
+        point 28 20
+      }
+    }
+    pencil color="#7a2430" size=1 {
+      points {
+        point 20 25
+      }
+    }
+  }
+}

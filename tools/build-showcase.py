@@ -32,7 +32,7 @@ def main() -> None:
     out.append("Each GIF is reproducible from the replay beside it:")
     out.append("")
     out.append("```sh")
-    out.append("atelier replay showcase/replays/<model>/<task>/recipe.toml --home /tmp/demo")
+    out.append("atelier replay showcase/replays/<model>/<task>.atelier --home /tmp/demo")
     out.append("```")
     out.append("")
 

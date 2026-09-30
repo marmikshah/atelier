@@ -1,0 +1,207 @@
+atelier "sc-fable-car" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#181820" "#c83c3c" "#821e2d" "#96d2eb" "#bebec8" "#eeeef2"
+tag "drive" direction="forward" from=0 to=9
+
+layer "body" {
+  frame 0 1 4 5 6 9 {
+    pixels x=2 y=13 {
+      legend {
+        color "1" "#821e2d"
+        color "2" "#c83c3c"
+        color "3" "#96d2eb"
+        color "4" "#eeeef2"
+        color "5" "#bebec8"
+      }
+      grid """
+        ........11111111111
+        .......2222222222222
+        .......2233333233332
+        .......2233333233332
+        .......2233333233332
+        .12222222222221222222222222
+        .12222222222221222222222224
+        .12222222222221222222222224
+        .12222222222221222222222225
+        .51111111111111111111111115
+        55111111111111111111111111
+        """
+    }
+  }
+  frame 2 3 7 8 {
+    pixels x=2 y=12 {
+      legend {
+        color "1" "#821e2d"
+        color "2" "#c83c3c"
+        color "3" "#96d2eb"
+        color "4" "#eeeef2"
+        color "5" "#bebec8"
+      }
+      grid """
+        ........11111111111
+        .......2222222222222
+        .......2233333233332
+        .......2233333233332
+        .......2233333233332
+        .12222222222221222222222222
+        .12222222222221222222222224
+        .12222222222221222222222224
+        .12222222222221222222222225
+        .51111111111111111111111115
+        55111111111111111111111111
+        """
+    }
+  }
+}
+
+layer "wheels" {
+  frame 0 5 {
+    ellipse color="#181820" cx=9 cy=25 fill=#true rx=3 ry=3
+    ellipse color="#181820" cx=23 cy=25 fill=#true rx=3 ry=3
+    pencil color="#bebec8" {
+      points {
+        point 9 25
+        point 23 25
+      }
+    }
+    pencil color="#bebec8" {
+      points {
+        point 11 25
+        point 25 25
+      }
+    }
+  }
+  frame 1 6 {
+    ellipse color="#181820" cx=9 cy=25 fill=#true rx=3 ry=3
+    ellipse color="#181820" cx=23 cy=25 fill=#true rx=3 ry=3
+    pencil color="#bebec8" {
+      points {
+        point 9 25
+        point 23 25
+      }
+    }
+    pencil color="#bebec8" {
+      points {
+        point 10 27
+        point 24 27
+      }
+    }
+  }
+  frame 2 7 {
+    ellipse color="#181820" cx=9 cy=25 fill=#true rx=3 ry=3
+    ellipse color="#181820" cx=23 cy=25 fill=#true rx=3 ry=3
+    pencil color="#bebec8" {
+      points {
+        point 9 25
+        point 23 25
+      }
+    }
+    pencil color="#bebec8" {
+      points {
+        point 7 26
+        point 21 26
+      }
+    }
+  }
+  frame 3 8 {
+    ellipse color="#181820" cx=9 cy=25 fill=#true rx=3 ry=3
+    ellipse color="#181820" cx=23 cy=25 fill=#true rx=3 ry=3
+    pencil color="#bebec8" {
+      points {
+        point 9 25
+        point 23 25
+      }
+    }
+    pencil color="#bebec8" {
+      points {
+        point 7 24
+        point 21 24
+      }
+    }
+  }
+  frame 4 9 {
+    ellipse color="#181820" cx=9 cy=25 fill=#true rx=3 ry=3
+    ellipse color="#181820" cx=23 cy=25 fill=#true rx=3 ry=3
+    pencil color="#bebec8" {
+      points {
+        point 9 25
+        point 23 25
+      }
+    }
+    pencil color="#bebec8" {
+      points {
+        point 10 23
+        point 24 23
+      }
+    }
+  }
+}
+
+layer "exhaust" {
+  frame 0 5 {
+    pixels x=1 y=22 {
+      legend {
+        color "1" "#eeeef2"
+      }
+      grid """
+        1
+        1
+        """
+    }
+  }
+  frame 1 6 {
+    pixels x=0 y=20 {
+      legend {
+        color "1" "#eeeef2"
+      }
+      grid """
+        11
+        11
+        """
+    }
+  }
+  frame 2 7 {
+    pencil color="#eeeef2" {
+      points {
+        point 0 18
+        point 1 19
+      }
+    }
+  }
+  frame 3 8 {
+    pencil color="#eeeef2" {
+      points {
+        point 0 17
+      }
+    }
+  }
+}
+
+layer "speedlines" {
+  frame 0 5 {
+    line color="#bebec8" x0=26 x1=31 y0=5 y1=5
+    line color="#bebec8" x0=12 x1=17 y0=10 y1=10
+    line color="#bebec8" x0=0 x1=3 y0=30 y1=30
+  }
+  frame 1 6 {
+    line color="#bebec8" x0=19 x1=24 y0=5 y1=5
+    line color="#bebec8" x0=5 x1=10 y0=10 y1=10
+    line color="#bebec8" x0=26 x1=31 y0=30 y1=30
+  }
+  frame 2 7 {
+    line color="#bebec8" x0=12 x1=17 y0=5 y1=5
+    line color="#bebec8" x0=0 x1=3 y0=10 y1=10
+    line color="#bebec8" x0=19 x1=24 y0=30 y1=30
+  }
+  frame 3 8 {
+    line color="#bebec8" x0=5 x1=10 y0=5 y1=5
+    line color="#bebec8" x0=26 x1=31 y0=10 y1=10
+    line color="#bebec8" x0=12 x1=17 y0=30 y1=30
+  }
+  frame 4 9 {
+    line color="#bebec8" x0=0 x1=3 y0=5 y1=5
+    line color="#bebec8" x0=19 x1=24 y0=10 y1=10
+    line color="#bebec8" x0=5 x1=10 y0=30 y1=30
+  }
+}

@@ -1,0 +1,215 @@
+atelier "sc-sonnet-torch" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#282320" "#5f442d" "#cd3c14" "#fa961e" "#ffde82"
+tag "flicker" direction="forward" from=0 to=9
+
+layer "bracket" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    rect color="#282320" fill=#true x0=1 x1=4 y0=16 y1=29
+    line color="#5f442d" x0=1 x1=1 y0=16 y1=29
+    pencil color="#5f442d" size=1 {
+      points {
+        point 2 19
+        point 2 26
+      }
+    }
+    rect color="#282320" fill=#true x0=4 x1=13 y0=21 y1=22
+    line color="#5f442d" x0=4 x1=13 y0=21 y1=21
+    rect color="#282320" fill=#false x0=12 x1=18 y0=23 y1=26
+    line color="#5f442d" x0=12 x1=12 y0=23 y1=26
+    rect color="#5f442d" fill=#true x0=14 x1=16 y0=10 y1=25
+    line color="#282320" x0=14 x1=14 y0=10 y1=25
+    line color="#282320" x0=16 x1=16 y0=10 y1=25
+  }
+}
+
+layer "pulse" {
+  frame 0 3 6 9 {
+    pixels x=13 y=23 {
+      legend {
+        color "1" "#fa961e"
+      }
+      grid """
+        1...1
+        """
+    }
+  }
+  frame 1 2 7 8 {
+    pixels x=13 y=23 {
+      legend {
+        color "1" "#ffde82"
+      }
+      grid """
+        1...1
+        """
+    }
+  }
+}
+
+layer "flame" {
+  frame 0 6 {
+    pixels x=12 y=3 {
+      legend {
+        color "1" "#cd3c14"
+        color "2" "#fa961e"
+        color "3" "#ffde82"
+      }
+      grid """
+        ...1
+        ..121
+        .12221
+        1223221
+        12333221
+        12333321
+        12333321
+        12333321
+        12333321
+        """
+    }
+  }
+  frame 1 8 {
+    pixels x=12 y=1 {
+      legend {
+        color "1" "#cd3c14"
+        color "2" "#fa961e"
+        color "3" "#ffde82"
+      }
+      grid """
+        .....1
+        ....121
+        ...12221
+        ..122322
+        .1233331
+        12333321
+        12333321
+        12333321
+        12333321
+        12333321
+        12333321
+        """
+    }
+  }
+  frame 2 7 {
+    pixels x=12 y=4 {
+      legend {
+        color "1" "#cd3c14"
+        color "2" "#fa961e"
+        color "3" "#ffde82"
+      }
+      grid """
+        ....1
+        ...121
+        ..12221
+        .1223221
+        12233321
+        12333321
+        12333321
+        12333321
+        """
+    }
+  }
+  frame 3 9 {
+    pixels x=12 y=3 {
+      legend {
+        color "1" "#cd3c14"
+        color "2" "#fa961e"
+        color "3" "#ffde82"
+      }
+      grid """
+        ....1
+        ...121
+        ..12221
+        .1223221
+        12233321
+        12333321
+        12333321
+        12333321
+        12333321
+        """
+    }
+  }
+  frame 4 {
+    pixels x=12 y=5 {
+      legend {
+        color "1" "#cd3c14"
+        color "2" "#fa961e"
+        color "3" "#ffde82"
+      }
+      grid """
+        .1
+        1211
+        222221
+        13322221
+        12333321
+        12333321
+        12333321
+        """
+    }
+  }
+  frame 5 {
+    pixels x=12 y=1 {
+      legend {
+        color "1" "#cd3c14"
+        color "2" "#fa961e"
+        color "3" "#ffde82"
+      }
+      grid """
+        .1
+        121
+        22221
+        2332221
+        12333321
+        12333321
+        12333321
+        12333321
+        12333321
+        12333321
+        12333321
+        """
+    }
+  }
+}
+
+layer "embers" {
+  frame 0 5 {
+    pencil color="#ffde82" size=1 {
+      points {
+        point 12 9
+      }
+    }
+  }
+  frame 1 6 {
+    pencil color="#ffde82" size=1 {
+      points {
+        point 11 6
+      }
+    }
+  }
+  frame 2 7 {
+    pencil color="#fa961e" size=1 {
+      points {
+        point 11 3
+      }
+    }
+    pencil color="#ffde82" size=1 {
+      points {
+        point 19 9
+      }
+    }
+  }
+  frame 3 8 {
+    pencil color="#ffde82" size=1 {
+      points {
+        point 20 6
+      }
+    }
+  }
+  frame 4 9 {
+    pencil color="#fa961e" size=1 {
+      points {
+        point 20 3
+      }
+    }
+  }
+}

@@ -1,110 +1,124 @@
-# Replay recipes
+# Editable replay files
 
-A recipe describes the current artwork, grouped by layer and frame. Normal CLI
-and MCP edits maintain `documents/<id>/recipe/recipe.toml` automatically. This
-replaces the append-only JSONL log; there is no separate authoring workflow.
+Atelier uses `.atelier` source files. A file describes the current canvas,
+layers and frames, with an ordered construction inside each frame. CLI and MCP
+mutations maintain `documents/<id>/recipe/recipe.atelier` atomically. JSONL is
+accepted only by the one-time migration command; normal editing and replay
+never produce or execute a JSONL log.
 
-## Why this structure
+The source is a small KDL-style domain language. It supports quoted strings,
+decimal integers and finite floating-point numbers, `#true`/`#false`, child
+blocks, `//` comments and nested `/* ... */` comments. Nodes end at a newline
+or semicolon. Strings use `\n`, `\t`, `\r`, `\"`, `\\` and `\u{...}` escapes.
+Full KDL annotations, raw strings and extensions are outside this grammar.
+Parsing and schema checking report source locations, reject unknown names and
+duplicates, and bound nesting, pixel counts and rendering work.
 
-Metadata calls replace document, layer or frame settings. Pixel and region edits
-replace the affected cel's pixels. Drawing and effect calls retain their existing
-operation parameters when that representation is smaller and pixel exact;
-otherwise the result becomes pixel data. A full overwrite can remove the earlier
-construction. Read-only calls and export paths do not enter the recipe.
+## A complete source
 
-Small cels use multiline grids. Large or high-colour pixel data uses cropped,
-lossless PNG resources, keeping raster bytes out of text and model context.
-Identical cels within one layer share a frame list. Editing one frame separates
-it automatically. Layers stay named, ordered, and independent.
+```kdl
+atelier "Lantern" format=1 renderer=1
+canvas 16 32
+frames 100 100
 
-This is exact reduction of stored artwork, not artistic inference: it does not
-guess a generator for painted texture or link unrelated shapes. Retained draw
-operations use Atelier's existing renderer. PNG encoding does not quantise
-colours; invisible RGB, logical cel dimensions and off-canvas pixels survive.
-
-## A complete recipe
-
-```toml
-format = 1
-renderer = 1
-name = "Lantern flame"
-canvas = [7, 7]
-frames = [100, 120]
-
-[[layers]]
-name = "Flame"
-
-[[layers.cels]]
-frames = [0, 1]
-origin = [2, 1]
-legend = { f = "#f27d3a", h = "#ffecbd" }
-grid = '''
-.f.
-fhf
-fhf
-.f.
-'''
+layer "Brass body" {
+  frame 0 1 {
+    pixels x=5 y=3 {
+      legend {
+        color "b" "#69442d"
+        color "g" "#dba85b"
+      }
+      grid """
+        .bbb
+        bgggb
+        bgggb
+        .bbb
+        """
+    }
+  }
+}
+layer "Flame" {
+  frame 0 {
+    pencil color="#ffb84d" {
+      points { point 8 6; point 8 7; }
+    }
+  }
+  frame 1 {
+    pencil color="#ffd56b" {
+      points { point 8 5; point 8 6; }
+    }
+  }
+}
 ```
 
-`frames` at the document level gives durations in milliseconds; inside a cel it
-lists zero-based frame indices. The example stores one image used in two frames.
-Replay creates independent editable cels from that shared description.
+Layers keep their order. `frame 0 1` shares the construction between those
+frames; editing one detaches it. `size W H` preserves a cel's logical bounds,
+and `at X Y` places that cel on the canvas. Omitted size and position mean the
+canvas dimensions and `(0, 0)`. Settings precede layers. Layer properties are
+`opacity=0..255`, `visible=#false`, and `blend="multiply"` or another renderer
+blend name. `tag "idle" from=0 to=1 direction="forward"` defines an animation
+range. `palette "#..." ...` records document colours; a palette node inside a
+frame fixes the colours used by subsequent operations.
 
-Document settings include `palette` (RGB/RGBA hex colours), `tags` (the existing
-name/from/to/direction fields), and an optional relative PNG `reference`.
-Layer settings are `name`, `opacity` (0–255), `visible`, and `blend`, which default
-to fully visible, opaque, normal blending.
+## Pixels and drawing commands
 
-Cel fields:
+Small sprites use cropped grids. Rows can omit trailing dots; `.` and spaces
+leave existing pixels alone. To erase a pixel, name an explicit `#00000000`
+colour in the legend. Colours preserve RGBA exactly, including invisible RGB.
 
-| Field | Meaning |
-| --- | --- |
-| `frames` | Frame indices; defaults to `[0]` |
-| `size` | Logical pixel dimensions; defaults to the document canvas |
-| `at` | Signed placement of that logical cel on the canvas; defaults to `[0, 0]` |
-| `origin` | Position of cropped grid/PNG pixels inside the logical cel |
-| `grid`, `legend` | Equal-width rows and symbol-to-hex colour mappings; `.` clears |
-| `image` | Relative lossless PNG path, used instead of a grid |
-| `draw` | Ordered existing drawing/effect operations applied after starting pixels |
-| `palette` | Optional drawing palette, preserving indexed operation colours |
+Large repeated regions can use colour counts instead of spelling every pixel:
 
-For example, a gradient remains a concise operation:
-
-```toml
-[[layers.cels]]
-frames = [2]
-draw = [
-  { op = "gradient", x0 = 0, y0 = 0, x1 = 63, y1 = 63, stops = [{ pos = 0, color = [21, 18, 39] }, { pos = 1, color = [230, 148, 63] }] },
-]
+```kdl
+row "b" 128 "g" 2 "b" 126 repeat=8
 ```
 
-This fragment requires frame 2 and a suitable canvas in its containing recipe.
-Operations use the same parameters as `doc_draw` and `doc_fx`, without document,
-layer, frame or revision arguments. Seeds above TOML's signed integer range are
-quoted decimal strings and are restored to the renderer's full unsigned range.
+Rows advance downward from the pixel block's origin. Sparse regions instead
+record only occupied strips, positioned relative to that origin:
 
-## Replay and migrate
+```kdl
+span 5 0 "bbb"
+span 4 1 "bgggb" rows=2
+```
+
+A `pixels` block can contain grids, rows and spans. Blank surroundings need no
+entries. All three forms use the same legend and write exact pixels directly;
+counts and coordinates are checked before decoding.
+
+Drawing and effect nodes reuse the existing operation names and strict parameter
+schemas in [tools.md](tools.md). Scalar parameters are properties. Arrays use
+child nodes: `points { point X Y; ... }`, or `stops { stop pos=0 color="#..."; ... }`.
+Drawing colours are RGB/RGBA hex; numeric seeds support the full unsigned 64-bit
+range. Operations execute in source order with their authoring palette.
+
+An edit over a gradient keeps the gradient and adds the edit. Corrections can
+replace an overwritten operation after verifying exact rendering. Unchanged
+comments and formatting survive tool edits. A raster import chooses a grid for
+at most 1,024 occupied bounding-box cells, occupied strips for larger regions
+with more than 25% blanks, and colour rows otherwise. Later edits retain that
+pixel form. Nothing automatically turns into a PNG.
+
+## Replay and migration
 
 ```sh
-atelier replay art/lantern                    # bundle containing recipe.toml
-atelier replay art/lantern/recipe.toml         # or an explicit file
-atelier replay <doc-id>                       # current stored recipe
-atelier migrate <doc-id> art/lantern          # export a working document
-atelier migrate old.jsonl art/lantern         # legacy import
+atelier replay art/lantern.atelier --home target/art-review
+atelier replay <doc-id>
+atelier migrate old.jsonl art/lantern.atelier
+atelier migrate <doc-id> art/lantern.atelier
+atelier migrate --store --home .atelier
 python3 tools/migrate-recipes.py old-recipes --out target/migrated-art
+python3 tools/migrate-recipes.py .atelier --replace
 ```
 
-The batch script accepts files or directories, groups only identical legacy
-command streams, and writes `migration.json` mapping every original path to its
-new recipe. It stops on failure and keeps the partial report. Originals are never
-overwritten; retry into a new directory. Changing a game's asset references is
-an explicit next step using that mapping.
+Migration replays the legacy calls in an isolated store, then checks exact RGBA,
+cel bounds, offsets and metadata against the new source. `--out` preserves the
+originals and filenames and writes a verification report. `--replace` deletes
+external JSONL inputs only after the collection verifies. Store migration keeps
+existing document ids and revisions and installs each source atomically; retained
+checkpoint recipes migrate too, preserving their labels and pixels. A destination already present is never overwritten.
 
-Migration compares complete metadata, logical cel bounds, placement and exact
-RGBA pixels. Normal edits use the same check before publication. Checkpoints
-and portable archives include the complete recipe bundle.
-
-The parser refuses unknown fields, duplicate frame assignments, traversal and
-symlink resources. Text is limited to 16 MiB, decoded/logical pixels to the
-existing 64-megapixel document budget, and total rendering work is bounded.
-The versioned `format` and `renderer` fields make interpretation explicit.
+Sources with a reference image export to a directory containing
+`recipe.atelier` and the explicit reference PNG. Artwork pixels stay in source
+text. Reference paths must remain inside the directory; links and traversal
+are rejected. The working store also maintains raster files for the editor's
+existing bounded readers and exports. These are materialized pixels, not replay
+source. Checkpoints and portable archives include the matching construction.

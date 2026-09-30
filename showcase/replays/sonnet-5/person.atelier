@@ -1,0 +1,188 @@
+atelier "sc-sonnet-person" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#241814" "#e8b48c" "#6b4226" "#3f7d5c" "#3a4a6e" "#b4823c"
+tag "jump" direction="forward" from=0 to=9
+
+layer "legs" {
+  frame 0 {
+    rect color="#3a4a6e" fill=#true x0=13 x1=15 y0=20 y1=25
+    rect color="#3a4a6e" fill=#true x0=17 x1=19 y0=20 y1=25
+    rect color="#b4823c" fill=#true x0=12 x1=15 y0=26 y1=27
+    rect color="#b4823c" fill=#true x0=17 x1=20 y0=26 y1=27
+  }
+  frame 1 9 {
+    rect color="#3a4a6e" fill=#true x0=11 x1=14 y0=21 y1=25
+    rect color="#3a4a6e" fill=#true x0=18 x1=21 y0=21 y1=25
+    rect color="#b4823c" fill=#true x0=10 x1=14 y0=26 y1=27
+    rect color="#b4823c" fill=#true x0=18 x1=22 y0=26 y1=27
+  }
+  frame 2 8 {
+    rect color="#3a4a6e" fill=#true x0=9 x1=13 y0=22 y1=25
+    rect color="#3a4a6e" fill=#true x0=19 x1=23 y0=22 y1=25
+    rect color="#b4823c" fill=#true x0=8 x1=13 y0=26 y1=27
+    rect color="#b4823c" fill=#true x0=19 x1=24 y0=26 y1=27
+  }
+  frame 3 {
+    rect color="#3a4a6e" fill=#true x0=13 x1=15 y0=14 y1=24
+    rect color="#3a4a6e" fill=#true x0=17 x1=19 y0=14 y1=24
+    rect color="#b4823c" fill=#true x0=13 x1=16 y0=25 y1=26
+    rect color="#b4823c" fill=#true x0=16 x1=19 y0=25 y1=26
+  }
+  frame 4 {
+    rect color="#3a4a6e" fill=#true x0=11 x1=14 y0=13 y1=17
+    rect color="#3a4a6e" fill=#true x0=18 x1=21 y0=13 y1=17
+    rect color="#b4823c" fill=#true x0=12 x1=15 y0=18 y1=19
+    rect color="#b4823c" fill=#true x0=17 x1=20 y0=18 y1=19
+  }
+  frame 5 {
+    rect color="#3a4a6e" fill=#true x0=10 x1=13 y0=14 y1=17
+    rect color="#3a4a6e" fill=#true x0=18 x1=21 y0=14 y1=17
+    rect color="#b4823c" fill=#true x0=12 x1=15 y0=18 y1=19
+    rect color="#b4823c" fill=#true x0=16 x1=19 y0=18 y1=19
+  }
+  frame 6 {
+    pixels x=12 y=13 {
+      legend {
+        color "1" "#3a4a6e"
+        color "2" "#b4823c"
+      }
+      grid """
+        1111.1111
+        1111.1111
+        1111.1111
+        1111.1111
+        .111.111
+        .111.111
+        .111.111
+        .111.111
+        .2222222
+        .2222222
+        """
+    }
+  }
+  frame 7 {
+    rect color="#3a4a6e" fill=#true x0=13 x1=15 y0=16 y1=23
+    rect color="#3a4a6e" fill=#true x0=17 x1=19 y0=16 y1=23
+    rect color="#b4823c" fill=#true x0=12 x1=16 y0=24 y1=25
+    rect color="#b4823c" fill=#true x0=16 x1=20 y0=24 y1=25
+  }
+}
+
+layer "torso_head" {
+  frame 0 {
+    rect color="#6b4226" fill=#true x0=12 x1=19 y0=5 y1=7
+    rect color="#e8b48c" fill=#true x0=12 x1=19 y0=8 y1=11
+    pencil color="#241814" {
+      points {
+        point 14 9
+        point 17 9
+      }
+    }
+    rect color="#3f7d5c" fill=#true x0=11 x1=20 y0=12 y1=19
+    line color="#b4823c" x0=11 x1=20 y0=18 y1=18
+  }
+  frame 1 9 {
+    rect color="#6b4226" fill=#true x0=12 x1=19 y0=8 y1=10
+    rect color="#e8b48c" fill=#true x0=12 x1=19 y0=11 y1=13
+    pencil color="#241814" {
+      points {
+        point 14 12
+        point 17 12
+      }
+    }
+    rect color="#3f7d5c" fill=#true x0=10 x1=21 y0=14 y1=19
+    line color="#b4823c" x0=10 x1=21 y0=18 y1=18
+  }
+  frame 2 8 {
+    rect color="#6b4226" fill=#true x0=12 x1=19 y0=11 y1=13
+    rect color="#e8b48c" fill=#true x0=12 x1=19 y0=14 y1=16
+    pencil color="#241814" {
+      points {
+        point 14 15
+        point 17 15
+      }
+    }
+    rect color="#3f7d5c" fill=#true x0=9 x1=22 y0=17 y1=21
+    line color="#b4823c" x0=9 x1=22 y0=20 y1=20
+  }
+  frame 3 5 {
+    rect color="#6b4226" fill=#true x0=12 x1=19 y0=2 y1=4
+    rect color="#e8b48c" fill=#true x0=12 x1=19 y0=5 y1=7
+    pencil color="#241814" {
+      points {
+        point 14 6
+        point 17 6
+      }
+    }
+    rect color="#3f7d5c" fill=#true x0=12 x1=19 y0=8 y1=13
+    line color="#b4823c" x0=12 x1=19 y0=12 y1=12
+  }
+  frame 4 6 {
+    rect color="#6b4226" fill=#true x0=12 x1=19 y0=1 y1=3
+    rect color="#e8b48c" fill=#true x0=12 x1=19 y0=4 y1=6
+    pencil color="#241814" {
+      points {
+        point 14 5
+        point 17 5
+      }
+    }
+    rect color="#3f7d5c" fill=#true x0=12 x1=19 y0=7 y1=12
+    line color="#b4823c" x0=12 x1=19 y0=11 y1=11
+  }
+  frame 7 {
+    rect color="#6b4226" fill=#true x0=12 x1=19 y0=4 y1=6
+    rect color="#e8b48c" fill=#true x0=12 x1=19 y0=7 y1=9
+    pencil color="#241814" {
+      points {
+        point 14 8
+        point 17 8
+      }
+    }
+    rect color="#3f7d5c" fill=#true x0=12 x1=19 y0=10 y1=15
+    line color="#b4823c" x0=12 x1=19 y0=14 y1=14
+  }
+}
+
+layer "arms" {
+  frame 0 {
+    rect color="#e8b48c" fill=#true x0=9 x1=10 y0=13 y1=18
+    rect color="#e8b48c" fill=#true x0=21 x1=22 y0=13 y1=18
+  }
+  frame 1 {
+    rect color="#e8b48c" fill=#true x0=8 x1=9 y0=14 y1=18
+    rect color="#e8b48c" fill=#true x0=22 x1=23 y0=14 y1=18
+  }
+  frame 2 {
+    rect color="#e8b48c" fill=#true x0=7 x1=8 y0=17 y1=20
+    rect color="#e8b48c" fill=#true x0=23 x1=24 y0=17 y1=20
+  }
+  frame 3 {
+    rect color="#e8b48c" fill=#true x0=9 x1=10 y0=8 y1=12
+    rect color="#e8b48c" fill=#true x0=21 x1=22 y0=8 y1=12
+  }
+  frame 4 {
+    rect color="#e8b48c" fill=#true x0=9 x1=10 y0=3 y1=7
+    rect color="#e8b48c" fill=#true x0=21 x1=22 y0=3 y1=7
+  }
+  frame 5 {
+    rect color="#e8b48c" fill=#true x0=9 x1=10 y0=0 y1=6
+    rect color="#e8b48c" fill=#true x0=21 x1=22 y0=0 y1=6
+  }
+  frame 6 {
+    rect color="#e8b48c" fill=#true x0=9 x1=10 y0=4 y1=9
+    rect color="#e8b48c" fill=#true x0=21 x1=22 y0=4 y1=9
+  }
+  frame 7 {
+    rect color="#e8b48c" fill=#true x0=8 x1=9 y0=11 y1=14
+    rect color="#e8b48c" fill=#true x0=22 x1=23 y0=11 y1=14
+  }
+  frame 8 {
+    rect color="#e8b48c" fill=#true x0=6 x1=8 y0=15 y1=17
+    rect color="#e8b48c" fill=#true x0=23 x1=25 y0=15 y1=17
+  }
+  frame 9 {
+    rect color="#e8b48c" fill=#true x0=8 x1=9 y0=15 y1=19
+    rect color="#e8b48c" fill=#true x0=22 x1=23 y0=15 y1=19
+  }
+}

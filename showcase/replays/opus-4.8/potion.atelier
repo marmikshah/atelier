@@ -1,0 +1,261 @@
+atelier "sc-opus-potion" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#2d3e4a" "#8ac4d0" "#942ca8" "#ce68e0" "#9c6636" "#ece0fa"
+
+layer "liquid" {
+  frame 0 5 {
+    pixels x=7 y=17 {
+      legend {
+        color "1" "#ce68e0"
+        color "2" "#942ca8"
+      }
+      grid """
+        ...11...11...11
+        .11221112211122111
+        2222222222222222222
+        2222222222222222222
+        2221222222222222222
+        2222222222222222222
+        2221222222222222222
+        .22222222222222222
+        .22122222222222222
+        ..222222222222222
+        ...2222222222222
+        ....22222222222
+        ......2222222
+        """
+    }
+  }
+  frame 1 6 {
+    pixels x=7 y=17 {
+      legend {
+        color "1" "#ce68e0"
+        color "2" "#942ca8"
+      }
+      grid """
+        ..11...11...11
+        .12211122111221111
+        2222222222222222222
+        2222222222222222222
+        2221222222222222222
+        2222222222222222222
+        2221222222222222222
+        .22222222222222222
+        .22122222222222222
+        ..222222222222222
+        ...2222222222222
+        ....22222222222
+        ......2222222
+        """
+    }
+  }
+  frame 2 7 {
+    pixels x=7 y=17 {
+      legend {
+        color "1" "#ce68e0"
+        color "2" "#942ca8"
+      }
+      grid """
+        ..1...11...11...1
+        .12111221112211121
+        2222222222222222222
+        2222222222222222222
+        2221222222222222222
+        2222222222222222222
+        2221222222222222222
+        .22222222222222222
+        .22122222222222222
+        ..222222222222222
+        ...2222222222222
+        ....22222222222
+        ......2222222
+        """
+    }
+  }
+  frame 3 8 {
+    pixels x=7 y=17 {
+      legend {
+        color "1" "#ce68e0"
+        color "2" "#942ca8"
+      }
+      grid """
+        .....11...11...11
+        .11112211122111221
+        2222222222222222222
+        2222222222222222222
+        2221222222222222222
+        2222222222222222222
+        2221222222222222222
+        .22222222222222222
+        .22122222222222222
+        ..222222222222222
+        ...2222222222222
+        ....22222222222
+        ......2222222
+        """
+    }
+  }
+  frame 4 9 {
+    pixels x=7 y=17 {
+      legend {
+        color "1" "#ce68e0"
+        color "2" "#942ca8"
+      }
+      grid """
+        ....11...11...11
+        .11122111221112211
+        2222222222222222222
+        2222222222222222222
+        2221222222222222222
+        2222222222222222222
+        2221222222222222222
+        .22222222222222222
+        .22122222222222222
+        ..222222222222222
+        ...2222222222222
+        ....22222222222
+        ......2222222
+        """
+    }
+  }
+}
+
+layer "bubbles" {
+  frame 0 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 27
+        point 17 23
+        point 20 20
+      }
+    }
+  }
+  frame 1 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 26
+        point 17 22
+        point 20 19
+      }
+    }
+  }
+  frame 2 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 25
+        point 17 21
+      }
+    }
+    pencil color="#ece0fa" {
+      points {
+        point 20 18
+        point 19 18
+        point 21 18
+        point 20 17
+      }
+    }
+  }
+  frame 3 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 24
+        point 17 20
+        point 20 27
+      }
+    }
+  }
+  frame 4 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 23
+        point 17 19
+        point 20 26
+      }
+    }
+  }
+  frame 5 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 22
+        point 20 25
+      }
+    }
+    pencil color="#ece0fa" {
+      points {
+        point 17 18
+        point 16 18
+        point 18 18
+        point 17 17
+      }
+    }
+  }
+  frame 6 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 21
+        point 17 27
+        point 20 24
+      }
+    }
+  }
+  frame 7 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 20
+        point 17 26
+        point 20 23
+      }
+    }
+  }
+  frame 8 {
+    pencil color="#ce68e0" {
+      points {
+        point 13 19
+        point 17 25
+        point 20 22
+      }
+    }
+  }
+  frame 9 {
+    pixels x=12 y=17 {
+      legend {
+        color "1" "#ece0fa"
+        color "2" "#ce68e0"
+      }
+      grid """
+        .1
+        111
+
+
+        ........2
+
+
+        .....2
+        """
+    }
+  }
+}
+
+layer "glass" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    ellipse color="#2d3e4a" cx=16 cy=21 fill=#false rx=10 ry=9
+    line color="#2d3e4a" x0=12 x1=12 y0=6 y1=14
+    line color="#2d3e4a" x0=19 x1=19 y0=6 y1=14
+    pencil color="#8ac4d0" {
+      points {
+        point 14 8
+        point 14 9
+        point 10 15
+      }
+    }
+  }
+}
+
+layer "cork" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    rect color="#9c6636" fill=#true x0=12 x1=19 y0=3 y1=6
+    rect color="#2d3e4a" fill=#false x0=12 x1=19 y0=3 y1=6
+    line color="#ece0fa" x0=13 x1=18 y0=4 y1=4
+  }
+}

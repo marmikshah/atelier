@@ -88,16 +88,17 @@ inferred name, no transport default.
 and update the same recipe. Anything you can do in a shell, an agent can do over MCP.
 
 **Art rebuilds itself.** Normal editing maintains a [structured recipe](docs/recipes.md)
-at `documents/<id>/recipe/recipe.toml`. It describes the current canvas, layers,
-and frames. Small pixel art stays readable as grids; economical drawing
-operations stay as operations; large pixel data lives in lossless PNG files.
+at `documents/<id>/recipe/recipe.atelier`. It describes the current canvas, layers,
+and frames. Small pixel art stays readable as grids; large regions use repeatable spans
+and colour rows. Drawing operations remain editable commands.
 Repeated edits replace that state, so discarded work does not enlarge the replay.
 
 ```sh
 atelier replay <doc-id>                              # rebuild the current artwork
-atelier migrate old-recipe.jsonl art/lantern         # one-time legacy import
-atelier replay art/lantern --home target/art-review
+atelier migrate old-recipe.jsonl art/lantern.atelier # one-time legacy import
+atelier replay art/lantern.atelier --home target/art-review
 python3 tools/migrate-recipes.py path/to/recipes --out target/migrated-art
+atelier migrate --store --home .atelier
 ```
 
 **Agents can see.** `doc_look` returns rendered pixels, and the analysis tools

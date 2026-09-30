@@ -581,7 +581,7 @@ fn collect_state_entries(
                     entries,
                     archive_prefix,
                     crate::source::RECIPE_PATH,
-                    entry.path().join("recipe.toml"),
+                    entry.path().join("recipe.atelier"),
                 )?;
                 for name in source.resource_names() {
                     push_source(
@@ -1134,7 +1134,7 @@ mod tests {
             .unwrap();
         studio.set_document_revision(&id, 7).unwrap();
         studio
-            .journal_append(
+            .append_legacy_fixture(
                 &id,
                 ToolName::DocNew,
                 &json!({"doc_id": id, "name": "portable", "w": 4, "h": 4}),

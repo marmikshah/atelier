@@ -9,8 +9,8 @@ atelier call <tool> '<json>'          # one tool call, in-process — the front 
 atelier call <tool> --file ops.json   # args from a file (or --stdin, --image-out PATH)
 atelier tools [--markdown|--schema <name>]   # the surface / full reference / one schema
 atelier init                          # stamp ./.atelier for a directory-local store
-atelier replay <recipe|id>           # rebuild a TOML recipe or working document
-atelier migrate <old|id> <new-dir>   # import legacy JSONL or export a document recipe
+atelier replay <recipe|id>           # rebuild a DSL recipe or working document
+atelier migrate <old|id> <new.atelier>   # import legacy JSONL or export a document recipe
 atelier library                       # what's in your document store
 atelier library verify [--json]       # validate metadata, cels, references, recipes
 atelier library pack <id> --out art.atelierpack   # write a portable backup
@@ -102,7 +102,7 @@ it). `atelier status` shows the daemon endpoint and store.
 
 ## Structured replay files
 
-Normal calls automatically update `documents/<id>/recipe/recipe.toml` inside
+Normal calls automatically update `documents/<id>/recipe/recipe.atelier` inside
 the selected store. The [recipe format](recipes.md) groups current artwork by
 layer and frame, with document settings written once. It has no working UUIDs,
 tool-call envelopes, or edit history. Repeated pixels are stored once when
@@ -112,16 +112,18 @@ multiple frames of a layer share the same cel.
 atelier library                         # documents and current recipe sizes
 atelier library verify                  # verify pixels, metadata and replay agree
 atelier replay <doc-id>                  # rebuild that document's current recipe
-atelier replay art/lantern/recipe.toml --home target/art-review
-atelier migrate <doc-id> art/lantern     # export a portable recipe bundle
-atelier migrate old.jsonl art/lantern   # import a legacy command log once
+atelier replay art/lantern/recipe.atelier --home target/art-review
+atelier migrate <doc-id> art/lantern.atelier # export an editable recipe
+atelier migrate old.jsonl art/lantern.atelier # import a legacy command log once
+atelier migrate --store --home .atelier # preserve ids while converting live recipes
 ```
 
-A bundle contains `recipe.toml` and any `pixels/*.png` resources it references.
-Commit the whole bundle. Edit TOML with an ordinary editor, then replay it into
-a fresh working document. Replay publishes only a complete, validated document.
-The native `doc.json` and `cels/` remain the working cache; edit through tools
-or rebuild from the recipe to keep both in agreement.
+A standalone `.atelier` file contains the complete editable artwork. A recipe
+with a reference image exports as a directory holding `recipe.atelier` and that
+reference. Small sprites use grids; large regions use colour rows or occupied
+strips. Drawing commands remain editable when later paint patches are added.
+The working store materializes pixels for its readers; editing the source and
+replaying it rebuilds those pixels.
 
 `replay` accepts structured recipes only. `migrate` is the sole legacy JSONL
 entry point; it verifies metadata, cel bounds, offsets and every RGBA pixel,

@@ -2,7 +2,6 @@ use crate::document::{DocMeta, FrameMeta, LayerMeta, TagMeta};
 use crate::raster::Blend;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 /// A replay describes the current document, grouped by layer and frame.
@@ -39,9 +38,6 @@ fn yes() -> bool {
 fn is_zero(v: &[i32; 2]) -> bool {
     *v == [0, 0]
 }
-fn is_origin(v: &[u32; 2]) -> bool {
-    *v == [0, 0]
-}
 fn is_opaque(v: &u8) -> bool {
     *v == 255
 }
@@ -66,9 +62,8 @@ pub struct Layer {
     pub cels: Vec<Cel>,
 }
 
-/// One independent cel or several identical frames. A grid/image supplies
-/// optional starting pixels; `draw` contains only operations still needed to
-/// reproduce this cel. No UUIDs, API envelopes, or editing history are stored.
+/// Independent cel bounds and an ordered, editable construction. Repeated
+/// frame indices share the source until a frame is edited.
 #[derive(Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Cel {
@@ -78,23 +73,44 @@ pub struct Cel {
     pub size: Option<[u32; 2]>,
     #[serde(default, skip_serializing_if = "is_zero")]
     pub at: [i32; 2],
-    #[serde(default, skip_serializing_if = "is_origin")]
-    pub origin: [u32; 2],
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub grid: Option<String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub legend: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub image: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub draw: Vec<Value>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub palette: Option<Vec<String>>,
+    #[serde(default)]
+    pub steps: Vec<Step>,
 }
 impl Cel {
     pub fn size(&self, canvas: [u32; 2]) -> [u32; 2] {
         self.size.unwrap_or(canvas)
     }
+}
+/// Pixel writes and renderer operations occur in this exact order. A paint
+/// patch never destroys the editable operations underneath it.
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
+pub enum Step {
+    Pixels(Pixels),
+    Draw { op: Value, palette: Vec<String> },
+}
+/// Exact pixel writes. Missing cells leave existing pixels alone. Transparent
+/// RGBA colours are explicit writes, including invisible nonzero RGB.
+#[derive(Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct Pixels {
+    pub origin: [u32; 2],
+    pub legend: BTreeMap<String, String>,
+    pub data: Vec<PixelData>,
+}
+/// All pixel forms use the same legend and placement. Grid rows may omit
+/// trailing dots. Rows encode colour counts; spans omit surrounding gaps.
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
+pub enum PixelData {
+    Grid(String),
+    Row {
+        runs: Vec<(String, u32)>,
+        repeat: u32,
+    },
+    Span {
+        x: u32,
+        y: u32,
+        text: String,
+        rows: u32,
+    },
 }
 impl Asset {
     pub fn cels(&self) -> impl Iterator<Item = &Cel> {
@@ -154,19 +170,4 @@ pub fn hex(c: &[u8; 4]) -> String {
     } else {
         format!("#{:02x}{:02x}{:02x}{:02x}", c[0], c[1], c[2], c[3])
     }
-}
-
-/// TOML has signed integers. A quoted decimal seed represents the rest of the
-/// existing renderer's u64 range without changing the drawing-operation API.
-pub(super) fn drawing_op(op: &Value) -> Result<Cow<'_, Value>, String> {
-    let Some(Value::String(seed)) = op.get("seed") else {
-        return Ok(Cow::Borrowed(op));
-    };
-    if seed.is_empty() || !seed.bytes().all(|c| c.is_ascii_digit()) {
-        return Err("seed must be an unsigned decimal integer".into());
-    }
-    let seed: u64 = seed.parse().map_err(|_| "seed exceeds the u64 range")?;
-    let mut resolved = op.clone();
-    resolved["seed"] = Value::from(seed);
-    Ok(Cow::Owned(resolved))
 }

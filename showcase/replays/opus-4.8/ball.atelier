@@ -1,0 +1,91 @@
+atelier "sc-opus-ball" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#dc3232" "#ff968c" "#8c1e2d" "#372d46"
+
+layer "shadow" {
+  frame 0 1 9 {
+    ellipse color="#372d46" cx=16 cy=30 fill=#true rx=3 ry=2
+  }
+  frame 2 8 {
+    ellipse color="#372d46" cx=16 cy=30 fill=#true rx=4 ry=2
+  }
+  frame 3 7 {
+    ellipse color="#372d46" cx=16 cy=30 fill=#true rx=5 ry=2
+  }
+  frame 4 6 {
+    ellipse color="#372d46" cx=16 cy=30 fill=#true rx=6 ry=2
+  }
+  frame 5 {
+    ellipse color="#372d46" cx=16 cy=30 fill=#true rx=8 ry=2
+  }
+}
+
+layer "ball" {
+  frame 0 {
+    ellipse color="#8c1e2d" cx=16 cy=8 fill=#true rx=5 ry=5
+    ellipse color="#dc3232" cx=15 cy=7 fill=#true rx=5 ry=5
+    pencil color="#ff968c" {
+      points {
+        point 14 6
+        point 15 6
+        point 14 7
+      }
+    }
+  }
+  frame 1 9 {
+    ellipse color="#8c1e2d" cx=16 cy=9 fill=#true rx=5 ry=5
+    ellipse color="#dc3232" cx=15 cy=8 fill=#true rx=5 ry=5
+    pencil color="#ff968c" {
+      points {
+        point 14 7
+        point 15 7
+        point 14 8
+      }
+    }
+  }
+  frame 2 8 {
+    ellipse color="#8c1e2d" cx=16 cy=11 fill=#true rx=5 ry=5
+    ellipse color="#dc3232" cx=15 cy=10 fill=#true rx=5 ry=5
+    pencil color="#ff968c" {
+      points {
+        point 14 9
+        point 15 9
+        point 14 10
+      }
+    }
+  }
+  frame 3 7 {
+    ellipse color="#8c1e2d" cx=16 cy=14 fill=#true rx=5 ry=5
+    ellipse color="#dc3232" cx=15 cy=13 fill=#true rx=5 ry=5
+    pencil color="#ff968c" {
+      points {
+        point 14 12
+        point 15 12
+        point 14 13
+      }
+    }
+  }
+  frame 4 6 {
+    ellipse color="#8c1e2d" cx=16 cy=18 fill=#true rx=4 ry=6
+    ellipse color="#dc3232" cx=15 cy=17 fill=#true rx=4 ry=6
+    pencil color="#ff968c" {
+      points {
+        point 14 15
+        point 15 15
+        point 14 16
+      }
+    }
+  }
+  frame 5 {
+    ellipse color="#8c1e2d" cx=16 cy=27 fill=#true rx=7 ry=3
+    ellipse color="#dc3232" cx=15 cy=26 fill=#true rx=7 ry=3
+    pencil color="#ff968c" {
+      points {
+        point 12 25
+        point 13 25
+        point 12 26
+      }
+    }
+  }
+}

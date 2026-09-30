@@ -1,0 +1,459 @@
+atelier "sc-opus-torch" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#463a32" "#c6361c" "#f28c28" "#ffe482" "#966032"
+
+layer "bracket" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    rect color="#463a32" fill=#true x0=0 x1=2 y0=15 y1=27
+    rect color="#463a32" fill=#true x0=2 x1=14 y0=20 y1=22
+    rect color="#463a32" fill=#true x0=14 x1=17 y0=16 y1=28
+    polygon color="#463a32" fill=#true {
+      points {
+        point 11 13
+        point 20 13
+        point 18 17
+        point 13 17
+      }
+    }
+  }
+}
+
+layer "glow" {
+  frame 0 5 {
+    rect color="#966032" fill=#true x0=14 x1=16 y0=16 y1=21
+    pencil color="#966032" size=1 {
+      points {
+        point 11 13
+        point 20 13
+        point 12 12
+        point 19 12
+      }
+    }
+    pencil color="#966032" size=1 {
+      points {
+        point 3 20
+        point 4 21
+      }
+    }
+  }
+  frame 1 4 {
+    rect color="#966032" fill=#true x0=14 x1=16 y0=16 y1=22
+    pencil color="#966032" size=1 {
+      points {
+        point 11 13
+        point 20 13
+        point 12 12
+        point 19 12
+      }
+    }
+    pencil color="#966032" size=1 {
+      points {
+        point 3 20
+        point 4 21
+      }
+    }
+  }
+  frame 2 3 {
+    rect color="#966032" fill=#true x0=14 x1=16 y0=16 y1=23
+    pencil color="#966032" size=1 {
+      points {
+        point 11 13
+        point 20 13
+        point 12 12
+        point 19 12
+      }
+    }
+    pencil color="#966032" size=1 {
+      points {
+        point 3 20
+        point 4 21
+        point 1 18
+      }
+    }
+  }
+  frame 6 9 {
+    pixels x=3 y=12 {
+      legend {
+        color "1" "#966032"
+      }
+      grid """
+        .........1......1
+        ........1........1
+
+
+        ...........111
+        ...........111
+        ...........111
+        ...........111
+        1..........111
+        .1
+        """
+    }
+  }
+  frame 7 8 {
+    pixels x=3 y=12 {
+      legend {
+        color "1" "#966032"
+      }
+      grid """
+        .........1......1
+        ........1........1
+
+
+        ...........111
+        ...........111
+        ...........111
+        ...........111
+        1
+        """
+    }
+  }
+}
+
+layer "flame" {
+  frame 0 {
+    pixels x=11 y=2 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ....1
+        ....1
+        ...111
+        ...121
+        ...1211
+        ..11221
+        ..123211
+        .1123321
+        .1233321
+        .12333211
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 1 {
+    pixels x=11 y=4 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        .....1
+        ...111
+        ..11121
+        ..11221
+        ..12222
+        .1123221
+        .1233321
+        .1233321
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 2 {
+    pixels x=11 y=3 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ......1
+        .....11
+        ....1221
+        ...12221
+        ...12221
+        ..122221
+        ..123321
+        .1233321
+        .1233321
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 3 {
+    pixels x=11 y=5 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ......1
+        ....111
+        ...12211
+        ..122211
+        ..123221
+        .1233321
+        .1233321
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 4 {
+    pixels x=11 y=3 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        .....1
+        ....11
+        ....211
+        ...1211
+        ...1221
+        ..12321
+        ..123321
+        .1233321
+        .1233321
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 5 {
+    pixels x=11 y=3 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ....1
+        ....11
+        ...121
+        ...1211
+        ..11221
+        ..123211
+        .1123321
+        .1233321
+        .12333211
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 6 {
+    pixels x=11 y=3 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ...1
+        ...11
+        ...21
+        ..1221
+        ..12221
+        ..22321
+        .1223321
+        .1233321
+        .1233321
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 7 {
+    pixels x=11 y=3 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ..1
+        ..11
+        ..12
+        ..122
+        ..1221
+        ..22221
+        .122321
+        .1233321
+        .1233321
+        123333321
+        123333321
+        """
+    }
+  }
+  frame 8 {
+    pixels x=11 y=5 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ..1
+        ..11
+        ..122
+        ..1222
+        ..22321
+        .123332
+        .1233321
+        .23333321
+        123333321
+        """
+    }
+  }
+  frame 9 {
+    pixels x=11 y=3 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+        color "3" "#ffe482"
+      }
+      grid """
+        ...1
+        ...11
+        ..111
+        ..1221
+        ..12221
+        ..12321
+        .1223321
+        .1233321
+        .1233321
+        123333321
+        123333321
+        """
+    }
+  }
+}
+
+layer "embers" {
+  frame 0 {
+    pencil color="#ffe482" size=1 {
+      points {
+        point 16 4
+      }
+    }
+    pencil color="#c6361c" size=1 {
+      points {
+        point 12 1
+      }
+    }
+  }
+  frame 1 {
+    pencil color="#ffe482" size=1 {
+      points {
+        point 16 3
+      }
+    }
+    pencil color="#c6361c" size=1 {
+      points {
+        point 11 0
+      }
+    }
+  }
+  frame 2 {
+    pixels x=15 y=2 {
+      legend {
+        color "1" "#f28c28"
+        color "2" "#ffe482"
+      }
+      grid """
+        1
+
+        ..2
+        """
+    }
+  }
+  frame 3 {
+    pixels x=15 y=1 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#ffe482"
+      }
+      grid """
+        1
+
+        ..2
+        """
+    }
+  }
+  frame 4 {
+    pixels x=14 y=0 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#f28c28"
+      }
+      grid """
+        1
+
+        ....2
+        """
+    }
+  }
+  frame 5 {
+    pencil color="#ffe482" size=1 {
+      points {
+        point 15 4
+      }
+    }
+    pencil color="#c6361c" size=1 {
+      points {
+        point 18 1
+      }
+    }
+  }
+  frame 6 {
+    pencil color="#ffe482" size=1 {
+      points {
+        point 15 3
+      }
+    }
+    pencil color="#c6361c" size=1 {
+      points {
+        point 19 0
+      }
+    }
+  }
+  frame 7 {
+    pixels x=13 y=2 {
+      legend {
+        color "1" "#f28c28"
+        color "2" "#ffe482"
+      }
+      grid """
+        ...1
+
+        2
+        """
+    }
+  }
+  frame 8 {
+    pixels x=13 y=1 {
+      legend {
+        color "1" "#c6361c"
+        color "2" "#ffe482"
+      }
+      grid """
+        ...1
+
+        2
+        """
+    }
+  }
+  frame 9 {
+    pencil color="#c6361c" size=1 {
+      points {
+        point 17 0
+      }
+    }
+    pencil color="#f28c28" size=1 {
+      points {
+        point 12 2
+      }
+    }
+  }
+}

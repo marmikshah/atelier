@@ -1,0 +1,72 @@
+atelier "sc-kimi-ball" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#ffb094" "#ee4630" "#801822" "#26283a"
+
+layer "Layer 1" {
+  frame 0 9 {
+    ellipse color="#26283a" cx=16 cy=28 fill=#true rx=3 ry=1
+  }
+  frame 1 2 8 {
+    ellipse color="#26283a" cx=16 cy=28 fill=#true rx=4 ry=1
+  }
+  frame 3 7 {
+    ellipse color="#26283a" cx=16 cy=28 fill=#true rx=5 ry=1
+  }
+  frame 4 6 {
+    ellipse color="#26283a" cx=16 cy=28 fill=#true rx=6 ry=1
+  }
+  frame 5 {
+    ellipse color="#26283a" cx=16 cy=28 fill=#true rx=8 ry=1
+  }
+}
+
+layer "ball" {
+  frame 0 {
+    ellipse color="#ee4630" cx=16 cy=8 fill=#true rx=5 ry=5
+    ellipse color="#801822" cx=17 cy=10 fill=#true rx=4 ry=3
+    ellipse color="#801822" cx=16 cy=8 fill=#true rx=5 ry=5
+    ellipse color="#ee4630" cx=15 cy=7 fill=#true rx=5 ry=5
+    ellipse color="#ffb094" cx=14 cy=6 fill=#true rx=2 ry=2
+  }
+  frame 1 {
+    ellipse color="#801822" cx=16 cy=11 fill=#true rx=5 ry=5
+    ellipse color="#ee4630" cx=15 cy=10 fill=#true rx=5 ry=5
+    ellipse color="#ffb094" cx=14 cy=9 fill=#true rx=2 ry=2
+  }
+  frame 2 {
+    ellipse color="#801822" cx=16 cy=15 fill=#true rx=5 ry=6
+    ellipse color="#ee4630" cx=15 cy=14 fill=#true rx=5 ry=6
+    ellipse color="#ffb094" cx=14 cy=13 fill=#true rx=2 ry=2
+  }
+  frame 3 {
+    ellipse color="#801822" cx=16 cy=20 fill=#true rx=5 ry=6
+    ellipse color="#ee4630" cx=15 cy=19 fill=#true rx=5 ry=6
+    ellipse color="#ffb094" cx=14 cy=18 fill=#true rx=2 ry=2
+  }
+  frame 4 6 {
+    ellipse color="#801822" cx=16 cy=21 fill=#true rx=4 ry=7
+    ellipse color="#ee4630" cx=15 cy=20 fill=#true rx=4 ry=7
+    ellipse color="#ffb094" cx=14 cy=18 fill=#true rx=2 ry=2
+  }
+  frame 5 {
+    ellipse color="#801822" cx=16 cy=25 fill=#true rx=8 ry=3
+    ellipse color="#ee4630" cx=15 cy=24 fill=#true rx=8 ry=3
+    ellipse color="#ffb094" cx=13 cy=23 fill=#true rx=2 ry=1
+  }
+  frame 7 {
+    ellipse color="#801822" cx=16 cy=17 fill=#true rx=5 ry=6
+    ellipse color="#ee4630" cx=15 cy=16 fill=#true rx=5 ry=6
+    ellipse color="#ffb094" cx=14 cy=15 fill=#true rx=2 ry=2
+  }
+  frame 8 {
+    ellipse color="#801822" cx=16 cy=13 fill=#true rx=5 ry=5
+    ellipse color="#ee4630" cx=15 cy=12 fill=#true rx=5 ry=5
+    ellipse color="#ffb094" cx=14 cy=11 fill=#true rx=2 ry=2
+  }
+  frame 9 {
+    ellipse color="#801822" cx=16 cy=10 fill=#true rx=5 ry=5
+    ellipse color="#ee4630" cx=15 cy=9 fill=#true rx=5 ry=5
+    ellipse color="#ffb094" cx=14 cy=8 fill=#true rx=2 ry=2
+  }
+}

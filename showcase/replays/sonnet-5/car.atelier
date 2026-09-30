@@ -1,0 +1,141 @@
+atelier "sc-sonnet-car" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#14141f" "#c43a3a" "#e6785a" "#282830" "#96d2e6" "#c8c8cd"
+tag "drive" direction="forward" from=0 to=9
+
+layer "speed_lines" {
+  frame 1 6 {
+    line color="#c8c8cd" size=1 x0=4 x1=5 y0=18 y1=18
+  }
+  frame 2 7 {
+    line color="#c8c8cd" size=1 x0=2 x1=4 y0=17 y1=17
+    line color="#c8c8cd" size=1 x0=3 x1=5 y0=19 y1=19
+  }
+  frame 3 8 {
+    pixels x=0 y=17 {
+      legend {
+        color "1" "#c8c8cd"
+      }
+      grid """
+        11
+        ....1
+        .11
+        """
+    }
+  }
+}
+
+layer "body" {
+  frame 0 3 4 5 8 9 {
+    pixels x=5 y=12 {
+      legend {
+        color "1" "#14141f"
+        color "2" "#c43a3a"
+        color "3" "#96d2e6"
+      }
+      grid """
+        ..........111111
+        ..........12222313
+        .........122222313
+        .........1222233313
+        ........12222233313
+        .1111111122222222211111
+        .1222222222222222222221
+        11222222222222222222221
+        11222222222222222222221
+        """
+    }
+  }
+  frame 1 2 6 7 {
+    pixels x=5 y=11 {
+      legend {
+        color "1" "#14141f"
+        color "2" "#c43a3a"
+        color "3" "#96d2e6"
+      }
+      grid """
+        ..........111111
+        ..........12222313
+        .........122222313
+        .........1222233313
+        ........12222233313
+        .1111111122222222211111
+        .1222222222222222222221
+        11222222222222222222221
+        11222222222222222222221
+        """
+    }
+  }
+}
+
+layer "wheel_rear" {
+  frame 0 5 {
+    ellipse color="#282830" cx=11 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=11 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=11 x1=11 y0=22 y1=19
+  }
+  frame 1 6 {
+    ellipse color="#282830" cx=11 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=11 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=11 x1=14 y0=22 y1=22
+  }
+  frame 2 7 {
+    ellipse color="#282830" cx=11 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=11 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=11 x1=11 y0=22 y1=25
+  }
+  frame 3 8 {
+    ellipse color="#282830" cx=11 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=11 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=11 x1=8 y0=22 y1=22
+  }
+  frame 4 9 {
+    ellipse color="#282830" cx=11 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=11 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=11 x1=13 y0=22 y1=20
+  }
+}
+
+layer "wheel_front" {
+  frame 0 5 {
+    ellipse color="#282830" cx=23 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=23 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=23 x1=23 y0=22 y1=19
+  }
+  frame 1 6 {
+    ellipse color="#282830" cx=23 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=23 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=23 x1=26 y0=22 y1=22
+  }
+  frame 2 7 {
+    ellipse color="#282830" cx=23 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=23 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=23 x1=23 y0=22 y1=25
+  }
+  frame 3 8 {
+    ellipse color="#282830" cx=23 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=23 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=23 x1=20 y0=22 y1=22
+  }
+  frame 4 9 {
+    ellipse color="#282830" cx=23 cy=22 fill=#true rx=3 ry=3
+    ellipse color="#c8c8cd" cx=23 cy=22 fill=#true rx=1 ry=1
+    line color="#c8c8cd" size=1 x0=23 x1=25 y0=22 y1=20
+  }
+}
+
+layer "exhaust" {
+  frame 0 5 {
+    ellipse color="#c8c8cd" cx=4 cy=19 fill=#true rx=1 ry=1
+  }
+  frame 1 6 {
+    ellipse color="#c8c8cd" cx=2 cy=17 fill=#true rx=2 ry=2
+  }
+  frame 2 7 {
+    ellipse color="#c8c8cd" cx=1 cy=15 fill=#true rx=2 ry=2
+  }
+  frame 3 8 {
+    ellipse color="#c8c8cd" cx=0 cy=13 fill=#true rx=1 ry=1
+  }
+}

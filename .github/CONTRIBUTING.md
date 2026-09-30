@@ -58,8 +58,8 @@ make release      # optimized binary
 ```
 
 The workspace commits `Cargo.lock` because it publishes executable artifacts.
-Include its changes when adding or updating dependencies. Rust 1.88 remains the
-minimum supported compiler and has a dedicated CI check.
+Include its changes when adding or updating dependencies. Development and CI
+use Rust 1.98.1, declared in `rust-toolchain.toml`.
 
 The hooks in `.githooks/` are optional:
 

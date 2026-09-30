@@ -1,0 +1,225 @@
+atelier "sc-sonnet-explosion" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#ffffff" "#ffd64f" "#ff8c2b" "#c13921" "#bababa" "#5c5c5c"
+
+layer "core" {
+  frame 0 {
+    pixels x=9 y=9 {
+      legend {
+        color "1" "#ffd64f"
+        color "2" "#ff8c2b"
+        color "3" "#ffffff"
+      }
+      grid """
+        .......1
+        .......1
+        ..1..22122..1
+        ...122222221
+        ...222111222
+        ..22211111222
+        ..22113331122
+        111211333112111
+        ..22113331122
+        ..22211111222
+        ...222111222
+        ...122222221
+        ..1..22122..1
+        .......1
+        .......1
+        """
+    }
+  }
+  frame 1 {
+    ellipse color="#ffd64f" cx=16 cy=16 fill=#true rx=3 ry=3
+    ellipse color="#ffffff" cx=16 cy=16 fill=#true rx=1 ry=1
+  }
+  frame 2 {
+    ellipse color="#ff8c2b" cx=16 cy=16 fill=#true rx=1 ry=1
+  }
+}
+
+layer "debris" {
+  frame 1 {
+    pixels x=14 y=14 {
+      legend {
+        color "1" "#ffffff"
+      }
+      grid """
+        ..1
+        .111
+        11111
+        .111
+        .111
+        """
+    }
+  }
+  frame 2 {
+    pixels x=12 y=13 {
+      legend {
+        color "1" "#ffd64f"
+      }
+      grid """
+        ....1
+        .11.1.11
+        ...1.1
+        ..1...1
+        11.....11
+        ...111
+        ..1.1.1
+        .1..1..1
+        ....1
+        """
+    }
+  }
+  frame 3 {
+    pixels x=10 y=13 {
+      legend {
+        color "1" "#ff8c2b"
+      }
+      grid """
+        ......1
+        ...1.....1
+        ..1.......1
+
+        ..1.......1
+        .1.........1
+        1...........1
+        ...1.....1
+        ...1..1..1
+        ..1...1...1
+        ..1...1...1
+        ......1
+        ......1
+        """
+    }
+  }
+  frame 4 {
+    pixels x=8 y=13 {
+      legend {
+        color "1" "#ff8c2b"
+      }
+      grid """
+        ........1
+
+        ..111.......111
+
+
+
+        ..1...........1
+        .1.............1
+        1...............1
+
+        ....1.......1
+        ...1.........1
+        ...1....1....1
+        ..1.....1.....1
+        ........1
+        ........1
+        ........1
+        """
+    }
+  }
+  frame 5 {
+    pixels x=6 y=13 {
+      legend {
+        color "1" "#c13921"
+      }
+      grid """
+        ..........1
+        ..........1
+        ....1...........1
+        ...1.............1
+        ...1.............1
+
+
+
+        ..1...............1
+        .1.................1
+        .1.................1
+        1...................1
+        """
+    }
+  }
+  frame 6 {
+    pixels x=4 y=17 {
+      legend {
+        color "1" "#c13921"
+      }
+      grid """
+        .....1.............1
+        ....1...............1
+
+
+
+
+
+        ..1...................1
+        .1.....................1
+        .1.....................1
+        1.......................1
+        """
+    }
+  }
+}
+
+layer "smoke" {
+  frame 3 {
+    ellipse color="#bababa" cx=16 cy=15 fill=#true rx=2 ry=2
+    pencil color="#5c5c5c" size=1 {
+      points {
+        point 16 15
+      }
+    }
+  }
+  frame 4 {
+    ellipse color="#bababa" cx=16 cy=12 fill=#true rx=3 ry=2
+    pencil color="#5c5c5c" size=1 {
+      points {
+        point 15 12
+        point 17 11
+      }
+    }
+  }
+  frame 5 {
+    ellipse color="#bababa" cx=14 cy=10 fill=#true rx=2 ry=2
+    ellipse color="#bababa" cx=18 cy=9 fill=#true rx=2 ry=2
+    pencil color="#5c5c5c" size=1 {
+      points {
+        point 14 10
+        point 18 9
+      }
+    }
+  }
+  frame 6 {
+    pixels x=12 y=5 {
+      legend {
+        color "1" "#bababa"
+        color "2" "#5c5c5c"
+      }
+      grid """
+        ....111
+        111.111
+        111.111
+        1112
+        """
+    }
+  }
+  frame 7 {
+    pencil color="#bababa" size=1 {
+      points {
+        point 12 5
+        point 19 4
+        point 16 6
+      }
+    }
+  }
+  frame 8 {
+    pencil color="#bababa" size=1 {
+      points {
+        point 13 3
+        point 18 2
+      }
+    }
+  }
+}

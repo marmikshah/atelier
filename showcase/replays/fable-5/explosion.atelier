@@ -1,0 +1,200 @@
+atelier "sc-fable-explosion" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#ffffff" "#ffe060" "#ff9030" "#c84020" "#b0b0b8" "#60606c"
+
+layer "core" {
+  frame 0 {
+    pixels x=13 y=15 {
+      legend {
+        color "1" "#ffe060"
+        color "2" "#ffffff"
+      }
+      grid """
+        ...1
+        ..111
+        .12221
+        1122211
+        .12221
+        ..111
+        ...1
+        """
+    }
+  }
+  frame 1 {
+    ellipse color="#ff9030" cx=16 cy=18 fill=#true rx=8 ry=8
+    ellipse color="#ffe060" cx=16 cy=18 fill=#true rx=7 ry=7
+    ellipse color="#ffffff" cx=16 cy=18 fill=#true rx=4 ry=4
+    line color="#ffe060" size=1 x0=16 x1=16 y0=9 y1=6
+    line color="#ffe060" size=1 x0=16 x1=16 y0=27 y1=30
+    line color="#ffe060" size=1 x0=7 x1=4 y0=18 y1=18
+    line color="#ffe060" size=1 x0=25 x1=28 y0=18 y1=18
+    line color="#ffe060" size=1 x0=22 x1=24 y0=12 y1=10
+    line color="#ffe060" size=1 x0=10 x1=8 y0=12 y1=10
+    line color="#ffe060" size=1 x0=10 x1=8 y0=24 y1=26
+    line color="#ffe060" size=1 x0=22 x1=24 y0=24 y1=26
+  }
+  frame 2 {
+    ellipse color="#ff9030" cx=16 cy=18 fill=#true rx=9 ry=9
+    ellipse color="#ffe060" cx=16 cy=18 fill=#true rx=6 ry=6
+    ellipse color="#ffffff" cx=16 cy=18 fill=#true rx=2 ry=2
+  }
+  frame 3 {
+    ellipse color="#ff9030" cx=16 cy=18 fill=#false rx=10 ry=10
+    ellipse color="#ff9030" cx=16 cy=18 fill=#false rx=9 ry=9
+    ellipse color="#c84020" cx=16 cy=18 fill=#false rx=7 ry=7
+    ellipse color="#ff9030" cx=16 cy=18 fill=#true rx=3 ry=3
+    ellipse color="#ffe060" cx=16 cy=18 fill=#true rx=1 ry=1
+    pencil color="#c84020" size=1 {
+      points {
+        point 16 8
+        point 23 13
+        point 9 23
+        point 16 28
+        point 24 22
+      }
+    }
+    pencil color="#ffe060" size=1 {
+      points {
+        point 12 12
+        point 21 23
+      }
+    }
+  }
+  frame 4 {
+    pencil color="#c84020" size=1 {
+      points {
+        point 14 17
+        point 18 19
+        point 16 21
+      }
+    }
+    ellipse color="#c84020" cx=16 cy=18 fill=#false rx=7 ry=6
+    pencil color="#ff9030" size=1 {
+      points {
+        point 9 18
+        point 16 24
+        point 23 17
+      }
+    }
+  }
+}
+
+layer "debris" {
+  frame 2 {
+    pencil color="#ffe060" size=2 {
+      points {
+        point 8 11
+        point 24 11
+        point 13 8
+        point 20 7
+      }
+    }
+    pencil color="#ffe060" size=1 {
+      points {
+        point 4 17
+        point 28 17
+        point 9 24
+        point 23 25
+      }
+    }
+  }
+  frame 3 {
+    pencil color="#ff9030" size=2 {
+      points {
+        point 5 10
+        point 27 10
+        point 11 5
+        point 22 4
+      }
+    }
+    pencil color="#ff9030" size=1 {
+      points {
+        point 1 18
+        point 31 18
+        point 6 27
+        point 26 28
+      }
+    }
+  }
+  frame 4 {
+    pencil color="#c84020" size=1 {
+      points {
+        point 3 11
+        point 29 11
+        point 10 3
+        point 23 2
+        point 4 30
+        point 29 31
+      }
+    }
+  }
+  frame 5 {
+    pencil color="#c84020" size=1 {
+      points {
+        point 2 13
+        point 30 13
+      }
+    }
+  }
+}
+
+layer "smoke" {
+  frame 4 {
+    ellipse color="#60606c" cx=16 cy=16 fill=#true rx=4 ry=3
+    ellipse color="#b0b0b8" cx=15 cy=15 fill=#true rx=2 ry=1
+  }
+  frame 5 {
+    ellipse color="#60606c" cx=15 cy=13 fill=#true rx=5 ry=4
+    ellipse color="#60606c" cx=20 cy=15 fill=#true rx=2 ry=2
+    ellipse color="#b0b0b8" cx=14 cy=12 fill=#true rx=3 ry=2
+    pencil color="#60606c" size=1 {
+      points {
+        point 21 11
+        point 22 10
+      }
+    }
+  }
+  frame 6 {
+    ellipse color="#60606c" cx=16 cy=10 fill=#true rx=4 ry=3
+    ellipse color="#60606c" cx=11 cy=13 fill=#true rx=2 ry=2
+    ellipse color="#b0b0b8" cx=17 cy=9 fill=#true rx=2 ry=1
+    pencil color="#60606c" size=1 {
+      points {
+        point 21 8
+        point 22 7
+        point 9 10
+      }
+    }
+  }
+  frame 7 {
+    ellipse color="#60606c" cx=14 cy=8 fill=#true rx=3 ry=2
+    ellipse color="#60606c" cx=19 cy=6 fill=#true rx=2 ry=1
+    pencil color="#b0b0b8" size=1 {
+      points {
+        point 14 7
+        point 15 7
+      }
+    }
+  }
+  frame 8 {
+    pixels x=12 y=4 {
+      legend {
+        color "1" "#60606c"
+      }
+      grid """
+        .....1..1
+        .1....1
+        1..1
+        """
+    }
+  }
+  frame 9 {
+    pencil color="#60606c" size=1 {
+      points {
+        point 14 3
+        point 18 4
+      }
+    }
+  }
+}

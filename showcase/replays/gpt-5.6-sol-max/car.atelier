@@ -1,0 +1,373 @@
+atelier "car-gpt56-max" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#1c1a24" "#2d3648" "#cd3844" "#f45c4e" "#f5dca7" "#889ba1"
+tag "drive" direction="forward" from=0 to=9
+
+layer "Speed Lines" {
+  frame 0 5 {
+    line color="#889ba1" size=1 x0=1 x1=7 y0=11 y1=11
+    line color="#889ba1" size=1 x0=22 x1=29 y0=8 y1=8
+    line color="#889ba1" size=1 x0=0 x1=5 y0=27 y1=27
+    line color="#889ba1" size=1 x0=17 x1=23 y0=29 y1=29
+  }
+  frame 1 6 {
+    line color="#889ba1" size=1 x0=0 x1=2 y0=11 y1=11
+    line color="#889ba1" size=1 x0=28 x1=31 y0=11 y1=11
+    line color="#889ba1" size=1 x0=17 x1=24 y0=8 y1=8
+    line color="#889ba1" size=1 x0=27 x1=31 y0=27 y1=27
+    line color="#889ba1" size=1 x0=12 x1=18 y0=29 y1=29
+  }
+  frame 2 7 {
+    line color="#889ba1" size=1 x0=23 x1=29 y0=11 y1=11
+    line color="#889ba1" size=1 x0=12 x1=19 y0=8 y1=8
+    line color="#889ba1" size=1 x0=22 x1=27 y0=27 y1=27
+    line color="#889ba1" size=1 x0=7 x1=13 y0=29 y1=29
+  }
+  frame 3 8 {
+    line color="#889ba1" size=1 x0=18 x1=24 y0=11 y1=11
+    line color="#889ba1" size=1 x0=7 x1=14 y0=8 y1=8
+    line color="#889ba1" size=1 x0=17 x1=22 y0=27 y1=27
+    line color="#889ba1" size=1 x0=2 x1=8 y0=29 y1=29
+  }
+  frame 4 9 {
+    line color="#889ba1" size=1 x0=13 x1=19 y0=11 y1=11
+    line color="#889ba1" size=1 x0=2 x1=9 y0=8 y1=8
+    line color="#889ba1" size=1 x0=12 x1=17 y0=27 y1=27
+    line color="#889ba1" size=1 x0=0 x1=3 y0=29 y1=29
+    line color="#889ba1" size=1 x0=29 x1=31 y0=29 y1=29
+  }
+}
+
+layer "Exhaust FX" {
+  frame 0 5 {
+    pencil color="#889ba1" {
+      points {
+        point 2 21
+      }
+    }
+  }
+  frame 1 6 {
+    pencil color="#889ba1" {
+      points {
+        point 1 21
+        point 2 20
+        point 2 21
+      }
+    }
+  }
+  frame 2 7 {
+    pixels x=0 y=19 {
+      legend {
+        color "1" "#889ba1"
+        color "2" "#f5dca7"
+      }
+      grid """
+        .1
+        12
+        ..1
+        """
+    }
+  }
+  frame 3 8 {
+    pixels x=0 y=18 {
+      legend {
+        color "1" "#889ba1"
+        color "2" "#f5dca7"
+      }
+      grid """
+        12
+        1
+        ..1
+        """
+    }
+  }
+  frame 4 9 {
+    pencil color="#889ba1" {
+      points {
+        point 0 17
+        point 2 19
+      }
+    }
+  }
+}
+
+layer "Rear Wheel" {
+  frame 0 5 {
+    pixels x=7 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f5dca7"
+        color "4" "#f45c4e"
+      }
+      grid """
+        ..111
+        .12321
+        1223221
+        1223221
+        1224221
+        .12421
+        ..111
+        """
+    }
+  }
+  frame 1 6 {
+    pixels x=7 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f5dca7"
+        color "4" "#f45c4e"
+      }
+      grid """
+        ..111
+        .12221
+        1222331
+        1223221
+        1442221
+        .12221
+        ..111
+        """
+    }
+  }
+  frame 2 7 {
+    pixels x=7 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f45c4e"
+        color "4" "#f5dca7"
+      }
+      grid """
+        ..111
+        .12221
+        1332221
+        1224221
+        1222441
+        .12221
+        ..111
+        """
+    }
+  }
+  frame 3 8 {
+    pixels x=7 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f45c4e"
+        color "4" "#f5dca7"
+      }
+      grid """
+        ..111
+        .12321
+        1223221
+        1224221
+        1224221
+        .12421
+        ..111
+        """
+    }
+  }
+  frame 4 9 {
+    pixels x=7 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f45c4e"
+        color "4" "#f5dca7"
+      }
+      grid """
+        ..111
+        .12221
+        1222331
+        1224221
+        1442221
+        .12221
+        ..111
+        """
+    }
+  }
+}
+
+layer "Front Wheel" {
+  frame 0 5 {
+    pixels x=20 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f5dca7"
+        color "4" "#f45c4e"
+      }
+      grid """
+        ..111
+        .12321
+        1223221
+        1223221
+        1224221
+        .12421
+        ..111
+        """
+    }
+  }
+  frame 1 6 {
+    pixels x=20 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f5dca7"
+        color "4" "#f45c4e"
+      }
+      grid """
+        ..111
+        .12221
+        1222331
+        1223221
+        1442221
+        .12221
+        ..111
+        """
+    }
+  }
+  frame 2 7 {
+    pixels x=20 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f45c4e"
+        color "4" "#f5dca7"
+      }
+      grid """
+        ..111
+        .12221
+        1332221
+        1224221
+        1222441
+        .12221
+        ..111
+        """
+    }
+  }
+  frame 3 8 {
+    pixels x=20 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f45c4e"
+        color "4" "#f5dca7"
+      }
+      grid """
+        ..111
+        .12321
+        1223221
+        1224221
+        1224221
+        .12421
+        ..111
+        """
+    }
+  }
+  frame 4 9 {
+    pixels x=20 y=19 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#2d3648"
+        color "3" "#f45c4e"
+        color "4" "#f5dca7"
+      }
+      grid """
+        ..111
+        .12221
+        1222331
+        1224221
+        1442221
+        .12221
+        ..111
+        """
+    }
+  }
+}
+
+layer "Chassis" {
+  frame 0 3 6 9 {
+    pixels x=3 y=11 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#cd3844"
+        color "3" "#2d3648"
+        color "4" "#889ba1"
+        color "5" "#f45c4e"
+        color "6" "#f5dca7"
+      }
+      grid """
+        .........11111111
+        ........1123333111
+        ........12233331311
+        .......1123333313411
+        .....111223333313421111
+        ...1112223333331333222111
+        .1125555555555555555555221
+        166222222255522222222226661
+        166222222255522222222226661
+        122222222222222222222222221
+        1122222222222222222222222333
+        .111111111111111111111111333
+        ..11111111111111111111111
+        """
+    }
+  }
+  frame 1 2 7 8 {
+    pixels x=3 y=10 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#cd3844"
+        color "3" "#2d3648"
+        color "4" "#889ba1"
+        color "5" "#f45c4e"
+        color "6" "#f5dca7"
+      }
+      grid """
+        .........11111111
+        ........1123333111
+        ........12233331311
+        .......1123333313411
+        .....111223333313421111
+        ...1112223333331333222111
+        .1125555555555555555555221
+        166222222255522222222226661
+        166222222255522222222226661
+        122222222222222222222222221
+        1122222222222222222222222333
+        .111111111111111111111111333
+        ..11111111111111111111111
+        """
+    }
+  }
+  frame 4 5 {
+    pixels x=3 y=12 {
+      legend {
+        color "1" "#1c1a24"
+        color "2" "#cd3844"
+        color "3" "#2d3648"
+        color "4" "#889ba1"
+        color "5" "#f45c4e"
+        color "6" "#f5dca7"
+      }
+      grid """
+        .........11111111
+        ........1123333111
+        ........12233331311
+        .......1123333313411
+        .....111223333313421111
+        ...1112223333331333222111
+        .1125555555555555555555221
+        166222222255522222222226661
+        166222222255522222222226661
+        122222222222222222222222221
+        1122222222222222222222222333
+        .111111111111111111111111333
+        ..11111111111111111111111
+        """
+    }
+  }
+}

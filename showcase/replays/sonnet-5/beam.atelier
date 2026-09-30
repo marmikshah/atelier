@@ -1,0 +1,139 @@
+atelier "sc-sonnet-beam" format=1 renderer=1
+canvas 48 48
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#16121f" "#4b3f72" "#2c2440" "#d9a066" "#eafcff" "#35c9e8"
+
+layer "body" {
+  frame 0 1 2 4 7 8 9 {
+    rect color="#4b3f72" fill=#true x0=12 x1=21 y0=17 y1=27
+    rect color="#2c2440" fill=#true x0=13 x1=16 y0=28 y1=37
+    rect color="#4b3f72" fill=#true x0=17 x1=20 y0=28 y1=37
+    rect color="#16121f" fill=#true x0=11 x1=16 y0=37 y1=39
+    rect color="#16121f" fill=#true x0=17 x1=21 y0=37 y1=39
+    rect color="#16121f" fill=#false x0=12 x1=21 y0=17 y1=27
+  }
+  frame 3 6 {
+    rect color="#4b3f72" fill=#true x0=11 x1=20 y0=17 y1=27
+    rect color="#2c2440" fill=#true x0=13 x1=16 y0=28 y1=37
+    rect color="#4b3f72" fill=#true x0=17 x1=20 y0=28 y1=37
+    rect color="#16121f" fill=#true x0=11 x1=16 y0=37 y1=39
+    rect color="#16121f" fill=#true x0=17 x1=21 y0=37 y1=39
+    rect color="#16121f" fill=#false x0=11 x1=20 y0=17 y1=27
+  }
+  frame 5 {
+    rect color="#4b3f72" fill=#true x0=10 x1=19 y0=17 y1=27
+    rect color="#2c2440" fill=#true x0=13 x1=16 y0=28 y1=37
+    rect color="#4b3f72" fill=#true x0=17 x1=20 y0=28 y1=37
+    rect color="#16121f" fill=#true x0=11 x1=16 y0=37 y1=39
+    rect color="#16121f" fill=#true x0=17 x1=21 y0=37 y1=39
+    rect color="#16121f" fill=#false x0=10 x1=19 y0=17 y1=27
+  }
+}
+
+layer "arms" {
+  frame 0 7 8 9 {
+    line color="#2c2440" size=2 x0=20 x1=24 y0=20 y1=22
+    ellipse color="#d9a066" cx=25 cy=22 fill=#true rx=2 ry=2
+  }
+  frame 1 2 {
+    line color="#2c2440" size=2 x0=20 x1=23 y0=20 y1=21
+    ellipse color="#d9a066" cx=23 cy=21 fill=#true rx=2 ry=2
+  }
+  frame 3 {
+    line color="#2c2440" size=2 x0=19 x1=22 y0=19 y1=20
+    ellipse color="#d9a066" cx=22 cy=20 fill=#true rx=2 ry=2
+  }
+  frame 4 {
+    line color="#2c2440" size=2 x0=20 x1=27 y0=20 y1=22
+    ellipse color="#d9a066" cx=27 cy=22 fill=#true rx=2 ry=2
+  }
+  frame 5 {
+    line color="#2c2440" size=2 x0=18 x1=28 y0=20 y1=22
+    ellipse color="#d9a066" cx=28 cy=22 fill=#true rx=2 ry=2
+  }
+  frame 6 {
+    line color="#2c2440" size=2 x0=19 x1=27 y0=20 y1=22
+    ellipse color="#d9a066" cx=27 cy=22 fill=#true rx=2 ry=2
+  }
+}
+
+layer "head" {
+  frame 0 1 2 4 7 8 9 {
+    ellipse color="#d9a066" cx=16 cy=12 fill=#true rx=4 ry=4
+    rect color="#4b3f72" fill=#true x0=12 x1=20 y0=8 y1=10
+    ellipse color="#16121f" cx=16 cy=12 fill=#false rx=4 ry=4
+    pencil color="#16121f" {
+      points {
+        point 19 12
+      }
+    }
+  }
+  frame 3 6 {
+    ellipse color="#d9a066" cx=15 cy=12 fill=#true rx=4 ry=4
+    rect color="#4b3f72" fill=#true x0=11 x1=19 y0=8 y1=10
+    ellipse color="#16121f" cx=15 cy=12 fill=#false rx=4 ry=4
+    pencil color="#16121f" {
+      points {
+        point 18 12
+      }
+    }
+  }
+  frame 5 {
+    ellipse color="#d9a066" cx=14 cy=12 fill=#true rx=4 ry=4
+    rect color="#4b3f72" fill=#true x0=10 x1=18 y0=8 y1=10
+    ellipse color="#16121f" cx=14 cy=12 fill=#false rx=4 ry=4
+    pencil color="#16121f" {
+      points {
+        point 17 12
+      }
+    }
+  }
+}
+
+layer "beam" {
+  frame 1 {
+    pencil color="#35c9e8" {
+      points {
+        point 23 21
+      }
+    }
+  }
+  frame 2 {
+    ellipse color="#35c9e8" cx=23 cy=21 fill=#true rx=2 ry=2
+    pencil color="#eafcff" {
+      points {
+        point 23 21
+      }
+    }
+  }
+  frame 3 {
+    ellipse color="#35c9e8" cx=22 cy=20 fill=#true rx=3 ry=3
+    ellipse color="#eafcff" cx=22 cy=20 fill=#true rx=1 ry=1
+  }
+  frame 4 {
+    ellipse color="#eafcff" cx=28 cy=22 fill=#true rx=2 ry=2
+    line color="#35c9e8" size=2 x0=30 x1=34 y0=22 y1=22
+  }
+  frame 5 {
+    rect color="#35c9e8" fill=#true x0=30 x1=47 y0=21 y1=23
+    rect color="#eafcff" fill=#true x0=30 x1=44 y0=22 y1=22
+    ellipse color="#eafcff" cx=29 cy=22 fill=#true rx=2 ry=2
+  }
+  frame 6 {
+    rect color="#35c9e8" fill=#true x0=29 x1=42 y0=21 y1=23
+    rect color="#eafcff" fill=#true x0=29 x1=38 y0=22 y1=22
+    ellipse color="#eafcff" cx=28 cy=22 fill=#true rx=2 ry=2
+  }
+  frame 7 {
+    rect color="#35c9e8" fill=#true x0=27 x1=34 y0=21 y1=23
+    ellipse color="#eafcff" cx=26 cy=22 fill=#true rx=1 ry=1
+  }
+  frame 8 {
+    pencil color="#35c9e8" {
+      points {
+        point 26 22
+        point 27 22
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ mod evaluate;
 mod model;
 mod validate;
 pub use evaluate::compile;
-pub use model::{Asset, Cel, Layer, color, hex};
+pub use model::{Asset, Cel, Layer, PixelData, Pixels, Step, color, hex};
 pub use validate::MAX_SOURCE_BYTES;
 #[cfg(test)]
 mod tests;

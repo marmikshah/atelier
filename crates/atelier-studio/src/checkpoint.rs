@@ -15,7 +15,7 @@ use super::{CheckpointAction, JOURNAL_FILE, Studio, store::read_bounded_utf8};
 /// `remove_dir_all`, so an unvalidated one is a directory traversal:
 /// `../../../../x` escaped the store and deleted it. Every id the
 /// tool hands out matches this shape, so rejecting anything else costs nothing.
-fn valid_checkpoint_id(cpid: &str) -> bool {
+pub(crate) fn valid_checkpoint_id(cpid: &str) -> bool {
     cpid.strip_prefix("cp").is_some_and(|number| {
         !number.is_empty()
             && number != "0"
@@ -1135,7 +1135,7 @@ mod hardening_tests {
             .save(&blue_ref)
             .unwrap();
         s.set_reference(id, red_ref.to_str()).unwrap();
-        s.journal_append(
+        s.append_legacy_fixture(
             id,
             crate::ToolName::DocNew,
             &json!({"name": "c", "doc_id": id}),
@@ -1160,7 +1160,7 @@ mod hardening_tests {
         )
         .unwrap();
         s.set_reference(id, blue_ref.to_str()).unwrap();
-        s.journal_append(
+        s.append_legacy_fixture(
             id,
             crate::ToolName::DocDraw,
             &json!({"doc_id": id, "op": "fill_cel"}),

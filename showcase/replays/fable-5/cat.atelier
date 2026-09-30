@@ -1,0 +1,341 @@
+atelier "sc-fable-cat" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#282040" "#7a58c4" "#e28a3c" "#804626" "#ffd650" "#fff6de"
+tag "idle" direction="forward" from=0 to=9
+
+layer "tail" {
+  frame 0 1 7 8 9 {
+    pixels x=8 y=20 {
+      legend {
+        color "1" "#fff6de"
+        color "2" "#e28a3c"
+      }
+      grid """
+        1
+        2
+        2
+        2
+        2
+        .22
+        ...2
+        """
+    }
+  }
+  frame 2 6 {
+    pixels x=6 y=21 {
+      legend {
+        color "1" "#fff6de"
+        color "2" "#e28a3c"
+      }
+      grid """
+        1
+        2
+        2
+        .22
+        ...22
+        .....2
+        """
+    }
+  }
+  frame 3 4 5 {
+    pixels x=5 y=22 {
+      legend {
+        color "1" "#fff6de"
+        color "2" "#e28a3c"
+      }
+      grid """
+        1
+        2
+        2
+        .22
+        ...2222
+        """
+    }
+  }
+}
+
+layer "body" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    pixels x=10 y=4 {
+      legend {
+        color "1" "#e28a3c"
+        color "2" "#804626"
+        color "3" "#282040"
+        color "4" "#fff6de"
+      }
+      grid """
+        .1........1
+        .1.......11
+        111......11
+        111.....1111
+        111111111111
+        .111111111
+        .111111111
+        22111111111
+        22131113111
+        22111111111
+        2211131111
+        .111111111
+        ..1111111
+        ..1111111
+        ..111111111111
+        .1111111111111
+        22114441111
+        22144444111
+        22144444111
+        22144444111
+        22144444111
+        2214444411
+        ..1144411
+        ...44144
+        """
+    }
+  }
+}
+
+layer "hat" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    pixels x=9 y=1 {
+      legend {
+        color "1" "#7a58c4"
+        color "2" "#ffd650"
+        color "3" "#282040"
+      }
+      grid """
+        ......11
+        .....1111
+        .....1111
+        ....12111
+        ....11111
+        ...1111111
+        ...1333331
+        1111111111111
+        .33333333333
+        """
+    }
+  }
+}
+
+layer "staff" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    line color="#804626" x0=24 x1=24 y0=10 y1=27
+    pencil color="#e28a3c" {
+      points {
+        point 23 18
+        point 24 18
+        point 23 19
+      }
+    }
+  }
+}
+
+layer "orb" {
+  frame 0 4 5 9 {
+    pixels x=23 y=7 {
+      legend {
+        color "1" "#ffd650"
+      }
+      grid """
+        .1
+        111
+        .1
+        """
+    }
+  }
+  frame 1 3 6 8 {
+    ellipse color="#ffd650" cx=24 cy=8 fill=#true rx=2 ry=2
+    pencil color="#fff6de" {
+      points {
+        point 24 8
+      }
+    }
+    pencil color="#ffd650" {
+      points {
+        point 20 12
+      }
+    }
+  }
+  frame 2 7 {
+    pixels x=17 y=4 {
+      legend {
+        color "1" "#ffd650"
+        color "2" "#fff6de"
+      }
+      grid """
+        .......1
+        1.....111
+        .....11111
+        ....1122211
+        ...111222111
+        ....1122211
+        .....11111
+        ......111
+        ...1...1
+        ...1
+
+
+
+
+        .....1
+        """
+    }
+  }
+}
+
+layer "sparkles" {
+  frame 0 {
+    pencil color="#fff6de" {
+      points {
+        point 21 14
+      }
+    }
+    pencil color="#ffd650" {
+      points {
+        point 28 11
+      }
+    }
+    pencil color="#fff6de" {
+      points {
+        point 26 3
+      }
+    }
+  }
+  frame 1 {
+    pencil color="#ffd650" {
+      points {
+        point 21 13
+      }
+    }
+    pencil color="#fff6de" {
+      points {
+        point 28 10
+      }
+    }
+    pencil color="#ffd650" {
+      points {
+        point 26 2
+      }
+    }
+  }
+  frame 2 {
+    pencil color="#fff6de" {
+      points {
+        point 21 12
+      }
+    }
+    pencil color="#ffd650" {
+      points {
+        point 28 9
+      }
+    }
+    pencil color="#fff6de" {
+      points {
+        point 26 1
+      }
+    }
+  }
+  frame 3 {
+    pencil color="#ffd650" {
+      points {
+        point 21 11
+      }
+    }
+    pencil color="#fff6de" {
+      points {
+        point 28 8
+      }
+    }
+    pencil color="#ffd650" {
+      points {
+        point 26 0
+      }
+    }
+  }
+  frame 4 {
+    pencil color="#fff6de" {
+      points {
+        point 21 10
+      }
+    }
+    pencil color="#ffd650" {
+      points {
+        point 28 7
+      }
+    }
+  }
+  frame 5 {
+    pencil color="#ffd650" {
+      points {
+        point 21 9
+      }
+    }
+    pencil color="#fff6de" {
+      points {
+        point 28 16
+      }
+    }
+  }
+  frame 6 {
+    pencil color="#fff6de" {
+      points {
+        point 21 8
+      }
+    }
+    pencil color="#ffd650" {
+      points {
+        point 28 15
+      }
+    }
+  }
+  frame 7 {
+    pencil color="#ffd650" {
+      points {
+        point 21 7
+      }
+    }
+    pencil color="#fff6de" {
+      points {
+        point 28 14
+      }
+    }
+  }
+  frame 8 {
+    pixels x=21 y=5 {
+      legend {
+        color "1" "#fff6de"
+        color "2" "#ffd650"
+      }
+      grid """
+        .....1
+        1
+
+
+
+
+
+
+        .......2
+        """
+    }
+  }
+  frame 9 {
+    pixels x=21 y=4 {
+      legend {
+        color "1" "#ffd650"
+        color "2" "#fff6de"
+      }
+      grid """
+        .....1
+        1
+
+
+
+
+
+
+        .......2
+        """
+    }
+  }
+}

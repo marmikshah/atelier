@@ -1,6 +1,5 @@
 use atelier_core::document::{Document, MAX_DOCUMENT_CEL_PIXELS};
 use atelier_core::source::{Asset, MAX_SOURCE_BYTES, compile};
-use image::RgbaImage;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File};
 use std::io::{Cursor, Read};
@@ -11,15 +10,25 @@ pub struct Source {
     pub(super) asset: Asset,
     pub(super) text: String,
     pub(super) files: BTreeMap<String, Vec<u8>>,
-    pub(super) images: BTreeMap<String, RgbaImage>,
 }
 impl Source {
+    /// Capture an older native snapshot that has no replay construction.
+    pub fn from_native(path: &Path) -> Result<Self, String> {
+        if !fs::symlink_metadata(path)
+            .map_err(|e| e.to_string())?
+            .is_dir()
+        {
+            return Err("native snapshot must be a real directory".into());
+        }
+        let doc = Document::load(path)?;
+        super::edit::current(&doc, path, None, None)
+    }
     pub fn load(path: &Path) -> Result<Self, String> {
         let path = manifest_path(path);
         let text =
             String::from_utf8(read_file(&path, MAX_SOURCE_BYTES)?).map_err(|e| e.to_string())?;
         let asset: Asset =
-            toml_edit::de::from_str(&text).map_err(|e| format!("invalid recipe: {e}"))?;
+            super::parse::decode(&text).map_err(|e| format!("invalid recipe: {e}"))?;
         asset.validate()?;
         let root = path.parent().unwrap_or(Path::new("."));
         let mut files = BTreeMap::new();
@@ -43,9 +52,13 @@ impl Source {
             return Err("recipe manifest exceeds 16 MiB".into());
         }
         asset.validate()?;
+        if text.len() as u64 + files.values().map(|v| v.len() as u64).sum::<u64>()
+            > 256 * 1024 * 1024
+        {
+            return Err("recipe resources exceed 256 MiB".into());
+        }
         let used = resource_names(&asset);
         files.retain(|name, _| used.contains(name.as_str()));
-        let mut images = BTreeMap::new();
         let mut pixels = 0;
         for name in used {
             let data = files
@@ -59,14 +72,6 @@ impl Source {
             if w == 0 || h == 0 || pixels > MAX_DOCUMENT_CEL_PIXELS {
                 return Err("recipe image pixel budget exceeded".into());
             }
-            for cel in asset.cels().filter(|c| c.image.as_deref() == Some(name)) {
-                let size = cel.size(asset.canvas);
-                if cel.origin[0] as u64 + w as u64 > size[0] as u64
-                    || cel.origin[1] as u64 + h as u64 > size[1] as u64
-                {
-                    return Err("image and origin exceed cel size".into());
-                }
-            }
             let mut reader =
                 image::ImageReader::with_format(Cursor::new(data), image::ImageFormat::Png);
             let mut limits = image::Limits::default();
@@ -74,20 +79,12 @@ impl Source {
             limits.max_image_height = Some(h);
             limits.max_alloc = Some(MAX_DOCUMENT_CEL_PIXELS * 4);
             reader.limits(limits);
-            images.insert(
-                name.to_owned(),
-                reader.decode().map_err(|e| e.to_string())?.to_rgba8(),
-            );
+            reader.decode().map_err(|e| e.to_string())?;
         }
-        Ok(Self {
-            asset,
-            text,
-            files,
-            images,
-        })
+        Ok(Self { asset, text, files })
     }
     pub fn compile(&self) -> Result<Document, String> {
-        compile(&self.asset, &self.images)
+        compile(&self.asset)
     }
     pub fn asset(&self) -> &Asset {
         &self.asset
@@ -100,7 +97,7 @@ impl Source {
     }
     pub(super) fn write_to(&self, root: &Path) -> Result<(), String> {
         fs::create_dir(root).map_err(|e| format!("cannot create recipe bundle: {e}"))?;
-        fs::write(root.join("recipe.toml"), &self.text).map_err(|e| e.to_string())?;
+        fs::write(root.join("recipe.atelier"), &self.text).map_err(|e| e.to_string())?;
         for (name, bytes) in &self.files {
             let path = root.join(name);
             fs::create_dir_all(path.parent().ok_or("resource has no parent")?)
@@ -111,15 +108,11 @@ impl Source {
     }
 }
 fn resource_names(asset: &Asset) -> BTreeSet<&str> {
-    asset
-        .cels()
-        .filter_map(|c| c.image.as_deref())
-        .chain(asset.reference.as_deref())
-        .collect()
+    asset.reference.as_deref().into_iter().collect()
 }
 pub(super) fn manifest_path(path: &Path) -> PathBuf {
     if path.is_dir() {
-        path.join("recipe.toml")
+        path.join("recipe.atelier")
     } else {
         path.into()
     }

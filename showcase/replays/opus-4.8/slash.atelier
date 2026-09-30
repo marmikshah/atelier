@@ -1,0 +1,232 @@
+atelier "sc-opus-slash" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#2e225c" "#5c4ec8" "#8ccdfa" "#e8f4ff" "#ffffff" "#ffe296"
+
+layer "trail" {
+  frame 0 {
+    pixels x=1 y=10 {
+      legend {
+        color "1" "#2e225c"
+        color "2" "#5c4ec8"
+      }
+      grid """
+        1
+
+        .2
+        .2
+        """
+    }
+  }
+  frame 1 {
+    pixels x=1 y=10 {
+      legend {
+        color "1" "#2e225c"
+        color "2" "#5c4ec8"
+        color "3" "#8ccdfa"
+      }
+      grid """
+        1
+        22
+        .2
+        .2
+        .22
+        ..3
+
+        ...3
+        """
+    }
+  }
+  frame 2 {
+    pixels x=1 y=12 {
+      legend {
+        color "1" "#2e225c"
+        color "2" "#5c4ec8"
+        color "3" "#8ccdfa"
+        color "4" "#e8f4ff"
+      }
+      grid """
+        .1
+        222
+        .22
+        .222
+        ..23
+        ..333
+        ...333
+        ....333
+        .....333
+        ......343
+        .......3
+        """
+    }
+  }
+  frame 3 {
+    pixels x=1 y=12 {
+      legend {
+        color "1" "#5c4ec8"
+        color "2" "#2e225c"
+        color "3" "#8ccdfa"
+        color "4" "#e8f4ff"
+        color "5" "#ffffff"
+      }
+      grid """
+        .1
+        121
+        .11
+        .111
+        ..11
+        ..113
+        ...333
+        ....333
+        .....333
+        ......333
+        .......343
+        ........343
+        .........343
+        ..........35
+        """
+    }
+  }
+  frame 4 {
+    pixels x=2 y=14 {
+      legend {
+        color "1" "#5c4ec8"
+        color "2" "#2e225c"
+        color "3" "#e8f4ff"
+        color "4" "#8ccdfa"
+        color "5" "#ffffff"
+      }
+      grid """
+        .1
+        121
+        .11
+        .11
+        .111
+        ..111
+        ...111
+        ....111
+        .....131
+        ......1344
+        .......43344
+        .......4433344
+        .........44335
+        ...........455
+        """
+    }
+  }
+  frame 5 {
+    pixels x=3 y=16 {
+      legend {
+        color "1" "#5c4ec8"
+        color "2" "#2e225c"
+        color "3" "#8ccdfa"
+        color "4" "#e8f4ff"
+      }
+      grid """
+        .1
+        121
+        .111
+        ..111
+        ...111
+        ....1333
+        .....3333
+        .....33333
+        ......33333
+        .......33343
+        ........344443
+        .........344444
+        ...........34444444
+        ..............444444
+        ................444
+        """
+    }
+  }
+  frame 6 {
+    pixels x=6 y=19 {
+      legend {
+        color "1" "#5c4ec8"
+        color "2" "#2e225c"
+        color "3" "#8ccdfa"
+        color "4" "#e8f4ff"
+      }
+      grid """
+        .1
+        121
+        .111
+        ..113
+        ...333
+        ....3333
+        ......333
+        .......3333
+        .........343
+        ..........344
+        .............44
+        ..............44
+        """
+    }
+  }
+  frame 7 {
+    pixels x=11 y=24 {
+      legend {
+        color "1" "#2e225c"
+        color "2" "#5c4ec8"
+        color "3" "#8ccdfa"
+      }
+      grid """
+        1
+        .22
+        ...3
+        ....33
+        ......33
+        .......333
+        .........33
+        """
+    }
+  }
+  frame 8 {
+    pixels x=15 y=27 {
+      legend {
+        color "1" "#2e225c"
+        color "2" "#5c4ec8"
+      }
+      grid """
+        11
+        .11
+        ....2
+        ......2
+        """
+    }
+  }
+}
+
+layer "flash" {
+  frame 5 {
+    pixels x=20 y=25 {
+      legend {
+        color "1" "#ffe296"
+        color "2" "#ffffff"
+      }
+      grid """
+        ..1
+        ..1
+        ..1
+        .22
+        2222111
+        ..2211
+        ..11
+        """
+    }
+  }
+  frame 6 {
+    pixels x=22 y=29 {
+      legend {
+        color "1" "#ffffff"
+        color "2" "#ffe296"
+      }
+      grid """
+        1.2
+        2222
+        """
+    }
+  }
+}

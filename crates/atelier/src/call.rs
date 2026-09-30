@@ -315,7 +315,7 @@ mod tests {
         assert!(
             dir.join("documents")
                 .join(&doc_id)
-                .join("recipe/recipe.toml")
+                .join("recipe/recipe.atelier")
                 .exists()
         );
         assert!(

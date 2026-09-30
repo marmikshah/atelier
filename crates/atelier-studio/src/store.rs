@@ -679,18 +679,14 @@ impl Studio {
         self.docs_dir.join(id).join(JOURNAL_FILE)
     }
 
-    /// Append one call to `id`'s journal.
-    ///
-    /// Test fixture writer for legacy import and archive coverage.
-    /// rather than aspirational: it lives beside the art it produced, so a
-    /// document carries its own provenance and nothing has to be turned on
-    /// beforehand to get it.
-    ///
-    /// JSON Lines, appended: one versioned call per line. Failure is explicit;
-    /// the dispatch transaction must not publish pixels whose recipe could not
-    /// be persisted.
+    /// Construct legacy journals for import, recovery and archive tests.
     #[cfg(test)]
-    pub fn journal_append(&self, id: &str, tool: ToolName, args: &Value) -> Result<(), String> {
+    pub(crate) fn append_legacy_fixture(
+        &self,
+        id: &str,
+        tool: ToolName,
+        args: &Value,
+    ) -> Result<(), String> {
         // Defence in depth: `id` is joined onto the store path, so validate it
         // here too rather than trust every caller forever — a bad id must never
         // write recipe.jsonl outside the store (the repo has had a traversal bug
@@ -863,14 +859,14 @@ mod tests {
         let id = created["doc_id"].as_str().unwrap();
         assert!(s.journal(id).unwrap().is_empty(), "nothing recorded yet");
         assert!(
-            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            s.append_legacy_fixture(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
                 .is_err(),
             "a recipe cannot begin with an edit"
         );
 
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+        s.append_legacy_fixture(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
-        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+        s.append_legacy_fixture(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
             .unwrap();
         let steps = s.journal(id).unwrap();
         assert_eq!(steps.len(), 2, "appends accumulate in order");
@@ -880,7 +876,7 @@ mod tests {
         // Journaling an unknown document is a no-op, never a panic or a stray
         // directory: a failed create must not leave a journal behind.
         assert!(
-            s.journal_append("nope", ToolName::DocDraw, &json!({}))
+            s.append_legacy_fixture("nope", ToolName::DocDraw, &json!({}))
                 .is_err()
         );
         assert!(s.journal("nope").is_err(), "no document, no journal");
@@ -893,9 +889,9 @@ mod tests {
         let s = studio("journal-policy");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+        s.append_legacy_fixture(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
-        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+        s.append_legacy_fixture(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
             .unwrap();
         let path = s.journal_path(id);
 
@@ -903,7 +899,7 @@ mod tests {
         fs::write(&path, format!("{clean}{{\"tool\":\"doc_")).unwrap();
         assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
         assert!(
-            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            s.append_legacy_fixture(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
                 .is_err(),
             "new writes must not cement a torn tail into the journal"
         );
@@ -987,7 +983,7 @@ mod tests {
         let s = studio("journal-version");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+        s.append_legacy_fixture(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
         let path = s.journal_path(id);
         let current: Value =
@@ -1121,14 +1117,14 @@ mod tests {
 
         fs::remove_file(&metadata).unwrap();
         fs::rename(&held_metadata, &metadata).unwrap();
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "safe", "doc_id": id}))
+        s.append_legacy_fixture(id, ToolName::DocNew, &json!({"name": "safe", "doc_id": id}))
             .unwrap();
         let journal = s.journal_path(id);
         let held_journal = document.join("held-recipe.jsonl");
         fs::rename(&journal, &held_journal).unwrap();
         symlink(&held_journal, &journal).unwrap();
         assert!(
-            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            s.append_legacy_fixture(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
                 .is_err()
         );
         let error = s.journal(id).unwrap_err();

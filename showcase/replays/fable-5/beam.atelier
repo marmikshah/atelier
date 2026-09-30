@@ -1,0 +1,267 @@
+atelier "sc-fable-beam" format=1 renderer=1
+canvas 48 48
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#1a1c2c" "#4a5578" "#96a5c8" "#286ed2" "#5ad7ff" "#ffffff"
+
+layer "body" {
+  frame 0 1 2 3 6 7 8 9 {
+    ellipse color="#4a5578" cx=17 cy=13 fill=#true rx=3 ry=3
+    polygon color="#4a5578" fill=#true {
+      points {
+        point 14 17
+        point 19 17
+        point 18 24
+        point 17 30
+        point 13 30
+      }
+    }
+    line color="#1a1c2c" size=1 x0=14 x1=13 y0=18 y1=29
+    rect color="#1a1c2c" fill=#true x0=13 x1=17 y0=29 y1=31
+    line color="#1a1c2c" size=2 x0=14 x1=10 y0=31 y1=41
+    rect color="#1a1c2c" fill=#true x0=8 x1=12 y0=41 y1=42
+    line color="#4a5578" size=2 x0=16 x1=20 y0=31 y1=41
+    rect color="#4a5578" fill=#true x0=19 x1=23 y0=41 y1=42
+    line color="#1a1c2c" size=1 x0=19 x1=23 y0=42 y1=42
+    pencil color="#96a5c8" {
+      points {
+        point 19 11
+        point 20 12
+        point 20 13
+      }
+    }
+    line color="#1a1c2c" size=1 x0=14 x1=14 y0=11 y1=15
+  }
+  frame 4 5 {
+    ellipse color="#4a5578" cx=16 cy=14 fill=#true rx=3 ry=3
+    polygon color="#4a5578" fill=#true {
+      points {
+        point 13 18
+        point 18 18
+        point 16 31
+        point 12 31
+      }
+    }
+    line color="#1a1c2c" size=1 x0=13 x1=12 y0=19 y1=30
+    rect color="#1a1c2c" fill=#true x0=12 x1=16 y0=30 y1=32
+    line color="#1a1c2c" size=2 x0=13 x1=9 y0=32 y1=41
+    rect color="#1a1c2c" fill=#true x0=7 x1=11 y0=41 y1=42
+    line color="#4a5578" size=2 x0=15 x1=21 y0=32 y1=41
+    rect color="#4a5578" fill=#true x0=20 x1=24 y0=41 y1=42
+    line color="#1a1c2c" size=1 x0=20 x1=24 y0=42 y1=42
+    pencil color="#96a5c8" {
+      points {
+        point 18 12
+        point 19 13
+        point 19 14
+      }
+    }
+    line color="#1a1c2c" size=1 x0=13 x1=13 y0=12 y1=16
+  }
+}
+
+layer "arms" {
+  frame 0 9 {
+    line color="#1a1c2c" size=2 x0=15 x1=21 y0=21 y1=28
+    line color="#4a5578" size=2 x0=16 x1=22 y0=19 y1=26
+    rect color="#4a5578" fill=#true x0=22 x1=23 y0=26 y1=28
+    pencil color="#96a5c8" {
+      points {
+        point 23 26
+      }
+    }
+  }
+  frame 1 2 3 6 7 {
+    line color="#1a1c2c" size=2 x0=15 x1=23 y0=21 y1=26
+    line color="#4a5578" size=2 x0=16 x1=23 y0=19 y1=23
+    rect color="#4a5578" fill=#true x0=24 x1=25 y0=23 y1=26
+    pencil color="#96a5c8" {
+      points {
+        point 25 23
+        point 25 26
+      }
+    }
+  }
+  frame 4 5 {
+    line color="#1a1c2c" size=2 x0=14 x1=23 y0=21 y1=26
+    line color="#4a5578" size=2 x0=15 x1=23 y0=19 y1=23
+    rect color="#4a5578" fill=#true x0=24 x1=25 y0=23 y1=26
+    pencil color="#96a5c8" {
+      points {
+        point 25 23
+        point 25 26
+      }
+    }
+  }
+  frame 8 {
+    line color="#1a1c2c" size=2 x0=15 x1=22 y0=21 y1=27
+    line color="#4a5578" size=2 x0=16 x1=22 y0=19 y1=25
+    rect color="#4a5578" fill=#true x0=23 x1=24 y0=25 y1=27
+    pencil color="#96a5c8" {
+      points {
+        point 24 25
+      }
+    }
+  }
+}
+
+layer "fx" {
+  frame 1 {
+    pixels x=26 y=20 {
+      legend {
+        color "1" "#286ed2"
+        color "2" "#5ad7ff"
+      }
+      grid """
+        ..1
+        ..2
+        ..2
+        .111
+        2111221
+        .111
+        ..2
+        ..2
+        ..1
+        """
+    }
+  }
+  frame 2 {
+    pixels x=25 y=21 {
+      legend {
+        color "1" "#5ad7ff"
+        color "2" "#286ed2"
+        color "3" "#ffffff"
+      }
+      grid """
+        ...1
+        ..222
+        .21112
+        1213121
+        .21112
+        ..222
+        ...1
+        """
+    }
+  }
+  frame 3 {
+    pixels x=24 y=19 {
+      legend {
+        color "1" "#286ed2"
+        color "2" "#5ad7ff"
+        color "3" "#ffffff"
+      }
+      grid """
+        ....1
+        ....2
+        ...111
+        .1122211
+        .1233321
+        2123332121
+        .1233321
+        ..122211
+        ...111
+        ....2
+        ....1
+        """
+    }
+  }
+  frame 4 {
+    pixels x=24 y=20 {
+      legend {
+        color "1" "#5ad7ff"
+        color "2" "#286ed2"
+        color "3" "#ffffff"
+      }
+      grid """
+        ..11111....2....2
+        .11112222222222222222222
+        111331111111111111111111
+        113333333333333333333333
+        113333333333333333333333
+        113333333333333333333333
+        111331111111111111111111
+        .11112222222222222222222
+        ..11111...........22
+        """
+    }
+  }
+  frame 5 {
+    pixels x=25 y=20 {
+      legend {
+        color "1" "#5ad7ff"
+        color "2" "#286ed2"
+        color "3" "#ffffff"
+      }
+      grid """
+        ..111...............2
+        .1112222222222222222222
+        11331111111111111111111
+        13333331333313333331333
+        13333333333333333333333
+        13333333133333331333313
+        11331111111111111111111
+        .1112222222222222222222
+        ..111..2
+        .......2
+        """
+    }
+  }
+  frame 6 {
+    pixels x=26 y=20 {
+      legend {
+        color "1" "#286ed2"
+        color "2" "#5ad7ff"
+        color "3" "#ffffff"
+      }
+      grid """
+        .......1
+        .222...............1
+        2221111111111111111111
+        2332222222222222222222
+        2333333333333333333333
+        2332222222222222222222
+        2221111111111111111111
+        .222
+        ..............1
+        """
+    }
+  }
+  frame 7 {
+    pixels x=26 y=22 {
+      legend {
+        color "1" "#5ad7ff"
+        color "2" "#286ed2"
+        color "3" "#ffffff"
+      }
+      grid """
+        .1......2
+        111..22222222222222222
+        131..21111311113111311
+        111..22222222222222222
+        .1...............2
+        """
+    }
+  }
+  frame 8 {
+    pixels x=25 y=24 {
+      legend {
+        color "1" "#286ed2"
+        color "2" "#5ad7ff"
+      }
+      grid """
+        .......122221...12111
+        111
+        """
+    }
+  }
+  frame 9 {
+    pixels x=24 y=26 {
+      legend {
+        color "1" "#5ad7ff"
+        color "2" "#286ed2"
+      }
+      grid """
+        12
+        """
+    }
+  }
+}

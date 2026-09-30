@@ -11,11 +11,13 @@ what changed and why.
 
 ### Changed
 
-- Normal editing now maintains a structured TOML replay grouped by layer and
-  frame, replacing JSONL history. Small art uses readable grids, economical
-  drawing operations stay procedural, and large pixels use lossless PNGs.
-  `atelier migrate` and `tools/migrate-recipes.py` import old recipes without
-  changing their pixels; all 80 showcase recipes now use this structure.
+- Replay uses an editable `.atelier` DSL with layers, frames, drawing commands,
+  cropped grids, colour rows and occupied spans. Blank surroundings are implicit,
+  and pixel edits preserve procedural construction and local source formatting.
+  JSONL is import-only. All 80 showcase recipes migrate with identical GIFs.
+  `atelier migrate --store` preserves document ids, revisions and checkpoints;
+  the collection script can replace existing files after exact verification.
+- The Rust toolchain and minimum version move to 1.98.1 and 1.98 respectively.
 
 - Atelier is closed to outside pull requests. The repository is entirely
   AI-generated with no line-by-line human review, so a merged contribution

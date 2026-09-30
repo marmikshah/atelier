@@ -1,0 +1,337 @@
+atelier "sc-kimi-person" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#2b1d14" "#e4a878" "#3e8c4a" "#74502e" "#48301e" "#e8c44c"
+tag "jump" direction="forward" from=0 to=9
+
+layer "legs" {
+  frame 0 9 {
+    pixels x=12 y=20 {
+      legend {
+        color "1" "#74502e"
+        color "2" "#48301e"
+        color "3" "#2b1d14"
+      }
+      grid """
+        111..111
+        111..111
+        111..111
+        111..111
+        222..222
+        222..222
+        222..222
+        333..333
+        """
+    }
+  }
+  frame 1 {
+    rect color="#74502e" fill=#true x0=12 x1=14 y0=15 y1=23
+    rect color="#74502e" fill=#true x0=17 x1=19 y0=15 y1=23
+    rect color="#48301e" fill=#true x0=12 x1=14 y0=24 y1=27
+    rect color="#48301e" fill=#true x0=17 x1=19 y0=24 y1=27
+    line color="#2b1d14" x0=12 x1=14 y0=27 y1=27
+    line color="#2b1d14" x0=17 x1=19 y0=27 y1=27
+  }
+  frame 2 4 {
+    rect color="#74502e" fill=#true x0=12 x1=14 y0=15 y1=18
+    rect color="#74502e" fill=#true x0=17 x1=19 y0=15 y1=18
+    rect color="#48301e" fill=#true x0=12 x1=14 y0=19 y1=21
+    rect color="#48301e" fill=#true x0=17 x1=19 y0=19 y1=21
+  }
+  frame 3 {
+    pixels x=12 y=14 {
+      legend {
+        color "1" "#74502e"
+        color "2" "#48301e"
+      }
+      grid """
+        111..111
+        111..111
+        111..111
+        222..222
+        222..222
+        222..222
+        """
+    }
+  }
+  frame 5 {
+    rect color="#74502e" fill=#true x0=12 x1=14 y0=17 y1=20
+    rect color="#74502e" fill=#true x0=17 x1=19 y0=17 y1=20
+    rect color="#48301e" fill=#true x0=12 x1=14 y0=21 y1=24
+    rect color="#48301e" fill=#true x0=17 x1=19 y0=21 y1=24
+  }
+  frame 6 {
+    rect color="#74502e" fill=#true x0=12 x1=14 y0=18 y1=22
+    rect color="#74502e" fill=#true x0=17 x1=19 y0=18 y1=22
+    rect color="#48301e" fill=#true x0=12 x1=14 y0=23 y1=26
+    rect color="#48301e" fill=#true x0=17 x1=19 y0=23 y1=26
+  }
+  frame 7 {
+    rect color="#74502e" fill=#true x0=12 x1=14 y0=17 y1=23
+    rect color="#74502e" fill=#true x0=17 x1=19 y0=17 y1=23
+    rect color="#48301e" fill=#true x0=12 x1=14 y0=24 y1=27
+    rect color="#48301e" fill=#true x0=17 x1=19 y0=24 y1=27
+    line color="#2b1d14" x0=12 x1=14 y0=27 y1=27
+    line color="#2b1d14" x0=17 x1=19 y0=27 y1=27
+  }
+  frame 8 {
+    pixels x=12 y=21 {
+      legend {
+        color "1" "#74502e"
+        color "2" "#48301e"
+        color "3" "#2b1d14"
+      }
+      grid """
+        111..111
+        111..111
+        111..111
+        222..222
+        222..222
+        222..222
+        333..333
+        """
+    }
+  }
+}
+
+layer "body" {
+  frame 0 9 {
+    pixels x=12 y=7 {
+      legend {
+        color "1" "#48301e"
+        color "2" "#e4a878"
+        color "3" "#2b1d14"
+        color "4" "#3e8c4a"
+        color "5" "#e8c44c"
+      }
+      grid """
+        .111111
+        .111111
+        .122221
+        .232232
+        .222222
+        .222222
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        33355333
+        """
+    }
+  }
+  frame 1 2 4 {
+    pixels x=12 y=2 {
+      legend {
+        color "1" "#48301e"
+        color "2" "#e4a878"
+        color "3" "#2b1d14"
+        color "4" "#3e8c4a"
+        color "5" "#e8c44c"
+      }
+      grid """
+        .111111
+        .111111
+        .122221
+        .232232
+        .222222
+        .222222
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        33355333
+        """
+    }
+  }
+  frame 3 {
+    pixels x=12 y=1 {
+      legend {
+        color "1" "#48301e"
+        color "2" "#e4a878"
+        color "3" "#2b1d14"
+        color "4" "#3e8c4a"
+        color "5" "#e8c44c"
+      }
+      grid """
+        .111111
+        .111111
+        .122221
+        .232232
+        .222222
+        .222222
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        33355333
+        """
+    }
+  }
+  frame 5 7 {
+    pixels x=12 y=4 {
+      legend {
+        color "1" "#48301e"
+        color "2" "#e4a878"
+        color "3" "#2b1d14"
+        color "4" "#3e8c4a"
+        color "5" "#e8c44c"
+      }
+      grid """
+        .111111
+        .111111
+        .122221
+        .232232
+        .222222
+        .222222
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        33355333
+        """
+    }
+  }
+  frame 6 {
+    pixels x=12 y=5 {
+      legend {
+        color "1" "#48301e"
+        color "2" "#e4a878"
+        color "3" "#2b1d14"
+        color "4" "#3e8c4a"
+        color "5" "#e8c44c"
+      }
+      grid """
+        .111111
+        .111111
+        .122221
+        .232232
+        .222222
+        .222222
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        33355333
+        """
+    }
+  }
+  frame 8 {
+    pixels x=12 y=8 {
+      legend {
+        color "1" "#48301e"
+        color "2" "#e4a878"
+        color "3" "#2b1d14"
+        color "4" "#3e8c4a"
+        color "5" "#e8c44c"
+      }
+      grid """
+        .111111
+        .111111
+        .122221
+        .232232
+        .222222
+        .222222
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        44444444
+        33355333
+        """
+    }
+  }
+}
+
+layer "arms" {
+  frame 0 9 {
+    rect color="#3e8c4a" fill=#true x0=10 x1=11 y0=14 y1=18
+    rect color="#e4a878" fill=#true x0=10 x1=11 y0=19 y1=20
+    rect color="#3e8c4a" fill=#true x0=20 x1=21 y0=14 y1=18
+    rect color="#e4a878" fill=#true x0=20 x1=21 y0=19 y1=20
+  }
+  frame 1 {
+    line color="#3e8c4a" size=2 x0=11 x1=8 y0=9 y1=5
+    line color="#3e8c4a" size=2 x0=20 x1=23 y0=9 y1=5
+    pencil color="#e4a878" {
+      points {
+        point 8 4
+        point 9 4
+        point 22 4
+        point 23 4
+      }
+    }
+  }
+  frame 2 4 {
+    line color="#3e8c4a" size=2 x0=11 x1=9 y0=8 y1=5
+    line color="#3e8c4a" size=2 x0=20 x1=22 y0=8 y1=5
+    pencil color="#e4a878" {
+      points {
+        point 8 4
+        point 9 4
+        point 22 4
+        point 23 4
+      }
+    }
+  }
+  frame 3 {
+    line color="#3e8c4a" size=2 x0=11 x1=9 y0=7 y1=4
+    line color="#3e8c4a" size=2 x0=20 x1=22 y0=7 y1=4
+    pencil color="#e4a878" {
+      points {
+        point 8 3
+        point 9 3
+        point 22 3
+        point 23 3
+      }
+    }
+  }
+  frame 5 {
+    pixels x=8 y=7 {
+      legend {
+        color "1" "#e4a878"
+        color "2" "#3e8c4a"
+      }
+      grid """
+        11...........211
+        222.........222
+        .222.......222
+        ..22.......22
+        """
+    }
+  }
+  frame 6 {
+    pixels x=6 y=11 {
+      legend {
+        color "1" "#e4a878"
+        color "2" "#3e8c4a"
+      }
+      grid """
+        112222........222211
+        112222........222211
+        """
+    }
+  }
+  frame 7 {
+    rect color="#3e8c4a" fill=#true x0=10 x1=11 y0=11 y1=14
+    rect color="#e4a878" fill=#true x0=10 x1=11 y0=15 y1=16
+    rect color="#3e8c4a" fill=#true x0=20 x1=21 y0=11 y1=14
+    rect color="#e4a878" fill=#true x0=20 x1=21 y0=15 y1=16
+  }
+  frame 8 {
+    rect color="#3e8c4a" fill=#true x0=10 x1=11 y0=15 y1=18
+    rect color="#e4a878" fill=#true x0=10 x1=11 y0=19 y1=20
+    rect color="#3e8c4a" fill=#true x0=20 x1=21 y0=15 y1=18
+    rect color="#e4a878" fill=#true x0=20 x1=21 y0=19 y1=20
+  }
+}

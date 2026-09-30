@@ -1,0 +1,141 @@
+atelier "gpt-5.6-sol-max — Rubber Ball Bounce" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#1e2749" "#d52d4b" "#ff6952" "#ffe6b3"
+tag "bounce" direction="forward" from=0 to=9
+
+layer "Cast Shadow" {
+  frame 0 1 7 8 9 {
+    ellipse color="#1e2749" cx=16 cy=29 fill=#true rx=3 ry=1
+  }
+  frame 2 6 {
+    ellipse color="#1e2749" cx=16 cy=29 fill=#true rx=4 ry=1
+  }
+  frame 3 {
+    ellipse color="#1e2749" cx=16 cy=29 fill=#true rx=6 ry=1
+  }
+  frame 4 {
+    ellipse color="#1e2749" cx=16 cy=29 fill=#true rx=10 ry=2
+  }
+  frame 5 {
+    ellipse color="#1e2749" cx=16 cy=29 fill=#true rx=7 ry=1
+  }
+}
+
+layer "Ball" {
+  frame 0 8 9 {
+    ellipse color="#1e2749" cx=16 cy=6 fill=#true rx=6 ry=6
+    ellipse color="#d52d4b" cx=16 cy=6 fill=#true rx=5 ry=5
+    polygon color="#ff6952" fill=#true {
+      points {
+        point 14 2
+        point 18 3
+        point 20 5
+        point 19 8
+        point 16 10
+        point 13 8
+        point 13 5
+      }
+    }
+    ellipse color="#ffe6b3" cx=14 cy=3 fill=#true rx=1 ry=1
+  }
+  frame 1 7 {
+    ellipse color="#1e2749" cx=16 cy=7 fill=#true rx=6 ry=6
+    ellipse color="#d52d4b" cx=16 cy=7 fill=#true rx=5 ry=5
+    polygon color="#ff6952" fill=#true {
+      points {
+        point 14 3
+        point 18 4
+        point 20 6
+        point 19 9
+        point 16 11
+        point 13 9
+        point 13 6
+      }
+    }
+    ellipse color="#ffe6b3" cx=14 cy=4 fill=#true rx=1 ry=1
+  }
+  frame 2 {
+    ellipse color="#1e2749" cx=16 cy=10 fill=#true rx=6 ry=6
+    ellipse color="#d52d4b" cx=16 cy=10 fill=#true rx=5 ry=5
+    polygon color="#ff6952" fill=#true {
+      points {
+        point 14 6
+        point 18 7
+        point 20 9
+        point 19 12
+        point 16 14
+        point 13 12
+        point 13 9
+      }
+    }
+    ellipse color="#ffe6b3" cx=14 cy=7 fill=#true rx=1 ry=1
+  }
+  frame 3 {
+    ellipse color="#1e2749" cx=16 cy=16 fill=#true rx=5 ry=7
+    ellipse color="#d52d4b" cx=16 cy=16 fill=#true rx=4 ry=6
+    polygon color="#ff6952" fill=#true {
+      points {
+        point 14 11
+        point 17 11
+        point 19 14
+        point 18 19
+        point 16 21
+        point 13 18
+        point 13 14
+      }
+    }
+    ellipse color="#ffe6b3" cx=14 cy=12 fill=#true rx=1 ry=1
+  }
+  frame 4 {
+    pixels x=7 y=23 {
+      legend {
+        color "1" "#d52d4b"
+        color "2" "#ffe6b3"
+        color "3" "#ff6952"
+        color "4" "#1e2749"
+      }
+      grid """
+        ....12222333331
+        ..113222333333331
+        4113333333333333314
+        4411133333333331144
+        4444111333311114444
+        ..444444444444444
+        .....444444444
+        """
+    }
+  }
+  frame 5 {
+    ellipse color="#1e2749" cx=16 cy=16 fill=#true rx=4 ry=8
+    ellipse color="#d52d4b" cx=16 cy=16 fill=#true rx=3 ry=7
+    polygon color="#ff6952" fill=#true {
+      points {
+        point 15 10
+        point 18 12
+        point 18 17
+        point 17 21
+        point 15 22
+        point 13 18
+        point 14 13
+      }
+    }
+    ellipse color="#ffe6b3" cx=15 cy=11 fill=#true rx=1 ry=1
+  }
+  frame 6 {
+    ellipse color="#1e2749" cx=16 cy=10 fill=#true rx=5 ry=7
+    ellipse color="#d52d4b" cx=16 cy=10 fill=#true rx=4 ry=6
+    polygon color="#ff6952" fill=#true {
+      points {
+        point 14 5
+        point 17 5
+        point 19 8
+        point 18 13
+        point 16 15
+        point 13 12
+        point 13 8
+      }
+    }
+    ellipse color="#ffe6b3" cx=14 cy=6 fill=#true rx=1 ry=1
+  }
+}

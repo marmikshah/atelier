@@ -1,0 +1,279 @@
+atelier "sc-kimi-explosion" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#fffae6" "#ffd454" "#f07e28" "#96341e" "#968c82" "#554e4a"
+
+layer "smoke" {
+  frame 3 {
+    ellipse color="#554e4a" cx=15 cy=15 fill=#true rx=2 ry=1
+    pencil color="#968c82" {
+      points {
+        point 14 14
+        point 16 14
+      }
+    }
+  }
+  frame 4 {
+    ellipse color="#554e4a" cx=15 cy=13 fill=#true rx=3 ry=2
+    pencil color="#968c82" {
+      points {
+        point 13 11
+        point 15 11
+        point 17 12
+      }
+    }
+  }
+  frame 5 {
+    pixels x=11 y=10 {
+      legend {
+        color "1" "#968c82"
+        color "2" "#554e4a"
+      }
+      grid """
+        .121.212
+        222222222
+        22222222
+        22222
+        .222
+        """
+    }
+  }
+  frame 6 {
+    pixels x=10 y=8 {
+      legend {
+        color "1" "#968c82"
+        color "2" "#554e4a"
+      }
+      grid """
+        .....1.121
+        .121.222222
+        22222.22222
+        22222.22222
+        22222.2222
+        .222
+        """
+    }
+  }
+  frame 7 {
+    pixels x=11 y=7 {
+      legend {
+        color "1" "#968c82"
+        color "2" "#554e4a"
+      }
+      grid """
+        .....121
+        121..222
+        222..222
+        222.2
+        """
+    }
+  }
+  frame 8 {
+    pixels x=12 y=6 {
+      legend {
+        color "1" "#968c82"
+        color "2" "#554e4a"
+      }
+      grid """
+        ....1
+        1
+        ..2
+        """
+    }
+  }
+}
+
+layer "core" {
+  frame 0 {
+    pixels x=9 y=9 {
+      legend {
+        color "1" "#fffae6"
+        color "2" "#ffd454"
+      }
+      grid """
+        ......1
+
+        ......2
+        ...2.111.2
+        ....11111
+        ...1111111
+        1.211111112.1
+        ...1111111
+        ....11111
+        ...2.111.2
+        ......2
+
+        ......1
+        """
+    }
+  }
+  frame 1 {
+    pixels x=12 y=12 {
+      legend {
+        color "1" "#ffd454"
+        color "2" "#f07e28"
+        color "3" "#fffae6"
+      }
+      grid """
+        ...1
+        .23332
+        .33333
+        1333331
+        .33333
+        .23332
+        ...1
+        """
+    }
+  }
+  frame 2 {
+    ellipse color="#ffd454" cx=15 cy=15 fill=#true rx=1 ry=1
+    pencil color="#f07e28" {
+      points {
+        point 15 13
+        point 13 15
+        point 17 15
+        point 15 17
+      }
+    }
+  }
+  frame 3 {
+    ellipse color="#f07e28" cx=15 cy=15 fill=#true rx=1 ry=1
+    pencil color="#96341e" {
+      points {
+        point 15 13
+        point 13 15
+        point 17 16
+      }
+    }
+  }
+  frame 4 {
+    pencil color="#96341e" {
+      points {
+        point 15 15
+        point 16 14
+        point 14 16
+      }
+    }
+  }
+}
+
+layer "sparks" {
+  frame 0 {
+    pixels x=12 y=13 {
+      legend {
+        color "1" "#f07e28"
+        color "2" "#fffae6"
+      }
+      grid """
+        ..12.11
+        .2...2
+        2.....2
+        11
+        .2...2
+        ...2
+        """
+    }
+  }
+  frame 1 {
+    pixels x=10 y=11 {
+      legend {
+        color "1" "#f07e28"
+        color "2" "#ffd454"
+      }
+      grid """
+        ...1.2
+
+        ..2.....211
+
+
+        2.........2
+        11
+
+
+        ..2.....2
+
+        .....2
+        """
+    }
+  }
+  frame 2 {
+    pixels x=7 y=10 {
+      legend {
+        color "1" "#f07e28"
+        color "2" "#ffd454"
+      }
+      grid """
+        .....1..2
+
+
+        ...2.........2
+        ..............11
+
+
+
+        2...............2
+        .11
+
+
+
+        ...2.........2
+
+
+        ........2
+        """
+    }
+  }
+  frame 3 {
+    pencil color="#f07e28" {
+      points {
+        point 15 10
+        point 25 21
+        point 5 21
+        point 21 14
+        point 21 26
+        point 9 26
+        point 9 14
+      }
+    }
+    pencil color="#96341e" {
+      points {
+        point 23 15
+        point 24 15
+        point 7 21
+        point 6 21
+        point 11 10
+      }
+    }
+  }
+  frame 4 {
+    pencil color="#f07e28" {
+      points {
+        point 15 11
+        point 28 24
+        point 2 24
+        point 23 16
+        point 23 29
+        point 7 29
+        point 7 16
+      }
+    }
+    pencil color="#96341e" {
+      points {
+        point 24 17
+        point 25 17
+        point 5 23
+        point 4 23
+        point 10 11
+      }
+    }
+  }
+  frame 5 {
+    pencil color="#96341e" {
+      points {
+        point 15 12
+        point 24 18
+        point 6 18
+      }
+    }
+  }
+}

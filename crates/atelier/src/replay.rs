@@ -8,7 +8,7 @@ pub async fn run(args: &[String]) -> i32 {
     while index < args.len() {
         match args[index].as_str() {
             "--help" | "-h" => {
-                println!("usage: atelier replay <recipe.toml|bundle|doc-id> [--home DIR]");
+                println!("usage: atelier replay <recipe.atelier|bundle|doc-id> [--home DIR]");
                 return 0;
             }
             "--home" if home.is_none() => {

@@ -1,15 +1,16 @@
-use super::{Asset, Cel, color};
+use super::{Asset, Cel, PixelData, Pixels, Step, color};
 use crate::document::Document;
 use image::{Rgba, RgbaImage};
 use std::collections::BTreeMap;
 
-/// Compile a layered recipe using bounded, already decoded PNG resources.
-pub fn compile(asset: &Asset, images: &BTreeMap<String, RgbaImage>) -> Result<Document, String> {
+/// Compile the ordered source with the existing renderer. Pixels are decoded
+/// directly into bounded cels; sparse spans never allocate padded grids.
+pub fn compile(asset: &Asset) -> Result<Document, String> {
     asset.validate()?;
     let mut document = Document::from_metadata(asset.metadata()?)?;
     for (layer, description) in asset.layers.iter().enumerate() {
         for cel in &description.cels {
-            let img = render_cel(asset, cel, images)?;
+            let img = render_cel(asset, cel)?;
             for frame in &cel.frames {
                 document.set_cel(layer, *frame, cel.at[0], cel.at[1], img.clone())?;
             }
@@ -17,55 +18,78 @@ pub fn compile(asset: &Asset, images: &BTreeMap<String, RgbaImage>) -> Result<Do
     }
     Ok(document)
 }
-
-fn render_cel(
-    asset: &Asset,
-    cel: &Cel,
-    images: &BTreeMap<String, RgbaImage>,
-) -> Result<RgbaImage, String> {
-    let size = cel.size(asset.canvas);
-    let mut img = RgbaImage::new(size[0], size[1]);
-    if let Some(grid) = &cel.grid {
-        for (y, row) in grid.lines().enumerate() {
-            for (x, c) in row.chars().enumerate() {
-                if c != '.' {
-                    img.put_pixel(
-                        cel.origin[0] + x as u32,
-                        cel.origin[1] + y as u32,
-                        Rgba(color(
-                            cel.legend
-                                .get(&c.to_string())
-                                .ok_or("grid symbol has no colour")?,
-                        )?),
-                    );
+fn render_cel(asset: &Asset, cel: &Cel) -> Result<RgbaImage, String> {
+    let [w, h] = cel.size(asset.canvas);
+    let mut img = RgbaImage::new(w, h);
+    let mut doc = Document::new("cel", w.min(4096), h.min(4096));
+    for step in &cel.steps {
+        match step {
+            Step::Pixels(pixels) => paint(pixels, &mut img)?,
+            Step::Draw { op, palette } => {
+                doc.set_cel(0, 0, 0, 0, img)?;
+                doc.set_palette(palette.iter().map(|s| color(s)).collect::<Result<_, _>>()?)?;
+                doc.apply_op(0, 0, op)?;
+                img = doc
+                    .cel(0, 0)
+                    .map(|(_, _, p)| p.clone())
+                    .unwrap_or_else(|| RgbaImage::new(w, h));
+            }
+        }
+    }
+    Ok(img)
+}
+/// Visit explicit writes only. Coordinates and counts are validated first.
+pub(super) fn visit(
+    pixels: &Pixels,
+    mut put: impl FnMut(u32, u32, &str) -> Result<(), String>,
+) -> Result<(), String> {
+    let [ox, oy] = pixels.origin;
+    let mut cursor = 0u32;
+    for data in &pixels.data {
+        match data {
+            PixelData::Grid(text) => {
+                for row in text.lines() {
+                    for (x, symbol) in row.chars().enumerate() {
+                        if symbol != '.' && symbol != ' ' {
+                            put(ox + x as u32, oy + cursor, &symbol.to_string())?;
+                        }
+                    }
+                    cursor += 1;
+                }
+            }
+            PixelData::Row { runs, repeat } => {
+                for dy in 0..*repeat {
+                    let mut x = ox;
+                    for (symbol, count) in runs {
+                        if symbol != "." && symbol != " " {
+                            for dx in 0..*count {
+                                put(x + dx, oy + cursor + dy, symbol)?;
+                            }
+                        }
+                        x += count;
+                    }
+                }
+                cursor += repeat;
+            }
+            PixelData::Span { x, y, text, rows } => {
+                for dy in 0..*rows {
+                    for (dx, symbol) in text.chars().enumerate() {
+                        put(ox + x + dx as u32, oy + y + dy, &symbol.to_string())?;
+                    }
                 }
             }
         }
     }
-    if let Some(path) = &cel.image {
-        let source = images
-            .get(path)
-            .ok_or_else(|| format!("missing image '{path}'"))?;
-        super::validate::fits(cel, asset.canvas, [source.width(), source.height()])?;
-        for (x, y, px) in source.enumerate_pixels() {
-            img.put_pixel(cel.origin[0] + x, cel.origin[1] + y, *px);
-        }
-    }
-    if !cel.draw.is_empty() {
-        let mut doc = Document::new("cel", size[0], size[1]);
-        doc.set_palette(
-            cel.palette
-                .as_ref()
-                .unwrap_or(&asset.palette)
-                .iter()
-                .map(|s| color(s))
-                .collect::<Result<_, _>>()?,
-        )?;
-        doc.set_cel(0, 0, 0, 0, img)?;
-        for op in &cel.draw {
-            doc.apply_op(0, 0, super::model::drawing_op(op)?.as_ref())?;
-        }
-        img = doc.cel_full(0, 0);
-    }
-    Ok(img)
+    Ok(())
+}
+fn paint(pixels: &Pixels, img: &mut RgbaImage) -> Result<(), String> {
+    let colors = pixels
+        .legend
+        .iter()
+        .map(|(s, c)| Ok((s.as_str(), Rgba(color(c)?))))
+        .collect::<Result<BTreeMap<_, _>, String>>()?;
+    visit(pixels, |x, y, s| {
+        img.put_pixel(x, y, *colors.get(s).ok_or("pixel symbol has no colour")?);
+        Ok(())
+    })
 }

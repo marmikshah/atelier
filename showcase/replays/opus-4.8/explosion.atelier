@@ -1,0 +1,271 @@
+atelier "sc-opus-explosion" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#ffffff" "#ffe04a" "#ff8a2b" "#d63a26" "#9aa0a8" "#4a4e57"
+
+layer "smoke" {
+  frame 3 {
+    pencil color="#4a4e57" {
+      points {
+        point 16 15
+        point 16 14
+        point 15 15
+      }
+    }
+  }
+  frame 4 {
+    pixels x=14 y=12 {
+      legend {
+        color "1" "#4a4e57"
+        color "2" "#9aa0a8"
+      }
+      grid """
+        ..1
+        .222
+        22222
+        12221
+        ..1
+        """
+    }
+  }
+  frame 5 {
+    pixels x=13 y=9 {
+      legend {
+        color "1" "#4a4e57"
+        color "2" "#9aa0a8"
+      }
+      grid """
+        ...1
+        ..2221
+        122222
+        .222221
+        ..222
+        ..1
+        """
+    }
+  }
+  frame 6 {
+    pixels x=13 y=6 {
+      legend {
+        color "1" "#9aa0a8"
+        color "2" "#4a4e57"
+      }
+      grid """
+        ...12
+        ..111
+        .11111
+        2.111.2
+        .1.1.1
+        """
+    }
+  }
+  frame 7 {
+    pixels x=14 y=4 {
+      legend {
+        color "1" "#9aa0a8"
+        color "2" "#4a4e57"
+      }
+      grid """
+        ..1
+        .1112
+        .1111
+        21.1
+        ..1
+        """
+    }
+  }
+  frame 8 {
+    pixels x=15 y=3 {
+      legend {
+        color "1" "#9aa0a8"
+      }
+      grid """
+        .1
+        .11
+        111
+        .1
+        """
+    }
+  }
+  frame 9 {
+    pencil color="#9aa0a8" {
+      points {
+        point 16 3
+        point 17 3
+        point 16 4
+      }
+    }
+  }
+}
+
+layer "debris" {
+  frame 2 {
+    pixels x=11 y=13 {
+      legend {
+        color "1" "#ff8a2b"
+      }
+      grid """
+        .11.....11
+
+        11.......11
+
+
+        ..1.....1
+        ..1.....1
+        """
+    }
+  }
+  frame 3 {
+    pixels x=7 y=10 {
+      legend {
+        color "1" "#ff8a2b"
+      }
+      grid """
+        ..11...........11
+
+
+
+        11...............11
+
+
+
+
+
+        ...1...........1
+        ...1...........1
+        """
+    }
+  }
+  frame 4 {
+    pencil color="#d63a26" {
+      points {
+        point 25 9
+        point 7 9
+        point 28 15
+        point 29 15
+        point 4 15
+        point 3 15
+        point 24 23
+        point 8 23
+      }
+    }
+  }
+  frame 5 {
+    pencil color="#d63a26" {
+      points {
+        point 31 17
+        point 1 17
+        point 26 26
+        point 6 26
+      }
+    }
+  }
+  frame 6 {
+    pencil color="#d63a26" {
+      points {
+        point 27 28
+      }
+    }
+  }
+}
+
+layer "core" {
+  frame 0 {
+    pixels x=15 y=15 {
+      legend {
+        color "1" "#ffe04a"
+        color "2" "#ffffff"
+      }
+      grid """
+        .1
+        121
+        .1
+        """
+    }
+  }
+  frame 1 {
+    ellipse color="#ff8a2b" cx=16 cy=16 fill=#true rx=5 ry=5
+    ellipse color="#ffe04a" cx=16 cy=16 fill=#true rx=4 ry=4
+    ellipse color="#ffffff" cx=16 cy=16 fill=#true rx=2 ry=2
+  }
+  frame 2 {
+    ellipse color="#ff8a2b" cx=16 cy=16 fill=#true rx=4 ry=4
+    ellipse color="#ffe04a" cx=16 cy=16 fill=#true rx=2 ry=2
+    pencil color="#ffffff" {
+      points {
+        point 16 16
+      }
+    }
+  }
+  frame 3 {
+    ellipse color="#d63a26" cx=16 cy=16 fill=#true rx=3 ry=3
+    ellipse color="#ff8a2b" cx=16 cy=16 fill=#true rx=2 ry=2
+  }
+  frame 4 {
+    ellipse color="#d63a26" cx=16 cy=16 fill=#true rx=1 ry=1
+  }
+}
+
+layer "sparks" {
+  frame 1 {
+    pencil color="#ffffff" {
+      points {
+        point 16 10
+        point 22 16
+        point 16 22
+        point 10 16
+        point 20 11
+        point 12 20
+        point 21 21
+        point 11 11
+      }
+    }
+  }
+  frame 2 {
+    pencil color="#ffe04a" {
+      points {
+        point 16 7
+        point 25 16
+        point 16 25
+        point 7 16
+        point 23 9
+        point 9 23
+        point 24 23
+        point 8 9
+      }
+    }
+  }
+  frame 3 {
+    pencil color="#ffe04a" {
+      points {
+        point 16 4
+        point 28 16
+        point 16 28
+        point 4 16
+        point 27 6
+        point 5 26
+        point 27 26
+        point 5 6
+      }
+    }
+  }
+  frame 4 {
+    pencil color="#ff8a2b" {
+      points {
+        point 16 2
+        point 30 16
+        point 2 16
+        point 29 4
+        point 3 28
+      }
+    }
+  }
+  frame 5 {
+    pencil color="#ff8a2b" {
+      points {
+        point 31 2
+        point 1 30
+      }
+    }
+  }
+}

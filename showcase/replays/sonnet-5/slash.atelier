@@ -1,0 +1,207 @@
+atelier "sc-sonnet-slash" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#ffffff" "#fff096" "#b4e1ff" "#5a96e6" "#284696"
+
+layer "trail" {
+  frame 1 {
+    polyline color="#284696" size=1 {
+      points {
+        point 6 10
+        point 9 8
+      }
+    }
+  }
+  frame 2 {
+    pixels x=6 y=7 {
+      legend {
+        color "1" "#5a96e6"
+        color "2" "#284696"
+      }
+      grid """
+        .....1111
+        ...11....111
+        .22
+        2
+        """
+    }
+  }
+  frame 3 {
+    polyline color="#284696" size=1 {
+      points {
+        point 6 10
+        point 9 8
+        point 13 7
+      }
+    }
+    polyline color="#5a96e6" size=2 {
+      points {
+        point 13 7
+        point 17 8
+        point 21 11
+        point 24 15
+      }
+    }
+  }
+  frame 4 {
+    polyline color="#284696" size=1 {
+      points {
+        point 6 10
+        point 9 8
+        point 13 7
+      }
+    }
+    polyline color="#5a96e6" size=2 {
+      points {
+        point 13 7
+        point 17 8
+        point 21 11
+        point 24 15
+      }
+    }
+    polyline color="#b4e1ff" size=2 {
+      points {
+        point 24 15
+        point 26 20
+        point 27 24
+      }
+    }
+  }
+  frame 5 {
+    polyline color="#284696" size=1 {
+      points {
+        point 6 10
+        point 9 8
+        point 13 7
+      }
+    }
+    polyline color="#5a96e6" size=2 {
+      points {
+        point 13 7
+        point 17 8
+        point 21 11
+      }
+    }
+    polyline color="#b4e1ff" size=2 {
+      points {
+        point 21 11
+        point 24 15
+        point 26 20
+      }
+    }
+  }
+  frame 6 {
+    polyline color="#284696" size=1 {
+      points {
+        point 9 8
+        point 13 7
+        point 17 8
+      }
+    }
+    polyline color="#5a96e6" size=1 {
+      points {
+        point 17 8
+        point 21 11
+        point 24 15
+      }
+    }
+  }
+  frame 7 {
+    polyline color="#284696" size=1 {
+      points {
+        point 17 8
+        point 21 11
+        point 24 15
+      }
+    }
+  }
+}
+
+layer "core" {
+  frame 3 {
+    polyline color="#b4e1ff" size=1 {
+      points {
+        point 21 11
+        point 24 15
+      }
+    }
+  }
+  frame 4 {
+    polyline color="#fff096" size=2 {
+      points {
+        point 24 15
+        point 26 20
+        point 27 24
+      }
+    }
+    pencil color="#ffffff" size=2 {
+      points {
+        point 27 24
+      }
+    }
+  }
+  frame 5 {
+    polyline color="#fff096" size=2 {
+      points {
+        point 21 11
+        point 24 15
+        point 26 20
+        point 27 24
+      }
+    }
+    polyline color="#ffffff" size=2 {
+      points {
+        point 26 20
+        point 27 24
+      }
+    }
+  }
+  frame 6 {
+    polyline color="#b4e1ff" size=1 {
+      points {
+        point 24 15
+        point 26 20
+        point 27 24
+      }
+    }
+    polyline color="#fff096" size=1 {
+      points {
+        point 26 20
+        point 27 24
+      }
+    }
+  }
+  frame 7 {
+    polyline color="#5a96e6" size=1 {
+      points {
+        point 24 15
+        point 26 20
+        point 27 24
+      }
+    }
+  }
+  frame 8 {
+    polyline color="#284696" size=1 {
+      points {
+        point 26 20
+        point 27 24
+      }
+    }
+  }
+  frame 9 {
+    pencil color="#284696" size=1 {
+      points {
+        point 27 24
+      }
+    }
+  }
+}
+
+layer "flash" {
+  frame 5 {
+    line color="#ffffff" size=1 x0=27 x1=30 y0=24 y1=22
+    line color="#ffffff" size=1 x0=27 x1=30 y0=24 y1=26
+    line color="#fff096" size=1 x0=27 x1=28 y0=24 y1=28
+    line color="#fff096" size=1 x0=27 x1=23 y0=24 y1=27
+  }
+}

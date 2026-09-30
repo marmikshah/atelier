@@ -1,0 +1,556 @@
+atelier "GPT-5.6-sol MAX — Wizard Cat" format=1 renderer=1
+canvas 32 32
+frames 100 100 100 100 100 100 100 100 100 100
+palette "#171329" "#403060" "#7950a5" "#c48045" "#f4d58d" "#8ef6d2"
+tag "wizard-cat-loop" direction="forward" from=0 to=9
+
+layer "Tail" {
+  frame 0 5 {
+    pixels x=2 y=21 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#c48045"
+      }
+      grid """
+        ...11111
+        ..112222111
+        .122222222211
+        1222222222221
+        12322222222221
+        1222221222221
+        1222222222221
+        .1232222222221
+        ..12223222221
+        ...1112222211
+        ......11111
+        """
+    }
+  }
+  frame 1 4 {
+    pixels x=1 y=20 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#c48045"
+      }
+      grid """
+        ....111
+        ..11222111
+        .12222222211
+        .1222222222211
+        12322222222221
+        122222222222221
+        .1222221122221
+        .1232222221211
+        ..1222222221
+        ...1223222221
+        ....11222221
+        ......111211
+        """
+    }
+  }
+  frame 2 3 {
+    curve aa=#false color="#171329" width=6 {
+      points {
+        point 12 25
+        point 4 16
+        point 0 22
+        point 8 28
+      }
+    }
+    curve aa=#false color="#7950a5" width=4 {
+      points {
+        point 12 25
+        point 4 16
+        point 0 22
+        point 8 28
+      }
+    }
+    pencil color="#c48045" size=1 {
+      points {
+        point 3 20
+        point 2 23
+        point 5 27
+      }
+    }
+  }
+  frame 6 8 {
+    pixels x=3 y=22 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#c48045"
+      }
+      grid """
+        .....11111
+        ..1112222211
+        .11222222221
+        .122222222221
+        1232222222211
+        1222222222221
+        11222222222221
+        .122222322221
+        ..13222222211
+        ....1111111
+        """
+    }
+  }
+  frame 7 {
+    pixels x=4 y=22 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#c48045"
+      }
+      grid """
+        ........1
+        ...11111211
+        .1122222221
+        112222222221
+        12222222221211
+        12222222222221
+        132222222222221
+        12222222322221
+        .1223222222211
+        ..1112222111
+        """
+    }
+  }
+  frame 9 {
+    pixels x=2 y=22 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#c48045"
+      }
+      grid """
+        ..111111111
+        .112222222211
+        .122222222221
+        11322222222221
+        1222222222221
+        .122222222221
+        .1222222222221
+        ..13223222221
+        ...1112222211
+        ......11111
+        """
+    }
+  }
+}
+
+layer "Body and Face" {
+  frame 0 1 2 3 4 5 8 9 {
+    pixels x=7 y=8 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#403060"
+        color "4" "#8ef6d2"
+        color "5" "#f4d58d"
+        color "6" "#c48045"
+      }
+      grid """
+        ..1...........1
+        ..111.11111.111
+        ..1211333331121
+        ..1133333333311
+        ..1333333333331
+        .133333333333331
+        .133333333333331
+        .133345555543331
+        .133355555553331
+        5553355565553355
+        ..1555551555551
+        ..1553511153311
+        55531133333111111
+        .13222222222225511
+        .13222222231525551
+        .13222222231255511
+        .1322222623321111
+        .132222222332331
+        .113222223323311
+        ..1112222222111
+        ..1222221222221
+        ..1222221222221
+        ..1111111111111
+        ...11111111111
+        """
+    }
+  }
+  frame 6 7 {
+    pixels x=7 y=8 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#403060"
+        color "4" "#f4d58d"
+        color "5" "#c48045"
+      }
+      grid """
+        ..1...........1
+        ..111.11111.111
+        ..1211333331121
+        ..1133333333311
+        ..1333333333331
+        .133333333333331
+        .133333333333331
+        .133111444111331
+        .133344444443331
+        4443344454443344
+        ..1444441444441
+        ..1443411143311
+        44431133333111111
+        .13222222222224411
+        .13222222231424441
+        .13222222231244411
+        .1322222523321111
+        .132222222332331
+        .113222223323311
+        ..1112222222111
+        ..1222221222221
+        ..1222221222221
+        ..1111111111111
+        ...11111111111
+        """
+    }
+  }
+}
+
+layer "Wizard Hat" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    pixels x=7 y=1 {
+      legend {
+        color "1" "#171329"
+        color "2" "#7950a5"
+        color "3" "#8ef6d2"
+        color "4" "#f4d58d"
+        color "5" "#c48045"
+        color "6" "#403060"
+      }
+      grid """
+        ........11
+        ......1111
+        .....11122
+        .....122231
+        .....123421
+        ....1122231
+        ....11222211
+        ....1222222211
+        ...555555555551
+        ..15555555555511
+        1166666666666661
+        116666666666661
+        .11666666666611
+        ..111111111111
+        """
+    }
+  }
+}
+
+layer "Staff" {
+  frame 0 1 2 3 4 5 6 7 8 9 {
+    line color="#171329" size=3 x0=26 x1=25 y0=29 y1=9
+    line color="#c48045" size=1 x0=26 x1=25 y0=29 y1=9
+    line color="#171329" size=2 x0=25 x1=22 y0=11 y1=8
+    line color="#171329" size=2 x0=25 x1=28 y0=11 y1=8
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 26 29
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 25 13
+        point 25 17
+        point 26 21
+        point 26 25
+      }
+    }
+  }
+}
+
+layer "Orb Glow and Sparkles" {
+  frame 0 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=4 ry=4
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#f4d58d" cx=25 cy=7 fill=#true rx=1 ry=1
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 25 2
+        point 20 6
+        point 30 6
+        point 25 12
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 22 3
+        point 29 3
+        point 29 11
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 20 16
+        point 5 15
+        point 23 18
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 19 15
+        point 20 20
+        point 21 22
+      }
+    }
+  }
+  frame 1 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=4 ry=4
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#f4d58d" cx=25 cy=7 fill=#true rx=1 ry=1
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 25 2
+        point 20 6
+        point 30 6
+        point 25 12
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 5 7
+        point 20 18
+        point 29 13
+        point 8 9
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 19 15
+        point 20 20
+        point 21 22
+      }
+    }
+  }
+  frame 2 {
+    pixels x=5 y=1 {
+      legend {
+        color "1" "#8ef6d2"
+        color "2" "#171329"
+        color "3" "#f4d58d"
+      }
+      grid """
+        ....................1
+        ..................22222
+        ................121111121
+        ................211111112
+        ...............21113331112
+        3..............21133333112
+        ...3..........1211333331121
+        ...............21133333112
+        ...............21113331112
+        ................211111112
+        .................21111123
+        ..................22222
+        ....................1
+        ..............1
+        ..............3
+        ...............1
+
+
+        ...............1
+
+        ................1
+        ................3
+        ...............1
+        """
+    }
+  }
+  frame 3 {
+    pixels x=5 y=1 {
+      legend {
+        color "1" "#8ef6d2"
+        color "2" "#171329"
+        color "3" "#f4d58d"
+      }
+      grid """
+        ....................1
+        ..................22222
+        ................121111121
+        ................211111112
+        3..3...........21113331112
+        ...............21133333112
+        ..............1211333331121
+        ...............21133333112
+        ...............21113331132
+        ................211111112
+        .................21111121
+        ..................22222
+        ....................1
+        ..............13
+        ..............3
+        ...............1
+
+
+        ...............1
+
+        ................1
+        ................3
+        ...............1
+        """
+    }
+  }
+  frame 4 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=4 ry=4
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#f4d58d" cx=25 cy=7 fill=#true rx=1 ry=1
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 25 2
+        point 20 6
+        point 30 6
+        point 25 12
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 5 4
+        point 20 12
+        point 29 7
+        point 8 3
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 19 15
+        point 20 20
+        point 21 22
+      }
+    }
+  }
+  frame 5 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=2 ry=2
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 25 7
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 5 3
+        point 20 10
+        point 29 5
+        point 8 1
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 20 16
+        point 21 22
+      }
+    }
+  }
+  frame 6 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=2 ry=2
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 25 7
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 5 2
+        point 20 8
+        point 29 3
+        point 8 19
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 20 16
+      }
+    }
+  }
+  frame 7 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=2 ry=2
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 25 7
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 5 1
+        point 20 6
+        point 29 1
+        point 8 17
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 20 16
+      }
+    }
+  }
+  frame 8 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=4 ry=4
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#f4d58d" cx=25 cy=7 fill=#true rx=1 ry=1
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 25 2
+        point 20 6
+        point 30 6
+        point 25 12
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 5 20
+        point 20 4
+        point 29 19
+        point 8 15
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 19 15
+        point 20 20
+        point 21 22
+      }
+    }
+  }
+  frame 9 {
+    ellipse color="#171329" cx=25 cy=7 fill=#true rx=4 ry=4
+    ellipse color="#8ef6d2" cx=25 cy=7 fill=#true rx=3 ry=3
+    ellipse color="#f4d58d" cx=25 cy=7 fill=#true rx=1 ry=1
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 25 2
+        point 20 6
+        point 30 6
+        point 25 12
+      }
+    }
+    pencil color="#f4d58d" size=1 {
+      points {
+        point 5 18
+        point 20 2
+        point 29 17
+        point 8 13
+      }
+    }
+    pencil color="#8ef6d2" size=1 {
+      points {
+        point 19 15
+        point 20 20
+        point 21 22
+      }
+    }
+  }
+}
