@@ -183,6 +183,7 @@ const fn supports_expected_revision(tool: ToolName) -> bool {
             | ToolName::DocCheckpoint
             | ToolName::DocDitherRamp
             | ToolName::DocDraw
+            | ToolName::DocFont
             | ToolName::DocFrame
             | ToolName::DocFx
             | ToolName::DocLayer
@@ -302,6 +303,25 @@ fn strip_nonstandard_formats(schema: &mut Value) {
         Value::Array(items) => {
             for v in items {
                 strip_nonstandard_formats(v);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Font metadata is nested and typed; explain its pixel units once in the tool
+/// description instead of repeating the Rust API docs in every property.
+fn compact_font_schema(schema: &mut Value) {
+    match schema {
+        Value::Object(fields) => {
+            fields.remove("description");
+            for value in fields.values_mut() {
+                compact_font_schema(value);
+            }
+        }
+        Value::Array(items) => {
+            for value in items {
+                compact_font_schema(value);
             }
         }
         _ => {}
@@ -677,13 +697,24 @@ impl Atelier {
             .map(|mut t| {
                 let mut schema = Value::Object((*t.input_schema).clone());
                 strip_nonstandard_formats(&mut schema);
+                // MCP defaults to 2020-12. Omit that repeated declaration;
+                // keep any explicitly different dialect intact.
+                // https://modelcontextprotocol.io/specification/2025-11-25/basic#schema-dialect
+                if schema.get("$schema").and_then(Value::as_str)
+                    == Some("https://json-schema.org/draft/2020-12/schema")
+                {
+                    schema.as_object_mut().unwrap().remove("$schema");
+                }
+                if t.name == "doc_font" {
+                    compact_font_schema(&mut schema);
+                }
                 if let Ok(tool) = t.name.parse::<ToolName>()
                     && supports_expected_revision(tool)
                     && let Some(properties) =
                         schema.get_mut("properties").and_then(Value::as_object_mut)
                 {
                     // Keep this deliberately description-free: the same compact
-                    // property appears on twelve schemas and must fit the fixed
+                    // property appears on thirteen schemas and must fit the fixed
                     // 32 KiB registry budget. Server instructions explain it once.
                     properties.insert(
                         "expected_revision".into(),
@@ -976,6 +1007,7 @@ impl Atelier {
             ToolName::DocContactSheet => call!(DocContactSheet, doc_contact_sheet),
             ToolName::DocRef => call!(DocRefOp, doc_ref),
             ToolName::DocExport => call!(DocExport, doc_export),
+            ToolName::DocFont => call!(DocFont, doc_font),
         })
     }
 }
@@ -991,6 +1023,7 @@ fn is_store_mutation(tool: ToolName, args: &Value) -> bool {
     !matches!(
         (tool, op),
         (ToolName::DocRef, Some("analyze" | "compare" | "diff"))
+            | (ToolName::DocFont, Some("get"))
             | (ToolName::DocPalette, Some("report"))
             | (ToolName::DocCheckpoint, Some("list"))
     ) && !matches!(
@@ -1236,7 +1269,7 @@ impl ServerHandler for Atelier {
              HTTP, CLI, and replay stay equivalent. Save a \
              doc_checkpoint before destructive edits. Successful document calls return a \
              revision; pass it as expected_revision on a later mutation to reject stale writes. \
-             All 25 tools are advertised."
+             All 26 tools are advertised."
                 .into(),
         );
         info
@@ -1304,7 +1337,7 @@ mod tests {
             .instructions
             .unwrap_or_default();
         assert!(
-            instructions.contains("25 tools"),
+            instructions.contains("26 tools"),
             "get_info instructions drifted from the tool count"
         );
     }
@@ -1355,6 +1388,7 @@ mod tests {
                 "doc_checkpoint",
                 "doc_dither_ramp",
                 "doc_draw",
+                "doc_font",
                 "doc_frame",
                 "doc_fx",
                 "doc_layer",
@@ -1464,9 +1498,9 @@ mod tests {
         // `atelier tools` lists the registry only; building a `Studio` for it
         // used to create ~/.atelier/documents as a side effect of `--help`-level
         // work. The router is an associated fn, so nothing here touches disk.
-        assert_eq!(Atelier::registry_tools().len(), 25);
-        assert!(tools_text().starts_with("atelier tools — 25 tools\n"));
-        assert!(tools_markdown().contains("**25** tools"));
+        assert_eq!(Atelier::registry_tools().len(), 26);
+        assert!(tools_text().starts_with("atelier tools — 26 tools\n"));
+        assert!(tools_markdown().contains("**26** tools"));
     }
 
     #[test]
@@ -2204,6 +2238,57 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir);
         Atelier::with_studio(studio)
+    }
+
+    #[tokio::test]
+    async fn rgb_export_uses_shared_dispatch_and_rejects_animation_options() {
+        let atelier = temp_atelier("rgb-export");
+        let created = atelier
+            .dispatch(
+                ToolName::DocNew,
+                json!({"name":"rgb", "width":1, "height":1}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let id = result_json(&created).unwrap()["doc_id"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        let out = std::env::temp_dir().join("atelier-srv-test-rgb-export/rgb.png");
+        let args =
+            json!({"doc_id":id, "op":"sheet", "out_path":out, "scale":1, "color_mode":"rgb"});
+        let failed = atelier
+            .dispatch(ToolName::DocExport, args.clone(), "test")
+            .await
+            .unwrap();
+        assert!(is_error_result(&failed));
+        assert!(!out.exists());
+        atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({"doc_id":id, "layer":0, "frame":0, "op":"fill_cel", "color":[7,19,241]}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let exported = atelier
+            .dispatch(ToolName::DocExport, args, "test")
+            .await
+            .unwrap();
+        assert!(!is_error_result(&exported));
+        assert_eq!(result_json(&exported).unwrap()["format"], "RGB888");
+        assert_eq!(std::fs::read(&out).unwrap()[25], 2); // PNG IHDR RGB colour type.
+        assert_eq!(atelier.studio().journal(&id).unwrap().len(), 2);
+        let failed = atelier
+            .dispatch(
+                ToolName::DocExport,
+                json!({"doc_id":id, "op":"anim", "out_path":out, "color_mode":"rgb"}),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(is_error_result(&failed));
     }
 
     #[tokio::test(flavor = "current_thread")]

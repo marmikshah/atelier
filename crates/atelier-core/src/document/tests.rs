@@ -838,6 +838,7 @@ fn aggregate_cel_pixels_are_rejected_before_decoding() {
         tags: Vec::new(),
         cels,
         reference: None,
+        font: None,
     };
     std::fs::write(dir.join("doc.json"), serde_json::to_vec(&metadata).unwrap()).unwrap();
 
@@ -1131,6 +1132,91 @@ fn oversized_generated_outputs_are_rejected_before_writing_files() {
         );
     }
     let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn rgb_sheet_preserves_pixels_scaling_and_both_metadata_dialects() {
+    let dir = std::env::temp_dir().join(format!("atelier_rgb_sheet_{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let mut d = Document::new("rgb", 2, 1);
+    d.fill_cel(0, 0, [1, 127, 254, 255]).unwrap();
+    d.pencil(0, 0, &[(1, 0)], [253, 2, 129, 255], 1).unwrap();
+    d.add_frame(80, Some(0)).unwrap();
+    for standard in [false, true] {
+        let out = dir.join(if standard {
+            "standard.png"
+        } else {
+            "native.png"
+        });
+        if standard {
+            d.export_sheet_std_with_color_mode(&out, 3, PngColorMode::Rgb)
+                .unwrap();
+        } else {
+            d.export_sheet_with_color_mode(&out, 3, PngColorMode::Rgb)
+                .unwrap();
+        }
+        let reader = png::Decoder::new(std::io::BufReader::new(std::fs::File::open(&out).unwrap()))
+            .read_info()
+            .unwrap();
+        assert_eq!(reader.info().color_type, png::ColorType::Rgb);
+        assert_eq!(reader.info().bit_depth, png::BitDepth::Eight);
+        let image = image::open(&out).unwrap().to_rgb8();
+        assert_eq!(image.dimensions(), (12, 3));
+        for (x, _, p) in image.enumerate_pixels() {
+            assert_eq!(
+                p.0,
+                if x % 6 < 3 {
+                    [1, 127, 254]
+                } else {
+                    [253, 2, 129]
+                }
+            );
+        }
+        let sidecar: Value =
+            serde_json::from_slice(&std::fs::read(out.with_extension("json")).unwrap()).unwrap();
+        assert_eq!(
+            if standard {
+                &sidecar["meta"]["format"]
+            } else {
+                &sidecar["format"]
+            },
+            "RGB888"
+        );
+    }
+    let out = dir.join("default.png");
+    d.export_sheet(&out, 1).unwrap();
+    let reader = png::Decoder::new(std::io::BufReader::new(std::fs::File::open(&out).unwrap()))
+        .read_info()
+        .unwrap();
+    assert_eq!(reader.info().color_type, png::ColorType::Rgba);
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn rgb_sheet_rejects_transparency_without_replacing_outputs() {
+    let dir = std::env::temp_dir().join(format!("atelier_rgb_alpha_{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    for alpha in [0, 254] {
+        let mut d = Document::new("alpha", 1, 1);
+        d.fill_cel(0, 0, [10, 20, 30, 255]).unwrap();
+        d.add_frame(100, None).unwrap();
+        d.fill_cel(0, 1, [40, 50, 60, alpha]).unwrap();
+        for standard in [false, true] {
+            let out = dir.join("existing.png");
+            let sidecar = out.with_extension("json");
+            std::fs::write(&out, b"previous PNG").unwrap();
+            std::fs::write(&sidecar, b"previous sidecar").unwrap();
+            let result = if standard {
+                d.export_sheet_std_with_color_mode(&out, 2, PngColorMode::Rgb)
+            } else {
+                d.export_sheet_with_color_mode(&out, 2, PngColorMode::Rgb)
+            };
+            assert!(result.unwrap_err().contains("fully opaque"));
+            assert_eq!(std::fs::read(&out).unwrap(), b"previous PNG");
+            assert_eq!(std::fs::read(&sidecar).unwrap(), b"previous sidecar");
+        }
+    }
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]

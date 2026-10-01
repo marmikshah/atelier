@@ -3,12 +3,12 @@
 //! A `Document` is a canvas of ordered **layers** (opacity / visibility / blend)
 //! over a timeline of **frames** (each with a duration). A **cel** is one
 //! layer×frame image placed at (x,y); cels are sparse. The document also holds a
-//! **palette** and animation **tags** (named frame ranges).
+//! **palette**, animation **tags** (named frame ranges), and optional pixel-font metadata.
 //!
 //! Persistence: a directory with `doc.json` (structure + cel file refs) and one
 //! PNG per cel under `cels/`. Rendering flattens visible layers at a frame with
 //! source-over compositing scaled by layer opacity; export covers spritesheets
-//! (+ JSON sidecars) and animated GIF/APNG.
+//! (+ JSON sidecars), animated GIF/APNG, and static TrueType pixel fonts.
 
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -25,6 +25,7 @@ use crate::raster;
 mod budget;
 mod draw;
 mod export;
+mod font;
 mod fx;
 mod operation;
 mod palette;
@@ -35,6 +36,10 @@ mod timeline;
 #[cfg(test)]
 mod tests;
 
+pub use export::PngColorMode;
+pub use font::{
+    FontGlyph, FontMeta, MAX_FONT_GLYPHS, MAX_FONT_MAPPINGS, MAX_FONT_PIXELS, MAX_FONT_POINTS,
+};
 pub use fx::{DitherAxis, DitherPattern};
 pub use operation::{OpSide, color_array, draw_ops, fx_ops, operation_schema, validate_op};
 pub use render::{ValueView, seam_axis_img};
@@ -157,6 +162,9 @@ pub struct DocMeta {
     /// Reference image filename inside the doc dir (`doc_ref op=set`).
     /// — the original the artwork is recreating, kept for compare loops.
     pub reference: Option<String>,
+    /// Optional static pixel-font metadata. Legacy documents have no font.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font: Option<FontMeta>,
 }
 
 impl DocMeta {
@@ -509,6 +517,9 @@ fn validate_meta(meta: &DocMeta) -> Result<(), String> {
             "stored reference must be 'reference.png', got '{reference}'"
         ));
     }
+    if let Some(font) = &meta.font {
+        font.validate(meta)?;
+    }
     Ok(())
 }
 
@@ -535,6 +546,7 @@ fn structure_value(meta: &DocMeta, mut cel_keys: Vec<(usize, usize)>) -> Value {
         "palette": meta.palette,
         "palette_len": meta.palette.len(),
         "reference": meta.reference,
+        "font": meta.font,
     })
 }
 
@@ -670,8 +682,8 @@ impl Document {
     }
 
     /// Set or clear the stored reference-image file name, returning the
-    /// previous one (so a caller can delete the replaced file). The one
-    /// meta field external callers may write — it has no cel coupling.
+    /// previous one (so a caller can delete the replaced file). This field
+    /// has no cel coupling.
     pub fn set_reference_file(&mut self, name: Option<String>) -> Option<String> {
         std::mem::replace(&mut self.meta.reference, name)
     }
@@ -695,6 +707,7 @@ impl Document {
             tags: Vec::new(),
             cels: Vec::new(),
             reference: None,
+            font: None,
         };
         Document {
             meta,

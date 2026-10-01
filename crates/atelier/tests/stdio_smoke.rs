@@ -184,4 +184,46 @@ fn stdio_server_handshakes_lists_and_calls() {
         .and_then(Value::as_str)
         .unwrap_or_default();
     assert!(text.contains("\"w\":8"), "explicit-id call payload: {text}");
+
+    let drawn = s.request(
+        "tools/call",
+        json!({"name":"doc_draw","arguments":{
+            "doc_id":doc_id,"layer":0,"frame":0,"op":"fill_cel","color":[17,31,241]
+        }}),
+    );
+    assert_ne!(drawn["isError"], true);
+    let font = s.request(
+        "tools/call",
+        json!({"name":"doc_font","arguments":{
+            "doc_id":doc_id,"op":"set","expected_revision":2,"font":{
+                "family":"Stdio Pixel","baseline":7,"ascent":7,"descent":1,
+                "missing_glyph":0,"space_glyph":1,"glyphs":[
+                    {"name":"missing","codepoints":[],"rect":[0,0,1,1],"advance":1},
+                    {"name":"space","codepoints":[32],"rect":null,"advance":4},
+                    {"name":"A","codepoints":[65],"rect":[1,0,1,1],"advance":2}
+                ]
+            }
+        }}),
+    );
+    assert_ne!(font["isError"], true, "font config: {font}");
+    let out = std::env::temp_dir().join(format!("atelier-stdio-smoke-{}", std::process::id()));
+    let exported = s.request(
+        "tools/call",
+        json!({"name":"doc_export","arguments":{
+            "doc_id":doc_id,"op":"font","out_path":out.join("font.ttf")
+        }}),
+    );
+    assert_ne!(exported["isError"], true, "font export: {exported}");
+    assert_eq!(
+        &std::fs::read(out.join("font.ttf")).unwrap()[..4],
+        &[0, 1, 0, 0]
+    );
+    let rgb = s.request(
+        "tools/call",
+        json!({"name":"doc_export","arguments":{
+            "doc_id":doc_id,"op":"sheet","out_path":out.join("rgb.png"),"scale":1,"color_mode":"rgb"
+        }}),
+    );
+    assert_ne!(rgb["isError"], true, "RGB export: {rgb}");
+    assert_eq!(std::fs::read(out.join("rgb.png")).unwrap()[25], 2);
 }

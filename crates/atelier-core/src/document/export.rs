@@ -3,11 +3,68 @@
 use std::path::Path;
 
 use image::{Rgba, RgbaImage};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::raster;
 
 use super::Document;
+
+/// PNG channel layout. RGB exports require a fully opaque rendered sheet.
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum PngColorMode {
+    #[default]
+    Rgba,
+    Rgb,
+}
+
+impl PngColorMode {
+    const fn pixel_format(self) -> &'static str {
+        match self {
+            Self::Rgba => "RGBA8888",
+            Self::Rgb => "RGB888",
+        }
+    }
+}
+
+fn save_sheet_png(sheet: &RgbaImage, out: &Path, color_mode: PngColorMode) -> Result<(), String> {
+    // Validate before opening the output so a failed RGB export cannot replace
+    // a previously exported asset or leave a partial PNG behind.
+    let rgb = if color_mode == PngColorMode::Rgb {
+        if let Some((x, y, pixel)) = sheet.enumerate_pixels().find(|(_, _, p)| p.0[3] != 255) {
+            return Err(format!(
+                "RGB PNG export requires fully opaque pixels; pixel ({x}, {y}) has alpha {}",
+                pixel.0[3]
+            ));
+        }
+        Some(
+            sheet
+                .as_raw()
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .flat_map(|p| p[..3].iter().copied())
+                .collect::<Vec<u8>>(),
+        )
+    } else {
+        None
+    };
+    let file = std::fs::File::create(out).map_err(|e| e.to_string())?;
+    let mut encoder =
+        png::Encoder::new(std::io::BufWriter::new(file), sheet.width(), sheet.height());
+    encoder.set_color(match color_mode {
+        PngColorMode::Rgba => png::ColorType::Rgba,
+        PngColorMode::Rgb => png::ColorType::Rgb,
+    });
+    encoder.set_depth(png::BitDepth::Eight);
+    let mut writer = encoder.write_header().map_err(|e| e.to_string())?;
+    writer
+        .write_image_data(rgb.as_deref().unwrap_or(sheet.as_raw()))
+        .map_err(|e| e.to_string())?;
+    writer.finish().map_err(|e| e.to_string())
+}
 
 impl Document {
     /// Render the horizontal spritesheet image (every frame side by side,
@@ -36,9 +93,19 @@ impl Document {
     }
 
     pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
+        self.export_sheet_with_color_mode(out, scale, PngColorMode::Rgba)
+    }
+
+    /// Export a PNG sheet with native metadata, optionally requiring RGB.
+    pub fn export_sheet_with_color_mode(
+        &self,
+        out: &Path,
+        scale: u32,
+        color_mode: PngColorMode,
+    ) -> Result<Value, String> {
         let n = self.meta.frames.len();
         let (sheet, fw, fh) = self.sheet_image(scale)?;
-        sheet.save(out).map_err(|e| e.to_string())?;
+        save_sheet_png(&sheet, out, color_mode)?;
         let frames: Vec<Value> = self
             .meta
             .frames
@@ -60,6 +127,7 @@ impl Document {
         let meta = json!({
             "path": out.to_string_lossy(), "frame_w": fw, "frame_h": fh,
             "count": n, "frames": frames, "tags": tags, "palette": self.meta.palette,
+            "color_mode": color_mode, "format": color_mode.pixel_format(),
         });
         let mp = out.with_extension("json");
         std::fs::write(
@@ -75,8 +143,18 @@ impl Document {
     /// engines' existing sheet importers already parse (`frames` keyed by name
     /// with `frame`/`sourceSize`/`duration`, `meta.frameTags`).
     pub fn export_sheet_std(&self, out: &Path, scale: u32) -> Result<Value, String> {
+        self.export_sheet_std_with_color_mode(out, scale, PngColorMode::Rgba)
+    }
+
+    /// Export a PNG sheet with standard metadata, optionally requiring RGB.
+    pub fn export_sheet_std_with_color_mode(
+        &self,
+        out: &Path,
+        scale: u32,
+        color_mode: PngColorMode,
+    ) -> Result<Value, String> {
         let (sheet, fw, fh) = self.sheet_image(scale)?;
-        sheet.save(out).map_err(|e| e.to_string())?;
+        save_sheet_png(&sheet, out, color_mode)?;
         let stem = out
             .file_stem()
             .map(|s| s.to_string_lossy().to_string())
@@ -111,7 +189,7 @@ impl Document {
                 "app": "atelier",
                 "version": env!("CARGO_PKG_VERSION"),
                 "image": image_name,
-                "format": "RGBA8888",
+                "format": color_mode.pixel_format(),
                 "size": {"w": sheet.width(), "h": sheet.height()},
                 "scale": "1",
                 "frameTags": frame_tags,
@@ -130,6 +208,7 @@ impl Document {
             "count": self.meta.frames.len(),
             "frame_w": fw,
             "frame_h": fh,
+            "color_mode": color_mode,
         }))
     }
 

@@ -36,7 +36,7 @@ mod transaction;
 mod view;
 pub use control::{
     AlphaMode, AnimAuditMode, AnimationFormat, CheckpointAction, CompareMode, DiffRender,
-    DocumentId, DumpMode, ExportOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
+    DocumentId, DumpMode, ExportOp, FontOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta, ToolName,
 };
 pub use integrity::{IntegrityIssue, IntegritySeverity, StoreIntegrityReport};

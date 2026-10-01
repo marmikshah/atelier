@@ -56,6 +56,19 @@ impl Document {
                 if n == 1 {
                     return Err("cannot delete the last remaining frame".into());
                 }
+                if self
+                    .meta
+                    .font
+                    .as_ref()
+                    .is_some_and(|font| font.frame == frame)
+                {
+                    return Err("cannot delete the font atlas frame; clear or replace doc_font metadata first".into());
+                }
+                if let Some(font) = &mut self.meta.font
+                    && font.frame > frame
+                {
+                    font.frame -= 1;
+                }
                 self.meta.frames.remove(frame);
                 self.cels.retain(|k, _| k.1 != frame);
                 self.shift_cel_frames(frame + 1, -1);
@@ -86,6 +99,11 @@ impl Document {
                     },
                 );
                 self.shift_cel_frames(frame, 1);
+                if let Some(font) = &mut self.meta.font
+                    && font.frame >= frame
+                {
+                    font.frame += 1;
+                }
                 for t in &mut self.meta.tags {
                     if t.from >= frame {
                         t.from += 1;
@@ -104,6 +122,11 @@ impl Document {
                 let meta = self.meta.frames[frame].clone();
                 self.meta.frames.insert(frame + 1, meta);
                 self.shift_cel_frames(frame + 1, 1);
+                if let Some(font) = &mut self.meta.font
+                    && font.frame > frame
+                {
+                    font.frame += 1;
+                }
                 let to_copy: Vec<(usize, (i32, i32, RgbaImage))> = self
                     .cels
                     .iter()
@@ -140,6 +163,9 @@ impl Document {
                     let mut map = vec![0usize; n];
                     for (newi, &old) in order.iter().enumerate() {
                         map[old] = newi;
+                    }
+                    if let Some(font) = &mut self.meta.font {
+                        font.frame = map[font.frame];
                     }
                     let all: Vec<_> = self.cels.drain().collect();
                     self.cels = all
