@@ -183,6 +183,7 @@ const fn supports_expected_revision(tool: ToolName) -> bool {
             | ToolName::DocCheckpoint
             | ToolName::DocDitherRamp
             | ToolName::DocDraw
+            | ToolName::DocFont
             | ToolName::DocFrame
             | ToolName::DocFx
             | ToolName::DocLayer
@@ -302,6 +303,25 @@ fn strip_nonstandard_formats(schema: &mut Value) {
         Value::Array(items) => {
             for v in items {
                 strip_nonstandard_formats(v);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Font metadata is nested and typed; explain its pixel units once in the tool
+/// description instead of repeating the Rust API docs in every property.
+fn compact_font_schema(schema: &mut Value) {
+    match schema {
+        Value::Object(fields) => {
+            fields.remove("description");
+            for value in fields.values_mut() {
+                compact_font_schema(value);
+            }
+        }
+        Value::Array(items) => {
+            for value in items {
+                compact_font_schema(value);
             }
         }
         _ => {}
@@ -677,13 +697,24 @@ impl Atelier {
             .map(|mut t| {
                 let mut schema = Value::Object((*t.input_schema).clone());
                 strip_nonstandard_formats(&mut schema);
+                // MCP defaults to 2020-12. Omit that repeated declaration;
+                // keep any explicitly different dialect intact.
+                // https://modelcontextprotocol.io/specification/2025-11-25/basic#schema-dialect
+                if schema.get("$schema").and_then(Value::as_str)
+                    == Some("https://json-schema.org/draft/2020-12/schema")
+                {
+                    schema.as_object_mut().unwrap().remove("$schema");
+                }
+                if t.name == "doc_font" {
+                    compact_font_schema(&mut schema);
+                }
                 if let Ok(tool) = t.name.parse::<ToolName>()
                     && supports_expected_revision(tool)
                     && let Some(properties) =
                         schema.get_mut("properties").and_then(Value::as_object_mut)
                 {
                     // Keep this deliberately description-free: the same compact
-                    // property appears on twelve schemas and must fit the fixed
+                    // property appears on thirteen schemas and must fit the fixed
                     // 32 KiB registry budget. Server instructions explain it once.
                     properties.insert(
                         "expected_revision".into(),
@@ -976,6 +1007,7 @@ impl Atelier {
             ToolName::DocContactSheet => call!(DocContactSheet, doc_contact_sheet),
             ToolName::DocRef => call!(DocRefOp, doc_ref),
             ToolName::DocExport => call!(DocExport, doc_export),
+            ToolName::DocFont => call!(DocFont, doc_font),
         })
     }
 }
@@ -991,6 +1023,7 @@ fn is_store_mutation(tool: ToolName, args: &Value) -> bool {
     !matches!(
         (tool, op),
         (ToolName::DocRef, Some("analyze" | "compare" | "diff"))
+            | (ToolName::DocFont, Some("get"))
             | (ToolName::DocPalette, Some("report"))
             | (ToolName::DocCheckpoint, Some("list"))
     ) && !matches!(
@@ -1236,7 +1269,7 @@ impl ServerHandler for Atelier {
              HTTP, CLI, and replay stay equivalent. Save a \
              doc_checkpoint before destructive edits. Successful document calls return a \
              revision; pass it as expected_revision on a later mutation to reject stale writes. \
-             All 25 tools are advertised."
+             All 26 tools are advertised."
                 .into(),
         );
         info
@@ -1304,7 +1337,7 @@ mod tests {
             .instructions
             .unwrap_or_default();
         assert!(
-            instructions.contains("25 tools"),
+            instructions.contains("26 tools"),
             "get_info instructions drifted from the tool count"
         );
     }
@@ -1355,6 +1388,7 @@ mod tests {
                 "doc_checkpoint",
                 "doc_dither_ramp",
                 "doc_draw",
+                "doc_font",
                 "doc_frame",
                 "doc_fx",
                 "doc_layer",
@@ -1464,9 +1498,9 @@ mod tests {
         // `atelier tools` lists the registry only; building a `Studio` for it
         // used to create ~/.atelier/documents as a side effect of `--help`-level
         // work. The router is an associated fn, so nothing here touches disk.
-        assert_eq!(Atelier::registry_tools().len(), 25);
-        assert!(tools_text().starts_with("atelier tools — 25 tools\n"));
-        assert!(tools_markdown().contains("**25** tools"));
+        assert_eq!(Atelier::registry_tools().len(), 26);
+        assert!(tools_text().starts_with("atelier tools — 26 tools\n"));
+        assert!(tools_markdown().contains("**26** tools"));
     }
 
     #[test]

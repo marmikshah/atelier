@@ -838,6 +838,7 @@ fn aggregate_cel_pixels_are_rejected_before_decoding() {
         tags: Vec::new(),
         cels,
         reference: None,
+        font: None,
     };
     std::fs::write(dir.join("doc.json"), serde_json::to_vec(&metadata).unwrap()).unwrap();
 

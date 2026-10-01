@@ -8,13 +8,13 @@ use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
 use atelier_core::document::{
-    DitherAxis, DitherPattern, OpSide, PngColorMode, TagDirection, draw_ops, fx_ops,
+    DitherAxis, DitherPattern, FontMeta, OpSide, PngColorMode, TagDirection, draw_ops, fx_ops,
     operation_schema,
 };
 use atelier_core::raster::{Blend, SaturationCurve};
 use atelier_studio::{
     AlphaMode, AnimAuditMode, AnimationFormat, CheckpointAction, CompareMode, DiffRender,
-    DocumentId, DumpMode, ExportOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
+    DocumentId, DumpMode, ExportOp, FontOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta,
 };
 
@@ -211,10 +211,10 @@ impl JsonSchema for DocFx {
 #[serde(deny_unknown_fields)]
 pub(crate) struct DocExport {
     pub(crate) doc_id: DocumentId,
-    /// sheet | anim.
+    /// sheet | anim | font (static TrueType, using stored doc_font metadata).
     pub(crate) op: ExportOp,
     pub(crate) out_path: String,
-    /// Nearest-neighbour upscale (default 4).
+    /// `sheet`/`anim`: nearest-neighbour upscale (default 4).
     pub(crate) scale: Option<u32>,
     /// `sheet`: metadata dialect ("atelier" or "standard").
     pub(crate) meta: Option<SheetMeta>,
@@ -224,6 +224,16 @@ pub(crate) struct DocExport {
     pub(crate) format: Option<AnimationFormat>,
     /// `anim`: optional animation tag.
     pub(crate) tag: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct DocFont {
+    pub(crate) doc_id: DocumentId,
+    /// get | set | clear.
+    pub(crate) op: FontOp,
+    /// `set`: complete editable glyph mappings and metrics.
+    pub(crate) font: Option<FontMeta>,
 }
 
 #[derive(Deserialize, JsonSchema)]

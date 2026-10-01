@@ -17,3 +17,8 @@ png.workspace = true
 schemars.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+write-fonts.workspace = true
+
+[dev-dependencies]
+ttf-parser.workspace = true
+ab_glyph.workspace = true

@@ -28,7 +28,7 @@ impl Atelier {
         ))
     }
 
-    #[tool(description = "Get document structure: layers, frames, cels, and tags.")]
+    #[tool(description = "Get document structure: layers, frames, cels, tags, and font metadata.")]
     pub(crate) fn doc_info(&self, Parameters(p): Parameters<DocRef>) -> CallToolResult {
         res(self.studio().doc_info(&p.doc_id))
     }

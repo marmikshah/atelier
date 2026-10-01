@@ -27,6 +27,10 @@ base64 = "0.22.1"
 crc32fast = "1.5.0"
 image = { version = "0.25.10", default-features = false, features = ["png", "gif"] }
 png = "0.18.1" # direct: APNG animation encoder (already in the tree via image)
+write-fonts = { version = "0.53.0", features = ["read"] }
+# Independent reader and rasterizer for font-export validation.
+ttf-parser = "0.25.1"
+ab_glyph = "0.2.32"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 # Coordinates independent CLI and daemon processes that share a document store.

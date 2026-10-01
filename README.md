@@ -6,9 +6,9 @@
 </p>
 
 Atelier is an offline, headless pixel-art editor for shell automation and MCP
-clients. Its 25 tools edit layered animations, inspect rendered pixels, and
-export PNGs, spritesheets, GIFs, and APNGs. Documents and replay journals stay
-local; the editor needs no account or outbound service.
+clients. Its 26 tools edit layered animations, inspect rendered pixels, and
+export PNGs, spritesheets, GIFs, APNGs, and pixel fonts. Documents and replay
+journals stay local; the editor needs no account or outbound service.
 
 **[Explore the model showcase →](https://marmikshah.github.io/atelier/)**
 Claude, Codex, and Kimi draw the same ten briefs. Every animation includes its
@@ -73,6 +73,32 @@ RGB export requires every rendered pixel in every frame to be fully opaque;
 transparency causes an error before the output files are written. It preserves
 exact RGB values and nearest-neighbour scaling. Both the native sidecar and
 `meta:"standard"` sidecar record the PNG's channel format.
+
+Pixel glyph atlases can also be exported as static TrueType fonts. Draw glyphs
+on a transparent canvas, then store their mappings and metrics with `doc_font`.
+For a 16×8 atlas with an 8×8 missing glyph followed by an 8×8 letter A:
+
+```sh
+atelier call doc_font '{"doc_id":"<returned-id>","op":"set","font":{"family":"My Pixel Font","baseline":7,"ascent":7,"descent":1,"missing_glyph":0,"space_glyph":1,"glyphs":[{"name":"missing","codepoints":[],"rect":[0,0,8,8],"advance":8},{"name":"space","codepoints":[32],"rect":null,"advance":4},{"name":"A","codepoints":[65],"rect":[8,0,8,8],"advance":8}]}}'
+atelier call doc_export '{"doc_id":"<returned-id>","op":"font","out_path":"my-pixel-font.ttf"}'
+```
+
+Glyph rectangles use `[x,y,width,height]` in the atlas; baseline is measured down
+from each rectangle's top edge. Advances, ascent, descent, line gap, and optional
+`bearing_x` are in source pixels. `frame` defaults to 0 and follows timeline
+reordering; deleting that frame requires clearing or replacing the font metadata.
+Multiple Unicode scalar values in `codepoints` share a glyph. The explicit space
+glyph has no rectangle; the missing glyph must contain solid pixels and becomes
+TrueType glyph zero. `doc_font op=get` reads metadata and `op=clear` removes it.
+Set/clear are guarded by `expected_revision` and recorded in replay journals.
+
+Export uses the visible, composited atlas frame, ignores pixel RGB colours, and
+requires alpha to be 0 or 255 inside glyph rectangles. Integer outlines preserve
+the pixel grid without curves or hinting; `gasp` requests no grid fitting or
+smoothing, though text renderers control their own antialiasing. Font units default
+to `units_per_em:1024` and `units_per_pixel:64`, so a 16-pixel em uses a 16px text
+size. Image export options such as `scale` do not apply to font export. Mappings,
+rectangles, metrics, and TrueType coordinate limits are validated before writing.
 
 ## MCP and Docker
 

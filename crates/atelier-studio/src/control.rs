@@ -238,6 +238,7 @@ parsed_control_enum! {
         DocDraw => "doc_draw",
         DocDumpRegion => "doc_dump_region",
         DocExport => "doc_export",
+        DocFont => "doc_font",
         DocFrame => "doc_frame",
         DocFrameDiff => "doc_frame_diff",
         DocFx => "doc_fx",
@@ -275,6 +276,7 @@ impl ToolName {
             | Self::DocCheckpoint
             | Self::DocDitherRamp
             | Self::DocDraw
+            | Self::DocFont
             | Self::DocFrame
             | Self::DocFx
             | Self::DocLayer
@@ -291,6 +293,7 @@ impl ToolName {
             Self::DocNew
             | Self::DocAddTag
             | Self::DocDraw
+            | Self::DocFont
             | Self::DocDitherRamp
             | Self::DocFrame
             | Self::DocFx
@@ -397,7 +400,16 @@ default_control_enum! {
 control_enum! {
     pub enum ExportOp {
         Sheet => "sheet",
-        Anim => "anim"
+        Anim => "anim",
+        Font => "font"
+    }
+}
+
+control_enum! {
+    pub enum FontOp {
+        Get => "get",
+        Set => "set",
+        Clear => "clear"
     }
 }
 
