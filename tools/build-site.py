@@ -12,14 +12,18 @@ ROOT = Path(__file__).resolve().parent.parent
 SHOWCASE = ROOT / "showcase"
 OUTPUT = ROOT / "target" / "site"
 PROVIDERS = {
-    "Anthropic": ("claude", "Claude"),
-    "OpenAI": ("codex", "Codex"),
-    "Moonshot AI": ("kimi", "Kimi"),
+    "Anthropic": ("claude", "Anthropic"),
+    "OpenAI": ("codex", "OpenAI"),
+    "Moonshot AI": ("kimi", "Moonshot AI"),
 }
 
 
 def escape(value):
     return html.escape(str(value), quote=True)
+
+
+def icon(name):
+    return f'<svg class="icon" aria-hidden="true"><use href="#icon-{name}"></use></svg>'
 
 
 def model_name(model):
@@ -60,115 +64,117 @@ def load_data():
     return data, runs
 
 
-def card(run):
-    name, effort = model_name(run["model"])
-    badge = f'<span class="effort">{escape(effort)}</span>' if effort else ""
-    tokens = f'{run["tokens"]:,}' if run.get("tokens") is not None else "Unavailable"
-    size = 192 if run["task"] == "beam" else 128
-    key, label = PROVIDERS[run["vendor"]]
-    return f"""<article class="card" data-model="{escape(run['model'])}" data-provider-key="{key}" data-provider-name="{label}" data-vendor="{escape(run['vendor'])}" data-tokens="{tokens}" data-size="{size}">
-      <div class="card-heading"><h4>{escape(name)}</h4>{badge}</div>
-      <a class="stage" href="showcase/{escape(run['gif'])}" aria-label="Open {escape(name)} {escape(run['task'])} GIF">
-        <img src="showcase/{escape(run['gif'])}" width="{size}" height="{size}" loading="lazy"
-          alt="{escape(run['task'].title())} animation by {escape(name)}" class="sprite" style="--sprite-size:{size}px">
-        <span class="stage-caption">{run['frames']} frames · 1 sec loop</span>
-      </a>
-      <div class="card-footer"><p><strong>{run['tool_calls']:,}</strong> calls <span>·</span> <strong>{run['looks']:,}</strong> looks</p>
-        <a href="showcase/{escape(run['replay'])}" download>Replay <span aria-hidden="true">↗</span></a></div>
-      <details class="run-details"><summary>Run details</summary>
-        <dl><div><dt>Recorded model</dt><dd>{escape(run['model'])}</dd></div>
-          <div><dt>Reported tokens</dt><dd>{tokens}</dd></div></dl>
-        <p>Counts vary by client. Token totals can include cached input. See the method below.</p>
-      </details>
-    </article>"""
-
-
-def gallery(data, runs):
-    sections = []
-    for task in data["tasks"]:
-        brief = (SHOWCASE / "tasks" / f"{task}.txt").read_text().strip()
-        groups = []
-        for vendor, (key, label) in PROVIDERS.items():
-            models = [model for model in reversed(data["models"]) if runs[model, task]["vendor"] == vendor]
-            if not models:
+def model_metadata(data, runs):
+    # Interleave providers, newest recorded models first, so the first columns span providers.
+    groups = [[model for model in reversed(data["models"])
+               if runs[model, data["tasks"][0]]["vendor"] == vendor] for vendor in PROVIDERS]
+    models = []
+    for index in range(max(map(len, groups))):
+        for group in groups:
+            if index >= len(group):
                 continue
-            cards = "\n".join(card(runs[model, task]) for model in models)
-            groups.append(f"""<section class="provider-group" data-provider="{key}">
-              <div class="provider-heading"><h3><span class="provider-dot {key}"></span>{label}</h3>
-                <p>{escape(vendor)} <span> / </span> {len(models)} {'model' if len(models) == 1 else 'models'}</p></div>
-              <div class="cards">{cards}</div></section>""")
-        sections.append(f"""<section class="task-section" data-task="{task}" aria-labelledby="task-{task}">
-          <div class="task-heading"><div><span class="eyebrow">The brief</span><h2 id="task-{task}">{escape(task.title())}</h2></div>
-            <span class="canvas-label">{'48 × 48' if task == 'beam' else '32 × 32'} px / 10 fps</span></div>
-          <details class="brief"><summary>Read the original prompt</summary><p>{escape(brief)}</p></details>
-          {''.join(groups)}</section>""")
-    return "\n".join(sections)
-
-
-def comparison_columns(data, runs):
-    """Default to the last recorded model from each provider, without ranking runs."""
-    task = data["tasks"][0]
-    options, defaults = [], []
-    for vendor, (_, label) in PROVIDERS.items():
-        models = [model for model in reversed(data["models"]) if runs[model, task]["vendor"] == vendor]
-        if not models:
-            continue
-        defaults.append(models[0])
-        choices = []
-        for model in models:
+            model = group[index]
             name, effort = model_name(model)
-            display = f"{name} · {effort}" if effort else name
-            choices.append(f'<option value="{model}">{escape(display)}</option>')
-        options.append(f'<optgroup label="{label}">{"".join(choices)}</optgroup>')
-    defaults.extend(model for model in reversed(data["models"]) if model not in defaults)
-    columns = []
-    for index, default in enumerate(defaults[:3], start=1):
-        optional = '<option value="">No third model</option>' if index == 3 else ""
-        columns.append(f'''<div class="comparison-column">
-          <div class="model-picker"><label class="eyebrow" for="model-{index}">Model {index:02}</label>
-            <select id="model-{index}" data-model-select data-default="{default}">{optional}{"".join(options)}</select></div>
-          <div class="comparison-slot"></div></div>''')
-    return "".join(columns)
+            vendor = runs[model, data["tasks"][0]]["vendor"]
+            key, label = PROVIDERS[vendor]
+            models.append({"id": model, "name": name, "effort": effort, "provider": key, "vendor": label})
+    return models
 
 
-def hero_samples(data, runs):
-    samples = []
-    for index, (vendor, (_, label)) in enumerate(PROVIDERS.items()):
-        models = [model for model in data["models"] if runs[model, data["tasks"][0]]["vendor"] == vendor]
-        if not models:
-            continue
-        task = ("alien", "potion", "cat")[index]
-        if task not in data["tasks"]:
-            task = data["tasks"][0]
-        run = runs[models[-1], task]
-        name, _ = model_name(run["model"])
-        samples.append(f'<div class="hero-sample sample-{index + 1}"><img src="showcase/{escape(run["gif"])}" '
-                       f'width="128" height="128" alt="{escape(name)} {escape(task)} animation">'
-                       f'<span>{label} / {escape(task.title())}</span></div>')
-    return "".join(samples)
+def provider_badge(model):
+    return f'<span class="provider-badge {model["provider"]}"><span></span>{escape(model["vendor"])}</span>'
+
+
+def artwork(run, preview=False):
+    name, effort = model_name(run["model"])
+    display = f"{name} ({effort})" if effort else name
+    canvas = 48 if run["task"] == "beam" else 32
+    key = f'{run["model"]}/{run["task"]}'
+    return f'''<a class="{'run-preview' if preview else 'artwork-stage'}" href="showcase/{escape(run['gif'])}"
+      data-run="{key}" aria-label="Inspect {escape(run['task'].title())} by {escape(display)}" style="--canvas:{canvas}">
+      <img src="showcase/{escape(run['gif'])}" width="{canvas * 4}" height="{canvas * 4}" loading="lazy"
+        alt="{escape(run['task'].title())} by {escape(display)}">
+      {'' if preview else f'<span class="inspect-mark">{icon("expand")}</span>'}</a>'''
+
+
+def matrix_table(data, runs, models):
+    headings = []
+    for model in models:
+        effort = f'<span class="effort">{model["effort"]}</span>' if model["effort"] else ""
+        headings.append(f'''<th scope="col" data-model-column="{model['id']}"><div class="model-name">{escape(model['name'])}{effort}</div>{provider_badge(model)}</th>''')
+    rows = []
+    for index, task in enumerate(data["tasks"], start=1):
+        cells = []
+        for model in models:
+            run = runs[model["id"], task]
+            tokens = f'{run["tokens"]:,}' if run.get("tokens") is not None else "—"
+            cells.append(f'''<td data-model-column="{model['id']}">{artwork(run)}
+              <div class="cell-stats"><p><span><strong>{run['tool_calls']:,}</strong> calls</span><span><strong>{run['looks']:,}</strong> looks</span></p>
+              <p><span>Tokens</span><strong title="{'Not reported' if tokens == '—' else 'Reported tokens'}">{tokens}</strong></p></div></td>''')
+        rows.append(f'''<tr data-task-row="{task}"><th scope="row" class="brief-column"><span class="brief-number">{index:02}</span>
+          <strong>{escape(task.title())}</strong><span class="canvas-size">{'48 × 48' if task == 'beam' else '32 × 32'} px</span>
+          <a class="prompt-link" href="showcase/tasks/{task}.txt" data-brief="{task}">View prompt {icon('arrow')}</a></th>{''.join(cells)}</tr>''')
+    return f'''<table id="matrix-table" class="matrix-table"><caption class="visually-hidden">Each row is one frozen brief. Each column is a model drawing that brief.</caption>
+      <thead><tr><th scope="col" class="brief-column corner-heading">Brief <span>{len(data['tasks'])} tasks</span></th>{''.join(headings)}</tr></thead>
+      <tbody>{''.join(rows)}</tbody></table>'''
+
+
+def runs_table(data, runs, models):
+    columns = [("task", "Brief"), ("model", "Model"), ("provider", "Provider"), (None, "Preview"),
+               ("calls", "Calls"), ("looks", "Looks"), ("tokens", "Reported tokens"), (None, "Replay")]
+    headings = []
+    for key, label in columns:
+        if key:
+            headings.append(f'<th scope="col" data-sort-heading="{key}" aria-sort="{"ascending" if key == "task" else "none"}"><button type="button" data-sort="{key}">{label}{icon("sort")}</button></th>')
+        else:
+            headings.append(f'<th scope="col">{label}</th>')
+    rows = []
+    for task in data["tasks"]:
+        for model in models:
+            run = runs[model["id"], task]
+            tokens = f'{run["tokens"]:,}' if run.get("tokens") is not None else "—"
+            effort = f'<span class="effort">{model["effort"]}</span>' if model["effort"] else ""
+            rows.append(f'''<tr data-run-row="{model['id']}/{task}"><th scope="row">{escape(task.title())}</th>
+              <td><span class="data-model-name">{escape(model['name'])}</span>{effort}</td><td>{provider_badge(model)}</td>
+              <td>{artwork(run, preview=True)}</td><td class="numeric">{run['tool_calls']:,}</td><td class="numeric">{run['looks']:,}</td>
+              <td class="numeric" title="{'Not reported' if tokens == '—' else 'Reported tokens'}">{tokens}</td>
+              <td><a class="replay-link" href="showcase/{escape(run['replay'])}" download aria-label="Download {escape(task)} replay by {escape(model['name'])}">{icon('download')}<span>Replay</span></a></td></tr>''')
+    return f'''<table id="runs-table" class="runs-table" hidden><caption class="visually-hidden">Recorded run data. Counts vary between clients and are not an efficiency ranking.</caption>
+      <thead><tr>{''.join(headings)}</tr></thead><tbody>{''.join(rows)}</tbody></table>'''
+
+
+def filters(data, models):
+    providers = []
+    choices = []
+    for vendor, (key, label) in PROVIDERS.items():
+        count = sum(model["provider"] == key for model in models)
+        if count:
+            providers.append(f'<label class="check-option"><input type="checkbox" data-provider-filter value="{key}" checked><span class="provider-dot {key}"></span><span>{label}</span><span class="option-count">{count}</span></label>')
+        for model in models:
+            if model["provider"] != key:
+                continue
+            effort = f'<span class="model-effort">{model["effort"]}</span>' if model["effort"] else ""
+            choices.append(f'<label class="check-option model-option" data-model-provider="{key}"><input type="checkbox" data-model-filter value="{model["id"]}" checked><span>{escape(model["name"])}{effort}</span></label>')
+    return "".join(providers), "".join(choices)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args()
     data, runs = load_data()
-    vendors = {run["vendor"] for run in data["runs"]}
-    template = (ROOT / "site" / "index.html").read_text()
+    models = model_metadata(data, runs)
+    briefs = {task: (SHOWCASE / "tasks" / f"{task}.txt").read_text().strip() for task in data["tasks"]}
+    provider_filters, model_filters = filters(data, models)
+    client_data = {"models": models, "tasks": data["tasks"], "briefs": briefs, "runs": data["runs"]}
     replacements = {
-        "MODEL_COUNT": str(len(data["models"])),
-        "RUN_COUNT": str(len(runs)),
-        "PROVIDER_COUNT": str(len(vendors)),
-        "TASK_COUNT": str(len(data["tasks"])),
+        "MODEL_COUNT": str(len(models)), "RUN_COUNT": str(len(runs)), "TASK_COUNT": str(len(data["tasks"])),
         "TASK_OPTIONS": "".join(f'<option value="{task}">{escape(task.title())}</option>' for task in data["tasks"]),
-        "PROVIDER_BUTTONS": "".join(f'<button type="button" data-filter="{key}" aria-pressed="false">{label}</button>'
-                                    for vendor, (key, label) in PROVIDERS.items() if vendor in vendors),
-        "GALLERY": gallery(data, runs),
-        "COMPARISON_COLUMNS": comparison_columns(data, runs),
-        "HERO_SAMPLES": hero_samples(data, runs),
-        "METHOD": escape(data["method"]),
-        "SERVER": escape(data["server"]),
-        "VERIFIED": escape(data["verified"]),
+        "PROVIDER_FILTERS": provider_filters, "MODEL_FILTERS": model_filters,
+        "MATRIX_TABLE": matrix_table(data, runs, models), "RUNS_TABLE": runs_table(data, runs, models),
+        "CLIENT_DATA": json.dumps(client_data, ensure_ascii=True, separators=(",", ":")).replace("<", "\\u003c"),
+        "METHOD": escape(data["method"]), "SERVER": escape(data["server"]), "VERIFIED": escape(data["verified"]),
     }
+    template = (ROOT / "site" / "index.html").read_text()
     for key, value in replacements.items():
         template = template.replace(f"@@{key}@@", value)
     if re.search(r"@@[A-Z_]+@@", template):
@@ -184,7 +190,7 @@ def main():
         shutil.copyfile(ROOT / "site" / name, OUTPUT / name)
     (OUTPUT / "index.html").write_text(template)
     (OUTPUT / ".nojekyll").touch()
-    print(f"Built {len(runs)} animations from {len(data['models'])} models into target/site")
+    print(f"Built {len(runs)} animations from {len(models)} models into target/site")
 
 
 if __name__ == "__main__":

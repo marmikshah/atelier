@@ -1,204 +1,341 @@
 "use strict";
 
+const data = JSON.parse(document.querySelector("#showcase-data").textContent);
+const modelIds = data.models.map(model => model.id);
+const providerIds = [...new Set(data.models.map(model => model.provider))];
+const models = new Map(data.models.map(model => [model.id, model]));
+const runKey = run => `${run.model}/${run.task}`;
+const runs = new Map(data.runs.map(run => [runKey(run), run]));
+const sourceRuns = data.tasks.flatMap(task => modelIds.map(model => runs.get(`${model}/${task}`)));
+const matrix = document.querySelector("#matrix-table");
+const runTable = document.querySelector("#runs-table");
+const matrixRows = [...matrix.rows].map(row => ({row,
+  cells: new Map([...row.querySelectorAll("[data-model-column]")].map(cell => [cell.dataset.modelColumn, cell]))}));
+const runRows = new Map([...document.querySelectorAll("[data-run-row]")].map(row => [row.dataset.runRow, row]));
+const providerInputs = [...document.querySelectorAll("[data-provider-filter]")];
+const modelInputs = [...document.querySelectorAll("[data-model-filter]")];
 const taskSelect = document.querySelector("#task-select");
-const filters = [...document.querySelectorAll("[data-filter]")];
-const tasks = [...document.querySelectorAll("[data-task]")];
-const resultCount = document.querySelector(".result-count");
-const viewButtons = [...document.querySelectorAll("[data-view]")];
-const modelSelects = [...document.querySelectorAll("[data-model-select]")];
-const zoomButtons = [...document.querySelectorAll("[data-zoom]")];
-const backgroundButtons = [...document.querySelectorAll("[data-background]")];
-const comparison = document.querySelector("#comparison");
-const columns = document.querySelector(".comparison-columns");
+const search = document.querySelector("#brief-search");
+const zoomSelect = document.querySelector("#pixel-zoom");
+const statsInput = document.querySelector("#show-stats");
+const scrollPanel = document.querySelector(".table-scroll");
 const shareButton = document.querySelector("#share-link");
-const shareFeedback = document.querySelector(".share-feedback");
-const modelIds = new Set([...modelSelects[0].options].map(option => option.value).filter(Boolean));
-const defaultModels = modelSelects.map(select => select.dataset.default);
-const taskIds = tasks.map(task => task.dataset.task);
-const cards = new Map(tasks.map(task => [task.dataset.task,
-  new Map([...task.querySelectorAll(".card")].map(card => [card.dataset.model, card]))]));
-let view = "compare";
-let provider = "all";
-let selectedModels = defaultModels;
-let zoom = 4;
-let background = "grid";
-let comparisonKey = "";
+const shareStatus = document.querySelector("#share-status");
+const copyFallback = document.querySelector(".copy-fallback");
+const filterPanel = document.querySelector("#filter-panel");
+const filterHost = document.querySelector(".filter-host");
+const filterDialog = document.querySelector("#filter-dialog");
+const runDialog = document.querySelector("#run-dialog");
+const briefDialog = document.querySelector("#brief-dialog");
+const sortKeys = ["task", "model", "provider", "calls", "looks", "tokens"];
+const number = value => value == null ? "Not reported" : value.toLocaleString("en-US");
+const plural = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
+let state;
+let filteredRuns = [];
+let matrixOrder = modelIds.join(",");
 let shareTimer;
+let inspectedRun;
+let columnCount = modelIds.length;
+
+function readSelection(params, key, allowed, fallback) {
+  if (!params.has(key)) return [...fallback];
+  if (params.get(key) === "") return [];
+  const selected = [...new Set(params.get(key).split(","))].filter(value => allowed.includes(value));
+  return selected.length ? selected : [...fallback];
+}
 
 function readLocation() {
   const params = new URLSearchParams(window.location.search);
-  const requestedTask = params.get("task") || taskIds[0];
-  taskSelect.value = requestedTask === "all" || taskIds.includes(requestedTask) ? requestedTask : taskIds[0];
-  const requestedView = params.get("view");
-  view = ["compare", "gallery"].includes(requestedView) ? requestedView
-    : params.has("provider") || taskSelect.value === "all" ? "gallery" : "compare";
-  if (view === "compare" && taskSelect.value === "all") taskSelect.value = taskIds[0];
-  const requestedProvider = params.get("provider") || "all";
-  provider = filters.some(button => button.dataset.filter === requestedProvider) ? requestedProvider : "all";
-  const requestedModels = [...new Set((params.get("models") || "").split(","))].filter(model => modelIds.has(model));
-  selectedModels = requestedModels.length >= 2 ? requestedModels.slice(0, modelSelects.length) : [...defaultModels];
-  zoom = zoomButtons.some(button => button.dataset.zoom === params.get("zoom")) ? Number(params.get("zoom")) : 4;
-  background = backgroundButtons.some(button => button.dataset.background === params.get("background"))
-    ? params.get("background") : "grid";
+  const legacyProvider = params.get("provider");
+  state = {
+    providers: readSelection(params, "providers", providerIds, providerIds.includes(legacyProvider) ? [legacyProvider] : providerIds),
+    models: readSelection(params, "models", modelIds, modelIds),
+    task: data.tasks.includes(params.get("task")) ? params.get("task") : "all",
+    query: params.get("q") || "",
+    view: ["runs", "data"].includes(params.get("view")) ? "runs" : "artwork",
+    zoom: ["2", "3", "4", "6"].includes(params.get("zoom")) ? Number(params.get("zoom")) : window.innerWidth <= 600 ? 2 : 3,
+    background: ["grid", "light", "dark"].includes(params.get("background")) ? params.get("background") : "grid",
+    stats: params.get("stats") !== "0",
+    sort: sortKeys.includes(params.get("sort")) ? params.get("sort") : "task",
+    direction: params.get("direction") === "desc" ? "desc" : "asc",
+  };
 }
 
-function writeLocation(push = true) {
+function writeLocation(mode = "push") {
   const url = new URL(window.location.href);
-  url.searchParams.set("task", taskSelect.value);
-  url.searchParams.set("models", selectedModels.join(","));
-  if (view === "compare") url.searchParams.delete("view");
-  else url.searchParams.set("view", view);
-  if (view === "gallery" && provider !== "all") url.searchParams.set("provider", provider);
-  else url.searchParams.delete("provider");
-  if (zoom === 4) url.searchParams.delete("zoom");
-  else url.searchParams.set("zoom", String(zoom));
-  if (background === "grid") url.searchParams.delete("background");
-  else url.searchParams.set("background", background);
-  if (url.href !== window.location.href) window.history[push ? "pushState" : "replaceState"](null, "", url);
-}
-
-function syncModelSelects() {
-  modelSelects.forEach((select, index) => {
-    select.value = selectedModels[index] || "";
-    for (const option of select.options) {
-      option.disabled = Boolean(option.value) && option.value !== select.value && selectedModels.includes(option.value);
-    }
-    select.closest(".comparison-column").classList.toggle("is-empty", !select.value);
-  });
-}
-
-function renderComparison() {
-  const task = tasks.find(section => section.dataset.task === taskSelect.value);
-  document.querySelector("#comparison-title").textContent = task.querySelector("h2").textContent;
-  document.querySelector("#comparison-canvas").textContent = task.querySelector(".canvas-label").textContent;
-  document.querySelector("#comparison-brief p").textContent = task.querySelector(".brief p").textContent;
-  syncModelSelects();
-  columns.style.setProperty("--columns", selectedModels.length);
-  const canvasSize = Number(cards.get(taskSelect.value).get(selectedModels[0]).dataset.size) / 4;
-  columns.style.setProperty("--column-width", `${Math.max(280, canvasSize * zoom + 32)}px`);
-  comparison.style.setProperty("--display-size", `${canvasSize * zoom}px`);
-  comparison.style.setProperty("--stage-height", `${Math.max(240, canvasSize * zoom + 56)}px`);
-  comparison.dataset.background = background;
-  for (const button of zoomButtons) button.setAttribute("aria-pressed", String(Number(button.dataset.zoom) === zoom));
-  for (const button of backgroundButtons) button.setAttribute("aria-pressed", String(button.dataset.background === background));
-
-  const key = `${taskSelect.value}/${selectedModels.join(",")}`;
-  if (key === comparisonKey) return;
-  comparisonKey = key;
-  modelSelects.forEach((select, index) => {
-    const slot = select.closest(".comparison-column").querySelector(".comparison-slot");
-    slot.replaceChildren();
-    const model = selectedModels[index];
-    if (!model) return;
-    const card = cards.get(taskSelect.value).get(model).cloneNode(true);
-    const heading = card.querySelector(".card-heading");
-    heading.querySelector("h4").classList.add("visually-hidden");
-    const label = document.createElement("p");
-    label.className = "comparison-provider";
-    const dot = document.createElement("span");
-    dot.className = `provider-dot ${card.dataset.providerKey}`;
-    dot.setAttribute("aria-hidden", "true");
-    label.append(dot, `${card.dataset.providerName} / ${card.dataset.vendor}`);
-    heading.prepend(label);
-    const tokens = document.createElement("p");
-    tokens.className = "comparison-tokens";
-    const total = document.createElement("strong");
-    total.textContent = card.dataset.tokens;
-    tokens.append("Reported tokens", total);
-    card.querySelector(".run-details").before(tokens);
-    // A comparison can scroll horizontally; load its three small GIFs immediately.
-    card.querySelector("img").loading = "eager";
-    slot.append(card);
-  });
-}
-
-function render(updateLocation = false) {
-  const comparing = view === "compare";
-  document.querySelector("#browse-gallery").hidden = comparing;
-  comparison.hidden = !comparing;
-  document.querySelector("#provider-picker").hidden = comparing;
-  document.querySelector(".brief-arrows").hidden = !comparing;
-  [...taskSelect.options].find(option => option.value === "all").disabled = comparing;
-  for (const button of viewButtons) button.setAttribute("aria-pressed", String(button.dataset.view === view));
-  let count = 0;
-  const visibleProviders = new Set();
-  for (const task of tasks) {
-    task.hidden = taskSelect.value !== "all" && taskSelect.value !== task.dataset.task;
-    for (const group of task.querySelectorAll("[data-provider]")) {
-      group.hidden = provider !== "all" && provider !== group.dataset.provider;
-      if (!task.hidden && !group.hidden) {
-        count += group.querySelectorAll(".card").length;
-        visibleProviders.add(group.dataset.provider);
-      }
-    }
+  const defaults = {
+    providers: state.providers.join(",") === providerIds.join(",") ? null : state.providers.join(","),
+    models: state.models.join(",") === modelIds.join(",") ? null : state.models.join(","),
+    task: state.task === "all" ? null : state.task,
+    q: state.query || null,
+    view: state.view === "artwork" ? null : state.view,
+    zoom: String(state.zoom),
+    background: state.background === "grid" ? null : state.background,
+    stats: state.stats ? null : "0",
+    sort: state.sort === "task" ? null : state.sort,
+    direction: state.direction === "asc" ? null : "desc",
+  };
+  url.searchParams.delete("provider");
+  for (const [key, value] of Object.entries(defaults)) {
+    if (value === null) url.searchParams.delete(key);
+    else url.searchParams.set(key, value);
   }
-  if (comparing) {
-    renderComparison();
-    count = selectedModels.length;
-    visibleProviders.clear();
-    for (const model of selectedModels) visibleProviders.add(cards.get(taskSelect.value).get(model).dataset.providerKey);
+  if (url.href !== window.location.href) window.history[mode === "replace" ? "replaceState" : "pushState"](null, "", url);
+}
+
+function sortValue(run) {
+  const model = models.get(run.model);
+  return ({task: run.task, model: `${model.name} ${model.effort}`, provider: model.vendor,
+    calls: run.tool_calls, looks: run.looks, tokens: run.tokens})[state.sort];
+}
+
+function compareRuns(left, right) {
+  const a = sortValue(left), b = sortValue(right);
+  // Missing totals stay at the end in both directions, rather than appearing as zero.
+  if (a == null || b == null) return a == null && b == null ? 0 : a == null ? 1 : -1;
+  const order = typeof a === "number" ? a - b : a.localeCompare(b);
+  return state.direction === "desc" ? -order : order;
+}
+
+function renderChips(activeModels) {
+  const container = document.querySelector("#active-filters");
+  container.replaceChildren();
+  const chips = [];
+  if (state.providers.length !== providerIds.length) {
+    const labels = state.providers.map(provider => data.models.find(model => model.provider === provider).vendor);
+    chips.push([labels.join(", ") || "No providers", () => { state.providers = [...providerIds]; }]);
   }
-  for (const button of filters) button.setAttribute("aria-pressed", String(button.dataset.filter === provider));
-  const taskName = taskSelect.selectedOptions[0].text;
-  resultCount.textContent = `${count} ${comparing ? "models" : count === 1 ? "animation" : "animations"} · ${taskName} · ${visibleProviders.size} ${visibleProviders.size === 1 ? "provider" : "providers"}`;
-  shareFeedback.hidden = true;
+  if (state.models.length !== modelIds.length) chips.push([plural(activeModels.length, "model"), () => { state.models = [...modelIds]; }]);
+  if (state.task !== "all") chips.push([`Brief: ${state.task[0].toUpperCase()}${state.task.slice(1)}`, () => { state.task = "all"; }]);
+  if (state.query) chips.push([`Search: ${state.query}`, () => { state.query = ""; }]);
+  for (const [label, clear] of chips) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "filter-chip";
+    button.setAttribute("aria-label", `Clear filter: ${label}`);
+    const close = document.createElement("span");
+    close.textContent = "×";
+    close.setAttribute("aria-hidden", "true");
+    button.append(label, close);
+    button.addEventListener("click", () => { clear(); render("push"); });
+    container.append(button);
+  }
+  container.hidden = !chips.length;
+  const badge = document.querySelector("#mobile-filter-count");
+  badge.textContent = chips.length;
+  badge.hidden = !chips.length;
+}
+
+function updateScrollHint() {
+  const overflowing = scrollPanel.scrollWidth > scrollPanel.clientWidth + 1;
+  document.querySelector("#table-navigation").hidden = !overflowing;
+  document.querySelector("#previous-columns").disabled = scrollPanel.scrollLeft <= 1;
+  document.querySelector("#next-columns").disabled = scrollPanel.scrollLeft + scrollPanel.clientWidth >= scrollPanel.scrollWidth - 1;
+}
+
+function columnMinimum() {
+  return window.innerWidth <= 600 ? Math.max(122, 48 * state.zoom + 26) : Math.max(state.zoom === 2 ? 128 : 176, 48 * state.zoom + 32);
+}
+
+function sizeColumns() {
+  const briefWidth = window.innerWidth <= 600 ? 110 : 156;
+  const minimum = columnMinimum();
+  const width = columnCount ? Math.max(minimum, (scrollPanel.clientWidth - briefWidth) / columnCount) : minimum;
+  document.documentElement.style.setProperty("--model-width", `${width}px`);
+  updateScrollHint();
+}
+
+function render(historyMode = null) {
+  const activeModels = state.models.filter(id => state.providers.includes(models.get(id).provider));
+  const query = state.query.trim().toLowerCase();
+  const activeTasks = data.tasks.filter(task => (state.task === "all" || state.task === task) && task.includes(query));
+  const modelSet = new Set(activeModels), taskSet = new Set(activeTasks);
+  columnCount = activeModels.length;
+  filteredRuns = sourceRuns.filter(run => modelSet.has(run.model) && taskSet.has(run.task)).sort(compareRuns);
+  providerInputs.forEach(input => { input.checked = state.providers.includes(input.value); });
+  modelInputs.forEach(input => {
+    input.checked = state.models.includes(input.value);
+    input.closest("label").hidden = !state.providers.includes(models.get(input.value).provider);
+  });
+  document.querySelector(".no-model-options").hidden = Boolean(state.providers.length);
+  document.querySelector("#model-filter-count").textContent = activeModels.length;
+  taskSelect.value = state.task;
+  search.value = state.query;
+  zoomSelect.value = state.zoom;
+  statsInput.checked = state.stats;
+  document.body.classList.toggle("hide-stats", !state.stats);
+  for (const background of ["grid", "light", "dark"]) document.body.classList.toggle(`background-${background}`, background === state.background);
+  document.documentElement.style.setProperty("--zoom", state.zoom);
+  document.documentElement.style.setProperty("--model-width", `${columnMinimum()}px`);
+  document.documentElement.style.setProperty("--model-count", activeModels.length);
+  for (const {row, cells} of matrixRows) {
+    if (row.dataset.taskRow) row.hidden = !taskSet.has(row.dataset.taskRow);
+    for (const [id, cell] of cells) cell.hidden = !modelSet.has(id);
+  }
+  const order = [...activeModels, ...modelIds.filter(id => !modelSet.has(id))];
+  if (order.join(",") !== matrixOrder) {
+    for (const {row, cells} of matrixRows) row.append(...order.map(id => cells.get(id)));
+    matrixOrder = order.join(",");
+  }
+  const runBody = runTable.tBodies[0];
+  for (const row of runRows.values()) row.hidden = true;
+  for (const run of filteredRuns) {
+    const row = runRows.get(runKey(run));
+    row.hidden = false;
+    runBody.append(row);
+  }
+  matrix.hidden = state.view !== "artwork";
+  runTable.hidden = state.view !== "runs";
+  document.querySelector(".display-controls").hidden = state.view !== "artwork";
+  for (const button of document.querySelectorAll("[data-view]")) button.setAttribute("aria-pressed", String(button.dataset.view === state.view));
+  for (const button of document.querySelectorAll("[data-background]")) button.setAttribute("aria-pressed", String(button.dataset.background === state.background));
+  for (const heading of document.querySelectorAll("[data-sort-heading]")) {
+    const active = heading.dataset.sortHeading === state.sort;
+    heading.setAttribute("aria-sort", active ? state.direction === "asc" ? "ascending" : "descending" : "none");
+    heading.querySelector("use").setAttribute("href", active ? `#icon-sort-${state.direction === "asc" ? "up" : "down"}` : "#icon-sort");
+  }
+  const total = document.createElement("strong");
+  total.textContent = plural(filteredRuns.length, "result");
+  document.querySelector("#result-count").replaceChildren(total, ` · ${plural(activeTasks.length, "brief")} · ${plural(activeModels.length, "model")}`);
+  document.querySelector(".empty-state").hidden = Boolean(filteredRuns.length);
+  scrollPanel.hidden = !filteredRuns.length;
+  document.querySelector("#export-csv").disabled = !filteredRuns.length;
+  document.querySelector("#close-filters").textContent = `Show ${plural(filteredRuns.length, "result")}`;
+  renderChips(activeModels);
+  copyFallback.hidden = true;
   clearTimeout(shareTimer);
-  shareButton.textContent = "Copy view link ↗";
-  document.querySelector("#share-status").textContent = "";
-  if (updateLocation) writeLocation();
+  shareButton.querySelector("span").textContent = "Share view";
+  shareStatus.textContent = "";
+  if (historyMode) writeLocation(historyMode);
+  sizeColumns();
 }
 
-taskSelect.addEventListener("change", () => render(true));
-for (const button of filters) {
-  button.addEventListener("click", () => {
-    provider = button.dataset.filter;
-    render(true);
-  });
+function resetFilters() {
+  state.providers = [...providerIds];
+  state.models = [...modelIds];
+  state.task = "all";
+  state.query = "";
+  render("push");
 }
-window.addEventListener("popstate", () => { readLocation(); render(); });
-for (const button of viewButtons) {
-  button.addEventListener("click", () => {
-    view = button.dataset.view;
-    if (view === "compare" && taskSelect.value === "all") taskSelect.value = taskIds[0];
-    render(true);
-  });
+
+function fitRunArtwork() {
+  if (!inspectedRun) return;
+  const canvas = inspectedRun.task === "beam" ? 48 : 32;
+  const available = window.innerWidth <= 600 ? window.innerWidth - 60 : 340;
+  const scale = Math.max(1, Math.min(6, Math.floor(available / canvas)));
+  runDialog.style.setProperty("--inspect-size", `${canvas * scale}px`);
 }
-for (const select of modelSelects) {
-  select.addEventListener("change", () => {
-    const models = modelSelects.map(picker => picker.value).filter(Boolean);
-    if (models.length < 2 || new Set(models).size !== models.length) { syncModelSelects(); return; }
-    selectedModels = models;
-    render(true);
-  });
+
+function openRun(key) {
+  const run = runs.get(key), model = models.get(run.model);
+  inspectedRun = run;
+  document.querySelector("#run-provider").textContent = `${model.vendor}${model.effort ? ` · ${model.effort} effort` : ""}`;
+  document.querySelector("#run-title").textContent = `${run.task[0].toUpperCase()}${run.task.slice(1)} · ${model.name}`;
+  const image = document.querySelector("#run-image");
+  image.src = `showcase/${run.gif}`;
+  image.alt = `${run.task} animation by ${model.name}`;
+  document.querySelector("#run-canvas").textContent = `${run.task === "beam" ? "48 × 48" : "32 × 32"} px · ${run.frames} frames · 10 fps`;
+  document.querySelector("#run-calls").textContent = number(run.tool_calls);
+  document.querySelector("#run-looks").textContent = number(run.looks);
+  document.querySelector("#run-tokens").textContent = number(run.tokens);
+  document.querySelector("#run-prompt").textContent = data.briefs[run.task];
+  document.querySelector("#run-model").textContent = `Recorded model: ${run.model}`;
+  document.querySelector("#run-gif").href = `showcase/${run.gif}`;
+  document.querySelector("#run-replay").href = `showcase/${run.replay}`;
+  fitRunArtwork();
+  runDialog.showModal();
 }
-for (const button of zoomButtons) button.addEventListener("click", () => { zoom = Number(button.dataset.zoom); render(true); });
-for (const button of backgroundButtons) button.addEventListener("click", () => { background = button.dataset.background; render(true); });
-for (const [id, direction] of [["previous-brief", -1], ["next-brief", 1]]) {
-  document.querySelector(`#${id}`).addEventListener("click", () => {
-    const index = taskIds.indexOf(taskSelect.value);
-    taskSelect.value = taskIds[(index + direction + taskIds.length) % taskIds.length];
-    render(true);
-  });
-}
+
+for (const input of providerInputs) input.addEventListener("change", () => {
+  state.providers = providerInputs.filter(option => option.checked).map(option => option.value);
+  render("push");
+});
+for (const input of modelInputs) input.addEventListener("change", () => {
+  state.models = input.checked ? [...state.models, input.value] : state.models.filter(id => id !== input.value);
+  render("push");
+});
+for (const button of document.querySelectorAll("[data-reset]")) button.addEventListener("click", resetFilters);
+document.querySelector("#all-models").addEventListener("click", () => { state.models = [...modelIds]; render("push"); });
+document.querySelector("#clear-models").addEventListener("click", () => { state.models = []; render("push"); });
+document.querySelector("#latest-models").addEventListener("click", () => {
+  state.models = state.providers.map(provider => data.models.find(model => model.provider === provider).id);
+  render("push");
+});
+taskSelect.addEventListener("change", () => { state.task = taskSelect.value; render("push"); });
+search.addEventListener("input", () => { state.query = search.value; render("replace"); });
+zoomSelect.addEventListener("change", () => { state.zoom = Number(zoomSelect.value); render("push"); });
+statsInput.addEventListener("change", () => { state.stats = statsInput.checked; render("push"); });
+for (const button of document.querySelectorAll("[data-view]")) button.addEventListener("click", () => { state.view = button.dataset.view; render("push"); });
+for (const button of document.querySelectorAll("[data-background]")) button.addEventListener("click", () => { state.background = button.dataset.background; render("push"); });
+for (const button of document.querySelectorAll("[data-sort]")) button.addEventListener("click", () => {
+  const sort = button.dataset.sort;
+  state.direction = state.sort === sort ? state.direction === "asc" ? "desc" : "asc" : ["calls", "looks", "tokens"].includes(sort) ? "desc" : "asc";
+  state.sort = sort;
+  render("push");
+});
 shareButton.addEventListener("click", async () => {
-  writeLocation(false);
+  writeLocation("replace");
   const url = new URL(window.location.href);
   url.hash = "gallery";
   window.history.replaceState(null, "", url);
   try {
-    await navigator.clipboard.writeText(window.location.href);
-    shareButton.textContent = "Link copied ✓";
-    document.querySelector("#share-status").textContent = "View link copied to clipboard";
-    shareTimer = setTimeout(() => { shareButton.textContent = "Copy view link ↗"; }, 2500);
+    await navigator.clipboard.writeText(url.href);
+    shareButton.querySelector("span").textContent = "Link copied";
+    shareStatus.textContent = "View link copied to clipboard";
+    shareTimer = setTimeout(() => { shareButton.querySelector("span").textContent = "Share view"; shareStatus.textContent = ""; }, 2500);
   } catch {
-    shareFeedback.hidden = false;
+    copyFallback.hidden = false;
     const input = document.querySelector("#share-url");
-    input.value = window.location.href;
+    input.value = url.href;
     input.focus();
     input.select();
   }
 });
+document.querySelector("#export-csv").addEventListener("click", () => {
+  const rows = [["Brief", "Model", "Provider", "Calls", "Looks", "Reported tokens", "Frames", "GIF", "Replay"],
+    ...filteredRuns.map(run => [run.task, run.model, run.vendor, run.tool_calls, run.looks, run.tokens, run.frames,
+      new URL(`showcase/${run.gif}`, window.location.href).href, new URL(`showcase/${run.replay}`, window.location.href).href])];
+  const csv = rows.map(row => row.map(value => `"${String(value ?? "").replaceAll('"', '""')}"`).join(",")).join("\r\n") + "\r\n";
+  const url = URL.createObjectURL(new Blob([csv], {type: "text/csv;charset=utf-8"}));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "atelier-runs.csv";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+for (const [id, direction] of [["previous-columns", -1], ["next-columns", 1]]) document.querySelector(`#${id}`).addEventListener("click", () => {
+  scrollPanel.scrollBy({left: columnMinimum() * 2 * direction});
+});
+scrollPanel.addEventListener("scroll", updateScrollHint);
+for (const link of document.querySelectorAll("[data-run], [data-brief]")) link.addEventListener("click", event => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  if (link.dataset.run) openRun(link.dataset.run);
+  else {
+    const task = link.dataset.brief;
+    document.querySelector("#brief-title").textContent = `${task[0].toUpperCase()}${task.slice(1)}`;
+    document.querySelector("#brief-prompt").textContent = data.briefs[task];
+    briefDialog.showModal();
+  }
+});
+document.querySelector("#open-filters").addEventListener("click", () => {
+  filterDialog.querySelector(".filter-dialog-content").append(filterPanel);
+  filterDialog.showModal();
+});
+document.querySelector("#close-filters").addEventListener("click", () => filterDialog.close());
+filterDialog.addEventListener("close", () => filterHost.append(filterPanel));
+for (const dialog of [filterDialog, runDialog, briefDialog]) dialog.addEventListener("click", event => {
+  const rect = dialog.getBoundingClientRect();
+  if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
+});
+for (const link of document.querySelectorAll('a[href="#about"]')) link.addEventListener("click", () => { document.querySelector("#about").open = true; });
+window.addEventListener("popstate", () => { readLocation(); render(); });
+window.addEventListener("resize", () => {
+  if (window.innerWidth > 900 && filterDialog.open) filterDialog.close();
+  if (runDialog.open) fitRunArtwork();
+  sizeColumns();
+});
 readLocation();
+document.documentElement.classList.add("js");
 render();
-document.querySelector(".gallery-intro").hidden = false;
-shareButton.hidden = false;
+if (window.location.hash === "#about") document.querySelector("#about").open = true;
