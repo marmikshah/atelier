@@ -2,7 +2,7 @@
 # Run Atelier's non-mutating local and CI checks.
 set -euo pipefail
 if [[ ${1:-} == --help ]]; then
-  echo "Usage: tools/check.sh — check formatting, Clippy, rustdoc, tests, and the static site"
+  echo "Usage: tools/check.sh — check Rust formatting, Clippy, rustdoc, and tests"
   exit 0
 fi
 if [[ $# -ne 0 ]]; then
@@ -14,4 +14,3 @@ cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
 RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps
 cargo test --locked
-python3 tools/build-site.py

@@ -6,14 +6,12 @@ on:
     paths:
       - "site/**"
       - "showcase/**"
-      - "tools/build-site.py"
       - ".github/workflows/pages.yml"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "site/**"
       - "showcase/**"
-      - "tools/build-site.py"
       - ".github/workflows/pages.yml"
   workflow_dispatch: {}
 
@@ -28,15 +26,24 @@ jobs:
   build:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: python3 tools/build-site.py
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci --prefix site
+      - name: Check types and comparison behavior
+        run: npm --prefix site run check
+      - name: Build the Vite showcase
+        run: npm --prefix site run build
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
-          path: target/site
+          path: site/dist
 
   deploy:
     if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'

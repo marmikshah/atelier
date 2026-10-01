@@ -1,93 +1,26 @@
 <!doctype html>
-<html lang="en" style="--model-count:@@MODEL_COUNT@@">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Compare pixel-art animations from Claude, Codex, and Kimi in one table. Filter by model, provider, and brief, and explore the original run data.">
-  <meta name="theme-color" content="#f6f7fb">
-  <title>Atelier — model comparison</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236554d9'/%3E%3Cpath d='M8 24V12h4V8h8v4h4v12h-4v-8h-8v8z' fill='white'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css">
-  <script defer src="gallery.js"></script>
-</head>
-<body>
-  <a class="skip-link" href="#gallery">Skip to the comparison table</a>
-  <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 4 4"></path></symbol>
-    <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"></path><circle cx="9" cy="7" r="2.5" fill="currentColor" stroke="none"></circle><circle cx="15" cy="17" r="2.5" fill="currentColor" stroke="none"></circle></symbol>
-    <symbol id="icon-matrix" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M4 10h16M10 4v16"></path></symbol>
-    <symbol id="icon-table" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M4 9h16M4 14h16M10 4v16"></path></symbol>
-    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"></path></symbol>
-    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"></path></symbol>
-    <symbol id="icon-link" viewBox="0 0 24 24"><path d="m10 13 4-4M9 15l-2 2a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 2 2-2a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 0)"></path></symbol>
-    <symbol id="icon-sort" viewBox="0 0 24 24"><path d="m8 9 4-4 4 4m-8 6 4 4 4-4"></path></symbol>
-    <symbol id="icon-sort-up" viewBox="0 0 24 24"><path d="m8 14 4-4 4 4"></path></symbol>
-    <symbol id="icon-sort-down" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"></path></symbol>
-    <symbol id="icon-left" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"></path></symbol>
-    <symbol id="icon-right" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"></path></symbol>
-    <symbol id="icon-expand" viewBox="0 0 24 24"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"></path></symbol>
-    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"></path></symbol>
-    <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6m0-10v1"></path></symbol>
-    <symbol id="icon-github" viewBox="0 0 24 24"><path d="M9 19c-4 1-4-2-6-2m12 5v-4a3.5 3.5 0 0 0-1-2.5c3.5-.4 7-1.7 7-6a4.5 4.5 0 0 0-1.2-3.1 4 4 0 0 0-.1-3.2S18.7 2.8 16 4a11 11 0 0 0-8 0C5.3 2.8 4.3 3.2 4.3 3.2a4 4 0 0 0-.1 3.2A4.5 4.5 0 0 0 3 9.5c0 4.3 3.5 5.6 7 6A3.5 3.5 0 0 0 9 18v4"></path></symbol>
-  </svg>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="./" aria-label="Atelier home"><span class="brand-mark" aria-hidden="true">a</span>atelier<span class="brand-divider"></span><span class="brand-context">Model showcase</span></a>
-      <nav aria-label="Site"><a class="nav-active" href="#gallery">Compare</a><a href="#about">Method</a><a class="github-link" href="https://github.com/marmikshah/atelier"><svg class="icon" aria-hidden="true"><use href="#icon-github"></use></svg>GitHub</a></nav>
-    </div>
-  </header>
-  <main class="page-shell">
-    <section class="page-intro" aria-labelledby="page-title">
-      <div><p class="eyebrow">The Atelier experiment</p><h1 id="page-title">Model comparison<span class="title-dot">.</span></h1><p class="page-description">Every model, the same brief. Compare their artwork and explore the recorded runs.</p></div>
-      <div class="experiment-stats" aria-label="Experiment size"><div><strong>@@MODEL_COUNT@@</strong><span>models</span></div><div><strong>@@TASK_COUNT@@</strong><span>shared briefs</span></div><div><strong>@@RUN_COUNT@@</strong><span>original runs</span></div></div>
-    </section>
-    <div class="workspace" id="gallery">
-      <div class="filter-host">
-        <aside id="filter-panel" class="filter-panel requires-js" aria-labelledby="filter-title">
-          <div class="filter-heading"><h2 id="filter-title"><svg class="icon" aria-hidden="true"><use href="#icon-filter"></use></svg>Filters</h2><button class="text-button" type="button" data-reset>Reset</button></div>
-          <fieldset><legend>Provider</legend><div class="provider-options">@@PROVIDER_FILTERS@@</div></fieldset>
-          <fieldset><legend>Models <span id="model-filter-count">@@MODEL_COUNT@@</span></legend><div class="model-presets"><button type="button" class="text-button" id="all-models" aria-label="Select all models">All</button><button type="button" class="text-button" id="clear-models" aria-label="Deselect all models">None</button><button type="button" class="text-button" id="latest-models" title="Last recorded model for each selected provider">Latest per provider</button></div><div class="model-options">@@MODEL_FILTERS@@</div><p class="no-model-options" hidden>Select a provider to see its models.</p></fieldset>
-          <fieldset><legend>Brief</legend><label class="visually-hidden" for="task-select">Filter by brief</label><select id="task-select"><option value="all">All briefs</option>@@TASK_OPTIONS@@</select></fieldset>
-          <label class="check-option stats-option"><input type="checkbox" id="show-stats" checked><span>Show run stats in artwork</span></label>
-          <p class="filter-note">All models receive the same frozen prompts. No human-touched pixels.</p>
-        </aside>
-      </div>
-      <section class="results-workspace" aria-label="Comparison results">
-        <div class="results-toolbar requires-js">
-          <button type="button" class="button mobile-filters" id="open-filters"><svg class="icon" aria-hidden="true"><use href="#icon-filter"></use></svg>Filters<span id="mobile-filter-count" hidden></span></button>
-          <div class="search-field"><svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg><label class="visually-hidden" for="brief-search">Search briefs</label><input id="brief-search" type="search" placeholder="Search briefs…" autocomplete="off"></div>
-          <div class="toolbar-actions"><button type="button" class="button" id="export-csv"><svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg>Export CSV</button><button type="button" class="button button-primary" id="share-link"><svg class="icon" aria-hidden="true"><use href="#icon-link"></use></svg><span>Share view</span></button></div>
-        </div>
-        <div class="active-filters" id="active-filters" aria-label="Active filters" hidden></div>
-        <p class="visually-hidden" id="share-status" role="status"></p>
-        <div class="copy-fallback" hidden><label for="share-url">Copy this link to share the current view</label><input id="share-url" type="text" readonly></div>
-        <div class="results-panel">
-          <div class="panel-toolbar">
-            <div class="view-switch requires-js" role="group" aria-label="Table view"><button type="button" data-view="artwork" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#icon-matrix"></use></svg>Artwork</button><button type="button" data-view="runs" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#icon-table"></use></svg>Run data</button></div>
-            <span class="no-js-title">Artwork comparison</span>
-            <div class="display-controls requires-js"><label for="pixel-zoom">Zoom<select id="pixel-zoom"><option value="2">2×</option><option value="3" selected>3×</option><option value="4">4×</option><option value="6">6×</option></select></label><div class="background-controls" role="group" aria-label="Artwork background"><button type="button" data-background="grid" aria-label="Checkerboard background" aria-pressed="true"><span class="swatch swatch-grid"></span></button><button type="button" data-background="light" aria-label="Light background" aria-pressed="false"><span class="swatch swatch-light"></span></button><button type="button" data-background="dark" aria-label="Dark background" aria-pressed="false"><span class="swatch swatch-dark"></span></button></div></div>
-          </div>
-          <div class="panel-summary"><p id="result-count" aria-live="polite"><strong>@@RUN_COUNT@@</strong> results · @@TASK_COUNT@@ briefs · @@MODEL_COUNT@@ models</p><div class="table-navigation requires-js" id="table-navigation"><span id="table-scroll-hint">More columns</span><button type="button" id="previous-columns" aria-label="Scroll table left"><svg class="icon" aria-hidden="true"><use href="#icon-left"></use></svg></button><button type="button" id="next-columns" aria-label="Scroll table right"><svg class="icon" aria-hidden="true"><use href="#icon-right"></use></svg></button></div></div>
-          <div class="table-scroll" tabindex="0" role="region" aria-label="Comparison table; scroll to see more models and briefs">@@MATRIX_TABLE@@@@RUNS_TABLE@@</div>
-          <div class="empty-state" hidden><span class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg></span><h2>No matching results</h2><p>Choose a model or try a different brief.</p><button type="button" class="button button-primary" data-reset>Reset filters</button></div>
-          <div class="panel-footer"><span><span class="status-dot" aria-hidden="true"></span>Original, unedited outputs</span><span>10 frames · 10 fps · Independent loops</span></div>
-        </div>
-        <p class="data-note"><svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg><span>Calls and tokens use different counting methods across clients. These are recorded values, not an efficiency ranking. A dash means not reported. <a href="#about">Read the method</a></span></p>
-      </section>
-    </div>
-    <details class="method-panel" id="about">
-      <summary><span>About this experiment</span><span class="method-summary-note">Method, provenance &amp; verification</span></summary>
-      <div class="method-content"><p>Atelier is an offline, headless pixel-art editor. Each model gets the same frozen briefs and draws through its tools: layers, shapes, palettes, and frame-by-frame edits. Each result includes its original replay.</p><p>Runs were collected across different editor versions and clients. Counts and token totals are not a like-for-like efficiency ranking. A dash means a token total was not reported.</p><h2>Method</h2><p>@@METHOD@@</p><h2>Editor builds</h2><p>@@SERVER@@</p><h2>Verification</h2><p>@@VERIFIED@@</p><a href="showcase/runs.json" download>Download the complete run data <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg></a></div>
-    </details>
-    <footer><p>Made with <a href="https://github.com/marmikshah/atelier">Atelier</a> by <a href="https://github.com/marmikshah">Marmik Shah</a>.</p><a href="https://github.com/marmikshah/atelier/blob/master/LICENSE">MIT licensed <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg></a></footer>
-  </main>
-  <dialog id="filter-dialog" class="filter-dialog" aria-labelledby="filter-title"><form method="dialog"><button class="icon-button dialog-close" aria-label="Close filters"><svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg></button></form><div class="filter-dialog-content"></div><button type="button" class="button button-primary filter-done" id="close-filters">Show results</button></dialog>
-  <dialog id="run-dialog" class="run-dialog" aria-labelledby="run-title">
-    <div class="dialog-heading"><div><p class="eyebrow" id="run-provider"></p><h2 id="run-title"></h2></div><form method="dialog"><button class="icon-button" aria-label="Close run details"><svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg></button></form></div>
-    <div class="run-content"><div class="run-artwork"><img id="run-image" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt=""><span id="run-canvas"></span></div><div class="run-information"><p class="eyebrow">Recorded run</p><dl class="run-metrics"><div><dt>Calls</dt><dd id="run-calls"></dd></div><div><dt>Looks</dt><dd id="run-looks"></dd></div><div><dt>Reported tokens</dt><dd id="run-tokens"></dd></div></dl><h3>Original prompt</h3><p class="original-prompt" id="run-prompt"></p><p class="recorded-model" id="run-model"></p></div></div>
-    <div class="dialog-footer"><span>Counts vary by client.</span><div><a id="run-gif" class="button" download>Download GIF <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg></a><a id="run-replay" class="button button-primary" download>Download replay <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg></a></div></div>
-  </dialog>
-  <dialog id="brief-dialog" class="brief-dialog" aria-labelledby="brief-title"><div class="dialog-heading"><div><p class="eyebrow">Frozen brief · shared by every model</p><h2 id="brief-title"></h2></div><form method="dialog"><button class="icon-button" aria-label="Close prompt"><svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg></button></form></div><p class="original-prompt" id="brief-prompt"></p></dialog>
-  <script type="application/json" id="showcase-data">@@CLIENT_DATA@@</script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="One canvas, ten shared briefs. Compare pixel-art animations from Claude, Codex, and Kimi, and explore the original run data."
+    />
+    <meta name="theme-color" content="#f6f8f7" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Atelier — compare every pixel</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript
+      ><p>
+        Explore
+        <a href="https://github.com/marmikshah/atelier/tree/master/showcase"
+          >the original artwork and recorded runs on GitHub</a
+        >.
+      </p></noscript
+    >
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
