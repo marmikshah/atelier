@@ -15,3 +15,10 @@
 /*.png
 
 __pycache__/
+
+# Vite showcase dependencies, copied source artifacts, and production build.
+/site/node_modules/
+/site/public/showcase/
+/site/public/.nojekyll
+/site/public/font-licenses.txt
+/site/dist/

@@ -11,9 +11,11 @@ export PNGs, spritesheets, GIFs, APNGs, and pixel fonts. Documents and replay
 journals stay local; the editor needs no account or outbound service.
 
 **[Explore the model showcase →](https://marmikshah.github.io/atelier/)**
-Claude, Codex, and Kimi draw the same ten briefs. Compare two or three models
-side by side, adjust pixel zoom and backgrounds, and share the exact view.
-Every animation includes its original replay and recorded run statistics.
+Claude, Codex, and Kimi draw the same ten briefs. Compare all models in an
+artwork table with pinned headers and filters for provider, model, and brief.
+Switch to sortable run data, export filtered results as CSV, or open an
+animation to inspect its prompt, statistics, and original replay. Views can
+be shared with their filters, zoom, and background.
 
 ## Build and draw
 
@@ -130,19 +132,27 @@ Daemon logs: `journalctl --user -u atelier -f`. Remove it with `atelier uninstal
 ## Develop and build the showcase
 
 ```sh
-tools/check.sh                       # format, lint, rustdoc, tests, site build
+tools/check.sh                       # Rust formatting, lint, rustdoc, tests
 cargo fmt --all                      # apply formatting
 cargo build --release --locked -p atelier
 cargo build --locked -p atelier
 tools/showcase-check.sh               # reproduce every committed GIF
-python3 tools/build-site.py           # static site → target/site, no dependencies
-python3 -m http.server 8000 --directory target/site
+npm ci --prefix site                 # Node.js 24+; install locked website dependencies
+npm --prefix site run dev            # Vite development server with hot reload
+npm --prefix site run check          # TypeScript and comparison behavior tests
+npm --prefix site run build          # production website → site/dist
+npm --prefix site run preview        # serve the production build locally
 ```
 
-The website uses plain HTML, CSS, and JavaScript. Its build reads
-`showcase/runs.json`, frozen briefs, GIFs, and replay journals; the generated
-site stays in ignored `target/site`. GitHub Pages publishes it when changes
-reach `master`. CI is self-contained and uses only public actions.
+The website is a Vite + React + TypeScript app in `site/`. Its components read
+`showcase/runs.json` and the frozen briefs directly; the npm preparation step
+validates the complete model/brief matrix and copies original GIFs, prompts,
+and replay journals into the public assets. Fonts are bundled locally. The
+production build stays in ignored `site/dist`, with relative asset paths that
+work under the GitHub Pages `/atelier/` prefix. Filters and views use query
+parameters, so shared links work directly on static hosting. The Pages workflow
+runs `npm ci`, type checks, comparison tests, and the Vite build before publishing
+changes on `master`; Rust checks remain independent of Node.js.
 
 To collect another showcase run with an authenticated Codex CLI:
 
