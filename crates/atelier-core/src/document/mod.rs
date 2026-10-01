@@ -35,6 +35,7 @@ mod timeline;
 #[cfg(test)]
 mod tests;
 
+pub use export::PngColorMode;
 pub use fx::{DitherAxis, DitherPattern};
 pub use operation::{OpSide, color_array, draw_ops, fx_ops, operation_schema, validate_op};
 pub use render::{ValueView, seam_axis_img};

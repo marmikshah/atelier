@@ -2206,6 +2206,57 @@ mod tests {
         Atelier::with_studio(studio)
     }
 
+    #[tokio::test]
+    async fn rgb_export_uses_shared_dispatch_and_rejects_animation_options() {
+        let atelier = temp_atelier("rgb-export");
+        let created = atelier
+            .dispatch(
+                ToolName::DocNew,
+                json!({"name":"rgb", "width":1, "height":1}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let id = result_json(&created).unwrap()["doc_id"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        let out = std::env::temp_dir().join("atelier-srv-test-rgb-export/rgb.png");
+        let args =
+            json!({"doc_id":id, "op":"sheet", "out_path":out, "scale":1, "color_mode":"rgb"});
+        let failed = atelier
+            .dispatch(ToolName::DocExport, args.clone(), "test")
+            .await
+            .unwrap();
+        assert!(is_error_result(&failed));
+        assert!(!out.exists());
+        atelier
+            .dispatch(
+                ToolName::DocDraw,
+                json!({"doc_id":id, "layer":0, "frame":0, "op":"fill_cel", "color":[7,19,241]}),
+                "test",
+            )
+            .await
+            .unwrap();
+        let exported = atelier
+            .dispatch(ToolName::DocExport, args, "test")
+            .await
+            .unwrap();
+        assert!(!is_error_result(&exported));
+        assert_eq!(result_json(&exported).unwrap()["format"], "RGB888");
+        assert_eq!(std::fs::read(&out).unwrap()[25], 2); // PNG IHDR RGB colour type.
+        assert_eq!(atelier.studio().journal(&id).unwrap().len(), 2);
+        let failed = atelier
+            .dispatch(
+                ToolName::DocExport,
+                json!({"doc_id":id, "op":"anim", "out_path":out, "color_mode":"rgb"}),
+                "test",
+            )
+            .await
+            .unwrap();
+        assert!(is_error_result(&failed));
+    }
+
     #[tokio::test(flavor = "current_thread")]
     async fn contended_store_io_does_not_block_the_async_runtime() {
         use std::sync::atomic::{AtomicBool, Ordering};

@@ -3,6 +3,7 @@
 use std::fs;
 use std::path::Path;
 
+use atelier_core::document::PngColorMode;
 use serde_json::{Value, json};
 
 use super::{AnimationFormat, DEFAULT_EXPORT_SCALE, ExportOp, SheetMeta, Studio, export_scale};
@@ -25,6 +26,7 @@ impl Studio {
         meta: Option<SheetMeta>,
         format: Option<AnimationFormat>,
         tag: Option<&str>,
+        color_mode: Option<PngColorMode>,
     ) -> Result<Value, String> {
         let scale = export_scale(scale.unwrap_or(DEFAULT_EXPORT_SCALE));
         match op {
@@ -34,14 +36,26 @@ impl Studio {
                 }
                 let (_dir, document) = self.open(id)?;
                 ensure_parent(out_path)?;
+                let color_mode = color_mode.unwrap_or_default();
                 match meta.unwrap_or_default() {
-                    SheetMeta::Atelier => document.export_sheet(Path::new(out_path), scale),
-                    SheetMeta::Standard => document.export_sheet_std(Path::new(out_path), scale),
+                    SheetMeta::Atelier => document.export_sheet_with_color_mode(
+                        Path::new(out_path),
+                        scale,
+                        color_mode,
+                    ),
+                    SheetMeta::Standard => document.export_sheet_std_with_color_mode(
+                        Path::new(out_path),
+                        scale,
+                        color_mode,
+                    ),
                 }
             }
             ExportOp::Anim => {
-                if meta.is_some() {
-                    return Err("doc_export op=anim accepts `format` and `tag`, not `meta`".into());
+                if meta.is_some() || color_mode.is_some() {
+                    return Err(
+                        "doc_export op=anim accepts `format` and `tag`, not `meta` or `color_mode`"
+                            .into(),
+                    );
                 }
                 match format.unwrap_or_default() {
                     AnimationFormat::Gif => self.doc_export_gif(id, out_path, scale, tag),

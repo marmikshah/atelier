@@ -8,7 +8,8 @@ use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
 use atelier_core::document::{
-    DitherAxis, DitherPattern, OpSide, TagDirection, draw_ops, fx_ops, operation_schema,
+    DitherAxis, DitherPattern, OpSide, PngColorMode, TagDirection, draw_ops, fx_ops,
+    operation_schema,
 };
 use atelier_core::raster::{Blend, SaturationCurve};
 use atelier_studio::{
@@ -217,6 +218,8 @@ pub(crate) struct DocExport {
     pub(crate) scale: Option<u32>,
     /// `sheet`: metadata dialect ("atelier" or "standard").
     pub(crate) meta: Option<SheetMeta>,
+    /// `sheet`: rgba (default) or rgb. RGB rejects any rendered pixel with alpha below 255.
+    pub(crate) color_mode: Option<PngColorMode>,
     /// `anim`: gif or apng.
     pub(crate) format: Option<AnimationFormat>,
     /// `anim`: optional animation tag.

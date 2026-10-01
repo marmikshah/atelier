@@ -62,6 +62,18 @@ CLI, replay, stdio, and HTTP use one dispatch path. There is no active document
 or inferred target. Mutations may include `expected_revision` to reject a stale
 write with `revision_conflict`; omitting it keeps last-write-wins behavior.
 
+Spritesheets default to RGBA PNGs. Set `color_mode` to `rgb` when a consumer
+requires a PNG without an alpha channel:
+
+```sh
+atelier call doc_export '{"doc_id":"<returned-id>","op":"sheet","out_path":"cat.png","scale":1,"color_mode":"rgb"}'
+```
+
+RGB export requires every rendered pixel in every frame to be fully opaque;
+transparency causes an error before the output files are written. It preserves
+exact RGB values and nearest-neighbour scaling. Both the native sidecar and
+`meta:"standard"` sidecar record the PNG's channel format.
+
 ## MCP and Docker
 
 Configure a stdio MCP client to launch `atelier`, or install the Linux daemon:
