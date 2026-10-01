@@ -65,7 +65,8 @@ def card(run):
     badge = f'<span class="effort">{escape(effort)}</span>' if effort else ""
     tokens = f'{run["tokens"]:,}' if run.get("tokens") is not None else "Unavailable"
     size = 192 if run["task"] == "beam" else 128
-    return f"""<article class="card">
+    key, label = PROVIDERS[run["vendor"]]
+    return f"""<article class="card" data-model="{escape(run['model'])}" data-provider-key="{key}" data-provider-name="{label}" data-vendor="{escape(run['vendor'])}" data-tokens="{tokens}" data-size="{size}">
       <div class="card-heading"><h4>{escape(name)}</h4>{badge}</div>
       <a class="stage" href="showcase/{escape(run['gif'])}" aria-label="Open {escape(name)} {escape(run['task'])} GIF">
         <img src="showcase/{escape(run['gif'])}" width="{size}" height="{size}" loading="lazy"
@@ -104,6 +105,32 @@ def gallery(data, runs):
     return "\n".join(sections)
 
 
+def comparison_columns(data, runs):
+    """Default to the last recorded model from each provider, without ranking runs."""
+    task = data["tasks"][0]
+    options, defaults = [], []
+    for vendor, (_, label) in PROVIDERS.items():
+        models = [model for model in reversed(data["models"]) if runs[model, task]["vendor"] == vendor]
+        if not models:
+            continue
+        defaults.append(models[0])
+        choices = []
+        for model in models:
+            name, effort = model_name(model)
+            display = f"{name} · {effort}" if effort else name
+            choices.append(f'<option value="{model}">{escape(display)}</option>')
+        options.append(f'<optgroup label="{label}">{"".join(choices)}</optgroup>')
+    defaults.extend(model for model in reversed(data["models"]) if model not in defaults)
+    columns = []
+    for index, default in enumerate(defaults[:3], start=1):
+        optional = '<option value="">No third model</option>' if index == 3 else ""
+        columns.append(f'''<div class="comparison-column">
+          <div class="model-picker"><label class="eyebrow" for="model-{index}">Model {index:02}</label>
+            <select id="model-{index}" data-model-select data-default="{default}">{optional}{"".join(options)}</select></div>
+          <div class="comparison-slot"></div></div>''')
+    return "".join(columns)
+
+
 def hero_samples(data, runs):
     samples = []
     for index, (vendor, (_, label)) in enumerate(PROVIDERS.items()):
@@ -136,6 +163,7 @@ def main():
         "PROVIDER_BUTTONS": "".join(f'<button type="button" data-filter="{key}" aria-pressed="false">{label}</button>'
                                     for vendor, (key, label) in PROVIDERS.items() if vendor in vendors),
         "GALLERY": gallery(data, runs),
+        "COMPARISON_COLUMNS": comparison_columns(data, runs),
         "HERO_SAMPLES": hero_samples(data, runs),
         "METHOD": escape(data["method"]),
         "SERVER": escape(data["server"]),

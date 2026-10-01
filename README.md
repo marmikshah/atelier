@@ -11,8 +11,9 @@ export PNGs, spritesheets, GIFs, APNGs, and pixel fonts. Documents and replay
 journals stay local; the editor needs no account or outbound service.
 
 **[Explore the model showcase →](https://marmikshah.github.io/atelier/)**
-Claude, Codex, and Kimi draw the same ten briefs. Every animation includes its
-original replay and recorded run statistics.
+Claude, Codex, and Kimi draw the same ten briefs. Compare two or three models
+side by side, adjust pixel zoom and backgrounds, and share the exact view.
+Every animation includes its original replay and recorded run statistics.
 
 ## Build and draw
 

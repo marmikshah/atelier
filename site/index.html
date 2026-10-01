@@ -22,7 +22,7 @@
         <div class="hero-copy"><p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> A pixel-art experiment</p>
           <h1 id="hero-title">Same brief.<br>Different brush<span class="period">.</span></h1>
           <p class="hero-description">Give an agent a canvas, a few colours, and a second of animation. See what it makes.</p>
-          <a class="gallery-link" href="#gallery">Explore the showcase <span aria-hidden="true">↓</span></a>
+          <a class="gallery-link" href="#gallery">Compare the models <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero-art" aria-label="Three interpretations from the showcase">
           <div class="art-label">Made with Atelier <span aria-hidden="true">↙</span></div>
@@ -31,12 +31,31 @@
       </section>
       <div class="experiment-strip"><p><strong>@@MODEL_COUNT@@</strong> models</p><p><strong>@@TASK_COUNT@@</strong> identical briefs</p><p><strong>@@RUN_COUNT@@</strong> animations</p><p class="strip-note">No human-touched pixels.</p></div>
       <section id="gallery" class="gallery" aria-label="Animation gallery">
+        <div class="gallery-intro" hidden>
+          <div><p class="eyebrow">Look closer</p><h2>One brief, side by side.</h2><p>Choose your models. Compare their pixels at the same scale.</p></div>
+          <div class="view-switch" role="group" aria-label="Showcase view"><button type="button" data-view="compare" aria-pressed="true">Compare models</button><button type="button" data-view="gallery" aria-pressed="false">Browse all</button></div>
+        </div>
         <div class="gallery-toolbar">
-          <div class="task-picker"><label class="eyebrow" for="task-select">Choose a brief</label><select id="task-select"><option value="all">All briefs</option>@@TASK_OPTIONS@@</select></div>
-          <div class="provider-picker"><span class="eyebrow" id="provider-label">Browse by provider</span><div class="provider-filters" role="group" aria-labelledby="provider-label"><button type="button" data-filter="all" aria-pressed="true">All providers</button>@@PROVIDER_BUTTONS@@</div></div>
+          <div class="task-picker"><label class="eyebrow" for="task-select">Choose a brief</label><div class="brief-navigation"><select id="task-select"><option value="all">All briefs</option>@@TASK_OPTIONS@@</select><div class="brief-arrows" hidden><button type="button" id="previous-brief" aria-label="Previous brief">←</button><button type="button" id="next-brief" aria-label="Next brief">→</button></div></div></div>
+          <div class="provider-picker" id="provider-picker"><span class="eyebrow" id="provider-label">Browse by provider</span><div class="provider-filters" role="group" aria-labelledby="provider-label"><button type="button" data-filter="all" aria-pressed="true">All providers</button>@@PROVIDER_BUTTONS@@</div></div>
+          <button type="button" class="share-button" id="share-link" hidden>Copy view link <span aria-hidden="true">↗</span></button>
         </div>
         <p class="result-count" aria-live="polite">@@RUN_COUNT@@ animations across @@PROVIDER_COUNT@@ providers</p>
-        @@GALLERY@@
+        <p class="visually-hidden" id="share-status" role="status"></p>
+        <div class="share-feedback" hidden><label for="share-url">Copy this link to share the current view</label><input id="share-url" type="text" readonly></div>
+        <section id="comparison" class="comparison" aria-label="Models drawing the same brief" hidden>
+          <div class="task-heading"><div><span class="eyebrow">The shared brief</span><h3 id="comparison-title"></h3></div><span class="canvas-label" id="comparison-canvas"></span></div>
+          <details class="brief" id="comparison-brief"><summary>Read the original prompt</summary><p></p></details>
+          <div class="inspection-toolbar">
+            <div class="inspection-control"><span class="eyebrow" id="zoom-label">Pixel zoom</span><div class="segmented" role="group" aria-labelledby="zoom-label"><button type="button" data-zoom="2" aria-pressed="false">2×</button><button type="button" data-zoom="4" aria-pressed="true">4×</button><button type="button" data-zoom="6" aria-pressed="false">6×</button></div></div>
+            <div class="inspection-control"><span class="eyebrow" id="background-label">Background</span><div class="segmented" role="group" aria-labelledby="background-label"><button type="button" data-background="grid" aria-pressed="true"><span class="background-swatch swatch-grid" aria-hidden="true"></span>Grid</button><button type="button" data-background="light" aria-pressed="false"><span class="background-swatch swatch-light" aria-hidden="true"></span>Light</button><button type="button" data-background="dark" aria-pressed="false"><span class="background-swatch swatch-dark" aria-hidden="true"></span>Dark</button></div></div>
+            <p class="comparison-hint">Same canvas. Same scale.<br> Animations loop independently.</p>
+          </div>
+          <p class="comparison-scroll-hint">Scroll sideways to compare models <span aria-hidden="true">↔</span></p>
+          <div class="comparison-scroll" role="region" aria-label="Side-by-side model results" tabindex="0"><div class="comparison-columns">@@COMPARISON_COLUMNS@@</div></div>
+          <p class="comparison-note">Calls and tokens are reported differently across clients. <a href="#about">How to read the run data <span aria-hidden="true">↗</span></a></p>
+        </section>
+        <div id="browse-gallery">@@GALLERY@@</div>
       </section>
       <section id="about" class="about" aria-labelledby="about-title">
         <div><p class="eyebrow">Behind the pixels</p><h2 id="about-title">One editor.<br>A level canvas.</h2></div>
