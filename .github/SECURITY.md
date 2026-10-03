@@ -29,14 +29,9 @@ timeline.
   uploads time out after 30 seconds and at most 64 requests run concurrently.
   Persisted document metadata is bounded, and normal store reads refuse
   symlinked document directories, metadata, cels, references, and journals.
-- **100% of the code is AI-generated and has had no line-by-line human
-  review.** It has been through several rounds of AI review and revision, which
-  is not the same thing. Assume bugs — including security bugs — exist, and use
-  at your own risk (see the README notice).
 
 ## Supported versions
 
-Atelier publishes no releases. `master` is the only supported version, it is
-the only thing fixes land on, and running Atelier means building it from a
-clone. There is nothing older to back-port to. Native support is limited to Ubuntu 22.04 or newer on x86_64; the
-Alpine linux/amd64 container is the only other supported runtime.
+Atelier publishes no releases; build the current `master` checkout. CI checks
+Ubuntu x86_64, macOS, and the Alpine linux/amd64 container. The background daemon
+requires Linux with `systemd --user`; Windows uses the container.

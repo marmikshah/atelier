@@ -5,8 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Atelier's 1.x series has not completed maintainer review. Please include
-        the smallest reproducible command or tool-call sequence you can provide.
+        Include the smallest reproducible command or tool-call sequence you can provide.
   - type: textarea
     id: what
     attributes:
@@ -32,7 +31,7 @@ body:
     id: version
     attributes:
       label: atelier version
-      description: Output of `atelier --version`.
+      description: Output of `atelier --version` and the checkout commit.
     validations:
       required: true
   - type: dropdown
@@ -40,6 +39,7 @@ body:
     attributes:
       label: Transport
       options:
+        - CLI / replay
         - stdio
         - HTTP (foreground)
         - HTTP (background daemon)
@@ -55,4 +55,4 @@ body:
     id: os
     attributes:
       label: Supported runtime
-      description: e.g. Ubuntu 24.04 x86_64 or the Alpine linux/amd64 image.
+      description: e.g. Ubuntu 24.04 x86_64, macOS, or the Alpine linux/amd64 image.

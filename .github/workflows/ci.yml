@@ -14,11 +14,59 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
+  rust:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    uses: ./.github/workflows/ci-rust.yml
-    with:
-      kind: tool
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            name: ci / gate
+          - os: macos-15
+            name: Rust (macOS)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: 1.98.0
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
+      - run: tools/check.sh
+      - name: Build the release binary
+        run: cargo build --release --locked -p atelier
+      - name: Test showcase tooling against the built editor
+        run: python3 -m unittest discover -s tools/tests
+
+  tooling:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: No local machine paths
+        run: |
+          if git grep -nI -E '/Users/|/private/(tmp|var)|[A-Za-z]:\\Users\\|/home/[a-z0-9_.-]+/Workspace' \
+              -- . ':!*.lock' ':!.github/workflows/ci.yml'; then
+            echo "::error::Local machine path found in a tracked file."
+            exit 1
+          fi
+      - name: Shell scripts
+        run: shellcheck tools/*.sh
+      - name: Python tooling
+        run: |
+          python3 -m venv "$RUNNER_TEMP/atelier-lint"
+          "$RUNNER_TEMP/atelier-lint/bin/pip" install ruff==0.14.0
+          "$RUNNER_TEMP/atelier-lint/bin/ruff" check --select E9,F tools
+          "$RUNNER_TEMP/atelier-lint/bin/ruff" format --check tools
+      - name: GitHub Actions workflows
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 
   msrv:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
@@ -54,3 +102,7 @@ jobs:
         run: |
           docker run --rm atelier:ci --version
           tools/container-smoke.sh atelier:ci
+      - name: Validate Compose configuration
+        env:
+          ATELIER_HTTP_TOKEN: ci-configuration-check
+        run: docker compose config --quiet

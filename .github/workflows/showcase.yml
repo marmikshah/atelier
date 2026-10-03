@@ -2,15 +2,28 @@ name: Showcase
 
 # The showcase claims every GIF is reproducible from the replay beside it.
 # This proves it. It replays the complete matrix and requires byte-identical GIFs,
-# which takes ~10 minutes — too slow for every pull request, so it runs on
-# demand and weekly, and on any change to the showcase or the editor's export
-# and replay paths.
+# on pull requests that change the editor or showcase, on master, weekly, and
+# on demand.
 on:
   push:
     branches: [master]
     paths:
       - "showcase/**"
-      - "tools/showcase-check.sh"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "tools/showcase.py"
+      - ".github/workflows/showcase.yml"
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "showcase/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "tools/showcase.py"
       - ".github/workflows/showcase.yml"
   schedule:
     - cron: "23 4 * * 1"
@@ -19,8 +32,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: showcase-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   replays:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     name: Replay every showcase recipe
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -37,4 +55,4 @@ jobs:
         run: cargo build --locked -p atelier
 
       - name: Replay the showcase matrix
-        run: tools/showcase-check.sh
+        run: python3 tools/showcase.py verify

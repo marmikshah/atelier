@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-image=${1:?usage: tools/container-smoke.sh <image>}
+if [[ ${1:-} == --help ]]; then
+  echo "Usage: tools/container-smoke.sh IMAGE"
+  echo "Check bearer authentication and persistence across two Docker containers."
+  echo "Requires Docker, curl, and jq; temporary containers and volume are removed."
+  exit 0
+fi
+if [[ $# -ne 1 ]]; then
+  echo "Usage: tools/container-smoke.sh IMAGE | --help" >&2
+  exit 2
+fi
+image=$1
 container="atelier-smoke-$$"
 volume="atelier-smoke-data-$$"
 responses=$(mktemp -d)
