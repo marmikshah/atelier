@@ -820,7 +820,7 @@ impl Atelier {
         // lock also coordinates separate CLI and daemon processes. The caller
         // keeps the order guard through this complete blocking operation, so
         // pixels and provenance still commit in one order.
-        let _store_lock = {
+        let store_lock = {
             let studio = self.studio();
             if store_mutation {
                 studio.lock_store_exclusive()
@@ -831,30 +831,68 @@ impl Atelier {
         .map_err(|error| ErrorData::internal_error(error, None))?;
 
         let started = std::time::Instant::now();
-        let mut result = match if store_mutation {
-            self.invoke_transaction(tool, args.clone(), journaled, expected_revision)
-        } else {
-            self.invoke(tool, args.clone())
-        } {
-            Ok(r) => r,
-            // Protocol-level failure (malformed params): the caller sees the
-            // error; make sure the operator does too. Unknown names are
-            // rejected while constructing `ToolName`, before dispatch.
-            Err(e) => {
-                tracing::error!(tool = tool.as_str(), %caller, error = %e, "tool call failed (protocol error)");
-                return Err(e);
+        let mut result =
+            self.invoke_store_call(tool, &args, journaled, store_mutation, expected_revision)?;
+        if is_error_result(&result)
+            && let Some(target) = mutation_target(tool, &args)
+                .map_err(|error| ErrorData::invalid_params(error, None))?
+        {
+            // Reads release their shared lock before taking an exclusive one.
+            // Revalidate after that transition: another writer may have fixed
+            // the document while this caller waited. Retry at most once.
+            let _recovery_lock = if store_mutation {
+                None
+            } else {
+                drop(store_lock);
+                Some(
+                    self.studio()
+                        .lock_store_exclusive()
+                        .map_err(|error| ErrorData::internal_error(error, None))?,
+                )
+            };
+            match self.studio().recover_document(&target) {
+                Ok(Some(recovery)) => {
+                    result = self.invoke_store_call(
+                        tool,
+                        &args,
+                        journaled,
+                        store_mutation,
+                        expected_revision,
+                    )?;
+                    result = attach_result_field(result, "recovery", recovery);
+                }
+                Ok(None) => {}
+                Err(error) => {
+                    result = res(Err(format!("cannot recover document '{target}': {error}")))
+                }
             }
+        }
+        log_call(tool, &args, caller, &result, started.elapsed());
+        Ok(result)
+    }
+
+    fn invoke_store_call(
+        &self,
+        tool: ToolName,
+        args: &Value,
+        journaled: bool,
+        store_mutation: bool,
+        expected_revision: Option<u64>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let mut result = if store_mutation {
+            self.invoke_transaction(tool, args.clone(), journaled, expected_revision)?
+        } else {
+            self.invoke(tool, args.clone())?
         };
         if !store_mutation
             && !is_error_result(&result)
-            && let Some(target) = result_document_target(tool, &args, &result)
+            && let Some(target) = result_document_target(tool, args, &result)
         {
             result = match self.studio().document_revision(&target) {
                 Ok(revision) => attach_result_field(result, "revision", json!(revision)),
                 Err(error) => res(Err(error)),
             };
         }
-        log_call(tool, &args, caller, &result, started.elapsed());
         Ok(result)
     }
 
@@ -2554,7 +2592,7 @@ mod tests {
         std::fs::remove_file(&journal).unwrap();
         std::fs::create_dir(&journal).unwrap();
         let failed = atelier
-            .dispatch(
+            .invoke_transaction(
                 ToolName::DocDraw,
                 json!({
                     "doc_id": doc_id,
@@ -2564,9 +2602,9 @@ mod tests {
                     "points": [[0, 0]],
                     "color": [255, 0, 0, 255]
                 }),
-                "test",
+                true,
+                None,
             )
-            .await
             .unwrap();
         assert!(is_error_result(&failed));
         let error = result_json(&failed).unwrap()["error"]

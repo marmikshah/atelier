@@ -28,8 +28,10 @@ mod checkpoint;
 mod control;
 mod craft;
 mod integrity;
+mod journal;
 mod ops_export;
 mod ops_region;
+mod recovery;
 mod reference;
 mod store;
 mod transaction;
@@ -40,7 +42,10 @@ pub use control::{
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta, ToolName,
 };
 pub use integrity::{IntegrityIssue, IntegritySeverity, StoreIntegrityReport};
-pub use store::{JOURNAL_FORMAT_VERSION, JournalEntry, validate_journal};
+pub use journal::{
+    JOURNAL_FORMAT_VERSION, JournalEntry, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES, ParsedJournal,
+    parse_journal, validate_journal,
+};
 pub use transaction::{CommitOutcome, StoreTransaction};
 pub use view::LookOptions;
 
@@ -57,9 +62,7 @@ pub(crate) const MAX_CANVAS: u32 = atelier_core::document::MAX_DOCUMENT_DIMENSIO
 pub const JOURNAL_FILE: &str = "recipe.jsonl";
 /// Store-owned optimistic-concurrency generation, beside `doc.json`.
 ///
-/// This stays outside the core document format: older 1.x documents have no
-/// sidecar and therefore begin at revision zero when first opened by a build
-/// that supports guarded writes.
+/// Each new document starts at revision zero; dispatch increments it on commit.
 pub const REVISION_FILE: &str = "revision";
 /// Text grids (silhouette/dump/diff) stay readable only so long — shared area
 /// cap for every grid-emitting reader.

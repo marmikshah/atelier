@@ -553,11 +553,11 @@ mod tests {
         let stage_stats = measure_stage_tree(&source, &staged).unwrap();
 
         // Empty canvas: root+root-cels+checkpoint-root+2*(cp+cp-cels),
-        // with doc/recipe at the root and doc/recipe/label per checkpoint.
+        // with doc/recipe/revision at the root and doc/recipe/label per checkpoint.
         assert_eq!(stage_stats.visited_directories, 7);
-        assert_eq!(stage_stats.visited_files, 8);
+        assert_eq!(stage_stats.visited_files, 9);
         assert_eq!(stage_stats.copied_files, 1);
-        assert_eq!(stage_stats.linked_files, 7);
+        assert_eq!(stage_stats.linked_files, 8);
         #[cfg(unix)]
         {
             use std::os::unix::fs::MetadataExt;
@@ -576,8 +576,8 @@ mod tests {
         let sync_stats = measure_sync_tree(&staged).unwrap();
         assert_eq!(sync_stats.visited_directories, 7);
         assert_eq!(sync_stats.synced_directories, 7);
-        assert_eq!(sync_stats.visited_files, 8);
-        assert_eq!(sync_stats.synced_files, 8);
+        assert_eq!(sync_stats.visited_files, 9);
+        assert_eq!(sync_stats.synced_files, 9);
     }
 
     #[test]

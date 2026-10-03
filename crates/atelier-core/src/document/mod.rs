@@ -78,10 +78,6 @@ pub const MAX_DOCUMENT_CELS: usize = 16_384;
 /// 256 MiB before hash-map and metadata overhead.
 pub const MAX_DOCUMENT_CEL_PIXELS: u64 = 64 * 1024 * 1024;
 
-const fn document_format_v1() -> u32 {
-    DOCUMENT_FORMAT_VERSION
-}
-
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct LayerMeta {
@@ -147,9 +143,7 @@ pub struct CelMeta {
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct DocMeta {
-    /// Explicit on-disk contract version. Legacy pre-version files deserialize
-    /// as v1; newer unknown versions fail instead of being reinterpreted.
-    #[serde(default = "document_format_v1")]
+    /// Explicit on-disk contract version; only the current format is accepted.
     pub format_version: u32,
     pub name: String,
     pub w: u32,
@@ -162,7 +156,7 @@ pub struct DocMeta {
     /// Reference image filename inside the doc dir (`doc_ref op=set`).
     /// — the original the artwork is recreating, kept for compare loops.
     pub reference: Option<String>,
-    /// Optional static pixel-font metadata. Legacy documents have no font.
+    /// Optional static pixel-font metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub font: Option<FontMeta>,
 }

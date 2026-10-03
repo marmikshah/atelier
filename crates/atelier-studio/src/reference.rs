@@ -454,7 +454,7 @@ impl Studio {
 /// that isn't a bare file name — the server only ever writes "reference.png",
 /// so a doc.json edited to hold "../../<something>" must not turn the clear
 /// path into an arbitrary file deletion (or the read path into a file probe).
-fn ref_path(dir: &Path, name: &str) -> Result<std::path::PathBuf, String> {
+pub(super) fn ref_path(dir: &Path, name: &str) -> Result<std::path::PathBuf, String> {
     let p = Path::new(name);
     let is_bare = p.components().count() == 1 && p.file_name().is_some() && !p.is_absolute();
     if !is_bare {

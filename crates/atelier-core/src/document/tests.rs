@@ -1036,13 +1036,15 @@ fn persisted_document_shape_is_strict() {
     );
     assert_eq!(current["format_version"], json!(DOCUMENT_FORMAT_VERSION));
 
-    // Pre-version files are the v1 legacy shape and remain readable.
-    let mut legacy = current.clone();
-    legacy.as_object_mut().unwrap().remove("format_version");
-    std::fs::write(&path, serde_json::to_vec(&legacy).unwrap()).unwrap();
+    let mut unversioned = current.clone();
+    unversioned
+        .as_object_mut()
+        .unwrap()
+        .remove("format_version");
+    std::fs::write(&path, serde_json::to_vec(&unversioned).unwrap()).unwrap();
     assert!(
-        Document::load(&dir).is_ok(),
-        "legacy v1 must migrate on read"
+        Document::load(&dir).is_err(),
+        "the format version must be explicit"
     );
 
     let mut future = current.clone();

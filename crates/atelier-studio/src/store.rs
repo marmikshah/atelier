@@ -6,115 +6,18 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 
 use atelier_core::document::{AnalysisDocument, Document};
 
-use super::{DocumentId, JOURNAL_FILE, MAX_CANVAS, REVISION_FILE, Studio, ToolName};
+use super::journal::ParsedJournal;
+use super::{
+    DocumentId, JOURNAL_FILE, JournalEntry, MAX_CANVAS, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES,
+    REVISION_FILE, Studio, ToolName, parse_journal, validate_journal,
+};
 
-/// Current JSONL journal entry format.
-pub const JOURNAL_FORMAT_VERSION: u32 = 1;
-
-const MAX_JOURNAL_BYTES: u64 = 64 * 1024 * 1024;
-const MAX_JOURNAL_ENTRIES: usize = 100_000;
 /// Twenty decimal digits for `u64::MAX`, plus one trailing newline.
 const MAX_REVISION_BYTES: u64 = 21;
-
-const fn journal_format_v1() -> u32 {
-    JOURNAL_FORMAT_VERSION
-}
-
-/// The one current journal-line shape, shared by the writer, store reader, and
-/// replay parser.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct JournalEntry {
-    #[serde(default = "journal_format_v1")]
-    pub format_version: u32,
-    pub tool: ToolName,
-    pub args: Map<String, Value>,
-}
-
-impl JournalEntry {
-    pub fn new(tool: ToolName, args: Map<String, Value>) -> Self {
-        Self {
-            format_version: JOURNAL_FORMAT_VERSION,
-            tool,
-            args,
-        }
-    }
-}
-
-/// Validate the current per-document journal contract. An absent/empty journal
-/// means "no recipe"; a non-empty one is a complete, self-identifying rebuild.
-pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
-    if let Some(entry) = entries
-        .iter()
-        .find(|entry| entry.format_version != JOURNAL_FORMAT_VERSION)
-    {
-        return Err(format!(
-            "unsupported journal format {} (this build supports {})",
-            entry.format_version, JOURNAL_FORMAT_VERSION
-        ));
-    }
-    let Some(first) = entries.first() else {
-        return Ok(());
-    };
-    if first.tool != ToolName::DocNew {
-        return Err("journal must start with doc_new".into());
-    }
-    if entries
-        .iter()
-        .skip(1)
-        .any(|entry| entry.tool == ToolName::DocNew)
-    {
-        return Err("journal may contain exactly one doc_new".into());
-    }
-    let recorded_id = first
-        .args
-        .get("doc_id")
-        .and_then(Value::as_str)
-        .filter(|id| Studio::valid_id(id))
-        .ok_or("journal doc_new requires a valid args.doc_id stamp")?;
-    for (index, entry) in entries.iter().enumerate().skip(1) {
-        if !entry.tool.is_recipe_step() {
-            return Err(format!(
-                "journal line {} uses non-recipe tool '{}'",
-                index + 1,
-                entry.tool
-            ));
-        }
-        let mut targets = Vec::new();
-        for key in ["doc_id", "set_doc"] {
-            if let Some(value) = entry.args.get(key) {
-                targets.push(value.as_str().ok_or_else(|| {
-                    format!(
-                        "journal line {} ({}) has a non-string {key}",
-                        index + 1,
-                        entry.tool
-                    )
-                })?);
-            }
-        }
-        if targets.is_empty() {
-            return Err(format!(
-                "journal line {} ({}) has no document target",
-                index + 1,
-                entry.tool
-            ));
-        }
-        if targets.iter().any(|target| *target != recorded_id) {
-            return Err(format!(
-                "journal line {} ({}) targets a document other than '{}'",
-                index + 1,
-                entry.tool,
-                recorded_id
-            ));
-        }
-    }
-    Ok(())
-}
 
 pub(crate) fn read_bounded_utf8(
     path: &std::path::Path,
@@ -165,42 +68,13 @@ pub(crate) fn read_bounded_utf8(
     String::from_utf8(bytes).map_err(|error| format!("{label} is not UTF-8: {error}"))
 }
 
-pub(crate) struct ParsedJournal {
-    pub(crate) entries: Vec<JournalEntry>,
-    pub(crate) torn_tail: bool,
-}
-
 pub(crate) fn parse_journal_file(
     id: &str,
     path: &std::path::Path,
 ) -> Result<ParsedJournal, String> {
     let body = read_bounded_utf8(path, JOURNAL_FILE, MAX_JOURNAL_BYTES)?;
-    let final_line_was_terminated = body.ends_with('\n');
-    let mut lines = body
-        .lines()
-        .enumerate()
-        .map(|(line, value)| (line, value.trim()))
-        .filter(|(_, value)| !value.is_empty())
-        .peekable();
-    let mut entries = Vec::new();
-    let mut torn_tail = false;
-    while let Some((line, value)) = lines.next() {
-        let is_last = lines.peek().is_none();
-        match serde_json::from_str::<JournalEntry>(value) {
-            Ok(entry) if entries.len() < MAX_JOURNAL_ENTRIES => entries.push(entry),
-            Ok(_) => {
-                return Err(format!(
-                    "journal has more than {MAX_JOURNAL_ENTRIES} entries; split or archive its recipe before verification"
-                ));
-            }
-            Err(error) if is_last && error.is_eof() && !final_line_was_terminated => {
-                torn_tail = true;
-                break;
-            }
-            Err(error) => return Err(format!("journal line {}: {error}", line + 1)),
-        }
-    }
-    validate_journal(&entries).map_err(|error| format!("journal: {error}"))?;
+    let journal = parse_journal(&body)?;
+    let entries = &journal.entries;
     if let Some(recorded_id) = entries
         .first()
         .and_then(|entry| entry.args.get("doc_id"))
@@ -211,7 +85,7 @@ pub(crate) fn parse_journal_file(
             "journal: doc_new stamp '{recorded_id}' does not match document '{id}'"
         ));
     }
-    Ok(ParsedJournal { entries, torn_tail })
+    Ok(journal)
 }
 
 fn read_journal_file(id: &str, path: &std::path::Path) -> Result<Vec<JournalEntry>, String> {
@@ -417,10 +291,7 @@ impl Studio {
 
     /// Current optimistic-concurrency generation for one document.
     ///
-    /// The sidecar was added after the original v1 store format, so absence is
-    /// the compatible initial generation zero. A present file is deliberately
-    /// strict and bounded: corruption must stop guarded writes rather than
-    /// silently resetting a document to an earlier generation.
+    /// Every current document has a strict, bounded revision sidecar.
     pub fn document_revision(&self, id: &str) -> Result<u64, String> {
         if !Self::valid_id(id) {
             return Err(format!("invalid document id '{id}'"));
@@ -430,7 +301,6 @@ impl Studio {
         }
         let path = self.doc_dir(id).join(REVISION_FILE);
         match fs::symlink_metadata(&path) {
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(0),
             Err(error) => {
                 return Err(format!(
                     "cannot inspect revision for document '{id}': {error}"
@@ -539,7 +409,10 @@ impl Studio {
             created.ok_or("could not generate a unique document id after 32 attempts")?
         };
         let mut doc = Document::new(name, w, h);
-        if let Err(error) = doc.save(&dir) {
+        if let Err(error) = doc
+            .save(&dir)
+            .and_then(|()| self.set_document_revision(id.as_str(), 0))
+        {
             let _ = fs::remove_dir_all(&dir);
             return Err(error);
         }
@@ -773,7 +646,7 @@ impl Studio {
 
     /// Read a document's journal back as its ordered calls.
     ///
-    /// Same policy as the replay-side parser (`Recipe::parse_jsonl`): a torn
+    /// Same parser as external replay files: a torn
     /// FINAL line is a crash mid-append and is dropped, but a malformed line
     /// with content after it is real corruption and errors — silently skipping
     /// it would report "N steps / replayable" for a journal that `atelier
@@ -800,6 +673,7 @@ impl Studio {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::JOURNAL_FORMAT_VERSION;
 
     fn studio(tag: &str) -> Studio {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
@@ -808,12 +682,15 @@ mod tests {
     }
 
     #[test]
-    fn legacy_revision_zero_round_trips_through_the_sidecar() {
+    fn current_revision_round_trips_through_the_sidecar() {
         let s = studio("revision");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
         assert_eq!(s.document_revision(&id).unwrap(), 0);
-        assert!(!s.doc_dir(&id).join(REVISION_FILE).exists());
+        assert_eq!(
+            fs::read_to_string(s.doc_dir(&id).join(REVISION_FILE)).unwrap(),
+            "0\n"
+        );
 
         s.set_document_revision(&id, u64::MAX).unwrap();
         assert_eq!(s.document_revision(&id).unwrap(), u64::MAX);
@@ -825,11 +702,13 @@ mod tests {
     }
 
     #[test]
-    fn malformed_revision_is_never_reinterpreted_as_legacy_zero() {
+    fn malformed_or_missing_revision_is_rejected() {
         let s = studio("revision-corrupt");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
         let path = s.doc_dir(&id).join(REVISION_FILE);
+        fs::remove_file(&path).unwrap();
+        assert!(s.document_revision(&id).is_err());
 
         for malformed in ["", " 1\n", "1\n\n", "18446744073709551616\n"] {
             fs::write(&path, malformed).unwrap();
@@ -850,6 +729,7 @@ mod tests {
         let id = created["doc_id"].as_str().unwrap().to_string();
         let outside = s.docs_dir.join("outside-revision");
         fs::write(&outside, "41\n").unwrap();
+        fs::remove_file(s.doc_dir(&id).join(REVISION_FILE)).unwrap();
         symlink(&outside, s.doc_dir(&id).join(REVISION_FILE)).unwrap();
 
         assert!(s.document_revision(&id).is_err());
@@ -901,7 +781,11 @@ mod tests {
         let path = s.journal_path(id);
 
         let clean = fs::read_to_string(&path).unwrap();
-        fs::write(&path, format!("{clean}{{\"tool\":\"doc_")).unwrap();
+        fs::write(
+            &path,
+            format!("{clean}{{\"format_version\":1,\"tool\":\"doc_"),
+        )
+        .unwrap();
         assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
         assert!(
             s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
@@ -909,7 +793,7 @@ mod tests {
             "new writes must not cement a torn tail into the journal"
         );
 
-        fs::write(&path, format!("{clean}{{\"tool\":\n")).unwrap();
+        fs::write(&path, format!("{clean}{{\"format_version\":1,\"tool\":\n")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 3"),
@@ -929,7 +813,7 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"tool\":\"doc_new\",\"args\":[],\"note\":\"old\"}\n",
+            "{\"format_version\":1,\"tool\":\"doc_new\",\"args\":[],\"note\":\"old\"}\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -940,7 +824,7 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"123e4567-e89b-42d3-a456-426614174000\"}}\n",
+            "{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"123e4567-e89b-42d3-a456-426614174000\"}}\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -984,7 +868,7 @@ mod tests {
     }
 
     #[test]
-    fn journals_are_versioned_and_legacy_v1_remains_readable() {
+    fn journals_require_the_current_explicit_version() {
         let s = studio("journal-version");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
@@ -995,13 +879,13 @@ mod tests {
             serde_json::from_str(fs::read_to_string(&path).unwrap().trim()).unwrap();
         assert_eq!(current["format_version"], JOURNAL_FORMAT_VERSION);
 
-        let legacy =
-            format!("{{\"tool\":\"doc_new\",\"args\":{{\"name\":\"d\",\"doc_id\":\"{id}\"}}}}\n");
-        fs::write(&path, legacy).unwrap();
-        assert_eq!(
-            s.journal(id).unwrap()[0].format_version,
-            JOURNAL_FORMAT_VERSION
-        );
+        let mut unversioned = current.clone();
+        unversioned
+            .as_object_mut()
+            .unwrap()
+            .remove("format_version");
+        fs::write(&path, format!("{unversioned}\n")).unwrap();
+        assert!(s.journal(id).unwrap_err().contains("format_version"));
 
         let mut future = current;
         future["format_version"] = json!(JOURNAL_FORMAT_VERSION + 1);
