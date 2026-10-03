@@ -358,11 +358,17 @@ mod tests {
         d.fill_cel(0, 0, [9, 8, 7, 255]).unwrap();
         d.clear_region(0, 0, i32::MIN, i32::MIN, i32::MAX, i32::MAX)
             .unwrap();
-        assert_eq!(d.opaque_count(None, 0).unwrap(), 0);
+        assert_eq!(
+            d.flatten(0).pixels().filter(|pixel| pixel.0[3] > 0).count(),
+            0
+        );
 
         d.fill_cel(0, 0, [9, 8, 7, 255]).unwrap();
         d.clear_region(0, 0, i32::MAX - 1, i32::MAX - 1, i32::MAX, i32::MAX)
             .unwrap();
-        assert_eq!(d.opaque_count(None, 0).unwrap(), 16);
+        assert_eq!(
+            d.flatten(0).pixels().filter(|pixel| pixel.0[3] > 0).count(),
+            16
+        );
     }
 }

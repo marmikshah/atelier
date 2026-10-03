@@ -1049,17 +1049,7 @@ impl Document {
         self.mark_all_dirty();
     }
 
-    /// Append a new frame; with `copy_from`, duplicate that frame's cels into it.
-    pub fn add_frame(
-        &mut self,
-        duration_ms: u32,
-        copy_from: Option<usize>,
-    ) -> Result<usize, String> {
-        self.add_frames(duration_ms, copy_from, 1)
-    }
-
-    /// Append a batch after validating its complete frame and cel allocation.
-    /// Returns the last added frame's index; rejected batches change nothing.
+    /// Append `count` frames, optionally copying the cels from `copy_from`.
     pub fn add_frames(
         &mut self,
         duration_ms: u32,
@@ -1132,7 +1122,8 @@ impl Document {
     }
 
     /// Place (or replace) the cel image for (layer, frame) at offset (x, y).
-    pub fn set_cel(
+    #[cfg(test)]
+    pub(crate) fn set_cel(
         &mut self,
         layer: usize,
         frame: usize,

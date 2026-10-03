@@ -100,11 +100,8 @@ impl Document {
 
 // -- the op registry ----------------------------------------------------------
 //
-// ONE table drives everything: `apply_op_raw` dispatches on it, the strict
-// validator reads its key lists, and the doc_draw/doc_fx vocabularies are
-// filtered from it. It used to be three hand-synced lists (dispatch match,
-// key table, draw/fx partition) with two tests existing only to catch drift —
-// a new op is now exactly one entry here.
+// The table drives dispatch, strict validation, and the doc_draw/doc_fx
+// vocabularies. Add an operation in one place.
 
 /// Which single-operation tool vocabulary an operation belongs to.
 /// `doc_draw` adds new marks and `doc_fx` reworks existing pixels.
@@ -192,13 +189,6 @@ pub(crate) static OPS: &[OpSpec] = &[
     },
     OpSpec {
         name: "fill",
-        required: &["x", "y", "color"],
-        optional: &["tolerance"],
-        side: OpSide::Draw,
-        run: op_fill,
-    },
-    OpSpec {
-        name: "bucket",
         required: &["x", "y", "color"],
         optional: &["tolerance"],
         side: OpSide::Draw,

@@ -93,6 +93,7 @@ dependencies = [
  "atelier-core",
  "atelier-studio",
  "axum",
+ "base64",
  "rmcp",
  "schemars",
  "serde",

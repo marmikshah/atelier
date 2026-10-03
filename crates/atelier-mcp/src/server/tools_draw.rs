@@ -2,7 +2,7 @@
 //! edits, and graduated dither ramps.
 
 use super::params::*;
-use super::{Atelier, edited, palette_list, region, res};
+use super::{Atelier, palette_list, region, res};
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::CallToolResult;
 use rmcp::{tool, tool_router};
@@ -37,10 +37,9 @@ impl Atelier {
 
     #[tool(description = "Clear or move a rectangular cel region.")]
     pub(crate) fn doc_region(&self, Parameters(p): Parameters<DocRegion>) -> CallToolResult {
-        edited(
-            self.studio()
-                .doc_region(&p.doc_id, p.op, p.layer, p.frame, Some(p.rect), p.offset),
-        )
+        res(self
+            .studio()
+            .doc_region(&p.doc_id, p.op, p.layer, p.frame, Some(p.rect), p.offset))
     }
 
     #[tool(description = "Paint a region from character rows and a colour legend.")]
@@ -55,7 +54,7 @@ impl Atelier {
             p.legend,
             p.rows,
         );
-        edited(r)
+        res(r)
     }
 
     #[tool(description = "Dither a colour ramp horizontally, vertically, or radially.")]

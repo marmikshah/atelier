@@ -92,10 +92,6 @@ impl Document {
         Ok((sheet, fw, fh))
     }
 
-    pub fn export_sheet(&self, out: &Path, scale: u32) -> Result<Value, String> {
-        self.export_sheet_with_color_mode(out, scale, PngColorMode::Rgba)
-    }
-
     /// Export a PNG sheet with native metadata, optionally requiring RGB.
     pub fn export_sheet_with_color_mode(
         &self,
@@ -138,15 +134,8 @@ impl Document {
         Ok(meta)
     }
 
-    /// Export the spritesheet with the industry-standard hash sprite-JSON
-    /// sidecar instead of atelier's richer native shape — the layout that game
-    /// engines' existing sheet importers already parse (`frames` keyed by name
-    /// with `frame`/`sourceSize`/`duration`, `meta.frameTags`).
-    pub fn export_sheet_std(&self, out: &Path, scale: u32) -> Result<Value, String> {
-        self.export_sheet_std_with_color_mode(out, scale, PngColorMode::Rgba)
-    }
-
-    /// Export a PNG sheet with standard metadata, optionally requiring RGB.
+    /// Export a PNG sheet with the standard hash sprite-JSON sidecar used by
+    /// game engines, optionally requiring RGB channels.
     pub fn export_sheet_std_with_color_mode(
         &self,
         out: &Path,

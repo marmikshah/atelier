@@ -228,9 +228,9 @@ fn palette_set_and_index() {
 fn frame_ops_delete_reindexes_and_protects_last() {
     let mut d = Document::new("t", 2, 2);
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
-    d.add_frame(100, None).unwrap();
+    d.add_frames(100, None, 1).unwrap();
     d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
-    d.add_frame(100, None).unwrap();
+    d.add_frames(100, None, 1).unwrap();
     d.pencil(0, 2, &[(0, 0)], [3, 3, 3, 255], 1).unwrap();
     d.add_tag("mid", 1, 1, TagDirection::Forward).unwrap();
     d.add_tag("all", 0, 2, TagDirection::Forward).unwrap();
@@ -251,7 +251,7 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
     // untagged frames).
     let mut d = Document::new("t", 2, 2);
     for _ in 0..3 {
-        d.add_frame(100, None).unwrap();
+        d.add_frames(100, None, 1).unwrap();
     }
     d.add_tag("walk", 0, 1, TagDirection::Forward).unwrap();
     d.frame_ops(FrameAction::Move, 1, Some(3), None).unwrap();
@@ -259,8 +259,8 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
 
     // A reorder entirely INSIDE a tag keeps the tag's full coverage.
     let mut e = Document::new("t", 2, 2);
-    e.add_frame(100, None).unwrap();
-    e.add_frame(100, None).unwrap();
+    e.add_frames(100, None, 1).unwrap();
+    e.add_frames(100, None, 1).unwrap();
     e.add_tag("all", 0, 2, TagDirection::Forward).unwrap();
     e.frame_ops(FrameAction::Move, 1, Some(2), None).unwrap();
     assert_eq!((e.meta.tags[0].from, e.meta.tags[0].to), (0, 2));
@@ -268,7 +268,7 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
     // A single-frame tag follows its frame.
     let mut s = Document::new("t", 2, 2);
     for _ in 0..3 {
-        s.add_frame(100, None).unwrap();
+        s.add_frames(100, None, 1).unwrap();
     }
     s.add_tag("pose", 1, 1, TagDirection::Forward).unwrap();
     s.frame_ops(FrameAction::Move, 1, Some(3), None).unwrap();
@@ -279,7 +279,7 @@ fn frame_ops_move_remaps_tags_without_ballooning() {
 fn frame_ops_move_and_duplicate() {
     let mut d = Document::new("t", 2, 2);
     d.pencil(0, 0, &[(0, 0)], [1, 1, 1, 255], 1).unwrap();
-    d.add_frame(100, None).unwrap();
+    d.add_frames(100, None, 1).unwrap();
     d.pencil(0, 1, &[(0, 0)], [2, 2, 2, 255], 1).unwrap();
     d.frame_ops(FrameAction::Move, 0, Some(1), None).unwrap();
     assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [2, 2, 2, 255]);
@@ -870,7 +870,7 @@ fn analysis_load_decodes_only_the_requested_frame_and_layer() {
     let _ = std::fs::remove_dir_all(&dir);
     let mut document = Document::new("targeted", 4, 4);
     document.add_layer(Some("top".into()), 255, raster::Blend::Normal);
-    document.add_frame(DEFAULT_FRAME_MS, None).unwrap();
+    document.add_frames(DEFAULT_FRAME_MS, None, 1).unwrap();
     for layer in 0..2 {
         for frame in 0..2 {
             document
@@ -929,7 +929,7 @@ fn analysis_load_probes_unselected_cels_without_decoding_them() {
         std::env::temp_dir().join(format!("atelier-analysis-probe-all-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     let mut document = Document::new("targeted", 4, 4);
-    document.add_frame(DEFAULT_FRAME_MS, None).unwrap();
+    document.add_frames(DEFAULT_FRAME_MS, None, 1).unwrap();
     document.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
     document.fill_cel(0, 1, [4, 5, 6, 255]).unwrap();
     document.save(&dir).unwrap();
@@ -1103,11 +1103,6 @@ fn sheet_image_errors_on_dimension_overflow() {
 #[test]
 fn oversized_generated_outputs_are_rejected_before_writing_files() {
     let d = Document::new("t", 1024, 1024);
-    assert!(
-        d.render_preview(0, 16, None, false, 1, None)
-            .unwrap_err()
-            .contains("output safety cap")
-    );
 
     let dir = std::env::temp_dir().join(format!("atelier-output-cap-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
@@ -1115,7 +1110,8 @@ fn oversized_generated_outputs_are_rejected_before_writing_files() {
     for (name, result) in [
         (
             "sheet.png",
-            d.export_sheet(&dir.join("sheet.png"), 16).map(|_| ()),
+            d.export_sheet_with_color_mode(&dir.join("sheet.png"), 16, PngColorMode::Rgba)
+                .map(|_| ()),
         ),
         (
             "anim.gif",
@@ -1143,7 +1139,7 @@ fn rgb_sheet_preserves_pixels_scaling_and_both_metadata_dialects() {
     let mut d = Document::new("rgb", 2, 1);
     d.fill_cel(0, 0, [1, 127, 254, 255]).unwrap();
     d.pencil(0, 0, &[(1, 0)], [253, 2, 129, 255], 1).unwrap();
-    d.add_frame(80, Some(0)).unwrap();
+    d.add_frames(80, Some(0), 1).unwrap();
     for standard in [false, true] {
         let out = dir.join(if standard {
             "standard.png"
@@ -1186,7 +1182,8 @@ fn rgb_sheet_preserves_pixels_scaling_and_both_metadata_dialects() {
         );
     }
     let out = dir.join("default.png");
-    d.export_sheet(&out, 1).unwrap();
+    d.export_sheet_with_color_mode(&out, 1, PngColorMode::Rgba)
+        .unwrap();
     let reader = png::Decoder::new(std::io::BufReader::new(std::fs::File::open(&out).unwrap()))
         .read_info()
         .unwrap();
@@ -1201,7 +1198,7 @@ fn rgb_sheet_rejects_transparency_without_replacing_outputs() {
     for alpha in [0, 254] {
         let mut d = Document::new("alpha", 1, 1);
         d.fill_cel(0, 0, [10, 20, 30, 255]).unwrap();
-        d.add_frame(100, None).unwrap();
+        d.add_frames(100, None, 1).unwrap();
         d.fill_cel(0, 1, [40, 50, 60, alpha]).unwrap();
         for standard in [false, true] {
             let out = dir.join("existing.png");
@@ -1225,12 +1222,14 @@ fn rgb_sheet_rejects_transparency_without_replacing_outputs() {
 fn export_sheet_std_writes_engine_parsable_json() {
     let mut d = Document::new("runner", 8, 8);
     d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
-    d.add_frame(80, Some(0)).unwrap();
+    d.add_frames(80, Some(0), 1).unwrap();
     d.add_tag("run", 0, 1, TagDirection::Forward).unwrap();
     let dir = std::env::temp_dir().join("atelier-std-json-test");
     let _ = std::fs::create_dir_all(&dir);
     let out = dir.join("runner.png");
-    let r = d.export_sheet_std(&out, 2).unwrap();
+    let r = d
+        .export_sheet_std_with_color_mode(&out, 2, PngColorMode::Rgba)
+        .unwrap();
     assert_eq!(r["meta_format"], "standard");
     let meta: Value =
         serde_json::from_str(&std::fs::read_to_string(out.with_extension("json")).unwrap())
@@ -1619,17 +1618,6 @@ fn layer_opacity_blends_toward_backdrop() {
 }
 
 #[test]
-fn render_preview_tile_and_region_size() {
-    let d = Document::new("t", 4, 4);
-    let tiled = d.render_preview(0, 1, None, false, 3, None).unwrap();
-    assert_eq!((tiled.width(), tiled.height()), (12, 12)); // 3×3 grid
-    let crop = d
-        .render_preview(0, 1, Some((0, 0, 1, 1)), false, 1, None)
-        .unwrap();
-    assert_eq!((crop.width(), crop.height()), (2, 2));
-}
-
-#[test]
 fn get_pixel_reads_back_a_drawn_pixel() {
     let mut d = Document::new("t", 8, 8);
     d.pencil(0, 0, &[(3, 4)], [10, 20, 30, 255], 1).unwrap();
@@ -1839,7 +1827,7 @@ fn adjust_hue_rotates_red_toward_green() {
 fn doc_with_frames(n: usize) -> Document {
     let mut d = Document::new("t", 4, 4);
     while d.meta.frames.len() < n {
-        d.add_frame(100, None).unwrap();
+        d.add_frames(100, None, 1).unwrap();
     }
     d
 }
@@ -1902,7 +1890,8 @@ fn export_sheet_writes_png_and_json_sidecar() {
     let mut d = doc_with_frames(3);
     d.fill_cel(0, 0, [255, 0, 0, 255]).unwrap();
     let out = dir.join("sheet.png");
-    d.export_sheet(&out, 2).unwrap();
+    d.export_sheet_with_color_mode(&out, 2, PngColorMode::Rgba)
+        .unwrap();
     // 3 frames × (4·2) wide, (4·2) tall.
     let png = image::open(&out).unwrap().to_rgba8();
     assert_eq!(png.dimensions(), (24, 8));
@@ -2049,13 +2038,13 @@ fn seam_axis_solid_is_seamless_edge_mismatch_is_not() {
     let mut d = Document::new("t", 4, 4);
     d.fill_cel(0, 0, [120, 120, 120, 255]).unwrap();
     // A solid cel tiles seamlessly: far edge == near edge on both axes.
-    let (mh, _, _) = d.seam_axis(None, 0, true, 8).unwrap();
-    let (mv, _, _) = d.seam_axis(None, 0, false, 8).unwrap();
+    let (mh, _, _) = seam_axis_img(&d.flatten(0), true, 8);
+    let (mv, _, _) = seam_axis_img(&d.flatten(0), false, 8);
     assert_eq!(mh, 0);
     assert_eq!(mv, 0);
     // Recolour the far (right) column so it no longer matches x=0.
     d.line(0, 0, 3, 0, 3, 3, [10, 10, 10, 255], 1).unwrap();
-    let (mh2, max_delta, _) = d.seam_axis(None, 0, true, 8).unwrap();
+    let (mh2, max_delta, _) = seam_axis_img(&d.flatten(0), true, 8);
     assert!(mh2 > 0, "edge mismatch should be detected");
     assert!(max_delta > 8, "delta should exceed threshold");
 }
@@ -2089,11 +2078,23 @@ fn huge_coordinates_cannot_wedge_the_drawing_primitives() {
         1,
     )
     .unwrap();
-    assert_eq!(d2.opaque_count(None, 0).unwrap(), 0);
+    assert_eq!(
+        d2.flatten(0)
+            .pixels()
+            .filter(|pixel| pixel.0[3] > 0)
+            .count(),
+        0
+    );
     // brush/size clamps: an absurd brush size covers the canvas, it doesn't loop.
     d2.pencil(0, 0, &[(4, 4)], [7, 7, 7, 255], i32::MAX)
         .unwrap();
-    assert_eq!(d2.opaque_count(None, 0).unwrap(), 64);
+    assert_eq!(
+        d2.flatten(0)
+            .pixels()
+            .filter(|pixel| pixel.0[3] > 0)
+            .count(),
+        64
+    );
 }
 
 #[test]
@@ -2184,7 +2185,7 @@ fn save_writes_only_dirtied_cels_and_sweeps_stale_files() {
     let _ = std::fs::remove_dir_all(&dir);
     let modified = |p: &std::path::Path| std::fs::metadata(p).unwrap().modified().unwrap();
     let mut d = Document::new("t", 4, 4);
-    d.add_frame(100, None).unwrap();
+    d.add_frames(100, None, 1).unwrap();
     d.rect(0, 0, 0, 0, 1, 1, [1, 1, 1, 255], true, 1).unwrap();
     d.rect(0, 1, 0, 0, 1, 1, [2, 2, 2, 255], true, 1).unwrap();
     d.save(&dir).unwrap();
@@ -2212,7 +2213,7 @@ fn save_load_round_trip_still_recovers_every_cel() {
     let dir = std::env::temp_dir().join(format!("atelier-dirty-rt-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     let mut d = Document::new("t", 4, 4);
-    d.add_frame(100, Some(0)).unwrap();
+    d.add_frames(100, Some(0), 1).unwrap();
     d.rect(0, 0, 0, 0, 1, 1, [10, 0, 0, 255], true, 1).unwrap();
     d.rect(0, 1, 2, 2, 3, 3, [0, 0, 10, 255], true, 1).unwrap();
     d.save(&dir).unwrap();

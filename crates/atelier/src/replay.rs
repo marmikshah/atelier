@@ -11,7 +11,6 @@
 //! visible result), while status/diagnostics go to stderr (header, errors, the
 //! final "N step(s) ok" tally) so they don't pollute piped stdout.
 
-use std::collections::HashMap;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
@@ -216,8 +215,7 @@ async fn run_atomic_session(recipe: &ParsedJournal, studio: &Studio) -> Result<S
 async fn run_session(recipe: &ParsedJournal, atelier: &Atelier) -> Result<String, String> {
     eprintln!("== replaying journal");
 
-    let mut ids: HashMap<String, String> = HashMap::new();
-    let mut minted_document = None;
+    let mut identity: Option<(String, String)> = None;
     for (idx, step) in recipe.entries.iter().enumerate() {
         let mut args = step.args.clone();
         let recorded = if step.tool == ToolName::DocNew {
@@ -229,7 +227,7 @@ async fn run_session(recipe: &ParsedJournal, atelier: &Atelier) -> Result<String
                 }
             }
         } else {
-            if let Err(error) = remap_ids(&mut args, &ids) {
+            if let Err(error) = remap_ids(&mut args, identity.as_ref()) {
                 print_step(idx, step, &format!("ERROR {error}"));
                 return Err(format!("step {} ({}) failed: {error}", idx + 1, step.tool));
             }
@@ -273,12 +271,13 @@ async fn run_session(recipe: &ParsedJournal, atelier: &Atelier) -> Result<String
             if recorded != minted {
                 eprintln!("replay: '{recorded}' rebuilds as '{minted}'");
             }
-            ids.insert(recorded, minted.clone());
-            minted_document = Some(minted);
+            identity = Some((recorded, minted));
         }
     }
 
-    minted_document.ok_or_else(|| "recipe completed without creating a document".into())
+    identity
+        .map(|(_, minted)| minted)
+        .ok_or_else(|| "recipe completed without creating a document".into())
 }
 
 /// Remove the concrete id stamped into the recorded `doc_new` arguments. The
@@ -294,16 +293,19 @@ fn take_recorded_id(args: &mut Map<String, Value>) -> Result<String, String> {
     }
 }
 
-/// Rewrite every recorded document id in `args` through the remap table.
+/// Rewrite targets through the single recorded-to-minted document identity.
 /// Covers each id-bearing field on the tool surface: `doc_id` everywhere,
 /// plus doc_palette's `set_doc`.
-fn remap_ids(args: &mut Map<String, Value>, ids: &HashMap<String, String>) -> Result<(), String> {
+fn remap_ids(
+    args: &mut Map<String, Value>,
+    identity: Option<&(String, String)>,
+) -> Result<(), String> {
     for key in ["doc_id", "set_doc"] {
         let Some(recorded) = args.get(key).and_then(Value::as_str) else {
             continue;
         };
-        if let Some(mapped) = ids.get(recorded) {
-            args.insert(key.into(), json!(mapped));
+        if let Some((_, minted)) = identity.filter(|(source, _)| source == recorded) {
+            args.insert(key.into(), json!(minted));
         } else {
             return Err(format!(
                 "recorded document id '{recorded}' in `{key}` has no doc_new mapping"
@@ -377,13 +379,13 @@ mod tests {
 
     #[test]
     fn remap_rewrites_every_id_bearing_field() {
-        let ids: HashMap<String, String> = [(RECORDED_ID.to_string(), ID.to_string())].into();
+        let identity = (RECORDED_ID.to_string(), ID.to_string());
         let mut args = object(json!({
             "doc_id": RECORDED_ID,
             "set_doc": RECORDED_ID,
             "name": "hero"
         }));
-        remap_ids(&mut args, &ids).unwrap();
+        remap_ids(&mut args, Some(&identity)).unwrap();
         assert_eq!(
             args,
             object(json!({
@@ -393,7 +395,7 @@ mod tests {
             }))
         );
         let mut unresolved = object(json!({"doc_id": MISSING_ID}));
-        assert!(remap_ids(&mut unresolved, &ids).is_err());
+        assert!(remap_ids(&mut unresolved, Some(&identity)).is_err());
     }
 
     #[test]

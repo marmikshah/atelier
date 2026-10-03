@@ -95,7 +95,7 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
     let mut distinct = std::collections::HashSet::new();
     let mut distinct_truncated = false;
     // Optional per-band value coverage (the structure read for `bands`/`notan`,
-    // carried over from the retired doc_render_value `band_pcts`).
+    // the posterised views).
     let nb = bands.map(|b| b.max(2) as usize);
     let mut band_counts = nb.map(|b| vec![0u64; b]);
     for p in img.pixels() {
@@ -127,7 +127,6 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
     if n == 0 {
         return json!({
             "opaque_pixels": 0,
-            "distinct_colors": 0,
             "distinct_colors_at_least": 0,
             "distinct_colors_exact": true,
             "distinct_colors_truncated": false,
@@ -139,9 +138,6 @@ fn look_stats(img: &RgbaImage, bands: Option<u32>) -> Value {
     let distinct_colors = distinct.len() + usize::from(distinct_truncated);
     let mut out = json!({
         "opaque_pixels": n,
-        // Compatibility alias: exact for ordinary pixel art; once the bounded
-        // set fills it is an explicitly labelled lower bound.
-        "distinct_colors": distinct_colors,
         "distinct_colors_at_least": distinct_colors,
         "distinct_colors_exact": !distinct_truncated,
         "distinct_colors_truncated": distinct_truncated,
@@ -290,7 +286,7 @@ impl Studio {
         let native = match mode {
             LookMode::Render => {
                 if onion {
-                    doc.render_preview(frame, 1, None, true, 1, None)?
+                    doc.flatten_onion(frame)
                 } else {
                     doc.flatten(frame)
                 }
@@ -304,7 +300,7 @@ impl Studio {
         };
         let (view, ox, oy) = crop_region(&native, region)?;
         // Per-band coverage is the value-structure read; meaningful only for the
-        // posterised modes (carried over from the retired doc_render_value).
+        // posterised modes.
         let band_arg = match mode {
             LookMode::Bands => Some(bands.max(2)),
             LookMode::Notan => Some(3),
@@ -555,6 +551,41 @@ mod tests {
         let (png, _) = s.look(id, 0, &opts).unwrap();
         assert_eq!(&png[0..4], b"\x89PNG");
     }
+
+    #[test]
+    fn look_crops_before_scaling_and_repeats_the_result() {
+        let s = studio("look-crop-tile");
+        let created = s.doc_new("c", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let legend = serde_json::from_value(json!({"r": [255, 0, 0, 255]})).unwrap();
+        s.doc_paint_grid(id, 0, 0, 1, 1, legend, vec!["r.".into(), "..".into()])
+            .unwrap();
+        let (png, report) = s
+            .look(
+                id,
+                0,
+                &LookOptions {
+                    region: Some((1, 1, 2, 2)),
+                    scale: Some(3),
+                    tile: Some(2),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        let image = image::load_from_memory(&png).unwrap().into_rgba8();
+        assert_eq!(image.dimensions(), (12, 12));
+        assert_eq!(report["stats"]["opaque_pixels"], 1);
+        for y in 0..12 {
+            for x in 0..12 {
+                let expected = if x % 6 < 3 && y % 6 < 3 {
+                    [255, 0, 0, 255]
+                } else {
+                    [0, 0, 0, 0]
+                };
+                assert_eq!(image.get_pixel(x, y).0, expected);
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -564,7 +595,7 @@ mod hardening_tests {
     #[test]
     fn look_stats_bounds_distinct_colours_and_marks_the_lower_bound() {
         let empty = look_stats(&RgbaImage::new(1, 1), None);
-        assert_eq!(empty["distinct_colors"], 0);
+        assert_eq!(empty["distinct_colors_at_least"], 0);
         assert_eq!(empty["distinct_colors_exact"], true);
 
         let width = (MAX_TRACKED_DISTINCT_COLORS + 1) as u32;
@@ -575,7 +606,10 @@ mod hardening_tests {
         }
 
         let stats = look_stats(&image, None);
-        assert_eq!(stats["distinct_colors"], MAX_TRACKED_DISTINCT_COLORS + 1);
+        assert_eq!(
+            stats["distinct_colors_at_least"],
+            MAX_TRACKED_DISTINCT_COLORS + 1
+        );
         assert_eq!(stats["distinct_colors_exact"], false);
         assert_eq!(stats["distinct_colors_truncated"], true);
         assert_eq!(stats["opaque_pixels"], width);

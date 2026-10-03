@@ -514,6 +514,9 @@ fn collect_state_entries(
         .iter()
         .map(|cel| cel.file.clone())
         .collect();
+    if kind == StateKind::Main {
+        validate_revision(&root.join(REVISION_FILE))?;
+    }
     let expects_reference = document.meta().reference.as_deref() == Some("reference.png");
     drop(document);
 
@@ -549,7 +552,6 @@ fn collect_state_entries(
                 push_source(entries, archive_prefix, &name, entry.path())?;
             }
             REVISION_FILE if kind == StateKind::Main && file_type.is_file() => {
-                validate_revision(&entry.path())?;
                 push_source(entries, archive_prefix, &name, entry.path())?;
             }
             "reference.png" if file_type.is_file() => {
@@ -1329,6 +1331,16 @@ mod tests {
         let error = source.pack_document(&id, &archive).unwrap_err();
         assert!(error.contains("unknown file"), "{error}");
         fs::remove_file(document_dir.join("notes.txt")).unwrap();
+
+        let revision_path = document_dir.join(REVISION_FILE);
+        let revision = fs::read(&revision_path).unwrap();
+        fs::remove_file(&revision_path).unwrap();
+        assert!(source.pack_document(&id, &archive).is_err());
+        assert!(
+            !archive.exists(),
+            "invalid state must not create an archive"
+        );
+        fs::write(revision_path, revision).unwrap();
 
         source.pack_document(&id, &archive).unwrap();
         let before = fs::read(&archive).unwrap();

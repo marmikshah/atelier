@@ -3,6 +3,7 @@
 //! errors keep the {"error": ...} payload AND set `is_error` so MCP harnesses
 //! flag the failure instead of treating it as a success.
 
+use base64::Engine as _;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
@@ -27,35 +28,6 @@ use params::*;
 /// Encoded PNG bytes accepted for an inline MCP image. Base64 expands this by
 /// another third, so keep the pre-encoding cap deliberately conservative.
 const MAX_INLINE_PNG_BYTES: usize = 8 * 1024 * 1024;
-
-/// Standard base64 for MCP image blocks. Kept here because inline images are
-/// part of tool results; Atelier no longer exposes a second, duplicate resource
-/// API for document renders.
-fn base64(bytes: &[u8]) -> String {
-    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
-    for chunk in bytes.chunks(3) {
-        let b = [
-            chunk[0],
-            *chunk.get(1).unwrap_or(&0),
-            *chunk.get(2).unwrap_or(&0),
-        ];
-        let n = (b[0] as u32) << 16 | (b[1] as u32) << 8 | b[2] as u32;
-        out.push(TABLE[(n >> 18 & 63) as usize] as char);
-        out.push(TABLE[(n >> 12 & 63) as usize] as char);
-        out.push(if chunk.len() > 1 {
-            TABLE[(n >> 6 & 63) as usize] as char
-        } else {
-            '='
-        });
-        out.push(if chunk.len() > 2 {
-            TABLE[(n & 63) as usize] as char
-        } else {
-            '='
-        });
-    }
-    out
-}
 
 /// Wraps a studio result as a tool result: Ok becomes a JSON text part; errors
 /// carry a machine-readable {"error": ...} payload and set `is_error` so every
@@ -100,9 +72,13 @@ fn img_result(r: Result<(Vec<u8>, Value), String>) -> CallToolResult {
         }
         Ok((png, report)) => {
             let mut result = CallToolResult::structured(report);
-            result
-                .content
-                .insert(0, Content::image(base64(&png), "image/png"));
+            result.content.insert(
+                0,
+                Content::image(
+                    base64::engine::general_purpose::STANDARD.encode(&png),
+                    "image/png",
+                ),
+            );
             result
         }
         Err(e) => CallToolResult::structured_error(json!({"error": e})),
@@ -117,15 +93,6 @@ fn opt_img_result(r: Result<(Option<Vec<u8>>, Value), String>) -> CallToolResult
         Ok((None, report)) => res(Ok(report)),
         Err(e) => res(Err(e)),
     }
-}
-
-/// Acknowledge an edit op with its TEXT report only — no inline preview image.
-/// doc_look is the agent's only eye: returning a preview PNG from every edit
-/// tool taxed every LLM client with image tokens (an upscaled frame is tens of
-/// thousands of tokens) and undercut the deliberate see-and-fix loop. If the
-/// agent needs to see the result, it calls doc_look.
-fn edited(r: Result<Value, String>) -> CallToolResult {
-    res(r)
 }
 
 /// Preserve a successful handler result while making a post-commit durability
@@ -1984,16 +1951,6 @@ mod tests {
         let _ = std::fs::remove_dir_all(root);
     }
 
-    #[test]
-    fn base64_matches_known_vectors() {
-        // RFC 4648 test vectors exercise the 0/1/2 trailing-byte padding cases.
-        assert_eq!(base64(b""), "");
-        assert_eq!(base64(b"f"), "Zg==");
-        assert_eq!(base64(b"fo"), "Zm8=");
-        assert_eq!(base64(b"foo"), "Zm9v");
-        assert_eq!(base64(b"foobar"), "Zm9vYmFy");
-    }
-
     #[tokio::test]
     async fn revisions_tag_reads_chain_writes_and_reject_stale_mutations() {
         let atelier = temp_atelier("revision-contract");
@@ -2630,7 +2587,7 @@ mod tests {
                 .any(|c| matches!(c, rmcp::model::ContentBlock::Image(_)))
         };
 
-        let edit = edited(Ok(json!({"ok": true})));
+        let edit = res(Ok(json!({"ok": true})));
         assert!(
             !has_image(&edit),
             "edit ops must return text only — doc_look is the agent's eye"

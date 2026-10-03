@@ -103,7 +103,7 @@ pub(crate) struct DocDraw {
     pub(crate) frame: usize,
     pub(crate) frame_to: Option<usize>,
     /// One draw op: pencil | line | rect | ellipse | polyline | polygon | stroke
-    /// | curve | stamp | fill | bucket | gradient | scatter | noise | text |
+    /// | curve | stamp | fill | gradient | scatter | noise | text |
     /// fill_cel | clear_cel.
     pub(crate) op: DrawOpName,
     /// The op's own params, flattened alongside (e.g. for "rect": x0, y0, x1, y1,

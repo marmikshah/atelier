@@ -15,9 +15,9 @@ mod transform;
 // Explicit surface instead of globs: exactly what the rest of the workspace
 // uses, so the module's API is one readable list.
 pub use colour::{
-    PaletteLab, SaturationCurve, close, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp,
-    make_ramp_oklch, median_cut, median_cut_weighted, nearest_oklab, oklab_delta, oklab_to_oklch,
-    oklab_to_srgb, oklch_to_oklab, rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab,
+    PaletteLab, SaturationCurve, close_rgb, hsl_to_rgb, hue_deg, luma, make_ramp, make_ramp_oklch,
+    median_cut, median_cut_weighted, oklab_delta, oklab_to_oklch, oklab_to_srgb, oklch_to_oklab,
+    rgb_to_hsl, saturation, shade_hsl, shade_ramp, srgb_to_oklab,
 };
 pub use noise::{
     dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
@@ -910,12 +910,10 @@ mod tests {
     }
 
     #[test]
-    fn nearest_oklab_beats_naive_rgb_on_a_hue() {
+    fn palette_lab_finds_the_perceptually_nearest_color() {
         // a desaturated teal is perceptually nearer teal than near-equal-RGB grey
-        let i = nearest_oklab(
-            [60, 120, 120, 255],
-            &[[128, 128, 128, 255], [40, 150, 150, 255]],
-        );
+        let mut palette = PaletteLab::new(&[[128, 128, 128, 255], [40, 150, 150, 255]]);
+        let i = palette.nearest([60, 120, 120, 255]);
         assert_eq!(i, Some(1));
     }
 

@@ -15,12 +15,6 @@ pub enum SaturationCurve {
     SaturatedShadows,
 }
 
-/// Manhattan colour distance over all 4 channels within tolerance.
-pub fn close(a: [u8; 4], b: [u8; 4], tol: i32) -> bool {
-    let d: i32 = (0..4).map(|i| (a[i] as i32 - b[i] as i32).abs()).sum();
-    d <= tol
-}
-
 /// Colour match by MAX channel distance over RGB only (alpha ignored) — the
 /// metric the fill/replace tools actually promise ("max channel distance"), and
 /// the one that lets an anti-aliased edge (same RGB, different alpha) still
@@ -210,22 +204,7 @@ pub fn oklab_delta(a: [u8; 4], b: [u8; 4]) -> f32 {
     ((l1 - l2).powi(2) + (a1 - a2).powi(2) + (b1 - b2).powi(2)).sqrt()
 }
 
-/// Index of the perceptually nearest entry in `palette` to `p` (OKLab ΔE).
-/// Returns None for an empty palette. Converts the probe ONCE and single-passes
-/// the palette (the old min_by evaluated both deltas — and re-converted the
-/// probe — per comparison). For per-pixel loops prefer [`PaletteLab`].
-pub fn nearest_oklab(p: [u8; 4], palette: &[[u8; 4]]) -> Option<usize> {
-    if palette.is_empty() {
-        return None;
-    }
-    Some(nearest_lab(
-        srgb_to_oklab(p),
-        palette.iter().map(|c| srgb_to_oklab(*c)),
-    ))
-}
-
-/// Index of the nearest lab entry to `probe` by squared ΔE — the one copy of
-/// the nearest-colour scan shared by `nearest_oklab` and `PaletteLab`.
+/// Index of the nearest precomputed Lab entry by squared distance.
 fn nearest_lab<I: Iterator<Item = (f32, f32, f32)>>(probe: (f32, f32, f32), labs: I) -> usize {
     let (l, a, b) = probe;
     let (mut best, mut bd) = (0usize, f32::MAX);

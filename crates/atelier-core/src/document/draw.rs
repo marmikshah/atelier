@@ -217,7 +217,7 @@ impl Document {
             return Ok(());
         }
         let target = img.get_pixel(x as u32, y as u32).0;
-        if raster::close(target, color, 0) {
+        if target == color {
             return Ok(());
         }
         // Visited mask, not a colour check: when the fill colour is itself

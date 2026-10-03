@@ -147,7 +147,7 @@ impl Document {
     /// Flatten `frame` with onion-skin ghosts of the neighbours behind it: the
     /// previous frame tinted blue and the next tinted red, both faded, so motion
     /// is visible at a glance.
-    fn flatten_onion(&self, frame: usize) -> RgbaImage {
+    pub fn flatten_onion(&self, frame: usize) -> RgbaImage {
         let n = self.meta.frames.len();
         let mut out = RgbaImage::from_pixel(self.meta.w, self.meta.h, Rgba([0, 0, 0, 0]));
         let ghost = |src: RgbaImage, tint: [u8; 3]| -> RgbaImage {
@@ -172,87 +172,6 @@ impl Document {
         let cur = self.flatten(frame);
         raster::composite(&mut out, &cur, 0, 0, 255, raster::Blend::Normal);
         out
-    }
-
-    /// Render a frame to an image with preview options: `onion` ghosts the
-    /// neighbours; `region` crops (document pixels); `tile` repeats the result
-    /// in an N×N grid (seam check); `scale` nearest-upscales; `max_size`
-    /// down-scales the longest side for a cheap thumbnail.
-    pub fn render_preview(
-        &self,
-        frame: usize,
-        scale: u32,
-        region: Option<(i32, i32, i32, i32)>,
-        onion: bool,
-        tile: u32,
-        max_size: Option<u32>,
-    ) -> Result<RgbaImage, String> {
-        let mut base = if onion {
-            self.flatten_onion(frame)
-        } else {
-            self.flatten(frame)
-        };
-        if let Some((x0, y0, x1, y1)) = region {
-            let (ax, ay, bx, by) = raster::clamp_region(x0, y0, x1, y1, self.meta.w, self.meta.h)
-                .ok_or("render region is empty after clamping")?;
-            base = image::imageops::crop_imm(
-                &base,
-                ax as u32,
-                ay as u32,
-                (bx - ax + 1) as u32,
-                (by - ay + 1) as u32,
-            )
-            .to_image();
-        }
-        // Raw caller values size an allocation here (tile² cells, w×scale), so
-        // clamp both — 16 matches the studio's export/preview ceiling. A library
-        // caller passing tile=100000 would otherwise ask for an absurd buffer
-        // (and `tw * tile` can wrap u32).
-        let tile = tile.clamp(1, 16);
-        let sc = scale.clamp(1, 16);
-        // Preflight the combined tile×scale target before allocating either
-        // intermediate. Each intermediate is also checked below, but without
-        // this a request that must ultimately fail could first allocate the
-        // entire 256 MiB per-image allowance for its tiled stage.
-        raster::checked_rgba_dimensions(
-            "preview",
-            base.width() as u64 * tile as u64 * sc as u64,
-            base.height() as u64 * tile as u64 * sc as u64,
-        )?;
-        if tile > 1 {
-            let (tw, th) = (base.width(), base.height());
-            let (out_w, out_h) = raster::checked_rgba_dimensions(
-                "tiled preview",
-                tw as u64 * tile as u64,
-                th as u64 * tile as u64,
-            )?;
-            let mut t = RgbaImage::from_pixel(out_w, out_h, Rgba([0, 0, 0, 0]));
-            for ty in 0..tile {
-                for tx in 0..tile {
-                    image::imageops::replace(&mut t, &base, (tx * tw) as i64, (ty * th) as i64);
-                }
-            }
-            base = t;
-        }
-        if sc > 1 {
-            let (out_w, out_h) = raster::checked_rgba_dimensions(
-                "scaled preview",
-                base.width() as u64 * sc as u64,
-                base.height() as u64 * sc as u64,
-            )?;
-            base =
-                image::imageops::resize(&base, out_w, out_h, image::imageops::FilterType::Nearest);
-        }
-        if let Some(ms) = max_size {
-            let long = base.width().max(base.height());
-            if long > ms && long > 0 {
-                let f = ms as f32 / long as f32;
-                let nw = (base.width() as f32 * f).round().max(1.0) as u32;
-                let nh = (base.height() as f32 * f).round().max(1.0) as u32;
-                base = image::imageops::resize(&base, nw, nh, image::imageops::FilterType::Nearest);
-            }
-        }
-        Ok(base)
     }
 
     // -- animation & tiling feedback (read-only diff/seam primitives) --------
@@ -295,27 +214,10 @@ impl Document {
         }
         Ok((added, removed, recolored, bbox, a, b))
     }
-
-    /// Wrap-test one tiling axis: compare the far edge against the near edge that
-    /// would abut it when the cel repeats. `horizontal` true tests column x=w-1
-    /// vs x=0 (left/right tiling), false tests row y=h-1 vs y=0 (top/bottom).
-    /// `threshold` is the max per-channel delta still counted as a match. Returns
-    /// `(mismatches, max_delta, worst)` where `worst` is up to 10 `[x,y,delta]`
-    /// edge cells sorted by descending delta (the position is the far-edge cell).
-    pub fn seam_axis(
-        &self,
-        layer: Option<usize>,
-        frame: usize,
-        horizontal: bool,
-        threshold: i32,
-    ) -> Result<(u32, i32, Vec<[i32; 3]>), String> {
-        let img = self.analysis_image(layer, frame)?;
-        Ok(seam_axis_img(&img, horizontal, threshold))
-    }
 }
 
-/// [`Document::seam_axis`] over an already-flattened frame — callers testing
-/// several axes (or also rendering an overlay) flatten once and reuse it.
+/// Compare the opposite edges of a flattened frame along one tiling axis.
+/// Returns mismatch count, maximum channel delta, and up to ten worst pixels.
 pub fn seam_axis_img(
     img: &RgbaImage,
     horizontal: bool,
@@ -368,8 +270,8 @@ impl Document {
 
     /// One-flatten combination of `silhouette_center` and the full-frame
     /// opaque count — the per-frame pair the animation audits read, without
-    /// flattening the same frame twice. The count is whole-frame (matching
-    /// `opaque_count`); only the centroid is clipped to `region`.
+    /// flattening the same frame twice. The count is whole-frame; only the
+    /// centroid is clipped to `region`.
     pub fn silhouette_stats(
         &self,
         layer: Option<usize>,
@@ -394,11 +296,5 @@ impl Document {
             n += 1;
         }
         Ok((n > 0).then(|| ([sx / n as f64, sy / n as f64], opaque)))
-    }
-
-    /// Count opaque pixels in a frame (denominator for the seam loop score).
-    pub fn opaque_count(&self, layer: Option<usize>, frame: usize) -> Result<u64, String> {
-        let img = self.analysis_image(layer, frame)?;
-        Ok(img.pixels().filter(|p| p.0[3] > 0).count() as u64)
     }
 }

@@ -177,7 +177,7 @@ impl Studio {
                 if !self.exists(id) {
                     return Err(format!("no document '{id}'"));
                 }
-                stage_tree(&source, &stage_root.join(id))?;
+                stage_tree(&source, &stage_root.join(id), true)?;
             }
             Ok(())
         })();
@@ -278,35 +278,13 @@ fn ensure_directory(path: &Path, label: &str) -> Result<(), String> {
     }
 }
 
-#[derive(Clone, Copy)]
-enum TreeIoEvent {
-    VisitDirectory,
-    VisitFile,
-    LinkFile,
-    CopyFile,
-    SyncDirectory,
-    SyncFile,
-}
-
-fn stage_tree(source: &Path, destination: &Path) -> Result<(), String> {
-    stage_tree_inner(source, destination, true, &mut |_| {})
-}
-
-fn stage_tree_inner<F>(
-    source: &Path,
-    destination: &Path,
-    copy_root_journal: bool,
-    observe: &mut F,
-) -> Result<(), String>
-where
-    F: FnMut(TreeIoEvent),
-{
+fn stage_tree(source: &Path, destination: &Path, copy_root_journal: bool) -> Result<(), String> {
     if !directory_state(source, "document source")? {
         return Err(format!("document source {} is missing", source.display()));
     }
     fs::create_dir(destination)
         .map_err(|e| format!("cannot stage {}: {e}", destination.display()))?;
-    observe(TreeIoEvent::VisitDirectory);
+
     for entry in fs::read_dir(source).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
         let source_path = entry.path();
@@ -319,20 +297,15 @@ where
             // save creates a new snapshot. Hard-linking those nested journals
             // avoids copying up to the entire retained checkpoint quota on
             // every otherwise-small document mutation.
-            stage_tree_inner(&source_path, &destination_path, false, observe)?;
+            stage_tree(&source_path, &destination_path, false)?;
         } else if file_type.is_file() {
-            observe(TreeIoEvent::VisitFile);
             // Appending to a hard-linked journal would mutate the live recipe.
             // Other writers replace files by rename before changing content;
             // nested checkpoint recipes are immutable snapshots (above).
             if copy_root_journal && entry.file_name() == JOURNAL_FILE {
                 fs::copy(&source_path, &destination_path).map_err(|e| e.to_string())?;
-                observe(TreeIoEvent::CopyFile);
-            } else if fs::hard_link(&source_path, &destination_path).is_ok() {
-                observe(TreeIoEvent::LinkFile);
-            } else {
+            } else if fs::hard_link(&source_path, &destination_path).is_err() {
                 fs::copy(&source_path, &destination_path).map_err(|e| e.to_string())?;
-                observe(TreeIoEvent::CopyFile);
             }
         } else {
             return Err(format!(
@@ -345,26 +318,16 @@ where
 }
 
 fn sync_tree(path: &Path) -> Result<(), String> {
-    sync_tree_inner(path, &mut |_| {})
-}
-
-fn sync_tree_inner<F>(path: &Path, observe: &mut F) -> Result<(), String>
-where
-    F: FnMut(TreeIoEvent),
-{
-    observe(TreeIoEvent::VisitDirectory);
     for entry in fs::read_dir(path).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
         let child = entry.path();
         let file_type = entry.file_type().map_err(|e| e.to_string())?;
         if file_type.is_dir() {
-            sync_tree_inner(&child, observe)?;
+            sync_tree(&child)?;
         } else if file_type.is_file() {
-            observe(TreeIoEvent::VisitFile);
             fs::File::open(&child)
                 .and_then(|file| file.sync_all())
                 .map_err(|e| format!("cannot sync {}: {e}", child.display()))?;
-            observe(TreeIoEvent::SyncFile);
         } else {
             return Err(format!(
                 "refusing non-regular staged entry {}",
@@ -373,7 +336,7 @@ where
         }
     }
     sync_dir(path).map_err(|e| format!("cannot sync {}: {e}", path.display()))?;
-    observe(TreeIoEvent::SyncDirectory);
+
     Ok(())
 }
 
@@ -414,43 +377,6 @@ mod tests {
         let root = std::env::temp_dir().join(format!("atelier-transaction-{tag}"));
         let _ = fs::remove_dir_all(&root);
         Studio::with_docs_dir(root)
-    }
-
-    #[derive(Default)]
-    struct TreeIoStats {
-        visited_directories: usize,
-        visited_files: usize,
-        linked_files: usize,
-        copied_files: usize,
-        synced_directories: usize,
-        synced_files: usize,
-    }
-
-    impl TreeIoStats {
-        fn observe(&mut self, event: TreeIoEvent) {
-            match event {
-                TreeIoEvent::VisitDirectory => self.visited_directories += 1,
-                TreeIoEvent::VisitFile => self.visited_files += 1,
-                TreeIoEvent::LinkFile => self.linked_files += 1,
-                TreeIoEvent::CopyFile => self.copied_files += 1,
-                TreeIoEvent::SyncDirectory => self.synced_directories += 1,
-                TreeIoEvent::SyncFile => self.synced_files += 1,
-            }
-        }
-    }
-
-    fn measure_stage_tree(source: &Path, destination: &Path) -> Result<TreeIoStats, String> {
-        let mut stats = TreeIoStats::default();
-        stage_tree_inner(source, destination, true, &mut |event| {
-            stats.observe(event);
-        })?;
-        Ok(stats)
-    }
-
-    fn measure_sync_tree(path: &Path) -> Result<TreeIoStats, String> {
-        let mut stats = TreeIoStats::default();
-        sync_tree_inner(path, &mut |event| stats.observe(event))?;
-        Ok(stats)
     }
 
     #[test]
@@ -550,14 +476,8 @@ mod tests {
         let stage_root = live.docs_dir.join("measured-stage");
         fs::create_dir(&stage_root).unwrap();
         let staged = stage_root.join(id);
-        let stage_stats = measure_stage_tree(&source, &staged).unwrap();
+        stage_tree(&source, &staged, true).unwrap();
 
-        // Empty canvas: root+root-cels+checkpoint-root+2*(cp+cp-cels),
-        // with doc/recipe/revision at the root and doc/recipe/label per checkpoint.
-        assert_eq!(stage_stats.visited_directories, 7);
-        assert_eq!(stage_stats.visited_files, 9);
-        assert_eq!(stage_stats.copied_files, 1);
-        assert_eq!(stage_stats.linked_files, 8);
         #[cfg(unix)]
         {
             use std::os::unix::fs::MetadataExt;
@@ -573,11 +493,7 @@ mod tests {
             assert_eq!(source_checkpoint.dev(), staged_checkpoint.dev());
         }
 
-        let sync_stats = measure_sync_tree(&staged).unwrap();
-        assert_eq!(sync_stats.visited_directories, 7);
-        assert_eq!(sync_stats.synced_directories, 7);
-        assert_eq!(sync_stats.visited_files, 9);
-        assert_eq!(sync_stats.synced_files, 9);
+        sync_tree(&staged).unwrap();
     }
 
     #[test]
@@ -586,7 +502,7 @@ mod tests {
         let create = live.begin_transaction(None).unwrap();
         let report = create.studio().doc_new("staged", 4, 4).unwrap();
         let id = report["doc_id"].as_str().unwrap();
-        stage_tree(&create.studio().doc_dir(id), &live.doc_dir(id)).unwrap();
+        stage_tree(&create.studio().doc_dir(id), &live.doc_dir(id), true).unwrap();
 
         let error = create.commit(id).unwrap_err();
 
