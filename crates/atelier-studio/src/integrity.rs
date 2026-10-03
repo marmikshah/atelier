@@ -1015,7 +1015,7 @@ mod tests {
             .unwrap();
         let path = journal_path(&studio, &id);
         let mut journal = fs::read_to_string(&path).unwrap();
-        journal.push_str("{\"format_version\":1,\"tool\":\"doc_draw\"");
+        journal.push_str("{\"schema\":1,\"tool\":\"doc_draw\"");
         fs::write(path, journal).unwrap();
 
         let report = studio.verify_store().unwrap();

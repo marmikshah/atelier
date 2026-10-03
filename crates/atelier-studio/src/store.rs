@@ -664,7 +664,7 @@ impl Studio {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::JOURNAL_FORMAT_VERSION;
+    use crate::JOURNAL_SCHEMA;
 
     fn studio(tag: &str) -> Studio {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
@@ -772,11 +772,7 @@ mod tests {
         let path = s.journal_path(id);
 
         let clean = fs::read_to_string(&path).unwrap();
-        fs::write(
-            &path,
-            format!("{clean}{{\"format_version\":1,\"tool\":\"doc_"),
-        )
-        .unwrap();
+        fs::write(&path, format!("{clean}{{\"schema\":1,\"tool\":\"doc_")).unwrap();
         assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
         assert!(
             s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
@@ -784,7 +780,7 @@ mod tests {
             "new writes must not cement a torn tail into the journal"
         );
 
-        fs::write(&path, format!("{clean}{{\"format_version\":1,\"tool\":\n")).unwrap();
+        fs::write(&path, format!("{clean}{{\"schema\":1,\"tool\":\n")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 3"),
@@ -804,7 +800,7 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"format_version\":1,\"tool\":\"doc_new\",\"args\":[],\"note\":\"old\"}\n",
+            "{\"schema\":1,\"tool\":\"doc_new\",\"args\":[],\"note\":\"old\"}\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -815,7 +811,7 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"123e4567-e89b-42d3-a456-426614174000\"}}\n",
+            "{\"schema\":1,\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"123e4567-e89b-42d3-a456-426614174000\"}}\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -868,18 +864,28 @@ mod tests {
         let path = s.journal_path(id);
         let current: Value =
             serde_json::from_str(fs::read_to_string(&path).unwrap().trim()).unwrap();
-        assert_eq!(current["format_version"], JOURNAL_FORMAT_VERSION);
+        assert_eq!(current["schema"], JOURNAL_SCHEMA);
 
         let mut unversioned = current.clone();
-        unversioned
+        unversioned.as_object_mut().unwrap().remove("schema");
+        fs::write(&path, format!("{unversioned}\n")).unwrap();
+        assert!(s.journal(id).unwrap_err().contains("schema"));
+
+        let mut unsupported = current.clone();
+        let schema = unsupported
             .as_object_mut()
             .unwrap()
-            .remove("format_version");
-        fs::write(&path, format!("{unversioned}\n")).unwrap();
-        assert!(s.journal(id).unwrap_err().contains("format_version"));
+            .remove("schema")
+            .unwrap();
+        unsupported["format_version"] = schema;
+        fs::write(&path, format!("{unsupported}\n")).unwrap();
+        assert!(
+            s.journal(id).is_err(),
+            "only the current marker is accepted"
+        );
 
         let mut future = current;
-        future["format_version"] = json!(JOURNAL_FORMAT_VERSION + 1);
+        future["schema"] = json!(JOURNAL_SCHEMA + 1);
         fs::write(
             &path,
             format!("{}\n", serde_json::to_string(&future).unwrap()),

@@ -456,7 +456,7 @@ mod tests {
             std::env::temp_dir().join(format!("atelier-replay-home-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&home);
         let recipe = parse_journal(&format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"home-layout\",\"width\":4,\"height\":4}}}}\n"
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"home-layout\",\"width\":4,\"height\":4}}}}\n"
         ))
         .unwrap();
 
@@ -488,8 +488,8 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir.clone());
         let recipe = parse_journal(&format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"rolled-back\",\"width\":4,\"height\":4}}}}\n\
-             {{\"format_version\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"not_a_real_operation\"}}}}\n"
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"rolled-back\",\"width\":4,\"height\":4}}}}\n\
+             {{\"schema\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"not_a_real_operation\"}}}}\n"
         ))
         .unwrap();
 

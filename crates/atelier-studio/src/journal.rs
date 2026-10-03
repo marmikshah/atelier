@@ -6,7 +6,7 @@ use serde_json::{Map, Value};
 use crate::{Studio, ToolName};
 
 /// Current JSONL journal entry format.
-pub const JOURNAL_FORMAT_VERSION: u32 = 1;
+pub const JOURNAL_SCHEMA: u32 = 1;
 
 pub const MAX_JOURNAL_BYTES: u64 = 64 * 1024 * 1024;
 pub const MAX_JOURNAL_ENTRIES: usize = 100_000;
@@ -15,7 +15,7 @@ pub const MAX_JOURNAL_ENTRIES: usize = 100_000;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct JournalEntry {
-    pub format_version: u32,
+    pub schema: u32,
     pub tool: ToolName,
     pub args: Map<String, Value>,
 }
@@ -23,7 +23,7 @@ pub struct JournalEntry {
 impl JournalEntry {
     pub fn new(tool: ToolName, args: Map<String, Value>) -> Self {
         Self {
-            format_version: JOURNAL_FORMAT_VERSION,
+            schema: JOURNAL_SCHEMA,
             tool,
             args,
         }
@@ -33,13 +33,10 @@ impl JournalEntry {
 /// Validate the current per-document journal contract. An absent/empty journal
 /// means "no recipe"; a non-empty one is a complete, self-identifying rebuild.
 pub fn validate_journal(entries: &[JournalEntry]) -> Result<(), String> {
-    if let Some(entry) = entries
-        .iter()
-        .find(|entry| entry.format_version != JOURNAL_FORMAT_VERSION)
-    {
+    if let Some(entry) = entries.iter().find(|entry| entry.schema != JOURNAL_SCHEMA) {
         return Err(format!(
             "unsupported journal format {} (this build supports {})",
-            entry.format_version, JOURNAL_FORMAT_VERSION
+            entry.schema, JOURNAL_SCHEMA
         ));
     }
     let Some(first) = entries.first() else {
@@ -169,9 +166,9 @@ mod tests {
     #[test]
     fn reads_a_document_journal() {
         let recipe = parse_journal(&format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"name\":\"x\",\"doc_id\":\"{ID}\"}}}}\n\
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"name\":\"x\",\"doc_id\":\"{ID}\"}}}}\n\
              \n\
-             {{\"format_version\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{ID}\",\"op\":\"rect\"}}}}\n"
+             {{\"schema\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{ID}\",\"op\":\"rect\"}}}}\n"
         ))
         .unwrap();
         assert_eq!(recipe.entries.len(), 2, "blank lines are skipped");
@@ -182,8 +179,8 @@ mod tests {
     #[test]
     fn a_torn_final_line_preserves_completed_steps() {
         let recipe = parse_journal(&format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
-             {{\"format_version\":1,\"tool\":\"doc_dr"
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
+             {{\"schema\":1,\"tool\":\"doc_dr"
         ))
         .unwrap();
         assert_eq!(recipe.entries.len(), 1);
@@ -193,20 +190,22 @@ mod tests {
     #[test]
     fn corruption_and_obsolete_shapes_are_rejected() {
         let torn_middle = format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
-             {{\"format_version\":1,\"tool\":\n\
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
+             {{\"schema\":1,\"tool\":\n\
              torn\n"
         );
         assert!(parse_journal(&torn_middle).unwrap_err().contains("line 2"));
 
         let invalid_complete = format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
              {{\"args\":{{}}}}\n"
         );
         assert!(parse_journal(&invalid_complete).is_err());
         assert!(
-            parse_journal("{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{\"doc_id\":\"d_0000000000000000\"}}\n")
-                .is_err()
+            parse_journal(
+                "{\"schema\":1,\"tool\":\"doc_new\",\"args\":{\"doc_id\":\"d_0000000000000000\"}}\n"
+            )
+            .is_err()
         );
         assert!(parse_journal("\n\n").unwrap().entries.is_empty());
         assert!(parse_journal(r#"{"name":"old","description":"wrapped","steps":[]}"#).is_err());
@@ -225,8 +224,8 @@ mod tests {
     #[test]
     fn entry_count_is_bounded_with_the_overflowing_line_reported() {
         let source = format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
-             {{\"format_version\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{ID}\",\"op\":\"rect\"}}}}\n"
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
+             {{\"schema\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{ID}\",\"op\":\"rect\"}}}}\n"
         );
         let error = parse_with_limits(&source, MAX_JOURNAL_BYTES, 1).unwrap_err();
         assert!(error.contains("line 2"), "{error}");
@@ -236,8 +235,8 @@ mod tests {
     #[test]
     fn newline_terminated_incomplete_json_is_corruption_not_a_torn_tail() {
         let source = format!(
-            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
-             {{\"format_version\":1,\"tool\":\"doc_draw\"\n"
+            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{ID}\"}}}}\n\
+             {{\"schema\":1,\"tool\":\"doc_draw\"\n"
         );
         let error = parse_journal(&source).unwrap_err();
         assert!(error.contains("line 2"), "{error}");
