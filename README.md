@@ -28,7 +28,7 @@ tools/               Development checks, showcase runner and container smoke
 ## Run
 
 Build from a checkout with Rust 1.88+; the pinned toolchain is used for development.
-Linux and macOS support native builds. Windows uses Docker; the daemon needs Linux.
+Linux and macOS support native builds; the daemon needs Linux.
 
 ```sh
 cargo install --locked --path crates/atelier
@@ -61,9 +61,10 @@ npm --prefix site run build           # production website → site/dist
 cargo build --release --locked -p atelier
 ```
 
-No releases or images are published. With `ATELIER_HTTP_TOKEN` set, run
-`docker compose up -d --build`; it binds localhost and persists a named volume.
+No releases or images are published. For Linux containers, set `ATELIER_HTTP_TOKEN`
+and run `docker compose up -d --build`; it binds localhost and persists a named volume.
 Check an image with `tools/container-smoke.sh IMAGE`; detailed instructions use `--help`.
-CI checks native builds, MSRV, containers and replay bytes; master publishes the website.
+CI checks native builds, MSRV and replay bytes. Containers are checked on pushes to
+`master` and non-draft PRs targeting `master`; `master` publishes the website.
 
 See [Contributing](.github/CONTRIBUTING.md) and [Security](.github/SECURITY.md). [MIT](LICENSE) © Marmik Shah

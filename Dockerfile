@@ -3,8 +3,9 @@
 # atelier — the Alpine container image, built from source.
 # One static musl binary, a non-root account, and no runtime packages.
 #
-# CI builds and smoke-tests linux/amd64. Docker builds for the host platform
-# by default; pass --platform to choose another supported Linux architecture.
+# CI builds and smoke-tests linux/amd64 on master pushes and PRs targeting master.
+# Docker builds for the host platform by default; pass --platform to choose
+# another supported Linux architecture.
 #
 # Runs the streamable-HTTP transport (container-native); point an MCP client at
 #   http://<host>:8765/mcp
