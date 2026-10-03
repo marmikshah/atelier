@@ -3,19 +3,26 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use serde_json::{Value, json};
+
+static STORE_ID: AtomicUsize = AtomicUsize::new(0);
 
 struct Store(PathBuf);
 
 impl Store {
     fn new() -> Self {
-        let nonce = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        Self(std::env::temp_dir().join(format!("atelier-recovery-{}-{nonce}", std::process::id())))
+        loop {
+            let id = STORE_ID.fetch_add(1, Ordering::Relaxed);
+            let path =
+                std::env::temp_dir().join(format!("atelier-recovery-{}-{id}", std::process::id()));
+            match fs::create_dir(&path) {
+                Ok(()) => return Self(path),
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(error) => panic!("create recovery test store: {error}"),
+            }
+        }
     }
 
     fn call(&self, tool: &str, args: Value) -> (bool, Value) {
