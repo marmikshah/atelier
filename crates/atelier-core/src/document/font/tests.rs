@@ -163,7 +163,7 @@ fn font_metadata_round_trips_and_rejects_invalid_persisted_mappings() {
     std::fs::write(dir.join("doc.json"), serde_json::to_vec(&metadata).unwrap()).unwrap();
     assert!(
         Document::load(&dir).unwrap().meta().font.is_none(),
-        "legacy docs remain readable"
+        "font metadata is optional"
     );
     std::fs::remove_dir_all(dir).unwrap();
 }

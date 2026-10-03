@@ -18,32 +18,6 @@ use atelier_studio::{
     PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta,
 };
 
-/// Preserve replay compatibility with journals produced by earlier 1.x clients
-/// that stringified flattened operation values before the schemas were typed.
-///
-/// New clients receive concrete types from the registry-derived schemas. This
-/// narrowly scoped shim remains idempotent for old recipes; drawn `text` stays
-/// prose, and values that are not complete JSON remain strings for the strict
-/// operation validator to reject.
-pub(crate) fn revive_legacy_params(params: &mut serde_json::Map<String, Value>) {
-    for (key, value) in params.iter_mut() {
-        if key == "text" {
-            continue;
-        }
-        if let Value::String(raw) = value {
-            let candidate = raw.trim();
-            let was_typed = candidate.starts_with('[')
-                || candidate.starts_with('{')
-                || candidate == "true"
-                || candidate == "false"
-                || candidate.parse::<f64>().is_ok();
-            if was_typed && let Ok(parsed) = serde_json::from_str::<Value>(candidate) {
-                *value = parsed;
-            }
-        }
-    }
-}
-
 // --- library params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -560,29 +534,6 @@ pub(crate) struct DocPaintGrid {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn legacy_stringified_params_are_revived_except_text() {
-        let mut params =
-            serde_json::from_value::<serde_json::Map<String, Value>>(serde_json::json!({
-                "color": "[255, 0, 0]",
-                "points": "[[1,2],[3,4]]",
-                "dx": "2",
-                "wrap": "true",
-                "mode": "auto",
-                "text": "[42]",
-                "torn": "[1,"
-            }))
-            .unwrap();
-        revive_legacy_params(&mut params);
-        assert_eq!(params["color"], serde_json::json!([255, 0, 0]));
-        assert_eq!(params["points"], serde_json::json!([[1, 2], [3, 4]]));
-        assert_eq!(params["dx"], serde_json::json!(2));
-        assert_eq!(params["wrap"], serde_json::json!(true));
-        assert_eq!(params["mode"], serde_json::json!("auto"));
-        assert_eq!(params["text"], serde_json::json!("[42]"));
-        assert_eq!(params["torn"], serde_json::json!("[1,"));
-    }
 
     #[test]
     fn typed_tool_params_reject_removed_or_misspelled_fields() {

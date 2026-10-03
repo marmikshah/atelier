@@ -17,9 +17,10 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value, json};
 
-use atelier_mcp::recipe::{MAX_RECIPE_BYTES, Recipe};
 use atelier_mcp::server::{self, Atelier};
-use atelier_studio::{JournalEntry, Studio, ToolName};
+use atelier_studio::{
+    JournalEntry, MAX_JOURNAL_BYTES, ParsedJournal, Studio, ToolName, parse_journal,
+};
 use rmcp::model::CallToolResult;
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
@@ -31,10 +32,8 @@ const USAGE: &str = "usage: atelier replay <recipe.jsonl | doc-id> [--home DIR]"
 /// A path wins over an id, so a file named like a document still replays as the
 /// file the user pointed at.
 ///
-/// The lookup deliberately ignores `--home`: that flag names where the replay
-/// *writes*, so `replay jt --home /tmp/sandbox` means "rebuild jt over there",
-/// and reading the journal from the destination would only ever find an empty
-/// store. Point `ATELIER_HOME` at a different store to read from one.
+/// For a document ID, source and destination use the same selected store.
+/// Pass a journal file to replay into a different store with `--home`.
 fn read_source(path: &Path, label: &str) -> Result<String, String> {
     let file =
         std::fs::File::open(path).map_err(|error| format!("cannot read {label}: {error}"))?;
@@ -45,19 +44,19 @@ fn read_source(path: &Path, label: &str) -> Result<String, String> {
         return Err(format!("cannot read {label}: source is not a regular file"));
     }
     let length = metadata.len();
-    if length > MAX_RECIPE_BYTES {
+    if length > MAX_JOURNAL_BYTES {
         return Err(format!(
-            "cannot read {label}: source is {length} bytes, over the {MAX_RECIPE_BYTES}-byte replay limit"
+            "cannot read {label}: source is {length} bytes, over the {MAX_JOURNAL_BYTES}-byte replay limit"
         ));
     }
-    let capacity = usize::try_from(length.min(MAX_RECIPE_BYTES)).unwrap_or(0);
+    let capacity = usize::try_from(length.min(MAX_JOURNAL_BYTES)).unwrap_or(0);
     let mut bytes = Vec::with_capacity(capacity);
-    file.take(MAX_RECIPE_BYTES.saturating_add(1))
+    file.take(MAX_JOURNAL_BYTES.saturating_add(1))
         .read_to_end(&mut bytes)
         .map_err(|error| format!("cannot read {label}: {error}"))?;
-    if bytes.len() as u64 > MAX_RECIPE_BYTES {
+    if bytes.len() as u64 > MAX_JOURNAL_BYTES {
         return Err(format!(
-            "cannot read {label}: source grew beyond the {MAX_RECIPE_BYTES}-byte replay limit while it was read"
+            "cannot read {label}: source grew beyond the {MAX_JOURNAL_BYTES}-byte replay limit while it was read"
         ));
     }
     String::from_utf8(bytes).map_err(|error| format!("cannot read {label}: not UTF-8: {error}"))
@@ -143,7 +142,7 @@ pub async fn run(args: &[String]) -> i32 {
             return 2;
         }
     };
-    let recipe = match Recipe::parse(&src) {
+    let recipe = match parse_journal(&src) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("replay: {e}");
@@ -151,6 +150,13 @@ pub async fn run(args: &[String]) -> i32 {
         }
     };
 
+    if recipe.entries.is_empty() {
+        eprintln!("replay: recipe has no complete steps");
+        return 2;
+    }
+    if recipe.torn_tail {
+        eprintln!("replay: ignored an incomplete final journal line");
+    }
     match drive(recipe, home).await {
         Ok(()) => 0,
         Err(e) => {
@@ -161,7 +167,7 @@ pub async fn run(args: &[String]) -> i32 {
 }
 
 /// Build the in-process tool server and run every step in order.
-async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
+async fn drive(recipe: ParsedJournal, home: Option<&str>) -> Result<(), String> {
     // `--home` roots an isolated store for the run; otherwise the ambient
     // ATELIER_HOME (or the default) is where the rebuild lands.
     let studio = match home {
@@ -176,7 +182,7 @@ async fn drive(recipe: Recipe, home: Option<&str>) -> Result<(), String> {
 /// The outer store lock protects transaction cleanup and the final publication
 /// from other processes. Per-step dispatch still uses its normal transaction
 /// path, but those commits are visible only inside this outer generation.
-async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, String> {
+async fn run_atomic_session(recipe: &ParsedJournal, studio: &Studio) -> Result<String, String> {
     let _store_lock = studio.lock_store_exclusive()?;
     studio.cleanup_stale_transactions()?;
     let transaction = studio.begin_transaction(None)?;
@@ -196,7 +202,7 @@ async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, 
     }
     eprintln!(
         "replay: {} step(s) committed atomically",
-        recipe.steps.len()
+        recipe.entries.len()
     );
     Ok(minted)
 }
@@ -207,12 +213,12 @@ async fn run_atomic_session(recipe: &Recipe, studio: &Studio) -> Result<String, 
 /// Recorded document ids never reach the server verbatim: `doc_new` always
 /// mints a fresh opaque id, so every later target is rewritten to the id this
 /// run actually received.
-async fn run_session(recipe: &Recipe, atelier: &Atelier) -> Result<String, String> {
+async fn run_session(recipe: &ParsedJournal, atelier: &Atelier) -> Result<String, String> {
     eprintln!("== replaying journal");
 
     let mut ids: HashMap<String, String> = HashMap::new();
     let mut minted_document = None;
-    for (idx, step) in recipe.steps.iter().enumerate() {
+    for (idx, step) in recipe.entries.iter().enumerate() {
         let mut args = step.args.clone();
         let recorded = if step.tool == ToolName::DocNew {
             match take_recorded_id(&mut args) {
@@ -432,11 +438,11 @@ mod tests {
         ));
         let _ = std::fs::remove_file(&path);
         let file = std::fs::File::create(&path).unwrap();
-        file.set_len(MAX_RECIPE_BYTES + 1).unwrap();
+        file.set_len(MAX_JOURNAL_BYTES + 1).unwrap();
 
         let error = read_source(&path, "oversize recipe").unwrap_err();
         assert!(
-            error.contains(&format!("{}-byte replay limit", MAX_RECIPE_BYTES)),
+            error.contains(&format!("{}-byte replay limit", MAX_JOURNAL_BYTES)),
             "{error}"
         );
         let _ = std::fs::remove_file(path);
@@ -447,8 +453,8 @@ mod tests {
         let home =
             std::env::temp_dir().join(format!("atelier-replay-home-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&home);
-        let recipe = Recipe::parse(&format!(
-            "{{\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"home-layout\",\"width\":4,\"height\":4}}}}\n"
+        let recipe = parse_journal(&format!(
+            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"home-layout\",\"width\":4,\"height\":4}}}}\n"
         ))
         .unwrap();
 
@@ -479,9 +485,9 @@ mod tests {
         ));
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir.clone());
-        let recipe = Recipe::parse(&format!(
-            "{{\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"rolled-back\",\"width\":4,\"height\":4}}}}\n\
-             {{\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"not_a_real_operation\"}}}}\n"
+        let recipe = parse_journal(&format!(
+            "{{\"format_version\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"rolled-back\",\"width\":4,\"height\":4}}}}\n\
+             {{\"format_version\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"not_a_real_operation\"}}}}\n"
         ))
         .unwrap();
 
@@ -618,8 +624,8 @@ mod tests {
         // Replay the journal into a fresh store and export the rebuild.
         let journal =
             std::fs::read_to_string(dir_a.join(doc_id).join(atelier_studio::JOURNAL_FILE)).unwrap();
-        let recipe = Recipe::parse(&journal).unwrap();
-        assert!(recipe.steps.len() >= 7, "the journal drives the rebuild");
+        let recipe = parse_journal(&journal).unwrap();
+        assert!(recipe.entries.len() >= 7, "the journal drives the rebuild");
         let studio_b = Studio::with_docs_dir(dir_b.clone());
         let committed_id = run_atomic_session(&recipe, &studio_b).await.unwrap();
         let replayed_docs = studio_b.list_docs();
@@ -627,7 +633,7 @@ mod tests {
         assert_eq!(committed_id, replay_id);
         assert_eq!(
             studio_b.document_revision(replay_id).unwrap(),
-            recipe.steps.len() as u64,
+            recipe.entries.len() as u64,
             "the outer atomic publication must preserve inner step revisions without adding one"
         );
         let replayed: Vec<Vec<u8>> = (0..=2)

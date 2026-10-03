@@ -10,8 +10,7 @@ use rmcp::{tool, tool_router};
 #[tool_router(router = draw_router, vis = "pub(crate)")]
 impl Atelier {
     #[tool(description = "Apply one typed drawing operation across frame cels.")]
-    pub(crate) fn doc_draw(&self, Parameters(mut p): Parameters<DocDraw>) -> CallToolResult {
-        revive_legacy_params(&mut p.params);
+    pub(crate) fn doc_draw(&self, Parameters(p): Parameters<DocDraw>) -> CallToolResult {
         res(self.studio().doc_draw(
             &p.doc_id,
             p.layer,
@@ -25,8 +24,7 @@ impl Atelier {
     #[tool(
         description = "Apply one typed effect, transform, or colour operation across frame cels."
     )]
-    pub(crate) fn doc_fx(&self, Parameters(mut p): Parameters<DocFx>) -> CallToolResult {
-        revive_legacy_params(&mut p.params);
+    pub(crate) fn doc_fx(&self, Parameters(p): Parameters<DocFx>) -> CallToolResult {
         res(self.studio().doc_fx(
             &p.doc_id,
             p.layer,
