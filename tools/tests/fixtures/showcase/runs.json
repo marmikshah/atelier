@@ -1,0 +1,5 @@
+{
+  "models": ["fixture"],
+  "tasks": ["tiny"],
+  "runs": [{"model": "fixture", "task": "tiny", "replay": "replays/fixture/tiny.jsonl", "gif": "gifs/fixture/tiny.gif"}]
+}

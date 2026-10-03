@@ -39,7 +39,7 @@ const MAX_CHECKPOINT_LABEL_BYTES: usize = 4096;
 /// current filesystem's compression or allocation strategy.
 const MAX_CHECKPOINT_LOGICAL_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 
-/// Bound hostile or legacy checkpoint roots before collecting their names.
+/// Bound checkpoint roots before collecting their names.
 const MAX_CHECKPOINT_DIRECTORY_ENTRIES: usize = 4096;
 
 fn read_checkpoint_label(path: &Path, checkpoint_id: &str) -> Result<Option<String>, String> {

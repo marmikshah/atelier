@@ -1,14 +1,10 @@
 # syntax=docker/dockerfile:1
 #
-# atelier — the supported Alpine release image.
+# atelier — the Alpine container image, built from source.
 # One static musl binary, a non-root account, and no runtime packages.
 #
-# Releases publish linux/amd64 only, and that is the platform CI builds and
-# smoke-tests. Nothing here is architecture-specific, so cloning and running
-# `docker build .` yields a native image wherever the Rust Alpine base and the
-# store's per-architecture renameat2 number both exist. linux/arm64 is verified
-# by hand with tools/container-smoke.sh; linux/ppc64le should work but is
-# untested. Pass --platform to choose a platform explicitly.
+# CI builds and smoke-tests linux/amd64. Docker builds for the host platform
+# by default; pass --platform to choose another supported Linux architecture.
 #
 # Runs the streamable-HTTP transport (container-native); point an MCP client at
 #   http://<host>:8765/mcp
@@ -22,8 +18,7 @@ FROM rust:1.98.0-alpine3.22 AS build
 # installs at all (the default build links no openssl, no C deps).
 WORKDIR /src
 COPY . .
-RUN cargo build --release --locked -p atelier \
- && strip target/release/atelier
+RUN cargo build --release --locked -p atelier
 
 # ---- runtime -----------------------------------------------------------------
 FROM alpine:3.24

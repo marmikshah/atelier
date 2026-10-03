@@ -1,18 +1,18 @@
 <!--
   Atelier is closed to outside pull requests; they are declined without review.
-  See .github/CONTRIBUTING.md for why. This template is for maintainer use.
+  See .github/CONTRIBUTING.md. This template is for maintainer use.
 -->
 
 ## Summary
 
-<!-- What problem does this solve, and what is intentionally out of scope? -->
+<!-- Describe the concrete problem, resulting behavior, and removals. -->
 
 ## Validation
 
-<!-- List the commands run and any manual evidence. -->
+<!-- List the checks, baseline comparisons, and anything unverified. -->
 
 - [ ] `tools/check.sh`
-- [ ] Tests cover behavior changes
+- [ ] Tests cover meaningful behavior risks
 - [ ] User-facing changes are documented
 - [ ] Tool descriptions match the tool surface
 

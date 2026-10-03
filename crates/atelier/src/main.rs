@@ -42,10 +42,8 @@
 // and macOS both do; anything else is refused here rather than at the first
 // mutation.
 //
-// Ubuntu x86_64 and the released `linux/amd64` container remain the supported
-// targets. macOS builds and passes the test suite so the crate can be developed
-// and tested there, but ships no binary and has no daemon: `atelier install`
-// needs `systemd --user`.
+// CI checks Ubuntu, macOS, and the Alpine linux/amd64 container. The optional
+// background daemon needs Linux with `systemd --user`.
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 compile_error!("atelier needs an atomic directory exchange; only Linux and macOS provide one");
 
@@ -104,6 +102,12 @@ ENVIRONMENT:
     ATELIER_IMPORT_ROOT      HTTP-only root for relative reference-image paths
     ATELIER_EXPORT_ROOT      HTTP-only root for relative output paths
     ATELIER_LOG              log filter (RUST_LOG syntax; default info, output on stderr)
+
+STORE:
+    --home DIR overrides ATELIER_HOME, then ./.atelier, then ~/.atelier.
+    Tools reset unsupported or corrupt documents to fresh current-format data,
+    preserving the UUID and valid name/dimensions. Failed writes return errors.
+    library verify inspects saved data without changing it.
 ";
 
 /// Agents that load the standard `SKILL.md`: `--for` selector → skills dir

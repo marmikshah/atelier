@@ -3,12 +3,9 @@
 .DS_Store
 *.swp
 .claude/
-.claude/settings.local.json
 .venv/
 .env
 .env.*
-!.env.example
-*.p8
 
 # Local exports are build outputs; source art lives in assets/ and showcase/.
 /*.gif

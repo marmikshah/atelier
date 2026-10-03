@@ -867,7 +867,7 @@ mod tests {
         s.doc_frame(id, FrameOp::Add, None, None, None, None, Some(2))
             .unwrap();
 
-        let legacy = s
+        let single_frame = s
             .doc_draw(
                 id,
                 0,
@@ -881,7 +881,7 @@ mod tests {
             )
             .unwrap();
         assert_eq!(
-            legacy,
+            single_frame,
             json!({
                 "ok": true,
                 "doc_id": id,

@@ -3,10 +3,9 @@
 target
 .git
 .github
-.githooks
 .claude
 .venv
-benchmarks
+assets
 site
 showcase
 tools
@@ -16,5 +15,4 @@ tools
 *.zip
 .env
 .env.*
-*.p8
 .DS_Store

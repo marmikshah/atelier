@@ -1,0 +1,4 @@
+{"format_version":1,"tool":"doc_new","args":{"doc_id":"550e8400-e29b-41d4-a716-446655440000","name":"Tiny fixture","width":4,"height":3}}
+{"format_version":1,"tool":"doc_draw","args":{"doc_id":"550e8400-e29b-41d4-a716-446655440000","layer":0,"frame":0,"op":"rect","x0":0,"y0":0,"x1":1,"y1":1,"color":[100,180,50],"fill":true}}
+{"format_version":1,"tool":"doc_frame","args":{"doc_id":"550e8400-e29b-41d4-a716-446655440000","op":"add","copy_from":0,"duration_ms":140}}
+{"format_version":1,"tool":"doc_fx","args":{"doc_id":"550e8400-e29b-41d4-a716-446655440000","layer":0,"frame":1,"op":"shift","dx":1,"dy":1}}

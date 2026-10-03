@@ -5,175 +5,65 @@
   </picture>
 </p>
 
-Atelier is an offline, headless pixel-art editor for shell automation and MCP
-clients. Its 26 tools edit layered animations, inspect rendered pixels, and
-export PNGs, spritesheets, GIFs, APNGs, and pixel fonts. Documents and replay
-journals stay local; the editor needs no account or outbound service.
+Atelier is an offline, headless pixel-art editor for CLI and MCP clients.
+Its 26 tools edit layered animations, inspect pixels, and export PNGs,
+spritesheets, GIFs, APNGs, and TrueType pixel fonts. Documents stay local.
 
-**[Explore the model showcase →](https://marmikshah.github.io/atelier/)**
-Claude, Codex, and Kimi draw the same ten briefs. Compare all models in an
-artwork table with pinned headers and filters for provider, model, and brief.
-Switch to sortable run data, export filtered results as CSV, or open an
-animation to inspect its prompt, statistics, and original replay. Views can
-be shared with their filters, zoom, and background.
+[Explore the showcase](https://marmikshah.github.io/atelier/): compare original
+animations, filter models and briefs, download replays, or export run data.
 
-## Build and draw
+## Architecture
 
-Build from source; there are no published releases or container images:
+```text
+crates/
+├── atelier-core/    Document format, raster operations, rendering and exports
+├── atelier-studio/  Storage, transactions, journals, checkpoints and analysis
+├── atelier-mcp/     Shared tool dispatch, schemas, stdio and HTTP transports
+└── atelier/         CLI, replay, archives, agent skills and Linux daemon
+site/                React + TypeScript showcase, built with Vite
+showcase/            Frozen briefs, recorded runs, replay journals and GIFs
+tools/               Development checks, showcase runner and container smoke
+```
+
+## Run
+
+Build from a checkout with Rust 1.88+; the pinned toolchain is used for development.
+Linux and macOS support native builds. Windows uses Docker; the daemon needs Linux.
 
 ```sh
-git clone https://github.com/marmikshah/atelier.git
-cd atelier
 cargo install --locked --path crates/atelier
+atelier init                         # opt into a directory-local .atelier store
 atelier call doc_new '{"name":"cat","width":32,"height":32}'
+atelier call doc_look '{"doc_id":"<returned-id>","out_path":"preview.png"}'
+atelier                              # stdio MCP server, launched by your client
+atelier --http                       # foreground HTTP at 127.0.0.1:8765/mcp
+atelier install --port 8765           # optional systemd --user daemon
+atelier skills install --for codex    # also claude, kimi, cursor, or all
+atelier --help                       # commands, store policy and environment
+atelier tools --markdown             # current tool reference; --schema NAME for JSON
 ```
 
-Use the returned `doc_id` in later calls, with explicit layer and frame targets:
+Documents use explicit UUIDs; tools safely reset unsupported or corrupt saved data.
+`atelier library verify` inspects without changes; archives preserve UUIDs.
+
+## Develop and release
 
 ```sh
-atelier call doc_draw '{"doc_id":"<returned-id>","layer":0,"frame":0,"op":"fill_cel","color":[224,160,80]}'
-atelier call doc_look '{"doc_id":"<returned-id>","out_path":"/tmp/cat.png"}'
-```
-
-Linux supports the editor and the `systemd --user` daemon. macOS builds and
-passes tests but has no daemon. Use Docker on Windows. Rust 1.88 is the minimum
-supported compiler; `rust-toolchain.toml` selects the development toolchain.
-
-## Commands and documents
-
-The binary owns its reference: `atelier --help`, `atelier tools --markdown`,
-and `atelier tools --schema <tool>` describe the commands and tool arguments.
-
-```sh
-atelier init                         # create a directory-local .atelier store
-atelier library                      # list documents
-atelier library verify               # check stored documents without changes
-atelier library pack <id> --out art.atelierpack
-atelier library unpack art.atelierpack
-atelier replay <journal|id> --home /tmp/demo
-atelier skills install --for codex   # also claude, kimi, cursor, or all
-atelier skills show sprite           # also scene or review
-```
-
-Store selection is `--home DIR`, then `ATELIER_HOME`, then a local `./.atelier`,
-then `~/.atelier`. Each document records deterministic editing calls in
-`documents/<id>/recipe.jsonl`; replay stages the entire document before
-publishing it. Archives preserve UUIDs and refuse collisions unless replacement
-is explicitly requested. Checkpoints provide bounded local recovery.
-
-CLI, replay, stdio, and HTTP use one dispatch path. There is no active document
-or inferred target. Mutations may include `expected_revision` to reject a stale
-write with `revision_conflict`; omitting it keeps last-write-wins behavior.
-
-Spritesheets default to RGBA PNGs. Set `color_mode` to `rgb` when a consumer
-requires a PNG without an alpha channel:
-
-```sh
-atelier call doc_export '{"doc_id":"<returned-id>","op":"sheet","out_path":"cat.png","scale":1,"color_mode":"rgb"}'
-```
-
-RGB export requires every rendered pixel in every frame to be fully opaque;
-transparency causes an error before the output files are written. It preserves
-exact RGB values and nearest-neighbour scaling. Both the native sidecar and
-`meta:"standard"` sidecar record the PNG's channel format.
-
-Pixel glyph atlases can also be exported as static TrueType fonts. Draw glyphs
-on a transparent canvas, then store their mappings and metrics with `doc_font`.
-For a 16×8 atlas with an 8×8 missing glyph followed by an 8×8 letter A:
-
-```sh
-atelier call doc_font '{"doc_id":"<returned-id>","op":"set","font":{"family":"My Pixel Font","baseline":7,"ascent":7,"descent":1,"missing_glyph":0,"space_glyph":1,"glyphs":[{"name":"missing","codepoints":[],"rect":[0,0,8,8],"advance":8},{"name":"space","codepoints":[32],"rect":null,"advance":4},{"name":"A","codepoints":[65],"rect":[8,0,8,8],"advance":8}]}}'
-atelier call doc_export '{"doc_id":"<returned-id>","op":"font","out_path":"my-pixel-font.ttf"}'
-```
-
-Glyph rectangles use `[x,y,width,height]` in the atlas; baseline is measured down
-from each rectangle's top edge. Advances, ascent, descent, line gap, and optional
-`bearing_x` are in source pixels. `frame` defaults to 0 and follows timeline
-reordering; deleting that frame requires clearing or replacing the font metadata.
-Multiple Unicode scalar values in `codepoints` share a glyph. The explicit space
-glyph has no rectangle; the missing glyph must contain solid pixels and becomes
-TrueType glyph zero. `doc_font op=get` reads metadata and `op=clear` removes it.
-Set/clear are guarded by `expected_revision` and recorded in replay journals.
-
-Export uses the visible, composited atlas frame, ignores pixel RGB colours, and
-requires alpha to be 0 or 255 inside glyph rectangles. Integer outlines preserve
-the pixel grid without curves or hinting; `gasp` requests no grid fitting or
-smoothing, though text renderers control their own antialiasing. Font units default
-to `units_per_em:1024` and `units_per_pixel:64`, so a 16-pixel em uses a 16px text
-size. Image export options such as `scale` do not apply to font export. Mappings,
-rectangles, metrics, and TrueType coordinate limits are validated before writing.
-
-## MCP and Docker
-
-Configure a stdio MCP client to launch `atelier`, or install the Linux daemon:
-
-```sh
-atelier install --port 8765
-atelier status
-# Endpoint: http://127.0.0.1:8765/mcp
-```
-
-`atelier --http [ADDR]` runs a foreground HTTP server. Non-loopback listeners
-require `ATELIER_HTTP_TOKEN`; when set, every request needs the matching bearer
-token. Use a TLS reverse proxy for remote access. HTTP file access requires
-`ATELIER_IMPORT_ROOT` or `ATELIER_EXPORT_ROOT` and relative paths under those
-directories. CLI and stdio retain normal local filesystem access.
-
-Set `ATELIER_HTTP_TOKEN` in your environment, then run the container:
-
-```sh
-docker compose up -d --build
-```
-
-It exposes `127.0.0.1:8765/mcp` and persists documents in a named volume.
-`ATELIER_PLATFORM=linux/arm64` selects ARM64; CI checks `linux/amd64`.
-Daemon logs: `journalctl --user -u atelier -f`. Remove it with `atelier uninstall`.
-
-## Develop and build the showcase
-
-```sh
-tools/check.sh                       # Rust formatting, lint, rustdoc, tests
-cargo fmt --all                      # apply formatting
-cargo build --release --locked -p atelier
+tools/check.sh                       # formatting, strict Clippy, rustdoc and tests
 cargo build --locked -p atelier
-tools/showcase-check.sh               # reproduce every committed GIF
-npm ci --prefix site                 # Node.js 24+; install locked website dependencies
-npm --prefix site run dev            # Vite development server with hot reload
-npm --prefix site run check          # TypeScript and comparison behavior tests
-npm --prefix site run build          # production website → site/dist
-npm --prefix site run preview        # serve the production build locally
+python3 -m unittest discover -s tools/tests
+python3 tools/showcase.py verify      # reproduce all committed GIFs, offline
+python3 tools/showcase.py run --help  # collect new runs with authenticated Codex
+npm ci --prefix site                 # Node.js 24+
+npm --prefix site run dev             # website with hot reload
+npm --prefix site run check           # formatting, strict TypeScript and tests
+npm --prefix site run build           # production website → site/dist
+cargo build --release --locked -p atelier
 ```
 
-The website is a Vite + React + TypeScript app in `site/`. Its components read
-`showcase/runs.json` and the frozen briefs directly; the npm preparation step
-validates the complete model/brief matrix and copies original GIFs, prompts,
-and replay journals into the public assets. Fonts are bundled locally. The
-production build stays in ignored `site/dist`, with relative asset paths that
-work under the GitHub Pages `/atelier/` prefix. Filters and views use query
-parameters, so shared links work directly on static hosting. The Pages workflow
-runs `npm ci`, type checks, comparison tests, and the Vite build before publishing
-changes on `master`; Rust checks remain independent of Node.js.
+No releases or images are published. With `ATELIER_HTTP_TOKEN` set, run
+`docker compose up -d --build`; it binds localhost and persists a named volume.
+Check an image with `tools/container-smoke.sh IMAGE`; detailed instructions use `--help`.
+CI checks native builds, MSRV, containers and replay bytes; master publishes the website.
 
-To collect another showcase run with an authenticated Codex CLI:
-
-```sh
-python3 tools/run-showcase.py --model gpt-6.1-sol --effort max
-```
-
-The runner uses isolated stores and the shipped sprite skill, verifies replay
-bytes, and writes transcripts, art, and usage to `target/showcase/`. Its
-`--help` describes task selection and resuming interrupted sessions. Preserve
-the counting-method caveats in `showcase/runs.json` when adding results.
-
-## About the project
-
-Atelier asks whether agents working through tools can make art useful in games.
-All code was written by AI and has had no line-by-line human review. Assume
-bugs and breaking changes; review the code and isolate important data before
-using it in production.
-
-Outside pull requests are closed; bug reports and questions are welcome.
-Report vulnerabilities privately through [SECURITY.md](.github/SECURITY.md).
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for participation details.
-
-[MIT](LICENSE) © Marmik Shah
+See [Contributing](.github/CONTRIBUTING.md) and [Security](.github/SECURITY.md). [MIT](LICENSE) © Marmik Shah

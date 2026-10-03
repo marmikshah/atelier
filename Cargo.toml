@@ -15,8 +15,7 @@ rust-version = "1.88"
 license = "MIT"
 repository = "https://github.com/marmikshah/atelier"
 homepage = "https://marmikshah.github.io/atelier/"
-# GitHub releases are the distribution channel for now. Opt in crate-by-crate
-# only after the public Rust API and crates.io release order are documented.
+# Build from source; the workspace crates are not published.
 publish = false
 keywords = ["mcp", "pixel-art", "sprite", "gamedev", "animation"]
 categories = ["command-line-utilities", "multimedia::images", "game-development"]
@@ -50,13 +49,12 @@ schemars = "1.2.1"
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "net", "process", "signal", "sync"] }
 axum = "0.8.9"
 
-# Internal crates — path for local builds, version for crates.io publish.
+# Internal crates share the workspace version and build from local paths.
 atelier-core = { version = "0.1.0", path = "crates/atelier-core" }
 atelier-studio = { version = "0.1.0", path = "crates/atelier-studio" }
 atelier-mcp = { version = "0.1.0", path = "crates/atelier-mcp" }
 
-# The shipped binary: thin LTO + one codegen unit + stripped symbols (the
-# Docker image already stripped by hand; the release workflow didn't).
+# Native and container release binaries share optimization and symbol stripping.
 [profile.release]
 lto = "thin"
 codegen-units = 1
