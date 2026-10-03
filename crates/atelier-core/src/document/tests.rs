@@ -823,7 +823,7 @@ fn aggregate_cel_pixels_are_rejected_before_decoding() {
         })
         .collect();
     let metadata = DocMeta {
-        format_version: DOCUMENT_FORMAT_VERSION,
+        schema: DOCUMENT_SCHEMA,
         name: "hostile aggregate".into(),
         w: 8,
         h: 8,
@@ -1034,13 +1034,10 @@ fn persisted_document_shape_is_strict() {
         current.get("reference").is_some_and(Value::is_null),
         "the current optional field is explicit, not inferred when absent"
     );
-    assert_eq!(current["format_version"], json!(DOCUMENT_FORMAT_VERSION));
+    assert_eq!(current["schema"], json!(DOCUMENT_SCHEMA));
 
     let mut unversioned = current.clone();
-    unversioned
-        .as_object_mut()
-        .unwrap()
-        .remove("format_version");
+    unversioned.as_object_mut().unwrap().remove("schema");
     std::fs::write(&path, serde_json::to_vec(&unversioned).unwrap()).unwrap();
     assert!(
         Document::load(&dir).is_err(),
@@ -1048,7 +1045,7 @@ fn persisted_document_shape_is_strict() {
     );
 
     let mut future = current.clone();
-    future["format_version"] = json!(DOCUMENT_FORMAT_VERSION + 1);
+    future["schema"] = json!(DOCUMENT_SCHEMA + 1);
     std::fs::write(&path, serde_json::to_vec(&future).unwrap()).unwrap();
     let error = Document::load(&dir).err().expect("future format must fail");
     assert!(

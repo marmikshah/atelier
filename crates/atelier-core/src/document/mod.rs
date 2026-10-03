@@ -46,7 +46,7 @@ pub use render::{ValueView, seam_axis_img};
 pub use timeline::FrameAction;
 
 /// Current persisted `doc.json` format.
-pub const DOCUMENT_FORMAT_VERSION: u32 = 1;
+pub const DOCUMENT_SCHEMA: u32 = 1;
 /// Maximum width or height accepted by both constructors and persisted files.
 pub const MAX_DOCUMENT_DIMENSION: u32 = 4096;
 /// Largest accepted persisted `doc.json` file.
@@ -144,7 +144,7 @@ pub struct CelMeta {
 #[serde(deny_unknown_fields)]
 pub struct DocMeta {
     /// Explicit on-disk contract version; only the current format is accepted.
-    pub format_version: u32,
+    pub schema: u32,
     pub name: String,
     pub w: u32,
     pub h: u32,
@@ -414,10 +414,10 @@ fn load_stored_cels(
 /// Validate the one current on-disk document shape. Loading does not repair,
 /// default, or reinterpret persisted metadata.
 fn validate_meta(meta: &DocMeta) -> Result<(), String> {
-    if meta.format_version != DOCUMENT_FORMAT_VERSION {
+    if meta.schema != DOCUMENT_SCHEMA {
         return Err(format!(
             "unsupported document format {} (this build supports {})",
-            meta.format_version, DOCUMENT_FORMAT_VERSION
+            meta.schema, DOCUMENT_SCHEMA
         ));
     }
     if meta.w == 0
@@ -524,7 +524,7 @@ fn structure_value(meta: &DocMeta, mut cel_keys: Vec<(usize, usize)>) -> Value {
         .map(|(layer, frame)| json!({"layer": layer, "frame": frame}))
         .collect();
     json!({
-        "format_version": meta.format_version,
+        "schema": meta.schema,
         "name": meta.name, "w": meta.w, "h": meta.h,
         "layers": meta.layers.iter().enumerate().map(|(index, layer)| json!({
             "index": index, "name": layer.name, "opacity": layer.opacity,
@@ -684,7 +684,7 @@ impl Document {
 
     pub fn new(name: &str, w: u32, h: u32) -> Document {
         let meta = DocMeta {
-            format_version: DOCUMENT_FORMAT_VERSION,
+            schema: DOCUMENT_SCHEMA,
             name: name.to_string(),
             w,
             h,

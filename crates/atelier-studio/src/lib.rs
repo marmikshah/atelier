@@ -43,7 +43,7 @@ pub use control::{
 };
 pub use integrity::{IntegrityIssue, IntegritySeverity, StoreIntegrityReport};
 pub use journal::{
-    JOURNAL_FORMAT_VERSION, JournalEntry, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES, ParsedJournal,
+    JOURNAL_SCHEMA, JournalEntry, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES, ParsedJournal,
     parse_journal, validate_journal,
 };
 pub use transaction::{CommitOutcome, StoreTransaction};

@@ -56,16 +56,25 @@ fn read_json(path: &Path) -> Value {
 
 #[test]
 fn unsupported_and_corrupt_metadata_is_replaced_in_the_current_format() {
-    for corruption in ["missing version", "future version", "invalid JSON"] {
+    for corruption in [
+        "missing schema",
+        "unsupported marker",
+        "future schema",
+        "invalid JSON",
+    ] {
         let store = Store::new();
         let id = store.create();
         let path = store.document(&id).join("doc.json");
         let mut meta = read_json(&path);
         match corruption {
-            "missing version" => {
-                meta.as_object_mut().unwrap().remove("format_version");
+            "missing schema" => {
+                meta.as_object_mut().unwrap().remove("schema");
             }
-            "future version" => meta["format_version"] = json!(99),
+            "unsupported marker" => {
+                let schema = meta.as_object_mut().unwrap().remove("schema").unwrap();
+                meta["format_version"] = schema;
+            }
+            "future schema" => meta["schema"] = json!(99),
             _ => {}
         }
         fs::write(
@@ -95,7 +104,8 @@ fn unsupported_and_corrupt_metadata_is_replaced_in_the_current_format() {
         assert_eq!(result["doc_id"], id);
         assert_eq!(result["recovery"]["doc_id"], id);
         assert_eq!(result["revision"], 0);
-        assert_eq!(read_json(&path)["format_version"], 1);
+        assert_eq!(read_json(&path)["schema"], 1);
+        assert!(read_json(&path).get("format_version").is_none());
         assert_eq!(
             store.call("doc_info", json!({"doc_id":id})).1["recovery"],
             Value::Null
