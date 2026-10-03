@@ -953,7 +953,7 @@ mod tests {
     }
 
     #[test]
-    fn verifies_revision_sidecars_without_rejecting_legacy_absence() {
+    fn verifies_current_revision_sidecars_and_rejects_missing_or_corrupt_data() {
         let studio = studio("revision");
         let created = studio.doc_new("verified", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
@@ -965,12 +965,19 @@ mod tests {
             )
             .unwrap();
 
-        let legacy = studio.verify_store().unwrap();
+        let fresh = studio.verify_store().unwrap();
         assert!(
-            legacy.ok,
-            "legacy revision zero is valid: {:?}",
-            legacy.issues
+            fresh.ok,
+            "fresh documents have valid revision zero: {:?}",
+            fresh.issues
         );
+
+        fs::remove_file(studio.doc_dir(&id).join(REVISION_FILE)).unwrap();
+        let missing = studio.verify_store().unwrap();
+        assert!(!missing.ok);
+        assert!(missing.issues.iter().any(|issue| {
+            issue.severity == IntegritySeverity::Error && issue.component == REVISION_FILE
+        }));
 
         studio.set_document_revision(&id, 7).unwrap();
         let current = studio.verify_store().unwrap();

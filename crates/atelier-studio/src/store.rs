@@ -88,10 +88,6 @@ pub(crate) fn parse_journal_file(
     Ok(journal)
 }
 
-fn read_journal_file(id: &str, path: &std::path::Path) -> Result<Vec<JournalEntry>, String> {
-    parse_journal_file(id, path).map(|journal| journal.entries)
-}
-
 /// An advisory cross-process lock for one document store.
 pub struct StoreLock {
     file: fs::File,
@@ -430,17 +426,12 @@ impl Studio {
     }
 
     pub fn list_docs(&self) -> Value {
-        self.list_docs_filtered(None, None)
+        self.list_docs_inner(None, None, None, usize::MAX)
     }
 
     /// `prefix` keeps opaque ids starting with it; `contains` searches either
     /// the id or the display name. Both are case-sensitive; combined = AND.
-    pub fn list_docs_filtered(&self, prefix: Option<&str>, contains: Option<&str>) -> Value {
-        self.list_docs_inner(prefix, contains, None, usize::MAX)
-    }
-
-    /// Return a bounded page of the filtered library. `cursor` is the last
-    /// opaque id returned by the previous page and is exclusive.
+    /// Pages contain up to 100 documents in UUID order, after `cursor`.
     pub fn list_docs_page(
         &self,
         prefix: Option<&str>,
@@ -666,7 +657,7 @@ impl Studio {
             }
             Ok(_) => {}
         }
-        read_journal_file(id, &path)
+        parse_journal_file(id, &path).map(|journal| journal.entries)
     }
 }
 
@@ -929,19 +920,24 @@ mod tests {
                     .to_string(),
             );
         }
-        assert_eq!(s.list_docs_filtered(None, None)["count"], 3);
-        assert_eq!(s.list_docs_filtered(Some(&ids[0]), None)["count"], 1);
+        assert_eq!(s.list_docs_page(None, None, None, 100).unwrap()["count"], 3);
         assert_eq!(
-            s.list_docs_filtered(None, Some("hero"))["count"],
+            s.list_docs_page(Some(&ids[0]), None, None, 100).unwrap()["count"],
+            1
+        );
+        assert_eq!(
+            s.list_docs_page(None, Some("hero"), None, 100).unwrap()["count"],
             2,
             "contains also searches display names"
         );
         assert_eq!(
-            s.list_docs_filtered(None, Some(&ids[1][ids[1].len() - 6..]))["count"],
+            s.list_docs_page(None, Some(&ids[1][ids[1].len() - 6..]), None, 100)
+                .unwrap()["count"],
             1
         );
         assert_eq!(
-            s.list_docs_filtered(Some(&ids[2]), Some(&ids[2][3..]))["count"],
+            s.list_docs_page(Some(&ids[2]), Some(&ids[2][3..]), None, 100)
+                .unwrap()["count"],
             1
         );
     }
@@ -1033,7 +1029,11 @@ mod tests {
         assert!(Studio::valid_id(first_id), "unexpected id: {first_id}");
         assert!(Studio::valid_id(second_id), "unexpected id: {second_id}");
         assert_ne!(first_id, second_id);
-        assert_eq!(s.list_docs_filtered(None, Some("same name"))["count"], 2);
+        assert_eq!(
+            s.list_docs_page(None, Some("same name"), None, 100)
+                .unwrap()["count"],
+            2
+        );
         assert!(s.doc_info("same-name").is_err(), "names are never ids");
     }
 

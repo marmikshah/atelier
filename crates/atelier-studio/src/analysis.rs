@@ -393,10 +393,6 @@ fn components_image(
         .collect();
     let returned = components.len();
     json!({
-        // `count` remains as a compatibility alias for callers that only need
-        // the returned array length. The explicit fields retain the totals
-        // even when either bounded sample is shortened.
-        "count": returned,
         "total_components": total_components,
         "matching_components": matching_components,
         "returned": returned,
@@ -700,9 +696,8 @@ impl Studio {
             }
         }
         let mut out = json!({
-            "count": count,
-            "count_exact": count_exact,
             "distinct_colors_at_least": count,
+            "distinct_colors_exact": count_exact,
             "returned": colors.len(),
             "colors": colors,
             "off_palette_count": if has_palette { json!(off_palette_count) } else { Value::Null },
@@ -722,9 +717,6 @@ impl Studio {
                 .saturating_sub(PALETTE_LIST_CAP)
                 .saturating_add(usize::from(!count_exact));
             out["others"] = json!({
-                // Compatibility alias: exact below the analysis cap, otherwise
-                // an explicitly labelled lower bound.
-                "colors": other_colors_at_least,
                 "colors_at_least": other_colors_at_least,
                 "colors_exact": count_exact,
                 "pixels": others_pixels,
@@ -1170,33 +1162,6 @@ impl Studio {
     }
 }
 
-/// Mean angle and max angular spread (degrees) of a set of directions, handling
-/// the 0/360 wrap via unit-vector summation. Empty → `(None, None)`.
-#[cfg(test)]
-fn circular_summary(deg: &[f64]) -> (Option<f64>, Option<f64>) {
-    if deg.is_empty() {
-        return (None, None);
-    }
-    let (mut sx, mut sy) = (0.0, 0.0);
-    for &d in deg {
-        let r = d.to_radians();
-        sx += r.cos();
-        sy += r.sin();
-    }
-    let mean = sy.atan2(sx).to_degrees();
-    let spread = deg
-        .iter()
-        .map(|&d| {
-            let mut diff = (d - mean).rem_euclid(360.0);
-            if diff > 180.0 {
-                diff -= 360.0;
-            }
-            diff.abs()
-        })
-        .fold(0.0f64, f64::max);
-    (Some(mean), Some(spread))
-}
-
 /// The per-form lighting audit behind `critique`, factored out so it can be unit-tested without a
 /// Studio/disk. For each connected opaque component it fits a lightness plane
 /// (the inferred light direction), correlates lightness with interior distance
@@ -1420,8 +1385,8 @@ pub(super) fn form_audit_image(img: &image::RgbaImage, min_area: u32) -> Value {
 #[cfg(test)]
 mod tests {
     use super::{
-        AnimAuditMode, BoundedColorCounts, DiffRender, DumpMode, MAX_TRACKED_DISTINCT_COLORS,
-        Studio, TagDirection, circular_summary, components_image, form_audit_image,
+        AnimAuditMode, BoundedColorCounts, CircularTally, DiffRender, DumpMode,
+        MAX_TRACKED_DISTINCT_COLORS, Studio, TagDirection, components_image, form_audit_image,
     };
     use serde_json::{Value, json};
 
@@ -1552,7 +1517,10 @@ mod tests {
 
     #[test]
     fn circular_summary_wraps_across_zero() {
-        let (mean, spread) = circular_summary(&[350.0, 10.0]);
+        let mut tally = CircularTally::new();
+        tally.add(350.0);
+        tally.add(10.0);
+        let (mean, spread) = tally.summary();
         let m = mean.unwrap().rem_euclid(360.0);
         assert!(
             !(1.0..=359.0).contains(&m),
@@ -1582,7 +1550,6 @@ mod tests {
             json!({"points": [[7, 7]], "color": [0, 255, 0, 255]}),
         );
         let r = s.doc_components(id, 0, None, 8, None, 1).unwrap();
-        assert_eq!(r["count"], 2);
         assert_eq!(r["total_components"], 2);
         assert_eq!(r["returned"], 2);
         assert_eq!(r["specks_total"], 1);
@@ -1595,7 +1562,7 @@ mod tests {
         let red = s
             .doc_components(id, 0, None, 8, Some([255, 0, 0, 255]), 1)
             .unwrap();
-        assert_eq!(red["count"], 1);
+        assert_eq!(red["returned"], 1);
         assert!(s.doc_components(id, 0, None, 5, None, 1).is_err());
         assert!(s.doc_components(id, 0, None, 8, None, 0).is_err());
     }
@@ -1720,8 +1687,8 @@ mod tests {
             json!({"points": [[0, 1]], "color": [250, 4, 0, 255]}),
         );
         let r = s.doc_palette_report(id, Some(0), None, None, 8).unwrap();
-        assert_eq!(r["count"], 2);
-        assert_eq!(r["count_exact"], true);
+        assert_eq!(r["distinct_colors_at_least"], 2);
+        assert_eq!(r["distinct_colors_exact"], true);
         assert_eq!(r["frames_scanned"], 1);
         assert_eq!(r["inspected_pixels"], 16);
         assert_eq!(r["colors"][0]["hex"], "#ff0000ff"); // most-used first

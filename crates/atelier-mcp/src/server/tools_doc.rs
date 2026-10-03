@@ -6,7 +6,7 @@ use rmcp::model::CallToolResult;
 use rmcp::{tool, tool_router};
 
 use super::params::*;
-use super::{Atelier, alpha_snap, edited, palette_list, region, res, rgba};
+use super::{Atelier, alpha_snap, palette_list, region, res, rgba};
 
 #[tool_router(router = doc_router, vis = "pub(crate)")]
 impl Atelier {
@@ -155,7 +155,7 @@ impl Atelier {
                     },
                     alpha,
                 );
-                edited(r)
+                res(r)
             }
         }
     }

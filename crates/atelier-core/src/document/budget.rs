@@ -107,7 +107,7 @@ mod tests {
     fn frame_growth_checks_counts_and_source_before_mutation() {
         let mut document = Document::new("frames", 1, 1);
         assert!(document.add_frames(100, None, 0).is_err());
-        assert!(document.add_frame(100, Some(1)).is_err());
+        assert!(document.add_frames(100, Some(1), 1).is_err());
         assert!(document.add_frames(100, None, MAX_DOCUMENT_FRAMES).is_err());
         assert_eq!(document.meta.frames.len(), 1);
         document
@@ -138,7 +138,7 @@ mod tests {
     fn scaled_cel_is_checked_against_the_other_cels_before_resizing() {
         let mut document = Document::new("scale", 1, 1);
         document.fill_cel(0, 0, [1, 2, 3, 255]).unwrap();
-        document.add_frame(100, Some(0)).unwrap();
+        document.add_frames(100, Some(0), 1).unwrap();
         // Valid as one image, but exceeds the document's budget with frame 1.
         let error = document.scale_cel(0, 0, 8192, 8192, "nearest").unwrap_err();
         assert!(error.contains("decoded pixels"), "{error}");

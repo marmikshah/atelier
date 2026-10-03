@@ -110,18 +110,12 @@ function selection<T extends string>(
 export function readState(search: string, models: Model[], tasks: string[]): ComparisonState {
   const params = new URLSearchParams(search);
   const defaults = defaultState(models);
-  const provider = params.get('provider') as Provider;
   return {
-    providers: selection(
-      params,
-      'providers',
-      defaults.providers,
-      defaults.providers.includes(provider) ? [provider] : defaults.providers,
-    ),
+    providers: selection(params, 'providers', defaults.providers, defaults.providers),
     models: selection(params, 'models', defaults.models, defaults.models),
     task: tasks.includes(params.get('task') ?? '') ? params.get('task')! : 'all',
     query: params.get('q') ?? '',
-    view: ['runs', 'data'].includes(params.get('view') ?? '') ? 'runs' : 'artwork',
+    view: params.get('view') === 'runs' ? 'runs' : 'artwork',
     zoom: ['2', '3', '4', '6'].includes(params.get('zoom') ?? '') ? Number(params.get('zoom')) : 2,
     background: ['grid', 'light', 'dark'].includes(params.get('background') ?? '')
       ? (params.get('background') as Background)
@@ -148,7 +142,6 @@ export function stateURL(state: ComparisonState, models: Model[], current: strin
     sort: state.sort === 'task' ? null : state.sort,
     direction: state.direction === 'asc' ? null : 'desc',
   };
-  url.searchParams.delete('provider');
   for (const [key, value] of Object.entries(values)) {
     if (value === null) url.searchParams.delete(key);
     else url.searchParams.set(key, value);

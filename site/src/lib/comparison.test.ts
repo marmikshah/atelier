@@ -72,31 +72,22 @@ test('shared links preserve column order and every comparison preference', () =>
     sort: 'tokens' as const,
     direction: 'desc' as const,
   };
-  const url = stateURL(state, models, 'https://example.test/atelier/?provider=claude');
+  const url = stateURL(state, models, 'https://example.test/atelier/?view=artwork');
   assert.equal(url.pathname, '/atelier/');
-  assert.equal(url.searchParams.has('provider'), false);
   assert.deepEqual(readState(url.search, models, data.tasks), state);
 });
 
 test('invalid identifiers fall back safely and valid mixed selections are deduplicated', () => {
   assert.deepEqual(
-    readState('?models=unknown&providers=unknown&zoom=999&task=unknown', models, data.tasks),
+    readState(
+      '?models=unknown&providers=unknown&zoom=999&task=unknown&view=unknown',
+      models,
+      data.tasks,
+    ),
     defaultState(models),
   );
   const state = readState(`?models=unknown,${models[0].id},${models[0].id}`, models, data.tasks);
   assert.deepEqual(state.models, [models[0].id]);
-});
-
-test('legacy provider and comparison links still select their original models', () => {
-  const state = readState(
-    `?provider=kimi&view=compare&models=${models[2].id}&task=ball`,
-    models,
-    data.tasks,
-  );
-  const runs = filterRuns(data, state, models);
-  assert.equal(runs.length, 1);
-  assert.equal(runs[0].vendor, 'Moonshot AI');
-  assert.equal(runs[0].task, 'ball');
 });
 
 test('token sorting is numeric with unreported values last in both directions', () => {
