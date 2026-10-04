@@ -9,6 +9,17 @@ Atelier is an offline, headless pixel-art editor for CLI and MCP clients.
 Its 26 tools edit layered animations, inspect pixels, and export PNGs,
 spritesheets, GIFs, APNGs, and TrueType pixel fonts. Documents stay local.
 
+**100% of this code was written by AI.** Atelier is a personal experiment in
+whether agents, using only tool calls, can make art useful in games. My part
+has been giving direction, and I hope the result helps you make something of
+your own.
+
+> [!NOTE]
+> **None of the code has had line-by-line human review.** Automated checks
+> and AI reviews are part of the process; bugs, security issues, and breaking
+> changes are still possible. Please review the code and work with copies of
+> important data before using it in production.
+
 [Explore the showcase](https://marmikshah.github.io/atelier/): compare original
 animations, filter models and briefs, download replays, or export run data.
 
