@@ -7,7 +7,8 @@ Maintainers should work through issues and reviewable pull requests. Keep each
 change focused; stack dependent branches on the preceding PR's branch. Run
 `tools/check.sh`, the showcase tooling tests, and the replay verifier for editor
 changes. Run the website checks and production build for site changes. The
-[README](../README.md) lists these commands; tool `--help` provides details.
+[development guide](../docs/development.md) explains the repository layout and
+lists the commands; tool `--help` provides details.
 
 Preserve tool schemas, pixels, exports, platform integrations, and recorded
 artwork. Retain tests that prove supported behavior, and add regressions for
