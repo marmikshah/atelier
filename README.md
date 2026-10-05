@@ -5,9 +5,44 @@
   </picture>
 </p>
 
-Atelier is an offline, headless pixel-art editor for CLI and MCP clients.
-Its 26 tools edit layered animations, inspect pixels, and export PNGs,
+Atelier is an offline, headless pixel-art editor for command-line tools and AI
+agents. Create layered sprites and animations, inspect pixels, and export PNGs,
 spritesheets, GIFs, APNGs, and TrueType pixel fonts. Documents stay local.
+
+Use it directly from a shell or connect an agent through MCP (Model Context
+Protocol). Both interfaces expose the same editing tools; no graphical editor
+or running server is needed for CLI calls.
+
+## Showcase
+
+- [Animation showcase](https://marmikshah.github.io/atelier/) — compare models and briefs, view animations, and download replays.
+- [Frayed](https://apps.apple.com/app/id6806894761)
+
+## Get started
+
+Build from source on **Linux or macOS** with Rust 1.88+ and a native build
+toolchain. The checkout pins the Rust version used for development. No binaries
+or container images are published.
+
+```sh
+git clone https://github.com/marmikshah/atelier.git
+cd atelier
+cargo install --locked --path crates/atelier
+atelier --help
+```
+
+Then follow [your first sprite](docs/getting-started.md) to create a document,
+draw pixels, and save an image.
+
+| I want to… | Start here |
+| --- | --- |
+| Make art from the terminal | [Getting started](docs/getting-started.md) |
+| Connect an agent, run a server, or choose where art is stored | [Running Atelier](docs/running.md) |
+| Find a tool's arguments | `atelier tools --markdown` or `atelier tools --schema NAME` |
+| Understand the code or work on the showcase | [Development guide](docs/development.md) |
+| Report a bug or security issue | [Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md) |
+
+## About this project
 
 **100% of this code was written by AI.** Atelier is a personal experiment in
 whether agents, using only tool calls, can make art useful in games. My part
@@ -20,62 +55,4 @@ your own.
 > changes are still possible. Please review the code and work with copies of
 > important data before using it in production.
 
-[Explore the showcase](https://marmikshah.github.io/atelier/): compare original
-animations, filter models and briefs, download replays, or export run data.
-
-## Architecture
-
-```text
-crates/
-├── atelier-core/    Document format, raster operations, rendering and exports
-├── atelier-studio/  Storage, transactions, journals, checkpoints and analysis
-├── atelier-mcp/     Shared tool dispatch, schemas, stdio and HTTP transports
-└── atelier/         CLI, replay, archives, agent skills and Linux daemon
-site/                React + TypeScript showcase, built with Vite
-showcase/            Frozen briefs, recorded runs, replay journals and GIFs
-tools/               Development checks, showcase runner and container smoke
-```
-
-## Run
-
-Build from a checkout with Rust 1.88+; the pinned toolchain is used for development.
-Linux and macOS support native builds; the daemon needs Linux.
-
-```sh
-cargo install --locked --path crates/atelier
-atelier init                         # opt into a directory-local .atelier store
-atelier call doc_new '{"name":"cat","width":32,"height":32}'
-atelier call doc_look '{"doc_id":"<returned-id>","out_path":"preview.png"}'
-atelier                              # stdio MCP server, launched by your client
-atelier --http                       # foreground HTTP at 127.0.0.1:8765/mcp
-atelier install --port 8765           # optional systemd --user daemon
-atelier skills install --for codex    # also claude, kimi, cursor, or all
-atelier --help                       # commands, store policy and environment
-atelier tools --markdown             # current tool reference; --schema NAME for JSON
-```
-
-Documents use explicit UUIDs; tools safely reset unsupported or corrupt saved data.
-`atelier library verify` inspects without changes; archives preserve UUIDs.
-
-## Develop and release
-
-```sh
-tools/check.sh                       # formatting, strict Clippy, rustdoc and tests
-cargo build --locked -p atelier
-python3 -m unittest discover -s tools/tests
-python3 tools/showcase.py verify      # reproduce all committed GIFs, offline
-python3 tools/showcase.py run --help  # collect new runs with authenticated Codex
-npm ci --prefix site                 # Node.js 24+
-npm --prefix site run dev             # website with hot reload
-npm --prefix site run check           # formatting, strict TypeScript and tests
-npm --prefix site run build           # production website → site/dist
-cargo build --release --locked -p atelier
-```
-
-No releases or images are published. For Linux containers, set `ATELIER_HTTP_TOKEN`
-and run `docker compose up -d --build`; it binds localhost and persists a named volume.
-Check an image with `tools/container-smoke.sh IMAGE`; detailed instructions use `--help`.
-CI checks native builds, MSRV and replay bytes. Containers are checked on pushes to
-`master` and non-draft PRs targeting `master`; `master` publishes the website.
-
-See [Contributing](.github/CONTRIBUTING.md) and [Security](.github/SECURITY.md). [MIT](LICENSE) © Marmik Shah
+[MIT](LICENSE) © Marmik Shah
