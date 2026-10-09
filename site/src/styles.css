@@ -213,10 +213,6 @@ blockquote {
   gap: 14px 28px;
   padding: 18px var(--gutter) 0;
 }
-.brand img {
-  width: 174px;
-  height: auto;
-}
 .tally {
   display: flex;
   gap: 14px;
@@ -938,9 +934,6 @@ kbd {
 }
 
 @media (max-width: 720px) {
-  .brand img {
-    width: 116px;
-  }
   .tally {
     order: 3;
     width: 100%;
