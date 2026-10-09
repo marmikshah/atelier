@@ -1,7 +1,7 @@
 {
-  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and the OpenAI models via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and gpt-5.6-sol-max runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call. For gpt-6-astra-xhigh, each fresh agent uses gpt-6-astra with xhigh reasoning. Its tool-call and doc_look counts are recorded by the CLI wrapper, including failed calls and excluding harness export and verification; per-agent tokens are unavailable and remain null. For gpt-6.1-sol-max, each fresh Codex session uses gpt-6.1-sol with max reasoning. The runner records every Atelier call, including failed calls and excluding harness verification. Interrupted sessions are resumed with their original stores and artwork. Tokens are cumulative input plus output from Codex session usage, including cached input; each run also records the separate token-usage fields. All session turns were checked for the requested model and effort.",
-  "server": "The first 40 retained runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which was used to verify the first 60 retained replays. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so the gpt-5.6-sol-max/slash replay had 5 fractional arguments rounded to integers and its GIF regenerated; the calls are otherwise the model's own. This changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task. The 10 gpt-6-astra-xhigh runs used the repository build at 2c1ec81c837b390f23f433c2502e5704bda7c23e (reported version 0.1.0, 25-tool surface), through isolated CLI dispatch with one store per task. All 80 replays were verified against that build. The 10 gpt-6.1-sol-max runs used the repository build at 225b07cda54688473df7c0310c59e1ee00ce4eb2 (reported version 0.1.0, 25-tool surface) through isolated CLI dispatch, one store per task, using codex-cli 0.159.2. All 90 replays were verified against that build.",
-  "verified": "Every GIF parsed from disk: all 90 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, within the requested colour limits and with transparency. CI replays all 90 committed JSONL files through the repository build and requires the exported GIFs to match byte-for-byte.",
+  "method": "Subagents driving atelier, one agent per task, each loading the atelier-sprite skill and working only through atelier's tools \u2014 the Anthropic models via Claude Code (fable-5.1 as Claude Code subagents on the atelier CLI, one isolated store per task), kimi-k3 via Kimi Code, and the OpenAI models via Codex. Every model draws the same ten tasks from identical frozen briefs (showcase/tasks/*.txt). Stats: Claude Code runs report the client's own tool_uses and subagent tokens plus each agent's self-reported doc_look count; Kimi Code and gpt-5.6-sol-max runs report each agent's self-reported tool-call and doc_look tally (per-agent token usage is unavailable, so tokens are null). Durations are omitted: agents ran concurrently, so wall-clock is queueing, not work. The fable-5.1 agents batched several atelier CLI calls per shell step, so their tool_uses count shell steps, not atelier calls; the replay journal beside each GIF holds every mutating call. For gpt-6-astra-xhigh, each fresh agent uses gpt-6-astra with xhigh reasoning. Its tool-call and doc_look counts are recorded by the CLI wrapper, including failed calls and excluding harness export and verification; per-agent tokens are unavailable and remain null. For gpt-6.1-sol-max, each fresh Codex session uses gpt-6.1-sol with max reasoning. The runner records every Atelier call, including failed calls and excluding harness verification. Interrupted sessions are resumed with their original stores and artwork. Tokens are cumulative input plus output from Codex session usage, including cached input; each run also records the separate token-usage fields. All session turns were checked for the requested model and effort. For opus-5.5-xhigh, sonnet-5.5-xhigh, and haiku-5.5-xhigh, each fresh headless Claude Code session (claude -p) uses claude-opus-5-5, claude-sonnet-5-5, or claude-haiku-5-5 with xhigh effort and the same prompt, call-recording wrapper, and isolated store per task as the Codex runner, with customizations and MCP servers disabled and only the Bash, Read, Write, Edit, Glob, and Grep tools available. The wrapper records every Atelier call, including failed calls and excluding harness export and verification. Tokens are cumulative input plus output from the session's reported usage, including cached input and cache writes; each run also records the separate token-usage fields. Every assistant turn was checked for the requested model; the effort is the level requested on the command line. Each session completed in a single invocation. From these runs onward, every model is tested at xhigh effort. Earlier runs at max effort, or with no recorded effort, are not directly comparable with xhigh runs; xhigh runs for the remaining models will be added as access to them becomes available.",
+  "server": "The first 40 retained runs used atelier 1.5.0+ (28-tool surface) against one long-running daemon build (master, pre-#51). The 10 gpt-5.6-sol-max runs used atelier 1.7.0 through isolated in-process CLI dispatch on master. The 10 opus-5 runs used atelier 1.9.0 (25-tool surface) through isolated CLI dispatch, one store per task, which was used to verify the first 60 retained replays. Atelier 1.9.0 requires 32-bit integers where earlier builds silently accepted fractions, so the gpt-5.6-sol-max/slash replay had 5 fractional arguments rounded to integers and its GIF regenerated; the calls are otherwise the model's own. This changed under 1% of that animation's pixels. The 10 fable-5.1 runs used atelier 0.1.0 (master, 2c1ec81) through isolated CLI dispatch, one store per task. The 10 gpt-6-astra-xhigh runs used the repository build at 2c1ec81c837b390f23f433c2502e5704bda7c23e (reported version 0.1.0, 25-tool surface), through isolated CLI dispatch with one store per task. All 80 replays were verified against that build. The 10 gpt-6.1-sol-max runs used the repository build at 225b07cda54688473df7c0310c59e1ee00ce4eb2 (reported version 0.1.0, 25-tool surface) through isolated CLI dispatch, one store per task, using codex-cli 0.159.2. All 90 replays were verified against that build. The 30 opus-5.5-xhigh, sonnet-5.5-xhigh, and haiku-5.5-xhigh runs used the repository build at ac90b5d6f096876776da670e7cd868c40012d354 (reported version 0.1.0, 26-tool surface) through isolated CLI dispatch, one store per task, using Claude Code 2.1.295. All 120 replays were verified against that build.",
+  "verified": "Every GIF parsed from disk: all 120 are 10 frames x 100ms = 1000ms, 32x32 (48x48 for beam) at scale 4, within the requested colour limits and with transparency. CI replays all 120 committed JSONL files through the repository build and requires the exported GIFs to match byte-for-byte.",
   "tasks": [
     "alien",
     "ball",
@@ -23,7 +23,10 @@
     "opus-5",
     "fable-5.1",
     "gpt-6-astra-xhigh",
-    "gpt-6.1-sol-max"
+    "gpt-6.1-sol-max",
+    "opus-5.5-xhigh",
+    "sonnet-5.5-xhigh",
+    "haiku-5.5-xhigh"
   ],
   "runs": [
     {
@@ -1135,6 +1138,636 @@
       },
       "model_id": "gpt-6.1-sol",
       "reasoning_effort": "max"
+    },
+    {
+      "task": "alien",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/alien.gif",
+      "replay": "replays/opus-5.5-xhigh/alien.jsonl",
+      "frames": 10,
+      "tool_calls": 255,
+      "looks": 14,
+      "tokens": 2988021,
+      "token_usage": {
+        "input_tokens": 2914918,
+        "cached_input_tokens": 2802000,
+        "cache_write_input_tokens": 112830,
+        "output_tokens": 73103,
+        "reasoning_output_tokens": 55125,
+        "total_tokens": 2988021
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "ball",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/ball.gif",
+      "replay": "replays/opus-5.5-xhigh/ball.jsonl",
+      "frames": 10,
+      "tool_calls": 244,
+      "looks": 18,
+      "tokens": 3177230,
+      "token_usage": {
+        "input_tokens": 3112064,
+        "cached_input_tokens": 3010052,
+        "cache_write_input_tokens": 101910,
+        "output_tokens": 65166,
+        "reasoning_output_tokens": 43640,
+        "total_tokens": 3177230
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "beam",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/beam.gif",
+      "replay": "replays/opus-5.5-xhigh/beam.jsonl",
+      "frames": 10,
+      "tool_calls": 2510,
+      "looks": 87,
+      "tokens": 7165738,
+      "token_usage": {
+        "input_tokens": 7050313,
+        "cached_input_tokens": 6883313,
+        "cache_write_input_tokens": 166854,
+        "output_tokens": 115425,
+        "reasoning_output_tokens": 75283,
+        "total_tokens": 7165738
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "car",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/car.gif",
+      "replay": "replays/opus-5.5-xhigh/car.jsonl",
+      "frames": 10,
+      "tool_calls": 414,
+      "looks": 38,
+      "tokens": 3597092,
+      "token_usage": {
+        "input_tokens": 3526097,
+        "cached_input_tokens": 3425533,
+        "cache_write_input_tokens": 100460,
+        "output_tokens": 70995,
+        "reasoning_output_tokens": 49997,
+        "total_tokens": 3597092
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "cat",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/cat.gif",
+      "replay": "replays/opus-5.5-xhigh/cat.jsonl",
+      "frames": 10,
+      "tool_calls": 241,
+      "looks": 16,
+      "tokens": 3382683,
+      "token_usage": {
+        "input_tokens": 3300891,
+        "cached_input_tokens": 3194052,
+        "cache_write_input_tokens": 106743,
+        "output_tokens": 81792,
+        "reasoning_output_tokens": 61974,
+        "total_tokens": 3382683
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "explosion",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/explosion.gif",
+      "replay": "replays/opus-5.5-xhigh/explosion.jsonl",
+      "frames": 10,
+      "tool_calls": 1163,
+      "looks": 39,
+      "tokens": 8633194,
+      "token_usage": {
+        "input_tokens": 8533974,
+        "cached_input_tokens": 8372503,
+        "cache_write_input_tokens": 161297,
+        "output_tokens": 99220,
+        "reasoning_output_tokens": 57865,
+        "total_tokens": 8633194
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "person",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/person.gif",
+      "replay": "replays/opus-5.5-xhigh/person.jsonl",
+      "frames": 10,
+      "tool_calls": 415,
+      "looks": 47,
+      "tokens": 5076065,
+      "token_usage": {
+        "input_tokens": 4969528,
+        "cached_input_tokens": 4833812,
+        "cache_write_input_tokens": 135604,
+        "output_tokens": 106537,
+        "reasoning_output_tokens": 80473,
+        "total_tokens": 5076065
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "potion",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/potion.gif",
+      "replay": "replays/opus-5.5-xhigh/potion.jsonl",
+      "frames": 10,
+      "tool_calls": 256,
+      "looks": 28,
+      "tokens": 3473833,
+      "token_usage": {
+        "input_tokens": 3389215,
+        "cached_input_tokens": 3270162,
+        "cache_write_input_tokens": 118969,
+        "output_tokens": 84618,
+        "reasoning_output_tokens": 66308,
+        "total_tokens": 3473833
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "slash",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/slash.gif",
+      "replay": "replays/opus-5.5-xhigh/slash.jsonl",
+      "frames": 10,
+      "tool_calls": 513,
+      "looks": 28,
+      "tokens": 5829132,
+      "token_usage": {
+        "input_tokens": 5740981,
+        "cached_input_tokens": 5606446,
+        "cache_write_input_tokens": 134401,
+        "output_tokens": 88151,
+        "reasoning_output_tokens": 61965,
+        "total_tokens": 5829132
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "torch",
+      "model": "opus-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/opus-5.5-xhigh/torch.gif",
+      "replay": "replays/opus-5.5-xhigh/torch.jsonl",
+      "frames": 10,
+      "tool_calls": 420,
+      "looks": 28,
+      "tokens": 4664895,
+      "token_usage": {
+        "input_tokens": 4568168,
+        "cached_input_tokens": 4433918,
+        "cache_write_input_tokens": 134130,
+        "output_tokens": 96727,
+        "reasoning_output_tokens": 67450,
+        "total_tokens": 4664895
+      },
+      "model_id": "claude-opus-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "alien",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/alien.gif",
+      "replay": "replays/sonnet-5.5-xhigh/alien.jsonl",
+      "frames": 10,
+      "tool_calls": 277,
+      "looks": 14,
+      "tokens": 2673592,
+      "token_usage": {
+        "input_tokens": 2610845,
+        "cached_input_tokens": 2515641,
+        "cache_write_input_tokens": 95118,
+        "output_tokens": 62747,
+        "reasoning_output_tokens": 46043,
+        "total_tokens": 2673592
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "ball",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/ball.gif",
+      "replay": "replays/sonnet-5.5-xhigh/ball.jsonl",
+      "frames": 10,
+      "tool_calls": 196,
+      "looks": 34,
+      "tokens": 1235542,
+      "token_usage": {
+        "input_tokens": 1206029,
+        "cached_input_tokens": 1145406,
+        "cache_write_input_tokens": 60555,
+        "output_tokens": 29513,
+        "reasoning_output_tokens": 16018,
+        "total_tokens": 1235542
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "beam",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/beam.gif",
+      "replay": "replays/sonnet-5.5-xhigh/beam.jsonl",
+      "frames": 10,
+      "tool_calls": 1340,
+      "looks": 19,
+      "tokens": 3904149,
+      "token_usage": {
+        "input_tokens": 3820098,
+        "cached_input_tokens": 3700729,
+        "cache_write_input_tokens": 119269,
+        "output_tokens": 84051,
+        "reasoning_output_tokens": 54202,
+        "total_tokens": 3904149
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "car",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/car.gif",
+      "replay": "replays/sonnet-5.5-xhigh/car.jsonl",
+      "frames": 10,
+      "tool_calls": 347,
+      "looks": 5,
+      "tokens": 1708994,
+      "token_usage": {
+        "input_tokens": 1650433,
+        "cached_input_tokens": 1571290,
+        "cache_write_input_tokens": 79081,
+        "output_tokens": 58561,
+        "reasoning_output_tokens": 43798,
+        "total_tokens": 1708994
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "cat",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/cat.gif",
+      "replay": "replays/sonnet-5.5-xhigh/cat.jsonl",
+      "frames": 10,
+      "tool_calls": 583,
+      "looks": 8,
+      "tokens": 2339783,
+      "token_usage": {
+        "input_tokens": 2275208,
+        "cached_input_tokens": 2186855,
+        "cache_write_input_tokens": 88269,
+        "output_tokens": 64575,
+        "reasoning_output_tokens": 45371,
+        "total_tokens": 2339783
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "explosion",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/explosion.gif",
+      "replay": "replays/sonnet-5.5-xhigh/explosion.jsonl",
+      "frames": 10,
+      "tool_calls": 1170,
+      "looks": 17,
+      "tokens": 2636356,
+      "token_usage": {
+        "input_tokens": 2581782,
+        "cached_input_tokens": 2496765,
+        "cache_write_input_tokens": 84915,
+        "output_tokens": 54574,
+        "reasoning_output_tokens": 28696,
+        "total_tokens": 2636356
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "person",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/person.gif",
+      "replay": "replays/sonnet-5.5-xhigh/person.jsonl",
+      "frames": 10,
+      "tool_calls": 1017,
+      "looks": 47,
+      "tokens": 5812432,
+      "token_usage": {
+        "input_tokens": 5699996,
+        "cached_input_tokens": 5558642,
+        "cache_write_input_tokens": 141234,
+        "output_tokens": 112436,
+        "reasoning_output_tokens": 85807,
+        "total_tokens": 5812432
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "potion",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/potion.gif",
+      "replay": "replays/sonnet-5.5-xhigh/potion.jsonl",
+      "frames": 10,
+      "tool_calls": 174,
+      "looks": 9,
+      "tokens": 2128589,
+      "token_usage": {
+        "input_tokens": 2084539,
+        "cached_input_tokens": 2017286,
+        "cache_write_input_tokens": 67159,
+        "output_tokens": 44050,
+        "reasoning_output_tokens": 28995,
+        "total_tokens": 2128589
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "slash",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/slash.gif",
+      "replay": "replays/sonnet-5.5-xhigh/slash.jsonl",
+      "frames": 10,
+      "tool_calls": 317,
+      "looks": 3,
+      "tokens": 1348354,
+      "token_usage": {
+        "input_tokens": 1314848,
+        "cached_input_tokens": 1260103,
+        "cache_write_input_tokens": 54675,
+        "output_tokens": 33506,
+        "reasoning_output_tokens": 18319,
+        "total_tokens": 1348354
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "torch",
+      "model": "sonnet-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/sonnet-5.5-xhigh/torch.gif",
+      "replay": "replays/sonnet-5.5-xhigh/torch.jsonl",
+      "frames": 10,
+      "tool_calls": 352,
+      "looks": 11,
+      "tokens": 4032638,
+      "token_usage": {
+        "input_tokens": 3954409,
+        "cached_input_tokens": 3844150,
+        "cache_write_input_tokens": 110141,
+        "output_tokens": 78229,
+        "reasoning_output_tokens": 54129,
+        "total_tokens": 4032638
+      },
+      "model_id": "claude-sonnet-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "alien",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/alien.gif",
+      "replay": "replays/haiku-5.5-xhigh/alien.jsonl",
+      "frames": 10,
+      "tool_calls": 201,
+      "looks": 1,
+      "tokens": 2265708,
+      "token_usage": {
+        "input_tokens": 2202336,
+        "cached_input_tokens": 2116880,
+        "cache_write_input_tokens": 85382,
+        "output_tokens": 63372,
+        "reasoning_output_tokens": 49124,
+        "total_tokens": 2265708
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "ball",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/ball.gif",
+      "replay": "replays/haiku-5.5-xhigh/ball.jsonl",
+      "frames": 10,
+      "tool_calls": 160,
+      "looks": 3,
+      "tokens": 1455702,
+      "token_usage": {
+        "input_tokens": 1411129,
+        "cached_input_tokens": 1346896,
+        "cache_write_input_tokens": 64169,
+        "output_tokens": 44573,
+        "reasoning_output_tokens": 31869,
+        "total_tokens": 1455702
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "beam",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/beam.gif",
+      "replay": "replays/haiku-5.5-xhigh/beam.jsonl",
+      "frames": 10,
+      "tool_calls": 220,
+      "looks": 6,
+      "tokens": 2389901,
+      "token_usage": {
+        "input_tokens": 2328018,
+        "cached_input_tokens": 2246208,
+        "cache_write_input_tokens": 81724,
+        "output_tokens": 61883,
+        "reasoning_output_tokens": 47047,
+        "total_tokens": 2389901
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "car",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/car.gif",
+      "replay": "replays/haiku-5.5-xhigh/car.jsonl",
+      "frames": 10,
+      "tool_calls": 142,
+      "looks": 2,
+      "tokens": 1970883,
+      "token_usage": {
+        "input_tokens": 1897534,
+        "cached_input_tokens": 1808509,
+        "cache_write_input_tokens": 88967,
+        "output_tokens": 73349,
+        "reasoning_output_tokens": 61588,
+        "total_tokens": 1970883
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "cat",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/cat.gif",
+      "replay": "replays/haiku-5.5-xhigh/cat.jsonl",
+      "frames": 10,
+      "tool_calls": 204,
+      "looks": 2,
+      "tokens": 2000585,
+      "token_usage": {
+        "input_tokens": 1933744,
+        "cached_input_tokens": 1848622,
+        "cache_write_input_tokens": 85052,
+        "output_tokens": 66841,
+        "reasoning_output_tokens": 52471,
+        "total_tokens": 2000585
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "explosion",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/explosion.gif",
+      "replay": "replays/haiku-5.5-xhigh/explosion.jsonl",
+      "frames": 10,
+      "tool_calls": 1162,
+      "looks": 39,
+      "tokens": 2871432,
+      "token_usage": {
+        "input_tokens": 2815106,
+        "cached_input_tokens": 2739550,
+        "cache_write_input_tokens": 75450,
+        "output_tokens": 56326,
+        "reasoning_output_tokens": 36897,
+        "total_tokens": 2871432
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "person",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/person.gif",
+      "replay": "replays/haiku-5.5-xhigh/person.jsonl",
+      "frames": 10,
+      "tool_calls": 196,
+      "looks": 7,
+      "tokens": 2152315,
+      "token_usage": {
+        "input_tokens": 2075075,
+        "cached_input_tokens": 1980957,
+        "cache_write_input_tokens": 94048,
+        "output_tokens": 77240,
+        "reasoning_output_tokens": 64233,
+        "total_tokens": 2152315
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "potion",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/potion.gif",
+      "replay": "replays/haiku-5.5-xhigh/potion.jsonl",
+      "frames": 10,
+      "tool_calls": 178,
+      "looks": 2,
+      "tokens": 2304509,
+      "token_usage": {
+        "input_tokens": 2237479,
+        "cached_input_tokens": 2151623,
+        "cache_write_input_tokens": 85780,
+        "output_tokens": 67030,
+        "reasoning_output_tokens": 52408,
+        "total_tokens": 2304509
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "slash",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/slash.gif",
+      "replay": "replays/haiku-5.5-xhigh/slash.jsonl",
+      "frames": 10,
+      "tool_calls": 165,
+      "looks": 2,
+      "tokens": 1653105,
+      "token_usage": {
+        "input_tokens": 1603045,
+        "cached_input_tokens": 1531670,
+        "cache_write_input_tokens": 71309,
+        "output_tokens": 50060,
+        "reasoning_output_tokens": 37355,
+        "total_tokens": 1653105
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
+    },
+    {
+      "task": "torch",
+      "model": "haiku-5.5-xhigh",
+      "vendor": "Anthropic",
+      "gif": "gifs/haiku-5.5-xhigh/torch.gif",
+      "replay": "replays/haiku-5.5-xhigh/torch.jsonl",
+      "frames": 10,
+      "tool_calls": 94,
+      "looks": 4,
+      "tokens": 2564367,
+      "token_usage": {
+        "input_tokens": 2493422,
+        "cached_input_tokens": 2399405,
+        "cache_write_input_tokens": 93943,
+        "output_tokens": 70945,
+        "reasoning_output_tokens": 57411,
+        "total_tokens": 2564367
+      },
+      "model_id": "claude-haiku-5-5",
+      "reasoning_effort": "xhigh"
     }
   ]
 }
