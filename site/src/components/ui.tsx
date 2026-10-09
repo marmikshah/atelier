@@ -1,39 +1,35 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useRef } from 'react';
-import type { ReactNode } from 'react';
-import type { Model, Provider } from '../lib/comparison.ts';
-import { providers } from '../lib/comparison.ts';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import wordmark from '../assets/wordmark.png';
+import type { Model } from '../lib/comparison.ts';
+import { effortKey, effortName } from '../lib/comparison.ts';
 
 export function Brand() {
   return (
     <a className="brand" href="./" aria-label="Atelier home">
-      <span className="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 32 32">
-          <path d="M8 24V12h4V8h8v4h4v12h-4v-8h-8v8z" fill="currentColor" />
-        </svg>
-      </span>
-      <span>
-        atelier<span className="brand-period">.</span>
-      </span>
+      <img src={wordmark} width={116} height={37} alt="atelier" />
     </a>
   );
 }
 
-export function ProviderMark({ provider, small = false }: { provider: Provider; small?: boolean }) {
-  const value = providers.find((value) => value.id === provider)!;
-  return (
-    <span className={`provider-mark ${provider}${small ? ' small' : ''}`} aria-hidden="true">
-      {value.initial}
-    </span>
-  );
+/** Follow a link normally with a modifier key; otherwise run the in-page action. */
+export function inspectLink(event: MouseEvent<HTMLAnchorElement>, action: () => void) {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  action();
 }
 
-export function ProviderLabel({ model }: { model: Model }) {
+/** A model's wall label: provider, name, and recorded effort. */
+export function Placard({ model }: { model: Model }) {
   return (
-    <span className={`provider-label ${model.provider}`}>
-      <span className="provider-dot" />
-      {model.vendor}
+    <span className="placard">
+      <span className={`pigment ${model.provider}`}>{model.vendor}</span>
+      <span className="placard-name">{model.name}</span>
+      <span className={`effort effort-${effortKey(model)}`}>
+        {model.effort ? `${model.effort} effort` : `effort ${effortName('none')}`}
+      </span>
     </span>
   );
 }
@@ -45,6 +41,7 @@ export function Modal({
   description,
   label,
   className = '',
+  onKeyDown,
   children,
 }: {
   open: boolean;
@@ -53,6 +50,7 @@ export function Modal({
   description: string;
   label?: string;
   className?: string;
+  onKeyDown?: (event: KeyboardEvent) => void;
   children: ReactNode;
 }) {
   const returnFocus = useRef<HTMLElement | null>(null);
@@ -62,6 +60,7 @@ export function Modal({
         <Dialog.Overlay className="modal-overlay" />
         <Dialog.Content
           className={`modal ${className}`}
+          onKeyDown={onKeyDown}
           onOpenAutoFocus={() => {
             returnFocus.current =
               document.activeElement instanceof HTMLElement ? document.activeElement : null;

@@ -2,8 +2,8 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Download } from 'lucide-react';
 import { asset } from '../data.ts';
 import { canvasSize, number, runKey, title } from '../lib/comparison.ts';
 import type { ComparisonState, Model, Run, Sort } from '../lib/comparison.ts';
-import { inspectLink } from './ArtworkTable.tsx';
-import { ProviderLabel } from './ui.tsx';
+import { effortKey, effortName } from '../lib/comparison.ts';
+import { inspectLink } from './ui.tsx';
 
 const columns: { key?: Sort; label: string; numeric?: boolean }[] = [
   { key: 'task', label: 'Brief' },
@@ -30,7 +30,7 @@ export function RunsTable({
   inspect: (run: Run) => void;
 }) {
   return (
-    <table className="runs-table" id="runs-table">
+    <table className="ledger" id="runs-table">
       <caption className="visually-hidden">
         Original recorded run data. Unreported token totals are shown as a dash.
       </caption>
@@ -96,10 +96,12 @@ export function RunsTable({
               </td>
               <td>
                 <span className="data-model-name">{model.name}</span>
-                {model.effort && <span className="effort">{model.effort}</span>}
+                <span className={`effort effort-${effortKey(model)}`}>
+                  {effortName(effortKey(model))}
+                </span>
               </td>
               <td>
-                <ProviderLabel model={model} />
+                <span className={`pigment ${model.provider}`}>{model.vendor}</span>
               </td>
               <td className="numeric">{number(run.tool_calls)}</td>
               <td className="numeric">{number(run.looks)}</td>

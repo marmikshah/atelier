@@ -1,25 +1,9 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
-import {
-  ArrowUpRight,
-  Check,
-  CheckCheck,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  FileText,
-  Grid2X2,
-  Info,
-  Link,
-  Palette,
-  Search,
-  SlidersHorizontal,
-  Table2,
-  X,
-} from 'lucide-react';
-import { asset, briefs, data, models } from './data.ts';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowUpRight, Check, Download, LayoutGrid, Link, Rows3, Table2, X } from 'lucide-react';
+import { asset, briefs, data, models, runsByKey } from './data.ts';
 import {
   defaultState,
+  familiesOf,
   filterRuns,
   providers,
   runsCSV,
@@ -28,50 +12,57 @@ import {
   visibleModels,
   visibleTasks,
 } from './lib/comparison.ts';
-import type { Background, Run, Sort } from './lib/comparison.ts';
+import type { Background, Run, Sort, View } from './lib/comparison.ts';
 import { useComparisonState } from './hooks/useComparisonState.ts';
-import { ArtworkTable } from './components/ArtworkTable.tsx';
-import { FilterPanel } from './components/FilterPanel.tsx';
+import { Desk } from './components/Desk.tsx';
 import { RunsTable } from './components/RunsTable.tsx';
 import { RunInspector } from './components/RunInspector.tsx';
+import { Wall } from './components/Wall.tsx';
 import { Brand, Modal } from './components/ui.tsx';
+import quill from './assets/quill.png';
 
 const repository = 'https://github.com/marmikshah/atelier';
+const viewTabs: { id: View; label: string; icon: typeof LayoutGrid }[] = [
+  { id: 'artwork', label: 'By brief', icon: LayoutGrid },
+  { id: 'models', label: 'By model', icon: Rows3 },
+  { id: 'runs', label: 'Ledger', icon: Table2 },
+];
+const grounds: { id: Background; label: string }[] = [
+  { id: 'grid', label: 'Checker' },
+  { id: 'light', label: 'Paper' },
+  { id: 'dark', label: 'Ink' },
+];
+const count = (value: number, noun: string) => `${value} ${noun}${value === 1 ? '' : 's'}`;
 
 export function App() {
   const { state, update } = useComparisonState();
-  const [filterOpen, setFilterOpen] = useState(false);
   const [methodOpen, setMethodOpen] = useState(window.location.hash === '#about');
   const [brief, setBrief] = useState<string | null>(null);
   const [inspected, setInspected] = useState<Run | null>(null);
   const [share, setShare] = useState('');
   const [copied, setCopied] = useState(false);
-  const [mobile, setMobile] = useState(window.innerWidth <= 600);
-  const [scroll, setScroll] = useState({ width: 0, previous: false, next: false });
-  const surface = useRef<HTMLDivElement>(null);
   const shareInput = useRef<HTMLInputElement>(null);
-  const searchInput = useRef<HTMLInputElement>(null);
-  const selectedModels = useMemo(() => visibleModels(state, models), [state]);
-  const selectedTasks = useMemo(() => visibleTasks(state, data.tasks), [state]);
+  const commandInput = useRef<HTMLInputElement>(null);
+  const selectedModels = useMemo(() => visibleModels(state, models, data.tasks), [state]);
+  const selectedTasks = useMemo(() => visibleTasks(state, models, data.tasks), [state]);
   const runs = useMemo(() => filterRuns(data, state, models), [state]);
-  const briefWidth = mobile ? 94 : 126;
-  const columnWidth = Math.max(
-    112,
-    48 * state.zoom + 16,
-    (scroll.width - briefWidth) / (selectedModels.length || 1),
-  );
+  // The pieces in the order they hang, so the inspector can step along the wall.
+  const hung = useMemo(() => {
+    if (state.view === 'runs') return runs;
+    const pair = (model: string, task: string) => runsByKey.get(`${model}/${task}`)!;
+    if (state.view === 'artwork')
+      return selectedTasks.flatMap((task) => selectedModels.map((model) => pair(model.id, task)));
+    return familiesOf(selectedModels).flatMap((family) =>
+      selectedModels
+        .filter((model) => model.family === family)
+        .flatMap((model) => selectedTasks.map((task) => pair(model.id, task))),
+    );
+  }, [state.view, runs, selectedModels, selectedTasks]);
 
   const reset = () => {
     const defaults = defaultState(models);
-    update({ providers: defaults.providers, models: defaults.models, task: 'all', query: '' });
+    update({ families: [], efforts: [], models: defaults.models, task: 'all', query: '' });
   };
-  const latest = () =>
-    update({
-      models: state.providers.map(
-        (provider) => models.find((model) => model.provider === provider)!.id,
-      ),
-    });
-  const allModels = () => update({ models: models.map((model) => model.id) });
   const sort = (key: Sort) =>
     update({
       sort: key,
@@ -85,42 +76,6 @@ export function App() {
             : 'asc',
     });
 
-  const measure = () => {
-    const element = surface.current;
-    if (!element) return;
-    const next = {
-      width: element.clientWidth,
-      previous: element.scrollLeft > 1,
-      next: element.scrollLeft + element.clientWidth < element.scrollWidth - 1,
-    };
-    setScroll((current) =>
-      current.width === next.width &&
-      current.previous === next.previous &&
-      current.next === next.next
-        ? current
-        : next,
-    );
-  };
-  useLayoutEffect(measure, [
-    state.zoom,
-    state.view,
-    columnWidth,
-    selectedModels.length,
-    selectedTasks.length,
-  ]);
-  useEffect(() => {
-    const observer = new ResizeObserver(measure);
-    if (surface.current) observer.observe(surface.current);
-    const resize = () => {
-      setMobile(window.innerWidth <= 600);
-      if (window.innerWidth > 1100) setFilterOpen(false);
-    };
-    window.addEventListener('resize', resize);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
   useEffect(() => {
     if (!copied) return;
     const timer = setTimeout(() => setCopied(false), 2500);
@@ -137,18 +92,18 @@ export function App() {
       if (
         (event.metaKey || event.ctrlKey) &&
         event.key.toLowerCase() === 'k' &&
-        !filterOpen &&
         !methodOpen &&
         !brief &&
         !inspected
       ) {
         event.preventDefault();
-        searchInput.current?.focus();
+        commandInput.current?.focus();
+        commandInput.current?.select();
       }
     };
     window.addEventListener('keydown', shortcut);
     return () => window.removeEventListener('keydown', shortcut);
-  }, [filterOpen, methodOpen, brief, inspected]);
+  }, [methodOpen, brief, inspected]);
 
   async function shareView() {
     const url = stateURL(state, models, window.location.href);
@@ -173,434 +128,241 @@ export function App() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  const chips: { label: string; clear: () => void }[] = [];
-  if (state.providers.length !== providers.length)
-    chips.push({
-      label:
-        state.providers
-          .map((id) => providers.find((provider) => provider.id === id)!.name)
-          .join(', ') || 'No providers',
-      clear: () => update({ providers: providers.map((provider) => provider.id) }),
-    });
-  if (state.models.length !== models.length)
-    chips.push({ label: `${selectedModels.length} selected models`, clear: allModels });
-  if (state.task !== 'all')
-    chips.push({ label: title(state.task), clear: () => update({ task: 'all' }) });
-  if (state.query) chips.push({ label: `“${state.query}”`, clear: () => update({ query: '' }) });
-
   return (
     <>
       <a className="skip-link" href="#gallery">
-        Skip to comparison
+        Skip to the gallery
       </a>
-      <div className="app-shell">
-        <aside className="sidebar" aria-label="Comparison navigation and filters">
-          <div className="sidebar-brand">
-            <Brand />
-            <p>The pixel art experiment</p>
-          </div>
-          <nav className="sidebar-nav" aria-label="Site">
-            <a href="#gallery" className="nav-active" aria-current="page">
-              <Grid2X2 size={16} aria-hidden="true" />
-              Model comparison<span className="count-badge">{models.length}</span>
-            </a>
-            <button type="button" onClick={() => setMethodOpen(true)}>
-              <FileText size={16} aria-hidden="true" />
-              About the experiment
-              <ArrowUpRight size={13} aria-hidden="true" />
-            </button>
-          </nav>
-          <div className="sidebar-filters">
-            <FilterPanel state={state} update={update} reset={reset} />
-          </div>
-          <div className="sidebar-footer">
-            <span className="verified-dot" />
+      <header className="masthead">
+        <Brand />
+        <nav aria-label="Site">
+          <button type="button" className="text-button" onClick={() => setMethodOpen(true)}>
+            Methodology
+          </button>
+          <a className="text-button" href={repository}>
+            GitHub
+            <ArrowUpRight size={13} aria-hidden="true" />
+          </a>
+        </nav>
+      </header>
+      <main>
+        <section className="hero" aria-labelledby="page-title">
+          <img className="hero-quill" src={quill} width={36} height={37} alt="" />
+          <p className="eyebrow">An exhibition of machine-made pixel art</p>
+          <h1 id="page-title">
+            Same canvas. Same briefs. <em>A different hand in every frame.</em>
+          </h1>
+          <p className="hero-note">
+            Each model was handed ten identical briefs and drew its answers through Atelier’s
+            editing tools, one call at a time. These are the originals.
+          </p>
+          <dl className="tally">
             <div>
-              <strong>Created through tools</strong>
-              <p>Shared prompts. Original pixels.</p>
+              <dd>{models.length}</dd>
+              <dt>models from {providers.length} providers</dt>
             </div>
-          </div>
-        </aside>
-        <div className="main-shell">
-          <header className="topbar">
-            <div className="mobile-brand">
-              <Brand />
+            <div>
+              <dd>{data.tasks.length}</dd>
+              <dt>shared briefs</dt>
             </div>
-            <div className="breadcrumb">
-              <span>Showcase</span>
-              <ChevronRight size={13} aria-hidden="true" />
-              <strong>Model comparison</strong>
+            <div>
+              <dd>{data.runs.length}</dd>
+              <dt>original animations</dt>
             </div>
-            <div className="topbar-actions">
-              <span className="verified-label">
-                <CheckCheck size={15} aria-hidden="true" />
-                Reproducible runs
-              </span>
-              <a href={repository} className="source-link">
-                GitHub
-                <ArrowUpRight size={13} aria-hidden="true" />
-              </a>
+          </dl>
+        </section>
+        <section className="gallery" id="gallery" aria-label="Gallery">
+          <Desk state={state} update={update} reset={reset} input={commandInput} />
+          <div className="rail">
+            <div className="view-switch" role="group" aria-label="Arrangement">
+              {viewTabs.map(({ id, label, icon: Icon }) => (
+                <button
+                  type="button"
+                  key={id}
+                  data-view={id}
+                  aria-pressed={state.view === id}
+                  onClick={() => update({ view: id })}
+                >
+                  <Icon size={14} aria-hidden="true" />
+                  {label}
+                </button>
+              ))}
             </div>
-          </header>
-          <main className="main-content">
-            <section className="page-intro" aria-labelledby="page-title">
-              <div>
-                <div className="eyebrow">
-                  <span />
-                  THE MODEL SHOWCASE
-                </div>
-                <h1 id="page-title">
-                  Compare every pixel<span>.</span>
-                </h1>
-                <p>Same canvas. Same briefs. A different imagination in every column.</p>
-              </div>
-              <dl className="experiment-totals">
-                <div>
-                  <dt>Models</dt>
-                  <dd>
-                    {models.length}
-                    <span>across {providers.length} providers</span>
-                  </dd>
-                </div>
-                <div>
-                  <dt>Briefs</dt>
-                  <dd>
-                    {data.tasks.length}
-                    <span>identical prompts</span>
-                  </dd>
-                </div>
-                <div>
-                  <dt>Runs</dt>
-                  <dd>
-                    {data.runs.length}
-                    <span>original animations</span>
-                  </dd>
-                </div>
-              </dl>
-            </section>
-            <section className="comparison-workspace" id="gallery" aria-label="Model comparison">
-              <div className="workspace-toolbar">
-                <div className="view-switch" role="group" aria-label="Table view">
-                  <button
-                    type="button"
-                    data-view="artwork"
-                    aria-pressed={state.view === 'artwork'}
-                    onClick={() => update({ view: 'artwork' })}
-                  >
-                    <Grid2X2 size={15} aria-hidden="true" />
-                    Artwork
-                  </button>
-                  <button
-                    type="button"
-                    data-view="runs"
-                    aria-pressed={state.view === 'runs'}
-                    onClick={() => update({ view: 'runs' })}
-                  >
-                    <Table2 size={15} aria-hidden="true" />
-                    Run data
-                  </button>
-                </div>
-                <div className="table-actions">
-                  <button
-                    type="button"
-                    className="button mobile-filters"
-                    aria-label="Filters"
-                    onClick={() => setFilterOpen(true)}
-                  >
-                    <SlidersHorizontal size={15} aria-hidden="true" />
-                    Filters{chips.length > 0 && <span className="count-badge">{chips.length}</span>}
-                  </button>
-                  <div className="search-field">
-                    <Search size={15} aria-hidden="true" />
-                    <input
-                      ref={searchInput}
-                      type="search"
-                      id="brief-search"
-                      aria-label="Search briefs"
-                      placeholder="Search briefs…"
-                      value={state.query}
-                      onChange={(event) => update({ query: event.target.value }, 'replace')}
-                    />
-                    <kbd>{navigator.platform.includes('Mac') ? '⌘ K' : 'Ctrl K'}</kbd>
-                  </div>
-                  <button
-                    type="button"
-                    className="button share-button"
-                    id="share-link"
-                    aria-label={copied ? 'Link copied' : 'Share view'}
-                    onClick={shareView}
-                  >
-                    {copied ? (
-                      <Check size={15} aria-hidden="true" />
-                    ) : (
-                      <Link size={15} aria-hidden="true" />
-                    )}
-                    <span>{copied ? 'Link copied' : 'Share view'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="button button-primary"
-                    id="export-csv"
-                    disabled={!runs.length}
-                    onClick={exportCSV}
-                  >
-                    <Download size={15} aria-hidden="true" />
-                    <span>Export CSV</span>
-                  </button>
-                </div>
-              </div>
-              {share && (
-                <div className="share-fallback">
-                  <label htmlFor="share-url">Copy this link to share your view</label>
-                  <input ref={shareInput} id="share-url" value={share} readOnly />
-                  <button
-                    type="button"
-                    className="icon-button"
-                    onClick={() => setShare('')}
-                    aria-label="Dismiss share link"
-                  >
-                    <X size={15} aria-hidden="true" />
-                  </button>
-                </div>
-              )}
-              <span role="status" className="visually-hidden">
-                {copied ? 'View link copied to clipboard' : ''}
-              </span>
-              {chips.length > 0 && (
-                <div className="active-filters" aria-label="Active filters">
-                  {chips.map((chip) => (
-                    <button
-                      type="button"
-                      className="filter-chip"
-                      key={chip.label}
-                      aria-label={`Clear filter: ${chip.label}`}
-                      onClick={chip.clear}
-                    >
-                      {chip.label}
-                      <X size={11} aria-hidden="true" />
-                    </button>
-                  ))}
-                  <button type="button" className="text-button" onClick={reset}>
-                    Clear all
-                  </button>
-                </div>
-              )}
-              <div className="table-controls">
-                <p className="result-count" id="result-count" role="status">
-                  <strong>{runs.length}</strong>{' '}
-                  {state.view === 'artwork'
-                    ? runs.length === 1
-                      ? 'artwork'
-                      : 'artworks'
-                    : runs.length === 1
-                      ? 'run'
-                      : 'runs'}
-                  <span>·</span>
-                  {selectedTasks.length} {selectedTasks.length === 1 ? 'brief' : 'briefs'}
-                  <span>·</span>
-                  {selectedModels.length} {selectedModels.length === 1 ? 'model' : 'models'}
-                </p>
-                <div className="display-controls">
-                  <div className="comparison-presets" role="group" aria-label="Model presets">
-                    <button
-                      type="button"
-                      aria-pressed={state.models.length === models.length}
-                      onClick={allModels}
-                    >
-                      All models
-                    </button>
-                    <button
-                      type="button"
-                      title="The last recorded model for each selected provider"
-                      onClick={latest}
-                    >
-                      Latest per provider
-                    </button>
-                  </div>
-                  {state.view === 'artwork' && (
-                    <>
-                      <span className="control-divider" />
-                      <label className="zoom-control">
-                        Scale
-                        <select
-                          id="pixel-zoom"
-                          aria-label="Pixel zoom"
-                          value={state.zoom}
-                          onChange={(event) => update({ zoom: Number(event.target.value) })}
-                        >
-                          {[2, 3, 4, 6].map((zoom) => (
-                            <option key={zoom} value={zoom}>
-                              {zoom}×
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <div
-                        className="background-controls"
-                        role="group"
-                        aria-label="Artwork background"
-                      >
-                        {(['grid', 'light', 'dark'] as Background[]).map((background) => (
-                          <button
-                            type="button"
-                            key={background}
-                            data-background={background}
-                            aria-label={`${title(background)} background`}
-                            title={`${title(background)} background`}
-                            aria-pressed={state.background === background}
-                            onClick={() => update({ background })}
-                          >
-                            <span className={`background-swatch ${background}`} />
-                          </button>
-                        ))}
-                      </div>
-                      <label className="stats-toggle">
-                        <input
-                          type="checkbox"
-                          id="show-stats"
-                          checked={state.stats}
-                          onChange={(event) => update({ stats: event.target.checked })}
-                        />
-                        Stats
-                      </label>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div
-                className={`table-scroll background-${state.background}`}
-                ref={surface}
-                onScroll={measure}
-                tabIndex={runs.length ? 0 : -1}
-                aria-label="Scrollable comparison table"
-                style={{ '--stage-height': `${48 * state.zoom + 24}px` } as CSSProperties}
-              >
-                {runs.length ? (
-                  state.view === 'artwork' ? (
-                    <ArtworkTable
-                      models={selectedModels}
-                      tasks={selectedTasks}
-                      zoom={state.zoom}
-                      stats={state.stats}
-                      width={columnWidth}
-                      briefWidth={briefWidth}
-                      inspect={setInspected}
-                      openBrief={setBrief}
-                      hideModel={(id) =>
-                        update({ models: state.models.filter((model) => model !== id) })
-                      }
-                    />
-                  ) : (
-                    <RunsTable
-                      runs={runs}
-                      models={models}
-                      state={state}
-                      sort={sort}
-                      inspect={setInspected}
-                    />
-                  )
-                ) : (
-                  <div className="empty-state">
-                    <div>
-                      <Palette size={25} aria-hidden="true" />
-                    </div>
-                    <h2>No matching results</h2>
-                    <p>Try a different brief, or include more providers and models.</p>
-                    <button type="button" className="button button-primary" onClick={reset}>
-                      Reset filters
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="table-footer">
-                <span>
-                  <Info size={13} aria-hidden="true" />
-                  {state.view === 'runs' || state.stats
-                    ? '— means not reported.'
-                    : 'Click any artwork to inspect its original run.'}
-                </span>
-                {scroll.previous || scroll.next ? (
-                  <div className="table-navigation">
-                    <span>More models</span>
-                    <button
-                      type="button"
-                      className="icon-button"
-                      aria-label="Scroll to previous columns"
-                      disabled={!scroll.previous}
-                      onClick={() => surface.current?.scrollBy({ left: -columnWidth * 2 })}
-                    >
-                      <ChevronLeft size={16} aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="icon-button"
-                      aria-label="Scroll to next columns"
-                      disabled={!scroll.next}
-                      onClick={() => surface.current?.scrollBy({ left: columnWidth * 2 })}
-                    >
-                      <ChevronRight size={16} aria-hidden="true" />
-                    </button>
-                  </div>
-                ) : (
-                  <span className="loop-note">10 frames · 1-second loops</span>
-                )}
-              </div>
-            </section>
-            <div className="method-note">
+            <p className="result-count" id="result-count" role="status">
+              <strong>{count(runs.length, state.view === 'runs' ? 'run' : 'piece')}</strong>
               <span>
-                <Info size={13} aria-hidden="true" />
-                New runs use xhigh effort. Earlier effort levels and counts are not directly
-                comparable.
+                {count(selectedModels.length, 'model')} · {count(selectedTasks.length, 'brief')}
               </span>
-              <button type="button" onClick={() => setMethodOpen(true)}>
-                Read the methodology
-                <ArrowUpRight size={12} aria-hidden="true" />
+            </p>
+            <div className="rail-controls">
+              {state.view !== 'runs' && (
+                <>
+                  <label className="select-control">
+                    Scale
+                    <select
+                      id="pixel-zoom"
+                      aria-label="Pixel zoom"
+                      value={state.zoom}
+                      onChange={(event) => update({ zoom: Number(event.target.value) })}
+                    >
+                      {[2, 3, 4, 6].map((zoom) => (
+                        <option key={zoom} value={zoom}>
+                          {zoom}×
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="ground-controls" role="group" aria-label="Ground behind artwork">
+                    {grounds.map((ground) => (
+                      <button
+                        type="button"
+                        key={ground.id}
+                        data-background={ground.id}
+                        aria-label={`${ground.label} ground`}
+                        title={`${ground.label} ground`}
+                        aria-pressed={state.background === ground.id}
+                        onClick={() => update({ background: ground.id })}
+                      >
+                        <span className={`ground-swatch ground-${ground.id}`} />
+                      </button>
+                    ))}
+                  </div>
+                  <label className="check-control">
+                    <input
+                      type="checkbox"
+                      id="show-stats"
+                      checked={state.stats}
+                      onChange={(event) => update({ stats: event.target.checked })}
+                    />
+                    Stats
+                  </label>
+                </>
+              )}
+              <button
+                type="button"
+                className="button"
+                id="share-link"
+                aria-label={copied ? 'Link copied' : 'Share this view'}
+                onClick={shareView}
+              >
+                {copied ? (
+                  <Check size={14} aria-hidden="true" />
+                ) : (
+                  <Link size={14} aria-hidden="true" />
+                )}
+                <span>{copied ? 'Copied' : 'Share'}</span>
+              </button>
+              <button
+                type="button"
+                className="button"
+                id="export-csv"
+                disabled={!runs.length}
+                onClick={exportCSV}
+              >
+                <Download size={14} aria-hidden="true" />
+                <span>CSV</span>
               </button>
             </div>
-            <footer className="page-footer">
-              <span>Atelier · An experiment in art created through tools</span>
-              <a href={`${repository}/tree/master/showcase`}>
-                Source data &amp; replays
-                <ArrowUpRight size={12} aria-hidden="true" />
-              </a>
-            </footer>
-          </main>
-        </div>
-      </div>
-      <Modal
-        open={filterOpen}
-        onOpenChange={setFilterOpen}
-        title="Filters"
-        description="Filter the comparison by provider, model, and brief."
-        className="filter-modal"
-      >
-        <FilterPanel state={state} update={update} reset={reset} />
-        <div className="filter-modal-footer">
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => setFilterOpen(false)}
-          >
-            Show {runs.length} results
+          </div>
+          {share && (
+            <div className="share-fallback">
+              <label htmlFor="share-url">Copy this link to share your view</label>
+              <input ref={shareInput} id="share-url" value={share} readOnly />
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setShare('')}
+                aria-label="Dismiss share link"
+              >
+                <X size={15} aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          <span role="status" className="visually-hidden">
+            {copied ? 'View link copied to clipboard' : ''}
+          </span>
+          {runs.length ? (
+            <div
+              className={`wall-scroll ground-${state.background}`}
+              tabIndex={0}
+              aria-label="Scrollable gallery"
+            >
+              {state.view === 'runs' ? (
+                <RunsTable
+                  runs={runs}
+                  models={models}
+                  state={state}
+                  sort={sort}
+                  inspect={setInspected}
+                />
+              ) : (
+                <Wall
+                  by={state.view === 'artwork' ? 'brief' : 'model'}
+                  models={selectedModels}
+                  tasks={selectedTasks}
+                  zoom={state.zoom}
+                  stats={state.stats}
+                  inspect={setInspected}
+                  openBrief={setBrief}
+                  hideModel={(id) =>
+                    update({ models: state.models.filter((model) => model !== id) })
+                  }
+                />
+              )}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <h2>The wall is bare.</h2>
+              <p>Nothing matches this selection. Loosen the command or bring models back.</p>
+              <button type="button" className="button button-primary" onClick={reset}>
+                Rehang everything
+              </button>
+            </div>
+          )}
+          <p className="wall-note">
+            {state.view === 'runs' || state.stats
+              ? '— means the client did not report a total. '
+              : 'Select any piece to see its run, brief, and replay. '}
+            Every piece is ten frames, looping once a second.
+          </p>
+        </section>
+      </main>
+      <footer className="colophon">
+        <p>
+          New runs use xhigh effort. Earlier effort levels and counts are not directly comparable.{' '}
+          <button type="button" className="text-button" onClick={() => setMethodOpen(true)}>
+            Read the methodology
           </button>
-        </div>
-      </Modal>
-      <RunInspector run={inspected} close={() => setInspected(null)} />
+        </p>
+        <p>
+          Atelier is an experiment in art made through tools.{' '}
+          <a className="text-button" href={`${repository}/tree/master/showcase`}>
+            Source data &amp; replays
+            <ArrowUpRight size={12} aria-hidden="true" />
+          </a>
+        </p>
+      </footer>
+      <RunInspector
+        run={inspected}
+        runs={hung}
+        inspect={setInspected}
+        close={() => setInspected(null)}
+      />
       <Modal
         open={Boolean(brief)}
         onOpenChange={(open) => {
           if (!open) setBrief(null);
         }}
-        title={brief ? `${title(brief)} brief` : 'Frozen brief'}
-        label="The same prompt for every model"
+        title={brief ? title(brief) : 'Frozen brief'}
+        label="The brief every model received"
         description="The exact frozen prompt used for this artwork."
       >
         {brief && (
-          <div className="brief-modal-content">
-            <pre>{briefs[brief]}</pre>
+          <div className="brief-modal">
+            <blockquote>{briefs[brief]}</blockquote>
             <a className="button" href={asset(`tasks/${brief}.txt`)} download>
               <Download size={14} aria-hidden="true" />
-              Download prompt
+              Download brief
             </a>
           </div>
         )}
@@ -608,36 +370,17 @@ export function App() {
       <Modal
         open={methodOpen}
         onOpenChange={setMethodOpen}
-        title="The Atelier experiment"
-        label="Behind every pixel"
+        title="How the exhibition was made"
+        label="Methodology"
         description="The original methodology, server provenance, and reproduction notes."
         className="method-modal"
       >
-        <div className="method-intro">
-          <p>
-            Every model receives the same ten frozen briefs and creates its artwork through
-            Atelier’s editing tools. The table shows their original animations.
-          </p>
-          <div>
-            <span>
-              <Check size={14} aria-hidden="true" />
-              Identical prompts
-            </span>
-            <span>
-              <Check size={14} aria-hidden="true" />
-              Original pixels
-            </span>
-            <span>
-              <Check size={14} aria-hidden="true" />
-              Replay journals
-            </span>
-          </div>
-        </div>
         <div className="method-body">
-          <section>
-            <h3>How the runs were collected</h3>
-            <p>{data.method}</p>
-          </section>
+          <p className="method-lede">
+            Every model receives the same ten frozen briefs and creates its artwork through
+            Atelier’s editing tools. The gallery shows the original animations, and each one can be
+            rebuilt from its replay journal.
+          </p>
           <section>
             <h3>Reasoning effort</h3>
             <p>
@@ -648,6 +391,10 @@ export function App() {
               token counts also follow each client’s reporting method; they are not an efficiency
               ranking.
             </p>
+          </section>
+          <section>
+            <h3>How the runs were collected</h3>
+            <p>{data.method}</p>
           </section>
           <section>
             <h3>Editor &amp; client provenance</h3>
@@ -661,16 +408,16 @@ export function App() {
               magnification.
             </p>
           </section>
-        </div>
-        <div className="method-download">
-          <a className="button button-primary" href={asset('runs.json')} download>
-            <Download size={14} aria-hidden="true" />
-            Download original data
-          </a>
-          <a className="text-button" href={repository}>
-            Explore Atelier
-            <ArrowUpRight size={13} aria-hidden="true" />
-          </a>
+          <div className="method-download">
+            <a className="button button-primary" href={asset('runs.json')} download>
+              <Download size={14} aria-hidden="true" />
+              Download original data
+            </a>
+            <a className="text-button" href={repository}>
+              Explore Atelier
+              <ArrowUpRight size={13} aria-hidden="true" />
+            </a>
+          </div>
         </div>
       </Modal>
     </>

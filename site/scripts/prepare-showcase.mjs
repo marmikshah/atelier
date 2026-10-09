@@ -54,7 +54,7 @@ for (const directory of ['gifs', 'replays', 'tasks']) {
 await cp(path.join(source, 'runs.json'), path.join(output, 'runs.json'));
 await writeFile(path.join(output, '..', '.nojekyll'), '');
 const fontLicenses = await Promise.all(
-    ['inter', 'space-grotesk'].map(
+    ['inter', 'fraunces', 'pixelify-sans'].map(
         async (font) =>
             `${font}\n${await readFile(new URL(`../node_modules/@fontsource-variable/${font}/LICENSE`, import.meta.url), 'utf8')}`,
     ),
