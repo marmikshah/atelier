@@ -9,7 +9,7 @@ import { effortKey, effortName } from '../lib/comparison.ts';
 export function Brand() {
   return (
     <a className="brand" href="./" aria-label="Atelier home">
-      <img src={wordmark} width={116} height={37} alt="atelier" />
+      <img src={wordmark} width={151} height={48} alt="atelier" />
     </a>
   );
 }
