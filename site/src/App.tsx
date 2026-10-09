@@ -549,7 +549,8 @@ export function App() {
             <div className="method-note">
               <span>
                 <Info size={13} aria-hidden="true" />
-                Counts use different client reporting methods; they are not an efficiency ranking.
+                New runs use xhigh effort. Earlier effort levels and counts are not directly
+                comparable.
               </span>
               <button type="button" onClick={() => setMethodOpen(true)}>
                 Read the methodology
@@ -636,6 +637,17 @@ export function App() {
           <section>
             <h3>How the runs were collected</h3>
             <p>{data.method}</p>
+          </section>
+          <section>
+            <h3>Reasoning effort</h3>
+            <p>
+              From the Opus 5.5, Sonnet 5.5, and Haiku 5.5 runs onward, every model is tested at
+              xhigh reasoning effort. Some earlier runs used max effort and others did not record an
+              effort level, so they are not directly comparable with xhigh runs. xhigh runs for the
+              remaining models will be added as access to them becomes available. Tool-call and
+              token counts also follow each client’s reporting method; they are not an efficiency
+              ranking.
+            </p>
           </section>
           <section>
             <h3>Editor &amp; client provenance</h3>
