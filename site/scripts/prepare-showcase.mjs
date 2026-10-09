@@ -54,9 +54,9 @@ for (const directory of ['gifs', 'replays', 'tasks']) {
 await cp(path.join(source, 'runs.json'), path.join(output, 'runs.json'));
 await writeFile(path.join(output, '..', '.nojekyll'), '');
 const fontLicenses = await Promise.all(
-    ['inter', 'fraunces', 'pixelify-sans'].map(
+    ['jersey-10', 'vt323'].map(
         async (font) =>
-            `${font}\n${await readFile(new URL(`../node_modules/@fontsource-variable/${font}/LICENSE`, import.meta.url), 'utf8')}`,
+            `${font}\n${await readFile(new URL(`../node_modules/@fontsource/${font}/LICENSE`, import.meta.url), 'utf8')}`,
     ),
 );
 await writeFile(path.join(output, '..', 'font-licenses.txt'), fontLicenses.join('\n\n'));
