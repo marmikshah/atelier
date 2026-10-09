@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowUpRight, Check, Download, LayoutGrid, Link, Rows3, Table2, X } from 'lucide-react';
+import { ArrowUpRight, Check, Download, Link, X } from 'lucide-react';
 import { asset, briefs, data, models, runsByKey } from './data.ts';
 import {
   defaultState,
   familiesOf,
   filterRuns,
-  providers,
   runsCSV,
   stateURL,
   title,
@@ -14,18 +13,17 @@ import {
 } from './lib/comparison.ts';
 import type { Background, Run, Sort, View } from './lib/comparison.ts';
 import { useComparisonState } from './hooks/useComparisonState.ts';
-import { Desk } from './components/Desk.tsx';
+import { Command, Lines } from './components/Desk.tsx';
 import { RunsTable } from './components/RunsTable.tsx';
 import { RunInspector } from './components/RunInspector.tsx';
 import { Wall } from './components/Wall.tsx';
 import { Brand, Modal } from './components/ui.tsx';
-import quill from './assets/quill.png';
 
 const repository = 'https://github.com/marmikshah/atelier';
-const viewTabs: { id: View; label: string; icon: typeof LayoutGrid }[] = [
-  { id: 'artwork', label: 'By brief', icon: LayoutGrid },
-  { id: 'models', label: 'By model', icon: Rows3 },
-  { id: 'runs', label: 'Ledger', icon: Table2 },
+const viewTabs: { id: View; label: string }[] = [
+  { id: 'artwork', label: 'By brief' },
+  { id: 'models', label: 'By model' },
+  { id: 'runs', label: 'Data' },
 ];
 const grounds: { id: Background; label: string }[] = [
   { id: 'grid', label: 'Checker' },
@@ -63,6 +61,12 @@ export function App() {
     const defaults = defaultState(models);
     update({ families: [], efforts: [], models: defaults.models, task: 'all', query: '' });
   };
+  const filtered =
+    state.families.length > 0 ||
+    state.efforts.length > 0 ||
+    state.models.length !== models.length ||
+    state.task !== 'all' ||
+    state.query !== '';
   const sort = (key: Sort) =>
     update({
       sort: key,
@@ -135,9 +139,23 @@ export function App() {
       </a>
       <header className="masthead">
         <Brand />
+        <dl className="tally" aria-label="Exhibition totals">
+          <div>
+            <dt>Models</dt>
+            <dd>{models.length}</dd>
+          </div>
+          <div>
+            <dt>Briefs</dt>
+            <dd>{data.tasks.length}</dd>
+          </div>
+          <div>
+            <dt>Runs</dt>
+            <dd>{data.runs.length}</dd>
+          </div>
+        </dl>
         <nav aria-label="Site">
           <button type="button" className="text-button" onClick={() => setMethodOpen(true)}>
-            Methodology
+            About
           </button>
           <a className="text-button" href={repository}>
             GitHub
@@ -146,124 +164,117 @@ export function App() {
         </nav>
       </header>
       <main>
-        <section className="hero" aria-labelledby="page-title">
-          <img className="hero-quill" src={quill} width={36} height={37} alt="" />
-          <p className="eyebrow">An exhibition of machine-made pixel art</p>
-          <h1 id="page-title">
-            Same canvas. Same briefs. <em>A different hand in every frame.</em>
-          </h1>
-          <p className="hero-note">
-            Each model was handed ten identical briefs and drew its answers through Atelier’s
-            editing tools, one call at a time. These are the originals.
-          </p>
-          <dl className="tally">
-            <div>
-              <dd>{models.length}</dd>
-              <dt>models from {providers.length} providers</dt>
-            </div>
-            <div>
-              <dd>{data.tasks.length}</dd>
-              <dt>shared briefs</dt>
-            </div>
-            <div>
-              <dd>{data.runs.length}</dd>
-              <dt>original animations</dt>
-            </div>
-          </dl>
-        </section>
+        <h1 className="tagline" id="page-title">
+          Same canvas. Same briefs. <em>Every model draws its own.</em>
+        </h1>
         <section className="gallery" id="gallery" aria-label="Gallery">
-          <Desk state={state} update={update} reset={reset} input={commandInput} />
-          <div className="rail">
-            <div className="view-switch" role="group" aria-label="Arrangement">
-              {viewTabs.map(({ id, label, icon: Icon }) => (
+          <div className="hud">
+            <div className="hud-row">
+              <Command state={state} update={update} input={commandInput} />
+              <div className="view-switch" role="group" aria-label="Arrangement">
+                {viewTabs.map(({ id, label }) => (
+                  <button
+                    type="button"
+                    key={id}
+                    data-view={id}
+                    aria-pressed={state.view === id}
+                    onClick={() => update({ view: id })}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="hud-row">
+              <Lines state={state} update={update} />
+              <div className="hud-tools">
+                {state.view !== 'runs' && (
+                  <>
+                    <label className="select-control">
+                      Zoom
+                      <select
+                        id="pixel-zoom"
+                        aria-label="Pixel zoom"
+                        value={state.zoom}
+                        onChange={(event) => update({ zoom: Number(event.target.value) })}
+                      >
+                        {[2, 3, 4, 6].map((zoom) => (
+                          <option key={zoom} value={zoom}>
+                            {zoom}×
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <div
+                      className="ground-controls"
+                      role="group"
+                      aria-label="Ground behind artwork"
+                    >
+                      {grounds.map((ground) => (
+                        <button
+                          type="button"
+                          key={ground.id}
+                          data-background={ground.id}
+                          aria-label={`${ground.label} ground`}
+                          title={`${ground.label} ground`}
+                          aria-pressed={state.background === ground.id}
+                          onClick={() => update({ background: ground.id })}
+                        >
+                          <span className={`ground-swatch ground-${ground.id}`} />
+                        </button>
+                      ))}
+                    </div>
+                    <label className="check-control">
+                      <input
+                        type="checkbox"
+                        id="show-stats"
+                        checked={state.stats}
+                        onChange={(event) => update({ stats: event.target.checked })}
+                      />
+                      Stats
+                    </label>
+                  </>
+                )}
                 <button
                   type="button"
-                  key={id}
-                  data-view={id}
-                  aria-pressed={state.view === id}
-                  onClick={() => update({ view: id })}
+                  className="tool-button"
+                  id="share-link"
+                  aria-label={copied ? 'Link copied' : 'Share this view'}
+                  title="Copy a link to this view"
+                  onClick={shareView}
                 >
-                  <Icon size={14} aria-hidden="true" />
-                  {label}
+                  {copied ? (
+                    <Check size={14} aria-hidden="true" />
+                  ) : (
+                    <Link size={14} aria-hidden="true" />
+                  )}
+                  <span>{copied ? 'Copied' : 'Share'}</span>
                 </button>
-              ))}
-            </div>
-            <p className="result-count" id="result-count" role="status">
-              <strong>{count(runs.length, state.view === 'runs' ? 'run' : 'piece')}</strong>
-              <span>
-                {count(selectedModels.length, 'model')} · {count(selectedTasks.length, 'brief')}
-              </span>
-            </p>
-            <div className="rail-controls">
-              {state.view !== 'runs' && (
-                <>
-                  <label className="select-control">
-                    Scale
-                    <select
-                      id="pixel-zoom"
-                      aria-label="Pixel zoom"
-                      value={state.zoom}
-                      onChange={(event) => update({ zoom: Number(event.target.value) })}
-                    >
-                      {[2, 3, 4, 6].map((zoom) => (
-                        <option key={zoom} value={zoom}>
-                          {zoom}×
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="ground-controls" role="group" aria-label="Ground behind artwork">
-                    {grounds.map((ground) => (
-                      <button
-                        type="button"
-                        key={ground.id}
-                        data-background={ground.id}
-                        aria-label={`${ground.label} ground`}
-                        title={`${ground.label} ground`}
-                        aria-pressed={state.background === ground.id}
-                        onClick={() => update({ background: ground.id })}
-                      >
-                        <span className={`ground-swatch ground-${ground.id}`} />
-                      </button>
-                    ))}
-                  </div>
-                  <label className="check-control">
-                    <input
-                      type="checkbox"
-                      id="show-stats"
-                      checked={state.stats}
-                      onChange={(event) => update({ stats: event.target.checked })}
-                    />
-                    Stats
-                  </label>
-                </>
-              )}
-              <button
-                type="button"
-                className="button"
-                id="share-link"
-                aria-label={copied ? 'Link copied' : 'Share this view'}
-                onClick={shareView}
-              >
-                {copied ? (
-                  <Check size={14} aria-hidden="true" />
-                ) : (
-                  <Link size={14} aria-hidden="true" />
-                )}
-                <span>{copied ? 'Copied' : 'Share'}</span>
-              </button>
-              <button
-                type="button"
-                className="button"
-                id="export-csv"
-                disabled={!runs.length}
-                onClick={exportCSV}
-              >
-                <Download size={14} aria-hidden="true" />
-                <span>CSV</span>
-              </button>
+                <button
+                  type="button"
+                  className="tool-button"
+                  id="export-csv"
+                  title="Download the shown runs as CSV"
+                  disabled={!runs.length}
+                  onClick={exportCSV}
+                >
+                  <Download size={14} aria-hidden="true" />
+                  <span>CSV</span>
+                </button>
+              </div>
             </div>
           </div>
+          <p className="result-count" id="result-count" role="status">
+            <strong>{count(runs.length, state.view === 'runs' ? 'run' : 'piece')}</strong>
+            <span>
+              {count(selectedModels.length, 'model')} × {count(selectedTasks.length, 'brief')}
+            </span>
+            {filtered && (
+              <button type="button" className="text-button" onClick={reset}>
+                Reset
+              </button>
+            )}
+          </p>
           {share && (
             <div className="share-fallback">
               <label htmlFor="share-url">Copy this link to share your view</label>
@@ -312,10 +323,10 @@ export function App() {
             </div>
           ) : (
             <div className="empty-state">
-              <h2>The wall is bare.</h2>
-              <p>Nothing matches this selection. Loosen the command or bring models back.</p>
+              <h2>Nothing here</h2>
+              <p>No runs match this selection.</p>
               <button type="button" className="button button-primary" onClick={reset}>
-                Rehang everything
+                Show everything
               </button>
             </div>
           )}
@@ -370,8 +381,8 @@ export function App() {
       <Modal
         open={methodOpen}
         onOpenChange={setMethodOpen}
-        title="How the exhibition was made"
-        label="Methodology"
+        title="How this was made"
+        label="About"
         description="The original methodology, server provenance, and reproduction notes."
         className="method-modal"
       >

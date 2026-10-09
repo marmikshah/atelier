@@ -47,10 +47,13 @@ function Piece({
       {stats && (
         <span className="piece-stats">
           <span>
-            <b>{number(run.tool_calls)}</b> calls · <b>{number(run.looks)}</b> looks
+            <b>{number(run.tool_calls)}</b> calls
+          </span>
+          <span>
+            <b>{number(run.looks)}</b> looks
           </span>
           <span title={run.tokens === null ? 'Not reported' : 'Reported tokens'}>
-            {number(run.tokens)} tokens
+            <b>{number(run.tokens)}</b> tok
           </span>
         </span>
       )}
