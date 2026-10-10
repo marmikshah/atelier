@@ -1291,7 +1291,7 @@ mod tests {
 
     #[test]
     fn advertised_schemas_carry_no_rust_integer_formats() {
-        // Ajv-based clients (Kimi Code, most Node MCP hosts) warn on every
+        // Ajv-based clients (most Node MCP hosts) warn on every
         // schemars integer format: `unknown format "uint32" ignored`.
         let tools = Atelier::registry_tools();
         assert!(!tools.is_empty());
