@@ -2,8 +2,7 @@ name: Showcase
 
 # The showcase claims every GIF is reproducible from the replay beside it.
 # This proves it. It replays the complete matrix and requires byte-identical GIFs,
-# on pull requests that change the editor or showcase, on master, weekly, and
-# on demand.
+# on pull requests that change the editor or showcase, on master, and on demand.
 on:
   push:
     branches: [master]
@@ -25,8 +24,6 @@ on:
       - "rust-toolchain.toml"
       - "tools/showcase.py"
       - ".github/workflows/showcase.yml"
-  schedule:
-    - cron: "23 4 * * 1"
   workflow_dispatch: {}
 
 permissions:

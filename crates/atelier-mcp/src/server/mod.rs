@@ -17,10 +17,10 @@ use serde_json::{Value, json};
 use atelier_studio::{AlphaMode, Studio, ToolName};
 
 mod params;
-mod toolsdoc;
+mod reference;
 mod transport;
 
-pub use toolsdoc::{tools_markdown, tools_text};
+pub use reference::{tools_markdown, tools_text};
 pub use transport::{run, run_http};
 
 use params::*;
@@ -1264,7 +1264,7 @@ impl ServerHandler for Atelier {
             .with_title("Atelier")
             .with_description("Offline, headless pixel-art editor exposed through a CLI and MCP.")
             .with_website_url(env!("CARGO_PKG_HOMEPAGE"));
-        info.instructions = Some(
+        info.instructions = Some(format!(
             "Atelier is a stateless, offline pixel-art editor. Keep the doc_id returned \
              by doc_new and pass it explicitly on every later document call. Each doc_draw \
              or doc_fx call applies exactly one operation; use doc_paint_grid for dense pixel \
@@ -1274,9 +1274,9 @@ impl ServerHandler for Atelier {
              HTTP, CLI, and replay stay equivalent. Save a \
              doc_checkpoint before destructive edits. Successful document calls return a \
              revision; pass it as expected_revision on a later mutation to reject stale writes. \
-             All 26 tools are advertised."
-                .into(),
-        );
+             All {} tools are advertised.",
+            ToolName::ALL.len()
+        ));
         info
     }
 }
@@ -1342,7 +1342,7 @@ mod tests {
             .instructions
             .unwrap_or_default();
         assert!(
-            instructions.contains("26 tools"),
+            instructions.contains(&format!("All {n} tools are advertised.")),
             "get_info instructions drifted from the tool count"
         );
     }

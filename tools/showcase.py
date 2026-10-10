@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Verify recorded showcase artwork or collect isolated Codex runs.
+"""Verify recorded showcase artwork or collect isolated agent runs.
 
 Build Atelier first with cargo build --locked -p atelier. Verification is
-offline; collecting new artwork requires an authenticated Codex CLI.
+offline; collecting new artwork requires an authenticated Codex or Claude Code
+CLI.
 """
 
 import argparse
@@ -35,6 +36,10 @@ if args[0] == "call":
     args += ["--home", os.environ["ATELIER_BENCHMARK_HOME"]]
 os.execv(os.environ["ATELIER_BENCHMARK_BINARY"], ["atelier", *args])
 """
+# Headless clients that can collect runs, and the built-in tools Claude Code may use.
+VENDORS = {"codex": "OpenAI", "claude": "Anthropic"}
+VERSION_KEYS = {"codex": "codex_version", "claude": "claude_code_version"}
+CLAUDE_TOOLS = "Bash,Read,Write,Edit,Glob,Grep"
 SCHEMA = {
     "type": "object",
     "properties": {
@@ -188,6 +193,100 @@ def session_usage(thread_id):
     return usage, settings
 
 
+def read_events(path):
+    """Read a client's JSONL event stream, skipping lines cut short by a crash."""
+    events = []
+    for line in path.read_text(errors="replace").replace("\0", "").splitlines():
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError:
+            pass
+    return events
+
+
+def session_id(client, events):
+    """Return the session an interrupted run should continue, if it started one."""
+    for event in events:
+        if client == "codex" and event.get("type") == "thread.started":
+            return event["thread_id"]
+        if client == "claude" and event.get("subtype") == "init":
+            return event["session_id"]
+    return None
+
+
+def client_command(args, schema, directory, session):
+    """Build the headless command for a fresh session, or to resume `session`."""
+    if args.client == "claude":
+        command = ["claude", "-p", "--model", args.model, "--effort", args.effort]
+        command += ["--safe-mode", "--strict-mcp-config"]
+        command += ["--tools", CLAUDE_TOOLS, "--allowedTools", CLAUDE_TOOLS]
+        command += ["--permission-mode", "dontAsk", "--permission-prompts", "none"]
+        command += ["--output-format", "stream-json", "--verbose"]
+        command += ["--json-schema", schema.read_text()]
+        return command + (["--resume", session] if session else [])
+    settings = ["--ignore-user-config", "--model", args.model]
+    settings += ["-c", f'model_reasoning_effort="{args.effort}"']
+    settings += ["-c", 'approval_policy="never"']
+    output = ["--json", "--output-schema", str(schema)]
+    output += ["--output-last-message", str(directory / "result.json")]
+    if session:
+        sandbox = ["-c", 'sandbox_mode="workspace-write"']
+        return ["codex", "exec", "resume", *settings, *sandbox, *output, session, "-"]
+    sandbox = ["--sandbox", "workspace-write"]
+    return ["codex", "exec", *settings, *sandbox, *output, "--cd", str(directory), "-"]
+
+
+def claude_outcome(args, events):
+    """Return a Claude Code session's result, token usage, and observed settings."""
+    results = [event for event in events if event.get("type") == "result"]
+    if not results or results[-1].get("is_error"):
+        detail = results[-1].get("result") if results else "no result"
+        raise RuntimeError(f"Claude Code did not finish: {str(detail)[:300]}")
+    messages = {
+        event["message"]["id"]: event["message"]
+        for event in events
+        if event.get("type") == "assistant"
+        and event["message"].get("model") != "<synthetic>"
+    }
+    reported = {"input": 0, "cached": 0, "written": 0, "output": 0, "reasoning": 0}
+    for result in results:
+        used = (result.get("modelUsage") or {}).get(args.model, {})
+        reported["cached"] += used.get("cacheReadInputTokens", 0)
+        reported["written"] += used.get("cacheCreationInputTokens", 0)
+        reported["input"] += used.get("inputTokens", 0)
+        reported["output"] += used.get("outputTokens", 0)
+        reported["reasoning"] += used.get("thinkingTokens", 0)
+    streamed = {"input": 0, "cached": 0, "written": 0}
+    for message in messages.values():
+        used = message.get("usage") or {}
+        streamed["input"] += used.get("input_tokens", 0)
+        streamed["cached"] += used.get("cache_read_input_tokens", 0)
+        streamed["written"] += used.get("cache_creation_input_tokens", 0)
+    # A killed invocation reports no summary, leaving the session total short of
+    # its own messages. Use the per-message input then; its output stays unknown.
+    complete = sum(streamed.values()) <= 1.01 * (
+        reported["input"] + reported["cached"] + reported["written"]
+    )
+    source = reported if complete else streamed
+    input_tokens = source["input"] + source["cached"] + source["written"]
+    usage = {
+        "input_tokens": input_tokens,
+        "cached_input_tokens": source["cached"],
+        "cache_write_input_tokens": source["written"],
+        "output_tokens": reported["output"],
+        "reasoning_output_tokens": reported["reasoning"],
+        "total_tokens": input_tokens + reported["output"],
+        "complete": complete,
+    }
+    # Claude Code reports the model of each turn but not its effort, so the
+    # effort recorded here is the level requested on the command line.
+    settings = [
+        {"model": model, "effort": args.effort}
+        for model in sorted({message["model"] for message in messages.values()})
+    ]
+    return results[-1].get("structured_output"), usage, settings
+
+
 def run_task(task, args, manifest, binary, wrapper, schema):
     directory = args.output / task
     complete = directory / "complete.json"
@@ -231,8 +330,17 @@ read credentials. Finish with exactly one document containing the requested
 animation. Return its doc_id and a short summary. The harness exports the final
 GIF and verifies its replay; you may export to inspect your own animation.
 """
+    events_path = directory / "events.jsonl"
+    session = session_id(args.client, read_events(events_path)) if continuing else None
     if not continuing:
         (directory / "prompt.txt").write_text(prompt)
+    if session:
+        prompt = (
+            "Continue your original showcase task in the same isolated store. "
+            "The previous CLI turn was interrupted; preserve its artwork and follow "
+            "the original brief and tool-only workflow. Complete any remaining checks "
+            "and return the final doc_id and summary in the required JSON format."
+        )
     environment = dict(os.environ)
     environment.update(
         {
@@ -241,71 +349,14 @@ GIF and verifies its replay; you may export to inspect your own animation.
             "ATELIER_BENCHMARK_LOG": str(directory / "calls.jsonl"),
         }
     )
-    command = [
-        "codex",
-        "exec",
-        "--ignore-user-config",
-        "--model",
-        args.model,
-        "-c",
-        f'model_reasoning_effort="{args.effort}"',
-        "-c",
-        'approval_policy="never"',
-        "--sandbox",
-        "workspace-write",
-        "--json",
-        "--output-schema",
-        str(schema),
-        "--output-last-message",
-        str(directory / "result.json"),
-        "--cd",
-        str(directory),
-        "-",
-    ]
-    if continuing:
-        events = [
-            json.loads(line)
-            for line in (directory / "events.jsonl").read_text().splitlines()
-        ]
-        thread_id = next(
-            event["thread_id"]
-            for event in events
-            if event.get("type") == "thread.started"
-        )
-        command = [
-            "codex",
-            "exec",
-            "resume",
-            "--ignore-user-config",
-            "--model",
-            args.model,
-            "-c",
-            f'model_reasoning_effort="{args.effort}"',
-            "-c",
-            'approval_policy="never"',
-            "-c",
-            'sandbox_mode="workspace-write"',
-            "--json",
-            "--output-schema",
-            str(schema),
-            "--output-last-message",
-            str(directory / "result.json"),
-            thread_id,
-            "-",
-        ]
-        prompt = (
-            "Continue your original showcase task in the same isolated store. "
-            "The previous CLI turn was interrupted; preserve its artwork and follow "
-            "the original brief and tool-only workflow. Complete any remaining checks "
-            "and return the final doc_id and summary in the required JSON format."
-        )
+    command = client_command(args, schema, directory, session)
     with (directory / "invocations.jsonl").open("a") as invocations:
         invocations.write(json.dumps({"command": command, **manifest}) + "\n")
     print(
-        f"{task}: {'resuming' if continuing else 'starting'} {args.model} / {args.effort}",
+        f"{task}: {'resuming' if session else 'starting'} {args.model} / {args.effort}",
         flush=True,
     )
-    with (directory / "events.jsonl").open("a") as events:
+    with events_path.open("a") as events:
         with (directory / "stderr.log").open("a") as errors:
             process = subprocess.run(
                 command,
@@ -318,9 +369,21 @@ GIF and verifies its replay; you may export to inspect your own animation.
             )
     if process.returncode:
         raise RuntimeError(
-            f"{task}: Codex exited {process.returncode}; see {directory}"
+            f"{task}: {args.client} exited {process.returncode}; see {directory}"
         )
-    result = json.loads((directory / "result.json").read_text())
+    events = read_events(events_path)
+    session = session_id(args.client, events)
+    if args.client == "claude":
+        result, usage, settings = claude_outcome(args, events)
+        write_json(directory / "result.json", result)
+    else:
+        result = json.loads((directory / "result.json").read_text())
+        usage = None
+        for event in events:
+            if event.get("type") == "turn.completed":
+                usage = event.get("usage")
+        cumulative_usage, settings = session_usage(session)
+        usage = cumulative_usage or usage
     documents = atelier_call(binary, home, "list_docs", {})["documents"]
     if len(documents) != 1 or documents[0]["doc_id"] != result["doc_id"]:
         raise RuntimeError(f"{task}: expected exactly the reported document")
@@ -346,21 +409,7 @@ GIF and verifies its replay; you may export to inspect your own animation.
     replay_gif(binary, recipe, replay_home, replay_gif_path, directory / "replay.log")
     if gif.read_bytes() != replay_gif_path.read_bytes():
         raise RuntimeError(f"{task}: replay changes the exported GIF")
-    calls = [
-        json.loads(line)
-        for line in (directory / "calls.jsonl").read_text().splitlines()
-    ]
-    usage = None
-    thread_id = None
-    for line in (directory / "events.jsonl").read_text().splitlines():
-        event = json.loads(line)
-        if event.get("type") == "thread.started":
-            thread_id = event.get("thread_id")
-        if event.get("type") == "turn.completed":
-            usage = event.get("usage")
-    cumulative_usage, settings = session_usage(thread_id)
-    if cumulative_usage:
-        usage = cumulative_usage
+    calls = read_events(directory / "calls.jsonl")
     if not settings or any(
         setting != {"model": args.model, "effort": args.effort} for setting in settings
     ):
@@ -370,7 +419,7 @@ GIF and verifies its replay; you may export to inspect your own animation.
     record = {
         "task": task,
         "model": args.label,
-        "vendor": "OpenAI",
+        "vendor": VENDORS[args.client],
         "model_id": args.model,
         "reasoning_effort": args.effort,
         "doc_id": result["doc_id"],
@@ -379,7 +428,7 @@ GIF and verifies its replay; you may export to inspect your own animation.
         "looks": sum(call["tool"] == "doc_look" for call in calls),
         "tokens": usage["input_tokens"] + usage["output_tokens"] if usage else None,
         "usage": usage,
-        "thread_id": thread_id,
+        "thread_id": session,
         "settings": settings,
         "document": info,
         "gif_sha256": digest(gif),
@@ -405,6 +454,7 @@ def collect(args, parser):
         parser.error("tasks must be unique names from showcase/runs.json")
     args.output = (args.output or ROOT / "target/showcase" / args.label).resolve()
     args.output.mkdir(parents=True, exist_ok=True)
+    version_key = VERSION_KEYS[args.client]
     manifest = {
         "model_id": args.model,
         "reasoning_effort": args.effort,
@@ -415,8 +465,8 @@ def collect(args, parser):
         "atelier_version": subprocess.check_output(
             [str(args.binary), "--version"], text=True
         ).strip(),
-        "codex_version": subprocess.check_output(
-            ["codex", "--version"], text=True
+        version_key: subprocess.check_output(
+            [args.client, "--version"], text=True
         ).strip(),
         "skill_sha256": digest(ROOT / "crates/atelier/skills/sprite.md"),
         "brief_sha256": {
@@ -425,11 +475,17 @@ def collect(args, parser):
     }
     manifest_path = args.output / "manifest.json"
     if manifest_path.exists():
-        if not args.resume or json.loads(manifest_path.read_text()) != manifest:
+        recorded = json.loads(manifest_path.read_text())
+        # Clients update themselves between sessions; everything else must match.
+        if not args.resume or {**recorded, version_key: None} != {
+            **manifest,
+            version_key: None,
+        }:
             parser.error(
                 "output already contains a run; use a fresh path or --resume with identical provenance"
             )
-    if not manifest_path.exists():
+        manifest = recorded
+    else:
         write_json(manifest_path, manifest)
     binary = args.output / "atelier-binary"
     if not binary.exists():
@@ -486,9 +542,15 @@ def main():
         help="Matrix directory (default: repository showcase)",
     )
     run = commands.add_parser(
-        "run", help="Collect new artwork with an authenticated Codex CLI"
+        "run", help="Collect new artwork with an authenticated agent CLI"
     )
-    run.add_argument("--model", required=True, help="Codex model id")
+    run.add_argument(
+        "--client",
+        choices=sorted(VENDORS),
+        default="codex",
+        help="Headless agent CLI that draws the artwork (default: codex)",
+    )
+    run.add_argument("--model", required=True, help="Model id as the client names it")
     run.add_argument(
         "--effort", required=True, choices=["low", "medium", "high", "xhigh", "max"]
     )
