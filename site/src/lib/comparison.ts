@@ -1,4 +1,4 @@
-export type Provider = 'claude' | 'codex' | 'kimi';
+export type Provider = 'claude' | 'codex';
 export type View = 'artwork' | 'models' | 'runs';
 export type Sort = 'task' | 'model' | 'provider' | 'calls' | 'looks' | 'tokens';
 export type Background = 'grid' | 'light' | 'dark';
@@ -55,7 +55,6 @@ export interface ComparisonState {
 export const providers: { id: Provider; name: string }[] = [
   { id: 'claude', name: 'Anthropic' },
   { id: 'codex', name: 'OpenAI' },
-  { id: 'kimi', name: 'Moonshot AI' },
 ];
 export const views: View[] = ['artwork', 'models', 'runs'];
 export const sortKeys: Sort[] = ['task', 'model', 'provider', 'calls', 'looks', 'tokens'];

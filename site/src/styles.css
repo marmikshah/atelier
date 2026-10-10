@@ -26,7 +26,6 @@
   --cyan: #73eff7;
   --claude: var(--orange);
   --codex: var(--green);
-  --kimi: var(--blue);
   /* Jersey 10 is drawn on a 10px grid and VT323 on 16px; sizes stay on those grids. */
   --ui: 'Jersey 10', ui-monospace, monospace;
   --mono: 'VT323', ui-monospace, monospace;
@@ -402,9 +401,6 @@ kbd {
 }
 .pigment.codex {
   --pigment: var(--codex);
-}
-.pigment.kimi {
-  --pigment: var(--kimi);
 }
 .pigment::before {
   content: '';

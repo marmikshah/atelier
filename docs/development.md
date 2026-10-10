@@ -88,14 +88,16 @@ under `showcase/gifs/`. The website prepares its data from these committed files
 To inspect one recipe in an isolated store:
 
 ```sh
-./target/debug/atelier replay showcase/replays/opus-4.8/cat.jsonl --home ./replay-store
+./target/debug/atelier replay showcase/replays/opus-5.5-xhigh/cat.jsonl --home ./replay-store
 ./target/debug/atelier library --home ./replay-store
 ```
 
 Use the returned document ID with the tools from [Getting started](getting-started.md),
-adding `--home ./replay-store` to each call. To collect new runs, start with
-`python3 tools/showcase.py run --help`. Collection requires an authenticated
-Codex CLI; verifying existing artwork does not.
+adding `--home ./replay-store` to each call. To collect new OpenAI runs, start
+with `python3 tools/showcase.py run --help`; it requires an authenticated Codex
+CLI. The Anthropic runs were collected the same way through headless Claude Code,
+as [runs.json](../showcase/runs.json) describes. Verifying existing artwork needs
+neither.
 
 ## CI and publishing
 
