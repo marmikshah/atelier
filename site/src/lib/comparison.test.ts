@@ -30,12 +30,11 @@ test('the default comparison includes every original model and run', () => {
   assert.equal(filterRuns(data, state, models).length, data.runs.length);
   assert.equal(models[0].vendor, 'Anthropic');
   assert.equal(models[1].vendor, 'OpenAI');
-  assert.equal(models[2].vendor, 'Moonshot AI');
 });
 
 test('every model belongs to one model line and one effort level', () => {
   const families = familiesOf(models);
-  assert.ok(families.includes('haiku') && families.includes('gpt') && families.includes('kimi'));
+  assert.ok(families.includes('haiku') && families.includes('gpt'));
   assert.equal(
     families.reduce((count, family) => count + shown({ families: [family] }).length, 0),
     models.length,
@@ -51,13 +50,13 @@ test('every model belongs to one model line and one effort level', () => {
 test('model line, effort, hidden model, brief, and command filters combine', () => {
   const opus = shown({ families: ['opus'] });
   assert.ok(opus.length > 1);
-  assert.deepEqual(shown({ families: ['opus'], efforts: ['xhigh'] }), ['opus-5.5-xhigh']);
+  assert.deepEqual(shown({ families: ['gpt'], efforts: ['xhigh'] }), ['gpt-6-astra-xhigh']);
   assert.deepEqual(shown({ families: ['opus'], models: [opus[1]] }), [opus[1]]);
   const results = filterRuns(
     data,
     {
       ...defaultState(models),
-      families: ['opus'],
+      families: ['gpt'],
       efforts: ['xhigh'],
       task: 'cat',
       query: ' CAT ',
@@ -66,7 +65,7 @@ test('model line, effort, hidden model, brief, and command filters combine', () 
   );
   assert.deepEqual(
     results.map((run) => `${run.model}/${run.task}`),
-    ['opus-5.5-xhigh/cat'],
+    ['gpt-6-astra-xhigh/cat'],
   );
   assert.deepEqual(
     visibleTasks({ ...defaultState(models), task: 'cat', query: 'alien' }, models, data.tasks),
@@ -76,10 +75,10 @@ test('model line, effort, hidden model, brief, and command filters combine', () 
 
 test('typed commands name models and briefs by the start of a word', () => {
   assert.deepEqual(shown({ query: 'haiku' }), shown({ families: ['haiku'] }));
-  assert.deepEqual(shown({ query: 'Opus XHIGH' }), ['opus-5.5-xhigh']);
+  assert.deepEqual(shown({ query: 'GPT XHIGH' }), ['gpt-6-astra-xhigh']);
   assert.deepEqual(
     shown({ query: 'anthropic' }),
-    shown({}).filter((id) => !/^(gpt|kimi)/.test(id)),
+    shown({}).filter((id) => !id.startsWith('gpt-')),
   );
   assert.deepEqual(
     new Set(shown({ query: 'sonnet, gpt' })),

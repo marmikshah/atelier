@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const source = fileURLToPath(new URL('../../showcase/', import.meta.url));
 const output = fileURLToPath(new URL('../public/showcase/', import.meta.url));
 const data = JSON.parse(await readFile(path.join(source, 'runs.json'), 'utf8'));
-const providers = new Set(['Anthropic', 'OpenAI', 'Moonshot AI']);
+const providers = new Set(['Anthropic', 'OpenAI']);
 
 for (const key of ['models', 'tasks']) {
     const values = data[key];
