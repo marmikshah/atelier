@@ -20,7 +20,7 @@ or running server is needed for CLI calls.
 
 ## Get started
 
-Build from source on **Linux or macOS** with Rust 1.88+ and a native build
+Build from source on **Linux or macOS** with Rust 1.98+ and a native build
 toolchain. The checkout pins the Rust version used for development. No binaries
 or container images are published.
 
@@ -40,7 +40,7 @@ draw pixels, and save an image.
 | Connect an agent, run a server, or choose where art is stored | [Running Atelier](docs/running.md) |
 | Find a tool's arguments | `atelier tools --markdown` or `atelier tools --schema NAME` |
 | Understand the code or work on the showcase | [Development guide](docs/development.md) |
-| Report a bug or security issue | [Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md) |
+| Report a bug or security issue | [Issues](https://github.com/marmikshah/atelier/issues) · [Security](.github/SECURITY.md) |
 
 ## About this project
 
@@ -54,5 +54,12 @@ your own.
 > and AI reviews are part of the process; bugs, security issues, and breaking
 > changes are still possible. Please review the code and work with copies of
 > important data before using it in production.
+
+## Contributing
+
+Bug reports and questions are welcome as issues; include the checkout commit and
+a minimal command sequence or replay journal. Outside pull requests are
+currently closed. Report vulnerabilities privately through the
+[security policy](.github/SECURITY.md).
 
 [MIT](LICENSE) © Marmik Shah

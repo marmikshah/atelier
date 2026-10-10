@@ -1,9 +1,7 @@
 /target/
 .atelier/
 .DS_Store
-*.swp
 .claude/
-.venv/
 .env
 .env.*
 

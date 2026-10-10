@@ -4,15 +4,12 @@ target
 .git
 .github
 .claude
-.venv
 assets
 site
 showcase
 tools
 *.gif
 *.png
-*.tar.gz
-*.zip
 .env
 .env.*
 .DS_Store
