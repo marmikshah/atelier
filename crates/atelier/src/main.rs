@@ -89,7 +89,7 @@ USAGE:
     atelier tools [--markdown|--schema <name>]
                                   list the tools (plain text; --markdown emits the
                                   full reference; --schema dumps one input schema)
-    atelier skills                the shipped skills; `skills install [--for claude|codex|kimi|cursor|all]`
+    atelier skills                the shipped skills; `skills install [--for claude|codex|cursor|all]`
                                   writes them for your agent (~/.claude/skills by default, --dir DIR
                                   for anywhere else), `skills show <name>` prints one
     atelier --version             print the version
@@ -113,7 +113,7 @@ STORE:
 /// Agents that load the standard `SKILL.md`: `--for` selector → skills dir
 /// under the user's home. Codex and Cursor additionally read project-level
 /// skill directories; that is what `--dir` is for.
-const SKILL_TARGETS: &[&str] = &["claude", "codex", "kimi", "cursor"];
+const SKILL_TARGETS: &[&str] = &["claude", "codex", "cursor"];
 
 /// Root directory for one client's skills, under the user's home. `--dir`
 /// writes them anywhere else.
@@ -121,7 +121,6 @@ fn skill_target_root(target: &str, home: &std::path::Path) -> Option<std::path::
     match target {
         "claude" => Some(home.join(".claude")),
         "codex" => Some(home.join(".agents")),
-        "kimi" => Some(home.join(".kimi-code")),
         "cursor" => Some(home.join(".cursor")),
         _ => None,
     }
@@ -152,7 +151,7 @@ fn skills_cmd(args: &[String]) -> i32 {
                         Some(root) => vec![root.join("skills")],
                         None => {
                             eprintln!(
-                                "atelier: unknown --for '{target}' (claude | codex | kimi | cursor | all)"
+                                "atelier: unknown --for '{target}' (claude | codex | cursor | all)"
                             );
                             return 2;
                         }
@@ -363,10 +362,6 @@ mod tests {
             Some(home.join(".claude"))
         );
         assert_eq!(skill_target_root("codex", home), Some(home.join(".agents")));
-        assert_eq!(
-            skill_target_root("kimi", home),
-            Some(home.join(".kimi-code"))
-        );
         assert_eq!(
             skill_target_root("cursor", home),
             Some(home.join(".cursor"))

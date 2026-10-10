@@ -29,7 +29,7 @@ atelier skills show sprite            # read a guide without installing it
 atelier skills install --for codex
 ```
 
-The installer also accepts `claude`, `kimi`, `cursor`, or `all`. It writes the
+The installer also accepts `claude`, `cursor`, or `all`. It writes the
 bundled skills to the selected agent's user skill directory, replacing existing
 copies. Use `--dir PATH` instead of `--for` to choose a destination.
 
