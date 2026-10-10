@@ -58,8 +58,8 @@ your own.
 ## Contributing
 
 Bug reports and questions are welcome as issues; include the checkout commit and
-a minimal command sequence or replay journal. Outside pull requests are
-currently closed. Report vulnerabilities privately through the
+a minimal command sequence or replay journal. Pull requests from outside the
+project are not accepted. Report vulnerabilities privately through the
 [security policy](.github/SECURITY.md).
 
 [MIT](LICENSE) © Marmik Shah

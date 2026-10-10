@@ -1,6 +1,6 @@
 name: Bug report
 description: Report reproducible incorrect behavior.
-labels: [bug]
+labels: [C-Bug]
 body:
   - type: markdown
     attributes:
