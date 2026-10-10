@@ -2,8 +2,8 @@
 
 [README](../README.md) · [Getting started](getting-started.md) · [Running Atelier](running.md)
 
-Run commands below from the repository root. See [Contributing](../.github/CONTRIBUTING.md)
-for the project's contribution policy.
+Run commands below from the repository root. The [README](../README.md#contributing)
+states the contribution policy.
 
 ## Repository map
 
@@ -36,7 +36,7 @@ showcase results; it is separate from the editor.
 
 Use Linux or macOS with a native build toolchain and Rust installed through
 rustup. [rust-toolchain.toml](../rust-toolchain.toml) pins the development
-version and components; the minimum supported Rust version is 1.88.
+version and components, which is also the minimum supported version.
 Python 3 is needed for showcase tooling.
 
 ```sh
@@ -93,16 +93,14 @@ To inspect one recipe in an isolated store:
 ```
 
 Use the returned document ID with the tools from [Getting started](getting-started.md),
-adding `--home ./replay-store` to each call. To collect new OpenAI runs, start
-with `python3 tools/showcase.py run --help`; it requires an authenticated Codex
-CLI. The Anthropic runs were collected the same way through headless Claude Code,
-as [runs.json](../showcase/runs.json) describes. Verifying existing artwork needs
-neither.
+adding `--home ./replay-store` to each call. To collect new runs, start with
+`python3 tools/showcase.py run --help`. Collection drives an authenticated Codex
+or Claude Code CLI, chosen with `--client`, and writes to the ignored
+`target/showcase/` directory; verifying existing artwork needs neither.
 
 ## CI and publishing
 
-CI checks native builds on Ubuntu and macOS, the minimum supported Rust version,
-and showcase tooling. A separate workflow verifies replay bytes. Linux container
+CI checks native builds on Ubuntu and macOS and the showcase tooling. A separate workflow verifies replay bytes. Linux container
 checks run on pushes to `master` and non-draft PRs targeting `master`.
 
 The Pages workflow checks and builds website changes, then publishes the showcase

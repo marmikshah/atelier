@@ -23,7 +23,7 @@ body:
     id: repro
     attributes:
       label: Steps to reproduce
-      description: Exact commands / tool calls. A recipe JSON or a minimal sequence is ideal.
+      description: Exact commands / tool calls. A replay JSONL journal or a minimal sequence is ideal.
       render: shell
     validations:
       required: true
