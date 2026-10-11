@@ -17,7 +17,19 @@ need no server. Running bare `atelier` in a terminal waits for MCP input; use
 For a stdio client, set its server command to `atelier` (or the absolute path to
 the binary) and leave its arguments empty. Set `ATELIER_HOME` in the client's
 server environment to an absolute directory so its working directory does not
-change which store it uses. Client configuration formats vary.
+change which store it uses. Client configuration formats vary; many accept
+this shape:
+
+```json
+{
+  "mcpServers": {
+    "atelier": {
+      "command": "atelier",
+      "env": { "ATELIER_HOME": "/absolute/path/to/your/art" }
+    }
+  }
+}
+```
 
 ## Agent skills
 
