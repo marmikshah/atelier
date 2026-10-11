@@ -18,6 +18,7 @@ pub async fn run(args: &[String]) -> i32 {
         Some("pack") => pack(&args[1..]),
         Some("unpack") => unpack(&args[1..]),
         Some("rm") => rm(&args[1..]).await,
+        Some("reset") => reset(&args[1..]),
         Some("--help" | "-h" | "help") => {
             println!("{USAGE}");
             0
@@ -39,6 +40,7 @@ const USAGE: &str = "usage:
   atelier library rm <id>... [--yes] [--home DIR]
   atelier library rm --prefix <p> [--yes] [--home DIR]
   atelier library rm --all [--yes] [--home DIR]
+  atelier library reset <doc-id> [--yes] [--home DIR]
 
   (no args)          list every document: id, size, frames, layers
   verify             validate every document's metadata, cels, and journal
@@ -51,6 +53,9 @@ const USAGE: &str = "usage:
   rm <id>...         delete the named documents
   rm --prefix <p>    delete every document whose id starts with <p>
   rm --all           delete every document
+  reset <doc-id>     replace a damaged or unsupported document with a blank one,
+                     keeping its UUID and any readable name and size; tools never
+                     do this on their own, and healthy documents are left alone
   --yes, -y          skip the confirmation prompt
 
 Documents are your artwork, not a cache — deleting them cannot be undone.";
@@ -585,6 +590,79 @@ async fn rm(args: &[String]) -> i32 {
     i32::from(failed > 0)
 }
 
+#[derive(Debug, PartialEq, Eq)]
+struct ResetOptions {
+    id: String,
+    yes: bool,
+    home: Option<PathBuf>,
+}
+
+fn parse_reset(args: &[String]) -> Result<ResetOptions, String> {
+    let mut id = None;
+    let mut yes = false;
+    let mut home = None;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--yes" | "-y" => yes = true,
+            "--home" => take_home(args, &mut index, &mut home)?,
+            option if option.starts_with('-') => {
+                return Err(format!("unknown reset option '{option}'"));
+            }
+            value if id.is_none() => id = Some(value.to_string()),
+            value => return Err(format!("unexpected reset argument '{value}'")),
+        }
+        index += 1;
+    }
+    let id = id.ok_or("reset needs one document id")?;
+    Ok(ResetOptions { id, yes, home })
+}
+
+/// Discard one damaged document's saved data. Tool calls refuse damaged
+/// documents and leave them on disk; this is the only way to blank one.
+fn reset(args: &[String]) -> i32 {
+    let options = match parse_reset(args) {
+        Ok(options) => options,
+        Err(error) => {
+            eprintln!("atelier library: {error}\n\n{USAGE}");
+            return 2;
+        }
+    };
+    let studio = studio_at(options.home.as_deref());
+    let id = &options.id;
+    match studio.document_damage(id) {
+        Ok(Some(reason)) => {
+            if !options.yes {
+                eprintln!("About to discard the saved pixels and history of document {id}:");
+                eprintln!("  {reason}");
+                if !confirm() {
+                    eprintln!("aborted.");
+                    return 1;
+                }
+            }
+        }
+        Ok(None) => {
+            println!("nothing to reset: document {id} is missing or readable");
+            return 0;
+        }
+        Err(error) => {
+            eprintln!("atelier library reset: {error}");
+            return 1;
+        }
+    }
+    match studio.reset_document(id) {
+        Ok(Some(report)) => print_report("reset", &report),
+        Ok(None) => {
+            println!("nothing to reset: document {id} is missing or readable");
+            0
+        }
+        Err(error) => {
+            eprintln!("atelier library reset: {error}");
+            1
+        }
+    }
+}
+
 /// Ask on the terminal. No terminal (piped/CI) = refuse rather than assume yes:
 /// a destructive default is how someone loses their artwork.
 fn confirm() -> bool {
@@ -646,6 +724,21 @@ mod tests {
             parse_rm(&v(&["--all", "--home", "a", "--home", "b"])).is_err(),
             "--home may only be passed once"
         );
+    }
+
+    #[test]
+    fn reset_arguments_require_exactly_one_id() {
+        assert_eq!(
+            parse_reset(&v(&["a", "--yes", "--home", "/tmp/store"])).unwrap(),
+            ResetOptions {
+                id: "a".into(),
+                yes: true,
+                home: Some(PathBuf::from("/tmp/store")),
+            }
+        );
+        assert!(parse_reset(&v(&["--yes"])).is_err());
+        assert!(parse_reset(&v(&["a", "b"])).is_err());
+        assert!(parse_reset(&v(&["a", "--all"])).is_err());
     }
 
     #[test]

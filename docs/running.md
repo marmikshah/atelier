@@ -59,9 +59,12 @@ refuse to overwrite existing documents unless `--replace --yes` is supplied.
 Replays rebuild documents from recorded tool calls; use a separate store to
 inspect a recipe without affecting your working library.
 
-Normal tool access can reset unsupported or corrupt documents to fresh data,
-keeping the UUID and valid name/dimensions. Use `library verify` first when
-investigating damaged data, and keep backups of important work.
+Tools never discard saved work. A call on an unsupported or corrupt document
+returns an error and leaves its files unchanged. Use `library verify` to see
+what is wrong, and copy the document's directory before changing anything.
+`atelier library reset <doc-id>` replaces a damaged document with a blank one,
+keeping its UUID and any readable name and dimensions; it asks for
+confirmation and does nothing to a healthy document.
 
 ## HTTP server and Linux daemon
 

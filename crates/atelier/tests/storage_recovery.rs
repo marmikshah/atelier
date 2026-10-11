@@ -1,4 +1,4 @@
-//! Recovery goes through the shipped CLI and the shared MCP dispatch path.
+//! Damaged documents are refused by tools and replaced only by `library reset`.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -46,6 +46,23 @@ impl Store {
         result["doc_id"].as_str().unwrap().into()
     }
 
+    /// Run `library reset <id>` with any extra flags; returns success and stdout.
+    fn reset(&self, id: &str, extra: &[&str]) -> (bool, String) {
+        let output = Command::new(env!("CARGO_BIN_EXE_atelier"))
+            .args(["library", "reset", id])
+            .args(extra)
+            .arg("--home")
+            .arg(&self.0)
+            .env("ATELIER_LOG", "off")
+            .stdin(std::process::Stdio::null())
+            .output()
+            .unwrap();
+        (
+            output.status.success(),
+            String::from_utf8_lossy(&output.stdout).into_owned(),
+        )
+    }
+
     fn document(&self, id: &str) -> PathBuf {
         self.0.join("documents").join(id)
     }
@@ -62,7 +79,7 @@ fn read_json(path: &Path) -> Value {
 }
 
 #[test]
-fn unsupported_and_corrupt_metadata_is_replaced_in_the_current_format() {
+fn unsupported_and_corrupt_metadata_is_refused_until_an_explicit_reset() {
     for corruption in [
         "missing schema",
         "unsupported marker",
@@ -107,21 +124,30 @@ fn unsupported_and_corrupt_metadata_is_replaced_in_the_current_format() {
         );
 
         let (ok, result) = store.call("doc_info", json!({"doc_id":id}));
+        assert!(!ok, "{corruption}: {result}");
+        let error = result["error"].as_str().unwrap();
+        assert!(error.contains("left unchanged"), "{error}");
+        assert!(error.contains("library reset"), "{error}");
+        assert_eq!(fs::read(&path).unwrap(), before, "tools never replace data");
+
+        // Without a terminal or --yes the reset refuses, like `library rm`.
+        assert!(!store.reset(&id, &[]).0);
+        assert_eq!(fs::read(&path).unwrap(), before);
+
+        let (ok, report) = store.reset(&id, &["--yes"]);
+        assert!(ok, "{report}");
+        let report: Value = serde_json::from_str(&report).unwrap();
+        assert_eq!(report["doc_id"], id);
+        let (ok, result) = store.call("doc_info", json!({"doc_id":id}));
         assert!(ok, "{result}");
-        assert_eq!(result["doc_id"], id);
-        assert_eq!(result["recovery"]["doc_id"], id);
         assert_eq!(result["revision"], 0);
         assert_eq!(read_json(&path)["schema"], 1);
         assert!(read_json(&path).get("format_version").is_none());
-        assert_eq!(
-            store.call("doc_info", json!({"doc_id":id})).1["recovery"],
-            Value::Null
-        );
     }
 }
 
 #[test]
-fn broken_cels_revisions_and_journals_keep_the_named_canvas_and_uuid() {
+fn reset_of_broken_cels_revisions_and_journals_keeps_the_named_canvas_and_uuid() {
     for component in ["cels/L0_F0.png", "revision", "recipe.jsonl"] {
         let store = Store::new();
         let id = store.create();
@@ -148,9 +174,15 @@ fn broken_cels_revisions_and_journals_keep_the_named_canvas_and_uuid() {
             "doc_dump_region" => json!({"doc_id":id,"layer":0,"frame":0,"region":[0,0,0,0]}),
             _ => json!({"doc_id":id}),
         };
-        let (ok, recovered) = store.call(tool, args);
-        assert!(ok, "{component}: {recovered}");
-        assert_eq!(recovered["recovery"]["doc_id"], id);
+        let (ok, refused) = store.call(tool, args);
+        assert!(!ok, "{component}: {refused}");
+        assert_eq!(
+            fs::read(store.document(&id).join(component)).unwrap(),
+            b"broken\n",
+            "{component} stays as found"
+        );
+        let (ok, report) = store.reset(&id, &["--yes"]);
+        assert!(ok, "{component}: {report}");
         let (ok, result) = store.call("doc_info", json!({"doc_id":id}));
         assert!(ok, "{result}");
         assert_eq!(result["name"], "named canvas");
@@ -171,17 +203,31 @@ fn broken_cels_revisions_and_journals_keep_the_named_canvas_and_uuid() {
 }
 
 #[test]
-fn failed_recovery_writes_leave_the_saved_generation_untouched() {
+fn failed_reset_writes_leave_the_saved_generation_untouched() {
     let store = Store::new();
     let id = store.create();
     let path = store.document(&id).join("doc.json");
     fs::write(&path, "broken").unwrap();
     fs::remove_dir(store.0.join("documents/.transactions")).unwrap();
     fs::write(store.0.join("documents/.transactions"), "blocks staging").unwrap();
-    let (ok, result) = store.call("doc_info", json!({"doc_id":id}));
-    assert!(!ok, "{result}");
-    assert!(result["error"].as_str().unwrap().contains("recover"));
+    assert!(!store.reset(&id, &["--yes"]).0);
     assert_eq!(fs::read(&path).unwrap(), b"broken");
     fs::remove_file(store.0.join("documents/.transactions")).unwrap();
+    assert!(store.reset(&id, &["--yes"]).0);
     assert!(store.call("doc_info", json!({"doc_id":id})).0);
+}
+
+#[test]
+fn reset_leaves_healthy_and_missing_documents_alone() {
+    let store = Store::new();
+    let id = store.create();
+    let path = store.document(&id).join("doc.json");
+    let before = fs::read(&path).unwrap();
+    let (ok, output) = store.reset(&id, &["--yes"]);
+    assert!(ok, "{output}");
+    assert!(output.contains("nothing to reset"), "{output}");
+    assert_eq!(fs::read(&path).unwrap(), before);
+    let (ok, output) = store.reset("00000000-0000-4000-8000-000000000000", &["--yes"]);
+    assert!(ok, "{output}");
+    assert!(output.contains("nothing to reset"), "{output}");
 }
