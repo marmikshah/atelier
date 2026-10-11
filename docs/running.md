@@ -117,6 +117,30 @@ for network and file-access boundaries.
 HTTP external file access is disabled unless the corresponding roots are set.
 CLI and stdio calls use normal local filesystem access.
 
+## Container image
+
+MCP clients can launch the published linux/amd64 image over stdio. Keep the
+volume mount, or documents are lost when the container exits:
+
+```json
+{
+  "mcpServers": {
+    "atelier": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "--mount", "type=volume,src=atelier-data,dst=/data",
+        "ghcr.io/marmikshah/atelier:latest"
+      ]
+    }
+  }
+}
+```
+
+Files a tool writes with `out_path` stay inside the container unless you add
+a bind mount for them. With no arguments the image serves stdio; pass
+`--http 0.0.0.0:8765` and `ATELIER_HTTP_TOKEN` to serve HTTP instead.
+
 ## Docker Compose
 
 From the repository root, set a token and build the local image:

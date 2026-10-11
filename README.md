@@ -33,7 +33,8 @@ or running server is needed for CLI calls.
 ## Get started
 
 Atelier builds from source on **Linux or macOS** with Rust 1.98+ and a native
-build toolchain. No binaries or container images are published.
+build toolchain. A [container image](docs/running.md#container-image) is
+published for MCP clients; no native binaries are.
 
 ```sh
 cargo install --locked --git https://github.com/marmikshah/atelier atelier
@@ -83,7 +84,8 @@ covers HTTP, Docker, and storage.
 
 ## Stability
 
-Atelier is at 0.1 and has no tagged releases; `master` is the current version.
+Atelier is at 0.1. `master` is the current source; version tags publish the
+container image.
 
 - **Your documents are not discarded.** Edits are journaled and committed
   atomically. A document that is damaged, or saved by a build with a different

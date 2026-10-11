@@ -104,5 +104,13 @@ CI checks native builds on Ubuntu and macOS and the showcase tooling. A separate
 checks run on pushes to `master` and non-draft PRs targeting `master`.
 
 The Pages workflow checks and builds website changes, then publishes the showcase
-from `master`. No binary releases or container images are published. See
-[Running Atelier](running.md#docker-compose) for local container use.
+from `master`. See [Running Atelier](running.md#docker-compose) for local
+container use.
+
+Pushing a `vX.Y.Z` tag runs the Image workflow. It requires the tag,
+`Cargo.toml`, and [server.json](../server.json) to name the same version
+(`tools/check-version.sh`), smoke-tests the linux/amd64 image, pushes it to
+`ghcr.io/marmikshah/atelier`, and publishes `server.json` to the MCP Registry.
+The registry reads the image's labels anonymously, so the GHCR package must be
+public; after the first tag, set its visibility and re-run the registry job.
+No native binaries are published.
