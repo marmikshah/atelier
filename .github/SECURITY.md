@@ -32,7 +32,8 @@ timeline.
 
 ## Supported versions
 
-Atelier publishes no releases; build the current `master` checkout. CI checks
+Only the current `master` checkout and the most recent tagged container image
+are supported. CI checks
 Ubuntu x86_64, macOS, and the Alpine linux/amd64 container. Container checks run
 on pushes to `master` and non-draft PRs targeting `master`. The background daemon
 requires Linux with `systemd --user`.

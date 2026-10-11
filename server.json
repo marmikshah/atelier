@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.marmikshah/atelier",
+  "title": "Atelier",
+  "description": "Offline, headless pixel-art editor: draw, animate, inspect, and export sprites and fonts.",
+  "repository": {
+    "url": "https://github.com/marmikshah/atelier",
+    "source": "github"
+  },
+  "websiteUrl": "https://marmikshah.github.io/atelier/",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/marmikshah/atelier:0.1.0",
+      "runtimeHint": "docker",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--mount",
+          "value": "type=volume,src=atelier-data,dst=/data",
+          "description": "Keeps documents in the atelier-data Docker volume between runs."
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
