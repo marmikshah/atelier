@@ -787,7 +787,7 @@ impl Atelier {
         // lock also coordinates separate CLI and daemon processes. The caller
         // keeps the order guard through this complete blocking operation, so
         // pixels and provenance still commit in one order.
-        let store_lock = {
+        let _store_lock = {
             let studio = self.studio();
             if store_mutation {
                 studio.lock_store_exclusive()
@@ -804,34 +804,14 @@ impl Atelier {
             && let Some(target) = mutation_target(tool, &args)
                 .map_err(|error| ErrorData::invalid_params(error, None))?
         {
-            // Reads release their shared lock before taking an exclusive one.
-            // Revalidate after that transition: another writer may have fixed
-            // the document while this caller waited. Retry at most once.
-            let _recovery_lock = if store_mutation {
-                None
-            } else {
-                drop(store_lock);
-                Some(
-                    self.studio()
-                        .lock_store_exclusive()
-                        .map_err(|error| ErrorData::internal_error(error, None))?,
-                )
-            };
-            match self.studio().recover_document(&target) {
-                Ok(Some(recovery)) => {
-                    result = self.invoke_store_call(
-                        tool,
-                        &args,
-                        journaled,
-                        store_mutation,
-                        expected_revision,
-                    )?;
-                    result = attach_result_field(result, "recovery", recovery);
-                }
-                Ok(None) => {}
-                Err(error) => {
-                    result = res(Err(format!("cannot recover document '{target}': {error}")))
-                }
+            // Damaged or unsupported saved data is reported, never replaced:
+            // the check is read-only and runs under the lock already held.
+            if let Ok(Some(reason)) = self.studio().document_damage(&target) {
+                result = res(Err(format!(
+                    "document '{target}' is damaged or unsupported and was left unchanged: \
+                     {reason}. Inspect it with `atelier library verify`; \
+                     `atelier library reset {target}` replaces it with a blank document."
+                )));
             }
         }
         log_call(tool, &args, caller, &result, started.elapsed());
