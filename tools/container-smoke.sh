@@ -3,7 +3,8 @@ set -euo pipefail
 
 if [[ ${1:-} == --help ]]; then
   echo "Usage: tools/container-smoke.sh IMAGE"
-  echo "Check bearer authentication and persistence across two Docker containers."
+  echo "Check the default stdio transport, then bearer authentication and"
+  echo "persistence over HTTP across two Docker containers."
   echo "Requires Docker, curl, and jq; temporary containers and volume are removed."
   exit 0
 fi
@@ -27,6 +28,11 @@ trap cleanup EXIT
 
 docker volume create "$volume" >/dev/null
 
+# With no arguments the image serves MCP over stdio, as registry clients run it.
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"container-smoke","version":"0"}}}' |
+  docker run -i --rm --mount "type=volume,src=$volume,dst=/data" "$image" |
+  jq -e 'select(.id == 1) | .result.serverInfo.name == "atelier"' >/dev/null
+
 start_server() {
   docker run -d --name "$container" \
     --read-only \
@@ -36,7 +42,7 @@ start_server() {
     --mount "type=volume,src=$volume,dst=/data" \
     -p 127.0.0.1::8765 \
     -e ATELIER_HTTP_TOKEN="$token" \
-    "$image" >/dev/null
+    "$image" --http 0.0.0.0:8765 >/dev/null
 
   local address
   address=$(docker port "$container" 8765/tcp)

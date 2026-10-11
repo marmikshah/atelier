@@ -4,9 +4,11 @@
 # Set ATELIER_HTTP_TOKEN in the shell or a local ignored .env before starting.
 services:
   atelier:
-    # No images are published, so the image is built from this checkout.
+    # Built from this checkout so the server matches the source beside it.
     build: .
     image: atelier:local
+    # The image defaults to stdio; a long-running service needs HTTP.
+    command: ["--http", "0.0.0.0:8765"]
     # Docker builds for the host platform by default. Set ATELIER_PLATFORM to
     # pick another (linux/amd64, or linux/arm64 on Apple Silicon, Graviton, or
     # a Pi 5).
