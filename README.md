@@ -13,6 +13,18 @@ Use it directly from a shell or connect an agent through MCP (Model Context
 Protocol). Both interfaces expose the same editing tools; no graphical editor
 or running server is needed for CLI calls.
 
+<p align="center">
+  <img src="showcase/gifs/opus-5.5-xhigh/cat.gif" width="128" height="128" alt="Animated pixel-art cat">
+  <img src="showcase/gifs/opus-5.5-xhigh/torch.gif" width="128" height="128" alt="Animated pixel-art torch">
+  <img src="showcase/gifs/opus-5.5-xhigh/potion.gif" width="128" height="128" alt="Animated pixel-art potion">
+  <img src="showcase/gifs/opus-5.5-xhigh/explosion.gif" width="128" height="128" alt="Animated pixel-art explosion">
+</p>
+
+<p align="center">
+  Drawn by an agent through Atelier's tools. Each is rebuilt byte for byte from
+  the <a href="showcase/replays/opus-5.5-xhigh">recorded tool calls</a> in CI.
+</p>
+
 ## Showcase
 
 - [Animation showcase](https://marmikshah.github.io/atelier/) — compare models and briefs, view animations, and download replays.
@@ -20,15 +32,21 @@ or running server is needed for CLI calls.
 
 ## Get started
 
-Build from source on **Linux or macOS** with Rust 1.98+ and a native build
-toolchain. The checkout pins the Rust version used for development. No binaries
-or container images are published.
+Atelier builds from source on **Linux or macOS** with Rust 1.98+ and a native
+build toolchain. No binaries or container images are published.
+
+```sh
+cargo install --locked --git https://github.com/marmikshah/atelier atelier
+atelier --help
+```
+
+To work from a checkout instead, which also pins the Rust version used for
+development:
 
 ```sh
 git clone https://github.com/marmikshah/atelier.git
 cd atelier
 cargo install --locked --path crates/atelier
-atelier --help
 ```
 
 Then follow [your first sprite](docs/getting-started.md) to create a document,
@@ -42,18 +60,57 @@ draw pixels, and save an image.
 | Understand the code or work on the showcase | [Development guide](docs/development.md) |
 | Report a bug or security issue | [Issues](https://github.com/marmikshah/atelier/issues) · [Security](.github/SECURITY.md) |
 
-## About this project
+## Connect an agent
 
-**100% of this code was written by AI.** Atelier is a personal experiment in
+Agents with shell access can call `atelier call TOOL '<json>'` directly. For an
+MCP client, register `atelier` as a stdio server with no arguments:
+
+```json
+{
+  "mcpServers": {
+    "atelier": {
+      "command": "atelier",
+      "env": { "ATELIER_HOME": "/absolute/path/to/your/art" }
+    }
+  }
+}
+```
+
+In Claude Code, `claude mcp add atelier -- atelier` does the same. Then run
+`atelier skills install --for claude` (or `codex`, `cursor`, `all`) to give
+the agent the bundled drawing guides. [Running Atelier](docs/running.md)
+covers HTTP, Docker, and storage.
+
+## Stability
+
+Atelier is at 0.1 and has no tagged releases; `master` is the current version.
+
+- **Your documents are not discarded.** Edits are journaled and committed
+  atomically. A document that is damaged, or saved by a build with a different
+  document schema, is refused with an error and left unchanged on disk.
+- **The document and journal formats are versioned, with no migration.** If
+  an update changes either one, documents saved before it are refused, stay
+  on disk untouched, and open again with the commit that wrote them.
+- **Tool names and arguments can still change** between commits. Pin a commit
+  if you script against them, and read the current surface from
+  `atelier tools --markdown`.
+
+## How it is built
+
+**100% of this code was written by AI.** Atelier began as an experiment in
 whether agents, using only tool calls, can make art useful in games. My part
 has been giving direction, and I hope the result helps you make something of
 your own.
 
+CI checks formatting, strict Clippy, and the Rust test suite on Linux and
+macOS, smoke-tests the container, and replays every showcase recipe, which
+must reproduce its GIF byte for byte. The [security policy](.github/SECURITY.md)
+describes the network and file-access boundaries.
+
 > [!NOTE]
-> **None of the code has had line-by-line human review.** Automated checks
-> and AI reviews are part of the process; bugs, security issues, and breaking
-> changes are still possible. Please review the code and work with copies of
-> important data before using it in production.
+> **None of the code has had line-by-line human review.** Bugs, security
+> issues, and breaking changes are still possible. Please review the code and
+> work with copies of important data before using it in production.
 
 ## Contributing
 
