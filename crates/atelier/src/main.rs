@@ -105,9 +105,9 @@ ENVIRONMENT:
 
 STORE:
     --home DIR overrides ATELIER_HOME, then ./.atelier, then ~/.atelier.
-    Tools reset unsupported or corrupt documents to fresh current-format data,
-    preserving the UUID and valid name/dimensions. Failed writes return errors.
-    library verify inspects saved data without changing it.
+    Tools refuse unsupported or corrupt documents and leave them unchanged.
+    library verify inspects saved data without changing it; library reset
+    replaces one damaged document with a blank one after confirmation.
 ";
 
 /// Agents that load the standard `SKILL.md`: `--for` selector → skills dir

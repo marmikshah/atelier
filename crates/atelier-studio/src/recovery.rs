@@ -1,4 +1,4 @@
-//! Atomic replacement of unreadable saved document generations.
+//! Damage detection and explicit replacement of unreadable saved documents.
 
 use std::fs;
 
@@ -8,11 +8,10 @@ use serde_json::{Value, json};
 use crate::{CommitOutcome, Studio, ToolName};
 
 impl Studio {
-    /// After a failed tool call, replace an unreadable document with a fresh
-    /// generation. The caller must hold the store's exclusive lock. Healthy
-    /// documents and missing IDs are untouched; directory links are refused.
-    /// Verification and archive inspection never call this method.
-    pub fn recover_document(&self, id: &str) -> Result<Option<Value>, String> {
+    /// Why a saved document cannot be used, or `None` when it is healthy or
+    /// missing. Read-only: tool calls use this to explain a failure without
+    /// touching the saved data. Directory links are refused.
+    pub fn document_damage(&self, id: &str) -> Result<Option<String>, String> {
         if !Self::valid_id(id) {
             return Err(format!("invalid document id '{id}'"));
         }
@@ -49,9 +48,19 @@ impl Studio {
             }
             Ok(())
         })();
-        let Err(reason) = validation else {
+        Ok(validation.err())
+    }
+
+    /// Replace an unreadable document with a fresh generation, discarding its
+    /// saved pixels and journal. Only the explicit `library reset` command
+    /// calls this; tool calls never do. Healthy documents and missing IDs are
+    /// untouched and report `None`.
+    pub fn reset_document(&self, id: &str) -> Result<Option<Value>, String> {
+        let _lock = self.lock_store_exclusive()?;
+        let Some(reason) = self.document_damage(id)? else {
             return Ok(None);
         };
+        let dir = self.doc_dir(id);
 
         // Valid current metadata remains authoritative for the named canvas.
         // Unreadable or unsupported metadata has no shape to infer or migrate.
