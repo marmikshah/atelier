@@ -71,6 +71,11 @@ doc_new → lock a palette → silhouette → look → block → look → detail
 
 Iterate 4–7. Stop when the next fix would not change how it reads at 1×.
 
+To change a finished sprite's resolution, use `doc_rescale` with a whole-number
+`factor`: it resizes the canvas and every layer and frame together and keeps
+proportions exactly. The defaults (`nearest` up, `majority` down) add no
+colours; `epx` smooths diagonal steps on the way up.
+
 ## Animating
 
 - Duplicate, then edit what moves: `doc_frame op=add copy_from=<n>`.

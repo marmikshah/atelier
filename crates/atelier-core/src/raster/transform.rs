@@ -211,6 +211,85 @@ pub fn interior_distance(fg: &[bool], w: usize, h: usize) -> Vec<f32> {
     d
 }
 
+/// Fully transparent pixels compare equal whatever colour they carry.
+fn pixel_key(pixel: Rgba<u8>) -> [u8; 4] {
+    if pixel.0[3] == 0 { [0; 4] } else { pixel.0 }
+}
+
+/// Double an image with the EPX (Scale2x) rule: each source pixel becomes a
+/// 2×2 block whose corners take a neighbour's colour only where two adjacent
+/// neighbours agree. Diagonals come out smooth and no new colour is created.
+pub fn upscale_epx(img: &RgbaImage) -> RgbaImage {
+    let (w, h) = (img.width(), img.height());
+    let mut out = RgbaImage::new(w * 2, h * 2);
+    for y in 0..h {
+        for x in 0..w {
+            let p = *img.get_pixel(x, y);
+            // Off-canvas neighbours repeat the pixel itself, so edges stay put.
+            let up = if y > 0 { *img.get_pixel(x, y - 1) } else { p };
+            let down = if y + 1 < h {
+                *img.get_pixel(x, y + 1)
+            } else {
+                p
+            };
+            let left = if x > 0 { *img.get_pixel(x - 1, y) } else { p };
+            let right = if x + 1 < w {
+                *img.get_pixel(x + 1, y)
+            } else {
+                p
+            };
+            let (a, b, c, d) = (
+                pixel_key(up),
+                pixel_key(right),
+                pixel_key(left),
+                pixel_key(down),
+            );
+            let top_left = if c == a && c != d && a != b { up } else { p };
+            let top_right = if a == b && a != c && b != d { right } else { p };
+            let bottom_left = if d == c && d != b && c != a { left } else { p };
+            let bottom_right = if b == d && b != a && d != c { down } else { p };
+            out.put_pixel(x * 2, y * 2, top_left);
+            out.put_pixel(x * 2 + 1, y * 2, top_right);
+            out.put_pixel(x * 2, y * 2 + 1, bottom_left);
+            out.put_pixel(x * 2 + 1, y * 2 + 1, bottom_right);
+        }
+    }
+    out
+}
+
+/// Shrink by an integer `factor`, giving each `factor`×`factor` block its most
+/// common colour, so the result uses only colours the source already had. A
+/// tie goes to the more opaque colour (thin outlines survive), then to the
+/// one met first in row order. Both dimensions must divide by `factor`.
+pub fn downscale_majority(img: &RgbaImage, factor: u32) -> RgbaImage {
+    let factor = factor.max(1);
+    let (w, h) = (img.width() / factor, img.height() / factor);
+    let mut out = RgbaImage::new(w, h);
+    let mut counts: Vec<([u8; 4], u32)> = Vec::new();
+    for ty in 0..h {
+        for tx in 0..w {
+            counts.clear();
+            for sy in ty * factor..(ty + 1) * factor {
+                for sx in tx * factor..(tx + 1) * factor {
+                    let key = pixel_key(*img.get_pixel(sx, sy));
+                    match counts.iter_mut().find(|(colour, _)| *colour == key) {
+                        Some((_, count)) => *count += 1,
+                        None => counts.push((key, 1)),
+                    }
+                }
+            }
+            let mut best = counts[0];
+            for &(colour, count) in &counts[1..] {
+                if count > best.1 || (count == best.1 && colour[3] > best.0[3]) {
+                    best = (colour, count);
+                }
+            }
+            out.put_pixel(tx, ty, Rgba(best.0));
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -335,5 +414,63 @@ mod tests {
         assert_eq!(out.dimensions(), (4, 4));
         assert_eq!(out.get_pixel(0, 0).0, src.get_pixel(0, 0).0);
         assert_eq!(out.get_pixel(3, 3).0, src.get_pixel(1, 1).0);
+    }
+
+    #[test]
+    fn epx_smooths_a_diagonal_without_new_colours() {
+        let (k, o) = (Rgba([0, 0, 0, 255]), Rgba([0, 0, 0, 0]));
+        // A two-pixel diagonal: k at (0,0) and (1,1).
+        let mut img = RgbaImage::from_pixel(2, 2, o);
+        img.put_pixel(0, 0, k);
+        img.put_pixel(1, 1, k);
+        let out = upscale_epx(&img);
+        assert_eq!((out.width(), out.height()), (4, 4));
+        assert!(out.pixels().all(|p| *p == k || *p == o));
+        // The solid blocks keep their own colour on the diagonal itself.
+        assert_eq!(*out.get_pixel(0, 0), k);
+        assert_eq!(*out.get_pixel(3, 3), k);
+        // Nearest would leave (2,1) and (1,2) empty; EPX fills the step.
+        assert_eq!(*out.get_pixel(2, 1), k);
+        assert_eq!(*out.get_pixel(1, 2), k);
+    }
+
+    #[test]
+    fn epx_leaves_flat_areas_and_edges_as_plain_doubling() {
+        let mut img = RgbaImage::from_pixel(3, 1, Rgba([5, 6, 7, 255]));
+        img.put_pixel(2, 0, Rgba([9, 9, 9, 255]));
+        let out = upscale_epx(&img);
+        let nearest = scale(&img, 6, 2, ScaleMethod::Nearest);
+        assert_eq!(out, nearest);
+    }
+
+    #[test]
+    fn majority_downscale_keeps_existing_colours_and_prefers_opaque_on_ties() {
+        let (r, g, o) = (
+            Rgba([255, 0, 0, 255]),
+            Rgba([0, 255, 0, 255]),
+            Rgba([0, 0, 0, 0]),
+        );
+        let mut img = RgbaImage::from_pixel(4, 2, o);
+        // Left block: three red, one green -> red.
+        img.put_pixel(0, 0, r);
+        img.put_pixel(1, 0, r);
+        img.put_pixel(0, 1, r);
+        img.put_pixel(1, 1, g);
+        // Right block: two transparent, two green -> the opaque colour wins.
+        img.put_pixel(2, 1, g);
+        img.put_pixel(3, 1, g);
+        let out = downscale_majority(&img, 2);
+        assert_eq!((out.width(), out.height()), (2, 1));
+        assert_eq!(*out.get_pixel(0, 0), r);
+        assert_eq!(*out.get_pixel(1, 0), g);
+    }
+
+    #[test]
+    fn majority_downscale_inverts_a_nearest_upscale() {
+        let mut img = RgbaImage::from_pixel(3, 2, Rgba([0, 0, 0, 0]));
+        img.put_pixel(1, 0, Rgba([10, 20, 30, 255]));
+        img.put_pixel(2, 1, Rgba([40, 50, 60, 128]));
+        let up = scale(&img, 9, 6, ScaleMethod::Nearest);
+        assert_eq!(downscale_majority(&up, 3), img);
     }
 }
