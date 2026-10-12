@@ -622,11 +622,14 @@ fn fx_snap_false_keeps_continuous_tone() {
 
 #[test]
 fn malformed_colour_errors_instead_of_black_fallback() {
-    // A hex-string colour used to silently become BLACK — the footgun the
+    // A malformed colour used to silently become BLACK — the footgun the
     // model benchmark surfaced (one run burned 13 calls repainting around
     // it). It must reject loudly at validation time now.
     for bad in [
-        json!("#ff00ff"),
+        json!("#ff00f"),
+        json!("ff00ff"),
+        json!("#gg00ff"),
+        json!("#ff00ff0"),
         json!({"r": 255, "g": 0, "b": 255}),
         json!([255, 0]),
         json!([255, 0, 300]),
@@ -635,9 +638,39 @@ fn malformed_colour_errors_instead_of_black_fallback() {
             .expect_err("malformed colour must be rejected");
         assert!(e.contains("colour array"), "unhelpful error: {e}");
     }
-    // Well-formed colours still pass, 3 or 4 channels.
+    // Well-formed colours still pass, 3 or 4 channels, as arrays or hex.
     validate_op(&json!({"op": "outline", "color": [255, 0, 255]})).unwrap();
     validate_op(&json!({"op": "outline", "color": [255, 0, 255, 128]})).unwrap();
+    validate_op(&json!({"op": "outline", "color": "#ff00ff"})).unwrap();
+    validate_op(&json!({"op": "outline", "color": "#FF00FF80"})).unwrap();
+}
+
+#[test]
+fn hex_colours_paint_exactly_like_their_arrays() {
+    let paint = |ops: &[Value]| {
+        let mut d = Document::new("t", 8, 2);
+        for op in ops {
+            d.apply_op(0, 0, op).unwrap();
+        }
+        d.cel_full(0, 0)
+    };
+    let arrays = paint(&[
+        json!({"op": "fill_cel", "color": [26, 19, 48]}),
+        json!({"op": "pencil", "points": [[1, 0]], "color": [255, 0, 255, 128]}),
+        json!({"op": "gradient", "x0": 0, "y0": 1, "x1": 7, "y1": 1,
+               "stops": [{"pos": 0.0, "color": [0, 0, 0]}, {"pos": 1.0, "color": [255, 255, 255]}]}),
+        json!({"op": "scatter", "x0": 0, "y0": 0, "x1": 7, "y1": 1, "seed": 3,
+               "colors": [[9, 9, 9], [200, 10, 10]]}),
+    ]);
+    let hex = paint(&[
+        json!({"op": "fill_cel", "color": "#1a1330"}),
+        json!({"op": "pencil", "points": [[1, 0]], "color": "#FF00FF80"}),
+        json!({"op": "gradient", "x0": 0, "y0": 1, "x1": 7, "y1": 1,
+               "stops": [{"pos": 0.0, "color": "#000000"}, {"pos": 1.0, "color": "#ffffff"}]}),
+        json!({"op": "scatter", "x0": 0, "y0": 0, "x1": 7, "y1": 1, "seed": 3,
+               "colors": ["#090909", [200, 10, 10]]}),
+    ]);
+    assert_eq!(arrays, hex);
 }
 
 #[test]

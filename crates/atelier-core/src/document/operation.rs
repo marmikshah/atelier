@@ -28,6 +28,8 @@ impl Document {
         // behind Studio. Enforce the same strict contract here so direct users
         // cannot bypass validation and reach the lossy parsing helpers below.
         validate_op(op)?;
+        let expanded = expand_hex_colours(op);
+        let op = expanded.as_ref().unwrap_or(op);
         let opacity = op.get("opacity").and_then(|v| v.as_u64()).map(|v| v as u8);
         let mode = match op.get("blend_mode") {
             None => None,
@@ -476,10 +478,16 @@ pub fn operation_schema(side: OpSide) -> Schema {
         "type": "object",
         "$defs": {
             "c": {
-                "type": "array",
-                "items": {"type": "integer", "minimum": 0, "maximum": 255},
-                "minItems": 3,
-                "maxItems": 4
+                "description": "[r,g,b(,a)] or \"#rrggbb(aa)\"",
+                "anyOf": [
+                    {
+                        "type": "array",
+                        "items": {"type": "integer", "minimum": 0, "maximum": 255},
+                        "minItems": 3,
+                        "maxItems": 4
+                    },
+                    {"type": "string"}
+                ]
             },
             "cs": {
                 "type": "array",
@@ -1081,11 +1089,73 @@ pub(super) fn op_keys(kind: &str) -> Option<(&'static [&'static str], &'static [
     find_op(kind).map(|s| (s.required, s.optional))
 }
 
-/// Strict colour-array parse: `v` must be `[r,g,b]` or `[r,g,b,a]` with every
-/// component an integer 0..=255; the alpha defaults to 255. The ONE shape check
-/// for caller-supplied colours — the operation validator and Studio's paint-grid
-/// legend parser share it (two hand-synced copies drift).
+/// `"#rrggbb"` or `"#rrggbbaa"` (either case) as RGBA; alpha defaults to 255.
+fn hex_color(text: &str) -> Option<[u8; 4]> {
+    let digits = text.strip_prefix('#')?;
+    if !matches!(digits.len(), 6 | 8) || !digits.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+        return None;
+    }
+    let mut out = [255u8; 4];
+    for (index, slot) in out.iter_mut().enumerate().take(digits.len() / 2) {
+        *slot = u8::from_str_radix(&digits[index * 2..index * 2 + 2], 16).ok()?;
+    }
+    Some(out)
+}
+
+/// Keys whose value is one colour, a list of colours, or gradient stops.
+const COLOR_KEYS: [&str; 8] = [
+    "color", "light", "dark", "color_a", "color_b", "from", "to", "colorize",
+];
+const COLOR_LIST_KEYS: [&str; 2] = ["colors", "ramp"];
+
+/// A copy of `op` with every hex colour rewritten as `[r,g,b,a]`, or `None`
+/// when it holds none. The op handlers read arrays only.
+fn expand_hex_colours(op: &Value) -> Option<Value> {
+    let object = op.as_object()?;
+    let as_array = |value: &Value| value.as_str().and_then(hex_color).map(|rgba| json!(rgba));
+    let mut expanded = object.clone();
+    let mut changed = false;
+    for (key, value) in object {
+        if COLOR_KEYS.contains(&key.as_str()) {
+            if let Some(rgba) = as_array(value) {
+                expanded.insert(key.clone(), rgba);
+                changed = true;
+            }
+        } else if COLOR_LIST_KEYS.contains(&key.as_str())
+            && let Some(list) = value.as_array()
+            && list.iter().any(Value::is_string)
+        {
+            let list = list
+                .iter()
+                .map(|item| as_array(item).unwrap_or_else(|| item.clone()))
+                .collect();
+            expanded.insert(key.clone(), Value::Array(list));
+            changed = true;
+        } else if key == "stops"
+            && let Some(stops) = value.as_array()
+        {
+            let mut stops = stops.clone();
+            for stop in &mut stops {
+                if let Some(rgba) = stop.get("color").and_then(as_array) {
+                    stop["color"] = rgba;
+                    changed = true;
+                }
+            }
+            expanded.insert(key.clone(), Value::Array(stops));
+        }
+    }
+    changed.then_some(Value::Object(expanded))
+}
+
+/// Strict colour parse: `v` must be `[r,g,b]` or `[r,g,b,a]` with every
+/// component an integer 0..=255, or a `"#rrggbb"` / `"#rrggbbaa"` string; the
+/// alpha defaults to 255. The ONE shape check for caller-supplied colours —
+/// the operation validator and Studio's paint-grid legend parser share it
+/// (two hand-synced copies drift).
 pub fn color_array(v: &Value) -> Option<[u8; 4]> {
+    if let Some(text) = v.as_str() {
+        return hex_color(text);
+    }
     let a = v.as_array()?;
     if !(3..=4).contains(&a.len()) {
         return None;
