@@ -558,8 +558,18 @@ mod tests {
         let created = s.doc_new("c", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap();
         let legend = serde_json::from_value(json!({"r": [255, 0, 0, 255]})).unwrap();
-        s.doc_paint_grid(id, 0, 0, 1, 1, legend, vec!["r.".into(), "..".into()])
-            .unwrap();
+        s.doc_paint_grid(
+            id,
+            0,
+            0,
+            None,
+            1,
+            1,
+            legend,
+            vec!["r.".into(), "..".into()],
+            false,
+        )
+        .unwrap();
         let (png, report) = s
             .look(
                 id,

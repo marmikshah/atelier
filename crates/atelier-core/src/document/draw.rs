@@ -553,7 +553,9 @@ impl Document {
     /// every character must be in `legend` ('.'/' ' skip, leaving the pixel
     /// untouched). LLMs emit a sprite as a grid far more reliably than as a
     /// sequence of absolute-coordinate draw calls — this removes the
-    /// coordinate-math failure class. Returns `(painted, clipped)`.
+    /// coordinate-math failure class. With `replace`, the grid's rectangle
+    /// (widest row × row count) is cleared first, so skipped cells end up
+    /// transparent. Returns `(painted, clipped)`.
     pub fn paint_grid(
         &mut self,
         layer: usize,
@@ -562,9 +564,35 @@ impl Document {
         oy: i32,
         legend: &std::collections::HashMap<char, [u8; 4]>,
         rows: &[String],
+        replace: bool,
     ) -> Result<(u64, u64), String> {
         let (w, h) = (self.meta.w as i32, self.meta.h as i32);
+        // Reject an unknown character before `replace` clears anything.
+        for (ry, row) in rows.iter().enumerate() {
+            for (rx, ch) in row.chars().enumerate() {
+                if ch != '.' && ch != ' ' && !legend.contains_key(&ch) {
+                    return Err(format!(
+                        "row {} col {}: character '{}' is not in the legend",
+                        ry, rx, ch
+                    ));
+                }
+            }
+        }
         let img = self.cel_canvas(layer, frame)?;
+        if replace {
+            let width = rows
+                .iter()
+                .map(|row| row.chars().count())
+                .max()
+                .unwrap_or(0);
+            let x_end = ox.saturating_add(i32::try_from(width).unwrap_or(i32::MAX));
+            let y_end = oy.saturating_add(i32::try_from(rows.len()).unwrap_or(i32::MAX));
+            for ty in oy.max(0)..y_end.min(h) {
+                for tx in ox.max(0)..x_end.min(w) {
+                    img.put_pixel(tx as u32, ty as u32, Rgba([0, 0, 0, 0]));
+                }
+            }
+        }
         let (mut painted, mut clipped) = (0u64, 0u64);
         for (ry, row) in rows.iter().enumerate() {
             for (rx, ch) in row.chars().enumerate() {

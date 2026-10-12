@@ -456,6 +456,46 @@ impl Studio {
         Ok(count)
     }
 
+    /// Apply `edit` to one layer's cel in every frame of a checked inclusive
+    /// range and summarise the combined change. The caller opens, validates,
+    /// and saves the document.
+    fn apply_across_frames<F>(
+        doc: &mut Document,
+        id: &str,
+        layer: usize,
+        frame: usize,
+        frame_to: usize,
+        count: usize,
+        mut edit: F,
+    ) -> Result<Value, String>
+    where
+        F: FnMut(&mut Document, usize) -> Result<(), String>,
+    {
+        let (mut changed, mut bbox, mut frames_changed): (u64, Option<[u32; 4]>, usize) =
+            (0, None, 0);
+        for current in frame..=frame_to {
+            let before = doc.cel_full(layer, current);
+            edit(doc, current)?;
+            let (frame_changed, frame_bbox) = doc.cel_change_summary(layer, current, &before)?;
+            changed += frame_changed;
+            if frame_changed > 0 {
+                frames_changed += 1;
+            }
+            if let Some([x0, y0, x1, y1]) = frame_bbox {
+                bbox = Some(match bbox {
+                    None => [x0, y0, x1, y1],
+                    Some([a0, b0, a1, b1]) => [a0.min(x0), b0.min(y0), a1.max(x1), b1.max(y1)],
+                });
+            }
+        }
+        let mut ack = Self::change_ack_summary(id, changed, bbox);
+        ack["frame"] = json!(frame);
+        ack["frame_to"] = json!(frame_to);
+        ack["frames_targeted"] = json!(count);
+        ack["frames_changed"] = json!(frames_changed);
+        Ok(ack)
+    }
+
     /// Apply a cel edit and return its changed-pixel count and bounding box.
     fn edit_with_ack<F>(&self, id: &str, layer: usize, frame: usize, f: F) -> Result<Value, String>
     where
@@ -525,16 +565,20 @@ impl Studio {
 
     /// Declarative grid painting: legend (char -> colour or palette index) +
     /// row strings paint a whole region in one call. Palette-index legends are
-    /// palette-true by construction.
+    /// palette-true by construction. `frame_to` paints the same grid onto
+    /// every frame of an inclusive range; `replace` clears the grid's
+    /// rectangle first so skipped cells become transparent.
     pub fn doc_paint_grid(
         &self,
         id: &str,
         layer: usize,
         frame: usize,
+        frame_to: Option<usize>,
         x: i32,
         y: i32,
         legend: serde_json::Map<String, Value>,
         rows: Vec<String>,
+        replace: bool,
     ) -> Result<Value, String> {
         let (_dir, doc) = self.open(id)?;
         let palette = doc.meta().palette.clone();
@@ -592,10 +636,24 @@ impl Studio {
             map.insert(ch, color);
         }
         let counts = std::cell::Cell::new((0u64, 0u64));
-        let mut ack = self.edit_with_ack(id, layer, frame, |d| {
-            counts.set(d.paint_grid(layer, frame, x, y, &map, &rows)?);
+        let mut paint = |d: &mut Document, current: usize| {
+            let (painted, clipped) = d.paint_grid(layer, current, x, y, &map, &rows, replace)?;
+            let (total_painted, total_clipped) = counts.get();
+            counts.set((total_painted + painted, total_clipped + clipped));
             Ok(())
-        })?;
+        };
+        let mut ack = match frame_to {
+            None => self.edit_with_ack(id, layer, frame, |d| paint(d, frame))?,
+            Some(frame_to) => {
+                let (dir, mut doc) = self.open(id)?;
+                let count = Self::checked_edit_frame_range(&doc, layer, frame, frame_to)?;
+                let ack = Self::apply_across_frames(
+                    &mut doc, id, layer, frame, frame_to, count, &mut paint,
+                )?;
+                doc.save(&dir)?;
+                ack
+            }
+        };
         let (painted, clipped) = counts.get();
         ack["painted"] = json!(painted);
         if clipped > 0 {
@@ -629,32 +687,16 @@ impl Studio {
                 let count = Self::checked_edit_frame_range(&doc, layer, frame, frame_to)?;
                 atelier_core::document::validate_op(&operation)?;
 
-                let (mut changed, mut bbox, mut frames_changed): (u64, Option<[u32; 4]>, usize) =
-                    (0, None, 0);
-                for current in frame..=frame_to {
-                    let before = doc.cel_full(layer, current);
-                    doc.apply_op(layer, current, &operation)?;
-                    let (frame_changed, frame_bbox) =
-                        doc.cel_change_summary(layer, current, &before)?;
-                    changed += frame_changed;
-                    if frame_changed > 0 {
-                        frames_changed += 1;
-                    }
-                    if let Some([x0, y0, x1, y1]) = frame_bbox {
-                        bbox = Some(match bbox {
-                            None => [x0, y0, x1, y1],
-                            Some([a0, b0, a1, b1]) => {
-                                [a0.min(x0), b0.min(y0), a1.max(x1), b1.max(y1)]
-                            }
-                        });
-                    }
-                }
+                let ack = Self::apply_across_frames(
+                    &mut doc,
+                    id,
+                    layer,
+                    frame,
+                    frame_to,
+                    count,
+                    |doc, current| doc.apply_op(layer, current, &operation),
+                )?;
                 doc.save(&dir)?;
-                let mut ack = Self::change_ack_summary(id, changed, bbox);
-                ack["frame"] = json!(frame);
-                ack["frame_to"] = json!(frame_to);
-                ack["frames_targeted"] = json!(count);
-                ack["frames_changed"] = json!(frames_changed);
                 ack
             }
         };
@@ -1114,7 +1156,7 @@ mod hardening_tests {
         let mk = |color: Value| {
             let mut legend = serde_json::Map::new();
             legend.insert("k".into(), color);
-            s.doc_paint_grid(id, 0, 0, 0, 0, legend, vec!["k".into()])
+            s.doc_paint_grid(id, 0, 0, None, 0, 0, legend, vec!["k".into()], false)
         };
         // 300 used to truncate to 44 via `as u8`; now it's a loud error.
         let e = mk(json!([255, 300, 0])).unwrap_err();
@@ -1123,6 +1165,101 @@ mod hardening_tests {
         assert!(mk(json!([255, 128, 0, 200])).is_ok());
         assert!(mk(json!([1, 2])).is_err(), "too short must error");
         assert!(mk(json!([1, 2, 3, 4, 5])).is_err(), "too long must error");
+    }
+
+    #[test]
+    fn paint_grid_frame_range_paints_every_frame_in_one_call() {
+        let s = studio("grid-range");
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        s.doc_frame(id, FrameOp::Add, None, None, None, None, Some(2))
+            .unwrap();
+        let legend: serde_json::Map<String, Value> =
+            [("k".into(), json!([9, 8, 7]))].into_iter().collect();
+        let ack = s
+            .doc_paint_grid(
+                id,
+                0,
+                0,
+                Some(1),
+                1,
+                1,
+                legend.clone(),
+                vec!["kk".into()],
+                false,
+            )
+            .unwrap();
+        assert_eq!(ack["frames_targeted"], 2);
+        assert_eq!(ack["frames_changed"], 2);
+        assert_eq!(ack["painted"], 4, "two pixels on each of two frames");
+        let (_, doc) = s.open(id).unwrap();
+        for frame in 0..2 {
+            assert_eq!(doc.cel_full(0, frame).get_pixel(2, 1).0, [9, 8, 7, 255]);
+        }
+        assert_eq!(doc.cel_full(0, 2).get_pixel(2, 1).0, [0, 0, 0, 0]);
+        drop(doc);
+        let error = s
+            .doc_paint_grid(id, 0, 1, Some(3), 0, 0, legend, vec!["k".into()], false)
+            .unwrap_err();
+        assert!(error.contains("out of range"), "got: {error}");
+    }
+
+    #[test]
+    fn paint_grid_replace_clears_skipped_cells_inside_its_rectangle_only() {
+        let s = studio("grid-replace");
+        let created = s.doc_new("d", 4, 4).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        let legend: serde_json::Map<String, Value> =
+            [("k".into(), json!([9, 8, 7]))].into_iter().collect();
+        let full = vec!["kkkk".to_string(); 4];
+        s.doc_paint_grid(id, 0, 0, None, 0, 0, legend.clone(), full.clone(), false)
+            .unwrap();
+        // Without replace, '.' leaves the earlier pixel in place.
+        s.doc_paint_grid(
+            id,
+            0,
+            0,
+            None,
+            1,
+            1,
+            legend.clone(),
+            vec!["k.".into(), ".".into()],
+            false,
+        )
+        .unwrap();
+        let (_, doc) = s.open(id).unwrap();
+        assert_eq!(doc.cel_full(0, 0).get_pixel(2, 1).0[3], 255);
+        drop(doc);
+        // With replace, the 2×2 rectangle is cleared; a short row is padded.
+        s.doc_paint_grid(
+            id,
+            0,
+            0,
+            None,
+            1,
+            1,
+            legend.clone(),
+            vec!["k.".into(), ".".into()],
+            true,
+        )
+        .unwrap();
+        let (_, doc) = s.open(id).unwrap();
+        let cel = doc.cel_full(0, 0);
+        assert_eq!(cel.get_pixel(1, 1).0, [9, 8, 7, 255]);
+        for (x, y) in [(2, 1), (1, 2), (2, 2)] {
+            assert_eq!(cel.get_pixel(x, y).0[3], 0, "({x},{y}) is cleared");
+        }
+        for (x, y) in [(0, 0), (3, 1), (0, 2), (3, 3), (1, 3)] {
+            assert_eq!(cel.get_pixel(x, y).0[3], 255, "({x},{y}) is outside");
+        }
+        drop(doc);
+        // An unknown character fails before anything is cleared.
+        let before = s.open(id).unwrap().1.cel_full(0, 0);
+        assert!(
+            s.doc_paint_grid(id, 0, 0, None, 0, 0, legend, vec!["k?..".into()], true)
+                .is_err()
+        );
+        assert_eq!(s.open(id).unwrap().1.cel_full(0, 0), before);
     }
 
     #[test]
