@@ -56,9 +56,9 @@ impl JsonSchema for DocumentId {
     }
 
     fn json_schema(_: &mut SchemaGenerator) -> Schema {
+        // Not `format: uuid`: a unique prefix of the id is accepted too.
         json_schema!({
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
         })
     }
 }

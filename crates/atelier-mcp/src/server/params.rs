@@ -676,14 +676,14 @@ mod tests {
             ])
         );
         assert_eq!(layer["properties"]["doc_id"]["type"], "string");
-        assert_eq!(layer["properties"]["doc_id"]["format"], "uuid");
+        assert_eq!(layer["properties"]["doc_id"]["type"], "string");
         assert!(layer["$defs"].get("DocumentId").is_none());
 
         let draw = schemars::schema_for!(DocDraw);
         let draw = draw.as_value();
         assert_eq!(draw["additionalProperties"], false);
         assert_eq!(draw["properties"]["doc_id"]["type"], "string");
-        assert_eq!(draw["properties"]["doc_id"]["format"], "uuid");
+        assert_eq!(draw["properties"]["doc_id"]["type"], "string");
         assert_eq!(draw["properties"]["frame_to"]["minimum"], 0);
         assert!(
             !draw["required"]
