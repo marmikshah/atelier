@@ -39,7 +39,7 @@ mod view;
 pub use control::{
     AlphaMode, AnimAuditMode, AnimationFormat, CheckpointAction, CompareMode, DiffRender,
     DocumentId, DumpMode, ExportOp, FontOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
-    PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta, ToolName,
+    PaletteScheme, ReferenceOp, RegionOp, RescaleMethod, RescaleOp, SeamAxis, SheetMeta, ToolName,
 };
 pub use integrity::{IntegrityIssue, IntegritySeverity, StoreIntegrityReport};
 pub use journal::{

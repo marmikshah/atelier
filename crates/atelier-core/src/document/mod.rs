@@ -36,6 +36,7 @@ mod timeline;
 #[cfg(test)]
 mod tests;
 
+pub use draw::{MAX_RESCALE_FACTOR, Rescale};
 pub use export::PngColorMode;
 pub use font::{
     FontGlyph, FontMeta, MAX_FONT_GLYPHS, MAX_FONT_MAPPINGS, MAX_FONT_PIXELS, MAX_FONT_POINTS,

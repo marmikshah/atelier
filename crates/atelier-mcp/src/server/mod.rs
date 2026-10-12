@@ -158,6 +158,7 @@ const fn supports_expected_revision(tool: ToolName) -> bool {
             | ToolName::DocPalette
             | ToolName::DocRef
             | ToolName::DocRegion
+            | ToolName::DocRescale
     )
 }
 
@@ -979,6 +980,7 @@ impl Atelier {
             ToolName::DocDraw => call!(DocDraw, doc_draw),
             ToolName::DocFx => call!(DocFx, doc_fx),
             ToolName::DocRegion => call!(DocRegion, doc_region),
+            ToolName::DocRescale => call!(DocRescale, doc_rescale),
             ToolName::DocPaintGrid => call!(DocPaintGrid, doc_paint_grid),
             ToolName::DocDitherRamp => call!(DocDitherRamp, doc_dither_ramp),
             ToolName::DocLook => call!(DocLook, doc_look),
@@ -1381,6 +1383,7 @@ mod tests {
                 "doc_palette",
                 "doc_ref",
                 "doc_region",
+                "doc_rescale",
             ]
         );
     }
@@ -1483,9 +1486,9 @@ mod tests {
         // `atelier tools` lists the registry only; building a `Studio` for it
         // used to create ~/.atelier/documents as a side effect of `--help`-level
         // work. The router is an associated fn, so nothing here touches disk.
-        assert_eq!(Atelier::registry_tools().len(), 26);
-        assert!(tools_text().starts_with("atelier tools — 26 tools\n"));
-        assert!(tools_markdown().contains("**26** tools"));
+        assert_eq!(Atelier::registry_tools().len(), 27);
+        assert!(tools_text().starts_with("atelier tools — 27 tools\n"));
+        assert!(tools_markdown().contains("**27** tools"));
     }
 
     #[test]

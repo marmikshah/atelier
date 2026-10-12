@@ -22,7 +22,10 @@ pub use colour::{
 pub use noise::{
     dither_threshold, fbm, hash2, perlin, ramp_dither_threshold, sample_gradient, voronoi,
 };
-pub use transform::{ScaleMethod, interior_distance, remove_background, rotate_quarters, scale};
+pub use transform::{
+    ScaleMethod, downscale_majority, interior_distance, remove_background, rotate_quarters, scale,
+    upscale_epx,
+};
 
 /// Per-image ceiling for generated RGBA output. A maximum-size document is
 /// 4096² pixels; this budget still permits several frames in a modest sheet or

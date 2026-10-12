@@ -15,7 +15,7 @@ use atelier_core::raster::{Blend, SaturationCurve};
 use atelier_studio::{
     AlphaMode, AnimAuditMode, AnimationFormat, CheckpointAction, CompareMode, DiffRender,
     DocumentId, DumpMode, ExportOp, FontOp, FrameOp, LayerOp, LookBackground, LookMode, PaletteOp,
-    PaletteScheme, ReferenceOp, RegionOp, SeamAxis, SheetMeta,
+    PaletteScheme, ReferenceOp, RegionOp, RescaleMethod, RescaleOp, SeamAxis, SheetMeta,
 };
 
 // --- library params --------------------------------------------------------
@@ -261,6 +261,20 @@ pub(crate) struct DocRegion {
     pub(crate) rect: [i32; 4],
     /// For move, destination offset [dx,dy].
     pub(crate) offset: Option<[i32; 2]>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct DocRescale {
+    pub(crate) doc_id: DocumentId,
+    /// up | down.
+    pub(crate) op: RescaleOp,
+    /// Whole-number factor for both sides; `down` needs both to divide evenly.
+    #[schemars(range(min = 2, max = 16))]
+    pub(crate) factor: u32,
+    /// up: nearest (default) | epx (smooth diagonals; factor 2, 4, 8, 16).
+    /// down: majority (default) | nearest | average (blends new colours).
+    pub(crate) method: Option<RescaleMethod>,
 }
 
 #[derive(Deserialize, JsonSchema)]
