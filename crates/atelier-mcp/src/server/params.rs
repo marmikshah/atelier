@@ -540,8 +540,8 @@ pub(crate) struct DocPaintGrid {
     /// Top-left of the grid (default 0,0). Crop rows to the painted pixels.
     pub(crate) x: Option<i32>,
     pub(crate) y: Option<i32>,
-    /// Single-character keys -> [r,g,b(,a)] colour OR an integer palette index
-    /// (palette-true by construction). '.' and ' ' are reserved: untouched.
+    /// Single-character keys -> [r,g,b(,a)] or "#rrggbb" colour OR an integer
+    /// palette index (palette-true by construction). '.' and ' ' are reserved.
     pub(crate) legend: serde_json::Map<String, Value>,
     /// One string per pixel row, e.g. ["..kk..", ".koook."].
     pub(crate) rows: Vec<String>,

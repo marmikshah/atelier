@@ -610,7 +610,7 @@ impl Studio {
                         )
                     })?
                 }
-                Value::Array(_) => {
+                Value::Array(_) | Value::String(_) => {
                     // Strict like validate_op's colour check: exactly
                     // [r,g,b] or [r,g,b,a], every component 0..=255 — one shared
                     // predicate in core. The old parse dropped non-numbers
@@ -620,7 +620,7 @@ impl Studio {
                         Some(c) => c,
                         None => {
                             return Err(format!(
-                                "legend '{}': colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {}",
+                                "legend '{}': colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, or \"#rrggbb\", got {}",
                                 k, v
                             ));
                         }
@@ -628,7 +628,7 @@ impl Studio {
                 }
                 _ => {
                     return Err(format!(
-                        "legend '{}': value must be [r,g,b(,a)] or a palette index",
+                        "legend '{}': value must be [r,g,b(,a)], \"#rrggbb\", or a palette index",
                         k
                     ));
                 }
@@ -1164,6 +1164,8 @@ mod hardening_tests {
         assert!(mk(json!([255, 128, 0])).is_ok());
         assert!(mk(json!([255, 128, 0, 200])).is_ok());
         assert!(mk(json!([1, 2])).is_err(), "too short must error");
+        assert!(mk(json!("#ff8000")).is_ok(), "hex colours are accepted");
+        assert!(mk(json!("#ff80")).is_err(), "malformed hex must error");
         assert!(mk(json!([1, 2, 3, 4, 5])).is_err(), "too long must error");
     }
 
