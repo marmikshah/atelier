@@ -42,6 +42,13 @@ impl Atelier {
             .doc_region(&p.doc_id, p.op, p.layer, p.frame, Some(p.rect), p.offset))
     }
 
+    #[tool(description = "Resize the whole document, canvas and every cel, by an integer factor.")]
+    pub(crate) fn doc_rescale(&self, Parameters(p): Parameters<DocRescale>) -> CallToolResult {
+        res(self
+            .studio()
+            .doc_rescale(&p.doc_id, p.op, p.factor, p.method))
+    }
+
     #[tool(description = "Paint a region from character rows and a colour legend.")]
     pub(crate) fn doc_paint_grid(&self, Parameters(p): Parameters<DocPaintGrid>) -> CallToolResult {
         let studio = self.studio();

@@ -11,6 +11,30 @@ use super::{AlphaSnap, Document};
 /// identically to the true curve at any width.
 const CURVE_TOLERANCE: f32 = 0.25;
 
+/// Largest whole-document rescale factor in one call.
+pub const MAX_RESCALE_FACTOR: u32 = 16;
+
+/// How [`Document::rescale`] resamples every cel.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Rescale {
+    /// Each pixel becomes a solid block.
+    UpNearest,
+    /// EPX / Scale2x: smooths diagonal steps, adds no colours.
+    UpEpx,
+    /// Each block's most common colour: adds no colours.
+    DownMajority,
+    /// Each block's centre pixel.
+    DownNearest,
+    /// Alpha-weighted mean of each block: blends into new colours.
+    DownAverage,
+}
+
+impl Rescale {
+    pub const fn is_upscale(self) -> bool {
+        matches!(self, Self::UpNearest | Self::UpEpx)
+    }
+}
+
 impl Document {
     pub fn pencil(
         &mut self,
@@ -376,6 +400,94 @@ impl Document {
             }
         };
         self.mark_dirty(layer, frame);
+        Ok(())
+    }
+
+    /// Resize the whole document by one integer `factor`: the canvas and every
+    /// cel on every layer and frame, so proportions are kept exactly. Nothing
+    /// changes unless every check passes.
+    pub fn rescale(&mut self, mode: Rescale, factor: u32) -> Result<(), String> {
+        if !(2..=MAX_RESCALE_FACTOR).contains(&factor) {
+            return Err(format!(
+                "rescale factor must be 2..={MAX_RESCALE_FACTOR} (got {factor})"
+            ));
+        }
+        if self.meta.font.is_some() {
+            return Err(
+                "this document has pixel-font metadata measured in pixels; clear it with doc_font before rescaling"
+                    .into(),
+            );
+        }
+        let (w, h) = (self.meta.w, self.meta.h);
+        let (new_w, new_h) = if mode.is_upscale() {
+            if mode == Rescale::UpEpx && !factor.is_power_of_two() {
+                return Err(format!(
+                    "method epx doubles the canvas, so factor must be 2, 4, 8, or 16 (got {factor}); use nearest for other factors"
+                ));
+            }
+            let grown = |side: u32| {
+                side.checked_mul(factor)
+                    .filter(|side| *side <= super::MAX_DOCUMENT_DIMENSION)
+            };
+            match (grown(w), grown(h)) {
+                (Some(new_w), Some(new_h)) => (new_w, new_h),
+                _ => {
+                    return Err(format!(
+                        "{w}x{h} scaled up by {factor} exceeds the {} pixel limit per side",
+                        super::MAX_DOCUMENT_DIMENSION
+                    ));
+                }
+            }
+        } else {
+            if !w.is_multiple_of(factor) || !h.is_multiple_of(factor) {
+                return Err(format!(
+                    "{w}x{h} does not divide evenly by {factor}; rescale keeps proportions exactly, so choose a factor that divides both sides"
+                ));
+            }
+            (w / factor, h / factor)
+        };
+        super::checked_cel_pixel_total(
+            self.cels
+                .keys()
+                .map(|_| (u64::from(new_w), u64::from(new_h))),
+        )?;
+
+        let keys: Vec<(usize, usize)> = self.cels.keys().copied().collect();
+        for (layer, frame) in keys {
+            let full = self.cel_full(layer, frame);
+            let resized = match mode {
+                Rescale::UpNearest => {
+                    raster::scale(&full, new_w, new_h, raster::ScaleMethod::Nearest)
+                }
+                Rescale::UpEpx => {
+                    let mut image = full;
+                    for _ in 0..factor.trailing_zeros() {
+                        image = raster::upscale_epx(&image);
+                    }
+                    image
+                }
+                Rescale::DownMajority => raster::downscale_majority(&full, factor),
+                Rescale::DownNearest => {
+                    // The centre sample of each block.
+                    let mut image = RgbaImage::new(new_w, new_h);
+                    for y in 0..new_h {
+                        for x in 0..new_w {
+                            let source =
+                                full.get_pixel(x * factor + factor / 2, y * factor + factor / 2);
+                            image.put_pixel(x, y, *source);
+                        }
+                    }
+                    image
+                }
+                Rescale::DownAverage => {
+                    raster::scale(&full, new_w, new_h, raster::ScaleMethod::AreaAverage)
+                }
+            };
+            self.cels.insert((layer, frame), (0, 0, resized));
+            self.mark_dirty(layer, frame);
+        }
+        self.meta.w = new_w;
+        self.meta.h = new_h;
         Ok(())
     }
 

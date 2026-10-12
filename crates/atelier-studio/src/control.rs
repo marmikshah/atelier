@@ -250,6 +250,7 @@ parsed_control_enum! {
         DocPalette => "doc_palette",
         DocRef => "doc_ref",
         DocRegion => "doc_region",
+        DocRescale => "doc_rescale",
         DocSeamReport => "doc_seam_report",
         DocSilhouette => "doc_silhouette",
         ListDocs => "list_docs"
@@ -284,7 +285,8 @@ impl ToolName {
             | Self::DocPaintGrid
             | Self::DocPalette
             | Self::DocRef
-            | Self::DocRegion => false,
+            | Self::DocRegion
+            | Self::DocRescale => false,
         }
     }
 
@@ -300,7 +302,8 @@ impl ToolName {
             | Self::DocLayer
             | Self::DocPaintGrid
             | Self::DocPalette
-            | Self::DocRegion => true,
+            | Self::DocRegion
+            | Self::DocRescale => true,
             Self::DeleteDoc
             | Self::DocAnimAudit
             | Self::DocCheckpoint
@@ -378,6 +381,22 @@ named_control_enum! {
     pub enum RegionOp {
         Clear => "clear",
         Move => "move"
+    }
+}
+
+named_control_enum! {
+    pub enum RescaleOp {
+        Up => "up",
+        Down => "down"
+    }
+}
+
+named_control_enum! {
+    pub enum RescaleMethod {
+        Nearest => "nearest",
+        Epx => "epx",
+        Majority => "majority",
+        Average => "average"
     }
 }
 
