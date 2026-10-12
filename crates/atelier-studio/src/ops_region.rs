@@ -115,12 +115,14 @@ mod tests {
                 id,
                 0,
                 0,
+                None,
                 0,
                 0,
                 [("x".into(), json!([255, 0, 0, 255]))]
                     .into_iter()
                     .collect(),
                 vec!["xx".into()],
+                false,
             )
             .unwrap();
 

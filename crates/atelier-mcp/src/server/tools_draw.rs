@@ -49,10 +49,12 @@ impl Atelier {
             &p.doc_id,
             p.layer,
             p.frame,
+            p.frame_to,
             p.x.unwrap_or(0),
             p.y.unwrap_or(0),
             p.legend,
             p.rows,
+            p.replace.unwrap_or(false),
         );
         res(r)
     }

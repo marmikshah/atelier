@@ -1101,7 +1101,17 @@ mod tests {
         let mut legend = Map::new();
         legend.insert("x".into(), json!([255, 32, 16, 255]));
         studio
-            .doc_paint_grid(&id, 0, 0, 0, 0, legend, vec!["xx".into(), "xx".into()])
+            .doc_paint_grid(
+                &id,
+                0,
+                0,
+                None,
+                0,
+                0,
+                legend,
+                vec!["xx".into(), "xx".into()],
+                false,
+            )
             .unwrap();
         studio.set_document_revision(&id, 7).unwrap();
         studio

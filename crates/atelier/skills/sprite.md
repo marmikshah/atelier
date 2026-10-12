@@ -57,7 +57,9 @@ doc_new → lock a palette → silhouette → look → block → look → detail
    a broken silhouette is wasted work.
 4. **Block the big masses** per layer with one `doc_draw` operation per call.
    Use `doc_paint_grid` when the mass is most naturally expressed as dense pixel
-   rows.
+   rows. Send only the rows and columns that hold pixels and place them with
+   `x`/`y`; never pad a grid out to the canvas with `.`. Pass `replace: true`
+   when the grid should overwrite what is under it, instead of clearing first.
 5. **`doc_look` after every coherent pass.** It hands the frame back as an image. Look at
    it and say what is wrong in words before you touch anything. If you cannot
    name the problem, you are guessing.
@@ -72,6 +74,8 @@ Iterate 4–7. Stop when the next fix would not change how it reads at 1×.
 ## Animating
 
 - Duplicate, then edit what moves: `doc_frame op=add copy_from=<n>`.
+- The same pixels on several frames are one call: `doc_paint_grid`, `doc_draw`
+  and `doc_fx` take `frame_to`.
 - **Repaint the moving part on its own layer.** The body layer should be
   untouched between frames if the body does not move. This is the whole reason
   for the layer split.
