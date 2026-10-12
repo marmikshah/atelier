@@ -799,6 +799,14 @@ impl Atelier {
         .map_err(|error| ErrorData::internal_error(error, None))?;
 
         let started = std::time::Instant::now();
+        // Short ids are expanded once, under the store lock, so the handler
+        // and the journal only ever see full ids.
+        let mut args = args;
+        if let Err(error) = self.expand_short_ids(&mut args) {
+            let result = res(Err(error));
+            log_call(tool, &args, caller, &result, started.elapsed());
+            return Ok(result);
+        }
         let mut result =
             self.invoke_store_call(tool, &args, journaled, store_mutation, expected_revision)?;
         if is_error_result(&result)
@@ -817,6 +825,22 @@ impl Atelier {
         }
         log_call(tool, &args, caller, &result, started.elapsed());
         Ok(result)
+    }
+
+    /// Replace a unique document-id prefix in `doc_id` or `set_doc` with the
+    /// full id. Full ids and malformed values pass through untouched.
+    fn expand_short_ids(&self, args: &mut Value) -> Result<(), String> {
+        let Some(object) = args.as_object_mut() else {
+            return Ok(());
+        };
+        for key in ["doc_id", "set_doc"] {
+            if let Some(Value::String(given)) = object.get(key)
+                && let Some(full) = self.studio().expand_id_prefix(given)?
+            {
+                object.insert(key.into(), json!(full));
+            }
+        }
+        Ok(())
     }
 
     fn invoke_store_call(
@@ -1248,7 +1272,8 @@ impl ServerHandler for Atelier {
             .with_website_url(env!("CARGO_PKG_HOMEPAGE"));
         info.instructions = Some(format!(
             "Atelier is a stateless, offline pixel-art editor. Keep the doc_id returned \
-             by doc_new and pass it explicitly on every later document call. Each doc_draw \
+             by doc_new and pass it explicitly on every later document call; its first 8 \
+             or more characters are enough while they are unique. Each doc_draw \
              or doc_fx call applies exactly one operation; use doc_paint_grid for dense pixel \
              rows and doc_look to inspect the result. MCP \
              _meta may carry a log label at \"io.github.marmikshah.atelier/session\", but \
