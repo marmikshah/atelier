@@ -99,6 +99,9 @@ impl Drop for StoreLock {
     }
 }
 
+/// Fewest characters accepted as a short document id.
+pub const MIN_ID_PREFIX: usize = 8;
+
 impl Studio {
     /// The store resolution policy, pure so it is testable without touching
     /// process env or cwd:
@@ -243,6 +246,32 @@ impl Studio {
         }
         out.sort();
         out
+    }
+
+    /// Expand a short document id to the one stored id it begins. A full id
+    /// and anything that is not a plausible prefix return `None`, leaving the
+    /// usual validation to report them. A prefix that matches no document, or
+    /// more than one, is an error: a short id is never guessed.
+    pub fn expand_id_prefix(&self, given: &str) -> Result<Option<String>, String> {
+        let plausible = (MIN_ID_PREFIX..36).contains(&given.len())
+            && given
+                .bytes()
+                .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f' | b'-'));
+        if !plausible {
+            return Ok(None);
+        }
+        let mut matches = self
+            .doc_ids()
+            .into_iter()
+            .filter(|id| id.starts_with(given));
+        match (matches.next(), matches.next()) {
+            (Some(id), None) => Ok(Some(id)),
+            (None, _) => Err(format!("no document id starts with '{given}'")),
+            (Some(_), Some(_)) => Err(format!(
+                "document id prefix '{given}' matches {} documents; pass more characters",
+                2 + matches.count()
+            )),
+        }
     }
 
     fn existing_doc_dir(&self, id: &str) -> Result<PathBuf, String> {
@@ -852,6 +881,34 @@ mod tests {
             .unwrap(),
         );
         validate_journal(&[create, palette]).unwrap();
+    }
+
+    #[test]
+    fn id_prefixes_expand_only_when_unique() {
+        let s = studio("id-prefix");
+        let created = s.doc_new("d", 8, 8).unwrap();
+        let id = created["doc_id"].as_str().unwrap();
+        assert_eq!(s.expand_id_prefix(&id[..8]).unwrap().as_deref(), Some(id));
+        assert_eq!(s.expand_id_prefix(&id[..20]).unwrap().as_deref(), Some(id));
+        // Full ids, too-short prefixes, and non-id text are left for validation.
+        assert_eq!(s.expand_id_prefix(id).unwrap(), None);
+        assert_eq!(s.expand_id_prefix(&id[..7]).unwrap(), None);
+        assert_eq!(s.expand_id_prefix("not-an-id").unwrap(), None);
+        let error = s.expand_id_prefix("00000000").unwrap_err();
+        assert!(error.contains("no document id starts with"), "got: {error}");
+
+        // A second document sharing the first 35 characters makes it ambiguous.
+        let last = if id.ends_with('0') { '1' } else { '0' };
+        let twin = format!("{}{last}", &id[..35]);
+        fs::create_dir(s.doc_dir(&twin)).unwrap();
+        fs::copy(
+            s.doc_dir(id).join("doc.json"),
+            s.doc_dir(&twin).join("doc.json"),
+        )
+        .unwrap();
+        let error = s.expand_id_prefix(&id[..8]).unwrap_err();
+        assert!(error.contains("matches 2 documents"), "got: {error}");
+        assert_eq!(s.expand_id_prefix(id).unwrap(), None);
     }
 
     #[test]
