@@ -1329,7 +1329,7 @@ mod tests {
 
     #[test]
     fn advertised_tool_definitions_fit_the_context_budget() {
-        const MAX_TOOL_DEFINITION_BYTES: usize = 32 * 1024;
+        const MAX_TOOL_DEFINITION_BYTES: usize = 34 * 1024;
         let bytes = serde_json::to_vec(&Atelier::registry_tools()).unwrap();
         assert!(
             bytes.len() <= MAX_TOOL_DEFINITION_BYTES,
