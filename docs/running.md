@@ -106,12 +106,19 @@ paint_grid layer=3 frame=0 x=12 y=2 legend=C:#5ad8f8,K:0 rows:4
 - Each call is the tool name without its `doc_` prefix, followed by
   `key=value` arguments.
 - Numbers, plain words, and `#` colours are written as they are. A list of
-  them is joined by commas (`0,0,32,32`), and a map of them is written as
-  `key:value` pairs (`C:#5ad8f8,K:0`). Any other value is JSON, such as
-  `"glass back"` or `[[1,2],[3,4]]`.
+  them is joined by commas (`0,0,32,32`), a list of such lists by spaces
+  (`points=7,33 17,33 18,33`), and a map of them is written as `key:value`
+  pairs (`C:#5ad8f8,K:0`). Any other value is JSON, such as `"glass back"`.
 - `rows:N` ends a grid call and is followed by N rows between `|` bars.
 - Blank lines and lines that start with `#` are ignored, so a recipe can carry
   notes.
+
+A recipe records calls, not pixels, so what it draws depends on how the tools
+behave. The header names the Atelier version that wrote it, and later versions
+are expected to replay it to the same picture. When a fix changes what a tool
+draws, the recipes that depend on it are re-recorded rather than edited; the
+showcase's CI job replays every recipe and compares the result with the
+committed animation, so such a change cannot slip through unnoticed.
 
 To see what a recipe draws without saving anything, add `--show`. Each step is
 printed with its layer name and the pixels it changed, in terminal colour:
