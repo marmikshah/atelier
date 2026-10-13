@@ -55,7 +55,7 @@ doc_paint_grid layer=1 frame=0 x=8 y=5 legend={"D":0,"L":3,"S":1,"o":2} rows:17
   |.....DSSSSD.....|
   |......DSSD......|
   |.......DD.......|
-doc_paint_grid layer=0 frame=0 x=12 y=22 legend={"D":0,"L":3,"S":1,"o":2} rows:8
+doc_paint_grid layer=0 frame=0 x=12 y=22 legend={"D":0,"S":1,"o":2} rows:8
   |..DooD..|
   |.DooooD.|
   |DooooooD|
@@ -120,24 +120,24 @@ doc_paint_grid layer=2 frame=6 x=9 y=3 legend={"D":0,"L":3,"o":2} rows:3
   |ooD........Doo|
   |...D......D...|
 doc_region op=clear layer=3 frame=6 rect=[10,10,12,4]
-doc_paint_grid layer=3 frame=6 x=10 y=12 legend={"e":0} rows:2
-  |.eeee..eeee.|
-  |..eee..eee..|
+doc_paint_grid layer=3 frame=6 x=11 y=12 legend={"e":0} rows:2
+  |eeee..eeee|
+  |.eee..eee.|
 doc_fx op=shift layer=0 frame=6 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=1 frame=6 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=2 frame=6 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=3 frame=6 dx=0 dy=-1 wrap=false
 doc_region op=clear layer=3 frame=7 rect=[10,10,12,4]
-doc_paint_grid layer=3 frame=7 x=10 y=13 legend={"e":0} rows:1
-  |..eee..eee..|
+doc_paint_grid layer=3 frame=7 x=12 y=13 legend={"e":0} rows:1
+  |eee..eee|
 doc_fx op=shift layer=0 frame=7 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=1 frame=7 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=2 frame=7 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=3 frame=7 dx=0 dy=-1 wrap=false
 doc_region op=clear layer=3 frame=8 rect=[10,10,12,4]
-doc_paint_grid layer=3 frame=8 x=10 y=12 legend={"e":0} rows:2
-  |.eeee..eeee.|
-  |..eee..eee..|
+doc_paint_grid layer=3 frame=8 x=11 y=12 legend={"e":0} rows:2
+  |eeee..eeee|
+  |.eee..eee.|
 doc_frame op=delete frame=1
 doc_frame op=delete frame=1
 doc_frame op=delete frame=1
@@ -152,64 +152,69 @@ doc_fx op=shift layer=0 frame=1 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=1 frame=1 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=2 frame=1 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=3 frame=1 dx=0 dy=-1 wrap=false
-doc_region op=clear layer=2 frame=2 rect=[8,2,23,6]
-doc_paint_grid layer=2 frame=2 x=9 y=3 legend={"D":0,"L":3,"o":2} rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
+doc_paint_grid layer=2 frame=2 x=8 y=2 replace=true legend={"D":0,"L":3,"o":2} rows:5
+  |................|
+  |.LL..........LL.|
+  |.ooD........Doo.|
+  |....D......D....|
+  |................|
 doc_fx op=shift layer=0 frame=2 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=1 frame=2 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=2 frame=2 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=3 frame=2 dx=0 dy=-1 wrap=false
-doc_region op=clear layer=2 frame=3 rect=[8,2,23,6]
-doc_paint_grid layer=2 frame=3 x=9 y=3 legend={"D":0,"L":3,"o":2} rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
+doc_paint_grid layer=2 frame=3 x=8 y=2 replace=true legend={"D":0,"L":3,"o":2} rows:5
+  |................|
+  |.LL..........LL.|
+  |.ooD........Doo.|
+  |....D......D....|
+  |................|
 doc_fx op=shift layer=0 frame=3 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=1 frame=3 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=2 frame=3 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=3 frame=3 dx=0 dy=-2 wrap=false
-doc_region op=clear layer=2 frame=4 rect=[8,2,23,6]
-doc_paint_grid layer=2 frame=4 x=9 y=3 legend={"D":0,"L":3,"o":2} rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
+doc_paint_grid layer=2 frame=4 x=8 y=2 replace=true legend={"D":0,"L":3,"o":2} rows:5
+  |................|
+  |.LL..........LL.|
+  |.ooD........Doo.|
+  |....D......D....|
+  |................|
 doc_fx op=shift layer=0 frame=4 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=1 frame=4 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=2 frame=4 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=3 frame=4 dx=0 dy=-2 wrap=false
-doc_region op=clear layer=2 frame=5 rect=[8,2,23,6]
-doc_paint_grid layer=2 frame=5 x=9 y=3 legend={"D":0,"L":3,"o":2} rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
+doc_paint_grid layer=2 frame=5 x=8 y=2 replace=true legend={"D":0,"L":3,"o":2} rows:5
+  |................|
+  |.LL..........LL.|
+  |.ooD........Doo.|
+  |....D......D....|
+  |................|
 doc_fx op=shift layer=0 frame=5 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=1 frame=5 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=2 frame=5 dx=0 dy=-2 wrap=false
 doc_fx op=shift layer=3 frame=5 dx=0 dy=-2 wrap=false
-doc_region op=clear layer=2 frame=6 rect=[8,2,23,6]
-doc_paint_grid layer=2 frame=6 x=9 y=3 legend={"D":0,"L":3,"o":2} rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
+doc_paint_grid layer=2 frame=6 x=8 y=2 replace=true legend={"D":0,"L":3,"o":2} rows:5
+  |................|
+  |.LL..........LL.|
+  |.ooD........Doo.|
+  |....D......D....|
+  |................|
 doc_region op=clear layer=3 frame=6 rect=[9,9,22,14]
-doc_paint_grid layer=3 frame=6 x=10 y=12 legend={"e":0} rows:2
-  |.eeee..eeee.|
-  |..eee..eee..|
+doc_paint_grid layer=3 frame=6 x=11 y=12 legend={"e":0} rows:2
+  |eeee..eeee|
+  |.eee..eee.|
 doc_fx op=shift layer=0 frame=6 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=1 frame=6 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=2 frame=6 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=3 frame=6 dx=0 dy=-1 wrap=false
 doc_region op=clear layer=3 frame=7 rect=[9,9,22,14]
-doc_paint_grid layer=3 frame=7 x=10 y=13 legend={"e":0} rows:1
-  |..eee..eee..|
+doc_paint_grid layer=3 frame=7 x=12 y=13 legend={"e":0} rows:1
+  |eee..eee|
 doc_fx op=shift layer=0 frame=7 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=1 frame=7 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=2 frame=7 dx=0 dy=-1 wrap=false
 doc_fx op=shift layer=3 frame=7 dx=0 dy=-1 wrap=false
 doc_region op=clear layer=3 frame=8 rect=[9,9,22,14]
-doc_paint_grid layer=3 frame=8 x=10 y=12 legend={"e":0} rows:2
-  |.eeee..eeee.|
-  |..eee..eee..|
+doc_paint_grid layer=3 frame=8 x=11 y=12 legend={"e":0} rows:2
+  |eeee..eeee|
+  |.eee..eee.|
 doc_add_tag name=idle direction=forward from=0 to=9

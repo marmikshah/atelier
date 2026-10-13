@@ -6,90 +6,58 @@ doc_layer op=add name=bubbles
 doc_layer op=add name=glass
 doc_layer op=add name=cork
 doc_palette op=set colors=[[27,34,56,255],[214,241,245,255],[47,179,107,255],[23,113,90,255],[166,242,160,255],[185,121,63,255]]
-doc_paint_grid layer=3 frame=0 x=0 y=0 legend={"O":[27,34,56,255],"W":[214,241,245,255]} rows:32
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |...........OOOOOOOOOO...........|
-  |............O......O............|
-  |............OW.....O............|
-  |............OW.....O............|
-  |............OW.....O............|
-  |...........O........O...........|
-  |..........O..........O..........|
-  |........OO............OO........|
-  |.......O................O.......|
-  |......O..................O......|
-  |.....O.................W..O.....|
-  |.....O..W.................O.....|
-  |....O..W................W..O....|
-  |....O..W...................O....|
-  |....O..W...................O....|
-  |....O..W...................O....|
-  |....O...W..................O....|
-  |.....O....................O.....|
-  |.....O....................O.....|
-  |......O....W.............O......|
-  |.......O................O.......|
-  |........OO............OO........|
-  |..........OO........OO..........|
-  |............OOOOOOOO............|
-  |................................|
-doc_paint_grid layer=4 frame=0 x=0 y=2 legend={"C":[185,121,63,255],"O":[27,34,56,255]} rows:9
-  |            OOOOOOOO            |
-  |           OCCCCCCCCO           |
-  |           OCCCCCCCCO           |
-  |           OCCCCCCCCO           |
-  |            OCCCCCCO            |
-  |             CCCCCC             |
-  |             CCCCCC             |
-  |             CCCCCC             |
-  |             OOOOOO             |
-doc_paint_grid layer=1 frame=0 x=0 y=0 legend={"D":[23,113,90,255]} rows:32
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |                                |
-  |     D                   DD     |
-  |     D                   DD     |
-  |     DD                 DDD     |
-  |      D                 DD      |
-  |      DD               DDD      |
-  |       DD            DDDD       |
-  |        DDD        DDDDD        |
-  |          DDD   DDDDDD          |
-  |            DDDDDDDD            |
-  |                                |
-  |                                |
-doc_draw op=pencil layer=4 frame=0 color=[27,34,56,255] points=[[13,4],[17,3],[16,5],[15,8]]
-doc_draw op=pencil layer=3 frame=0 color=[214,241,245,255] erase=true points=[[13,9],[13,10]]
+doc_paint_grid layer=3 frame=0 x=4 y=7 legend={"O":"#1b2238","W":"#d6f1f5"} rows:24
+  |.......OOOOOOOOOO.......|
+  |........O......O........|
+  |........OW.....O........|
+  |........OW.....O........|
+  |........OW.....O........|
+  |.......O........O.......|
+  |......O..........O......|
+  |....OO............OO....|
+  |...O................O...|
+  |..O..................O..|
+  |.O.................W..O.|
+  |.O..W.................O.|
+  |O..W................W..O|
+  |O..W...................O|
+  |O..W...................O|
+  |O..W...................O|
+  |O...W..................O|
+  |.O....................O.|
+  |.O....................O.|
+  |..O....W.............O..|
+  |...O................O...|
+  |....OO............OO....|
+  |......OO........OO......|
+  |........OOOOOOOO........|
+doc_paint_grid layer=4 frame=0 x=11 y=2 legend={"C":"#b9793f","O":"#1b2238"} rows:9
+  | OOOOOOOO.|
+  |OCCCCCCCCO|
+  |OCCCCCCCCO|
+  |OCCCCCCCCO|
+  | OCCCCCCO.|
+  |  CCCCCC..|
+  |  CCCCCC..|
+  |  CCCCCC..|
+  |  OOOOOO..|
+doc_paint_grid layer=1 frame=0 x=5 y=21 legend={"D":"#17715a"} rows:9
+  |D                   DD|
+  |D                   DD|
+  |DD                 DDD|
+  | D                 DD.|
+  | DD               DDD.|
+  |  DD            DDDD..|
+  |   DDD        DDDDD...|
+  |     DDD   DDDDDD.....|
+  |       DDDDDDDD.......|
+doc_draw op=pencil layer=4 frame=0 color="#1b2238" points=[[13,4],[17,3],[16,5],[15,8]]
+doc_draw op=pencil layer=3 frame=0 color="#d6f1f5" erase=true points=[[13,9],[13,10]]
 doc_region op=clear layer=3 frame=0 rect=[13,9,1,2]
-doc_draw op=pencil layer=3 frame=0 color=[27,34,56,255] points=[[11,7],[12,7],[13,7],[12,8],[12,9]]
+doc_draw op=pencil layer=3 frame=0 color="#1b2238" points=[[11,7],[12,7],[13,7],[12,8],[12,9]]
 doc_region op=clear layer=3 frame=0 rect=[13,10,13,10]
 doc_frame op=add copy_from=0 count=9
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=0 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -122,8 +90,7 @@ doc_paint_grid layer=0 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=1 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -156,8 +123,7 @@ doc_paint_grid layer=0 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=2 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -190,8 +156,7 @@ doc_paint_grid layer=0 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=3 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -224,8 +189,7 @@ doc_paint_grid layer=0 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=4 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -258,8 +222,7 @@ doc_paint_grid layer=0 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=5 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -292,8 +255,7 @@ doc_paint_grid layer=0 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=6 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -326,8 +288,7 @@ doc_paint_grid layer=0 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=7 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -360,8 +321,7 @@ doc_paint_grid layer=0 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=8 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -394,8 +354,7 @@ doc_paint_grid layer=0 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=9 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -428,8 +387,7 @@ doc_paint_grid layer=0 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=0 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -462,8 +420,7 @@ doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=1 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -496,8 +453,7 @@ doc_paint_grid layer=2 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=2 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -530,8 +486,7 @@ doc_paint_grid layer=2 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=3 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -564,8 +519,7 @@ doc_paint_grid layer=2 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=4 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -598,8 +552,7 @@ doc_paint_grid layer=2 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=5 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -632,8 +585,7 @@ doc_paint_grid layer=2 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=6 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -666,8 +618,7 @@ doc_paint_grid layer=2 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=7 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -700,8 +651,7 @@ doc_paint_grid layer=2 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=8 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -734,8 +684,7 @@ doc_paint_grid layer=2 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=9 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -768,7 +717,7 @@ doc_paint_grid layer=2 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_draw op=pencil layer=3 frame=0 frame_to=9 color=[214,241,245,255] points=[[10,14],[9,15],[8,16],[7,17],[22,15]]
+doc_draw op=pencil layer=3 frame=0 frame_to=9 color="#d6f1f5" points=[[10,14],[9,15],[8,16],[7,17],[22,15]]
 doc_region op=clear layer=3 frame=0 rect=[13,11,13,11]
 doc_region op=clear layer=3 frame=0 rect=[8,18,8,18]
 doc_region op=clear layer=3 frame=1 rect=[13,11,13,11]
@@ -789,8 +738,7 @@ doc_region op=clear layer=3 frame=8 rect=[13,11,13,11]
 doc_region op=clear layer=3 frame=8 rect=[8,18,8,18]
 doc_region op=clear layer=3 frame=9 rect=[13,11,13,11]
 doc_region op=clear layer=3 frame=9 rect=[8,18,8,18]
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=0 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -823,8 +771,7 @@ doc_paint_grid layer=0 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=1 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -857,8 +804,7 @@ doc_paint_grid layer=0 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=2 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -891,8 +837,7 @@ doc_paint_grid layer=0 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=3 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -925,8 +870,7 @@ doc_paint_grid layer=0 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=4 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -959,8 +903,7 @@ doc_paint_grid layer=0 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=5 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -993,8 +936,7 @@ doc_paint_grid layer=0 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=6 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1027,8 +969,7 @@ doc_paint_grid layer=0 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=7 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1061,8 +1002,7 @@ doc_paint_grid layer=0 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=8 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1095,8 +1035,7 @@ doc_paint_grid layer=0 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=0 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=0 frame=9 x=0 y=0 replace=true legend={"G":"#2fb36b","L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1129,8 +1068,7 @@ doc_paint_grid layer=0 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |            GGGGGGGG            |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=0 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1163,8 +1101,7 @@ doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=1 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1197,8 +1134,7 @@ doc_paint_grid layer=2 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=2 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1231,8 +1167,7 @@ doc_paint_grid layer=2 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=3 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1265,8 +1200,7 @@ doc_paint_grid layer=2 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=4 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1299,8 +1233,7 @@ doc_paint_grid layer=2 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=5 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1333,8 +1266,7 @@ doc_paint_grid layer=2 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=6 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1367,8 +1299,7 @@ doc_paint_grid layer=2 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=7 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1401,8 +1332,7 @@ doc_paint_grid layer=2 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=8 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1435,8 +1365,7 @@ doc_paint_grid layer=2 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=9 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1469,8 +1398,7 @@ doc_paint_grid layer=2 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=0 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1503,8 +1431,7 @@ doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=1 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1537,8 +1464,7 @@ doc_paint_grid layer=2 frame=1 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=2 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1571,8 +1497,7 @@ doc_paint_grid layer=2 frame=2 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=3 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1605,8 +1530,7 @@ doc_paint_grid layer=2 frame=3 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=4 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1639,8 +1563,7 @@ doc_paint_grid layer=2 frame=4 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=5 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1673,8 +1596,7 @@ doc_paint_grid layer=2 frame=5 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=6 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1707,8 +1629,7 @@ doc_paint_grid layer=2 frame=6 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=7 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1741,8 +1662,7 @@ doc_paint_grid layer=2 frame=7 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=8 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
@@ -1775,8 +1695,7 @@ doc_paint_grid layer=2 frame=8 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242
   |                                |
   |                                |
   |                                |
-doc_region op=clear layer=2 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=2 frame=9 x=0 y=0 legend={"G":[47,179,107,255],"L":[166,242,160,255]} rows:32
+doc_paint_grid layer=2 frame=9 x=0 y=0 replace=true legend={"L":"#a6f2a0"} rows:32
   |                                |
   |                                |
   |                                |
