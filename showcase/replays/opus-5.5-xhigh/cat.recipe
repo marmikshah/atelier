@@ -281,10 +281,10 @@ paint_grid layer=4 frame=0 x=2 y=20 legend=C:#fbe3b0,K:#1a1330,O:#e58a3c rows:5
   |KCCCCOOOOOO|
   |KCCCCOOOOOO|
   |.KKKKKKKKK.|
-draw op=pencil layer=2 frame=0 color=#5a3d9e points=[[22,13],[22,14],[22,15],[22,16],[22,17],[22,18],[21,19]]
-draw op=pencil layer=1 frame=0 color=#5a3d9e points=[[20,21],[20,22],[21,23],[21,24],[22,25],[22,26],[22,27],[22,28],[19,27],[19,28]]
-draw op=pencil layer=2 frame=0 color=#5a3d9e points=[[15,13],[17,13],[19,13],[17,14]]
-draw op=pencil layer=1 frame=0 color=#e58a3c points=[[19,27],[19,28]]
+draw op=pencil layer=2 frame=0 color=#5a3d9e points=22,13 22,14 22,15 22,16 22,17 22,18 21,19
+draw op=pencil layer=1 frame=0 color=#5a3d9e points=20,21 20,22 21,23 21,24 22,25 22,26 22,27 22,28 19,27 19,28
+draw op=pencil layer=2 frame=0 color=#5a3d9e points=15,13 17,13 19,13 17,14
+draw op=pencil layer=1 frame=0 color=#e58a3c points=19,27 19,28
 draw op=pencil layer=2 frame=0 color=#e58a3c points=[[17,14]]
 region op=clear layer=0 frame=0 rect=0,0,32,32
 paint_grid layer=0 frame=0 x=22 y=14 legend=C:#fbe3b0,K:#1a1330,O:#e58a3c,P:#5a3d9e rows:17

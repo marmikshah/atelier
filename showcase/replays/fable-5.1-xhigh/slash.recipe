@@ -319,38 +319,38 @@ paint_grid layer=0 frame=7 x=15 y=8 legend=3:#52c4f0,4:#2868c8,5:#182e72 rows:14
   |..........4|
 draw op=clear_cel layer=1 frame=0 frame_to=9
 draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=pencil layer=1 frame=3 color=#ffffff points=[[25,23],[24,24],[25,24],[26,24],[25,25]]
+draw op=pencil layer=1 frame=3 color=#ffffff points=25,23 24,24 25,24 26,24 25,25
 draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=pencil layer=1 frame=3 color=#ffffff points=[[25,23],[24,24],[25,24],[26,24],[25,25]]
-draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=[[25,16],[27,22],[32,24],[27,26],[25,32],[23,26],[18,24],[23,22]]
+draw op=pencil layer=1 frame=3 color=#ffffff points=25,23 24,24 25,24 26,24 25,25
+draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=25,16 27,22 32,24 27,26 25,32 23,26 18,24 23,22
 draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=pencil layer=1 frame=3 color=#ffffff points=[[25,23],[24,24],[25,24],[26,24],[25,25]]
-draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=[[25,16],[27,22],[32,24],[27,26],[25,32],[23,26],[18,24],[23,22]]
+draw op=pencil layer=1 frame=3 color=#ffffff points=25,23 24,24 25,24 26,24 25,25
+draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=25,16 27,22 32,24 27,26 25,32 23,26 18,24 23,22
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=24 x1=21 y0=23 y1=20
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=26 x1=29 y0=23 y1=20
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=26 x1=29 y0=25 y1=28
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=24 x1=21 y0=25 y1=28
 draw op=ellipse layer=1 frame=5 color=#b4f2ff cx=25 cy=24 fill=false rx=4 ry=4
 draw op=pencil layer=1 frame=5 color=#ffffff points=[[25,24]]
-draw op=pencil layer=1 frame=5 color=#fff2a6 points=[[25,17],[25,18],[25,30],[25,31],[18,24],[19,24],[31,24]]
+draw op=pencil layer=1 frame=5 color=#fff2a6 points=25,17 25,18 25,30 25,31 18,24 19,24 31,24
 draw op=ellipse layer=1 frame=6 color=#52c4f0 cx=25 cy=24 fill=false rx=6 ry=6
 draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=pencil layer=1 frame=3 color=#ffffff points=[[25,23],[24,24],[25,24],[26,24],[25,25]]
-draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=[[25,16],[27,22],[32,24],[27,26],[25,32],[23,26],[18,24],[23,22]]
+draw op=pencil layer=1 frame=3 color=#ffffff points=25,23 24,24 25,24 26,24 25,25
+draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=25,16 27,22 32,24 27,26 25,32 23,26 18,24 23,22
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=24 x1=21 y0=23 y1=20
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=26 x1=29 y0=23 y1=20
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=26 x1=29 y0=25 y1=28
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=24 x1=21 y0=25 y1=28
 draw op=ellipse layer=1 frame=5 color=#b4f2ff cx=25 cy=24 fill=false rx=4 ry=4
 draw op=pencil layer=1 frame=5 color=#ffffff points=[[25,24]]
-draw op=pencil layer=1 frame=5 color=#fff2a6 points=[[25,17],[25,18],[25,30],[25,31],[18,24],[19,24],[31,24]]
+draw op=pencil layer=1 frame=5 color=#fff2a6 points=25,17 25,18 25,30 25,31 18,24 19,24 31,24
 draw op=ellipse layer=1 frame=6 color=#52c4f0 cx=25 cy=24 fill=false rx=6 ry=6
-draw op=pencil layer=1 frame=6 color=#ffffff erase=true points=[[21,20],[29,20],[29,28],[21,28]] size=2
+draw op=pencil layer=1 frame=6 color=#ffffff erase=true points=21,20 29,20 29,28 21,28 size=2
 draw op=clear_cel layer=2 frame=0 frame_to=9
-draw op=pencil layer=2 frame=5 color=#ffffff points=[[22,20],[26,19],[29,21],[30,25],[28,28]]
-draw op=pencil layer=2 frame=6 color=#fff2a6 points=[[21,17],[27,16],[29,31]]
-draw op=pencil layer=2 frame=7 color=#52c4f0 points=[[20,15],[28,14]]
-draw op=pencil layer=2 frame=8 color=#2868c8 points=[[19,16],[28,14]]
+draw op=pencil layer=2 frame=5 color=#ffffff points=22,20 26,19 29,21 30,25 28,28
+draw op=pencil layer=2 frame=6 color=#fff2a6 points=21,17 27,16 29,31
+draw op=pencil layer=2 frame=7 color=#52c4f0 points=20,15 28,14
+draw op=pencil layer=2 frame=8 color=#2868c8 points=19,16 28,14
 draw op=clear_cel layer=0 frame=4
 paint_grid layer=0 frame=4 x=8 y=7 legend=0:#ffffff,1:#fff2a6,2:#b4f2ff,3:#52c4f0,4:#2868c8 rows:17
   |32...............|
@@ -371,13 +371,13 @@ paint_grid layer=0 frame=4 x=8 y=7 legend=0:#ffffff,1:#fff2a6,2:#b4f2ff,3:#52c4f
   |............21100|
   |..............110|
 draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=pencil layer=1 frame=3 color=#ffffff points=[[25,23],[24,24],[25,24],[26,24],[25,25]]
-draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=[[25,17],[27,22],[31,24],[27,26],[25,31],[23,26],[19,24],[23,22]]
+draw op=pencil layer=1 frame=3 color=#ffffff points=25,23 24,24 25,24 26,24 25,25
+draw op=polygon layer=1 frame=4 color=#ffffff fill=true points=25,17 27,22 31,24 27,26 25,31 23,26 19,24 23,22
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=24 x1=21 y0=23 y1=20
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=26 x1=29 y0=23 y1=20
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=26 x1=29 y0=25 y1=28
 draw op=line layer=1 frame=4 color=#fff2a6 size=1 x0=24 x1=21 y0=25 y1=28
-draw op=polygon layer=1 frame=5 color=#ffffff fill=true points=[[25,22],[27,24],[25,26],[23,24]]
+draw op=polygon layer=1 frame=5 color=#ffffff fill=true points=25,22 27,24 25,26 23,24
 draw op=line layer=1 frame=5 color=#fff2a6 size=1 x0=25 x1=25 y0=19 y1=17
 draw op=line layer=1 frame=5 color=#fff2a6 size=1 x0=30 x1=32 y0=24 y1=24
 draw op=line layer=1 frame=5 color=#fff2a6 size=1 x0=25 x1=25 y0=29 y1=31
@@ -393,10 +393,10 @@ draw op=line layer=1 frame=6 color=#52c4f0 size=1 x0=19 x1=18 y0=18 y1=17
 draw op=line layer=1 frame=6 color=#52c4f0 size=1 x0=31 x1=32 y0=18 y1=17
 draw op=line layer=1 frame=6 color=#52c4f0 size=1 x0=31 x1=32 y0=30 y1=31
 draw op=line layer=1 frame=6 color=#52c4f0 size=1 x0=19 x1=18 y0=30 y1=31
-draw op=pencil layer=1 frame=7 color=#2868c8 points=[[25,13],[14,24],[17,16]]
+draw op=pencil layer=1 frame=7 color=#2868c8 points=25,13 14,24 17,16
 draw op=clear_cel layer=2 frame=0 frame_to=9
-draw op=pencil layer=2 frame=5 color=#ffffff points=[[24,17],[28,18],[31,21],[29,30]]
-draw op=pencil layer=2 frame=6 color=#fff2a6 points=[[23,15],[30,16]]
+draw op=pencil layer=2 frame=5 color=#ffffff points=24,17 28,18 31,21 29,30
+draw op=pencil layer=2 frame=6 color=#fff2a6 points=23,15 30,16
 draw op=pencil layer=2 frame=7 color=#52c4f0 points=[[23,13]]
 draw op=pencil layer=2 frame=8 color=#2868c8 points=[[22,13]]
 add_tag name=slash direction=forward from=0 to=9

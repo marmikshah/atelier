@@ -51,10 +51,10 @@ paint_grid layer=1 frame=0 x=5 y=21 legend=D:#17715a rows:9
   |   DDD        DDDDD...|
   |     DDD   DDDDDD.....|
   |       DDDDDDDD.......|
-draw op=pencil layer=4 frame=0 color=#1b2238 points=[[13,4],[17,3],[16,5],[15,8]]
-draw op=pencil layer=3 frame=0 color=#d6f1f5 erase=true points=[[13,9],[13,10]]
+draw op=pencil layer=4 frame=0 color=#1b2238 points=13,4 17,3 16,5 15,8
+draw op=pencil layer=3 frame=0 color=#d6f1f5 erase=true points=13,9 13,10
 region op=clear layer=3 frame=0 rect=13,9,1,2
-draw op=pencil layer=3 frame=0 color=#1b2238 points=[[11,7],[12,7],[13,7],[12,8],[12,9]]
+draw op=pencil layer=3 frame=0 color=#1b2238 points=11,7 12,7 13,7 12,8 12,9
 region op=clear layer=3 frame=0 rect=13,10,13,10
 frame op=add copy_from=0 count=9
 paint_grid layer=0 frame=0 x=0 y=0 replace=true legend=G:#2fb36b,L:#a6f2a0 rows:32
@@ -717,7 +717,7 @@ paint_grid layer=2 frame=9 x=0 y=0 replace=true legend=L:#a6f2a0 rows:32
   |                                |
   |                                |
   |                                |
-draw op=pencil layer=3 frame=0 frame_to=9 color=#d6f1f5 points=[[10,14],[9,15],[8,16],[7,17],[22,15]]
+draw op=pencil layer=3 frame=0 frame_to=9 color=#d6f1f5 points=10,14 9,15 8,16 7,17 22,15
 region op=clear layer=3 frame=0 rect=13,11,13,11
 region op=clear layer=3 frame=0 rect=8,18,8,18
 region op=clear layer=3 frame=1 rect=13,11,13,11

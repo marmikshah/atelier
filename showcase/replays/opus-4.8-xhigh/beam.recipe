@@ -55,7 +55,7 @@ draw op=ellipse layer=2 frame=1 color=#ffffff cx=25 cy=23 fill=true rx=1 ry=1
 draw op=ellipse layer=2 frame=2 color=#2f8fd8 cx=25 cy=23 fill=true rx=4 ry=4
 draw op=ellipse layer=2 frame=2 color=#9fe8ff cx=25 cy=23 fill=true rx=3 ry=3
 draw op=ellipse layer=2 frame=2 color=#ffffff cx=25 cy=23 fill=true rx=2 ry=2
-draw op=pencil layer=2 frame=2 color=#9fe8ff points=[[25,17],[30,23],[25,29],[20,23]] size=1
+draw op=pencil layer=2 frame=2 color=#9fe8ff points=25,17 30,23 25,29 20,23 size=1
 draw op=rect layer=2 frame=3 color=#2f8fd8 fill=true x0=25 x1=36 y0=21 y1=25
 draw op=rect layer=2 frame=3 color=#9fe8ff fill=true x0=25 x1=35 y0=22 y1=24
 draw op=rect layer=2 frame=3 color=#ffffff fill=true x0=25 x1=34 y0=23 y1=23
@@ -78,9 +78,9 @@ draw op=rect layer=2 frame=6 color=#ffffff fill=true x0=32 x1=47 y0=23 y1=23
 draw op=ellipse layer=2 frame=6 color=#9fe8ff cx=24 cy=23 fill=true rx=2 ry=2
 draw op=rect layer=2 frame=7 color=#2f8fd8 fill=true x0=34 x1=47 y0=22 y1=24
 draw op=rect layer=2 frame=7 color=#9fe8ff fill=true x0=37 x1=47 y0=23 y1=23
-draw op=pencil layer=2 frame=7 color=#9fe8ff points=[[27,23],[30,23],[24,23]] size=1
-draw op=pencil layer=2 frame=8 color=#9fe8ff points=[[24,23],[23,22]] size=1
-draw op=pencil layer=2 frame=8 color=#9fe8ff points=[[39,23],[44,23],[42,24]] size=1
+draw op=pencil layer=2 frame=7 color=#9fe8ff points=27,23 30,23 24,23 size=1
+draw op=pencil layer=2 frame=8 color=#9fe8ff points=24,23 23,22 size=1
+draw op=pencil layer=2 frame=8 color=#9fe8ff points=39,23 44,23 42,24 size=1
 draw op=ellipse layer=2 frame=9 color=#9fe8ff cx=25 cy=23 fill=true rx=1 ry=1
 draw op=rect layer=2 frame=9 color=#ffffff fill=true x0=25 x1=25 y0=23 y1=23
 add_tag name=beam direction=forward from=0 to=9

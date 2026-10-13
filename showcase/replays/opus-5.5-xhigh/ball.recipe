@@ -45,13 +45,13 @@ paint_grid layer=0 frame=0 x=12 y=28 legend=S:#4b4668 rows:3
   |..SSSS..|
   |SSSSSSSS|
   |..SSSS..|
-draw op=pencil layer=2 frame=0 color=#4a1030 erase=true points=[[17,11],[15,12]]
+draw op=pencil layer=2 frame=0 color=#4a1030 erase=true points=17,11 15,12
 draw op=rect layer=2 frame=0 color=#4a1030 erase=true fill=true x0=17 x1=17 y0=11 y1=11
 draw op=pencil layer=2 frame=0 color=#4a1030 points=[[3,20]]
 draw op=pencil layer=2 frame=0 color=#4a1030 erase=true points=[[3,20]]
 draw op=pencil layer=2 frame=0 color=#00000000 erase=true points=[[3,20]]
-draw op=pencil layer=2 frame=0 color=#00000000 erase=true points=[[17,11],[15,12]]
-draw op=pencil layer=0 frame=0 color=#4b4668 points=[[13,28],[18,28],[13,30],[18,30]]
+draw op=pencil layer=2 frame=0 color=#00000000 erase=true points=17,11 15,12
+draw op=pencil layer=0 frame=0 color=#4b4668 points=13,28 18,28 13,30 18,30
 frame op=add copy_from=0
 region op=move layer=1 frame=1 offset=0,1 rect=10,2,21,13
 region op=move layer=2 frame=1 offset=0,1 rect=10,2,21,13
@@ -163,8 +163,8 @@ paint_grid layer=0 frame=5 x=4 y=28 legend=S:#4b4668 rows:3
   |...SSSSSSSSSSSSSSSSSS...|
   |SSSSSSSSSSSSSSSSSSSSSSSS|
   |...SSSSSSSSSSSSSSSSSS...|
-draw op=pencil layer=2 frame=5 color=#00000000 erase=true points=[[15,27],[16,27],[22,26]]
-draw op=pencil layer=0 frame=5 color=#4b4668 points=[[6,28],[25,28],[6,30],[25,30]]
+draw op=pencil layer=2 frame=5 color=#00000000 erase=true points=15,27 16,27 22,26
+draw op=pencil layer=0 frame=5 color=#4b4668 points=6,28 25,28 6,30 25,30
 frame op=add copy_from=5
 draw op=clear_cel layer=1 frame=6
 paint_grid layer=1 frame=6 x=12 y=12 legend=B:#e23b45,D:#4a1030 rows:17

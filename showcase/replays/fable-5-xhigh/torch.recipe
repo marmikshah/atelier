@@ -45,7 +45,7 @@ paint_grid layer=2 frame=0 x=11 y=6 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:13
 draw op=pencil layer=3 frame=0 color=#ffe478 points=[[12,10]]
 draw op=pencil layer=3 frame=0 color=#f79617 points=[[14,6]]
 draw op=pencil layer=3 frame=0 color=#d9481f points=[[14,2]]
-draw op=pencil layer=1 frame=0 color=#aa7239 points=[[15,22],[16,22]]
+draw op=pencil layer=1 frame=0 color=#aa7239 points=15,22 16,22
 region op=clear layer=2 frame=0 rect=0,0,32,32
 paint_grid layer=2 frame=0 x=11 y=6 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:13
   |....o....|
@@ -78,7 +78,7 @@ paint_grid layer=2 frame=2 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
   |.oyyyyyo.|
 draw op=pencil layer=3 frame=2 color=#f79617 points=[[13,6]]
 draw op=pencil layer=3 frame=2 color=#d9481f points=[[12,2]]
-draw op=pencil layer=1 frame=2 color=#aa7239 points=[[13,22],[14,22],[15,22],[16,22],[17,22],[18,22],[14,17],[17,17]]
+draw op=pencil layer=1 frame=2 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17
 paint_grid layer=2 frame=5 x=11 y=6 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:13
   |....o....|
   |...ror...|
@@ -95,7 +95,7 @@ paint_grid layer=2 frame=5 x=11 y=6 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:13
   |.oyyyyyo.|
 draw op=pencil layer=3 frame=5 color=#f79617 points=[[20,6]]
 draw op=pencil layer=3 frame=5 color=#d9481f points=[[12,0]]
-draw op=pencil layer=1 frame=5 color=#aa7239 points=[[13,22],[14,22],[15,22],[16,22],[17,22],[18,22],[14,17],[17,17]]
+draw op=pencil layer=1 frame=5 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17
 paint_grid layer=2 frame=7 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
   |..r......|
   |..o......|
@@ -113,7 +113,7 @@ paint_grid layer=2 frame=7 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
   |.oyyyyyo.|
 draw op=pencil layer=3 frame=7 color=#ffe478 points=[[16,8]]
 draw op=pencil layer=3 frame=7 color=#d9481f points=[[18,2]]
-draw op=pencil layer=1 frame=7 color=#aa7239 points=[[15,22],[16,22]]
+draw op=pencil layer=1 frame=7 color=#aa7239 points=15,22 16,22
 paint_grid layer=2 frame=1 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
   |.....o...|
   |.....or..|
@@ -132,7 +132,7 @@ paint_grid layer=2 frame=1 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
 draw op=pencil layer=3 frame=1 color=#ffe478 points=[[13,8]]
 draw op=pencil layer=3 frame=1 color=#f79617 points=[[13,4]]
 draw op=pencil layer=3 frame=1 color=#d9481f points=[[15,0]]
-draw op=pencil layer=1 frame=1 color=#aa7239 points=[[14,22],[15,22],[16,22],[17,22],[14,17],[17,17]]
+draw op=pencil layer=1 frame=1 color=#aa7239 points=14,22 15,22 16,22 17,22 14,17 17,17
 paint_grid layer=2 frame=3 x=11 y=7 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:12
   |.......r.|
   |.......o.|
@@ -149,8 +149,8 @@ paint_grid layer=2 frame=3 x=11 y=7 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:12
 draw op=pencil layer=3 frame=3 color=#ffe478 points=[[19,10]]
 draw op=pencil layer=3 frame=3 color=#f79617 points=[[12,4]]
 draw op=pencil layer=3 frame=3 color=#d9481f points=[[13,0]]
-draw op=pencil layer=1 frame=3 color=#aa7239 points=[[13,22],[14,22],[15,22],[16,22],[17,22],[18,22],[14,17],[17,17],[14,18],[17,18]]
-draw op=pencil layer=1 frame=3 color=#f79617 points=[[13,23],[18,23]]
+draw op=pencil layer=1 frame=3 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17 14,18 17,18
+draw op=pencil layer=1 frame=3 color=#f79617 points=13,23 18,23
 paint_grid layer=2 frame=4 x=11 y=8 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:11
   |.....o...|
   |....oor..|
@@ -165,8 +165,8 @@ paint_grid layer=2 frame=4 x=11 y=8 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:11
   |.oyyyyyo.|
 draw op=pencil layer=3 frame=4 color=#ffe478 points=[[20,8]]
 draw op=pencil layer=3 frame=4 color=#d9481f points=[[11,2]]
-draw op=pencil layer=1 frame=4 color=#aa7239 points=[[13,22],[14,22],[15,22],[16,22],[17,22],[18,22],[14,17],[17,17],[14,18],[17,18]]
-draw op=pencil layer=1 frame=4 color=#f79617 points=[[13,23],[18,23]]
+draw op=pencil layer=1 frame=4 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17 14,18 17,18
+draw op=pencil layer=1 frame=4 color=#f79617 points=13,23 18,23
 paint_grid layer=2 frame=6 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
   |...o.....|
   |..ro.....|
@@ -184,7 +184,7 @@ paint_grid layer=2 frame=6 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
   |.oyyyyyo.|
 draw op=pencil layer=3 frame=6 color=#ffe478 points=[[15,10]]
 draw op=pencil layer=3 frame=6 color=#f79617 points=[[19,4]]
-draw op=pencil layer=1 frame=6 color=#aa7239 points=[[14,22],[15,22],[16,22],[17,22]]
+draw op=pencil layer=1 frame=6 color=#aa7239 points=14,22 15,22 16,22 17,22
 paint_grid layer=2 frame=8 x=11 y=7 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:12
   |..r......|
   |..o......|
@@ -201,7 +201,7 @@ paint_grid layer=2 frame=8 x=11 y=7 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:12
 draw op=pencil layer=3 frame=8 color=#ffe478 points=[[13,10]]
 draw op=pencil layer=3 frame=8 color=#f79617 points=[[16,6]]
 draw op=pencil layer=3 frame=8 color=#d9481f points=[[19,0]]
-draw op=pencil layer=1 frame=8 color=#aa7239 points=[[15,22],[16,22]]
+draw op=pencil layer=1 frame=8 color=#aa7239 points=15,22 16,22
 paint_grid layer=2 frame=9 x=11 y=8 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:11
   |...o.....|
   |..roo....|
@@ -216,5 +216,5 @@ paint_grid layer=2 frame=9 x=11 y=8 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:11
   |.oyyyyyo.|
 draw op=pencil layer=3 frame=9 color=#ffe478 points=[[14,8]]
 draw op=pencil layer=3 frame=9 color=#f79617 points=[[15,4]]
-draw op=pencil layer=1 frame=9 color=#aa7239 points=[[15,22],[16,22]]
+draw op=pencil layer=1 frame=9 color=#aa7239 points=15,22 16,22
 add_tag name=burn direction=forward from=0 to=9
