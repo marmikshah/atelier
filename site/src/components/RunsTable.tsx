@@ -120,7 +120,7 @@ export function RunsTable({
                   aria-label={`Download ${run.task} replay by ${model.name}`}
                 >
                   <Download size={13} aria-hidden="true" />
-                  JSONL
+                  Recipe
                 </a>
               </td>
             </tr>

@@ -748,7 +748,7 @@ fn validate_archive_path(path: &str) -> Result<Option<&str>, String> {
             [
                 _,
                 _,
-                "doc.json" | "recipe.jsonl" | "reference.png" | "label.txt"
+                "doc.json" | "doc.recipe" | "reference.png" | "label.txt"
             ]
         ) || (parts.len() == 4 && parts[2] == "cels" && is_cel_name(parts[3])))
     {

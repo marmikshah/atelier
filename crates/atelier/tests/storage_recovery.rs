@@ -127,14 +127,25 @@ fn unsupported_and_corrupt_metadata_is_refused_until_an_explicit_reset() {
         assert!(!ok, "{corruption}: {result}");
         let error = result["error"].as_str().unwrap();
         assert!(error.contains("left unchanged"), "{error}");
-        assert!(error.contains("library reset"), "{error}");
         assert_eq!(fs::read(&path).unwrap(), before, "tools never replace data");
 
         // Without a terminal or --yes the reset refuses, like `library rm`.
         assert!(!store.reset(&id, &[]).0);
         assert_eq!(fs::read(&path).unwrap(), before);
 
-        let (ok, report) = store.reset(&id, &["--yes"]);
+        // Intact work in another format is never pointed at reset, and reset
+        // keeps it unless explicitly told to discard it.
+        let confirm: &[&str] = if corruption == "future schema" {
+            assert!(error.contains("does not read"), "{error}");
+            assert!(!error.contains("library reset"), "{error}");
+            assert!(!store.reset(&id, &["--yes"]).0);
+            assert_eq!(fs::read(&path).unwrap(), before);
+            &["--yes", "--discard-unsupported"]
+        } else {
+            assert!(error.contains("library reset"), "{error}");
+            &["--yes"]
+        };
+        let (ok, report) = store.reset(&id, confirm);
         assert!(ok, "{report}");
         let report: Value = serde_json::from_str(&report).unwrap();
         assert_eq!(report["doc_id"], id);
@@ -148,7 +159,7 @@ fn unsupported_and_corrupt_metadata_is_refused_until_an_explicit_reset() {
 
 #[test]
 fn reset_of_broken_cels_revisions_and_journals_keeps_the_named_canvas_and_uuid() {
-    for component in ["cels/L0_F0.png", "revision", "recipe.jsonl"] {
+    for component in ["cels/L0_F0.png", "revision", "doc.recipe"] {
         let store = Store::new();
         let id = store.create();
         assert!(
@@ -164,7 +175,7 @@ fn reset_of_broken_cels_revisions_and_journals_keeps_the_named_canvas_and_uuid()
         fs::write(store.document(&id).join(component), "broken\n").unwrap();
         let tool = if component.starts_with("cels/") {
             "doc_dump_region"
-        } else if component == "recipe.jsonl" {
+        } else if component == "doc.recipe" {
             "doc_draw"
         } else {
             "doc_info"
@@ -215,6 +226,30 @@ fn failed_reset_writes_leave_the_saved_generation_untouched() {
     fs::remove_file(store.0.join("documents/.transactions")).unwrap();
     assert!(store.reset(&id, &["--yes"]).0);
     assert!(store.call("doc_info", json!({"doc_id":id})).0);
+}
+
+#[test]
+fn an_earlier_journal_format_is_a_version_mismatch_not_damage() {
+    let store = Store::new();
+    let id = store.create();
+    // Documents from before the recipe format carry `recipe.jsonl` instead.
+    fs::remove_file(store.document(&id).join("doc.recipe")).unwrap();
+    let journal = store.document(&id).join("recipe.jsonl");
+    let legacy = format!(
+        "{}\n",
+        json!({"schema":1,"tool":"doc_new","args":{"doc_id":id,"name":"named canvas","width":8,"height":6}})
+    );
+    fs::write(&journal, &legacy).unwrap();
+    let (ok, result) = store.call(
+        "doc_draw",
+        json!({"doc_id":id,"layer":0,"frame":0,"op":"fill_cel","color":"#010203"}),
+    );
+    assert!(!ok, "{result}");
+    let error = result["error"].as_str().unwrap();
+    assert!(error.contains("unsupported journal format"), "{error}");
+    assert!(!error.contains("library reset"), "{error}");
+    assert!(!store.reset(&id, &["--yes"]).0);
+    assert_eq!(fs::read_to_string(&journal).unwrap(), legacy);
 }
 
 #[test]

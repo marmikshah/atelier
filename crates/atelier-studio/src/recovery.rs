@@ -7,6 +7,13 @@ use serde_json::{Value, json};
 
 use crate::{CommitOutcome, Studio, ToolName};
 
+/// True when a [`Studio::document_damage`] reason means the document is
+/// intact but saved in a format this build does not read. Such a document
+/// opens again with the Atelier version that wrote it.
+pub fn is_format_mismatch(reason: &str) -> bool {
+    reason.contains("unsupported document format") || reason.contains("unsupported journal format")
+}
+
 impl Studio {
     /// Why a saved document cannot be used, or `None` when it is healthy or
     /// missing. Read-only: tool calls use this to explain a failure without
@@ -38,6 +45,15 @@ impl Studio {
                 super::open_bounded(&path)?;
             }
             self.document_revision(id)?;
+            // A document from before the recipe format keeps its journal
+            // under the earlier name; that is a version mismatch, not damage.
+            if !dir.join(crate::JOURNAL_FILE).exists() && dir.join("recipe.jsonl").exists() {
+                return Err(format!(
+                    "unsupported journal format: recipe.jsonl predates {} (this build supports {})",
+                    crate::JOURNAL_FILE,
+                    crate::JOURNAL_SCHEMA
+                ));
+            }
             let journal = super::store::parse_journal_file(id, &dir.join(crate::JOURNAL_FILE))?;
             if journal.entries.is_empty() {
                 return Err("document has no complete replay journal".into());

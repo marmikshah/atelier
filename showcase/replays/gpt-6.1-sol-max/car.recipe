@@ -1,0 +1,324 @@
+atelier 3 ea978c75-9f3c-476c-abf4-18213d9214ce 0.1.0
+doc_new name="Redline — driving loop" width=32 height=32
+doc_palette op=set colors=[[25,32,48],[69,87,110],[121,192,210],[229,76,63],[141,43,64],[255,228,168]]
+doc_layer op=rename index=0 name="Speed lines"
+doc_layer op=add name=Exhaust
+doc_layer op=add name="Rear wheel"
+doc_layer op=add name="Front wheel"
+doc_layer op=add name=Chassis
+doc_paint_grid layer=4 frame=0 x=4 y=11 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:13
+  |........kkkkkkkkk.........|
+  |.......kkkkkkkkkkk........|
+  |......kkkkkkkkkkkkk.......|
+  |......kkkkkkkkkkkkkk......|
+  |.....kkkkkkkkkkkkkkkk.....|
+  |.kkkkkkkkkkkkkkkkkkkkkkk..|
+  |.kkkkkkkkkkkkkkkkkkkkkkkk.|
+  |kkkkkkkkkkkkkkkkkkkkkkkkkk|
+  |kkkkkkkkkkkkkkkkkkkkkkkkkk|
+  |kkkkk...kkkkkkkkkkk...kkkk|
+  |kkkk.....kkkkkkkkk.....kkk|
+  |.kk.......kkkkkkk.......kk|
+  |..k.......kkkkkkk.......k.|
+doc_paint_grid layer=4 frame=0 x=4 y=11 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:13
+  |........kkkkkkkkk.........|
+  |.......krrrrrrrrrk........|
+  |......krbbbbkbbbbrk.......|
+  |......kbbbbbkbbbbbrk......|
+  |.....kbbbbbbkbbbbbbrk.....|
+  |.krrrrrrrrrrrrrrrrrrrrrk..|
+  |.krrrrrrrrrrrrrrrrrrrrrrk.|
+  |krrrrrrrrrrrrrrrrrrrrrrrrk|
+  |krrrrkkkrrrrrrrrrrrkkkrrrk|
+  |kdddk...kdddddddddk...kddk|
+  |kddk.....kdddddddk.....kdk|
+  |.kk.......kdddddk.......kk|
+  |..k.......kkkkkkk.......k.|
+doc_paint_grid layer=2 frame=0 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.ksssk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=0 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.ksssk.|
+  |..kkk..|
+doc_draw op=line layer=4 frame=0 color=[69,87,110] size=1 x0=10 x1=15 y0=15 y1=15
+doc_draw op=line layer=4 frame=0 color=[69,87,110] size=1 x0=17 x1=22 y0=15 y1=15
+doc_draw op=pencil layer=4 frame=0 color=[255,228,168] points=[[12,13],[13,13],[18,13],[19,14]] size=1
+doc_draw op=line layer=4 frame=0 color=[255,228,168] size=1 x0=13 x1=18 y0=12 y1=12
+doc_draw op=line layer=4 frame=0 color=[255,228,168] size=1 x0=6 x1=14 y0=17 y1=17
+doc_draw op=line layer=4 frame=0 color=[255,228,168] size=1 x0=24 x1=27 y0=17 y1=17
+doc_draw op=line layer=4 frame=0 color=[141,43,64] size=1 x0=16 x1=16 y0=17 y1=21
+doc_draw op=line layer=4 frame=0 color=[255,228,168] size=1 x0=18 x1=19 y0=18 y1=18
+doc_draw op=pencil layer=4 frame=0 color=[255,228,168] points=[[28,18],[28,19]] size=1
+doc_draw op=pencil layer=4 frame=0 color=[25,32,48] points=[[5,18],[28,20]] size=1
+doc_draw op=pencil layer=4 frame=0 color=[141,43,64] points=[[6,18],[6,19]] size=1
+doc_draw op=line layer=4 frame=0 color=[69,87,110] size=1 x0=4 x1=6 y0=21 y1=21
+doc_draw op=line layer=4 frame=0 color=[69,87,110] size=1 x0=27 x1=29 y0=21 y1=21
+doc_draw op=line layer=4 frame=0 color=[69,87,110] size=1 x0=4 x1=5 y0=22 y1=22
+doc_draw op=line layer=4 frame=0 color=[69,87,110] size=1 x0=15 x1=19 y0=22 y1=22
+doc_paint_grid layer=2 frame=0 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.kshsk.|
+  |ksbhbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.ksbsk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=0 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.kshsk.|
+  |ksbhbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.ksbsk.|
+  |..kkk..|
+doc_draw op=line layer=0 frame=0 color=[121,192,210] size=1 x0=29 x1=31 y0=7 y1=7
+doc_draw op=line layer=0 frame=0 color=[121,192,210] size=1 x0=14 x1=16 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=0 color=[69,87,110] points=[[16,9]] size=1
+doc_draw op=line layer=0 frame=0 color=[69,87,110] size=1 x0=20 x1=25 y0=29 y1=29
+doc_paint_grid layer=1 frame=0 x=2 y=22 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:1
+  |sb|
+doc_frame op=add copy_from=0 count=9 duration_ms=100
+doc_region op=move layer=4 frame=1 offset=[0,1] rect=[4,11,29,23]
+doc_paint_grid layer=2 frame=1 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksshk.|
+  |ksbhbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.kbssk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=1 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksshk.|
+  |ksbhbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.kbssk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=1 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=1 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=1 color=[121,192,210] size=1 x0=25 x1=30 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=1 color=[69,87,110] points=[[30,7]] size=1
+doc_draw op=line layer=0 frame=1 color=[121,192,210] size=1 x0=10 x1=12 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=1 color=[69,87,110] points=[[12,9]] size=1
+doc_draw op=line layer=0 frame=1 color=[69,87,110] size=1 x0=16 x1=21 y0=29 y1=29
+doc_paint_grid layer=1 frame=1 x=1 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:3
+  |.s|
+  |bb|
+  |.s|
+doc_region op=move layer=4 frame=2 offset=[0,1] rect=[4,11,29,23]
+doc_paint_grid layer=2 frame=2 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |ksbbbhk|
+  |ksbhhsk|
+  |kbbbbsk|
+  |.ksssk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=2 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |ksbbbhk|
+  |ksbhhsk|
+  |kbbbbsk|
+  |.ksssk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=2 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=2 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=2 color=[121,192,210] size=1 x0=21 x1=26 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=2 color=[69,87,110] points=[[26,7]] size=1
+doc_draw op=line layer=0 frame=2 color=[121,192,210] size=1 x0=6 x1=8 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=2 color=[69,87,110] points=[[8,9]] size=1
+doc_draw op=line layer=0 frame=2 color=[69,87,110] size=1 x0=12 x1=17 y0=29 y1=29
+doc_paint_grid layer=1 frame=2 x=0 y=20 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:3
+  |sb.|
+  |bbs|
+  |ss.|
+doc_paint_grid layer=2 frame=3 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |kbbbbsk|
+  |ksbhhsk|
+  |ksbbbhk|
+  |.ksssk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=3 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |kbbbbsk|
+  |ksbhhsk|
+  |ksbbbhk|
+  |.ksssk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=3 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=3 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=3 color=[121,192,210] size=1 x0=17 x1=22 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=3 color=[69,87,110] points=[[22,7]] size=1
+doc_draw op=line layer=0 frame=3 color=[121,192,210] size=1 x0=2 x1=4 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=3 color=[69,87,110] points=[[4,9]] size=1
+doc_draw op=line layer=0 frame=3 color=[69,87,110] size=1 x0=8 x1=13 y0=29 y1=29
+doc_paint_grid layer=1 frame=3 x=0 y=19 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:3
+  |ss.|
+  |bbs|
+  |ss.|
+doc_region op=move layer=4 frame=4 offset=[0,-1] rect=[4,11,29,23]
+doc_paint_grid layer=2 frame=4 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.kbssk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbhbsk|
+  |.ksshk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=4 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.kbssk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbhbsk|
+  |.ksshk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=4 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=4 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=4 color=[121,192,210] size=1 x0=13 x1=18 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=4 color=[69,87,110] points=[[18,7]] size=1
+doc_draw op=line layer=0 frame=4 color=[121,192,210] size=1 x0=0 x1=0 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=4 color=[69,87,110] points=[[0,9]] size=1
+doc_draw op=line layer=0 frame=4 color=[69,87,110] size=1 x0=4 x1=9 y0=29 y1=29
+doc_paint_grid layer=1 frame=4 x=0 y=18 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:3
+  |s.|
+  |sb|
+  |s.|
+doc_paint_grid layer=2 frame=5 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksbsk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbhbsk|
+  |.kshsk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=5 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksbsk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbhbsk|
+  |.kshsk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=5 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=5 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=5 color=[121,192,210] size=1 x0=9 x1=14 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=5 color=[69,87,110] points=[[14,7]] size=1
+doc_draw op=line layer=0 frame=5 color=[69,87,110] size=1 x0=0 x1=5 y0=29 y1=29
+doc_paint_grid layer=1 frame=5 x=0 y=18 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:2
+  |s.|
+  |s.|
+doc_region op=move layer=4 frame=6 offset=[0,1] rect=[4,11,29,23]
+doc_paint_grid layer=2 frame=6 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.kssbk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbhbsk|
+  |.khssk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=6 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.kssbk.|
+  |ksbbbsk|
+  |ksbhbsk|
+  |ksbhbsk|
+  |.khssk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=6 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=6 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=6 color=[121,192,210] size=1 x0=5 x1=10 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=6 color=[69,87,110] points=[[10,7]] size=1
+doc_draw op=line layer=0 frame=6 color=[121,192,210] size=1 x0=30 x1=31 y0=9 y1=9
+doc_draw op=line layer=0 frame=6 color=[69,87,110] size=1 x0=0 x1=1 y0=29 y1=29
+doc_paint_grid layer=1 frame=6 x=0 y=17 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:1
+  |s|
+doc_region op=move layer=4 frame=7 offset=[0,1] rect=[4,11,29,23]
+doc_paint_grid layer=2 frame=7 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |ksbbbbk|
+  |kshhbsk|
+  |khbbbsk|
+  |.ksssk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=7 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |ksbbbbk|
+  |kshhbsk|
+  |khbbbsk|
+  |.ksssk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=7 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=7 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=7 color=[121,192,210] size=1 x0=1 x1=6 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=7 color=[69,87,110] points=[[6,7]] size=1
+doc_draw op=line layer=0 frame=7 color=[121,192,210] size=1 x0=26 x1=28 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=7 color=[69,87,110] points=[[28,9]] size=1
+doc_paint_grid layer=2 frame=8 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |khbbbsk|
+  |kshhbsk|
+  |ksbbbbk|
+  |.ksssk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=8 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.ksssk.|
+  |khbbbsk|
+  |kshhbsk|
+  |ksbbbbk|
+  |.ksssk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=8 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=8 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=8 color=[121,192,210] size=1 x0=0 x1=2 y0=7 y1=7
+doc_draw op=pencil layer=0 frame=8 color=[69,87,110] points=[[2,7]] size=1
+doc_draw op=line layer=0 frame=8 color=[121,192,210] size=1 x0=22 x1=24 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=8 color=[69,87,110] points=[[24,9]] size=1
+doc_draw op=line layer=0 frame=8 color=[69,87,110] size=1 x0=28 x1=31 y0=29 y1=29
+doc_region op=move layer=4 frame=9 offset=[0,-1] rect=[4,11,29,23]
+doc_paint_grid layer=2 frame=9 x=7 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.khssk.|
+  |ksbhbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.kssbk.|
+  |..kkk..|
+doc_paint_grid layer=3 frame=9 x=21 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:7
+  |..kkk..|
+  |.khssk.|
+  |ksbhbsk|
+  |ksbhbsk|
+  |ksbbbsk|
+  |.kssbk.|
+  |..kkk..|
+doc_region op=clear layer=0 frame=9 rect=[0,0,31,31]
+doc_region op=clear layer=1 frame=9 rect=[0,0,31,31]
+doc_draw op=line layer=0 frame=9 color=[121,192,210] size=1 x0=18 x1=20 y0=9 y1=9
+doc_draw op=pencil layer=0 frame=9 color=[69,87,110] points=[[20,9]] size=1
+doc_draw op=line layer=0 frame=9 color=[69,87,110] size=1 x0=24 x1=29 y0=29 y1=29
+doc_paint_grid layer=1 frame=9 x=3 y=21 legend={"b":2,"d":4,"h":5,"k":0,"r":3,"s":1} rows:1
+  |s|
+doc_add_tag name=drive direction=forward from=0 to=9
+doc_region op=move layer=4 frame=4 offset=[0,1] rect=[4,10,29,22]
+doc_region op=move layer=4 frame=9 offset=[0,1] rect=[4,10,29,22]
+doc_region op=move layer=1 frame=9 offset=[0,1] rect=[3,21,3,21]

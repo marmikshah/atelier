@@ -1,0 +1,1093 @@
+atelier 3 7c2f3e7f-1b08-4704-a24a-f1f95933e5fa 0.1.0
+doc_new name=explosion width=32 height=32
+doc_layer op=rename index=0 name=smoke
+doc_layer op=add name=debris
+doc_layer op=add name=sparks
+doc_layer op=add name=core
+doc_palette op=set colors=[[255,244,194,255],[255,198,40,255],[242,120,28,255],[168,50,30,255],[107,90,99,255],[46,38,48,255]]
+doc_layer op=set index=1 name=debris
+doc_frame op=add count=9
+doc_draw op=ellipse layer=3 frame=0 color=[255,244,194,255] cx=16 cy=17 fill=true rx=3 ry=3
+doc_draw op=pencil layer=2 frame=9 color=[255,198,40,255] points=[[20,2],[22,3]]
+doc_draw op=pencil layer=2 frame=9 color=[255,198,40,255] erase=true points=[[22,3]]
+doc_draw op=rect layer=2 frame=9 color=[255,198,40,255] fill=true x0=10 x1=11 y0=10 y1=11
+doc_draw op=line layer=2 frame=9 color=[255,198,40,255] x0=2 x1=8 y0=2 y1=5
+doc_draw op=clear_cel layer=2 frame=9
+doc_draw op=clear_cel layer=3 frame=0
+doc_draw op=pencil layer=2 frame=9 color=[255,198,40,255] points=[[20,2],[22,3],[5,5],[6,5]]
+doc_draw op=pencil layer=2 frame=9 color=[255,198,40,255] erase=true points=[[22,3]] size=1
+doc_draw op=rect layer=2 frame=9 color=[255,198,40,255] erase=true fill=true x0=5 x1=5 y0=5 y1=5
+doc_draw op=ellipse layer=2 frame=9 color=[255,198,40,255] cx=20 cy=2 erase=true fill=true rx=1 ry=1
+doc_draw op=rect layer=2 frame=9 color=[0,0,0,0] erase=true fill=true x0=5 x1=5 y0=5 y1=5
+doc_draw op=rect layer=2 frame=9 color=[255,0,0,255] erase=true fill=true x0=6 x1=6 y0=5 y1=5
+doc_draw op=line layer=2 frame=9 color=[255,0,0,255] erase=true x0=20 x1=22 y0=2 y1=3
+doc_draw op=clear_cel layer=3 frame=0
+doc_draw op=clear_cel layer=3 frame=1
+doc_draw op=clear_cel layer=3 frame=2
+doc_draw op=clear_cel layer=3 frame=3
+doc_draw op=clear_cel layer=3 frame=4
+doc_draw op=clear_cel layer=3 frame=5
+doc_draw op=clear_cel layer=3 frame=6
+doc_draw op=clear_cel layer=3 frame=7
+doc_draw op=clear_cel layer=3 frame=8
+doc_draw op=clear_cel layer=3 frame=9
+doc_draw op=ellipse layer=3 frame=0 color=[255,198,40,255] cx=16 cy=18 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=0 color=[255,244,194,255] cx=16 cy=18 fill=true rx=2 ry=2
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=28 y0=18 y1=18
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=4 y0=18 y1=18
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=16 y0=18 y1=29
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=16 y0=18 y1=5
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=25 y0=18 y1=27
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=7 y0=18 y1=9
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=25 y0=18 y1=9
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=7 y0=18 y1=27
+doc_draw op=ellipse layer=3 frame=1 color=[242,120,28,255] cx=16 cy=18 fill=true rx=8 ry=8
+doc_draw op=ellipse layer=3 frame=1 color=[255,198,40,255] cx=16 cy=18 fill=true rx=6 ry=6
+doc_draw op=ellipse layer=3 frame=1 color=[255,244,194,255] cx=16 cy=18 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=16 cy=18 fill=true rx=7 ry=7
+doc_draw op=ellipse layer=3 frame=2 color=[255,198,40,255] cx=16 cy=18 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=3 frame=2 color=[255,244,194,255] cx=16 cy=18 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=16 cy=18 fill=true rx=6 ry=6
+doc_draw op=ellipse layer=3 frame=3 color=[242,120,28,255] cx=16 cy=18 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=3 frame=3 color=[255,198,40,255] cx=16 cy=18 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=4 color=[168,50,30,255] cx=16 cy=19 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=4 color=[242,120,28,255] cx=16 cy=19 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=4 color=[255,198,40,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=5 color=[168,50,30,255] cx=16 cy=19 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=5 color=[242,120,28,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=6 color=[168,50,30,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=0 frame=0
+doc_draw op=clear_cel layer=0 frame=1
+doc_draw op=clear_cel layer=0 frame=2
+doc_draw op=clear_cel layer=0 frame=3
+doc_draw op=clear_cel layer=0 frame=4
+doc_draw op=clear_cel layer=0 frame=5
+doc_draw op=clear_cel layer=0 frame=6
+doc_draw op=clear_cel layer=0 frame=7
+doc_draw op=clear_cel layer=0 frame=8
+doc_draw op=clear_cel layer=0 frame=9
+doc_draw op=ellipse layer=0 frame=3 color=[46,38,48,255] cx=16 cy=12 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=3 color=[46,38,48,255] cx=12 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[46,38,48,255] cx=20 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[107,90,99,255] cx=17 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[107,90,99,255] cx=13 cy=15 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=3 color=[107,90,99,255] cx=21 cy=15 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=16 cy=10 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=11 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=21 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=16 cy=14 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=17 cy=11 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=12 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=22 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=17 cy=15 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=17 cy=8 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=12 cy=11 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=22 cy=10 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=16 cy=13 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=15 cy=16 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=18 cy=9 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=13 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=23 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=17 cy=14 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=16 cy=17 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=18 cy=6 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=13 cy=9 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=23 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=16 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=15 cy=15 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=19 cy=7 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=14 cy=10 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=24 cy=9 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=17 cy=13 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=16 cy=16 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=19 cy=4 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=14 cy=7 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=23 cy=6 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=17 cy=10 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=20 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=15 cy=8 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=24 cy=7 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=18 cy=11 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[46,38,48,255] cx=20 cy=3 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=8 color=[46,38,48,255] cx=16 cy=6 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[107,90,99,255] cx=21 cy=4 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[107,90,99,255] cx=17 cy=7 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=0 frame=0
+doc_draw op=clear_cel layer=0 frame=1
+doc_draw op=clear_cel layer=0 frame=2
+doc_draw op=clear_cel layer=0 frame=3
+doc_draw op=clear_cel layer=0 frame=4
+doc_draw op=clear_cel layer=0 frame=5
+doc_draw op=clear_cel layer=0 frame=6
+doc_draw op=clear_cel layer=0 frame=7
+doc_draw op=clear_cel layer=0 frame=8
+doc_draw op=clear_cel layer=0 frame=9
+doc_draw op=ellipse layer=0 frame=3 color=[46,38,48,255] cx=16 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=3 color=[46,38,48,255] cx=12 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[46,38,48,255] cx=20 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[107,90,99,255] cx=17 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[107,90,99,255] cx=13 cy=13 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=3 color=[107,90,99,255] cx=21 cy=13 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=16 cy=11 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=11 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=21 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[46,38,48,255] cx=16 cy=14 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=17 cy=10 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=12 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=22 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[107,90,99,255] cx=17 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=16 cy=15 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=15 cy=12 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=15 cy=9 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=5 color=[46,38,48,255] cx=20 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=17 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=16 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=16 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[107,90,99,255] cx=21 cy=7 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=16 cy=15 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=16 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=16 cy=9 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=19 cy=6 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=23 cy=6 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=24 cy=9 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[46,38,48,255] cx=22 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=17 cy=14 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=17 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=17 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=20 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=24 cy=5 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=25 cy=8 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[107,90,99,255] cx=23 cy=10 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=19 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=21 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=24 cy=5 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[46,38,48,255] cx=25 cy=8 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=20 cy=7 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=22 cy=4 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=25 cy=4 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[107,90,99,255] cx=26 cy=7 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[46,38,48,255] cx=22 cy=4 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[46,38,48,255] cx=24 cy=6 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[107,90,99,255] cx=23 cy=3 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[107,90,99,255] cx=25 cy=5 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=2 frame=2
+doc_draw op=clear_cel layer=2 frame=3
+doc_draw op=clear_cel layer=2 frame=4
+doc_draw op=clear_cel layer=2 frame=5
+doc_draw op=clear_cel layer=2 frame=6
+doc_draw op=clear_cel layer=2 frame=0
+doc_draw op=clear_cel layer=2 frame=1
+doc_draw op=clear_cel layer=2 frame=7
+doc_draw op=clear_cel layer=2 frame=8
+doc_draw op=clear_cel layer=2 frame=9
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=16 x1=15 y0=15 y1=12
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[15,12]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=15 x1=14 y0=13 y1=10
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[14,10]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=16 x1=14 y0=11 y1=10
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[14,10]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=14 x1=14 y0=8 y1=10
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[14,10]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=14 x1=14 y0=12 y1=13
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[14,13]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=17 x1=19 y0=16 y1=13
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[19,13]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=18 x1=20 y0=14 y1=12
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[20,12]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=19 x1=21 y0=11 y1=11
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[21,11]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=21 x1=22 y0=11 y1=13
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[22,13]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=22 x1=22 y0=14 y1=15
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[22,15]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=19 x1=22 y0=16 y1=15
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[22,15]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=22 x1=25 y0=15 y1=15
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[25,15]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=25 x1=27 y0=14 y1=15
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[27,15]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=27 x1=28 y0=15 y1=16
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[28,16]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=29 x1=29 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[29,19]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=19 x1=22 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[22,19]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=22 x1=25 y0=19 y1=20
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[25,20]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=26 x1=27 y0=21 y1=22
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[27,22]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=28 x1=29 y0=23 y1=25
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[29,25]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=30 x1=30 y0=26 y1=27
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[30,27]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=18 x1=20 y0=19 y1=21
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[20,21]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=20 x1=22 y0=21 y1=24
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[22,24]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=22 x1=23 y0=24 y1=27
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[23,27]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=23 x1=24 y0=28 y1=29
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[24,29]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=24 x1=24 y0=32 y1=33
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[24,33]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=16 x1=17 y0=19 y1=22
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[17,22]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=17 x1=18 y0=22 y1=25
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[18,25]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=18 x1=18 y0=25 y1=28
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[18,28]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=18 x1=18 y0=28 y1=30
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[18,30]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=18 x1=18 y0=32 y1=33
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[18,33]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=15 x1=14 y0=19 y1=22
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[14,22]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=14 x1=14 y0=22 y1=25
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[14,25]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=13 x1=13 y0=26 y1=28
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[13,28]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=13 x1=12 y0=29 y1=31
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[12,31]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=12 x1=12 y0=33 y1=34
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[12,34]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=14 x1=12 y0=19 y1=21
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[12,21]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=11 x1=9 y0=21 y1=23
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[9,23]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=9 x1=8 y0=24 y1=26
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[8,26]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=7 x1=6 y0=27 y1=29
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[6,29]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=6 x1=6 y0=31 y1=32
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[6,32]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=13 x1=11 y0=16 y1=15
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[11,15]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=11 x1=8 y0=15 y1=15
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[8,15]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=8 x1=6 y0=14 y1=15
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[6,15]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=6 x1=5 y0=15 y1=17
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[5,17]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=4 x1=4 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[4,19]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=15 x1=13 y0=17 y1=15
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[13,15]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=15 x1=12 y0=15 y1=14
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[12,14]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=13 x1=11 y0=13 y1=14
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[11,14]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=11 x1=10 y0=14 y1=15
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[10,15]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=10 x1=10 y0=17 y1=18
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[10,18]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=16 x1=17 y0=17 y1=14
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[17,14]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=16 x1=17 y0=16 y1=13
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[17,13]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=16 x1=17 y0=11 y1=13
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[17,13]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=17 x1=17 y0=13 y1=14
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[17,14]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=18 x1=18 y0=16 y1=17
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[18,17]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=16 x1=18 y0=18 y1=16
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[18,16]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=17 x1=20 y0=16 y1=15
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[20,15]]
+doc_draw op=line layer=2 frame=4 color=[242,120,28,255] x0=19 x1=21 y0=14 y1=16
+doc_draw op=pencil layer=2 frame=4 color=[255,198,40,255] points=[[21,16]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=21 x1=21 y0=16 y1=17
+doc_draw op=pencil layer=2 frame=5 color=[242,120,28,255] points=[[21,17]]
+doc_draw op=line layer=2 frame=6 color=[168,50,30,255] x0=22 x1=22 y0=19 y1=20
+doc_draw op=pencil layer=2 frame=6 color=[168,50,30,255] points=[[22,20]]
+doc_draw op=clear_cel layer=2 frame=0
+doc_draw op=clear_cel layer=2 frame=1
+doc_draw op=clear_cel layer=2 frame=2
+doc_draw op=clear_cel layer=2 frame=3
+doc_draw op=clear_cel layer=2 frame=4
+doc_draw op=clear_cel layer=2 frame=5
+doc_draw op=clear_cel layer=2 frame=6
+doc_draw op=clear_cel layer=2 frame=7
+doc_draw op=clear_cel layer=2 frame=8
+doc_draw op=clear_cel layer=2 frame=9
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=14 x1=12 y0=13 y1=9
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[12,9]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=13 x1=11 y0=10 y1=7
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[11,7]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=13 x1=11 y0=5 y1=6
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[11,6]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=10 x1=10 y0=6 y1=8
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[10,8]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=18 x1=19 y0=13 y1=9
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[19,9]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=18 x1=20 y0=10 y1=7
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[20,7]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=18 x1=20 y0=5 y1=7
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[20,7]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=20 x1=20 y0=7 y1=8
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[20,8]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=21 x1=24 y0=15 y1=13
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[24,13]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=24 x1=27 y0=13 y1=12
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[27,12]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=26 x1=28 y0=10 y1=12
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[28,12]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=28 x1=28 y0=12 y1=13
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[28,13]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=22 x1=26 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[26,19]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=26 x1=29 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[29,19]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=29 x1=31 y0=19 y1=20
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[31,20]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=31 x1=31 y0=21 y1=22
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[31,22]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=19 x1=22 y0=20 y1=22
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[22,22]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=22 x1=24 y0=22 y1=25
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[24,25]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=24 x1=25 y0=24 y1=26
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[25,26]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=25 x1=25 y0=26 y1=28
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[25,28]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=17 x1=18 y0=20 y1=24
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[18,24]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=18 x1=18 y0=23 y1=26
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[18,26]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=18 x1=19 y0=26 y1=28
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[19,28]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=19 x1=19 y0=29 y1=30
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[19,30]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=15 x1=14 y0=20 y1=24
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[14,24]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=14 x1=14 y0=23 y1=26
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[14,26]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=14 x1=13 y0=26 y1=28
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[13,28]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=13 x1=13 y0=29 y1=30
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[13,30]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=13 x1=9 y0=20 y1=23
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[9,23]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=10 x1=7 y0=22 y1=25
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[7,25]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=7 x1=6 y0=24 y1=27
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[6,27]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=6 x1=6 y0=27 y1=28
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[6,28]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=11 x1=7 y0=15 y1=14
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[7,14]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=8 x1=4 y0=13 y1=13
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[4,13]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=5 x1=3 y0=12 y1=13
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[3,13]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=3 x1=3 y0=13 y1=14
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[3,14]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=16 x1=16 y0=16 y1=12
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[16,12]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=16 x1=16 y0=14 y1=10
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[16,10]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=16 x1=16 y0=8 y1=10
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[16,10]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=16 x1=16 y0=10 y1=12
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[16,12]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=13 x1=9 y0=18 y1=18
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[9,18]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=10 x1=6 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[6,19]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=7 x1=5 y0=18 y1=20
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[5,20]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=5 x1=5 y0=20 y1=22
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[5,22]]
+doc_draw op=clear_cel layer=1 frame=0
+doc_draw op=clear_cel layer=1 frame=1
+doc_draw op=clear_cel layer=1 frame=2
+doc_draw op=clear_cel layer=1 frame=3
+doc_draw op=clear_cel layer=1 frame=4
+doc_draw op=clear_cel layer=1 frame=5
+doc_draw op=clear_cel layer=1 frame=6
+doc_draw op=clear_cel layer=1 frame=7
+doc_draw op=clear_cel layer=1 frame=8
+doc_draw op=clear_cel layer=1 frame=9
+doc_draw op=rect layer=1 frame=2 color=[242,120,28,255] fill=true x0=12 x1=13 y0=13 y1=14
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[12,13]]
+doc_draw op=rect layer=1 frame=3 color=[168,50,30,255] fill=true x0=11 x1=12 y0=12 y1=13
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[11,12]]
+doc_draw op=rect layer=1 frame=4 color=[46,38,48,255] fill=true x0=10 x1=11 y0=13 y1=14
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[10,13]]
+doc_draw op=rect layer=1 frame=5 color=[46,38,48,255] fill=true x0=9 x1=10 y0=15 y1=16
+doc_draw op=pencil layer=1 frame=6 color=[46,38,48,255] points=[[9,19],[10,19],[9,20]]
+doc_draw op=pencil layer=1 frame=7 color=[107,90,99,255] points=[[9,23],[10,24]]
+doc_draw op=rect layer=1 frame=2 color=[242,120,28,255] fill=true x0=20 x1=21 y0=12 y1=13
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[20,12]]
+doc_draw op=rect layer=1 frame=3 color=[168,50,30,255] fill=true x0=21 x1=22 y0=10 y1=11
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[21,10]]
+doc_draw op=rect layer=1 frame=4 color=[46,38,48,255] fill=true x0=22 x1=23 y0=10 y1=11
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[22,10]]
+doc_draw op=rect layer=1 frame=5 color=[46,38,48,255] fill=true x0=22 x1=23 y0=13 y1=14
+doc_draw op=pencil layer=1 frame=6 color=[46,38,48,255] points=[[23,16],[24,16],[23,17]]
+doc_draw op=pencil layer=1 frame=7 color=[107,90,99,255] points=[[23,21],[24,22]]
+doc_draw op=rect layer=1 frame=2 color=[242,120,28,255] fill=true x0=23 x1=24 y0=16 y1=17
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[23,16]]
+doc_draw op=rect layer=1 frame=3 color=[168,50,30,255] fill=true x0=26 x1=27 y0=17 y1=18
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[26,17]]
+doc_draw op=rect layer=1 frame=4 color=[46,38,48,255] fill=true x0=27 x1=28 y0=18 y1=19
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[27,18]]
+doc_draw op=rect layer=1 frame=5 color=[46,38,48,255] fill=true x0=28 x1=29 y0=21 y1=22
+doc_draw op=pencil layer=1 frame=6 color=[46,38,48,255] points=[[28,24],[29,24],[28,25]]
+doc_draw op=pencil layer=1 frame=7 color=[107,90,99,255] points=[[28,29],[29,30]]
+doc_draw op=rect layer=1 frame=2 color=[242,120,28,255] fill=true x0=9 x1=10 y0=19 y1=20
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[9,19]]
+doc_draw op=rect layer=1 frame=3 color=[168,50,30,255] fill=true x0=7 x1=8 y0=21 y1=22
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[7,21]]
+doc_draw op=rect layer=1 frame=4 color=[46,38,48,255] fill=true x0=5 x1=6 y0=23 y1=24
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[5,23]]
+doc_draw op=rect layer=1 frame=5 color=[46,38,48,255] fill=true x0=4 x1=5 y0=26 y1=27
+doc_draw op=pencil layer=1 frame=6 color=[46,38,48,255] points=[[4,30],[5,30],[4,31]]
+doc_draw op=pencil layer=1 frame=7 color=[107,90,99,255] points=[[4,35],[5,36]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[13,23]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[12,26]]
+doc_draw op=pencil layer=1 frame=4 color=[46,38,48,255] points=[[12,29]]
+doc_draw op=pencil layer=1 frame=5 color=[46,38,48,255] points=[[11,32]]
+doc_draw op=pencil layer=1 frame=6 color=[107,90,99,255] points=[[11,36]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[19,23]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[20,26]]
+doc_draw op=pencil layer=1 frame=4 color=[46,38,48,255] points=[[21,30]]
+doc_draw op=pencil layer=1 frame=5 color=[46,38,48,255] points=[[21,33]]
+doc_draw op=pencil layer=1 frame=6 color=[107,90,99,255] points=[[21,37]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[16,13]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[16,12]]
+doc_draw op=pencil layer=1 frame=4 color=[46,38,48,255] points=[[16,13]]
+doc_draw op=pencil layer=1 frame=5 color=[46,38,48,255] points=[[16,15]]
+doc_draw op=pencil layer=1 frame=6 color=[107,90,99,255] points=[[16,19]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[11,17]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[9,17]]
+doc_draw op=pencil layer=1 frame=4 color=[46,38,48,255] points=[[7,19]]
+doc_draw op=pencil layer=1 frame=5 color=[46,38,48,255] points=[[7,21]]
+doc_draw op=pencil layer=1 frame=6 color=[107,90,99,255] points=[[7,25]]
+doc_palette op=swap from=[[46,38,48,255],[107,90,99,255]] to=[[78,60,74,255],[150,133,144,255]]
+doc_draw op=clear_cel layer=0 frame=0
+doc_draw op=clear_cel layer=0 frame=1
+doc_draw op=clear_cel layer=0 frame=2
+doc_draw op=clear_cel layer=0 frame=3
+doc_draw op=clear_cel layer=0 frame=4
+doc_draw op=clear_cel layer=0 frame=5
+doc_draw op=clear_cel layer=0 frame=6
+doc_draw op=clear_cel layer=0 frame=7
+doc_draw op=clear_cel layer=0 frame=8
+doc_draw op=clear_cel layer=0 frame=9
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=12 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=13 cy=13 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=20 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=21 cy=13 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=16 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=17 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=11 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=12 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=21 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=22 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=16 cy=14 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=17 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=16 cy=11 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=17 cy=10 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=10 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=11 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=16 cy=15 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=17 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=15 cy=12 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=16 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=20 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=21 cy=7 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=15 cy=9 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=16 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=9 cy=10 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=10 cy=9 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=15 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=14 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=9 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=19 cy=6 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=20 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=23 cy=6 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=24 cy=5 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=24 cy=9 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=25 cy=8 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=22 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=23 cy=10 fill=true rx=1 ry=1
+doc_draw op=pencil layer=0 frame=6 color=[0,0,0,0] erase=true points=[[15,4],[22,6],[15,7],[11,10],[16,12],[13,15],[15,15]]
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=17 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=18 cy=10 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=17 cy=6 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=18 cy=5 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=20 cy=3 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=21 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=24 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=25 cy=2 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=25 cy=6 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=26 cy=5 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=23 cy=8 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=24 cy=7 fill=true rx=1 ry=1
+doc_draw op=pencil layer=0 frame=7 color=[0,0,0,0] erase=true points=[[18,1],[26,3],[19,4],[23,4],[26,4],[27,4],[14,6],[15,6],[17,6],[14,7],[25,8],[22,9],[24,9],[15,10],[15,11],[18,12],[19,12]]
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=19 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=20 cy=2 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=22 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=23 cy=1 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=25 cy=4 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=26 cy=3 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=24 cy=7 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=25 cy=6 fill=true rx=1 ry=1
+doc_draw op=pencil layer=0 frame=8 color=[0,0,0,0] erase=true points=[[21,0],[24,0],[18,1],[19,1],[24,1],[24,2],[25,2],[24,3],[20,4],[26,4],[27,4],[20,5],[26,5],[26,7],[24,8]]
+doc_draw op=clear_cel layer=3 frame=0
+doc_draw op=clear_cel layer=3 frame=1
+doc_draw op=clear_cel layer=3 frame=2
+doc_draw op=clear_cel layer=3 frame=3
+doc_draw op=clear_cel layer=3 frame=4
+doc_draw op=clear_cel layer=3 frame=5
+doc_draw op=clear_cel layer=3 frame=6
+doc_draw op=clear_cel layer=3 frame=7
+doc_draw op=clear_cel layer=3 frame=8
+doc_draw op=clear_cel layer=3 frame=9
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=28 y0=18 y1=18
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=4 y0=18 y1=18
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=16 y0=18 y1=29
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=16 y0=18 y1=5
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=27 y0=18 y1=29
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=5 y0=18 y1=7
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=27 y0=18 y1=7
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=6 y0=18 y1=28
+doc_draw op=ellipse layer=3 frame=1 color=[242,120,28,255] cx=16 cy=18 fill=true rx=8 ry=8
+doc_draw op=ellipse layer=3 frame=1 color=[255,198,40,255] cx=16 cy=18 fill=true rx=6 ry=6
+doc_draw op=ellipse layer=3 frame=1 color=[255,244,194,255] cx=16 cy=18 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=0 color=[255,198,40,255] cx=16 cy=18 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=0 color=[255,244,194,255] cx=16 cy=18 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=16 cy=18 fill=true rx=7 ry=7
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=11 cy=15 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=20 cy=23 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=22 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[255,198,40,255] cx=16 cy=18 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=3 frame=2 color=[255,198,40,255] cx=13 cy=16 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[255,198,40,255] cx=19 cy=21 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[255,244,194,255] cx=16 cy=18 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=2 color=[255,244,194,255] cx=15 cy=17 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=16 cy=18 fill=true rx=6 ry=6
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=12 cy=21 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=20 cy=16 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=16 cy=22 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=3 color=[242,120,28,255] cx=16 cy=18 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=3 frame=3 color=[242,120,28,255] cx=13 cy=21 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=3 color=[242,120,28,255] cx=19 cy=16 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=3 color=[255,198,40,255] cx=16 cy=19 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=3 color=[255,198,40,255] cx=15 cy=18 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[168,50,30,255] cx=16 cy=19 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=4 color=[168,50,30,255] cx=13 cy=21 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[168,50,30,255] cx=19 cy=21 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[242,120,28,255] cx=16 cy=19 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=4 color=[242,120,28,255] cx=14 cy=20 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[255,198,40,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=5 color=[168,50,30,255] cx=16 cy=19 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=5 color=[168,50,30,255] cx=15 cy=21 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=5 color=[242,120,28,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=6 color=[168,50,30,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=2 frame=0
+doc_draw op=clear_cel layer=2 frame=1
+doc_draw op=clear_cel layer=2 frame=2
+doc_draw op=clear_cel layer=2 frame=3
+doc_draw op=clear_cel layer=2 frame=4
+doc_draw op=clear_cel layer=2 frame=5
+doc_draw op=clear_cel layer=2 frame=6
+doc_draw op=clear_cel layer=2 frame=7
+doc_draw op=clear_cel layer=2 frame=8
+doc_draw op=clear_cel layer=2 frame=9
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=14 x1=13 y0=13 y1=9
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[13,9]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=13 x1=12 y0=8 y1=6
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[12,6]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=12 x1=11 y0=6 y1=6
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[11,6]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=11 x1=11 y0=6 y1=7
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[11,7]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=18 x1=20 y0=14 y1=11
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[20,11]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=20 x1=21 y0=11 y1=10
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[21,10]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=21 x1=22 y0=10 y1=10
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[22,10]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=22 x1=22 y0=10 y1=11
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[22,11]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=21 x1=25 y0=16 y1=15
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[25,15]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=25 x1=27 y0=15 y1=14
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[27,14]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=27 x1=29 y0=14 y1=15
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[29,15]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=29 x1=29 y0=15 y1=16
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[29,16]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=20 x1=22 y0=19 y1=20
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[22,20]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=23 x1=25 y0=20 y1=21
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[25,21]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=25 x1=26 y0=21 y1=22
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[26,22]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=26 x1=26 y0=22 y1=24
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[26,24]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=18 x1=19 y0=20 y1=22
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[19,22]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=20 x1=20 y0=23 y1=24
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[20,24]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=20 x1=21 y0=24 y1=26
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[21,26]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=21 x1=21 y0=26 y1=28
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[21,28]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=16 x1=15 y0=21 y1=23
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[15,23]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=15 x1=15 y0=24 y1=26
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[15,26]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=15 x1=15 y0=26 y1=28
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[15,28]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=15 x1=15 y0=28 y1=29
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[15,29]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=13 x1=11 y0=21 y1=23
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[11,23]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=10 x1=9 y0=24 y1=26
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[9,26]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=9 x1=8 y0=26 y1=27
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[8,27]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=8 x1=8 y0=27 y1=29
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[8,29]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=12 x1=9 y0=16 y1=14
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[9,14]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=8 x1=6 y0=14 y1=13
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[6,13]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=6 x1=5 y0=13 y1=14
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[5,14]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=5 x1=5 y0=14 y1=15
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[5,15]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=13 x1=11 y0=18 y1=18
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[11,18]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=10 x1=9 y0=18 y1=18
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[9,18]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=9 x1=8 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[8,19]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=8 x1=8 y0=19 y1=21
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[8,21]]
+doc_draw op=clear_cel layer=1 frame=0
+doc_draw op=clear_cel layer=1 frame=1
+doc_draw op=clear_cel layer=1 frame=2
+doc_draw op=clear_cel layer=1 frame=3
+doc_draw op=clear_cel layer=1 frame=4
+doc_draw op=clear_cel layer=1 frame=5
+doc_draw op=clear_cel layer=1 frame=6
+doc_draw op=clear_cel layer=1 frame=7
+doc_draw op=clear_cel layer=1 frame=8
+doc_draw op=clear_cel layer=1 frame=9
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[12,13],[13,13],[14,13],[12,14],[13,14]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[12,13]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[11,12],[12,12],[13,12],[11,13],[12,13]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[11,12]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[10,13],[11,13],[12,13],[10,14],[11,14]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[10,13]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[9,15],[10,15],[11,15],[9,16],[10,16]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[9,19],[10,19],[11,19]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[9,23],[10,24]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[20,12],[21,12],[20,13],[21,13]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[20,12]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[21,10],[22,10],[21,11],[22,11]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[21,10]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[22,10],[23,10],[22,11],[23,11]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[22,10]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[22,13],[23,13],[22,14],[23,14]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[23,16],[24,16]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[23,21],[24,22]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[23,16],[24,16],[25,16],[23,17],[24,17]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[23,16]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[26,17],[27,17],[28,17],[26,18],[27,18]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[26,17]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[27,18],[28,18],[29,18],[27,19],[28,19]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[27,18]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[28,21],[29,21],[30,21],[28,22],[29,22]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[28,24],[29,24],[30,24]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[28,29],[29,30]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[9,19],[10,19],[9,20],[10,20]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[9,19]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[7,21],[8,21],[7,22],[8,22]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[7,21]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[5,23],[6,23],[5,24],[6,24]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[5,23]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[4,26],[5,26],[4,27],[5,27]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[4,30],[5,30]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[4,35],[5,36]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[13,23]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[12,26]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[12,29]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[11,32]]
+doc_draw op=pencil layer=1 frame=6 color=[150,133,144,255] points=[[11,36]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[19,23]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[20,26]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[21,30]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[21,33]]
+doc_draw op=pencil layer=1 frame=6 color=[150,133,144,255] points=[[21,37]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[16,13]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[16,12]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[16,13]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[16,15]]
+doc_draw op=pencil layer=1 frame=6 color=[150,133,144,255] points=[[16,19]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[11,17]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[9,17]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[7,19]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[7,21]]
+doc_draw op=pencil layer=1 frame=6 color=[150,133,144,255] points=[[7,25]]
+doc_draw op=pencil layer=0 frame=9 color=[150,133,144,255] points=[[24,2],[21,4],[27,5]]
+doc_draw op=clear_cel layer=3 frame=0
+doc_draw op=clear_cel layer=3 frame=1
+doc_draw op=clear_cel layer=3 frame=2
+doc_draw op=clear_cel layer=3 frame=3
+doc_draw op=clear_cel layer=3 frame=4
+doc_draw op=clear_cel layer=3 frame=5
+doc_draw op=clear_cel layer=3 frame=6
+doc_draw op=clear_cel layer=3 frame=7
+doc_draw op=clear_cel layer=3 frame=8
+doc_draw op=clear_cel layer=3 frame=9
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=28 y0=18 y1=18
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=4 y0=18 y1=18
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=16 y0=18 y1=29
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=16 y0=18 y1=5
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=27 y0=18 y1=29
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=5 y0=18 y1=7
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=27 y0=18 y1=7
+doc_draw op=line layer=3 frame=1 color=[255,198,40,255] x0=16 x1=6 y0=18 y1=28
+doc_draw op=ellipse layer=3 frame=1 color=[242,120,28,255] cx=16 cy=18 fill=true rx=8 ry=8
+doc_draw op=ellipse layer=3 frame=1 color=[255,198,40,255] cx=16 cy=18 fill=true rx=6 ry=6
+doc_draw op=ellipse layer=3 frame=1 color=[255,244,194,255] cx=16 cy=18 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=0 color=[255,198,40,255] cx=16 cy=18 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=0 color=[255,244,194,255] cx=16 cy=18 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=16 cy=18 fill=true rx=6 ry=6
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=12 cy=15 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=19 cy=22 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=20 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[242,120,28,255] cx=12 cy=22 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=2 color=[255,198,40,255] cx=16 cy=18 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=2 color=[255,198,40,255] cx=14 cy=16 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=2 color=[255,198,40,255] cx=18 cy=20 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=2 color=[255,244,194,255] cx=16 cy=18 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=16 cy=18 fill=true rx=6 ry=6
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=12 cy=21 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=20 cy=16 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=3 color=[168,50,30,255] cx=16 cy=22 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=3 color=[242,120,28,255] cx=16 cy=18 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=3 frame=3 color=[242,120,28,255] cx=13 cy=21 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=3 color=[242,120,28,255] cx=19 cy=16 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=3 color=[255,198,40,255] cx=16 cy=19 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=3 color=[255,198,40,255] cx=15 cy=18 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[168,50,30,255] cx=16 cy=19 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=3 frame=4 color=[168,50,30,255] cx=13 cy=21 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[168,50,30,255] cx=19 cy=21 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[242,120,28,255] cx=16 cy=19 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=3 frame=4 color=[242,120,28,255] cx=14 cy=20 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=4 color=[255,198,40,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=5 color=[168,50,30,255] cx=16 cy=19 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=3 frame=5 color=[168,50,30,255] cx=15 cy=21 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=5 color=[242,120,28,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=3 frame=6 color=[168,50,30,255] cx=16 cy=19 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=2 frame=0
+doc_draw op=clear_cel layer=2 frame=1
+doc_draw op=clear_cel layer=2 frame=2
+doc_draw op=clear_cel layer=2 frame=3
+doc_draw op=clear_cel layer=2 frame=4
+doc_draw op=clear_cel layer=2 frame=5
+doc_draw op=clear_cel layer=2 frame=6
+doc_draw op=clear_cel layer=2 frame=7
+doc_draw op=clear_cel layer=2 frame=8
+doc_draw op=clear_cel layer=2 frame=9
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=14 x1=12 y0=12 y1=7
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[12,7]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=12 x1=11 y0=6 y1=4
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[11,4]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=11 x1=11 y0=4 y1=4
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[11,4]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=11 x1=11 y0=4 y1=5
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[11,5]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=19 x1=21 y0=13 y1=10
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[21,10]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=21 x1=22 y0=9 y1=8
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[22,8]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=22 x1=23 y0=8 y1=8
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[23,8]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=23 x1=23 y0=8 y1=9
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[23,9]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=22 x1=26 y0=16 y1=14
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[26,14]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=27 x1=30 y0=14 y1=13
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[30,13]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=30 x1=31 y0=13 y1=14
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[31,14]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=31 x1=31 y0=14 y1=16
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[31,16]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=21 x1=24 y0=19 y1=20
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[24,20]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=25 x1=27 y0=20 y1=21
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[27,21]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=27 x1=28 y0=21 y1=22
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[28,22]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=28 x1=28 y0=22 y1=24
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[28,24]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=19 x1=21 y0=21 y1=24
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[21,24]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=21 x1=22 y0=24 y1=26
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[22,26]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=22 x1=22 y0=26 y1=28
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[22,28]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=22 x1=22 y0=28 y1=29
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[22,29]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=16 x1=15 y0=22 y1=24
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[15,24]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=15 x1=15 y0=25 y1=27
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[15,27]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=15 x1=15 y0=27 y1=29
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[15,29]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=15 x1=15 y0=29 y1=30
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[15,30]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=12 x1=9 y0=22 y1=25
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[9,25]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=9 x1=7 y0=25 y1=27
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[7,27]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=7 x1=7 y0=27 y1=29
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[7,29]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=7 x1=7 y0=29 y1=31
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[7,31]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=11 x1=7 y0=15 y1=13
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[7,13]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=6 x1=4 y0=13 y1=12
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[4,12]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=4 x1=3 y0=12 y1=13
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[3,13]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=3 x1=3 y0=13 y1=14
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[3,14]]
+doc_draw op=line layer=2 frame=2 color=[255,198,40,255] x0=12 x1=9 y0=18 y1=18
+doc_draw op=pencil layer=2 frame=2 color=[255,244,194,255] points=[[9,18]]
+doc_draw op=line layer=2 frame=3 color=[242,120,28,255] x0=8 x1=7 y0=18 y1=19
+doc_draw op=pencil layer=2 frame=3 color=[255,198,40,255] points=[[7,19]]
+doc_draw op=line layer=2 frame=4 color=[168,50,30,255] x0=7 x1=6 y0=19 y1=20
+doc_draw op=pencil layer=2 frame=4 color=[242,120,28,255] points=[[6,20]]
+doc_draw op=line layer=2 frame=5 color=[168,50,30,255] x0=6 x1=6 y0=20 y1=21
+doc_draw op=pencil layer=2 frame=5 color=[168,50,30,255] points=[[6,21]]
+doc_draw op=clear_cel layer=1 frame=0
+doc_draw op=clear_cel layer=1 frame=1
+doc_draw op=clear_cel layer=1 frame=2
+doc_draw op=clear_cel layer=1 frame=3
+doc_draw op=clear_cel layer=1 frame=4
+doc_draw op=clear_cel layer=1 frame=5
+doc_draw op=clear_cel layer=1 frame=6
+doc_draw op=clear_cel layer=1 frame=7
+doc_draw op=clear_cel layer=1 frame=8
+doc_draw op=clear_cel layer=1 frame=9
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[11,12],[12,12],[13,12],[11,13],[12,13]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[11,12]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[9,10],[10,10],[11,10],[9,11],[10,11]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[9,10]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[8,10],[9,10],[10,10],[8,11],[9,11]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[8,10]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[7,13],[8,13],[9,13],[7,14],[8,14]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[7,16],[8,16],[9,16]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[7,21],[8,22]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[20,11],[21,11],[20,12],[21,12]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[20,11]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[22,9],[23,9],[22,10],[23,10]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[22,9]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[23,9],[24,9],[23,10],[24,10]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[23,9]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[23,11],[24,11],[23,12],[24,12]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[24,14],[25,14]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[24,19],[25,20]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[24,16],[25,16],[26,16],[24,17],[25,17]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[24,16]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[27,16],[28,16],[29,16],[27,17],[28,17]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[27,16]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[29,17],[30,17],[31,17],[29,18],[30,18]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[29,17]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[30,20],[31,20],[32,20],[30,21],[31,21]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[30,24],[31,24],[32,24]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[30,28],[31,29]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[8,19],[9,19],[8,20],[9,20]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[8,19]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[5,21],[6,21],[5,22],[6,22]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[5,21]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[3,24],[4,24],[3,25],[4,25]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[3,24]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[2,27],[3,27],[2,28],[3,28]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[2,30],[3,30]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[2,35],[3,36]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[13,23],[14,23],[13,24],[14,24]]
+doc_draw op=pencil layer=1 frame=2 color=[255,198,40,255] points=[[13,23]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[11,27],[12,27],[11,28],[12,28]]
+doc_draw op=pencil layer=1 frame=3 color=[242,120,28,255] points=[[11,27]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[11,30],[12,30],[11,31],[12,31]]
+doc_draw op=pencil layer=1 frame=4 color=[168,50,30,255] points=[[11,30]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[10,34],[11,34],[10,35],[11,35]]
+doc_draw op=pencil layer=1 frame=6 color=[78,60,74,255] points=[[10,38],[11,38]]
+doc_draw op=pencil layer=1 frame=7 color=[150,133,144,255] points=[[10,42],[11,43]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[19,24]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[21,28]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[22,31]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[22,35]]
+doc_draw op=pencil layer=1 frame=6 color=[150,133,144,255] points=[[22,39]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[16,12]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[16,11]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[16,12]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[16,14]]
+doc_draw op=pencil layer=1 frame=6 color=[150,133,144,255] points=[[16,18]]
+doc_draw op=pencil layer=1 frame=2 color=[242,120,28,255] points=[[10,16]]
+doc_draw op=pencil layer=1 frame=3 color=[168,50,30,255] points=[[7,16]]
+doc_draw op=pencil layer=1 frame=4 color=[78,60,74,255] points=[[6,18]]
+doc_draw op=pencil layer=1 frame=5 color=[78,60,74,255] points=[[5,21]]
+doc_draw op=pencil layer=1 frame=6 color=[150,133,144,255] points=[[5,24]]
+doc_draw op=clear_cel layer=0 frame=0
+doc_draw op=clear_cel layer=0 frame=1
+doc_draw op=clear_cel layer=0 frame=2
+doc_draw op=clear_cel layer=0 frame=3
+doc_draw op=clear_cel layer=0 frame=4
+doc_draw op=clear_cel layer=0 frame=5
+doc_draw op=clear_cel layer=0 frame=6
+doc_draw op=clear_cel layer=0 frame=7
+doc_draw op=clear_cel layer=0 frame=8
+doc_draw op=clear_cel layer=0 frame=9
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=12 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=13 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=20 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=21 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=16 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=17 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=11 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=12 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=21 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=22 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=16 cy=14 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=17 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=16 cy=11 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=17 cy=10 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=10 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=11 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=16 cy=15 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=17 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=15 cy=12 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=16 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=20 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=21 cy=7 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=15 cy=9 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=16 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=9 cy=10 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=10 cy=9 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=15 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=9 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=19 cy=6 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=20 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=23 cy=6 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=24 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=24 cy=9 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=25 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=22 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=23 cy=10 fill=true rx=2 ry=2
+doc_draw op=pencil layer=0 frame=6 color=[0,0,0,0] erase=true points=[[15,4],[22,6],[15,7],[28,8],[11,10],[16,12],[13,15],[15,15]]
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=17 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=18 cy=10 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=17 cy=6 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=18 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=20 cy=3 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=21 cy=2 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=24 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=25 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=25 cy=6 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=26 cy=5 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=23 cy=8 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=24 cy=7 fill=true rx=1 ry=1
+doc_draw op=pencil layer=0 frame=7 color=[0,0,0,0] erase=true points=[[26,0],[18,1],[26,3],[19,4],[23,4],[26,4],[27,4],[14,6],[15,6],[17,6],[14,7],[25,8],[22,9],[24,9],[15,10],[15,11],[18,12],[19,12]]
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=19 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=20 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=22 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=23 cy=1 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=25 cy=4 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=26 cy=3 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=24 cy=7 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=25 cy=6 fill=true rx=1 ry=1
+doc_draw op=pencil layer=0 frame=8 color=[0,0,0,0] erase=true points=[[19,0],[20,0],[21,0],[24,0],[25,0],[18,1],[19,1],[24,1],[25,1],[24,2],[25,2],[24,3],[20,4],[26,4],[27,4],[20,5],[26,5],[26,7],[24,8]]
+doc_draw op=clear_cel layer=0 frame=0
+doc_draw op=clear_cel layer=0 frame=1
+doc_draw op=clear_cel layer=0 frame=2
+doc_draw op=clear_cel layer=0 frame=3
+doc_draw op=clear_cel layer=0 frame=4
+doc_draw op=clear_cel layer=0 frame=5
+doc_draw op=clear_cel layer=0 frame=6
+doc_draw op=clear_cel layer=0 frame=7
+doc_draw op=clear_cel layer=0 frame=8
+doc_draw op=clear_cel layer=0 frame=9
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=12 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=13 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=20 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=21 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=3 color=[78,60,74,255] cx=16 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=3 color=[150,133,144,255] cx=17 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=11 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=12 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=21 cy=13 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=22 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=16 cy=14 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=17 cy=13 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=4 color=[78,60,74,255] cx=16 cy=11 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=4 color=[150,133,144,255] cx=17 cy=10 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=10 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=11 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=16 cy=15 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=17 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=15 cy=12 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=16 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=20 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=21 cy=7 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=5 color=[78,60,74,255] cx=15 cy=9 fill=true rx=5 ry=5
+doc_draw op=ellipse layer=0 frame=5 color=[150,133,144,255] cx=16 cy=8 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=9 cy=10 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=10 cy=9 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=15 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=14 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=12 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=11 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=16 cy=9 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=17 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=19 cy=6 fill=true rx=4 ry=4
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=20 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=23 cy=6 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=24 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=24 cy=9 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=25 cy=8 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=6 color=[78,60,74,255] cx=22 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=6 color=[150,133,144,255] cx=23 cy=10 fill=true rx=2 ry=2
+doc_draw op=pencil layer=0 frame=6 color=[0,0,0,0] erase=true points=[[15,4],[22,6],[15,7],[28,8],[11,10],[16,12],[13,15],[15,15]]
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=17 cy=11 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=18 cy=10 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=17 cy=6 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=18 cy=5 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=20 cy=3 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=21 cy=2 fill=true rx=3 ry=3
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=24 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=25 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=25 cy=6 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=26 cy=5 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=7 color=[78,60,74,255] cx=23 cy=8 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=7 color=[150,133,144,255] cx=24 cy=7 fill=true rx=1 ry=1
+doc_draw op=pencil layer=0 frame=7 color=[0,0,0,0] erase=true points=[[26,0],[18,1],[26,3],[19,4],[23,4],[26,4],[27,4],[14,6],[15,6],[17,6],[14,7],[25,8],[22,9],[24,9],[15,10],[15,11],[18,12],[19,12]]
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=19 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=20 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=22 cy=2 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=23 cy=1 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=25 cy=4 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=26 cy=3 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[78,60,74,255] cx=24 cy=7 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=0 frame=8 color=[150,133,144,255] cx=25 cy=6 fill=true rx=1 ry=1
+doc_draw op=pencil layer=0 frame=8 color=[0,0,0,0] erase=true points=[[19,0],[20,0],[21,0],[24,0],[25,0],[18,1],[19,1],[24,1],[25,1],[24,2],[25,2],[24,3],[20,4],[26,4],[27,4],[20,5],[26,5],[26,7],[24,8]]
+doc_draw op=pencil layer=0 frame=9 color=[150,133,144,255] points=[[24,2],[21,4],[27,5]]
+doc_draw op=clear_cel layer=3 frame=6
+doc_draw op=pencil layer=3 frame=6 color=[168,50,30,255] points=[[16,19],[16,20]]
+doc_add_tag name=explosion from=0 to=9

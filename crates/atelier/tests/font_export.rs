@@ -108,12 +108,12 @@ fn cli_font_export_replays_identically_and_guards_metadata_updates() {
         );
         assert_eq!(std::fs::read(&original).unwrap(), bytes);
     }
-    let journal = home.join("documents").join(id).join("recipe.jsonl");
+    let journal = home.join("documents").join(id).join("doc.recipe");
     let lines = std::fs::read_to_string(&journal).unwrap();
     assert_eq!(
         lines.lines().count(),
-        3,
-        "get, failed writes, and export must not enter the recipe"
+        4,
+        "a header and three calls: get, failed writes, and export must not enter the recipe"
     );
     let replay_home = root.join("replayed");
     let replayed = Command::new(env!("CARGO_BIN_EXE_atelier"))

@@ -1,0 +1,969 @@
+atelier 3 28a20658-ba4a-4309-8917-0add108d90d2 0.1.0
+doc_new name=alien-idle width=32 height=32
+doc_palette op=set colors=[[22,49,31,255],[53,124,60,255],[104,196,76,255],[185,238,134,255]]
+doc_layer op=add name=antennae
+doc_layer op=add name=head
+doc_layer op=add name=eyes
+doc_layer op=rename index=0 name=body
+doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"o":[22,49,31,255]} rows:2
+  |..oo..|
+  |.oooo.|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............ollllllo............|
+  |...........ollllllllo...........|
+  |.........ommollllllommo.........|
+  |.........ommommmmmmommo.........|
+  |..........omommmmmmomo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=0 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=0 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |...........oooooooooo...........|
+  |.........olhhhhhhhhhhlo.........|
+  |.......ollhhhhhhhhhhhhllo.......|
+  |......omllllhhhhhhhhllllmo......|
+  |......omllllllllllllllllmo......|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |.......ommllllllllllllmmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........ommlloollmmo..........|
+  |............ommmmmmo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=0 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:4
+  |........oho..........oho........|
+  |........ooooo......ooooo........|
+  |.........ooooo....ooooo.........|
+  |..........ooo......ooo..........|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........ooollllllllooo.........|
+  |.........omollllllllomo.........|
+  |.........omommmmmmmmomo.........|
+  |.........ooommmmmmmmooo.........|
+  |............oooooooo............|
+doc_paint_grid layer=1 frame=0 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=0 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |...........oooooooooo...........|
+  |.........oohhhhhhhhhhoo.........|
+  |.......oolllhhhhhhhhllloo.......|
+  |......omllllllhhhhllllllmo......|
+  |......omllllllllllllllllmo......|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........omllllllllllllmo........|
+  |.........ommllollollmmo.........|
+  |..........omllloolllmo..........|
+  |...........oommmmmmoo...........|
+  |.............ommmmo.............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=0 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:4
+  |........oho..........oho........|
+  |........ooooo......ooooo........|
+  |.........ooooo....ooooo.........|
+  |..........ooo......ooo..........|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........ooollllllllooo.........|
+  |.........omollllllllomo.........|
+  |.........omommmmmmmmomo.........|
+  |.........ooommmmmmmmooo.........|
+  |............oooooooo............|
+doc_paint_grid layer=1 frame=0 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=0 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllllllllmmo.........|
+  |..........oommommommoo..........|
+  |............oomoomoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=0 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |........oho..........oho........|
+  |.......ohoooo......ooooho.......|
+  |.......ooooooo....ooooooo.......|
+  |........oooooo....oooooo........|
+  |..........oooo....oooo..........|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........ooollllllllooo.........|
+  |.........omollllllllomo.........|
+  |.........omommmmmmmmomo.........|
+  |.........ooommmmmmmmooo.........|
+  |............oooooooo............|
+doc_paint_grid layer=1 frame=0 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=0 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=0 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=0 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=0 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=0 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_frame op=add copy_from=0 count=9 duration_ms=100
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=0 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=0 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=0 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=1 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=1 x=0 y=5 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |........hh............hh........|
+  |........ll............ll........|
+  |..........o..........o..........|
+  |...........o........o...........|
+  |............oo....oo............|
+doc_paint_grid layer=2 frame=1 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=1 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=2 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=2 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |........hh............hh........|
+  |........ll............ll........|
+  |..........o..........o..........|
+  |...........o........o...........|
+  |............oo....oo............|
+doc_paint_grid layer=2 frame=2 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=2 x=0 y=13 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=3 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=3 x=0 y=3 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=3 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=3 x=0 y=13 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=4 x=0 y=21 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=4 x=0 y=2 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |..........hh........hh..........|
+  |..........ll........ll..........|
+  |...........o........o...........|
+  |............o......o............|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=4 x=0 y=8 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=4 x=0 y=12 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=5 x=0 y=21 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=5 x=0 y=2 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |...........hh......hh...........|
+  |...........ll......ll...........|
+  |............o......o............|
+  |............o......o............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=5 x=0 y=8 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=5 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:3
+  |.........ooooo....ooooo.........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=6 x=0 y=21 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=6 x=0 y=2 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |............hh....hh............|
+  |............ll....ll............|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=6 x=0 y=8 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=6 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:3
+  |........oo............oo........|
+  |..........ooo......ooo..........|
+  |............oo....oo............|
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=7 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=7 x=0 y=3 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |............hh....hh............|
+  |............ll....ll............|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=7 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=7 x=0 y=15 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:3
+  |.........ooooo....ooooo.........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=8 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=8 x=0 y=3 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |...........hh......hh...........|
+  |...........ll......ll...........|
+  |............o......o............|
+  |............o......o............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=8 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=8 x=0 y=13 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=9 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=9 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |..........hh........hh..........|
+  |..........ll........ll..........|
+  |...........o........o...........|
+  |............o......o............|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=9 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=9 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=0 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |........hh............hh........|
+  |........ll............ll........|
+  |..........o..........o..........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=0 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=0 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=1 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=1 x=0 y=5 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.......hh..............hh.......|
+  |.......ll..............ll.......|
+  |.........o............o.........|
+  |..........oo........oo..........|
+  |............oo....oo............|
+doc_paint_grid layer=2 frame=1 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=1 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=2 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=2 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.......hh..............hh.......|
+  |.......ll..............ll.......|
+  |.........o............o.........|
+  |..........oo........oo..........|
+  |............oo....oo............|
+doc_paint_grid layer=2 frame=2 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=2 x=0 y=13 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=3 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=3 x=0 y=3 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |........hh............hh........|
+  |........ll............ll........|
+  |..........o..........o..........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=3 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=3 x=0 y=13 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=4 x=0 y=21 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=4 x=0 y=2 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=4 x=0 y=8 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=4 x=0 y=12 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=5 x=0 y=21 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=5 x=0 y=2 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |..........hh........hh..........|
+  |..........ll........ll..........|
+  |............o......o............|
+  |............o......o............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=5 x=0 y=8 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=5 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:3
+  |.........ooooo....ooooo.........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=6 x=0 y=21 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=6 x=0 y=2 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |...........hh......hh...........|
+  |...........ll......ll...........|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=6 x=0 y=8 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=6 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:3
+  |........oo............oo........|
+  |..........ooo......ooo..........|
+  |............oo....oo............|
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=7 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=7 x=0 y=3 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |...........hh......hh...........|
+  |...........ll......ll...........|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=7 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=7 x=0 y=15 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:3
+  |.........ooooo....ooooo.........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=8 x=0 y=22 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=8 x=0 y=3 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |..........hh........hh..........|
+  |..........ll........ll..........|
+  |............o......o............|
+  |............o......o............|
+  |.............o....o.............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=8 x=0 y=9 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=8 x=0 y=13 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=9 x=0 y=23 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:7
+  |............oolllloo............|
+  |...........ollllllllo...........|
+  |.........omollllllllomo.........|
+  |.........omollllllllomo.........|
+  |..........oommmmmmmmoo..........|
+  |............ommmmmmo............|
+  |.............oooooo.............|
+doc_paint_grid layer=1 frame=9 x=0 y=4 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:6
+  |.........hh..........hh.........|
+  |.........ll..........ll.........|
+  |...........o........o...........|
+  |...........o........o...........|
+  |............o......o............|
+  |.............o....o.............|
+doc_paint_grid layer=2 frame=9 x=0 y=10 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:13
+  |..........oooooooooooo..........|
+  |........oolhhhhhhhhhhloo........|
+  |......oolllhhhhhhhhhhllloo......|
+  |.....omllllllhhhhhhllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |.....omllllllllllllllllllmo.....|
+  |......omllllllllllllllllmo......|
+  |.......omllllllllllllllmo.......|
+  |........ommllllllllllmmo........|
+  |.........ommllollollmmo.........|
+  |..........oommmoommmoo..........|
+  |............oommmmoo............|
+  |..............ommo..............|
+doc_paint_grid layer=3 frame=9 x=0 y=14 legend={"h":[185,238,134,255],"l":[104,196,76,255],"m":[53,124,60,255],"o":[22,49,31,255]} rows:5
+  |.........oho........oho.........|
+  |........ohooo......oooho........|
+  |........oooooo....oooooo........|
+  |.........ooooo....ooooo.........|
+  |...........ooo....ooo...........|
+doc_add_tag name=idle direction=forward from=0 to=9

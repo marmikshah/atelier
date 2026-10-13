@@ -63,7 +63,7 @@ atelier library
 atelier library verify               # inspect saved data without changing it
 atelier library pack <doc-id> --out sprite.atelierpack
 atelier library unpack sprite.atelierpack
-atelier replay recipe.jsonl --home ./replay-store
+atelier replay sprite.recipe --home ./replay-store
 ```
 
 Replace `<doc-id>` with a UUID from the library. Archives preserve UUIDs and
@@ -77,6 +77,33 @@ what is wrong, and copy the document's directory before changing anything.
 `atelier library reset <doc-id>` replaces a damaged document with a blank one,
 keeping its UUID and any readable name and dimensions; it asks for
 confirmation and does nothing to a healthy document.
+
+A document saved in a format this build does not read is not damaged. Tools
+say so, and `library reset` leaves it alone unless `--discard-unsupported` is
+passed; open it with the Atelier version that wrote it instead.
+
+## Recipes
+
+Every document keeps a recipe, `doc.recipe`, beside its pixels: a text file
+with one line per call that changed it. `atelier replay` rebuilds the document
+from that file alone.
+
+```text
+atelier 3 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
+doc_new name=potion-flask width=32 height=32
+doc_layer op=rename index=0 name=glass_back
+doc_paint_grid layer=3 frame=0 x=12 y=2 legend={"C":5,"K":0} rows:4
+  |.KKKKKK.|
+  |KCCCCCCK|
+  |KCCCCCCK|
+  |.KKKKKK.|
+```
+
+- The first line gives the format number, the document ID, and the Atelier
+  version that created the file. Calls do not repeat the document ID.
+- Each call is the tool name followed by `key=value` arguments. Values are
+  JSON; a plain word such as `rename` may be written without quotes.
+- `rows:N` ends a grid call and is followed by N rows between `|` bars.
 
 ## HTTP server and Linux daemon
 

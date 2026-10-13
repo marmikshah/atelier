@@ -122,9 +122,12 @@ def showcase_matrix(root):
         )
     for run in data["runs"]:
         stem = f"{run['model']}/{run['task']}"
-        if run["replay"] != f"replays/{stem}.jsonl" or run["gif"] != f"gifs/{stem}.gif":
+        if (
+            run["replay"] != f"replays/{stem}.recipe"
+            or run["gif"] != f"gifs/{stem}.gif"
+        ):
             raise ValueError(f"incorrect artifact paths for {stem}")
-    for directory, extension in [("replays", "jsonl"), ("gifs", "gif")]:
+    for directory, extension in [("replays", "recipe"), ("gifs", "gif")]:
         actual = {
             str(path.relative_to(root / directory))
             for path in (root / directory).rglob(f"*.{extension}")
@@ -296,7 +299,7 @@ def run_task(task, args, manifest, binary, wrapper, schema):
             raise RuntimeError(f"{task}: completed run has different provenance")
         if (
             digest(directory / f"{task}.gif") != result["gif_sha256"]
-            or digest(directory / f"{task}.jsonl") != result["replay_sha256"]
+            or digest(directory / f"{task}.recipe") != result["replay_sha256"]
         ):
             raise RuntimeError(f"{task}: completed artifacts changed")
         print(f"{task}: retaining completed run", flush=True)
@@ -388,8 +391,8 @@ GIF and verifies its replay; you may export to inspect your own animation.
     if len(documents) != 1 or documents[0]["doc_id"] != result["doc_id"]:
         raise RuntimeError(f"{task}: expected exactly the reported document")
     info = atelier_call(binary, home, "doc_info", {"doc_id": result["doc_id"]})
-    source = home / "documents" / result["doc_id"] / "recipe.jsonl"
-    recipe = directory / f"{task}.jsonl"
+    source = home / "documents" / result["doc_id"] / "doc.recipe"
+    recipe = directory / f"{task}.recipe"
     shutil.copyfile(source, recipe)
     gif = directory / f"{task}.gif"
     atelier_call(

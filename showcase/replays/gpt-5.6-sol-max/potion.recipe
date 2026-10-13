@@ -1,0 +1,119 @@
+atelier 3 8392c3fa-2177-4952-b506-73d2c4391d85 0.1.0
+doc_new name="GPT-5.6-sol MAX Potion" width=32 height=32
+doc_palette op=set colors=[[27,23,53],[60,58,107],[184,121,72],[77,155,123],[123,224,165],[215,255,226]]
+doc_layer op=rename index=0 name="Bottle + Cork"
+doc_layer op=add name="Liquid Surface"
+doc_layer op=add name="Glass Highlights"
+doc_layer op=add name="Bubbles + Pops"
+doc_draw op=polygon layer=0 frame=0 color=[27,23,53] fill=true points=[[11,9],[20,9],[20,12],[23,15],[24,23],[22,27],[19,29],[12,29],[9,27],[7,23],[8,15],[11,12]]
+doc_draw op=rect layer=0 frame=0 color=[27,23,53] fill=true x0=11 x1=20 y0=6 y1=12
+doc_draw op=rect layer=0 frame=0 color=[27,23,53] fill=true x0=12 x1=19 y0=2 y1=6
+doc_draw op=polygon layer=0 frame=0 color=[27,23,53] erase=true fill=true points=[[12,12],[19,12],[19,13],[21,16],[22,23],[20,26],[18,27],[13,27],[11,26],[9,23],[10,16],[12,13]]
+doc_draw op=rect layer=0 frame=0 color=[27,23,53] erase=true fill=true x0=13 x1=18 y0=7 y1=11
+doc_draw op=rect layer=0 frame=0 color=[184,121,72] fill=true x0=13 x1=18 y0=3 y1=5
+doc_draw op=line layer=0 frame=0 color=[27,23,53] size=1 x0=13 x1=18 y0=4 y1=4
+doc_draw op=pencil layer=0 frame=0 color=[215,255,226] points=[[14,3],[17,5]] size=1
+doc_draw op=line layer=0 frame=0 color=[60,58,107] size=1 x0=11 x1=9 y0=13 y1=19
+doc_draw op=line layer=0 frame=0 color=[60,58,107] size=1 x0=9 x1=11 y0=21 y1=26
+doc_draw op=line layer=0 frame=0 color=[60,58,107] size=1 x0=12 x1=19 y0=28 y1=28
+doc_draw op=line layer=0 frame=0 color=[60,58,107] size=1 x0=20 x1=22 y0=14 y1=20
+doc_draw op=pencil layer=0 frame=0 color=[60,58,107] points=[[20,25],[19,27],[12,27]] size=1
+doc_draw op=line layer=0 frame=0 color=[60,58,107] size=1 x0=12 x1=12 y0=7 y1=11
+doc_draw op=line layer=0 frame=0 color=[60,58,107] size=1 x0=19 x1=19 y0=7 y1=11
+doc_draw op=polygon layer=1 frame=0 color=[77,155,123] fill=true points=[[10,17],[12,16],[15,16],[17,17],[20,17],[21,18],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=0 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=0 color=[215,255,226] points=[[11,17],[12,16],[15,16],[17,17],[20,17]] size=1
+doc_draw op=line layer=2 frame=0 color=[215,255,226] size=1 x0=14 x1=17 y0=8 y1=8
+doc_draw op=polyline layer=2 frame=0 color=[215,255,226] points=[[11,14],[10,16],[9,19],[9,21]] size=1
+doc_draw op=pencil layer=2 frame=0 color=[60,58,107] points=[[10,23],[11,25],[13,27],[21,21],[21,23],[19,27]] size=1
+doc_draw op=pencil layer=2 frame=0 color=[215,255,226] points=[[10,17],[10,18],[20,14]] size=1
+doc_draw op=pencil layer=3 frame=0 color=[215,255,226] points=[[14,25],[15,25],[14,24],[18,18],[19,18],[18,17],[12,22],[13,22]] size=1
+doc_draw op=pencil layer=3 frame=0 color=[77,155,123] points=[[15,24],[19,17],[13,21]] size=1
+doc_frame op=add copy_from=0 count=9 duration_ms=100
+doc_draw op=clear_cel layer=1 frame=1
+doc_draw op=polygon layer=1 frame=1 color=[77,155,123] fill=true points=[[10,17],[12,17],[14,16],[17,16],[19,17],[21,17],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=1 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=1 color=[215,255,226] points=[[10,17],[12,17],[14,16],[17,16],[19,17]] size=1
+doc_draw op=clear_cel layer=1 frame=2
+doc_draw op=polygon layer=1 frame=2 color=[77,155,123] fill=true points=[[10,16],[12,17],[15,17],[17,16],[20,16],[21,17],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=2 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=2 color=[215,255,226] points=[[10,16],[12,17],[15,17],[17,16],[20,16]] size=1
+doc_draw op=clear_cel layer=1 frame=3
+doc_draw op=polygon layer=1 frame=3 color=[77,155,123] fill=true points=[[10,16],[13,16],[15,17],[18,17],[20,16],[21,16],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=3 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=3 color=[215,255,226] points=[[10,16],[13,16],[15,17],[18,17],[20,16]] size=1
+doc_draw op=clear_cel layer=1 frame=4
+doc_draw op=polygon layer=1 frame=4 color=[77,155,123] fill=true points=[[10,17],[12,16],[15,16],[17,17],[20,17],[21,17],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=4 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=4 color=[215,255,226] points=[[10,17],[12,16],[15,16],[17,17],[20,17]] size=1
+doc_draw op=clear_cel layer=1 frame=5
+doc_draw op=polygon layer=1 frame=5 color=[77,155,123] fill=true points=[[10,17],[12,17],[14,16],[17,16],[19,17],[21,18],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=5 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=5 color=[215,255,226] points=[[10,17],[12,17],[14,16],[17,16],[19,17]] size=1
+doc_draw op=clear_cel layer=1 frame=6
+doc_draw op=polygon layer=1 frame=6 color=[77,155,123] fill=true points=[[10,16],[12,17],[15,17],[18,16],[20,16],[21,17],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=6 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=6 color=[215,255,226] points=[[10,16],[12,17],[15,17],[18,16],[20,16]] size=1
+doc_draw op=clear_cel layer=1 frame=7
+doc_draw op=polygon layer=1 frame=7 color=[77,155,123] fill=true points=[[10,16],[13,16],[15,17],[18,17],[20,16],[21,16],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=7 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=7 color=[215,255,226] points=[[10,16],[13,16],[15,17],[18,17],[20,16]] size=1
+doc_draw op=clear_cel layer=1 frame=8
+doc_draw op=polygon layer=1 frame=8 color=[77,155,123] fill=true points=[[10,17],[12,16],[15,16],[17,17],[20,17],[21,17],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=8 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=8 color=[215,255,226] points=[[10,17],[12,16],[15,16],[17,17],[20,17]] size=1
+doc_draw op=clear_cel layer=1 frame=9
+doc_draw op=polygon layer=1 frame=9 color=[77,155,123] fill=true points=[[10,17],[12,17],[14,16],[17,16],[19,17],[21,18],[21,23],[19,26],[12,26],[10,23]]
+doc_draw op=polygon layer=1 frame=9 color=[123,224,165] fill=true points=[[12,18],[14,17],[17,18],[19,18],[20,23],[18,25],[13,25],[11,23],[11,19]]
+doc_draw op=polyline layer=1 frame=9 color=[215,255,226] points=[[10,17],[12,17],[14,16],[17,16],[19,17]] size=1
+doc_draw op=clear_cel layer=3 frame=1
+doc_draw op=pencil layer=3 frame=1 color=[215,255,226] points=[[14,23],[15,23],[14,22],[12,20],[13,20]] size=1
+doc_draw op=pencil layer=3 frame=1 color=[77,155,123] points=[[15,22],[13,19]] size=1
+doc_draw op=pencil layer=3 frame=1 color=[215,255,226] points=[[17,15],[19,15],[18,14]] size=1
+doc_draw op=clear_cel layer=3 frame=2
+doc_draw op=pencil layer=3 frame=2 color=[215,255,226] points=[[15,21],[16,21],[15,20],[12,19],[13,19]] size=1
+doc_draw op=pencil layer=3 frame=2 color=[77,155,123] points=[[16,20],[13,18]] size=1
+doc_draw op=clear_cel layer=3 frame=3
+doc_draw op=pencil layer=3 frame=3 color=[215,255,226] points=[[15,19],[16,19],[15,18],[12,18],[13,18]] size=1
+doc_draw op=pencil layer=3 frame=3 color=[77,155,123] points=[[16,18],[13,17]] size=1
+doc_draw op=clear_cel layer=3 frame=4
+doc_draw op=pencil layer=3 frame=4 color=[215,255,226] points=[[14,18],[15,18],[14,17],[18,25],[19,25],[18,24]] size=1
+doc_draw op=pencil layer=3 frame=4 color=[77,155,123] points=[[15,17],[19,24]] size=1
+doc_draw op=pencil layer=3 frame=4 color=[215,255,226] points=[[11,15],[13,15],[12,14]] size=1
+doc_draw op=clear_cel layer=3 frame=5
+doc_draw op=pencil layer=3 frame=5 color=[215,255,226] points=[[19,23],[20,23],[19,22]] size=1
+doc_draw op=pencil layer=3 frame=5 color=[77,155,123] points=[[20,22]] size=1
+doc_draw op=pencil layer=3 frame=5 color=[215,255,226] points=[[13,15],[15,15],[14,14]] size=1
+doc_draw op=clear_cel layer=3 frame=6
+doc_draw op=pencil layer=3 frame=6 color=[215,255,226] points=[[18,21],[19,21],[18,20]] size=1
+doc_draw op=pencil layer=3 frame=6 color=[77,155,123] points=[[19,20]] size=1
+doc_draw op=clear_cel layer=3 frame=7
+doc_draw op=pencil layer=3 frame=7 color=[215,255,226] points=[[18,19],[19,19],[18,18]] size=1
+doc_draw op=pencil layer=3 frame=7 color=[77,155,123] points=[[19,18]] size=1
+doc_draw op=clear_cel layer=3 frame=8
+doc_draw op=pencil layer=3 frame=8 color=[215,255,226] points=[[19,18],[20,18],[19,17]] size=1
+doc_draw op=pencil layer=3 frame=8 color=[77,155,123] points=[[20,17]] size=1
+doc_draw op=clear_cel layer=3 frame=9
+doc_draw op=pencil layer=3 frame=9 color=[215,255,226] points=[[18,17],[19,17],[18,16],[12,24],[13,24],[12,23]] size=1
+doc_draw op=pencil layer=3 frame=9 color=[77,155,123] points=[[19,16],[13,23]] size=1
+doc_add_tag name=bubble-loop direction=forward from=0 to=9
+doc_draw op=polygon layer=1 frame=0 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=0 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=1 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=1 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=2 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=2 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=3 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=3 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=4 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=4 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=5 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=5 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=6 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=6 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=7 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=7 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=8 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=8 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1
+doc_draw op=polygon layer=1 frame=9 color=[77,155,123] fill=true points=[[19,18],[20,18],[20,23],[18,25],[17,25],[19,23]]
+doc_draw op=pencil layer=1 frame=9 color=[215,255,226] points=[[12,19],[12,20],[13,24]] size=1

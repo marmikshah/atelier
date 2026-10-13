@@ -816,11 +816,20 @@ impl Atelier {
             // Damaged or unsupported saved data is reported, never replaced:
             // the check is read-only and runs under the lock already held.
             if let Ok(Some(reason)) = self.studio().document_damage(&target) {
-                result = res(Err(format!(
-                    "document '{target}' is damaged or unsupported and was left unchanged: \
-                     {reason}. Inspect it with `atelier library verify`; \
-                     `atelier library reset {target}` replaces it with a blank document."
-                )));
+                // A version mismatch is intact work: never point it at reset.
+                result = res(Err(if atelier_studio::is_format_mismatch(&reason) {
+                    format!(
+                        "document '{target}' was saved in a format this build does not read \
+                         and was left unchanged: {reason}. Open it with the Atelier version \
+                         that wrote it."
+                    )
+                } else {
+                    format!(
+                        "document '{target}' is damaged and was left unchanged: {reason}. \
+                         Inspect it with `atelier library verify`; \
+                         `atelier library reset {target}` replaces it with a blank document."
+                    )
+                }));
             }
         }
         log_call(tool, &args, caller, &result, started.elapsed());
