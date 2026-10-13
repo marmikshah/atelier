@@ -805,7 +805,7 @@ mod tests {
         let path = s.journal_path(id);
 
         let clean = fs::read_to_string(&path).unwrap();
-        fs::write(&path, format!("{clean}doc_draw op=re")).unwrap();
+        fs::write(&path, format!("{clean}draw op=re")).unwrap();
         assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
         assert!(
             s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
@@ -813,7 +813,7 @@ mod tests {
             "new writes must not cement a torn tail into the journal"
         );
 
-        fs::write(&path, format!("{clean}doc_draw op=\n")).unwrap();
+        fs::write(&path, format!("{clean}draw op=\n")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 4"),
@@ -831,7 +831,7 @@ mod tests {
             "complete final corruption errors: {err}"
         );
 
-        fs::write(&path, "atelier 3 not-an-id 0.1.0\n").unwrap();
+        fs::write(&path, "atelier 4 not-an-id 0.1.0\n").unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 1"),
@@ -840,7 +840,7 @@ mod tests {
 
         fs::write(
             &path,
-            "atelier 3 123e4567-e89b-42d3-a456-426614174000 0.1.0\ndoc_new name=d\n",
+            "atelier 4 123e4567-e89b-42d3-a456-426614174000 0.1.0\nnew name=d\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -925,7 +925,7 @@ mod tests {
         assert_eq!(
             written,
             format!(
-                "atelier {JOURNAL_SCHEMA} {id} {}\ndoc_new name=d\ndoc_draw op=rect\n",
+                "atelier {JOURNAL_SCHEMA} {id} {}\nnew name=d\ndraw op=rect\n",
                 env!("CARGO_PKG_VERSION")
             ),
             "one header, then calls that leave the document id to it"

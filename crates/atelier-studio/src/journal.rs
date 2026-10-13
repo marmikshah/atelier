@@ -1,10 +1,12 @@
 //! The per-document recipe: a readable text journal of every call.
 //!
 //! ```text
-//! atelier 3 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
-//! doc_new name="potion-flask" width=32 height=32
-//! doc_layer op=rename index=0 name=glass_back
-//! doc_paint_grid layer=3 frame=0 x=12 y=2 legend={"C":5,"K":0} rows:4
+//! atelier 4 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
+//! new name=potion-flask width=32 height=32
+//! palette op=set colors=#1a1630,#f0b07a,#5ad8f8
+//! layer op=rename index=0 name="glass back"
+//! region op=clear layer=3 frame=0 rect=0,0,32,32
+//! paint_grid layer=3 frame=0 x=12 y=2 legend=C:#5ad8f8,K:0 rows:4
 //!   |.KKKKKK.|
 //!   |KCCCCCCK|
 //!   |KCCCCCCK|
@@ -12,18 +14,25 @@
 //! ```
 //!
 //! The first line names the format, the document, and the Atelier version
-//! that created the file. Every other record is one call: the tool, then
-//! `key=value` arguments. Values are JSON, except that a plain word may drop
-//! its quotes. `doc_id` is implied by the header. A `rows:N` marker ends the
-//! line of a grid call and is followed by N rows between `|` bars, so the
-//! picture reads as drawn and trailing spaces survive an editor.
+//! that created the file. Every other record is one call: the tool without
+//! its `doc_` prefix, then `key=value` arguments; `doc_id` is implied by the
+//! header. A value is written the plainest way that reads back exactly:
+//!
+//! - a number, `true`, `false`, `null`, a plain word, or a `#` colour as is;
+//! - a list of two or more of those joined by commas: `0,0,32,32`;
+//! - a map of those as `key:value` pairs joined by commas: `C:#5ad8f8,K:0`;
+//! - anything else as JSON: `"glass back"`, `[[1,2],[3,4]]`.
+//!
+//! A `rows:N` marker ends the line of a grid call and is followed by N rows
+//! between `|` bars, so the picture reads as drawn and trailing spaces survive
+//! an editor. Blank lines and lines starting with `#` are ignored.
 
 use serde_json::{Map, Value};
 
 use crate::{Studio, ToolName};
 
 /// The recipe format number written in the header line.
-pub const JOURNAL_SCHEMA: u32 = 3;
+pub const JOURNAL_SCHEMA: u32 = 4;
 
 pub const MAX_JOURNAL_BYTES: u64 = 64 * 1024 * 1024;
 pub const MAX_JOURNAL_ENTRIES: usize = 100_000;
@@ -66,14 +75,95 @@ fn is_plain_key(key: &str) -> bool {
         && key != "rows"
 }
 
-/// A string that reads unambiguously without quotes.
+/// A string that reads unambiguously without quotes: a word or a `#` colour.
 fn is_bare_word(text: &str) -> bool {
     let mut bytes = text.bytes();
     bytes
         .next()
-        .is_some_and(|first| first.is_ascii_alphabetic() || first == b'_')
+        .is_some_and(|first| first.is_ascii_alphabetic() || matches!(first, b'_' | b'#'))
         && bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-' | b'.'))
         && !matches!(text, "true" | "false" | "null")
+}
+
+/// A map key that can sit before a `:` in a comma-joined map.
+fn is_map_key(key: &str) -> bool {
+    !key.is_empty()
+        && !key.starts_with(['"', '[', '{'])
+        && key
+            .chars()
+            .all(|c| !c.is_whitespace() && !c.is_control() && !matches!(c, ':' | ','))
+}
+
+/// A scalar written as is: a number, `true`, `false`, `null`, or a bare word.
+fn atom(value: &Value) -> Option<String> {
+    match value {
+        Value::String(text) => is_bare_word(text).then(|| text.clone()),
+        Value::Array(_) | Value::Object(_) => None,
+        scalar => serde_json::to_string(scalar).ok(),
+    }
+}
+
+/// The plainest spelling of `value` that [`parse_value`] reads back exactly.
+fn encode_value(value: &Value) -> Result<String, String> {
+    let plain = match value {
+        Value::Array(items) if items.len() >= 2 => items
+            .iter()
+            .map(atom)
+            .collect::<Option<Vec<_>>>()
+            .map(|atoms| atoms.join(",")),
+        Value::Object(map) if !map.is_empty() => map
+            .iter()
+            .map(|(key, value)| {
+                atom(value)
+                    .filter(|_| is_map_key(key))
+                    .map(|value| format!("{key}:{value}"))
+            })
+            .collect::<Option<Vec<_>>>()
+            .map(|pairs| pairs.join(",")),
+        scalar => atom(scalar),
+    };
+    match plain {
+        Some(plain) => Ok(plain),
+        None => serde_json::to_string(value).map_err(|error| error.to_string()),
+    }
+}
+
+fn parse_atom(word: &str) -> Result<Value, String> {
+    match word {
+        "" => Err("a value is missing".into()),
+        "true" => Ok(Value::Bool(true)),
+        "false" => Ok(Value::Bool(false)),
+        "null" => Ok(Value::Null),
+        word if word.starts_with(|c: char| c.is_ascii_digit() || c == '-') => {
+            match serde_json::from_str(word) {
+                Ok(number @ Value::Number(_)) => Ok(number),
+                _ => Err(format!("'{word}' is not a number")),
+            }
+        }
+        word if is_bare_word(word) => Ok(Value::String(word.to_string())),
+        word => Err(format!("'{word}' must be quoted")),
+    }
+}
+
+/// Read a value written without JSON brackets or quotes.
+fn parse_value(word: &str) -> Result<Value, String> {
+    if word.contains(':') {
+        let mut map = Map::new();
+        for pair in word.split(',') {
+            let (key, value) = pair
+                .split_once(':')
+                .filter(|(key, _)| is_map_key(key))
+                .ok_or_else(|| format!("'{pair}' is not a key:value pair"))?;
+            if map.insert(key.to_string(), parse_atom(value)?).is_some() {
+                return Err(format!("map key '{key}' is given twice"));
+            }
+        }
+        Ok(Value::Object(map))
+    } else if word.contains(',') {
+        word.split(',').map(parse_atom).collect()
+    } else {
+        parse_atom(word)
+    }
 }
 
 /// Rows that can be written as a block: strings with no line break.
@@ -101,8 +191,12 @@ pub fn encode_entry(entry: &JournalEntry, id: &str) -> Result<String, String> {
             ));
         }
     }
-    let json = |value: &Value| serde_json::to_string(value).map_err(|error| error.to_string());
-    let mut out = entry.tool.as_str().to_string();
+    let mut out = entry
+        .tool
+        .as_str()
+        .strip_prefix("doc_")
+        .ok_or_else(|| format!("'{}' is not a recipe step", entry.tool))?
+        .to_string();
     let rows = args.get("rows").and_then(block_rows);
     if !args
         .keys()
@@ -110,7 +204,7 @@ pub fn encode_entry(entry: &JournalEntry, id: &str) -> Result<String, String> {
     {
         // An argument name the line grammar cannot carry: keep the call exact.
         out.push(' ');
-        out.push_str(&json(&Value::Object(args))?);
+        out.push_str(&serde_json::to_string(&args).map_err(|error| error.to_string())?);
         out.push('\n');
         return Ok(out);
     }
@@ -127,10 +221,7 @@ pub fn encode_entry(entry: &JournalEntry, id: &str) -> Result<String, String> {
         out.push(' ');
         out.push_str(key);
         out.push('=');
-        match &args[key] {
-            Value::String(text) if is_bare_word(text) => out.push_str(text),
-            value => out.push_str(&json(value)?),
-        }
+        out.push_str(&encode_value(&args[key])?);
     }
     if let Some(rows) = rows {
         out.push_str(&format!(" rows:{}\n", rows.len()));
@@ -150,7 +241,7 @@ type CallLine = (ToolName, Map<String, Value>, Option<usize>);
 
 fn parse_call_line(line: &str) -> Result<CallLine, String> {
     let (tool, mut rest) = line.split_once(' ').unwrap_or((line, ""));
-    let tool: ToolName = serde_json::from_value(Value::String(tool.to_string()))
+    let tool: ToolName = serde_json::from_value(Value::String(format!("doc_{tool}")))
         .map_err(|_| format!("unknown tool '{tool}'"))?;
     rest = rest.trim_start_matches(' ');
     if rest.starts_with('{') {
@@ -171,11 +262,7 @@ fn parse_call_line(line: &str) -> Result<CallLine, String> {
         if !is_plain_key(key) {
             return Err(format!("'{key}' is not an argument name"));
         }
-        let quoted = after
-            .bytes()
-            .next()
-            .is_some_and(|first| matches!(first, b'"' | b'[' | b'{' | b'-' | b'0'..=b'9'));
-        let (value, used) = if quoted {
+        let (value, used) = if after.starts_with(['"', '[', '{']) {
             let mut stream = serde_json::Deserializer::from_str(after).into_iter::<Value>();
             let value = stream
                 .next()
@@ -184,13 +271,7 @@ fn parse_call_line(line: &str) -> Result<CallLine, String> {
             (value, stream.byte_offset())
         } else {
             let word = after.split(' ').next().unwrap_or("");
-            let value = match word {
-                "" => return Err(format!("'{key}=' has no value")),
-                "true" => Value::Bool(true),
-                "false" => Value::Bool(false),
-                "null" => Value::Null,
-                word => Value::String(word.to_string()),
-            };
+            let value = parse_value(word).map_err(|error| format!("{key}: {error}"))?;
             (value, word.len())
         };
         let remainder = &after[used..];
@@ -342,10 +423,10 @@ fn parse_with_limits(
         .split('\n')
         .map(|line| line.strip_suffix('\r').unwrap_or(line))
         .collect();
-    let is_blank = |line: &str| line.trim().is_empty();
+    let is_blank = |line: &str| line.trim().is_empty() || line.starts_with('#');
     // Every complete line ends in a newline, so an unterminated final line is
     // what a crash left behind even when it happens to read as a shorter call.
-    let mut torn_tail = lines.pop().is_some_and(|last| !is_blank(last));
+    let mut torn_tail = lines.pop().is_some_and(|last| !last.is_empty());
     let located = |index: usize, error: String| {
         format!(
             "journal line {}: {error} — expected a header, then one 'tool key=value' call per line",
@@ -430,10 +511,10 @@ mod tests {
     const OTHER: &str = "123e4567-e89b-42d3-a456-426614174000";
 
     fn header() -> String {
-        format!("atelier 3 {ID} 0.1.0\n")
+        format!("atelier 4 {ID} 0.1.0\n")
     }
 
-    const NEW: &str = "doc_new name=x width=4 height=4\n";
+    const NEW: &str = "new name=x width=4 height=4\n";
 
     fn entry(tool: ToolName, args: Value) -> JournalEntry {
         JournalEntry::new(tool, serde_json::from_value(args).unwrap())
@@ -442,11 +523,11 @@ mod tests {
     #[test]
     fn reads_a_recipe() {
         let recipe = parse_journal(&format!(
-            "{}{NEW}\ndoc_draw op=rect layer=0 frame=0 x0=1 color=\"#102030\" fill=true\n",
+            "# a note\n{}{NEW}\n# another\ndraw op=rect layer=0 frame=0 x0=1 color=#102030 fill=true\n",
             header()
         ))
         .unwrap();
-        assert_eq!(recipe.entries.len(), 2, "blank lines are skipped");
+        assert_eq!(recipe.entries.len(), 2, "blank and # lines are skipped");
         assert_eq!(recipe.entries[0].tool, ToolName::DocNew);
         assert_eq!(recipe.entries[0].args["width"], 4);
         let draw = &recipe.entries[1].args;
@@ -466,7 +547,7 @@ mod tests {
         );
         assert_eq!(
             encode_entry(&grid, ID).unwrap(),
-            "doc_paint_grid layer=3 frame=0 x=12 y=2 replace=true legend={\"K\":0} rows:2\n  |.KK.|\n  |K  K|\n"
+            "paint_grid layer=3 frame=0 x=12 y=2 replace=true legend=K:0 rows:2\n  |.KK.|\n  |K  K|\n"
         );
         let layer = entry(
             ToolName::DocLayer,
@@ -474,8 +555,55 @@ mod tests {
         );
         assert_eq!(
             encode_entry(&layer, ID).unwrap(),
-            "doc_layer op=rename index=0 name=\"glass back\"\n"
+            "layer op=rename index=0 name=\"glass back\"\n"
         );
+    }
+
+    #[test]
+    fn colours_lists_and_maps_are_written_plainly() {
+        let line = |tool, args| encode_entry(&entry(tool, args), ID).unwrap();
+        assert_eq!(
+            line(
+                ToolName::DocPalette,
+                json!({"doc_id": ID, "op": "set", "colors": ["#1a1630", "#f0b07a"]})
+            ),
+            "palette op=set colors=#1a1630,#f0b07a\n"
+        );
+        assert_eq!(
+            line(
+                ToolName::DocRegion,
+                json!({"doc_id": ID, "op": "clear", "layer": 8, "frame": 0, "rect": [0, 0, 48, -1.5]})
+            ),
+            "region op=clear layer=8 frame=0 rect=0,0,48,-1.5\n"
+        );
+        assert_eq!(
+            line(
+                ToolName::DocPaintGrid,
+                json!({"doc_id": ID, "layer": 0, "frame": 0, "rows": ["K*"],
+                       "legend": {"K": "#1a1630", "*": 2, "1": "#F0B07Aff"}})
+            ),
+            "paint_grid layer=0 frame=0 legend=*:2,1:#F0B07Aff,K:#1a1630 rows:1\n  |K*|\n"
+        );
+        // Anything that would not read back exactly stays JSON.
+        for (value, written) in [
+            (json!(["one"]), "[\"one\"]"),
+            (json!([]), "[]"),
+            (json!({}), "{}"),
+            (json!([[1, 2], [3, 4]]), "[[1,2],[3,4]]"),
+            (json!(["a", "b c"]), "[\"a\",\"b c\"]"),
+            (json!(["1", 2]), "[\"1\",2]"),
+            (json!({"a:b": 1}), "{\"a:b\":1}"),
+            (json!({"K": [1, 2, 3]}), "{\"K\":[1,2,3]}"),
+            (json!("a,b"), "\"a,b\""),
+            (json!("K:1"), "\"K:1\""),
+            (json!("#"), "#"),
+            (json!([true, null, "x", 1]), "true,null,x,1"),
+        ] {
+            assert_eq!(encode_value(&value).unwrap(), written);
+            let read =
+                parse_journal(&format!("{}{NEW}draw op=rect v={written}\n", header())).unwrap();
+            assert_eq!(read.entries[1].args["v"], value, "{written}");
+        }
     }
 
     #[test]
@@ -532,6 +660,15 @@ mod tests {
                 ToolName::DocDraw,
                 json!({"doc_id": ID, "op": "rect", "odd key=1": [1]}),
             ),
+            entry(
+                ToolName::DocPalette,
+                json!({"doc_id": ID, "op": "swap", "from": [[1, 2, 3], "#040506"], "to": ["#000000", "#ffffff"]}),
+            ),
+            entry(
+                ToolName::DocPaintGrid,
+                json!({"doc_id": ID, "layer": 0, "frame": 0, "rows": ["a"],
+                       "legend": {"a": "#ffffff", "-": 1, "é": 0, "=": 2, "#": 3, "7": 4}}),
+            ),
         ];
         let mut source = header();
         for call in &calls {
@@ -553,46 +690,58 @@ mod tests {
     #[test]
     fn a_torn_final_record_preserves_completed_steps() {
         for torn in [
-            "doc_dr",
-            "doc_draw op=rect color=\"#10",
-            "doc_draw op=rect points=[[1,2],[3",
+            "dr",
+            "draw op=rect color=\"#10",
+            "draw op=rect points=[[1,2],[3",
             // A cut that still reads as a shorter call is not mistaken for one.
-            "doc_draw op=rect layer=0",
-            "doc_paint_grid layer=0 frame=0 legend={} rows:3\n  |..|\n  |.",
+            "draw op=rect layer=0",
+            "# a note",
+            "  ",
+            "paint_grid layer=0 frame=0 legend={} rows:3\n  |..|\n  |.",
             // Cut exactly between two rows of a block: the file still ends in a newline.
-            "doc_paint_grid layer=0 frame=0 legend={} rows:3\n  |..|\n",
-            "doc_paint_grid layer=0 frame=0 legend={} rows:3\n",
+            "paint_grid layer=0 frame=0 legend={} rows:3\n  |..|\n",
+            "paint_grid layer=0 frame=0 legend={} rows:3\n",
         ] {
             let recipe = parse_journal(&format!("{}{NEW}{torn}", header())).unwrap();
             assert_eq!(recipe.entries.len(), 1, "{torn:?}");
             assert!(recipe.torn_tail, "{torn:?}");
         }
-        let only_header = parse_journal("atelier 3 550e84").unwrap();
+        let only_header = parse_journal("atelier 4 550e84").unwrap();
         assert!(only_header.torn_tail && !only_header.headed);
     }
 
     #[test]
     fn corruption_and_other_formats_are_rejected() {
         let bad = |body: &str| parse_journal(&format!("{}{NEW}{body}", header())).unwrap_err();
-        assert!(bad("doc_draw op=\ntorn\n").contains("line 3"));
-        assert!(bad("doc_draw op=rect color=\"#10\n").contains("line 3"));
+        assert!(bad("draw op=\ntorn\n").contains("line 3"));
+        assert!(bad("draw op=rect color=\"#10\n").contains("line 3"));
         assert!(bad("not_a_tool op=rect\n").contains("unknown tool"));
-        assert!(bad("doc_draw op=rect op=line\n").contains("given twice"));
-        assert!(bad("doc_draw op=rect x=1y=2\n").contains("line 3"));
-        assert!(bad("doc_draw op=rect name=\"a\"b\n").contains("unexpected text"));
-        assert!(bad("doc_draw op=rect stray\n").contains("key=value"));
-        assert!(bad(&format!("doc_draw doc_id=\"{ID}\"\n")).contains("must not repeat doc_id"));
+        assert!(bad("draw op=rect op=line\n").contains("given twice"));
+        assert!(bad("draw op=rect x=1y=2\n").contains("line 3"));
+        assert!(bad("draw op=rect name=\"a\"b\n").contains("unexpected text"));
+        assert!(bad("draw op=rect stray\n").contains("key=value"));
+        assert!(bad("doc_draw op=rect\n").contains("unknown tool"));
+        assert!(bad("draw op=rect x=1,,2\n").contains("value is missing"));
+        assert!(bad("draw op=rect x=1,b:2\n").contains("key:value"));
+        assert!(bad("draw op=rect x=a:1,a:2\n").contains("given twice"));
+        assert!(bad("draw op=rect x=12abc\n").contains("not a number"));
+        assert!(bad("draw op=rect x=a,b*c\n").contains("must be quoted"));
+        assert!(bad(&format!("draw doc_id=\"{ID}\"\n")).contains("must not repeat doc_id"));
         assert!(
-            bad("doc_paint_grid layer=0 frame=0 legend={} rows:2\n  |..|\n..\ndoc_layer op=add\n")
+            bad("paint_grid layer=0 frame=0 legend={} rows:2\n  |..|\n..\nlayer op=add\n")
                 .contains("line 5")
         );
         assert!(parse_journal("\n\n").unwrap().entries.is_empty());
         assert!(parse_journal(NEW).unwrap_err().contains("line 1"));
-        assert!(parse_journal("atelier 3 d_0000000000000000 0.1.0\n").is_err());
-        assert!(parse_journal(&format!("atelier 3 {ID}\n")).is_err());
+        assert!(parse_journal("atelier 4 d_0000000000000000 0.1.0\n").is_err());
+        assert!(parse_journal(&format!("atelier 4 {ID}\n")).is_err());
         // Earlier and later formats are version mismatches, named as such.
         for (source, number) in [
-            (format!("atelier 4 {ID} 9.0.0\n"), "4"),
+            (format!("atelier 5 {ID} 9.0.0\n"), "5"),
+            (
+                format!("atelier 3 {ID} 0.1.0\ndoc_new name=x width=4 height=4\n"),
+                "3",
+            ),
             (
                 format!("{{\"schema\":2,\"doc_id\":\"{ID}\",\"atelier\":\"0.1.0\"}}\n"),
                 "2",
@@ -622,7 +771,7 @@ mod tests {
 
     #[test]
     fn entry_count_is_bounded_with_the_overflowing_line_reported() {
-        let source = format!("{}{NEW}doc_draw op=rect\n", header());
+        let source = format!("{}{NEW}draw op=rect\n", header());
         let error = parse_with_limits(&source, MAX_JOURNAL_BYTES, 1).unwrap_err();
         assert!(error.contains("line 3"), "{error}");
         assert!(error.contains("more than 1 entries"), "{error}");

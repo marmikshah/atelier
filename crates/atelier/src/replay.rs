@@ -456,7 +456,7 @@ mod tests {
             std::env::temp_dir().join(format!("atelier-replay-home-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&home);
         let recipe = parse_journal(&format!(
-            "atelier 3 {RECORDED_ID} 0.1.0\ndoc_new name=home-layout width=4 height=4\n"
+            "atelier 4 {RECORDED_ID} 0.1.0\nnew name=home-layout width=4 height=4\n"
         ))
         .unwrap();
 
@@ -488,9 +488,9 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir.clone());
         let recipe = parse_journal(&format!(
-            "atelier 3 {RECORDED_ID} 0.1.0\n\
-             doc_new name=rolled-back width=4 height=4\n\
-             doc_draw op=not_a_real_operation\n"
+            "atelier 4 {RECORDED_ID} 0.1.0\n\
+             new name=rolled-back width=4 height=4\n\
+             draw op=not_a_real_operation\n"
         ))
         .unwrap();
 

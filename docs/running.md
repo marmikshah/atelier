@@ -89,10 +89,12 @@ with one line per call that changed it. `atelier replay` rebuilds the document
 from that file alone.
 
 ```text
-atelier 3 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
-doc_new name=potion-flask width=32 height=32
-doc_layer op=rename index=0 name=glass_back
-doc_paint_grid layer=3 frame=0 x=12 y=2 legend={"C":5,"K":0} rows:4
+atelier 4 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
+new name=potion-flask width=32 height=32
+palette op=set colors=#1a1630,#f0b07a,#5ad8f8
+layer op=rename index=0 name="glass back"
+region op=clear layer=3 frame=0 rect=0,0,32,32
+paint_grid layer=3 frame=0 x=12 y=2 legend=C:#5ad8f8,K:0 rows:4
   |.KKKKKK.|
   |KCCCCCCK|
   |KCCCCCCK|
@@ -101,9 +103,15 @@ doc_paint_grid layer=3 frame=0 x=12 y=2 legend={"C":5,"K":0} rows:4
 
 - The first line gives the format number, the document ID, and the Atelier
   version that created the file. Calls do not repeat the document ID.
-- Each call is the tool name followed by `key=value` arguments. Values are
-  JSON; a plain word such as `rename` may be written without quotes.
+- Each call is the tool name without its `doc_` prefix, followed by
+  `key=value` arguments.
+- Numbers, plain words, and `#` colours are written as they are. A list of
+  them is joined by commas (`0,0,32,32`), and a map of them is written as
+  `key:value` pairs (`C:#5ad8f8,K:0`). Any other value is JSON, such as
+  `"glass back"` or `[[1,2],[3,4]]`.
 - `rows:N` ends a grid call and is followed by N rows between `|` bars.
+- Blank lines and lines that start with `#` are ignored, so a recipe can carry
+  notes.
 
 ## HTTP server and Linux daemon
 
