@@ -323,7 +323,7 @@ paint_grid layer=2 frame=9 x=14 y=15 legend=G:4,L:3,M:2 rows:13
   |.........|
   |.........|
   |........L|
-draw op=pencil layer=2 frame=9 color=#000000 erase=true points=[[14,15],[17,15]]
+draw op=pencil layer=2 frame=9 color=#000000 erase=true points=14,15 17,15
 paint_grid layer=2 frame=9 x=14 y=14 legend=M:2 rows:3
   |...M|
   |....|

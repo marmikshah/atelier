@@ -167,9 +167,9 @@ paint_grid layer=7 frame=0 x=25 y=22 legend=C:#7aeeda,T:#1da3b1,W:#fff7d0 rows:5
   |TCWCT|
   |.TCT.|
   |..T..|
-draw op=pencil layer=4 frame=0 color=#355377 points=[[12,11],[13,11],[14,10],[16,10]] size=1
+draw op=pencil layer=4 frame=0 color=#355377 points=12,11 13,11 14,10 16,10 size=1
 draw op=line layer=4 frame=0 color=#7aeeda size=1 x0=16 x1=18 y0=13 y1=13
-draw op=pencil layer=4 frame=0 color=#fff7d0 points=[[19,16],[18,17]] size=1
+draw op=pencil layer=4 frame=0 color=#fff7d0 points=19,16 18,17 size=1
 draw op=pencil layer=4 frame=0 color=#141e33 points=[[13,16]] size=1
 draw op=line layer=3 frame=0 color=#fff7d0 size=1 x0=24 x1=25 y0=22 y1=22
 draw op=pencil layer=5 frame=0 color=#fff7d0 points=[[24,27]] size=1
@@ -315,44 +315,44 @@ draw op=ellipse layer=7 frame=1 color=#7aeeda cx=26 cy=24 fill=true rx=2 ry=2
 draw op=ellipse layer=7 frame=1 color=#fff7d0 cx=26 cy=24 fill=true rx=1 ry=1
 draw op=line layer=8 frame=1 color=#1da3b1 size=1 x0=30 x1=31 y0=20 y1=19
 draw op=line layer=8 frame=1 color=#7aeeda size=1 x0=31 x1=32 y0=26 y1=26
-draw op=pencil layer=8 frame=1 color=#1da3b1 points=[[25,18],[27,30]] size=1
+draw op=pencil layer=8 frame=1 color=#1da3b1 points=25,18 27,30 size=1
 draw op=ellipse layer=7 frame=2 color=#1da3b1 cx=25 cy=25 fill=true rx=4 ry=4
 draw op=ellipse layer=7 frame=2 color=#7aeeda cx=25 cy=25 fill=true rx=3 ry=3
 draw op=ellipse layer=7 frame=2 color=#fff7d0 cx=25 cy=25 fill=true rx=2 ry=2
-draw op=polyline layer=8 frame=2 color=#1da3b1 points=[[23,19],[26,19],[28,20]] size=1
-draw op=polyline layer=8 frame=2 color=#1da3b1 points=[[30,28],[28,31],[25,32]] size=1
+draw op=polyline layer=8 frame=2 color=#1da3b1 points=23,19 26,19 28,20 size=1
+draw op=polyline layer=8 frame=2 color=#1da3b1 points=30,28 28,31 25,32 size=1
 draw op=line layer=8 frame=2 color=#7aeeda size=1 x0=32 x1=30 y0=20 y1=22
 draw op=line layer=8 frame=2 color=#7aeeda size=1 x0=34 x1=32 y0=26 y1=26
-draw op=pencil layer=8 frame=2 color=#fff7d0 points=[[28,19],[30,30]] size=1
-draw op=polygon layer=7 frame=3 color=#1da3b1 fill=true points=[[26,23],[28,20],[33,21],[38,22],[43,22],[47,24],[43,26],[36,26],[33,28],[28,28],[26,26]]
-draw op=polygon layer=7 frame=3 color=#7aeeda fill=true points=[[28,23],[31,22],[39,23],[47,24],[38,25],[31,27],[28,26]]
-draw op=polygon layer=7 frame=3 color=#fff7d0 fill=true points=[[28,24],[30,23],[34,24],[46,24],[35,25],[30,26],[28,25]]
+draw op=pencil layer=8 frame=2 color=#fff7d0 points=28,19 30,30 size=1
+draw op=polygon layer=7 frame=3 color=#1da3b1 fill=true points=26,23 28,20 33,21 38,22 43,22 47,24 43,26 36,26 33,28 28,28 26,26
+draw op=polygon layer=7 frame=3 color=#7aeeda fill=true points=28,23 31,22 39,23 47,24 38,25 31,27 28,26
+draw op=polygon layer=7 frame=3 color=#fff7d0 fill=true points=28,24 30,23 34,24 46,24 35,25 30,26 28,25
 draw op=line layer=8 frame=3 color=#7aeeda size=1 x0=33 x1=37 y0=19 y1=20
 draw op=line layer=8 frame=3 color=#1da3b1 size=1 x0=37 x1=41 y0=29 y1=29
-draw op=pencil layer=8 frame=3 color=#7aeeda points=[[29,17],[32,31]] size=1
-draw op=polygon layer=7 frame=4 color=#1da3b1 fill=true points=[[22,25],[24,21],[26,22],[28,18],[30,21],[34,20],[33,22],[39,21],[43,22],[47,21],[47,29],[43,28],[38,29],[35,28],[31,30],[29,28],[27,32],[26,28],[23,29]]
-draw op=polygon layer=7 frame=4 color=#7aeeda fill=true points=[[25,24],[28,21],[31,23],[38,23],[43,24],[47,23],[47,28],[39,27],[33,28],[28,28],[25,27]]
-draw op=polygon layer=7 frame=4 color=#fff7d0 fill=true points=[[26,24],[29,23],[33,24],[47,24],[47,26],[34,26],[29,27],[26,26]]
+draw op=pencil layer=8 frame=3 color=#7aeeda points=29,17 32,31 size=1
+draw op=polygon layer=7 frame=4 color=#1da3b1 fill=true points=22,25 24,21 26,22 28,18 30,21 34,20 33,22 39,21 43,22 47,21 47,29 43,28 38,29 35,28 31,30 29,28 27,32 26,28 23,29
+draw op=polygon layer=7 frame=4 color=#7aeeda fill=true points=25,24 28,21 31,23 38,23 43,24 47,23 47,28 39,27 33,28 28,28 25,27
+draw op=polygon layer=7 frame=4 color=#fff7d0 fill=true points=26,24 29,23 33,24 47,24 47,26 34,26 29,27 26,26
 draw op=line layer=8 frame=4 color=#1da3b1 size=1 x0=35 x1=41 y0=19 y1=19
 draw op=line layer=8 frame=4 color=#7aeeda size=1 x0=30 x1=31 y0=15 y1=17
 draw op=line layer=8 frame=4 color=#7aeeda size=1 x0=35 x1=39 y0=31 y1=33
-draw op=pencil layer=8 frame=4 color=#1da3b1 points=[[44,31],[45,19]] size=1
-draw op=polygon layer=7 frame=5 color=#1da3b1 fill=true points=[[24,24],[27,20],[30,21],[34,21],[36,22],[41,21],[47,22],[47,27],[42,28],[37,26],[33,27],[29,28],[25,27]]
-draw op=polygon layer=7 frame=5 color=#7aeeda fill=true points=[[26,23],[29,22],[34,23],[39,23],[42,24],[47,23],[47,26],[41,26],[35,25],[30,26],[27,26]]
-draw op=polygon layer=7 frame=5 color=#fff7d0 fill=true points=[[27,24],[33,24],[36,23],[41,24],[47,24],[47,25],[37,25],[31,25],[28,26]]
+draw op=pencil layer=8 frame=4 color=#1da3b1 points=44,31 45,19 size=1
+draw op=polygon layer=7 frame=5 color=#1da3b1 fill=true points=24,24 27,20 30,21 34,21 36,22 41,21 47,22 47,27 42,28 37,26 33,27 29,28 25,27
+draw op=polygon layer=7 frame=5 color=#7aeeda fill=true points=26,23 29,22 34,23 39,23 42,24 47,23 47,26 41,26 35,25 30,26 27,26
+draw op=polygon layer=7 frame=5 color=#fff7d0 fill=true points=27,24 33,24 36,23 41,24 47,24 47,25 37,25 31,25 28,26
 draw op=line layer=8 frame=5 color=#7aeeda size=1 x0=38 x1=43 y0=19 y1=19
 draw op=line layer=8 frame=5 color=#1da3b1 size=1 x0=35 x1=41 y0=30 y1=31
-draw op=pencil layer=8 frame=5 color=#7aeeda points=[[30,18],[46,29]] size=1
-draw op=polygon layer=7 frame=6 color=#1da3b1 fill=true points=[[27,23],[31,22],[34,23],[38,24],[34,25],[28,26]]
-draw op=polygon layer=7 frame=6 color=#7aeeda fill=true points=[[28,24],[31,23],[36,24],[32,25],[29,25]]
+draw op=pencil layer=8 frame=5 color=#7aeeda points=30,18 46,29 size=1
+draw op=polygon layer=7 frame=6 color=#1da3b1 fill=true points=27,23 31,22 34,23 38,24 34,25 28,26
+draw op=polygon layer=7 frame=6 color=#7aeeda fill=true points=28,24 31,23 36,24 32,25 29,25
 draw op=line layer=7 frame=6 color=#fff7d0 size=1 x0=29 x1=34 y0=24 y1=24
 draw op=line layer=7 frame=6 color=#7aeeda size=1 x0=39 x1=47 y0=24 y1=24
 draw op=line layer=8 frame=6 color=#1da3b1 size=1 x0=36 x1=41 y0=21 y1=21
 draw op=line layer=8 frame=6 color=#1da3b1 size=1 x0=40 x1=45 y0=27 y1=27
-draw op=pencil layer=8 frame=6 color=#7aeeda points=[[45,20],[33,28]] size=1
+draw op=pencil layer=8 frame=6 color=#7aeeda points=45,20 33,28 size=1
 draw op=line layer=7 frame=7 color=#7aeeda size=1 x0=30 x1=33 y0=24 y1=24
 draw op=line layer=7 frame=7 color=#1da3b1 size=1 x0=40 x1=44 y0=24 y1=24
-draw op=pencil layer=8 frame=7 color=#1da3b1 points=[[36,28],[45,21]] size=1
+draw op=pencil layer=8 frame=7 color=#1da3b1 points=36,28 45,21 size=1
 draw op=pencil layer=8 frame=7 color=#7aeeda points=[[29,22]] size=1
 draw op=pencil layer=8 frame=8 color=#1da3b1 points=[[31,25]] size=1
 add_tag name=charge-release-recover direction=forward from=0 to=9

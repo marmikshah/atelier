@@ -5,7 +5,7 @@ layer op=add name=glass
 layer op=add name=cork
 layer op=rename index=0 name=liquid
 palette op=set colors=#231527,#c9975a,#7a5230,#4fae3a,#2b6e1f,#a8e67a
-draw op=pencil layer=2 frame=0 color=#231527 points=[[13,8],[18,8],[13,9],[18,9],[13,10],[18,10],[13,11],[18,11],[13,12],[18,12],[13,13],[18,13],[11,14],[20,14],[9,15],[22,15],[7,16],[24,16],[6,17],[25,17],[5,18],[26,18],[5,19],[26,19],[4,20],[27,20],[4,21],[27,21],[5,22],[26,22],[6,23],[25,23],[7,24],[24,24],[9,25],[22,25],[11,26],[20,26]] size=1
+draw op=pencil layer=2 frame=0 color=#231527 points=13,8 18,8 13,9 18,9 13,10 18,10 13,11 18,11 13,12 18,12 13,13 18,13 11,14 20,14 9,15 22,15 7,16 24,16 6,17 25,17 5,18 26,18 5,19 26,19 4,20 27,20 4,21 27,21 5,22 26,22 6,23 25,23 7,24 24,24 9,25 22,25 11,26 20,26 size=1
 draw op=rect layer=2 frame=0 color=#231527 fill=true x0=14 x1=17 y0=27 y1=27
 draw op=rect layer=3 frame=0 color=#c9975a fill=true x0=14 x1=17 y0=3 y1=3
 draw op=rect layer=3 frame=0 color=#c9975a fill=true x0=13 x1=18 y0=4 y1=5

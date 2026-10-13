@@ -6,13 +6,13 @@ layer op=add name=wheel_front
 layer op=add name=exhaust
 layer op=add name=speedlines
 palette op=set colors=#14141f,#d7263d,#ff6b6b,#d9d9d9,#a8dadc,#f1f1f1
-draw op=polygon layer=0 frame=0 color=#14141f fill=true points=[[2,22],[2,17],[6,17],[10,12],[20,12],[25,16],[29,16],[29,22]]
+draw op=polygon layer=0 frame=0 color=#14141f fill=true points=2,22 2,17 6,17 10,12 20,12 25,16 29,16 29,22
 draw op=ellipse layer=1 frame=0 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
 draw op=ellipse layer=2 frame=0 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
-draw op=polygon layer=0 frame=0 color=#d7263d fill=true points=[[2,22],[2,17],[6,17],[10,12],[20,12],[25,16],[29,16],[29,22]]
-draw op=polygon layer=0 frame=0 color=#14141f fill=false points=[[2,22],[2,17],[6,17],[10,12],[20,12],[25,16],[29,16],[29,22]]
+draw op=polygon layer=0 frame=0 color=#d7263d fill=true points=2,22 2,17 6,17 10,12 20,12 25,16 29,16 29,22
+draw op=polygon layer=0 frame=0 color=#14141f fill=false points=2,22 2,17 6,17 10,12 20,12 25,16 29,16 29,22
 draw op=line layer=0 frame=0 color=#14141f x0=2 x1=29 y0=22 y1=22
-draw op=polygon layer=0 frame=0 color=#a8dadc fill=true points=[[11,13],[19,13],[23,16],[9,16]]
+draw op=polygon layer=0 frame=0 color=#a8dadc fill=true points=11,13 19,13 23,16 9,16
 draw op=line layer=0 frame=0 color=#d9d9d9 x0=3 x1=28 y0=21 y1=21
 draw op=line layer=0 frame=0 color=#ff6b6b x0=7 x1=24 y0=17 y1=17
 draw op=ellipse layer=1 frame=0 color=#d9d9d9 cx=9 cy=24 fill=true rx=2 ry=2
@@ -64,10 +64,10 @@ region op=move layer=0 frame=3 offset=0,1 rect=0,0,32,32
 region op=move layer=0 frame=6 offset=0,-1 rect=0,0,32,32
 region op=move layer=0 frame=7 offset=0,-1 rect=0,0,32,32
 draw op=pencil layer=3 frame=0 color=#f1f1f1 points=[[1,20]]
-draw op=pencil layer=3 frame=1 color=#f1f1f1 points=[[1,19],[0,20]]
-draw op=pencil layer=3 frame=2 color=#f1f1f1 points=[[0,18],[1,18],[0,19]]
-draw op=pencil layer=3 frame=3 color=#f1f1f1 points=[[0,17],[1,17],[0,18]]
-draw op=pencil layer=3 frame=4 color=#f1f1f1 points=[[0,16],[1,16]]
+draw op=pencil layer=3 frame=1 color=#f1f1f1 points=1,19 0,20
+draw op=pencil layer=3 frame=2 color=#f1f1f1 points=0,18 1,18 0,19
+draw op=pencil layer=3 frame=3 color=#f1f1f1 points=0,17 1,17 0,18
+draw op=pencil layer=3 frame=4 color=#f1f1f1 points=0,16 1,16
 draw op=pencil layer=3 frame=5 color=#f1f1f1 points=[[0,15]]
 draw op=pencil layer=3 frame=6 color=#f1f1f1 points=[[0,14]]
 draw op=line layer=4 frame=0 color=#f1f1f1 x0=0 x1=1 y0=10 y1=10
@@ -213,11 +213,11 @@ draw op=pencil layer=2 frame=9 color=#d9d9d9 points=[[26,22]]
 draw op=clear_cel layer=3 frame=0
 draw op=pencil layer=3 frame=0 color=#f1f1f1 points=[[1,20]]
 draw op=clear_cel layer=3 frame=1
-draw op=pencil layer=3 frame=1 color=#f1f1f1 points=[[1,20],[0,20]]
+draw op=pencil layer=3 frame=1 color=#f1f1f1 points=1,20 0,20
 draw op=clear_cel layer=3 frame=2
-draw op=pencil layer=3 frame=2 color=#f1f1f1 points=[[0,19],[1,19]]
+draw op=pencil layer=3 frame=2 color=#f1f1f1 points=0,19 1,19
 draw op=clear_cel layer=3 frame=3
-draw op=pencil layer=3 frame=3 color=#f1f1f1 points=[[0,18],[1,18]]
+draw op=pencil layer=3 frame=3 color=#f1f1f1 points=0,18 1,18
 draw op=clear_cel layer=3 frame=4
 draw op=pencil layer=3 frame=4 color=#f1f1f1 points=[[0,17]]
 draw op=clear_cel layer=3 frame=5

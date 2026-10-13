@@ -46,7 +46,7 @@ paint_grid layer=0 frame=0 x=12 y=21 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=0 color=#f2b483 points=[[2,2],[4,2],[4,6]] size=2
+draw op=polyline layer=2 frame=0 color=#f2b483 points=2,2 4,2 4,6 size=2
 region op=clear layer=2 frame=0 rect=0,0,8,8
 frame op=add copy_from=0
 region op=move layer=3 frame=1 offset=0,3 rect=13,9,6,6
@@ -69,8 +69,8 @@ paint_grid layer=0 frame=1 x=12 y=23 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=1 color=#f2b483 points=[[11,18],[12,24]] size=2
-draw op=polyline layer=2 frame=1 color=#f2b483 points=[[20,18],[19,24]] size=2
+draw op=polyline layer=2 frame=1 color=#f2b483 points=11,18 12,24 size=2
+draw op=polyline layer=2 frame=1 color=#f2b483 points=20,18 19,24 size=2
 frame op=add copy_from=1
 region op=move layer=3 frame=2 offset=0,-10 rect=13,12,18,17
 region op=clear layer=1 frame=2 rect=12,18,19,22
@@ -98,8 +98,8 @@ paint_grid layer=0 frame=2 x=12 y=17 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=2 color=#f2b483 points=[[11,8],[8,5],[6,3]] size=2
-draw op=polyline layer=2 frame=2 color=#f2b483 points=[[20,8],[23,5],[25,3]] size=2
+draw op=polyline layer=2 frame=2 color=#f2b483 points=11,8 8,5 6,3 size=2
+draw op=polyline layer=2 frame=2 color=#f2b483 points=20,8 23,5 25,3 size=2
 frame op=add copy_from=2
 region op=clear layer=1 frame=3 rect=12,8,19,16
 region op=clear layer=0 frame=3 rect=12,17,19,27
@@ -119,8 +119,8 @@ paint_grid layer=0 frame=3 x=12 y=14 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=3 color=#f2b483 points=[[11,8],[9,3],[12,0]] size=2
-draw op=polyline layer=2 frame=3 color=#f2b483 points=[[20,8],[22,3],[19,0]] size=2
+draw op=polyline layer=2 frame=3 color=#f2b483 points=11,8 9,3 12,0 size=2
+draw op=polyline layer=2 frame=3 color=#f2b483 points=20,8 22,3 19,0 size=2
 frame op=add copy_from=3
 region op=move layer=3 frame=4 offset=0,-1 rect=13,2,18,7
 region op=clear layer=1 frame=4 rect=12,8,19,13
@@ -138,8 +138,8 @@ paint_grid layer=0 frame=4 x=12 y=12 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=4 color=#f2b483 points=[[11,7],[10,3],[13,0]] size=2
-draw op=polyline layer=2 frame=4 color=#f2b483 points=[[20,7],[21,3],[18,0]] size=2
+draw op=polyline layer=2 frame=4 color=#f2b483 points=11,7 10,3 13,0 size=2
+draw op=polyline layer=2 frame=4 color=#f2b483 points=20,7 21,3 18,0 size=2
 frame op=add copy_from=4
 region op=move layer=3 frame=5 offset=0,-1 rect=13,1,18,6
 region op=clear layer=1 frame=5 rect=12,7,19,11
@@ -154,12 +154,12 @@ paint_grid layer=0 frame=5 x=12 y=10 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=5 color=#f2b483 points=[[11,6],[9,2],[11,0]] size=2
-draw op=polyline layer=2 frame=5 color=#f2b483 points=[[20,6],[22,2],[20,0]] size=2
+draw op=polyline layer=2 frame=5 color=#f2b483 points=11,6 9,2 11,0 size=2
+draw op=polyline layer=2 frame=5 color=#f2b483 points=20,6 22,2 20,0 size=2
 frame op=add copy_from=5
 region op=clear layer=2 frame=6 rect=8,0,22,6
-draw op=polyline layer=2 frame=6 color=#f2b483 points=[[11,6],[9,3],[10,1]] size=2
-draw op=polyline layer=2 frame=6 color=#f2b483 points=[[20,6],[22,3],[21,1]] size=2
+draw op=polyline layer=2 frame=6 color=#f2b483 points=11,6 9,3 10,1 size=2
+draw op=polyline layer=2 frame=6 color=#f2b483 points=20,6 22,3 21,1 size=2
 frame op=add copy_from=6
 region op=move layer=3 frame=7 offset=0,2 rect=13,0,18,5
 region op=clear layer=1 frame=7 rect=12,6,19,9
@@ -178,8 +178,8 @@ paint_grid layer=0 frame=7 x=12 y=13 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=7 color=#f2b483 points=[[11,8],[9,10],[10,13]] size=2
-draw op=polyline layer=2 frame=7 color=#f2b483 points=[[20,8],[22,10],[21,13]] size=2
+draw op=polyline layer=2 frame=7 color=#f2b483 points=11,8 9,10 10,13 size=2
+draw op=polyline layer=2 frame=7 color=#f2b483 points=20,8 22,10 21,13 size=2
 frame op=add copy_from=7
 region op=move layer=3 frame=8 offset=0,3 rect=13,2,18,7
 region op=clear layer=1 frame=8 rect=12,8,19,12
@@ -203,8 +203,8 @@ paint_grid layer=0 frame=8 x=12 y=17 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=8 color=#f2b483 points=[[11,11],[9,14],[11,17]] size=2
-draw op=polyline layer=2 frame=8 color=#f2b483 points=[[20,11],[22,14],[20,17]] size=2
+draw op=polyline layer=2 frame=8 color=#f2b483 points=11,11 9,14 11,17 size=2
+draw op=polyline layer=2 frame=8 color=#f2b483 points=20,11 22,14 20,17 size=2
 frame op=add copy_from=8
 region op=move layer=3 frame=9 offset=0,7 rect=13,5,18,10
 region op=clear layer=1 frame=9 rect=12,11,19,16
@@ -222,6 +222,6 @@ paint_grid layer=0 frame=9 x=12 y=22 legend=B:#c97b3a,O:#1a1310,P:#35507a,T:#000
   |PPPTTPPP|
   |BBBTTBBB|
   |OOOTTOOO|
-draw op=polyline layer=2 frame=9 color=#f2b483 points=[[11,18],[8,19],[8,22]] size=2
-draw op=polyline layer=2 frame=9 color=#f2b483 points=[[20,18],[23,19],[23,22]] size=2
+draw op=polyline layer=2 frame=9 color=#f2b483 points=11,18 8,19 8,22 size=2
+draw op=polyline layer=2 frame=9 color=#f2b483 points=20,18 23,19 23,22 size=2
 add_tag name=jump direction=forward from=0 to=9

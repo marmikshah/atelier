@@ -7,9 +7,9 @@ layer op=add name=embers
 layer op=rename index=0 name=bracket
 draw op=rect layer=0 frame=0 color=#271c27 fill=true x0=13 x1=18 y0=23 y1=30
 draw op=rect layer=0 frame=0 color=#5b3020 fill=true x0=14 x1=17 y0=24 y1=29
-draw op=pencil layer=0 frame=0 color=#f4721c points=[[15,25],[16,28]]
-draw op=polyline layer=0 frame=0 color=#271c27 points=[[15,24],[10,21],[10,18]] size=3
-draw op=polyline layer=0 frame=0 color=#271c27 points=[[16,24],[21,21],[21,18]] size=3
+draw op=pencil layer=0 frame=0 color=#f4721c points=15,25 16,28
+draw op=polyline layer=0 frame=0 color=#271c27 points=15,24 10,21 10,18 size=3
+draw op=polyline layer=0 frame=0 color=#271c27 points=16,24 21,21 21,18 size=3
 draw op=rect layer=0 frame=0 color=#271c27 fill=true x0=9 x1=21 y0=17 y1=20
 draw op=rect layer=0 frame=0 color=#5b3020 fill=true x0=10 x1=20 y0=17 y1=19
 draw op=line layer=0 frame=0 color=#271c27 size=2 x0=8 x1=22 y0=17 y1=17
@@ -17,13 +17,13 @@ draw op=line layer=1 frame=0 color=#be371c size=1 x0=10 x1=20 y0=17 y1=17
 draw op=line layer=1 frame=0 color=#f4721c size=1 x0=12 x1=18 y0=19 y1=19
 draw op=pencil layer=1 frame=0 color=#be371c points=[[14,24]]
 draw op=ellipse layer=2 frame=0 color=#be371c cx=15 cy=13 fill=true rx=5 ry=5
-draw op=polyline layer=2 frame=0 color=#be371c points=[[12,14],[13,10],[13,7],[15,4],[16,9]] size=3
-draw op=polyline layer=2 frame=0 color=#be371c points=[[18,15],[19,12],[19,9]] size=2
+draw op=polyline layer=2 frame=0 color=#be371c points=12,14 13,10 13,7 15,4 16,9 size=3
+draw op=polyline layer=2 frame=0 color=#be371c points=18,15 19,12 19,9 size=2
 draw op=ellipse layer=2 frame=0 color=#f4721c cx=15 cy=14 fill=true rx=3 ry=4
-draw op=polyline layer=2 frame=0 color=#f4721c points=[[14,14],[15,11],[15,8]] size=2
+draw op=polyline layer=2 frame=0 color=#f4721c points=14,14 15,11 15,8 size=2
 draw op=ellipse layer=2 frame=0 color=#ffd655 cx=15 cy=15 fill=true rx=1 ry=2
 draw op=pencil layer=2 frame=0 color=#ffd655 points=[[15,12]]
-draw op=pencil layer=3 frame=0 color=#f4721c points=[[21,11],[10,8]]
+draw op=pencil layer=3 frame=0 color=#f4721c points=21,11 10,8
 draw op=pencil layer=3 frame=0 color=#be371c points=[[22,7]]
 frame op=add copy_from=0 duration_ms=100
 frame op=add copy_from=0 duration_ms=100
@@ -37,43 +37,43 @@ frame op=add copy_from=0 duration_ms=100
 draw op=clear_cel layer=1 frame=1
 draw op=line layer=1 frame=1 color=#be371c size=1 x0=9 x1=21 y0=17 y1=17
 draw op=line layer=1 frame=1 color=#f4721c size=1 x0=11 x1=19 y0=19 y1=19
-draw op=pencil layer=1 frame=1 color=#be371c points=[[14,24],[17,24]]
+draw op=pencil layer=1 frame=1 color=#be371c points=14,24 17,24
 draw op=clear_cel layer=2 frame=1
 draw op=ellipse layer=2 frame=1 color=#be371c cx=15 cy=13 fill=true rx=5 ry=5
-draw op=polyline layer=2 frame=1 color=#be371c points=[[14,13],[16,9],[16,6],[18,3],[18,1]] size=3
-draw op=polyline layer=2 frame=1 color=#be371c points=[[12,13],[11,10],[11,7]] size=2
+draw op=polyline layer=2 frame=1 color=#be371c points=14,13 16,9 16,6 18,3 18,1 size=3
+draw op=polyline layer=2 frame=1 color=#be371c points=12,13 11,10 11,7 size=2
 draw op=ellipse layer=2 frame=1 color=#f4721c cx=15 cy=14 fill=true rx=3 ry=4
-draw op=polyline layer=2 frame=1 color=#f4721c points=[[15,13],[17,10],[17,7]] size=2
+draw op=polyline layer=2 frame=1 color=#f4721c points=15,13 17,10 17,7 size=2
 draw op=ellipse layer=2 frame=1 color=#ffd655 cx=15 cy=15 fill=true rx=1 ry=2
 draw op=pencil layer=2 frame=1 color=#ffd655 points=[[16,12]]
 draw op=clear_cel layer=3 frame=1
 draw op=pencil layer=3 frame=1 color=#ffd655 points=[[22,9]]
-draw op=pencil layer=3 frame=1 color=#be371c points=[[10,6],[23,5]]
+draw op=pencil layer=3 frame=1 color=#be371c points=10,6 23,5
 draw op=pencil layer=3 frame=1 color=#f4721c points=[[20,13]]
 draw op=clear_cel layer=1 frame=2
 draw op=line layer=1 frame=2 color=#f4721c size=1 x0=9 x1=21 y0=17 y1=17
 draw op=line layer=1 frame=2 color=#ffd655 size=1 x0=11 x1=19 y0=19 y1=19
-draw op=pencil layer=1 frame=2 color=#f4721c points=[[14,23],[17,23],[14,24],[17,24]]
+draw op=pencil layer=1 frame=2 color=#f4721c points=14,23 17,23 14,24 17,24
 draw op=clear_cel layer=2 frame=2
 draw op=ellipse layer=2 frame=2 color=#be371c cx=16 cy=13 fill=true rx=4 ry=5
-draw op=polyline layer=2 frame=2 color=#be371c points=[[16,13],[18,10],[18,7],[20,5]] size=3
-draw op=polyline layer=2 frame=2 color=#be371c points=[[13,14],[12,11],[13,8]] size=2
+draw op=polyline layer=2 frame=2 color=#be371c points=16,13 18,10 18,7 20,5 size=3
+draw op=polyline layer=2 frame=2 color=#be371c points=13,14 12,11 13,8 size=2
 draw op=ellipse layer=2 frame=2 color=#f4721c cx=16 cy=14 fill=true rx=3 ry=4
-draw op=polyline layer=2 frame=2 color=#f4721c points=[[16,13],[18,10],[18,8]] size=2
+draw op=polyline layer=2 frame=2 color=#f4721c points=16,13 18,10 18,8 size=2
 draw op=ellipse layer=2 frame=2 color=#ffd655 cx=16 cy=15 fill=true rx=1 ry=2
 draw op=clear_cel layer=3 frame=2
 draw op=pencil layer=3 frame=2 color=#f4721c points=[[23,7]]
-draw op=pencil layer=3 frame=2 color=#be371c points=[[10,4],[23,3]]
+draw op=pencil layer=3 frame=2 color=#be371c points=10,4 23,3
 draw op=pencil layer=3 frame=2 color=#ffd655 points=[[20,11]]
 draw op=clear_cel layer=1 frame=3
 draw op=line layer=1 frame=3 color=#be371c size=1 x0=10 x1=20 y0=17 y1=17
 draw op=line layer=1 frame=3 color=#f4721c size=1 x0=13 x1=17 y0=19 y1=19
 draw op=clear_cel layer=2 frame=3
 draw op=ellipse layer=2 frame=3 color=#be371c cx=15 cy=14 fill=true rx=5 ry=4
-draw op=polyline layer=2 frame=3 color=#be371c points=[[13,14],[13,11],[12,9]] size=3
-draw op=polyline layer=2 frame=3 color=#be371c points=[[17,14],[18,11],[17,8]] size=2
+draw op=polyline layer=2 frame=3 color=#be371c points=13,14 13,11 12,9 size=3
+draw op=polyline layer=2 frame=3 color=#be371c points=17,14 18,11 17,8 size=2
 draw op=ellipse layer=2 frame=3 color=#f4721c cx=15 cy=15 fill=true rx=3 ry=3
-draw op=polyline layer=2 frame=3 color=#f4721c points=[[15,14],[14,12],[14,10]] size=2
+draw op=polyline layer=2 frame=3 color=#f4721c points=15,14 14,12 14,10 size=2
 draw op=ellipse layer=2 frame=3 color=#ffd655 cx=15 cy=16 fill=true rx=1 ry=1
 draw op=clear_cel layer=3 frame=3
 draw op=pencil layer=3 frame=3 color=#be371c points=[[24,5]]
@@ -84,10 +84,10 @@ draw op=line layer=1 frame=4 color=#be371c size=1 x0=11 x1=19 y0=17 y1=17
 draw op=pencil layer=1 frame=4 color=#f4721c points=[[15,19]]
 draw op=clear_cel layer=2 frame=4
 draw op=ellipse layer=2 frame=4 color=#be371c cx=14 cy=13 fill=true rx=5 ry=5
-draw op=polyline layer=2 frame=4 color=#be371c points=[[14,13],[12,10],[12,7],[10,4]] size=3
-draw op=polyline layer=2 frame=4 color=#be371c points=[[17,14],[18,11],[18,8]] size=2
+draw op=polyline layer=2 frame=4 color=#be371c points=14,13 12,10 12,7 10,4 size=3
+draw op=polyline layer=2 frame=4 color=#be371c points=17,14 18,11 18,8 size=2
 draw op=ellipse layer=2 frame=4 color=#f4721c cx=14 cy=14 fill=true rx=3 ry=4
-draw op=polyline layer=2 frame=4 color=#f4721c points=[[14,13],[13,10],[13,7]] size=2
+draw op=polyline layer=2 frame=4 color=#f4721c points=14,13 13,10 13,7 size=2
 draw op=ellipse layer=2 frame=4 color=#ffd655 cx=14 cy=15 fill=true rx=1 ry=2
 draw op=clear_cel layer=3 frame=4
 draw op=pencil layer=3 frame=4 color=#ffd655 points=[[20,12]]
@@ -96,33 +96,33 @@ draw op=pencil layer=3 frame=4 color=#f4721c points=[[8,8]]
 draw op=clear_cel layer=1 frame=5
 draw op=line layer=1 frame=5 color=#f4721c size=1 x0=8 x1=22 y0=17 y1=17
 draw op=line layer=1 frame=5 color=#ffd655 size=1 x0=10 x1=20 y0=19 y1=19
-draw op=pencil layer=1 frame=5 color=#f4721c points=[[14,23],[17,23],[14,24],[17,24],[15,27],[16,27]]
+draw op=pencil layer=1 frame=5 color=#f4721c points=14,23 17,23 14,24 17,24 15,27 16,27
 draw op=clear_cel layer=2 frame=5
 draw op=ellipse layer=2 frame=5 color=#be371c cx=15 cy=13 fill=true rx=6 ry=5
-draw op=polyline layer=2 frame=5 color=#be371c points=[[13,13],[14,9],[14,6],[15,2]] size=4
-draw op=polyline layer=2 frame=5 color=#be371c points=[[18,14],[20,11],[19,7]] size=3
+draw op=polyline layer=2 frame=5 color=#be371c points=13,13 14,9 14,6 15,2 size=4
+draw op=polyline layer=2 frame=5 color=#be371c points=18,14 20,11 19,7 size=3
 draw op=ellipse layer=2 frame=5 color=#f4721c cx=15 cy=14 fill=true rx=4 ry=4
-draw op=polyline layer=2 frame=5 color=#f4721c points=[[15,13],[16,10],[16,6]] size=2
+draw op=polyline layer=2 frame=5 color=#f4721c points=15,13 16,10 16,6 size=2
 draw op=ellipse layer=2 frame=5 color=#ffd655 cx=15 cy=15 fill=true rx=2 ry=2
 draw op=line layer=2 frame=5 color=#ffd655 size=1 x0=15 x1=15 y0=14 y1=11
 draw op=clear_cel layer=3 frame=5
-draw op=pencil layer=3 frame=5 color=#ffd655 points=[[21,10],[9,6]]
+draw op=pencil layer=3 frame=5 color=#ffd655 points=21,10 9,6
 draw op=pencil layer=3 frame=5 color=#be371c points=[[26,1]]
 draw op=pencil layer=3 frame=5 color=#f4721c points=[[8,5]]
 draw op=clear_cel layer=1 frame=6
 draw op=line layer=1 frame=6 color=#f4721c size=1 x0=9 x1=21 y0=17 y1=17
 draw op=line layer=1 frame=6 color=#ffd655 size=1 x0=11 x1=19 y0=19 y1=19
-draw op=pencil layer=1 frame=6 color=#f4721c points=[[14,23],[17,23]]
+draw op=pencil layer=1 frame=6 color=#f4721c points=14,23 17,23
 draw op=clear_cel layer=2 frame=6
 draw op=ellipse layer=2 frame=6 color=#be371c cx=16 cy=13 fill=true rx=5 ry=5
-draw op=polyline layer=2 frame=6 color=#be371c points=[[15,13],[17,10],[17,7],[19,4]] size=3
-draw op=polyline layer=2 frame=6 color=#be371c points=[[13,14],[12,11],[11,8]] size=2
-draw op=polyline layer=2 frame=6 color=#be371c points=[[19,14],[21,11],[21,8]] size=2
+draw op=polyline layer=2 frame=6 color=#be371c points=15,13 17,10 17,7 19,4 size=3
+draw op=polyline layer=2 frame=6 color=#be371c points=13,14 12,11 11,8 size=2
+draw op=polyline layer=2 frame=6 color=#be371c points=19,14 21,11 21,8 size=2
 draw op=ellipse layer=2 frame=6 color=#f4721c cx=16 cy=14 fill=true rx=3 ry=4
-draw op=polyline layer=2 frame=6 color=#f4721c points=[[16,13],[18,10],[18,7]] size=2
+draw op=polyline layer=2 frame=6 color=#f4721c points=16,13 18,10 18,7 size=2
 draw op=ellipse layer=2 frame=6 color=#ffd655 cx=16 cy=15 fill=true rx=1 ry=2
 draw op=clear_cel layer=3 frame=6
-draw op=pencil layer=3 frame=6 color=#f4721c points=[[22,8],[9,4]]
+draw op=pencil layer=3 frame=6 color=#f4721c points=22,8 9,4
 draw op=pencil layer=3 frame=6 color=#be371c points=[[7,2]]
 draw op=pencil layer=3 frame=6 color=#ffd655 points=[[21,13]]
 draw op=clear_cel layer=1 frame=7
@@ -131,23 +131,23 @@ draw op=line layer=1 frame=7 color=#f4721c size=1 x0=12 x1=18 y0=19 y1=19
 draw op=pencil layer=1 frame=7 color=#be371c points=[[17,24]]
 draw op=clear_cel layer=2 frame=7
 draw op=ellipse layer=2 frame=7 color=#be371c cx=16 cy=14 fill=true rx=5 ry=4
-draw op=polyline layer=2 frame=7 color=#be371c points=[[16,14],[18,11],[19,8]] size=3
-draw op=polyline layer=2 frame=7 color=#be371c points=[[13,14],[13,11],[14,9]] size=2
+draw op=polyline layer=2 frame=7 color=#be371c points=16,14 18,11 19,8 size=3
+draw op=polyline layer=2 frame=7 color=#be371c points=13,14 13,11 14,9 size=2
 draw op=ellipse layer=2 frame=7 color=#f4721c cx=16 cy=15 fill=true rx=3 ry=3
-draw op=polyline layer=2 frame=7 color=#f4721c points=[[16,14],[17,12],[17,10]] size=2
+draw op=polyline layer=2 frame=7 color=#f4721c points=16,14 17,12 17,10 size=2
 draw op=ellipse layer=2 frame=7 color=#ffd655 cx=16 cy=16 fill=true rx=1 ry=1
 draw op=clear_cel layer=3 frame=7
-draw op=pencil layer=3 frame=7 color=#be371c points=[[23,6],[8,2]]
+draw op=pencil layer=3 frame=7 color=#be371c points=23,6 8,2
 draw op=pencil layer=3 frame=7 color=#ffd655 points=[[10,12]]
 draw op=clear_cel layer=1 frame=8
 draw op=line layer=1 frame=8 color=#be371c size=1 x0=11 x1=19 y0=17 y1=17
 draw op=line layer=1 frame=8 color=#f4721c size=1 x0=13 x1=17 y0=19 y1=19
 draw op=clear_cel layer=2 frame=8
 draw op=ellipse layer=2 frame=8 color=#be371c cx=14 cy=13 fill=true rx=5 ry=5
-draw op=polyline layer=2 frame=8 color=#be371c points=[[14,13],[12,10],[11,6]] size=3
-draw op=polyline layer=2 frame=8 color=#be371c points=[[17,14],[18,11],[19,9]] size=2
+draw op=polyline layer=2 frame=8 color=#be371c points=14,13 12,10 11,6 size=3
+draw op=polyline layer=2 frame=8 color=#be371c points=17,14 18,11 19,9 size=2
 draw op=ellipse layer=2 frame=8 color=#f4721c cx=14 cy=14 fill=true rx=3 ry=4
-draw op=polyline layer=2 frame=8 color=#f4721c points=[[14,13],[13,10],[13,8]] size=2
+draw op=polyline layer=2 frame=8 color=#f4721c points=14,13 13,10 13,8 size=2
 draw op=ellipse layer=2 frame=8 color=#ffd655 cx=14 cy=15 fill=true rx=1 ry=2
 draw op=clear_cel layer=3 frame=8
 draw op=pencil layer=3 frame=8 color=#f4721c points=[[9,10]]
@@ -159,13 +159,13 @@ draw op=line layer=1 frame=9 color=#f4721c size=1 x0=12 x1=18 y0=19 y1=19
 draw op=pencil layer=1 frame=9 color=#be371c points=[[14,24]]
 draw op=clear_cel layer=2 frame=9
 draw op=ellipse layer=2 frame=9 color=#be371c cx=15 cy=13 fill=true rx=5 ry=5
-draw op=polyline layer=2 frame=9 color=#be371c points=[[13,14],[14,10],[14,7],[15,5]] size=3
-draw op=polyline layer=2 frame=9 color=#be371c points=[[18,15],[19,12],[19,10]] size=2
+draw op=polyline layer=2 frame=9 color=#be371c points=13,14 14,10 14,7 15,5 size=3
+draw op=polyline layer=2 frame=9 color=#be371c points=18,15 19,12 19,10 size=2
 draw op=ellipse layer=2 frame=9 color=#f4721c cx=15 cy=14 fill=true rx=3 ry=4
-draw op=polyline layer=2 frame=9 color=#f4721c points=[[14,14],[15,11],[15,9]] size=2
+draw op=polyline layer=2 frame=9 color=#f4721c points=14,14 15,11 15,9 size=2
 draw op=ellipse layer=2 frame=9 color=#ffd655 cx=15 cy=15 fill=true rx=1 ry=2
 draw op=pencil layer=2 frame=9 color=#ffd655 points=[[15,12]]
 draw op=clear_cel layer=3 frame=9
-draw op=pencil layer=3 frame=9 color=#ffd655 points=[[20,13],[9,10]]
+draw op=pencil layer=3 frame=9 color=#ffd655 points=20,13 9,10
 draw op=pencil layer=3 frame=9 color=#be371c points=[[22,9]]
 add_tag name=flicker direction=forward from=0 to=9

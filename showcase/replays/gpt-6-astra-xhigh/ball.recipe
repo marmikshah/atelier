@@ -218,7 +218,7 @@ paint_grid layer=0 frame=9 x=12 y=27 legend=k:0 rows:3
   |..kkkk..|
   |kkkkkkkk|
   |..kkkk..|
-draw op=pencil layer=0 frame=7 color=#2a1c3a erase=true points=[[13,27],[18,27],[11,28],[20,28],[13,29],[18,29]] size=1
+draw op=pencil layer=0 frame=7 color=#2a1c3a erase=true points=13,27 18,27 11,28 20,28 13,29 18,29 size=1
 region op=clear layer=0 frame=7 rect=13,27,13,27
 region op=clear layer=0 frame=7 rect=18,27,18,27
 region op=clear layer=0 frame=7 rect=11,28,11,28

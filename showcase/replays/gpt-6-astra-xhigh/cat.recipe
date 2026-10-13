@@ -172,17 +172,17 @@ paint_grid layer=6 frame=0 x=25 y=8 legend=C:#6ed8ce,L:#fff1bc rows:5
   |CLCCC|
   |CCCCC|
   |.CCC.|
-draw op=pencil layer=2 frame=0 color=#28243f points=[[13,17],[14,17],[18,17],[19,17],[13,18],[14,18],[18,18],[19,18],[16,19],[16,20]] size=1
-draw op=pencil layer=2 frame=0 color=#fff1bc points=[[13,17],[18,17],[15,19],[17,19],[15,20],[17,20]] size=1
-draw op=pencil layer=2 frame=0 color=#b86662 points=[[8,18],[9,18],[8,20],[9,20],[12,19]] size=1
-draw op=pencil layer=2 frame=0 color=#efa76e points=[[22,18],[23,18],[21,20],[22,20]] size=1
-draw op=pencil layer=3 frame=0 color=#fff1bc points=[[16,6],[17,6],[15,7],[15,8],[16,9],[17,9],[16,11],[16,12]] size=1
-draw op=pencil layer=3 frame=0 color=#28243f points=[[12,9],[12,10],[13,8]] size=1
-draw op=pencil layer=1 frame=0 color=#fff1bc points=[[15,22],[16,22],[17,22],[15,23],[17,23],[16,24]] size=1
-draw op=pencil layer=1 frame=0 color=#efa76e points=[[16,25],[16,26]] size=1
-draw op=pencil layer=1 frame=0 color=#b86662 points=[[18,25],[19,25],[18,27],[11,24],[12,24]] size=1
-draw op=pencil layer=4 frame=0 color=#b86662 points=[[27,16],[27,20],[27,25],[27,28]] size=1
-draw op=pencil layer=4 frame=0 color=#fff1bc points=[[27,14],[27,15]] size=1
+draw op=pencil layer=2 frame=0 color=#28243f points=13,17 14,17 18,17 19,17 13,18 14,18 18,18 19,18 16,19 16,20 size=1
+draw op=pencil layer=2 frame=0 color=#fff1bc points=13,17 18,17 15,19 17,19 15,20 17,20 size=1
+draw op=pencil layer=2 frame=0 color=#b86662 points=8,18 9,18 8,20 9,20 12,19 size=1
+draw op=pencil layer=2 frame=0 color=#efa76e points=22,18 23,18 21,20 22,20 size=1
+draw op=pencil layer=3 frame=0 color=#fff1bc points=16,6 17,6 15,7 15,8 16,9 17,9 16,11 16,12 size=1
+draw op=pencil layer=3 frame=0 color=#28243f points=12,9 12,10 13,8 size=1
+draw op=pencil layer=1 frame=0 color=#fff1bc points=15,22 16,22 17,22 15,23 17,23 16,24 size=1
+draw op=pencil layer=1 frame=0 color=#efa76e points=16,25 16,26 size=1
+draw op=pencil layer=1 frame=0 color=#b86662 points=18,25 19,25 18,27 11,24 12,24 size=1
+draw op=pencil layer=4 frame=0 color=#b86662 points=27,16 27,20 27,25 27,28 size=1
+draw op=pencil layer=4 frame=0 color=#fff1bc points=27,14 27,15 size=1
 draw op=clear_cel layer=0 frame=0
 draw op=clear_cel layer=6 frame=0
 draw op=clear_cel layer=7 frame=0

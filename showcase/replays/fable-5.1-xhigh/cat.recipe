@@ -57,26 +57,26 @@ paint_grid layer=4 frame=0 x=22 y=5 legend=g:#45d4e6 rows:5
   |ggggg|
   |.ggg.|
 draw op=line layer=0 frame=0 color=#241a3a x0=24 x1=19 y0=10 y1=29
-draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=[[3,27],[0,29],[0,22],[2,20]]
+draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=3,27 0,29 0,22 2,20
 fx op=outline layer=2 frame=0 color=#241a3a
 draw op=clear_cel layer=2 frame=0
-draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=[[3,27],[0,29],[0,25],[1,23]]
+draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=3,27 0,29 0,25 1,23
 draw op=pencil layer=2 frame=0 color=#f8d8a8 points=[[1,23]]
 fx op=outline layer=2 frame=0 color=#241a3a
 draw op=clear_cel layer=2 frame=0
-draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=[[3,27],[0,29],[0,24],[1,22]]
+draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=3,27 0,29 0,24 1,22
 draw op=pencil layer=2 frame=0 color=#f8d8a8 points=[[1,22]]
 fx op=outline layer=2 frame=0 color=#241a3a
 draw op=clear_cel layer=2 frame=0
-draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=[[3,27],[0,29],[0,23],[2,21]]
+draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=3,27 0,29 0,23 2,21
 draw op=pencil layer=2 frame=0 color=#f8d8a8 points=[[2,21]]
 fx op=outline layer=2 frame=0 color=#241a3a
 draw op=clear_cel layer=2 frame=0
-draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=[[3,27],[0,29],[0,22],[2,20]]
+draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=3,27 0,29 0,22 2,20
 draw op=pencil layer=2 frame=0 color=#f8d8a8 points=[[2,20]]
 fx op=outline layer=2 frame=0 color=#241a3a
 draw op=clear_cel layer=2 frame=0
-draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=[[3,27],[0,29],[1,22],[3,20]]
+draw op=curve layer=2 frame=0 width=1 aa=false color=#e38a3a points=3,27 0,29 1,22 3,20
 draw op=pencil layer=2 frame=0 color=#f8d8a8 points=[[3,20]]
 fx op=outline layer=2 frame=0 color=#241a3a
 draw op=clear_cel layer=2 frame=0
@@ -345,43 +345,43 @@ paint_grid layer=6 frame=9 x=19 y=0 legend=g:#45d4e6,w:#effeff rows:5
   |........ggg|
   |.........g.|
 draw op=clear_cel layer=1 frame=0
-draw op=curve layer=1 frame=0 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[0,22],[1,20]]
+draw op=curve layer=1 frame=0 width=1 aa=false color=#e38a3a points=5,27 1,30 0,22 1,20
 draw op=pencil layer=1 frame=0 color=#f8d8a8 points=[[1,20]]
 fx op=outline layer=1 frame=0 color=#241a3a
 draw op=clear_cel layer=1 frame=1
-draw op=curve layer=1 frame=1 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[0,22],[1,20]]
+draw op=curve layer=1 frame=1 width=1 aa=false color=#e38a3a points=5,27 1,30 0,22 1,20
 draw op=pencil layer=1 frame=1 color=#f8d8a8 points=[[1,20]]
 fx op=outline layer=1 frame=1 color=#241a3a
 draw op=clear_cel layer=1 frame=2
-draw op=curve layer=1 frame=2 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[0,21],[2,20]]
+draw op=curve layer=1 frame=2 width=1 aa=false color=#e38a3a points=5,27 1,30 0,21 2,20
 draw op=pencil layer=1 frame=2 color=#f8d8a8 points=[[2,20]]
 fx op=outline layer=1 frame=2 color=#241a3a
 draw op=clear_cel layer=1 frame=3
-draw op=curve layer=1 frame=3 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[0,20],[3,21]]
+draw op=curve layer=1 frame=3 width=1 aa=false color=#e38a3a points=5,27 1,30 0,20 3,21
 draw op=pencil layer=1 frame=3 color=#f8d8a8 points=[[3,21]]
 fx op=outline layer=1 frame=3 color=#241a3a
 draw op=clear_cel layer=1 frame=4
-draw op=curve layer=1 frame=4 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[1,20],[4,21]]
+draw op=curve layer=1 frame=4 width=1 aa=false color=#e38a3a points=5,27 1,30 1,20 4,21
 draw op=pencil layer=1 frame=4 color=#f8d8a8 points=[[4,21]]
 fx op=outline layer=1 frame=4 color=#241a3a
 draw op=clear_cel layer=1 frame=5
-draw op=curve layer=1 frame=5 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[1,19],[4,22]]
+draw op=curve layer=1 frame=5 width=1 aa=false color=#e38a3a points=5,27 1,30 1,19 4,22
 draw op=pencil layer=1 frame=5 color=#f8d8a8 points=[[4,22]]
 fx op=outline layer=1 frame=5 color=#241a3a
 draw op=clear_cel layer=1 frame=6
-draw op=curve layer=1 frame=6 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[1,19],[4,22]]
+draw op=curve layer=1 frame=6 width=1 aa=false color=#e38a3a points=5,27 1,30 1,19 4,22
 draw op=pencil layer=1 frame=6 color=#f8d8a8 points=[[4,22]]
 fx op=outline layer=1 frame=6 color=#241a3a
 draw op=clear_cel layer=1 frame=7
-draw op=curve layer=1 frame=7 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[1,20],[4,21]]
+draw op=curve layer=1 frame=7 width=1 aa=false color=#e38a3a points=5,27 1,30 1,20 4,21
 draw op=pencil layer=1 frame=7 color=#f8d8a8 points=[[4,21]]
 fx op=outline layer=1 frame=7 color=#241a3a
 draw op=clear_cel layer=1 frame=8
-draw op=curve layer=1 frame=8 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[0,20],[3,21]]
+draw op=curve layer=1 frame=8 width=1 aa=false color=#e38a3a points=5,27 1,30 0,20 3,21
 draw op=pencil layer=1 frame=8 color=#f8d8a8 points=[[3,21]]
 fx op=outline layer=1 frame=8 color=#241a3a
 draw op=clear_cel layer=1 frame=9
-draw op=curve layer=1 frame=9 width=1 aa=false color=#e38a3a points=[[5,27],[1,30],[0,21],[2,20]]
+draw op=curve layer=1 frame=9 width=1 aa=false color=#e38a3a points=5,27 1,30 0,21 2,20
 draw op=pencil layer=1 frame=9 color=#f8d8a8 points=[[2,20]]
 fx op=outline layer=1 frame=9 color=#241a3a
 draw op=pencil layer=1 frame=0 frame_to=1 color=#e38a3a points=[[3,27]]

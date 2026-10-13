@@ -6,23 +6,23 @@ layer op=add name="Body and Face"
 layer op=add name="Wizard Hat"
 layer op=add name=Staff
 layer op=add name="Orb Glow and Sparkles"
-draw op=curve layer=0 frame=0 width=6 aa=false color=#171329 points=[[12,25],[2,20],[2,30],[12,28]]
-draw op=curve layer=0 frame=0 width=4 aa=false color=#7950a5 points=[[12,25],[2,20],[2,30],[12,28]]
-draw op=pencil layer=0 frame=0 color=#c48045 points=[[4,25],[5,28],[8,29]] size=1
+draw op=curve layer=0 frame=0 width=6 aa=false color=#171329 points=12,25 2,20 2,30 12,28
+draw op=curve layer=0 frame=0 width=4 aa=false color=#7950a5 points=12,25 2,20 2,30 12,28
+draw op=pencil layer=0 frame=0 color=#c48045 points=4,25 5,28 8,29 size=1
 draw op=ellipse layer=1 frame=0 color=#171329 cx=15 cy=23 fill=true rx=7 ry=8
 draw op=ellipse layer=1 frame=0 color=#403060 cx=15 cy=23 fill=true rx=6 ry=7
 draw op=ellipse layer=1 frame=0 color=#7950a5 cx=13 cy=23 fill=true rx=3 ry=5
-draw op=polygon layer=1 frame=0 color=#171329 fill=true points=[[9,14],[9,8],[13,11]]
-draw op=polygon layer=1 frame=0 color=#171329 fill=true points=[[21,14],[21,8],[17,11]]
-draw op=polygon layer=1 frame=0 color=#7950a5 fill=true points=[[10,12],[10,10],[12,12]]
-draw op=polygon layer=1 frame=0 color=#7950a5 fill=true points=[[20,12],[20,10],[18,12]]
+draw op=polygon layer=1 frame=0 color=#171329 fill=true points=9,14 9,8 13,11
+draw op=polygon layer=1 frame=0 color=#171329 fill=true points=21,14 21,8 17,11
+draw op=polygon layer=1 frame=0 color=#7950a5 fill=true points=10,12 10,10 12,12
+draw op=polygon layer=1 frame=0 color=#7950a5 fill=true points=20,12 20,10 18,12
 draw op=ellipse layer=1 frame=0 color=#171329 cx=15 cy=15 fill=true rx=7 ry=6
 draw op=ellipse layer=1 frame=0 color=#403060 cx=15 cy=15 fill=true rx=6 ry=5
 draw op=ellipse layer=1 frame=0 color=#f4d58d cx=15 cy=17 fill=true rx=3 ry=2
-draw op=pencil layer=1 frame=0 color=#8ef6d2 points=[[12,15],[18,15]] size=1
+draw op=pencil layer=1 frame=0 color=#8ef6d2 points=12,15 18,15 size=1
 draw op=pencil layer=1 frame=0 color=#c48045 points=[[15,17]] size=1
 draw op=line layer=1 frame=0 color=#171329 size=1 x0=15 x1=15 y0=18 y1=19
-draw op=pencil layer=1 frame=0 color=#171329 points=[[14,19],[16,19]] size=1
+draw op=pencil layer=1 frame=0 color=#171329 points=14,19 16,19 size=1
 draw op=line layer=1 frame=0 color=#f4d58d size=1 x0=11 x1=7 y0=18 y1=17
 draw op=line layer=1 frame=0 color=#f4d58d size=1 x0=11 x1=7 y0=19 y1=20
 draw op=line layer=1 frame=0 color=#f4d58d size=1 x0=19 x1=22 y0=18 y1=17
@@ -32,123 +32,123 @@ draw op=rect layer=1 frame=0 color=#7950a5 fill=true x0=10 x1=14 y0=28 y1=29
 draw op=rect layer=1 frame=0 color=#7950a5 fill=true x0=16 x1=20 y0=28 y1=29
 draw op=ellipse layer=1 frame=0 color=#171329 cx=21 cy=22 fill=true rx=3 ry=2
 draw op=ellipse layer=1 frame=0 color=#f4d58d cx=21 cy=22 fill=true rx=2 ry=1
-draw op=polygon layer=1 frame=0 color=#7950a5 fill=false points=[[10,21],[20,21],[18,27],[12,27]]
+draw op=polygon layer=1 frame=0 color=#7950a5 fill=false points=10,21 20,21 18,27 12,27
 draw op=pencil layer=1 frame=0 color=#c48045 points=[[15,24]] size=1
-draw op=polygon layer=2 frame=0 color=#171329 fill=true points=[[7,12],[11,8],[12,3],[16,1],[17,6],[22,10],[21,12]]
-draw op=polygon layer=2 frame=0 color=#7950a5 fill=true points=[[10,10],[13,7],[13,4],[16,3],[16,7],[20,10]]
-draw op=polygon layer=2 frame=0 color=#171329 fill=true points=[[7,11],[22,11],[20,14],[9,14]]
-draw op=polygon layer=2 frame=0 color=#403060 fill=true points=[[9,11],[21,11],[19,13],[10,13]]
+draw op=polygon layer=2 frame=0 color=#171329 fill=true points=7,12 11,8 12,3 16,1 17,6 22,10 21,12
+draw op=polygon layer=2 frame=0 color=#7950a5 fill=true points=10,10 13,7 13,4 16,3 16,7 20,10
+draw op=polygon layer=2 frame=0 color=#171329 fill=true points=7,11 22,11 20,14 9,14
+draw op=polygon layer=2 frame=0 color=#403060 fill=true points=9,11 21,11 19,13 10,13
 draw op=rect layer=2 frame=0 color=#c48045 fill=true x0=10 x1=20 y0=9 y1=10
 draw op=pencil layer=2 frame=0 color=#f4d58d points=[[15,5]] size=1
-draw op=pencil layer=2 frame=0 color=#8ef6d2 points=[[16,4],[16,6],[14,5]] size=1
+draw op=pencil layer=2 frame=0 color=#8ef6d2 points=16,4 16,6 14,5 size=1
 draw op=line layer=3 frame=0 color=#171329 size=3 x0=26 x1=25 y0=29 y1=9
 draw op=line layer=3 frame=0 color=#c48045 size=1 x0=26 x1=25 y0=29 y1=9
 draw op=line layer=3 frame=0 color=#171329 size=2 x0=25 x1=22 y0=11 y1=8
 draw op=line layer=3 frame=0 color=#171329 size=2 x0=25 x1=28 y0=11 y1=8
 draw op=pencil layer=3 frame=0 color=#f4d58d points=[[26,29]] size=1
-draw op=pencil layer=3 frame=0 color=#f4d58d points=[[25,13],[25,17],[26,21],[26,25]] size=1
+draw op=pencil layer=3 frame=0 color=#f4d58d points=25,13 25,17 26,21 26,25 size=1
 draw op=ellipse layer=4 frame=0 color=#171329 cx=25 cy=7 fill=true rx=4 ry=4
 draw op=ellipse layer=4 frame=0 color=#8ef6d2 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=0 color=#f4d58d cx=25 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=4 frame=0 color=#8ef6d2 points=[[25,2],[20,6],[30,6],[25,12]] size=1
-draw op=pencil layer=4 frame=0 color=#f4d58d points=[[22,3],[29,3],[29,11]] size=1
-draw op=pencil layer=4 frame=0 color=#8ef6d2 points=[[20,16],[5,15],[23,18]] size=1
-draw op=pencil layer=4 frame=0 color=#8ef6d2 points=[[19,15],[20,20],[21,22]] size=1
+draw op=pencil layer=4 frame=0 color=#8ef6d2 points=25,2 20,6 30,6 25,12 size=1
+draw op=pencil layer=4 frame=0 color=#f4d58d points=22,3 29,3 29,11 size=1
+draw op=pencil layer=4 frame=0 color=#8ef6d2 points=20,16 5,15 23,18 size=1
+draw op=pencil layer=4 frame=0 color=#8ef6d2 points=19,15 20,20 21,22 size=1
 frame op=add copy_from=0 count=9 duration_ms=100
 draw op=clear_cel layer=0 frame=1
-draw op=curve layer=0 frame=1 width=6 aa=false color=#171329 points=[[12,25],[2,19],[1,27],[10,29]]
-draw op=curve layer=0 frame=1 width=4 aa=false color=#7950a5 points=[[12,25],[2,19],[1,27],[10,29]]
-draw op=pencil layer=0 frame=1 color=#c48045 points=[[3,24],[4,27],[7,29]] size=1
+draw op=curve layer=0 frame=1 width=6 aa=false color=#171329 points=12,25 2,19 1,27 10,29
+draw op=curve layer=0 frame=1 width=4 aa=false color=#7950a5 points=12,25 2,19 1,27 10,29
+draw op=pencil layer=0 frame=1 color=#c48045 points=3,24 4,27 7,29 size=1
 draw op=clear_cel layer=0 frame=4
-draw op=curve layer=0 frame=4 width=6 aa=false color=#171329 points=[[12,25],[2,19],[1,27],[10,29]]
-draw op=curve layer=0 frame=4 width=4 aa=false color=#7950a5 points=[[12,25],[2,19],[1,27],[10,29]]
-draw op=pencil layer=0 frame=4 color=#c48045 points=[[3,24],[4,27],[7,29]] size=1
+draw op=curve layer=0 frame=4 width=6 aa=false color=#171329 points=12,25 2,19 1,27 10,29
+draw op=curve layer=0 frame=4 width=4 aa=false color=#7950a5 points=12,25 2,19 1,27 10,29
+draw op=pencil layer=0 frame=4 color=#c48045 points=3,24 4,27 7,29 size=1
 draw op=clear_cel layer=0 frame=2
-draw op=curve layer=0 frame=2 width=6 aa=false color=#171329 points=[[12,25],[4,16],[0,22],[8,28]]
-draw op=curve layer=0 frame=2 width=4 aa=false color=#7950a5 points=[[12,25],[4,16],[0,22],[8,28]]
-draw op=pencil layer=0 frame=2 color=#c48045 points=[[3,20],[2,23],[5,27]] size=1
+draw op=curve layer=0 frame=2 width=6 aa=false color=#171329 points=12,25 4,16 0,22 8,28
+draw op=curve layer=0 frame=2 width=4 aa=false color=#7950a5 points=12,25 4,16 0,22 8,28
+draw op=pencil layer=0 frame=2 color=#c48045 points=3,20 2,23 5,27 size=1
 draw op=clear_cel layer=0 frame=3
-draw op=curve layer=0 frame=3 width=6 aa=false color=#171329 points=[[12,25],[4,16],[0,22],[8,28]]
-draw op=curve layer=0 frame=3 width=4 aa=false color=#7950a5 points=[[12,25],[4,16],[0,22],[8,28]]
-draw op=pencil layer=0 frame=3 color=#c48045 points=[[3,20],[2,23],[5,27]] size=1
+draw op=curve layer=0 frame=3 width=6 aa=false color=#171329 points=12,25 4,16 0,22 8,28
+draw op=curve layer=0 frame=3 width=4 aa=false color=#7950a5 points=12,25 4,16 0,22 8,28
+draw op=pencil layer=0 frame=3 color=#c48045 points=3,20 2,23 5,27 size=1
 draw op=clear_cel layer=0 frame=6
-draw op=curve layer=0 frame=6 width=6 aa=false color=#171329 points=[[12,25],[3,23],[4,31],[13,28]]
-draw op=curve layer=0 frame=6 width=4 aa=false color=#7950a5 points=[[12,25],[3,23],[4,31],[13,28]]
-draw op=pencil layer=0 frame=6 color=#c48045 points=[[5,26],[6,30],[10,29]] size=1
+draw op=curve layer=0 frame=6 width=6 aa=false color=#171329 points=12,25 3,23 4,31 13,28
+draw op=curve layer=0 frame=6 width=4 aa=false color=#7950a5 points=12,25 3,23 4,31 13,28
+draw op=pencil layer=0 frame=6 color=#c48045 points=5,26 6,30 10,29 size=1
 draw op=clear_cel layer=0 frame=8
-draw op=curve layer=0 frame=8 width=6 aa=false color=#171329 points=[[12,25],[3,23],[4,31],[13,28]]
-draw op=curve layer=0 frame=8 width=4 aa=false color=#7950a5 points=[[12,25],[3,23],[4,31],[13,28]]
-draw op=pencil layer=0 frame=8 color=#c48045 points=[[5,26],[6,30],[10,29]] size=1
+draw op=curve layer=0 frame=8 width=6 aa=false color=#171329 points=12,25 3,23 4,31 13,28
+draw op=curve layer=0 frame=8 width=4 aa=false color=#7950a5 points=12,25 3,23 4,31 13,28
+draw op=pencil layer=0 frame=8 color=#c48045 points=5,26 6,30 10,29 size=1
 draw op=clear_cel layer=0 frame=7
-draw op=curve layer=0 frame=7 width=6 aa=false color=#171329 points=[[12,25],[2,25],[6,32],[15,28]]
-draw op=curve layer=0 frame=7 width=4 aa=false color=#7950a5 points=[[12,25],[2,25],[6,32],[15,28]]
-draw op=pencil layer=0 frame=7 color=#c48045 points=[[5,28],[8,30],[12,29]] size=1
+draw op=curve layer=0 frame=7 width=6 aa=false color=#171329 points=12,25 2,25 6,32 15,28
+draw op=curve layer=0 frame=7 width=4 aa=false color=#7950a5 points=12,25 2,25 6,32 15,28
+draw op=pencil layer=0 frame=7 color=#c48045 points=5,28 8,30 12,29 size=1
 draw op=clear_cel layer=0 frame=9
-draw op=curve layer=0 frame=9 width=6 aa=false color=#171329 points=[[12,25],[2,21],[3,30],[12,28]]
-draw op=curve layer=0 frame=9 width=4 aa=false color=#7950a5 points=[[12,25],[2,21],[3,30],[12,28]]
-draw op=pencil layer=0 frame=9 color=#c48045 points=[[4,25],[5,29],[8,29]] size=1
+draw op=curve layer=0 frame=9 width=6 aa=false color=#171329 points=12,25 2,21 3,30 12,28
+draw op=curve layer=0 frame=9 width=4 aa=false color=#7950a5 points=12,25 2,21 3,30 12,28
+draw op=pencil layer=0 frame=9 color=#c48045 points=4,25 5,29 8,29 size=1
 draw op=clear_cel layer=4 frame=1
 draw op=ellipse layer=4 frame=1 color=#171329 cx=25 cy=7 fill=true rx=4 ry=4
 draw op=ellipse layer=4 frame=1 color=#8ef6d2 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=1 color=#f4d58d cx=25 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=4 frame=1 color=#8ef6d2 points=[[25,2],[20,6],[30,6],[25,12]] size=1
-draw op=pencil layer=4 frame=1 color=#f4d58d points=[[5,7],[20,18],[29,13],[8,9]] size=1
-draw op=pencil layer=4 frame=1 color=#8ef6d2 points=[[19,15],[20,20],[21,22]] size=1
+draw op=pencil layer=4 frame=1 color=#8ef6d2 points=25,2 20,6 30,6 25,12 size=1
+draw op=pencil layer=4 frame=1 color=#f4d58d points=5,7 20,18 29,13 8,9 size=1
+draw op=pencil layer=4 frame=1 color=#8ef6d2 points=19,15 20,20 21,22 size=1
 draw op=clear_cel layer=4 frame=2
 draw op=ellipse layer=4 frame=2 color=#171329 cx=25 cy=7 fill=true rx=5 ry=5
 draw op=ellipse layer=4 frame=2 color=#8ef6d2 cx=25 cy=7 fill=true rx=4 ry=4
 draw op=ellipse layer=4 frame=2 color=#f4d58d cx=25 cy=7 fill=true rx=2 ry=2
-draw op=pencil layer=4 frame=2 color=#8ef6d2 points=[[25,1],[19,7],[31,7],[25,13],[21,3],[29,3],[29,11]] size=1
-draw op=pencil layer=4 frame=2 color=#f4d58d points=[[5,6],[20,16],[29,11],[8,7]] size=1
-draw op=pencil layer=4 frame=2 color=#8ef6d2 points=[[19,14],[19,15],[20,16],[20,19],[21,21],[20,23]] size=1
-draw op=pencil layer=4 frame=2 color=#f4d58d points=[[19,15],[21,22]] size=1
+draw op=pencil layer=4 frame=2 color=#8ef6d2 points=25,1 19,7 31,7 25,13 21,3 29,3 29,11 size=1
+draw op=pencil layer=4 frame=2 color=#f4d58d points=5,6 20,16 29,11 8,7 size=1
+draw op=pencil layer=4 frame=2 color=#8ef6d2 points=19,14 19,15 20,16 20,19 21,21 20,23 size=1
+draw op=pencil layer=4 frame=2 color=#f4d58d points=19,15 21,22 size=1
 draw op=clear_cel layer=4 frame=3
 draw op=ellipse layer=4 frame=3 color=#171329 cx=25 cy=7 fill=true rx=5 ry=5
 draw op=ellipse layer=4 frame=3 color=#8ef6d2 cx=25 cy=7 fill=true rx=4 ry=4
 draw op=ellipse layer=4 frame=3 color=#f4d58d cx=25 cy=7 fill=true rx=2 ry=2
-draw op=pencil layer=4 frame=3 color=#8ef6d2 points=[[25,1],[19,7],[31,7],[25,13],[21,3],[29,3],[29,11]] size=1
-draw op=pencil layer=4 frame=3 color=#f4d58d points=[[5,5],[20,14],[29,9],[8,5]] size=1
-draw op=pencil layer=4 frame=3 color=#8ef6d2 points=[[19,14],[19,15],[20,16],[20,19],[21,21],[20,23]] size=1
-draw op=pencil layer=4 frame=3 color=#f4d58d points=[[19,15],[21,22]] size=1
+draw op=pencil layer=4 frame=3 color=#8ef6d2 points=25,1 19,7 31,7 25,13 21,3 29,3 29,11 size=1
+draw op=pencil layer=4 frame=3 color=#f4d58d points=5,5 20,14 29,9 8,5 size=1
+draw op=pencil layer=4 frame=3 color=#8ef6d2 points=19,14 19,15 20,16 20,19 21,21 20,23 size=1
+draw op=pencil layer=4 frame=3 color=#f4d58d points=19,15 21,22 size=1
 draw op=clear_cel layer=4 frame=4
 draw op=ellipse layer=4 frame=4 color=#171329 cx=25 cy=7 fill=true rx=4 ry=4
 draw op=ellipse layer=4 frame=4 color=#8ef6d2 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=4 color=#f4d58d cx=25 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=4 frame=4 color=#8ef6d2 points=[[25,2],[20,6],[30,6],[25,12]] size=1
-draw op=pencil layer=4 frame=4 color=#f4d58d points=[[5,4],[20,12],[29,7],[8,3]] size=1
-draw op=pencil layer=4 frame=4 color=#8ef6d2 points=[[19,15],[20,20],[21,22]] size=1
+draw op=pencil layer=4 frame=4 color=#8ef6d2 points=25,2 20,6 30,6 25,12 size=1
+draw op=pencil layer=4 frame=4 color=#f4d58d points=5,4 20,12 29,7 8,3 size=1
+draw op=pencil layer=4 frame=4 color=#8ef6d2 points=19,15 20,20 21,22 size=1
 draw op=clear_cel layer=4 frame=5
 draw op=ellipse layer=4 frame=5 color=#171329 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=5 color=#8ef6d2 cx=25 cy=7 fill=true rx=2 ry=2
 draw op=pencil layer=4 frame=5 color=#f4d58d points=[[25,7]] size=1
-draw op=pencil layer=4 frame=5 color=#f4d58d points=[[5,3],[20,10],[29,5],[8,1]] size=1
-draw op=pencil layer=4 frame=5 color=#8ef6d2 points=[[20,16],[21,22]] size=1
+draw op=pencil layer=4 frame=5 color=#f4d58d points=5,3 20,10 29,5 8,1 size=1
+draw op=pencil layer=4 frame=5 color=#8ef6d2 points=20,16 21,22 size=1
 draw op=clear_cel layer=4 frame=6
 draw op=ellipse layer=4 frame=6 color=#171329 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=6 color=#8ef6d2 cx=25 cy=7 fill=true rx=2 ry=2
 draw op=pencil layer=4 frame=6 color=#f4d58d points=[[25,7]] size=1
-draw op=pencil layer=4 frame=6 color=#f4d58d points=[[5,2],[20,8],[29,3],[8,19]] size=1
+draw op=pencil layer=4 frame=6 color=#f4d58d points=5,2 20,8 29,3 8,19 size=1
 draw op=pencil layer=4 frame=6 color=#8ef6d2 points=[[20,16]] size=1
 draw op=clear_cel layer=4 frame=7
 draw op=ellipse layer=4 frame=7 color=#171329 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=7 color=#8ef6d2 cx=25 cy=7 fill=true rx=2 ry=2
 draw op=pencil layer=4 frame=7 color=#f4d58d points=[[25,7]] size=1
-draw op=pencil layer=4 frame=7 color=#f4d58d points=[[5,1],[20,6],[29,1],[8,17]] size=1
+draw op=pencil layer=4 frame=7 color=#f4d58d points=5,1 20,6 29,1 8,17 size=1
 draw op=pencil layer=4 frame=7 color=#8ef6d2 points=[[20,16]] size=1
 draw op=clear_cel layer=4 frame=8
 draw op=ellipse layer=4 frame=8 color=#171329 cx=25 cy=7 fill=true rx=4 ry=4
 draw op=ellipse layer=4 frame=8 color=#8ef6d2 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=8 color=#f4d58d cx=25 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=4 frame=8 color=#8ef6d2 points=[[25,2],[20,6],[30,6],[25,12]] size=1
-draw op=pencil layer=4 frame=8 color=#f4d58d points=[[5,20],[20,4],[29,19],[8,15]] size=1
-draw op=pencil layer=4 frame=8 color=#8ef6d2 points=[[19,15],[20,20],[21,22]] size=1
+draw op=pencil layer=4 frame=8 color=#8ef6d2 points=25,2 20,6 30,6 25,12 size=1
+draw op=pencil layer=4 frame=8 color=#f4d58d points=5,20 20,4 29,19 8,15 size=1
+draw op=pencil layer=4 frame=8 color=#8ef6d2 points=19,15 20,20 21,22 size=1
 draw op=clear_cel layer=4 frame=9
 draw op=ellipse layer=4 frame=9 color=#171329 cx=25 cy=7 fill=true rx=4 ry=4
 draw op=ellipse layer=4 frame=9 color=#8ef6d2 cx=25 cy=7 fill=true rx=3 ry=3
 draw op=ellipse layer=4 frame=9 color=#f4d58d cx=25 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=4 frame=9 color=#8ef6d2 points=[[25,2],[20,6],[30,6],[25,12]] size=1
-draw op=pencil layer=4 frame=9 color=#f4d58d points=[[5,18],[20,2],[29,17],[8,13]] size=1
-draw op=pencil layer=4 frame=9 color=#8ef6d2 points=[[19,15],[20,20],[21,22]] size=1
+draw op=pencil layer=4 frame=9 color=#8ef6d2 points=25,2 20,6 30,6 25,12 size=1
+draw op=pencil layer=4 frame=9 color=#f4d58d points=5,18 20,2 29,17 8,13 size=1
+draw op=pencil layer=4 frame=9 color=#8ef6d2 points=19,15 20,20 21,22 size=1
 add_tag name=wizard-cat-loop direction=forward from=0 to=9
 draw op=line layer=1 frame=6 color=#171329 size=1 x0=11 x1=13 y0=15 y1=15
 draw op=line layer=1 frame=6 color=#171329 size=1 x0=17 x1=19 y0=15 y1=15

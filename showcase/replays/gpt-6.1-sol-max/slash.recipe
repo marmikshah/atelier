@@ -84,7 +84,7 @@ paint_grid layer=1 frame=3 x=10 y=2 legend=h:4 rows:25
   |................hh|
   |................hh|
   |................h.|
-draw op=pencil layer=1 frame=3 color=#fffbe7 points=[[19,7],[20,8],[21,9],[22,10],[23,11],[23,12],[24,12],[24,13],[25,14],[25,15],[25,16],[26,17],[26,18],[26,19],[26,20],[27,22],[27,23],[27,24],[27,25]] size=1
+draw op=pencil layer=1 frame=3 color=#fffbe7 points=19,7 20,8 21,9 22,10 23,11 23,12 24,12 24,13 25,14 25,15 25,16 26,17 26,18 26,19 26,20 27,22 27,23 27,24 27,25 size=1
 draw op=line layer=3 frame=3 color=#f5672b x0=6 x1=8 y0=8 y1=10
 draw op=line layer=3 frame=3 color=#bf3345 x0=15 x1=16 y0=19 y1=20
 paint_grid layer=0 frame=1 x=1 y=2 legend=y:3 rows:3

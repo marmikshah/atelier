@@ -258,5 +258,5 @@ draw op=pencil layer=4 frame=8 color=#d8401c points=[[11,2]]
 draw op=pencil layer=4 frame=8 color=#ffe060 points=[[17,4]]
 draw op=pencil layer=4 frame=9 color=#ff9020 points=[[18,3]]
 add_tag name=burn direction=forward from=0 to=9
-draw op=pencil layer=2 frame=2 frame_to=3 color=#000000 erase=true points=[[14,19],[14,20]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[14,19],[14,20]]
+draw op=pencil layer=2 frame=2 frame_to=3 color=#000000 erase=true points=14,19 14,20
+draw op=pencil layer=2 frame=7 color=#000000 erase=true points=14,19 14,20

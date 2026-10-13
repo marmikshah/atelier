@@ -6,10 +6,10 @@ layer op=add name=Head
 layer op=add name=Face
 layer op=add name=Highlights
 palette op=set colors=#18382b,#4faf68,#a8e063,#e8f7c7
-draw op=polygon layer=0 frame=0 color=#18382b fill=true points=[[11,18],[20,18],[22,20],[23,24],[21,28],[19,29],[12,29],[10,28],[8,24],[9,20]]
+draw op=polygon layer=0 frame=0 color=#18382b fill=true points=11,18 20,18 22,20 23,24 21,28 19,29 12,29 10,28 8,24 9,20
 draw op=line layer=0 frame=0 color=#18382b size=2 x0=9 x1=6 y0=21 y1=25
 draw op=line layer=0 frame=0 color=#18382b size=2 x0=22 x1=25 y0=21 y1=25
-draw op=polygon layer=0 frame=0 color=#4faf68 fill=true points=[[12,19],[19,19],[21,21],[21,25],[19,28],[12,28],[10,25],[10,21]]
+draw op=polygon layer=0 frame=0 color=#4faf68 fill=true points=12,19 19,19 21,21 21,25 19,28 12,28 10,25 10,21
 draw op=line layer=0 frame=0 color=#18382b size=1 x0=12 x1=19 y0=24 y1=24
 draw op=line layer=1 frame=0 color=#18382b size=2 x0=11 x1=7 y0=8 y1=3
 draw op=line layer=1 frame=0 color=#18382b size=2 x0=20 x1=24 y0=8 y1=3
@@ -17,17 +17,17 @@ draw op=ellipse layer=1 frame=0 color=#18382b cx=7 cy=3 fill=true rx=2 ry=2
 draw op=ellipse layer=1 frame=0 color=#18382b cx=24 cy=3 fill=true rx=2 ry=2
 draw op=ellipse layer=1 frame=0 color=#a8e063 cx=7 cy=3 fill=true rx=1 ry=1
 draw op=ellipse layer=1 frame=0 color=#a8e063 cx=24 cy=3 fill=true rx=1 ry=1
-draw op=polygon layer=2 frame=0 color=#18382b fill=true points=[[12,5],[19,5],[23,7],[26,11],[26,16],[23,19],[19,21],[12,21],[8,19],[5,16],[5,11],[8,7]]
-draw op=polygon layer=2 frame=0 color=#4faf68 fill=true points=[[12,6],[19,6],[22,8],[24,11],[24,16],[22,18],[19,19],[12,19],[9,18],[7,16],[7,11],[9,8]]
-draw op=polygon layer=3 frame=0 color=#e8f7c7 fill=true points=[[8,11],[14,12],[13,16],[10,16]]
-draw op=polygon layer=3 frame=0 color=#e8f7c7 fill=true points=[[23,11],[17,12],[18,16],[21,16]]
+draw op=polygon layer=2 frame=0 color=#18382b fill=true points=12,5 19,5 23,7 26,11 26,16 23,19 19,21 12,21 8,19 5,16 5,11 8,7
+draw op=polygon layer=2 frame=0 color=#4faf68 fill=true points=12,6 19,6 22,8 24,11 24,16 22,18 19,19 12,19 9,18 7,16 7,11 9,8
+draw op=polygon layer=3 frame=0 color=#e8f7c7 fill=true points=8,11 14,12 13,16 10,16
+draw op=polygon layer=3 frame=0 color=#e8f7c7 fill=true points=23,11 17,12 18,16 21,16
 draw op=ellipse layer=3 frame=0 color=#18382b cx=12 cy=14 fill=true rx=1 ry=2
 draw op=ellipse layer=3 frame=0 color=#18382b cx=19 cy=14 fill=true rx=1 ry=2
 draw op=line layer=3 frame=0 color=#18382b size=1 x0=14 x1=17 y0=18 y1=18
 draw op=line layer=4 frame=0 color=#a8e063 size=1 x0=10 x1=13 y0=9 y1=7
-draw op=pencil layer=4 frame=0 color=#a8e063 points=[[9,11],[11,7],[12,20],[19,20]] size=1
-draw op=polygon layer=4 frame=0 color=#e8f7c7 fill=true points=[[14,21],[17,21],[18,23],[16,25],[13,23]]
-draw op=pencil layer=4 frame=0 color=#a8e063 points=[[15,22],[16,22],[15,23],[16,23]] size=1
+draw op=pencil layer=4 frame=0 color=#a8e063 points=9,11 11,7 12,20 19,20 size=1
+draw op=polygon layer=4 frame=0 color=#e8f7c7 fill=true points=14,21 17,21 18,23 16,25 13,23
+draw op=pencil layer=4 frame=0 color=#a8e063 points=15,22 16,22 15,23 16,23 size=1
 frame op=add copy_from=0 count=9 duration_ms=100
 fx op=shift layer=0 frame=1 dx=0 dy=-1 wrap=false
 fx op=shift layer=0 frame=4 dx=0 dy=-1 wrap=false
@@ -117,8 +117,8 @@ draw op=ellipse layer=1 frame=9 color=#18382b cx=24 cy=4 fill=true rx=2 ry=2
 draw op=ellipse layer=1 frame=9 color=#a8e063 cx=7 cy=4 fill=true rx=1 ry=1
 draw op=ellipse layer=1 frame=9 color=#a8e063 cx=24 cy=4 fill=true rx=1 ry=1
 draw op=clear_cel layer=3 frame=4
-draw op=polygon layer=3 frame=4 color=#e8f7c7 fill=true points=[[8,12],[14,12],[13,14],[10,14]]
-draw op=polygon layer=3 frame=4 color=#e8f7c7 fill=true points=[[23,12],[17,12],[18,14],[21,14]]
+draw op=polygon layer=3 frame=4 color=#e8f7c7 fill=true points=8,12 14,12 13,14 10,14
+draw op=polygon layer=3 frame=4 color=#e8f7c7 fill=true points=23,12 17,12 18,14 21,14
 draw op=line layer=3 frame=4 color=#18382b size=1 x0=10 x1=13 y0=13 y1=13
 draw op=line layer=3 frame=4 color=#18382b size=1 x0=18 x1=21 y0=13 y1=13
 draw op=line layer=3 frame=4 color=#18382b size=1 x0=14 x1=17 y0=17 y1=17
@@ -127,8 +127,8 @@ draw op=line layer=3 frame=5 color=#18382b size=1 x0=9 x1=13 y0=14 y1=15
 draw op=line layer=3 frame=5 color=#18382b size=1 x0=18 x1=22 y0=15 y1=14
 draw op=line layer=3 frame=5 color=#18382b size=1 x0=14 x1=17 y0=18 y1=18
 draw op=clear_cel layer=3 frame=6
-draw op=polygon layer=3 frame=6 color=#e8f7c7 fill=true points=[[8,14],[14,14],[13,16],[10,16]]
-draw op=polygon layer=3 frame=6 color=#e8f7c7 fill=true points=[[23,14],[17,14],[18,16],[21,16]]
+draw op=polygon layer=3 frame=6 color=#e8f7c7 fill=true points=8,14 14,14 13,16 10,16
+draw op=polygon layer=3 frame=6 color=#e8f7c7 fill=true points=23,14 17,14 18,16 21,16
 draw op=line layer=3 frame=6 color=#18382b size=1 x0=10 x1=13 y0=15 y1=15
 draw op=line layer=3 frame=6 color=#18382b size=1 x0=18 x1=21 y0=15 y1=15
 draw op=line layer=3 frame=6 color=#18382b size=1 x0=14 x1=17 y0=19 y1=19

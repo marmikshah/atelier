@@ -5,17 +5,17 @@ layer op=rename index=0 name="Smoke curl"
 layer op=add name="Core flash"
 layer op=add name="Flying debris"
 layer op=add name=Sparks
-draw op=polygon layer=1 frame=0 color=#f57538 fill=true points=[[15,4],[17,12],[22,7],[20,14],[28,13],[23,17],[29,22],[21,21],[24,28],[18,24],[15,29],[13,23],[6,27],[9,21],[3,20],[9,17],[5,10],[12,13],[12,8],[14,13]]
-draw op=polygon layer=1 frame=0 color=#ffca55 fill=true points=[[15,9],[17,15],[20,11],[19,16],[24,15],[21,18],[25,21],[20,20],[20,24],[17,22],[15,25],[14,21],[10,23],[11,19],[6,20],[11,17],[9,14],[14,16]]
-draw op=polygon layer=1 frame=0 color=#fff3cf fill=true points=[[14,13],[16,12],[17,16],[20,15],[19,18],[21,19],[18,20],[17,23],[14,21],[11,21],[12,18],[11,16],[14,16]]
+draw op=polygon layer=1 frame=0 color=#f57538 fill=true points=15,4 17,12 22,7 20,14 28,13 23,17 29,22 21,21 24,28 18,24 15,29 13,23 6,27 9,21 3,20 9,17 5,10 12,13 12,8 14,13
+draw op=polygon layer=1 frame=0 color=#ffca55 fill=true points=15,9 17,15 20,11 19,16 24,15 21,18 25,21 20,20 20,24 17,22 15,25 14,21 10,23 11,19 6,20 11,17 9,14 14,16
+draw op=polygon layer=1 frame=0 color=#fff3cf fill=true points=14,13 16,12 17,16 20,15 19,18 21,19 18,20 17,23 14,21 11,21 12,18 11,16 14,16
 layer op=rename index=2 name="Shard NW"
 layer op=add name="Shard NE"
 layer op=add name="Shard W"
 layer op=add name="Shard E"
 layer op=add name="Shard SW"
 layer op=add name="Shard SE"
-draw op=pencil layer=3 frame=0 color=#ffca55 points=[[10,5],[26,8],[3,14],[28,26]] size=1
-draw op=pencil layer=3 frame=0 color=#fff3cf points=[[10,4],[27,8]] size=1
+draw op=pencil layer=3 frame=0 color=#ffca55 points=10,5 26,8 3,14 28,26 size=1
+draw op=pencil layer=3 frame=0 color=#fff3cf points=10,4 27,8 size=1
 frame op=add copy_from=0 duration_ms=100
 draw op=clear_cel layer=0 frame=1
 draw op=clear_cel layer=1 frame=1
@@ -199,7 +199,7 @@ paint_grid layer=3 frame=2 x=1 y=2 legend=O:2,R:3,Y:1 rows:29
   |....O.....................O...|
   |...O.......................O..|
   |..Y.........................Y.|
-draw op=pencil layer=0 frame=2 color=#8c8598 points=[[13,18],[14,19]] size=1
+draw op=pencil layer=0 frame=2 color=#8c8598 points=13,18 14,19 size=1
 frame op=add copy_from=2 duration_ms=100
 draw op=clear_cel layer=0 frame=3
 draw op=clear_cel layer=1 frame=3

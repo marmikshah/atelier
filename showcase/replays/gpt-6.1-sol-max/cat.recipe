@@ -185,7 +185,7 @@ paint_grid layer=2 frame=0 x=11 y=21 legend=C:5,K:0,L:2,T:4,V:1 rows:9
   |...K.....|
   |C......C.|
   |.V......V|
-draw op=pencil layer=4 frame=0 color=#fff2ba points=[[16,18],[15,19],[17,19]] size=1
+draw op=pencil layer=4 frame=0 color=#fff2ba points=16,18 15,19 17,19 size=1
 draw op=clear_cel layer=0 frame=0
 paint_grid layer=0 frame=0 x=3 y=19 legend=C:5,K:0,L:2,O:3 rows:10
   |.KK......|
