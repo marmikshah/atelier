@@ -1,12 +1,12 @@
-atelier 3 41d15758-3510-4c72-8ee0-53545c53bcde 0.1.0
-doc_new name="Emberwatch — wall torch" width=32 height=32
-doc_palette op=set colors=[[43,36,53],[118,84,73],[223,99,53],[255,182,66],[255,231,160]]
-doc_layer op=rename index=0 name="Wall plate and curved arm"
-doc_layer op=add name="Torch cup and stem"
-doc_layer op=add name="Living flame"
-doc_layer op=add name="Rising embers"
-doc_layer op=add name="Bracket light pulse"
-doc_paint_grid layer=0 frame=0 x=6 y=17 legend={"D":0} rows:13
+atelier 4 41d15758-3510-4c72-8ee0-53545c53bcde 0.1.0
+new name="Emberwatch — wall torch" width=32 height=32
+palette op=set colors=#2b2435,#765449,#df6335,#ffb642,#ffe7a0
+layer op=rename index=0 name="Wall plate and curved arm"
+layer op=add name="Torch cup and stem"
+layer op=add name="Living flame"
+layer op=add name="Rising embers"
+layer op=add name="Bracket light pulse"
+paint_grid layer=0 frame=0 x=6 y=17 legend=D:0 rows:13
   |..D...........|
   |.DDD..........|
   |DDDDD.........|
@@ -20,7 +20,7 @@ doc_paint_grid layer=0 frame=0 x=6 y=17 legend={"D":0} rows:13
   |DDDDD...DDDDDD|
   |.DDD..........|
   |..D...........|
-doc_paint_grid layer=1 frame=0 x=13 y=17 legend={"D":0} rows:13
+paint_grid layer=1 frame=0 x=13 y=17 legend=D:0 rows:13
   |DDDDDDDDDDDD|
   |DDDDDDDDDDDD|
   |.DDDDDDDDDD.|
@@ -34,7 +34,7 @@ doc_paint_grid layer=1 frame=0 x=13 y=17 legend={"D":0} rows:13
   |.....DDD....|
   |....DDDDD...|
   |.....DDD....|
-doc_paint_grid layer=2 frame=0 x=13 y=4 legend={"D":0} rows:14
+paint_grid layer=2 frame=0 x=13 y=4 legend=D:0 rows:14
   |.......D...|
   |......DD...|
   |.....DDD...|
@@ -49,7 +49,7 @@ doc_paint_grid layer=2 frame=0 x=13 y=4 legend={"D":0} rows:14
   |.DDDDDDDDDD|
   |.DDDDDDDDD.|
   |..DDDDDDD..|
-doc_paint_grid layer=0 frame=0 x=7 y=18 legend={"M":1} rows:11
+paint_grid layer=0 frame=0 x=7 y=18 legend=M:1 rows:11
   |.M.........|
   |MMM........|
   |MMM........|
@@ -61,7 +61,7 @@ doc_paint_grid layer=0 frame=0 x=7 y=18 legend={"M":1} rows:11
   |MMM...MMMMM|
   |MMM.....MMM|
   |.M.........|
-doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"M":1} rows:11
+paint_grid layer=1 frame=0 x=14 y=18 legend=M:1 rows:11
   |MMMMMMMMMM|
   |.MMMMMMMM.|
   |.MMMMMMMM.|
@@ -73,7 +73,7 @@ doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"M":1} rows:11
   |.....M....|
   |.....M....|
   |....MMM...|
-doc_paint_grid layer=2 frame=0 x=13 y=4 legend={"G":3,"O":2} rows:14
+paint_grid layer=2 frame=0 x=13 y=4 legend=G:3,O:2 rows:14
   |.......O...|
   |......OO...|
   |.....OGO...|
@@ -88,7 +88,7 @@ doc_paint_grid layer=2 frame=0 x=13 y=4 legend={"G":3,"O":2} rows:14
   |.OGGGGGGGOO|
   |.OGGGGGGGO.|
   |..OGGGGGO..|
-doc_paint_grid layer=0 frame=0 x=7 y=20 legend={"D":0,"O":2} rows:8
+paint_grid layer=0 frame=0 x=7 y=20 legend=D:0,O:2 rows:8
   |DOD|
   |.D.|
   |D..|
@@ -97,7 +97,7 @@ doc_paint_grid layer=0 frame=0 x=7 y=20 legend={"D":0,"O":2} rows:8
   |D..|
   |DOD|
   |.D.|
-doc_paint_grid layer=1 frame=0 x=15 y=19 legend={"D":0,"O":2} rows:10
+paint_grid layer=1 frame=0 x=15 y=19 legend=D:0,O:2 rows:10
   |O..OO.|
   |.OD..D|
   |...O..|
@@ -108,7 +108,7 @@ doc_paint_grid layer=1 frame=0 x=15 y=19 legend={"D":0,"O":2} rows:10
   |......|
   |......|
   |...O..|
-doc_paint_grid layer=2 frame=0 x=13 y=4 legend={"G":3,"H":4,"O":2} rows:14
+paint_grid layer=2 frame=0 x=13 y=4 legend=G:3,H:4,O:2 rows:14
   |.......O...|
   |......OO...|
   |.....OGO...|
@@ -123,14 +123,14 @@ doc_paint_grid layer=2 frame=0 x=13 y=4 legend={"G":3,"H":4,"O":2} rows:14
   |.OGGHHHHGOO|
   |.OGGHHHHGO.|
   |..OGGHHHO..|
-doc_paint_grid layer=3 frame=0 x=13 y=4 legend={"G":3,"M":1,"O":2} rows:6
+paint_grid layer=3 frame=0 x=13 y=4 legend=G:3,M:1,O:2 rows:6
   |M.........|
   |..........|
   |..........|
   |..........|
   |.........G|
   |.........O|
-doc_paint_grid layer=4 frame=0 x=9 y=18 legend={"G":3,"M":1,"O":2} rows:11
+paint_grid layer=4 frame=0 x=9 y=18 legend=G:3,M:1,O:2 rows:11
   |.....OOOGGGGOOO|
   |O..............|
   |...............|
@@ -142,8 +142,8 @@ doc_paint_grid layer=4 frame=0 x=9 y=18 legend={"G":3,"M":1,"O":2} rows:11
   |......OOO......|
   |...............|
   |.........M.....|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=1 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=1 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.............|
   |.........O...|
@@ -160,7 +160,7 @@ doc_paint_grid layer=2 frame=1 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGHHHHGGOO.|
   |..OGGHHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=1 x=11 y=2 replace=true legend={"M":1,"O":2} rows:10
+paint_grid layer=3 frame=1 x=11 y=2 replace=true legend=M:1,O:2 rows:10
   |................|
   |.M..............|
   |................|
@@ -171,7 +171,7 @@ doc_paint_grid layer=3 frame=1 x=11 y=2 replace=true legend={"M":1,"O":2} rows:1
   |................|
   |................|
   |................|
-doc_paint_grid layer=4 frame=1 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=1 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOGGGGGOOO.|
   |...O...............|
@@ -185,8 +185,8 @@ doc_paint_grid layer=4 frame=1 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............O......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=2 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=2 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.........O...|
   |........GO...|
@@ -203,7 +203,7 @@ doc_paint_grid layer=2 frame=2 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGHHHHHGO.|
   |..OGGGHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=2 x=11 y=2 replace=true legend={"O":2} rows:10
+paint_grid layer=3 frame=2 x=11 y=2 replace=true legend=O:2 rows:10
   |................|
   |................|
   |................|
@@ -214,7 +214,7 @@ doc_paint_grid layer=3 frame=2 x=11 y=2 replace=true legend={"O":2} rows:10
   |................|
   |................|
   |................|
-doc_paint_grid layer=4 frame=2 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=2 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOGGGGGOOO.|
   |...O...............|
@@ -228,8 +228,8 @@ doc_paint_grid layer=4 frame=2 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............O......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=3 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=3 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |........O....|
   |........GO...|
@@ -246,7 +246,7 @@ doc_paint_grid layer=2 frame=3 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGHHHHHGO.|
   |..OGGHHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=3 x=11 y=2 replace=true legend={"M":1} rows:10
+paint_grid layer=3 frame=3 x=11 y=2 replace=true legend=M:1 rows:10
   |................|
   |................|
   |................|
@@ -257,7 +257,7 @@ doc_paint_grid layer=3 frame=3 x=11 y=2 replace=true legend={"M":1} rows:10
   |................|
   |................|
   |................|
-doc_paint_grid layer=4 frame=3 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=3 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOGGGGGGOO.|
   |...O...............|
@@ -271,8 +271,8 @@ doc_paint_grid layer=4 frame=3 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............O......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=4 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=4 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.............|
   |.......O.....|
@@ -289,7 +289,7 @@ doc_paint_grid layer=2 frame=4 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGHHHHGOO.|
   |..OGGHHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=4 x=11 y=2 replace=true legend={"G":3,"M":1} rows:10
+paint_grid layer=3 frame=4 x=11 y=2 replace=true legend=G:3,M:1 rows:10
   |................|
   |................|
   |.............M..|
@@ -300,7 +300,7 @@ doc_paint_grid layer=3 frame=4 x=11 y=2 replace=true legend={"G":3,"M":1} rows:1
   |................|
   |.....G..........|
   |................|
-doc_paint_grid layer=4 frame=4 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=4 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOGGGGGGOO.|
   |...O...............|
@@ -314,8 +314,8 @@ doc_paint_grid layer=4 frame=4 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............O......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=5 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=5 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.............|
   |.............|
@@ -332,7 +332,7 @@ doc_paint_grid layer=2 frame=5 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGGHHHGOO.|
   |..OGGGHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=5 x=11 y=2 replace=true legend={"G":3,"M":1,"O":2} rows:10
+paint_grid layer=3 frame=5 x=11 y=2 replace=true legend=G:3,M:1,O:2 rows:10
   |................|
   |..............M.|
   |................|
@@ -343,7 +343,7 @@ doc_paint_grid layer=3 frame=5 x=11 y=2 replace=true legend={"G":3,"M":1,"O":2} 
   |....G...........|
   |....O...........|
   |................|
-doc_paint_grid layer=4 frame=5 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=5 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOGGGGGOOO.|
   |...O...............|
@@ -357,8 +357,8 @@ doc_paint_grid layer=4 frame=5 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............O......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=6 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=6 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.............|
   |.............|
@@ -375,7 +375,7 @@ doc_paint_grid layer=2 frame=6 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGHHHHGOO.|
   |..OGGHHHGGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=6 x=11 y=2 replace=true legend={"G":3,"O":2} rows:10
+paint_grid layer=3 frame=6 x=11 y=2 replace=true legend=G:3,O:2 rows:10
   |................|
   |................|
   |................|
@@ -386,7 +386,7 @@ doc_paint_grid layer=3 frame=6 x=11 y=2 replace=true legend={"G":3,"O":2} rows:1
   |....O...........|
   |................|
   |................|
-doc_paint_grid layer=4 frame=6 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=6 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOOGGGGOOO.|
   |...O...............|
@@ -400,8 +400,8 @@ doc_paint_grid layer=4 frame=6 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............M......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=7 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=7 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.............|
   |.............|
@@ -418,7 +418,7 @@ doc_paint_grid layer=2 frame=7 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGHHHHGOO.|
   |..OGGGHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=7 x=11 y=2 replace=true legend={"O":2} rows:10
+paint_grid layer=3 frame=7 x=11 y=2 replace=true legend=O:2 rows:10
   |................|
   |................|
   |................|
@@ -429,7 +429,7 @@ doc_paint_grid layer=3 frame=7 x=11 y=2 replace=true legend={"O":2} rows:10
   |................|
   |................|
   |................|
-doc_paint_grid layer=4 frame=7 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=7 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOOGGGGOOO.|
   |...O...............|
@@ -443,8 +443,8 @@ doc_paint_grid layer=4 frame=7 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............M......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=8 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=8 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.............|
   |.............|
@@ -461,7 +461,7 @@ doc_paint_grid layer=2 frame=8 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGHHHHGOO.|
   |..OGGHHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=8 x=11 y=2 replace=true legend={"G":3,"O":2} rows:10
+paint_grid layer=3 frame=8 x=11 y=2 replace=true legend=G:3,O:2 rows:10
   |................|
   |................|
   |................|
@@ -472,7 +472,7 @@ doc_paint_grid layer=3 frame=8 x=11 y=2 replace=true legend={"G":3,"O":2} rows:1
   |................|
   |..........G.....|
   |................|
-doc_paint_grid layer=4 frame=8 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=8 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOOGGGGOOO.|
   |...O...............|
@@ -486,8 +486,8 @@ doc_paint_grid layer=4 frame=8 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............M......|
   |...................|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_paint_grid layer=2 frame=9 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} rows:16
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=9 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
   |.............|
   |.............|
   |.............|
@@ -504,7 +504,7 @@ doc_paint_grid layer=2 frame=9 x=12 y=2 replace=true legend={"G":3,"H":4,"O":2} 
   |..OGGHHHHGOO.|
   |..OGGHHHHGO..|
   |...OGGHHHO...|
-doc_paint_grid layer=3 frame=9 x=11 y=2 replace=true legend={"G":3,"M":1,"O":2} rows:10
+paint_grid layer=3 frame=9 x=11 y=2 replace=true legend=G:3,M:1,O:2 rows:10
   |................|
   |................|
   |................|
@@ -515,7 +515,7 @@ doc_paint_grid layer=3 frame=9 x=11 y=2 replace=true legend={"G":3,"M":1,"O":2} 
   |...........G....|
   |...........O....|
   |................|
-doc_paint_grid layer=4 frame=9 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} rows:13
+paint_grid layer=4 frame=9 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
   |...................|
   |........OOOGGGGOOO.|
   |...O...............|
@@ -529,4 +529,4 @@ doc_paint_grid layer=4 frame=9 x=6 y=17 replace=true legend={"G":3,"M":1,"O":2} 
   |...................|
   |............M......|
   |...................|
-doc_add_tag name="Torch — seamless flicker" direction=forward from=0 to=9
+add_tag name="Torch — seamless flicker" direction=forward from=0 to=9

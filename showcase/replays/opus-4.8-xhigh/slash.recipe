@@ -1,42 +1,42 @@
-atelier 3 ad5b9f2b-d328-4bfa-a369-b67a2eabfc84 0.1.0
-doc_new name=slash-arc width=32 height=32
-doc_palette op=set colors=[[255,255,255,255],[182,240,255,255],[83,209,244,255],[46,139,214,255],[39,72,158,255],[21,40,92,255]]
-doc_layer op=rename index=0 name=trail
-doc_layer op=add name=edge
-doc_layer op=add name=flash
-doc_paint_grid layer=0 frame=0 x=1 y=0 legend={"2":2,"W":0} rows:3
+atelier 4 ad5b9f2b-d328-4bfa-a369-b67a2eabfc84 0.1.0
+new name=slash-arc width=32 height=32
+palette op=set colors=#ffffff,#b6f0ff,#53d1f4,#2e8bd6,#27489e,#15285c
+layer op=rename index=0 name=trail
+layer op=add name=edge
+layer op=add name=flash
+paint_grid layer=0 frame=0 x=1 y=0 legend=2:2,W:0 rows:3
   |.2.|
   |2W2|
   |.2.|
-doc_draw op=clear_cel layer=0 frame=0
-doc_frame op=add count=9
-doc_paint_grid layer=0 frame=0 x=5 y=5 legend={"2":2,"3":3,"4":4} rows:3
+draw op=clear_cel layer=0 frame=0
+frame op=add count=9
+paint_grid layer=0 frame=0 x=5 y=5 legend=2:2,3:3,4:4 rows:3
   |4322|
   |.322|
   |..22|
-doc_paint_grid layer=0 frame=1 x=6 y=5 legend={"2":2,"3":3,"4":4} rows:4
+paint_grid layer=0 frame=1 x=6 y=5 legend=2:2,3:3,4:4 rows:4
   |4333..|
   |433322|
   |.3322.|
   |..322.|
-doc_paint_grid layer=1 frame=1 x=10 y=7 legend={"0":0,"1":1} rows:3
+paint_grid layer=1 frame=1 x=10 y=7 legend=0:0,1:1 rows:3
   |.11.|
   |.110|
   |110.|
-doc_paint_grid layer=0 frame=2 x=7 y=6 legend={"2":2,"3":3,"4":4,"5":5} rows:6
+paint_grid layer=0 frame=2 x=7 y=6 legend=2:2,3:3,4:4,5:5 rows:6
   |54433....|
   |.443332..|
   |..3332222|
   |...33222.|
   |....2222.|
   |.....22..|
-doc_paint_grid layer=1 frame=2 x=14 y=9 legend={"0":0,"1":1} rows:5
+paint_grid layer=1 frame=2 x=14 y=9 legend=0:0,1:1 rows:5
   |.11.|
   |.111|
   |1110|
   |1100|
   |.00.|
-doc_paint_grid layer=0 frame=3 x=8 y=6 legend={"2":2,"3":3,"4":4,"5":5} rows:9
+paint_grid layer=0 frame=3 x=8 y=6 legend=2:2,3:3,4:4,5:5 rows:9
   |55.........|
   |.4444......|
   |..44333....|
@@ -46,7 +46,7 @@ doc_paint_grid layer=0 frame=3 x=8 y=6 legend={"2":2,"3":3,"4":4,"5":5} rows:9
   |......22222|
   |.......222.|
   |.......22..|
-doc_paint_grid layer=1 frame=3 x=16 y=12 legend={"0":0,"1":1} rows:7
+paint_grid layer=1 frame=3 x=16 y=12 legend=0:0,1:1 rows:7
   |...1...|
   |..111..|
   |.11111.|
@@ -54,7 +54,7 @@ doc_paint_grid layer=1 frame=3 x=16 y=12 legend={"0":0,"1":1} rows:7
   |.11100.|
   |..10000|
   |....00.|
-doc_paint_grid layer=0 frame=4 x=9 y=7 legend={"2":2,"3":3,"4":4,"5":5} rows:12
+paint_grid layer=0 frame=4 x=9 y=7 legend=2:2,3:3,4:4,5:5 rows:12
   |555...........|
   |.5444.........|
   |..44443.......|
@@ -67,7 +67,7 @@ doc_paint_grid layer=0 frame=4 x=9 y=7 legend={"2":2,"3":3,"4":4,"5":5} rows:12
   |........222222|
   |.........2222.|
   |..........2...|
-doc_paint_grid layer=1 frame=4 x=19 y=17 legend={"0":0,"1":1} rows:9
+paint_grid layer=1 frame=4 x=19 y=17 legend=0:0,1:1 rows:9
   |...11..|
   |.1111..|
   |111111.|
@@ -77,7 +77,7 @@ doc_paint_grid layer=1 frame=4 x=19 y=17 legend={"0":0,"1":1} rows:9
   |...0000|
   |....000|
   |....000|
-doc_paint_grid layer=2 frame=4 x=19 y=20 legend={"0":0,"1":1} rows:11
+paint_grid layer=2 frame=4 x=19 y=20 legend=0:0,1:1 rows:11
   |.....1.....|
   |.....1.....|
   |..1..1..1..|
@@ -89,7 +89,7 @@ doc_paint_grid layer=2 frame=4 x=19 y=20 legend={"0":0,"1":1} rows:11
   |..1..1..1..|
   |.....1.....|
   |.....1.....|
-doc_paint_grid layer=0 frame=5 x=13 y=9 legend={"2":2,"3":3,"4":4} rows:11
+paint_grid layer=0 frame=5 x=13 y=9 legend=2:2,3:3,4:4 rows:11
   |44.........|
   |4443.......|
   |.4333......|
@@ -101,14 +101,14 @@ doc_paint_grid layer=0 frame=5 x=13 y=9 legend={"2":2,"3":3,"4":4} rows:11
   |......2222.|
   |......22222|
   |.......22..|
-doc_paint_grid layer=1 frame=5 x=21 y=19 legend={"0":0,"1":1} rows:6
+paint_grid layer=1 frame=5 x=21 y=19 legend=0:0,1:1 rows:6
   |.111.|
   |1111.|
   |1111.|
   |.111.|
   |.1000|
   |..000|
-doc_paint_grid layer=2 frame=5 x=21 y=22 legend={"0":0,"1":1} rows:7
+paint_grid layer=2 frame=5 x=21 y=22 legend=0:0,1:1 rows:7
   |...1...|
   |.1.1.1.|
   |..000..|
@@ -116,7 +116,7 @@ doc_paint_grid layer=2 frame=5 x=21 y=22 legend={"0":0,"1":1} rows:7
   |..000..|
   |.1.1.1.|
   |...1...|
-doc_paint_grid layer=0 frame=6 x=16 y=12 legend={"2":2,"3":3,"4":4} rows:9
+paint_grid layer=0 frame=6 x=16 y=12 legend=2:2,3:3,4:4 rows:9
   |44......|
   |.33.....|
   |..33....|
@@ -126,11 +126,11 @@ doc_paint_grid layer=0 frame=6 x=16 y=12 legend={"2":2,"3":3,"4":4} rows:9
   |....222.|
   |.....222|
   |.....222|
-doc_paint_grid layer=1 frame=6 x=22 y=21 legend={"1":1} rows:3
+paint_grid layer=1 frame=6 x=22 y=21 legend=1:1 rows:3
   |111|
   |111|
   |.11|
-doc_paint_grid layer=0 frame=7 x=19 y=15 legend={"2":2,"3":3,"4":4} rows:8
+paint_grid layer=0 frame=7 x=19 y=15 legend=2:2,3:3,4:4 rows:8
   |4....|
   |.4...|
   |.33..|
@@ -139,10 +139,10 @@ doc_paint_grid layer=0 frame=7 x=19 y=15 legend={"2":2,"3":3,"4":4} rows:8
   |...22|
   |...22|
   |....2|
-doc_paint_grid layer=0 frame=8 x=21 y=18 legend={"3":3,"4":4} rows:3
+paint_grid layer=0 frame=8 x=21 y=18 legend=3:3,4:4 rows:3
   |4.|
   |43|
   |.3|
-doc_paint_grid layer=0 frame=9 x=21 y=18 legend={"5":5} rows:1
+paint_grid layer=0 frame=9 x=21 y=18 legend=5:5 rows:1
   |5|
-doc_add_tag name=slash direction=forward from=0 to=9
+add_tag name=slash direction=forward from=0 to=9

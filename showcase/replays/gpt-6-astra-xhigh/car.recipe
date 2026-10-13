@@ -1,12 +1,12 @@
-atelier 3 471df67a-926c-4e5d-91f7-4e10fc826b01 0.1.0
-doc_new name=sc-gpt-6-astra-xhigh-car width=32 height=32
-doc_palette op=set colors=[[28,35,52,255],[169,50,64,255],[242,91,80,255],[255,224,153,255],[63,130,142,255],[165,225,216,255]]
-doc_layer op=rename index=0 name="Speed streaks"
-doc_layer op=add name=Exhaust
-doc_layer op=add name=Chassis
-doc_layer op=add name="Rear wheel"
-doc_layer op=add name="Front wheel"
-doc_paint_grid layer=2 frame=0 x=5 y=11 legend={"K":0} rows:12
+atelier 4 471df67a-926c-4e5d-91f7-4e10fc826b01 0.1.0
+new name=sc-gpt-6-astra-xhigh-car width=32 height=32
+palette op=set colors=#1c2334,#a93240,#f25b50,#ffe099,#3f828e,#a5e1d8
+layer op=rename index=0 name="Speed streaks"
+layer op=add name=Exhaust
+layer op=add name=Chassis
+layer op=add name="Rear wheel"
+layer op=add name="Front wheel"
+paint_grid layer=2 frame=0 x=5 y=11 legend=K:0 rows:12
   |.......KKKKKKKK..........|
   |......KKKKKKKKKK.........|
   |.....KKKKKKKKKKKK........|
@@ -19,7 +19,7 @@ doc_paint_grid layer=2 frame=0 x=5 y=11 legend={"K":0} rows:12
   |.KKKKKKKKKKKKKKKKKKKKKKK.|
   |.KKKKKKKKKKKKKKKKKKKKKK..|
   |...KKKKKKKKKKKKKKKKKKK...|
-doc_paint_grid layer=3 frame=0 x=7 y=19 legend={"K":0} rows:7
+paint_grid layer=3 frame=0 x=7 y=19 legend=K:0 rows:7
   |..KKK..|
   |.KKKKK.|
   |KKKKKKK|
@@ -27,7 +27,7 @@ doc_paint_grid layer=3 frame=0 x=7 y=19 legend={"K":0} rows:7
   |KKKKKKK|
   |.KKKKK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=0 x=21 y=19 legend={"K":0} rows:7
+paint_grid layer=4 frame=0 x=21 y=19 legend=K:0 rows:7
   |..KKK..|
   |.KKKKK.|
   |KKKKKKK|
@@ -35,7 +35,7 @@ doc_paint_grid layer=4 frame=0 x=21 y=19 legend={"K":0} rows:7
   |KKKKKKK|
   |.KKKKK.|
   |..KKK..|
-doc_paint_grid layer=2 frame=0 x=6 y=12 legend={"C":2,"I":5,"K":0,"R":1,"T":4} rows:10
+paint_grid layer=2 frame=0 x=6 y=12 legend=C:2,I:5,K:0,R:1,T:4 rows:10
   |......CCCCCCCC.........|
   |.....CIIIIKIIIC........|
   |....CTTTTTKTTTTC.......|
@@ -46,7 +46,7 @@ doc_paint_grid layer=2 frame=0 x=6 y=12 legend={"C":2,"I":5,"K":0,"R":1,"T":4} r
   |CCCCCCCCCCCCCCCCCCCCCCC|
   |.RRRRRRRRRRRRRRRRRRRRR.|
   |.RRRRRRRRRRRRRRRRRRRR..|
-doc_paint_grid layer=3 frame=0 x=7 y=19 legend={"I":5,"K":0,"T":4} rows:7
+paint_grid layer=3 frame=0 x=7 y=19 legend=I:5,K:0,T:4 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTIIITK|
@@ -54,7 +54,7 @@ doc_paint_grid layer=3 frame=0 x=7 y=19 legend={"I":5,"K":0,"T":4} rows:7
   |KTIIITK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=0 x=21 y=19 legend={"I":5,"K":0,"T":4} rows:7
+paint_grid layer=4 frame=0 x=21 y=19 legend=I:5,K:0,T:4 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTIIITK|
@@ -62,31 +62,31 @@ doc_paint_grid layer=4 frame=0 x=21 y=19 legend={"I":5,"K":0,"T":4} rows:7
   |KTIIITK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=2 frame=0 x=12 y=12 legend={"Y":3} rows:1
+paint_grid layer=2 frame=0 x=12 y=12 legend=Y:3 rows:1
   |YYYYYY|
-doc_paint_grid layer=2 frame=0 x=11 y=14 legend={"I":5} rows:2
+paint_grid layer=2 frame=0 x=11 y=14 legend=I:5 rows:2
   |.I....I|
   |I....I.|
-doc_paint_grid layer=2 frame=0 x=24 y=16 legend={"Y":3} rows:1
+paint_grid layer=2 frame=0 x=24 y=16 legend=Y:3 rows:1
   |YYY|
-doc_paint_grid layer=2 frame=0 x=6 y=17 legend={"C":2,"R":1} rows:2
+paint_grid layer=2 frame=0 x=6 y=17 legend=C:2,R:1 rows:2
   |CC|
   |RR|
-doc_paint_grid layer=2 frame=0 x=27 y=17 legend={"Y":3} rows:2
+paint_grid layer=2 frame=0 x=27 y=17 legend=Y:3 rows:2
   |YY|
   |YY|
-doc_paint_grid layer=2 frame=0 x=17 y=17 legend={"R":1,"Y":3} rows:4
+paint_grid layer=2 frame=0 x=17 y=17 legend=R:1,Y:3 rows:4
   |RYY|
   |R..|
   |R..|
   |R..|
-doc_paint_grid layer=2 frame=0 x=6 y=20 legend={"Y":3} rows:1
+paint_grid layer=2 frame=0 x=6 y=20 legend=Y:3 rows:1
   |YY|
-doc_paint_grid layer=2 frame=0 x=28 y=20 legend={"Y":3} rows:1
+paint_grid layer=2 frame=0 x=28 y=20 legend=Y:3 rows:1
   |Y|
-doc_paint_grid layer=2 frame=0 x=4 y=21 legend={"K":0,"T":4} rows:1
+paint_grid layer=2 frame=0 x=4 y=21 legend=K:0,T:4 rows:1
   |KT|
-doc_paint_grid layer=3 frame=0 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=3 frame=0 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTYTK.|
   |KTIYITK|
@@ -94,7 +94,7 @@ doc_paint_grid layer=3 frame=0 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTTTTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=0 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=0 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTYTK.|
   |KTIYITK|
@@ -102,12 +102,12 @@ doc_paint_grid layer=4 frame=0 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTTTTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=2 frame=0 x=16 y=14 legend={"I":5,"K":0,"T":4} rows:2
+paint_grid layer=2 frame=0 x=16 y=14 legend=I:5,K:0,T:4 rows:2
   |.TI|
   |KI.|
-doc_frame op=add copy_from=0 count=9 duration_ms=100
-doc_frame op=duration frame=0 count=10 duration_ms=100
-doc_paint_grid layer=0 frame=0 x=7 y=8 legend={"I":5,"T":4} rows:21
+frame op=add copy_from=0 count=9 duration_ms=100
+frame op=duration frame=0 count=10 duration_ms=100
+paint_grid layer=0 frame=0 x=7 y=8 legend=I:5,T:4 rows:21
   |.................IITTTT|
   |.......................|
   |.......................|
@@ -129,9 +129,9 @@ doc_paint_grid layer=0 frame=0 x=7 y=8 legend={"I":5,"T":4} rows:21
   |.......................|
   |.......................|
   |.........IITTTTTT......|
-doc_paint_grid layer=1 frame=0 x=3 y=21 legend={"I":5} rows:1
+paint_grid layer=1 frame=0 x=3 y=21 legend=I:5 rows:1
   |I|
-doc_paint_grid layer=3 frame=1 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=3 frame=1 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTYK.|
   |KTIIYTK|
@@ -139,7 +139,7 @@ doc_paint_grid layer=3 frame=1 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTTITK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=1 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=1 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTYK.|
   |KTIIYTK|
@@ -147,7 +147,7 @@ doc_paint_grid layer=4 frame=1 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTTITK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=1 x=3 y=8 legend={"I":5,"T":4} rows:21
+paint_grid layer=0 frame=1 x=3 y=8 legend=I:5,T:4 rows:21
   |.................IITTTT|
   |.......................|
   |.......................|
@@ -169,11 +169,11 @@ doc_paint_grid layer=0 frame=1 x=3 y=8 legend={"I":5,"T":4} rows:21
   |.......................|
   |.......................|
   |.........IITTTTTT......|
-doc_paint_grid layer=1 frame=1 x=1 y=20 legend={"I":5} rows:2
+paint_grid layer=1 frame=1 x=1 y=20 legend=I:5 rows:2
   |.I|
   |II|
-doc_region op=move layer=2 frame=2 offset=[0,-1] rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=2 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+region op=move layer=2 frame=2 offset=0,-1 rect=0,0,31,31
+paint_grid layer=3 frame=2 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTIIYK|
@@ -181,7 +181,7 @@ doc_paint_grid layer=3 frame=2 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTTITK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=2 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=2 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTIIYK|
@@ -189,7 +189,7 @@ doc_paint_grid layer=4 frame=2 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTTITK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=2 x=0 y=8 legend={"I":5,"T":4} rows:21
+paint_grid layer=0 frame=2 x=0 y=8 legend=I:5,T:4 rows:21
   |................IITTTT|
   |......................|
   |......................|
@@ -211,12 +211,12 @@ doc_paint_grid layer=0 frame=2 x=0 y=8 legend={"I":5,"T":4} rows:21
   |......................|
   |......................|
   |........IITTTTTT......|
-doc_paint_grid layer=1 frame=2 x=0 y=19 legend={"I":5} rows:3
+paint_grid layer=1 frame=2 x=0 y=19 legend=I:5 rows:3
   |II.|
   |I.I|
   |.II|
-doc_region op=move layer=2 frame=3 offset=[0,-1] rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=3 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+region op=move layer=2 frame=3 offset=0,-1 rect=0,0,31,31
+paint_grid layer=3 frame=3 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTTITK|
@@ -224,7 +224,7 @@ doc_paint_grid layer=3 frame=3 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTIIYK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=3 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=3 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTTITK|
@@ -232,7 +232,7 @@ doc_paint_grid layer=4 frame=3 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTTIIYK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=3 x=4 y=8 legend={"I":5,"T":4} rows:21
+paint_grid layer=0 frame=3 x=4 y=8 legend=I:5,T:4 rows:21
   |........IITTTT|
   |..............|
   |..............|
@@ -254,11 +254,11 @@ doc_paint_grid layer=0 frame=3 x=4 y=8 legend={"I":5,"T":4} rows:21
   |..............|
   |..............|
   |IITTTTTT......|
-doc_paint_grid layer=1 frame=3 x=0 y=18 legend={"I":5,"T":4} rows:3
+paint_grid layer=1 frame=3 x=0 y=18 legend=I:5,T:4 rows:3
   |.I|
   |I.|
   |T.|
-doc_paint_grid layer=3 frame=4 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=3 frame=4 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTTITK|
@@ -266,7 +266,7 @@ doc_paint_grid layer=3 frame=4 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTIIYTK|
   |.KTTYK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=4 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=4 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTTITK|
@@ -274,7 +274,7 @@ doc_paint_grid layer=4 frame=4 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTIIYTK|
   |.KTTYK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=4 x=0 y=8 legend={"I":5,"T":4} rows:21
+paint_grid layer=0 frame=4 x=0 y=8 legend=I:5,T:4 rows:21
   |........IITTTT..................|
   |................................|
   |................................|
@@ -296,9 +296,9 @@ doc_paint_grid layer=0 frame=4 x=0 y=8 legend={"I":5,"T":4} rows:21
   |................................|
   |................................|
   |IITTTTTT........................|
-doc_paint_grid layer=1 frame=4 x=0 y=18 legend={"T":4} rows:1
+paint_grid layer=1 frame=4 x=0 y=18 legend=T:4 rows:1
   |T|
-doc_paint_grid layer=3 frame=5 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=3 frame=5 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTTTTK|
@@ -306,7 +306,7 @@ doc_paint_grid layer=3 frame=5 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTIYITK|
   |.KTYTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=5 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=5 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTTTTTK|
@@ -314,7 +314,7 @@ doc_paint_grid layer=4 frame=5 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTIYITK|
   |.KTYTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=5 x=0 y=8 legend={"I":5,"T":4} rows:21
+paint_grid layer=0 frame=5 x=0 y=8 legend=I:5,T:4 rows:21
   |....IITTTT.....................|
   |...............................|
   |...............................|
@@ -336,7 +336,7 @@ doc_paint_grid layer=0 frame=5 x=0 y=8 legend={"I":5,"T":4} rows:21
   |...............................|
   |...............................|
   |TTTT...........................|
-doc_paint_grid layer=3 frame=6 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=3 frame=6 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTITTTK|
@@ -344,7 +344,7 @@ doc_paint_grid layer=3 frame=6 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTYIITK|
   |.KYTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=6 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=6 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTITTTK|
@@ -352,7 +352,7 @@ doc_paint_grid layer=4 frame=6 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTYIITK|
   |.KYTTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=6 x=0 y=8 legend={"I":5,"T":4} rows:9
+paint_grid layer=0 frame=6 x=0 y=8 legend=I:5,T:4 rows:9
   |IITTTT.....................|
   |...........................|
   |...........................|
@@ -362,8 +362,8 @@ doc_paint_grid layer=0 frame=6 x=0 y=8 legend={"I":5,"T":4} rows:9
   |...........................|
   |...........................|
   |.......................ITTT|
-doc_region op=move layer=2 frame=7 offset=[0,1] rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=7 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+region op=move layer=2 frame=7 offset=0,1 rect=0,0,31,31
+paint_grid layer=3 frame=7 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTITTTK|
@@ -371,7 +371,7 @@ doc_paint_grid layer=3 frame=7 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KYIITTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=7 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=7 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KTITTTK|
@@ -379,7 +379,7 @@ doc_paint_grid layer=4 frame=7 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KYIITTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=7 x=0 y=8 legend={"I":5,"T":4} rows:21
+paint_grid layer=0 frame=7 x=0 y=8 legend=I:5,T:4 rows:21
   |TT..............................|
   |................................|
   |................................|
@@ -401,8 +401,8 @@ doc_paint_grid layer=0 frame=7 x=0 y=8 legend={"I":5,"T":4} rows:21
   |................................|
   |................................|
   |............................IITT|
-doc_region op=move layer=2 frame=8 offset=[0,1] rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=8 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+region op=move layer=2 frame=8 offset=0,1 rect=0,0,31,31
+paint_grid layer=3 frame=8 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KYIITTK|
@@ -410,7 +410,7 @@ doc_paint_grid layer=3 frame=8 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTITTTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=8 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=8 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KTTTK.|
   |KYIITTK|
@@ -418,7 +418,7 @@ doc_paint_grid layer=4 frame=8 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTITTTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=8 x=15 y=16 legend={"I":5,"T":4} rows:13
+paint_grid layer=0 frame=8 x=15 y=16 legend=I:5,T:4 rows:13
   |ITTT.............|
   |.................|
   |.................|
@@ -432,7 +432,7 @@ doc_paint_grid layer=0 frame=8 x=15 y=16 legend={"I":5,"T":4} rows:13
   |.................|
   |.................|
   |.........IITTTTTT|
-doc_paint_grid layer=3 frame=9 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=3 frame=9 x=7 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KYTTK.|
   |KTYIITK|
@@ -440,7 +440,7 @@ doc_paint_grid layer=3 frame=9 x=7 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTITTTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=4 frame=9 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
+paint_grid layer=4 frame=9 x=21 y=19 legend=I:5,K:0,T:4,Y:3 rows:7
   |..KKK..|
   |.KYTTK.|
   |KTYIITK|
@@ -448,7 +448,7 @@ doc_paint_grid layer=4 frame=9 x=21 y=19 legend={"I":5,"K":0,"T":4,"Y":3} rows:7
   |KTITTTK|
   |.KTTTK.|
   |..KKK..|
-doc_paint_grid layer=0 frame=9 x=11 y=8 legend={"I":5,"T":4} rows:21
+paint_grid layer=0 frame=9 x=11 y=8 legend=I:5,T:4 rows:21
   |.................IITT|
   |.....................|
   |.....................|
@@ -470,4 +470,4 @@ doc_paint_grid layer=0 frame=9 x=11 y=8 legend={"I":5,"T":4} rows:21
   |.....................|
   |.....................|
   |.........IITTTTTT....|
-doc_add_tag name=drive direction=forward from=0 to=9
+add_tag name=drive direction=forward from=0 to=9

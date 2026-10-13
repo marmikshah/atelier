@@ -1,289 +1,289 @@
-atelier 3 9156c6f5-77ae-4644-a6d4-e1a2edc312ea 0.1.0
-doc_new name=gpt56-person-jump width=32 height=32
-doc_layer op=rename index=0 name=legs
-doc_layer op=add name=torso
-doc_layer op=add name=arms
-doc_layer op=add name=head
-doc_palette op=set colors=[[33,24,47,255],[107,62,46,255],[242,178,127,255],[49,95,158,255],[247,223,146,255],[58,65,91,255]]
-doc_frame op=add copy_from=0 count=9 duration_ms=100
-doc_draw op=polygon layer=0 frame=0 color="#21182f" fill=true points=[[11,21],[16,21],[15,26],[13,29],[10,29],[10,27],[12,24]]
-doc_draw op=polygon layer=0 frame=0 color="#3a415b" fill=true points=[[12,22],[15,22],[14,26],[12,28],[11,28],[13,24]]
-doc_draw op=rect layer=0 frame=0 color="#6b3e2e" fill=true x0=9 x1=13 y0=28 y1=29
-doc_draw op=polygon layer=0 frame=0 color="#21182f" fill=true points=[[16,21],[21,21],[20,24],[22,27],[22,29],[19,29],[17,26]]
-doc_draw op=polygon layer=0 frame=0 color="#3a415b" fill=true points=[[17,22],[20,22],[19,24],[21,28],[20,28],[18,25]]
-doc_draw op=rect layer=0 frame=0 color="#6b3e2e" fill=true x0=19 x1=23 y0=28 y1=29
-doc_draw op=polygon layer=1 frame=0 color="#21182f" fill=true points=[[11,13],[21,13],[23,21],[20,24],[12,24],[9,21]]
-doc_draw op=polygon layer=1 frame=0 color="#315f9e" fill=true points=[[12,14],[20,14],[21,20],[19,22],[13,22],[11,20]]
-doc_draw op=rect layer=1 frame=0 color="#3a415b" fill=true x0=11 x1=21 y0=20 y1=22
-doc_draw op=rect layer=1 frame=0 color="#f7df92" fill=true x0=15 x1=17 y0=20 y1=22
-doc_draw op=rect layer=1 frame=0 color="#f7df92" fill=true x0=15 x1=17 y0=14 y1=16
-doc_draw op=polyline layer=2 frame=0 color="#21182f" points=[[11,15],[8,18],[8,23]] size=5
-doc_draw op=polyline layer=2 frame=0 color="#315f9e" points=[[11,15],[9,18],[9,22]] size=3
-doc_draw op=ellipse layer=2 frame=0 color="#21182f" cx=8 cy=24 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=0 color="#f2b27f" cx=8 cy=24 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=0 color="#21182f" points=[[21,15],[24,18],[24,23]] size=5
-doc_draw op=polyline layer=2 frame=0 color="#315f9e" points=[[21,15],[23,18],[23,22]] size=3
-doc_draw op=ellipse layer=2 frame=0 color="#21182f" cx=24 cy=24 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=0 color="#f2b27f" cx=24 cy=24 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=0 color="#21182f" cx=16 cy=9 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=0 color="#f2b27f" cx=16 cy=10 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=0 color="#6b3e2e" fill=true points=[[11,8],[12,5],[15,4],[20,5],[21,8],[19,7],[18,9],[16,7],[14,9]]
-doc_draw op=rect layer=3 frame=0 color="#6b3e2e" fill=true x0=11 x1=12 y0=9 y1=12
-doc_draw op=rect layer=3 frame=0 color="#6b3e2e" fill=true x0=20 x1=21 y0=9 y1=12
-doc_draw op=rect layer=3 frame=0 color="#21182f" fill=true x0=14 x1=14 y0=10 y1=11
-doc_draw op=rect layer=3 frame=0 color="#21182f" fill=true x0=18 x1=18 y0=10 y1=11
-doc_draw op=rect layer=3 frame=0 color="#6b3e2e" fill=true x0=15 x1=17 y0=13 y1=13
-doc_draw op=rect layer=3 frame=0 color="#f7df92" fill=true x0=13 x1=14 y0=8 y1=8
-doc_draw op=polygon layer=0 frame=1 color="#21182f" fill=true points=[[10,23],[16,22],[15,26],[12,29],[8,29],[8,27],[12,25]]
-doc_draw op=polygon layer=0 frame=1 color="#3a415b" fill=true points=[[11,24],[15,23],[14,25],[11,28],[9,28],[13,25]]
-doc_draw op=rect layer=0 frame=1 color="#6b3e2e" fill=true x0=7 x1=12 y0=28 y1=29
-doc_draw op=polygon layer=0 frame=1 color="#21182f" fill=true points=[[16,22],[22,23],[20,25],[24,27],[24,29],[20,29],[17,26]]
-doc_draw op=polygon layer=0 frame=1 color="#3a415b" fill=true points=[[17,23],[21,24],[19,25],[23,28],[21,28],[18,26]]
-doc_draw op=rect layer=0 frame=1 color="#6b3e2e" fill=true x0=20 x1=25 y0=28 y1=29
-doc_draw op=polygon layer=1 frame=1 color="#21182f" fill=true points=[[11,16],[21,16],[23,23],[20,25],[12,25],[9,23]]
-doc_draw op=polygon layer=1 frame=1 color="#315f9e" fill=true points=[[12,17],[20,17],[21,22],[19,23],[13,23],[11,22]]
-doc_draw op=rect layer=1 frame=1 color="#3a415b" fill=true x0=11 x1=21 y0=21 y1=23
-doc_draw op=rect layer=1 frame=1 color="#f7df92" fill=true x0=15 x1=17 y0=21 y1=23
-doc_draw op=rect layer=1 frame=1 color="#f7df92" fill=true x0=15 x1=17 y0=17 y1=19
-doc_draw op=polyline layer=2 frame=1 color="#21182f" points=[[11,18],[7,21],[7,25]] size=5
-doc_draw op=polyline layer=2 frame=1 color="#315f9e" points=[[11,18],[8,21],[8,24]] size=3
-doc_draw op=ellipse layer=2 frame=1 color="#21182f" cx=7 cy=26 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=1 color="#f2b27f" cx=7 cy=26 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=1 color="#21182f" points=[[21,18],[25,21],[25,25]] size=5
-doc_draw op=polyline layer=2 frame=1 color="#315f9e" points=[[21,18],[24,21],[24,24]] size=3
-doc_draw op=ellipse layer=2 frame=1 color="#21182f" cx=25 cy=26 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=1 color="#f2b27f" cx=25 cy=26 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=1 color="#21182f" cx=16 cy=12 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=1 color="#f2b27f" cx=16 cy=13 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=1 color="#6b3e2e" fill=true points=[[11,11],[12,8],[15,7],[20,8],[21,11],[19,10],[18,12],[16,10],[14,12]]
-doc_draw op=rect layer=3 frame=1 color="#6b3e2e" fill=true x0=11 x1=12 y0=12 y1=15
-doc_draw op=rect layer=3 frame=1 color="#6b3e2e" fill=true x0=20 x1=21 y0=12 y1=15
-doc_draw op=rect layer=3 frame=1 color="#21182f" fill=true x0=14 x1=14 y0=13 y1=14
-doc_draw op=rect layer=3 frame=1 color="#21182f" fill=true x0=18 x1=18 y0=13 y1=14
-doc_draw op=rect layer=3 frame=1 color="#6b3e2e" fill=true x0=15 x1=17 y0=16 y1=16
-doc_draw op=rect layer=3 frame=1 color="#f7df92" fill=true x0=13 x1=14 y0=11 y1=11
-doc_draw op=polygon layer=0 frame=2 color="#21182f" fill=true points=[[10,23],[16,23],[14,26],[11,29],[6,29],[6,27],[11,25]]
-doc_draw op=polygon layer=0 frame=2 color="#3a415b" fill=true points=[[11,24],[14,24],[13,26],[10,28],[7,28],[12,25]]
-doc_draw op=rect layer=0 frame=2 color="#6b3e2e" fill=true x0=5 x1=11 y0=28 y1=29
-doc_draw op=polygon layer=0 frame=2 color="#21182f" fill=true points=[[16,23],[22,23],[21,25],[26,27],[26,29],[21,29],[18,26]]
-doc_draw op=polygon layer=0 frame=2 color="#3a415b" fill=true points=[[18,24],[21,24],[20,25],[25,28],[22,28],[19,26]]
-doc_draw op=rect layer=0 frame=2 color="#6b3e2e" fill=true x0=21 x1=27 y0=28 y1=29
-doc_draw op=polygon layer=1 frame=2 color="#21182f" fill=true points=[[11,17],[21,17],[23,23],[20,25],[12,25],[9,23]]
-doc_draw op=polygon layer=1 frame=2 color="#315f9e" fill=true points=[[12,18],[20,18],[21,22],[19,23],[13,23],[11,22]]
-doc_draw op=rect layer=1 frame=2 color="#3a415b" fill=true x0=11 x1=21 y0=21 y1=23
-doc_draw op=rect layer=1 frame=2 color="#f7df92" fill=true x0=15 x1=17 y0=21 y1=23
-doc_draw op=rect layer=1 frame=2 color="#f7df92" fill=true x0=15 x1=17 y0=18 y1=19
-doc_draw op=polyline layer=2 frame=2 color="#21182f" points=[[11,19],[7,22],[5,26]] size=5
-doc_draw op=polyline layer=2 frame=2 color="#315f9e" points=[[11,19],[8,22],[6,25]] size=3
-doc_draw op=ellipse layer=2 frame=2 color="#21182f" cx=5 cy=27 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=2 color="#f2b27f" cx=5 cy=27 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=2 color="#21182f" points=[[21,19],[25,22],[27,26]] size=5
-doc_draw op=polyline layer=2 frame=2 color="#315f9e" points=[[21,19],[24,22],[26,25]] size=3
-doc_draw op=ellipse layer=2 frame=2 color="#21182f" cx=27 cy=27 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=2 color="#f2b27f" cx=27 cy=27 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=2 color="#21182f" cx=16 cy=13 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=2 color="#f2b27f" cx=16 cy=14 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=2 color="#6b3e2e" fill=true points=[[11,12],[12,9],[15,8],[20,9],[21,12],[19,11],[18,13],[16,11],[14,13]]
-doc_draw op=rect layer=3 frame=2 color="#6b3e2e" fill=true x0=11 x1=12 y0=13 y1=16
-doc_draw op=rect layer=3 frame=2 color="#6b3e2e" fill=true x0=20 x1=21 y0=13 y1=16
-doc_draw op=rect layer=3 frame=2 color="#21182f" fill=true x0=14 x1=14 y0=14 y1=15
-doc_draw op=rect layer=3 frame=2 color="#21182f" fill=true x0=18 x1=18 y0=14 y1=15
-doc_draw op=rect layer=3 frame=2 color="#6b3e2e" fill=true x0=15 x1=17 y0=17 y1=17
-doc_draw op=rect layer=3 frame=2 color="#f7df92" fill=true x0=13 x1=14 y0=12 y1=12
-doc_draw op=polygon layer=0 frame=3 color="#21182f" fill=true points=[[12,19],[16,19],[15,24],[14,28],[10,29],[9,28],[12,26]]
-doc_draw op=polygon layer=0 frame=3 color="#3a415b" fill=true points=[[13,20],[15,20],[14,24],[13,27],[11,28],[13,25]]
-doc_draw op=rect layer=0 frame=3 color="#6b3e2e" fill=true x0=8 x1=13 y0=28 y1=29
-doc_draw op=polygon layer=0 frame=3 color="#21182f" fill=true points=[[16,19],[20,19],[20,24],[23,27],[23,29],[19,29],[18,25]]
-doc_draw op=polygon layer=0 frame=3 color="#3a415b" fill=true points=[[17,20],[19,20],[19,24],[22,28],[20,28],[18,25]]
-doc_draw op=rect layer=0 frame=3 color="#6b3e2e" fill=true x0=19 x1=24 y0=28 y1=29
-doc_draw op=polygon layer=1 frame=3 color="#21182f" fill=true points=[[11,11],[21,11],[22,19],[20,21],[12,21],[10,19]]
-doc_draw op=polygon layer=1 frame=3 color="#315f9e" fill=true points=[[12,12],[20,12],[20,18],[19,19],[13,19],[12,18]]
-doc_draw op=rect layer=1 frame=3 color="#3a415b" fill=true x0=11 x1=21 y0=17 y1=19
-doc_draw op=rect layer=1 frame=3 color="#f7df92" fill=true x0=15 x1=17 y0=17 y1=19
-doc_draw op=rect layer=1 frame=3 color="#f7df92" fill=true x0=15 x1=17 y0=12 y1=14
-doc_draw op=polyline layer=2 frame=3 color="#21182f" points=[[11,13],[7,10],[5,6]] size=5
-doc_draw op=polyline layer=2 frame=3 color="#315f9e" points=[[11,13],[8,10],[6,7]] size=3
-doc_draw op=ellipse layer=2 frame=3 color="#21182f" cx=5 cy=5 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=3 color="#f2b27f" cx=5 cy=5 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=3 color="#21182f" points=[[21,13],[25,10],[27,6]] size=5
-doc_draw op=polyline layer=2 frame=3 color="#315f9e" points=[[21,13],[24,10],[26,7]] size=3
-doc_draw op=ellipse layer=2 frame=3 color="#21182f" cx=27 cy=5 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=3 color="#f2b27f" cx=27 cy=5 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=3 color="#21182f" cx=16 cy=7 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=3 color="#f2b27f" cx=16 cy=8 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=3 color="#6b3e2e" fill=true points=[[11,6],[12,3],[15,2],[20,3],[21,6],[19,5],[18,7],[16,5],[14,7]]
-doc_draw op=rect layer=3 frame=3 color="#6b3e2e" fill=true x0=11 x1=12 y0=7 y1=10
-doc_draw op=rect layer=3 frame=3 color="#6b3e2e" fill=true x0=20 x1=21 y0=7 y1=10
-doc_draw op=rect layer=3 frame=3 color="#21182f" fill=true x0=14 x1=14 y0=8 y1=9
-doc_draw op=rect layer=3 frame=3 color="#21182f" fill=true x0=18 x1=18 y0=8 y1=9
-doc_draw op=rect layer=3 frame=3 color="#6b3e2e" fill=true x0=15 x1=17 y0=11 y1=11
-doc_draw op=rect layer=3 frame=3 color="#f7df92" fill=true x0=13 x1=14 y0=6 y1=6
-doc_draw op=polygon layer=0 frame=4 color="#21182f" fill=true points=[[11,17],[16,17],[15,21],[11,23],[8,21],[9,19],[12,20]]
-doc_draw op=polygon layer=0 frame=4 color="#3a415b" fill=true points=[[12,18],[15,18],[14,20],[11,22],[10,21],[13,20]]
-doc_draw op=rect layer=0 frame=4 color="#6b3e2e" fill=true x0=7 x1=11 y0=20 y1=22
-doc_draw op=polygon layer=0 frame=4 color="#21182f" fill=true points=[[16,17],[21,17],[20,20],[23,19],[24,21],[21,23],[17,21]]
-doc_draw op=polygon layer=0 frame=4 color="#3a415b" fill=true points=[[17,18],[20,18],[19,20],[22,20],[21,22],[18,20]]
-doc_draw op=rect layer=0 frame=4 color="#6b3e2e" fill=true x0=21 x1=25 y0=20 y1=22
-doc_draw op=polygon layer=1 frame=4 color="#21182f" fill=true points=[[11,9],[21,9],[22,17],[20,19],[12,19],[10,17]]
-doc_draw op=polygon layer=1 frame=4 color="#315f9e" fill=true points=[[12,10],[20,10],[20,16],[19,17],[13,17],[12,16]]
-doc_draw op=rect layer=1 frame=4 color="#3a415b" fill=true x0=11 x1=21 y0=15 y1=17
-doc_draw op=rect layer=1 frame=4 color="#f7df92" fill=true x0=15 x1=17 y0=15 y1=17
-doc_draw op=rect layer=1 frame=4 color="#f7df92" fill=true x0=15 x1=17 y0=10 y1=12
-doc_draw op=polyline layer=2 frame=4 color="#21182f" points=[[11,11],[8,8],[8,3]] size=5
-doc_draw op=polyline layer=2 frame=4 color="#315f9e" points=[[11,11],[9,8],[9,4]] size=3
-doc_draw op=ellipse layer=2 frame=4 color="#21182f" cx=8 cy=2 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=4 color="#f2b27f" cx=8 cy=2 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=4 color="#21182f" points=[[21,11],[24,8],[24,3]] size=5
-doc_draw op=polyline layer=2 frame=4 color="#315f9e" points=[[21,11],[23,8],[23,4]] size=3
-doc_draw op=ellipse layer=2 frame=4 color="#21182f" cx=24 cy=2 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=4 color="#f2b27f" cx=24 cy=2 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=4 color="#21182f" cx=16 cy=5 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=4 color="#f2b27f" cx=16 cy=6 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=4 color="#6b3e2e" fill=true points=[[11,4],[12,1],[15,0],[20,1],[21,4],[19,3],[18,5],[16,3],[14,5]]
-doc_draw op=rect layer=3 frame=4 color="#6b3e2e" fill=true x0=11 x1=12 y0=5 y1=8
-doc_draw op=rect layer=3 frame=4 color="#6b3e2e" fill=true x0=20 x1=21 y0=5 y1=8
-doc_draw op=rect layer=3 frame=4 color="#21182f" fill=true x0=14 x1=14 y0=6 y1=7
-doc_draw op=rect layer=3 frame=4 color="#21182f" fill=true x0=18 x1=18 y0=6 y1=7
-doc_draw op=rect layer=3 frame=4 color="#6b3e2e" fill=true x0=15 x1=17 y0=9 y1=9
-doc_draw op=rect layer=3 frame=4 color="#f7df92" fill=true x0=13 x1=14 y0=4 y1=4
-doc_draw op=polygon layer=0 frame=5 color="#21182f" fill=true points=[[11,16],[16,16],[15,20],[12,22],[9,20],[9,18],[12,19]]
-doc_draw op=polygon layer=0 frame=5 color="#3a415b" fill=true points=[[12,17],[15,17],[14,19],[12,21],[10,20],[13,19]]
-doc_draw op=rect layer=0 frame=5 color="#6b3e2e" fill=true x0=8 x1=12 y0=19 y1=21
-doc_draw op=polygon layer=0 frame=5 color="#21182f" fill=true points=[[16,16],[21,16],[20,19],[23,18],[24,20],[21,22],[17,20]]
-doc_draw op=polygon layer=0 frame=5 color="#3a415b" fill=true points=[[17,17],[20,17],[19,19],[22,19],[21,21],[18,19]]
-doc_draw op=rect layer=0 frame=5 color="#6b3e2e" fill=true x0=21 x1=25 y0=19 y1=21
-doc_draw op=polygon layer=1 frame=5 color="#21182f" fill=true points=[[11,8],[21,8],[22,16],[20,18],[12,18],[10,16]]
-doc_draw op=polygon layer=1 frame=5 color="#315f9e" fill=true points=[[12,9],[20,9],[20,15],[19,16],[13,16],[12,15]]
-doc_draw op=rect layer=1 frame=5 color="#3a415b" fill=true x0=11 x1=21 y0=14 y1=16
-doc_draw op=rect layer=1 frame=5 color="#f7df92" fill=true x0=15 x1=17 y0=14 y1=16
-doc_draw op=rect layer=1 frame=5 color="#f7df92" fill=true x0=15 x1=17 y0=9 y1=11
-doc_draw op=polyline layer=2 frame=5 color="#21182f" points=[[11,10],[9,6],[10,2]] size=5
-doc_draw op=polyline layer=2 frame=5 color="#315f9e" points=[[11,10],[10,6],[11,3]] size=3
-doc_draw op=ellipse layer=2 frame=5 color="#21182f" cx=10 cy=1 fill=true rx=2 ry=1
-doc_draw op=ellipse layer=2 frame=5 color="#f2b27f" cx=10 cy=1 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=5 color="#21182f" points=[[21,10],[23,6],[22,2]] size=5
-doc_draw op=polyline layer=2 frame=5 color="#315f9e" points=[[21,10],[22,6],[21,3]] size=3
-doc_draw op=ellipse layer=2 frame=5 color="#21182f" cx=22 cy=1 fill=true rx=2 ry=1
-doc_draw op=ellipse layer=2 frame=5 color="#f2b27f" cx=22 cy=1 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=5 color="#21182f" cx=16 cy=4 fill=true rx=6 ry=4
-doc_draw op=ellipse layer=3 frame=5 color="#f2b27f" cx=16 cy=5 fill=true rx=4 ry=3
-doc_draw op=polygon layer=3 frame=5 color="#6b3e2e" fill=true points=[[11,3],[13,0],[19,0],[21,3],[19,2],[18,4],[16,2],[14,4]]
-doc_draw op=rect layer=3 frame=5 color="#6b3e2e" fill=true x0=11 x1=12 y0=4 y1=7
-doc_draw op=rect layer=3 frame=5 color="#6b3e2e" fill=true x0=20 x1=21 y0=4 y1=7
-doc_draw op=rect layer=3 frame=5 color="#21182f" fill=true x0=14 x1=14 y0=5 y1=6
-doc_draw op=rect layer=3 frame=5 color="#21182f" fill=true x0=18 x1=18 y0=5 y1=6
-doc_draw op=rect layer=3 frame=5 color="#6b3e2e" fill=true x0=15 x1=17 y0=7 y1=7
-doc_draw op=rect layer=3 frame=5 color="#f7df92" fill=true x0=13 x1=14 y0=3 y1=3
-doc_draw op=polygon layer=0 frame=6 color="#21182f" fill=true points=[[11,17],[16,17],[15,22],[13,25],[9,24],[9,22],[12,22]]
-doc_draw op=polygon layer=0 frame=6 color="#3a415b" fill=true points=[[12,18],[15,18],[14,21],[12,24],[10,23],[13,21]]
-doc_draw op=rect layer=0 frame=6 color="#6b3e2e" fill=true x0=8 x1=12 y0=23 y1=25
-doc_draw op=polygon layer=0 frame=6 color="#21182f" fill=true points=[[16,17],[21,17],[20,22],[23,22],[24,24],[20,25],[17,22]]
-doc_draw op=polygon layer=0 frame=6 color="#3a415b" fill=true points=[[17,18],[20,18],[19,21],[22,23],[21,24],[18,21]]
-doc_draw op=rect layer=0 frame=6 color="#6b3e2e" fill=true x0=21 x1=25 y0=23 y1=25
-doc_draw op=polygon layer=1 frame=6 color="#21182f" fill=true points=[[11,9],[21,9],[22,17],[20,19],[12,19],[10,17]]
-doc_draw op=polygon layer=1 frame=6 color="#315f9e" fill=true points=[[12,10],[20,10],[20,16],[19,17],[13,17],[12,16]]
-doc_draw op=rect layer=1 frame=6 color="#3a415b" fill=true x0=11 x1=21 y0=15 y1=17
-doc_draw op=rect layer=1 frame=6 color="#f7df92" fill=true x0=15 x1=17 y0=15 y1=17
-doc_draw op=rect layer=1 frame=6 color="#f7df92" fill=true x0=15 x1=17 y0=10 y1=12
-doc_draw op=polyline layer=2 frame=6 color="#21182f" points=[[11,11],[7,10],[5,7]] size=5
-doc_draw op=polyline layer=2 frame=6 color="#315f9e" points=[[11,11],[8,10],[6,8]] size=3
-doc_draw op=ellipse layer=2 frame=6 color="#21182f" cx=5 cy=6 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=6 color="#f2b27f" cx=5 cy=6 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=6 color="#21182f" points=[[21,11],[25,10],[27,7]] size=5
-doc_draw op=polyline layer=2 frame=6 color="#315f9e" points=[[21,11],[24,10],[26,8]] size=3
-doc_draw op=ellipse layer=2 frame=6 color="#21182f" cx=27 cy=6 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=6 color="#f2b27f" cx=27 cy=6 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=6 color="#21182f" cx=16 cy=5 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=6 color="#f2b27f" cx=16 cy=6 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=6 color="#6b3e2e" fill=true points=[[11,4],[12,1],[15,0],[20,1],[21,4],[19,3],[18,5],[16,3],[14,5]]
-doc_draw op=rect layer=3 frame=6 color="#6b3e2e" fill=true x0=11 x1=12 y0=5 y1=8
-doc_draw op=rect layer=3 frame=6 color="#6b3e2e" fill=true x0=20 x1=21 y0=5 y1=8
-doc_draw op=rect layer=3 frame=6 color="#21182f" fill=true x0=14 x1=14 y0=6 y1=7
-doc_draw op=rect layer=3 frame=6 color="#21182f" fill=true x0=18 x1=18 y0=6 y1=7
-doc_draw op=rect layer=3 frame=6 color="#6b3e2e" fill=true x0=15 x1=17 y0=9 y1=9
-doc_draw op=rect layer=3 frame=6 color="#f7df92" fill=true x0=13 x1=14 y0=4 y1=4
-doc_draw op=polygon layer=0 frame=7 color="#21182f" fill=true points=[[11,20],[16,20],[15,25],[13,29],[9,29],[9,27],[12,25]]
-doc_draw op=polygon layer=0 frame=7 color="#3a415b" fill=true points=[[12,21],[15,21],[14,25],[12,28],[10,28],[13,24]]
-doc_draw op=rect layer=0 frame=7 color="#6b3e2e" fill=true x0=8 x1=13 y0=28 y1=29
-doc_draw op=polygon layer=0 frame=7 color="#21182f" fill=true points=[[16,20],[21,20],[20,25],[23,27],[23,29],[19,29],[18,25]]
-doc_draw op=polygon layer=0 frame=7 color="#3a415b" fill=true points=[[17,21],[20,21],[19,25],[22,28],[20,28],[18,24]]
-doc_draw op=rect layer=0 frame=7 color="#6b3e2e" fill=true x0=19 x1=24 y0=28 y1=29
-doc_draw op=polygon layer=1 frame=7 color="#21182f" fill=true points=[[11,12],[21,12],[22,20],[20,22],[12,22],[10,20]]
-doc_draw op=polygon layer=1 frame=7 color="#315f9e" fill=true points=[[12,13],[20,13],[20,19],[19,20],[13,20],[12,19]]
-doc_draw op=rect layer=1 frame=7 color="#3a415b" fill=true x0=11 x1=21 y0=18 y1=20
-doc_draw op=rect layer=1 frame=7 color="#f7df92" fill=true x0=15 x1=17 y0=18 y1=20
-doc_draw op=rect layer=1 frame=7 color="#f7df92" fill=true x0=15 x1=17 y0=13 y1=15
-doc_draw op=polyline layer=2 frame=7 color="#21182f" points=[[11,14],[7,15],[4,18]] size=5
-doc_draw op=polyline layer=2 frame=7 color="#315f9e" points=[[11,14],[8,15],[5,18]] size=3
-doc_draw op=ellipse layer=2 frame=7 color="#21182f" cx=4 cy=19 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=7 color="#f2b27f" cx=4 cy=19 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=7 color="#21182f" points=[[21,14],[25,15],[28,18]] size=5
-doc_draw op=polyline layer=2 frame=7 color="#315f9e" points=[[21,14],[24,15],[27,18]] size=3
-doc_draw op=ellipse layer=2 frame=7 color="#21182f" cx=28 cy=19 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=7 color="#f2b27f" cx=28 cy=19 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=7 color="#21182f" cx=16 cy=8 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=7 color="#f2b27f" cx=16 cy=9 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=7 color="#6b3e2e" fill=true points=[[11,7],[12,4],[15,3],[20,4],[21,7],[19,6],[18,8],[16,6],[14,8]]
-doc_draw op=rect layer=3 frame=7 color="#6b3e2e" fill=true x0=11 x1=12 y0=8 y1=11
-doc_draw op=rect layer=3 frame=7 color="#6b3e2e" fill=true x0=20 x1=21 y0=8 y1=11
-doc_draw op=rect layer=3 frame=7 color="#21182f" fill=true x0=14 x1=14 y0=9 y1=10
-doc_draw op=rect layer=3 frame=7 color="#21182f" fill=true x0=18 x1=18 y0=9 y1=10
-doc_draw op=rect layer=3 frame=7 color="#6b3e2e" fill=true x0=15 x1=17 y0=12 y1=12
-doc_draw op=rect layer=3 frame=7 color="#f7df92" fill=true x0=13 x1=14 y0=7 y1=7
-doc_draw op=polygon layer=0 frame=8 color="#21182f" fill=true points=[[10,23],[16,22],[14,26],[11,29],[6,29],[6,27],[11,25]]
-doc_draw op=polygon layer=0 frame=8 color="#3a415b" fill=true points=[[11,24],[15,23],[13,26],[10,28],[7,28],[12,25]]
-doc_draw op=rect layer=0 frame=8 color="#6b3e2e" fill=true x0=5 x1=11 y0=28 y1=29
-doc_draw op=polygon layer=0 frame=8 color="#21182f" fill=true points=[[16,22],[22,23],[21,25],[26,27],[26,29],[21,29],[18,26]]
-doc_draw op=polygon layer=0 frame=8 color="#3a415b" fill=true points=[[17,23],[21,24],[19,26],[25,28],[22,28],[19,25]]
-doc_draw op=rect layer=0 frame=8 color="#6b3e2e" fill=true x0=21 x1=27 y0=28 y1=29
-doc_draw op=polygon layer=1 frame=8 color="#21182f" fill=true points=[[10,16],[22,16],[23,23],[20,25],[12,25],[9,23]]
-doc_draw op=polygon layer=1 frame=8 color="#315f9e" fill=true points=[[12,17],[20,17],[21,22],[19,23],[13,23],[11,22]]
-doc_draw op=rect layer=1 frame=8 color="#3a415b" fill=true x0=11 x1=21 y0=21 y1=23
-doc_draw op=rect layer=1 frame=8 color="#f7df92" fill=true x0=15 x1=17 y0=21 y1=23
-doc_draw op=rect layer=1 frame=8 color="#f7df92" fill=true x0=15 x1=17 y0=17 y1=19
-doc_draw op=polyline layer=2 frame=8 color="#21182f" points=[[11,18],[8,20],[9,24]] size=5
-doc_draw op=polyline layer=2 frame=8 color="#315f9e" points=[[11,18],[9,20],[10,23]] size=3
-doc_draw op=ellipse layer=2 frame=8 color="#21182f" cx=10 cy=25 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=8 color="#f2b27f" cx=10 cy=25 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=8 color="#21182f" points=[[21,18],[24,20],[23,24]] size=5
-doc_draw op=polyline layer=2 frame=8 color="#315f9e" points=[[21,18],[23,20],[22,23]] size=3
-doc_draw op=ellipse layer=2 frame=8 color="#21182f" cx=22 cy=25 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=8 color="#f2b27f" cx=22 cy=25 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=8 color="#21182f" cx=16 cy=12 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=8 color="#f2b27f" cx=16 cy=13 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=8 color="#6b3e2e" fill=true points=[[11,11],[12,8],[15,7],[20,8],[21,11],[19,10],[18,12],[16,10],[14,12]]
-doc_draw op=rect layer=3 frame=8 color="#6b3e2e" fill=true x0=11 x1=12 y0=12 y1=15
-doc_draw op=rect layer=3 frame=8 color="#6b3e2e" fill=true x0=20 x1=21 y0=12 y1=15
-doc_draw op=rect layer=3 frame=8 color="#21182f" fill=true x0=14 x1=14 y0=13 y1=14
-doc_draw op=rect layer=3 frame=8 color="#21182f" fill=true x0=18 x1=18 y0=13 y1=14
-doc_draw op=rect layer=3 frame=8 color="#6b3e2e" fill=true x0=15 x1=17 y0=16 y1=16
-doc_draw op=rect layer=3 frame=8 color="#f7df92" fill=true x0=13 x1=14 y0=11 y1=11
-doc_draw op=polygon layer=0 frame=9 color="#21182f" fill=true points=[[11,22],[16,22],[15,26],[13,29],[9,29],[9,27],[12,25]]
-doc_draw op=polygon layer=0 frame=9 color="#3a415b" fill=true points=[[12,23],[15,23],[14,26],[12,28],[10,28],[13,25]]
-doc_draw op=rect layer=0 frame=9 color="#6b3e2e" fill=true x0=8 x1=13 y0=28 y1=29
-doc_draw op=polygon layer=0 frame=9 color="#21182f" fill=true points=[[16,22],[21,22],[20,25],[23,27],[23,29],[19,29],[18,26]]
-doc_draw op=polygon layer=0 frame=9 color="#3a415b" fill=true points=[[17,23],[20,23],[19,25],[22,28],[20,28],[18,25]]
-doc_draw op=rect layer=0 frame=9 color="#6b3e2e" fill=true x0=19 x1=24 y0=28 y1=29
-doc_draw op=polygon layer=1 frame=9 color="#21182f" fill=true points=[[11,14],[21,14],[23,22],[20,24],[12,24],[9,22]]
-doc_draw op=polygon layer=1 frame=9 color="#315f9e" fill=true points=[[12,15],[20,15],[21,21],[19,22],[13,22],[11,21]]
-doc_draw op=rect layer=1 frame=9 color="#3a415b" fill=true x0=11 x1=21 y0=20 y1=22
-doc_draw op=rect layer=1 frame=9 color="#f7df92" fill=true x0=15 x1=17 y0=20 y1=22
-doc_draw op=rect layer=1 frame=9 color="#f7df92" fill=true x0=15 x1=17 y0=15 y1=17
-doc_draw op=polyline layer=2 frame=9 color="#21182f" points=[[11,16],[8,19],[8,23]] size=5
-doc_draw op=polyline layer=2 frame=9 color="#315f9e" points=[[11,16],[9,19],[9,22]] size=3
-doc_draw op=ellipse layer=2 frame=9 color="#21182f" cx=8 cy=24 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=9 color="#f2b27f" cx=8 cy=24 fill=true rx=1 ry=1
-doc_draw op=polyline layer=2 frame=9 color="#21182f" points=[[21,16],[24,19],[24,23]] size=5
-doc_draw op=polyline layer=2 frame=9 color="#315f9e" points=[[21,16],[23,19],[23,22]] size=3
-doc_draw op=ellipse layer=2 frame=9 color="#21182f" cx=24 cy=24 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=9 color="#f2b27f" cx=24 cy=24 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=3 frame=9 color="#21182f" cx=16 cy=10 fill=true rx=6 ry=5
-doc_draw op=ellipse layer=3 frame=9 color="#f2b27f" cx=16 cy=11 fill=true rx=4 ry=4
-doc_draw op=polygon layer=3 frame=9 color="#6b3e2e" fill=true points=[[11,9],[12,6],[15,5],[20,6],[21,9],[19,8],[18,10],[16,8],[14,10]]
-doc_draw op=rect layer=3 frame=9 color="#6b3e2e" fill=true x0=11 x1=12 y0=10 y1=13
-doc_draw op=rect layer=3 frame=9 color="#6b3e2e" fill=true x0=20 x1=21 y0=10 y1=13
-doc_draw op=rect layer=3 frame=9 color="#21182f" fill=true x0=14 x1=14 y0=11 y1=12
-doc_draw op=rect layer=3 frame=9 color="#21182f" fill=true x0=18 x1=18 y0=11 y1=12
-doc_draw op=rect layer=3 frame=9 color="#6b3e2e" fill=true x0=15 x1=17 y0=14 y1=14
-doc_draw op=rect layer=3 frame=9 color="#f7df92" fill=true x0=13 x1=14 y0=9 y1=9
-doc_add_tag name=jump direction=forward from=0 to=9
+atelier 4 9156c6f5-77ae-4644-a6d4-e1a2edc312ea 0.1.0
+new name=gpt56-person-jump width=32 height=32
+layer op=rename index=0 name=legs
+layer op=add name=torso
+layer op=add name=arms
+layer op=add name=head
+palette op=set colors=#21182f,#6b3e2e,#f2b27f,#315f9e,#f7df92,#3a415b
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=polygon layer=0 frame=0 color=#21182f fill=true points=[[11,21],[16,21],[15,26],[13,29],[10,29],[10,27],[12,24]]
+draw op=polygon layer=0 frame=0 color=#3a415b fill=true points=[[12,22],[15,22],[14,26],[12,28],[11,28],[13,24]]
+draw op=rect layer=0 frame=0 color=#6b3e2e fill=true x0=9 x1=13 y0=28 y1=29
+draw op=polygon layer=0 frame=0 color=#21182f fill=true points=[[16,21],[21,21],[20,24],[22,27],[22,29],[19,29],[17,26]]
+draw op=polygon layer=0 frame=0 color=#3a415b fill=true points=[[17,22],[20,22],[19,24],[21,28],[20,28],[18,25]]
+draw op=rect layer=0 frame=0 color=#6b3e2e fill=true x0=19 x1=23 y0=28 y1=29
+draw op=polygon layer=1 frame=0 color=#21182f fill=true points=[[11,13],[21,13],[23,21],[20,24],[12,24],[9,21]]
+draw op=polygon layer=1 frame=0 color=#315f9e fill=true points=[[12,14],[20,14],[21,20],[19,22],[13,22],[11,20]]
+draw op=rect layer=1 frame=0 color=#3a415b fill=true x0=11 x1=21 y0=20 y1=22
+draw op=rect layer=1 frame=0 color=#f7df92 fill=true x0=15 x1=17 y0=20 y1=22
+draw op=rect layer=1 frame=0 color=#f7df92 fill=true x0=15 x1=17 y0=14 y1=16
+draw op=polyline layer=2 frame=0 color=#21182f points=[[11,15],[8,18],[8,23]] size=5
+draw op=polyline layer=2 frame=0 color=#315f9e points=[[11,15],[9,18],[9,22]] size=3
+draw op=ellipse layer=2 frame=0 color=#21182f cx=8 cy=24 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=0 color=#f2b27f cx=8 cy=24 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=0 color=#21182f points=[[21,15],[24,18],[24,23]] size=5
+draw op=polyline layer=2 frame=0 color=#315f9e points=[[21,15],[23,18],[23,22]] size=3
+draw op=ellipse layer=2 frame=0 color=#21182f cx=24 cy=24 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=0 color=#f2b27f cx=24 cy=24 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=0 color=#21182f cx=16 cy=9 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=0 color=#f2b27f cx=16 cy=10 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=0 color=#6b3e2e fill=true points=[[11,8],[12,5],[15,4],[20,5],[21,8],[19,7],[18,9],[16,7],[14,9]]
+draw op=rect layer=3 frame=0 color=#6b3e2e fill=true x0=11 x1=12 y0=9 y1=12
+draw op=rect layer=3 frame=0 color=#6b3e2e fill=true x0=20 x1=21 y0=9 y1=12
+draw op=rect layer=3 frame=0 color=#21182f fill=true x0=14 x1=14 y0=10 y1=11
+draw op=rect layer=3 frame=0 color=#21182f fill=true x0=18 x1=18 y0=10 y1=11
+draw op=rect layer=3 frame=0 color=#6b3e2e fill=true x0=15 x1=17 y0=13 y1=13
+draw op=rect layer=3 frame=0 color=#f7df92 fill=true x0=13 x1=14 y0=8 y1=8
+draw op=polygon layer=0 frame=1 color=#21182f fill=true points=[[10,23],[16,22],[15,26],[12,29],[8,29],[8,27],[12,25]]
+draw op=polygon layer=0 frame=1 color=#3a415b fill=true points=[[11,24],[15,23],[14,25],[11,28],[9,28],[13,25]]
+draw op=rect layer=0 frame=1 color=#6b3e2e fill=true x0=7 x1=12 y0=28 y1=29
+draw op=polygon layer=0 frame=1 color=#21182f fill=true points=[[16,22],[22,23],[20,25],[24,27],[24,29],[20,29],[17,26]]
+draw op=polygon layer=0 frame=1 color=#3a415b fill=true points=[[17,23],[21,24],[19,25],[23,28],[21,28],[18,26]]
+draw op=rect layer=0 frame=1 color=#6b3e2e fill=true x0=20 x1=25 y0=28 y1=29
+draw op=polygon layer=1 frame=1 color=#21182f fill=true points=[[11,16],[21,16],[23,23],[20,25],[12,25],[9,23]]
+draw op=polygon layer=1 frame=1 color=#315f9e fill=true points=[[12,17],[20,17],[21,22],[19,23],[13,23],[11,22]]
+draw op=rect layer=1 frame=1 color=#3a415b fill=true x0=11 x1=21 y0=21 y1=23
+draw op=rect layer=1 frame=1 color=#f7df92 fill=true x0=15 x1=17 y0=21 y1=23
+draw op=rect layer=1 frame=1 color=#f7df92 fill=true x0=15 x1=17 y0=17 y1=19
+draw op=polyline layer=2 frame=1 color=#21182f points=[[11,18],[7,21],[7,25]] size=5
+draw op=polyline layer=2 frame=1 color=#315f9e points=[[11,18],[8,21],[8,24]] size=3
+draw op=ellipse layer=2 frame=1 color=#21182f cx=7 cy=26 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=1 color=#f2b27f cx=7 cy=26 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=1 color=#21182f points=[[21,18],[25,21],[25,25]] size=5
+draw op=polyline layer=2 frame=1 color=#315f9e points=[[21,18],[24,21],[24,24]] size=3
+draw op=ellipse layer=2 frame=1 color=#21182f cx=25 cy=26 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=1 color=#f2b27f cx=25 cy=26 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=1 color=#21182f cx=16 cy=12 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=1 color=#f2b27f cx=16 cy=13 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=1 color=#6b3e2e fill=true points=[[11,11],[12,8],[15,7],[20,8],[21,11],[19,10],[18,12],[16,10],[14,12]]
+draw op=rect layer=3 frame=1 color=#6b3e2e fill=true x0=11 x1=12 y0=12 y1=15
+draw op=rect layer=3 frame=1 color=#6b3e2e fill=true x0=20 x1=21 y0=12 y1=15
+draw op=rect layer=3 frame=1 color=#21182f fill=true x0=14 x1=14 y0=13 y1=14
+draw op=rect layer=3 frame=1 color=#21182f fill=true x0=18 x1=18 y0=13 y1=14
+draw op=rect layer=3 frame=1 color=#6b3e2e fill=true x0=15 x1=17 y0=16 y1=16
+draw op=rect layer=3 frame=1 color=#f7df92 fill=true x0=13 x1=14 y0=11 y1=11
+draw op=polygon layer=0 frame=2 color=#21182f fill=true points=[[10,23],[16,23],[14,26],[11,29],[6,29],[6,27],[11,25]]
+draw op=polygon layer=0 frame=2 color=#3a415b fill=true points=[[11,24],[14,24],[13,26],[10,28],[7,28],[12,25]]
+draw op=rect layer=0 frame=2 color=#6b3e2e fill=true x0=5 x1=11 y0=28 y1=29
+draw op=polygon layer=0 frame=2 color=#21182f fill=true points=[[16,23],[22,23],[21,25],[26,27],[26,29],[21,29],[18,26]]
+draw op=polygon layer=0 frame=2 color=#3a415b fill=true points=[[18,24],[21,24],[20,25],[25,28],[22,28],[19,26]]
+draw op=rect layer=0 frame=2 color=#6b3e2e fill=true x0=21 x1=27 y0=28 y1=29
+draw op=polygon layer=1 frame=2 color=#21182f fill=true points=[[11,17],[21,17],[23,23],[20,25],[12,25],[9,23]]
+draw op=polygon layer=1 frame=2 color=#315f9e fill=true points=[[12,18],[20,18],[21,22],[19,23],[13,23],[11,22]]
+draw op=rect layer=1 frame=2 color=#3a415b fill=true x0=11 x1=21 y0=21 y1=23
+draw op=rect layer=1 frame=2 color=#f7df92 fill=true x0=15 x1=17 y0=21 y1=23
+draw op=rect layer=1 frame=2 color=#f7df92 fill=true x0=15 x1=17 y0=18 y1=19
+draw op=polyline layer=2 frame=2 color=#21182f points=[[11,19],[7,22],[5,26]] size=5
+draw op=polyline layer=2 frame=2 color=#315f9e points=[[11,19],[8,22],[6,25]] size=3
+draw op=ellipse layer=2 frame=2 color=#21182f cx=5 cy=27 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=2 color=#f2b27f cx=5 cy=27 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=2 color=#21182f points=[[21,19],[25,22],[27,26]] size=5
+draw op=polyline layer=2 frame=2 color=#315f9e points=[[21,19],[24,22],[26,25]] size=3
+draw op=ellipse layer=2 frame=2 color=#21182f cx=27 cy=27 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=2 color=#f2b27f cx=27 cy=27 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=2 color=#21182f cx=16 cy=13 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=2 color=#f2b27f cx=16 cy=14 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=2 color=#6b3e2e fill=true points=[[11,12],[12,9],[15,8],[20,9],[21,12],[19,11],[18,13],[16,11],[14,13]]
+draw op=rect layer=3 frame=2 color=#6b3e2e fill=true x0=11 x1=12 y0=13 y1=16
+draw op=rect layer=3 frame=2 color=#6b3e2e fill=true x0=20 x1=21 y0=13 y1=16
+draw op=rect layer=3 frame=2 color=#21182f fill=true x0=14 x1=14 y0=14 y1=15
+draw op=rect layer=3 frame=2 color=#21182f fill=true x0=18 x1=18 y0=14 y1=15
+draw op=rect layer=3 frame=2 color=#6b3e2e fill=true x0=15 x1=17 y0=17 y1=17
+draw op=rect layer=3 frame=2 color=#f7df92 fill=true x0=13 x1=14 y0=12 y1=12
+draw op=polygon layer=0 frame=3 color=#21182f fill=true points=[[12,19],[16,19],[15,24],[14,28],[10,29],[9,28],[12,26]]
+draw op=polygon layer=0 frame=3 color=#3a415b fill=true points=[[13,20],[15,20],[14,24],[13,27],[11,28],[13,25]]
+draw op=rect layer=0 frame=3 color=#6b3e2e fill=true x0=8 x1=13 y0=28 y1=29
+draw op=polygon layer=0 frame=3 color=#21182f fill=true points=[[16,19],[20,19],[20,24],[23,27],[23,29],[19,29],[18,25]]
+draw op=polygon layer=0 frame=3 color=#3a415b fill=true points=[[17,20],[19,20],[19,24],[22,28],[20,28],[18,25]]
+draw op=rect layer=0 frame=3 color=#6b3e2e fill=true x0=19 x1=24 y0=28 y1=29
+draw op=polygon layer=1 frame=3 color=#21182f fill=true points=[[11,11],[21,11],[22,19],[20,21],[12,21],[10,19]]
+draw op=polygon layer=1 frame=3 color=#315f9e fill=true points=[[12,12],[20,12],[20,18],[19,19],[13,19],[12,18]]
+draw op=rect layer=1 frame=3 color=#3a415b fill=true x0=11 x1=21 y0=17 y1=19
+draw op=rect layer=1 frame=3 color=#f7df92 fill=true x0=15 x1=17 y0=17 y1=19
+draw op=rect layer=1 frame=3 color=#f7df92 fill=true x0=15 x1=17 y0=12 y1=14
+draw op=polyline layer=2 frame=3 color=#21182f points=[[11,13],[7,10],[5,6]] size=5
+draw op=polyline layer=2 frame=3 color=#315f9e points=[[11,13],[8,10],[6,7]] size=3
+draw op=ellipse layer=2 frame=3 color=#21182f cx=5 cy=5 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=3 color=#f2b27f cx=5 cy=5 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=3 color=#21182f points=[[21,13],[25,10],[27,6]] size=5
+draw op=polyline layer=2 frame=3 color=#315f9e points=[[21,13],[24,10],[26,7]] size=3
+draw op=ellipse layer=2 frame=3 color=#21182f cx=27 cy=5 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=3 color=#f2b27f cx=27 cy=5 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=3 color=#21182f cx=16 cy=7 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=3 color=#f2b27f cx=16 cy=8 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=3 color=#6b3e2e fill=true points=[[11,6],[12,3],[15,2],[20,3],[21,6],[19,5],[18,7],[16,5],[14,7]]
+draw op=rect layer=3 frame=3 color=#6b3e2e fill=true x0=11 x1=12 y0=7 y1=10
+draw op=rect layer=3 frame=3 color=#6b3e2e fill=true x0=20 x1=21 y0=7 y1=10
+draw op=rect layer=3 frame=3 color=#21182f fill=true x0=14 x1=14 y0=8 y1=9
+draw op=rect layer=3 frame=3 color=#21182f fill=true x0=18 x1=18 y0=8 y1=9
+draw op=rect layer=3 frame=3 color=#6b3e2e fill=true x0=15 x1=17 y0=11 y1=11
+draw op=rect layer=3 frame=3 color=#f7df92 fill=true x0=13 x1=14 y0=6 y1=6
+draw op=polygon layer=0 frame=4 color=#21182f fill=true points=[[11,17],[16,17],[15,21],[11,23],[8,21],[9,19],[12,20]]
+draw op=polygon layer=0 frame=4 color=#3a415b fill=true points=[[12,18],[15,18],[14,20],[11,22],[10,21],[13,20]]
+draw op=rect layer=0 frame=4 color=#6b3e2e fill=true x0=7 x1=11 y0=20 y1=22
+draw op=polygon layer=0 frame=4 color=#21182f fill=true points=[[16,17],[21,17],[20,20],[23,19],[24,21],[21,23],[17,21]]
+draw op=polygon layer=0 frame=4 color=#3a415b fill=true points=[[17,18],[20,18],[19,20],[22,20],[21,22],[18,20]]
+draw op=rect layer=0 frame=4 color=#6b3e2e fill=true x0=21 x1=25 y0=20 y1=22
+draw op=polygon layer=1 frame=4 color=#21182f fill=true points=[[11,9],[21,9],[22,17],[20,19],[12,19],[10,17]]
+draw op=polygon layer=1 frame=4 color=#315f9e fill=true points=[[12,10],[20,10],[20,16],[19,17],[13,17],[12,16]]
+draw op=rect layer=1 frame=4 color=#3a415b fill=true x0=11 x1=21 y0=15 y1=17
+draw op=rect layer=1 frame=4 color=#f7df92 fill=true x0=15 x1=17 y0=15 y1=17
+draw op=rect layer=1 frame=4 color=#f7df92 fill=true x0=15 x1=17 y0=10 y1=12
+draw op=polyline layer=2 frame=4 color=#21182f points=[[11,11],[8,8],[8,3]] size=5
+draw op=polyline layer=2 frame=4 color=#315f9e points=[[11,11],[9,8],[9,4]] size=3
+draw op=ellipse layer=2 frame=4 color=#21182f cx=8 cy=2 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=4 color=#f2b27f cx=8 cy=2 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=4 color=#21182f points=[[21,11],[24,8],[24,3]] size=5
+draw op=polyline layer=2 frame=4 color=#315f9e points=[[21,11],[23,8],[23,4]] size=3
+draw op=ellipse layer=2 frame=4 color=#21182f cx=24 cy=2 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=4 color=#f2b27f cx=24 cy=2 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=4 color=#21182f cx=16 cy=5 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=4 color=#f2b27f cx=16 cy=6 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=4 color=#6b3e2e fill=true points=[[11,4],[12,1],[15,0],[20,1],[21,4],[19,3],[18,5],[16,3],[14,5]]
+draw op=rect layer=3 frame=4 color=#6b3e2e fill=true x0=11 x1=12 y0=5 y1=8
+draw op=rect layer=3 frame=4 color=#6b3e2e fill=true x0=20 x1=21 y0=5 y1=8
+draw op=rect layer=3 frame=4 color=#21182f fill=true x0=14 x1=14 y0=6 y1=7
+draw op=rect layer=3 frame=4 color=#21182f fill=true x0=18 x1=18 y0=6 y1=7
+draw op=rect layer=3 frame=4 color=#6b3e2e fill=true x0=15 x1=17 y0=9 y1=9
+draw op=rect layer=3 frame=4 color=#f7df92 fill=true x0=13 x1=14 y0=4 y1=4
+draw op=polygon layer=0 frame=5 color=#21182f fill=true points=[[11,16],[16,16],[15,20],[12,22],[9,20],[9,18],[12,19]]
+draw op=polygon layer=0 frame=5 color=#3a415b fill=true points=[[12,17],[15,17],[14,19],[12,21],[10,20],[13,19]]
+draw op=rect layer=0 frame=5 color=#6b3e2e fill=true x0=8 x1=12 y0=19 y1=21
+draw op=polygon layer=0 frame=5 color=#21182f fill=true points=[[16,16],[21,16],[20,19],[23,18],[24,20],[21,22],[17,20]]
+draw op=polygon layer=0 frame=5 color=#3a415b fill=true points=[[17,17],[20,17],[19,19],[22,19],[21,21],[18,19]]
+draw op=rect layer=0 frame=5 color=#6b3e2e fill=true x0=21 x1=25 y0=19 y1=21
+draw op=polygon layer=1 frame=5 color=#21182f fill=true points=[[11,8],[21,8],[22,16],[20,18],[12,18],[10,16]]
+draw op=polygon layer=1 frame=5 color=#315f9e fill=true points=[[12,9],[20,9],[20,15],[19,16],[13,16],[12,15]]
+draw op=rect layer=1 frame=5 color=#3a415b fill=true x0=11 x1=21 y0=14 y1=16
+draw op=rect layer=1 frame=5 color=#f7df92 fill=true x0=15 x1=17 y0=14 y1=16
+draw op=rect layer=1 frame=5 color=#f7df92 fill=true x0=15 x1=17 y0=9 y1=11
+draw op=polyline layer=2 frame=5 color=#21182f points=[[11,10],[9,6],[10,2]] size=5
+draw op=polyline layer=2 frame=5 color=#315f9e points=[[11,10],[10,6],[11,3]] size=3
+draw op=ellipse layer=2 frame=5 color=#21182f cx=10 cy=1 fill=true rx=2 ry=1
+draw op=ellipse layer=2 frame=5 color=#f2b27f cx=10 cy=1 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=5 color=#21182f points=[[21,10],[23,6],[22,2]] size=5
+draw op=polyline layer=2 frame=5 color=#315f9e points=[[21,10],[22,6],[21,3]] size=3
+draw op=ellipse layer=2 frame=5 color=#21182f cx=22 cy=1 fill=true rx=2 ry=1
+draw op=ellipse layer=2 frame=5 color=#f2b27f cx=22 cy=1 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=5 color=#21182f cx=16 cy=4 fill=true rx=6 ry=4
+draw op=ellipse layer=3 frame=5 color=#f2b27f cx=16 cy=5 fill=true rx=4 ry=3
+draw op=polygon layer=3 frame=5 color=#6b3e2e fill=true points=[[11,3],[13,0],[19,0],[21,3],[19,2],[18,4],[16,2],[14,4]]
+draw op=rect layer=3 frame=5 color=#6b3e2e fill=true x0=11 x1=12 y0=4 y1=7
+draw op=rect layer=3 frame=5 color=#6b3e2e fill=true x0=20 x1=21 y0=4 y1=7
+draw op=rect layer=3 frame=5 color=#21182f fill=true x0=14 x1=14 y0=5 y1=6
+draw op=rect layer=3 frame=5 color=#21182f fill=true x0=18 x1=18 y0=5 y1=6
+draw op=rect layer=3 frame=5 color=#6b3e2e fill=true x0=15 x1=17 y0=7 y1=7
+draw op=rect layer=3 frame=5 color=#f7df92 fill=true x0=13 x1=14 y0=3 y1=3
+draw op=polygon layer=0 frame=6 color=#21182f fill=true points=[[11,17],[16,17],[15,22],[13,25],[9,24],[9,22],[12,22]]
+draw op=polygon layer=0 frame=6 color=#3a415b fill=true points=[[12,18],[15,18],[14,21],[12,24],[10,23],[13,21]]
+draw op=rect layer=0 frame=6 color=#6b3e2e fill=true x0=8 x1=12 y0=23 y1=25
+draw op=polygon layer=0 frame=6 color=#21182f fill=true points=[[16,17],[21,17],[20,22],[23,22],[24,24],[20,25],[17,22]]
+draw op=polygon layer=0 frame=6 color=#3a415b fill=true points=[[17,18],[20,18],[19,21],[22,23],[21,24],[18,21]]
+draw op=rect layer=0 frame=6 color=#6b3e2e fill=true x0=21 x1=25 y0=23 y1=25
+draw op=polygon layer=1 frame=6 color=#21182f fill=true points=[[11,9],[21,9],[22,17],[20,19],[12,19],[10,17]]
+draw op=polygon layer=1 frame=6 color=#315f9e fill=true points=[[12,10],[20,10],[20,16],[19,17],[13,17],[12,16]]
+draw op=rect layer=1 frame=6 color=#3a415b fill=true x0=11 x1=21 y0=15 y1=17
+draw op=rect layer=1 frame=6 color=#f7df92 fill=true x0=15 x1=17 y0=15 y1=17
+draw op=rect layer=1 frame=6 color=#f7df92 fill=true x0=15 x1=17 y0=10 y1=12
+draw op=polyline layer=2 frame=6 color=#21182f points=[[11,11],[7,10],[5,7]] size=5
+draw op=polyline layer=2 frame=6 color=#315f9e points=[[11,11],[8,10],[6,8]] size=3
+draw op=ellipse layer=2 frame=6 color=#21182f cx=5 cy=6 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=6 color=#f2b27f cx=5 cy=6 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=6 color=#21182f points=[[21,11],[25,10],[27,7]] size=5
+draw op=polyline layer=2 frame=6 color=#315f9e points=[[21,11],[24,10],[26,8]] size=3
+draw op=ellipse layer=2 frame=6 color=#21182f cx=27 cy=6 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=6 color=#f2b27f cx=27 cy=6 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=6 color=#21182f cx=16 cy=5 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=6 color=#f2b27f cx=16 cy=6 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=6 color=#6b3e2e fill=true points=[[11,4],[12,1],[15,0],[20,1],[21,4],[19,3],[18,5],[16,3],[14,5]]
+draw op=rect layer=3 frame=6 color=#6b3e2e fill=true x0=11 x1=12 y0=5 y1=8
+draw op=rect layer=3 frame=6 color=#6b3e2e fill=true x0=20 x1=21 y0=5 y1=8
+draw op=rect layer=3 frame=6 color=#21182f fill=true x0=14 x1=14 y0=6 y1=7
+draw op=rect layer=3 frame=6 color=#21182f fill=true x0=18 x1=18 y0=6 y1=7
+draw op=rect layer=3 frame=6 color=#6b3e2e fill=true x0=15 x1=17 y0=9 y1=9
+draw op=rect layer=3 frame=6 color=#f7df92 fill=true x0=13 x1=14 y0=4 y1=4
+draw op=polygon layer=0 frame=7 color=#21182f fill=true points=[[11,20],[16,20],[15,25],[13,29],[9,29],[9,27],[12,25]]
+draw op=polygon layer=0 frame=7 color=#3a415b fill=true points=[[12,21],[15,21],[14,25],[12,28],[10,28],[13,24]]
+draw op=rect layer=0 frame=7 color=#6b3e2e fill=true x0=8 x1=13 y0=28 y1=29
+draw op=polygon layer=0 frame=7 color=#21182f fill=true points=[[16,20],[21,20],[20,25],[23,27],[23,29],[19,29],[18,25]]
+draw op=polygon layer=0 frame=7 color=#3a415b fill=true points=[[17,21],[20,21],[19,25],[22,28],[20,28],[18,24]]
+draw op=rect layer=0 frame=7 color=#6b3e2e fill=true x0=19 x1=24 y0=28 y1=29
+draw op=polygon layer=1 frame=7 color=#21182f fill=true points=[[11,12],[21,12],[22,20],[20,22],[12,22],[10,20]]
+draw op=polygon layer=1 frame=7 color=#315f9e fill=true points=[[12,13],[20,13],[20,19],[19,20],[13,20],[12,19]]
+draw op=rect layer=1 frame=7 color=#3a415b fill=true x0=11 x1=21 y0=18 y1=20
+draw op=rect layer=1 frame=7 color=#f7df92 fill=true x0=15 x1=17 y0=18 y1=20
+draw op=rect layer=1 frame=7 color=#f7df92 fill=true x0=15 x1=17 y0=13 y1=15
+draw op=polyline layer=2 frame=7 color=#21182f points=[[11,14],[7,15],[4,18]] size=5
+draw op=polyline layer=2 frame=7 color=#315f9e points=[[11,14],[8,15],[5,18]] size=3
+draw op=ellipse layer=2 frame=7 color=#21182f cx=4 cy=19 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=7 color=#f2b27f cx=4 cy=19 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=7 color=#21182f points=[[21,14],[25,15],[28,18]] size=5
+draw op=polyline layer=2 frame=7 color=#315f9e points=[[21,14],[24,15],[27,18]] size=3
+draw op=ellipse layer=2 frame=7 color=#21182f cx=28 cy=19 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=7 color=#f2b27f cx=28 cy=19 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=7 color=#21182f cx=16 cy=8 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=7 color=#f2b27f cx=16 cy=9 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=7 color=#6b3e2e fill=true points=[[11,7],[12,4],[15,3],[20,4],[21,7],[19,6],[18,8],[16,6],[14,8]]
+draw op=rect layer=3 frame=7 color=#6b3e2e fill=true x0=11 x1=12 y0=8 y1=11
+draw op=rect layer=3 frame=7 color=#6b3e2e fill=true x0=20 x1=21 y0=8 y1=11
+draw op=rect layer=3 frame=7 color=#21182f fill=true x0=14 x1=14 y0=9 y1=10
+draw op=rect layer=3 frame=7 color=#21182f fill=true x0=18 x1=18 y0=9 y1=10
+draw op=rect layer=3 frame=7 color=#6b3e2e fill=true x0=15 x1=17 y0=12 y1=12
+draw op=rect layer=3 frame=7 color=#f7df92 fill=true x0=13 x1=14 y0=7 y1=7
+draw op=polygon layer=0 frame=8 color=#21182f fill=true points=[[10,23],[16,22],[14,26],[11,29],[6,29],[6,27],[11,25]]
+draw op=polygon layer=0 frame=8 color=#3a415b fill=true points=[[11,24],[15,23],[13,26],[10,28],[7,28],[12,25]]
+draw op=rect layer=0 frame=8 color=#6b3e2e fill=true x0=5 x1=11 y0=28 y1=29
+draw op=polygon layer=0 frame=8 color=#21182f fill=true points=[[16,22],[22,23],[21,25],[26,27],[26,29],[21,29],[18,26]]
+draw op=polygon layer=0 frame=8 color=#3a415b fill=true points=[[17,23],[21,24],[19,26],[25,28],[22,28],[19,25]]
+draw op=rect layer=0 frame=8 color=#6b3e2e fill=true x0=21 x1=27 y0=28 y1=29
+draw op=polygon layer=1 frame=8 color=#21182f fill=true points=[[10,16],[22,16],[23,23],[20,25],[12,25],[9,23]]
+draw op=polygon layer=1 frame=8 color=#315f9e fill=true points=[[12,17],[20,17],[21,22],[19,23],[13,23],[11,22]]
+draw op=rect layer=1 frame=8 color=#3a415b fill=true x0=11 x1=21 y0=21 y1=23
+draw op=rect layer=1 frame=8 color=#f7df92 fill=true x0=15 x1=17 y0=21 y1=23
+draw op=rect layer=1 frame=8 color=#f7df92 fill=true x0=15 x1=17 y0=17 y1=19
+draw op=polyline layer=2 frame=8 color=#21182f points=[[11,18],[8,20],[9,24]] size=5
+draw op=polyline layer=2 frame=8 color=#315f9e points=[[11,18],[9,20],[10,23]] size=3
+draw op=ellipse layer=2 frame=8 color=#21182f cx=10 cy=25 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=8 color=#f2b27f cx=10 cy=25 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=8 color=#21182f points=[[21,18],[24,20],[23,24]] size=5
+draw op=polyline layer=2 frame=8 color=#315f9e points=[[21,18],[23,20],[22,23]] size=3
+draw op=ellipse layer=2 frame=8 color=#21182f cx=22 cy=25 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=8 color=#f2b27f cx=22 cy=25 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=8 color=#21182f cx=16 cy=12 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=8 color=#f2b27f cx=16 cy=13 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=8 color=#6b3e2e fill=true points=[[11,11],[12,8],[15,7],[20,8],[21,11],[19,10],[18,12],[16,10],[14,12]]
+draw op=rect layer=3 frame=8 color=#6b3e2e fill=true x0=11 x1=12 y0=12 y1=15
+draw op=rect layer=3 frame=8 color=#6b3e2e fill=true x0=20 x1=21 y0=12 y1=15
+draw op=rect layer=3 frame=8 color=#21182f fill=true x0=14 x1=14 y0=13 y1=14
+draw op=rect layer=3 frame=8 color=#21182f fill=true x0=18 x1=18 y0=13 y1=14
+draw op=rect layer=3 frame=8 color=#6b3e2e fill=true x0=15 x1=17 y0=16 y1=16
+draw op=rect layer=3 frame=8 color=#f7df92 fill=true x0=13 x1=14 y0=11 y1=11
+draw op=polygon layer=0 frame=9 color=#21182f fill=true points=[[11,22],[16,22],[15,26],[13,29],[9,29],[9,27],[12,25]]
+draw op=polygon layer=0 frame=9 color=#3a415b fill=true points=[[12,23],[15,23],[14,26],[12,28],[10,28],[13,25]]
+draw op=rect layer=0 frame=9 color=#6b3e2e fill=true x0=8 x1=13 y0=28 y1=29
+draw op=polygon layer=0 frame=9 color=#21182f fill=true points=[[16,22],[21,22],[20,25],[23,27],[23,29],[19,29],[18,26]]
+draw op=polygon layer=0 frame=9 color=#3a415b fill=true points=[[17,23],[20,23],[19,25],[22,28],[20,28],[18,25]]
+draw op=rect layer=0 frame=9 color=#6b3e2e fill=true x0=19 x1=24 y0=28 y1=29
+draw op=polygon layer=1 frame=9 color=#21182f fill=true points=[[11,14],[21,14],[23,22],[20,24],[12,24],[9,22]]
+draw op=polygon layer=1 frame=9 color=#315f9e fill=true points=[[12,15],[20,15],[21,21],[19,22],[13,22],[11,21]]
+draw op=rect layer=1 frame=9 color=#3a415b fill=true x0=11 x1=21 y0=20 y1=22
+draw op=rect layer=1 frame=9 color=#f7df92 fill=true x0=15 x1=17 y0=20 y1=22
+draw op=rect layer=1 frame=9 color=#f7df92 fill=true x0=15 x1=17 y0=15 y1=17
+draw op=polyline layer=2 frame=9 color=#21182f points=[[11,16],[8,19],[8,23]] size=5
+draw op=polyline layer=2 frame=9 color=#315f9e points=[[11,16],[9,19],[9,22]] size=3
+draw op=ellipse layer=2 frame=9 color=#21182f cx=8 cy=24 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=9 color=#f2b27f cx=8 cy=24 fill=true rx=1 ry=1
+draw op=polyline layer=2 frame=9 color=#21182f points=[[21,16],[24,19],[24,23]] size=5
+draw op=polyline layer=2 frame=9 color=#315f9e points=[[21,16],[23,19],[23,22]] size=3
+draw op=ellipse layer=2 frame=9 color=#21182f cx=24 cy=24 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=9 color=#f2b27f cx=24 cy=24 fill=true rx=1 ry=1
+draw op=ellipse layer=3 frame=9 color=#21182f cx=16 cy=10 fill=true rx=6 ry=5
+draw op=ellipse layer=3 frame=9 color=#f2b27f cx=16 cy=11 fill=true rx=4 ry=4
+draw op=polygon layer=3 frame=9 color=#6b3e2e fill=true points=[[11,9],[12,6],[15,5],[20,6],[21,9],[19,8],[18,10],[16,8],[14,10]]
+draw op=rect layer=3 frame=9 color=#6b3e2e fill=true x0=11 x1=12 y0=10 y1=13
+draw op=rect layer=3 frame=9 color=#6b3e2e fill=true x0=20 x1=21 y0=10 y1=13
+draw op=rect layer=3 frame=9 color=#21182f fill=true x0=14 x1=14 y0=11 y1=12
+draw op=rect layer=3 frame=9 color=#21182f fill=true x0=18 x1=18 y0=11 y1=12
+draw op=rect layer=3 frame=9 color=#6b3e2e fill=true x0=15 x1=17 y0=14 y1=14
+draw op=rect layer=3 frame=9 color=#f7df92 fill=true x0=13 x1=14 y0=9 y1=9
+add_tag name=jump direction=forward from=0 to=9

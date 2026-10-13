@@ -1,13 +1,13 @@
-atelier 3 381263ed-f860-4cc2-977f-57364f8c092d 0.1.0
-doc_new name="Tideglass • bubbling flask" width=32 height=32
-doc_palette op=set colors=[[36,38,59,255],[80,106,128,255],[183,123,83,255],[233,189,131,255],[47,183,167,255],[197,243,219,255]]
-doc_layer op=rename index=0 name="Glass body — fixed"
-doc_layer op=add name="Liquid body — fixed"
-doc_layer op=add name="Surface — wobble"
-doc_layer op=add name="Bubbles — rise and pop"
-doc_layer op=add name="Glass reflections — fixed"
-doc_layer op=add name="Cork — fixed"
-doc_paint_grid layer=0 frame=0 x=5 y=6 legend={"I":"#24263b"} rows:24
+atelier 4 381263ed-f860-4cc2-977f-57364f8c092d 0.1.0
+new name="Tideglass • bubbling flask" width=32 height=32
+palette op=set colors=#24263b,#506a80,#b77b53,#e9bd83,#2fb7a7,#c5f3db
+layer op=rename index=0 name="Glass body — fixed"
+layer op=add name="Liquid body — fixed"
+layer op=add name="Surface — wobble"
+layer op=add name="Bubbles — rise and pop"
+layer op=add name="Glass reflections — fixed"
+layer op=add name="Cork — fixed"
+paint_grid layer=0 frame=0 x=5 y=6 legend=I:#24263b rows:24
   |......IIIIIIIIII......|
   |.....IIIIIIIIIIII.....|
   |.....IIIIIIIIIIII.....|
@@ -32,13 +32,13 @@ doc_paint_grid layer=0 frame=0 x=5 y=6 legend={"I":"#24263b"} rows:24
   |..IIIIIIIIIIIIIIIIII..|
   |....IIIIIIIIIIIIII....|
   |......IIIIIIIIII......|
-doc_paint_grid layer=5 frame=0 x=12 y=2 legend={"I":"#24263b"} rows:5
+paint_grid layer=5 frame=0 x=12 y=2 legend=I:#24263b rows:5
   |.IIIIII.|
   |IIIIIIII|
   |IIIIIIII|
   |IIIIIIII|
   |.IIIIII.|
-doc_paint_grid layer=0 frame=0 x=6 y=7 legend={"S":"#506a80"} rows:22
+paint_grid layer=0 frame=0 x=6 y=7 legend=S:#506a80 rows:22
   |.....SSSSSSSSSS.....|
   |......SSSSSSSS......|
   |.......SSSSSS.......|
@@ -61,7 +61,7 @@ doc_paint_grid layer=0 frame=0 x=6 y=7 legend={"S":"#506a80"} rows:22
   |.SSSSSSSSSSSSSSSSSS.|
   |..SSSSSSSSSSSSSSSS..|
   |....SSSSSSSSSSSS....|
-doc_paint_grid layer=1 frame=0 x=7 y=18 legend={"S":"#506a80","T":"#2fb7a7"} rows:11
+paint_grid layer=1 frame=0 x=7 y=18 legend=S:#506a80,T:#2fb7a7 rows:11
   |TTTTTTTTTTTTTTTTTT|
   |TTTTTTTTTTTTTTTTTS|
   |TTTTTTTTTTTTTTTTTS|
@@ -73,105 +73,105 @@ doc_paint_grid layer=1 frame=0 x=7 y=18 legend={"S":"#506a80","T":"#2fb7a7"} row
   |..TTTTTTTTTTTTSS..|
   |...TTTTTTTTTSSS...|
   |.....TTTTTSSS.....|
-doc_paint_grid layer=5 frame=0 x=12 y=2 legend={"C":"#b77b53","G":"#e9bd83","I":"#24263b"} rows:5
+paint_grid layer=5 frame=0 x=12 y=2 legend=C:#b77b53,G:#e9bd83,I:#24263b rows:5
   |.GGGGGG.|
   |GCCCCCCI|
   |ICCCCCCI|
   |ICCCCCCI|
   |.ICCCC..|
-doc_paint_grid layer=2 frame=0 x=7 y=17 legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:3
+paint_grid layer=2 frame=0 x=7 y=17 legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:3
   |......HHHHHH......|
   |HHHHHHTTTTTTHHHHHH|
   |TTTTTTTTTTTTTTTTTS|
-doc_draw op=rect layer=1 frame=0 color="#2fb7a7" erase=true fill=true x0=7 x1=24 y0=18 y1=19
-doc_region op=clear layer=1 frame=0 rect=[7,18,24,19]
-doc_draw op=pencil layer=4 frame=0 color="#c5f3db" points=[[11,7],[12,7],[13,7],[14,7],[13,9],[13,10],[11,12],[10,13],[9,14],[8,15],[8,16],[7,17],[6,18],[6,19],[6,20],[6,21],[6,22],[7,23],[11,27],[12,28],[13,28],[14,28]] size=1
-doc_draw op=pencil layer=4 frame=0 color="#2fb7a7" points=[[22,14],[23,15],[24,16],[25,21],[25,22]] size=1
-doc_draw op=pencil layer=5 frame=0 color="#e9bd83" points=[[13,3],[13,4],[14,3],[16,3]] size=1
-doc_draw op=pencil layer=5 frame=0 color="#24263b" points=[[17,4],[14,5]] size=1
-doc_paint_grid layer=2 frame=0 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+draw op=rect layer=1 frame=0 color=#2fb7a7 erase=true fill=true x0=7 x1=24 y0=18 y1=19
+region op=clear layer=1 frame=0 rect=7,18,24,19
+draw op=pencil layer=4 frame=0 color=#c5f3db points=[[11,7],[12,7],[13,7],[14,7],[13,9],[13,10],[11,12],[10,13],[9,14],[8,15],[8,16],[7,17],[6,18],[6,19],[6,20],[6,21],[6,22],[7,23],[11,27],[12,28],[13,28],[14,28]] size=1
+draw op=pencil layer=4 frame=0 color=#2fb7a7 points=[[22,14],[23,15],[24,16],[25,21],[25,22]] size=1
+draw op=pencil layer=5 frame=0 color=#e9bd83 points=[[13,3],[13,4],[14,3],[16,3]] size=1
+draw op=pencil layer=5 frame=0 color=#24263b points=[[17,4],[14,5]] size=1
+paint_grid layer=2 frame=0 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |......HHHHHH......|
   |THHHHHTTTTTTHHHHHS|
   |TTTTTTTTTTTTTTTTSS|
-doc_region op=clear layer=3 frame=0 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=0 color="#506a80" points=[[20,22]] size=1
-doc_draw op=pencil layer=3 frame=0 color="#c5f3db" points=[[11,26],[20,20],[19,21],[21,21],[16,23]] size=1
-doc_frame op=add copy_from=0 count=9 duration_ms=100
-doc_paint_grid layer=2 frame=1 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=0 rect=8,15,23,27
+draw op=pencil layer=3 frame=0 color=#506a80 points=[[20,22]] size=1
+draw op=pencil layer=3 frame=0 color=#c5f3db points=[[11,26],[20,20],[19,21],[21,21],[16,23]] size=1
+frame op=add copy_from=0 count=9 duration_ms=100
+paint_grid layer=2 frame=1 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |....HHHHH.........|
   |THHHTTTTTHHHHHHHHS|
   |TTTTTTTTTTTTTTTTSS|
-doc_region op=clear layer=3 frame=1 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=1 color="#506a80" points=[[11,26],[20,21]] size=1
-doc_draw op=pencil layer=3 frame=1 color="#c5f3db" points=[[11,25],[20,19],[19,20],[21,20],[16,22]] size=1
-doc_paint_grid layer=2 frame=2 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=1 rect=8,15,23,27
+draw op=pencil layer=3 frame=1 color=#506a80 points=[[11,26],[20,21]] size=1
+draw op=pencil layer=3 frame=1 color=#c5f3db points=[[11,25],[20,19],[19,20],[21,20],[16,22]] size=1
+paint_grid layer=2 frame=2 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |....HH............|
   |THHHTTHHHHHHHHHHHS|
   |TTTTTTTTTTTTTTTTSS|
-doc_region op=clear layer=3 frame=2 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=2 color="#506a80" points=[[11,25],[20,20]] size=1
-doc_draw op=pencil layer=3 frame=2 color="#c5f3db" points=[[11,23],[10,24],[12,24],[20,18],[19,19],[21,19],[16,21]] size=1
-doc_paint_grid layer=2 frame=3 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=2 rect=8,15,23,27
+draw op=pencil layer=3 frame=2 color=#506a80 points=[[11,25],[20,20]] size=1
+draw op=pencil layer=3 frame=2 color=#c5f3db points=[[11,23],[10,24],[12,24],[20,18],[19,19],[21,19],[16,21]] size=1
+paint_grid layer=2 frame=3 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |..................|
   |THHHHHHHHHHH..HHHS|
   |TTTTTTTTTTTTHHTTSS|
-doc_region op=clear layer=3 frame=3 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=3 color="#2fb7a7" points=[[20,19]] size=1
-doc_draw op=pencil layer=3 frame=3 color="#506a80" points=[[11,24],[20,20]] size=1
-doc_draw op=pencil layer=3 frame=3 color="#c5f3db" points=[[11,22],[10,23],[12,23],[20,18],[19,19],[21,19],[16,20]] size=1
-doc_paint_grid layer=2 frame=4 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=3 rect=8,15,23,27
+draw op=pencil layer=3 frame=3 color=#2fb7a7 points=[[20,19]] size=1
+draw op=pencil layer=3 frame=3 color=#506a80 points=[[11,24],[20,20]] size=1
+draw op=pencil layer=3 frame=3 color=#c5f3db points=[[11,22],[10,23],[12,23],[20,18],[19,19],[21,19],[16,20]] size=1
+paint_grid layer=2 frame=4 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |..................|
   |THHHHHHHH.....HHHS|
   |TTTTTTTTTHHHHHTTSS|
-doc_region op=clear layer=3 frame=4 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=4 color="#506a80" points=[[11,23]] size=1
-doc_draw op=pencil layer=3 frame=4 color="#c5f3db" points=[[11,21],[10,22],[12,22],[18,18],[22,18],[20,17],[16,19]] size=1
-doc_paint_grid layer=2 frame=5 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=4 rect=8,15,23,27
+draw op=pencil layer=3 frame=4 color=#506a80 points=[[11,23]] size=1
+draw op=pencil layer=3 frame=4 color=#c5f3db points=[[11,21],[10,22],[12,22],[18,18],[22,18],[20,17],[16,19]] size=1
+paint_grid layer=2 frame=5 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |..................|
   |THHHHH......HHHHHS|
   |TTTTTTHHHHHHTTTTSS|
-doc_region op=clear layer=3 frame=5 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=5 color="#2fb7a7" points=[[16,19]] size=1
-doc_draw op=pencil layer=3 frame=5 color="#506a80" points=[[11,22]] size=1
-doc_draw op=pencil layer=3 frame=5 color="#c5f3db" points=[[11,20],[10,21],[12,21],[20,26],[16,18]] size=1
-doc_paint_grid layer=2 frame=6 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=5 rect=8,15,23,27
+draw op=pencil layer=3 frame=5 color=#2fb7a7 points=[[16,19]] size=1
+draw op=pencil layer=3 frame=5 color=#506a80 points=[[11,22]] size=1
+draw op=pencil layer=3 frame=5 color=#c5f3db points=[[11,20],[10,21],[12,21],[20,26],[16,18]] size=1
+paint_grid layer=2 frame=6 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |..................|
   |THHH.....HHHHHHHHS|
   |TTTTHHHHHTTTTTTTSS|
-doc_region op=clear layer=3 frame=6 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=6 color="#506a80" points=[[11,21],[20,26]] size=1
-doc_draw op=pencil layer=3 frame=6 color="#c5f3db" points=[[11,19],[10,20],[12,20],[20,25],[15,17],[17,17]] size=1
-doc_paint_grid layer=2 frame=7 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=6 rect=8,15,23,27
+draw op=pencil layer=3 frame=6 color=#506a80 points=[[11,21],[20,26]] size=1
+draw op=pencil layer=3 frame=6 color=#c5f3db points=[[11,19],[10,20],[12,20],[20,25],[15,17],[17,17]] size=1
+paint_grid layer=2 frame=7 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |..................|
   |THHH..HHHHHHHHHHHS|
   |TTTTHHTTTTTTTTTTSS|
-doc_region op=clear layer=3 frame=7 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=7 color="#506a80" points=[[11,20],[20,25]] size=1
-doc_draw op=pencil layer=3 frame=7 color="#c5f3db" points=[[11,18],[10,19],[12,19],[20,23],[19,24],[21,24],[16,26]] size=1
-doc_paint_grid layer=2 frame=8 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=7 rect=8,15,23,27
+draw op=pencil layer=3 frame=7 color=#506a80 points=[[11,20],[20,25]] size=1
+draw op=pencil layer=3 frame=7 color=#c5f3db points=[[11,18],[10,19],[12,19],[20,23],[19,24],[21,24],[16,26]] size=1
+paint_grid layer=2 frame=8 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |............HH....|
   |THHHHHHHHHHHTTHHHS|
   |TTTTTTTTTTTTTTTTSS|
-doc_region op=clear layer=3 frame=8 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=8 color="#2fb7a7" points=[[11,18]] size=1
-doc_draw op=pencil layer=3 frame=8 color="#506a80" points=[[11,19],[20,24]] size=1
-doc_draw op=pencil layer=3 frame=8 color="#c5f3db" points=[[11,17],[10,18],[12,18],[20,22],[19,23],[21,23],[16,25]] size=1
-doc_paint_grid layer=2 frame=9 x=7 y=16 replace=true legend={"H":"#c5f3db","S":"#506a80","T":"#2fb7a7"} rows:4
+region op=clear layer=3 frame=8 rect=8,15,23,27
+draw op=pencil layer=3 frame=8 color=#2fb7a7 points=[[11,18]] size=1
+draw op=pencil layer=3 frame=8 color=#506a80 points=[[11,19],[20,24]] size=1
+draw op=pencil layer=3 frame=8 color=#c5f3db points=[[11,17],[10,18],[12,18],[20,22],[19,23],[21,23],[16,25]] size=1
+paint_grid layer=2 frame=9 x=7 y=16 replace=true legend=H:#c5f3db,S:#506a80,T:#2fb7a7 rows:4
   |..................|
   |.........HHHHH....|
   |THHHHHHHHTTTTTHHHS|
   |TTTTTTTTTTTTTTTTSS|
-doc_region op=clear layer=3 frame=9 rect=[8,15,23,27]
-doc_draw op=pencil layer=3 frame=9 color="#506a80" points=[[20,23]] size=1
-doc_draw op=pencil layer=3 frame=9 color="#c5f3db" points=[[9,17],[13,17],[11,16],[20,21],[19,22],[21,22],[16,24]] size=1
-doc_draw op=pencil layer=5 frame=0 frame_to=9 color="#b77b53" points=[[14,5]] size=1
-doc_add_tag name=bubbling direction=forward from=0 to=9
+region op=clear layer=3 frame=9 rect=8,15,23,27
+draw op=pencil layer=3 frame=9 color=#506a80 points=[[20,23]] size=1
+draw op=pencil layer=3 frame=9 color=#c5f3db points=[[9,17],[13,17],[11,16],[20,21],[19,22],[21,22],[16,24]] size=1
+draw op=pencil layer=5 frame=0 frame_to=9 color=#b77b53 points=[[14,5]] size=1
+add_tag name=bubbling direction=forward from=0 to=9

@@ -1,60 +1,60 @@
-atelier 3 514966af-df25-440f-80d8-df368c758797 0.1.0
-doc_new name=rubber_ball width=32 height=32
-doc_layer op=add name=shadow
-doc_layer op=rename index=0 name=ball
-doc_layer op=move index=1 to_index=0
-doc_palette op=set colors=[[42,10,10,255],[156,35,28,255],[226,72,58,255],[255,177,153,255]]
-doc_frame op=add copy_from=0 count=9
-doc_draw op=ellipse layer=1 frame=0 color="#2a0a0a" cx=16 cy=6 fill=true rx=6 ry=6
-doc_draw op=ellipse layer=1 frame=0 color="#e2483a" cx=16 cy=6 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=1 frame=0 color="#9c231c" cx=17 cy=7 fill=true rx=4 ry=4
-doc_draw op=ellipse layer=1 frame=0 color="#ffb199" cx=14 cy=4 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=1 frame=0 color="#e2483a" cx=16 cy=6 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=1 frame=0 color="#9c231c" cx=18 cy=8 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=1 frame=0 color="#ffb199" cx=14 cy=4 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=0 color="#2a0a0a" cx=16 cy=29 fill=true rx=3 ry=2
-doc_draw op=ellipse layer=1 frame=4 color="#2a0a0a" cx=16 cy=14 fill=true rx=4 ry=8
-doc_draw op=ellipse layer=1 frame=4 color="#e2483a" cx=16 cy=14 fill=true rx=3 ry=7
-doc_draw op=ellipse layer=1 frame=4 color="#9c231c" cx=17 cy=16 fill=true rx=2 ry=3
-doc_draw op=ellipse layer=1 frame=4 color="#ffb199" cx=15 cy=8 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=4 color="#2a0a0a" cx=16 cy=29 fill=true rx=6 ry=2
-doc_draw op=ellipse layer=1 frame=5 color="#2a0a0a" cx=16 cy=25 fill=true rx=8 ry=3
-doc_draw op=ellipse layer=1 frame=5 color="#e2483a" cx=16 cy=25 fill=true rx=7 ry=2
-doc_draw op=ellipse layer=1 frame=5 color="#9c231c" cx=19 cy=25 fill=true rx=3 ry=1
-doc_draw op=ellipse layer=1 frame=5 color="#ffb199" cx=12 cy=24 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=5 color="#2a0a0a" cx=16 cy=29 fill=true rx=8 ry=2
-doc_draw op=ellipse layer=0 frame=1 color="#2a0a0a" cx=16 cy=29 fill=true rx=3 ry=2
-doc_draw op=ellipse layer=1 frame=1 color="#2a0a0a" cx=16 cy=7 fill=true rx=6 ry=6
-doc_draw op=ellipse layer=1 frame=1 color="#e2483a" cx=16 cy=7 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=1 frame=1 color="#9c231c" cx=18 cy=9 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=1 frame=1 color="#ffb199" cx=14 cy=5 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=2 color="#2a0a0a" cx=16 cy=29 fill=true rx=4 ry=2
-doc_draw op=ellipse layer=1 frame=2 color="#2a0a0a" cx=16 cy=9 fill=true rx=6 ry=6
-doc_draw op=ellipse layer=1 frame=2 color="#e2483a" cx=16 cy=9 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=1 frame=2 color="#9c231c" cx=18 cy=11 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=1 frame=2 color="#ffb199" cx=14 cy=7 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=3 color="#2a0a0a" cx=16 cy=29 fill=true rx=5 ry=2
-doc_draw op=ellipse layer=1 frame=3 color="#2a0a0a" cx=16 cy=11 fill=true rx=5 ry=7
-doc_draw op=ellipse layer=1 frame=3 color="#e2483a" cx=16 cy=11 fill=true rx=4 ry=6
-doc_draw op=ellipse layer=1 frame=3 color="#9c231c" cx=17 cy=13 fill=true rx=2 ry=3
-doc_draw op=ellipse layer=1 frame=3 color="#ffb199" cx=14 cy=8 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=6 color="#2a0a0a" cx=16 cy=29 fill=true rx=6 ry=2
-doc_draw op=ellipse layer=1 frame=6 color="#2a0a0a" cx=16 cy=14 fill=true rx=4 ry=8
-doc_draw op=ellipse layer=1 frame=6 color="#e2483a" cx=16 cy=14 fill=true rx=3 ry=7
-doc_draw op=ellipse layer=1 frame=6 color="#9c231c" cx=17 cy=16 fill=true rx=2 ry=3
-doc_draw op=ellipse layer=1 frame=6 color="#ffb199" cx=15 cy=8 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=7 color="#2a0a0a" cx=16 cy=29 fill=true rx=5 ry=2
-doc_draw op=ellipse layer=1 frame=7 color="#2a0a0a" cx=16 cy=11 fill=true rx=5 ry=7
-doc_draw op=ellipse layer=1 frame=7 color="#e2483a" cx=16 cy=11 fill=true rx=4 ry=6
-doc_draw op=ellipse layer=1 frame=7 color="#9c231c" cx=17 cy=13 fill=true rx=2 ry=3
-doc_draw op=ellipse layer=1 frame=7 color="#ffb199" cx=14 cy=8 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=8 color="#2a0a0a" cx=16 cy=29 fill=true rx=4 ry=2
-doc_draw op=ellipse layer=1 frame=8 color="#2a0a0a" cx=16 cy=9 fill=true rx=6 ry=6
-doc_draw op=ellipse layer=1 frame=8 color="#e2483a" cx=16 cy=9 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=1 frame=8 color="#9c231c" cx=18 cy=11 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=1 frame=8 color="#ffb199" cx=14 cy=7 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=0 frame=9 color="#2a0a0a" cx=16 cy=29 fill=true rx=3 ry=2
-doc_draw op=ellipse layer=1 frame=9 color="#2a0a0a" cx=16 cy=7 fill=true rx=6 ry=6
-doc_draw op=ellipse layer=1 frame=9 color="#e2483a" cx=16 cy=7 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=1 frame=9 color="#9c231c" cx=18 cy=9 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=1 frame=9 color="#ffb199" cx=14 cy=5 fill=true rx=1 ry=1
+atelier 4 514966af-df25-440f-80d8-df368c758797 0.1.0
+new name=rubber_ball width=32 height=32
+layer op=add name=shadow
+layer op=rename index=0 name=ball
+layer op=move index=1 to_index=0
+palette op=set colors=#2a0a0a,#9c231c,#e2483a,#ffb199
+frame op=add copy_from=0 count=9
+draw op=ellipse layer=1 frame=0 color=#2a0a0a cx=16 cy=6 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=0 color=#e2483a cx=16 cy=6 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=0 color=#9c231c cx=17 cy=7 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=0 color=#ffb199 cx=14 cy=4 fill=true rx=1 ry=1
+draw op=ellipse layer=1 frame=0 color=#e2483a cx=16 cy=6 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=0 color=#9c231c cx=18 cy=8 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=0 color=#ffb199 cx=14 cy=4 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=0 color=#2a0a0a cx=16 cy=29 fill=true rx=3 ry=2
+draw op=ellipse layer=1 frame=4 color=#2a0a0a cx=16 cy=14 fill=true rx=4 ry=8
+draw op=ellipse layer=1 frame=4 color=#e2483a cx=16 cy=14 fill=true rx=3 ry=7
+draw op=ellipse layer=1 frame=4 color=#9c231c cx=17 cy=16 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=4 color=#ffb199 cx=15 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=4 color=#2a0a0a cx=16 cy=29 fill=true rx=6 ry=2
+draw op=ellipse layer=1 frame=5 color=#2a0a0a cx=16 cy=25 fill=true rx=8 ry=3
+draw op=ellipse layer=1 frame=5 color=#e2483a cx=16 cy=25 fill=true rx=7 ry=2
+draw op=ellipse layer=1 frame=5 color=#9c231c cx=19 cy=25 fill=true rx=3 ry=1
+draw op=ellipse layer=1 frame=5 color=#ffb199 cx=12 cy=24 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=5 color=#2a0a0a cx=16 cy=29 fill=true rx=8 ry=2
+draw op=ellipse layer=0 frame=1 color=#2a0a0a cx=16 cy=29 fill=true rx=3 ry=2
+draw op=ellipse layer=1 frame=1 color=#2a0a0a cx=16 cy=7 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=1 color=#e2483a cx=16 cy=7 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=1 color=#9c231c cx=18 cy=9 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=1 color=#ffb199 cx=14 cy=5 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=2 color=#2a0a0a cx=16 cy=29 fill=true rx=4 ry=2
+draw op=ellipse layer=1 frame=2 color=#2a0a0a cx=16 cy=9 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=2 color=#e2483a cx=16 cy=9 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=2 color=#9c231c cx=18 cy=11 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=2 color=#ffb199 cx=14 cy=7 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=3 color=#2a0a0a cx=16 cy=29 fill=true rx=5 ry=2
+draw op=ellipse layer=1 frame=3 color=#2a0a0a cx=16 cy=11 fill=true rx=5 ry=7
+draw op=ellipse layer=1 frame=3 color=#e2483a cx=16 cy=11 fill=true rx=4 ry=6
+draw op=ellipse layer=1 frame=3 color=#9c231c cx=17 cy=13 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=3 color=#ffb199 cx=14 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=6 color=#2a0a0a cx=16 cy=29 fill=true rx=6 ry=2
+draw op=ellipse layer=1 frame=6 color=#2a0a0a cx=16 cy=14 fill=true rx=4 ry=8
+draw op=ellipse layer=1 frame=6 color=#e2483a cx=16 cy=14 fill=true rx=3 ry=7
+draw op=ellipse layer=1 frame=6 color=#9c231c cx=17 cy=16 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=6 color=#ffb199 cx=15 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=7 color=#2a0a0a cx=16 cy=29 fill=true rx=5 ry=2
+draw op=ellipse layer=1 frame=7 color=#2a0a0a cx=16 cy=11 fill=true rx=5 ry=7
+draw op=ellipse layer=1 frame=7 color=#e2483a cx=16 cy=11 fill=true rx=4 ry=6
+draw op=ellipse layer=1 frame=7 color=#9c231c cx=17 cy=13 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=7 color=#ffb199 cx=14 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=8 color=#2a0a0a cx=16 cy=29 fill=true rx=4 ry=2
+draw op=ellipse layer=1 frame=8 color=#2a0a0a cx=16 cy=9 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=8 color=#e2483a cx=16 cy=9 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=8 color=#9c231c cx=18 cy=11 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=8 color=#ffb199 cx=14 cy=7 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=9 color=#2a0a0a cx=16 cy=29 fill=true rx=3 ry=2
+draw op=ellipse layer=1 frame=9 color=#2a0a0a cx=16 cy=7 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=9 color=#e2483a cx=16 cy=7 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=9 color=#9c231c cx=18 cy=9 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=9 color=#ffb199 cx=14 cy=5 fill=true rx=1 ry=1

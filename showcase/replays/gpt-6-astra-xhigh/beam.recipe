@@ -1,16 +1,16 @@
-atelier 3 081498af-e91d-46d8-a8fa-225bd2ba3154 0.1.0
-doc_new name=sc-gpt-6-astra-xhigh-beam width=48 height=48
-doc_palette op=set colors=[[20,30,51,255],[53,83,119,255],[29,163,177,255],[240,167,105,255],[122,238,218,255],[255,247,208,255]]
-doc_layer op=rename index=0 name=Body
-doc_layer op=add name="Rear leg"
-doc_layer op=add name="Front leg"
-doc_layer op=add name="Far arm"
-doc_layer op=add name=Head
-doc_layer op=add name="Near arm"
-doc_layer op=add name="Headband tails"
-doc_layer op=add name="Energy beam"
-doc_layer op=add name=Sparks
-doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"K":"#141e33"} rows:12
+atelier 4 081498af-e91d-46d8-a8fa-225bd2ba3154 0.1.0
+new name=sc-gpt-6-astra-xhigh-beam width=48 height=48
+palette op=set colors=#141e33,#355377,#1da3b1,#f0a769,#7aeeda,#fff7d0
+layer op=rename index=0 name=Body
+layer op=add name="Rear leg"
+layer op=add name="Front leg"
+layer op=add name="Far arm"
+layer op=add name=Head
+layer op=add name="Near arm"
+layer op=add name="Headband tails"
+layer op=add name="Energy beam"
+layer op=add name=Sparks
+paint_grid layer=0 frame=0 x=8 y=20 legend=K:#141e33 rows:12
   |....KKKK...|
   |..KKKKKKK..|
   |.KKKKKKKKK.|
@@ -23,7 +23,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"K":"#141e33"} rows:12
   |..KKKKKKKK.|
   |..KKKKKKKK.|
   |..KKKKKKKK.|
-doc_paint_grid layer=0 frame=0 x=3 y=30 legend={"K":"#141e33"} rows:12
+paint_grid layer=0 frame=0 x=3 y=30 legend=K:#141e33 rows:12
   |.......KKKK|
   |......KKKKK|
   |.....KKKKK.|
@@ -36,7 +36,7 @@ doc_paint_grid layer=0 frame=0 x=3 y=30 legend={"K":"#141e33"} rows:12
   |.KKKKK.....|
   |KKKKKKK....|
   |KKKKKKK....|
-doc_paint_grid layer=0 frame=0 x=13 y=30 legend={"K":"#141e33"} rows:12
+paint_grid layer=0 frame=0 x=13 y=30 legend=K:#141e33 rows:12
   |KKKKK.......|
   |KKKKKK......|
   |.KKKKKK.....|
@@ -49,14 +49,14 @@ doc_paint_grid layer=0 frame=0 x=13 y=30 legend={"K":"#141e33"} rows:12
   |.....KKKKKK.|
   |.....KKKKKKK|
   |.....KKKKKKK|
-doc_paint_grid layer=0 frame=0 x=15 y=21 legend={"K":"#141e33"} rows:6
+paint_grid layer=0 frame=0 x=15 y=21 legend=K:#141e33 rows:6
   |KKKK....KKK.|
   |KKKKK..KKKKK|
   |KKKKKKKKKKK.|
   |.KKKKKKKKK..|
   |..KKKKKKK...|
   |...KKKKK....|
-doc_paint_grid layer=0 frame=0 x=8 y=8 legend={"K":"#141e33"} rows:13
+paint_grid layer=0 frame=0 x=8 y=8 legend=K:#141e33 rows:13
   |....K...K....|
   |...KK..KK....|
   |.KKKKKKKKK...|
@@ -70,7 +70,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=8 legend={"K":"#141e33"} rows:13
   |.....KKKKKK..|
   |.....KKKKK...|
   |.....KKKK....|
-doc_paint_grid layer=0 frame=0 x=12 y=22 legend={"K":"#141e33"} rows:9
+paint_grid layer=0 frame=0 x=12 y=22 legend=K:#141e33 rows:9
   |.KKKK..........|
   |KKKKKK.........|
   |KKKKKK.........|
@@ -80,13 +80,13 @@ doc_paint_grid layer=0 frame=0 x=12 y=22 legend={"K":"#141e33"} rows:9
   |....KKKKKKKKKK.|
   |.....KKKKKKKK..|
   |......KKKK.....|
-doc_paint_grid layer=0 frame=0 x=5 y=13 legend={"K":"#141e33"} rows:4
+paint_grid layer=0 frame=0 x=5 y=13 legend=K:#141e33 rows:4
   |..KKKKK|
   |.KKKKK.|
   |KKKKK..|
   |KKK....|
-doc_draw op=clear_cel layer=0 frame=0
-doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1"} rows:12
+draw op=clear_cel layer=0 frame=0
+paint_grid layer=0 frame=0 x=8 y=20 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1 rows:12
   |....KKKK...|
   |..KKBBBBK..|
   |.KBBBBBBBK.|
@@ -99,7 +99,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"B":"#355377","K":"#141e33","S":
   |..KSSSSSSK.|
   |..KBBKBBBK.|
   |..KKKKKKKK.|
-doc_paint_grid layer=1 frame=0 x=3 y=30 legend={"B":"#355377","K":"#141e33","T":"#1da3b1"} rows:12
+paint_grid layer=1 frame=0 x=3 y=30 legend=B:#355377,K:#141e33,T:#1da3b1 rows:12
   |.......KKKK|
   |......KBBBK|
   |.....KBBBK.|
@@ -112,7 +112,7 @@ doc_paint_grid layer=1 frame=0 x=3 y=30 legend={"B":"#355377","K":"#141e33","T":
   |.KKBBK.....|
   |KBBBBBK....|
   |KKKKKKK....|
-doc_paint_grid layer=2 frame=0 x=13 y=30 legend={"B":"#355377","K":"#141e33","T":"#1da3b1"} rows:12
+paint_grid layer=2 frame=0 x=13 y=30 legend=B:#355377,K:#141e33,T:#1da3b1 rows:12
   |KKKKK.......|
   |KTTBBK......|
   |.KTTBBK.....|
@@ -125,14 +125,14 @@ doc_paint_grid layer=2 frame=0 x=13 y=30 legend={"B":"#355377","K":"#141e33","T"
   |.....KBBKKK.|
   |.....KBBBBBK|
   |.....KKKKKKK|
-doc_paint_grid layer=3 frame=0 x=15 y=21 legend={"B":"#355377","K":"#141e33","S":"#f0a769"} rows:6
+paint_grid layer=3 frame=0 x=15 y=21 legend=B:#355377,K:#141e33,S:#f0a769 rows:6
   |KKKK....KKK.|
   |KBBBK..KSSSK|
   |KBBBBKKSSSK.|
   |.KBBBBSSSK..|
   |..KBBBBBK...|
   |...KKKKK....|
-doc_paint_grid layer=4 frame=0 x=8 y=8 legend={"K":"#141e33","S":"#f0a769","T":"#1da3b1"} rows:13
+paint_grid layer=4 frame=0 x=8 y=8 legend=K:#141e33,S:#f0a769,T:#1da3b1 rows:13
   |....K...K....|
   |...KK..KK....|
   |.KKKKKKKKK...|
@@ -146,7 +146,7 @@ doc_paint_grid layer=4 frame=0 x=8 y=8 legend={"K":"#141e33","S":"#f0a769","T":"
   |.....KSSSSK..|
   |.....KSSSK...|
   |.....KKKK....|
-doc_paint_grid layer=5 frame=0 x=12 y=22 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:9
+paint_grid layer=5 frame=0 x=12 y=22 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:9
   |.KKKK..........|
   |KTTBBK.........|
   |KTTBBK.........|
@@ -156,53 +156,53 @@ doc_paint_grid layer=5 frame=0 x=12 y=22 legend={"B":"#355377","K":"#141e33","S"
   |....KTTBBSSSSK.|
   |.....KBBBBKKK..|
   |......KKKK.....|
-doc_paint_grid layer=6 frame=0 x=5 y=13 legend={"K":"#141e33","T":"#1da3b1"} rows:4
+paint_grid layer=6 frame=0 x=5 y=13 legend=K:#141e33,T:#1da3b1 rows:4
   |..KKKKK|
   |.KTTTK.|
   |KTTKK..|
   |KKK....|
-doc_paint_grid layer=7 frame=0 x=25 y=22 legend={"C":"#7aeeda","T":"#1da3b1","W":"#fff7d0"} rows:5
+paint_grid layer=7 frame=0 x=25 y=22 legend=C:#7aeeda,T:#1da3b1,W:#fff7d0 rows:5
   |..T..|
   |.TCT.|
   |TCWCT|
   |.TCT.|
   |..T..|
-doc_draw op=pencil layer=4 frame=0 color="#355377" points=[[12,11],[13,11],[14,10],[16,10]] size=1
-doc_draw op=line layer=4 frame=0 color="#7aeeda" size=1 x0=16 x1=18 y0=13 y1=13
-doc_draw op=pencil layer=4 frame=0 color="#fff7d0" points=[[19,16],[18,17]] size=1
-doc_draw op=pencil layer=4 frame=0 color="#141e33" points=[[13,16]] size=1
-doc_draw op=line layer=3 frame=0 color="#fff7d0" size=1 x0=24 x1=25 y0=22 y1=22
-doc_draw op=pencil layer=5 frame=0 color="#fff7d0" points=[[24,27]] size=1
-doc_frame op=duration frame=0 duration_ms=100
-doc_frame op=add copy_from=0 count=9 duration_ms=100
-doc_draw op=clear_cel layer=7 frame=1
-doc_fx op=shift layer=4 frame=1 dx=-1 dy=0 wrap=false
-doc_fx op=shift layer=3 frame=1 dx=-1 dy=0 wrap=false
-doc_fx op=shift layer=5 frame=1 dx=-1 dy=0 wrap=false
-doc_fx op=shift layer=6 frame=1 dx=-1 dy=0 wrap=false
-doc_draw op=clear_cel layer=7 frame=2
-doc_fx op=shift layer=0 frame=2 dx=-1 dy=1 wrap=false
-doc_fx op=shift layer=4 frame=2 dx=-1 dy=1 wrap=false
-doc_fx op=shift layer=3 frame=2 dx=-2 dy=1 wrap=false
-doc_fx op=shift layer=5 frame=2 dx=-2 dy=1 wrap=false
-doc_draw op=clear_cel layer=6 frame=2
-doc_paint_grid layer=6 frame=2 x=4 y=14 legend={"K":"#141e33","T":"#1da3b1"} rows:3
+draw op=pencil layer=4 frame=0 color=#355377 points=[[12,11],[13,11],[14,10],[16,10]] size=1
+draw op=line layer=4 frame=0 color=#7aeeda size=1 x0=16 x1=18 y0=13 y1=13
+draw op=pencil layer=4 frame=0 color=#fff7d0 points=[[19,16],[18,17]] size=1
+draw op=pencil layer=4 frame=0 color=#141e33 points=[[13,16]] size=1
+draw op=line layer=3 frame=0 color=#fff7d0 size=1 x0=24 x1=25 y0=22 y1=22
+draw op=pencil layer=5 frame=0 color=#fff7d0 points=[[24,27]] size=1
+frame op=duration frame=0 duration_ms=100
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=clear_cel layer=7 frame=1
+fx op=shift layer=4 frame=1 dx=-1 dy=0 wrap=false
+fx op=shift layer=3 frame=1 dx=-1 dy=0 wrap=false
+fx op=shift layer=5 frame=1 dx=-1 dy=0 wrap=false
+fx op=shift layer=6 frame=1 dx=-1 dy=0 wrap=false
+draw op=clear_cel layer=7 frame=2
+fx op=shift layer=0 frame=2 dx=-1 dy=1 wrap=false
+fx op=shift layer=4 frame=2 dx=-1 dy=1 wrap=false
+fx op=shift layer=3 frame=2 dx=-2 dy=1 wrap=false
+fx op=shift layer=5 frame=2 dx=-2 dy=1 wrap=false
+draw op=clear_cel layer=6 frame=2
+paint_grid layer=6 frame=2 x=4 y=14 legend=K:#141e33,T:#1da3b1 rows:3
   |KKKKKKK|
   |.KTTTTK|
   |..KKKK.|
-doc_draw op=clear_cel layer=7 frame=3
-doc_fx op=shift layer=0 frame=3 dx=1 dy=-1 wrap=false
-doc_fx op=shift layer=4 frame=3 dx=1 dy=-1 wrap=false
-doc_draw op=clear_cel layer=3 frame=3
-doc_paint_grid layer=3 frame=3 x=16 y=20 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:6
+draw op=clear_cel layer=7 frame=3
+fx op=shift layer=0 frame=3 dx=1 dy=-1 wrap=false
+fx op=shift layer=4 frame=3 dx=1 dy=-1 wrap=false
+draw op=clear_cel layer=3 frame=3
+paint_grid layer=3 frame=3 x=16 y=20 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:6
   |KKK............|
   |KBBKK.....KKKK.|
   |KBBBBKKKKKSSSWK|
   |.KBBBBBTTSSSSK.|
   |..KBBBBBBBBKK..|
   |...KKKKKKKK....|
-doc_draw op=clear_cel layer=5 frame=3
-doc_paint_grid layer=5 frame=3 x=13 y=22 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:7
+draw op=clear_cel layer=5 frame=3
+paint_grid layer=5 frame=3 x=13 y=22 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:7
   |KKKK..............|
   |KTTBBKK...........|
   |KTTBBBBKKKKK......|
@@ -210,24 +210,24 @@ doc_paint_grid layer=5 frame=3 x=13 y=22 legend={"B":"#355377","K":"#141e33","S"
   |..KTTBBBBBBSSSSWWK|
   |...KKKKBBBBSSSSSK.|
   |.......KKKKKKKKK..|
-doc_draw op=clear_cel layer=6 frame=3
-doc_paint_grid layer=6 frame=3 x=4 y=12 legend={"K":"#141e33","T":"#1da3b1"} rows:3
+draw op=clear_cel layer=6 frame=3
+paint_grid layer=6 frame=3 x=4 y=12 legend=K:#141e33,T:#1da3b1 rows:3
   |KKKKKKKKK|
   |.KTTTTTTK|
   |..KKKKKK.|
-doc_draw op=clear_cel layer=7 frame=4
-doc_fx op=shift layer=0 frame=4 dx=-2 dy=1 wrap=false
-doc_fx op=shift layer=4 frame=4 dx=-3 dy=1 wrap=false
-doc_draw op=clear_cel layer=3 frame=4
-doc_paint_grid layer=3 frame=4 x=14 y=21 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:6
+draw op=clear_cel layer=7 frame=4
+fx op=shift layer=0 frame=4 dx=-2 dy=1 wrap=false
+fx op=shift layer=4 frame=4 dx=-3 dy=1 wrap=false
+draw op=clear_cel layer=3 frame=4
+paint_grid layer=3 frame=4 x=14 y=21 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:6
   |KKK............|
   |KBBKK.....KKKK.|
   |KBBBBKKKKKSSSWK|
   |.KBBBBBTTSSSSK.|
   |..KBBBBBBBBKK..|
   |...KKKKKKKK....|
-doc_draw op=clear_cel layer=5 frame=4
-doc_paint_grid layer=5 frame=4 x=11 y=23 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:7
+draw op=clear_cel layer=5 frame=4
+paint_grid layer=5 frame=4 x=11 y=23 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:7
   |KKKK..............|
   |KTTBBKK...........|
   |KTTBBBBKKKKK......|
@@ -235,25 +235,25 @@ doc_paint_grid layer=5 frame=4 x=11 y=23 legend={"B":"#355377","K":"#141e33","S"
   |..KTTBBBBBBSSSSWWK|
   |...KKKKBBBBSSSSSK.|
   |.......KKKKKKKKK..|
-doc_draw op=clear_cel layer=6 frame=4
-doc_paint_grid layer=6 frame=4 x=1 y=13 legend={"K":"#141e33","T":"#1da3b1"} rows:4
+draw op=clear_cel layer=6 frame=4
+paint_grid layer=6 frame=4 x=1 y=13 legend=K:#141e33,T:#1da3b1 rows:4
   |..KKKKKKK.|
   |.KTTTTTTKK|
   |KTTKKKKK..|
   |KKK.......|
-doc_draw op=clear_cel layer=7 frame=5
-doc_fx op=shift layer=0 frame=5 dx=-2 dy=0 wrap=false
-doc_fx op=shift layer=4 frame=5 dx=-2 dy=0 wrap=false
-doc_draw op=clear_cel layer=3 frame=5
-doc_paint_grid layer=3 frame=5 x=14 y=20 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:6
+draw op=clear_cel layer=7 frame=5
+fx op=shift layer=0 frame=5 dx=-2 dy=0 wrap=false
+fx op=shift layer=4 frame=5 dx=-2 dy=0 wrap=false
+draw op=clear_cel layer=3 frame=5
+paint_grid layer=3 frame=5 x=14 y=20 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:6
   |KKK............|
   |KBBKK.....KKKK.|
   |KBBBBKKKKKSSSWK|
   |.KBBBBBTTSSSSK.|
   |..KBBBBBBBBKK..|
   |...KKKKKKKK....|
-doc_draw op=clear_cel layer=5 frame=5
-doc_paint_grid layer=5 frame=5 x=11 y=22 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:7
+draw op=clear_cel layer=5 frame=5
+paint_grid layer=5 frame=5 x=11 y=22 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:7
   |KKKK..............|
   |KTTBBKK...........|
   |KTTBBBBKKKKK......|
@@ -261,25 +261,25 @@ doc_paint_grid layer=5 frame=5 x=11 y=22 legend={"B":"#355377","K":"#141e33","S"
   |..KTTBBBBBBSSSSWWK|
   |...KKKKBBBBSSSSSK.|
   |.......KKKKKKKKK..|
-doc_draw op=clear_cel layer=6 frame=5
-doc_paint_grid layer=6 frame=5 x=2 y=13 legend={"K":"#141e33","T":"#1da3b1"} rows:4
+draw op=clear_cel layer=6 frame=5
+paint_grid layer=6 frame=5 x=2 y=13 legend=K:#141e33,T:#1da3b1 rows:4
   |...KKKKK.|
   |..KTTTTKK|
   |.KTTKKKK.|
   |KKKK.....|
-doc_draw op=clear_cel layer=7 frame=6
-doc_fx op=shift layer=0 frame=6 dx=-1 dy=0 wrap=false
-doc_fx op=shift layer=4 frame=6 dx=-1 dy=0 wrap=false
-doc_draw op=clear_cel layer=3 frame=6
-doc_paint_grid layer=3 frame=6 x=15 y=20 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:6
+draw op=clear_cel layer=7 frame=6
+fx op=shift layer=0 frame=6 dx=-1 dy=0 wrap=false
+fx op=shift layer=4 frame=6 dx=-1 dy=0 wrap=false
+draw op=clear_cel layer=3 frame=6
+paint_grid layer=3 frame=6 x=15 y=20 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:6
   |KKK............|
   |KBBKK.....KKKK.|
   |KBBBBKKKKKSSSWK|
   |.KBBBBBTTSSSSK.|
   |..KBBBBBBBBKK..|
   |...KKKKKKKK....|
-doc_draw op=clear_cel layer=5 frame=6
-doc_paint_grid layer=5 frame=6 x=12 y=22 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:7
+draw op=clear_cel layer=5 frame=6
+paint_grid layer=5 frame=6 x=12 y=22 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:7
   |KKKK..............|
   |KTTBBKK...........|
   |KTTBBBBKKKKK......|
@@ -287,18 +287,18 @@ doc_paint_grid layer=5 frame=6 x=12 y=22 legend={"B":"#355377","K":"#141e33","S"
   |..KTTBBBBBBSSSSWWK|
   |...KKKKBBBBSSSSSK.|
   |.......KKKKKKKKK..|
-doc_fx op=shift layer=6 frame=6 dx=-1 dy=0 wrap=false
-doc_draw op=clear_cel layer=7 frame=7
-doc_draw op=clear_cel layer=3 frame=7
-doc_paint_grid layer=3 frame=7 x=14 y=20 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:6
+fx op=shift layer=6 frame=6 dx=-1 dy=0 wrap=false
+draw op=clear_cel layer=7 frame=7
+draw op=clear_cel layer=3 frame=7
+paint_grid layer=3 frame=7 x=14 y=20 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:6
   |KKK............|
   |KBBKK.....KKKK.|
   |KBBBBKKKKKSSSWK|
   |.KBBBBBTTSSSSK.|
   |..KBBBBBBBBKK..|
   |...KKKKKKKK....|
-doc_draw op=clear_cel layer=5 frame=7
-doc_paint_grid layer=5 frame=7 x=11 y=22 legend={"B":"#355377","K":"#141e33","S":"#f0a769","T":"#1da3b1","W":"#fff7d0"} rows:7
+draw op=clear_cel layer=5 frame=7
+paint_grid layer=5 frame=7 x=11 y=22 legend=B:#355377,K:#141e33,S:#f0a769,T:#1da3b1,W:#fff7d0 rows:7
   |KKKK..............|
   |KTTBBKK...........|
   |KTTBBBBKKKKK......|
@@ -306,53 +306,53 @@ doc_paint_grid layer=5 frame=7 x=11 y=22 legend={"B":"#355377","K":"#141e33","S"
   |..KTTBBBBBBSSSSWWK|
   |...KKKKBBBBSSSSSK.|
   |.......KKKKKKKKK..|
-doc_draw op=clear_cel layer=7 frame=8
-doc_fx op=shift layer=3 frame=8 dx=1 dy=0 wrap=false
-doc_fx op=shift layer=5 frame=8 dx=1 dy=0 wrap=false
-doc_draw op=clear_cel layer=7 frame=9
-doc_draw op=ellipse layer=7 frame=1 color="#1da3b1" cx=26 cy=24 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=7 frame=1 color="#7aeeda" cx=26 cy=24 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=7 frame=1 color="#fff7d0" cx=26 cy=24 fill=true rx=1 ry=1
-doc_draw op=line layer=8 frame=1 color="#1da3b1" size=1 x0=30 x1=31 y0=20 y1=19
-doc_draw op=line layer=8 frame=1 color="#7aeeda" size=1 x0=31 x1=32 y0=26 y1=26
-doc_draw op=pencil layer=8 frame=1 color="#1da3b1" points=[[25,18],[27,30]] size=1
-doc_draw op=ellipse layer=7 frame=2 color="#1da3b1" cx=25 cy=25 fill=true rx=4 ry=4
-doc_draw op=ellipse layer=7 frame=2 color="#7aeeda" cx=25 cy=25 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=7 frame=2 color="#fff7d0" cx=25 cy=25 fill=true rx=2 ry=2
-doc_draw op=polyline layer=8 frame=2 color="#1da3b1" points=[[23,19],[26,19],[28,20]] size=1
-doc_draw op=polyline layer=8 frame=2 color="#1da3b1" points=[[30,28],[28,31],[25,32]] size=1
-doc_draw op=line layer=8 frame=2 color="#7aeeda" size=1 x0=32 x1=30 y0=20 y1=22
-doc_draw op=line layer=8 frame=2 color="#7aeeda" size=1 x0=34 x1=32 y0=26 y1=26
-doc_draw op=pencil layer=8 frame=2 color="#fff7d0" points=[[28,19],[30,30]] size=1
-doc_draw op=polygon layer=7 frame=3 color="#1da3b1" fill=true points=[[26,23],[28,20],[33,21],[38,22],[43,22],[47,24],[43,26],[36,26],[33,28],[28,28],[26,26]]
-doc_draw op=polygon layer=7 frame=3 color="#7aeeda" fill=true points=[[28,23],[31,22],[39,23],[47,24],[38,25],[31,27],[28,26]]
-doc_draw op=polygon layer=7 frame=3 color="#fff7d0" fill=true points=[[28,24],[30,23],[34,24],[46,24],[35,25],[30,26],[28,25]]
-doc_draw op=line layer=8 frame=3 color="#7aeeda" size=1 x0=33 x1=37 y0=19 y1=20
-doc_draw op=line layer=8 frame=3 color="#1da3b1" size=1 x0=37 x1=41 y0=29 y1=29
-doc_draw op=pencil layer=8 frame=3 color="#7aeeda" points=[[29,17],[32,31]] size=1
-doc_draw op=polygon layer=7 frame=4 color="#1da3b1" fill=true points=[[22,25],[24,21],[26,22],[28,18],[30,21],[34,20],[33,22],[39,21],[43,22],[47,21],[47,29],[43,28],[38,29],[35,28],[31,30],[29,28],[27,32],[26,28],[23,29]]
-doc_draw op=polygon layer=7 frame=4 color="#7aeeda" fill=true points=[[25,24],[28,21],[31,23],[38,23],[43,24],[47,23],[47,28],[39,27],[33,28],[28,28],[25,27]]
-doc_draw op=polygon layer=7 frame=4 color="#fff7d0" fill=true points=[[26,24],[29,23],[33,24],[47,24],[47,26],[34,26],[29,27],[26,26]]
-doc_draw op=line layer=8 frame=4 color="#1da3b1" size=1 x0=35 x1=41 y0=19 y1=19
-doc_draw op=line layer=8 frame=4 color="#7aeeda" size=1 x0=30 x1=31 y0=15 y1=17
-doc_draw op=line layer=8 frame=4 color="#7aeeda" size=1 x0=35 x1=39 y0=31 y1=33
-doc_draw op=pencil layer=8 frame=4 color="#1da3b1" points=[[44,31],[45,19]] size=1
-doc_draw op=polygon layer=7 frame=5 color="#1da3b1" fill=true points=[[24,24],[27,20],[30,21],[34,21],[36,22],[41,21],[47,22],[47,27],[42,28],[37,26],[33,27],[29,28],[25,27]]
-doc_draw op=polygon layer=7 frame=5 color="#7aeeda" fill=true points=[[26,23],[29,22],[34,23],[39,23],[42,24],[47,23],[47,26],[41,26],[35,25],[30,26],[27,26]]
-doc_draw op=polygon layer=7 frame=5 color="#fff7d0" fill=true points=[[27,24],[33,24],[36,23],[41,24],[47,24],[47,25],[37,25],[31,25],[28,26]]
-doc_draw op=line layer=8 frame=5 color="#7aeeda" size=1 x0=38 x1=43 y0=19 y1=19
-doc_draw op=line layer=8 frame=5 color="#1da3b1" size=1 x0=35 x1=41 y0=30 y1=31
-doc_draw op=pencil layer=8 frame=5 color="#7aeeda" points=[[30,18],[46,29]] size=1
-doc_draw op=polygon layer=7 frame=6 color="#1da3b1" fill=true points=[[27,23],[31,22],[34,23],[38,24],[34,25],[28,26]]
-doc_draw op=polygon layer=7 frame=6 color="#7aeeda" fill=true points=[[28,24],[31,23],[36,24],[32,25],[29,25]]
-doc_draw op=line layer=7 frame=6 color="#fff7d0" size=1 x0=29 x1=34 y0=24 y1=24
-doc_draw op=line layer=7 frame=6 color="#7aeeda" size=1 x0=39 x1=47 y0=24 y1=24
-doc_draw op=line layer=8 frame=6 color="#1da3b1" size=1 x0=36 x1=41 y0=21 y1=21
-doc_draw op=line layer=8 frame=6 color="#1da3b1" size=1 x0=40 x1=45 y0=27 y1=27
-doc_draw op=pencil layer=8 frame=6 color="#7aeeda" points=[[45,20],[33,28]] size=1
-doc_draw op=line layer=7 frame=7 color="#7aeeda" size=1 x0=30 x1=33 y0=24 y1=24
-doc_draw op=line layer=7 frame=7 color="#1da3b1" size=1 x0=40 x1=44 y0=24 y1=24
-doc_draw op=pencil layer=8 frame=7 color="#1da3b1" points=[[36,28],[45,21]] size=1
-doc_draw op=pencil layer=8 frame=7 color="#7aeeda" points=[[29,22]] size=1
-doc_draw op=pencil layer=8 frame=8 color="#1da3b1" points=[[31,25]] size=1
-doc_add_tag name=charge-release-recover direction=forward from=0 to=9
+draw op=clear_cel layer=7 frame=8
+fx op=shift layer=3 frame=8 dx=1 dy=0 wrap=false
+fx op=shift layer=5 frame=8 dx=1 dy=0 wrap=false
+draw op=clear_cel layer=7 frame=9
+draw op=ellipse layer=7 frame=1 color=#1da3b1 cx=26 cy=24 fill=true rx=3 ry=3
+draw op=ellipse layer=7 frame=1 color=#7aeeda cx=26 cy=24 fill=true rx=2 ry=2
+draw op=ellipse layer=7 frame=1 color=#fff7d0 cx=26 cy=24 fill=true rx=1 ry=1
+draw op=line layer=8 frame=1 color=#1da3b1 size=1 x0=30 x1=31 y0=20 y1=19
+draw op=line layer=8 frame=1 color=#7aeeda size=1 x0=31 x1=32 y0=26 y1=26
+draw op=pencil layer=8 frame=1 color=#1da3b1 points=[[25,18],[27,30]] size=1
+draw op=ellipse layer=7 frame=2 color=#1da3b1 cx=25 cy=25 fill=true rx=4 ry=4
+draw op=ellipse layer=7 frame=2 color=#7aeeda cx=25 cy=25 fill=true rx=3 ry=3
+draw op=ellipse layer=7 frame=2 color=#fff7d0 cx=25 cy=25 fill=true rx=2 ry=2
+draw op=polyline layer=8 frame=2 color=#1da3b1 points=[[23,19],[26,19],[28,20]] size=1
+draw op=polyline layer=8 frame=2 color=#1da3b1 points=[[30,28],[28,31],[25,32]] size=1
+draw op=line layer=8 frame=2 color=#7aeeda size=1 x0=32 x1=30 y0=20 y1=22
+draw op=line layer=8 frame=2 color=#7aeeda size=1 x0=34 x1=32 y0=26 y1=26
+draw op=pencil layer=8 frame=2 color=#fff7d0 points=[[28,19],[30,30]] size=1
+draw op=polygon layer=7 frame=3 color=#1da3b1 fill=true points=[[26,23],[28,20],[33,21],[38,22],[43,22],[47,24],[43,26],[36,26],[33,28],[28,28],[26,26]]
+draw op=polygon layer=7 frame=3 color=#7aeeda fill=true points=[[28,23],[31,22],[39,23],[47,24],[38,25],[31,27],[28,26]]
+draw op=polygon layer=7 frame=3 color=#fff7d0 fill=true points=[[28,24],[30,23],[34,24],[46,24],[35,25],[30,26],[28,25]]
+draw op=line layer=8 frame=3 color=#7aeeda size=1 x0=33 x1=37 y0=19 y1=20
+draw op=line layer=8 frame=3 color=#1da3b1 size=1 x0=37 x1=41 y0=29 y1=29
+draw op=pencil layer=8 frame=3 color=#7aeeda points=[[29,17],[32,31]] size=1
+draw op=polygon layer=7 frame=4 color=#1da3b1 fill=true points=[[22,25],[24,21],[26,22],[28,18],[30,21],[34,20],[33,22],[39,21],[43,22],[47,21],[47,29],[43,28],[38,29],[35,28],[31,30],[29,28],[27,32],[26,28],[23,29]]
+draw op=polygon layer=7 frame=4 color=#7aeeda fill=true points=[[25,24],[28,21],[31,23],[38,23],[43,24],[47,23],[47,28],[39,27],[33,28],[28,28],[25,27]]
+draw op=polygon layer=7 frame=4 color=#fff7d0 fill=true points=[[26,24],[29,23],[33,24],[47,24],[47,26],[34,26],[29,27],[26,26]]
+draw op=line layer=8 frame=4 color=#1da3b1 size=1 x0=35 x1=41 y0=19 y1=19
+draw op=line layer=8 frame=4 color=#7aeeda size=1 x0=30 x1=31 y0=15 y1=17
+draw op=line layer=8 frame=4 color=#7aeeda size=1 x0=35 x1=39 y0=31 y1=33
+draw op=pencil layer=8 frame=4 color=#1da3b1 points=[[44,31],[45,19]] size=1
+draw op=polygon layer=7 frame=5 color=#1da3b1 fill=true points=[[24,24],[27,20],[30,21],[34,21],[36,22],[41,21],[47,22],[47,27],[42,28],[37,26],[33,27],[29,28],[25,27]]
+draw op=polygon layer=7 frame=5 color=#7aeeda fill=true points=[[26,23],[29,22],[34,23],[39,23],[42,24],[47,23],[47,26],[41,26],[35,25],[30,26],[27,26]]
+draw op=polygon layer=7 frame=5 color=#fff7d0 fill=true points=[[27,24],[33,24],[36,23],[41,24],[47,24],[47,25],[37,25],[31,25],[28,26]]
+draw op=line layer=8 frame=5 color=#7aeeda size=1 x0=38 x1=43 y0=19 y1=19
+draw op=line layer=8 frame=5 color=#1da3b1 size=1 x0=35 x1=41 y0=30 y1=31
+draw op=pencil layer=8 frame=5 color=#7aeeda points=[[30,18],[46,29]] size=1
+draw op=polygon layer=7 frame=6 color=#1da3b1 fill=true points=[[27,23],[31,22],[34,23],[38,24],[34,25],[28,26]]
+draw op=polygon layer=7 frame=6 color=#7aeeda fill=true points=[[28,24],[31,23],[36,24],[32,25],[29,25]]
+draw op=line layer=7 frame=6 color=#fff7d0 size=1 x0=29 x1=34 y0=24 y1=24
+draw op=line layer=7 frame=6 color=#7aeeda size=1 x0=39 x1=47 y0=24 y1=24
+draw op=line layer=8 frame=6 color=#1da3b1 size=1 x0=36 x1=41 y0=21 y1=21
+draw op=line layer=8 frame=6 color=#1da3b1 size=1 x0=40 x1=45 y0=27 y1=27
+draw op=pencil layer=8 frame=6 color=#7aeeda points=[[45,20],[33,28]] size=1
+draw op=line layer=7 frame=7 color=#7aeeda size=1 x0=30 x1=33 y0=24 y1=24
+draw op=line layer=7 frame=7 color=#1da3b1 size=1 x0=40 x1=44 y0=24 y1=24
+draw op=pencil layer=8 frame=7 color=#1da3b1 points=[[36,28],[45,21]] size=1
+draw op=pencil layer=8 frame=7 color=#7aeeda points=[[29,22]] size=1
+draw op=pencil layer=8 frame=8 color=#1da3b1 points=[[31,25]] size=1
+add_tag name=charge-release-recover direction=forward from=0 to=9

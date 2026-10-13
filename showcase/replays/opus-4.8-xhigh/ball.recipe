@@ -1,65 +1,65 @@
-atelier 3 f175b9f7-f577-4ccf-9424-147c9e41f87b 0.1.0
-doc_new name=rubber-ball-bounce width=32 height=32
-doc_layer op=rename index=0 name=shadow
-doc_layer op=add name=ball
-doc_palette op=set colors=[[150,30,48,255],[224,58,58,255],[255,150,130,255],[44,38,56,255]]
-doc_draw op=ellipse layer=1 frame=0 color="#e03a3a" cx=15 cy=8 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=0 frame=0 color="#2c2638" cx=15 cy=30 fill=true rx=4 ry=1
-doc_fx op=form layer=1 frame=0 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=1
-doc_draw op=clear_cel layer=0 frame=1
-doc_draw op=ellipse layer=1 frame=1 color="#e03a3a" cx=15 cy=9 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=0 frame=1 color="#2c2638" cx=15 cy=30 fill=true rx=4 ry=1
-doc_fx op=form layer=1 frame=1 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=2
-doc_draw op=clear_cel layer=0 frame=2
-doc_draw op=ellipse layer=1 frame=2 color="#e03a3a" cx=15 cy=10 fill=true rx=4 ry=6
-doc_draw op=ellipse layer=0 frame=2 color="#2c2638" cx=15 cy=30 fill=true rx=5 ry=1
-doc_fx op=form layer=1 frame=2 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=3
-doc_draw op=clear_cel layer=0 frame=3
-doc_draw op=ellipse layer=1 frame=3 color="#e03a3a" cx=15 cy=13 fill=true rx=4 ry=6
-doc_draw op=ellipse layer=0 frame=3 color="#2c2638" cx=15 cy=30 fill=true rx=6 ry=1
-doc_fx op=form layer=1 frame=3 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=4
-doc_draw op=clear_cel layer=0 frame=4
-doc_draw op=ellipse layer=1 frame=4 color="#e03a3a" cx=15 cy=16 fill=true rx=3 ry=7
-doc_draw op=ellipse layer=0 frame=4 color="#2c2638" cx=15 cy=30 fill=true rx=7 ry=1
-doc_fx op=form layer=1 frame=4 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=5
-doc_draw op=clear_cel layer=0 frame=5
-doc_draw op=ellipse layer=1 frame=5 color="#e03a3a" cx=15 cy=26 fill=true rx=7 ry=3
-doc_draw op=ellipse layer=0 frame=5 color="#2c2638" cx=15 cy=30 fill=true rx=8 ry=1
-doc_fx op=form layer=1 frame=5 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=6
-doc_draw op=clear_cel layer=0 frame=6
-doc_draw op=ellipse layer=1 frame=6 color="#e03a3a" cx=15 cy=16 fill=true rx=3 ry=7
-doc_draw op=ellipse layer=0 frame=6 color="#2c2638" cx=15 cy=30 fill=true rx=7 ry=1
-doc_fx op=form layer=1 frame=6 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=7
-doc_draw op=clear_cel layer=0 frame=7
-doc_draw op=ellipse layer=1 frame=7 color="#e03a3a" cx=15 cy=13 fill=true rx=4 ry=6
-doc_draw op=ellipse layer=0 frame=7 color="#2c2638" cx=15 cy=30 fill=true rx=6 ry=1
-doc_fx op=form layer=1 frame=7 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=8
-doc_draw op=clear_cel layer=0 frame=8
-doc_draw op=ellipse layer=1 frame=8 color="#e03a3a" cx=15 cy=10 fill=true rx=4 ry=6
-doc_draw op=ellipse layer=0 frame=8 color="#2c2638" cx=15 cy=30 fill=true rx=5 ry=1
-doc_fx op=form layer=1 frame=8 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_frame op=add copy_from=0
-doc_draw op=clear_cel layer=1 frame=9
-doc_draw op=clear_cel layer=0 frame=9
-doc_draw op=ellipse layer=1 frame=9 color="#e03a3a" cx=15 cy=9 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=0 frame=9 color="#2c2638" cx=15 cy=30 fill=true rx=4 ry=1
-doc_fx op=form layer=1 frame=9 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#ff9682"] strength=1.0
-doc_fx op=form layer=1 frame=0 frame_to=9 form=sphere light_dir=top-left ramp=["#961e30","#e03a3a","#e03a3a","#ff9682"] strength=1.0
-doc_fx op=form layer=1 frame=0 frame_to=9 form=sphere light_dir=top-left ramp=["#961e30","#961e30","#e03a3a","#e03a3a","#ff9682"] strength=1.0
-doc_add_tag name=bounce direction=forward from=0 to=9
+atelier 4 f175b9f7-f577-4ccf-9424-147c9e41f87b 0.1.0
+new name=rubber-ball-bounce width=32 height=32
+layer op=rename index=0 name=shadow
+layer op=add name=ball
+palette op=set colors=#961e30,#e03a3a,#ff9682,#2c2638
+draw op=ellipse layer=1 frame=0 color=#e03a3a cx=15 cy=8 fill=true rx=5 ry=5
+draw op=ellipse layer=0 frame=0 color=#2c2638 cx=15 cy=30 fill=true rx=4 ry=1
+fx op=form layer=1 frame=0 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=1
+draw op=clear_cel layer=0 frame=1
+draw op=ellipse layer=1 frame=1 color=#e03a3a cx=15 cy=9 fill=true rx=5 ry=5
+draw op=ellipse layer=0 frame=1 color=#2c2638 cx=15 cy=30 fill=true rx=4 ry=1
+fx op=form layer=1 frame=1 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=2
+draw op=clear_cel layer=0 frame=2
+draw op=ellipse layer=1 frame=2 color=#e03a3a cx=15 cy=10 fill=true rx=4 ry=6
+draw op=ellipse layer=0 frame=2 color=#2c2638 cx=15 cy=30 fill=true rx=5 ry=1
+fx op=form layer=1 frame=2 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=3
+draw op=clear_cel layer=0 frame=3
+draw op=ellipse layer=1 frame=3 color=#e03a3a cx=15 cy=13 fill=true rx=4 ry=6
+draw op=ellipse layer=0 frame=3 color=#2c2638 cx=15 cy=30 fill=true rx=6 ry=1
+fx op=form layer=1 frame=3 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=4
+draw op=clear_cel layer=0 frame=4
+draw op=ellipse layer=1 frame=4 color=#e03a3a cx=15 cy=16 fill=true rx=3 ry=7
+draw op=ellipse layer=0 frame=4 color=#2c2638 cx=15 cy=30 fill=true rx=7 ry=1
+fx op=form layer=1 frame=4 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=5
+draw op=clear_cel layer=0 frame=5
+draw op=ellipse layer=1 frame=5 color=#e03a3a cx=15 cy=26 fill=true rx=7 ry=3
+draw op=ellipse layer=0 frame=5 color=#2c2638 cx=15 cy=30 fill=true rx=8 ry=1
+fx op=form layer=1 frame=5 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=6
+draw op=clear_cel layer=0 frame=6
+draw op=ellipse layer=1 frame=6 color=#e03a3a cx=15 cy=16 fill=true rx=3 ry=7
+draw op=ellipse layer=0 frame=6 color=#2c2638 cx=15 cy=30 fill=true rx=7 ry=1
+fx op=form layer=1 frame=6 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=7
+draw op=clear_cel layer=0 frame=7
+draw op=ellipse layer=1 frame=7 color=#e03a3a cx=15 cy=13 fill=true rx=4 ry=6
+draw op=ellipse layer=0 frame=7 color=#2c2638 cx=15 cy=30 fill=true rx=6 ry=1
+fx op=form layer=1 frame=7 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=8
+draw op=clear_cel layer=0 frame=8
+draw op=ellipse layer=1 frame=8 color=#e03a3a cx=15 cy=10 fill=true rx=4 ry=6
+draw op=ellipse layer=0 frame=8 color=#2c2638 cx=15 cy=30 fill=true rx=5 ry=1
+fx op=form layer=1 frame=8 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+frame op=add copy_from=0
+draw op=clear_cel layer=1 frame=9
+draw op=clear_cel layer=0 frame=9
+draw op=ellipse layer=1 frame=9 color=#e03a3a cx=15 cy=9 fill=true rx=5 ry=5
+draw op=ellipse layer=0 frame=9 color=#2c2638 cx=15 cy=30 fill=true rx=4 ry=1
+fx op=form layer=1 frame=9 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#ff9682 strength=1.0
+fx op=form layer=1 frame=0 frame_to=9 form=sphere light_dir=top-left ramp=#961e30,#e03a3a,#e03a3a,#ff9682 strength=1.0
+fx op=form layer=1 frame=0 frame_to=9 form=sphere light_dir=top-left ramp=#961e30,#961e30,#e03a3a,#e03a3a,#ff9682 strength=1.0
+add_tag name=bounce direction=forward from=0 to=9
