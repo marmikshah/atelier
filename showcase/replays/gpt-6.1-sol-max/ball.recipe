@@ -18,7 +18,7 @@ doc_paint_grid layer=1 frame=0 x=9 y=2 legend={"K":0} rows:14
   |.KKKKKKKKKKKK.|
   |..KKKKKKKKKK..|
   |....KKKKKK....|
-doc_paint_grid layer=1 frame=0 x=9 y=2 legend={"A":2,"H":3,"K":0,"R":1} rows:14
+doc_paint_grid layer=1 frame=0 x=9 y=2 legend={"A":2,"K":0,"R":1} rows:14
   |....KKKKKK....|
   |..KKAAAAAAKK..|
   |.KAAAAAAAAAAK.|
@@ -37,21 +37,10 @@ doc_paint_grid layer=0 frame=0 x=12 y=28 legend={"K":0} rows:3
   |..KKKK..|
   |KKKKKKKK|
   |..KKKK..|
-doc_paint_grid layer=1 frame=0 x=9 y=2 legend={"H":3} rows:14
-  |..............|
-  |..............|
-  |..............|
-  |...HHH........|
-  |..HHHH........|
-  |...HHH........|
-  |..............|
-  |..............|
-  |..............|
-  |..............|
-  |..............|
-  |..............|
-  |..............|
-  |..............|
+doc_paint_grid layer=1 frame=0 x=11 y=5 legend={"H":3} rows:3
+  |.HHH|
+  |HHHH|
+  |.HHH|
 doc_frame op=add copy_from=0 duration_ms=100
 doc_region op=move layer=1 frame=1 offset=[0,2] rect=[9,2,22,15]
 doc_region op=clear layer=0 frame=1 rect=[12,28,19,30]
@@ -126,28 +115,23 @@ doc_paint_grid layer=0 frame=4 x=3 y=28 legend={"K":0} rows:3
   |......KKKKKKKKKKKKKK......|
   |KKKKKKKKKKKKKKKKKKKKKKKKKK|
   |......KKKKKKKKKKKKKK......|
-doc_region op=clear layer=0 frame=0 rect=[12,28,19,30]
-doc_paint_grid layer=0 frame=0 x=12 y=28 legend={"K":0} rows:3
+doc_paint_grid layer=0 frame=0 x=12 y=28 replace=true legend={"K":0} rows:3
   |.KKKKKK.|
   |KKKKKKKK|
   |.KKKKKK.|
-doc_region op=clear layer=0 frame=1 rect=[11,28,20,30]
-doc_paint_grid layer=0 frame=1 x=11 y=28 legend={"K":0} rows:3
+doc_paint_grid layer=0 frame=1 x=11 y=28 replace=true legend={"K":0} rows:3
   |.KKKKKKKK.|
   |KKKKKKKKKK|
   |.KKKKKKKK.|
-doc_region op=clear layer=0 frame=2 rect=[9,28,22,30]
-doc_paint_grid layer=0 frame=2 x=10 y=28 legend={"K":0} rows:3
-  |.KKKKKKKKKK.|
-  |KKKKKKKKKKKK|
-  |.KKKKKKKKKK.|
-doc_region op=clear layer=0 frame=3 rect=[6,28,25,30]
-doc_paint_grid layer=0 frame=3 x=8 y=28 legend={"K":0} rows:3
-  |..KKKKKKKKKKKK..|
-  |KKKKKKKKKKKKKKKK|
-  |..KKKKKKKKKKKK..|
-doc_region op=clear layer=0 frame=4 rect=[3,28,28,30]
-doc_paint_grid layer=0 frame=4 x=3 y=28 legend={"K":0} rows:3
+doc_paint_grid layer=0 frame=2 x=9 y=28 replace=true legend={"K":0} rows:3
+  |..KKKKKKKKKK..|
+  |.KKKKKKKKKKKK.|
+  |..KKKKKKKKKK..|
+doc_paint_grid layer=0 frame=3 x=6 y=28 replace=true legend={"K":0} rows:3
+  |....KKKKKKKKKKKK....|
+  |..KKKKKKKKKKKKKKKK..|
+  |....KKKKKKKKKKKK....|
+doc_paint_grid layer=0 frame=4 x=3 y=28 replace=true legend={"K":0} rows:3
   |...KKKKKKKKKKKKKKKKKKKK...|
   |KKKKKKKKKKKKKKKKKKKKKKKKKK|
   |...KKKKKKKKKKKKKKKKKKKK...|
@@ -174,11 +158,10 @@ doc_paint_grid layer=1 frame=5 x=11 y=10 legend={"A":2,"H":3,"K":0,"R":1} rows:2
   |..KRRRRK..|
   |..KRRRRK..|
   |...KKKK...|
-doc_region op=clear layer=0 frame=5 rect=[3,28,28,30]
-doc_paint_grid layer=0 frame=5 x=8 y=28 legend={"K":0} rows:3
-  |..KKKKKKKKKKKK..|
-  |KKKKKKKKKKKKKKKK|
-  |..KKKKKKKKKKKK..|
+doc_paint_grid layer=0 frame=5 x=3 y=28 replace=true legend={"K":0} rows:3
+  |.......KKKKKKKKKKKK.......|
+  |.....KKKKKKKKKKKKKKKK.....|
+  |.......KKKKKKKKKKKK.......|
 doc_frame op=add copy_from=5 duration_ms=100
 doc_region op=clear layer=1 frame=6 rect=[11,10,20,29]
 doc_paint_grid layer=1 frame=6 x=10 y=5 legend={"A":2,"H":3,"K":0,"R":1} rows:16
@@ -198,11 +181,10 @@ doc_paint_grid layer=1 frame=6 x=10 y=5 legend={"A":2,"H":3,"K":0,"R":1} rows:16
   |..KARRRRRK..|
   |...KRRRRK...|
   |....KKKK....|
-doc_region op=clear layer=0 frame=6 rect=[8,28,23,30]
-doc_paint_grid layer=0 frame=6 x=10 y=28 legend={"K":0} rows:3
-  |.KKKKKKKKKK.|
-  |KKKKKKKKKKKK|
-  |.KKKKKKKKKK.|
+doc_paint_grid layer=0 frame=6 x=8 y=28 replace=true legend={"K":0} rows:3
+  |...KKKKKKKKKK...|
+  |..KKKKKKKKKKKK..|
+  |...KKKKKKKKKK...|
 doc_frame op=add copy_from=6 duration_ms=100
 doc_region op=clear layer=1 frame=7 rect=[10,5,21,20]
 doc_paint_grid layer=1 frame=7 x=9 y=2 legend={"A":2,"H":3,"K":0,"R":1} rows:14
@@ -220,17 +202,15 @@ doc_paint_grid layer=1 frame=7 x=9 y=2 legend={"A":2,"H":3,"K":0,"R":1} rows:14
   |.KAAARRRRRRRK.|
   |..KKRRRRRRKK..|
   |....KKKKKK....|
-doc_region op=clear layer=0 frame=7 rect=[10,28,21,30]
-doc_paint_grid layer=0 frame=7 x=11 y=28 legend={"K":0} rows:3
-  |.KKKKKKKK.|
-  |KKKKKKKKKK|
-  |.KKKKKKKK.|
+doc_paint_grid layer=0 frame=7 x=10 y=28 replace=true legend={"K":0} rows:3
+  |..KKKKKKKK..|
+  |.KKKKKKKKKK.|
+  |..KKKKKKKK..|
 doc_frame op=add copy_from=7 duration_ms=100
 doc_region op=move layer=1 frame=8 offset=[0,-1] rect=[9,2,22,15]
-doc_region op=clear layer=0 frame=8 rect=[11,28,20,30]
-doc_paint_grid layer=0 frame=8 x=12 y=28 legend={"K":0} rows:3
-  |.KKKKKK.|
-  |KKKKKKKK|
-  |.KKKKKK.|
+doc_paint_grid layer=0 frame=8 x=11 y=28 replace=true legend={"K":0} rows:3
+  |..KKKKKK..|
+  |.KKKKKKKK.|
+  |..KKKKKK..|
 doc_frame op=add copy_from=8 duration_ms=100
 doc_add_tag name=bounce direction=forward from=0 to=9

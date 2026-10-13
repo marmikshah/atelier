@@ -6,60 +6,60 @@ doc_layer op=add name="impact sparks"
 doc_palette op=set colors=[[39,47,91,255],[48,101,176,255],[54,196,218,255],[164,235,250,255],[255,207,76,255],[255,250,226,255]]
 doc_frame op=add copy_from=0 count=9 duration_ms=100
 doc_add_tag name=slash direction=forward from=0 to=9
-doc_draw op=curve layer=0 frame=1 width=4 aa=false color=[48,101,176,255] points=[[4,6],[7,4],[10,5]] snap=true
-doc_draw op=curve layer=0 frame=1 width=2 aa=false color=[54,196,218,255] points=[[5,6],[8,4],[10,5]] snap=true
-doc_draw op=curve layer=0 frame=2 width=6 aa=false color=[39,47,91,255] points=[[4,6],[9,3],[15,7]] snap=true
-doc_draw op=curve layer=0 frame=2 width=4 aa=false color=[48,101,176,255] points=[[5,6],[9,4],[15,7]] snap=true
-doc_draw op=curve layer=0 frame=2 width=2 aa=false color=[54,196,218,255] points=[[6,5],[10,4],[15,7]] snap=true
-doc_draw op=curve layer=0 frame=3 width=7 aa=false color=[39,47,91,255] points=[[4,6],[12,2],[21,11]] snap=true
-doc_draw op=curve layer=0 frame=3 width=5 aa=false color=[48,101,176,255] points=[[5,6],[12,3],[21,11]] snap=true
-doc_draw op=curve layer=0 frame=3 width=3 aa=false color=[54,196,218,255] points=[[7,5],[14,4],[21,11]] snap=true
-doc_draw op=curve layer=0 frame=4 width=9 aa=false color=[39,47,91,255] points=[[5,6],[16,2],[27,16]] snap=true
-doc_draw op=curve layer=0 frame=4 width=7 aa=false color=[48,101,176,255] points=[[6,6],[16,3],[27,16]] snap=true
-doc_draw op=curve layer=0 frame=4 width=4 aa=false color=[54,196,218,255] points=[[8,5],[18,5],[27,16]] snap=true
-doc_draw op=curve layer=0 frame=5 width=10 aa=false color=[39,47,91,255] points=[[6,7],[18,3],[29,22]] snap=true
-doc_draw op=curve layer=0 frame=5 width=8 aa=false color=[48,101,176,255] points=[[7,7],[18,4],[29,22]] snap=true
-doc_draw op=curve layer=0 frame=5 width=5 aa=false color=[54,196,218,255] points=[[9,6],[20,6],[29,22]] snap=true
-doc_draw op=curve layer=0 frame=6 width=7 aa=false color=[39,47,91,255] points=[[9,9],[21,7],[28,24]] snap=true
-doc_draw op=curve layer=0 frame=6 width=5 aa=false color=[48,101,176,255] points=[[11,9],[22,9],[28,24]] snap=true
-doc_draw op=curve layer=0 frame=6 width=3 aa=false color=[54,196,218,255] points=[[15,10],[24,12],[28,24]] snap=true
-doc_draw op=curve layer=0 frame=7 width=4 aa=false color=[39,47,91,255] points=[[14,13],[24,13],[29,24]] snap=true
-doc_draw op=curve layer=0 frame=7 width=2 aa=false color=[48,101,176,255] points=[[18,14],[26,16],[29,24]] snap=true
-doc_draw op=curve layer=1 frame=1 width=2 aa=false color=[164,235,250,255] points=[[6,5],[8,4],[10,5]] snap=true
-doc_draw op=pencil layer=1 frame=1 color=[255,250,226,255] points=[[10,5]] size=1
-doc_draw op=curve layer=1 frame=2 width=2 aa=false color=[164,235,250,255] points=[[7,5],[11,4],[15,7]] snap=true
-doc_draw op=line layer=1 frame=2 color=[255,250,226,255] size=1 x0=14 x1=16 y0=6 y1=8
-doc_draw op=curve layer=1 frame=3 width=2 aa=false color=[164,235,250,255] points=[[8,6],[15,5],[21,11]] snap=true
-doc_draw op=curve layer=1 frame=3 width=1 aa=false color=[255,250,226,255] points=[[16,6],[20,8],[22,11]] snap=true
-doc_draw op=curve layer=1 frame=4 width=2 aa=false color=[164,235,250,255] points=[[9,7],[19,6],[27,16]] snap=true
-doc_draw op=curve layer=1 frame=4 width=2 aa=false color=[255,250,226,255] points=[[20,7],[25,11],[28,17]] snap=true
-doc_draw op=pencil layer=1 frame=4 color=[255,207,76,255] points=[[28,17]] size=2
-doc_draw op=curve layer=1 frame=5 width=3 aa=false color=[164,235,250,255] points=[[10,9],[21,8],[29,22]] snap=true
-doc_draw op=curve layer=1 frame=5 width=2 aa=false color=[255,250,226,255] points=[[20,8],[27,15],[30,23]] snap=true
-doc_draw op=line layer=1 frame=5 color=[255,207,76,255] size=2 x0=28 x1=30 y0=20 y1=23
-doc_draw op=pencil layer=1 frame=5 color=[255,250,226,255] points=[[30,23]] size=2
-doc_draw op=curve layer=1 frame=6 width=2 aa=false color=[164,235,250,255] points=[[17,12],[25,15],[28,24]] snap=true
-doc_draw op=line layer=1 frame=6 color=[255,250,226,255] size=1 x0=26 x1=29 y0=20 y1=25
-doc_draw op=pencil layer=1 frame=6 color=[255,207,76,255] points=[[29,25]] size=2
-doc_draw op=line layer=2 frame=4 color=[255,207,76,255] size=1 x0=27 x1=29 y0=15 y1=17
-doc_draw op=pencil layer=2 frame=4 color=[255,250,226,255] points=[[28,17]] size=1
-doc_draw op=line layer=2 frame=5 color=[255,207,76,255] size=1 x0=27 x1=31 y0=22 y1=18
-doc_draw op=line layer=2 frame=5 color=[255,207,76,255] size=1 x0=28 x1=31 y0=23 y1=27
-doc_draw op=line layer=2 frame=5 color=[255,207,76,255] size=1 x0=28 x1=24 y0=23 y1=28
-doc_draw op=line layer=2 frame=5 color=[255,207,76,255] size=1 x0=27 x1=23 y0=22 y1=19
-doc_draw op=line layer=2 frame=5 color=[255,250,226,255] size=1 x0=28 x1=31 y0=23 y1=23
-doc_draw op=line layer=2 frame=5 color=[255,250,226,255] size=1 x0=28 x1=28 y0=23 y1=27
-doc_draw op=ellipse layer=2 frame=5 color=[255,250,226,255] cx=28 cy=23 fill=true rx=2 ry=2
-doc_draw op=line layer=2 frame=6 color=[255,207,76,255] size=1 x0=28 x1=31 y0=24 y1=20
-doc_draw op=line layer=2 frame=6 color=[255,207,76,255] size=1 x0=28 x1=31 y0=24 y1=29
-doc_draw op=line layer=2 frame=6 color=[255,207,76,255] size=1 x0=27 x1=22 y0=24 y1=29
-doc_draw op=line layer=2 frame=6 color=[164,235,250,255] size=1 x0=27 x1=23 y0=23 y1=19
-doc_draw op=ellipse layer=2 frame=6 color=[255,250,226,255] cx=28 cy=24 fill=true rx=2 ry=2
-doc_draw op=pencil layer=2 frame=6 color=[54,196,218,255] points=[[31,18],[21,30]] size=1
-doc_draw op=line layer=2 frame=7 color=[54,196,218,255] size=1 x0=28 x1=31 y0=24 y1=28
-doc_draw op=line layer=2 frame=7 color=[48,101,176,255] size=1 x0=26 x1=23 y0=25 y1=29
-doc_draw op=pencil layer=2 frame=7 color=[164,235,250,255] points=[[30,21],[21,30],[31,29]] size=1
-doc_draw op=pencil layer=2 frame=7 color=[255,207,76,255] points=[[28,25]] size=1
-doc_draw op=line layer=2 frame=8 color=[48,101,176,255] size=1 x0=29 x1=31 y0=26 y1=29
-doc_draw op=pencil layer=2 frame=8 color=[39,47,91,255] points=[[24,29],[30,23]] size=1
-doc_draw op=pencil layer=2 frame=8 color=[54,196,218,255] points=[[31,30]] size=1
+doc_draw op=curve layer=0 frame=1 width=4 aa=false color="#3065b0" points=[[4,6],[7,4],[10,5]] snap=true
+doc_draw op=curve layer=0 frame=1 width=2 aa=false color="#36c4da" points=[[5,6],[8,4],[10,5]] snap=true
+doc_draw op=curve layer=0 frame=2 width=6 aa=false color="#272f5b" points=[[4,6],[9,3],[15,7]] snap=true
+doc_draw op=curve layer=0 frame=2 width=4 aa=false color="#3065b0" points=[[5,6],[9,4],[15,7]] snap=true
+doc_draw op=curve layer=0 frame=2 width=2 aa=false color="#36c4da" points=[[6,5],[10,4],[15,7]] snap=true
+doc_draw op=curve layer=0 frame=3 width=7 aa=false color="#272f5b" points=[[4,6],[12,2],[21,11]] snap=true
+doc_draw op=curve layer=0 frame=3 width=5 aa=false color="#3065b0" points=[[5,6],[12,3],[21,11]] snap=true
+doc_draw op=curve layer=0 frame=3 width=3 aa=false color="#36c4da" points=[[7,5],[14,4],[21,11]] snap=true
+doc_draw op=curve layer=0 frame=4 width=9 aa=false color="#272f5b" points=[[5,6],[16,2],[27,16]] snap=true
+doc_draw op=curve layer=0 frame=4 width=7 aa=false color="#3065b0" points=[[6,6],[16,3],[27,16]] snap=true
+doc_draw op=curve layer=0 frame=4 width=4 aa=false color="#36c4da" points=[[8,5],[18,5],[27,16]] snap=true
+doc_draw op=curve layer=0 frame=5 width=10 aa=false color="#272f5b" points=[[6,7],[18,3],[29,22]] snap=true
+doc_draw op=curve layer=0 frame=5 width=8 aa=false color="#3065b0" points=[[7,7],[18,4],[29,22]] snap=true
+doc_draw op=curve layer=0 frame=5 width=5 aa=false color="#36c4da" points=[[9,6],[20,6],[29,22]] snap=true
+doc_draw op=curve layer=0 frame=6 width=7 aa=false color="#272f5b" points=[[9,9],[21,7],[28,24]] snap=true
+doc_draw op=curve layer=0 frame=6 width=5 aa=false color="#3065b0" points=[[11,9],[22,9],[28,24]] snap=true
+doc_draw op=curve layer=0 frame=6 width=3 aa=false color="#36c4da" points=[[15,10],[24,12],[28,24]] snap=true
+doc_draw op=curve layer=0 frame=7 width=4 aa=false color="#272f5b" points=[[14,13],[24,13],[29,24]] snap=true
+doc_draw op=curve layer=0 frame=7 width=2 aa=false color="#3065b0" points=[[18,14],[26,16],[29,24]] snap=true
+doc_draw op=curve layer=1 frame=1 width=2 aa=false color="#a4ebfa" points=[[6,5],[8,4],[10,5]] snap=true
+doc_draw op=pencil layer=1 frame=1 color="#fffae2" points=[[10,5]] size=1
+doc_draw op=curve layer=1 frame=2 width=2 aa=false color="#a4ebfa" points=[[7,5],[11,4],[15,7]] snap=true
+doc_draw op=line layer=1 frame=2 color="#fffae2" size=1 x0=14 x1=16 y0=6 y1=8
+doc_draw op=curve layer=1 frame=3 width=2 aa=false color="#a4ebfa" points=[[8,6],[15,5],[21,11]] snap=true
+doc_draw op=curve layer=1 frame=3 width=1 aa=false color="#fffae2" points=[[16,6],[20,8],[22,11]] snap=true
+doc_draw op=curve layer=1 frame=4 width=2 aa=false color="#a4ebfa" points=[[9,7],[19,6],[27,16]] snap=true
+doc_draw op=curve layer=1 frame=4 width=2 aa=false color="#fffae2" points=[[20,7],[25,11],[28,17]] snap=true
+doc_draw op=pencil layer=1 frame=4 color="#ffcf4c" points=[[28,17]] size=2
+doc_draw op=curve layer=1 frame=5 width=3 aa=false color="#a4ebfa" points=[[10,9],[21,8],[29,22]] snap=true
+doc_draw op=curve layer=1 frame=5 width=2 aa=false color="#fffae2" points=[[20,8],[27,15],[30,23]] snap=true
+doc_draw op=line layer=1 frame=5 color="#ffcf4c" size=2 x0=28 x1=30 y0=20 y1=23
+doc_draw op=pencil layer=1 frame=5 color="#fffae2" points=[[30,23]] size=2
+doc_draw op=curve layer=1 frame=6 width=2 aa=false color="#a4ebfa" points=[[17,12],[25,15],[28,24]] snap=true
+doc_draw op=line layer=1 frame=6 color="#fffae2" size=1 x0=26 x1=29 y0=20 y1=25
+doc_draw op=pencil layer=1 frame=6 color="#ffcf4c" points=[[29,25]] size=2
+doc_draw op=line layer=2 frame=4 color="#ffcf4c" size=1 x0=27 x1=29 y0=15 y1=17
+doc_draw op=pencil layer=2 frame=4 color="#fffae2" points=[[28,17]] size=1
+doc_draw op=line layer=2 frame=5 color="#ffcf4c" size=1 x0=27 x1=31 y0=22 y1=18
+doc_draw op=line layer=2 frame=5 color="#ffcf4c" size=1 x0=28 x1=31 y0=23 y1=27
+doc_draw op=line layer=2 frame=5 color="#ffcf4c" size=1 x0=28 x1=24 y0=23 y1=28
+doc_draw op=line layer=2 frame=5 color="#ffcf4c" size=1 x0=27 x1=23 y0=22 y1=19
+doc_draw op=line layer=2 frame=5 color="#fffae2" size=1 x0=28 x1=31 y0=23 y1=23
+doc_draw op=line layer=2 frame=5 color="#fffae2" size=1 x0=28 x1=28 y0=23 y1=27
+doc_draw op=ellipse layer=2 frame=5 color="#fffae2" cx=28 cy=23 fill=true rx=2 ry=2
+doc_draw op=line layer=2 frame=6 color="#ffcf4c" size=1 x0=28 x1=31 y0=24 y1=20
+doc_draw op=line layer=2 frame=6 color="#ffcf4c" size=1 x0=28 x1=31 y0=24 y1=29
+doc_draw op=line layer=2 frame=6 color="#ffcf4c" size=1 x0=27 x1=22 y0=24 y1=29
+doc_draw op=line layer=2 frame=6 color="#a4ebfa" size=1 x0=27 x1=23 y0=23 y1=19
+doc_draw op=ellipse layer=2 frame=6 color="#fffae2" cx=28 cy=24 fill=true rx=2 ry=2
+doc_draw op=pencil layer=2 frame=6 color="#36c4da" points=[[31,18],[21,30]] size=1
+doc_draw op=line layer=2 frame=7 color="#36c4da" size=1 x0=28 x1=31 y0=24 y1=28
+doc_draw op=line layer=2 frame=7 color="#3065b0" size=1 x0=26 x1=23 y0=25 y1=29
+doc_draw op=pencil layer=2 frame=7 color="#a4ebfa" points=[[30,21],[21,30],[31,29]] size=1
+doc_draw op=pencil layer=2 frame=7 color="#ffcf4c" points=[[28,25]] size=1
+doc_draw op=line layer=2 frame=8 color="#3065b0" size=1 x0=29 x1=31 y0=26 y1=29
+doc_draw op=pencil layer=2 frame=8 color="#272f5b" points=[[24,29],[30,23]] size=1
+doc_draw op=pencil layer=2 frame=8 color="#36c4da" points=[[31,30]] size=1
