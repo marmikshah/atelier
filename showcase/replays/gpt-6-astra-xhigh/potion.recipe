@@ -1,13 +1,13 @@
-atelier 3 2eb5df19-143b-4ebe-b846-3295814f7c09 0.1.0
-doc_new name=sc-gpt-6-astra-xhigh-potion width=32 height=32
-doc_palette op=set colors=[[35,33,58,255],[76,123,139,255],[248,231,185,255],[192,132,80,255],[119,66,177,255],[211,125,218,255]]
-doc_layer op=rename index=0 name="Bottle body — fixed"
-doc_layer op=add name="Potion reservoir"
-doc_layer op=add name="Wobbling meniscus"
-doc_layer op=add name="Rising bubbles and pops"
-doc_layer op=add name="Glass reflections — fixed"
-doc_layer op=add name="Cork — fixed"
-doc_paint_grid layer=0 frame=0 x=5 y=6 legend={"k":0} rows:24
+atelier 4 2eb5df19-143b-4ebe-b846-3295814f7c09 0.1.0
+new name=sc-gpt-6-astra-xhigh-potion width=32 height=32
+palette op=set colors=#23213a,#4c7b8b,#f8e7b9,#c08450,#7742b1,#d37dda
+layer op=rename index=0 name="Bottle body — fixed"
+layer op=add name="Potion reservoir"
+layer op=add name="Wobbling meniscus"
+layer op=add name="Rising bubbles and pops"
+layer op=add name="Glass reflections — fixed"
+layer op=add name="Cork — fixed"
+paint_grid layer=0 frame=0 x=5 y=6 legend=k:0 rows:24
   |......kkkkkkkkkk......|
   |.....kkkkkkkkkkkk.....|
   |......kkkkkkkkkk......|
@@ -32,12 +32,12 @@ doc_paint_grid layer=0 frame=0 x=5 y=6 legend={"k":0} rows:24
   |...kkkkkkkkkkkkkkkk...|
   |.....kkkkkkkkkkkk.....|
   |.......kkkkkkkk.......|
-doc_paint_grid layer=5 frame=0 x=12 y=2 legend={"k":0} rows:4
+paint_grid layer=5 frame=0 x=12 y=2 legend=k:0 rows:4
   |.kkkkkk.|
   |kkkkkkkk|
   |kkkkkkkk|
   |kkkkkkkk|
-doc_paint_grid layer=0 frame=0 x=6 y=6 legend={"g":1} rows:23
+paint_grid layer=0 frame=0 x=6 y=6 legend=g:1 rows:23
   |......gggggggg......|
   |.....gggggggggg.....|
   |......gggggggg......|
@@ -61,7 +61,7 @@ doc_paint_grid layer=0 frame=0 x=6 y=6 legend={"g":1} rows:23
   |..gggggggggggggggg..|
   |...gggggggggggggg...|
   |.....gggggggggg.....|
-doc_paint_grid layer=1 frame=0 x=7 y=18 legend={"p":4} rows:10
+paint_grid layer=1 frame=0 x=7 y=18 legend=p:4 rows:10
   |pppppppppppppppppp|
   |pppppppppppppppppp|
   |pppppppppppppppppp|
@@ -72,16 +72,16 @@ doc_paint_grid layer=1 frame=0 x=7 y=18 legend={"p":4} rows:10
   |..pppppppppppppp..|
   |...pppppppppppp...|
   |.....pppppppp.....|
-doc_paint_grid layer=2 frame=0 x=7 y=15 legend={"p":4,"v":5} rows:3
+paint_grid layer=2 frame=0 x=7 y=15 legend=p:4,v:5 rows:3
   |................v.|
   |vvvv.......vvvvvvv|
   |vvvvvvvvvvvvvvvvpv|
-doc_paint_grid layer=5 frame=0 x=12 y=2 legend={"c":3,"k":0,"w":2} rows:4
+paint_grid layer=5 frame=0 x=12 y=2 legend=c:3,k:0,w:2 rows:4
   |.cccccc.|
   |kcwcccck|
   |kccckcck|
   |kcccccck|
-doc_paint_grid layer=1 frame=0 x=8 y=18 legend={"v":5} rows:9
+paint_grid layer=1 frame=0 x=8 y=18 legend=v:5 rows:9
   |vv.......|
   |vv.......|
   |vv.......|
@@ -91,7 +91,7 @@ doc_paint_grid layer=1 frame=0 x=8 y=18 legend={"v":5} rows:9
   |.vvv.....|
   |..vvvv...|
   |....vvvvv|
-doc_paint_grid layer=4 frame=0 x=7 y=6 legend={"k":0,"v":5,"w":2} rows:22
+paint_grid layer=4 frame=0 x=7 y=6 legend=k:0,v:5,w:2 rows:22
   |.....wwwww........|
   |....wwwwwwww......|
   |.....kkkkkkkk.....|
@@ -114,7 +114,7 @@ doc_paint_grid layer=4 frame=0 x=7 y=6 legend={"k":0,"v":5,"w":2} rows:22
   |..w...............|
   |...ww.............|
   |.....wwwww........|
-doc_paint_grid layer=3 frame=0 x=12 y=19 legend={"v":5,"w":2} rows:7
+paint_grid layer=3 frame=0 x=12 y=19 legend=v:5,w:2 rows:7
   |.......w.|
   |......w.v|
   |.......v.|
@@ -122,17 +122,17 @@ doc_paint_grid layer=3 frame=0 x=12 y=19 legend={"v":5,"w":2} rows:7
   |.........|
   |.........|
   |v........|
-doc_paint_grid layer=5 frame=0 x=12 y=2 legend={"c":3,"k":0,"w":2} rows:2
+paint_grid layer=5 frame=0 x=12 y=2 legend=c:3,k:0,w:2 rows:2
   |.kkkkkk.|
   |kwwcccck|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=1
-doc_draw op=clear_cel layer=3 frame=1
-doc_paint_grid layer=2 frame=1 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=1
+draw op=clear_cel layer=3 frame=1
+paint_grid layer=2 frame=1 x=7 y=15 legend=p:4,v:5 rows:3
   |..............vvv.|
   |vv......vvvvvvvvvv|
   |vvvvvvvvvvvvvvpppv|
-doc_paint_grid layer=3 frame=1 x=12 y=18 legend={"v":5,"w":2} rows:8
+paint_grid layer=3 frame=1 x=12 y=18 legend=v:5,w:2 rows:8
   |........w.|
   |.......w.v|
   |........v.|
@@ -141,14 +141,14 @@ doc_paint_grid layer=3 frame=1 x=12 y=18 legend={"v":5,"w":2} rows:8
   |..........|
   |w.........|
   |v.........|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=2
-doc_draw op=clear_cel layer=3 frame=2
-doc_paint_grid layer=2 frame=2 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=2
+draw op=clear_cel layer=3 frame=2
+paint_grid layer=2 frame=2 x=7 y=15 legend=p:4,v:5 rows:3
   |...........vvvvvv.|
   |v.....vvvvvvvvvvvv|
   |vvvvvvvvvvvppppppv|
-doc_paint_grid layer=3 frame=2 x=11 y=17 legend={"v":5,"w":2} rows:8
+paint_grid layer=3 frame=2 x=11 y=17 legend=v:5,w:2 rows:8
   |.........w.|
   |........w.v|
   |.........v.|
@@ -157,14 +157,14 @@ doc_paint_grid layer=3 frame=2 x=11 y=17 legend={"v":5,"w":2} rows:8
   |.w.........|
   |w.v........|
   |.v.........|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=3
-doc_draw op=clear_cel layer=3 frame=3
-doc_paint_grid layer=2 frame=3 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=3
+draw op=clear_cel layer=3 frame=3
+paint_grid layer=2 frame=3 x=7 y=15 legend=p:4,v:5 rows:3
   |.........vvvvvvv..|
   |v...vvvvvvvvvvvvvv|
   |vvvvvvvvvpppppppvv|
-doc_paint_grid layer=3 frame=3 x=11 y=15 legend={"v":5,"w":2} rows:9
+paint_grid layer=3 frame=3 x=11 y=15 legend=v:5,w:2 rows:9
   |.........w.|
   |........w.v|
   |.........v.|
@@ -174,14 +174,14 @@ doc_paint_grid layer=3 frame=3 x=11 y=15 legend={"v":5,"w":2} rows:9
   |.w.........|
   |w.v........|
   |.v.........|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=4
-doc_draw op=clear_cel layer=3 frame=4
-doc_paint_grid layer=2 frame=4 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=4
+draw op=clear_cel layer=3 frame=4
+paint_grid layer=2 frame=4 x=7 y=15 legend=p:4,v:5 rows:3
   |.......vvvvvv.....|
   |vvvvvvvvvvvvvvvvvv|
   |vvvvvvvppppppvvvvv|
-doc_paint_grid layer=3 frame=4 x=11 y=13 legend={"v":5,"w":2} rows:10
+paint_grid layer=3 frame=4 x=11 y=13 legend=v:5,w:2 rows:10
   |.........v..|
   |.......w...v|
   |............|
@@ -192,14 +192,14 @@ doc_paint_grid layer=3 frame=4 x=11 y=13 legend={"v":5,"w":2} rows:10
   |.w..........|
   |w.v.........|
   |.v..........|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=5
-doc_draw op=clear_cel layer=3 frame=5
-doc_paint_grid layer=2 frame=5 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=5
+draw op=clear_cel layer=3 frame=5
+paint_grid layer=2 frame=5 x=7 y=15 legend=p:4,v:5 rows:3
   |....vvvvvvv.......|
   |vvvvvvvvvvvvvvvv.v|
   |vvvvpppppppvvvvvvv|
-doc_paint_grid layer=3 frame=5 x=12 y=19 legend={"v":5,"w":2} rows:7
+paint_grid layer=3 frame=5 x=12 y=19 legend=v:5,w:2 rows:7
   |.w.......|
   |w.v......|
   |.v.......|
@@ -207,14 +207,14 @@ doc_paint_grid layer=3 frame=5 x=12 y=19 legend={"v":5,"w":2} rows:7
   |.........|
   |.........|
   |........v|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=6
-doc_draw op=clear_cel layer=3 frame=6
-doc_paint_grid layer=2 frame=6 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=6
+draw op=clear_cel layer=3 frame=6
+paint_grid layer=2 frame=6 x=7 y=15 legend=p:4,v:5 rows:3
   |..vvvvvv..........|
   |vvvvvvvvvvvvvv...v|
   |vvppppppvvvvvvvvvv|
-doc_paint_grid layer=3 frame=6 x=12 y=18 legend={"v":5,"w":2} rows:8
+paint_grid layer=3 frame=6 x=12 y=18 legend=v:5,w:2 rows:8
   |.w.......|
   |w.v......|
   |.v.......|
@@ -223,14 +223,14 @@ doc_paint_grid layer=3 frame=6 x=12 y=18 legend={"v":5,"w":2} rows:8
   |.........|
   |........w|
   |........v|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=7
-doc_draw op=clear_cel layer=3 frame=7
-doc_paint_grid layer=2 frame=7 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=7
+draw op=clear_cel layer=3 frame=7
+paint_grid layer=2 frame=7 x=7 y=15 legend=p:4,v:5 rows:3
   |.vvvvv............|
   |vvvvvvvvvvv......v|
   |vpppppvvvvvvvvvvvv|
-doc_paint_grid layer=3 frame=7 x=12 y=17 legend={"v":5,"w":2} rows:8
+paint_grid layer=3 frame=7 x=12 y=17 legend=v:5,w:2 rows:8
   |.w.......|
   |w.v......|
   |.v.......|
@@ -239,14 +239,14 @@ doc_paint_grid layer=3 frame=7 x=12 y=17 legend={"v":5,"w":2} rows:8
   |.......w.|
   |......w.v|
   |.......v.|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=8
-doc_draw op=clear_cel layer=3 frame=8
-doc_paint_grid layer=2 frame=8 x=7 y=15 legend={"p":4,"v":5} rows:3
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=8
+draw op=clear_cel layer=3 frame=8
+paint_grid layer=2 frame=8 x=7 y=15 legend=p:4,v:5 rows:3
   |.vvv..............|
   |vvvvvvvvv.......vv|
   |vpppvvvvvvvvvvvvvv|
-doc_paint_grid layer=3 frame=8 x=11 y=15 legend={"v":5,"w":2} rows:9
+paint_grid layer=3 frame=8 x=11 y=15 legend=v:5,w:2 rows:9
   |.w........|
   |w.v.......|
   |.v........|
@@ -256,13 +256,13 @@ doc_paint_grid layer=3 frame=8 x=11 y=15 legend={"v":5,"w":2} rows:9
   |........w.|
   |.......w.v|
   |........v.|
-doc_frame op=add copy_from=0 duration_ms=100
-doc_draw op=clear_cel layer=2 frame=9
-doc_draw op=clear_cel layer=3 frame=9
-doc_paint_grid layer=2 frame=9 x=7 y=16 legend={"v":5} rows:2
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=2 frame=9
+draw op=clear_cel layer=3 frame=9
+paint_grid layer=2 frame=9 x=7 y=16 legend=v:5 rows:2
   |vvvvvvv......vvvvv|
   |vvvvvvvvvvvvvvvvvv|
-doc_paint_grid layer=3 frame=9 x=10 y=13 legend={"v":5,"w":2} rows:10
+paint_grid layer=3 frame=9 x=10 y=13 legend=v:5,w:2 rows:10
   |..v........|
   |w...v......|
   |...........|
@@ -273,5 +273,5 @@ doc_paint_grid layer=3 frame=9 x=10 y=13 legend={"v":5,"w":2} rows:10
   |.........w.|
   |........w.v|
   |.........v.|
-doc_frame op=duration frame=0 count=10 duration_ms=100
-doc_add_tag name="Violet effervescence" direction=forward from=0 to=9
+frame op=duration frame=0 count=10 duration_ms=100
+add_tag name="Violet effervescence" direction=forward from=0 to=9

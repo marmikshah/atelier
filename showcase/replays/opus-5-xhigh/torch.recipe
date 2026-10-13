@@ -1,17 +1,17 @@
-atelier 3 6b8ccfb9-8d39-4f45-bbf8-720a6492bd51 0.1.0
-doc_new name=wall-torch width=32 height=32
-doc_layer op=add name=shaft
-doc_layer op=add name=rag
-doc_layer op=add name=glow
-doc_layer op=add name=flame
-doc_layer op=add name=embers
-doc_layer op=rename index=0 name=bracket
-doc_palette op=set colors=[[35,26,22,255],[138,47,20,255],[224,96,28,255],[247,178,59,255],[255,240,184,255]]
-doc_paint_grid layer=0 frame=0 x=0 y=0 legend={"a":0,"b":1} rows:2
+atelier 4 6b8ccfb9-8d39-4f45-bbf8-720a6492bd51 0.1.0
+new name=wall-torch width=32 height=32
+layer op=add name=shaft
+layer op=add name=rag
+layer op=add name=glow
+layer op=add name=flame
+layer op=add name=embers
+layer op=rename index=0 name=bracket
+palette op=set colors=#231a16,#8a2f14,#e0601c,#f7b23b,#fff0b8
+paint_grid layer=0 frame=0 x=0 y=0 legend=a:0,b:1 rows:2
   |ab.|
   |.ba|
-doc_region op=clear layer=0 frame=0 rect=[0,0,4,3]
-doc_paint_grid layer=0 frame=0 x=12 y=20 legend={"k":0} rows:10
+region op=clear layer=0 frame=0 rect=0,0,4,3
+paint_grid layer=0 frame=0 x=12 y=20 legend=k:0 rows:10
   |kk....kk|
   |kk....kk|
   |kkkkkkkk|
@@ -22,26 +22,26 @@ doc_paint_grid layer=0 frame=0 x=12 y=20 legend={"k":0} rows:10
   |kkkkkkkk|
   |kkkkkkkk|
   |.kkkkkk.|
-doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0} rows:6
+paint_grid layer=1 frame=0 x=14 y=18 legend=k:0 rows:6
   |kkkk|
   |kkkk|
   |kkkk|
   |kkkk|
   |kkkk|
   |kkkk|
-doc_paint_grid layer=2 frame=0 x=13 y=15 legend={"k":0} rows:5
+paint_grid layer=2 frame=0 x=13 y=15 legend=k:0 rows:5
   |.kkkk.|
   |kkkkkk|
   |kkkkkk|
   |kkkkkk|
   |.kkkk.|
-doc_region op=clear layer=4 frame=0 rect=[10,0,21,17]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1} rows:4
+region op=clear layer=4 frame=0 rect=10,0,21,17
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1 rows:4
   |.rr.|
   |.oo.|
   |roor|
   |raar|
-doc_paint_grid layer=4 frame=0 x=12 y=9 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+paint_grid layer=4 frame=0 x=12 y=9 legend=a:3,o:2,r:1,w:4 rows:8
   |.roaaor.|
   |.roaaor.|
   |roawwaor|
@@ -50,8 +50,8 @@ doc_paint_grid layer=4 frame=0 x=12 y=9 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |.rawwar.|
   |.rawwar.|
   |..raar..|
-doc_region op=clear layer=3 frame=0 rect=[11,15,20,28]
-doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"o":2,"r":1} rows:11
+region op=clear layer=3 frame=0 rect=11,15,20,28
+paint_grid layer=3 frame=0 x=12 y=16 legend=o:2,r:1 rows:11
   |.o....o.|
   |.roooor.|
   |..rrrr..|
@@ -63,17 +63,17 @@ doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"o":2,"r":1} rows:11
   |........|
   |........|
   |.r....r.|
-doc_region op=clear layer=5 frame=0 rect=[9,0,22,12]
-doc_paint_grid layer=5 frame=0 x=18 y=3 legend={"a":3,"o":2} rows:5
+region op=clear layer=5 frame=0 rect=9,0,22,12
+paint_grid layer=5 frame=0 x=18 y=3 legend=a:3,o:2 rows:5
   |...o|
   |....|
   |....|
   |....|
   |a...|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=12 y=23 legend={"k":0} rows:7
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=12 y=23 legend=k:0 rows:7
   |kkkkkkkk|
   |.kkkkkk.|
   |..kkkk..|
@@ -81,19 +81,19 @@ doc_paint_grid layer=0 frame=0 x=12 y=23 legend={"k":0} rows:7
   |kkkkkkkk|
   |kkkkkkkk|
   |.kkkkkk.|
-doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0} rows:5
+paint_grid layer=1 frame=0 x=14 y=18 legend=k:0 rows:5
   |kkkk|
   |kkkk|
   |kkkk|
   |kkkk|
   |kkkk|
-doc_paint_grid layer=2 frame=0 x=13 y=15 legend={"k":0} rows:4
+paint_grid layer=2 frame=0 x=13 y=15 legend=k:0 rows:4
   |.kkkk.|
   |kkkkkk|
   |kkkkkk|
   |kkkkkk|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=12 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...rr...|
   |...oo...|
   |..roor..|
@@ -101,14 +101,14 @@ doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roaaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=12 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=0 x=12 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roawwaor|
   |.oawwao.|
   |.oawwao.|
   |..owwo..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"o":2,"r":1} rows:12
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=12 y=16 legend=o:2,r:1 rows:12
   |.oo..oo.|
   |.roooor.|
   |.rrrrrr.|
@@ -121,20 +121,20 @@ doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"o":2,"r":1} rows:12
   |........|
   |........|
   |.r....r.|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=18 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=18 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=10 y=22 legend={"k":0} rows:4
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=10 y=22 legend=k:0 rows:4
   |.kkkkkkkkkk.|
   |kkkkkkkkkkkk|
   |..kkkkkkkk..|
   |...kkkkkk...|
-doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0} rows:11
+paint_grid layer=1 frame=0 x=14 y=18 legend=k:0 rows:11
   |kkkk|
   |kkkk|
   |kkkk|
@@ -146,13 +146,13 @@ doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0} rows:11
   |kkkk|
   |kkkk|
   |.kk.|
-doc_paint_grid layer=2 frame=0 x=13 y=15 legend={"k":0} rows:4
+paint_grid layer=2 frame=0 x=13 y=15 legend=k:0 rows:4
   |.kkkk.|
   |kkkkkk|
   |kkkkkk|
   |kkkkkk|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=12 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -160,14 +160,14 @@ doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=12 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=12 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=11 y=16 legend={"o":2,"r":1} rows:7
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=11 y=16 legend=o:2,r:1 rows:7
   |..oo..oo..|
   |..roooor..|
   |..rrrrrr..|
@@ -175,19 +175,19 @@ doc_paint_grid layer=3 frame=0 x=11 y=16 legend={"o":2,"r":1} rows:7
   |..........|
   |..........|
   |rrr....rrr|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=18 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=18 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=11 y=22 legend={"k":0} rows:3
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=11 y=22 legend=k:0 rows:3
   |kkkkkkkkkk|
   |.kkkkkkkk.|
   |..kkkkkk..|
-doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0} rows:9
+paint_grid layer=1 frame=0 x=14 y=18 legend=k:0 rows:9
   |kkkk|
   |kkkk|
   |kkkk|
@@ -197,13 +197,13 @@ doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0} rows:9
   |kkkk|
   |kkkk|
   |kkkk|
-doc_paint_grid layer=2 frame=0 x=13 y=15 legend={"k":0} rows:4
+paint_grid layer=2 frame=0 x=13 y=15 legend=k:0 rows:4
   |.kkkk.|
   |kkkkkk|
   |kkkkkk|
   |kkkkkk|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=12 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -211,14 +211,14 @@ doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=12 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=12 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=11 y=16 legend={"o":2,"r":1} rows:8
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=11 y=16 legend=o:2,r:1 rows:8
   |..oo..oo..|
   |..roooor..|
   |..rrrrrr..|
@@ -227,20 +227,20 @@ doc_paint_grid layer=3 frame=0 x=11 y=16 legend={"o":2,"r":1} rows:8
   |..........|
   |rrr....rrr|
   |.r......r.|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=18 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=18 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=11 y=22 legend={"k":0,"r":1} rows:4
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=11 y=22 legend=k:0,r:1 rows:4
   |rrrkkkkrrr|
   |krkkkkkkrk|
   |.kkkkkkkk.|
   |..kkkkkk..|
-doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0,"o":2,"r":1} rows:11
+paint_grid layer=1 frame=0 x=14 y=18 legend=k:0,o:2,r:1 rows:11
   |roor|
   |roor|
   |krrk|
@@ -252,13 +252,13 @@ doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0,"o":2,"r":1} rows:11
   |krrk|
   |krrk|
   |kkkk|
-doc_paint_grid layer=2 frame=0 x=13 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=13 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |krrrrk|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=12 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -266,14 +266,14 @@ doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=12 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=12 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"a":3,"o":2,"r":1} rows:7
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=12 y=16 legend=a:3,o:2,r:1 rows:7
   |.a....a.|
   |.o....o.|
   |.r....r.|
@@ -281,21 +281,21 @@ doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"a":3,"o":2,"r":1} rows:7
   |........|
   |........|
   |oo....oo|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=18 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=18 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=11 y=22 legend={"k":0,"r":1} rows:5
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=11 y=22 legend=k:0,r:1 rows:5
   |rrrkkkkrrr|
   |.rkkkkkkr.|
   |.kkkkkkkk.|
   |.kkkkkkkk.|
   |..kkkkkk..|
-doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0,"o":2,"r":1} rows:11
+paint_grid layer=1 frame=0 x=14 y=18 legend=k:0,o:2,r:1 rows:11
   |roor|
   |roor|
   |krrk|
@@ -307,13 +307,13 @@ doc_paint_grid layer=1 frame=0 x=14 y=18 legend={"k":0,"o":2,"r":1} rows:11
   |krrk|
   |krrk|
   |kkkk|
-doc_paint_grid layer=2 frame=0 x=13 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=13 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |.krrk.|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=12 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -321,14 +321,14 @@ doc_paint_grid layer=4 frame=0 x=12 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=12 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=12 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"a":3,"o":2,"r":1} rows:9
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=12 y=16 legend=a:3,o:2,r:1 rows:9
   |.a....a.|
   |.o....o.|
   |..r..r..|
@@ -338,15 +338,15 @@ doc_paint_grid layer=3 frame=0 x=12 y=16 legend={"a":3,"o":2,"r":1} rows:9
   |oo....oo|
   |........|
   |r......r|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=18 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=18 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=8 y=19 legend={"k":0,"r":1} rows:9
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=8 y=19 legend=k:0,r:1 rows:9
   |rrr.........|
   |kkr.........|
   |krr.........|
@@ -356,7 +356,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=19 legend={"k":0,"r":1} rows:9
   |.rkkkkkkkk..|
   |kkkk........|
   |kkk.........|
-doc_paint_grid layer=1 frame=0 x=11 y=18 legend={"k":0,"o":2,"r":1} rows:11
+paint_grid layer=1 frame=0 x=11 y=18 legend=k:0,o:2,r:1 rows:11
   |.....krrk|
   |.....roor|
   |....krrk.|
@@ -368,13 +368,13 @@ doc_paint_grid layer=1 frame=0 x=11 y=18 legend={"k":0,"o":2,"r":1} rows:11
   |.krrk....|
   |.krrk....|
   |kkkk.....|
-doc_paint_grid layer=2 frame=0 x=15 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=15 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |.krrk.|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -382,14 +382,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:9
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:9
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -399,15 +399,15 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:9
   |.............|
   |...ooo....oo.|
   |...rr........|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=8 y=21 legend={"k":0,"r":1} rows:7
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=8 y=21 legend=k:0,r:1 rows:7
   |......rkkkkrr|
   |rrr..rkkkkkk.|
   |kkkrrkkkkkk..|
@@ -415,7 +415,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=21 legend={"k":0,"r":1} rows:7
   |krk..........|
   |kkk..........|
   |kkk..........|
-doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
+paint_grid layer=1 frame=0 x=13 y=18 legend=k:0,o:2,r:1 rows:8
   |...krrk|
   |...roor|
   |..krrk.|
@@ -424,13 +424,13 @@ doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
   |.krrk..|
   |krrk...|
   |kkkk...|
-doc_paint_grid layer=2 frame=0 x=15 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=15 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |.krrk.|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -438,14 +438,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -454,15 +454,15 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |......o....oo|
   |ooo.......rr.|
   |...oo........|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=8 y=21 legend={"k":0,"r":1} rows:7
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=8 y=21 legend=k:0,r:1 rows:7
   |krr..rrkkkkrr|
   |krrrrkkkkkkr.|
   |krrkkkkkkkkk.|
@@ -470,7 +470,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=21 legend={"k":0,"r":1} rows:7
   |krr..........|
   |krr..........|
   |kkk..........|
-doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
+paint_grid layer=1 frame=0 x=13 y=18 legend=k:0,o:2,r:1 rows:8
   |...krrk|
   |...roor|
   |..krrk.|
@@ -479,13 +479,13 @@ doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
   |.krrk..|
   |krrk...|
   |kkkk...|
-doc_paint_grid layer=2 frame=0 x=15 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=15 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |.krrk.|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -493,14 +493,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:7
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:7
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -508,15 +508,15 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:7
   |.............|
   |roo..oo....oo|
   |.....r....r..|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"k":0,"r":1} rows:7
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=8 y=20 legend=k:0,r:1 rows:7
   |rrr..........|
   |krr..rrkkkkrr|
   |krrrrrkkkkrr.|
@@ -524,7 +524,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"k":0,"r":1} rows:7
   |krr..........|
   |krr..........|
   |kkk..........|
-doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
+paint_grid layer=1 frame=0 x=13 y=18 legend=k:0,o:2,r:1 rows:8
   |...krrk|
   |...roor|
   |..krrk.|
@@ -533,13 +533,13 @@ doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
   |.krrk..|
   |krrk...|
   |krrk...|
-doc_paint_grid layer=2 frame=0 x=15 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=15 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |.krrk.|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -547,29 +547,29 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:6
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:6
   |.......a....a|
   |.......o....o|
   |........r..r.|
   |........o..o.|
   |ooo..........|
   |.....oo....oo|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"k":0,"o":2,"r":1} rows:7
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=8 y=20 legend=k:0,o:2,r:1 rows:7
   |rrr..........|
   |krr..ookkkkoo|
   |krrrookkkkoo.|
@@ -577,7 +577,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=20 legend={"k":0,"o":2,"r":1} rows:7
   |krr..........|
   |krr..........|
   |kkk..........|
-doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
+paint_grid layer=1 frame=0 x=13 y=18 legend=k:0,o:2,r:1 rows:8
   |...krrk|
   |...roor|
   |..krrk.|
@@ -586,13 +586,13 @@ doc_paint_grid layer=1 frame=0 x=13 y=18 legend={"k":0,"o":2,"r":1} rows:8
   |.krrk..|
   |krrk...|
   |krrk...|
-doc_paint_grid layer=2 frame=0 x=15 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=15 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |.krrk.|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -600,14 +600,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:7
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:7
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -615,15 +615,15 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:7
   |ooo..........|
   |.....aa....aa|
   |...o.........|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=0 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
-doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=0 frame=0 x=8 y=22 legend={"k":0,"o":2,"r":1} rows:7
+region op=clear layer=0 frame=0 rect=0,0,31,31
+region op=clear layer=1 frame=0 rect=0,0,31,31
+region op=clear layer=2 frame=0 rect=0,0,31,31
+paint_grid layer=0 frame=0 x=8 y=22 legend=k:0,o:2,r:1 rows:7
   |rrr.........|
   |krr.ookkkkoo|
   |krrookkkkoo.|
@@ -631,7 +631,7 @@ doc_paint_grid layer=0 frame=0 x=8 y=22 legend={"k":0,"o":2,"r":1} rows:7
   |krr.........|
   |krr.........|
   |kkk.........|
-doc_paint_grid layer=1 frame=0 x=12 y=18 legend={"k":0,"o":2,"r":1} rows:10
+paint_grid layer=1 frame=0 x=12 y=18 legend=k:0,o:2,r:1 rows:10
   |....krrk|
   |....roor|
   |...krrk.|
@@ -642,13 +642,13 @@ doc_paint_grid layer=1 frame=0 x=12 y=18 legend={"k":0,"o":2,"r":1} rows:10
   |.krrk...|
   |krrk....|
   |krrk....|
-doc_paint_grid layer=2 frame=0 x=15 y=15 legend={"a":3,"k":0,"o":2,"r":1} rows:4
+paint_grid layer=2 frame=0 x=15 y=15 legend=a:3,k:0,o:2,r:1 rows:4
   |.oooo.|
   |oaaaao|
   |roooor|
   |.krrk.|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -656,14 +656,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -672,22 +672,22 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -695,14 +695,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -711,13 +711,13 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -725,14 +725,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -741,14 +741,14 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_frame op=duration frame=0 duration_ms=100
-doc_region op=clear layer=4 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=1 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=0 duration_ms=100
+region op=clear layer=4 frame=1 rect=0,0,31,31
+paint_grid layer=4 frame=1 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |..r.....|
   |..rr....|
   |.ror....|
@@ -756,14 +756,14 @@ doc_paint_grid layer=4 frame=1 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=1 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=1 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |.oaawwaao|
   |roawwwao.|
   |..oawwao.|
   |...oaao..|
   |....aa...|
-doc_region op=clear layer=3 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=1 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=1 rect=0,0,31,31
+paint_grid layer=3 frame=1 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -774,14 +774,14 @@ doc_paint_grid layer=3 frame=1 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=1 x=20 y=3 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=1 rect=0,0,31,31
+paint_grid layer=5 frame=1 x=20 y=3 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_frame op=duration frame=1 duration_ms=100
-doc_region op=clear layer=4 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=2 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
+frame op=duration frame=1 duration_ms=100
+region op=clear layer=4 frame=2 rect=0,0,31,31
+paint_grid layer=4 frame=2 x=14 y=3 legend=a:3,o:2,r:1,w:4 rows:9
   |..r.....|
   |..rr....|
   |.ror....|
@@ -791,14 +791,14 @@ doc_paint_grid layer=4 frame=2 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=2 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=2 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |.oaawwaao|
   |roawwwao.|
   |..oawwao.|
   |...oaao..|
   |....aa...|
-doc_region op=clear layer=3 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=2 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
+region op=clear layer=3 frame=2 rect=0,0,31,31
+paint_grid layer=3 frame=2 x=8 y=16 legend=a:3,o:2,r:1,w:4 rows:11
   |.......aw..wa|
   |.......aaaaaa|
   |........oooo.|
@@ -810,8 +810,8 @@ doc_paint_grid layer=3 frame=2 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
   |rooaa....aa..|
   |.oorr....rr..|
   |.oo..........|
-doc_region op=clear layer=5 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=2 x=21 y=1 legend={"a":3,"o":2,"r":1} rows:9
+region op=clear layer=5 frame=2 rect=0,0,31,31
+paint_grid layer=5 frame=2 x=21 y=1 legend=a:3,o:2,r:1 rows:9
   |.r|
   |..|
   |..|
@@ -821,9 +821,9 @@ doc_paint_grid layer=5 frame=2 x=21 y=1 legend={"a":3,"o":2,"r":1} rows:9
   |..|
   |..|
   |a.|
-doc_frame op=duration frame=2 duration_ms=100
-doc_region op=clear layer=4 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=3 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=2 duration_ms=100
+region op=clear layer=4 frame=3 rect=0,0,31,31
+paint_grid layer=4 frame=3 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |..r.....|
   |..rr....|
   |.ror....|
@@ -832,17 +832,17 @@ doc_paint_grid layer=4 frame=3 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=3 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=3 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |.oaawwaao|
   |roawwwao.|
   |..oawwao.|
   |...oaao..|
   |....aa...|
-doc_paint_grid layer=4 frame=3 x=15 y=1 legend={"a":3,"o":2} rows:2
+paint_grid layer=4 frame=3 x=15 y=1 legend=a:3,o:2 rows:2
   |.o|
   |oa|
-doc_region op=clear layer=3 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=3 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=3 rect=0,0,31,31
+paint_grid layer=3 frame=3 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -853,43 +853,43 @@ doc_paint_grid layer=3 frame=3 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=3 x=21 y=2 legend={"a":3,"o":2} rows:6
+region op=clear layer=5 frame=3 rect=0,0,31,31
+paint_grid layer=5 frame=3 x=21 y=2 legend=a:3,o:2 rows:6
   |o|
   |.|
   |.|
   |.|
   |.|
   |a|
-doc_frame op=duration frame=3 duration_ms=100
-doc_region op=clear layer=4 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=4 x=14 y=6 legend={"a":3,"o":2,"r":1,"w":4} rows:6
+frame op=duration frame=3 duration_ms=100
+region op=clear layer=4 frame=4 rect=0,0,31,31
+paint_grid layer=4 frame=4 x=14 y=6 legend=a:3,o:2,r:1,w:4 rows:6
   |...r....|
   |...rr...|
   |..roor..|
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=4 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=4 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_paint_grid layer=4 frame=4 x=15 y=0 legend={"o":2,"r":1} rows:1
+paint_grid layer=4 frame=4 x=15 y=0 legend=o:2,r:1 rows:1
   |ro|
-doc_region op=clear layer=3 frame=4 rect=[0,0,31,31]
-doc_region op=clear layer=5 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=4 x=22 y=1 legend={"o":2,"r":1} rows:6
+region op=clear layer=3 frame=4 rect=0,0,31,31
+region op=clear layer=5 frame=4 rect=0,0,31,31
+paint_grid layer=5 frame=4 x=22 y=1 legend=o:2,r:1 rows:6
   |r|
   |.|
   |.|
   |.|
   |.|
   |o|
-doc_frame op=duration frame=4 duration_ms=100
-doc_region op=clear layer=4 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=5 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=4 duration_ms=100
+region op=clear layer=4 frame=5 rect=0,0,31,31
+paint_grid layer=4 frame=5 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |.....r..|
   |....rr..|
   |....ror.|
@@ -897,14 +897,14 @@ doc_paint_grid layer=4 frame=5 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=5 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=5 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaao.|
   |.oawwwaor|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_region op=clear layer=3 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=5 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=5 rect=0,0,31,31
+paint_grid layer=3 frame=5 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -913,16 +913,16 @@ doc_paint_grid layer=3 frame=5 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=5 x=15 y=4 legend={"a":3,"o":2} rows:5
+region op=clear layer=5 frame=5 rect=0,0,31,31
+paint_grid layer=5 frame=5 x=15 y=4 legend=a:3,o:2 rows:5
   |.......o|
   |........|
   |........|
   |........|
   |a.......|
-doc_frame op=duration frame=5 duration_ms=100
-doc_region op=clear layer=4 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=6 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
+frame op=duration frame=5 duration_ms=100
+region op=clear layer=4 frame=6 rect=0,0,31,31
+paint_grid layer=4 frame=6 x=14 y=3 legend=a:3,o:2,r:1,w:4 rows:9
   |.....r..|
   |....rr..|
   |....ror.|
@@ -932,14 +932,14 @@ doc_paint_grid layer=4 frame=6 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=6 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=6 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaao.|
   |.oawwwaor|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_region op=clear layer=3 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=6 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
+region op=clear layer=3 frame=6 rect=0,0,31,31
+paint_grid layer=3 frame=6 x=8 y=16 legend=a:3,o:2,r:1,w:4 rows:11
   |.......aw..wa|
   |.......aaaaaa|
   |........oooo.|
@@ -951,15 +951,15 @@ doc_paint_grid layer=3 frame=6 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
   |rooaa....aa..|
   |.oorr....rr..|
   |.oo..........|
-doc_region op=clear layer=5 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=6 x=15 y=3 legend={"a":3,"r":1} rows:4
+region op=clear layer=5 frame=6 rect=0,0,31,31
+paint_grid layer=5 frame=6 x=15 y=3 legend=a:3,r:1 rows:4
   |........r|
   |.........|
   |.........|
   |a........|
-doc_frame op=duration frame=6 duration_ms=100
-doc_region op=clear layer=4 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=7 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=6 duration_ms=100
+region op=clear layer=4 frame=7 rect=0,0,31,31
+paint_grid layer=4 frame=7 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |.....r..|
   |....rr..|
   |....ror.|
@@ -968,17 +968,17 @@ doc_paint_grid layer=4 frame=7 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=7 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=7 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaao.|
   |.oawwwaor|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_paint_grid layer=4 frame=7 x=19 y=1 legend={"a":3,"o":2} rows:2
+paint_grid layer=4 frame=7 x=19 y=1 legend=a:3,o:2 rows:2
   |o.|
   |ao|
-doc_region op=clear layer=3 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=7 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=7 rect=0,0,31,31
+paint_grid layer=3 frame=7 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -989,38 +989,38 @@ doc_paint_grid layer=3 frame=7 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=7 x=14 y=5 legend={"o":2} rows:1
+region op=clear layer=5 frame=7 rect=0,0,31,31
+paint_grid layer=5 frame=7 x=14 y=5 legend=o:2 rows:1
   |o|
-doc_frame op=duration frame=7 duration_ms=100
-doc_region op=clear layer=4 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=8 x=14 y=6 legend={"a":3,"o":2,"r":1,"w":4} rows:6
+frame op=duration frame=7 duration_ms=100
+region op=clear layer=4 frame=8 rect=0,0,31,31
+paint_grid layer=4 frame=8 x=14 y=6 legend=a:3,o:2,r:1,w:4 rows:6
   |...r....|
   |...rr...|
   |..roor..|
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=8 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=8 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_paint_grid layer=4 frame=8 x=19 y=0 legend={"o":2,"r":1} rows:1
+paint_grid layer=4 frame=8 x=19 y=0 legend=o:2,r:1 rows:1
   |or|
-doc_region op=clear layer=3 frame=8 rect=[0,0,31,31]
-doc_region op=clear layer=5 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=8 x=14 y=3 legend={"a":3,"o":2} rows:6
+region op=clear layer=3 frame=8 rect=0,0,31,31
+region op=clear layer=5 frame=8 rect=0,0,31,31
+paint_grid layer=5 frame=8 x=14 y=3 legend=a:3,o:2 rows:6
   |o.......|
   |........|
   |........|
   |........|
   |........|
   |.......a|
-doc_frame op=duration frame=8 duration_ms=100
-doc_region op=clear layer=4 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=9 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=8 duration_ms=100
+region op=clear layer=4 frame=9 rect=0,0,31,31
+paint_grid layer=4 frame=9 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |....r...|
   |...rr...|
   |...ror..|
@@ -1029,14 +1029,14 @@ doc_paint_grid layer=4 frame=9 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=9 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=9 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=9 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=9 rect=0,0,31,31
+paint_grid layer=3 frame=9 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1047,16 +1047,16 @@ doc_paint_grid layer=3 frame=9 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=9 x=13 y=2 legend={"a":3,"r":1} rows:5
+region op=clear layer=5 frame=9 rect=0,0,31,31
+paint_grid layer=5 frame=9 x=13 y=2 legend=a:3,r:1 rows:5
   |r........|
   |.........|
   |.........|
   |.........|
   |........a|
-doc_frame op=duration frame=9 duration_ms=100
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=9 duration_ms=100
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...rr...|
   |..ror...|
@@ -1064,14 +1064,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -1080,14 +1080,14 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_frame op=duration frame=0 duration_ms=100
-doc_region op=clear layer=4 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=1 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=0 duration_ms=100
+region op=clear layer=4 frame=1 rect=0,0,31,31
+paint_grid layer=4 frame=1 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |..r.....|
   |..rr....|
   |.ror....|
@@ -1095,14 +1095,14 @@ doc_paint_grid layer=4 frame=1 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=1 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=1 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaao|
   |.oawwwao.|
   |..oawwao.|
   |...owwo..|
   |....aa...|
-doc_region op=clear layer=3 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=1 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=1 rect=0,0,31,31
+paint_grid layer=3 frame=1 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1113,14 +1113,14 @@ doc_paint_grid layer=3 frame=1 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=1 x=20 y=3 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=1 rect=0,0,31,31
+paint_grid layer=5 frame=1 x=20 y=3 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_frame op=duration frame=1 duration_ms=100
-doc_region op=clear layer=4 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=2 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
+frame op=duration frame=1 duration_ms=100
+region op=clear layer=4 frame=2 rect=0,0,31,31
+paint_grid layer=4 frame=2 x=14 y=3 legend=a:3,o:2,r:1,w:4 rows:9
   |..r.....|
   |..rr....|
   |.ror....|
@@ -1130,14 +1130,14 @@ doc_paint_grid layer=4 frame=2 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=2 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=2 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaao|
   |.oawwwao.|
   |..oawwao.|
   |...owwo..|
   |....aa...|
-doc_region op=clear layer=3 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=2 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
+region op=clear layer=3 frame=2 rect=0,0,31,31
+paint_grid layer=3 frame=2 x=8 y=16 legend=a:3,o:2,r:1,w:4 rows:11
   |.......aw..wa|
   |.......aaaaaa|
   |........oooo.|
@@ -1149,8 +1149,8 @@ doc_paint_grid layer=3 frame=2 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
   |rooaa....aa..|
   |.oorr....rr..|
   |.oo..........|
-doc_region op=clear layer=5 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=2 x=21 y=1 legend={"a":3,"o":2,"r":1} rows:9
+region op=clear layer=5 frame=2 rect=0,0,31,31
+paint_grid layer=5 frame=2 x=21 y=1 legend=a:3,o:2,r:1 rows:9
   |.r|
   |..|
   |..|
@@ -1160,9 +1160,9 @@ doc_paint_grid layer=5 frame=2 x=21 y=1 legend={"a":3,"o":2,"r":1} rows:9
   |..|
   |..|
   |a.|
-doc_frame op=duration frame=2 duration_ms=100
-doc_region op=clear layer=4 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=3 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=2 duration_ms=100
+region op=clear layer=4 frame=3 rect=0,0,31,31
+paint_grid layer=4 frame=3 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |..r.....|
   |..rr....|
   |.ror....|
@@ -1171,17 +1171,17 @@ doc_paint_grid layer=4 frame=3 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=3 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=3 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaao|
   |.oawwwao.|
   |..oawwao.|
   |...owwo..|
   |....aa...|
-doc_paint_grid layer=4 frame=3 x=15 y=1 legend={"a":3,"o":2} rows:2
+paint_grid layer=4 frame=3 x=15 y=1 legend=a:3,o:2 rows:2
   |.o|
   |oa|
-doc_region op=clear layer=3 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=3 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=3 rect=0,0,31,31
+paint_grid layer=3 frame=3 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1192,43 +1192,43 @@ doc_paint_grid layer=3 frame=3 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=3 x=21 y=2 legend={"a":3,"o":2} rows:6
+region op=clear layer=5 frame=3 rect=0,0,31,31
+paint_grid layer=5 frame=3 x=21 y=2 legend=a:3,o:2 rows:6
   |o|
   |.|
   |.|
   |.|
   |.|
   |a|
-doc_frame op=duration frame=3 duration_ms=100
-doc_region op=clear layer=4 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=4 x=14 y=6 legend={"a":3,"o":2,"r":1,"w":4} rows:6
+frame op=duration frame=3 duration_ms=100
+region op=clear layer=4 frame=4 rect=0,0,31,31
+paint_grid layer=4 frame=4 x=14 y=6 legend=a:3,o:2,r:1,w:4 rows:6
   |...r....|
   |...rr...|
   |..roor..|
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=4 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=4 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_paint_grid layer=4 frame=4 x=15 y=0 legend={"o":2,"r":1} rows:1
+paint_grid layer=4 frame=4 x=15 y=0 legend=o:2,r:1 rows:1
   |ro|
-doc_region op=clear layer=3 frame=4 rect=[0,0,31,31]
-doc_region op=clear layer=5 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=4 x=22 y=1 legend={"o":2,"r":1} rows:6
+region op=clear layer=3 frame=4 rect=0,0,31,31
+region op=clear layer=5 frame=4 rect=0,0,31,31
+paint_grid layer=5 frame=4 x=22 y=1 legend=o:2,r:1 rows:6
   |r|
   |.|
   |.|
   |.|
   |.|
   |o|
-doc_frame op=duration frame=4 duration_ms=100
-doc_region op=clear layer=4 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=5 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=4 duration_ms=100
+region op=clear layer=4 frame=5 rect=0,0,31,31
+paint_grid layer=4 frame=5 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |.....r..|
   |....rr..|
   |....ror.|
@@ -1236,14 +1236,14 @@ doc_paint_grid layer=4 frame=5 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=5 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=5 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaaor|
   |.oawwwao.|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_region op=clear layer=3 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=5 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=5 rect=0,0,31,31
+paint_grid layer=3 frame=5 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -1252,16 +1252,16 @@ doc_paint_grid layer=3 frame=5 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=5 x=15 y=4 legend={"a":3,"o":2} rows:5
+region op=clear layer=5 frame=5 rect=0,0,31,31
+paint_grid layer=5 frame=5 x=15 y=4 legend=a:3,o:2 rows:5
   |.......o|
   |........|
   |........|
   |........|
   |a.......|
-doc_frame op=duration frame=5 duration_ms=100
-doc_region op=clear layer=4 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=6 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
+frame op=duration frame=5 duration_ms=100
+region op=clear layer=4 frame=6 rect=0,0,31,31
+paint_grid layer=4 frame=6 x=14 y=3 legend=a:3,o:2,r:1,w:4 rows:9
   |.....r..|
   |....rr..|
   |....ror.|
@@ -1271,14 +1271,14 @@ doc_paint_grid layer=4 frame=6 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=6 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=6 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaaor|
   |.oawwwao.|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_region op=clear layer=3 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=6 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
+region op=clear layer=3 frame=6 rect=0,0,31,31
+paint_grid layer=3 frame=6 x=8 y=16 legend=a:3,o:2,r:1,w:4 rows:11
   |.......aw..wa|
   |.......aaaaaa|
   |........oooo.|
@@ -1290,15 +1290,15 @@ doc_paint_grid layer=3 frame=6 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
   |rooaa....aa..|
   |.oorr....rr..|
   |.oo..........|
-doc_region op=clear layer=5 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=6 x=15 y=3 legend={"a":3,"r":1} rows:4
+region op=clear layer=5 frame=6 rect=0,0,31,31
+paint_grid layer=5 frame=6 x=15 y=3 legend=a:3,r:1 rows:4
   |........r|
   |.........|
   |.........|
   |a........|
-doc_frame op=duration frame=6 duration_ms=100
-doc_region op=clear layer=4 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=7 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=6 duration_ms=100
+region op=clear layer=4 frame=7 rect=0,0,31,31
+paint_grid layer=4 frame=7 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |.....r..|
   |....rr..|
   |....ror.|
@@ -1307,17 +1307,17 @@ doc_paint_grid layer=4 frame=7 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=7 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=7 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaaor|
   |.oawwwao.|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_paint_grid layer=4 frame=7 x=19 y=1 legend={"a":3,"o":2} rows:2
+paint_grid layer=4 frame=7 x=19 y=1 legend=a:3,o:2 rows:2
   |o.|
   |ao|
-doc_region op=clear layer=3 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=7 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=7 rect=0,0,31,31
+paint_grid layer=3 frame=7 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1328,38 +1328,38 @@ doc_paint_grid layer=3 frame=7 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=7 x=14 y=5 legend={"o":2} rows:1
+region op=clear layer=5 frame=7 rect=0,0,31,31
+paint_grid layer=5 frame=7 x=14 y=5 legend=o:2 rows:1
   |o|
-doc_frame op=duration frame=7 duration_ms=100
-doc_region op=clear layer=4 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=8 x=14 y=6 legend={"a":3,"o":2,"r":1,"w":4} rows:6
+frame op=duration frame=7 duration_ms=100
+region op=clear layer=4 frame=8 rect=0,0,31,31
+paint_grid layer=4 frame=8 x=14 y=6 legend=a:3,o:2,r:1,w:4 rows:6
   |...r....|
   |...rr...|
   |..roor..|
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=8 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=8 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_paint_grid layer=4 frame=8 x=19 y=0 legend={"o":2,"r":1} rows:1
+paint_grid layer=4 frame=8 x=19 y=0 legend=o:2,r:1 rows:1
   |or|
-doc_region op=clear layer=3 frame=8 rect=[0,0,31,31]
-doc_region op=clear layer=5 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=8 x=14 y=3 legend={"a":3,"o":2} rows:6
+region op=clear layer=3 frame=8 rect=0,0,31,31
+region op=clear layer=5 frame=8 rect=0,0,31,31
+paint_grid layer=5 frame=8 x=14 y=3 legend=a:3,o:2 rows:6
   |o.......|
   |........|
   |........|
   |........|
   |........|
   |.......a|
-doc_frame op=duration frame=8 duration_ms=100
-doc_region op=clear layer=4 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=9 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=8 duration_ms=100
+region op=clear layer=4 frame=9 rect=0,0,31,31
+paint_grid layer=4 frame=9 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |....r...|
   |...rr...|
   |...ror..|
@@ -1368,14 +1368,14 @@ doc_paint_grid layer=4 frame=9 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=9 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=9 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaaor|
   |.oawwwao..|
   |..oawwao..|
   |...oaao...|
   |....aa....|
-doc_region op=clear layer=3 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=9 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=9 rect=0,0,31,31
+paint_grid layer=3 frame=9 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1386,16 +1386,16 @@ doc_paint_grid layer=3 frame=9 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=9 x=13 y=2 legend={"a":3,"r":1} rows:5
+region op=clear layer=5 frame=9 rect=0,0,31,31
+paint_grid layer=5 frame=9 x=13 y=2 legend=a:3,r:1 rows:5
   |r........|
   |.........|
   |.........|
   |.........|
   |........a|
-doc_frame op=duration frame=9 duration_ms=100
-doc_region op=clear layer=4 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=9 duration_ms=100
+region op=clear layer=4 frame=0 rect=0,0,31,31
+paint_grid layer=4 frame=0 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |...r....|
   |...ro...|
   |..roo...|
@@ -1403,14 +1403,14 @@ doc_paint_grid layer=4 frame=0 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=0 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=0 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_region op=clear layer=3 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=0 rect=0,0,31,31
+paint_grid layer=3 frame=0 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -1419,14 +1419,14 @@ doc_paint_grid layer=3 frame=0 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=0 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=0 x=20 y=5 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=0 rect=0,0,31,31
+paint_grid layer=5 frame=0 x=20 y=5 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_frame op=duration frame=0 duration_ms=100
-doc_region op=clear layer=4 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=1 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=0 duration_ms=100
+region op=clear layer=4 frame=1 rect=0,0,31,31
+paint_grid layer=4 frame=1 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |..r.....|
   |..ro....|
   |.roo....|
@@ -1434,14 +1434,14 @@ doc_paint_grid layer=4 frame=1 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=1 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=1 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaao|
   |.oawwwao.|
   |..oawwao.|
   |...owwo..|
   |....aa...|
-doc_region op=clear layer=3 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=1 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=1 rect=0,0,31,31
+paint_grid layer=3 frame=1 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1452,14 +1452,14 @@ doc_paint_grid layer=3 frame=1 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=1 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=1 x=20 y=3 legend={"a":3,"o":2} rows:3
+region op=clear layer=5 frame=1 rect=0,0,31,31
+paint_grid layer=5 frame=1 x=20 y=3 legend=a:3,o:2 rows:3
   |..o|
   |...|
   |a..|
-doc_frame op=duration frame=1 duration_ms=100
-doc_region op=clear layer=4 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=2 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
+frame op=duration frame=1 duration_ms=100
+region op=clear layer=4 frame=2 rect=0,0,31,31
+paint_grid layer=4 frame=2 x=14 y=3 legend=a:3,o:2,r:1,w:4 rows:9
   |..r.....|
   |..ro....|
   |.roo....|
@@ -1469,14 +1469,14 @@ doc_paint_grid layer=4 frame=2 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=2 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=2 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaao|
   |.oawwwao.|
   |..oawwao.|
   |...owwo..|
   |....aa...|
-doc_region op=clear layer=3 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=2 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
+region op=clear layer=3 frame=2 rect=0,0,31,31
+paint_grid layer=3 frame=2 x=8 y=16 legend=a:3,o:2,r:1,w:4 rows:11
   |.......aw..wa|
   |.......aaaaaa|
   |........oooo.|
@@ -1488,8 +1488,8 @@ doc_paint_grid layer=3 frame=2 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
   |rooaa....aa..|
   |.oorr....rr..|
   |.oo..........|
-doc_region op=clear layer=5 frame=2 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=2 x=21 y=1 legend={"a":3,"o":2,"r":1} rows:9
+region op=clear layer=5 frame=2 rect=0,0,31,31
+paint_grid layer=5 frame=2 x=21 y=1 legend=a:3,o:2,r:1 rows:9
   |.r|
   |..|
   |..|
@@ -1499,9 +1499,9 @@ doc_paint_grid layer=5 frame=2 x=21 y=1 legend={"a":3,"o":2,"r":1} rows:9
   |..|
   |..|
   |a.|
-doc_frame op=duration frame=2 duration_ms=100
-doc_region op=clear layer=4 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=3 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=2 duration_ms=100
+region op=clear layer=4 frame=3 rect=0,0,31,31
+paint_grid layer=4 frame=3 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |..r.....|
   |..ro....|
   |.roo....|
@@ -1510,17 +1510,17 @@ doc_paint_grid layer=4 frame=3 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |roaaor..|
   |roawaor.|
   |roawwaor|
-doc_paint_grid layer=4 frame=3 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=3 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaao|
   |.oawwwao.|
   |..oawwao.|
   |...owwo..|
   |....aa...|
-doc_paint_grid layer=4 frame=3 x=15 y=1 legend={"a":3,"o":2} rows:2
+paint_grid layer=4 frame=3 x=15 y=1 legend=a:3,o:2 rows:2
   |.o|
   |oa|
-doc_region op=clear layer=3 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=3 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=3 rect=0,0,31,31
+paint_grid layer=3 frame=3 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1531,43 +1531,43 @@ doc_paint_grid layer=3 frame=3 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=3 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=3 x=21 y=2 legend={"a":3,"o":2} rows:6
+region op=clear layer=5 frame=3 rect=0,0,31,31
+paint_grid layer=5 frame=3 x=21 y=2 legend=a:3,o:2 rows:6
   |o|
   |.|
   |.|
   |.|
   |.|
   |a|
-doc_frame op=duration frame=3 duration_ms=100
-doc_region op=clear layer=4 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=4 x=14 y=6 legend={"a":3,"o":2,"r":1,"w":4} rows:6
+frame op=duration frame=3 duration_ms=100
+region op=clear layer=4 frame=4 rect=0,0,31,31
+paint_grid layer=4 frame=4 x=14 y=6 legend=a:3,o:2,r:1,w:4 rows:6
   |...r....|
   |...ro...|
   |..roar..|
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=4 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=4 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_paint_grid layer=4 frame=4 x=15 y=0 legend={"o":2,"r":1} rows:1
+paint_grid layer=4 frame=4 x=15 y=0 legend=o:2,r:1 rows:1
   |ro|
-doc_region op=clear layer=3 frame=4 rect=[0,0,31,31]
-doc_region op=clear layer=5 frame=4 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=4 x=22 y=1 legend={"o":2,"r":1} rows:6
+region op=clear layer=3 frame=4 rect=0,0,31,31
+region op=clear layer=5 frame=4 rect=0,0,31,31
+paint_grid layer=5 frame=4 x=22 y=1 legend=o:2,r:1 rows:6
   |r|
   |.|
   |.|
   |.|
   |.|
   |o|
-doc_frame op=duration frame=4 duration_ms=100
-doc_region op=clear layer=4 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=5 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
+frame op=duration frame=4 duration_ms=100
+region op=clear layer=4 frame=5 rect=0,0,31,31
+paint_grid layer=4 frame=5 x=14 y=5 legend=a:3,o:2,r:1,w:4 rows:7
   |.....r..|
   |....or..|
   |....oor.|
@@ -1575,14 +1575,14 @@ doc_paint_grid layer=4 frame=5 x=14 y=5 legend={"a":3,"o":2,"r":1,"w":4} rows:7
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=5 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=5 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaaor|
   |.oawwwao.|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_region op=clear layer=3 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=5 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
+region op=clear layer=3 frame=5 rect=0,0,31,31
+paint_grid layer=3 frame=5 x=8 y=16 legend=a:3,o:2,r:1 rows:8
   |.......a....a|
   |.......o....o|
   |........r..r.|
@@ -1591,16 +1591,16 @@ doc_paint_grid layer=3 frame=5 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:8
   |.............|
   |ooo..........|
   |....aa....aa.|
-doc_region op=clear layer=5 frame=5 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=5 x=15 y=4 legend={"a":3,"o":2} rows:5
+region op=clear layer=5 frame=5 rect=0,0,31,31
+paint_grid layer=5 frame=5 x=15 y=4 legend=a:3,o:2 rows:5
   |.......o|
   |........|
   |........|
   |........|
   |a.......|
-doc_frame op=duration frame=5 duration_ms=100
-doc_region op=clear layer=4 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=6 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
+frame op=duration frame=5 duration_ms=100
+region op=clear layer=4 frame=6 rect=0,0,31,31
+paint_grid layer=4 frame=6 x=14 y=3 legend=a:3,o:2,r:1,w:4 rows:9
   |.....r..|
   |....or..|
   |....oor.|
@@ -1610,14 +1610,14 @@ doc_paint_grid layer=4 frame=6 x=14 y=3 legend={"a":3,"o":2,"r":1,"w":4} rows:9
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=6 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=6 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaaor|
   |.oawwwao.|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_region op=clear layer=3 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=6 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
+region op=clear layer=3 frame=6 rect=0,0,31,31
+paint_grid layer=3 frame=6 x=8 y=16 legend=a:3,o:2,r:1,w:4 rows:11
   |.......aw..wa|
   |.......aaaaaa|
   |........oooo.|
@@ -1629,15 +1629,15 @@ doc_paint_grid layer=3 frame=6 x=8 y=16 legend={"a":3,"o":2,"r":1,"w":4} rows:11
   |rooaa....aa..|
   |.oorr....rr..|
   |.oo..........|
-doc_region op=clear layer=5 frame=6 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=6 x=15 y=3 legend={"a":3,"r":1} rows:4
+region op=clear layer=5 frame=6 rect=0,0,31,31
+paint_grid layer=5 frame=6 x=15 y=3 legend=a:3,r:1 rows:4
   |........r|
   |.........|
   |.........|
   |a........|
-doc_frame op=duration frame=6 duration_ms=100
-doc_region op=clear layer=4 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=7 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=6 duration_ms=100
+region op=clear layer=4 frame=7 rect=0,0,31,31
+paint_grid layer=4 frame=7 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |.....r..|
   |....or..|
   |....oor.|
@@ -1646,17 +1646,17 @@ doc_paint_grid layer=4 frame=7 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |..roaaor|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=7 x=14 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=7 x=14 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |oaawwaaor|
   |.oawwwao.|
   |.oawwao..|
   |..oaao...|
   |...aa....|
-doc_paint_grid layer=4 frame=7 x=19 y=1 legend={"a":3,"o":2} rows:2
+paint_grid layer=4 frame=7 x=19 y=1 legend=a:3,o:2 rows:2
   |o.|
   |ao|
-doc_region op=clear layer=3 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=7 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=7 rect=0,0,31,31
+paint_grid layer=3 frame=7 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1667,38 +1667,38 @@ doc_paint_grid layer=3 frame=7 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=7 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=7 x=14 y=5 legend={"o":2} rows:1
+region op=clear layer=5 frame=7 rect=0,0,31,31
+paint_grid layer=5 frame=7 x=14 y=5 legend=o:2 rows:1
   |o|
-doc_frame op=duration frame=7 duration_ms=100
-doc_region op=clear layer=4 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=8 x=14 y=6 legend={"a":3,"o":2,"r":1,"w":4} rows:6
+frame op=duration frame=7 duration_ms=100
+region op=clear layer=4 frame=8 rect=0,0,31,31
+paint_grid layer=4 frame=8 x=14 y=6 legend=a:3,o:2,r:1,w:4 rows:6
   |...r....|
   |...ro...|
   |..roar..|
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=8 x=14 y=12 legend={"a":3,"o":2,"w":4} rows:5
+paint_grid layer=4 frame=8 x=14 y=12 legend=a:3,o:2,w:4 rows:5
   |oaawwaao|
   |oawwwao.|
   |.oawwao.|
   |..oaao..|
   |...aa...|
-doc_paint_grid layer=4 frame=8 x=19 y=0 legend={"o":2,"r":1} rows:1
+paint_grid layer=4 frame=8 x=19 y=0 legend=o:2,r:1 rows:1
   |or|
-doc_region op=clear layer=3 frame=8 rect=[0,0,31,31]
-doc_region op=clear layer=5 frame=8 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=8 x=14 y=3 legend={"a":3,"o":2} rows:6
+region op=clear layer=3 frame=8 rect=0,0,31,31
+region op=clear layer=5 frame=8 rect=0,0,31,31
+paint_grid layer=5 frame=8 x=14 y=3 legend=a:3,o:2 rows:6
   |o.......|
   |........|
   |........|
   |........|
   |........|
   |.......a|
-doc_frame op=duration frame=8 duration_ms=100
-doc_region op=clear layer=4 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=4 frame=9 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
+frame op=duration frame=8 duration_ms=100
+region op=clear layer=4 frame=9 rect=0,0,31,31
+paint_grid layer=4 frame=9 x=14 y=4 legend=a:3,o:2,r:1,w:4 rows:8
   |....r...|
   |...ro...|
   |...roo..|
@@ -1707,14 +1707,14 @@ doc_paint_grid layer=4 frame=9 x=14 y=4 legend={"a":3,"o":2,"r":1,"w":4} rows:8
   |.roaaor.|
   |.roawaor|
   |roawwaor|
-doc_paint_grid layer=4 frame=9 x=13 y=12 legend={"a":3,"o":2,"r":1,"w":4} rows:5
+paint_grid layer=4 frame=9 x=13 y=12 legend=a:3,o:2,r:1,w:4 rows:5
   |roaawwaaor|
   |.oawwwao..|
   |..oawwao..|
   |...oaao...|
   |....aa....|
-doc_region op=clear layer=3 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=3 frame=9 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
+region op=clear layer=3 frame=9 rect=0,0,31,31
+paint_grid layer=3 frame=9 x=8 y=16 legend=a:3,o:2,r:1 rows:10
   |.......a....a|
   |.......oaaaao|
   |........roor.|
@@ -1725,12 +1725,12 @@ doc_paint_grid layer=3 frame=9 x=8 y=16 legend={"a":3,"o":2,"r":1} rows:10
   |roo.aa....aa.|
   |rooaa....aa..|
   |...rr....rr..|
-doc_region op=clear layer=5 frame=9 rect=[0,0,31,31]
-doc_paint_grid layer=5 frame=9 x=13 y=2 legend={"a":3,"r":1} rows:5
+region op=clear layer=5 frame=9 rect=0,0,31,31
+paint_grid layer=5 frame=9 x=13 y=2 legend=a:3,r:1 rows:5
   |r........|
   |.........|
   |.........|
   |.........|
   |........a|
-doc_frame op=duration frame=9 duration_ms=100
-doc_add_tag name=burn direction=forward from=0 to=9
+frame op=duration frame=9 duration_ms=100
+add_tag name=burn direction=forward from=0 to=9

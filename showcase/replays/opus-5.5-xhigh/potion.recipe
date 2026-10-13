@@ -1,8 +1,8 @@
-atelier 3 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
-doc_new name=potion-flask width=32 height=32
-doc_palette op=set colors=[[36,22,48],[134,32,66],[224,58,78],[255,156,120],[222,242,240],[198,140,86]]
-doc_layer op=rename index=0 name=glass_back
-doc_paint_grid layer=0 frame=0 x=6 y=2 legend={"K":0} rows:29
+atelier 4 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
+new name=potion-flask width=32 height=32
+palette op=set colors=#241630,#862042,#e03a4e,#ff9c78,#def2f0,#c68c56
+layer op=rename index=0 name=glass_back
+paint_grid layer=0 frame=0 x=6 y=2 legend=K:0 rows:29
   |.......KKKKKK.......|
   |......KKKKKKKK......|
   |......KKKKKKKK......|
@@ -32,11 +32,11 @@ doc_paint_grid layer=0 frame=0 x=6 y=2 legend={"K":0} rows:29
   |...KKKKKKKKKKKKKK...|
   |.....KKKKKKKKKK.....|
   |.......KKKKKK.......|
-doc_layer op=add name=liquid
-doc_layer op=add name=bubbles
-doc_layer op=add name=cork
-doc_layer op=add name=bottle
-doc_paint_grid layer=0 frame=0 x=6 y=6 legend={"G":4} rows:25
+layer op=add name=liquid
+layer op=add name=bubbles
+layer op=add name=cork
+layer op=add name=bottle
+paint_grid layer=0 frame=0 x=6 y=6 legend=G:4 rows:25
   |......GGGGGGGG......|
   |.......GGGGGG.......|
   |.......GGGGGG.......|
@@ -62,8 +62,8 @@ doc_paint_grid layer=0 frame=0 x=6 y=6 legend={"G":4} rows:25
   |...GGGGGGGGGGGGGG...|
   |.....GGGGGGGGGG.....|
   |.......GGGGGG.......|
-doc_region op=clear layer=0 frame=0 rect=[12,2,19,5]
-doc_paint_grid layer=1 frame=0 x=7 y=16 legend={"D":1,"L":3,"M":2} rows:14
+region op=clear layer=0 frame=0 rect=12,2,19,5
+paint_grid layer=1 frame=0 x=7 y=16 legend=D:1,L:3,M:2 rows:14
   |............LL....|
   |..........LLMMLL..|
   |LL......LLMMMMMMLL|
@@ -78,12 +78,12 @@ doc_paint_grid layer=1 frame=0 x=7 y=16 legend={"D":1,"L":3,"M":2} rows:14
   |..DDMMMMMMDDDDDD..|
   |....DDDDDDDDDD....|
   |......DDDDDD......|
-doc_paint_grid layer=3 frame=0 x=12 y=2 legend={"C":5,"K":0} rows:4
+paint_grid layer=3 frame=0 x=12 y=2 legend=C:5,K:0 rows:4
   |.KKKKKK.|
   |KCCCCCCK|
   |KCCCCCCK|
   |.KKKKKK.|
-doc_paint_grid layer=4 frame=0 x=6 y=6 legend={"K":0} rows:25
+paint_grid layer=4 frame=0 x=6 y=6 legend=K:0 rows:25
   |......KKKKKKKK......|
   |.......K....K.......|
   |.......K....K.......|
@@ -109,20 +109,20 @@ doc_paint_grid layer=4 frame=0 x=6 y=6 legend={"K":0} rows:25
   |...KK..........KK...|
   |.....KK......KK.....|
   |.......KKKKKK.......|
-doc_paint_grid layer=4 frame=0 x=8 y=20 legend={"G":4} rows:6
+paint_grid layer=4 frame=0 x=8 y=20 legend=G:4 rows:6
   |G.|
   |G.|
   |G.|
   |G.|
   |..|
   |.G|
-doc_paint_grid layer=3 frame=0 x=14 y=3 legend={"D":1,"G":4} rows:5
+paint_grid layer=3 frame=0 x=14 y=3 legend=D:1,G:4 rows:5
   |GG..D|
   |..D.D|
   |...D.|
   |.....|
   |DDDD.|
-doc_paint_grid layer=3 frame=0 x=12 y=1 replace=true legend={"C":5,"D":1,"G":4,"K":0} rows:7
+paint_grid layer=3 frame=0 x=12 y=1 replace=true legend=C:5,D:1,G:4,K:0 rows:7
   |.KKKKKK.|
   |KCGCCCDK|
   |KCCCCCDK|
@@ -130,7 +130,7 @@ doc_paint_grid layer=3 frame=0 x=12 y=1 replace=true legend={"C":5,"D":1,"G":4,"
   |.KCCCDK.|
   |........|
   |..CCCC..|
-doc_paint_grid layer=2 frame=0 x=12 y=17 legend={"G":4,"L":3} rows:12
+paint_grid layer=2 frame=0 x=12 y=17 legend=G:4,L:3 rows:12
   |.......G....|
   |......L..L..|
   |.......LL...|
@@ -143,15 +143,15 @@ doc_paint_grid layer=2 frame=0 x=12 y=17 legend={"G":4,"L":3} rows:12
   |............|
   |............|
   |L...........|
-doc_frame op=add copy_from=0 count=9 duration_ms=100
-doc_paint_grid layer=1 frame=1 x=7 y=16 replace=true legend={"D":1,"L":3,"M":2} rows:5
+frame op=add copy_from=0 count=9 duration_ms=100
+paint_grid layer=1 frame=1 x=7 y=16 replace=true legend=D:1,L:3,M:2 rows:5
   |..................|
   |..........LL..LL..|
   |LL......LLMMLLMMLL|
   |MMLLLLLLMMMMMMMMDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=1
-doc_paint_grid layer=2 frame=1 x=11 y=15 legend={"L":3,"M":2} rows:14
+draw op=clear_cel layer=2 frame=1
+paint_grid layer=2 frame=1 x=11 y=15 legend=L:3,M:2 rows:14
   |........MM..|
   |.......M..M.|
   |............|
@@ -166,14 +166,14 @@ doc_paint_grid layer=2 frame=1 x=11 y=15 legend={"L":3,"M":2} rows:14
   |L...........|
   |............|
   |.....L......|
-doc_paint_grid layer=1 frame=2 x=7 y=16 replace=true legend={"D":1,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=2 x=7 y=16 replace=true legend=D:1,L:3,M:2 rows:5
   |..................|
   |...........L..L...|
   |LLLL..LLLLLMLLMLLL|
   |MMMMLLMMMMMMMMMMDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=2
-doc_paint_grid layer=2 frame=2 x=11 y=13 legend={"G":4,"L":3,"M":2} rows:14
+draw op=clear_cel layer=2 frame=2
+paint_grid layer=2 frame=2 x=11 y=13 legend=G:4,L:3,M:2 rows:14
   |........M....|
   |..........M..|
   |......M......|
@@ -188,14 +188,14 @@ doc_paint_grid layer=2 frame=2 x=11 y=13 legend={"G":4,"L":3,"M":2} rows:14
   |GL...........|
   |LL...........|
   |....L........|
-doc_paint_grid layer=1 frame=3 x=7 y=16 replace=true legend={"D":1,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=3 x=7 y=16 replace=true legend=D:1,L:3,M:2 rows:5
   |..................|
   |....LL............|
   |LLLLMMLLLLLL..LLLL|
   |MMMMMMMMMMMMLLMMDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=3
-doc_paint_grid layer=2 frame=3 x=11 y=16 legend={"G":4,"L":3,"M":2} rows:10
+draw op=clear_cel layer=2 frame=3
+paint_grid layer=2 frame=3 x=11 y=16 legend=G:4,L:3,M:2 rows:10
   |.....M.....M|
   |............|
   |............|
@@ -206,14 +206,14 @@ doc_paint_grid layer=2 frame=3 x=11 y=16 legend={"G":4,"L":3,"M":2} rows:10
   |LL..........|
   |............|
   |.....L......|
-doc_paint_grid layer=1 frame=4 x=7 y=16 replace=true legend={"D":1,"G":4,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=4 x=7 y=16 replace=true legend=D:1,G:4,L:3,M:2 rows:5
   |..................|
   |..LLLLLL..........|
   |LLMMMMMMLL......LL|
   |MMMMMMMMMMLLLLLGDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=4
-doc_paint_grid layer=2 frame=4 x=9 y=19 legend={"G":4,"L":3} rows:9
+draw op=clear_cel layer=2 frame=4
+paint_grid layer=2 frame=4 x=9 y=19 legend=G:4,L:3 rows:9
   |..LL...|
   |.LG.L..|
   |.L..L..|
@@ -223,14 +223,14 @@ doc_paint_grid layer=2 frame=4 x=9 y=19 legend={"G":4,"L":3} rows:9
   |.......|
   |.......|
   |L......|
-doc_paint_grid layer=1 frame=5 x=7 y=16 replace=true legend={"D":1,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=5 x=7 y=16 replace=true legend=D:1,L:3,M:2 rows:5
   |....LL............|
   |..LLMMLL..........|
   |LLMMMMMMLL......LL|
   |MMMMMMMMMMLL..LLDD|
   |MMMMMMMMMMMMLLMMDD|
-doc_draw op=clear_cel layer=2 frame=5
-doc_paint_grid layer=2 frame=5 x=10 y=17 legend={"G":4,"L":3} rows:12
+draw op=clear_cel layer=2 frame=5
+paint_grid layer=2 frame=5 x=10 y=17 legend=G:4,L:3 rows:12
   |.G........|
   |L..L......|
   |.LL.......|
@@ -243,14 +243,14 @@ doc_paint_grid layer=2 frame=5 x=10 y=17 legend={"G":4,"L":3} rows:12
   |..........|
   |..........|
   |.........L|
-doc_paint_grid layer=1 frame=6 x=7 y=16 replace=true legend={"D":1,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=6 x=7 y=16 replace=true legend=D:1,L:3,M:2 rows:5
   |..................|
   |..LL..LL..........|
   |LLMMLLMMLL......LL|
   |MMMMMMMMMMLLLLLLDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=6
-doc_paint_grid layer=2 frame=6 x=9 y=15 legend={"G":4,"L":3,"M":2} rows:12
+draw op=clear_cel layer=2 frame=6
+paint_grid layer=2 frame=6 x=9 y=15 legend=G:4,L:3,M:2 rows:12
   |..MM........|
   |.M..M.......|
   |............|
@@ -263,14 +263,14 @@ doc_paint_grid layer=2 frame=6 x=9 y=15 legend={"G":4,"L":3,"M":2} rows:12
   |............|
   |............|
   |...........L|
-doc_paint_grid layer=1 frame=7 x=7 y=16 replace=true legend={"D":1,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=7 x=7 y=16 replace=true legend=D:1,L:3,M:2 rows:5
   |..................|
   |...L..L...........|
   |LLLMLLMLLLLL..LLLL|
   |MMMMMMMMMMMMLLMMDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=7
-doc_paint_grid layer=2 frame=7 x=10 y=13 legend={"G":4,"L":3,"M":2} rows:13
+draw op=clear_cel layer=2 frame=7
+paint_grid layer=2 frame=7 x=10 y=13 legend=G:4,L:3,M:2 rows:13
   |..M........|
   |M..........|
   |....M......|
@@ -284,14 +284,14 @@ doc_paint_grid layer=2 frame=7 x=10 y=13 legend={"G":4,"L":3,"M":2} rows:13
   |...........|
   |.........GL|
   |.........LL|
-doc_paint_grid layer=1 frame=8 x=7 y=16 replace=true legend={"D":1,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=8 x=7 y=16 replace=true legend=D:1,L:3,M:2 rows:5
   |..................|
   |............LL....|
   |LLLL..LL..LLMMLLLL|
   |MMMMLLMMLLMMMMMMDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=8
-doc_paint_grid layer=2 frame=8 x=9 y=14 legend={"G":4,"L":3,"M":2} rows:10
+draw op=clear_cel layer=2 frame=8
+paint_grid layer=2 frame=8 x=9 y=14 legend=G:4,L:3,M:2 rows:10
   |....M.......|
   |............|
   |M...........|
@@ -302,14 +302,14 @@ doc_paint_grid layer=2 frame=8 x=9 y=14 legend={"G":4,"L":3,"M":2} rows:10
   |............|
   |..........GL|
   |..........LL|
-doc_paint_grid layer=1 frame=9 x=7 y=16 replace=true legend={"D":1,"G":4,"L":3,"M":2} rows:5
+paint_grid layer=1 frame=9 x=7 y=16 replace=true legend=D:1,G:4,L:3,M:2 rows:5
   |..................|
   |..........LLLLLL..|
   |LL......LLMMMMMMLL|
   |MMGLLLLLMMMMMMMMDD|
   |MMMMMMMMMMMMMMMMDD|
-doc_draw op=clear_cel layer=2 frame=9
-doc_paint_grid layer=2 frame=9 x=14 y=15 legend={"G":4,"L":3,"M":2} rows:13
+draw op=clear_cel layer=2 frame=9
+paint_grid layer=2 frame=9 x=14 y=15 legend=G:4,L:3,M:2 rows:13
   |M..M.....|
   |.........|
   |.........|
@@ -323,51 +323,51 @@ doc_paint_grid layer=2 frame=9 x=14 y=15 legend={"G":4,"L":3,"M":2} rows:13
   |.........|
   |.........|
   |........L|
-doc_draw op=pencil layer=2 frame=9 color="#000000" erase=true points=[[14,15],[17,15]]
-doc_paint_grid layer=2 frame=9 x=14 y=14 legend={"M":2} rows:3
+draw op=pencil layer=2 frame=9 color=#000000 erase=true points=[[14,15],[17,15]]
+paint_grid layer=2 frame=9 x=14 y=14 legend=M:2 rows:3
   |...M|
   |....|
   |M...|
-doc_paint_grid layer=1 frame=0 x=19 y=26 legend={"M":2} rows:3
+paint_grid layer=1 frame=0 x=19 y=26 legend=M:2 rows:3
   |...M|
   |..M.|
   |MM..|
-doc_paint_grid layer=1 frame=0 x=19 y=26 legend={"D":1} rows:3
+paint_grid layer=1 frame=0 x=19 y=26 legend=D:1 rows:3
   |...D|
   |..D.|
   |DD..|
-doc_draw op=pencil layer=2 frame=9 color="#000000" erase=true points=[[22,27]]
-doc_paint_grid layer=2 frame=9 x=21 y=27 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=9 color=#000000 erase=true points=[[22,27]]
+paint_grid layer=2 frame=9 x=21 y=27 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=0 color="#000000" erase=true points=[[23,25]]
-doc_paint_grid layer=2 frame=0 x=22 y=25 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=0 color=#000000 erase=true points=[[23,25]]
+paint_grid layer=2 frame=0 x=22 y=25 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=1 color="#000000" erase=true points=[[22,23]]
-doc_paint_grid layer=2 frame=1 x=21 y=23 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=1 color=#000000 erase=true points=[[22,23]]
+paint_grid layer=2 frame=1 x=21 y=23 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=2 color="#000000" erase=true points=[[23,21]]
-doc_paint_grid layer=2 frame=2 x=22 y=21 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=2 color=#000000 erase=true points=[[23,21]]
+paint_grid layer=2 frame=2 x=22 y=21 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=3 color="#000000" erase=true points=[[22,20]]
-doc_paint_grid layer=2 frame=3 x=21 y=20 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=3 color=#000000 erase=true points=[[22,20]]
+paint_grid layer=2 frame=3 x=21 y=20 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=4 color="#000000" erase=true points=[[9,27]]
-doc_paint_grid layer=2 frame=4 x=10 y=27 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=4 color=#000000 erase=true points=[[9,27]]
+paint_grid layer=2 frame=4 x=10 y=27 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=5 color="#000000" erase=true points=[[10,25]]
-doc_paint_grid layer=2 frame=5 x=11 y=25 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=5 color=#000000 erase=true points=[[10,25]]
+paint_grid layer=2 frame=5 x=11 y=25 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=6 color="#000000" erase=true points=[[9,23]]
-doc_paint_grid layer=2 frame=6 x=10 y=23 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=6 color=#000000 erase=true points=[[9,23]]
+paint_grid layer=2 frame=6 x=10 y=23 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=7 color="#000000" erase=true points=[[10,21]]
-doc_paint_grid layer=2 frame=7 x=11 y=21 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[10,21]]
+paint_grid layer=2 frame=7 x=11 y=21 legend=L:3 rows:1
   |L|
-doc_draw op=pencil layer=2 frame=8 color="#000000" erase=true points=[[9,20]]
-doc_paint_grid layer=2 frame=8 x=10 y=20 legend={"L":3} rows:1
+draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[9,20]]
+paint_grid layer=2 frame=8 x=10 y=20 legend=L:3 rows:1
   |L|
-doc_paint_grid layer=1 frame=4 x=21 y=19 legend={"G":4,"L":3} rows:1
+paint_grid layer=1 frame=4 x=21 y=19 legend=G:4,L:3 rows:1
   |GL|
-doc_paint_grid layer=1 frame=9 x=9 y=19 legend={"G":4,"L":3} rows:1
+paint_grid layer=1 frame=9 x=9 y=19 legend=G:4,L:3 rows:1
   |LG|
-doc_add_tag name=bubble direction=forward from=0 to=9
+add_tag name=bubble direction=forward from=0 to=9

@@ -1,17 +1,17 @@
-atelier 3 f0728373-d9e6-4493-8b43-59f0828d8825 0.1.0
-doc_new name=wizard-cat width=32 height=32
-doc_palette op=set colors=[[27,18,48,255],[90,74,126,255],[232,163,61,255],[138,82,48,255],[125,224,232,255],[255,255,255,255]]
-doc_layer op=rename index=0 name=tail
-doc_layer op=add name=body
-doc_layer op=add name=staff
-doc_layer op=add name=hat
-doc_layer op=add name=orb
-doc_layer op=add name=sparkles
-doc_layer op=move index=2 to_index=1
-doc_paint_grid layer=2 frame=0 x=5 y=7 legend={"k":"#1b1230","o":"#e8a33d"} rows:2
+atelier 4 f0728373-d9e6-4493-8b43-59f0828d8825 0.1.0
+new name=wizard-cat width=32 height=32
+palette op=set colors=#1b1230,#5a4a7e,#e8a33d,#8a5230,#7de0e8,#ffffff
+layer op=rename index=0 name=tail
+layer op=add name=body
+layer op=add name=staff
+layer op=add name=hat
+layer op=add name=orb
+layer op=add name=sparkles
+layer op=move index=2 to_index=1
+paint_grid layer=2 frame=0 x=5 y=7 legend=k:#1b1230,o:#e8a33d rows:2
   |k.|
   |ko|
-doc_paint_grid layer=2 frame=0 x=5 y=7 legend={"c":"#7de0e8","k":"#1b1230","o":"#e8a33d","w":"#ffffff"} rows:22
+paint_grid layer=2 frame=0 x=5 y=7 legend=c:#7de0e8,k:#1b1230,o:#e8a33d,w:#ffffff rows:22
   |k................k...|
   |kok............kok...|
   |kooo..........oook...|
@@ -34,7 +34,7 @@ doc_paint_grid layer=2 frame=0 x=5 y=7 legend={"c":"#7de0e8","k":"#1b1230","o":"
   |.kooooooooooook......|
   |.koowwwkwwwoook......|
   |..kkkkkkkkkkkk.......|
-doc_paint_grid layer=3 frame=0 x=7 y=2 legend={"c":"#7de0e8","k":"#1b1230","p":"#5a4a7e"} rows:9
+paint_grid layer=3 frame=0 x=7 y=2 legend=c:#7de0e8,k:#1b1230,p:#5a4a7e rows:9
   |.kk...........|
   |kpppk.........|
   |.kppppk.......|
@@ -44,7 +44,7 @@ doc_paint_grid layer=3 frame=0 x=7 y=2 legend={"c":"#7de0e8","k":"#1b1230","p":"
   |..kkkkckkk....|
   |kppppppppppppk|
   |.kkkkkkkkkkkk.|
-doc_paint_grid layer=1 frame=0 x=23 y=11 legend={"b":"#8a5230","k":"#1b1230"} rows:19
+paint_grid layer=1 frame=0 x=23 y=11 legend=b:#8a5230,k:#1b1230 rows:19
   |kk|
   |bk|
   |bk|
@@ -64,180 +64,180 @@ doc_paint_grid layer=1 frame=0 x=23 y=11 legend={"b":"#8a5230","k":"#1b1230"} ro
   |bk|
   |bk|
   |kk|
-doc_draw op=polyline layer=0 frame=0 color="#1b1230" points=[[8,26],[6,25],[4,23],[4,21]] size=3
-doc_draw op=polyline layer=0 frame=0 color="#e8a33d" points=[[8,26],[6,25],[4,23],[4,21]] size=1
-doc_paint_grid layer=4 frame=0 x=22 y=6 legend={"c":"#7de0e8","w":"#ffffff"} rows:5
+draw op=polyline layer=0 frame=0 color=#1b1230 points=[[8,26],[6,25],[4,23],[4,21]] size=3
+draw op=polyline layer=0 frame=0 color=#e8a33d points=[[8,26],[6,25],[4,23],[4,21]] size=1
+paint_grid layer=4 frame=0 x=22 y=6 legend=c:#7de0e8,w:#ffffff rows:5
   |.ccc.|
   |cwwwc|
   |cwwwc|
   |cwwwc|
   |.ccc.|
-doc_paint_grid layer=2 frame=0 x=7 y=24 legend={"b":"#8a5230"} rows:3
+paint_grid layer=2 frame=0 x=7 y=24 legend=b:#8a5230 rows:3
   |b|
   |b|
   |b|
-doc_paint_grid layer=2 frame=0 x=9 y=12 legend={"b":"#8a5230"} rows:1
+paint_grid layer=2 frame=0 x=9 y=12 legend=b:#8a5230 rows:1
   |b|
-doc_draw op=pencil layer=0 frame=0 color="#ffffff" points=[[4,21],[4,22]]
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_frame op=add copy_from=0
-doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=0 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=0 color="#1b1230" points=[[8,26],[6,25],[4,23],[4,21]] size=3
-doc_draw op=polyline layer=0 frame=0 color="#e8a33d" points=[[8,26],[6,25],[4,23],[4,21]] size=1
-doc_draw op=pencil layer=0 frame=0 color="#ffffff" points=[[4,21],[4,22]]
-doc_draw op=pencil layer=4 frame=0 color="#7de0e8" points=[[24,7],[23,8],[25,8],[24,9]]
-doc_draw op=pencil layer=4 frame=0 color="#ffffff" points=[[24,8]]
-doc_draw op=pencil layer=5 frame=0 color="#7de0e8" points=[[26,7],[25,8],[27,8],[26,9],[20,7]]
-doc_draw op=pencil layer=5 frame=0 color="#ffffff" points=[[26,8]]
-doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=1 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=1 color="#1b1230" points=[[8,26],[6,25],[4,23],[5,21]] size=3
-doc_draw op=polyline layer=0 frame=1 color="#e8a33d" points=[[8,26],[6,25],[4,23],[5,21]] size=1
-doc_draw op=pencil layer=0 frame=1 color="#ffffff" points=[[5,21],[5,22]]
-doc_draw op=pencil layer=4 frame=1 color="#7de0e8" points=[[23,7],[23,8],[23,9],[24,7],[24,9],[25,7],[25,8],[25,9]]
-doc_draw op=pencil layer=4 frame=1 color="#ffffff" points=[[24,8]]
-doc_draw op=pencil layer=5 frame=1 color="#7de0e8" points=[[21,11]]
-doc_draw op=pencil layer=5 frame=1 color="#ffffff" points=[[26,7],[20,6]]
-doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=2 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=2 color="#1b1230" points=[[8,26],[6,25],[5,23],[6,20]] size=3
-doc_draw op=polyline layer=0 frame=2 color="#e8a33d" points=[[8,26],[6,25],[5,23],[6,20]] size=1
-doc_draw op=pencil layer=0 frame=2 color="#ffffff" points=[[6,20],[6,21]]
-doc_draw op=pencil layer=4 frame=2 color="#7de0e8" points=[[23,7],[25,7],[23,9],[25,9],[24,6],[22,8],[26,8],[24,10]]
-doc_draw op=pencil layer=4 frame=2 color="#ffffff" points=[[24,7],[23,8],[24,8],[25,8],[24,9]]
-doc_draw op=pencil layer=5 frame=2 color="#7de0e8" points=[[20,10],[27,6]]
-doc_draw op=pencil layer=5 frame=2 color="#ffffff" points=[[19,5]]
-doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=3 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=3 color="#1b1230" points=[[8,26],[6,25],[5,23],[6,20]] size=3
-doc_draw op=polyline layer=0 frame=3 color="#e8a33d" points=[[8,26],[6,25],[5,23],[6,20]] size=1
-doc_draw op=pencil layer=0 frame=3 color="#ffffff" points=[[6,20],[6,21]]
-doc_draw op=pencil layer=4 frame=3 color="#7de0e8" points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9]]
-doc_draw op=pencil layer=4 frame=3 color="#ffffff" points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
-doc_draw op=pencil layer=5 frame=3 color="#7de0e8" points=[[20,9],[27,5]]
-doc_draw op=pencil layer=5 frame=3 color="#ffffff" points=[[19,4]]
-doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=4 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=4 color="#1b1230" points=[[8,26],[6,25],[4,23],[5,21]] size=3
-doc_draw op=polyline layer=0 frame=4 color="#e8a33d" points=[[8,26],[6,25],[4,23],[5,21]] size=1
-doc_draw op=pencil layer=0 frame=4 color="#ffffff" points=[[5,21],[5,22]]
-doc_draw op=pencil layer=4 frame=4 color="#7de0e8" points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9],[24,4],[24,5],[20,8],[21,8],[27,8],[28,8],[24,11],[22,7],[19,13],[19,14],[20,19],[21,19],[22,19]]
-doc_draw op=pencil layer=4 frame=4 color="#ffffff" points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
-doc_draw op=pencil layer=5 frame=4 color="#7de0e8" points=[[18,3]]
-doc_draw op=pencil layer=5 frame=4 color="#ffffff" points=[[21,8]]
-doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=5 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=5 color="#1b1230" points=[[8,26],[6,25],[4,23],[4,21]] size=3
-doc_draw op=polyline layer=0 frame=5 color="#e8a33d" points=[[8,26],[6,25],[4,23],[4,21]] size=1
-doc_draw op=pencil layer=0 frame=5 color="#ffffff" points=[[4,21],[4,22]]
-doc_draw op=pencil layer=4 frame=5 color="#7de0e8" points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9],[24,4],[24,5],[20,8],[21,8],[27,8],[28,8],[24,11],[22,7],[19,13],[19,14],[20,19],[21,19],[22,19]]
-doc_draw op=pencil layer=4 frame=5 color="#ffffff" points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
-doc_draw op=pencil layer=5 frame=5 color="#7de0e8" points=[[21,6],[20,7],[22,7],[21,8],[19,2]]
-doc_draw op=pencil layer=5 frame=5 color="#ffffff" points=[[21,7]]
-doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=6 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=6 color="#1b1230" points=[[8,26],[6,25],[4,23],[3,21]] size=3
-doc_draw op=polyline layer=0 frame=6 color="#e8a33d" points=[[8,26],[6,25],[4,23],[3,21]] size=1
-doc_draw op=pencil layer=0 frame=6 color="#ffffff" points=[[3,21],[3,22]]
-doc_draw op=pencil layer=4 frame=6 color="#7de0e8" points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9]]
-doc_draw op=pencil layer=4 frame=6 color="#ffffff" points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
-doc_draw op=pencil layer=5 frame=6 color="#7de0e8" points=[[28,12]]
-doc_draw op=pencil layer=5 frame=6 color="#ffffff" points=[[22,6]]
-doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=7 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=7 color="#1b1230" points=[[8,26],[6,25],[3,23],[2,20]] size=3
-doc_draw op=polyline layer=0 frame=7 color="#e8a33d" points=[[8,26],[6,25],[3,23],[2,20]] size=1
-doc_draw op=pencil layer=0 frame=7 color="#ffffff" points=[[2,20],[2,21]]
-doc_draw op=pencil layer=4 frame=7 color="#7de0e8" points=[[23,7],[25,7],[23,9],[25,9],[24,6],[22,8],[26,8],[24,10]]
-doc_draw op=pencil layer=4 frame=7 color="#ffffff" points=[[24,7],[23,8],[24,8],[25,8],[24,9]]
-doc_draw op=pencil layer=5 frame=7 color="#7de0e8" points=[[22,5],[28,11]]
-doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=8 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=8 color="#1b1230" points=[[8,26],[6,25],[3,23],[2,20]] size=3
-doc_draw op=polyline layer=0 frame=8 color="#e8a33d" points=[[8,26],[6,25],[3,23],[2,20]] size=1
-doc_draw op=pencil layer=0 frame=8 color="#ffffff" points=[[2,20],[2,21]]
-doc_draw op=pencil layer=4 frame=8 color="#7de0e8" points=[[23,7],[23,8],[23,9],[24,7],[24,9],[25,7],[25,8],[25,9]]
-doc_draw op=pencil layer=4 frame=8 color="#ffffff" points=[[24,8]]
-doc_draw op=pencil layer=5 frame=8 color="#7de0e8" points=[[21,4],[27,10],[19,9]]
-doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=4 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=5 frame=9 rect=[0,0,32,32]
-doc_draw op=polyline layer=0 frame=9 color="#1b1230" points=[[8,26],[6,25],[4,23],[3,21]] size=3
-doc_draw op=polyline layer=0 frame=9 color="#e8a33d" points=[[8,26],[6,25],[4,23],[3,21]] size=1
-doc_draw op=pencil layer=0 frame=9 color="#ffffff" points=[[3,21],[3,22]]
-doc_draw op=pencil layer=4 frame=9 color="#7de0e8" points=[[24,7],[23,8],[25,8],[24,9]]
-doc_draw op=pencil layer=4 frame=9 color="#ffffff" points=[[24,8]]
-doc_draw op=pencil layer=5 frame=9 color="#7de0e8" points=[[19,8]]
-doc_draw op=pencil layer=5 frame=9 color="#ffffff" points=[[27,9]]
-doc_region op=clear layer=5 frame=0 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=0 color="#7de0e8" points=[[28,7],[27,8],[29,8],[28,9],[20,7]]
-doc_draw op=pencil layer=5 frame=0 color="#ffffff" points=[[28,8]]
-doc_region op=clear layer=5 frame=1 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=1 color="#7de0e8" points=[[21,11]]
-doc_draw op=pencil layer=5 frame=1 color="#ffffff" points=[[28,7],[20,6]]
-doc_region op=clear layer=5 frame=2 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=2 color="#7de0e8" points=[[20,10],[29,6]]
-doc_draw op=pencil layer=5 frame=2 color="#ffffff" points=[[19,5]]
-doc_region op=clear layer=5 frame=3 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=3 color="#7de0e8" points=[[20,9],[29,5]]
-doc_draw op=pencil layer=5 frame=3 color="#ffffff" points=[[19,4]]
-doc_region op=clear layer=5 frame=4 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=4 color="#7de0e8" points=[[18,3]]
-doc_draw op=pencil layer=5 frame=4 color="#ffffff" points=[[21,8]]
-doc_region op=clear layer=5 frame=5 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=5 color="#7de0e8" points=[[21,6],[20,7],[22,7],[21,8],[19,2]]
-doc_draw op=pencil layer=5 frame=5 color="#ffffff" points=[[21,7]]
-doc_region op=clear layer=5 frame=6 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=6 color="#7de0e8" points=[[30,12]]
-doc_draw op=pencil layer=5 frame=6 color="#ffffff" points=[[22,6]]
-doc_region op=clear layer=5 frame=7 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=7 color="#7de0e8" points=[[22,5],[30,11]]
-doc_region op=clear layer=5 frame=8 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=8 color="#7de0e8" points=[[21,4],[29,10],[19,9]]
-doc_region op=clear layer=5 frame=9 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=9 color="#7de0e8" points=[[19,8]]
-doc_draw op=pencil layer=5 frame=9 color="#ffffff" points=[[29,9]]
-doc_region op=clear layer=5 frame=0 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=0 color="#7de0e8" points=[[30,12],[20,7]]
-doc_region op=clear layer=5 frame=1 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=1 color="#7de0e8" points=[[21,11],[30,11]]
-doc_draw op=pencil layer=5 frame=1 color="#ffffff" points=[[20,6]]
-doc_region op=clear layer=5 frame=2 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=2 color="#7de0e8" points=[[20,10],[29,10]]
-doc_draw op=pencil layer=5 frame=2 color="#ffffff" points=[[19,5]]
-doc_region op=clear layer=5 frame=3 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=3 color="#7de0e8" points=[[20,9]]
-doc_draw op=pencil layer=5 frame=3 color="#ffffff" points=[[29,9],[19,4]]
-doc_region op=clear layer=5 frame=4 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=4 color="#7de0e8" points=[[28,7],[27,8],[29,8],[28,9],[18,3]]
-doc_draw op=pencil layer=5 frame=4 color="#ffffff" points=[[21,8],[28,8]]
-doc_region op=clear layer=5 frame=5 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=5 color="#7de0e8" points=[[21,6],[20,7],[22,7],[21,8],[19,2]]
-doc_draw op=pencil layer=5 frame=5 color="#ffffff" points=[[21,7],[28,7]]
-doc_region op=clear layer=5 frame=6 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=6 color="#7de0e8" points=[[29,6]]
-doc_draw op=pencil layer=5 frame=6 color="#ffffff" points=[[22,6]]
-doc_region op=clear layer=5 frame=7 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=7 color="#7de0e8" points=[[22,5],[29,5]]
-doc_region op=clear layer=5 frame=8 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=8 color="#7de0e8" points=[[21,4],[19,9]]
-doc_region op=clear layer=5 frame=9 rect=[0,0,32,32]
-doc_draw op=pencil layer=5 frame=9 color="#7de0e8" points=[[19,8]]
-doc_add_tag name=loop from=0 to=9
+draw op=pencil layer=0 frame=0 color=#ffffff points=[[4,21],[4,22]]
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=4 frame=0 rect=0,0,32,32
+region op=clear layer=5 frame=0 rect=0,0,32,32
+draw op=polyline layer=0 frame=0 color=#1b1230 points=[[8,26],[6,25],[4,23],[4,21]] size=3
+draw op=polyline layer=0 frame=0 color=#e8a33d points=[[8,26],[6,25],[4,23],[4,21]] size=1
+draw op=pencil layer=0 frame=0 color=#ffffff points=[[4,21],[4,22]]
+draw op=pencil layer=4 frame=0 color=#7de0e8 points=[[24,7],[23,8],[25,8],[24,9]]
+draw op=pencil layer=4 frame=0 color=#ffffff points=[[24,8]]
+draw op=pencil layer=5 frame=0 color=#7de0e8 points=[[26,7],[25,8],[27,8],[26,9],[20,7]]
+draw op=pencil layer=5 frame=0 color=#ffffff points=[[26,8]]
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=4 frame=1 rect=0,0,32,32
+region op=clear layer=5 frame=1 rect=0,0,32,32
+draw op=polyline layer=0 frame=1 color=#1b1230 points=[[8,26],[6,25],[4,23],[5,21]] size=3
+draw op=polyline layer=0 frame=1 color=#e8a33d points=[[8,26],[6,25],[4,23],[5,21]] size=1
+draw op=pencil layer=0 frame=1 color=#ffffff points=[[5,21],[5,22]]
+draw op=pencil layer=4 frame=1 color=#7de0e8 points=[[23,7],[23,8],[23,9],[24,7],[24,9],[25,7],[25,8],[25,9]]
+draw op=pencil layer=4 frame=1 color=#ffffff points=[[24,8]]
+draw op=pencil layer=5 frame=1 color=#7de0e8 points=[[21,11]]
+draw op=pencil layer=5 frame=1 color=#ffffff points=[[26,7],[20,6]]
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=4 frame=2 rect=0,0,32,32
+region op=clear layer=5 frame=2 rect=0,0,32,32
+draw op=polyline layer=0 frame=2 color=#1b1230 points=[[8,26],[6,25],[5,23],[6,20]] size=3
+draw op=polyline layer=0 frame=2 color=#e8a33d points=[[8,26],[6,25],[5,23],[6,20]] size=1
+draw op=pencil layer=0 frame=2 color=#ffffff points=[[6,20],[6,21]]
+draw op=pencil layer=4 frame=2 color=#7de0e8 points=[[23,7],[25,7],[23,9],[25,9],[24,6],[22,8],[26,8],[24,10]]
+draw op=pencil layer=4 frame=2 color=#ffffff points=[[24,7],[23,8],[24,8],[25,8],[24,9]]
+draw op=pencil layer=5 frame=2 color=#7de0e8 points=[[20,10],[27,6]]
+draw op=pencil layer=5 frame=2 color=#ffffff points=[[19,5]]
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=4 frame=3 rect=0,0,32,32
+region op=clear layer=5 frame=3 rect=0,0,32,32
+draw op=polyline layer=0 frame=3 color=#1b1230 points=[[8,26],[6,25],[5,23],[6,20]] size=3
+draw op=polyline layer=0 frame=3 color=#e8a33d points=[[8,26],[6,25],[5,23],[6,20]] size=1
+draw op=pencil layer=0 frame=3 color=#ffffff points=[[6,20],[6,21]]
+draw op=pencil layer=4 frame=3 color=#7de0e8 points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9]]
+draw op=pencil layer=4 frame=3 color=#ffffff points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
+draw op=pencil layer=5 frame=3 color=#7de0e8 points=[[20,9],[27,5]]
+draw op=pencil layer=5 frame=3 color=#ffffff points=[[19,4]]
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=4 frame=4 rect=0,0,32,32
+region op=clear layer=5 frame=4 rect=0,0,32,32
+draw op=polyline layer=0 frame=4 color=#1b1230 points=[[8,26],[6,25],[4,23],[5,21]] size=3
+draw op=polyline layer=0 frame=4 color=#e8a33d points=[[8,26],[6,25],[4,23],[5,21]] size=1
+draw op=pencil layer=0 frame=4 color=#ffffff points=[[5,21],[5,22]]
+draw op=pencil layer=4 frame=4 color=#7de0e8 points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9],[24,4],[24,5],[20,8],[21,8],[27,8],[28,8],[24,11],[22,7],[19,13],[19,14],[20,19],[21,19],[22,19]]
+draw op=pencil layer=4 frame=4 color=#ffffff points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
+draw op=pencil layer=5 frame=4 color=#7de0e8 points=[[18,3]]
+draw op=pencil layer=5 frame=4 color=#ffffff points=[[21,8]]
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=4 frame=5 rect=0,0,32,32
+region op=clear layer=5 frame=5 rect=0,0,32,32
+draw op=polyline layer=0 frame=5 color=#1b1230 points=[[8,26],[6,25],[4,23],[4,21]] size=3
+draw op=polyline layer=0 frame=5 color=#e8a33d points=[[8,26],[6,25],[4,23],[4,21]] size=1
+draw op=pencil layer=0 frame=5 color=#ffffff points=[[4,21],[4,22]]
+draw op=pencil layer=4 frame=5 color=#7de0e8 points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9],[24,4],[24,5],[20,8],[21,8],[27,8],[28,8],[24,11],[22,7],[19,13],[19,14],[20,19],[21,19],[22,19]]
+draw op=pencil layer=4 frame=5 color=#ffffff points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
+draw op=pencil layer=5 frame=5 color=#7de0e8 points=[[21,6],[20,7],[22,7],[21,8],[19,2]]
+draw op=pencil layer=5 frame=5 color=#ffffff points=[[21,7]]
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=4 frame=6 rect=0,0,32,32
+region op=clear layer=5 frame=6 rect=0,0,32,32
+draw op=polyline layer=0 frame=6 color=#1b1230 points=[[8,26],[6,25],[4,23],[3,21]] size=3
+draw op=polyline layer=0 frame=6 color=#e8a33d points=[[8,26],[6,25],[4,23],[3,21]] size=1
+draw op=pencil layer=0 frame=6 color=#ffffff points=[[3,21],[3,22]]
+draw op=pencil layer=4 frame=6 color=#7de0e8 points=[[23,6],[24,6],[25,6],[22,7],[26,7],[22,8],[26,8],[22,9],[26,9],[23,10],[24,10],[25,10],[20,9]]
+draw op=pencil layer=4 frame=6 color=#ffffff points=[[23,7],[23,8],[23,9],[24,7],[24,8],[24,9],[25,7],[25,8],[25,9],[23,12],[23,13]]
+draw op=pencil layer=5 frame=6 color=#7de0e8 points=[[28,12]]
+draw op=pencil layer=5 frame=6 color=#ffffff points=[[22,6]]
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=4 frame=7 rect=0,0,32,32
+region op=clear layer=5 frame=7 rect=0,0,32,32
+draw op=polyline layer=0 frame=7 color=#1b1230 points=[[8,26],[6,25],[3,23],[2,20]] size=3
+draw op=polyline layer=0 frame=7 color=#e8a33d points=[[8,26],[6,25],[3,23],[2,20]] size=1
+draw op=pencil layer=0 frame=7 color=#ffffff points=[[2,20],[2,21]]
+draw op=pencil layer=4 frame=7 color=#7de0e8 points=[[23,7],[25,7],[23,9],[25,9],[24,6],[22,8],[26,8],[24,10]]
+draw op=pencil layer=4 frame=7 color=#ffffff points=[[24,7],[23,8],[24,8],[25,8],[24,9]]
+draw op=pencil layer=5 frame=7 color=#7de0e8 points=[[22,5],[28,11]]
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=4 frame=8 rect=0,0,32,32
+region op=clear layer=5 frame=8 rect=0,0,32,32
+draw op=polyline layer=0 frame=8 color=#1b1230 points=[[8,26],[6,25],[3,23],[2,20]] size=3
+draw op=polyline layer=0 frame=8 color=#e8a33d points=[[8,26],[6,25],[3,23],[2,20]] size=1
+draw op=pencil layer=0 frame=8 color=#ffffff points=[[2,20],[2,21]]
+draw op=pencil layer=4 frame=8 color=#7de0e8 points=[[23,7],[23,8],[23,9],[24,7],[24,9],[25,7],[25,8],[25,9]]
+draw op=pencil layer=4 frame=8 color=#ffffff points=[[24,8]]
+draw op=pencil layer=5 frame=8 color=#7de0e8 points=[[21,4],[27,10],[19,9]]
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=4 frame=9 rect=0,0,32,32
+region op=clear layer=5 frame=9 rect=0,0,32,32
+draw op=polyline layer=0 frame=9 color=#1b1230 points=[[8,26],[6,25],[4,23],[3,21]] size=3
+draw op=polyline layer=0 frame=9 color=#e8a33d points=[[8,26],[6,25],[4,23],[3,21]] size=1
+draw op=pencil layer=0 frame=9 color=#ffffff points=[[3,21],[3,22]]
+draw op=pencil layer=4 frame=9 color=#7de0e8 points=[[24,7],[23,8],[25,8],[24,9]]
+draw op=pencil layer=4 frame=9 color=#ffffff points=[[24,8]]
+draw op=pencil layer=5 frame=9 color=#7de0e8 points=[[19,8]]
+draw op=pencil layer=5 frame=9 color=#ffffff points=[[27,9]]
+region op=clear layer=5 frame=0 rect=0,0,32,32
+draw op=pencil layer=5 frame=0 color=#7de0e8 points=[[28,7],[27,8],[29,8],[28,9],[20,7]]
+draw op=pencil layer=5 frame=0 color=#ffffff points=[[28,8]]
+region op=clear layer=5 frame=1 rect=0,0,32,32
+draw op=pencil layer=5 frame=1 color=#7de0e8 points=[[21,11]]
+draw op=pencil layer=5 frame=1 color=#ffffff points=[[28,7],[20,6]]
+region op=clear layer=5 frame=2 rect=0,0,32,32
+draw op=pencil layer=5 frame=2 color=#7de0e8 points=[[20,10],[29,6]]
+draw op=pencil layer=5 frame=2 color=#ffffff points=[[19,5]]
+region op=clear layer=5 frame=3 rect=0,0,32,32
+draw op=pencil layer=5 frame=3 color=#7de0e8 points=[[20,9],[29,5]]
+draw op=pencil layer=5 frame=3 color=#ffffff points=[[19,4]]
+region op=clear layer=5 frame=4 rect=0,0,32,32
+draw op=pencil layer=5 frame=4 color=#7de0e8 points=[[18,3]]
+draw op=pencil layer=5 frame=4 color=#ffffff points=[[21,8]]
+region op=clear layer=5 frame=5 rect=0,0,32,32
+draw op=pencil layer=5 frame=5 color=#7de0e8 points=[[21,6],[20,7],[22,7],[21,8],[19,2]]
+draw op=pencil layer=5 frame=5 color=#ffffff points=[[21,7]]
+region op=clear layer=5 frame=6 rect=0,0,32,32
+draw op=pencil layer=5 frame=6 color=#7de0e8 points=[[30,12]]
+draw op=pencil layer=5 frame=6 color=#ffffff points=[[22,6]]
+region op=clear layer=5 frame=7 rect=0,0,32,32
+draw op=pencil layer=5 frame=7 color=#7de0e8 points=[[22,5],[30,11]]
+region op=clear layer=5 frame=8 rect=0,0,32,32
+draw op=pencil layer=5 frame=8 color=#7de0e8 points=[[21,4],[29,10],[19,9]]
+region op=clear layer=5 frame=9 rect=0,0,32,32
+draw op=pencil layer=5 frame=9 color=#7de0e8 points=[[19,8]]
+draw op=pencil layer=5 frame=9 color=#ffffff points=[[29,9]]
+region op=clear layer=5 frame=0 rect=0,0,32,32
+draw op=pencil layer=5 frame=0 color=#7de0e8 points=[[30,12],[20,7]]
+region op=clear layer=5 frame=1 rect=0,0,32,32
+draw op=pencil layer=5 frame=1 color=#7de0e8 points=[[21,11],[30,11]]
+draw op=pencil layer=5 frame=1 color=#ffffff points=[[20,6]]
+region op=clear layer=5 frame=2 rect=0,0,32,32
+draw op=pencil layer=5 frame=2 color=#7de0e8 points=[[20,10],[29,10]]
+draw op=pencil layer=5 frame=2 color=#ffffff points=[[19,5]]
+region op=clear layer=5 frame=3 rect=0,0,32,32
+draw op=pencil layer=5 frame=3 color=#7de0e8 points=[[20,9]]
+draw op=pencil layer=5 frame=3 color=#ffffff points=[[29,9],[19,4]]
+region op=clear layer=5 frame=4 rect=0,0,32,32
+draw op=pencil layer=5 frame=4 color=#7de0e8 points=[[28,7],[27,8],[29,8],[28,9],[18,3]]
+draw op=pencil layer=5 frame=4 color=#ffffff points=[[21,8],[28,8]]
+region op=clear layer=5 frame=5 rect=0,0,32,32
+draw op=pencil layer=5 frame=5 color=#7de0e8 points=[[21,6],[20,7],[22,7],[21,8],[19,2]]
+draw op=pencil layer=5 frame=5 color=#ffffff points=[[21,7],[28,7]]
+region op=clear layer=5 frame=6 rect=0,0,32,32
+draw op=pencil layer=5 frame=6 color=#7de0e8 points=[[29,6]]
+draw op=pencil layer=5 frame=6 color=#ffffff points=[[22,6]]
+region op=clear layer=5 frame=7 rect=0,0,32,32
+draw op=pencil layer=5 frame=7 color=#7de0e8 points=[[22,5],[29,5]]
+region op=clear layer=5 frame=8 rect=0,0,32,32
+draw op=pencil layer=5 frame=8 color=#7de0e8 points=[[21,4],[19,9]]
+region op=clear layer=5 frame=9 rect=0,0,32,32
+draw op=pencil layer=5 frame=9 color=#7de0e8 points=[[19,8]]
+add_tag name=loop from=0 to=9

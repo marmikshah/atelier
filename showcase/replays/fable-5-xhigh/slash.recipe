@@ -1,15 +1,15 @@
-atelier 3 85337956-3954-4f51-8180-c136bb5f998e 0.1.0
-doc_new name=sword-slash width=32 height=32
-doc_palette op=set colors=[[255,255,255,255],[255,233,127,255],[143,227,255,255],[63,169,245,255],[31,111,208,255],[20,56,110,255]]
-doc_layer op=rename index=0 name=arc
-doc_layer op=add name=sparks
-doc_layer op=add name=flash
-doc_frame op=add copy_from=0 count=9 duration_ms=100
-doc_paint_grid layer=0 frame=0 x=0 y=0 legend={"A":"#ffffff","B":"#ffe97f","C":"#8fe3ff"} rows:2
+atelier 4 85337956-3954-4f51-8180-c136bb5f998e 0.1.0
+new name=sword-slash width=32 height=32
+palette op=set colors=#ffffff,#ffe97f,#8fe3ff,#3fa9f5,#1f6fd0,#14386e
+layer op=rename index=0 name=arc
+layer op=add name=sparks
+layer op=add name=flash
+frame op=add copy_from=0 count=9 duration_ms=100
+paint_grid layer=0 frame=0 x=0 y=0 legend=A:#ffffff,B:#ffe97f,C:#8fe3ff rows:2
   |AB|
   |.C|
-doc_region op=clear layer=0 frame=0 rect=[0,0,2,2]
-doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0"} rows:7
+region op=clear layer=0 frame=0 rect=0,0,2,2
+paint_grid layer=0 frame=0 x=4 y=4 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0 rows:7
   |......D|
   |......B|
   |.....DB|
@@ -17,7 +17,7 @@ doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....BC.|
   |..DBC..|
   |DBBC...|
-doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=0 frame=1 x=7 y=7 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:8
   |.......B|
   |.......B|
   |......BC|
@@ -26,7 +26,7 @@ doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |...BCCY.|
   |..BCCY..|
   |BBCCY...|
-doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:11
+paint_grid layer=0 frame=2 x=9 y=9 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:11
   |..........B|
   |..........B|
   |.........BB|
@@ -38,7 +38,7 @@ doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |...BBCCCY..|
   |..BBCCCY...|
   |BBBCCC.....|
-doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"C":"#8fe3ff","W":"#ffffff","Y":"#ffe97f"} rows:14
+paint_grid layer=0 frame=3 x=12 y=12 legend=C:#8fe3ff,W:#ffffff,Y:#ffe97f rows:14
   |............C.|
   |............C.|
   |...........CCY|
@@ -53,7 +53,7 @@ doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"C":"#8fe3ff","W":"#ffffff","Y"
   |..CCCYYYW.....|
   |CCCYYYY.......|
   |..Y...........|
-doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"C":"#8fe3ff","W":"#ffffff","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=4 x=15 y=15 legend=C:#8fe3ff,W:#ffffff,Y:#ffe97f rows:15
   |..............Y|
   |.............CY|
   |.............CY|
@@ -69,7 +69,7 @@ doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"C":"#8fe3ff","W":"#ffffff","Y"
   |...CCYYWWW.....|
   |.CCYYYWWW......|
   |YYYWWW.........|
-doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=5 x=17 y=17 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,Y:#ffe97f rows:15
   |..............B|
   |..............B|
   |.............DC|
@@ -85,7 +85,7 @@ doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |....BBBCCY.....|
   |..DBB.CCY......|
   |BBCCCC.........|
-doc_paint_grid layer=0 frame=6 x=22 y=22 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e"} rows:10
+paint_grid layer=0 frame=6 x=22 y=22 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e rows:10
   |.........N|
   |.........D|
   |........DB|
@@ -96,45 +96,45 @@ doc_paint_grid layer=0 frame=6 x=22 y=22 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...DD.....|
   |..DD..C...|
   |NDBBB.....|
-doc_paint_grid layer=0 frame=7 x=27 y=27 legend={"B":"#3fa9f5","D":"#1f6fd0"} rows:5
+paint_grid layer=0 frame=7 x=27 y=27 legend=B:#3fa9f5,D:#1f6fd0 rows:5
   |...D.|
   |....B|
   |..D..|
   |DDB..|
   |DB...|
-doc_paint_grid layer=0 frame=8 x=28 y=31 legend={"D":"#1f6fd0"} rows:1
+paint_grid layer=0 frame=8 x=28 y=31 legend=D:#1f6fd0 rows:1
   |D|
-doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
-doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0"} rows:7
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=4 y=4 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0 rows:7
   |......D|
   |......C|
   |.....BC|
@@ -142,7 +142,7 @@ doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....BC.|
   |..BBC..|
   |DCCC...|
-doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=0 frame=1 x=7 y=7 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:8
   |.......Y|
   |.......Y|
   |......CY|
@@ -151,7 +151,7 @@ doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |...BCCY.|
   |..CCYY..|
   |YYYYY...|
-doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:11
+paint_grid layer=0 frame=2 x=9 y=9 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:11
   |..........D|
   |..........Y|
   |.........CY|
@@ -163,7 +163,7 @@ doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |...BBCCYW..|
   |..CCCCWW...|
   |DYYYYW.....|
-doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:14
+paint_grid layer=0 frame=3 x=12 y=12 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:14
   |............D.|
   |............Y.|
   |...........CYY|
@@ -178,7 +178,7 @@ doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |..CCCCYWW.....|
   |DYYYYWW.......|
   |..Y...........|
-doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=4 x=15 y=15 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:15
   |..............D|
   |.............DD|
   |.............YY|
@@ -194,7 +194,7 @@ doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...CCCCWWW.....|
   |.DYYWWWWW......|
   |DDYYWW.........|
-doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=5 x=17 y=17 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e,Y:#ffe97f rows:15
   |..............N|
   |..............N|
   |.............BC|
@@ -210,7 +210,7 @@ doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |....BBBBCY.....|
   |..BBB.CCY......|
   |NNCCCC.........|
-doc_paint_grid layer=0 frame=6 x=19 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e"} rows:13
+paint_grid layer=0 frame=6 x=19 y=19 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e rows:13
   |............N|
   |............N|
   |............B|
@@ -224,7 +224,7 @@ doc_paint_grid layer=0 frame=6 x=19 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |......DC.....|
   |...DBBC......|
   |NNBBB........|
-doc_paint_grid layer=0 frame=7 x=22 y=23 legend={"B":"#3fa9f5","D":"#1f6fd0","N":"#14386e"} rows:9
+paint_grid layer=0 frame=7 x=22 y=23 legend=B:#3fa9f5,D:#1f6fd0,N:#14386e rows:9
   |.........D|
   |........DD|
   |.......N..|
@@ -234,7 +234,7 @@ doc_paint_grid layer=0 frame=7 x=22 y=23 legend={"B":"#3fa9f5","D":"#1f6fd0","N"
   |...NDB....|
   |..D.......|
   |ND........|
-doc_paint_grid layer=0 frame=8 x=24 y=24 legend={"D":"#1f6fd0","N":"#14386e"} rows:8
+paint_grid layer=0 frame=8 x=24 y=24 legend=D:#1f6fd0,N:#14386e rows:8
   |.......N|
   |........|
   |........|
@@ -243,7 +243,7 @@ doc_paint_grid layer=0 frame=8 x=24 y=24 legend={"D":"#1f6fd0","N":"#14386e"} ro
   |........|
   |..D.....|
   |N.......|
-doc_paint_grid layer=1 frame=3 x=19 y=19 legend={"Y":"#ffe97f"} rows:9
+paint_grid layer=1 frame=3 x=19 y=19 legend=Y:#ffe97f rows:9
   |........Y|
   |.........|
   |.........|
@@ -253,7 +253,7 @@ doc_paint_grid layer=1 frame=3 x=19 y=19 legend={"Y":"#ffe97f"} rows:9
   |.........|
   |.........|
   |Y........|
-doc_paint_grid layer=1 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} rows:9
+paint_grid layer=1 frame=4 x=22 y=22 legend=W:#ffffff,Y:#ffe97f rows:9
   |.......W.|
   |.........|
   |.........|
@@ -263,7 +263,7 @@ doc_paint_grid layer=1 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |.........|
   |W........|
   |.....Y...|
-doc_paint_grid layer=1 frame=5 x=24 y=24 legend={"C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=1 frame=5 x=24 y=24 legend=C:#8fe3ff,Y:#ffe97f rows:8
   |......Y.|
   |........|
   |........|
@@ -272,7 +272,7 @@ doc_paint_grid layer=1 frame=5 x=24 y=24 legend={"C":"#8fe3ff","Y":"#ffe97f"} ro
   |.......C|
   |Y.......|
   |.....C..|
-doc_paint_grid layer=1 frame=6 x=25 y=25 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:7
+paint_grid layer=1 frame=6 x=25 y=25 legend=B:#3fa9f5,C:#8fe3ff rows:7
   |......C|
   |.......|
   |.......|
@@ -280,23 +280,23 @@ doc_paint_grid layer=1 frame=6 x=25 y=25 legend={"B":"#3fa9f5","C":"#8fe3ff"} ro
   |.......|
   |.....B.|
   |C......|
-doc_paint_grid layer=1 frame=7 x=27 y=27 legend={"B":"#3fa9f5","D":"#1f6fd0"} rows:5
+paint_grid layer=1 frame=7 x=27 y=27 legend=B:#3fa9f5,D:#1f6fd0 rows:5
   |....B|
   |.....|
   |.....|
   |.....|
   |B...D|
-doc_paint_grid layer=1 frame=8 x=28 y=28 legend={"D":"#1f6fd0"} rows:3
+paint_grid layer=1 frame=8 x=28 y=28 legend=D:#1f6fd0 rows:3
   |..D|
   |...|
   |D..|
-doc_paint_grid layer=1 frame=9 x=27 y=27 legend={"N":"#14386e"} rows:5
+paint_grid layer=1 frame=9 x=27 y=27 legend=N:#14386e rows:5
   |N....|
   |.....|
   |....N|
   |.....|
   |..N..|
-doc_paint_grid layer=2 frame=4 x=21 y=21 legend={"W":"#ffffff","Y":"#ffe97f"} rows:11
+paint_grid layer=2 frame=4 x=21 y=21 legend=W:#ffffff,Y:#ffe97f rows:11
   |.....W.....|
   |.....W.....|
   |..Y..W..Y..|
@@ -308,43 +308,43 @@ doc_paint_grid layer=2 frame=4 x=21 y=21 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |..Y..W..Y..|
   |.....W.....|
   |.....W.....|
-doc_paint_grid layer=2 frame=5 x=24 y=24 legend={"W":"#ffffff"} rows:5
+paint_grid layer=2 frame=5 x=24 y=24 legend=W:#ffffff rows:5
   |....W|
   |.....|
   |.....|
   |.....|
   |W....|
-doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
-doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0"} rows:7
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=4 y=4 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0 rows:7
   |......D|
   |......C|
   |.....BC|
@@ -352,7 +352,7 @@ doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....BC.|
   |..BBC..|
   |DCCC...|
-doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=0 frame=1 x=7 y=7 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:8
   |.......Y|
   |.......Y|
   |......CY|
@@ -361,7 +361,7 @@ doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |...BCCY.|
   |..CCYY..|
   |YYYYY...|
-doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:11
+paint_grid layer=0 frame=2 x=9 y=9 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:11
   |..........D|
   |..........Y|
   |.........CY|
@@ -373,7 +373,7 @@ doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |...BBCCYW..|
   |..CCCCWW...|
   |DYYYYW.....|
-doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:14
+paint_grid layer=0 frame=3 x=12 y=12 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:14
   |............D.|
   |............Y.|
   |...........CYY|
@@ -388,7 +388,7 @@ doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |..CCCCYWW.....|
   |DYYYYWW.......|
   |..Y...........|
-doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=4 x=15 y=15 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:15
   |..............D|
   |.............DD|
   |.............YY|
@@ -404,7 +404,7 @@ doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...CCYYYWW.....|
   |.DYYYYWWW......|
   |DDYYYW.........|
-doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=5 x=17 y=17 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e,Y:#ffe97f rows:15
   |..............N|
   |..............N|
   |.............BC|
@@ -420,7 +420,7 @@ doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |....BBBBCY.....|
   |..BBB.CCY......|
   |NNCCCC.........|
-doc_paint_grid layer=0 frame=6 x=19 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e"} rows:13
+paint_grid layer=0 frame=6 x=19 y=19 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e rows:13
   |............N|
   |............N|
   |............B|
@@ -434,7 +434,7 @@ doc_paint_grid layer=0 frame=6 x=19 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |......DC.....|
   |...DBBC......|
   |NNBBB........|
-doc_paint_grid layer=0 frame=7 x=22 y=23 legend={"B":"#3fa9f5","D":"#1f6fd0","N":"#14386e"} rows:9
+paint_grid layer=0 frame=7 x=22 y=23 legend=B:#3fa9f5,D:#1f6fd0,N:#14386e rows:9
   |.........D|
   |........DD|
   |.......N..|
@@ -444,7 +444,7 @@ doc_paint_grid layer=0 frame=7 x=22 y=23 legend={"B":"#3fa9f5","D":"#1f6fd0","N"
   |...NDB....|
   |..D.......|
   |ND........|
-doc_paint_grid layer=0 frame=8 x=24 y=24 legend={"D":"#1f6fd0","N":"#14386e"} rows:8
+paint_grid layer=0 frame=8 x=24 y=24 legend=D:#1f6fd0,N:#14386e rows:8
   |.......N|
   |........|
   |.....N..|
@@ -453,7 +453,7 @@ doc_paint_grid layer=0 frame=8 x=24 y=24 legend={"D":"#1f6fd0","N":"#14386e"} ro
   |........|
   |.DD.....|
   |N.......|
-doc_paint_grid layer=1 frame=3 x=19 y=19 legend={"Y":"#ffe97f"} rows:9
+paint_grid layer=1 frame=3 x=19 y=19 legend=Y:#ffe97f rows:9
   |........Y|
   |.........|
   |.........|
@@ -463,7 +463,7 @@ doc_paint_grid layer=1 frame=3 x=19 y=19 legend={"Y":"#ffe97f"} rows:9
   |.........|
   |.........|
   |Y........|
-doc_paint_grid layer=1 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} rows:9
+paint_grid layer=1 frame=4 x=22 y=22 legend=W:#ffffff,Y:#ffe97f rows:9
   |.......W.|
   |.........|
   |.........|
@@ -473,7 +473,7 @@ doc_paint_grid layer=1 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |.........|
   |W........|
   |.....Y...|
-doc_paint_grid layer=1 frame=5 x=24 y=24 legend={"C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=1 frame=5 x=24 y=24 legend=C:#8fe3ff,Y:#ffe97f rows:8
   |......Y.|
   |........|
   |........|
@@ -482,7 +482,7 @@ doc_paint_grid layer=1 frame=5 x=24 y=24 legend={"C":"#8fe3ff","Y":"#ffe97f"} ro
   |.......C|
   |Y.......|
   |.....C..|
-doc_paint_grid layer=1 frame=6 x=25 y=25 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:7
+paint_grid layer=1 frame=6 x=25 y=25 legend=B:#3fa9f5,C:#8fe3ff rows:7
   |......C|
   |.......|
   |.......|
@@ -490,23 +490,23 @@ doc_paint_grid layer=1 frame=6 x=25 y=25 legend={"B":"#3fa9f5","C":"#8fe3ff"} ro
   |.......|
   |.....B.|
   |C......|
-doc_paint_grid layer=1 frame=7 x=27 y=27 legend={"B":"#3fa9f5","D":"#1f6fd0"} rows:5
+paint_grid layer=1 frame=7 x=27 y=27 legend=B:#3fa9f5,D:#1f6fd0 rows:5
   |....B|
   |.....|
   |.....|
   |.....|
   |B...D|
-doc_paint_grid layer=1 frame=8 x=28 y=28 legend={"D":"#1f6fd0"} rows:3
+paint_grid layer=1 frame=8 x=28 y=28 legend=D:#1f6fd0 rows:3
   |..D|
   |...|
   |D..|
-doc_paint_grid layer=1 frame=9 x=27 y=27 legend={"N":"#14386e"} rows:5
+paint_grid layer=1 frame=9 x=27 y=27 legend=N:#14386e rows:5
   |N....|
   |.....|
   |....N|
   |.....|
   |..N..|
-doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} rows:12
+paint_grid layer=2 frame=4 x=20 y=20 legend=W:#ffffff,Y:#ffe97f rows:12
   |......W.....|
   |......W.....|
   |......W.....|
@@ -519,43 +519,43 @@ doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |...Y..W..Y..|
   |......W.....|
   |......W.....|
-doc_paint_grid layer=2 frame=5 x=24 y=24 legend={"W":"#ffffff"} rows:5
+paint_grid layer=2 frame=5 x=24 y=24 legend=W:#ffffff rows:5
   |....W|
   |.....|
   |.....|
   |.....|
   |W....|
-doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
-doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0"} rows:7
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=4 y=4 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0 rows:7
   |......D|
   |......C|
   |.....BC|
@@ -563,7 +563,7 @@ doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....BC.|
   |..BBC..|
   |DCCC...|
-doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=0 frame=1 x=7 y=7 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:8
   |.......Y|
   |.......Y|
   |......CY|
@@ -572,7 +572,7 @@ doc_paint_grid layer=0 frame=1 x=7 y=7 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |...BCCY.|
   |..CCYY..|
   |YYYYY...|
-doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:11
+paint_grid layer=0 frame=2 x=9 y=9 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:11
   |..........D|
   |..........Y|
   |.........CY|
@@ -584,7 +584,7 @@ doc_paint_grid layer=0 frame=2 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |...BBCCYW..|
   |..CCCCWW...|
   |DYYYYW.....|
-doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:14
+paint_grid layer=0 frame=3 x=12 y=12 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:14
   |............D.|
   |............Y.|
   |...........CYY|
@@ -599,7 +599,7 @@ doc_paint_grid layer=0 frame=3 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |..CCCCYWW.....|
   |DYYYYWW.......|
   |..Y...........|
-doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=4 x=15 y=15 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:15
   |..............D|
   |.............DD|
   |.............YY|
@@ -615,7 +615,7 @@ doc_paint_grid layer=0 frame=4 x=15 y=15 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...CCCYYYW.....|
   |.DYYYYWWW......|
   |DDYYYY.........|
-doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e","Y":"#ffe97f"} rows:15
+paint_grid layer=0 frame=5 x=17 y=17 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e,Y:#ffe97f rows:15
   |..............N|
   |..............N|
   |.............BC|
@@ -631,7 +631,7 @@ doc_paint_grid layer=0 frame=5 x=17 y=17 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |....BBBBCY.....|
   |..BBB.CCY......|
   |NNCCCC.........|
-doc_paint_grid layer=0 frame=6 x=19 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e"} rows:13
+paint_grid layer=0 frame=6 x=19 y=19 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e rows:13
   |............N|
   |............N|
   |............B|
@@ -645,7 +645,7 @@ doc_paint_grid layer=0 frame=6 x=19 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |......DC.....|
   |...DBBC......|
   |NNBBB........|
-doc_paint_grid layer=0 frame=7 x=22 y=23 legend={"B":"#3fa9f5","D":"#1f6fd0","N":"#14386e"} rows:9
+paint_grid layer=0 frame=7 x=22 y=23 legend=B:#3fa9f5,D:#1f6fd0,N:#14386e rows:9
   |.........D|
   |........DD|
   |.......N..|
@@ -655,7 +655,7 @@ doc_paint_grid layer=0 frame=7 x=22 y=23 legend={"B":"#3fa9f5","D":"#1f6fd0","N"
   |...NDB....|
   |..D.......|
   |ND........|
-doc_paint_grid layer=0 frame=8 x=24 y=24 legend={"D":"#1f6fd0","N":"#14386e"} rows:8
+paint_grid layer=0 frame=8 x=24 y=24 legend=D:#1f6fd0,N:#14386e rows:8
   |.......N|
   |........|
   |.....N..|
@@ -664,7 +664,7 @@ doc_paint_grid layer=0 frame=8 x=24 y=24 legend={"D":"#1f6fd0","N":"#14386e"} ro
   |........|
   |.DD.....|
   |N.......|
-doc_paint_grid layer=1 frame=3 x=19 y=19 legend={"Y":"#ffe97f"} rows:9
+paint_grid layer=1 frame=3 x=19 y=19 legend=Y:#ffe97f rows:9
   |........Y|
   |.........|
   |.........|
@@ -674,7 +674,7 @@ doc_paint_grid layer=1 frame=3 x=19 y=19 legend={"Y":"#ffe97f"} rows:9
   |.........|
   |.........|
   |Y........|
-doc_paint_grid layer=1 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} rows:9
+paint_grid layer=1 frame=4 x=22 y=22 legend=W:#ffffff,Y:#ffe97f rows:9
   |.......W.|
   |.........|
   |.........|
@@ -684,7 +684,7 @@ doc_paint_grid layer=1 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |.........|
   |W........|
   |.....Y...|
-doc_paint_grid layer=1 frame=5 x=24 y=24 legend={"C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=1 frame=5 x=24 y=24 legend=C:#8fe3ff,Y:#ffe97f rows:8
   |......Y.|
   |........|
   |........|
@@ -693,7 +693,7 @@ doc_paint_grid layer=1 frame=5 x=24 y=24 legend={"C":"#8fe3ff","Y":"#ffe97f"} ro
   |.......C|
   |Y.......|
   |.....C..|
-doc_paint_grid layer=1 frame=6 x=25 y=25 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:7
+paint_grid layer=1 frame=6 x=25 y=25 legend=B:#3fa9f5,C:#8fe3ff rows:7
   |......C|
   |.......|
   |.......|
@@ -701,23 +701,23 @@ doc_paint_grid layer=1 frame=6 x=25 y=25 legend={"B":"#3fa9f5","C":"#8fe3ff"} ro
   |.......|
   |.....B.|
   |C......|
-doc_paint_grid layer=1 frame=7 x=27 y=27 legend={"B":"#3fa9f5","D":"#1f6fd0"} rows:5
+paint_grid layer=1 frame=7 x=27 y=27 legend=B:#3fa9f5,D:#1f6fd0 rows:5
   |....B|
   |.....|
   |.....|
   |.....|
   |B...D|
-doc_paint_grid layer=1 frame=8 x=28 y=28 legend={"D":"#1f6fd0"} rows:3
+paint_grid layer=1 frame=8 x=28 y=28 legend=D:#1f6fd0 rows:3
   |..D|
   |...|
   |D..|
-doc_paint_grid layer=1 frame=9 x=27 y=27 legend={"N":"#14386e"} rows:5
+paint_grid layer=1 frame=9 x=27 y=27 legend=N:#14386e rows:5
   |N....|
   |.....|
   |....N|
   |.....|
   |..N..|
-doc_paint_grid layer=2 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} rows:10
+paint_grid layer=2 frame=4 x=22 y=22 legend=W:#ffffff,Y:#ffe97f rows:10
   |........W.|
   |.......W..|
   |..........|
@@ -728,50 +728,50 @@ doc_paint_grid layer=2 frame=4 x=22 y=22 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |.W..W..Y..|
   |W...W...Y.|
   |....W.....|
-doc_paint_grid layer=2 frame=5 x=24 y=24 legend={"W":"#ffffff"} rows:5
+paint_grid layer=2 frame=5 x=24 y=24 legend=W:#ffffff rows:5
   |....W|
   |.....|
   |.....|
   |.....|
   |W....|
-doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
-doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:6
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=4 y=4 legend=B:#3fa9f5,C:#8fe3ff rows:6
   |.....C|
   |....C.|
   |...BC.|
   |..BCC.|
   |.CCC..|
   |C.....|
-doc_paint_grid layer=0 frame=1 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=0 frame=1 x=6 y=6 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:8
   |......CY|
   |.....CY.|
   |....BCY.|
@@ -780,7 +780,7 @@ doc_paint_grid layer=0 frame=1 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |.CCCY...|
   |CYYY....|
   |Y.......|
-doc_paint_grid layer=0 frame=2 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:12
+paint_grid layer=0 frame=2 x=6 y=6 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:12
   |...........D|
   |...........D|
   |..........CY|
@@ -793,7 +793,7 @@ doc_paint_grid layer=0 frame=2 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....CCCYW...|
   |..CCCYWW....|
   |DDYYYY......|
-doc_paint_grid layer=0 frame=3 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:13
+paint_grid layer=0 frame=3 x=9 y=9 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:13
   |............D|
   |............D|
   |............Y|
@@ -807,7 +807,7 @@ doc_paint_grid layer=0 frame=3 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....CCCCYW...|
   |...CCCYWW....|
   |DDYYYWW......|
-doc_paint_grid layer=0 frame=4 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:16
+paint_grid layer=0 frame=4 x=12 y=12 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:16
   |..............D.|
   |..............D.|
   |..............Y.|
@@ -824,7 +824,7 @@ doc_paint_grid layer=0 frame=4 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...CYYYYWW......|
   |DDYYYYYW........|
   |...Y............|
-doc_paint_grid layer=0 frame=5 x=16 y=16 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e","Y":"#ffe97f"} rows:14
+paint_grid layer=0 frame=5 x=16 y=16 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e,Y:#ffe97f rows:14
   |............N.|
   |............CC|
   |...........BC.|
@@ -839,7 +839,7 @@ doc_paint_grid layer=0 frame=5 x=16 y=16 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |..BBBCYY......|
   |NCCCCC........|
   |.C............|
-doc_paint_grid layer=0 frame=6 x=18 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e"} rows:11
+paint_grid layer=0 frame=6 x=18 y=19 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e rows:11
   |..........BB|
   |..........B.|
   |.........DB.|
@@ -851,7 +851,7 @@ doc_paint_grid layer=0 frame=6 x=18 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...DDBC.....|
   |.BBBBC......|
   |NBB.........|
-doc_paint_grid layer=0 frame=7 x=19 y=21 legend={"B":"#3fa9f5","D":"#1f6fd0","N":"#14386e"} rows:9
+paint_grid layer=0 frame=7 x=19 y=21 legend=B:#3fa9f5,D:#1f6fd0,N:#14386e rows:9
   |..........D|
   |.........D.|
   |........N..|
@@ -861,13 +861,13 @@ doc_paint_grid layer=0 frame=7 x=19 y=21 legend={"B":"#3fa9f5","D":"#1f6fd0","N"
   |....NBB....|
   |..DDD......|
   |NDD........|
-doc_paint_grid layer=0 frame=8 x=23 y=24 legend={"D":"#1f6fd0","N":"#14386e"} rows:5
+paint_grid layer=0 frame=8 x=23 y=24 legend=D:#1f6fd0,N:#14386e rows:5
   |....DD|
   |....D.|
   |..ND..|
   |.DD...|
   |D.....|
-doc_paint_grid layer=1 frame=3 x=17 y=17 legend={"Y":"#ffe97f"} rows:7
+paint_grid layer=1 frame=3 x=17 y=17 legend=Y:#ffe97f rows:7
   |......Y|
   |.......|
   |.......|
@@ -875,7 +875,7 @@ doc_paint_grid layer=1 frame=3 x=17 y=17 legend={"Y":"#ffe97f"} rows:7
   |.......|
   |.......|
   |Y......|
-doc_paint_grid layer=1 frame=4 x=19 y=19 legend={"W":"#ffffff","Y":"#ffe97f"} rows:11
+paint_grid layer=1 frame=4 x=19 y=19 legend=W:#ffffff,Y:#ffe97f rows:11
   |........W..|
   |...........|
   |...........|
@@ -887,7 +887,7 @@ doc_paint_grid layer=1 frame=4 x=19 y=19 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |W..........|
   |...........|
   |.......Y...|
-doc_paint_grid layer=1 frame=5 x=21 y=21 legend={"C":"#8fe3ff","Y":"#ffe97f"} rows:10
+paint_grid layer=1 frame=5 x=21 y=21 legend=C:#8fe3ff,Y:#ffe97f rows:10
   |.......Y..|
   |..........|
   |..........|
@@ -898,7 +898,7 @@ doc_paint_grid layer=1 frame=5 x=21 y=21 legend={"C":"#8fe3ff","Y":"#ffe97f"} ro
   |Y.........|
   |..........|
   |......C...|
-doc_paint_grid layer=1 frame=6 x=23 y=23 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:7
+paint_grid layer=1 frame=6 x=23 y=23 legend=B:#3fa9f5,C:#8fe3ff rows:7
   |......C|
   |.......|
   |.......|
@@ -906,25 +906,25 @@ doc_paint_grid layer=1 frame=6 x=23 y=23 legend={"B":"#3fa9f5","C":"#8fe3ff"} ro
   |.......|
   |.......|
   |C.....B|
-doc_paint_grid layer=1 frame=7 x=25 y=25 legend={"B":"#3fa9f5","D":"#1f6fd0"} rows:6
+paint_grid layer=1 frame=7 x=25 y=25 legend=B:#3fa9f5,D:#1f6fd0 rows:6
   |.....B|
   |......|
   |......|
   |......|
   |......|
   |B....D|
-doc_paint_grid layer=1 frame=8 x=27 y=27 legend={"D":"#1f6fd0"} rows:3
+paint_grid layer=1 frame=8 x=27 y=27 legend=D:#1f6fd0 rows:3
   |..D|
   |...|
   |D..|
-doc_paint_grid layer=1 frame=9 x=24 y=24 legend={"N":"#14386e"} rows:6
+paint_grid layer=1 frame=9 x=24 y=24 legend=N:#14386e rows:6
   |....N.|
   |......|
   |......|
   |......|
   |N.....|
   |.....N|
-doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} rows:10
+paint_grid layer=2 frame=4 x=20 y=20 legend=W:#ffffff,Y:#ffe97f rows:10
   |........W.|
   |.......W..|
   |..........|
@@ -935,50 +935,50 @@ doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |.W..W..Y..|
   |W...W...Y.|
   |....W.....|
-doc_paint_grid layer=2 frame=5 x=22 y=22 legend={"W":"#ffffff"} rows:5
+paint_grid layer=2 frame=5 x=22 y=22 legend=W:#ffffff rows:5
   |....W|
   |.....|
   |.....|
   |.....|
   |W....|
-doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
-doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:6
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=4 y=4 legend=B:#3fa9f5,C:#8fe3ff rows:6
   |.....C|
   |....C.|
   |...BC.|
   |..BCC.|
   |.CCC..|
   |C.....|
-doc_paint_grid layer=0 frame=1 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=0 frame=1 x=6 y=6 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:8
   |......CY|
   |.....CY.|
   |....BCY.|
@@ -987,7 +987,7 @@ doc_paint_grid layer=0 frame=1 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |.CCCY...|
   |CYYY....|
   |Y.......|
-doc_paint_grid layer=0 frame=2 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:12
+paint_grid layer=0 frame=2 x=6 y=6 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:12
   |...........D|
   |...........D|
   |..........CY|
@@ -1000,7 +1000,7 @@ doc_paint_grid layer=0 frame=2 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....CCCYW...|
   |..CCCYWW....|
   |DDYYYY......|
-doc_paint_grid layer=0 frame=3 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:13
+paint_grid layer=0 frame=3 x=9 y=9 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:13
   |............D|
   |............D|
   |............Y|
@@ -1014,7 +1014,7 @@ doc_paint_grid layer=0 frame=3 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....CCCCYW...|
   |...CCCYWW....|
   |DDYYYWW......|
-doc_paint_grid layer=0 frame=4 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:16
+paint_grid layer=0 frame=4 x=12 y=12 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:16
   |..............D.|
   |..............D.|
   |..............Y.|
@@ -1031,7 +1031,7 @@ doc_paint_grid layer=0 frame=4 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...CYYYYWW......|
   |DDYYYYYW........|
   |...Y............|
-doc_paint_grid layer=0 frame=5 x=16 y=16 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e","Y":"#ffe97f"} rows:14
+paint_grid layer=0 frame=5 x=16 y=16 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e,Y:#ffe97f rows:14
   |............N.|
   |............CC|
   |...........BC.|
@@ -1046,7 +1046,7 @@ doc_paint_grid layer=0 frame=5 x=16 y=16 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |..BBBCYY......|
   |NCCCCC........|
   |.C............|
-doc_paint_grid layer=0 frame=6 x=18 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e"} rows:11
+paint_grid layer=0 frame=6 x=18 y=19 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e rows:11
   |..........BB|
   |..........B.|
   |.........DB.|
@@ -1058,7 +1058,7 @@ doc_paint_grid layer=0 frame=6 x=18 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...DDBC.....|
   |.BBBBC......|
   |NBB.........|
-doc_paint_grid layer=0 frame=7 x=19 y=21 legend={"B":"#3fa9f5","D":"#1f6fd0","N":"#14386e"} rows:9
+paint_grid layer=0 frame=7 x=19 y=21 legend=B:#3fa9f5,D:#1f6fd0,N:#14386e rows:9
   |..........D|
   |.........D.|
   |........N..|
@@ -1068,13 +1068,13 @@ doc_paint_grid layer=0 frame=7 x=19 y=21 legend={"B":"#3fa9f5","D":"#1f6fd0","N"
   |....NBB....|
   |..DDD......|
   |NDD........|
-doc_paint_grid layer=0 frame=8 x=23 y=24 legend={"D":"#1f6fd0","N":"#14386e"} rows:5
+paint_grid layer=0 frame=8 x=23 y=24 legend=D:#1f6fd0,N:#14386e rows:5
   |....DD|
   |....D.|
   |..ND..|
   |.DD...|
   |D.....|
-doc_paint_grid layer=1 frame=3 x=17 y=17 legend={"Y":"#ffe97f"} rows:7
+paint_grid layer=1 frame=3 x=17 y=17 legend=Y:#ffe97f rows:7
   |......Y|
   |.......|
   |.......|
@@ -1082,7 +1082,7 @@ doc_paint_grid layer=1 frame=3 x=17 y=17 legend={"Y":"#ffe97f"} rows:7
   |.......|
   |.......|
   |Y......|
-doc_paint_grid layer=1 frame=4 x=19 y=19 legend={"W":"#ffffff","Y":"#ffe97f"} rows:11
+paint_grid layer=1 frame=4 x=19 y=19 legend=W:#ffffff,Y:#ffe97f rows:11
   |........W..|
   |...........|
   |...........|
@@ -1094,7 +1094,7 @@ doc_paint_grid layer=1 frame=4 x=19 y=19 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |W..........|
   |...........|
   |.......Y...|
-doc_paint_grid layer=1 frame=5 x=21 y=21 legend={"C":"#8fe3ff","Y":"#ffe97f"} rows:10
+paint_grid layer=1 frame=5 x=21 y=21 legend=C:#8fe3ff,Y:#ffe97f rows:10
   |.......Y..|
   |..........|
   |..........|
@@ -1105,7 +1105,7 @@ doc_paint_grid layer=1 frame=5 x=21 y=21 legend={"C":"#8fe3ff","Y":"#ffe97f"} ro
   |Y.........|
   |..........|
   |......C...|
-doc_paint_grid layer=1 frame=6 x=23 y=23 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:7
+paint_grid layer=1 frame=6 x=23 y=23 legend=B:#3fa9f5,C:#8fe3ff rows:7
   |......C|
   |.......|
   |.......|
@@ -1113,25 +1113,25 @@ doc_paint_grid layer=1 frame=6 x=23 y=23 legend={"B":"#3fa9f5","C":"#8fe3ff"} ro
   |.......|
   |.......|
   |C.....B|
-doc_paint_grid layer=1 frame=7 x=25 y=25 legend={"B":"#3fa9f5","D":"#1f6fd0"} rows:6
+paint_grid layer=1 frame=7 x=25 y=25 legend=B:#3fa9f5,D:#1f6fd0 rows:6
   |.....B|
   |......|
   |......|
   |......|
   |......|
   |B....D|
-doc_paint_grid layer=1 frame=8 x=27 y=27 legend={"D":"#1f6fd0"} rows:3
+paint_grid layer=1 frame=8 x=27 y=27 legend=D:#1f6fd0 rows:3
   |..D|
   |...|
   |D..|
-doc_paint_grid layer=1 frame=9 x=24 y=24 legend={"N":"#14386e"} rows:6
+paint_grid layer=1 frame=9 x=24 y=24 legend=N:#14386e rows:6
   |....N.|
   |......|
   |......|
   |......|
   |N.....|
   |.....N|
-doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} rows:9
+paint_grid layer=2 frame=4 x=20 y=20 legend=W:#ffffff,Y:#ffe97f rows:9
   |....W....|
   |....W..W.|
   |....W....|
@@ -1141,50 +1141,50 @@ doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |....W....|
   |.W..W..Y.|
   |....W...Y|
-doc_paint_grid layer=2 frame=5 x=22 y=22 legend={"W":"#ffffff"} rows:5
+paint_grid layer=2 frame=5 x=22 y=22 legend=W:#ffffff rows:5
   |....W|
   |.....|
   |.....|
   |.....|
   |W....|
-doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
-doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
-doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
-doc_paint_grid layer=0 frame=0 x=4 y=4 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:6
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=4 y=4 legend=B:#3fa9f5,C:#8fe3ff rows:6
   |.....C|
   |....C.|
   |...BC.|
   |..BCC.|
   |.CCC..|
   |C.....|
-doc_paint_grid layer=0 frame=1 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"#ffe97f"} rows:8
+paint_grid layer=0 frame=1 x=6 y=6 legend=B:#3fa9f5,C:#8fe3ff,Y:#ffe97f rows:8
   |......CY|
   |.....CY.|
   |....BCY.|
@@ -1193,7 +1193,7 @@ doc_paint_grid layer=0 frame=1 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","Y":"
   |.CCCY...|
   |CYYY....|
   |Y.......|
-doc_paint_grid layer=0 frame=2 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:12
+paint_grid layer=0 frame=2 x=6 y=6 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:12
   |...........D|
   |...........D|
   |..........CY|
@@ -1206,7 +1206,7 @@ doc_paint_grid layer=0 frame=2 x=6 y=6 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....CCCYW...|
   |..CCCYWW....|
   |DDYYYY......|
-doc_paint_grid layer=0 frame=3 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","W":"#ffffff","Y":"#ffe97f"} rows:13
+paint_grid layer=0 frame=3 x=9 y=9 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,W:#ffffff,Y:#ffe97f rows:13
   |............D|
   |............D|
   |............Y|
@@ -1220,7 +1220,7 @@ doc_paint_grid layer=0 frame=3 x=9 y=9 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"
   |....CCCCYW...|
   |...CCCYWW....|
   |DDYYYWW......|
-doc_paint_grid layer=0 frame=4 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","Y":"#ffe97f"} rows:16
+paint_grid layer=0 frame=4 x=12 y=12 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,Y:#ffe97f rows:16
   |..............D.|
   |..............D.|
   |..............Y.|
@@ -1237,7 +1237,7 @@ doc_paint_grid layer=0 frame=4 x=12 y=12 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...YYYYYYY......|
   |DDYYYYYY........|
   |...Y............|
-doc_paint_grid layer=0 frame=5 x=16 y=16 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e","Y":"#ffe97f"} rows:14
+paint_grid layer=0 frame=5 x=16 y=16 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e,Y:#ffe97f rows:14
   |............N.|
   |............CC|
   |...........BC.|
@@ -1252,7 +1252,7 @@ doc_paint_grid layer=0 frame=5 x=16 y=16 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |..BBBCYY......|
   |NCCCCC........|
   |.C............|
-doc_paint_grid layer=0 frame=6 x=18 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D":"#1f6fd0","N":"#14386e"} rows:11
+paint_grid layer=0 frame=6 x=18 y=19 legend=B:#3fa9f5,C:#8fe3ff,D:#1f6fd0,N:#14386e rows:11
   |..........BB|
   |..........B.|
   |.........DB.|
@@ -1264,7 +1264,7 @@ doc_paint_grid layer=0 frame=6 x=18 y=19 legend={"B":"#3fa9f5","C":"#8fe3ff","D"
   |...DDBC.....|
   |.BBBBC......|
   |NBB.........|
-doc_paint_grid layer=0 frame=7 x=19 y=21 legend={"B":"#3fa9f5","D":"#1f6fd0","N":"#14386e"} rows:9
+paint_grid layer=0 frame=7 x=19 y=21 legend=B:#3fa9f5,D:#1f6fd0,N:#14386e rows:9
   |..........D|
   |.........D.|
   |........N..|
@@ -1274,13 +1274,13 @@ doc_paint_grid layer=0 frame=7 x=19 y=21 legend={"B":"#3fa9f5","D":"#1f6fd0","N"
   |....NBB....|
   |..DDD......|
   |NDD........|
-doc_paint_grid layer=0 frame=8 x=23 y=24 legend={"D":"#1f6fd0","N":"#14386e"} rows:5
+paint_grid layer=0 frame=8 x=23 y=24 legend=D:#1f6fd0,N:#14386e rows:5
   |....DD|
   |....D.|
   |..ND..|
   |.DD...|
   |D.....|
-doc_paint_grid layer=1 frame=3 x=17 y=17 legend={"Y":"#ffe97f"} rows:7
+paint_grid layer=1 frame=3 x=17 y=17 legend=Y:#ffe97f rows:7
   |......Y|
   |.......|
   |.......|
@@ -1288,7 +1288,7 @@ doc_paint_grid layer=1 frame=3 x=17 y=17 legend={"Y":"#ffe97f"} rows:7
   |.......|
   |.......|
   |Y......|
-doc_paint_grid layer=1 frame=4 x=19 y=19 legend={"W":"#ffffff","Y":"#ffe97f"} rows:11
+paint_grid layer=1 frame=4 x=19 y=19 legend=W:#ffffff,Y:#ffe97f rows:11
   |........W..|
   |...........|
   |...........|
@@ -1300,7 +1300,7 @@ doc_paint_grid layer=1 frame=4 x=19 y=19 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |W..........|
   |...........|
   |.......Y...|
-doc_paint_grid layer=1 frame=5 x=21 y=21 legend={"C":"#8fe3ff","Y":"#ffe97f"} rows:10
+paint_grid layer=1 frame=5 x=21 y=21 legend=C:#8fe3ff,Y:#ffe97f rows:10
   |.......Y..|
   |..........|
   |..........|
@@ -1311,7 +1311,7 @@ doc_paint_grid layer=1 frame=5 x=21 y=21 legend={"C":"#8fe3ff","Y":"#ffe97f"} ro
   |Y.........|
   |..........|
   |......C...|
-doc_paint_grid layer=1 frame=6 x=23 y=23 legend={"B":"#3fa9f5","C":"#8fe3ff"} rows:7
+paint_grid layer=1 frame=6 x=23 y=23 legend=B:#3fa9f5,C:#8fe3ff rows:7
   |......C|
   |.......|
   |.......|
@@ -1319,25 +1319,25 @@ doc_paint_grid layer=1 frame=6 x=23 y=23 legend={"B":"#3fa9f5","C":"#8fe3ff"} ro
   |.......|
   |.......|
   |C.....B|
-doc_paint_grid layer=1 frame=7 x=25 y=25 legend={"B":"#3fa9f5","D":"#1f6fd0"} rows:6
+paint_grid layer=1 frame=7 x=25 y=25 legend=B:#3fa9f5,D:#1f6fd0 rows:6
   |.....B|
   |......|
   |......|
   |......|
   |......|
   |B....D|
-doc_paint_grid layer=1 frame=8 x=27 y=27 legend={"D":"#1f6fd0"} rows:3
+paint_grid layer=1 frame=8 x=27 y=27 legend=D:#1f6fd0 rows:3
   |..D|
   |...|
   |D..|
-doc_paint_grid layer=1 frame=9 x=24 y=24 legend={"N":"#14386e"} rows:6
+paint_grid layer=1 frame=9 x=24 y=24 legend=N:#14386e rows:6
   |....N.|
   |......|
   |......|
   |......|
   |N.....|
   |.....N|
-doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} rows:9
+paint_grid layer=2 frame=4 x=20 y=20 legend=W:#ffffff,Y:#ffe97f rows:9
   |....W....|
   |....W....|
   |....W....|
@@ -1347,10 +1347,10 @@ doc_paint_grid layer=2 frame=4 x=20 y=20 legend={"W":"#ffffff","Y":"#ffe97f"} ro
   |....W....|
   |....W..Y.|
   |....W...Y|
-doc_paint_grid layer=2 frame=5 x=22 y=22 legend={"W":"#ffffff"} rows:5
+paint_grid layer=2 frame=5 x=22 y=22 legend=W:#ffffff rows:5
   |....W|
   |.....|
   |.....|
   |.....|
   |W....|
-doc_add_tag name=slash from=0 to=9
+add_tag name=slash from=0 to=9

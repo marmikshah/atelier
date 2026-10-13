@@ -1,10 +1,10 @@
-atelier 3 b0420ebd-5bdf-42d4-8dbb-5d59be5344d0 0.1.0
-doc_new name=profile-beam width=48 height=48
-doc_layer op=rename index=0 name=legs
-doc_layer op=add name=body
-doc_layer op=add name=fx
-doc_palette op=set colors=[[42,30,51,255],[234,176,126,255],[210,98,46,255],[255,255,255,255],[159,232,255,255],[47,143,216,255]]
-doc_paint_grid layer=1 frame=0 x=10 y=7 legend={"K":0,"O":2,"S":1} rows:22
+atelier 4 b0420ebd-5bdf-42d4-8dbb-5d59be5344d0 0.1.0
+new name=profile-beam width=48 height=48
+layer op=rename index=0 name=legs
+layer op=add name=body
+layer op=add name=fx
+palette op=set colors=#2a1e33,#eab07e,#d2622e,#ffffff,#9fe8ff,#2f8fd8
+paint_grid layer=1 frame=0 x=10 y=7 legend=K:0,O:2,S:1 rows:22
   |.KKKKK........|
   |KKKKKKS.......|
   |KKKKKSS.......|
@@ -27,13 +27,13 @@ doc_paint_grid layer=1 frame=0 x=10 y=7 legend={"K":0,"O":2,"S":1} rows:22
   |..KOOOK..SSK..|
   |..KOOOK.......|
   |..KOOOK.......|
-doc_draw op=rect layer=0 frame=0 color="#d2622e" fill=true x0=11 x1=17 y0=30 y1=32
-doc_draw op=line layer=0 frame=0 color="#d2622e" size=3 x0=13 x1=9 y0=32 y1=42
-doc_draw op=line layer=0 frame=0 color="#d2622e" size=3 x0=15 x1=19 y0=32 y1=42
-doc_draw op=rect layer=0 frame=0 color="#2a1e33" fill=true x0=7 x1=11 y0=42 y1=43
-doc_draw op=rect layer=0 frame=0 color="#2a1e33" fill=true x0=16 x1=21 y0=42 y1=43
-doc_fx op=outline layer=0 frame=0 aa=false color="#2a1e33"
-doc_paint_grid layer=1 frame=0 x=10 y=7 replace=true legend={"K":0,"S":1} rows:9
+draw op=rect layer=0 frame=0 color=#d2622e fill=true x0=11 x1=17 y0=30 y1=32
+draw op=line layer=0 frame=0 color=#d2622e size=3 x0=13 x1=9 y0=32 y1=42
+draw op=line layer=0 frame=0 color=#d2622e size=3 x0=15 x1=19 y0=32 y1=42
+draw op=rect layer=0 frame=0 color=#2a1e33 fill=true x0=7 x1=11 y0=42 y1=43
+draw op=rect layer=0 frame=0 color=#2a1e33 fill=true x0=16 x1=21 y0=42 y1=43
+fx op=outline layer=0 frame=0 aa=false color=#2a1e33
+paint_grid layer=1 frame=0 x=10 y=7 replace=true legend=K:0,S:1 rows:9
   |.KKKKK...|
   |KKKKKKK..|
   |KKKKKKS..|
@@ -43,44 +43,44 @@ doc_paint_grid layer=1 frame=0 x=10 y=7 replace=true legend={"K":0,"S":1} rows:9
   |KKSSSS...|
   |.KSSS....|
   |..KS.....|
-doc_frame op=add copy_from=0 count=9 duration_ms=100
-doc_fx op=shift layer=1 frame=1 frame_to=2 dx=1 dy=0 wrap=false
-doc_fx op=shift layer=1 frame=4 dx=-1 dy=0 wrap=false
-doc_fx op=shift layer=1 frame=5 dx=-2 dy=0 wrap=false
-doc_fx op=shift layer=1 frame=6 dx=-1 dy=0 wrap=false
-doc_draw op=ellipse layer=2 frame=0 color="#9fe8ff" cx=25 cy=23 fill=true rx=1 ry=1
-doc_draw op=rect layer=2 frame=0 color="#ffffff" fill=true x0=25 x1=25 y0=23 y1=23
-doc_draw op=ellipse layer=2 frame=1 color="#9fe8ff" cx=25 cy=23 fill=true rx=2 ry=2
-doc_draw op=ellipse layer=2 frame=1 color="#ffffff" cx=25 cy=23 fill=true rx=1 ry=1
-doc_draw op=ellipse layer=2 frame=2 color="#2f8fd8" cx=25 cy=23 fill=true rx=4 ry=4
-doc_draw op=ellipse layer=2 frame=2 color="#9fe8ff" cx=25 cy=23 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=2 frame=2 color="#ffffff" cx=25 cy=23 fill=true rx=2 ry=2
-doc_draw op=pencil layer=2 frame=2 color="#9fe8ff" points=[[25,17],[30,23],[25,29],[20,23]] size=1
-doc_draw op=rect layer=2 frame=3 color="#2f8fd8" fill=true x0=25 x1=36 y0=21 y1=25
-doc_draw op=rect layer=2 frame=3 color="#9fe8ff" fill=true x0=25 x1=35 y0=22 y1=24
-doc_draw op=rect layer=2 frame=3 color="#ffffff" fill=true x0=25 x1=34 y0=23 y1=23
-doc_draw op=ellipse layer=2 frame=3 color="#9fe8ff" cx=25 cy=23 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=2 frame=3 color="#ffffff" cx=25 cy=23 fill=true rx=2 ry=2
-doc_draw op=rect layer=2 frame=4 color="#2f8fd8" fill=true x0=24 x1=43 y0=21 y1=25
-doc_draw op=rect layer=2 frame=4 color="#9fe8ff" fill=true x0=24 x1=42 y0=22 y1=24
-doc_draw op=rect layer=2 frame=4 color="#ffffff" fill=true x0=24 x1=41 y0=23 y1=23
-doc_draw op=ellipse layer=2 frame=4 color="#9fe8ff" cx=24 cy=23 fill=true rx=3 ry=3
-doc_draw op=ellipse layer=2 frame=4 color="#ffffff" cx=24 cy=23 fill=true rx=2 ry=2
-doc_draw op=rect layer=2 frame=5 color="#2f8fd8" fill=true x0=23 x1=47 y0=21 y1=25
-doc_draw op=rect layer=2 frame=5 color="#9fe8ff" fill=true x0=23 x1=47 y0=22 y1=24
-doc_draw op=rect layer=2 frame=5 color="#ffffff" fill=true x0=23 x1=47 y0=23 y1=23
-doc_draw op=ellipse layer=2 frame=5 color="#2f8fd8" cx=24 cy=23 fill=true rx=5 ry=5
-doc_draw op=ellipse layer=2 frame=5 color="#9fe8ff" cx=24 cy=23 fill=true rx=4 ry=4
-doc_draw op=ellipse layer=2 frame=5 color="#ffffff" cx=24 cy=23 fill=true rx=3 ry=3
-doc_draw op=rect layer=2 frame=6 color="#2f8fd8" fill=true x0=26 x1=47 y0=21 y1=25
-doc_draw op=rect layer=2 frame=6 color="#9fe8ff" fill=true x0=28 x1=47 y0=22 y1=24
-doc_draw op=rect layer=2 frame=6 color="#ffffff" fill=true x0=32 x1=47 y0=23 y1=23
-doc_draw op=ellipse layer=2 frame=6 color="#9fe8ff" cx=24 cy=23 fill=true rx=2 ry=2
-doc_draw op=rect layer=2 frame=7 color="#2f8fd8" fill=true x0=34 x1=47 y0=22 y1=24
-doc_draw op=rect layer=2 frame=7 color="#9fe8ff" fill=true x0=37 x1=47 y0=23 y1=23
-doc_draw op=pencil layer=2 frame=7 color="#9fe8ff" points=[[27,23],[30,23],[24,23]] size=1
-doc_draw op=pencil layer=2 frame=8 color="#9fe8ff" points=[[24,23],[23,22]] size=1
-doc_draw op=pencil layer=2 frame=8 color="#9fe8ff" points=[[39,23],[44,23],[42,24]] size=1
-doc_draw op=ellipse layer=2 frame=9 color="#9fe8ff" cx=25 cy=23 fill=true rx=1 ry=1
-doc_draw op=rect layer=2 frame=9 color="#ffffff" fill=true x0=25 x1=25 y0=23 y1=23
-doc_add_tag name=beam direction=forward from=0 to=9
+frame op=add copy_from=0 count=9 duration_ms=100
+fx op=shift layer=1 frame=1 frame_to=2 dx=1 dy=0 wrap=false
+fx op=shift layer=1 frame=4 dx=-1 dy=0 wrap=false
+fx op=shift layer=1 frame=5 dx=-2 dy=0 wrap=false
+fx op=shift layer=1 frame=6 dx=-1 dy=0 wrap=false
+draw op=ellipse layer=2 frame=0 color=#9fe8ff cx=25 cy=23 fill=true rx=1 ry=1
+draw op=rect layer=2 frame=0 color=#ffffff fill=true x0=25 x1=25 y0=23 y1=23
+draw op=ellipse layer=2 frame=1 color=#9fe8ff cx=25 cy=23 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=1 color=#ffffff cx=25 cy=23 fill=true rx=1 ry=1
+draw op=ellipse layer=2 frame=2 color=#2f8fd8 cx=25 cy=23 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=2 color=#9fe8ff cx=25 cy=23 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=2 color=#ffffff cx=25 cy=23 fill=true rx=2 ry=2
+draw op=pencil layer=2 frame=2 color=#9fe8ff points=[[25,17],[30,23],[25,29],[20,23]] size=1
+draw op=rect layer=2 frame=3 color=#2f8fd8 fill=true x0=25 x1=36 y0=21 y1=25
+draw op=rect layer=2 frame=3 color=#9fe8ff fill=true x0=25 x1=35 y0=22 y1=24
+draw op=rect layer=2 frame=3 color=#ffffff fill=true x0=25 x1=34 y0=23 y1=23
+draw op=ellipse layer=2 frame=3 color=#9fe8ff cx=25 cy=23 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=3 color=#ffffff cx=25 cy=23 fill=true rx=2 ry=2
+draw op=rect layer=2 frame=4 color=#2f8fd8 fill=true x0=24 x1=43 y0=21 y1=25
+draw op=rect layer=2 frame=4 color=#9fe8ff fill=true x0=24 x1=42 y0=22 y1=24
+draw op=rect layer=2 frame=4 color=#ffffff fill=true x0=24 x1=41 y0=23 y1=23
+draw op=ellipse layer=2 frame=4 color=#9fe8ff cx=24 cy=23 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=4 color=#ffffff cx=24 cy=23 fill=true rx=2 ry=2
+draw op=rect layer=2 frame=5 color=#2f8fd8 fill=true x0=23 x1=47 y0=21 y1=25
+draw op=rect layer=2 frame=5 color=#9fe8ff fill=true x0=23 x1=47 y0=22 y1=24
+draw op=rect layer=2 frame=5 color=#ffffff fill=true x0=23 x1=47 y0=23 y1=23
+draw op=ellipse layer=2 frame=5 color=#2f8fd8 cx=24 cy=23 fill=true rx=5 ry=5
+draw op=ellipse layer=2 frame=5 color=#9fe8ff cx=24 cy=23 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=5 color=#ffffff cx=24 cy=23 fill=true rx=3 ry=3
+draw op=rect layer=2 frame=6 color=#2f8fd8 fill=true x0=26 x1=47 y0=21 y1=25
+draw op=rect layer=2 frame=6 color=#9fe8ff fill=true x0=28 x1=47 y0=22 y1=24
+draw op=rect layer=2 frame=6 color=#ffffff fill=true x0=32 x1=47 y0=23 y1=23
+draw op=ellipse layer=2 frame=6 color=#9fe8ff cx=24 cy=23 fill=true rx=2 ry=2
+draw op=rect layer=2 frame=7 color=#2f8fd8 fill=true x0=34 x1=47 y0=22 y1=24
+draw op=rect layer=2 frame=7 color=#9fe8ff fill=true x0=37 x1=47 y0=23 y1=23
+draw op=pencil layer=2 frame=7 color=#9fe8ff points=[[27,23],[30,23],[24,23]] size=1
+draw op=pencil layer=2 frame=8 color=#9fe8ff points=[[24,23],[23,22]] size=1
+draw op=pencil layer=2 frame=8 color=#9fe8ff points=[[39,23],[44,23],[42,24]] size=1
+draw op=ellipse layer=2 frame=9 color=#9fe8ff cx=25 cy=23 fill=true rx=1 ry=1
+draw op=rect layer=2 frame=9 color=#ffffff fill=true x0=25 x1=25 y0=23 y1=23
+add_tag name=beam direction=forward from=0 to=9
