@@ -48,7 +48,7 @@ doc_paint_grid layer=1 frame=4 x=6 y=22 legend={"h":3,"k":0,"r":2,"s":1} rows:7
   |krrrrrrrrrrrsssssssk|
   |.kksssssssssssssskk.|
   |....kkkkkkkkkkkk....|
-doc_paint_grid layer=0 frame=4 x=5 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=4 x=5 y=27 legend={"k":0} rows:3
   |...kkkkkkkkkkkkkkkk...|
   |kkkkkkkkkkkkkkkkkkkkkk|
   |...kkkkkkkkkkkkkkkk...|
@@ -73,7 +73,7 @@ doc_paint_grid layer=1 frame=5 x=12 y=10 legend={"h":3,"k":0,"r":2,"s":1} rows:1
   |.krsssk.|
   |.kssssk.|
   |..kkkk..|
-doc_paint_grid layer=0 frame=5 x=8 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=5 x=8 y=27 legend={"k":0} rows:3
   |...kkkkkkkkkk...|
   |kkkkkkkkkkkkkkkk|
   |...kkkkkkkkkk...|
@@ -92,7 +92,7 @@ doc_paint_grid layer=1 frame=1 x=10 y=4 legend={"h":3,"k":0,"r":2,"s":1} rows:12
   |.krrrrssssk.|
   |..kssssssk..|
   |....kkkk....|
-doc_paint_grid layer=0 frame=1 x=11 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=1 x=11 y=27 legend={"k":0} rows:3
   |..kkkkkk..|
   |kkkkkkkkkk|
   |..kkkkkk..|
@@ -113,7 +113,7 @@ doc_paint_grid layer=1 frame=2 x=11 y=7 legend={"h":3,"k":0,"r":2,"s":1} rows:14
   |.krrssssk.|
   |..kssssk..|
   |...kkkk...|
-doc_paint_grid layer=0 frame=2 x=10 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=2 x=10 y=27 legend={"k":0} rows:3
   |..kkkkkkkk..|
   |kkkkkkkkkkkk|
   |..kkkkkkkk..|
@@ -136,7 +136,7 @@ doc_paint_grid layer=1 frame=3 x=12 y=12 legend={"h":3,"k":0,"r":2,"s":1} rows:1
   |.krsssk.|
   |.kssssk.|
   |..kkkk..|
-doc_paint_grid layer=0 frame=3 x=8 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=3 x=8 y=27 legend={"k":0} rows:3
   |...kkkkkkkkkk...|
   |kkkkkkkkkkkkkkkk|
   |...kkkkkkkkkk...|
@@ -157,7 +157,7 @@ doc_paint_grid layer=1 frame=6 x=11 y=5 legend={"h":3,"k":0,"r":2,"s":1} rows:14
   |.krrssssk.|
   |..kssssk..|
   |...kkkk...|
-doc_paint_grid layer=0 frame=6 x=10 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=6 x=10 y=27 legend={"k":0} rows:3
   |..kkkkkkkk..|
   |kkkkkkkkkkkk|
   |..kkkkkkkk..|
@@ -176,7 +176,7 @@ doc_paint_grid layer=1 frame=7 x=10 y=2 legend={"h":3,"k":0,"r":2,"s":1} rows:12
   |.krrrrssssk.|
   |..kssssssk..|
   |....kkkk....|
-doc_paint_grid layer=0 frame=7 x=11 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=7 x=11 y=27 legend={"k":0} rows:3
   |..kkkkkk..|
   |kkkkkkkkkk|
   |..kkkkkk..|
@@ -195,7 +195,7 @@ doc_paint_grid layer=1 frame=8 x=10 y=1 legend={"h":3,"k":0,"r":2,"s":1} rows:12
   |.krrrrssssk.|
   |..kssssssk..|
   |....kkkk....|
-doc_paint_grid layer=0 frame=8 x=12 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=8 x=12 y=27 legend={"k":0} rows:3
   |..kkkk..|
   |kkkkkkkk|
   |..kkkk..|
@@ -214,11 +214,11 @@ doc_paint_grid layer=1 frame=9 x=10 y=2 legend={"h":3,"k":0,"r":2,"s":1} rows:12
   |.krrrrssssk.|
   |..kssssssk..|
   |....kkkk....|
-doc_paint_grid layer=0 frame=9 x=12 y=27 legend={"h":3,"k":0,"r":2,"s":1} rows:3
+doc_paint_grid layer=0 frame=9 x=12 y=27 legend={"k":0} rows:3
   |..kkkk..|
   |kkkkkkkk|
   |..kkkk..|
-doc_draw op=pencil layer=0 frame=7 color=[42,28,58,255] erase=true points=[[13,27],[18,27],[11,28],[20,28],[13,29],[18,29]] size=1
+doc_draw op=pencil layer=0 frame=7 color="#2a1c3a" erase=true points=[[13,27],[18,27],[11,28],[20,28],[13,29],[18,29]] size=1
 doc_region op=clear layer=0 frame=7 rect=[13,27,13,27]
 doc_region op=clear layer=0 frame=7 rect=[18,27,18,27]
 doc_region op=clear layer=0 frame=7 rect=[11,28,11,28]

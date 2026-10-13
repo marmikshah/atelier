@@ -5,17 +5,17 @@ doc_layer op=add name=glass
 doc_layer op=add name=cork
 doc_layer op=rename index=0 name=liquid
 doc_palette op=set colors=[[35,21,39,255],[201,151,90,255],[122,82,48,255],[79,174,58,255],[43,110,31,255],[168,230,122,255]]
-doc_draw op=pencil layer=2 frame=0 color=[35,21,39,255] points=[[13,8],[18,8],[13,9],[18,9],[13,10],[18,10],[13,11],[18,11],[13,12],[18,12],[13,13],[18,13],[11,14],[20,14],[9,15],[22,15],[7,16],[24,16],[6,17],[25,17],[5,18],[26,18],[5,19],[26,19],[4,20],[27,20],[4,21],[27,21],[5,22],[26,22],[6,23],[25,23],[7,24],[24,24],[9,25],[22,25],[11,26],[20,26]] size=1
-doc_draw op=rect layer=2 frame=0 color=[35,21,39,255] fill=true x0=14 x1=17 y0=27 y1=27
-doc_draw op=rect layer=3 frame=0 color=[201,151,90,255] fill=true x0=14 x1=17 y0=3 y1=3
-doc_draw op=rect layer=3 frame=0 color=[201,151,90,255] fill=true x0=13 x1=18 y0=4 y1=5
-doc_draw op=rect layer=3 frame=0 color=[122,82,48,255] fill=true x0=13 x1=18 y0=6 y1=9
-doc_draw op=rect layer=3 frame=0 color=[35,21,39,255] fill=false x0=13 x1=18 y0=3 y1=9
+doc_draw op=pencil layer=2 frame=0 color="#231527" points=[[13,8],[18,8],[13,9],[18,9],[13,10],[18,10],[13,11],[18,11],[13,12],[18,12],[13,13],[18,13],[11,14],[20,14],[9,15],[22,15],[7,16],[24,16],[6,17],[25,17],[5,18],[26,18],[5,19],[26,19],[4,20],[27,20],[4,21],[27,21],[5,22],[26,22],[6,23],[25,23],[7,24],[24,24],[9,25],[22,25],[11,26],[20,26]] size=1
+doc_draw op=rect layer=2 frame=0 color="#231527" fill=true x0=14 x1=17 y0=27 y1=27
+doc_draw op=rect layer=3 frame=0 color="#c9975a" fill=true x0=14 x1=17 y0=3 y1=3
+doc_draw op=rect layer=3 frame=0 color="#c9975a" fill=true x0=13 x1=18 y0=4 y1=5
+doc_draw op=rect layer=3 frame=0 color="#7a5230" fill=true x0=13 x1=18 y0=6 y1=9
+doc_draw op=rect layer=3 frame=0 color="#231527" fill=false x0=13 x1=18 y0=3 y1=9
 doc_draw op=clear_cel layer=2 frame=0
-doc_draw op=ellipse layer=2 frame=0 color=[35,21,39,255] cx=16 cy=20 fill=false rx=12 ry=7
-doc_draw op=line layer=2 frame=0 color=[35,21,39,255] size=1 x0=13 x1=13 y0=8 y1=13
-doc_draw op=line layer=2 frame=0 color=[35,21,39,255] size=1 x0=18 x1=18 y0=8 y1=13
-doc_paint_grid layer=0 frame=0 x=5 y=20 legend={"D":[43,110,31,255],"H":[168,230,122,255],"L":[79,174,58,255]} rows:7
+doc_draw op=ellipse layer=2 frame=0 color="#231527" cx=16 cy=20 fill=false rx=12 ry=7
+doc_draw op=line layer=2 frame=0 color="#231527" size=1 x0=13 x1=13 y0=8 y1=13
+doc_draw op=line layer=2 frame=0 color="#231527" size=1 x0=18 x1=18 y0=8 y1=13
+doc_paint_grid layer=0 frame=0 x=5 y=20 legend={"D":"#2b6e1f","H":"#a8e67a","L":"#4fae3a"} rows:7
   |DDLLLLLLLLLLLLLLLLLLLLH|
   |DDLLLLLLLLLLLLLLLLLLLLH|
   |DDLLLLLLLLLLLLLLLLLLLLH|
@@ -23,52 +23,48 @@ doc_paint_grid layer=0 frame=0 x=5 y=20 legend={"D":[43,110,31,255],"H":[168,230
   |..DDLLLLLLLLLLLLLLLLH..|
   |....DDLLLLLLLLLLLLH....|
   |.......DDLLLLLLH.......|
-doc_region op=clear layer=0 frame=0 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=0 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=0 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.......................|
   |LLLLLLLLLLLLLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=0
-doc_paint_grid layer=1 frame=0 x=13 y=21 legend={"B":[168,230,122,255]} rows:5
+doc_paint_grid layer=1 frame=0 x=13 y=21 legend={"B":"#a8e67a"} rows:5
   |......B|
   |.......|
   |.......|
   |.......|
   |B......|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=1 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=1 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=1 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.LLLLLLLLLL............|
   |LLLLLLLLLLL............|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=1
-doc_paint_grid layer=1 frame=1 x=13 y=19 legend={"B":[168,230,122,255]} rows:5
+doc_paint_grid layer=1 frame=1 x=13 y=19 legend={"B":"#a8e67a"} rows:5
   |......B|
   |.......|
   |.......|
   |.......|
   |B......|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=2 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=2 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=2 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.......................|
   |LLLLLLLLLLLLLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=2
-doc_paint_grid layer=1 frame=2 x=13 y=17 legend={"B":[168,230,122,255]} rows:5
+doc_paint_grid layer=1 frame=2 x=13 y=17 legend={"B":"#a8e67a"} rows:5
   |.....B.B|
   |........|
   |........|
   |........|
   |B.......|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=3 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=3 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=3 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |...........LLLLLLLLLLL.|
   |...........LLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=3
-doc_paint_grid layer=1 frame=3 x=13 y=19 legend={"B":[168,230,122,255]} rows:7
+doc_paint_grid layer=1 frame=3 x=13 y=19 legend={"B":"#a8e67a"} rows:7
   |B......|
   |.......|
   |.......|
@@ -77,13 +73,12 @@ doc_paint_grid layer=1 frame=3 x=13 y=19 legend={"B":[168,230,122,255]} rows:7
   |.......|
   |......B|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=4 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=4 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=4 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.......................|
   |LLLLLLLLLLLLLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=4
-doc_paint_grid layer=1 frame=4 x=12 y=17 legend={"B":[168,230,122,255]} rows:7
+doc_paint_grid layer=1 frame=4 x=12 y=17 legend={"B":"#a8e67a"} rows:7
   |B.B.....|
   |........|
   |........|
@@ -92,52 +87,48 @@ doc_paint_grid layer=1 frame=4 x=12 y=17 legend={"B":[168,230,122,255]} rows:7
   |........|
   |.......B|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=5 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=5 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=5 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.......................|
   |LLLLLLLLLLLLLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=5
-doc_paint_grid layer=1 frame=5 x=13 y=21 legend={"B":[168,230,122,255]} rows:5
+doc_paint_grid layer=1 frame=5 x=13 y=21 legend={"B":"#a8e67a"} rows:5
   |......B|
   |.......|
   |.......|
   |.......|
   |B......|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=6 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=6 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=6 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.LLLLLLLLLL............|
   |LLLLLLLLLLL............|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=6
-doc_paint_grid layer=1 frame=6 x=13 y=19 legend={"B":[168,230,122,255]} rows:5
+doc_paint_grid layer=1 frame=6 x=13 y=19 legend={"B":"#a8e67a"} rows:5
   |......B|
   |.......|
   |.......|
   |.......|
   |B......|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=7 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=7 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=7 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.......................|
   |LLLLLLLLLLLLLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=7
-doc_paint_grid layer=1 frame=7 x=13 y=17 legend={"B":[168,230,122,255]} rows:5
+doc_paint_grid layer=1 frame=7 x=13 y=17 legend={"B":"#a8e67a"} rows:5
   |.....B.B|
   |........|
   |........|
   |........|
   |B.......|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=8 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=8 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=8 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |...........LLLLLLLLLLL.|
   |...........LLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=8
-doc_paint_grid layer=1 frame=8 x=13 y=19 legend={"B":[168,230,122,255]} rows:7
+doc_paint_grid layer=1 frame=8 x=13 y=19 legend={"B":"#a8e67a"} rows:7
   |B......|
   |.......|
   |.......|
@@ -146,13 +137,12 @@ doc_paint_grid layer=1 frame=8 x=13 y=19 legend={"B":[168,230,122,255]} rows:7
   |.......|
   |......B|
 doc_frame op=add copy_from=0 duration_ms=100
-doc_region op=clear layer=0 frame=9 rect=[5,17,27,19]
-doc_paint_grid layer=0 frame=9 x=5 y=17 legend={"L":[79,174,58,255]} rows:3
+doc_paint_grid layer=0 frame=9 x=5 y=17 replace=true legend={"L":"#4fae3a"} rows:3
   |.......................|
   |LLLLLLLLLLLLLLLLLLLLLLL|
   |LLLLLLLLLLLLLLLLLLLLLLL|
 doc_draw op=clear_cel layer=1 frame=9
-doc_paint_grid layer=1 frame=9 x=12 y=17 legend={"B":[168,230,122,255]} rows:7
+doc_paint_grid layer=1 frame=9 x=12 y=17 legend={"B":"#a8e67a"} rows:7
   |B.B.....|
   |........|
   |........|
