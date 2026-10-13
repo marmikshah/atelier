@@ -56,7 +56,7 @@ impl Studio {
             }
             let journal = super::store::parse_journal_file(id, &dir.join(crate::JOURNAL_FILE))?;
             if journal.entries.is_empty() {
-                return Err("document has no complete replay journal".into());
+                return Err("document has no complete recipe".into());
             }
             // A torn append cannot be extended without changing its meaning.
             if journal.torn_tail {
