@@ -162,28 +162,22 @@ const fn supports_expected_revision(tool: ToolName) -> bool {
     )
 }
 
-/// A list of `[r,g,b(,a)]` arrays -> a palette of RGBA swatches.
-fn palette_list(v: &[Vec<i64>]) -> Result<Vec<[u8; 4]>, String> {
-    v.iter().map(|c| rgba(c)).collect()
+/// A list of colours -> a palette of RGBA swatches.
+fn palette_list(v: &[Colour]) -> Result<Vec<[u8; 4]>, String> {
+    v.iter().map(rgba).collect()
 }
 
-/// [r,g,b] or [r,g,b,a] -> RGBA, STRICT: exactly 3..=4 components, each
-/// 0..=255 — the same shape the operation validator enforces for draw/FX.
-/// The typed tool paths used to truncate via `as u8` (300 → 44, -1 → 255)
-/// into a wrong-but-plausible colour the agent then painted with.
-fn rgba(v: &[i64]) -> Result<[u8; 4], String> {
-    let ok = (3..=4).contains(&v.len()) && v.iter().all(|n| (0..=255).contains(n));
-    if !ok {
-        return Err(format!(
-            "colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, got {v:?}"
-        ));
-    }
-    Ok([
-        v[0] as u8,
-        v[1] as u8,
-        v[2] as u8,
-        if v.len() == 4 { v[3] as u8 } else { 255 },
-    ])
+/// `[r,g,b]`, `[r,g,b,a]`, or `"#rrggbb(aa)"` -> RGBA, STRICT: the same shape
+/// the operation validator enforces for draw/FX. The typed tool paths used to
+/// truncate via `as u8` (300 → 44, -1 → 255) into a wrong-but-plausible colour
+/// the agent then painted with.
+fn rgba(colour: &Colour) -> Result<[u8; 4], String> {
+    atelier_core::document::color_array(&colour.0).ok_or_else(|| {
+        format!(
+            "colour must be [r,g,b] or [r,g,b,a] with 0..=255 values, or \"#rrggbb\", got {}",
+            colour.0
+        )
+    })
 }
 
 /// Parse the `doc_palette op=snap` / FX alpha policy string into an `AlphaSnap`.
@@ -192,7 +186,7 @@ fn rgba(v: &[i64]) -> Result<[u8; 4], String> {
 fn alpha_snap(
     mode: AlphaMode,
     cutoff: Option<u8>,
-    bg: Option<&[i64]>,
+    bg: Option<&Colour>,
 ) -> Result<atelier_core::document::AlphaSnap, String> {
     use atelier_core::document::AlphaSnap;
     match mode {
@@ -2626,12 +2620,17 @@ mod hardening_tests {
 
     #[test]
     fn rgba_rejects_values_that_cannot_be_rgba() {
-        assert_eq!(rgba(&[255, 128, 0]).unwrap(), [255, 128, 0, 255]);
-        assert_eq!(rgba(&[1, 2, 3, 4]).unwrap(), [1, 2, 3, 4]);
+        let rgba = |value: Value| rgba(&Colour(value));
+        assert_eq!(rgba(json!([255, 128, 0])).unwrap(), [255, 128, 0, 255]);
+        assert_eq!(rgba(json!([1, 2, 3, 4])).unwrap(), [1, 2, 3, 4]);
+        assert_eq!(rgba(json!("#ff8000")).unwrap(), [255, 128, 0, 255]);
+        assert_eq!(rgba(json!("#01020304")).unwrap(), [1, 2, 3, 4]);
         // These truncated silently before (300 → 44, -1 → 255, short → 0s).
-        assert!(rgba(&[255, 300, 0]).is_err());
-        assert!(rgba(&[255, -1, 0]).is_err());
-        assert!(rgba(&[255, 0]).is_err());
-        assert!(rgba(&[1, 2, 3, 4, 5]).is_err());
+        assert!(rgba(json!([255, 300, 0])).is_err());
+        assert!(rgba(json!([255, -1, 0])).is_err());
+        assert!(rgba(json!([255, 0])).is_err());
+        assert!(rgba(json!([1, 2, 3, 4, 5])).is_err());
+        assert!(rgba(json!("#ff80")).is_err());
+        assert!(rgba(json!("red")).is_err());
     }
 }

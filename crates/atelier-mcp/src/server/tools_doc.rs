@@ -88,7 +88,7 @@ impl Atelier {
         let studio = self.studio();
         match p.op.unwrap_or_default() {
             atelier_studio::PaletteOp::Generate => {
-                let Some(base) = p.base.as_deref() else {
+                let Some(base) = p.base.as_ref() else {
                     return res(Err("doc_palette op=generate needs `base`".to_string()));
                 };
                 res(studio.palette(
@@ -140,8 +140,7 @@ impl Atelier {
                 let Some(doc_id) = p.doc_id.as_deref() else {
                     return res(Err("doc_palette op=snap needs `doc_id`".to_string()));
                 };
-                let alpha = match alpha_snap(p.alpha.unwrap_or_default(), p.cutoff, p.bg.as_deref())
-                {
+                let alpha = match alpha_snap(p.alpha.unwrap_or_default(), p.cutoff, p.bg.as_ref()) {
                     Ok(a) => a,
                     Err(e) => return res(Err(e)),
                 };

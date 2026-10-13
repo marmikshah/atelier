@@ -18,6 +18,29 @@ use atelier_studio::{
     PaletteScheme, ReferenceOp, RegionOp, RescaleMethod, RescaleOp, SeamAxis, SheetMeta,
 };
 
+/// One colour as sent: `[r,g,b(,a)]` or `"#rrggbb(aa)"`. Checked when used, so
+/// a bad colour is reported as the tool's own error.
+#[derive(Deserialize)]
+#[serde(transparent)]
+pub(crate) struct Colour(pub(crate) Value);
+
+impl JsonSchema for Colour {
+    fn schema_name() -> Cow<'static, str> {
+        "Colour".into()
+    }
+
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn json_schema(_: &mut SchemaGenerator) -> Schema {
+        schemars::json_schema!({
+            "type": ["array", "string"],
+            "items": {"type": "integer"}
+        })
+    }
+}
+
 // --- library params --------------------------------------------------------
 
 #[derive(Deserialize, JsonSchema)]
@@ -339,8 +362,8 @@ pub(crate) struct DocComponents {
     /// Pixel adjacency: 4 or 8 (default 8).
     #[schemars(schema_with = "connectivity_schema")]
     pub(crate) connectivity: Option<u8>,
-    /// Only components of this exact [r,g,b]/[r,g,b,a]; omit = any opaque pixel.
-    pub(crate) color: Option<Vec<i64>>,
+    /// Only components of this exact [r,g,b(,a)] or "#rrggbb(aa)"; omit = any opaque pixel.
+    pub(crate) color: Option<Colour>,
     /// Components smaller than this are dropped from the list (default 1).
     #[schemars(range(min = 1))]
     pub(crate) min_area: Option<u32>,
@@ -455,9 +478,9 @@ pub(crate) struct DocDitherRamp {
     pub(crate) doc_id: DocumentId,
     pub(crate) layer: usize,
     pub(crate) frame: usize,
-    /// The ramp to dither across (>= 2 colours), as [[r,g,b],...].
+    /// The ramp to dither across (>= 2 colours), each [r,g,b(,a)] or "#rrggbb(aa)".
     #[schemars(length(min = 2, max = 256))]
-    pub(crate) ramp: Vec<Vec<i64>>,
+    pub(crate) ramp: Vec<Colour>,
     pub(crate) region: Option<[i32; 4]>,
     /// h | v | radial.
     pub(crate) axis: Option<DitherAxis>,
@@ -485,8 +508,8 @@ pub(crate) struct DocPalette {
     /// `from`→`to` · report — colour-usage tally.
     pub(crate) op: Option<PaletteOp>,
     // -- generate --
-    /// `generate`: base colour [r,g,b(,a)] the ramp is built from (required).
-    pub(crate) base: Option<Vec<i64>>,
+    /// `generate`: base colour ([r,g,b(,a)] or "#rrggbb(aa)") the ramp is built from (required).
+    pub(crate) base: Option<Colour>,
     /// `generate`: mono | complementary | triadic | analogous | split | tetradic.
     pub(crate) scheme: Option<PaletteScheme>,
     /// `generate`: colours per ramp (default 5, maximum 256; multi-hue schemes require 2+).
@@ -507,26 +530,26 @@ pub(crate) struct DocPalette {
     pub(crate) frame: Option<usize>,
     /// `report`: [x0,y0,x1,y1] to restrict the tally; omit = whole canvas.
     pub(crate) region: Option<[i32; 4]>,
-    /// `set`: palette swatches, each [r,g,b]/[r,g,b,a].
+    /// `set`: palette swatches, each [r,g,b(,a)] or "#rrggbb(aa)".
     #[schemars(length(max = 256))]
-    pub(crate) colors: Option<Vec<Vec<i64>>>,
+    pub(crate) colors: Option<Vec<Colour>>,
     /// `swap`: source colours to recolour (same length as `to`).
     #[schemars(length(min = 1, max = 256))]
-    pub(crate) from: Option<Vec<Vec<i64>>>,
+    pub(crate) from: Option<Vec<Colour>>,
     /// `swap`: replacement colours (same length as `from`).
     #[schemars(length(min = 1, max = 256))]
-    pub(crate) to: Option<Vec<Vec<i64>>>,
+    pub(crate) to: Option<Vec<Colour>>,
     /// `report`: max channel distance counting near-duplicates (default 8).
     pub(crate) dupe_threshold: Option<i32>,
-    /// `snap`: override palette. List of [r,g,b(,a)].
+    /// `snap`: override palette, colours as in `set`.
     #[schemars(length(min = 1, max = 256))]
-    pub(crate) palette: Option<Vec<Vec<i64>>>,
+    pub(crate) palette: Option<Vec<Colour>>,
     /// `snap`: partial-alpha policy — preserve (default) | opaque | flatten.
     pub(crate) alpha: Option<AlphaMode>,
     /// `snap`: alpha cutoff for alpha="opaque" (0..255, default 128).
     pub(crate) cutoff: Option<u8>,
     /// `snap`: backdrop [r,g,b] for alpha="flatten" (default opaque black).
-    pub(crate) bg: Option<Vec<i64>>,
+    pub(crate) bg: Option<Colour>,
 }
 
 #[derive(Deserialize, JsonSchema)]
