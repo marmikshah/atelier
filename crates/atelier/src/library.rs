@@ -40,7 +40,7 @@ const USAGE: &str = "usage:
   atelier library rm <id>... [--yes] [--home DIR]
   atelier library rm --prefix <p> [--yes] [--home DIR]
   atelier library rm --all [--yes] [--home DIR]
-  atelier library reset <doc-id> [--yes] [--home DIR]
+  atelier library reset <doc-id> [--yes] [--discard-unsupported] [--home DIR]
 
   (no args)          list every document: id, size, frames, layers
   verify             validate every document's metadata, cels, and journal
@@ -56,6 +56,9 @@ const USAGE: &str = "usage:
   reset <doc-id>     replace a damaged or unsupported document with a blank one,
                      keeping its UUID and any readable name and size; tools never
                      do this on their own, and healthy documents are left alone
+    --discard-unsupported
+                     also reset a document that is intact but saved in a format
+                     this build does not read; without it such work is kept
   --yes, -y          skip the confirmation prompt
 
 Documents are your artwork, not a cache — deleting them cannot be undone.";
@@ -594,17 +597,20 @@ async fn rm(args: &[String]) -> i32 {
 struct ResetOptions {
     id: String,
     yes: bool,
+    discard_unsupported: bool,
     home: Option<PathBuf>,
 }
 
 fn parse_reset(args: &[String]) -> Result<ResetOptions, String> {
     let mut id = None;
     let mut yes = false;
+    let mut discard_unsupported = false;
     let mut home = None;
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
             "--yes" | "-y" => yes = true,
+            "--discard-unsupported" => discard_unsupported = true,
             "--home" => take_home(args, &mut index, &mut home)?,
             option if option.starts_with('-') => {
                 return Err(format!("unknown reset option '{option}'"));
@@ -615,7 +621,12 @@ fn parse_reset(args: &[String]) -> Result<ResetOptions, String> {
         index += 1;
     }
     let id = id.ok_or("reset needs one document id")?;
-    Ok(ResetOptions { id, yes, home })
+    Ok(ResetOptions {
+        id,
+        yes,
+        discard_unsupported,
+        home,
+    })
 }
 
 /// Discard one damaged document's saved data. Tool calls refuse damaged
@@ -631,6 +642,17 @@ fn reset(args: &[String]) -> i32 {
     let studio = studio_at(options.home.as_deref());
     let id = &options.id;
     match studio.document_damage(id) {
+        Ok(Some(reason))
+            if atelier_studio::is_format_mismatch(&reason) && !options.discard_unsupported =>
+        {
+            eprintln!(
+                "atelier library reset: document {id} is not damaged; it was saved in a format this build does not read ({reason})."
+            );
+            eprintln!(
+                "Open it with the Atelier version that wrote it, or pass --discard-unsupported to blank it anyway."
+            );
+            return 1;
+        }
         Ok(Some(reason)) => {
             if !options.yes {
                 eprintln!("About to discard the saved pixels and history of document {id}:");
@@ -733,8 +755,14 @@ mod tests {
             ResetOptions {
                 id: "a".into(),
                 yes: true,
+                discard_unsupported: false,
                 home: Some(PathBuf::from("/tmp/store")),
             }
+        );
+        assert!(
+            parse_reset(&v(&["a", "--discard-unsupported"]))
+                .unwrap()
+                .discard_unsupported
         );
         assert!(parse_reset(&v(&["--yes"])).is_err());
         assert!(parse_reset(&v(&["a", "b"])).is_err());

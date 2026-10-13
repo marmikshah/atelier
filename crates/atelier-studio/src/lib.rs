@@ -46,6 +46,7 @@ pub use journal::{
     JOURNAL_SCHEMA, JournalEntry, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES, ParsedJournal,
     parse_journal, validate_journal,
 };
+pub use recovery::is_format_mismatch;
 pub use transaction::{CommitOutcome, StoreTransaction};
 pub use view::LookOptions;
 
@@ -59,7 +60,7 @@ pub(crate) const MAX_SOURCE_PIXELS: u64 = 64 * 1024 * 1024;
 /// loading cannot disagree.
 pub(crate) const MAX_CANVAS: u32 = atelier_core::document::MAX_DOCUMENT_DIMENSION;
 /// A document's journal, beside its `doc.json` and `cels/`.
-pub const JOURNAL_FILE: &str = "recipe.jsonl";
+pub const JOURNAL_FILE: &str = "doc.recipe";
 /// Store-owned optimistic-concurrency generation, beside `doc.json`.
 ///
 /// Each new document starts at revision zero; dispatch increments it on commit.

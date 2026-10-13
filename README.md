@@ -22,7 +22,7 @@ or running server is needed for CLI calls.
 
 <p align="center">
   Drawn by an agent through Atelier's tools. Each is rebuilt byte for byte from
-  the <a href="showcase/replays/opus-5.5-xhigh">recorded tool calls</a> in CI.
+  the <a href="showcase/replays/opus-5.5-xhigh">recipe beside it</a> in CI.
 </p>
 
 ## Showcase

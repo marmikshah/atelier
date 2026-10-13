@@ -1,0 +1,3197 @@
+atelier 3 19bbcfdc-1b8e-4f91-898d-8424c41011bf 0.1.0
+doc_new name=sword-slash-arc width=32 height=32
+doc_palette op=set colors=[[255,255,255,255],[217,244,255,255],[134,219,255,255],[62,162,230,255],[43,87,196,255],[28,42,102,255]]
+doc_layer op=add name=trail
+doc_layer op=add name=edge
+doc_layer op=add name=flash
+doc_layer op=add name=sparks
+doc_layer op=delete index=0
+doc_frame op=add count=9 duration_ms=100
+doc_paint_grid layer=0 frame=0 x=0 y=0 legend={"C":[134,219,255,255],"D":[43,87,196,255],"W":[255,255,255,255]} rows:3
+  |..W..|
+  |.WCW.|
+  |W.D.W|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=1 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:2
+  |VDDBB...|
+  |......BB|
+doc_paint_grid layer=1 frame=0 x=0 y=6 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |.CCCC....|
+  |CCCCCPPPP|
+  |......CCP|
+doc_paint_grid layer=0 frame=1 x=1 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:4
+  |VVDDBB......|
+  |.....DDBB...|
+  |........DBB.|
+  |...........B|
+doc_paint_grid layer=1 frame=1 x=0 y=6 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:6
+  |...C............|
+  |CCCCCCPPPPP.....|
+  |.......CCPPPP...|
+  |..........CPPWW.|
+  |............CPWW|
+  |.............CPW|
+doc_paint_grid layer=0 frame=2 x=2 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:9
+  |VDDBB.............|
+  |....DDBB..........|
+  |......DDBB........|
+  |.........DBB......|
+  |...........DB.....|
+  |............DB....|
+  |..............B...|
+  |...............B..|
+  |.................B|
+doc_paint_grid layer=1 frame=2 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:10
+  |CCCCCPPPPPP...........|
+  |.......CCCPPPP........|
+  |..........CCPPPP......|
+  |............CCPPWW....|
+  |..............CPPWW...|
+  |...............CPPWW..|
+  |................CCPWW.|
+  |.................CCPWW|
+  |..................CCPW|
+  |....................CW|
+doc_paint_grid layer=3 frame=2 x=13 y=6 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=4 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:12
+  |VBB...............|
+  |...DBBB...........|
+  |.....DDB..........|
+  |.......DBB........|
+  |........DDB.......|
+  |..........DBB.....|
+  |...........DBB....|
+  |.............BB...|
+  |..............BB..|
+  |...............B..|
+  |................B.|
+  |.................B|
+doc_paint_grid layer=1 frame=3 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |PPPPPPPP................|
+  |....CCCPPPP.............|
+  |........CPPPPP..........|
+  |.........CCCPPPP........|
+  |...........CCPPWW.......|
+  |............CCCPWW......|
+  |..............CCPWWW....|
+  |...............CCPWWW...|
+  |................CPPWW...|
+  |.................CPPWW..|
+  |.................CCPPWW.|
+  |..................CPPWWW|
+  |...................CPPWW|
+  |...................CCPWW|
+  |....................CPPW|
+  |.....................CPW|
+doc_paint_grid layer=3 frame=3 x=21 y=11 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:7
+  |P.....|
+  |......|
+  |......|
+  |......|
+  |......|
+  |......|
+  |.....C|
+doc_paint_grid layer=0 frame=4 x=9 y=9 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:11
+  |DB..........|
+  |.VDB........|
+  |...DB.......|
+  |....VBB.....|
+  |.....DDB....|
+  |.......DB...|
+  |........DB..|
+  |.........B..|
+  |..........B.|
+  |..........B.|
+  |...........B|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |PPPPP.................|
+  |...CPPPP..............|
+  |.....CCPPP............|
+  |......CCPPPP..........|
+  |........CCPWW.........|
+  |.........CCPPWW.......|
+  |..........CCPWWW......|
+  |...........CPPWWW.....|
+  |...........CCPPWWW....|
+  |............CCPWWWW...|
+  |............CCPWWWW...|
+  |.............CPPWWWW..|
+  |.............CCPWWWWW.|
+  |..............CPWWWWW.|
+  |...............PPWWWWW|
+  |...............CPPWWWW|
+  |................CPWWWW|
+  |................CPPWWW|
+  |.................CPWWW|
+  |..................CPWW|
+  |...................PW.|
+doc_paint_grid layer=2 frame=4 x=21 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:8
+  |.CC......|
+  |..PP..PCC|
+  |..PPPWPC.|
+  |..PWWPP..|
+  |.PPWWP...|
+  |CPPPPP...|
+  |C...PP...|
+  |.....CC..|
+doc_paint_grid layer=3 frame=4 x=18 y=9 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:11
+  |C............|
+  |.............|
+  |.............|
+  |.........P...|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |............C|
+doc_paint_grid layer=0 frame=5 x=14 y=11 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:7
+  |B.....|
+  |.B....|
+  |..D...|
+  |...D..|
+  |....B.|
+  |.....B|
+  |.....B|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |P................|
+  |.PPP.............|
+  |..CPPP...........|
+  |...CPPWW.........|
+  |....CCPWW........|
+  |.....CPWWW.......|
+  |......CPWWW......|
+  |......CPWWWW.....|
+  |......CPWWWWW....|
+  |.......CWWWWWW...|
+  |........PWWWWW...|
+  |........PWWWWWW..|
+  |.........PWWWWW..|
+  |..........WWWWWW.|
+  |..........PWWWWW.|
+  |...........PWWWW.|
+  |...........PPWWWW|
+  |............PWWWW|
+  |............CPWW.|
+doc_paint_grid layer=2 frame=5 x=19 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:12
+  |..C..........|
+  |..CC........C|
+  |...PP....PPPC|
+  |...PPPPPWWPP.|
+  |...PPWWPPWP..|
+  |...PWWWWPW...|
+  |..WPWWWWP....|
+  |.PPPPWWPP....|
+  |.PPWP.PPP....|
+  |CC.....PP....|
+  |........CC...|
+  |.........C...|
+doc_paint_grid layer=3 frame=5 x=17 y=13 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:17
+  |..P...........|
+  |..............|
+  |.............W|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |P.............|
+  |..............|
+  |............P.|
+  |..............|
+  |.....C........|
+doc_paint_grid layer=0 frame=6 x=20 y=16 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:12
+  |V......|
+  |.D.....|
+  |..B....|
+  |..D....|
+  |...B...|
+  |...B...|
+  |....B..|
+  |....B..|
+  |.......|
+  |.....B.|
+  |.......|
+  |......B|
+doc_paint_grid layer=1 frame=6 x=20 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:14
+  |CP........|
+  |.CPP......|
+  |..CPP.....|
+  |...PPP....|
+  |...CPWW...|
+  |....CPW...|
+  |....CPWW..|
+  |.....CPWW.|
+  |.....CPWW.|
+  |.....CCPW.|
+  |......CPWW|
+  |......CCPW|
+  |.......CPW|
+  |.......CWW|
+doc_paint_grid layer=2 frame=6 x=22 y=18 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:6
+  |.C....C|
+  |.CPPCCC|
+  |.PWWPC.|
+  |.PWWP..|
+  |CCPPC..|
+  |....C..|
+doc_paint_grid layer=3 frame=6 x=14 y=5 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:27
+  |..............C...|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |...C..............|
+  |..................|
+  |.................P|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |C.................|
+  |..................|
+  |..................|
+  |......C...........|
+doc_paint_grid layer=0 frame=7 x=25 y=22 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:7
+  |D..|
+  |VB.|
+  |...|
+  |.D.|
+  |..B|
+  |..B|
+  |..B|
+doc_paint_grid layer=1 frame=7 x=25 y=20 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:8
+  |C....|
+  |CC...|
+  |..C..|
+  |..C..|
+  |..C..|
+  |..CP.|
+  |....P|
+  |...PP|
+doc_paint_grid layer=3 frame=7 x=13 y=8 legend={"B":[62,162,230,255],"C":[134,219,255,255]} rows:24
+  |...B..............|
+  |.................B|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |C.................|
+  |......B...........|
+doc_paint_grid layer=0 frame=8 x=27 y=24 legend={"B":[62,162,230,255]} rows:3
+  |B|
+  |.|
+  |B|
+doc_paint_grid layer=1 frame=8 x=28 y=25 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |C|
+  |.|
+  |P|
+doc_paint_grid layer=3 frame=8 x=12 y=6 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:26
+  |.................B|
+  |...B..............|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |D.................|
+doc_paint_grid layer=3 frame=9 x=14 y=4 legend={"D":[43,87,196,255],"V":[28,42,102,255]} rows:3
+  |..............V|
+  |...............|
+  |D..............|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=6 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:3
+  |.B....|
+  |BBB...|
+  |.DBBBB|
+doc_paint_grid layer=1 frame=0 x=2 y=6 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:4
+  |CCC....|
+  |.CCCPPP|
+  |....CCP|
+  |.....CC|
+doc_paint_grid layer=0 frame=1 x=0 y=6 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:6
+  |..B..........|
+  |BBBB.........|
+  |.DDDBBB......|
+  |......DBBB...|
+  |.........DBB.|
+  |...........BB|
+doc_paint_grid layer=1 frame=1 x=3 y=6 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:6
+  |CC...........|
+  |.CCCCCCP.....|
+  |....CCCPPP...|
+  |.......CCPPP.|
+  |.........CPPP|
+  |..........CPP|
+doc_paint_grid layer=0 frame=2 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:10
+  |BBBBB...............|
+  |..DDBBBBB...........|
+  |.....DDDBBB.........|
+  |........DDDBB.......|
+  |...........DDBB.....|
+  |.............DDB....|
+  |..............DDB...|
+  |................DB..|
+  |.................DB.|
+  |...................B|
+doc_paint_grid layer=1 frame=2 x=4 y=6 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:11
+  |CC................|
+  |.CCCCCCC..........|
+  |.....CCCPP........|
+  |.......CCCPP......|
+  |.........CCPPP....|
+  |...........CPPP...|
+  |............CCPPP.|
+  |.............CCPP.|
+  |..............CCPP|
+  |...............CPP|
+  |................CP|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |BB...................|
+  |.BBBBB...............|
+  |...DDBBBB............|
+  |......DDBBB..........|
+  |........DDDBB........|
+  |.........VDDBB.......|
+  |...........VDDB......|
+  |............VDDBB....|
+  |..............DDB....|
+  |...............DDB...|
+  |................DDB..|
+  |.................DBB.|
+  |..................DB.|
+  |...................DB|
+  |....................B|
+doc_paint_grid layer=1 frame=3 x=5 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |CCCCCC................|
+  |....CCCCCC............|
+  |.......CCPPP..........|
+  |.........CCPPP........|
+  |...........CPPP.......|
+  |............CCPPP.....|
+  |.............CCPPP....|
+  |...............CPPP...|
+  |...............CCPPP..|
+  |................CCPP..|
+  |.................CPPW.|
+  |..................CPWW|
+  |..................CCPW|
+  |...................CPW|
+  |...................CPW|
+  |...................CPW|
+doc_paint_grid layer=3 frame=3 x=28 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=9 y=9 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:19
+  |BB................|
+  |.BBB..............|
+  |...DBBB...........|
+  |....DDBB..........|
+  |.....VDDBB........|
+  |.......DDBB.......|
+  |........VDDB......|
+  |.........VDBB.....|
+  |..........VDB.....|
+  |..........VVDB....|
+  |...........VDBB...|
+  |............VDB...|
+  |.............DB...|
+  |.............VDB..|
+  |..............DDB.|
+  |...............DB.|
+  |...............DBB|
+  |................DB|
+  |.................B|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CCCCC..................|
+  |...CCCCC...............|
+  |.....CCCCP.............|
+  |........CCPP...........|
+  |.........CCPPP.........|
+  |...........CPPP........|
+  |............CPPP.......|
+  |.............CPPP......|
+  |..............CPPW.....|
+  |..............CCPWW....|
+  |...............CPPWW...|
+  |................CPWW...|
+  |................CPPWW..|
+  |................CCPWW..|
+  |.................CPPWW.|
+  |..................CPWW.|
+  |..................CPPW.|
+  |...................CPW.|
+  |...................CPWW|
+  |...................CPW.|
+  |...................CW..|
+doc_paint_grid layer=3 frame=4 x=27 y=12 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:19
+  |P....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |....C|
+doc_paint_grid layer=0 frame=5 x=15 y=12 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:17
+  |B...........|
+  |.BB.........|
+  |..DBB.......|
+  |...DBB......|
+  |....DB......|
+  |....DDB.....|
+  |.....DB.....|
+  |......DB....|
+  |.......B....|
+  |.......B....|
+  |........B...|
+  |........BB..|
+  |.........B..|
+  |.........DB.|
+  |..........DB|
+  |...........B|
+  |...........B|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C................|
+  |CCCC.............|
+  |..CCCC...........|
+  |....CCCP.........|
+  |......CPP........|
+  |.......CPP.......|
+  |.......CCPW......|
+  |........CPWW.....|
+  |........CPWWW....|
+  |.........CPWWW...|
+  |.........CPWWW...|
+  |.........CPPWWW..|
+  |..........CPWWW..|
+  |...........CPWWW.|
+  |...........CCPWW.|
+  |............CPPW.|
+  |.............CPWW|
+  |.............CPWW|
+  |.............CWW.|
+doc_paint_grid layer=2 frame=5 x=19 y=14 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:14
+  |..C..........|
+  |..CC.........|
+  |..PP........C|
+  |...WW.C...PPC|
+  |...WWPP.WWPP.|
+  |....PWWPWW...|
+  |..CPWWWWP....|
+  |...PWWWWPC...|
+  |..WWPWWP.....|
+  |CPPW.PPWW....|
+  |CC...C.WW....|
+  |........PP...|
+  |........CC...|
+  |.........C...|
+doc_paint_grid layer=3 frame=5 x=19 y=14 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:15
+  |.C..........|
+  |............|
+  |...........P|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |P...........|
+  |............|
+  |..........P.|
+doc_paint_grid layer=0 frame=6 x=20 y=15 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB.....|
+  |BB.....|
+  |.BB....|
+  |..B....|
+  |..DB...|
+  |...B...|
+  |...DB..|
+  |....BB.|
+  |....DB.|
+  |.....BB|
+  |.....DB|
+  |......B|
+  |......B|
+doc_paint_grid layer=1 frame=6 x=22 y=16 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:13
+  |CC......|
+  |.CC.....|
+  |.CCC....|
+  |..CPP...|
+  |..CCP...|
+  |...CPP..|
+  |....CPP.|
+  |....CPP.|
+  |.....CPP|
+  |.....CPP|
+  |.....CPP|
+  |.....CPP|
+  |.....CPP|
+doc_paint_grid layer=2 frame=6 x=22 y=18 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:6
+  |.C....C|
+  |.CPPCCC|
+  |..WWPC.|
+  |.PWW...|
+  |CC.PC..|
+  |....C..|
+doc_paint_grid layer=3 frame=6 x=16 y=11 legend={"C":[134,219,255,255]} rows:19
+  |..C.............|
+  |................|
+  |...............C|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |C...............|
+doc_paint_grid layer=0 frame=7 x=23 y=18 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:11
+  |D....|
+  |DBB..|
+  |..B..|
+  |.DBB.|
+  |..B..|
+  |..DB.|
+  |.....|
+  |...B.|
+  |....B|
+  |....B|
+  |....B|
+doc_paint_grid layer=1 frame=7 x=27 y=22 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:7
+  |C..|
+  |C..|
+  |C..|
+  |CC.|
+  |..C|
+  |.CP|
+  |..P|
+doc_paint_grid layer=3 frame=7 x=30 y=10 legend={"B":[62,162,230,255]} rows:1
+  |B|
+doc_paint_grid layer=0 frame=8 x=25 y=21 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:6
+  |.D.|
+  |D..|
+  |.D.|
+  |..B|
+  |.D.|
+  |..B|
+doc_paint_grid layer=1 frame=8 x=28 y=25 legend={"C":[134,219,255,255]} rows:3
+  |C|
+  |.|
+  |C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255],"V":[28,42,102,255]} rows:4
+  |V..|
+  |.D.|
+  |..D|
+  |.D.|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:3
+  |BB....|
+  |DBBB..|
+  |....BB|
+doc_paint_grid layer=1 frame=0 x=2 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCC...|
+  |..CCPPP|
+  |....C..|
+doc_paint_grid layer=0 frame=1 x=0 y=7 legend={"B":[62,162,230,255]} rows:5
+  |BBB........|
+  |.BBB.......|
+  |....BBB....|
+  |.......BB..|
+  |.........BB|
+doc_paint_grid layer=1 frame=1 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCC..........|
+  |.CCCCCC......|
+  |....CCPPPP...|
+  |......CCPPPP.|
+  |........CCPPP|
+doc_paint_grid layer=0 frame=2 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:8
+  |BBB.............|
+  |.BBBB...........|
+  |....DBBB........|
+  |.......DBB......|
+  |.........DBB....|
+  |..........DBB...|
+  |............DB..|
+  |.............DBB|
+doc_paint_grid layer=1 frame=2 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:10
+  |CCC................|
+  |..CCCCC............|
+  |.....CCCCP.........|
+  |.......CCPPP.......|
+  |.........CCPP......|
+  |..........CCPPP....|
+  |...........CCPPP...|
+  |.............CPPPP.|
+  |................PPP|
+  |..................P|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB................|
+  |.BB...............|
+  |...BB.............|
+  |.....BB...........|
+  |......DBB.........|
+  |........DBB.......|
+  |.........DBB......|
+  |..........DDB.....|
+  |...........DDB....|
+  |............DDB...|
+  |.............DDB..|
+  |..............DDB.|
+  |...............DDB|
+doc_paint_grid layer=1 frame=3 x=5 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |C.....................|
+  |.CCCC.................|
+  |...CCCCC..............|
+  |.....CCCCP............|
+  |.......CCPPP..........|
+  |.........CCPP.........|
+  |..........CCPP........|
+  |...........CCPP.......|
+  |............CCPPP.....|
+  |.............CCPPP....|
+  |..............CCPP....|
+  |...............CPPW...|
+  |................CPPW..|
+  |.................CPWW.|
+  |...................PW.|
+  |....................WW|
+doc_paint_grid layer=3 frame=3 x=28 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=10 y=10 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |B............|
+  |.BB..........|
+  |..BB.........|
+  |...DBB.......|
+  |....DBB......|
+  |.....DBB.....|
+  |......DBB....|
+  |.......DBB...|
+  |........DB...|
+  |........DDB..|
+  |.........DB..|
+  |.........VDB.|
+  |..........DB.|
+  |..........VDB|
+  |............B|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |.CCCC................|
+  |...CCCC..............|
+  |.....CCCC............|
+  |......CCPP...........|
+  |........CPP..........|
+  |.........CPPP........|
+  |..........CPPP.......|
+  |...........CPPP......|
+  |............CPW......|
+  |............CPPW.....|
+  |.............CPWW....|
+  |.............CPPWW...|
+  |..............CPWW...|
+  |..............CPPWW..|
+  |...............CPWW..|
+  |...............CCPWW.|
+  |.................PWW.|
+  |..................PWW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=3 frame=4 x=27 y=12 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:19
+  |P....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |.....|
+  |....C|
+doc_paint_grid layer=0 frame=5 x=15 y=13 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB.......|
+  |.B.......|
+  |..B......|
+  |...B.....|
+  |...DB....|
+  |....B....|
+  |.....B...|
+  |.....B...|
+  |.........|
+  |......B..|
+  |......B..|
+  |.......B.|
+  |.......BB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |.CCC...........|
+  |...CC..........|
+  |...CCCP........|
+  |....CCPP.......|
+  |.....CPPP......|
+  |......CPW......|
+  |......CPWW.....|
+  |.......CPWW....|
+  |.......CPWWW...|
+  |.......CPWWW...|
+  |........PWWWW..|
+  |........CPWWW..|
+  |.........CPWWW.|
+  |..........CPWW.|
+  |...........PPWW|
+  |.............WW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=18 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:14
+  |..C...........|
+  |..CP..........|
+  |...PP..C....PC|
+  |...PWW.C..PPP.|
+  |....WWPWWWWP..|
+  |..C.WPWPWWW...|
+  |...CPWWWPW....|
+  |...WWPWPWCC...|
+  |..PWWWPWW.....|
+  |.CPP.CCWW.....|
+  |CC...C..WP....|
+  |.....C...P....|
+  |.........CC...|
+  |..........C...|
+doc_paint_grid layer=3 frame=5 x=19 y=14 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:15
+  |.C..........|
+  |............|
+  |...........P|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |P...........|
+  |............|
+  |..........P.|
+doc_paint_grid layer=0 frame=6 x=20 y=15 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:12
+  |BB....|
+  |BBB...|
+  |.B....|
+  |.B....|
+  |..B...|
+  |..B...|
+  |......|
+  |...B..|
+  |...B..|
+  |....B.|
+  |....B.|
+  |....DB|
+doc_paint_grid layer=1 frame=6 x=22 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:12
+  |C......|
+  |CC.....|
+  |.CC....|
+  |.CPP...|
+  |.CCP...|
+  |..CPP..|
+  |..CCP..|
+  |...CPP.|
+  |...CCP.|
+  |....CPP|
+  |.....PP|
+  |......P|
+doc_paint_grid layer=2 frame=6 x=21 y=18 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:7
+  |.C......|
+  |.CC...CC|
+  |..PPPCC.|
+  |..PWPC..|
+  |.CPPP...|
+  |CC..C...|
+  |....CC..|
+doc_paint_grid layer=3 frame=6 x=16 y=11 legend={"C":[134,219,255,255]} rows:19
+  |..C.............|
+  |................|
+  |...............C|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |C...............|
+doc_paint_grid layer=0 frame=7 x=23 y=18 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:9
+  |B...|
+  |DB..|
+  |D.B.|
+  |.BB.|
+  |..B.|
+  |..B.|
+  |..B.|
+  |..BB|
+  |..D.|
+doc_paint_grid layer=1 frame=7 x=26 y=23 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |C..|
+  |.C.|
+  |.C.|
+  |.C.|
+  |.CP|
+doc_paint_grid layer=3 frame=7 x=30 y=10 legend={"B":[62,162,230,255]} rows:1
+  |B|
+doc_paint_grid layer=0 frame=8 x=25 y=22 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:4
+  |D..|
+  |.B.|
+  |..B|
+  |.B.|
+doc_paint_grid layer=1 frame=8 x=27 y=26 legend={"C":[134,219,255,255]} rows:2
+  |C.|
+  |.C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255],"V":[28,42,102,255]} rows:4
+  |V.|
+  |.V|
+  |V.|
+  |.D|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:3
+  |BB....|
+  |DBBB..|
+  |....BB|
+doc_paint_grid layer=1 frame=0 x=2 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCC...|
+  |..CCPPP|
+  |....C..|
+doc_paint_grid layer=0 frame=1 x=0 y=7 legend={"B":[62,162,230,255]} rows:5
+  |BBB........|
+  |.BBB.......|
+  |....BBB....|
+  |.......BB..|
+  |.........BB|
+doc_paint_grid layer=1 frame=1 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCC..........|
+  |.CCCCCC......|
+  |....CCPPPP...|
+  |......CCPPPP.|
+  |........CCPPP|
+doc_paint_grid layer=0 frame=2 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:8
+  |BBB.............|
+  |.BBBB...........|
+  |....DBBB........|
+  |.......DBB......|
+  |.........DBB....|
+  |..........DBB...|
+  |............DB..|
+  |.............DBB|
+doc_paint_grid layer=1 frame=2 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:10
+  |CCC................|
+  |..CCCCC............|
+  |.....CCCCP.........|
+  |.......CCPPP.......|
+  |.........CCPP......|
+  |..........CCPPP....|
+  |...........CCPPP...|
+  |.............CPPPP.|
+  |................PPP|
+  |..................P|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB................|
+  |.BB...............|
+  |...BB.............|
+  |.....BB...........|
+  |......DBB.........|
+  |........DBB.......|
+  |.........DBB......|
+  |..........DDB.....|
+  |...........DDB....|
+  |............DDB...|
+  |.............DDB..|
+  |..............DDB.|
+  |...............DDB|
+doc_paint_grid layer=1 frame=3 x=5 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |C.....................|
+  |.CCCC.................|
+  |...CCCCC..............|
+  |.....CCCCP............|
+  |.......CCPPP..........|
+  |.........CCPP.........|
+  |..........CCPP........|
+  |...........CCPP.......|
+  |............CCPPP.....|
+  |.............CCPPP....|
+  |..............CCPP....|
+  |...............CPPW...|
+  |................CPPW..|
+  |.................CPWW.|
+  |...................PW.|
+  |....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=10 y=10 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |B............|
+  |.BB..........|
+  |..BB.........|
+  |...DBB.......|
+  |....DBB......|
+  |.....DBB.....|
+  |......DBB....|
+  |.......DBB...|
+  |........DB...|
+  |........DDB..|
+  |.........DB..|
+  |.........VDB.|
+  |..........DB.|
+  |..........VDB|
+  |............B|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |.CCCC................|
+  |...CCCC..............|
+  |.....CCCC............|
+  |......CCPP...........|
+  |........CPP..........|
+  |.........CPPP........|
+  |..........CPPP.......|
+  |...........CPPP......|
+  |............CPW......|
+  |............CPPW.....|
+  |.............CPWW....|
+  |.............CPPWW...|
+  |..............CPWW...|
+  |..............CPPWW..|
+  |...............CPWW..|
+  |...............CCPWW.|
+  |.................PWW.|
+  |..................PWW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=18 y=17 legend={"B":[62,162,230,255]} rows:9
+  |B....|
+  |.B...|
+  |.....|
+  |..B..|
+  |.....|
+  |.....|
+  |...B.|
+  |.....|
+  |....B|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CPP............|
+  |.CPP...........|
+  |.CCPP..........|
+  |..CCPPP........|
+  |...CCPPW.......|
+  |....CCPWW......|
+  |.....CPWW......|
+  |......CPWW.....|
+  |......CPWWW....|
+  |.......CPWWW...|
+  |.......CPWWW...|
+  |.......CPWWWW..|
+  |........CPWWW..|
+  |........CPPWWW.|
+  |.........CPWWW.|
+  |...........PWWW|
+  |.............WW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=20 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:10
+  |.CC.......|
+  |..C......C|
+  |..PP...PC.|
+  |...PWPWP..|
+  |...WWWP...|
+  |..PWWW....|
+  |.PPPWPP...|
+  |C....PP...|
+  |......CC..|
+  |.......C..|
+doc_paint_grid layer=3 frame=5 x=20 y=16 legend={"P":[217,244,255,255]} rows:11
+  |.........P|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |P.........|
+doc_paint_grid layer=0 frame=6 x=20 y=15 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:12
+  |BB....|
+  |BBB...|
+  |.B....|
+  |.B....|
+  |..B...|
+  |..B...|
+  |......|
+  |...B..|
+  |...B..|
+  |....B.|
+  |....B.|
+  |....DB|
+doc_paint_grid layer=1 frame=6 x=22 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:12
+  |C......|
+  |CC.....|
+  |.CC....|
+  |.CPP...|
+  |.CCP...|
+  |..CPP..|
+  |..CCP..|
+  |...CPP.|
+  |...CCP.|
+  |....CPP|
+  |.....PP|
+  |......P|
+doc_paint_grid layer=2 frame=6 x=22 y=19 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:5
+  |.C....|
+  |.CPCCC|
+  |.PWP..|
+  |CPPP..|
+  |C..C..|
+doc_paint_grid layer=3 frame=6 x=18 y=14 legend={"C":[134,219,255,255]} rows:15
+  |............C|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |C............|
+doc_paint_grid layer=0 frame=7 x=23 y=18 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:9
+  |B...|
+  |DB..|
+  |D.B.|
+  |.BB.|
+  |..B.|
+  |..B.|
+  |..B.|
+  |..BB|
+  |..D.|
+doc_paint_grid layer=1 frame=7 x=26 y=23 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |C..|
+  |.C.|
+  |.C.|
+  |.C.|
+  |.CP|
+doc_paint_grid layer=0 frame=8 x=25 y=22 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:4
+  |D..|
+  |.B.|
+  |..B|
+  |.B.|
+doc_paint_grid layer=1 frame=8 x=27 y=26 legend={"C":[134,219,255,255]} rows:2
+  |C.|
+  |.C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255],"V":[28,42,102,255]} rows:4
+  |V.|
+  |.V|
+  |V.|
+  |.D|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:3
+  |BB....|
+  |DBBB..|
+  |....BB|
+doc_paint_grid layer=1 frame=0 x=2 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCC...|
+  |..CCPPP|
+  |....C..|
+doc_paint_grid layer=0 frame=1 x=0 y=7 legend={"B":[62,162,230,255]} rows:5
+  |BBB........|
+  |.BBB.......|
+  |....BBB....|
+  |.......BB..|
+  |.........BB|
+doc_paint_grid layer=1 frame=1 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCC..........|
+  |.CCCCCC......|
+  |....CCPPPP...|
+  |......CCPPPP.|
+  |........CCPPP|
+doc_paint_grid layer=0 frame=2 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:8
+  |BBB.............|
+  |.BBBB...........|
+  |....DBBB........|
+  |.......DBB......|
+  |.........DBB....|
+  |..........DBB...|
+  |............DB..|
+  |.............DBB|
+doc_paint_grid layer=1 frame=2 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:10
+  |CCC................|
+  |..CCCCC............|
+  |.....CCCCP.........|
+  |.......CCPPP.......|
+  |.........CCPP......|
+  |..........CCPPP....|
+  |...........CCPPP...|
+  |.............CPPPP.|
+  |................PPP|
+  |..................P|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB................|
+  |.BB...............|
+  |...BB.............|
+  |.....BB...........|
+  |......DBB.........|
+  |........DBB.......|
+  |.........DBB......|
+  |..........DDB.....|
+  |...........DDB....|
+  |............DDB...|
+  |.............DDB..|
+  |..............DDB.|
+  |...............DDB|
+doc_paint_grid layer=1 frame=3 x=5 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |C.....................|
+  |.CCCC.................|
+  |...CCCCC..............|
+  |.....CCCCP............|
+  |.......CCPPP..........|
+  |.........CCPP.........|
+  |..........CCPP........|
+  |...........CCPP.......|
+  |............CCPPP.....|
+  |.............CCPPP....|
+  |..............CCPP....|
+  |...............CPPW...|
+  |................CPPW..|
+  |.................CPWW.|
+  |...................PW.|
+  |....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=10 y=10 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |B............|
+  |.BB..........|
+  |..BB.........|
+  |...DBB.......|
+  |....DBB......|
+  |.....DBB.....|
+  |......DBB....|
+  |.......DBB...|
+  |........DB...|
+  |........DDB..|
+  |.........DB..|
+  |.........VDB.|
+  |..........DB.|
+  |..........VDB|
+  |............B|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |.CCCC................|
+  |...CCCC..............|
+  |.....CCCC............|
+  |......CCPP...........|
+  |........CPP..........|
+  |.........CPPP........|
+  |..........CPPP.......|
+  |...........CPPP......|
+  |............CPW......|
+  |............CPPW.....|
+  |.............CPWW....|
+  |.............CPPWW...|
+  |..............CPWW...|
+  |..............CPPWW..|
+  |...............CPWW..|
+  |...............CCPWW.|
+  |.................PWW.|
+  |..................PWW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=15 y=13 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |B........|
+  |.B.......|
+  |..B......|
+  |...B.....|
+  |...BB....|
+  |....B....|
+  |.....B...|
+  |.....B...|
+  |......B..|
+  |......B..|
+  |......DB.|
+  |.......B.|
+  |.......BB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |.CCC...........|
+  |..CCP..........|
+  |...CCPP........|
+  |....CPPP.......|
+  |.....CPPP......|
+  |......CPW......|
+  |......CPWW.....|
+  |.......CPWW....|
+  |.......CPWWW...|
+  |........CPWW...|
+  |........CPWWW..|
+  |.........CPWW..|
+  |.........CPWWW.|
+  |..........CPWW.|
+  |...........PPWW|
+  |.............WW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=18 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:14
+  |...C..........|
+  |...CC.........|
+  |....P.........|
+  |....WW......CC|
+  |.....W....PP..|
+  |.....PW.WW....|
+  |.....WWW......|
+  |....PWWW......|
+  |..PW..WP......|
+  |CPP....WW.....|
+  |........W.....|
+  |........PP....|
+  |.........C....|
+  |.........CC...|
+doc_paint_grid layer=0 frame=6 x=20 y=15 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:12
+  |BB....|
+  |BBB...|
+  |.B....|
+  |.B....|
+  |..B...|
+  |..B...|
+  |......|
+  |...B..|
+  |...B..|
+  |....B.|
+  |....B.|
+  |....DB|
+doc_paint_grid layer=1 frame=6 x=22 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:12
+  |C......|
+  |CC.....|
+  |.CC....|
+  |.CPP...|
+  |.CCP...|
+  |..CPP..|
+  |..CCP..|
+  |...CPP.|
+  |...CCP.|
+  |....CPP|
+  |.....PP|
+  |......P|
+doc_paint_grid layer=2 frame=6 x=21 y=19 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:6
+  |..C....|
+  |..PP.CC|
+  |...WP..|
+  |.CPWP..|
+  |C...P..|
+  |....CC.|
+doc_paint_grid layer=3 frame=6 x=16 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:11
+  |...............P|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |C...............|
+doc_paint_grid layer=0 frame=7 x=23 y=18 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:9
+  |B...|
+  |DB..|
+  |D.B.|
+  |.BB.|
+  |..B.|
+  |..B.|
+  |..B.|
+  |..BB|
+  |..D.|
+doc_paint_grid layer=1 frame=7 x=26 y=23 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |C..|
+  |.C.|
+  |.C.|
+  |.C.|
+  |.CP|
+doc_paint_grid layer=0 frame=8 x=25 y=22 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:4
+  |D..|
+  |.B.|
+  |..B|
+  |.B.|
+doc_paint_grid layer=1 frame=8 x=27 y=26 legend={"C":[134,219,255,255]} rows:2
+  |C.|
+  |.C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255],"V":[28,42,102,255]} rows:4
+  |V.|
+  |.V|
+  |V.|
+  |.D|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:3
+  |BB....|
+  |DBBB..|
+  |....BB|
+doc_paint_grid layer=1 frame=0 x=2 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCC...|
+  |..CCPPP|
+  |....C..|
+doc_paint_grid layer=0 frame=1 x=0 y=7 legend={"B":[62,162,230,255]} rows:5
+  |BBB........|
+  |.BBB.......|
+  |....BBB....|
+  |.......BB..|
+  |.........BB|
+doc_paint_grid layer=1 frame=1 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCC..........|
+  |.CCCCCC......|
+  |....CCPPPP...|
+  |......CCPPPP.|
+  |........CCPPP|
+doc_paint_grid layer=0 frame=2 x=0 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:8
+  |BBB.............|
+  |.BBBB...........|
+  |....DBBB........|
+  |.......DBB......|
+  |.........DBB....|
+  |..........DBB...|
+  |............DB..|
+  |.............DBB|
+doc_paint_grid layer=1 frame=2 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:10
+  |CCC................|
+  |..CCCCC............|
+  |.....CCCCP.........|
+  |.......CCPPP.......|
+  |.........CCPP......|
+  |..........CCPPP....|
+  |...........CCPPP...|
+  |.............CPPPP.|
+  |................PPP|
+  |..................P|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB................|
+  |.BB...............|
+  |...BB.............|
+  |.....BB...........|
+  |......DBB.........|
+  |........DBB.......|
+  |.........DBB......|
+  |..........DDB.....|
+  |...........DDB....|
+  |............DDB...|
+  |.............DDB..|
+  |..............DDB.|
+  |...............DDB|
+doc_paint_grid layer=1 frame=3 x=5 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |C.....................|
+  |.CCCC.................|
+  |...CCCCC..............|
+  |.....CCCCP............|
+  |.......CCPPP..........|
+  |.........CCPP.........|
+  |..........CCPP........|
+  |...........CCPP.......|
+  |............CCPPP.....|
+  |.............CCPPP....|
+  |..............CCPP....|
+  |...............CPPW...|
+  |................CPPW..|
+  |.................CPWW.|
+  |...................PW.|
+  |....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=10 y=10 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |B.............|
+  |.BB...........|
+  |..BB..........|
+  |...DBB........|
+  |....DBB.......|
+  |.....DBB......|
+  |......DBB.....|
+  |.......DB.....|
+  |........DB....|
+  |........DBB...|
+  |.........DB...|
+  |.........VDB..|
+  |..........DB..|
+  |..........VDB.|
+  |............DB|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |.CCCC................|
+  |...CCCC..............|
+  |.....CCCC............|
+  |......CCPP...........|
+  |........CPP..........|
+  |.........CPPP........|
+  |..........CPPP.......|
+  |...........CPWW......|
+  |...........CPPW......|
+  |............CPWW.....|
+  |.............CPWW....|
+  |.............CPWWW...|
+  |..............CPWW...|
+  |..............CCPWW..|
+  |...............CPPW..|
+  |................CPWW.|
+  |.................PPW.|
+  |..................PWW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=15 y=13 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB.......|
+  |.B.......|
+  |..B......|
+  |...B.....|
+  |...DB....|
+  |....B....|
+  |.....B...|
+  |.....B...|
+  |......B..|
+  |......B..|
+  |......DB.|
+  |.......DB|
+  |.......DB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |.CCC...........|
+  |...CC..........|
+  |...CCPP........|
+  |....CCPP.......|
+  |.....CPPP......|
+  |......CPW......|
+  |......CPWW.....|
+  |.......CPWW....|
+  |.......CPPWW...|
+  |........CPWW...|
+  |........CCPWW..|
+  |.........CPPW..|
+  |..........CPWW.|
+  |..........CCPW.|
+  |...........CPWW|
+  |.............WW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=15 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:9
+  |...............C|
+  |......CC.....PCC|
+  |.......PW..WPP..|
+  |.......WWWPW....|
+  |......WWWWW.....|
+  |.....WPWWW......|
+  |...PWW..WP......|
+  |.CPP.....CC.....|
+  |CC..............|
+doc_paint_grid layer=0 frame=6 x=20 y=15 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:12
+  |BB....|
+  |B.....|
+  |.B....|
+  |.B....|
+  |..B...|
+  |..B...|
+  |......|
+  |...B..|
+  |...BB.|
+  |....B.|
+  |....B.|
+  |....DB|
+doc_paint_grid layer=1 frame=6 x=21 y=16 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:13
+  |CC......|
+  |.C......|
+  |.CC.....|
+  |..CP....|
+  |..CPP...|
+  |..CCP...|
+  |...CPP..|
+  |....CP..|
+  |....CPP.|
+  |....CCP.|
+  |.....CPP|
+  |......PP|
+  |.......P|
+doc_paint_grid layer=2 frame=6 x=19 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:5
+  |.......CC|
+  |...CPPPC.|
+  |...PWP...|
+  |.CPPPC...|
+  |CC.......|
+doc_paint_grid layer=3 frame=6 x=13 y=15 legend={"C":[134,219,255,255]} rows:10
+  |..................C|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |C..................|
+doc_paint_grid layer=0 frame=7 x=23 y=18 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:9
+  |B...|
+  |DB..|
+  |D.B.|
+  |.BB.|
+  |..B.|
+  |..B.|
+  |..B.|
+  |..BB|
+  |..D.|
+doc_paint_grid layer=1 frame=7 x=26 y=23 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |C..|
+  |.C.|
+  |.C.|
+  |.C.|
+  |.CP|
+doc_paint_grid layer=0 frame=8 x=25 y=22 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:4
+  |D..|
+  |.B.|
+  |..B|
+  |.B.|
+doc_paint_grid layer=1 frame=8 x=27 y=26 legend={"C":[134,219,255,255]} rows:2
+  |C.|
+  |.C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255],"V":[28,42,102,255]} rows:4
+  |V.|
+  |.V|
+  |V.|
+  |.D|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=0 frame=0 x=0 y=7 legend={"B":[62,162,230,255]} rows:3
+  |BBB...|
+  |.BBB..|
+  |.....B|
+doc_paint_grid layer=1 frame=0 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCC....|
+  |.CCPPPP|
+  |...CC..|
+doc_paint_grid layer=0 frame=1 x=0 y=7 legend={"B":[62,162,230,255]} rows:5
+  |BBB........|
+  |.BBBB......|
+  |.....BB....|
+  |.......BB..|
+  |.........BB|
+doc_paint_grid layer=1 frame=1 x=3 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCC..........|
+  |..CCCCC......|
+  |....CCCPPP...|
+  |......CCPPPP.|
+  |........CCPPP|
+doc_paint_grid layer=0 frame=2 x=1 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:8
+  |BBB............|
+  |.BBB...........|
+  |...BBBB........|
+  |......BBB......|
+  |........BBB....|
+  |..........BB...|
+  |...........DBB.|
+  |............DBB|
+doc_paint_grid layer=1 frame=2 x=4 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:10
+  |CC................|
+  |.CCCCC............|
+  |....CCCCP.........|
+  |......CCPPP.......|
+  |........CCPP......|
+  |.........CCPPP....|
+  |...........CPPP...|
+  |............CPPPP.|
+  |..............CPPP|
+  |.................W|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |B.................|
+  |.BB...............|
+  |...BB.............|
+  |.....BB...........|
+  |......DBB.........|
+  |........DBB.......|
+  |.........DBB......|
+  |..........DDB.....|
+  |...........DDB....|
+  |............DDB...|
+  |.............DDB..|
+  |..............DDB.|
+  |...............DDB|
+doc_paint_grid layer=1 frame=3 x=4 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |CC.....................|
+  |..CCCC.................|
+  |....CCCCC..............|
+  |......CCCPP............|
+  |........CCPPP..........|
+  |..........CPPP.........|
+  |...........CCPP........|
+  |............CCPP.......|
+  |.............CCPPP.....|
+  |..............CCPPP....|
+  |...............CCPP....|
+  |................CPPW...|
+  |.................CPPW..|
+  |..................CPWW.|
+  |....................PW.|
+  |.....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=10 y=10 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |B.............|
+  |.BB...........|
+  |..BB..........|
+  |...DBB........|
+  |....DBB.......|
+  |.....DBB......|
+  |......DBB.....|
+  |.......DB.....|
+  |........DB....|
+  |........DBB...|
+  |.........DB...|
+  |.........VDB..|
+  |..........DB..|
+  |..........VDB.|
+  |............DB|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |.CCCC................|
+  |...CCCC..............|
+  |.....CCCC............|
+  |......CCPP...........|
+  |........CPP..........|
+  |.........CPPP........|
+  |..........CPPP.......|
+  |...........CPWW......|
+  |...........CPPW......|
+  |............CPWW.....|
+  |.............CPWW....|
+  |.............CPWWW...|
+  |..............CPWW...|
+  |..............CCPWW..|
+  |...............CPPW..|
+  |................CPWW.|
+  |.................PPW.|
+  |..................PWW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=15 y=13 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB.......|
+  |.B.......|
+  |..B......|
+  |...B.....|
+  |...DB....|
+  |....B....|
+  |.....B...|
+  |.....B...|
+  |......B..|
+  |......B..|
+  |......DB.|
+  |.......DB|
+  |.......DB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |.CCC...........|
+  |...CC..........|
+  |...CCPP........|
+  |....CCPP.......|
+  |.....CPPP......|
+  |......CPW......|
+  |......CPWW.....|
+  |.......CPWW....|
+  |.......CPPWW...|
+  |........CPWW...|
+  |........CCPWW..|
+  |.........CPPW..|
+  |..........CPWW.|
+  |..........CCPW.|
+  |...........CPWW|
+  |.............WW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=15 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:9
+  |...............C|
+  |......CC.....PCC|
+  |.......PW..WPP..|
+  |.......WWWPW....|
+  |......WWWWW.....|
+  |.....WPWWW......|
+  |...PWW..WP......|
+  |.CPP.....CC.....|
+  |CC..............|
+doc_paint_grid layer=0 frame=6 x=19 y=14 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |BB.....|
+  |B......|
+  |.B.....|
+  |.B.....|
+  |..B....|
+  |..B....|
+  |...B...|
+  |...BB..|
+  |....B..|
+  |....B..|
+  |....DB.|
+  |.....B.|
+  |......B|
+doc_paint_grid layer=1 frame=6 x=20 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:14
+  |CC.......|
+  |.CC......|
+  |.CC......|
+  |..CP.....|
+  |..CPP....|
+  |...CPP...|
+  |....CP...|
+  |....CPP..|
+  |....CCP..|
+  |.....CPP.|
+  |.....CPP.|
+  |......CPP|
+  |.......PP|
+  |........P|
+doc_paint_grid layer=2 frame=6 x=19 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:5
+  |.......CC|
+  |...CPPPC.|
+  |...PWP...|
+  |.CPPPC...|
+  |CC.......|
+doc_paint_grid layer=3 frame=6 x=13 y=15 legend={"C":[134,219,255,255]} rows:10
+  |..................C|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |C..................|
+doc_paint_grid layer=0 frame=7 x=22 y=17 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:9
+  |BB..|
+  |.B..|
+  |.BB.|
+  |.D.B|
+  |..B.|
+  |..B.|
+  |..BB|
+  |...B|
+  |...B|
+doc_paint_grid layer=1 frame=7 x=25 y=21 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:7
+  |C...|
+  |C...|
+  |.C..|
+  |..C.|
+  |.CC.|
+  |..PP|
+  |..CP|
+doc_paint_grid layer=0 frame=8 x=25 y=20 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:6
+  |D..|
+  |...|
+  |D..|
+  |DB.|
+  |D.B|
+  |.B.|
+doc_paint_grid layer=1 frame=8 x=27 y=26 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:2
+  |D.|
+  |.B|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=1 frame=0 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCCPP......|
+  |..CCCPPPPP..|
+  |......CCPPPP|
+doc_paint_grid layer=0 frame=1 x=5 y=9 legend={"B":[62,162,230,255]} rows:3
+  |B.....|
+  |..BB..|
+  |....BB|
+doc_paint_grid layer=1 frame=1 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCCCCC..........|
+  |.CCCCCPPPP......|
+  |......CCCPPPP...|
+  |.........CCPPPP.|
+  |...........CCPPP|
+doc_paint_grid layer=0 frame=2 x=2 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:7
+  |BB............|
+  |..BBB.........|
+  |.....BB.......|
+  |.......BB.....|
+  |.........BB...|
+  |..........DBB.|
+  |...........DBB|
+doc_paint_grid layer=1 frame=2 x=1 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:10
+  |CCCCC................|
+  |...CCCCCC............|
+  |......CCPPPP.........|
+  |........CCCPPP.......|
+  |..........CCCPP......|
+  |............CCPPP....|
+  |..............CPPP...|
+  |...............CPPPP.|
+  |.................PPPP|
+  |....................W|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |B.................|
+  |.BB...............|
+  |...BB.............|
+  |.....BB...........|
+  |......DBB.........|
+  |........DBB.......|
+  |.........DBB......|
+  |..........DDB.....|
+  |...........DDB....|
+  |............DDB...|
+  |.............DDB..|
+  |..............DDB.|
+  |...............DDB|
+doc_paint_grid layer=1 frame=3 x=4 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |CC.....................|
+  |..CCCC.................|
+  |....CCCCC..............|
+  |......CCCPP............|
+  |........CCPPP..........|
+  |..........CPPP.........|
+  |...........CCPP........|
+  |............CCPP.......|
+  |.............CCPPP.....|
+  |..............CCPPP....|
+  |...............CCPP....|
+  |................CPPW...|
+  |.................CPPW..|
+  |..................CPWW.|
+  |....................PW.|
+  |.....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=10 y=10 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |B.............|
+  |.BB...........|
+  |..BB..........|
+  |...DBB........|
+  |....DBB.......|
+  |.....DBB......|
+  |......DBB.....|
+  |.......DB.....|
+  |........DB....|
+  |........DBB...|
+  |.........DB...|
+  |.........VDB..|
+  |..........DB..|
+  |..........VDB.|
+  |............DB|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |.CCCC................|
+  |...CCCC..............|
+  |.....CCCC............|
+  |......CCPP...........|
+  |........CPP..........|
+  |.........CPPP........|
+  |..........CPPP.......|
+  |...........CPWW......|
+  |...........CPPW......|
+  |............CPWW.....|
+  |.............CPWW....|
+  |.............CPWWW...|
+  |..............CPWW...|
+  |..............CCPWW..|
+  |...............CPPW..|
+  |................CPWW.|
+  |.................PPW.|
+  |..................PWW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=15 y=13 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |B........|
+  |.B.......|
+  |..B......|
+  |...B.....|
+  |...B.....|
+  |....B....|
+  |.....B...|
+  |.....B...|
+  |......B..|
+  |......B..|
+  |......DB.|
+  |.......DB|
+  |.......DB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |.CCC...........|
+  |..CCP..........|
+  |...CCPP........|
+  |....CPPP.......|
+  |.....CPWW......|
+  |.....CPPW......|
+  |......CPWW.....|
+  |.......CPWW....|
+  |.......CPWWW...|
+  |........CPWW...|
+  |........CPPWW..|
+  |.........CPPW..|
+  |..........CPWW.|
+  |..........CCPW.|
+  |...........CPWW|
+  |.............WW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=15 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:9
+  |...............C|
+  |......CC.....PCC|
+  |.......PW..WPP..|
+  |.......WWWPW....|
+  |......WWWWW.....|
+  |.....WPWWW......|
+  |...PWW..WP......|
+  |.CPP.....CC.....|
+  |CC..............|
+doc_paint_grid layer=0 frame=6 x=20 y=17 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:9
+  |B....|
+  |.....|
+  |.B...|
+  |.....|
+  |..B..|
+  |...B.|
+  |...B.|
+  |...DB|
+  |....B|
+doc_paint_grid layer=1 frame=6 x=19 y=14 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:15
+  |CC........|
+  |CCC.......|
+  |.CPP......|
+  |..CP......|
+  |..CPP.....|
+  |...CPP....|
+  |...CCPP...|
+  |....CPP...|
+  |.....CPP..|
+  |.....CPP..|
+  |......CPP.|
+  |......CPP.|
+  |......CCPP|
+  |........PP|
+  |.........P|
+doc_paint_grid layer=2 frame=6 x=20 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:5
+  |......CC|
+  |....PPC.|
+  |..PWP...|
+  |CCP.....|
+  |C.......|
+doc_paint_grid layer=3 frame=6 x=17 y=16 legend={"C":[134,219,255,255]} rows:8
+  |.............C|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |C.............|
+doc_paint_grid layer=0 frame=7 x=23 y=20 legend={"B":[62,162,230,255]} rows:6
+  |B..|
+  |...|
+  |.B.|
+  |.B.|
+  |...|
+  |..B|
+doc_paint_grid layer=1 frame=7 x=22 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:12
+  |CC.....|
+  |CC.....|
+  |.CC....|
+  |..CC...|
+  |..CC...|
+  |...CC..|
+  |...CC..|
+  |...CCP.|
+  |....CP.|
+  |....CPP|
+  |.....CP|
+  |......P|
+doc_paint_grid layer=0 frame=8 x=25 y=20 legend={"B":[62,162,230,255]} rows:6
+  |B.|
+  |..|
+  |..|
+  |B.|
+  |B.|
+  |.B|
+doc_paint_grid layer=1 frame=8 x=25 y=22 legend={"C":[134,219,255,255]} rows:5
+  |C..|
+  |.C.|
+  |..C|
+  |..C|
+  |..C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"B":[62,162,230,255]} rows:2
+  |B.|
+  |.B|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=1 frame=0 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCCPP......|
+  |..CCCPPPPP..|
+  |......CCPPPP|
+doc_paint_grid layer=0 frame=1 x=5 y=9 legend={"B":[62,162,230,255]} rows:3
+  |B.....|
+  |..BB..|
+  |....BB|
+doc_paint_grid layer=1 frame=1 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCCCCC..........|
+  |.CCCCCPPPP......|
+  |......CCCPPPP...|
+  |.........CCPPPP.|
+  |...........CCPPP|
+doc_paint_grid layer=0 frame=2 x=2 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:7
+  |BB............|
+  |..BBB.........|
+  |.....BB.......|
+  |.......BB.....|
+  |.........BB...|
+  |..........DBB.|
+  |...........DBB|
+doc_paint_grid layer=1 frame=2 x=1 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:10
+  |CCCCC................|
+  |...CCCCCC............|
+  |......CCPPPP.........|
+  |........CCCPPP.......|
+  |..........CCCPP......|
+  |............CCPPP....|
+  |..............CPPP...|
+  |...............CPPPP.|
+  |.................PPPP|
+  |....................W|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |B.................|
+  |.BB...............|
+  |...BB.............|
+  |.....BB...........|
+  |......DBB.........|
+  |........DBB.......|
+  |.........DBB......|
+  |..........DDB.....|
+  |...........DDB....|
+  |............DDB...|
+  |.............DDB..|
+  |..............DDB.|
+  |...............DDB|
+doc_paint_grid layer=1 frame=3 x=4 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |CC.....................|
+  |..CCCC.................|
+  |....CCCCC..............|
+  |......CCCPP............|
+  |........CCPPP..........|
+  |..........CPPP.........|
+  |...........CCPP........|
+  |............CCPP.......|
+  |.............CCPPP.....|
+  |..............CCPPP....|
+  |...............CCPP....|
+  |................CPPW...|
+  |.................CPPW..|
+  |..................CPWW.|
+  |....................PW.|
+  |.....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=10 y=10 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:15
+  |B.............|
+  |.BB...........|
+  |..BB..........|
+  |...DBB........|
+  |....DBB.......|
+  |.....DBB......|
+  |......DBB.....|
+  |.......DB.....|
+  |........DB....|
+  |........DBB...|
+  |.........DB...|
+  |.........VDB..|
+  |..........DB..|
+  |..........VDB.|
+  |............DB|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |.CCCC................|
+  |...CCCC..............|
+  |.....CCCC............|
+  |......CCPP...........|
+  |........CPP..........|
+  |.........CPPP........|
+  |..........CPPP.......|
+  |...........CPWW......|
+  |...........CPPW......|
+  |............CPWW.....|
+  |.............CPWW....|
+  |.............CPWWW...|
+  |..............CPWW...|
+  |..............CCPWW..|
+  |...............CPPW..|
+  |................CPWW.|
+  |.................PPW.|
+  |..................PWW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=15 y=13 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:13
+  |B........|
+  |.B.......|
+  |..B......|
+  |...B.....|
+  |...B.....|
+  |....B....|
+  |.....B...|
+  |.....B...|
+  |......B..|
+  |......B..|
+  |......DB.|
+  |.......DB|
+  |.......DB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |.CCC...........|
+  |..CCP..........|
+  |...CCPP........|
+  |....CPPP.......|
+  |.....CPWW......|
+  |.....CPPW......|
+  |......CPWW.....|
+  |.......CPWW....|
+  |.......CPWWW...|
+  |........CPWW...|
+  |........CPPWW..|
+  |.........CPPW..|
+  |..........CPWW.|
+  |..........CCPW.|
+  |...........CPWW|
+  |.............WW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=15 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:9
+  |...............C|
+  |......CC.....PCC|
+  |.......PW..WPP..|
+  |.......WWWPW....|
+  |......WWWWW.....|
+  |.....WPWWW......|
+  |...PWW..WP......|
+  |.CPP.....CC.....|
+  |CC..............|
+doc_paint_grid layer=0 frame=6 x=23 y=23 legend={"B":[62,162,230,255]} rows:3
+  |B.|
+  |BB|
+  |.B|
+doc_paint_grid layer=1 frame=6 x=19 y=14 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:15
+  |CC........|
+  |CCC.......|
+  |.CPP......|
+  |.CPP......|
+  |..CPP.....|
+  |..CCPP....|
+  |...CPPP...|
+  |...CCPP...|
+  |....CCPP..|
+  |.....CPP..|
+  |......CPP.|
+  |......CPP.|
+  |......CCPP|
+  |........PP|
+  |.........P|
+doc_paint_grid layer=0 frame=7 x=23 y=20 legend={"B":[62,162,230,255]} rows:6
+  |B..|
+  |...|
+  |.B.|
+  |.B.|
+  |...|
+  |..B|
+doc_paint_grid layer=1 frame=7 x=22 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:12
+  |CC.....|
+  |CC.....|
+  |.CC....|
+  |..CC...|
+  |..CC...|
+  |...CC..|
+  |...CC..|
+  |...CCP.|
+  |....CP.|
+  |....CPP|
+  |.....CP|
+  |......P|
+doc_paint_grid layer=0 frame=8 x=24 y=19 legend={"B":[62,162,230,255]} rows:7
+  |B..|
+  |.B.|
+  |B..|
+  |...|
+  |.B.|
+  |.B.|
+  |..B|
+doc_paint_grid layer=1 frame=8 x=25 y=21 legend={"C":[134,219,255,255]} rows:7
+  |C...|
+  |C...|
+  |.C..|
+  |..C.|
+  |..C.|
+  |..C.|
+  |...C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255]} rows:2
+  |D.|
+  |.D|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=1 frame=0 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCCPP......|
+  |..CCCCCPPP..|
+  |......CCCPPP|
+doc_paint_grid layer=0 frame=1 x=2 y=8 legend={"B":[62,162,230,255]} rows:4
+  |BB........|
+  |...BB.....|
+  |.....BBB..|
+  |.......BBB|
+doc_paint_grid layer=1 frame=1 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCCCCC..........|
+  |.C..CCCCPP......|
+  |.......CCCPPP...|
+  |..........CCPPP.|
+  |............CPPP|
+doc_paint_grid layer=0 frame=2 x=2 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:7
+  |BBB............|
+  |..BBBB.........|
+  |.....BBBB......|
+  |.......BBB.....|
+  |.........DBB...|
+  |..........DDB..|
+  |...........DDBB|
+doc_paint_grid layer=1 frame=2 x=1 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:10
+  |CCCCC................|
+  |....CCCCC............|
+  |.......CCCPP.........|
+  |..........CCPP.......|
+  |...........CCPP......|
+  |.............CCPP....|
+  |..............CCPP...|
+  |................CPPP.|
+  |.................PPPP|
+  |....................P|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:13
+  |B..................|
+  |.BBB...............|
+  |...BBB.............|
+  |.....DBB...........|
+  |......DDBB.........|
+  |........DDBB.......|
+  |.........DDBB......|
+  |..........DDBB.....|
+  |...........DDDB....|
+  |............DDDB...|
+  |.............VDDB..|
+  |..............VDBB.|
+  |...............DDBB|
+doc_paint_grid layer=1 frame=3 x=4 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |CC.....................|
+  |...CCC.................|
+  |.....CCCC..............|
+  |.......CCCP............|
+  |.........CCPP..........|
+  |...........CPP.........|
+  |............CCP........|
+  |.............CCP.......|
+  |..............CCPP.....|
+  |...............CCPP....|
+  |................CPP....|
+  |.................CPW...|
+  |..................CPW..|
+  |..................CPPW.|
+  |....................PW.|
+  |.....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=9 y=9 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:16
+  |B..............|
+  |.BB............|
+  |..BBB..........|
+  |...DBB.........|
+  |....DDB........|
+  |.....DDBB......|
+  |......DDB......|
+  |.......DDB.....|
+  |........DDB....|
+  |.........DBB...|
+  |.........VDB...|
+  |..........VDB..|
+  |..........VDB..|
+  |...........VDB.|
+  |...........VDDB|
+  |.............DB|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |..CCC................|
+  |....CCC..............|
+  |......CCC............|
+  |.......CCP...........|
+  |........CCP..........|
+  |..........CPP........|
+  |..........CCPP.......|
+  |...........CCPW......|
+  |............CPW......|
+  |.............CPW.....|
+  |.............CPWW....|
+  |..............CPWW...|
+  |..............CCPW...|
+  |...............CPPW..|
+  |................CPW..|
+  |................CCPW.|
+  |.................CPW.|
+  |..................PPW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=15 y=12 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:14
+  |B.........|
+  |BB........|
+  |.BB.......|
+  |..BB......|
+  |...B......|
+  |...BB.....|
+  |....BB....|
+  |.....B....|
+  |.....BB...|
+  |......B...|
+  |......DB..|
+  |......DDB.|
+  |.......DB.|
+  |.......DBB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |..CC...........|
+  |...CP..........|
+  |....CPP........|
+  |.....CPP.......|
+  |.....CCPW......|
+  |......CPW......|
+  |.......CPW.....|
+  |.......CPWW....|
+  |........CPWW...|
+  |........CPPW...|
+  |.........CPPW..|
+  |..........CPW..|
+  |..........CCPW.|
+  |...........CPW.|
+  |...........CPPW|
+  |.............PW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=15 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:9
+  |...............C|
+  |......CC.....PCC|
+  |.......PW..WPP..|
+  |.......WWWPW....|
+  |......WWWWW.....|
+  |.....WPWWW......|
+  |...PWW..WP......|
+  |.CPP.....CC.....|
+  |CC..............|
+doc_paint_grid layer=0 frame=6 x=22 y=20 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:7
+  |B...|
+  |B...|
+  |.B..|
+  |.BB.|
+  |.DB.|
+  |..BB|
+  |...B|
+doc_paint_grid layer=1 frame=6 x=19 y=14 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:15
+  |CC........|
+  |CCC.......|
+  |.CCP......|
+  |.CCP......|
+  |..CCP.....|
+  |..CCPP....|
+  |....CPP...|
+  |....CPP...|
+  |.....CPP..|
+  |......CP..|
+  |......CPP.|
+  |.......CP.|
+  |.......CPP|
+  |........PP|
+  |.........P|
+doc_paint_grid layer=0 frame=7 x=22 y=18 legend={"B":[62,162,230,255]} rows:9
+  |B....|
+  |.B...|
+  |.B...|
+  |..B..|
+  |..B..|
+  |..BB.|
+  |...B.|
+  |...B.|
+  |....B|
+doc_paint_grid layer=1 frame=7 x=22 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:12
+  |CC.....|
+  |.C.....|
+  |..C....|
+  |..CC...|
+  |...C...|
+  |...CC..|
+  |....C..|
+  |....CP.|
+  |....CC.|
+  |.....CP|
+  |.....CP|
+  |......P|
+doc_paint_grid layer=0 frame=8 x=24 y=19 legend={"B":[62,162,230,255]} rows:7
+  |B..|
+  |.B.|
+  |BB.|
+  |.B.|
+  |.B.|
+  |.B.|
+  |..B|
+doc_paint_grid layer=1 frame=8 x=26 y=23 legend={"C":[134,219,255,255]} rows:5
+  |C..|
+  |.C.|
+  |.C.|
+  |.C.|
+  |..C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255]} rows:2
+  |D.|
+  |.D|
+doc_region op=clear layer=0 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=0 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=1 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=2 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=3 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=4 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=5 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=6 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=7 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=8 rect=[0,0,32,32]
+doc_region op=clear layer=0 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=1 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=2 frame=9 rect=[0,0,32,32]
+doc_region op=clear layer=3 frame=9 rect=[0,0,32,32]
+doc_paint_grid layer=1 frame=0 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:3
+  |CCCCPP......|
+  |..CCCCCPPP..|
+  |......CCCCPP|
+doc_paint_grid layer=0 frame=1 x=1 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:4
+  |BBBB.......|
+  |....BBB....|
+  |......BBBB.|
+  |........BDB|
+doc_paint_grid layer=1 frame=1 x=0 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:5
+  |CCCCCC..........|
+  |.....CCCPP......|
+  |........CCPPP...|
+  |...........CPPP.|
+  |............CCPP|
+doc_paint_grid layer=0 frame=2 x=2 y=8 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:7
+  |BBBB...........|
+  |..BBBBB........|
+  |.....DDBB......|
+  |.......DDBB....|
+  |.........DDBB..|
+  |..........DDDB.|
+  |...........VDDB|
+doc_paint_grid layer=1 frame=2 x=1 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:10
+  |CCCCC................|
+  |.....CCCC............|
+  |........CCPP.........|
+  |..........CCPP.......|
+  |............CCP......|
+  |..............CPP....|
+  |...............CPP...|
+  |................CPPP.|
+  |.................CPPP|
+  |....................P|
+doc_paint_grid layer=3 frame=2 x=23 y=18 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=3 x=3 y=7 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:13
+  |B..................|
+  |.BBB...............|
+  |...DBBB............|
+  |.....DDBB..........|
+  |......DDDBB........|
+  |........VDDB.......|
+  |.........VVDB......|
+  |..........VVDBB....|
+  |...........VVDBB...|
+  |............VVDBB..|
+  |.............VVDBB.|
+  |..............VVDB.|
+  |...............VVDB|
+doc_paint_grid layer=1 frame=3 x=4 y=7 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:16
+  |CC.....................|
+  |...CCC.................|
+  |......CCC..............|
+  |........CCP............|
+  |..........CPP..........|
+  |...........CPP.........|
+  |............CCP........|
+  |..............CP.......|
+  |...............CPP.....|
+  |................CPP....|
+  |.................CP....|
+  |.................CPW...|
+  |..................CPW..|
+  |..................CCPW.|
+  |....................PW.|
+  |.....................WW|
+doc_paint_grid layer=3 frame=3 x=27 y=24 legend={"C":[134,219,255,255]} rows:1
+  |C|
+doc_paint_grid layer=0 frame=4 x=9 y=9 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:16
+  |B...............|
+  |.BB.............|
+  |..DBB...........|
+  |...DDBB.........|
+  |....DDBB........|
+  |.....VDDB.......|
+  |......VVDB......|
+  |.......VVDB.....|
+  |........VDB.....|
+  |.........VDB....|
+  |.........VVDB...|
+  |..........VVB...|
+  |..........VVDB..|
+  |...........VVDB.|
+  |...........VVVB.|
+  |.............DDB|
+doc_paint_grid layer=1 frame=4 x=8 y=8 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:21
+  |CC...................|
+  |..CCC................|
+  |....CCC..............|
+  |......CCC............|
+  |........CP...........|
+  |.........CP..........|
+  |..........CPP........|
+  |...........CPP.......|
+  |............CPW......|
+  |............CPW......|
+  |.............CPW.....|
+  |..............CPW....|
+  |..............CPWW...|
+  |...............CPW...|
+  |................CPW..|
+  |................CPW..|
+  |.................CPW.|
+  |.................CPW.|
+  |..................PPW|
+  |...................WW|
+  |....................W|
+doc_paint_grid layer=0 frame=5 x=15 y=12 legend={"B":[62,162,230,255],"D":[43,87,196,255],"V":[28,42,102,255]} rows:14
+  |B..........|
+  |BB.........|
+  |.BB........|
+  |..DB.......|
+  |...DB......|
+  |...DD......|
+  |....DB.....|
+  |.....DB....|
+  |.....DB....|
+  |......DB...|
+  |......VDB..|
+  |......VVB..|
+  |.......VDB.|
+  |.......VDDB|
+doc_paint_grid layer=1 frame=5 x=14 y=10 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:19
+  |C..............|
+  |CCC............|
+  |..CC...........|
+  |...CP..........|
+  |....CPP........|
+  |.....CPP.......|
+  |......CPW......|
+  |......CPW......|
+  |.......CPW.....|
+  |........CWW....|
+  |........CPWW...|
+  |.........CPW...|
+  |..........CPW..|
+  |..........CPW..|
+  |...........CPW.|
+  |............PW.|
+  |...........CCPW|
+  |.............PW|
+  |..............W|
+doc_paint_grid layer=2 frame=5 x=15 y=15 legend={"C":[134,219,255,255],"P":[217,244,255,255],"W":[255,255,255,255]} rows:9
+  |...............C|
+  |......CC.....PCC|
+  |.......PW..WPP..|
+  |.......WWWPW....|
+  |......WWWWW.....|
+  |.....WPWWW......|
+  |...PWW..WP......|
+  |.CPP.....CC.....|
+  |CC..............|
+doc_paint_grid layer=0 frame=6 x=20 y=16 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:11
+  |B.....|
+  |B.....|
+  |.B....|
+  |.B....|
+  |..B...|
+  |..BB..|
+  |...B..|
+  |...DB.|
+  |...DDB|
+  |....DB|
+  |.....B|
+doc_paint_grid layer=1 frame=6 x=19 y=14 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:15
+  |CC........|
+  |CCC.......|
+  |..CP......|
+  |..CP......|
+  |...CP.....|
+  |...CPP....|
+  |....CPP...|
+  |.....CP...|
+  |.....CPP..|
+  |......CP..|
+  |.......CP.|
+  |.......CP.|
+  |.......CPP|
+  |........PP|
+  |.........P|
+doc_paint_grid layer=0 frame=7 x=22 y=18 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:9
+  |B....|
+  |.B...|
+  |.B...|
+  |..B..|
+  |..B..|
+  |..DB.|
+  |...B.|
+  |...DB|
+  |....B|
+doc_paint_grid layer=1 frame=7 x=22 y=17 legend={"C":[134,219,255,255],"P":[217,244,255,255]} rows:12
+  |CC.....|
+  |.C.....|
+  |..C....|
+  |..CC...|
+  |...C...|
+  |...CC..|
+  |....C..|
+  |....CP.|
+  |.....C.|
+  |.....CP|
+  |.....CP|
+  |......P|
+doc_paint_grid layer=0 frame=8 x=24 y=19 legend={"B":[62,162,230,255],"D":[43,87,196,255]} rows:8
+  |B...|
+  |.B..|
+  |BB..|
+  |.B..|
+  |.B..|
+  |.D..|
+  |..B.|
+  |...B|
+doc_paint_grid layer=1 frame=8 x=26 y=23 legend={"C":[134,219,255,255]} rows:5
+  |C..|
+  |.C.|
+  |.C.|
+  |...|
+  |..C|
+doc_paint_grid layer=0 frame=9 x=26 y=23 legend={"D":[43,87,196,255]} rows:2
+  |D.|
+  |.D|
+doc_add_tag name=slash direction=forward from=0 to=9

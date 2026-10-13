@@ -37,8 +37,12 @@ fn short_ids_read_and_write_and_are_journaled_in_full() {
         json!({"doc_id": short, "layer":0, "frame":0, "op":"fill_cel", "color":[1,2,3]}),
     );
     assert!(ok, "{drawn}");
-    let journal = fs::read_to_string(home.join("documents").join(id).join("recipe.jsonl")).unwrap();
-    assert!(!journal.contains(&format!("\"{short}\"")), "{journal}");
+    let journal = fs::read_to_string(home.join("documents").join(id).join("doc.recipe")).unwrap();
+    assert!(
+        journal.starts_with(&format!("atelier 3 {id} ")),
+        "the header names the full id: {journal}"
+    );
+    assert!(!journal.contains(&format!("={short}")), "{journal}");
 
     let (ok, missing) = call(&home, "doc_info", json!({"doc_id":"00000000"}));
     assert!(!ok);

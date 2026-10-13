@@ -1,0 +1,283 @@
+atelier 3 64691094-bdee-416c-bbff-8acabfe92448 0.1.0
+doc_new name=torch width=32 height=32
+doc_layer op=add
+doc_layer op=rename index=0 name=handle
+doc_layer op=rename index=1 name=bracket
+doc_layer op=add name=glow
+doc_layer op=add name=flame
+doc_layer op=add name=embers
+doc_palette op=set colors=[[42,26,22,255],[140,90,60,255],[216,64,28,255],[255,144,32,255],[255,224,96,255]]
+doc_paint_grid layer=0 frame=0 x=13 y=16 legend={"d":0,"w":1} rows:12
+  |dddddd|
+  |dddddd|
+  |dddddd|
+  |.dwww.|
+  |.dwww.|
+  |.dwww.|
+  |.dwww.|
+  |.dwww.|
+  |.dwww.|
+  |.dwww.|
+  |.dwww.|
+  |.dwww.|
+doc_paint_grid layer=1 frame=0 x=12 y=22 legend={"d":0,"w":1} rows:10
+  |dddddddd|
+  |dddddddd|
+  |........|
+  |........|
+  |........|
+  |........|
+  |...dd...|
+  |.dddddd.|
+  |dddddddd|
+  |dddddddd|
+doc_paint_grid layer=3 frame=0 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..........|
+  |..........|
+  |....r.....|
+  |....rr....|
+  |...ror....|
+  |...roor...|
+  |..rooor...|
+  |..royoor..|
+  |.rooyyor..|
+  |.royyyyor.|
+  |.royyyyor.|
+  |..royyor..|
+  |..roooor..|
+doc_paint_grid layer=1 frame=0 x=12 y=28 legend={"d":0} rows:4
+  |...dd...|
+  |dddddddd|
+  |dddddddd|
+  |dddddddd|
+doc_paint_grid layer=2 frame=0 x=12 y=22 legend={"w":1} rows:8
+  |.wwwwww.|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |.wwwwww.|
+doc_frame op=add copy_from=0 count=9 duration_ms=100
+doc_draw op=pencil layer=4 frame=0 color=[255,144,32,255] points=[[18,1]]
+doc_draw op=clear_cel layer=2 frame=5
+doc_draw op=clear_cel layer=3 frame=1
+doc_paint_grid layer=3 frame=1 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..........|
+  |.....r....|
+  |.....r....|
+  |....ror...|
+  |....roor..|
+  |...rooor..|
+  |..rooyor..|
+  |..royyor..|
+  |.rooyyor..|
+  |.rooyyyor.|
+  |.rooyyyor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=2
+doc_paint_grid layer=3 frame=2 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |......r...|
+  |......r...|
+  |.....rr...|
+  |.....ro...|
+  |....roor..|
+  |....roor..|
+  |...rooor..|
+  |...royor..|
+  |..royyor..|
+  |.rooyyor..|
+  |.rooyyyor.|
+  |.rooyyyor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=3
+doc_paint_grid layer=3 frame=3 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |......r...|
+  |..........|
+  |.....r....|
+  |.....ro...|
+  |....roo...|
+  |....roor..|
+  |...rooor..|
+  |...royor..|
+  |..royyor..|
+  |..royyor..|
+  |.rooyyyor.|
+  |.rooyyyor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=4
+doc_paint_grid layer=3 frame=4 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..........|
+  |..........|
+  |.....r....|
+  |....rr....|
+  |....ror...|
+  |...roor...|
+  |..rooor...|
+  |..royoor..|
+  |.rooyyor..|
+  |.royyyyor.|
+  |.royyyyor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=5
+doc_paint_grid layer=3 frame=5 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |....r.....|
+  |...roor...|
+  |..rooor...|
+  |..rooor...|
+  |.rooyoor..|
+  |.royyyor..|
+  |.royyyyor.|
+  |.royyyyor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=6
+doc_paint_grid layer=3 frame=6 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..........|
+  |..........|
+  |...r......|
+  |...rr.....|
+  |...ror....|
+  |..roor....|
+  |..rooor...|
+  |..royoor..|
+  |.rooyyor..|
+  |.royyyoor.|
+  |.royyyoor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=7
+doc_paint_grid layer=3 frame=7 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..r.......|
+  |..rr......|
+  |..ro......|
+  |..roor....|
+  |..roor....|
+  |..rooor...|
+  |..royor...|
+  |..royoor..|
+  |.royyyor..|
+  |.royyyoor.|
+  |.royyyoor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=8
+doc_paint_grid layer=3 frame=8 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..........|
+  |...r......|
+  |...r......|
+  |...ro.....|
+  |...roor...|
+  |..rooor...|
+  |..royor...|
+  |..royoor..|
+  |.rooyyor..|
+  |.royyyoor.|
+  |.royyyoor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=3 frame=9
+doc_paint_grid layer=3 frame=9 x=11 y=3 legend={"o":3,"r":2,"y":4} rows:14
+  |..........|
+  |..........|
+  |....r.....|
+  |....r.....|
+  |....ro....|
+  |...roor...|
+  |...roor...|
+  |..royoor..|
+  |..royyor..|
+  |.rooyyor..|
+  |.royyyyor.|
+  |.royyyyor.|
+  |..royyor..|
+  |..roooor..|
+doc_draw op=clear_cel layer=2 frame=2
+doc_paint_grid layer=2 frame=2 x=12 y=19 legend={"w":1} rows:12
+  |..w.....|
+  |..w.....|
+  |........|
+  |wwwwwwww|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |...ww...|
+  |wwwwwwww|
+  |..wwww..|
+doc_draw op=clear_cel layer=2 frame=3
+doc_paint_grid layer=2 frame=3 x=12 y=19 legend={"w":1} rows:12
+  |..w.....|
+  |..w.....|
+  |........|
+  |wwwwwwww|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |...ww...|
+  |wwwwwwww|
+  |..wwww..|
+doc_draw op=clear_cel layer=2 frame=7
+doc_paint_grid layer=2 frame=7 x=12 y=19 legend={"w":1} rows:12
+  |..w.....|
+  |..w.....|
+  |........|
+  |wwwwwwww|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |...ww...|
+  |wwwwwwww|
+  |..wwww..|
+doc_paint_grid layer=2 frame=5 x=12 y=22 legend={"w":1} rows:8
+  |..wwww..|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |..wwww..|
+doc_draw op=pencil layer=4 frame=0 color=[255,224,96,255] points=[[18,8]]
+doc_draw op=pencil layer=4 frame=1 color=[255,224,96,255] points=[[18,6]]
+doc_draw op=pencil layer=4 frame=1 color=[216,64,28,255] points=[[19,0]]
+doc_draw op=pencil layer=4 frame=2 color=[255,144,32,255] points=[[19,5]]
+doc_draw op=pencil layer=4 frame=2 color=[255,224,96,255] points=[[14,5]]
+doc_draw op=pencil layer=4 frame=3 color=[255,144,32,255] points=[[19,3]]
+doc_draw op=pencil layer=4 frame=3 color=[255,224,96,255] points=[[13,4]]
+doc_draw op=pencil layer=4 frame=4 color=[216,64,28,255] points=[[20,2]]
+doc_draw op=pencil layer=4 frame=4 color=[255,144,32,255] points=[[13,2]]
+doc_draw op=pencil layer=4 frame=4 color=[255,224,96,255] points=[[13,8]]
+doc_draw op=pencil layer=4 frame=5 color=[255,144,32,255] points=[[12,1]]
+doc_draw op=pencil layer=4 frame=5 color=[255,224,96,255] points=[[13,6]]
+doc_draw op=pencil layer=4 frame=6 color=[216,64,28,255] points=[[12,0]]
+doc_draw op=pencil layer=4 frame=6 color=[255,144,32,255] points=[[12,5]]
+doc_draw op=pencil layer=4 frame=7 color=[255,144,32,255] points=[[12,3]]
+doc_draw op=pencil layer=4 frame=7 color=[255,224,96,255] points=[[17,6]]
+doc_draw op=pencil layer=4 frame=8 color=[216,64,28,255] points=[[11,2]]
+doc_draw op=pencil layer=4 frame=8 color=[255,224,96,255] points=[[17,4]]
+doc_draw op=pencil layer=4 frame=9 color=[255,144,32,255] points=[[18,3]]
+doc_add_tag name=burn direction=forward from=0 to=9
+doc_draw op=pencil layer=2 frame=2 color=[0,0,0,255] erase=true points=[[14,19],[14,20]]
+doc_draw op=pencil layer=2 frame=3 color=[0,0,0,255] erase=true points=[[14,19],[14,20]]
+doc_draw op=pencil layer=2 frame=7 color=[0,0,0,255] erase=true points=[[14,19],[14,20]]

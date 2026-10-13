@@ -1,5 +1,5 @@
 //! The store itself: where documents live on disk, the `ATELIER_HOME` policy,
-//! and the per-document journal (`recipe.jsonl`) that makes every document a
+//! and the per-document journal (`doc.recipe`) that makes every document a
 //! replayable recipe.
 
 use std::fs;
@@ -587,7 +587,7 @@ impl Studio {
     pub fn journal_append(&self, id: &str, tool: ToolName, args: &Value) -> Result<(), String> {
         // Defence in depth: `id` is joined onto the store path, so validate it
         // here too rather than trust every caller forever — a bad id must never
-        // write recipe.jsonl outside the store (the repo has had a traversal bug
+        // write doc.recipe outside the store (the repo has had a traversal bug
         // before). `.is_dir()` alone would follow `../` through a real dir.
         if !Self::valid_id(id) {
             return Err(format!("invalid document id '{id}'"));
@@ -600,8 +600,8 @@ impl Studio {
             .ok_or_else(|| format!("refusing to journal non-object args for {tool}"))?;
         let entry = JournalEntry::new(tool, args.clone());
         let path = self.journal_path(id);
-        let (mut existing_entries, existing_bytes) = match fs::symlink_metadata(&path) {
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (Vec::new(), 0),
+        let (mut existing_entries, existing_bytes, headed) = match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (Vec::new(), 0, false),
             Err(error) => return Err(format!("cannot inspect journal for '{id}': {error}")),
             Ok(metadata) if !metadata.file_type().is_file() => {
                 return Err(format!(
@@ -615,7 +615,7 @@ impl Studio {
                         "journal for '{id}' has an incomplete final line; run `atelier library verify` and repair it before editing"
                     ));
                 }
-                (parsed.entries, metadata.len())
+                (parsed.entries, metadata.len(), parsed.headed)
             }
         };
         if existing_entries.len() >= MAX_JOURNAL_ENTRIES {
@@ -637,8 +637,12 @@ impl Studio {
             ));
         }
 
-        let mut line = serde_json::to_string(&entry).map_err(|e| e.to_string())?;
-        line.push('\n');
+        let mut line = if !headed {
+            crate::journal::encode_header(id)
+        } else {
+            String::new()
+        };
+        line.push_str(&crate::journal::encode_entry(&entry, id)?);
         let line_bytes = u64::try_from(line.len()).unwrap_or(u64::MAX);
         if existing_bytes > MAX_JOURNAL_BYTES.saturating_sub(line_bytes) {
             return Err(format!(
@@ -801,7 +805,7 @@ mod tests {
         let path = s.journal_path(id);
 
         let clean = fs::read_to_string(&path).unwrap();
-        fs::write(&path, format!("{clean}{{\"schema\":1,\"tool\":\"doc_")).unwrap();
+        fs::write(&path, format!("{clean}doc_draw op=re")).unwrap();
         assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
         assert!(
             s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
@@ -809,29 +813,25 @@ mod tests {
             "new writes must not cement a torn tail into the journal"
         );
 
-        fs::write(&path, format!("{clean}{{\"schema\":1,\"tool\":\n")).unwrap();
+        fs::write(&path, format!("{clean}doc_draw op=\n")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
-            err.contains("line 3"),
-            "a newline-terminated incomplete object is corruption: {err}"
+            err.contains("line 4"),
+            "a newline-terminated incomplete call is corruption: {err}"
         );
 
-        fs::write(&path, format!("not json\n{clean}")).unwrap();
+        fs::write(&path, format!("not a recipe\n{clean}")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(err.contains("line 1"), "mid-file corruption errors: {err}");
 
-        fs::write(&path, format!("{clean}not json\n")).unwrap();
+        fs::write(&path, format!("{clean}not a call\n")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
-            err.contains("line 3"),
+            err.contains("line 4"),
             "complete final corruption errors: {err}"
         );
 
-        fs::write(
-            &path,
-            "{\"schema\":1,\"tool\":\"doc_new\",\"args\":[],\"note\":\"old\"}\n",
-        )
-        .unwrap();
+        fs::write(&path, "atelier 3 not-an-id 0.1.0\n").unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 1"),
@@ -840,7 +840,7 @@ mod tests {
 
         fs::write(
             &path,
-            "{\"schema\":1,\"tool\":\"doc_new\",\"args\":{\"name\":\"d\",\"doc_id\":\"123e4567-e89b-42d3-a456-426614174000\"}}\n",
+            "atelier 3 123e4567-e89b-42d3-a456-426614174000 0.1.0\ndoc_new name=d\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -912,40 +912,36 @@ mod tests {
     }
 
     #[test]
-    fn journals_require_the_current_explicit_version() {
+    fn journals_require_an_explicit_supported_version() {
         let s = studio("journal-version");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
         s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
-        let path = s.journal_path(id);
-        let current: Value =
-            serde_json::from_str(fs::read_to_string(&path).unwrap().trim()).unwrap();
-        assert_eq!(current["schema"], JOURNAL_SCHEMA);
-
-        let mut unversioned = current.clone();
-        unversioned.as_object_mut().unwrap().remove("schema");
-        fs::write(&path, format!("{unversioned}\n")).unwrap();
-        assert!(s.journal(id).unwrap_err().contains("schema"));
-
-        let mut unsupported = current.clone();
-        let schema = unsupported
-            .as_object_mut()
-            .unwrap()
-            .remove("schema")
+        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
             .unwrap();
-        unsupported["format_version"] = schema;
-        fs::write(&path, format!("{unsupported}\n")).unwrap();
+        let path = s.journal_path(id);
+        let written = fs::read_to_string(&path).unwrap();
+        assert_eq!(
+            written,
+            format!(
+                "atelier {JOURNAL_SCHEMA} {id} {}\ndoc_new name=d\ndoc_draw op=rect\n",
+                env!("CARGO_PKG_VERSION")
+            ),
+            "one header, then calls that leave the document id to it"
+        );
+        assert_eq!(s.journal(id).unwrap()[1].args["doc_id"], id);
+
+        let calls = written.split_once('\n').unwrap().1;
+        fs::write(&path, calls).unwrap();
         assert!(
             s.journal(id).is_err(),
-            "only the current marker is accepted"
+            "a recipe without its header is not read"
         );
 
-        let mut future = current;
-        future["schema"] = json!(JOURNAL_SCHEMA + 1);
         fs::write(
             &path,
-            format!("{}\n", serde_json::to_string(&future).unwrap()),
+            format!("atelier {} {id} 9.9.9\n{calls}", JOURNAL_SCHEMA + 1),
         )
         .unwrap();
         let error = s.journal(id).unwrap_err();
@@ -1068,7 +1064,7 @@ mod tests {
         s.journal_append(id, ToolName::DocNew, &json!({"name": "safe", "doc_id": id}))
             .unwrap();
         let journal = s.journal_path(id);
-        let held_journal = document.join("held-recipe.jsonl");
+        let held_journal = document.join("held-doc.recipe");
         fs::rename(&journal, &held_journal).unwrap();
         symlink(&held_journal, &journal).unwrap();
         assert!(

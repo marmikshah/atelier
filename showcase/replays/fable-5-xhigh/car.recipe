@@ -1,0 +1,324 @@
+atelier 3 3ced3c8f-341c-4aa0-b3f5-f90c980718ba 0.1.0
+doc_new name=car-drive width=32 height=32
+doc_palette op=set colors=[[26,26,36,255],[213,59,59,255],[140,34,48,255],[154,163,173,255],[242,244,245,255],[111,194,232,255]]
+doc_layer op=rename index=0 name=speed
+doc_layer op=add name=wheel_r
+doc_layer op=add name=wheel_f
+doc_layer op=add name=body
+doc_layer op=add name=fx
+doc_paint_grid layer=3 frame=0 x=0 y=10 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:12
+  |.............KKKKKKKK...........|
+  |............KRRRRRRRRK..........|
+  |...........KBBBBKBBBBBK.........|
+  |..........KBBBBBKBBBBBBK........|
+  |.........KBBBBBBKBBBBBBBK.......|
+  |....KKKKKKRRRRRRRRRRRRRRKKKKKK..|
+  |...KDRRRRRRRRRRRRRRRRRRRRRRRWK..|
+  |...KRRRRRRRRRRRRRRRRRRRRRRRRRK..|
+  |...KRRKKKKKKKRRRRRRRRKKKKKKKRK..|
+  |...KDR.......RRRRRRRR.......RK..|
+  |.GGKDD.......DDDDDDDD.......DK..|
+  |....KK.......KKKKKKKK.......K...|
+doc_paint_grid layer=1 frame=0 x=6 y=20 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGGK|
+  |KWGKGWK|
+  |KGGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=0 x=21 y=20 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGGK|
+  |KWGKGWK|
+  |KGGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=4 frame=0 x=0 y=18 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:2
+  |GW|
+  |WG|
+doc_paint_grid layer=0 frame=0 x=0 y=5 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:1
+  |WWW.......WWW.......WWW.......WW|
+doc_paint_grid layer=0 frame=0 x=0 y=13 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:1
+  |.....WWW.......WWW.......WWW....|
+doc_paint_grid layer=0 frame=0 x=0 y=28 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:1
+  |..GGGG......GGGG......GGGG......|
+doc_region op=move layer=1 frame=0 offset=[0,-1] rect=[6,20,7,7]
+doc_region op=move layer=2 frame=0 offset=[0,-1] rect=[21,20,7,7]
+doc_region op=clear layer=0 frame=0 rect=[0,28,32,1]
+doc_paint_grid layer=0 frame=0 x=0 y=27 legend={"G":[154,163,173,255]} rows:1
+  |..GGGG......GGGG......GGGG......|
+doc_region op=clear layer=1 frame=0 rect=[0,0,31,31]
+doc_region op=clear layer=2 frame=0 rect=[0,0,31,31]
+doc_paint_grid layer=1 frame=0 x=6 y=19 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGGK|
+  |KWGKGWK|
+  |KGGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=0 x=21 y=19 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGGK|
+  |KWGKGWK|
+  |KGGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=0 frame=0 x=0 y=5 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:1
+  |WWW.......WWW.......WWW.......WW|
+doc_paint_grid layer=0 frame=0 x=0 y=13 legend={"G":[154,163,173,255],"K":[26,26,36,255],"W":[242,244,245,255]} rows:1
+  |.....WWW.......WWW.......WWW....|
+doc_frame op=add copy_from=0 count=9
+doc_region op=move layer=3 frame=1 offset=[0,-1] rect=[0,10,31,21]
+doc_paint_grid layer=1 frame=1 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKWGGKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKGGWKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=1 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKWGGKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKGGWKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=1 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=1 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |.......WWW.......WWW.......WWW..|
+doc_paint_grid layer=0 frame=1 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |..WWW.......WWW.......WWW.......|
+doc_paint_grid layer=0 frame=1 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |GGG......GGGG......GGGG......GGG|
+doc_region op=clear layer=4 frame=1 rect=[0,0,31,31]
+doc_paint_grid layer=4 frame=1 x=0 y=15 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:3
+  |GGG|
+  |GWG|
+  |GGG|
+doc_paint_grid layer=4 frame=1 x=1 y=18 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |G|
+doc_region op=move layer=3 frame=2 offset=[0,-1] rect=[0,10,31,21]
+doc_paint_grid layer=1 frame=2 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGWK|
+  |KGGKGGK|
+  |KWGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=2 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGWK|
+  |KGGKGGK|
+  |KWGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=2 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=2 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |....WWW.......WWW.......WWW.....|
+doc_paint_grid layer=0 frame=2 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |WW.......WWW.......WWW.......WWW|
+doc_paint_grid layer=0 frame=2 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |......GGGG......GGGG......GGGG..|
+doc_region op=clear layer=4 frame=2 rect=[0,0,31,31]
+doc_paint_grid layer=4 frame=2 x=0 y=12 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:3
+  |G.G.|
+  |.G.G|
+  |G.G.|
+doc_paint_grid layer=1 frame=3 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KWGGGGK|
+  |KGGKGGK|
+  |KGGGGWK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=3 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KWGGGGK|
+  |KGGKGGK|
+  |KGGGGWK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=3 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=3 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |.WWW.......WWW.......WWW.......W|
+doc_paint_grid layer=0 frame=3 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |......WWW.......WWW.......WWW...|
+doc_paint_grid layer=0 frame=3 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |...GGGG......GGGG......GGGG.....|
+doc_region op=clear layer=4 frame=3 rect=[0,0,31,31]
+doc_paint_grid layer=4 frame=3 x=0 y=10 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:2
+  |G..|
+  |..G|
+doc_paint_grid layer=1 frame=4 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGWKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKWGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=4 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGWKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKWGGKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=4 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=4 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |W.......WWW.......WWW.......WWW.|
+doc_paint_grid layer=0 frame=4 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |...WWW.......WWW.......WWW......|
+doc_paint_grid layer=0 frame=4 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |GGGG......GGGG......GGGG......GG|
+doc_region op=clear layer=4 frame=4 rect=[0,0,31,31]
+doc_paint_grid layer=1 frame=5 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGGK|
+  |KWGKGWK|
+  |KGGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=5 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGGK|
+  |KWGKGWK|
+  |KGGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=5 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=5 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |.....WWW.......WWW.......WWW....|
+doc_paint_grid layer=0 frame=5 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |WWW.......WWW.......WWW.......WW|
+doc_paint_grid layer=0 frame=5 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |G......GGGG......GGGG......GGGG.|
+doc_region op=clear layer=4 frame=5 rect=[0,0,31,31]
+doc_paint_grid layer=4 frame=5 x=0 y=18 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:2
+  |GW|
+  |WG|
+doc_region op=move layer=3 frame=6 offset=[0,-1] rect=[0,10,31,21]
+doc_paint_grid layer=1 frame=6 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKWGGKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKGGWKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=6 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKWGGKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKGGWKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=6 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=6 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |..WWW.......WWW.......WWW.......|
+doc_paint_grid layer=0 frame=6 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |.......WWW.......WWW.......WWW..|
+doc_paint_grid layer=0 frame=6 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |....GGGG......GGGG......GGGG....|
+doc_region op=clear layer=4 frame=6 rect=[0,0,31,31]
+doc_paint_grid layer=4 frame=6 x=0 y=15 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:3
+  |GGG|
+  |GWG|
+  |GGG|
+doc_paint_grid layer=4 frame=6 x=1 y=18 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |G|
+doc_region op=move layer=3 frame=7 offset=[0,-1] rect=[0,10,31,21]
+doc_paint_grid layer=1 frame=7 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGWK|
+  |KGGKGGK|
+  |KWGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=7 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KGGGGWK|
+  |KGGKGGK|
+  |KWGGGGK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=7 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=7 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |WW.......WWW.......WWW.......WWW|
+doc_paint_grid layer=0 frame=7 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |....WWW.......WWW.......WWW.....|
+doc_paint_grid layer=0 frame=7 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |.GGGG......GGGG......GGGG......G|
+doc_region op=clear layer=4 frame=7 rect=[0,0,31,31]
+doc_paint_grid layer=4 frame=7 x=0 y=12 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:3
+  |G.G.|
+  |.G.G|
+  |G.G.|
+doc_paint_grid layer=1 frame=8 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KWGGGGK|
+  |KGGKGGK|
+  |KGGGGWK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=8 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGGKK|
+  |KWGGGGK|
+  |KGGKGGK|
+  |KGGGGWK|
+  |KKGGGKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=8 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=8 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |......WWW.......WWW.......WWW...|
+doc_paint_grid layer=0 frame=8 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |.WWW.......WWW.......WWW.......W|
+doc_paint_grid layer=0 frame=8 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |GG......GGGG......GGGG......GGGG|
+doc_region op=clear layer=4 frame=8 rect=[0,0,31,31]
+doc_paint_grid layer=4 frame=8 x=0 y=10 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:2
+  |G..|
+  |..G|
+doc_paint_grid layer=1 frame=9 x=6 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGWKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKWGGKK|
+  |.KKKKK.|
+doc_paint_grid layer=2 frame=9 x=21 y=19 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:7
+  |.KKKKK.|
+  |KKGGWKK|
+  |KGGGGGK|
+  |KGGKGGK|
+  |KGGGGGK|
+  |KKWGGKK|
+  |.KKKKK.|
+doc_region op=clear layer=0 frame=9 rect=[0,0,31,31]
+doc_paint_grid layer=0 frame=9 x=0 y=5 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |...WWW.......WWW.......WWW......|
+doc_paint_grid layer=0 frame=9 x=0 y=13 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |W.......WWW.......WWW.......WWW.|
+doc_paint_grid layer=0 frame=9 x=0 y=27 legend={"B":[111,194,232,255],"D":[140,34,48,255],"G":[154,163,173,255],"K":[26,26,36,255],"R":[213,59,59,255],"W":[242,244,245,255]} rows:1
+  |.....GGGG......GGGG......GGGG...|
+doc_region op=clear layer=4 frame=9 rect=[0,0,31,31]
+doc_add_tag name=drive from=0 to=9
