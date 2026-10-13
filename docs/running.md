@@ -113,6 +113,13 @@ paint_grid layer=3 frame=0 x=12 y=2 legend=C:#5ad8f8,K:0 rows:4
 - Blank lines and lines that start with `#` are ignored, so a recipe can carry
   notes.
 
+To see what a recipe draws without saving anything, add `--show`. Each step is
+printed with its layer name and the pixels it changed, in terminal colour:
+
+```sh
+atelier replay sprite.recipe --show | less -R
+```
+
 ## HTTP server and Linux daemon
 
 Run a foreground server:

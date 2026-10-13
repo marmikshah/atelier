@@ -10,6 +10,9 @@
 //! Output convention: the per-step log goes to stdout (scriptable, the recipe's
 //! visible result), while status/diagnostics go to stderr (header, errors, the
 //! final "N step(s) ok" tally) so they don't pollute piped stdout.
+//!
+//! `--show` replays the same way but publishes nothing: it prints each step
+//! with its layer name and the pixels it changed, for a person to read.
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -23,7 +26,7 @@ use atelier_studio::{
 use rmcp::model::CallToolResult;
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
-const USAGE: &str = "usage: atelier replay <file.recipe | doc-id> [--home DIR]";
+const USAGE: &str = "usage: atelier replay <file.recipe | doc-id> [--show] [--home DIR]";
 
 /// Read the recipe to replay: either a file, or the journal of a document in
 /// the store.
@@ -97,6 +100,7 @@ pub async fn run(args: &[String]) -> i32 {
     // Parse args: a single positional recipe path plus optional `--home <dir>`.
     let mut path: Option<&str> = None;
     let mut home: Option<&str> = None;
+    let mut show = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -107,6 +111,10 @@ pub async fn run(args: &[String]) -> i32 {
                 };
                 home = Some(dir);
                 i += 2;
+            }
+            "--show" => {
+                show = true;
+                i += 1;
             }
             "--help" | "-h" => {
                 println!("{USAGE}");
@@ -156,7 +164,7 @@ pub async fn run(args: &[String]) -> i32 {
     if recipe.torn_tail {
         eprintln!("replay: ignored an incomplete final journal line");
     }
-    match drive(recipe, home).await {
+    match drive(recipe, home, show).await {
         Ok(()) => 0,
         Err(e) => {
             eprintln!("replay: {e}");
@@ -166,14 +174,36 @@ pub async fn run(args: &[String]) -> i32 {
 }
 
 /// Build the in-process tool server and run every step in order.
-async fn drive(recipe: ParsedJournal, home: Option<&str>) -> Result<(), String> {
+async fn drive(recipe: ParsedJournal, home: Option<&str>, show: bool) -> Result<(), String> {
     // `--home` roots an isolated store for the run; otherwise the ambient
     // ATELIER_HOME (or the default) is where the rebuild lands.
     let studio = match home {
         Some(dir) => Studio::with_home(dir.into()),
         None => Studio::new(),
     };
+    if show {
+        return show_session(&recipe, &studio).await;
+    }
     run_atomic_session(&recipe, &studio).await.map(|_| ())
+}
+
+/// `--show`: replay in a private generation that is never published, printing
+/// each call with the pixels it changed.
+async fn show_session(recipe: &ParsedJournal, studio: &Studio) -> Result<(), String> {
+    let _store_lock = studio.lock_store_exclusive()?;
+    studio.cleanup_stale_transactions()?;
+    let transaction = studio.begin_transaction(None)?;
+    let staged = Atelier::with_studio(transaction.studio().clone());
+    match run_session(recipe, &staged, true).await {
+        // The reader closed the pager or pipe: stop without complaint.
+        Err(error) if error == OUTPUT_CLOSED => return Ok(()),
+        other => other?,
+    };
+    eprintln!(
+        "replay: showed {} step(s); nothing was saved",
+        recipe.entries.len()
+    );
+    Ok(())
 }
 
 /// Replay into one private generation, then publish the completed document.
@@ -186,7 +216,7 @@ async fn run_atomic_session(recipe: &ParsedJournal, studio: &Studio) -> Result<S
     studio.cleanup_stale_transactions()?;
     let transaction = studio.begin_transaction(None)?;
     let staged = Atelier::with_studio(transaction.studio().clone());
-    let minted = run_session(recipe, &staged)
+    let minted = run_session(recipe, &staged, false)
         .await
         .map_err(|error| format!("{error}; no replayed document was published"))?;
 
@@ -212,8 +242,14 @@ async fn run_atomic_session(recipe: &ParsedJournal, studio: &Studio) -> Result<S
 /// Recorded document ids never reach the server verbatim: `doc_new` always
 /// mints a fresh opaque id, so every later target is rewritten to the id this
 /// run actually received.
-async fn run_session(recipe: &ParsedJournal, atelier: &Atelier) -> Result<String, String> {
-    eprintln!("== replaying journal");
+async fn run_session(
+    recipe: &ParsedJournal,
+    atelier: &Atelier,
+    show: bool,
+) -> Result<String, String> {
+    if !show {
+        eprintln!("== replaying journal");
+    }
 
     let mut identity: Option<(String, String)> = None;
     for (idx, step) in recipe.entries.iter().enumerate() {
@@ -250,7 +286,19 @@ async fn run_session(recipe: &ParsedJournal, atelier: &Atelier) -> Result<String
         // payload with isError set; treat that as a failed step too.
         let is_error = server::is_error_result(&result);
         let summary = summarize(&result);
-        print_step(idx, step, &summary);
+        if show && !is_error {
+            let doc_id = identity
+                .as_ref()
+                .map(|(_, minted)| minted.clone())
+                .or_else(|| minted_id(&result));
+            if let Some(doc_id) = doc_id
+                && !emit(&shown_step(atelier, &doc_id, idx, step, &result).await)
+            {
+                return Err(OUTPUT_CLOSED.into());
+            }
+        } else {
+            print_step(idx, step, &summary);
+        }
         if is_error {
             return Err(format!(
                 "step {} ({}) failed: {summary}",
@@ -268,7 +316,7 @@ async fn run_session(recipe: &ParsedJournal, atelier: &Atelier) -> Result<String
                     idx + 1
                 ));
             };
-            if recorded != minted {
+            if recorded != minted && !show {
                 eprintln!("replay: '{recorded}' rebuilds as '{minted}'");
             }
             identity = Some((recorded, minted));
@@ -323,9 +371,111 @@ fn minted_id(result: &CallToolResult) -> Option<String> {
         .map(str::to_string)
 }
 
-/// One-line per-step report: `[N] tool — summary`. Goes to stdout.
+/// The JSON report of a read-only call made on behalf of `--show`.
+async fn read(atelier: &Atelier, tool: ToolName, args: Value) -> Option<Value> {
+    let result = atelier.dispatch(tool, args, "replay").await.ok()?;
+    (!server::is_error_result(&result))
+        .then(|| server::result_json(&result))
+        .flatten()
+}
+
+/// One step for `--show`: what was called, on which layer by name, and the
+/// frame's pixels inside the area the call changed.
+async fn shown_step(
+    atelier: &Atelier,
+    doc_id: &str,
+    idx: usize,
+    step: &JournalEntry,
+    result: &CallToolResult,
+) -> String {
+    let tool = step.tool.as_str();
+    let mut out = format!(
+        "[{}] {}",
+        idx + 1,
+        tool.strip_prefix("doc_").unwrap_or(tool)
+    );
+    for key in ["op", "name"] {
+        if let Some(word) = step.args.get(key).and_then(Value::as_str) {
+            out.push_str(&format!(" {word}"));
+        }
+    }
+    if let Some(layer) = step.args.get("layer").and_then(Value::as_u64) {
+        let info = read(atelier, ToolName::DocInfo, json!({"doc_id": doc_id})).await;
+        let name = info
+            .as_ref()
+            .and_then(|info| info["layers"].as_array())
+            .and_then(|layers| layers.iter().find(|entry| entry["index"] == layer))
+            .and_then(|entry| entry["name"].as_str());
+        match name {
+            Some(name) => out.push_str(&format!(" · layer {layer} \"{name}\"")),
+            None => out.push_str(&format!(" · layer {layer}")),
+        }
+    }
+    let frame = step.args.get("frame").and_then(Value::as_u64);
+    if let Some(frame) = frame {
+        out.push_str(&format!(" · frame {frame}"));
+    }
+    let bbox = server::result_json(result).and_then(|report| {
+        let bbox = report.get("change_bbox")?.as_array()?;
+        let edge = |index: usize| bbox.get(index).and_then(Value::as_i64);
+        Some([edge(0)?, edge(1)?, edge(2)?, edge(3)?])
+    });
+    let Some([x0, y0, x1, y1]) = bbox else {
+        out.push('\n');
+        return out;
+    };
+    let (width, height) = (x1 - x0 + 1, y1 - y0 + 1);
+    out.push_str(&format!(" · {width}×{height} at {x0},{y0}\n"));
+    let dump = read(
+        atelier,
+        ToolName::DocDumpRegion,
+        json!({"doc_id": doc_id, "frame": frame.unwrap_or(0), "region": [x0, y0, x1, y1], "mode": "hex"}),
+    )
+    .await;
+    match dump.as_ref().and_then(|dump| dump["rows"].as_array()) {
+        Some(rows) => {
+            for row in rows {
+                out.push_str("  ");
+                out.push_str(&paint_row(row.as_str().unwrap_or("")));
+                out.push('\n');
+            }
+        }
+        None => out.push_str("  (area too large to draw)\n"),
+    }
+    out
+}
+
+/// One row of `#rrggbb(aa)` / `.` tokens as terminal true-colour cells, two
+/// columns per pixel so pixels come out roughly square.
+fn paint_row(row: &str) -> String {
+    let mut out = String::new();
+    for token in row.split(' ') {
+        let channel = |at: usize| {
+            token
+                .get(at..at + 2)
+                .and_then(|pair| u8::from_str_radix(pair, 16).ok())
+        };
+        match (channel(1), channel(3), channel(5)) {
+            (Some(r), Some(g), Some(b)) => out.push_str(&format!("\x1b[48;2;{r};{g};{b}m  ")),
+            _ => out.push_str("\x1b[0;2m··"),
+        }
+    }
+    out.push_str("\x1b[0m");
+    out
+}
+
+const OUTPUT_CLOSED: &str = "output closed";
+
+/// Write to stdout, reporting a closed pipe instead of panicking on it.
+fn emit(text: &str) -> bool {
+    use std::io::Write;
+    std::io::stdout().write_all(text.as_bytes()).is_ok()
+}
+
+/// One-line per-step report: `[N] tool — summary`. Goes to stdout. A closed
+/// pipe does not stop the replay; the document is still rebuilt.
 fn print_step(idx: usize, step: &JournalEntry, summary: &str) {
-    println!("[{}] {} — {summary}", idx + 1, step.tool);
+    emit(&format!("[{}] {} — {summary}\n", idx + 1, step.tool));
 }
 
 /// Condense a tool result into a single readable line. atelier returns its
@@ -451,6 +601,61 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn show_names_the_layer_draws_the_change_and_saves_nothing() {
+        let home =
+            std::env::temp_dir().join(format!("atelier-replay-show-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&home);
+        let recipe = parse_journal(&format!(
+            "atelier 4 {RECORDED_ID} 0.1.0\n\
+             new name=shown width=4 height=4\n\
+             layer op=add name=ink\n\
+             paint_grid layer=1 frame=0 x=1 y=2 legend=K:#102030 rows:1\n  |K.K|\n"
+        ))
+        .unwrap();
+        let studio = Studio::with_home(home.clone());
+        let transaction = studio.begin_transaction(None).unwrap();
+        let staged = Atelier::with_studio(transaction.studio().clone());
+        let mut minted = String::new();
+        let mut shown = String::new();
+        for (idx, step) in recipe.entries.iter().enumerate() {
+            let mut args = step.args.clone();
+            if idx == 0 {
+                args.remove("doc_id");
+            } else {
+                args.insert("doc_id".into(), json!(minted));
+            }
+            let result = staged
+                .dispatch(step.tool, Value::Object(args), "test")
+                .await
+                .unwrap();
+            if idx == 0 {
+                minted = minted_id(&result).unwrap();
+            }
+            shown.push_str(&shown_step(&staged, &minted, idx, step, &result).await);
+        }
+        let ink = "\x1b[48;2;16;32;48m  ";
+        assert_eq!(
+            shown,
+            format!(
+                "[1] new shown\n[2] layer add ink\n\
+                 [3] paint_grid · layer 1 \"ink\" · frame 0 · 3×1 at 1,2\n  \
+                 {ink}\x1b[0;2m··{ink}\x1b[0m\n"
+            )
+        );
+        assert_eq!(
+            paint_row("#10203080 ."),
+            format!("{ink}\x1b[0;2m··\x1b[0m"),
+            "a translucent pixel shows its colour"
+        );
+        drop(transaction);
+        drive(recipe, Some(home.to_string_lossy().as_ref()), true)
+            .await
+            .unwrap();
+        assert_eq!(Studio::with_home(home.clone()).list_docs()["count"], 0);
+        let _ = std::fs::remove_dir_all(home);
+    }
+
+    #[tokio::test]
     async fn explicit_home_uses_the_same_documents_layout_as_atelier_home() {
         let home =
             std::env::temp_dir().join(format!("atelier-replay-home-test-{}", std::process::id()));
@@ -460,7 +665,7 @@ mod tests {
         ))
         .unwrap();
 
-        drive(recipe, Some(home.to_string_lossy().as_ref()))
+        drive(recipe, Some(home.to_string_lossy().as_ref()), false)
             .await
             .unwrap();
 

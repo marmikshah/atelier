@@ -77,6 +77,8 @@ USAGE:
                                   delete documents — permanent, confirms first
     atelier replay <recipe|id>    replay a recipe file, or rebuild a document from its
                                   own journal (every document records one)
+            [--show]              save nothing; print each step with its layer name
+                                  and the pixels it changed, in terminal colour
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier call <tool> ['<json>' | --file PATH | --stdin]
             [--home DIR] [--image-out PATH]
@@ -220,15 +222,16 @@ fn first_sentence(s: &str) -> &str {
 /// Install the global `tracing` subscriber. Logs go to **stderr only** —
 /// stdout is the stdio MCP transport, so a single log line there corrupts the
 /// protocol stream. `ATELIER_LOG` uses `RUST_LOG` syntax (e.g. `debug`,
-/// `atelier_mcp=trace`); default `info`.
-fn init_logging() {
+/// `atelier_mcp=trace`); default `info`, or `warn` when `quiet` so per-call
+/// lines do not cut through output a person is reading.
+fn init_logging(quiet: bool) {
     use std::io::IsTerminal;
     use tracing_subscriber::EnvFilter;
     // rmcp's per-request transport lifecycle chatters at info — three lines
     // per call under the stateless HTTP transport. Our own per-call line is
     // the signal; rmcp speaks only when something is wrong.
-    let filter =
-        EnvFilter::try_from_env("ATELIER_LOG").unwrap_or_else(|_| EnvFilter::new("info,rmcp=warn"));
+    let default = if quiet { "warn" } else { "info,rmcp=warn" };
+    let filter = EnvFilter::try_from_env("ATELIER_LOG").unwrap_or_else(|_| EnvFilter::new(default));
     tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_writer(std::io::stderr)
@@ -240,8 +243,11 @@ fn init_logging() {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
     let args: Vec<String> = std::env::args().collect();
+    init_logging(
+        args.get(1).is_some_and(|command| command == "replay")
+            && args.iter().any(|arg| arg == "--show"),
+    );
 
     // Subcommands / flags that don't start the server.
     match args.get(1).map(|s| s.as_str()) {
