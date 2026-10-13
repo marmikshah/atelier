@@ -14,7 +14,7 @@ states the contribution policy.
 | `crates/atelier-studio/` | Storage, transactions, journals, checkpoints, and analysis |
 | `crates/atelier-core/` | Document model, pixel operations, rendering, and exports |
 | `site/` | React + TypeScript showcase website, built with Vite |
-| `showcase/` | Frozen briefs, recorded runs, replay journals, and GIFs |
+| `showcase/` | Frozen briefs, recorded runs, recipes, and GIFs |
 | `tools/` | Development checks, showcase runner, and container smoke test |
 
 An edit travels through these layers:

@@ -390,7 +390,7 @@ export function App() {
           <p className="method-lede">
             Every model receives the same ten frozen briefs and creates its artwork through
             Atelier’s editing tools. The gallery shows the original animations, and each one can be
-            rebuilt from its replay journal.
+            rebuilt from its recipe.
           </p>
           <section>
             <h3>Reasoning effort</h3>

@@ -117,7 +117,7 @@ describes the network and file-access boundaries.
 ## Contributing
 
 Bug reports and questions are welcome as issues; include the checkout commit and
-a minimal command sequence or replay journal. Pull requests from outside the
+a minimal command sequence or recipe file. Pull requests from outside the
 project are not accepted. Report vulnerabilities privately through the
 [security policy](.github/SECURITY.md).
 
