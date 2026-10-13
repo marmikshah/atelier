@@ -1,4 +1,4 @@
-//! `atelier replay <recipe.jsonl>` — rebuild through a recorded list of tool
+//! `atelier replay <file.recipe>` — rebuild through a recorded list of tool
 //! calls, in process.
 //!
 //! Every step goes through `Atelier::dispatch` — the same single path MCP
@@ -23,7 +23,7 @@ use atelier_studio::{
 use rmcp::model::CallToolResult;
 
 /// One-line usage banner, shared by the `--help` path and the arg-error paths.
-const USAGE: &str = "usage: atelier replay <recipe.jsonl | doc-id> [--home DIR]";
+const USAGE: &str = "usage: atelier replay <file.recipe | doc-id> [--home DIR]";
 
 /// Read the recipe to replay: either a file, or the journal of a document in
 /// the store.
@@ -456,7 +456,7 @@ mod tests {
             std::env::temp_dir().join(format!("atelier-replay-home-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&home);
         let recipe = parse_journal(&format!(
-            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"home-layout\",\"width\":4,\"height\":4}}}}\n"
+            "atelier 3 {RECORDED_ID} 0.1.0\ndoc_new name=home-layout width=4 height=4\n"
         ))
         .unwrap();
 
@@ -488,8 +488,9 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir.clone());
         let recipe = parse_journal(&format!(
-            "{{\"schema\":1,\"tool\":\"doc_new\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"rolled-back\",\"width\":4,\"height\":4}}}}\n\
-             {{\"schema\":1,\"tool\":\"doc_draw\",\"args\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"not_a_real_operation\"}}}}\n"
+            "atelier 3 {RECORDED_ID} 0.1.0\n\
+             doc_new name=rolled-back width=4 height=4\n\
+             doc_draw op=not_a_real_operation\n"
         ))
         .unwrap();
 

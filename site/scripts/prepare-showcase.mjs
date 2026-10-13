@@ -34,7 +34,7 @@ for (const run of data.runs) {
     modelProviders.set(run.model, run.vendor);
     for (const [field, directory, extension] of [
         ['gif', 'gifs', 'gif'],
-        ['replay', 'replays', 'jsonl'],
+        ['replay', 'replays', 'recipe'],
     ]) {
         if (run[field] !== `${directory}/${key}.${extension}`)
             throw new Error(`Invalid ${field}: ${key}`);

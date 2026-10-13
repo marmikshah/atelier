@@ -75,7 +75,7 @@ USAGE:
                                   restore its UUID; replacement needs both flags
             rm <id>... | rm --prefix <p> | rm --all [--yes] [--home DIR]
                                   delete documents — permanent, confirms first
-    atelier replay <journal|id>   replay a JSONL journal, or rebuild a document from its
+    atelier replay <recipe|id>    replay a recipe file, or rebuild a document from its
                                   own journal (every document records one)
             [--home DIR]          run against an isolated ATELIER_HOME
     atelier call <tool> ['<json>' | --file PATH | --stdin]
@@ -107,7 +107,8 @@ STORE:
     --home DIR overrides ATELIER_HOME, then ./.atelier, then ~/.atelier.
     Tools refuse unsupported or corrupt documents and leave them unchanged.
     library verify inspects saved data without changing it; library reset
-    replaces one damaged document with a blank one after confirmation.
+    replaces one damaged document with a blank one after confirmation, and
+    keeps documents that are only in another format.
 ";
 
 /// Agents that load the standard `SKILL.md`: `--for` selector → skills dir

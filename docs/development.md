@@ -82,13 +82,13 @@ production build is written to `site/dist`.
 ## Understand and reproduce the showcase
 
 [showcase/runs.json](../showcase/runs.json) describes the runs and tasks.
-Each recorded animation has a JSONL recipe under `showcase/replays/` and a GIF
+Each recorded animation has a text recipe under `showcase/replays/` and a GIF
 under `showcase/gifs/`. The website prepares its data from these committed files.
 
 To inspect one recipe in an isolated store:
 
 ```sh
-./target/debug/atelier replay showcase/replays/opus-5.5-xhigh/cat.jsonl --home ./replay-store
+./target/debug/atelier replay showcase/replays/opus-5.5-xhigh/cat.recipe --home ./replay-store
 ./target/debug/atelier library --home ./replay-store
 ```
 

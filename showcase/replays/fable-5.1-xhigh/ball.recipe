@@ -1,0 +1,232 @@
+atelier 3 0e5e4759-1d3d-48e3-978d-0ec56189280e 0.1.0
+doc_new name=rubber-ball-bounce width=32 height=32
+doc_layer op=rename index=0 name=shadow
+doc_layer op=add name=ball
+doc_palette op=set colors=[[255,166,138],[222,62,52],[128,22,48],[58,48,76]]
+doc_paint_grid layer=1 frame=0 x=10 y=2 legend={"k":2,"l":0,"m":1,"s":3} rows:12
+  |....mmmm....|
+  |..mmmmmmmm..|
+  |.mmmmmmmmmm.|
+  |.mmmmmmmmmm.|
+  |mmmmmmmmmmmm|
+  |mmmmmmmmmmmm|
+  |mmmmmmmmmmmm|
+  |mmmmmmmmmmmm|
+  |.mmmmmmmmmm.|
+  |.mmmmmmmmmm.|
+  |..mmmmmmmm..|
+  |....mmmm....|
+doc_draw op=clear_cel layer=1 frame=0
+doc_paint_grid layer=1 frame=0 x=10 y=2 legend={"k":2,"l":0,"m":1,"s":3} rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+doc_draw op=clear_cel layer=0 frame=0
+doc_paint_grid layer=0 frame=0 x=13 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |.ssss.|
+  |ssssss|
+  |.ssss.|
+doc_frame op=add copy_from=0 count=9 duration_ms=100
+doc_draw op=clear_cel layer=1 frame=1
+doc_paint_grid layer=1 frame=1 x=10 y=3 legend={"k":2,"l":0,"m":1,"s":3} rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+doc_draw op=clear_cel layer=0 frame=1
+doc_paint_grid layer=0 frame=1 x=13 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |.ssss.|
+  |ssssss|
+  |.ssss.|
+doc_draw op=clear_cel layer=1 frame=2
+doc_paint_grid layer=1 frame=2 x=10 y=5 legend={"k":2,"l":0,"m":1,"s":3} rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+doc_draw op=clear_cel layer=0 frame=2
+doc_paint_grid layer=0 frame=2 x=12 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |.ssssss.|
+  |ssssssss|
+  |.ssssss.|
+doc_draw op=clear_cel layer=1 frame=3
+doc_paint_grid layer=1 frame=3 x=11 y=7 legend={"k":2,"l":0,"m":1,"s":3} rows:14
+  |...kkkk...|
+  |..kmmmmk..|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kllmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+doc_draw op=clear_cel layer=0 frame=3
+doc_paint_grid layer=0 frame=3 x=11 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |.ssssssss.|
+  |ssssssssss|
+  |.ssssssss.|
+doc_draw op=clear_cel layer=1 frame=4
+doc_paint_grid layer=1 frame=4 x=11 y=11 legend={"k":2,"l":0,"m":1,"s":3} rows:16
+  |...kkkk...|
+  |..kkmmkk..|
+  |.kkmmmmkk.|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |.kkmmkkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+doc_draw op=clear_cel layer=0 frame=4
+doc_paint_grid layer=0 frame=4 x=9 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |..ssssssssss..|
+  |ssssssssssssss|
+  |..ssssssssss..|
+doc_draw op=clear_cel layer=1 frame=5
+doc_paint_grid layer=1 frame=5 x=7 y=21 legend={"k":2,"l":0,"m":1,"s":3} rows:8
+  |.....kkkkkkkk.....|
+  |...kkmmmmmmmmkk...|
+  |.kkllllmmmmmmmmkk.|
+  |kkmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmkkk|
+  |kkmmmmmmmmmmmmkkkk|
+  |.kkkkkkkkkkkkkkkk.|
+doc_draw op=clear_cel layer=0 frame=5
+doc_paint_grid layer=0 frame=5 x=5 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |...ssssssssssssssss...|
+  |ssssssssssssssssssssss|
+  |...ssssssssssssssss...|
+doc_draw op=clear_cel layer=1 frame=6
+doc_paint_grid layer=1 frame=6 x=12 y=10 legend={"k":2,"l":0,"m":1,"s":3} rows:18
+  |...kk...|
+  |..kmmk..|
+  |.kmmmkk.|
+  |.kmmmkk.|
+  |.kmmmmk.|
+  |klmmmmkk|
+  |klmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmkkk|
+  |.kmmmkk.|
+  |.kmmmkk.|
+  |.kmmkkk.|
+  |..kkkk..|
+  |...kk...|
+doc_draw op=clear_cel layer=0 frame=6
+doc_paint_grid layer=0 frame=6 x=9 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |..ssssssssss..|
+  |ssssssssssssss|
+  |..ssssssssss..|
+doc_draw op=clear_cel layer=1 frame=7
+doc_paint_grid layer=1 frame=7 x=11 y=7 legend={"k":2,"l":0,"m":1,"s":3} rows:14
+  |...kkkk...|
+  |..kmmmmk..|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kllmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+doc_draw op=clear_cel layer=0 frame=7
+doc_paint_grid layer=0 frame=7 x=11 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |.ssssssss.|
+  |ssssssssss|
+  |.ssssssss.|
+doc_draw op=clear_cel layer=1 frame=8
+doc_paint_grid layer=1 frame=8 x=11 y=4 legend={"k":2,"l":0,"m":1,"s":3} rows:14
+  |...kkkk...|
+  |..kmmmmk..|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kllmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+doc_draw op=clear_cel layer=0 frame=8
+doc_paint_grid layer=0 frame=8 x=12 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |.ssssss.|
+  |ssssssss|
+  |.ssssss.|
+doc_draw op=clear_cel layer=1 frame=9
+doc_paint_grid layer=1 frame=9 x=10 y=3 legend={"k":2,"l":0,"m":1,"s":3} rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+doc_draw op=clear_cel layer=0 frame=9
+doc_paint_grid layer=0 frame=9 x=13 y=28 legend={"k":2,"l":0,"m":1,"s":3} rows:3
+  |.ssss.|
+  |ssssss|
+  |.ssss.|
+doc_draw op=clear_cel layer=1 frame=5
+doc_paint_grid layer=1 frame=5 x=7 y=21 legend={"k":2,"l":0,"m":1,"s":3} rows:8
+  |.....kkkkkkkk.....|
+  |...kkllmmmmmmkk...|
+  |.kkllllmmmmmmmmkk.|
+  |kkmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmkkk|
+  |kkmmmmmmmmmmmmkkkk|
+  |.kkkkkkkkkkkkkkkk.|
+doc_add_tag name=bounce direction=forward from=0 to=9

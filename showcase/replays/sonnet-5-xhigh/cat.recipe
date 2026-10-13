@@ -1,0 +1,284 @@
+atelier 3 fd3ad118-b792-4594-bf60-5e78e3227f88 0.1.0
+doc_new name=wizard_cat width=32 height=32
+doc_layer op=rename index=0 name=tail
+doc_layer op=add name=body
+doc_layer op=add name=hat
+doc_layer op=add name=staff
+doc_layer op=add name=orb_glow
+doc_layer op=add name=sparkles
+doc_palette op=set colors=[[43,27,23,255],[224,149,85,255],[163,96,61,255],[106,61,148,255],[255,203,92,255],[255,244,214,255]]
+doc_paint_grid layer=1 frame=0 x=0 y=0 legend={"F":[224,149,85,255]} rows:32
+  |................................|
+  |................................|
+  |................................|
+  |..........FF........FF..........|
+  |.........FFFF......FFFF.........|
+  |.........FFFF......FFFF.........|
+  |.........FFFFFFFFFFFFFF.........|
+  |.........FFFFFFFFFFFFFF.........|
+  |.........FFFFFFFFFFFFFF.........|
+  |.........FFFFFFFFFFFFFF.........|
+  |.........FFFFFFFFFFFFFF.........|
+  |.........FFFFFFFFFFFFFF.........|
+  |.........FFFFFFFFFFFFFF.FF......|
+  |..........FFFFFFFFFFFF..FFF.....|
+  |...........FFFFFFFFFF...FFF.....|
+  |............FFFFFFFF...FFF......|
+  |.............FFFFFF...FFF.......|
+  |...........FFFFFFFFFFFFF........|
+  |.........FFFFFFFFFFFFFF.........|
+  |........FFFFFFFFFFFFFFFF........|
+  |.......FFFFFFFFFFFFFFFFFF.......|
+  |......FFFFFFFFFFFFFFFFFFFF......|
+  |......FFFFFFFFFFFFFFFFFFFF......|
+  |......FFFFFFFFFFFFFFFFFFFF......|
+  |......FFFFFFFFFFFFFFFFFFFF......|
+  |......FFFFFFFFFFFFFFFFFFFF......|
+  |......FFFFFFFFFFFFFFFFFFFF......|
+  |......FFFFFFFFFFFFFFFFFFFF......|
+  |.......FFFFFFFFFFFFFFFFFF.......|
+  |........FFFFFFFFFFFFFFFF........|
+  |.........FFFFF....FFFFF.........|
+  |.........FFFF......FFFF.........|
+doc_paint_grid layer=2 frame=0 x=0 y=0 legend={"D":[43,27,23,255],"G":[255,203,92,255],"P":[106,61,148,255]} rows:32
+  |.................P..............|
+  |................PP..............|
+  |................PPP.............|
+  |...............PPPP.............|
+  |..............PPPPP.............|
+  |..............PPPPPP............|
+  |.............DDDDDDD............|
+  |........PPPPPPPPPPPPPPPP........|
+  |......PPPPPPPPPPPPPPPPPPPP......|
+  |.......PPPPPPPPPPPPPPPPPP.......|
+  |......PP................PP......|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+doc_draw op=pencil layer=2 frame=0 color=[255,203,92,255] points=[[16,3]]
+doc_paint_grid layer=3 frame=0 x=0 y=0 legend={"D":[43,27,23,255],"S":[163,96,61,255]} rows:32
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |........................DD......|
+  |........................DD......|
+  |........................DD......|
+  |........................SS......|
+  |........................DD......|
+  |........................DD......|
+  |........................DD......|
+  |........................DD......|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+doc_draw op=clear_cel layer=4 frame=0
+doc_draw op=ellipse layer=4 frame=0 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=ellipse layer=4 frame=0 color=[255,244,214,255] cx=25 cy=3 fill=true rx=0 ry=0
+doc_draw op=clear_cel layer=4 frame=0
+doc_draw op=pencil layer=4 frame=0 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=4 frame=0
+doc_draw op=ellipse layer=4 frame=0 color=[255,244,214,255] cx=25 cy=3 fill=true rx=2 ry=2
+doc_draw op=clear_cel layer=4 frame=0
+doc_draw op=ellipse layer=4 frame=0 color=[255,244,214,255] cx=25 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=4 frame=0 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=pencil layer=4 frame=0 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=0 frame=0
+doc_draw op=curve layer=0 frame=0 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[5.0,25],[3.0,21],[2.0,17],[3.0,13],[6.0,11]]
+doc_draw op=curve layer=0 frame=0 width=1 aa=false color=[163,96,61,255] points=[[5.6,25],[3.6,21],[2.6,17]]
+doc_paint_grid layer=1 frame=0 x=0 y=0 legend={"C":[255,244,214,255],"D":[43,27,23,255],"S":[163,96,61,255]} rows:32
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |.............S..S...............|
+  |................................|
+  |...........S......S.............|
+  |................................|
+  |...........DD......DD...........|
+  |................................|
+  |.............CCCCCC.............|
+  |............CCCDDCCC............|
+  |..............CCCC..............|
+  |................................|
+  |................................|
+  |.....................SS.........|
+  |......................SS........|
+  |.......................SS.......|
+  |........................SS......|
+  |........................SS......|
+  |........................SS......|
+  |........................SS......|
+  |........................SS......|
+  |........................SS......|
+  |........................SS......|
+  |.......................SS.......|
+  |......................SS........|
+  |................................|
+  |................................|
+doc_paint_grid layer=1 frame=0 x=0 y=0 legend={"C":[255,244,214,255],"D":[43,27,23,255],"S":[163,96,61,255]} rows:32
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |.............S..S...............|
+  |................................|
+  |...........S......S.............|
+  |................................|
+  |...........DD......DD...........|
+  |................................|
+  |.............CCCCCC.............|
+  |............CCCDDCCC............|
+  |..............CCCC..............|
+  |................................|
+  |................................|
+  |.....................SS.........|
+  |......................SS........|
+  |.............CCCCCC....SS.......|
+  |............CCCCCCCC....SS......|
+  |............CCCCCCCC....SS......|
+  |.............CCCCCC.....SS......|
+  |........................SS......|
+  |........................SS......|
+  |........................SS......|
+  |........................SS......|
+  |.......................SS.......|
+  |......................SS........|
+  |................................|
+  |................................|
+doc_draw op=clear_cel layer=5 frame=0
+doc_draw op=pencil layer=5 frame=0 color=[255,203,92,255] points=[[21,10]] size=1
+doc_draw op=pencil layer=5 frame=0 color=[255,244,214,255] points=[[30,7]] size=1
+doc_draw op=clear_cel layer=4 frame=0
+doc_draw op=ellipse layer=4 frame=0 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_frame op=add copy_from=0 duration_ms=100
+doc_draw op=clear_cel layer=0 frame=1
+doc_draw op=curve layer=0 frame=1 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[5.2,25],[3.4,21],[2.6,17],[3.8,13],[7.0,11]]
+doc_draw op=curve layer=0 frame=1 width=1 aa=false color=[163,96,61,255] points=[[5.8,25],[4.0,21],[3.2,17]]
+doc_draw op=clear_cel layer=4 frame=1
+doc_draw op=ellipse layer=4 frame=1 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=pencil layer=4 frame=1 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=5 frame=1
+doc_draw op=pencil layer=5 frame=1 color=[255,203,92,255] points=[[22,9]] size=1
+doc_draw op=pencil layer=5 frame=1 color=[255,244,214,255] points=[[28,6]] size=1
+doc_draw op=clear_cel layer=0 frame=2
+doc_draw op=curve layer=0 frame=2 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[5.4,25],[3.8,21],[3.2,17],[4.6,13],[8.0,11]]
+doc_draw op=curve layer=0 frame=2 width=1 aa=false color=[163,96,61,255] points=[[6.0,25],[4.3999999999999995,21],[3.8,17]]
+doc_draw op=clear_cel layer=4 frame=2
+doc_draw op=ellipse layer=4 frame=2 color=[255,244,214,255] cx=25 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=4 frame=2 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=pencil layer=4 frame=2 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=5 frame=2
+doc_draw op=pencil layer=5 frame=2 color=[255,203,92,255] points=[[20,8]] size=1
+doc_draw op=pencil layer=5 frame=2 color=[255,244,214,255] points=[[29,5]] size=1
+doc_draw op=clear_cel layer=0 frame=3
+doc_draw op=curve layer=0 frame=3 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[5.4,25],[3.8,21],[3.2,17],[4.6,13],[8.0,11]]
+doc_draw op=curve layer=0 frame=3 width=1 aa=false color=[163,96,61,255] points=[[6.0,25],[4.3999999999999995,21],[3.8,17]]
+doc_draw op=clear_cel layer=4 frame=3
+doc_draw op=ellipse layer=4 frame=3 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=pencil layer=4 frame=3 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=5 frame=3
+doc_draw op=pencil layer=5 frame=3 color=[255,203,92,255] points=[[21,7]] size=1
+doc_draw op=pencil layer=5 frame=3 color=[255,203,92,255] points=[[25,12]] size=1
+doc_draw op=clear_cel layer=0 frame=4
+doc_draw op=curve layer=0 frame=4 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[5.2,25],[3.4,21],[2.6,17],[3.8,13],[7.0,11]]
+doc_draw op=curve layer=0 frame=4 width=1 aa=false color=[163,96,61,255] points=[[5.8,25],[4.0,21],[3.2,17]]
+doc_draw op=clear_cel layer=4 frame=4
+doc_draw op=ellipse layer=4 frame=4 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=5 frame=4
+doc_draw op=pencil layer=5 frame=4 color=[255,203,92,255] points=[[22,6]] size=1
+doc_draw op=pencil layer=5 frame=4 color=[255,203,92,255] points=[[26,11]] size=1
+doc_draw op=clear_cel layer=0 frame=5
+doc_draw op=curve layer=0 frame=5 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[5.0,25],[3.0,21],[2.0,17],[3.0,13],[6.0,11]]
+doc_draw op=curve layer=0 frame=5 width=1 aa=false color=[163,96,61,255] points=[[5.6,25],[3.6,21],[2.6,17]]
+doc_draw op=clear_cel layer=4 frame=5
+doc_draw op=ellipse layer=4 frame=5 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=5 frame=5
+doc_draw op=pencil layer=5 frame=5 color=[255,203,92,255] points=[[20,5]] size=1
+doc_draw op=pencil layer=5 frame=5 color=[255,203,92,255] points=[[24,10]] size=1
+doc_draw op=clear_cel layer=0 frame=6
+doc_draw op=curve layer=0 frame=6 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[4.8,25],[2.6,21],[1.4,17],[2.2,13],[5.0,11]]
+doc_draw op=curve layer=0 frame=6 width=1 aa=false color=[163,96,61,255] points=[[5.3999999999999995,25],[3.2,21],[2.0,17]]
+doc_draw op=clear_cel layer=4 frame=6
+doc_draw op=ellipse layer=4 frame=6 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=pencil layer=4 frame=6 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=5 frame=6
+doc_draw op=pencil layer=5 frame=6 color=[255,203,92,255] points=[[21,4]] size=1
+doc_draw op=pencil layer=5 frame=6 color=[255,244,214,255] points=[[29,11]] size=1
+doc_draw op=pencil layer=5 frame=6 color=[255,203,92,255] points=[[25,9]] size=1
+doc_draw op=clear_cel layer=0 frame=7
+doc_draw op=curve layer=0 frame=7 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[4.6,25],[2.2,21],[0.8,17],[1.4,13],[4.0,11]]
+doc_draw op=curve layer=0 frame=7 width=1 aa=false color=[163,96,61,255] points=[[5.199999999999999,25],[2.8000000000000003,21],[1.4,17]]
+doc_draw op=clear_cel layer=4 frame=7
+doc_draw op=ellipse layer=4 frame=7 color=[255,244,214,255] cx=25 cy=3 fill=true rx=2 ry=2
+doc_draw op=ellipse layer=4 frame=7 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=pencil layer=4 frame=7 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=5 frame=7
+doc_draw op=pencil layer=5 frame=7 color=[255,244,214,255] points=[[30,10]] size=1
+doc_draw op=pencil layer=5 frame=7 color=[255,203,92,255] points=[[26,8]] size=1
+doc_draw op=clear_cel layer=0 frame=8
+doc_draw op=curve layer=0 frame=8 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[4.6,25],[2.2,21],[0.8,17],[1.4,13],[4.0,11]]
+doc_draw op=curve layer=0 frame=8 width=1 aa=false color=[163,96,61,255] points=[[5.199999999999999,25],[2.8000000000000003,21],[1.4,17]]
+doc_draw op=clear_cel layer=4 frame=8
+doc_draw op=ellipse layer=4 frame=8 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=pencil layer=4 frame=8 color=[255,244,214,255] points=[[25,3]] size=1
+doc_draw op=clear_cel layer=5 frame=8
+doc_draw op=pencil layer=5 frame=8 color=[255,244,214,255] points=[[28,9]] size=1
+doc_draw op=pencil layer=5 frame=8 color=[255,203,92,255] points=[[24,7]] size=1
+doc_draw op=clear_cel layer=0 frame=9
+doc_draw op=curve layer=0 frame=9 width=3 aa=false color=[224,149,85,255] points=[[8.0,27],[4.8,25],[2.6,21],[1.4,17],[2.2,13],[5.0,11]]
+doc_draw op=curve layer=0 frame=9 width=1 aa=false color=[163,96,61,255] points=[[5.3999999999999995,25],[3.2,21],[2.0,17]]
+doc_draw op=clear_cel layer=4 frame=9
+doc_draw op=ellipse layer=4 frame=9 color=[255,203,92,255] cx=25 cy=3 fill=true rx=1 ry=1
+doc_draw op=clear_cel layer=5 frame=9
+doc_draw op=pencil layer=5 frame=9 color=[255,244,214,255] points=[[29,8]] size=1
+doc_draw op=pencil layer=5 frame=9 color=[255,203,92,255] points=[[25,6]] size=1

@@ -60,27 +60,42 @@ class ShowcaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "valid identifiers"):
             showcase.showcase_matrix(self.matrix)
         manifest.write_text(original)
-        (self.matrix / "replays/fixture/tiny.jsonl").unlink()
+        (self.matrix / "replays/fixture/tiny.recipe").unlink()
         with self.assertRaisesRegex(ValueError, "replays differs"):
             showcase.showcase_matrix(self.matrix)
 
     def draw(self, wrapper, environment):
         """Draw the fixture recipe through the benchmark wrapper, as an agent would."""
         identity = None
-        recipe = Path(__file__).parent / "fixtures/showcase/replays/fixture/tiny.jsonl"
-        for line in recipe.read_text().splitlines():
-            step = json.loads(line)
-            params = step["args"]
-            if step["tool"] == "doc_new":
-                params.pop("doc_id")
-            else:
+        # The calls recorded in fixtures/showcase/replays/fixture/tiny.recipe.
+        steps = [
+            ("doc_new", {"name": "Tiny fixture", "width": 4, "height": 3}),
+            (
+                "doc_draw",
+                {
+                    "op": "rect",
+                    "layer": 0,
+                    "frame": 0,
+                    "color": [100, 180, 50],
+                    "fill": True,
+                    "x0": 0,
+                    "x1": 1,
+                    "y0": 0,
+                    "y1": 1,
+                },
+            ),
+            ("doc_frame", {"op": "add", "copy_from": 0, "duration_ms": 140}),
+            ("doc_fx", {"op": "shift", "layer": 0, "frame": 1, "dx": 1, "dy": 1}),
+        ]
+        for tool, params in steps:
+            if tool != "doc_new":
                 params["doc_id"] = identity
             result = subprocess.run(
                 [
                     sys.executable,
                     str(wrapper),
                     "call",
-                    step["tool"],
+                    tool,
                     json.dumps(params),
                 ],
                 env=environment,

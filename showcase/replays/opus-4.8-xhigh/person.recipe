@@ -1,0 +1,658 @@
+atelier 3 343b578a-010c-41e7-99ab-984251fa85e0 0.1.0
+doc_new name=adventurer-jump width=32 height=32
+doc_palette op=set colors=[[40,36,52],[236,186,140],[74,140,84],[44,96,62],[150,200,118],[150,100,58]]
+doc_layer op=rename index=0 name=legs
+doc_layer op=add name=body
+doc_layer op=add name=arms
+doc_frame op=add count=9 duration_ms=100
+doc_draw op=clear_cel layer=0 frame=0
+doc_paint_grid layer=0 frame=0 x=12 y=18 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:10
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=0
+doc_paint_grid layer=1 frame=0 x=12 y=4 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=0
+doc_paint_grid layer=2 frame=0 x=10 y=12 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |.T........T.|
+  |.T........T.|
+  |.S........S.|
+  |.S........S.|
+  |SS........SS|
+doc_draw op=clear_cel layer=0 frame=1
+doc_paint_grid layer=0 frame=1 x=12 y=19 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:9
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=1
+doc_paint_grid layer=1 frame=1 x=12 y=6 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:13
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=1
+doc_paint_grid layer=2 frame=1 x=9 y=13 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |..T........T..|
+  |.T..........T.|
+  |.S..........S.|
+  |S............S|
+  |S............S|
+doc_draw op=clear_cel layer=0 frame=2
+doc_paint_grid layer=0 frame=2 x=12 y=21 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:7
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=2
+doc_paint_grid layer=1 frame=2 x=12 y=8 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:13
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=2
+doc_paint_grid layer=2 frame=2 x=9 y=15 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |..T........T..|
+  |.T..........T.|
+  |.S..........S.|
+  |S............S|
+  |S............S|
+doc_draw op=clear_cel layer=0 frame=3
+doc_paint_grid layer=0 frame=3 x=13 y=17 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:11
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |.D..D.|
+  |.D..D.|
+doc_draw op=clear_cel layer=1 frame=3
+doc_paint_grid layer=1 frame=3 x=12 y=2 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:15
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=3
+doc_paint_grid layer=2 frame=3 x=10 y=7 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |S..........S|
+  |S..........S|
+  |S..........S|
+  |.T........T.|
+  |.T........T.|
+doc_draw op=clear_cel layer=0 frame=4
+doc_paint_grid layer=0 frame=4 x=12 y=15 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:6
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |.DD..DD.|
+doc_draw op=clear_cel layer=1 frame=4
+doc_paint_grid layer=1 frame=4 x=12 y=1 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=4
+doc_paint_grid layer=2 frame=4 x=11 y=5 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |S........S|
+  |S........S|
+  |S........S|
+  |T........T|
+  |T........T|
+doc_draw op=clear_cel layer=0 frame=5
+doc_paint_grid layer=0 frame=5 x=11 y=14 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |.PP....PP.|
+  |PP......PP|
+  |.PP....PP.|
+  |..DD..DD..|
+  |..DD..DD..|
+doc_draw op=clear_cel layer=1 frame=5
+doc_paint_grid layer=1 frame=5 x=12 y=0 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=5
+doc_paint_grid layer=2 frame=5 x=11 y=3 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:6
+  |S........S|
+  |S........S|
+  |S........S|
+  |S........S|
+  |T........T|
+  |T........T|
+doc_draw op=clear_cel layer=0 frame=6
+doc_paint_grid layer=0 frame=6 x=13 y=15 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:7
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |DD..DD|
+  |DD..DD|
+doc_draw op=clear_cel layer=1 frame=6
+doc_paint_grid layer=1 frame=6 x=12 y=1 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=6
+doc_paint_grid layer=2 frame=6 x=9 y=5 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |S............S|
+  |S............S|
+  |.S..........S.|
+  |..T........T..|
+  |..T........T..|
+doc_draw op=clear_cel layer=0 frame=7
+doc_paint_grid layer=0 frame=7 x=13 y=17 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:9
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |DD..DD|
+  |DD..DD|
+doc_draw op=clear_cel layer=1 frame=7
+doc_paint_grid layer=1 frame=7 x=12 y=3 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=7
+doc_paint_grid layer=2 frame=7 x=8 y=11 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:1
+  |SSST........TSSS|
+doc_draw op=clear_cel layer=0 frame=8
+doc_paint_grid layer=0 frame=8 x=11 y=20 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:8
+  |PP......PP|
+  |.PP....PP.|
+  |..PP..PP..|
+  |..PP..PP..|
+  |..PP..PP..|
+  |..PP..PP..|
+  |.DDD..DDD.|
+  |DDDD..DDDD|
+doc_draw op=clear_cel layer=1 frame=8
+doc_paint_grid layer=1 frame=8 x=12 y=7 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:13
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=8
+doc_paint_grid layer=2 frame=8 x=8 y=14 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:3
+  |...T........T...|
+  |.SS..........SS.|
+  |S..............S|
+doc_draw op=clear_cel layer=0 frame=9
+doc_paint_grid layer=0 frame=9 x=12 y=19 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:9
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=9
+doc_paint_grid layer=1 frame=9 x=12 y=5 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=9
+doc_paint_grid layer=2 frame=9 x=10 y=13 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |.T........T.|
+  |.T........T.|
+  |S..........S|
+  |S..........S|
+  |S..........S|
+doc_draw op=clear_cel layer=0 frame=0
+doc_paint_grid layer=0 frame=0 x=12 y=18 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:10
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=0
+doc_paint_grid layer=1 frame=0 x=12 y=4 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=0
+doc_paint_grid layer=2 frame=0 x=10 y=12 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |.T........T.|
+  |.T........T.|
+  |.S........S.|
+  |.S........S.|
+  |SS........SS|
+doc_draw op=clear_cel layer=0 frame=1
+doc_paint_grid layer=0 frame=1 x=12 y=19 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:9
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=1
+doc_paint_grid layer=1 frame=1 x=12 y=6 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:13
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=1
+doc_paint_grid layer=2 frame=1 x=9 y=13 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |..T........T..|
+  |.T..........T.|
+  |.S..........S.|
+  |S............S|
+  |S............S|
+doc_draw op=clear_cel layer=0 frame=2
+doc_paint_grid layer=0 frame=2 x=12 y=21 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:7
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=2
+doc_paint_grid layer=1 frame=2 x=12 y=8 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:13
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=2
+doc_paint_grid layer=2 frame=2 x=9 y=15 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |..T........T..|
+  |.T..........T.|
+  |.S..........S.|
+  |S............S|
+  |S............S|
+doc_draw op=clear_cel layer=0 frame=3
+doc_paint_grid layer=0 frame=3 x=13 y=17 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:11
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |.D..D.|
+  |.D..D.|
+doc_draw op=clear_cel layer=1 frame=3
+doc_paint_grid layer=1 frame=3 x=12 y=2 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:15
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=3
+doc_paint_grid layer=2 frame=3 x=10 y=7 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |S..........S|
+  |S..........S|
+  |S..........S|
+  |.T........T.|
+  |.T........T.|
+doc_draw op=clear_cel layer=0 frame=4
+doc_paint_grid layer=0 frame=4 x=12 y=15 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:6
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |.DD..DD.|
+doc_draw op=clear_cel layer=1 frame=4
+doc_paint_grid layer=1 frame=4 x=12 y=1 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=4
+doc_paint_grid layer=2 frame=4 x=11 y=5 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |S........S|
+  |S........S|
+  |S........S|
+  |T........T|
+  |T........T|
+doc_draw op=clear_cel layer=0 frame=5
+doc_paint_grid layer=0 frame=5 x=11 y=14 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |.PP....PP.|
+  |PP......PP|
+  |.PP....PP.|
+  |..DD..DD..|
+  |..DD..DD..|
+doc_draw op=clear_cel layer=1 frame=5
+doc_paint_grid layer=1 frame=5 x=12 y=0 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=5
+doc_paint_grid layer=2 frame=5 x=11 y=3 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:6
+  |S........S|
+  |S........S|
+  |S........S|
+  |S........S|
+  |T........T|
+  |T........T|
+doc_draw op=clear_cel layer=0 frame=6
+doc_paint_grid layer=0 frame=6 x=13 y=15 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:7
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |DD..DD|
+  |DD..DD|
+doc_draw op=clear_cel layer=1 frame=6
+doc_paint_grid layer=1 frame=6 x=12 y=1 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=6
+doc_paint_grid layer=2 frame=6 x=9 y=5 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |S............S|
+  |S............S|
+  |.S..........S.|
+  |..T........T..|
+  |..T........T..|
+doc_draw op=clear_cel layer=0 frame=7
+doc_paint_grid layer=0 frame=7 x=13 y=17 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:9
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |PP..PP|
+  |DD..DD|
+  |DD..DD|
+doc_draw op=clear_cel layer=1 frame=7
+doc_paint_grid layer=1 frame=7 x=12 y=3 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=7
+doc_paint_grid layer=2 frame=7 x=8 y=11 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:3
+  |..ST........TS..|
+  |.S............S.|
+  |S..............S|
+doc_draw op=clear_cel layer=0 frame=8
+doc_paint_grid layer=0 frame=8 x=11 y=20 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:8
+  |PP......PP|
+  |.PP....PP.|
+  |..PP..PP..|
+  |..PP..PP..|
+  |..PP..PP..|
+  |..PP..PP..|
+  |.DDD..DDD.|
+  |DDDD..DDDD|
+doc_draw op=clear_cel layer=1 frame=8
+doc_paint_grid layer=1 frame=8 x=12 y=7 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:13
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=8
+doc_paint_grid layer=2 frame=8 x=8 y=14 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:3
+  |...T........T...|
+  |.SS..........SS.|
+  |S..............S|
+doc_draw op=clear_cel layer=0 frame=9
+doc_paint_grid layer=0 frame=9 x=12 y=19 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:9
+  |PP....PP|
+  |PP....PP|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.PP..PP.|
+  |.DD..DD.|
+  |DDD..DDD|
+doc_draw op=clear_cel layer=1 frame=9
+doc_paint_grid layer=1 frame=9 x=12 y=5 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:14
+  |.DDDDD..|
+  |DDDDDDD.|
+  |DDDDDDD.|
+  |DSSSSSD.|
+  |DSDSDSD.|
+  |.SSSSS..|
+  |..SSS...|
+  |...SS...|
+  |LLLLLLLL|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |TTTTTTTT|
+  |gggggggg|
+  |DDDDDDDD|
+doc_draw op=clear_cel layer=2 frame=9
+doc_paint_grid layer=2 frame=9 x=10 y=13 legend={"D":0,"L":4,"P":5,"S":1,"T":2,"g":3} rows:5
+  |.T........T.|
+  |.T........T.|
+  |S..........S|
+  |S..........S|
+  |S..........S|
+doc_add_tag name=jump direction=forward from=0 to=9

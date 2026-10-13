@@ -415,28 +415,28 @@ impl Studio {
                 Some(id),
                 JOURNAL_FILE,
                 "journal is missing; the current document can be edited but not replayed",
-                "restore recipe.jsonl from backup, or keep the document as an intentionally non-replayable asset",
+                "restore doc.recipe from backup, or keep the document as an intentionally non-replayable asset",
             ),
             Err(error) => report.issue(
                 IntegritySeverity::Error,
                 Some(id),
                 JOURNAL_FILE,
                 format!("cannot inspect journal: {error}"),
-                "check ownership and permissions for recipe.jsonl",
+                "check ownership and permissions for doc.recipe",
             ),
             Ok(metadata) if metadata.file_type().is_symlink() => report.issue(
                 IntegritySeverity::Error,
                 Some(id),
                 JOURNAL_FILE,
                 "journal is a symbolic link",
-                "replace the link with a regular recipe.jsonl inside the document directory",
+                "replace the link with a regular doc.recipe inside the document directory",
             ),
             Ok(metadata) if !metadata.is_file() => report.issue(
                 IntegritySeverity::Error,
                 Some(id),
                 JOURNAL_FILE,
                 "journal is not a regular file",
-                "restore a regular recipe.jsonl or remove it if replay history is intentionally discarded",
+                "restore a regular doc.recipe or remove it if replay history is intentionally discarded",
             ),
             Ok(_) => match parse_journal_file(id, &journal_path) {
                 Ok(journal) => {
@@ -456,7 +456,7 @@ impl Studio {
                     Some(id),
                     JOURNAL_FILE,
                     error,
-                    "restore recipe.jsonl from backup, or remove it if replay history is intentionally discarded",
+                    "restore doc.recipe from backup, or remove it if replay history is intentionally discarded",
                 ),
             },
         }
@@ -710,7 +710,7 @@ impl Studio {
                 }
             };
             let name = entry.file_name().to_string_lossy().into_owned();
-            if matches!(name.as_str(), "doc.json" | "recipe.jsonl" | "cels")
+            if matches!(name.as_str(), "doc.json" | "doc.recipe" | "cels")
                 || name == REVISION_FILE
                 || (name == "reference.png" && has_reference)
             {
@@ -1015,7 +1015,7 @@ mod tests {
             .unwrap();
         let path = journal_path(&studio, &id);
         let mut journal = fs::read_to_string(&path).unwrap();
-        journal.push_str("{\"schema\":1,\"tool\":\"doc_draw\"");
+        journal.push_str("doc_draw op=re");
         fs::write(path, journal).unwrap();
 
         let report = studio.verify_store().unwrap();
