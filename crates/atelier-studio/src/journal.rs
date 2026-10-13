@@ -20,8 +20,9 @@
 //!
 //! - a number, `true`, `false`, `null`, a plain word, or a `#` colour as is;
 //! - a list of two or more of those joined by commas: `0,0,32,32`;
+//! - a list of two or more such lists joined by spaces: `7,33 17,33 18,33`;
 //! - a map of those as `key:value` pairs joined by commas: `C:#5ad8f8,K:0`;
-//! - anything else as JSON: `"glass back"`, `[[1,2],[3,4]]`.
+//! - anything else as JSON: `"glass back"`, `[[1,2]]`.
 //!
 //! A `rows:N` marker ends the line of a grid call and is followed by N rows
 //! between `|` bars, so the picture reads as drawn and trailing spaces survive
@@ -103,14 +104,32 @@ fn atom(value: &Value) -> Option<String> {
     }
 }
 
+/// A list of two or more atoms as `a,b`: the inner form of a nested list.
+fn atom_list(value: &Value) -> Option<String> {
+    let items = value.as_array().filter(|items| items.len() >= 2)?;
+    let atoms = items.iter().map(atom).collect::<Option<Vec<_>>>()?;
+    Some(atoms.join(","))
+}
+
+/// A point list token: `x,y` with no map separator, so it can follow another
+/// token on the line without being taken for an argument or a rows marker.
+fn is_pair_token(token: &str) -> bool {
+    token.contains(',') && !token.contains([':', '='])
+}
+
 /// The plainest spelling of `value` that [`parse_value`] reads back exactly.
 fn encode_value(value: &Value) -> Result<String, String> {
     let plain = match value {
-        Value::Array(items) if items.len() >= 2 => items
-            .iter()
-            .map(atom)
-            .collect::<Option<Vec<_>>>()
-            .map(|atoms| atoms.join(",")),
+        // Two or more lists of atoms, space-separated: `7,33 17,33 18,33`.
+        Value::Array(items) if items.len() >= 2 && items.iter().all(|item| item.is_array()) => {
+            items
+                .iter()
+                .map(atom_list)
+                .collect::<Option<Vec<_>>>()
+                .filter(|lists| lists.iter().all(|list| is_pair_token(list)))
+                .map(|lists| lists.join(" "))
+        }
+        Value::Array(_) => atom_list(value),
         Value::Object(map) if !map.is_empty() => map
             .iter()
             .map(|(key, value)| {
@@ -271,8 +290,23 @@ fn parse_call_line(line: &str) -> Result<CallLine, String> {
             (value, stream.byte_offset())
         } else {
             let word = after.split(' ').next().unwrap_or("");
-            let value = parse_value(word).map_err(|error| format!("{key}: {error}"))?;
-            (value, word.len())
+            let mut lists = vec![parse_value(word).map_err(|error| format!("{key}: {error}"))?];
+            let mut used = word.len();
+            // A point list continues over the following `x,y` tokens.
+            if is_pair_token(word) {
+                for token in after[used..].split(' ').skip(1) {
+                    if !is_pair_token(token) {
+                        break;
+                    }
+                    lists.push(parse_value(token).map_err(|error| format!("{key}: {error}"))?);
+                    used += 1 + token.len();
+                }
+            }
+            let value = match lists.len() {
+                1 => lists.remove(0),
+                _ => Value::Array(lists),
+            };
+            (value, used)
         };
         let remainder = &after[used..];
         if !remainder.is_empty() && !remainder.starts_with(' ') {
@@ -584,12 +618,26 @@ mod tests {
             ),
             "paint_grid layer=0 frame=0 legend=*:2,1:#F0B07Aff,K:#1a1630 rows:1\n  |K*|\n"
         );
+        assert_eq!(
+            line(
+                ToolName::DocDraw,
+                json!({"doc_id": ID, "op": "pencil", "layer": 0, "frame": 0,
+                       "points": [[7, 33], [17, 33], [18, 33]], "erase": true})
+            ),
+            "draw op=pencil layer=0 frame=0 erase=true points=7,33 17,33 18,33\n"
+        );
         // Anything that would not read back exactly stays JSON.
         for (value, written) in [
             (json!(["one"]), "[\"one\"]"),
             (json!([]), "[]"),
             (json!({}), "{}"),
-            (json!([[1, 2], [3, 4]]), "[[1,2],[3,4]]"),
+            (json!([[1, 2], [3, 4]]), "1,2 3,4"),
+            (json!([[1, 2]]), "[[1,2]]"),
+            (json!([[1], [2]]), "[[1],[2]]"),
+            (json!([[1, 2], [3]]), "[[1,2],[3]]"),
+            (json!([[1, 2], 3]), "[[1,2],3]"),
+            (json!([["a", "b"], ["c", "d"]]), "a,b c,d"),
+            (json!([[[1, 2], [3, 4]]]), "[[[1,2],[3,4]]]"),
             (json!(["a", "b c"]), "[\"a\",\"b c\"]"),
             (json!(["1", 2]), "[\"1\",2]"),
             (json!({"a:b": 1}), "{\"a:b\":1}"),
@@ -726,6 +774,16 @@ mod tests {
         assert!(bad("draw op=rect x=a:1,a:2\n").contains("given twice"));
         assert!(bad("draw op=rect x=12abc\n").contains("not a number"));
         assert!(bad("draw op=rect x=a,b*c\n").contains("must be quoted"));
+        // A point list ends at the first token that is not an `x,y` pair.
+        assert!(bad("draw op=rect points=1,2 3\n").contains("key=value"));
+        assert!(bad("draw op=rect points=1,2 3,x*\n").contains("must be quoted"));
+        let read = parse_journal(&format!(
+            "{}{NEW}draw op=rect points=1,2 3,4 rows:1\n  |.|\n",
+            header()
+        ))
+        .unwrap();
+        assert_eq!(read.entries[1].args["points"], json!([[1, 2], [3, 4]]));
+        assert_eq!(read.entries[1].args["rows"], json!(["."]));
         assert!(bad(&format!("draw doc_id=\"{ID}\"\n")).contains("must not repeat doc_id"));
         assert!(
             bad("paint_grid layer=0 frame=0 legend={} rows:2\n  |..|\n..\nlayer op=add\n")
