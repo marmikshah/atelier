@@ -1115,7 +1115,7 @@ mod tests {
             .unwrap();
         studio.set_document_revision(&id, 7).unwrap();
         studio
-            .journal_append(
+            .journal_call(
                 &id,
                 ToolName::DocNew,
                 &json!({"doc_id": id, "name": "portable", "w": 4, "h": 4}),

@@ -1129,7 +1129,7 @@ mod hardening_tests {
             .save(&blue_ref)
             .unwrap();
         s.set_reference(id, red_ref.to_str()).unwrap();
-        s.journal_append(
+        s.journal_call(
             id,
             crate::ToolName::DocNew,
             &json!({"name": "c", "doc_id": id}),
@@ -1154,10 +1154,10 @@ mod hardening_tests {
         )
         .unwrap();
         s.set_reference(id, blue_ref.to_str()).unwrap();
-        s.journal_append(
+        s.journal_call(
             id,
-            crate::ToolName::DocDraw,
-            &json!({"doc_id": id, "op": "fill_cel"}),
+            crate::ToolName::DocLayer,
+            &json!({"doc_id": id, "op": "add"}),
         )
         .unwrap();
 
