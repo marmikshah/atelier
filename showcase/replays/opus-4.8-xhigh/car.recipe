@@ -1,1205 +1,1066 @@
-atelier 4 645b80bc-9159-4d4f-9284-8dc7ef96e782 0.1.0
+atelier 5 645b80bc-9159-4d4f-9284-8dc7ef96e782 0.1.0
 new name=car-drive width=32 height=32
-palette op=set colors=#1a1a22,#e23a3a,#911f2b,#9fe0f2,#ededf2,#8b929c
-layer op=add name=exhaust
-layer op=add name=rear_wheel
-layer op=add name=front_wheel
-layer op=add name=chassis
-layer op=rename index=0 name=speed_lines
-frame op=add
-frame op=delete frame=1
-paint_grid layer=4 frame=0 x=5 y=5 legend=B:1,K:0 rows:3
-  |BBB|
-  |B.K|
-  |KKK|
-region op=clear layer=4 frame=0 rect=5,5,7,7
-region op=clear layer=0 frame=0 rect=0,0,31,31
-paint_grid layer=0 frame=0 x=0 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=0 x=0 y=7 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=0 x=0 y=16 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=0 x=2 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=0 rect=0,0,31,31
-paint_grid layer=1 frame=0 x=2 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=0 x=3 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=0 x=4 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=0 rect=0,0,31,31
-paint_grid layer=2 frame=0 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWgK.|
-  |KggWggK|
-  |KWWWWWK|
-  |KggWggK|
-  |.KgWgK.|
-  |..KKK..|
-region op=clear layer=3 frame=0 rect=0,0,31,31
-paint_grid layer=3 frame=0 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWgK.|
-  |KggWggK|
-  |KWWWWWK|
-  |KggWggK|
-  |.KgWgK.|
-  |..KKK..|
-region op=clear layer=4 frame=0 rect=0,0,31,31
-paint_grid layer=4 frame=0 x=3 y=9 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=0 x=26 y=16 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=0 x=4 y=16 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=0 x=20 y=15 legend=W:4 rows:1
-  |W|
-frame op=add count=9
-region op=clear layer=0 frame=0 rect=0,0,31,31
-paint_grid layer=0 frame=0 x=0 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=0 x=0 y=7 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=0 x=0 y=16 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=0 x=2 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=0 rect=0,0,31,31
-paint_grid layer=1 frame=0 x=2 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=0 x=3 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=0 x=4 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=0 rect=0,0,31,31
-paint_grid layer=2 frame=0 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWgK.|
-  |KggWggK|
-  |KWWWWWK|
-  |KggWggK|
-  |.KgWgK.|
-  |..KKK..|
-region op=clear layer=3 frame=0 rect=0,0,31,31
-paint_grid layer=3 frame=0 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWgK.|
-  |KggWggK|
-  |KWWWWWK|
-  |KggWggK|
-  |.KgWgK.|
-  |..KKK..|
-region op=clear layer=4 frame=0 rect=0,0,31,31
-paint_grid layer=4 frame=0 x=3 y=9 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=0 x=26 y=16 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=0 x=4 y=16 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=0 x=14 y=16 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=1 rect=0,0,31,31
-paint_grid layer=0 frame=1 x=0 y=4 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=1 x=2 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=1 x=0 y=16 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=1 x=1 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-region op=clear layer=1 frame=1 rect=0,0,31,31
-paint_grid layer=1 frame=1 x=1 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=1 x=2 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=1 x=1 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=1 x=2 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=1 rect=0,0,31,31
-paint_grid layer=2 frame=1 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KggWgWK|
-  |KWWWWWK|
-  |KWgWggK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=3 frame=1 rect=0,0,31,31
-paint_grid layer=3 frame=1 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KggWgWK|
-  |KWWWWWK|
-  |KWgWggK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=4 frame=1 rect=0,0,31,31
-paint_grid layer=4 frame=1 x=3 y=10 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=1 x=26 y=17 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=1 x=4 y=17 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=1 x=14 y=17 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=2 rect=0,0,31,31
-paint_grid layer=0 frame=2 x=0 y=4 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=2 x=1 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=2 x=2 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=2 x=0 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-region op=clear layer=1 frame=2 rect=0,0,31,31
-paint_grid layer=1 frame=2 x=0 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=2 x=1 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=2 x=0 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=2 x=1 y=22 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=2 rect=0,0,31,31
-paint_grid layer=2 frame=2 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KgWWWWK|
-  |KWWWWWK|
-  |KWWWWgK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=3 frame=2 rect=0,0,31,31
-paint_grid layer=3 frame=2 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KgWWWWK|
-  |KWWWWWK|
-  |KWWWWgK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=4 frame=2 rect=0,0,31,31
-paint_grid layer=4 frame=2 x=3 y=10 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=2 x=26 y=17 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=2 x=4 y=17 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=2 x=14 y=17 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=3 rect=0,0,31,31
-paint_grid layer=0 frame=3 x=2 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=3 x=0 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=3 x=1 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=3 x=0 y=29 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=3 rect=0,0,31,31
-paint_grid layer=1 frame=3 x=0 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=3 x=1 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=3 x=0 y=21 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=3 rect=0,0,31,31
-paint_grid layer=2 frame=3 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=3 frame=3 rect=0,0,31,31
-paint_grid layer=3 frame=3 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=4 frame=3 rect=0,0,31,31
-paint_grid layer=4 frame=3 x=3 y=10 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=3 x=26 y=17 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=3 x=4 y=17 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=3 x=14 y=17 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=4 rect=0,0,31,31
-paint_grid layer=0 frame=4 x=1 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=4 x=0 y=7 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=4 x=0 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=4 x=0 y=29 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=4 rect=0,0,31,31
-region op=clear layer=2 frame=4 rect=0,0,31,31
-paint_grid layer=2 frame=4 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=3 frame=4 rect=0,0,31,31
-paint_grid layer=3 frame=4 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=4 frame=4 rect=0,0,31,31
-paint_grid layer=4 frame=4 x=3 y=10 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=4 x=26 y=17 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=4 x=4 y=17 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=4 x=14 y=17 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=5 rect=0,0,31,31
-paint_grid layer=0 frame=5 x=0 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=5 x=0 y=7 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=5 x=0 y=16 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=5 x=2 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=5 rect=0,0,31,31
-paint_grid layer=1 frame=5 x=2 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=5 x=3 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=5 x=4 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=5 rect=0,0,31,31
-paint_grid layer=2 frame=5 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWgWK.|
-  |KWWWWWK|
-  |KgWWWgK|
-  |KWWWWWK|
-  |.KWgWK.|
-  |..KKK..|
-region op=clear layer=3 frame=5 rect=0,0,31,31
-paint_grid layer=3 frame=5 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWgWK.|
-  |KWWWWWK|
-  |KgWWWgK|
-  |KWWWWWK|
-  |.KWgWK.|
-  |..KKK..|
-region op=clear layer=4 frame=5 rect=0,0,31,31
-paint_grid layer=4 frame=5 x=3 y=9 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=5 x=26 y=16 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=5 x=4 y=16 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=5 x=14 y=16 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=6 rect=0,0,31,31
-paint_grid layer=0 frame=6 x=0 y=4 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=6 x=2 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=6 x=0 y=16 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=6 x=1 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-region op=clear layer=1 frame=6 rect=0,0,31,31
-paint_grid layer=1 frame=6 x=1 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=6 x=2 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=6 x=1 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=6 x=2 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=6 rect=0,0,31,31
-paint_grid layer=2 frame=6 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=3 frame=6 rect=0,0,31,31
-paint_grid layer=3 frame=6 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=4 frame=6 rect=0,0,31,31
-paint_grid layer=4 frame=6 x=3 y=8 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=6 x=26 y=15 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=6 x=4 y=15 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=6 x=14 y=15 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=7 rect=0,0,31,31
-paint_grid layer=0 frame=7 x=0 y=4 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=7 x=1 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=7 x=2 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=7 x=0 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-region op=clear layer=1 frame=7 rect=0,0,31,31
-paint_grid layer=1 frame=7 x=0 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=7 x=1 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=7 x=0 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=7 x=1 y=22 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=7 rect=0,0,31,31
-paint_grid layer=2 frame=7 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=3 frame=7 rect=0,0,31,31
-paint_grid layer=3 frame=7 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=4 frame=7 rect=0,0,31,31
-paint_grid layer=4 frame=7 x=3 y=8 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=7 x=26 y=15 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=7 x=4 y=15 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=7 x=14 y=15 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=8 rect=0,0,31,31
-paint_grid layer=0 frame=8 x=2 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=8 x=0 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=8 x=1 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=8 x=0 y=29 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=8 rect=0,0,31,31
-paint_grid layer=1 frame=8 x=0 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=8 x=1 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=8 x=0 y=21 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=8 rect=0,0,31,31
-paint_grid layer=2 frame=8 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWWWWgK|
-  |KWWWWWK|
-  |KgWWWWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=3 frame=8 rect=0,0,31,31
-paint_grid layer=3 frame=8 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWWWWgK|
-  |KWWWWWK|
-  |KgWWWWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=4 frame=8 rect=0,0,31,31
-paint_grid layer=4 frame=8 x=3 y=8 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=8 x=26 y=15 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=8 x=4 y=15 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=8 x=14 y=15 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=9 rect=0,0,31,31
-paint_grid layer=0 frame=9 x=1 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=9 x=0 y=7 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=9 x=0 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=9 x=0 y=29 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=9 rect=0,0,31,31
-region op=clear layer=2 frame=9 rect=0,0,31,31
-paint_grid layer=2 frame=9 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWgWggK|
-  |KWWWWWK|
-  |KggWgWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=3 frame=9 rect=0,0,31,31
-paint_grid layer=3 frame=9 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWgWggK|
-  |KWWWWWK|
-  |KggWgWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=4 frame=9 rect=0,0,31,31
-paint_grid layer=4 frame=9 x=3 y=8 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=9 x=26 y=15 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=9 x=4 y=15 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=9 x=14 y=15 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=0 rect=0,0,31,31
-paint_grid layer=0 frame=0 x=0 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=0 x=0 y=7 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=0 x=0 y=16 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=0 x=2 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=0 rect=0,0,31,31
-paint_grid layer=1 frame=0 x=2 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=0 x=3 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=0 x=4 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=0 rect=0,0,31,31
-paint_grid layer=2 frame=0 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWgK.|
-  |KggWggK|
-  |KWWWWWK|
-  |KggWggK|
-  |.KgWgK.|
-  |..KKK..|
-region op=clear layer=3 frame=0 rect=0,0,31,31
-paint_grid layer=3 frame=0 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWgK.|
-  |KggWggK|
-  |KWWWWWK|
-  |KggWggK|
-  |.KgWgK.|
-  |..KKK..|
-region op=clear layer=4 frame=0 rect=0,0,31,31
-paint_grid layer=4 frame=0 x=3 y=9 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=0 x=26 y=16 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=0 x=4 y=16 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=0 x=14 y=16 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=1 rect=0,0,31,31
-paint_grid layer=0 frame=1 x=0 y=4 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=1 x=2 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=1 x=0 y=16 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=1 x=1 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-region op=clear layer=1 frame=1 rect=0,0,31,31
-paint_grid layer=1 frame=1 x=1 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=1 x=2 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=1 x=1 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=1 x=2 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=1 rect=0,0,31,31
-paint_grid layer=2 frame=1 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KggWgWK|
-  |KWWWWWK|
-  |KWgWggK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=3 frame=1 rect=0,0,31,31
-paint_grid layer=3 frame=1 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KggWgWK|
-  |KWWWWWK|
-  |KWgWggK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=4 frame=1 rect=0,0,31,31
-paint_grid layer=4 frame=1 x=3 y=10 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=1 x=26 y=17 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=1 x=4 y=17 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=1 x=14 y=17 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=2 rect=0,0,31,31
-paint_grid layer=0 frame=2 x=0 y=4 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=2 x=1 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=2 x=2 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=2 x=0 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-region op=clear layer=1 frame=2 rect=0,0,31,31
-paint_grid layer=1 frame=2 x=0 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=2 x=1 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=2 x=0 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=2 x=1 y=22 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=2 rect=0,0,31,31
-paint_grid layer=2 frame=2 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KgWWWWK|
-  |KWWWWWK|
-  |KWWWWgK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=3 frame=2 rect=0,0,31,31
-paint_grid layer=3 frame=2 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWWgK.|
-  |KgWWWWK|
-  |KWWWWWK|
-  |KWWWWgK|
-  |.KgWWK.|
-  |..KKK..|
-region op=clear layer=4 frame=2 rect=0,0,31,31
-paint_grid layer=4 frame=2 x=3 y=11 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=2 x=26 y=18 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=2 x=4 y=18 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=2 x=14 y=18 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=3 rect=0,0,31,31
-paint_grid layer=0 frame=3 x=2 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=3 x=0 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=3 x=1 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=3 x=0 y=29 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=3 rect=0,0,31,31
-paint_grid layer=1 frame=3 x=0 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=3 x=1 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=3 x=0 y=21 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=3 rect=0,0,31,31
-paint_grid layer=2 frame=3 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=3 frame=3 rect=0,0,31,31
-paint_grid layer=3 frame=3 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=4 frame=3 rect=0,0,31,31
-paint_grid layer=4 frame=3 x=3 y=11 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=3 x=26 y=18 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=3 x=4 y=18 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=3 x=14 y=18 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=4 rect=0,0,31,31
-paint_grid layer=0 frame=4 x=1 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=4 x=0 y=7 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=4 x=0 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=4 x=0 y=29 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=4 rect=0,0,31,31
-region op=clear layer=2 frame=4 rect=0,0,31,31
-paint_grid layer=2 frame=4 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=3 frame=4 rect=0,0,31,31
-paint_grid layer=3 frame=4 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWggK.|
-  |KgWWWWK|
-  |KgWWWgK|
-  |KWWWWgK|
-  |.KggWK.|
-  |..KKK..|
-region op=clear layer=4 frame=4 rect=0,0,31,31
-paint_grid layer=4 frame=4 x=3 y=10 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=4 x=26 y=17 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=4 x=4 y=17 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=4 x=14 y=17 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=5 rect=0,0,31,31
-paint_grid layer=0 frame=5 x=0 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=5 x=0 y=7 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=5 x=0 y=16 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=5 x=2 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=5 rect=0,0,31,31
-paint_grid layer=1 frame=5 x=2 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=5 x=3 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=5 x=4 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=5 rect=0,0,31,31
-paint_grid layer=2 frame=5 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWgWK.|
-  |KWWWWWK|
-  |KgWWWgK|
-  |KWWWWWK|
-  |.KWgWK.|
-  |..KKK..|
-region op=clear layer=3 frame=5 rect=0,0,31,31
-paint_grid layer=3 frame=5 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KWgWK.|
-  |KWWWWWK|
-  |KgWWWgK|
-  |KWWWWWK|
-  |.KWgWK.|
-  |..KKK..|
-region op=clear layer=4 frame=5 rect=0,0,31,31
-paint_grid layer=4 frame=5 x=3 y=9 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=5 x=26 y=16 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=5 x=4 y=16 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=5 x=14 y=16 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=6 rect=0,0,31,31
-paint_grid layer=0 frame=6 x=0 y=4 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=6 x=2 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=6 x=0 y=16 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=6 x=1 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-region op=clear layer=1 frame=6 rect=0,0,31,31
-paint_grid layer=1 frame=6 x=1 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=6 x=2 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=6 x=1 y=23 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=6 x=2 y=23 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=6 rect=0,0,31,31
-paint_grid layer=2 frame=6 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=3 frame=6 rect=0,0,31,31
-paint_grid layer=3 frame=6 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=4 frame=6 rect=0,0,31,31
-paint_grid layer=4 frame=6 x=3 y=8 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=6 x=26 y=15 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=6 x=4 y=15 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=6 x=14 y=15 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=7 rect=0,0,31,31
-paint_grid layer=0 frame=7 x=0 y=4 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=7 x=1 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=7 x=2 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=7 x=0 y=29 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-region op=clear layer=1 frame=7 rect=0,0,31,31
-paint_grid layer=1 frame=7 x=0 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=7 x=1 y=21 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=7 x=0 y=22 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=7 x=1 y=22 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=7 rect=0,0,31,31
-paint_grid layer=2 frame=7 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=3 frame=7 rect=0,0,31,31
-paint_grid layer=3 frame=7 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KggWK.|
-  |KWWWWgK|
-  |KgWWWgK|
-  |KgWWWWK|
-  |.KWggK.|
-  |..KKK..|
-region op=clear layer=4 frame=7 rect=0,0,31,31
-paint_grid layer=4 frame=7 x=3 y=7 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=7 x=26 y=14 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=7 x=4 y=14 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=7 x=14 y=14 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=8 rect=0,0,31,31
-paint_grid layer=0 frame=8 x=2 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=8 x=0 y=7 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=8 x=1 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=8 x=0 y=29 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=8 rect=0,0,31,31
-paint_grid layer=1 frame=8 x=0 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=8 x=1 y=20 legend=g:5 rows:1
-  |g|
-paint_grid layer=1 frame=8 x=0 y=21 legend=g:5 rows:1
-  |g|
-region op=clear layer=2 frame=8 rect=0,0,31,31
-paint_grid layer=2 frame=8 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWWWWgK|
-  |KWWWWWK|
-  |KgWWWWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=3 frame=8 rect=0,0,31,31
-paint_grid layer=3 frame=8 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWWWWgK|
-  |KWWWWWK|
-  |KgWWWWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=4 frame=8 rect=0,0,31,31
-paint_grid layer=4 frame=8 x=3 y=7 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=8 x=26 y=14 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=8 x=4 y=14 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=8 x=14 y=14 legend=W:4 rows:1
-  |WW|
-region op=clear layer=0 frame=9 rect=0,0,31,31
-paint_grid layer=0 frame=9 x=1 y=4 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..g|
-paint_grid layer=0 frame=9 x=0 y=7 legend=g:5 rows:1
-  |gg..ggg..ggg..ggg..ggg..ggg..ggg|
-paint_grid layer=0 frame=9 x=0 y=16 legend=g:5 rows:1
-  |ggg..ggg..ggg..ggg..ggg..ggg..gg|
-paint_grid layer=0 frame=9 x=0 y=29 legend=g:5 rows:1
-  |g..ggg..ggg..ggg..ggg..ggg..ggg|
-region op=clear layer=1 frame=9 rect=0,0,31,31
-region op=clear layer=2 frame=9 rect=0,0,31,31
-paint_grid layer=2 frame=9 x=6 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWgWggK|
-  |KWWWWWK|
-  |KggWgWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=3 frame=9 rect=0,0,31,31
-paint_grid layer=3 frame=9 x=20 y=21 legend=K:0,W:4,g:5 rows:7
-  |..KKK..|
-  |.KgWWK.|
-  |KWgWggK|
-  |KWWWWWK|
-  |KggWgWK|
-  |.KWWgK.|
-  |..KKK..|
-region op=clear layer=4 frame=9 rect=0,0,31,31
-paint_grid layer=4 frame=9 x=3 y=8 legend=B:1,D:2,G:3,K:0 rows:14
-  |..........KKKKKKK.........|
-  |.........KGGGGGGGK........|
-  |........KGGGGKGGGGK.......|
-  |.......KGGGGGKGGGGGK......|
-  |......KGGGGGGKGGGGGGK.....|
-  |..KBBBBBBBBBBBBBBBBBBBBBK.|
-  |.KBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KBBBBBBBBBBBBBBBBBBBBBBBBK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KDDK.....KDDDDDDDK.....KDK|
-  |KDD.......DDDDDDD.......DK|
-  |KDD.......DDDDDDD.......DK|
-  |KKK.......KKKKKKK.......KK|
-paint_grid layer=4 frame=9 x=26 y=15 legend=W:4 rows:2
-  |W|
-  |W|
-paint_grid layer=4 frame=9 x=4 y=15 legend=W:4 rows:1
-  |W|
-paint_grid layer=4 frame=9 x=14 y=15 legend=W:4 rows:1
-  |WW|
+palette set colors=#1a1a22,#e23a3a,#911f2b,#9fe0f2,#ededf2,#8b929c
+layer add name=exhaust
+layer add name=rear_wheel
+layer add name=front_wheel
+layer add name=chassis
+layer rename index=0 name=speed_lines
+frame add
+frame delete frame=1
+legend A=#e23a3a B=#1a1a22
+chassis @0 grid 5,5 = 5,5 3x3
+    AAA
+    A.B
+    BBB
+chassis @0 clear 5,5 7,7 = 5,5 7,7 .
+speed_lines @0 clear 0,0 31,31 ~
+legend C=#8b929c
+speed_lines @0 grid 0,4 = 0,4 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @0 grid 0,7 = 0,7 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @0 grid 0,16 = 0,16 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @0 grid 2,29 = 2,29 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @0 clear 0,0 31,31 ~
+exhaust @0 grid 2,23 = 2,23 2,23 #8b929c
+exhaust @0 grid 3,23 = 3,23 3,23 #8b929c
+exhaust @0 grid 4,23 = 4,23 4,23 #8b929c
+rear_wheel @0 clear 0,0 31,31 ~
+legend D=#ededf2
+rear_wheel @0 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCDCB.
+    BCCDCCB
+    BDDDDDB
+    BCCDCCB
+    .BCDCB.
+    ..BBB..
+front_wheel @0 clear 0,0 31,31 ~
+front_wheel @0 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCDCB.
+    BCCDCCB
+    BDDDDDB
+    BCCDCCB
+    .BCDCB.
+    ..BBB..
+chassis @0 clear 0,0 31,31 ~
+legend E=#9fe0f2 F=#911f2b
+chassis @0 grid 3,9 = 3,9 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @0 grid 26,16 = 26,16 26,17 #ededf2
+chassis @0 grid 4,16 = 4,16 4,16 #ededf2
+chassis @0 grid 20,15 = 20,15 20,15 #ededf2
+frame add count=9
+speed_lines @0 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @0 grid 0,4 = 0,4 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @0 grid 0,7 = 0,7 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @0 grid 0,16 = 0,16 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @0 grid 2,29 = 2,29 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @0 clear 0,0 31,31 = 2,23 4,23 .
+exhaust @0 grid 2,23 = 2,23 2,23 #8b929c
+exhaust @0 grid 3,23 = 3,23 3,23 #8b929c
+exhaust @0 grid 4,23 = 4,23 4,23 #8b929c
+rear_wheel @0 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @0 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCDCB.
+    BCCDCCB
+    BDDDDDB
+    BCCDCCB
+    .BCDCB.
+    ..BBB..
+front_wheel @0 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @0 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCDCB.
+    BCCDCCB
+    BDDDDDB
+    BCCDCCB
+    .BCDCB.
+    ..BBB..
+chassis @0 clear 0,0 31,31 = 3,9 28,22 .
+chassis @0 grid 3,9 = 3,9 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @0 grid 26,16 = 26,16 26,17 #ededf2
+chassis @0 grid 4,16 = 4,16 4,16 #ededf2
+chassis @0 grid 14,16 = 14,16 15,16 #ededf2
+speed_lines @1 clear 0,0 31,31 ~
+speed_lines @1 grid 0,4 = 0,4 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @1 grid 2,7 = 2,7 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @1 grid 0,16 = 0,16 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @1 grid 1,29 = 1,29 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+exhaust @1 clear 0,0 31,31 ~
+exhaust @1 grid 1,22 = 1,22 1,22 #8b929c
+exhaust @1 grid 2,22 = 2,22 2,22 #8b929c
+exhaust @1 grid 1,23 = 1,23 1,23 #8b929c
+exhaust @1 grid 2,23 = 2,23 2,23 #8b929c
+rear_wheel @1 clear 0,0 31,31 ~
+rear_wheel @1 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCCDCDB
+    BDDDDDB
+    BDCDCCB
+    .BCDDB.
+    ..BBB..
+front_wheel @1 clear 0,0 31,31 ~
+front_wheel @1 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCCDCDB
+    BDDDDDB
+    BDCDCCB
+    .BCDDB.
+    ..BBB..
+chassis @1 clear 0,0 31,31 ~
+chassis @1 grid 3,10 = 3,10 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @1 grid 26,17 = 26,17 26,18 #ededf2
+chassis @1 grid 4,17 = 4,17 4,17 #ededf2
+chassis @1 grid 14,17 = 14,17 15,17 #ededf2
+speed_lines @2 clear 0,0 31,31 ~
+speed_lines @2 grid 0,4 = 0,4 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @2 grid 1,7 = 1,7 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @2 grid 2,16 = 2,16 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @2 grid 0,29 = 0,29 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+exhaust @2 clear 0,0 31,31 ~
+exhaust @2 grid 0,21 = 0,21 0,21 #8b929c
+exhaust @2 grid 1,21 = 1,21 1,21 #8b929c
+exhaust @2 grid 0,22 = 0,22 0,22 #8b929c
+exhaust @2 grid 1,22 = 1,22 1,22 #8b929c
+rear_wheel @2 clear 0,0 31,31 ~
+rear_wheel @2 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCDDDDB
+    BDDDDDB
+    BDDDDCB
+    .BCDDB.
+    ..BBB..
+front_wheel @2 clear 0,0 31,31 ~
+front_wheel @2 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCDDDDB
+    BDDDDDB
+    BDDDDCB
+    .BCDDB.
+    ..BBB..
+chassis @2 clear 0,0 31,31 ~
+chassis @2 grid 3,10 = 3,10 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @2 grid 26,17 = 26,17 26,18 #ededf2
+chassis @2 grid 4,17 = 4,17 4,17 #ededf2
+chassis @2 grid 14,17 = 14,17 15,17 #ededf2
+speed_lines @3 clear 0,0 31,31 ~
+speed_lines @3 grid 2,4 = 2,4 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @3 grid 0,7 = 0,7 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @3 grid 1,16 = 1,16 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @3 grid 0,29 = 0,29 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @3 clear 0,0 31,31 ~
+exhaust @3 grid 0,20 = 0,20 0,20 #8b929c
+exhaust @3 grid 1,20 = 1,20 1,20 #8b929c
+exhaust @3 grid 0,21 = 0,21 0,21 #8b929c
+rear_wheel @3 clear 0,0 31,31 ~
+rear_wheel @3 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+front_wheel @3 clear 0,0 31,31 ~
+front_wheel @3 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+chassis @3 clear 0,0 31,31 ~
+chassis @3 grid 3,10 = 3,10 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @3 grid 26,17 = 26,17 26,18 #ededf2
+chassis @3 grid 4,17 = 4,17 4,17 #ededf2
+chassis @3 grid 14,17 = 14,17 15,17 #ededf2
+speed_lines @4 clear 0,0 31,31 ~
+speed_lines @4 grid 1,4 = 1,4 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @4 grid 0,7 = 0,7 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @4 grid 0,16 = 0,16 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @4 grid 0,29 = 0,29 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @4 clear 0,0 31,31 ~
+rear_wheel @4 clear 0,0 31,31 ~
+rear_wheel @4 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+front_wheel @4 clear 0,0 31,31 ~
+front_wheel @4 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+chassis @4 clear 0,0 31,31 ~
+chassis @4 grid 3,10 = 3,10 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @4 grid 26,17 = 26,17 26,18 #ededf2
+chassis @4 grid 4,17 = 4,17 4,17 #ededf2
+chassis @4 grid 14,17 = 14,17 15,17 #ededf2
+speed_lines @5 clear 0,0 31,31 ~
+speed_lines @5 grid 0,4 = 0,4 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @5 grid 0,7 = 0,7 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @5 grid 0,16 = 0,16 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @5 grid 2,29 = 2,29 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @5 clear 0,0 31,31 ~
+exhaust @5 grid 2,23 = 2,23 2,23 #8b929c
+exhaust @5 grid 3,23 = 3,23 3,23 #8b929c
+exhaust @5 grid 4,23 = 4,23 4,23 #8b929c
+rear_wheel @5 clear 0,0 31,31 ~
+rear_wheel @5 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDCDB.
+    BDDDDDB
+    BCDDDCB
+    BDDDDDB
+    .BDCDB.
+    ..BBB..
+front_wheel @5 clear 0,0 31,31 ~
+front_wheel @5 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDCDB.
+    BDDDDDB
+    BCDDDCB
+    BDDDDDB
+    .BDCDB.
+    ..BBB..
+chassis @5 clear 0,0 31,31 ~
+chassis @5 grid 3,9 = 3,9 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @5 grid 26,16 = 26,16 26,17 #ededf2
+chassis @5 grid 4,16 = 4,16 4,16 #ededf2
+chassis @5 grid 14,16 = 14,16 15,16 #ededf2
+speed_lines @6 clear 0,0 31,31 ~
+speed_lines @6 grid 0,4 = 0,4 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @6 grid 2,7 = 2,7 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @6 grid 0,16 = 0,16 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @6 grid 1,29 = 1,29 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+exhaust @6 clear 0,0 31,31 ~
+exhaust @6 grid 1,22 = 1,22 1,22 #8b929c
+exhaust @6 grid 2,22 = 2,22 2,22 #8b929c
+exhaust @6 grid 1,23 = 1,23 1,23 #8b929c
+exhaust @6 grid 2,23 = 2,23 2,23 #8b929c
+rear_wheel @6 clear 0,0 31,31 ~
+rear_wheel @6 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+front_wheel @6 clear 0,0 31,31 ~
+front_wheel @6 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+chassis @6 clear 0,0 31,31 ~
+chassis @6 grid 3,8 = 3,8 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @6 grid 26,15 = 26,15 26,16 #ededf2
+chassis @6 grid 4,15 = 4,15 4,15 #ededf2
+chassis @6 grid 14,15 = 14,15 15,15 #ededf2
+speed_lines @7 clear 0,0 31,31 ~
+speed_lines @7 grid 0,4 = 0,4 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @7 grid 1,7 = 1,7 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @7 grid 2,16 = 2,16 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @7 grid 0,29 = 0,29 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+exhaust @7 clear 0,0 31,31 ~
+exhaust @7 grid 0,21 = 0,21 0,21 #8b929c
+exhaust @7 grid 1,21 = 1,21 1,21 #8b929c
+exhaust @7 grid 0,22 = 0,22 0,22 #8b929c
+exhaust @7 grid 1,22 = 1,22 1,22 #8b929c
+rear_wheel @7 clear 0,0 31,31 ~
+rear_wheel @7 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+front_wheel @7 clear 0,0 31,31 ~
+front_wheel @7 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+chassis @7 clear 0,0 31,31 ~
+chassis @7 grid 3,8 = 3,8 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @7 grid 26,15 = 26,15 26,16 #ededf2
+chassis @7 grid 4,15 = 4,15 4,15 #ededf2
+chassis @7 grid 14,15 = 14,15 15,15 #ededf2
+speed_lines @8 clear 0,0 31,31 ~
+speed_lines @8 grid 2,4 = 2,4 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @8 grid 0,7 = 0,7 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @8 grid 1,16 = 1,16 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @8 grid 0,29 = 0,29 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @8 clear 0,0 31,31 ~
+exhaust @8 grid 0,20 = 0,20 0,20 #8b929c
+exhaust @8 grid 1,20 = 1,20 1,20 #8b929c
+exhaust @8 grid 0,21 = 0,21 0,21 #8b929c
+rear_wheel @8 clear 0,0 31,31 ~
+rear_wheel @8 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDDDDCB
+    BDDDDDB
+    BCDDDDB
+    .BDDCB.
+    ..BBB..
+front_wheel @8 clear 0,0 31,31 ~
+front_wheel @8 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDDDDCB
+    BDDDDDB
+    BCDDDDB
+    .BDDCB.
+    ..BBB..
+chassis @8 clear 0,0 31,31 ~
+chassis @8 grid 3,8 = 3,8 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @8 grid 26,15 = 26,15 26,16 #ededf2
+chassis @8 grid 4,15 = 4,15 4,15 #ededf2
+chassis @8 grid 14,15 = 14,15 15,15 #ededf2
+speed_lines @9 clear 0,0 31,31 ~
+speed_lines @9 grid 1,4 = 1,4 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @9 grid 0,7 = 0,7 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @9 grid 0,16 = 0,16 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @9 grid 0,29 = 0,29 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @9 clear 0,0 31,31 ~
+rear_wheel @9 clear 0,0 31,31 ~
+rear_wheel @9 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDCDCCB
+    BDDDDDB
+    BCCDCDB
+    .BDDCB.
+    ..BBB..
+front_wheel @9 clear 0,0 31,31 ~
+front_wheel @9 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDCDCCB
+    BDDDDDB
+    BCCDCDB
+    .BDDCB.
+    ..BBB..
+chassis @9 clear 0,0 31,31 ~
+chassis @9 grid 3,8 = 3,8 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @9 grid 26,15 = 26,15 26,16 #ededf2
+chassis @9 grid 4,15 = 4,15 4,15 #ededf2
+chassis @9 grid 14,15 = 14,15 15,15 #ededf2
+speed_lines @0 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @0 grid 0,4 = 0,4 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @0 grid 0,7 = 0,7 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @0 grid 0,16 = 0,16 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @0 grid 2,29 = 2,29 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @0 clear 0,0 31,31 = 2,23 4,23 .
+exhaust @0 grid 2,23 = 2,23 2,23 #8b929c
+exhaust @0 grid 3,23 = 3,23 3,23 #8b929c
+exhaust @0 grid 4,23 = 4,23 4,23 #8b929c
+rear_wheel @0 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @0 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCDCB.
+    BCCDCCB
+    BDDDDDB
+    BCCDCCB
+    .BCDCB.
+    ..BBB..
+front_wheel @0 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @0 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCDCB.
+    BCCDCCB
+    BDDDDDB
+    BCCDCCB
+    .BCDCB.
+    ..BBB..
+chassis @0 clear 0,0 31,31 = 3,9 28,22 .
+chassis @0 grid 3,9 = 3,9 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @0 grid 26,16 = 26,16 26,17 #ededf2
+chassis @0 grid 4,16 = 4,16 4,16 #ededf2
+chassis @0 grid 14,16 = 14,16 15,16 #ededf2
+speed_lines @1 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @1 grid 0,4 = 0,4 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @1 grid 2,7 = 2,7 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @1 grid 0,16 = 0,16 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @1 grid 1,29 = 1,29 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+exhaust @1 clear 0,0 31,31 = 1,22 2,23 .
+exhaust @1 grid 1,22 = 1,22 1,22 #8b929c
+exhaust @1 grid 2,22 = 2,22 2,22 #8b929c
+exhaust @1 grid 1,23 = 1,23 1,23 #8b929c
+exhaust @1 grid 2,23 = 2,23 2,23 #8b929c
+rear_wheel @1 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @1 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCCDCDB
+    BDDDDDB
+    BDCDCCB
+    .BCDDB.
+    ..BBB..
+front_wheel @1 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @1 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCCDCDB
+    BDDDDDB
+    BDCDCCB
+    .BCDDB.
+    ..BBB..
+chassis @1 clear 0,0 31,31 = 3,10 28,23 .
+chassis @1 grid 3,10 = 3,10 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @1 grid 26,17 = 26,17 26,18 #ededf2
+chassis @1 grid 4,17 = 4,17 4,17 #ededf2
+chassis @1 grid 14,17 = 14,17 15,17 #ededf2
+speed_lines @2 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @2 grid 0,4 = 0,4 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @2 grid 1,7 = 1,7 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @2 grid 2,16 = 2,16 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @2 grid 0,29 = 0,29 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+exhaust @2 clear 0,0 31,31 = 0,21 1,22 .
+exhaust @2 grid 0,21 = 0,21 0,21 #8b929c
+exhaust @2 grid 1,21 = 1,21 1,21 #8b929c
+exhaust @2 grid 0,22 = 0,22 0,22 #8b929c
+exhaust @2 grid 1,22 = 1,22 1,22 #8b929c
+rear_wheel @2 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @2 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCDDDDB
+    BDDDDDB
+    BDDDDCB
+    .BCDDB.
+    ..BBB..
+front_wheel @2 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @2 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDDCB.
+    BCDDDDB
+    BDDDDDB
+    BDDDDCB
+    .BCDDB.
+    ..BBB..
+chassis @2 clear 0,0 31,31 = 3,10 28,23 .
+chassis @2 grid 3,11 = 3,11 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @2 grid 26,18 = 26,18 26,19 #ededf2
+chassis @2 grid 4,18 = 4,18 4,18 #ededf2
+chassis @2 grid 14,18 = 14,18 15,18 #ededf2
+speed_lines @3 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @3 grid 2,4 = 2,4 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @3 grid 0,7 = 0,7 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @3 grid 1,16 = 1,16 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @3 grid 0,29 = 0,29 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @3 clear 0,0 31,31 = 0,20 1,21 .
+exhaust @3 grid 0,20 = 0,20 0,20 #8b929c
+exhaust @3 grid 1,20 = 1,20 1,20 #8b929c
+exhaust @3 grid 0,21 = 0,21 0,21 #8b929c
+rear_wheel @3 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @3 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+front_wheel @3 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @3 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+chassis @3 clear 0,0 31,31 = 3,10 28,23 .
+chassis @3 grid 3,11 = 3,11 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @3 grid 26,18 = 26,18 26,19 #ededf2
+chassis @3 grid 4,18 = 4,18 4,18 #ededf2
+chassis @3 grid 14,18 = 14,18 15,18 #ededf2
+speed_lines @4 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @4 grid 1,4 = 1,4 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @4 grid 0,7 = 0,7 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @4 grid 0,16 = 0,16 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @4 grid 0,29 = 0,29 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @4 clear 0,0 31,31 ~
+rear_wheel @4 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @4 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+front_wheel @4 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @4 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDCCB.
+    BCDDDDB
+    BCDDDCB
+    BDDDDCB
+    .BCCDB.
+    ..BBB..
+chassis @4 clear 0,0 31,31 = 3,10 28,23 .
+chassis @4 grid 3,10 = 3,10 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @4 grid 26,17 = 26,17 26,18 #ededf2
+chassis @4 grid 4,17 = 4,17 4,17 #ededf2
+chassis @4 grid 14,17 = 14,17 15,17 #ededf2
+speed_lines @5 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @5 grid 0,4 = 0,4 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @5 grid 0,7 = 0,7 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @5 grid 0,16 = 0,16 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @5 grid 2,29 = 2,29 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @5 clear 0,0 31,31 = 2,23 4,23 .
+exhaust @5 grid 2,23 = 2,23 2,23 #8b929c
+exhaust @5 grid 3,23 = 3,23 3,23 #8b929c
+exhaust @5 grid 4,23 = 4,23 4,23 #8b929c
+rear_wheel @5 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @5 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BDCDB.
+    BDDDDDB
+    BCDDDCB
+    BDDDDDB
+    .BDCDB.
+    ..BBB..
+front_wheel @5 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @5 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BDCDB.
+    BDDDDDB
+    BCDDDCB
+    BDDDDDB
+    .BDCDB.
+    ..BBB..
+chassis @5 clear 0,0 31,31 = 3,9 28,22 .
+chassis @5 grid 3,9 = 3,9 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @5 grid 26,16 = 26,16 26,17 #ededf2
+chassis @5 grid 4,16 = 4,16 4,16 #ededf2
+chassis @5 grid 14,16 = 14,16 15,16 #ededf2
+speed_lines @6 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @6 grid 0,4 = 0,4 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @6 grid 2,7 = 2,7 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @6 grid 0,16 = 0,16 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @6 grid 1,29 = 1,29 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+exhaust @6 clear 0,0 31,31 = 1,22 2,23 .
+exhaust @6 grid 1,22 = 1,22 1,22 #8b929c
+exhaust @6 grid 2,22 = 2,22 2,22 #8b929c
+exhaust @6 grid 1,23 = 1,23 1,23 #8b929c
+exhaust @6 grid 2,23 = 2,23 2,23 #8b929c
+rear_wheel @6 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @6 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+front_wheel @6 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @6 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+chassis @6 clear 0,0 31,31 = 3,8 28,21 .
+chassis @6 grid 3,8 = 3,8 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @6 grid 26,15 = 26,15 26,16 #ededf2
+chassis @6 grid 4,15 = 4,15 4,15 #ededf2
+chassis @6 grid 14,15 = 14,15 15,15 #ededf2
+speed_lines @7 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @7 grid 0,4 = 0,4 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @7 grid 1,7 = 1,7 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @7 grid 2,16 = 2,16 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @7 grid 0,29 = 0,29 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+exhaust @7 clear 0,0 31,31 = 0,21 1,22 .
+exhaust @7 grid 0,21 = 0,21 0,21 #8b929c
+exhaust @7 grid 1,21 = 1,21 1,21 #8b929c
+exhaust @7 grid 0,22 = 0,22 0,22 #8b929c
+exhaust @7 grid 1,22 = 1,22 1,22 #8b929c
+rear_wheel @7 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @7 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+front_wheel @7 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @7 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCCDB.
+    BDDDDCB
+    BCDDDCB
+    BCDDDDB
+    .BDCCB.
+    ..BBB..
+chassis @7 clear 0,0 31,31 = 3,8 28,21 .
+chassis @7 grid 3,7 = 3,7 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @7 grid 26,14 = 26,14 26,15 #ededf2
+chassis @7 grid 4,14 = 4,14 4,14 #ededf2
+chassis @7 grid 14,14 = 14,14 15,14 #ededf2
+speed_lines @8 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @8 grid 2,4 = 2,4 28x1
+    CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @8 grid 0,7 = 0,7 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @8 grid 1,16 = 1,16 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @8 grid 0,29 = 0,29 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @8 clear 0,0 31,31 = 0,20 1,21 .
+exhaust @8 grid 0,20 = 0,20 0,20 #8b929c
+exhaust @8 grid 1,20 = 1,20 1,20 #8b929c
+exhaust @8 grid 0,21 = 0,21 0,21 #8b929c
+rear_wheel @8 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @8 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDDDDCB
+    BDDDDDB
+    BCDDDDB
+    .BDDCB.
+    ..BBB..
+front_wheel @8 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @8 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDDDDCB
+    BDDDDDB
+    BCDDDDB
+    .BDDCB.
+    ..BBB..
+chassis @8 clear 0,0 31,31 = 3,8 28,21 .
+chassis @8 grid 3,7 = 3,7 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @8 grid 26,14 = 26,14 26,15 #ededf2
+chassis @8 grid 4,14 = 4,14 4,14 #ededf2
+chassis @8 grid 14,14 = 14,14 15,14 #ededf2
+speed_lines @9 clear 0,0 31,31 = 0,4 31,29 .
+speed_lines @9 grid 1,4 = 1,4 31x1
+    CCC..CCC..CCC..CCC..CCC..CCC..C
+speed_lines @9 grid 0,7 = 0,7 32x1
+    CC..CCC..CCC..CCC..CCC..CCC..CCC
+speed_lines @9 grid 0,16 = 0,16 32x1
+    CCC..CCC..CCC..CCC..CCC..CCC..CC
+speed_lines @9 grid 0,29 = 0,29 31x1
+    C..CCC..CCC..CCC..CCC..CCC..CCC
+exhaust @9 clear 0,0 31,31 ~
+rear_wheel @9 clear 0,0 31,31 = 6,21 12,27 .
+rear_wheel @9 grid 6,21 = 6,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDCDCCB
+    BDDDDDB
+    BCCDCDB
+    .BDDCB.
+    ..BBB..
+front_wheel @9 clear 0,0 31,31 = 20,21 26,27 .
+front_wheel @9 grid 20,21 = 20,21 7x7
+    ..BBB..
+    .BCDDB.
+    BDCDCCB
+    BDDDDDB
+    BCCDCDB
+    .BDDCB.
+    ..BBB..
+chassis @9 clear 0,0 31,31 = 3,8 28,21 .
+chassis @9 grid 3,8 = 3,8 26x14
+    ..........BBBBBBB.........
+    .........BEEEEEEEB........
+    ........BEEEEBEEEEB.......
+    .......BEEEEEBEEEEEB......
+    ......BEEEEEEBEEEEEEB.....
+    ..BAAAAAAAAAAAAAAAAAAAAAB.
+    .BAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAAAAAAAAAAAB
+    BFFFFFFFFFFFFFFFFFFFFFFFFB
+    BFFB.....BFFFFFFFB.....BFB
+    BFF.......FFFFFFF.......FB
+    BFF.......FFFFFFF.......FB
+    BBB.......BBBBBBB.......BB
+chassis @9 grid 26,15 = 26,15 26,16 #ededf2
+chassis @9 grid 4,15 = 4,15 4,15 #ededf2
+chassis @9 grid 14,15 = 14,15 15,15 #ededf2

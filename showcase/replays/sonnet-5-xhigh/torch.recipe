@@ -1,183 +1,646 @@
-atelier 4 fe63cede-9c27-4143-b8a1-9bdc2fb55c6c 0.1.0
+atelier 5 fe63cede-9c27-4143-b8a1-9bdc2fb55c6c 0.1.0
 new name=wall_torch width=32 height=32
-layer op=rename index=0 name=bracket
-layer op=add name=handle
-layer op=add name=flame
-layer op=add name=embers
-layer op=add name=glow
-palette op=set colors=#2a1a18,#8a8a94,#7a4a28,#e8641e,#f7c53c
-draw op=rect layer=0 frame=0 color=#2a1a18 fill=false x0=12 x1=19 y0=18 y1=29
-draw op=rect layer=0 frame=0 color=#8a8a94 fill=true x0=13 x1=18 y0=19 y1=28
-draw op=rect layer=0 frame=0 color=#2a1a18 fill=true x0=12 x1=19 y0=20 y1=21
-draw op=rect layer=0 frame=0 color=#2a1a18 fill=true x0=12 x1=19 y0=25 y1=26
-draw op=rect layer=1 frame=0 color=#7a4a28 fill=true x0=15 x1=17 y0=9 y1=27
-draw op=line layer=1 frame=0 color=#2a1a18 size=1 x0=15 x1=15 y0=9 y1=27
-draw op=clear_cel layer=0 frame=0
-draw op=clear_cel layer=1 frame=0
-draw op=rect layer=0 frame=0 color=#2a1a18 fill=false x0=11 x1=21 y0=21 y1=29
-draw op=rect layer=0 frame=0 color=#8a8a94 fill=true x0=12 x1=20 y0=22 y1=28
-draw op=rect layer=0 frame=0 color=#2a1a18 fill=true x0=11 x1=21 y0=23 y1=24
-draw op=rect layer=1 frame=0 color=#7a4a28 fill=true x0=15 x1=17 y0=9 y1=28
-draw op=line layer=1 frame=0 color=#2a1a18 size=1 x0=15 x1=15 y0=9 y1=28
-draw op=polygon layer=2 frame=0 color=#e8641e fill=true points=11,9 13,6 14,3 16,1 18,3 19,6 21,9
-draw op=polygon layer=2 frame=0 color=#f7c53c fill=true points=13,9 14,7 16,4 18,7 19,9
-draw op=clear_cel layer=2 frame=0
-draw op=polygon layer=2 frame=0 color=#e8641e fill=true points=11,9 12,7 12,5 14,3 13,2 15,1 17,2 16,4 18,2 20,4 19,6 21,7 21,9
-draw op=polygon layer=2 frame=0 color=#f7c53c fill=true points=13,9 13,7 15,5 14,4 16,3 18,5 17,7 18,9
-frame op=add copy_from=0 count=9 duration_ms=100
-frame op=duration frame=0 duration_ms=100
-draw op=clear_cel layer=2 frame=0
-draw op=polygon layer=2 frame=0 color=#e8641e fill=true points=11,9 12,7 12,5 14,3 13,2 15,1 17,2 16,4 18,2 20,4 19,6 21,7 21,9
-draw op=polygon layer=2 frame=0 color=#f7c53c fill=true points=13,9 13,7 15,5 14,4 16,3 18,5 17,7 18,9
-draw op=clear_cel layer=3 frame=0
-draw op=pencil layer=3 frame=0 color=#f7c53c points=[[15,3]]
-draw op=pencil layer=3 frame=0 color=#e8641e points=[[17,0]]
-draw op=clear_cel layer=4 frame=0
-draw op=pencil layer=4 frame=0 color=#e8641e points=10,24 22,24
-draw op=clear_cel layer=2 frame=1
-draw op=polygon layer=2 frame=1 color=#e8641e fill=true points=11,9 13,8 13,4 15,4 14,3 16,0 18,1 17,5 19,3 21,5 20,5 22,6 21,9
-draw op=polygon layer=2 frame=1 color=#f7c53c fill=true points=13,9 14,8 16,4 15,5 17,2 19,6 18,6 18,9
-draw op=clear_cel layer=3 frame=1
-draw op=pencil layer=3 frame=1 color=#e8641e points=[[14,2]]
-draw op=clear_cel layer=4 frame=1
-draw op=pencil layer=4 frame=1 color=#e8641e points=10,24 22,24
-draw op=clear_cel layer=2 frame=2
-draw op=polygon layer=2 frame=2 color=#e8641e fill=true points=11,9 13,8 13,4 15,5 14,3 16,-1 18,1 17,5 19,4 21,5 20,5 22,6 21,9
-draw op=polygon layer=2 frame=2 color=#f7c53c fill=true points=13,9 14,8 16,4 15,5 17,2 19,6 18,6 18,9
-draw op=clear_cel layer=3 frame=2
-draw op=pencil layer=3 frame=2 color=#e8641e points=[[13,1]]
-draw op=clear_cel layer=4 frame=2
-draw op=pencil layer=4 frame=2 color=#e8641e points=10,24 22,24 10,23 22,23
-draw op=clear_cel layer=2 frame=3
-draw op=polygon layer=2 frame=3 color=#e8641e fill=true points=11,9 13,8 13,6 15,5 14,1 16,-1 18,3 17,5 19,4 21,3 20,5 22,6 21,9
-draw op=polygon layer=2 frame=3 color=#f7c53c fill=true points=13,9 14,8 16,6 15,5 17,2 19,4 18,6 18,9
-draw op=clear_cel layer=3 frame=3
-draw op=pencil layer=3 frame=3 color=#e8641e points=[[14,0]]
-draw op=clear_cel layer=4 frame=3
-draw op=pencil layer=4 frame=3 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22
-draw op=pencil layer=4 frame=3 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=4
-draw op=polygon layer=2 frame=4 color=#e8641e fill=true points=11,9 13,8 13,6 15,4 14,1 16,0 18,3 17,5 19,3 21,3 20,5 22,6 21,9
-draw op=polygon layer=2 frame=4 color=#f7c53c fill=true points=13,9 14,8 16,6 15,5 17,2 19,4 18,6 18,9
-draw op=clear_cel layer=3 frame=4
-draw op=pencil layer=3 frame=4 color=#f7c53c points=[[21,3]]
-draw op=clear_cel layer=4 frame=4
-draw op=pencil layer=4 frame=4 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22 10,26 22,26
-draw op=pencil layer=4 frame=4 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=5
-draw op=polygon layer=2 frame=5 color=#e8641e fill=true points=11,9 12,7 12,5 14,3 13,2 15,1 17,2 16,4 18,2 20,4 19,6 21,7 21,9
-draw op=polygon layer=2 frame=5 color=#f7c53c fill=true points=13,9 13,7 15,5 14,4 16,3 18,5 17,7 18,9
-draw op=clear_cel layer=3 frame=5
-draw op=pencil layer=3 frame=5 color=#e8641e points=[[20,2]]
-draw op=clear_cel layer=4 frame=5
-draw op=pencil layer=4 frame=5 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22 10,26 22,26
-draw op=pencil layer=4 frame=5 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=6
-draw op=polygon layer=2 frame=6 color=#e8641e fill=true points=11,9 11,6 11,4 13,2 12,3 14,2 16,1 15,3 17,1 19,5 18,7 20,8 21,9
-draw op=polygon layer=2 frame=6 color=#f7c53c fill=true points=13,9 12,6 14,4 13,3 15,4 17,6 16,8 18,9
-draw op=clear_cel layer=3 frame=6
-draw op=pencil layer=3 frame=6 color=#e8641e points=[[19,1]]
-draw op=clear_cel layer=4 frame=6
-draw op=pencil layer=4 frame=6 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22 10,26 22,26
-draw op=pencil layer=4 frame=6 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=7
-draw op=polygon layer=2 frame=7 color=#e8641e fill=true points=11,9 11,6 11,4 13,1 12,3 14,3 16,1 15,3 17,0 19,5 18,7 20,8 21,9
-draw op=polygon layer=2 frame=7 color=#f7c53c fill=true points=13,9 12,6 14,4 13,3 15,4 17,6 16,8 18,9
-draw op=clear_cel layer=3 frame=7
-draw op=pencil layer=3 frame=7 color=#f7c53c points=[[16,3]]
-draw op=pencil layer=3 frame=7 color=#e8641e points=[[20,0]]
-draw op=clear_cel layer=4 frame=7
-draw op=pencil layer=4 frame=7 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22
-draw op=pencil layer=4 frame=7 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=8
-draw op=polygon layer=2 frame=8 color=#e8641e fill=true points=11,9 11,6 11,6 13,1 12,1 14,3 16,3 15,3 17,0 19,3 18,7 20,8 21,9
-draw op=polygon layer=2 frame=8 color=#f7c53c fill=true points=13,9 12,6 14,6 13,3 15,4 17,4 16,8 18,9
-draw op=clear_cel layer=3 frame=8
-draw op=pencil layer=3 frame=8 color=#e8641e points=[[17,2]]
-draw op=clear_cel layer=4 frame=8
-draw op=pencil layer=4 frame=8 color=#e8641e points=10,24 22,24 10,23 22,23
-draw op=clear_cel layer=2 frame=9
-draw op=polygon layer=2 frame=9 color=#e8641e fill=true points=11,9 11,6 11,6 13,2 12,1 14,2 16,3 15,3 17,1 19,3 18,7 20,8 21,9
-draw op=polygon layer=2 frame=9 color=#f7c53c fill=true points=13,9 12,6 14,6 13,3 15,4 17,4 16,8 18,9
-draw op=clear_cel layer=3 frame=9
-draw op=pencil layer=3 frame=9 color=#e8641e points=[[18,1]]
-draw op=clear_cel layer=4 frame=9
-draw op=pencil layer=4 frame=9 color=#e8641e points=10,24 22,24
-draw op=clear_cel layer=2 frame=0
-draw op=polygon layer=2 frame=0 color=#e8641e fill=true points=11,9 13,7 13,4 15,4 14,3 16,-1 18,2 17,5 19,4 21,5 20,5 22,6 21,9
-draw op=polygon layer=2 frame=0 color=#f7c53c fill=true points=13,9 14,8 16,4 15,5 17,3 19,6 18,6 18,9
-draw op=clear_cel layer=3 frame=0
-draw op=pencil layer=3 frame=0 color=#f7c53c points=[[15,3]]
-draw op=pencil layer=3 frame=0 color=#e8641e points=[[17,0]]
-draw op=clear_cel layer=4 frame=0
-draw op=pencil layer=4 frame=0 color=#e8641e points=10,24 22,24
-draw op=clear_cel layer=2 frame=1
-draw op=polygon layer=2 frame=1 color=#e8641e fill=true points=11,9 13,8 13,4 15,5 14,2 16,-1 18,1 17,4 19,4 21,4 20,6 22,6 21,9
-draw op=polygon layer=2 frame=1 color=#f7c53c fill=true points=13,9 14,8 16,5 15,5 17,2 19,4 18,6 18,9
-draw op=clear_cel layer=3 frame=1
-draw op=pencil layer=3 frame=1 color=#e8641e points=[[14,2]]
-draw op=clear_cel layer=4 frame=1
-draw op=pencil layer=4 frame=1 color=#e8641e points=10,24 22,24
-draw op=clear_cel layer=2 frame=2
-draw op=polygon layer=2 frame=2 color=#e8641e fill=true points=11,9 12,8 12,5 14,5 13,1 15,0 17,2 16,3 18,4 20,3 19,6 21,6 21,9
-draw op=polygon layer=2 frame=2 color=#f7c53c fill=true points=13,9 13,8 15,6 14,4 16,2 18,4 17,6 18,9
-draw op=clear_cel layer=3 frame=2
-draw op=pencil layer=3 frame=2 color=#e8641e points=[[13,1]]
-draw op=clear_cel layer=4 frame=2
-draw op=pencil layer=4 frame=2 color=#e8641e points=10,24 22,24 10,23 22,23
-draw op=clear_cel layer=2 frame=3
-draw op=polygon layer=2 frame=3 color=#e8641e fill=true points=11,9 11,8 11,6 13,4 12,2 14,1 16,3 15,3 17,3 19,3 18,7 20,6 21,9
-draw op=polygon layer=2 frame=3 color=#f7c53c fill=true points=13,9 12,7 14,5 13,4 15,2 17,5 16,7 18,9
-draw op=clear_cel layer=3 frame=3
-draw op=pencil layer=3 frame=3 color=#e8641e points=[[14,0]]
-draw op=clear_cel layer=4 frame=3
-draw op=pencil layer=4 frame=3 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22
-draw op=pencil layer=4 frame=3 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=4
-draw op=polygon layer=2 frame=4 color=#e8641e fill=true points=11,9 11,8 11,5 13,3 12,3 14,2 16,3 15,3 17,1 19,4 18,7 20,7 21,9
-draw op=polygon layer=2 frame=4 color=#f7c53c fill=true points=13,9 12,7 14,4 13,3 15,3 17,6 16,8 18,9
-draw op=clear_cel layer=3 frame=4
-draw op=pencil layer=3 frame=4 color=#f7c53c points=[[21,3]]
-draw op=clear_cel layer=4 frame=4
-draw op=pencil layer=4 frame=4 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22 10,26 22,26
-draw op=pencil layer=4 frame=4 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=5
-draw op=polygon layer=2 frame=5 color=#e8641e fill=true points=11,9 11,7 11,4 13,2 12,3 14,3 16,2 15,3 17,0 19,5 18,7 20,8 21,9
-draw op=polygon layer=2 frame=5 color=#f7c53c fill=true points=13,9 12,6 14,4 13,3 15,3 17,6 16,8 18,9
-draw op=clear_cel layer=3 frame=5
-draw op=pencil layer=3 frame=5 color=#e8641e points=[[20,2]]
-draw op=clear_cel layer=4 frame=5
-draw op=pencil layer=4 frame=5 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22 10,26 22,26
-draw op=pencil layer=4 frame=5 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=6
-draw op=polygon layer=2 frame=6 color=#e8641e fill=true points=11,9 11,6 11,4 13,1 12,2 14,3 16,1 15,4 17,0 19,4 18,6 20,8 21,9
-draw op=polygon layer=2 frame=6 color=#f7c53c fill=true points=13,9 12,6 14,5 13,3 15,4 17,4 16,8 18,9
-draw op=clear_cel layer=3 frame=6
-draw op=pencil layer=3 frame=6 color=#e8641e points=[[19,1]]
-draw op=clear_cel layer=4 frame=6
-draw op=pencil layer=4 frame=6 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22 10,26 22,26
-draw op=pencil layer=4 frame=6 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=7
-draw op=polygon layer=2 frame=7 color=#e8641e fill=true points=11,9 12,6 12,5 14,1 13,1 15,2 17,2 16,5 18,0 20,3 19,6 21,8 21,9
-draw op=polygon layer=2 frame=7 color=#f7c53c fill=true points=13,9 13,6 15,6 14,4 16,4 18,4 17,8 18,9
-draw op=clear_cel layer=3 frame=7
-draw op=pencil layer=3 frame=7 color=#f7c53c points=[[16,3]]
-draw op=pencil layer=3 frame=7 color=#e8641e points=[[20,0]]
-draw op=clear_cel layer=4 frame=7
-draw op=pencil layer=4 frame=7 color=#f7c53c points=10,24 22,24 10,23 22,23 10,25 22,25 10,22 22,22
-draw op=pencil layer=4 frame=7 color=#f7c53c points=12,23 20,23
-draw op=clear_cel layer=2 frame=8
-draw op=polygon layer=2 frame=8 color=#e8641e fill=true points=11,9 13,6 13,6 15,2 14,2 16,1 18,3 17,5 19,1 21,3 20,5 22,8 21,9
-draw op=polygon layer=2 frame=8 color=#f7c53c fill=true points=13,9 14,7 16,5 15,4 17,4 19,5 18,7 18,9
-draw op=clear_cel layer=3 frame=8
-draw op=pencil layer=3 frame=8 color=#e8641e points=[[17,2]]
-draw op=clear_cel layer=4 frame=8
-draw op=pencil layer=4 frame=8 color=#e8641e points=10,24 22,24 10,23 22,23
-draw op=clear_cel layer=2 frame=9
-draw op=polygon layer=2 frame=9 color=#e8641e fill=true points=11,9 13,6 13,5 15,3 14,3 16,0 18,3 17,5 19,3 21,4 20,5 22,7 21,9
-draw op=polygon layer=2 frame=9 color=#f7c53c fill=true points=13,9 14,7 16,4 15,5 17,3 19,6 18,6 18,9
-draw op=clear_cel layer=3 frame=9
-draw op=pencil layer=3 frame=9 color=#e8641e points=[[18,1]]
-draw op=clear_cel layer=4 frame=9
-draw op=pencil layer=4 frame=9 color=#e8641e points=10,24 22,24
+layer rename index=0 name=bracket
+layer add name=handle
+layer add name=flame
+layer add name=embers
+layer add name=glow
+palette set colors=#2a1a18,#8a8a94,#7a4a28,#e8641e,#f7c53c
+legend A=#2a1a18
+bracket @0 rect #2a1a18 12,18 19,29 = 12,18 8x12
+    AAAAAAAA
+    A......A
+    A......A
+    A......A
+    A......A
+    A......A
+    A......A
+    A......A
+    A......A
+    A......A
+    A......A
+    AAAAAAAA
+bracket @0 rect #8a8a94 13,19 18,28 fill = 13,19 18,28 #8a8a94
+bracket @0 rect #2a1a18 12,20 19,21 fill = 13,20 18,21 #2a1a18
+bracket @0 rect #2a1a18 12,25 19,26 fill = 13,25 18,26 #2a1a18
+handle @0 rect #7a4a28 15,9 17,27 fill = 15,9 17,27 #7a4a28
+handle @0 line #2a1a18 15,9 15,27 size 1 = 15,9 15,27 #2a1a18
+bracket @0 clear_cel = 12,18 19,29 .
+handle @0 clear_cel = 15,9 17,27 .
+bracket @0 rect #2a1a18 11,21 21,29 = 11,21 11x9
+    AAAAAAAAAAA
+    A.........A
+    A.........A
+    A.........A
+    A.........A
+    A.........A
+    A.........A
+    A.........A
+    AAAAAAAAAAA
+bracket @0 rect #8a8a94 12,22 20,28 fill = 12,22 20,28 #8a8a94
+bracket @0 rect #2a1a18 11,23 21,24 fill = 12,23 20,24 #2a1a18
+handle @0 rect #7a4a28 15,9 17,28 fill = 15,9 17,28 #7a4a28
+handle @0 line #2a1a18 15,9 15,28 size 1 = 15,9 15,28 #2a1a18
+legend B=#e8641e
+flame @0 polygon #e8641e fill = 11,1 11x9
+    .....B.....
+    ....BBB....
+    ...BBBBB...
+    ...BBBBB...
+    ..BBBBBBB..
+    ..BBBBBBB..
+    .BBBBBBBBB.
+    .BBBBBBBBB.
+    BBBBBBBBBBB
+legend C=#f7c53c
+flame @0 polygon #f7c53c fill = 13,4 7x6
+    .BBCBB.
+    BBCCCBB
+    BBCCCBB
+    BCCCCCB
+    BCCCCCC
+    CCCCCCC
+flame @0 clear_cel = 11,1 21,9 .
+flame @0 polygon #e8641e fill = 11,1 11x9
+    ...BBB.....
+    ..BBBBBB...
+    ...BBBBBB..
+    ..BBBBBBBB.
+    .BBBBBBBB..
+    .BBBBBBBBB.
+    .BBBBBBBBBB
+    .BBBBBBBBBB
+    BBBBBBBBBBB
+flame @0 polygon #f7c53c fill = 13,3 6x7
+    .BCCBB
+    BCCCCB
+    BBCCCC
+    BCCCCB
+    CCCCCB
+    CCCCCC
+    CCCCCC
+frame add copy_from=0 count=9 duration_ms=100
+frame duration frame=0 duration_ms=100
+flame @0 clear_cel = 11,1 21,9 .
+flame @0 polygon #e8641e fill = 11,1 11x9
+    ...BBB.....
+    ..BBBBBB...
+    ...BBBBBB..
+    ..BBBBBBBB.
+    .BBBBBBBB..
+    .BBBBBBBBB.
+    .BBBBBBBBBB
+    .BBBBBBBBBB
+    BBBBBBBBBBB
+flame @0 polygon #f7c53c fill = 13,3 6x7
+    .BCCBB
+    BCCCCB
+    BBCCCC
+    BCCCCB
+    CCCCCB
+    CCCCCC
+    CCCCCC
+embers @0 clear_cel ~
+embers @0 pencil #f7c53c = 15,3 15,3 #f7c53c
+embers @0 pencil #e8641e = 17,0 17,0 #e8641e
+glow @0 clear_cel ~
+glow @0 pencil #e8641e = 10,24 13x1
+    B...........B
+flame @1 clear_cel = 11,1 21,9 .
+flame @1 polygon #e8641e fill = 11,0 12x10
+    .....BB.....
+    ....BBBB....
+    ....BBBB....
+    ...BBBB.B...
+    ..BBBBBBBB..
+    ..BBBBBBBBB.
+    ..BBBBBBBBBB
+    ..BBBBBBBBBB
+    .BBBBBBBBBB.
+    BBBBBBBBBBB.
+flame @1 polygon #f7c53c fill = 13,2 7x8
+    ..BBCB.
+    .BBCCCB
+    BBBCCCB
+    BBCCCCC
+    BBCCCCC
+    BBCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @1 clear_cel ~
+embers @1 pencil #e8641e = 14,2 14,2 #e8641e
+glow @1 clear_cel ~
+glow @1 pencil #e8641e = 10,24 13x1
+    B...........B
+flame @2 clear_cel = 11,1 21,9 .
+flame @2 polygon #e8641e fill = 11,0 12x10
+    .....BB.....
+    ....BBBB....
+    ....BBBB....
+    ...BBBB.....
+    ..BBBBBBBB..
+    ..BBBBBBBBB.
+    ..BBBBBBBBBB
+    ..BBBBBBBBBB
+    .BBBBBBBBBB.
+    BBBBBBBBBBB.
+flame @2 polygon #f7c53c fill = 13,2 7x8
+    ..BBCB.
+    .BBCCC.
+    BBBCCCB
+    BBCCCCC
+    BBCCCCC
+    BBCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @2 clear_cel ~
+embers @2 pencil #e8641e = 13,1 13,1 #e8641e
+glow @2 clear_cel ~
+glow @2 pencil #e8641e = 10,23 13x2
+    B...........B
+    B...........B
+flame @3 clear_cel = 11,1 21,9 .
+flame @3 polygon #e8641e fill = 11,0 12x10
+    ....BBB.....
+    ...BBBB.....
+    ...BBBBB....
+    ...BBBBB.BB.
+    ....BBBBBB..
+    ...BBBBBBBB.
+    ..BBBBBBBBBB
+    ..BBBBBBBBBB
+    .BBBBBBBBBB.
+    BBBBBBBBBBB.
+flame @3 polygon #f7c53c fill = 13,2 7x8
+    .BBBCB.
+    .BBCCC.
+    ..BCCCC
+    .BCCCCB
+    BBBCCCB
+    BBCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @3 clear_cel ~
+embers @3 pencil #e8641e = 14,0 14,0 #e8641e
+glow @3 clear_cel ~
+glow @3 pencil #f7c53c = 10,22 13x4
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @3 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @4 clear_cel = 11,1 21,9 .
+flame @4 polygon #e8641e fill = 11,0 12x10
+    ....BB......
+    ...BBBB.....
+    ...BBBB.....
+    ....BBBBBBB.
+    ....BBBBBB..
+    ...BBBBBBBB.
+    ..BBBBBBBBBB
+    ..BBBBBBBBBB
+    .BBBBBBBBBB.
+    BBBBBBBBBBB.
+flame @4 polygon #f7c53c fill = 13,2 7x8
+    .BBBC..
+    ..BCCCB
+    ..BCCCC
+    .BCCCCB
+    BBBCCCB
+    BBCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @4 clear_cel ~
+embers @4 pencil #f7c53c = 21,3 21,3 #f7c53c
+glow @4 clear_cel ~
+glow @4 pencil #f7c53c = 10,22 13x5
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @4 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @5 clear_cel = 11,1 21,9 .
+flame @5 polygon #e8641e fill = 11,1 11x9
+    ...BBB.....
+    ..BBBBBB...
+    ...BBBBBB..
+    ..BBBBBBBB.
+    .BBBBBBBB..
+    .BBBBBBBBB.
+    .BBBBBBBBBB
+    .BBBBBBBBBB
+    BBBBBBBBBBB
+flame @5 polygon #f7c53c fill = 13,3 6x7
+    .BCCBB
+    BCCCCB
+    BBCCCC
+    BCCCCB
+    CCCCCB
+    CCCCCC
+    CCCCCC
+embers @5 clear_cel ~
+embers @5 pencil #e8641e = 20,2 20,2 #e8641e
+glow @5 clear_cel ~
+glow @5 pencil #f7c53c = 10,22 13x5
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @5 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @6 clear_cel = 11,1 21,9 .
+flame @6 polygon #e8641e fill = 11,1 11x9
+    ....BBB....
+    ..BBBBBB...
+    .BBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBB..
+    BBBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+flame @6 polygon #f7c53c fill = 12,3 7x7
+    BCCBBBB
+    BBCCBBB
+    BCCCCBB
+    CCCCCCB
+    CCCCCBB
+    BCCCCCB
+    BCCCCCC
+embers @6 clear_cel ~
+embers @6 pencil #e8641e = 19,1 19,1 #e8641e
+glow @6 clear_cel ~
+glow @6 pencil #f7c53c = 10,22 13x5
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @6 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @7 clear_cel = 11,1 21,9 .
+flame @7 polygon #e8641e fill = 11,0 11x10
+    ......B....
+    ..B..BB....
+    .B..BBBB...
+    .BBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBB..
+    BBBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+flame @7 polygon #f7c53c fill = 12,3 7x7
+    BCCBBBB
+    BBCCBBB
+    BCCCCBB
+    CCCCCCB
+    CCCCCBB
+    BCCCCCB
+    BCCCCCC
+embers @7 clear_cel ~
+embers @7 pencil #f7c53c = 16,3 16,3 #f7c53c
+embers @7 pencil #e8641e = 20,0 20,0 #e8641e
+glow @7 clear_cel ~
+glow @7 pencil #f7c53c = 10,22 13x4
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @7 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @8 clear_cel = 11,1 21,9 .
+flame @8 polygon #e8641e fill = 11,0 11x10
+    ......B....
+    .BB..BBB...
+    ..B..BBB...
+    .BBBBBBBB..
+    .BBBBBBBB..
+    BBBBBBBB...
+    BBBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+flame @8 polygon #f7c53c fill = 12,3 7x7
+    BCCBBBB
+    BCCCCCB
+    BBCCCCB
+    CCCCCBB
+    CCCCCBB
+    BCCCCCB
+    BCCCCCC
+embers @8 clear_cel ~
+embers @8 pencil #e8641e = 17,2 17,2 #e8641e
+glow @8 clear_cel ~
+glow @8 pencil #e8641e = 10,23 13x2
+    B...........B
+    B...........B
+flame @9 clear_cel = 11,1 21,9 .
+flame @9 polygon #e8641e fill = 11,1 11x9
+    .BB...B....
+    ..BBBBBB...
+    ..BBBBBBB..
+    .BBBBBBBB..
+    .BBBBBBB...
+    BBBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+flame @9 polygon #f7c53c fill = 12,3 7x7
+    .CCBBBB
+    BCCCCCB
+    BBCCCCB
+    CCCCCBB
+    CCCCCBB
+    BCCCCCB
+    BCCCCCC
+embers @9 clear_cel ~
+embers @9 pencil #e8641e = 18,1 18,1 #e8641e
+glow @9 clear_cel ~
+glow @9 pencil #e8641e = 10,24 13x1
+    B...........B
+flame @0 clear_cel = 11,1 21,9 .
+flame @0 polygon #e8641e fill = 11,0 12x10
+    .....BB.....
+    ....BBB.....
+    ....BBBB....
+    ...BBBBB....
+    ..BBBBBBBB..
+    ..BBBBBBBBB.
+    ..BBBBBBBBBB
+    ..BBBBBBBBBB
+    .BBBBBBBBBB.
+    BBBBBBBBBBB.
+flame @0 polygon #f7c53c fill = 13,3 7x7
+    .BBBCB.
+    BBBCCCB
+    BBCCCCB
+    BBCCCCC
+    BBCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @0 clear_cel = 15,0 17,3 .
+embers @0 pencil #f7c53c = 15,3 15,3 #f7c53c
+embers @0 pencil #e8641e = 17,0 17,0 #e8641e
+glow @0 clear_cel = 10,24 22,24 .
+glow @0 pencil #e8641e = 10,24 13x1
+    B...........B
+flame @1 clear_cel = 11,0 22,9 .
+flame @1 polygon #e8641e fill = 11,0 12x10
+    ....BBB.....
+    ....BBBB....
+    ...BBBBB....
+    ...BBBB.....
+    ..BBBBBBBBB.
+    ..BBBBBBBB..
+    ..BBBBBBBBBB
+    ..BBBBBBBBBB
+    .BBBBBBBBBB.
+    BBBBBBBBBBB.
+flame @1 polygon #f7c53c fill = 13,2 7x8
+    .BBBCB.
+    .BBCCC.
+    BBBCCCC
+    BBCCCCB
+    BBCCCCB
+    BBCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @1 clear_cel = 14,2 14,2 .
+embers @1 pencil #e8641e = 14,2 14,2 #e8641e
+glow @1 clear_cel = 10,24 22,24 .
+glow @1 pencil #e8641e = 10,24 13x1
+    B...........B
+flame @2 clear_cel = 11,0 22,9 .
+flame @2 polygon #e8641e fill = 11,0 11x10
+    ...BB......
+    ..BBBB.....
+    ..BBBBB....
+    ..BBBBB.BB.
+    ...BBBBBBB.
+    .BBBBBBBB..
+    .BBBBBBBBBB
+    .BBBBBBBBBB
+    .BBBBBBBBBB
+    BBBBBBBBBBB
+flame @2 polygon #f7c53c fill = 13,2 6x8
+    BBBCB.
+    BBCCC.
+    .CCCCC
+    BCCCCB
+    BBCCCB
+    BCCCCB
+    CCCCCC
+    CCCCCC
+embers @2 clear_cel = 13,1 13,1 .
+embers @2 pencil #e8641e = 13,1 13,1 #e8641e
+glow @2 clear_cel = 10,23 22,24 .
+glow @2 pencil #e8641e = 10,23 13x2
+    B...........B
+    B...........B
+flame @3 clear_cel = 11,0 22,9 .
+flame @3 polygon #e8641e fill = 11,1 11x9
+    ..BB.......
+    .BBBB......
+    .BBBBBBBB..
+    ..BBBBBBB..
+    .BBBBBBB...
+    BBBBBBBBBB.
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+flame @3 polygon #f7c53c fill = 12,2 7x8
+    BBBC...
+    BBCCCBB
+    .CCCCBB
+    BBCCCCB
+    BCCCCBB
+    CCCCCBB
+    CCCCCCB
+    BCCCCCC
+embers @3 clear_cel = 14,0 14,0 .
+embers @3 pencil #e8641e = 14,0 14,0 #e8641e
+glow @3 clear_cel = 10,22 22,25 .
+glow @3 pencil #f7c53c = 10,22 13x4
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @3 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @4 clear_cel = 11,0 22,9 .
+flame @4 polygon #e8641e fill = 11,1 11x9
+    ......B....
+    ..BBBBBB...
+    .BBBBBBB...
+    .BBBBBBBB..
+    BBBBBBBBB..
+    BBBBBBBB...
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+flame @4 polygon #f7c53c fill = 12,3 7x7
+    BCCCBBB
+    BBCCCBB
+    BCCCCBB
+    BCCCCCB
+    CCCCCBB
+    CCCCCCB
+    BCCCCCC
+embers @4 clear_cel = 21,3 21,3 .
+embers @4 pencil #f7c53c = 21,3 21,3 #f7c53c
+glow @4 clear_cel = 10,22 22,26 .
+glow @4 pencil #f7c53c = 10,22 13x5
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @4 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @5 clear_cel = 11,1 21,9 .
+flame @5 polygon #e8641e fill = 11,0 11x10
+    ......B....
+    .....BB....
+    ..B.BBBB...
+    .BBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBB..
+    BBBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+flame @5 polygon #f7c53c fill = 12,3 7x7
+    BCCCBBB
+    BBCCCBB
+    BCCCCBB
+    CCCCCCB
+    CCCCCBB
+    BCCCCCB
+    BCCCCCC
+embers @5 clear_cel = 20,2 20,2 .
+embers @5 pencil #e8641e = 20,2 20,2 #e8641e
+glow @5 clear_cel = 10,22 22,26 .
+glow @5 pencil #f7c53c = 10,22 13x5
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @5 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @6 clear_cel = 11,1 21,9 .
+flame @6 polygon #e8641e fill = 11,0 11x10
+    ......B....
+    ..B..BBB...
+    .BB.BBBB...
+    .BBBBBBBB..
+    BBBBBBBBB..
+    BBBBBBBB...
+    BBBBBBBB...
+    BBBBBBBBB..
+    BBBBBBBBBB.
+    BBBBBBBBBBB
+flame @6 polygon #f7c53c fill = 12,3 7x7
+    BCCBBBB
+    BCCCCCB
+    BCCCCCB
+    CCCCCBB
+    CCCCCBB
+    BCCCCCB
+    BCCCCCC
+embers @6 clear_cel = 19,1 19,1 .
+embers @6 pencil #e8641e = 19,1 19,1 #e8641e
+glow @6 clear_cel = 10,22 22,26 .
+glow @6 pencil #f7c53c = 10,22 13x5
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @6 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @7 clear_cel = 11,0 21,9 .
+flame @7 polygon #e8641e fill = 11,0 11x10
+    .......B...
+    ..BB...BB..
+    ...BBBBBB..
+    ..BBBBBBBB.
+    ..BBBBBBBB.
+    .BBBBBBBB..
+    .BBBBBBBB..
+    .BBBBBBBBB.
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+flame @7 polygon #f7c53c fill = 13,4 6x6
+    BCCCCC
+    BCCCCC
+    CCCCCB
+    CCCCCB
+    CCCCCB
+    CCCCCC
+embers @7 clear_cel = 16,0 20,3 .
+embers @7 pencil #f7c53c = 16,3 16,3 #f7c53c
+embers @7 pencil #e8641e = 20,0 20,0 #e8641e
+glow @7 clear_cel = 10,22 22,25 .
+glow @7 pencil #f7c53c = 10,22 13x4
+    C...........C
+    C...........C
+    C...........C
+    C...........C
+glow @7 pencil #f7c53c = 12,23 9x1
+    C.......C
+flame @8 clear_cel = 11,0 21,9 .
+flame @8 polygon #e8641e fill = 11,1 12x9
+    ....BB..B...
+    ...BBBB.BB..
+    ....BBBBBBB.
+    ...BBBBBBB..
+    ...BBBBBBB..
+    ..BBBBBBBBB.
+    .BBBBBBBBBB.
+    .BBBBBBBBBBB
+    BBBBBBBBBBB.
+flame @8 polygon #f7c53c fill = 13,4 7x6
+    .BCCCCB
+    .BBCCCC
+    BBCCCCB
+    BCCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @8 clear_cel = 17,2 17,2 .
+embers @8 pencil #e8641e = 17,2 17,2 #e8641e
+glow @8 clear_cel = 10,23 22,24 .
+glow @8 pencil #e8641e = 10,23 13x2
+    B...........B
+    B...........B
+flame @9 clear_cel = 11,1 21,9 .
+flame @9 polygon #e8641e fill = 11,0 12x10
+    .....B......
+    ....BBB.....
+    ....BBB.....
+    ...BBBBBBB..
+    ...BBBBBBBB.
+    ..BBBBBBBB..
+    ..BBBBBBBBB.
+    .BBBBBBBBBBB
+    .BBBBBBBBBB.
+    BBBBBBBBBBB.
+flame @9 polygon #f7c53c fill = 13,3 7x7
+    .BBBCBB
+    .BBCCCB
+    BBCCCCB
+    BBCCCCC
+    BCCCCCB
+    BCCCCCB
+    CCCCCCB
+embers @9 clear_cel = 18,1 18,1 .
+embers @9 pencil #e8641e = 18,1 18,1 #e8641e
+glow @9 clear_cel = 10,24 22,24 .
+glow @9 pencil #e8641e = 10,24 13x1
+    B...........B
 add_tag name=flicker direction=forward from=0 to=9

@@ -1,340 +1,343 @@
-atelier 4 9220db54-5b5c-4773-ab8e-1575c9c75e7f 0.1.0
+atelier 5 9220db54-5b5c-4773-ab8e-1575c9c75e7f 0.1.0
 new name=torch width=32 height=32
-palette op=set colors=#3b3f4f,#a3aac0,#7a4a24,#ff7a1c,#ffe65a
-layer op=add name=glow
-layer op=add name=stick
-layer op=add name=flame_outer
-layer op=add name=flame_core
-layer op=add name=embers
-layer op=rename index=0 name=bracket
-paint_grid layer=0 frame=0 x=6 y=15 legend=B:0 rows:15
-  |BB...........|
-  |BB...........|
-  |BB...........|
-  |BBB..........|
-  |BBBB.........|
-  |BB.BB........|
-  |BB..BB.BBBBBB|
-  |BB...B.BBBBBB|
-  |BBBBBBBBBBBBB|
-  |BBBBBBB.BBBB.|
-  |BB...........|
-  |BB...........|
-  |BB...........|
-  |BB...........|
-  |BB...........|
-paint_grid layer=2 frame=0 x=14 y=13 legend=W:2 rows:8
-  |WWWW|
-  |WWWW|
-  |.WW.|
-  |.WW.|
-  |.WW.|
-  |.WW.|
-  |.WW.|
-  |.WW.|
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-paint_grid layer=3 frame=0 x=11 y=2 legend=O:3 rows:11
-  |.....O....|
-  |....OOO...|
-  |...OOOOO..|
-  |..OOOOOOO.|
-  |.OOOOOOOOO|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=0 x=13 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |.YYYY.|
-paint_grid layer=1 frame=0 x=7 y=18 legend=L:1 rows:8
-  |L...........|
-  |L...........|
-  |L...........|
-  |L.....LLLLLL|
-  |L...........|
-  |.LLLLL......|
-  |L...........|
-  |L...........|
-paint_grid layer=5 frame=0 x=9 y=6 legend=O:3,W:2,Y:4 rows:7
-  |..............W|
-  |O..............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |.Y.............|
-paint_grid layer=3 frame=1 x=11 y=2 legend=O:3 rows:11
-  |....O.....|
-  |...OOO....|
-  |..OOOOO...|
-  |.OOOOOOO..|
-  |OOOOOOOOO.|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=1 x=12 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |..YYYY|
-paint_grid layer=1 frame=1 x=7 y=18 legend=L:1 rows:8
-  |L...........|
-  |L...........|
-  |L...........|
-  |L.....LLLLLL|
-  |L...........|
-  |.LLLLL......|
-  |L...........|
-  |L...........|
-paint_grid layer=5 frame=1 x=9 y=5 legend=O:3,W:2,Y:4 rows:7
-  |...............W|
-  |O...............|
-  |................|
-  |................|
-  |................|
-  |................|
-  |.Y..............|
-paint_grid layer=3 frame=2 x=11 y=3 legend=O:3 rows:10
-  |....O.....|
-  |...OOO....|
-  |..OOOOO...|
-  |.OOOOOOO..|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=2 x=13 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |.YYYY.|
-paint_grid layer=1 frame=2 x=7 y=20 legend=L:1 rows:4
-  |L..........|
-  |L......LLLL|
-  |L..........|
-  |..LLL......|
-paint_grid layer=5 frame=2 x=8 y=5 legend=W:2,Y:4 rows:6
-  |W.|
-  |..|
-  |..|
-  |..|
-  |..|
-  |.Y|
-paint_grid layer=3 frame=3 x=11 y=2 legend=O:3 rows:11
-  |......O....|
-  |.....OOO...|
-  |....OOOOO..|
-  |...OOOOOOO.|
-  |..OOOOOOOOO|
-  |.OOOOOOOOO.|
-  |OOOOOOOOOO.|
-  |OOOOOOOOOO.|
-  |OOOOOOOOOO.|
-  |.OOOOOOOO..|
-  |..OOOOOO...|
-paint_grid layer=4 frame=3 x=14 y=7 legend=Y:4 rows:6
-  |.YY...|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |YYYY..|
-paint_grid layer=1 frame=3 x=14 y=21 legend=L:1 rows:1
-  |LLLL|
-paint_grid layer=5 frame=3 x=8 y=4 legend=O:3,W:2 rows:6
-  |W.|
-  |..|
-  |..|
-  |..|
-  |..|
-  |.O|
-paint_grid layer=3 frame=4 x=11 y=2 legend=O:3 rows:11
-  |...O......|
-  |...OO.....|
-  |..OOOOO...|
-  |.OOOOOOO..|
-  |OOOOOOOOO.|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=4 x=13 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |.YYYY.|
-paint_grid layer=1 frame=4 x=0 y=32 legend={} rows:0
-paint_grid layer=5 frame=4 x=9 y=8 legend=O:3,Y:4 rows:5
-  |O............|
-  |.............|
-  |.............|
-  |.............|
-  |............Y|
-paint_grid layer=3 frame=5 x=11 y=2 legend=O:3 rows:11
-  |....O.....|
-  |....OO....|
-  |...OOOO...|
-  |..OOOOOOO.|
-  |.OOOOOOOOO|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=5 x=13 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |.YYYY.|
-paint_grid layer=1 frame=5 x=0 y=32 legend={} rows:0
-paint_grid layer=5 frame=5 x=8 y=7 legend=O:3,Y:4 rows:5
-  |O.............|
-  |..............|
-  |..............|
-  |..............|
-  |.............Y|
-paint_grid layer=3 frame=6 x=11 y=2 legend=O:3 rows:11
-  |.....O....|
-  |.....OO...|
-  |....OOOO..|
-  |...OOOOOO.|
-  |..OOOOOOOO|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=6 x=14 y=7 legend=Y:4 rows:6
-  |.YY...|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |YYYY..|
-paint_grid layer=1 frame=6 x=0 y=32 legend={} rows:0
-paint_grid layer=5 frame=6 x=8 y=6 legend=W:2,Y:4 rows:7
-  |W..............|
-  |...............|
-  |...............|
-  |...............|
-  |..............Y|
-  |...............|
-  |.Y.............|
-paint_grid layer=3 frame=7 x=11 y=3 legend=O:3 rows:10
-  |.....O....|
-  |....OOO...|
-  |...OOOOO..|
-  |..OOOOOOO.|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=7 x=13 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |.YYYY.|
-paint_grid layer=1 frame=7 x=14 y=21 legend=L:1 rows:1
-  |LLLL|
-paint_grid layer=5 frame=7 x=7 y=5 legend=O:3,W:2,Y:4 rows:6
-  |W...............|
-  |................|
-  |................|
-  |................|
-  |...............O|
-  |...Y............|
-paint_grid layer=3 frame=8 x=11 y=2 legend=O:3 rows:11
-  |...O......|
-  |..OOO.....|
-  |.OOOOO....|
-  |OOOOOOO...|
-  |OOOOOOOOO.|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=8 x=12 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |..YYYY|
-paint_grid layer=1 frame=8 x=7 y=20 legend=L:1 rows:4
-  |L..........|
-  |L......LLLL|
-  |L..........|
-  |..LLL......|
-paint_grid layer=5 frame=8 x=10 y=8 legend=O:3,Y:4 rows:2
-  |............O|
-  |Y............|
-paint_grid layer=3 frame=9 x=11 y=2 legend=O:3 rows:11
-  |....O.....|
-  |...OOO....|
-  |..OOOOO...|
-  |.OOOOOOO..|
-  |.OOOOOOOOO|
-  |.OOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |OOOOOOOOOO|
-  |.OOOOOOOO.|
-  |..OOOOOO..|
-paint_grid layer=4 frame=9 x=13 y=7 legend=Y:4 rows:6
-  |..YY..|
-  |.YYYY.|
-  |YYYYYY|
-  |YYYYYY|
-  |.YYYY.|
-  |.YYYY.|
-paint_grid layer=1 frame=9 x=7 y=18 legend=L:1 rows:8
-  |L...........|
-  |L...........|
-  |L...........|
-  |L.....LLLLLL|
-  |L...........|
-  |.LLLLL......|
-  |L...........|
-  |L...........|
-paint_grid layer=5 frame=9 x=10 y=7 legend=O:3 rows:2
-  |.............O|
-  |O.............|
-palette op=swap from=["#3b3f4f"] to=["#4f5569"]
+palette set colors=#3b3f4f,#a3aac0,#7a4a24,#ff7a1c,#ffe65a
+layer add name=glow
+layer add name=stick
+layer add name=flame_outer
+layer add name=flame_core
+layer add name=embers
+layer rename index=0 name=bracket
+legend A=#3b3f4f
+bracket @0 grid 6,15 = 6,15 13x15
+    AA...........
+    AA...........
+    AA...........
+    AAA..........
+    AAAA.........
+    AA.AA........
+    AA..AA.AAAAAA
+    AA...A.AAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAA.AAAA.
+    AA...........
+    AA...........
+    AA...........
+    AA...........
+    AA...........
+legend B=#7a4a24
+stick @0 grid 14,13 = 14,13 4x8
+    BBBB
+    BBBB
+    .BB.
+    .BB.
+    .BB.
+    .BB.
+    .BB.
+    .BB.
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+legend C=#ff7a1c
+flame_outer @0 grid 11,2 = 11,2 10x11
+    .....C....
+    ....CCC...
+    ...CCCCC..
+    ..CCCCCCC.
+    .CCCCCCCCC
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+legend D=#ffe65a
+flame_core @0 grid 13,7 = 13,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    .DDDD.
+legend E=#a3aac0
+glow @0 grid 7,18 = 7,18 12x8
+    E...........
+    E...........
+    E...........
+    E.....EEEEEE
+    E...........
+    .EEEEE......
+    E...........
+    E...........
+embers @0 grid 9,6 = 9,6 15x7
+    ..............B
+    C..............
+    ...............
+    ...............
+    ...............
+    ...............
+    .D.............
+flame_outer @1 grid 11,2 = 11,2 10x11
+    ....C.....
+    ...CCC....
+    ..CCCCC...
+    .CCCCCCC..
+    CCCCCCCCC.
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @1 grid 12,7 = 12,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    ..DDDD
+glow @1 grid 7,18 = 7,18 12x8
+    E...........
+    E...........
+    E...........
+    E.....EEEEEE
+    E...........
+    .EEEEE......
+    E...........
+    E...........
+embers @1 grid 9,5 = 9,5 16x7
+    ...............B
+    C...............
+    ................
+    ................
+    ................
+    ................
+    .D..............
+flame_outer @2 grid 11,3 = 11,3 10x10
+    ....C.....
+    ...CCC....
+    ..CCCCC...
+    .CCCCCCC..
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @2 grid 13,7 = 13,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    .DDDD.
+glow @2 grid 7,20 = 7,20 11x4
+    E..........
+    E......EEEE
+    E..........
+    ..EEE......
+embers @2 grid 8,5 = 8,5 2x6
+    B.
+    ..
+    ..
+    ..
+    ..
+    .D
+flame_outer @3 grid 11,2 = 11,2 11x11
+    ......C....
+    .....CCC...
+    ....CCCCC..
+    ...CCCCCCC.
+    ..CCCCCCCCC
+    .CCCCCCCCC.
+    CCCCCCCCCC.
+    CCCCCCCCCC.
+    CCCCCCCCCC.
+    .CCCCCCCC..
+    ..CCCCCC...
+flame_core @3 grid 14,7 = 14,7 6x6
+    .DD...
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    DDDD..
+glow @3 grid 14,21 = 14,21 17,21 #a3aac0
+embers @3 grid 8,4 = 8,4 2x6
+    B.
+    ..
+    ..
+    ..
+    ..
+    .C
+flame_outer @4 grid 11,2 = 11,2 10x11
+    ...C......
+    ...CC.....
+    ..CCCCC...
+    .CCCCCCC..
+    CCCCCCCCC.
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @4 grid 13,7 = 13,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    .DDDD.
+glow @4 grid 0,32 ~
+embers @4 grid 9,8 = 9,8 13x5
+    C............
+    .............
+    .............
+    .............
+    ............D
+flame_outer @5 grid 11,2 = 11,2 10x11
+    ....C.....
+    ....CC....
+    ...CCCC...
+    ..CCCCCCC.
+    .CCCCCCCCC
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @5 grid 13,7 = 13,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    .DDDD.
+glow @5 grid 0,32 ~
+embers @5 grid 8,7 = 8,7 14x5
+    C.............
+    ..............
+    ..............
+    ..............
+    .............D
+flame_outer @6 grid 11,2 = 11,2 10x11
+    .....C....
+    .....CC...
+    ....CCCC..
+    ...CCCCCC.
+    ..CCCCCCCC
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @6 grid 14,7 = 14,7 6x6
+    .DD...
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    DDDD..
+glow @6 grid 0,32 ~
+embers @6 grid 8,6 = 8,6 15x7
+    B..............
+    ...............
+    ...............
+    ...............
+    ..............D
+    ...............
+    .D.............
+flame_outer @7 grid 11,3 = 11,3 10x10
+    .....C....
+    ....CCC...
+    ...CCCCC..
+    ..CCCCCCC.
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @7 grid 13,7 = 13,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    .DDDD.
+glow @7 grid 14,21 = 14,21 17,21 #a3aac0
+embers @7 grid 7,5 = 7,5 16x6
+    B...............
+    ................
+    ................
+    ................
+    ...............C
+    ...D............
+flame_outer @8 grid 11,2 = 11,2 10x11
+    ...C......
+    ..CCC.....
+    .CCCCC....
+    CCCCCCC...
+    CCCCCCCCC.
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @8 grid 12,7 = 12,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    ..DDDD
+glow @8 grid 7,20 = 7,20 11x4
+    E..........
+    E......EEEE
+    E..........
+    ..EEE......
+embers @8 grid 10,8 = 10,8 13x2
+    ............C
+    D............
+flame_outer @9 grid 11,2 = 11,2 10x11
+    ....C.....
+    ...CCC....
+    ..CCCCC...
+    .CCCCCCC..
+    .CCCCCCCCC
+    .CCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    CCCCCCCCCC
+    .CCCCCCCC.
+    ..CCCCCC..
+flame_core @9 grid 13,7 = 13,7 6x6
+    ..DD..
+    .DDDD.
+    DDDDDD
+    DDDDDD
+    .DDDD.
+    .DDDD.
+glow @9 grid 7,18 = 7,18 12x8
+    E...........
+    E...........
+    E...........
+    E.....EEEEEE
+    E...........
+    .EEEEE......
+    E...........
+    E...........
+embers @9 grid 10,7 = 10,7 14x2
+    .............C
+    C.............
+palette swap from=["#3b3f4f"] to=["#4f5569"]
 add_tag name=torch_loop direction=forward from=0 to=9

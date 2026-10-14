@@ -1,262 +1,261 @@
-atelier 4 64691094-bdee-416c-bbff-8acabfe92448 0.1.0
+atelier 5 64691094-bdee-416c-bbff-8acabfe92448 0.1.0
 new name=torch width=32 height=32
-layer op=add
-layer op=rename index=0 name=handle
-layer op=rename index=1 name=bracket
-layer op=add name=glow
-layer op=add name=flame
-layer op=add name=embers
-palette op=set colors=#2a1a16,#8c5a3c,#d8401c,#ff9020,#ffe060
-paint_grid layer=0 frame=0 x=13 y=16 legend=d:0,w:1 rows:12
-  |dddddd|
-  |dddddd|
-  |dddddd|
-  |.dwww.|
-  |.dwww.|
-  |.dwww.|
-  |.dwww.|
-  |.dwww.|
-  |.dwww.|
-  |.dwww.|
-  |.dwww.|
-  |.dwww.|
-paint_grid layer=1 frame=0 x=12 y=22 legend=d:0 rows:10
-  |dddddddd|
-  |dddddddd|
-  |........|
-  |........|
-  |........|
-  |........|
-  |...dd...|
-  |.dddddd.|
-  |dddddddd|
-  |dddddddd|
-paint_grid layer=3 frame=0 x=12 y=6 legend=o:3,r:2,y:4 rows:11
-  |...r....|
-  |...rr...|
-  |..ror...|
-  |..roor..|
-  |.rooor..|
-  |.royoor.|
-  |rooyyor.|
-  |royyyyor|
-  |royyyyor|
-  |.royyor.|
-  |.roooor.|
-paint_grid layer=1 frame=0 x=12 y=28 legend=d:0 rows:4
-  |...dd...|
-  |dddddddd|
-  |dddddddd|
-  |dddddddd|
-paint_grid layer=2 frame=0 x=13 y=22 legend=w:1 rows:8
-  |wwwwww|
-  |......|
-  |......|
-  |......|
-  |......|
-  |......|
-  |......|
-  |wwwwww|
-frame op=add copy_from=0 count=9 duration_ms=100
-draw op=pencil layer=4 frame=0 color=#ff9020 points=[[18,1]]
-draw op=clear_cel layer=2 frame=5
-draw op=clear_cel layer=3 frame=1
-paint_grid layer=3 frame=1 x=12 y=5 legend=o:3,r:2,y:4 rows:12
-  |....r...|
-  |....r...|
-  |...ror..|
-  |...roor.|
-  |..rooor.|
-  |.rooyor.|
-  |.royyor.|
-  |rooyyor.|
-  |rooyyyor|
-  |rooyyyor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=2
-paint_grid layer=3 frame=2 x=12 y=3 legend=o:3,r:2,y:4 rows:14
-  |.....r..|
-  |.....r..|
-  |....rr..|
-  |....ro..|
-  |...roor.|
-  |...roor.|
-  |..rooor.|
-  |..royor.|
-  |.royyor.|
-  |rooyyor.|
-  |rooyyyor|
-  |rooyyyor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=3
-paint_grid layer=3 frame=3 x=12 y=3 legend=o:3,r:2,y:4 rows:14
-  |.....r..|
-  |........|
-  |....r...|
-  |....ro..|
-  |...roo..|
-  |...roor.|
-  |..rooor.|
-  |..royor.|
-  |.royyor.|
-  |.royyor.|
-  |rooyyyor|
-  |rooyyyor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=4
-paint_grid layer=3 frame=4 x=12 y=6 legend=o:3,r:2,y:4 rows:11
-  |....r...|
-  |...rr...|
-  |...ror..|
-  |..roor..|
-  |.rooor..|
-  |.royoor.|
-  |rooyyor.|
-  |royyyyor|
-  |royyyyor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=5
-paint_grid layer=3 frame=5 x=12 y=7 legend=o:3,r:2,y:4 rows:10
-  |...r....|
-  |..roor..|
-  |.rooor..|
-  |.rooor..|
-  |rooyoor.|
-  |royyyor.|
-  |royyyyor|
-  |royyyyor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=6
-paint_grid layer=3 frame=6 x=12 y=6 legend=o:3,r:2,y:4 rows:11
-  |..r.....|
-  |..rr....|
-  |..ror...|
-  |.roor...|
-  |.rooor..|
-  |.royoor.|
-  |rooyyor.|
-  |royyyoor|
-  |royyyoor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=7
-paint_grid layer=3 frame=7 x=12 y=4 legend=o:3,r:2,y:4 rows:13
-  |.r......|
-  |.rr.....|
-  |.ro.....|
-  |.roor...|
-  |.roor...|
-  |.rooor..|
-  |.royor..|
-  |.royoor.|
-  |royyyor.|
-  |royyyoor|
-  |royyyoor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=8
-paint_grid layer=3 frame=8 x=12 y=5 legend=o:3,r:2,y:4 rows:12
-  |..r.....|
-  |..r.....|
-  |..ro....|
-  |..roor..|
-  |.rooor..|
-  |.royor..|
-  |.royoor.|
-  |rooyyor.|
-  |royyyoor|
-  |royyyoor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=3 frame=9
-paint_grid layer=3 frame=9 x=12 y=5 legend=o:3,r:2,y:4 rows:12
-  |...r....|
-  |...r....|
-  |...ro...|
-  |..roor..|
-  |..roor..|
-  |.royoor.|
-  |.royyor.|
-  |rooyyor.|
-  |royyyyor|
-  |royyyyor|
-  |.royyor.|
-  |.roooor.|
-draw op=clear_cel layer=2 frame=2
-paint_grid layer=2 frame=2 x=12 y=19 legend=w:1 rows:12
-  |..w.....|
-  |..w.....|
-  |........|
-  |wwwwwwww|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |...ww...|
-  |wwwwwwww|
-  |..wwww..|
-draw op=clear_cel layer=2 frame=3
-paint_grid layer=2 frame=3 x=12 y=19 legend=w:1 rows:12
-  |..w.....|
-  |..w.....|
-  |........|
-  |wwwwwwww|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |...ww...|
-  |wwwwwwww|
-  |..wwww..|
-draw op=clear_cel layer=2 frame=7
-paint_grid layer=2 frame=7 x=12 y=19 legend=w:1 rows:12
-  |..w.....|
-  |..w.....|
-  |........|
-  |wwwwwwww|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |...ww...|
-  |wwwwwwww|
-  |..wwww..|
-paint_grid layer=2 frame=5 x=14 y=22 legend=w:1 rows:8
-  |wwww|
-  |....|
-  |....|
-  |....|
-  |....|
-  |....|
-  |....|
-  |wwww|
-draw op=pencil layer=4 frame=0 color=#ffe060 points=[[18,8]]
-draw op=pencil layer=4 frame=1 color=#ffe060 points=[[18,6]]
-draw op=pencil layer=4 frame=1 color=#d8401c points=[[19,0]]
-draw op=pencil layer=4 frame=2 color=#ff9020 points=[[19,5]]
-draw op=pencil layer=4 frame=2 color=#ffe060 points=[[14,5]]
-draw op=pencil layer=4 frame=3 color=#ff9020 points=[[19,3]]
-draw op=pencil layer=4 frame=3 color=#ffe060 points=[[13,4]]
-draw op=pencil layer=4 frame=4 color=#d8401c points=[[20,2]]
-draw op=pencil layer=4 frame=4 color=#ff9020 points=[[13,2]]
-draw op=pencil layer=4 frame=4 color=#ffe060 points=[[13,8]]
-draw op=pencil layer=4 frame=5 color=#ff9020 points=[[12,1]]
-draw op=pencil layer=4 frame=5 color=#ffe060 points=[[13,6]]
-draw op=pencil layer=4 frame=6 color=#d8401c points=[[12,0]]
-draw op=pencil layer=4 frame=6 color=#ff9020 points=[[12,5]]
-draw op=pencil layer=4 frame=7 color=#ff9020 points=[[12,3]]
-draw op=pencil layer=4 frame=7 color=#ffe060 points=[[17,6]]
-draw op=pencil layer=4 frame=8 color=#d8401c points=[[11,2]]
-draw op=pencil layer=4 frame=8 color=#ffe060 points=[[17,4]]
-draw op=pencil layer=4 frame=9 color=#ff9020 points=[[18,3]]
+layer add
+layer rename index=0 name=handle
+layer rename index=1 name=bracket
+layer add name=glow
+layer add name=flame
+layer add name=embers
+palette set colors=#2a1a16,#8c5a3c,#d8401c,#ff9020,#ffe060
+legend A=#2a1a16 B=#8c5a3c
+handle @0 grid 13,16 = 13,16 6x12
+    AAAAAA
+    AAAAAA
+    AAAAAA
+    .ABBB.
+    .ABBB.
+    .ABBB.
+    .ABBB.
+    .ABBB.
+    .ABBB.
+    .ABBB.
+    .ABBB.
+    .ABBB.
+bracket @0 grid 12,22 = 12,22 8x10
+    AAAAAAAA
+    AAAAAAAA
+    ........
+    ........
+    ........
+    ........
+    ...AA...
+    .AAAAAA.
+    AAAAAAAA
+    AAAAAAAA
+legend C=#d8401c D=#ff9020 E=#ffe060
+flame @0 grid 12,6 = 12,6 8x11
+    ...C....
+    ...CC...
+    ..CDC...
+    ..CDDC..
+    .CDDDC..
+    .CDEDDC.
+    CDDEEDC.
+    CDEEEEDC
+    CDEEEEDC
+    .CDEEDC.
+    .CDDDDC.
+bracket @0 grid 12,28 = 12,29 19,29 #2a1a16
+glow @0 grid 13,22 = 13,22 6x8
+    BBBBBB
+    ......
+    ......
+    ......
+    ......
+    ......
+    ......
+    BBBBBB
+frame add copy_from=0 count=9 duration_ms=100
+embers @0 pencil #ff9020 = 18,1 18,1 #ff9020
+glow @5 clear_cel = 13,22 18,29 .
+flame @1 clear_cel = 12,6 19,16 .
+flame @1 grid 12,5 = 12,5 8x12
+    ....C...
+    ....C...
+    ...CDC..
+    ...CDDC.
+    ..CDDDC.
+    .CDDEDC.
+    .CDEEDC.
+    CDDEEDC.
+    CDDEEEDC
+    CDDEEEDC
+    .CDEEDC.
+    .CDDDDC.
+flame @2 clear_cel = 12,6 19,16 .
+flame @2 grid 12,3 = 12,3 8x14
+    .....C..
+    .....C..
+    ....CC..
+    ....CD..
+    ...CDDC.
+    ...CDDC.
+    ..CDDDC.
+    ..CDEDC.
+    .CDEEDC.
+    CDDEEDC.
+    CDDEEEDC
+    CDDEEEDC
+    .CDEEDC.
+    .CDDDDC.
+flame @3 clear_cel = 12,6 19,16 .
+flame @3 grid 12,3 = 12,3 8x14
+    .....C..
+    ........
+    ....C...
+    ....CD..
+    ...CDD..
+    ...CDDC.
+    ..CDDDC.
+    ..CDEDC.
+    .CDEEDC.
+    .CDEEDC.
+    CDDEEEDC
+    CDDEEEDC
+    .CDEEDC.
+    .CDDDDC.
+flame @4 clear_cel = 12,6 19,16 .
+flame @4 grid 12,6 = 12,6 8x11
+    ....C...
+    ...CC...
+    ...CDC..
+    ..CDDC..
+    .CDDDC..
+    .CDEDDC.
+    CDDEEDC.
+    CDEEEEDC
+    CDEEEEDC
+    .CDEEDC.
+    .CDDDDC.
+flame @5 clear_cel = 12,6 19,16 .
+flame @5 grid 12,7 = 12,7 8x10
+    ...C....
+    ..CDDC..
+    .CDDDC..
+    .CDDDC..
+    CDDEDDC.
+    CDEEEDC.
+    CDEEEEDC
+    CDEEEEDC
+    .CDEEDC.
+    .CDDDDC.
+flame @6 clear_cel = 12,6 19,16 .
+flame @6 grid 12,6 = 12,6 8x11
+    ..C.....
+    ..CC....
+    ..CDC...
+    .CDDC...
+    .CDDDC..
+    .CDEDDC.
+    CDDEEDC.
+    CDEEEDDC
+    CDEEEDDC
+    .CDEEDC.
+    .CDDDDC.
+flame @7 clear_cel = 12,6 19,16 .
+flame @7 grid 12,4 = 12,4 8x13
+    .C......
+    .CC.....
+    .CD.....
+    .CDDC...
+    .CDDC...
+    .CDDDC..
+    .CDEDC..
+    .CDEDDC.
+    CDEEEDC.
+    CDEEEDDC
+    CDEEEDDC
+    .CDEEDC.
+    .CDDDDC.
+flame @8 clear_cel = 12,6 19,16 .
+flame @8 grid 12,5 = 12,5 8x12
+    ..C.....
+    ..C.....
+    ..CD....
+    ..CDDC..
+    .CDDDC..
+    .CDEDC..
+    .CDEDDC.
+    CDDEEDC.
+    CDEEEDDC
+    CDEEEDDC
+    .CDEEDC.
+    .CDDDDC.
+flame @9 clear_cel = 12,6 19,16 .
+flame @9 grid 12,5 = 12,5 8x12
+    ...C....
+    ...C....
+    ...CD...
+    ..CDDC..
+    ..CDDC..
+    .CDEDDC.
+    .CDEEDC.
+    CDDEEDC.
+    CDEEEEDC
+    CDEEEEDC
+    .CDEEDC.
+    .CDDDDC.
+glow @2 clear_cel = 13,22 18,29 .
+glow @2 grid 12,19 = 12,19 8x12
+    ..B.....
+    ..B.....
+    ........
+    BBBBBBBB
+    ........
+    ........
+    ........
+    ........
+    ........
+    ...BB...
+    BBBBBBBB
+    ..BBBB..
+glow @3 clear_cel = 13,22 18,29 .
+glow @3 grid 12,19 = 12,19 8x12
+    ..B.....
+    ..B.....
+    ........
+    BBBBBBBB
+    ........
+    ........
+    ........
+    ........
+    ........
+    ...BB...
+    BBBBBBBB
+    ..BBBB..
+glow @7 clear_cel = 13,22 18,29 .
+glow @7 grid 12,19 = 12,19 8x12
+    ..B.....
+    ..B.....
+    ........
+    BBBBBBBB
+    ........
+    ........
+    ........
+    ........
+    ........
+    ...BB...
+    BBBBBBBB
+    ..BBBB..
+glow @5 grid 14,22 = 14,22 4x8
+    BBBB
+    ....
+    ....
+    ....
+    ....
+    ....
+    ....
+    BBBB
+embers @0 pencil #ffe060 = 18,8 18,8 #ffe060
+embers @1 pencil #ffe060 = 18,6 18,6 #ffe060
+embers @1 pencil #d8401c = 19,0 19,0 #d8401c
+embers @2 pencil #ff9020 = 19,5 19,5 #ff9020
+embers @2 pencil #ffe060 = 14,5 14,5 #ffe060
+embers @3 pencil #ff9020 = 19,3 19,3 #ff9020
+embers @3 pencil #ffe060 = 13,4 13,4 #ffe060
+embers @4 pencil #d8401c = 20,2 20,2 #d8401c
+embers @4 pencil #ff9020 = 13,2 13,2 #ff9020
+embers @4 pencil #ffe060 = 13,8 13,8 #ffe060
+embers @5 pencil #ff9020 = 12,1 12,1 #ff9020
+embers @5 pencil #ffe060 = 13,6 13,6 #ffe060
+embers @6 pencil #d8401c = 12,0 12,0 #d8401c
+embers @6 pencil #ff9020 = 12,5 12,5 #ff9020
+embers @7 pencil #ff9020 = 12,3 12,3 #ff9020
+embers @7 pencil #ffe060 = 17,6 17,6 #ffe060
+embers @8 pencil #d8401c = 11,2 11,2 #d8401c
+embers @8 pencil #ffe060 = 17,4 17,4 #ffe060
+embers @9 pencil #ff9020 = 18,3 18,3 #ff9020
 add_tag name=burn direction=forward from=0 to=9
-draw op=pencil layer=2 frame=2 frame_to=3 color=#000000 erase=true points=14,19 14,20
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=14,19 14,20
+glow @2 erase pencil = 14,19 14,20 .
+glow @3 erase pencil = 14,19 14,20 .
+glow @7 erase pencil = 14,19 14,20 .

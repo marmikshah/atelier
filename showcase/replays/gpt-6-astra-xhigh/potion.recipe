@@ -1,277 +1,282 @@
-atelier 4 2eb5df19-143b-4ebe-b846-3295814f7c09 0.1.0
+atelier 5 2eb5df19-143b-4ebe-b846-3295814f7c09 0.1.0
 new name=sc-gpt-6-astra-xhigh-potion width=32 height=32
-palette op=set colors=#23213a,#4c7b8b,#f8e7b9,#c08450,#7742b1,#d37dda
-layer op=rename index=0 name="Bottle body — fixed"
-layer op=add name="Potion reservoir"
-layer op=add name="Wobbling meniscus"
-layer op=add name="Rising bubbles and pops"
-layer op=add name="Glass reflections — fixed"
-layer op=add name="Cork — fixed"
-paint_grid layer=0 frame=0 x=5 y=6 legend=k:0 rows:24
-  |......kkkkkkkkkk......|
-  |.....kkkkkkkkkkkk.....|
-  |......kkkkkkkkkk......|
-  |.......kkkkkkkk.......|
-  |.......kkkkkkkk.......|
-  |......kkkkkkkkkk......|
-  |....kkkkkkkkkkkkkk....|
-  |...kkkkkkkkkkkkkkkk...|
-  |..kkkkkkkkkkkkkkkkkk..|
-  |.kkkkkkkkkkkkkkkkkkkk.|
-  |.kkkkkkkkkkkkkkkkkkkk.|
-  |kkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkk|
-  |.kkkkkkkkkkkkkkkkkkkk.|
-  |.kkkkkkkkkkkkkkkkkkkk.|
-  |..kkkkkkkkkkkkkkkkkk..|
-  |...kkkkkkkkkkkkkkkk...|
-  |.....kkkkkkkkkkkk.....|
-  |.......kkkkkkkk.......|
-paint_grid layer=5 frame=0 x=12 y=2 legend=k:0 rows:4
-  |.kkkkkk.|
-  |kkkkkkkk|
-  |kkkkkkkk|
-  |kkkkkkkk|
-paint_grid layer=0 frame=0 x=6 y=6 legend=g:1 rows:23
-  |......gggggggg......|
-  |.....gggggggggg.....|
-  |......gggggggg......|
-  |.......gggggg.......|
-  |.......gggggg.......|
-  |......gggggggg......|
-  |....gggggggggggg....|
-  |...gggggggggggggg...|
-  |..gggggggggggggggg..|
-  |.gggggggggggggggggg.|
-  |.gggggggggggggggggg.|
-  |gggggggggggggggggggg|
-  |gggggggggggggggggggg|
-  |gggggggggggggggggggg|
-  |gggggggggggggggggggg|
-  |gggggggggggggggggggg|
-  |gggggggggggggggggggg|
-  |gggggggggggggggggggg|
-  |.gggggggggggggggggg.|
-  |.gggggggggggggggggg.|
-  |..gggggggggggggggg..|
-  |...gggggggggggggg...|
-  |.....gggggggggg.....|
-paint_grid layer=1 frame=0 x=7 y=18 legend=p:4 rows:10
-  |pppppppppppppppppp|
-  |pppppppppppppppppp|
-  |pppppppppppppppppp|
-  |pppppppppppppppppp|
-  |pppppppppppppppppp|
-  |pppppppppppppppppp|
-  |.pppppppppppppppp.|
-  |..pppppppppppppp..|
-  |...pppppppppppp...|
-  |.....pppppppp.....|
-paint_grid layer=2 frame=0 x=7 y=15 legend=p:4,v:5 rows:3
-  |................v.|
-  |vvvv.......vvvvvvv|
-  |vvvvvvvvvvvvvvvvpv|
-paint_grid layer=5 frame=0 x=12 y=2 legend=c:3,k:0,w:2 rows:4
-  |.cccccc.|
-  |kcwcccck|
-  |kccckcck|
-  |kcccccck|
-paint_grid layer=1 frame=0 x=8 y=18 legend=v:5 rows:9
-  |vv.......|
-  |vv.......|
-  |vv.......|
-  |vv.......|
-  |vv.......|
-  |vvv......|
-  |.vvv.....|
-  |..vvvv...|
-  |....vvvvv|
-paint_grid layer=4 frame=0 x=7 y=6 legend=k:0,v:5,w:2 rows:22
-  |.....wwwww........|
-  |....wwwwwwww......|
-  |.....kkkkkkkk.....|
-  |......w...........|
-  |......w...........|
-  |.....w............|
-  |...ww.............|
-  |..w............v..|
-  |.w..............v.|
-  |.w................|
-  |..................|
-  |w.................|
-  |w.................|
-  |w.................|
-  |w.................|
-  |..................|
-  |.................v|
-  |.................v|
-  |..................|
-  |..w...............|
-  |...ww.............|
-  |.....wwwww........|
-paint_grid layer=3 frame=0 x=12 y=19 legend=v:5,w:2 rows:7
-  |.......w.|
-  |......w.v|
-  |.......v.|
-  |.........|
-  |.........|
-  |.........|
-  |v........|
-paint_grid layer=5 frame=0 x=12 y=2 legend=c:3,k:0,w:2 rows:2
-  |.kkkkkk.|
-  |kwwcccck|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=1
-draw op=clear_cel layer=3 frame=1
-paint_grid layer=2 frame=1 x=7 y=15 legend=p:4,v:5 rows:3
-  |..............vvv.|
-  |vv......vvvvvvvvvv|
-  |vvvvvvvvvvvvvvpppv|
-paint_grid layer=3 frame=1 x=12 y=18 legend=v:5,w:2 rows:8
-  |........w.|
-  |.......w.v|
-  |........v.|
-  |..........|
-  |..........|
-  |..........|
-  |w.........|
-  |v.........|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=2
-draw op=clear_cel layer=3 frame=2
-paint_grid layer=2 frame=2 x=7 y=15 legend=p:4,v:5 rows:3
-  |...........vvvvvv.|
-  |v.....vvvvvvvvvvvv|
-  |vvvvvvvvvvvppppppv|
-paint_grid layer=3 frame=2 x=11 y=17 legend=v:5,w:2 rows:8
-  |.........w.|
-  |........w.v|
-  |.........v.|
-  |...........|
-  |...........|
-  |.w.........|
-  |w.v........|
-  |.v.........|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=3
-draw op=clear_cel layer=3 frame=3
-paint_grid layer=2 frame=3 x=7 y=15 legend=p:4,v:5 rows:3
-  |.........vvvvvvv..|
-  |v...vvvvvvvvvvvvvv|
-  |vvvvvvvvvpppppppvv|
-paint_grid layer=3 frame=3 x=11 y=15 legend=v:5,w:2 rows:9
-  |.........w.|
-  |........w.v|
-  |.........v.|
-  |...........|
-  |...........|
-  |...........|
-  |.w.........|
-  |w.v........|
-  |.v.........|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=4
-draw op=clear_cel layer=3 frame=4
-paint_grid layer=2 frame=4 x=7 y=15 legend=p:4,v:5 rows:3
-  |.......vvvvvv.....|
-  |vvvvvvvvvvvvvvvvvv|
-  |vvvvvvvppppppvvvvv|
-paint_grid layer=3 frame=4 x=11 y=13 legend=v:5,w:2 rows:10
-  |.........v..|
-  |.......w...v|
-  |............|
-  |............|
-  |............|
-  |............|
-  |............|
-  |.w..........|
-  |w.v.........|
-  |.v..........|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=5
-draw op=clear_cel layer=3 frame=5
-paint_grid layer=2 frame=5 x=7 y=15 legend=p:4,v:5 rows:3
-  |....vvvvvvv.......|
-  |vvvvvvvvvvvvvvvv.v|
-  |vvvvpppppppvvvvvvv|
-paint_grid layer=3 frame=5 x=12 y=19 legend=v:5,w:2 rows:7
-  |.w.......|
-  |w.v......|
-  |.v.......|
-  |.........|
-  |.........|
-  |.........|
-  |........v|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=6
-draw op=clear_cel layer=3 frame=6
-paint_grid layer=2 frame=6 x=7 y=15 legend=p:4,v:5 rows:3
-  |..vvvvvv..........|
-  |vvvvvvvvvvvvvv...v|
-  |vvppppppvvvvvvvvvv|
-paint_grid layer=3 frame=6 x=12 y=18 legend=v:5,w:2 rows:8
-  |.w.......|
-  |w.v......|
-  |.v.......|
-  |.........|
-  |.........|
-  |.........|
-  |........w|
-  |........v|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=7
-draw op=clear_cel layer=3 frame=7
-paint_grid layer=2 frame=7 x=7 y=15 legend=p:4,v:5 rows:3
-  |.vvvvv............|
-  |vvvvvvvvvvv......v|
-  |vpppppvvvvvvvvvvvv|
-paint_grid layer=3 frame=7 x=12 y=17 legend=v:5,w:2 rows:8
-  |.w.......|
-  |w.v......|
-  |.v.......|
-  |.........|
-  |.........|
-  |.......w.|
-  |......w.v|
-  |.......v.|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=8
-draw op=clear_cel layer=3 frame=8
-paint_grid layer=2 frame=8 x=7 y=15 legend=p:4,v:5 rows:3
-  |.vvv..............|
-  |vvvvvvvvv.......vv|
-  |vpppvvvvvvvvvvvvvv|
-paint_grid layer=3 frame=8 x=11 y=15 legend=v:5,w:2 rows:9
-  |.w........|
-  |w.v.......|
-  |.v........|
-  |..........|
-  |..........|
-  |..........|
-  |........w.|
-  |.......w.v|
-  |........v.|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=2 frame=9
-draw op=clear_cel layer=3 frame=9
-paint_grid layer=2 frame=9 x=7 y=16 legend=v:5 rows:2
-  |vvvvvvv......vvvvv|
-  |vvvvvvvvvvvvvvvvvv|
-paint_grid layer=3 frame=9 x=10 y=13 legend=v:5,w:2 rows:10
-  |..v........|
-  |w...v......|
-  |...........|
-  |...........|
-  |...........|
-  |...........|
-  |...........|
-  |.........w.|
-  |........w.v|
-  |.........v.|
-frame op=duration frame=0 count=10 duration_ms=100
+palette set colors=#23213a,#4c7b8b,#f8e7b9,#c08450,#7742b1,#d37dda
+layer rename index=0 name="Bottle body — fixed"
+layer add name="Potion reservoir"
+layer add name="Wobbling meniscus"
+layer add name="Rising bubbles and pops"
+layer add name="Glass reflections — fixed"
+layer add name="Cork — fixed"
+legend A=#23213a
+"Bottle body — fixed" @0 grid 5,6 = 5,6 22x24
+    ......AAAAAAAAAA......
+    .....AAAAAAAAAAAA.....
+    ......AAAAAAAAAA......
+    .......AAAAAAAA.......
+    .......AAAAAAAA.......
+    ......AAAAAAAAAA......
+    ....AAAAAAAAAAAAAA....
+    ...AAAAAAAAAAAAAAAA...
+    ..AAAAAAAAAAAAAAAAAA..
+    .AAAAAAAAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAAAAAAAAA.
+    ..AAAAAAAAAAAAAAAAAA..
+    ...AAAAAAAAAAAAAAAA...
+    .....AAAAAAAAAAAA.....
+    .......AAAAAAAA.......
+"Cork — fixed" @0 grid 12,2 = 12,2 8x4
+    .AAAAAA.
+    AAAAAAAA
+    AAAAAAAA
+    AAAAAAAA
+legend B=#4c7b8b
+"Bottle body — fixed" @0 grid 6,6 = 6,6 20x23
+    .....ABBBBBBBBA.....
+    ....ABBBBBBBBBBA....
+    .....ABBBBBBBBA.....
+    ......ABBBBBBA......
+    ......ABBBBBBA......
+    .....ABBBBBBBBA.....
+    ...ABBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBA
+    BBBBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBBBB
+    ABBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBA..
+    ....ABBBBBBBBBBA....
+legend C=#7742b1
+"Potion reservoir" @0 grid 7,18 = 7,18 18x10
+    CCCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCCC
+    .CCCCCCCCCCCCCCCC.
+    ..CCCCCCCCCCCCCC..
+    ...CCCCCCCCCCCC...
+    .....CCCCCCCC.....
+legend D=#d37dda
+"Wobbling meniscus" @0 grid 7,15 = 7,15 18x3
+    ................D.
+    DDDD.......DDDDDDD
+    DDDDDDDDDDDDDDDDCD
+legend E=#c08450 F=#f8e7b9
+"Cork — fixed" @0 grid 12,2 = 13,2 6x4
+    EEEEEE
+    EFEEEE
+    EEEAEE
+    EEEEEE
+"Potion reservoir" @0 grid 8,18 = 8,18 9x9
+    DDCCCCCCC
+    DDCCCCCCC
+    DDCCCCCCC
+    DDCCCCCCC
+    DDCCCCCCC
+    DDDCCCCCC
+    CDDDCCCCC
+    .CDDDDCCC
+    ..CCDDDDD
+"Glass reflections — fixed" @0 grid 7,6 = 7,6 18x22
+    .....FFFFF........
+    ....FFFFFFFF......
+    .....AAAAAAAA.....
+    ......F...........
+    ......F...........
+    .....F............
+    ...FF.............
+    ..F............D..
+    .F..............D.
+    .F................
+    ..................
+    F.................
+    F.................
+    F.................
+    F.................
+    ..................
+    .................D
+    .................D
+    ..................
+    ..F...............
+    ...FF.............
+    .....FFFFF........
+"Rising bubbles and pops" @0 grid 12,19 = 12,19 9x7
+    .......F.
+    ......F.D
+    .......D.
+    .........
+    .........
+    .........
+    D........
+"Cork — fixed" @0 grid 12,2 = 13,2 6x2
+    AAAAAA
+    FFEEEE
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @1 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @1 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @1 grid 7,15 = 7,15 18x3
+    ..............DDD.
+    DD......DDDDDDDDDD
+    DDDDDDDDDDDDDDCCCD
+"Rising bubbles and pops" @1 grid 12,18 = 12,18 10x8
+    ........F.
+    .......F.D
+    ........D.
+    ..........
+    ..........
+    ..........
+    F.........
+    D.........
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @2 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @2 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @2 grid 7,15 = 7,15 18x3
+    ...........DDDDDD.
+    D.....DDDDDDDDDDDD
+    DDDDDDDDDDDCCCCCCD
+"Rising bubbles and pops" @2 grid 11,17 = 11,17 11x8
+    .........F.
+    ........F.D
+    .........D.
+    ...........
+    ...........
+    .F.........
+    F.D........
+    .D.........
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @3 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @3 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @3 grid 7,15 = 7,15 18x3
+    .........DDDDDDD..
+    D...DDDDDDDDDDDDDD
+    DDDDDDDDDCCCCCCCDD
+"Rising bubbles and pops" @3 grid 11,15 = 11,15 11x9
+    .........F.
+    ........F.D
+    .........D.
+    ...........
+    ...........
+    ...........
+    .F.........
+    F.D........
+    .D.........
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @4 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @4 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @4 grid 7,15 = 7,15 18x3
+    .......DDDDDD.....
+    DDDDDDDDDDDDDDDDDD
+    DDDDDDDCCCCCCDDDDD
+"Rising bubbles and pops" @4 grid 11,13 = 11,13 12x10
+    .........D..
+    .......F...D
+    ............
+    ............
+    ............
+    ............
+    ............
+    .F..........
+    F.D.........
+    .D..........
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @5 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @5 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @5 grid 7,15 = 7,15 18x3
+    ....DDDDDDD.......
+    DDDDDDDDDDDDDDDD.D
+    DDDDCCCCCCCDDDDDDD
+"Rising bubbles and pops" @5 grid 12,19 = 12,19 9x7
+    .F.......
+    F.D......
+    .D.......
+    .........
+    .........
+    .........
+    ........D
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @6 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @6 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @6 grid 7,15 = 7,15 18x3
+    ..DDDDDD..........
+    DDDDDDDDDDDDDD...D
+    DDCCCCCCDDDDDDDDDD
+"Rising bubbles and pops" @6 grid 12,18 = 12,18 9x8
+    .F.......
+    F.D......
+    .D.......
+    .........
+    .........
+    .........
+    ........F
+    ........D
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @7 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @7 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @7 grid 7,15 = 7,15 18x3
+    .DDDDD............
+    DDDDDDDDDDD......D
+    DCCCCCDDDDDDDDDDDD
+"Rising bubbles and pops" @7 grid 12,17 = 12,17 9x8
+    .F.......
+    F.D......
+    .D.......
+    .........
+    .........
+    .......F.
+    ......F.D
+    .......D.
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @8 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @8 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @8 grid 7,15 = 7,15 18x3
+    .DDD..............
+    DDDDDDDDD.......DD
+    DCCCDDDDDDDDDDDDDD
+"Rising bubbles and pops" @8 grid 11,15 = 11,15 10x9
+    .F........
+    F.D.......
+    .D........
+    ..........
+    ..........
+    ..........
+    ........F.
+    .......F.D
+    ........D.
+frame add copy_from=0 duration_ms=100
+"Wobbling meniscus" @9 clear_cel = 7,15 24,17 .
+"Rising bubbles and pops" @9 clear_cel = 12,19 20,25 .
+"Wobbling meniscus" @9 grid 7,16 = 7,16 18x2
+    DDDDDDD......DDDDD
+    DDDDDDDDDDDDDDDDDD
+"Rising bubbles and pops" @9 grid 10,13 = 10,13 11x10
+    ..D........
+    F...D......
+    ...........
+    ...........
+    ...........
+    ...........
+    ...........
+    .........F.
+    ........F.D
+    .........D.
+frame duration frame=0 count=10 duration_ms=100
 add_tag name="Violet effervescence" direction=forward from=0 to=9

@@ -1,1826 +1,1831 @@
-atelier 4 128e7322-7049-40a9-bc6b-fdcaf625b435 0.1.0
+atelier 5 128e7322-7049-40a9-bc6b-fdcaf625b435 0.1.0
 new name=corked-flask width=32 height=32
-palette op=set colors=#1b1426,#cf8f4e,#9ebfd4,#ef4ba6,#ff9fdc,#fdeef8
-layer op=add name=liquid
-layer op=add name=bubbles
-layer op=add name=shine
-layer op=add name=cork
-layer op=rename index=0 name=glass
-paint_grid layer=0 frame=0 x=4 y=2 legend=k:#1b1426 rows:28
-  |........kkkkkkkk........|
-  |........kkkkkkkk........|
-  |........kkkkkkkk........|
-  |........kkkkkkkk........|
-  |........kkkkkkkk........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |........kkkkkkkk........|
-  |......kkkkkkkkkkkk......|
-  |....kkkkkkkkkkkkkkkk....|
-  |...kkkkkkkkkkkkkkkkkk...|
-  |..kkkkkkkkkkkkkkkkkkkk..|
-  |.kkkkkkkkkkkkkkkkkkkkkk.|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |.kkkkkkkkkkkkkkkkkkkkkk.|
-  |..kkkkkkkkkkkkkkkkkkkk..|
-  |...kkkkkkkkkkkkkkkkkk...|
-  |....kkkkkkkkkkkkkkkk....|
-  |.....kkkkkkkkkkkkkk.....|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=2 legend=k:#1b1426 rows:28
-  |.......kkkkkkkkkk.......|
-  |.......kkkkkkkkkk.......|
-  |.......kkkkkkkkkk.......|
-  |........kkkkkkkk........|
-  |........kkkkkkkk........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |.........kkkkkk.........|
-  |........kkkkkkkk........|
-  |......kkkkkkkkkkkk......|
-  |....kkkkkkkkkkkkkkkk....|
-  |...kkkkkkkkkkkkkkkkkk...|
-  |..kkkkkkkkkkkkkkkkkkkk..|
-  |.kkkkkkkkkkkkkkkkkkkkkk.|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkk|
-  |.kkkkkkkkkkkkkkkkkkkkkk.|
-  |..kkkkkkkkkkkkkkkkkkkk..|
-  |...kkkkkkkkkkkkkkkkkk...|
-  |....kkkkkkkkkkkkkkkk....|
-  |.....kkkkkkkkkkkkkk.....|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=7 legend=g:#9ebfd4,k:#1b1426 rows:23
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |........kggggggk........|
-  |......kkggggggggkk......|
-  |....kkggggggggggggkk....|
-  |...kggggggggggggggggk...|
-  |..kggggggggggggggggggk..|
-  |.kggggggggggggggggggggk.|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |.kggggggggggggggggggggk.|
-  |..kggggggggggggggggggk..|
-  |...kggggggggggggggggk...|
-  |....kggggggggggggggk....|
-  |.....kkkkkkkkkkkkkk.....|
-paint_grid layer=4 frame=0 x=11 y=2 legend=c:#cf8f4e,k:#1b1426 rows:5
-  |kkkkkkkkkk|
-  |kcccccccck|
-  |kcccccccck|
-  |.kcccccck.|
-  |.kkkkkkkk.|
-paint_grid layer=3 frame=0 x=8 y=8 legend=w:#fdeef8 rows:13
-  |......w|
-  |......w|
-  |......w|
-  |.......|
-  |.......|
-  |.......|
-  |.......|
-  |...w...|
-  |.w.w...|
-  |ww.....|
-  |ww.....|
-  |ww.....|
-  |w......|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |..lllwwlll............|
-  |llmmmmmmmmlll........l|
-  |mmmmmmmmmmmmmllllllllm|
-  |mmmmmmmmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |kmmmmmmmmmmmmmmmmmmmkk|
-  |.kmmmmmmmmmmmmmmmmmkk.|
-  |..kmmmmmmmmmmmmmmmkk..|
-  |...kmmmmmmmmkkkkkkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=0 x=11 y=20 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.......wl|
-  |.......ll|
-  |.........|
-  |.........|
-  |.....wl..|
-  |.....ll..|
-  |.........|
-  |.........|
-  |l........|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=3 frame=0 rect=0,0,32,32
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=7 legend=g:#9ebfd4,k:#1b1426 rows:23
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |........kggggggk........|
-  |......kkggggggggkk......|
-  |....kkggggggggggggkk....|
-  |...kggggggggggggggggk...|
-  |..kggggggggggggggggggk..|
-  |.kggggggggggggggggggggk.|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |.kggggggggggggggggggggk.|
-  |..kggggggggggggggggggk..|
-  |...kggggggggggggggggk...|
-  |....kggggggggggggggk....|
-  |.....kkkkkkkkkkkkkk.....|
-paint_grid layer=4 frame=0 x=11 y=2 legend=c:#cf8f4e,k:#1b1426 rows:5
-  |kkkkkkkkkk|
-  |kcccccccck|
-  |kcccccccck|
-  |.kcccccck.|
-  |.kkkkkkkk.|
-paint_grid layer=3 frame=0 x=8 y=8 legend=w:#fdeef8 rows:13
-  |......w...........|
-  |......w...........|
-  |......w...........|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |...w..........w...|
-  |.w.w...........w..|
-  |ww..............w.|
-  |ww...............w|
-  |ww................|
-  |w.................|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |..lllwwlll............|
-  |llmmmmmmmmlll........l|
-  |mmmmmmmmmmmmmllllllllk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=0 x=11 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |.......wl|
-  |.......ll|
-  |.........|
-  |.....wl..|
-  |.....ll..|
-  |.........|
-  |l........|
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.....llwwlll.lll......|
-  |.llllmmmmmmmlmmm......|
-  |lmmmmmmmmmmmmmmmllllll|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=1 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.......www|
-  |..........|
-  |..........|
-  |..........|
-  |....wl....|
-  |....ll....|
-  |..........|
-  |..........|
-  |l.........|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.......llwwll.........|
-  |...llllmmmmmml..ll....|
-  |lllmmmmmmmmmmmllmmllll|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=2 x=12 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:8
-  |.......w|
-  |........|
-  |........|
-  |..wl....|
-  |..ll....|
-  |........|
-  |........|
-  |l.......|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.........lllwwll......|
-  |.....llllmmmmmmmllll..|
-  |lllllmmmmmmmmmmmmmmmll|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=3 x=12 y=19 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |..wl|
-  |..ll|
-  |....|
-  |....|
-  |....|
-  |wl..|
-  |ll..|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=5 y=17 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:12
-  |...........l..........|
-  |.........llmllwwll....|
-  |.......llmmmmmmmmmllll|
-  |lllllllmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=4 x=11 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:11
-  |.....w...|
-  |...ww....|
-  |.........|
-  |.........|
-  |.........|
-  |.........|
-  |wl.......|
-  |ll.......|
-  |.........|
-  |.........|
-  |........l|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.............lllwwlll.|
-  |ll..........lmmmmmmmml|
-  |mmlllllll.llmmmmmmmmmk|
-  |mmmmmmmmmlmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=5 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w....|
-  |...w......|
-  |..........|
-  |..........|
-  |wl........|
-  |ll........|
-  |..........|
-  |..........|
-  |.........l|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |................llwwl.|
-  |lllll.......llllmmmmml|
-  |mmmmmlllllllmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=6 x=10 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:5
-  |wl.........|
-  |ll.........|
-  |...........|
-  |...........|
-  |..........l|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.ll..ll...........llw.|
-  |lmmllmml......llllmmmw|
-  |mmmmmmmmllllllmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=7 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |ww..........|
-  |..w.........|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |.....l......|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.wwll...............l.|
-  |lmmmm...l.......llllml|
-  |mmmmmlllmlllllllmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=8 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |w.........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |........wl|
-  |........ll|
-  |..........|
-  |....l.....|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.llwwll...............|
-  |lmmmmmmllll.......llll|
-  |mmmmmmmmmmmlllllllmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.lmmmmmmmmmmmmmmmmmmk.|
-  |..lmmmmmmmmmmmmmmmmk..|
-  |...lmmmmmmmmmmmmmmk...|
-  |....lllllmkkkkkkkk....|
-paint_grid layer=2 frame=9 x=16 y=22 legend=l:#ff9fdc,w:#fdeef8 rows:4
-  |..wl|
-  |..ll|
-  |....|
-  |l...|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=3 frame=0 rect=0,0,32,32
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=7 legend=g:#9ebfd4,k:#1b1426 rows:23
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |........kggggggk........|
-  |......kkggggggggkk......|
-  |....kkggggggggggggkk....|
-  |...kggggggggggggggggk...|
-  |..kggggggggggggggggggk..|
-  |.kggggggggggggggggggggk.|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |.kggggggggggggggggggggk.|
-  |..kggggggggggggggggggk..|
-  |...kggggggggggggggggk...|
-  |....kggggggggggggggk....|
-  |.....kkkkkkkkkkkkkk.....|
-paint_grid layer=4 frame=0 x=11 y=2 legend=c:#cf8f4e,k:#1b1426 rows:5
-  |kkkkkkkkkk|
-  |kcccccccck|
-  |kcccccccck|
-  |.kcccccck.|
-  |.kkkkkkkk.|
-paint_grid layer=3 frame=0 x=8 y=8 legend=w:#fdeef8 rows:13
-  |......w...........|
-  |......w...........|
-  |......w...........|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |...w..........w...|
-  |.w.w...........w..|
-  |ww..............w.|
-  |ww...............w|
-  |ww................|
-  |w.................|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |..lllwwlll............|
-  |llmlmlmlmllll........l|
-  |lmmmmmmmmmlmlllllllllm|
-  |mmmmmmmmmmmmmlmlmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=0 x=11 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |.......wl|
-  |.......ll|
-  |.........|
-  |.....wl..|
-  |.....ll..|
-  |.........|
-  |l........|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.....llwwlll.lll......|
-  |.lllllmlmlmlllml......|
-  |lmlmlmmmmmmmlmmmllllll|
-  |mmmmmmmmmmmmmmmmmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=1 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.......www|
-  |..........|
-  |..........|
-  |..........|
-  |....wl....|
-  |....ll....|
-  |..........|
-  |..........|
-  |l.........|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.......llwwll.........|
-  |...lllllmlmlml..ll....|
-  |lllmlmlmmmmmmmlllmllll|
-  |mlmmmmmmmmmmmmmlmmmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=2 x=12 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:8
-  |.......w|
-  |........|
-  |........|
-  |..wl....|
-  |..ll....|
-  |........|
-  |........|
-  |l.......|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.........lllwwll......|
-  |.....lllllmlmlmlllll..|
-  |lllllmlmlmmmmmmmlmlmll|
-  |mlmlmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=3 x=12 y=19 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |..wl|
-  |..ll|
-  |....|
-  |....|
-  |....|
-  |wl..|
-  |ll..|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=5 y=17 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:12
-  |...........l..........|
-  |.........llmllwwll....|
-  |.......lllmmmlmlmlllll|
-  |lllllllmlmmmmmmmmmlmlm|
-  |mlmlmlmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=4 x=11 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:11
-  |.....w...|
-  |...ww....|
-  |.........|
-  |.........|
-  |.........|
-  |.........|
-  |wl.......|
-  |ll.......|
-  |.........|
-  |.........|
-  |........l|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.............lllwwlll.|
-  |ll..........llmlmlmlml|
-  |lmlllllll.lllmmmmmmmmm|
-  |mmmlmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=5 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w....|
-  |...w......|
-  |..........|
-  |..........|
-  |wl........|
-  |ll........|
-  |..........|
-  |..........|
-  |.........l|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |................llwwl.|
-  |lllll.......llllmlmlml|
-  |lmlmlllllllllmlmmmmmmm|
-  |mmmmmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=6 x=10 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:5
-  |wl.........|
-  |ll.........|
-  |...........|
-  |...........|
-  |..........l|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.ll..ll...........llw.|
-  |llmlllml......llllmlmw|
-  |lmmmlmmmlllllllmlmmmmm|
-  |mmmmmmmmmlmlmlmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=7 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |ww..........|
-  |..w.........|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |.....l......|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.wwll...............l.|
-  |llmlm...l.......llllml|
-  |lmmmmllllllllllllmlmmm|
-  |mmmmmlmlmlmlmlmlmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=8 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |w.........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |........wl|
-  |........ll|
-  |..........|
-  |....l.....|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.llwwll...............|
-  |llmlmlmllll.......llll|
-  |lmmmmmmmlmlllllllllmlm|
-  |mmmmmmmmmmmlmlmlmlmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |.mmmmmmmmmmmmmmmmmmmk.|
-  |..mmmmmmmmmmmmmmmmmk..|
-  |...mkmkmkmkmkmkmkmk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=9 x=16 y=22 legend=l:#ff9fdc,w:#fdeef8 rows:4
-  |..wl|
-  |..ll|
-  |....|
-  |l...|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=3 frame=0 rect=0,0,32,32
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=7 legend=g:#9ebfd4,k:#1b1426 rows:23
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |........kggggggk........|
-  |......kkggggggggkk......|
-  |....kkggggggggggggkk....|
-  |...kggggggggggggggggk...|
-  |..kggggggggggggggggggk..|
-  |.kggggggggggggggggggggk.|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |.kggggggggggggggggggggk.|
-  |..kggggggggggggggggggk..|
-  |...kggggggggggggggggk...|
-  |....kggggggggggggggk....|
-  |.....kkkkkkkkkkkkkk.....|
-paint_grid layer=4 frame=0 x=11 y=2 legend=c:#cf8f4e,k:#1b1426 rows:5
-  |kkkkkkkkkk|
-  |kcccccccck|
-  |kcccccccck|
-  |.kcccccck.|
-  |.kkkkkkkk.|
-paint_grid layer=3 frame=0 x=8 y=8 legend=w:#fdeef8 rows:13
-  |......w...........|
-  |......w...........|
-  |......w...........|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |...w..........w...|
-  |.w.w...........w..|
-  |ww..............w.|
-  |ww...............w|
-  |ww................|
-  |w.................|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |..lllwwlll............|
-  |llmlmlmlmllll........l|
-  |lmmmmmmmmmlmlllllllllm|
-  |mmmmmmmmmmmmmlmlmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=0 x=11 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |.......wl|
-  |.......ll|
-  |.........|
-  |.....wl..|
-  |.....ll..|
-  |.........|
-  |l........|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.....llwwlll.lll......|
-  |.lllllmlmlmlllml......|
-  |lmlmlmmmmmmmlmmmllllll|
-  |mmmmmmmmmmmmmmmmmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=1 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.......www|
-  |..........|
-  |..........|
-  |..........|
-  |....wl....|
-  |....ll....|
-  |..........|
-  |..........|
-  |l.........|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.......llwwll.........|
-  |...lllllmlmlml..ll....|
-  |lllmlmlmmmmmmmlllmllll|
-  |mlmmmmmmmmmmmmmlmmmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=2 x=12 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:8
-  |.......w|
-  |........|
-  |........|
-  |..wl....|
-  |..ll....|
-  |........|
-  |........|
-  |l.......|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.........lllwwll......|
-  |.....lllllmlmlmlllll..|
-  |lllllmlmlmmmmmmmlmlmll|
-  |mlmlmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=3 x=12 y=19 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |..wl|
-  |..ll|
-  |....|
-  |....|
-  |....|
-  |wl..|
-  |ll..|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=5 y=17 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:12
-  |...........l..........|
-  |.........llmllwwll....|
-  |.......lllmmmlmlmlllll|
-  |lllllllmlmmmmmmmmmlmlm|
-  |mlmlmlmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=4 x=11 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:11
-  |.....w...|
-  |...ww....|
-  |.........|
-  |.........|
-  |.........|
-  |.........|
-  |wl.......|
-  |ll.......|
-  |.........|
-  |.........|
-  |........l|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.............lllwwlll.|
-  |ll..........llmlmlmlml|
-  |lmlllllll.lllmmmmmmmmm|
-  |mmmlmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=5 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w....|
-  |...w......|
-  |..........|
-  |..........|
-  |wl........|
-  |ll........|
-  |..........|
-  |..........|
-  |.........l|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |................llwwl.|
-  |lllll.......llllmlmlml|
-  |lmlmlllllllllmlmmmmmmm|
-  |mmmmmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=6 x=10 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:5
-  |wl.........|
-  |ll.........|
-  |...........|
-  |...........|
-  |..........l|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.ll..ll...........llw.|
-  |llmlllml......llllmlmw|
-  |lmmmlmmmlllllllmlmmmmm|
-  |mmmmmmmmmlmlmlmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=7 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |ww..........|
-  |..w.........|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |.....l......|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.wwll...............l.|
-  |llmlm...l.......llllml|
-  |lmmmmllllllllllllmlmmm|
-  |mmmmmlmlmlmlmlmlmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=8 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |w.........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |........wl|
-  |........ll|
-  |..........|
-  |....l.....|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.llwwll...............|
-  |llmlmlmllll.......llll|
-  |lmmmmmmmlmlllllllllmlm|
-  |mmmmmmmmmmmlmlmlmlmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=9 x=16 y=22 legend=l:#ff9fdc,w:#fdeef8 rows:4
-  |..wl|
-  |..ll|
-  |....|
-  |l...|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=3 frame=0 rect=0,0,32,32
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=7 legend=g:#9ebfd4,k:#1b1426 rows:23
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |........kggggggk........|
-  |......kkggggggggkk......|
-  |....kkggggggggggggkk....|
-  |...kggggggggggggggggk...|
-  |..kggggggggggggggggggk..|
-  |.kggggggggggggggggggggk.|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |.kggggggggggggggggggggk.|
-  |..kggggggggggggggggggk..|
-  |...kggggggggggggggggk...|
-  |....kggggggggggggggk....|
-  |.....kkkkkkkkkkkkkk.....|
-paint_grid layer=4 frame=0 x=11 y=2 legend=c:#cf8f4e,k:#1b1426 rows:5
-  |kkkkkkkkkk|
-  |kcccccccck|
-  |kcccccccck|
-  |.kcccccck.|
-  |.kkkkkkkk.|
-paint_grid layer=3 frame=0 x=8 y=8 legend=w:#fdeef8 rows:13
-  |......w...........|
-  |......w...........|
-  |......w...........|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |...w..........w...|
-  |.w.w...........w..|
-  |ww..............w.|
-  |ww...............w|
-  |ww................|
-  |w.................|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |..lllwwlll............|
-  |llmlmlmlmllll........l|
-  |lmmmmmmmmmlmlllllllllm|
-  |mmmmmmmmmmmmmlmlmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=0 x=11 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |.......wl|
-  |.......ll|
-  |.........|
-  |.....wl..|
-  |.....ll..|
-  |.........|
-  |w........|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.....llwwlll.lll......|
-  |.lllllmlmlmlllml......|
-  |lmlmlmmmmmmmlmmmllllll|
-  |mmmmmmmmmmmmmmmmmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=1 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.......www|
-  |..........|
-  |..........|
-  |..........|
-  |....wl....|
-  |....ll....|
-  |..........|
-  |..........|
-  |w.........|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.......llwwll.........|
-  |...lllllmlmlml..ll....|
-  |lllmlmlmmmmmmmlllmllll|
-  |mlmmmmmmmmmmmmmlmmmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=2 x=12 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w....|
-  |.......w.w|
-  |..........|
-  |..........|
-  |..wl......|
-  |..ll......|
-  |..........|
-  |..........|
-  |w.........|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.........lllwwll......|
-  |.....lllllmlmlmlllll..|
-  |lllllmlmlmmmmmmmlmlmll|
-  |mlmlmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=3 x=12 y=19 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |..wl|
-  |..ll|
-  |....|
-  |....|
-  |....|
-  |wl..|
-  |ll..|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=5 y=17 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:12
-  |...........l..........|
-  |.........llmllwwll....|
-  |.......lllmmmlmlmlllll|
-  |lllllllmlmmmmmmmmmlmlm|
-  |mlmlmlmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=4 x=11 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:11
-  |.....w...|
-  |...ww....|
-  |.........|
-  |.........|
-  |.........|
-  |.........|
-  |wl.......|
-  |ll.......|
-  |.........|
-  |.........|
-  |........w|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.............lllwwlll.|
-  |ll..........llmlmlmlml|
-  |lmlllllll.lllmmmmmmmmm|
-  |mmmlmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=5 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w.w..|
-  |...w......|
-  |..........|
-  |..........|
-  |wl........|
-  |ll........|
-  |..........|
-  |..........|
-  |.........w|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |................llwwl.|
-  |lllll.......llllmlmlml|
-  |lmlmlllllllllmlmmmmmmm|
-  |mmmmmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=6 x=10 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:5
-  |wl.........|
-  |ll.........|
-  |...........|
-  |...........|
-  |..........w|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.ll..ll...........llw.|
-  |llmlllml......llllmlmw|
-  |lmmmlmmmlllllllmlmmmmm|
-  |mmmmmmmmmlmlmlmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=7 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |ww..........|
-  |..w.........|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |.....w......|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.wwll...............l.|
-  |llmlm...l.......llllml|
-  |lmmmmllllllllllllmlmmm|
-  |mmmmmlmlmlmlmlmlmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=8 x=9 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |w...........|
-  |..w.w.......|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |......w.....|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.llwwll...............|
-  |llmlmlmllll.......llll|
-  |lmmmmmmmlmlllllllllmlm|
-  |mmmmmmmmmmmlmlmlmlmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.mmmmmmmmmmmmmmmmmmkk.|
-  |..mmmmmmmmmmmmmmmmkk..|
-  |...mmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=9 x=16 y=22 legend=l:#ff9fdc,w:#fdeef8 rows:4
-  |..wl|
-  |..ll|
-  |....|
-  |w...|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=3 frame=0 rect=0,0,32,32
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=7 legend=g:#9ebfd4,k:#1b1426 rows:23
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |........kggggggk........|
-  |......kkggggggggkk......|
-  |....kkggggggggggggkk....|
-  |...kggggggggggggggggk...|
-  |..kggggggggggggggggggk..|
-  |.kggggggggggggggggggggk.|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |.kggggggggggggggggggggk.|
-  |..kggggggggggggggggggk..|
-  |...kggggggggggggggggk...|
-  |....kggggggggggggggk....|
-  |.....kkkkkkkkkkkkkk.....|
-paint_grid layer=4 frame=0 x=11 y=2 legend=c:#cf8f4e,k:#1b1426 rows:5
-  |kkkkkkkkkk|
-  |kccccccckk|
-  |kccccccckk|
-  |.kccccckk.|
-  |.kkkkkkkk.|
-paint_grid layer=3 frame=0 x=8 y=8 legend=w:#fdeef8 rows:13
-  |......w...........|
-  |......w...........|
-  |......w...........|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |...w..........w...|
-  |.w.w...........w..|
-  |ww..............w.|
-  |ww...............w|
-  |ww................|
-  |w.................|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |..lllwwlll............|
-  |llmlmlmlmllll........l|
-  |lmmmmmmmmmlmlllllllllm|
-  |mmmmmmmmmmmmmlmlmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=0 x=11 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |.......wl|
-  |.......ll|
-  |.........|
-  |.....wl..|
-  |.....ll..|
-  |.........|
-  |w........|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.....llwwlll.lll......|
-  |.lllllmlmlmlllml......|
-  |lmlmlmmmmmmmlmmmllllll|
-  |mmmmmmmmmmmmmmmmmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=1 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.......www|
-  |..........|
-  |..........|
-  |..........|
-  |....wl....|
-  |....ll....|
-  |..........|
-  |..........|
-  |w.........|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.......llwwll.........|
-  |...lllllmlmlml..ll....|
-  |lllmlmlmmmmmmmlllmllll|
-  |mlmmmmmmmmmmmmmlmmmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=2 x=12 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w....|
-  |.......w.w|
-  |..........|
-  |..........|
-  |..wl......|
-  |..ll......|
-  |..........|
-  |..........|
-  |w.........|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.........lllwwll......|
-  |.....lllllmlmlmlllll..|
-  |lllllmlmlmmmmmmmlmlmll|
-  |mlmlmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=3 x=12 y=19 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |..wl|
-  |..ll|
-  |....|
-  |....|
-  |....|
-  |wl..|
-  |ll..|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=5 y=17 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:12
-  |...........l..........|
-  |.........llmllwwll....|
-  |.......lllmmmlmlmlllll|
-  |lllllllmlmmmmmmmmmlmlm|
-  |mlmlmlmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=4 x=11 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:11
-  |.....w...|
-  |...ww....|
-  |.........|
-  |.........|
-  |.........|
-  |.........|
-  |wl.......|
-  |ll.......|
-  |.........|
-  |.........|
-  |........w|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.............lllwwlll.|
-  |ll..........llmlmlmlml|
-  |lmlllllll.lllmmmmmmmmm|
-  |mmmlmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=5 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w.w..|
-  |...w......|
-  |..........|
-  |..........|
-  |wl........|
-  |ll........|
-  |..........|
-  |..........|
-  |.........w|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |................llwwl.|
-  |lllll.......llllmlmlml|
-  |lmlmlllllllllmlmmmmmmm|
-  |mmmmmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=6 x=10 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:5
-  |wl.........|
-  |ll.........|
-  |...........|
-  |...........|
-  |..........w|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.ll..ll...........llw.|
-  |llmlllml......llllmlmw|
-  |lmmmlmmmlllllllmlmmmmm|
-  |mmmmmmmmmlmlmlmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=7 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |ww..........|
-  |..w.........|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |.....w......|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.wwll...............l.|
-  |llmlm...l.......llllml|
-  |lmmmmllllllllllllmlmmm|
-  |mmmmmlmlmlmlmlmlmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=8 x=9 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |w...........|
-  |..w.w.......|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |......w.....|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.llwwll...............|
-  |llmlmlmllll.......llll|
-  |lmmmmmmmlmlllllllllmlm|
-  |mmmmmmmmmmmlmlmlmlmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=9 x=16 y=22 legend=l:#ff9fdc,w:#fdeef8 rows:4
-  |..wl|
-  |..ll|
-  |....|
-  |w...|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=3 frame=0 rect=0,0,32,32
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=4 y=7 legend=g:#9ebfd4,k:#1b1426 rows:23
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |.........kggggk.........|
-  |........kggggggk........|
-  |......kkggggggggkk......|
-  |....kkggggggggggggkk....|
-  |...kggggggggggggggggk...|
-  |..kggggggggggggggggggk..|
-  |.kggggggggggggggggggggk.|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |kggggggggggggggggggggggk|
-  |.kggggggggggggggggggggk.|
-  |..kggggggggggggggggggk..|
-  |...kggggggggggggggggk...|
-  |....kggggggggggggggk....|
-  |.....kkkkkkkkkkkkkk.....|
-paint_grid layer=4 frame=0 x=11 y=2 legend=c:#cf8f4e,k:#1b1426 rows:5
-  |kkkkkkkkkk|
-  |kcccccccck|
-  |kcccccccck|
-  |.kcccccck.|
-  |.kkkkkkkk.|
-paint_grid layer=3 frame=0 x=8 y=8 legend=w:#fdeef8 rows:13
-  |......w...........|
-  |......w...........|
-  |......w...........|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |...w..........w...|
-  |.w.w...........w..|
-  |ww..............w.|
-  |ww...............w|
-  |ww................|
-  |w.................|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |..lllwwlll............|
-  |llmlmlmlmllll........l|
-  |lmmmmmmmmmlmlllllllllm|
-  |mmmmmmmmmmmmmlmlmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=0 x=11 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |.......wl|
-  |.......ll|
-  |.........|
-  |.....wl..|
-  |.....ll..|
-  |.........|
-  |w........|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.....llwwlll.lll......|
-  |.lllllmlmlmlllml......|
-  |lmlmlmmmmmmmlmmmllllll|
-  |mmmmmmmmmmmmmmmmmlmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=1 x=11 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.......www|
-  |..........|
-  |..........|
-  |..........|
-  |....wl....|
-  |....ll....|
-  |..........|
-  |..........|
-  |w.........|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.......llwwll.........|
-  |...lllllmlmlml..ll....|
-  |lllmlmlmmmmmmmlllmllll|
-  |mlmmmmmmmmmmmmmlmmmlmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=2 x=12 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w....|
-  |.......w.w|
-  |..........|
-  |..........|
-  |..wl......|
-  |..ll......|
-  |..........|
-  |..........|
-  |w.........|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.........lllwwll......|
-  |.....lllllmlmlmlllll..|
-  |lllllmlmlmmmmmmmlmlmll|
-  |mlmlmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=3 x=12 y=19 legend=l:#ff9fdc,w:#fdeef8 rows:7
-  |..wl|
-  |..ll|
-  |....|
-  |....|
-  |....|
-  |wl..|
-  |ll..|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=5 y=17 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:12
-  |...........l..........|
-  |.........llmllwwll....|
-  |.......lllmmmlmlmlllll|
-  |lllllllmlmmmmmmmmmlmlm|
-  |mlmlmlmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=4 x=11 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:11
-  |.....w...|
-  |...ww....|
-  |.........|
-  |.........|
-  |.........|
-  |.........|
-  |wl.......|
-  |ll.......|
-  |.........|
-  |.........|
-  |........w|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.............lllwwlll.|
-  |ll..........llmlmlmlml|
-  |lmlllllll.lllmmmmmmmmm|
-  |mmmlmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=5 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:9
-  |.....w.w..|
-  |...w......|
-  |..........|
-  |..........|
-  |wl........|
-  |ll........|
-  |..........|
-  |..........|
-  |.........w|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |................llwwl.|
-  |lllll.......llllmlmlml|
-  |lmlmlllllllllmlmmmmmmm|
-  |mmmmmlmlmlmlmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=6 x=10 y=21 legend=l:#ff9fdc,w:#fdeef8 rows:5
-  |wl.........|
-  |ll.........|
-  |...........|
-  |...........|
-  |..........w|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.ll..ll...........llw.|
-  |llmlllml......llllmlmw|
-  |lmmmlmmmlllllllmlmmmmm|
-  |mmmmmmmmmlmlmlmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=7 x=10 y=18 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |ww..........|
-  |..w.........|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |.....w......|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.wwll...............l.|
-  |llmlm...l.......llllml|
-  |lmmmmllllllllllllmlmmm|
-  |mmmmmlmlmlmlmlmlmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=8 x=9 y=17 legend=l:#ff9fdc,w:#fdeef8 rows:10
-  |w...........|
-  |..w.w.......|
-  |............|
-  |............|
-  |............|
-  |............|
-  |..........wl|
-  |..........ll|
-  |............|
-  |......w.....|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=5 y=18 legend=k:#1b1426,l:#ff9fdc,m:#ef4ba6,w:#fdeef8 rows:11
-  |.llwwll...............|
-  |llmlmlmllll.......llll|
-  |lmmmmmmmlmlllllllllmlm|
-  |mmmmmmmmmmmlmlmlmlmmmk|
-  |mmmmmmmmmmmmmmmmmmmmmk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |mmmmmmmmmmmmmmmmmmmmkk|
-  |.lmmmmmmmmmmmmmmmmmkk.|
-  |..lmmmmmmmmmmmmmmmkk..|
-  |...lmmmmmmmmmmmmmkk...|
-  |....kkkkkkkkkkkkkk....|
-paint_grid layer=2 frame=9 x=16 y=22 legend=l:#ff9fdc,w:#fdeef8 rows:4
-  |..wl|
-  |..ll|
-  |....|
-  |w...|
+palette set colors=#1b1426,#cf8f4e,#9ebfd4,#ef4ba6,#ff9fdc,#fdeef8
+layer add name=liquid
+layer add name=bubbles
+layer add name=shine
+layer add name=cork
+layer rename index=0 name=glass
+legend A=#1b1426
+glass @0 grid 4,2 = 4,2 24x28
+    ........AAAAAAAA........
+    ........AAAAAAAA........
+    ........AAAAAAAA........
+    ........AAAAAAAA........
+    ........AAAAAAAA........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    ........AAAAAAAA........
+    ......AAAAAAAAAAAA......
+    ....AAAAAAAAAAAAAAAA....
+    ...AAAAAAAAAAAAAAAAAA...
+    ..AAAAAAAAAAAAAAAAAAAA..
+    .AAAAAAAAAAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAAAAAAAAAA.
+    ..AAAAAAAAAAAAAAAAAAAA..
+    ...AAAAAAAAAAAAAAAAAA...
+    ....AAAAAAAAAAAAAAAA....
+    .....AAAAAAAAAAAAAA.....
+glass @0 clear 0,0 32,32 = 4,2 27,29 .
+glass @0 grid 4,2 = 4,2 24x28
+    .......AAAAAAAAAA.......
+    .......AAAAAAAAAA.......
+    .......AAAAAAAAAA.......
+    ........AAAAAAAA........
+    ........AAAAAAAA........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    .........AAAAAA.........
+    ........AAAAAAAA........
+    ......AAAAAAAAAAAA......
+    ....AAAAAAAAAAAAAAAA....
+    ...AAAAAAAAAAAAAAAAAA...
+    ..AAAAAAAAAAAAAAAAAAAA..
+    .AAAAAAAAAAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAAAAAAAAAA.
+    ..AAAAAAAAAAAAAAAAAAAA..
+    ...AAAAAAAAAAAAAAAAAA...
+    ....AAAAAAAAAAAAAAAA....
+    .....AAAAAAAAAAAAAA.....
+glass @0 clear 0,0 32,32 = 4,2 27,29 .
+legend B=#9ebfd4
+glass @0 grid 4,7 = 4,7 24x23
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    ........ABBBBBBA........
+    ......AABBBBBBBBAA......
+    ....AABBBBBBBBBBBBAA....
+    ...ABBBBBBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBBBBBA..
+    ...ABBBBBBBBBBBBBBBBA...
+    ....ABBBBBBBBBBBBBBA....
+    .....AAAAAAAAAAAAAA.....
+legend C=#cf8f4e
+cork @0 grid 11,2 = 11,2 10x5
+    AAAAAAAAAA
+    ACCCCCCCCA
+    ACCCCCCCCA
+    .ACCCCCCA.
+    .AAAAAAAA.
+legend D=#fdeef8
+shine @0 grid 8,8 = 8,8 7x13
+    ......D
+    ......D
+    ......D
+    .......
+    .......
+    .......
+    .......
+    ...D...
+    .D.D...
+    DD.....
+    DD.....
+    DD.....
+    D......
+liquid @0 clear 0,0 32,32 ~
+bubbles @0 clear 0,0 32,32 ~
+legend E=#ff9fdc F=#ef4ba6
+liquid @0 grid 5,18 = 5,18 22x11
+    ..EEEDDEEE............
+    EEFFFFFFFFEEE........E
+    FFFFFFFFFFFFFEEEEEEEEF
+    FFFFFFFFFFFFFFFFFFFFFF
+    FFFFFFFFFFFFFFFFFFFFFF
+    FFFFFFFFFFFFFFFFFFFFFA
+    AFFFFFFFFFFFFFFFFFFFAA
+    .AFFFFFFFFFFFFFFFFFAA.
+    ..AFFFFFFFFFFFFFFFAA..
+    ...AFFFFFFFFAAAAAAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @0 grid 11,20 = 11,20 9x9
+    .......DE
+    .......EE
+    .........
+    .........
+    .....DE..
+    .....EE..
+    .........
+    .........
+    E........
+glass @0 clear 0,0 32,32 = 4,7 27,29 .
+liquid @0 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @0 clear 0,0 32,32 = 11,20 19,28 .
+shine @0 clear 0,0 32,32 = 8,8 14,20 .
+cork @0 clear 0,0 32,32 = 11,2 20,6 .
+glass @0 grid 4,7 = 4,7 24x23
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    ........ABBBBBBA........
+    ......AABBBBBBBBAA......
+    ....AABBBBBBBBBBBBAA....
+    ...ABBBBBBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBBBBBA..
+    ...ABBBBBBBBBBBBBBBBA...
+    ....ABBBBBBBBBBBBBBA....
+    .....AAAAAAAAAAAAAA.....
+cork @0 grid 11,2 = 11,2 10x5
+    AAAAAAAAAA
+    ACCCCCCCCA
+    ACCCCCCCCA
+    .ACCCCCCA.
+    .AAAAAAAA.
+shine @0 grid 8,8 = 8,8 18x13
+    ......D...........
+    ......D...........
+    ......D...........
+    ..................
+    ..................
+    ..................
+    ..................
+    ...D..........D...
+    .D.D...........D..
+    DD..............D.
+    DD...............D
+    DD................
+    D.................
+liquid @0 clear 0,0 32,32 ~
+bubbles @0 clear 0,0 32,32 ~
+liquid @0 grid 5,18 = 5,18 22x11
+    ..EEEDDEEE............
+    EEFFFFFFFFEEE........E
+    FFFFFFFFFFFFFEEEEEEEEA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @0 grid 11,21 = 11,21 9x7
+    .......DE
+    .......EE
+    .........
+    .....DE..
+    .....EE..
+    .........
+    E........
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+liquid @1 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @1 clear 0,0 32,32 = 11,21 19,27 .
+liquid @1 grid 5,18 = 5,18 22x11
+    .....EEDDEEE.EEE......
+    .EEEEFFFFFFFEFFF......
+    EFFFFFFFFFFFFFFFEEEEEE
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @1 grid 11,18 = 11,18 10x9
+    .......DDD
+    ..........
+    ..........
+    ..........
+    ....DE....
+    ....EE....
+    ..........
+    ..........
+    E.........
+liquid @2 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @2 clear 0,0 32,32 = 11,21 19,27 .
+liquid @2 grid 5,18 = 5,18 22x11
+    .......EEDDEE.........
+    ...EEEEFFFFFFE..EE....
+    EEEFFFFFFFFFFFEEFFEEEE
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @2 grid 12,18 = 12,18 8x8
+    .......D
+    ........
+    ........
+    ..DE....
+    ..EE....
+    ........
+    ........
+    E.......
+liquid @3 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @3 clear 0,0 32,32 = 11,21 19,27 .
+liquid @3 grid 5,18 = 5,18 22x11
+    .........EEEDDEE......
+    .....EEEEFFFFFFFEEEE..
+    EEEEEFFFFFFFFFFFFFFFEE
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @3 grid 12,19 = 12,19 4x7
+    ..DE
+    ..EE
+    ....
+    ....
+    ....
+    DE..
+    EE..
+liquid @4 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @4 clear 0,0 32,32 = 11,21 19,27 .
+liquid @4 grid 5,17 = 5,17 22x12
+    ...........E..........
+    .........EEFEEDDEE....
+    .......EEFFFFFFFFFEEEE
+    EEEEEEEFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @4 grid 11,17 = 11,17 9x11
+    .....D...
+    ...DD....
+    .........
+    .........
+    .........
+    .........
+    DE.......
+    EE.......
+    .........
+    .........
+    ........E
+liquid @5 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @5 clear 0,0 32,32 = 11,21 19,27 .
+liquid @5 grid 5,18 = 5,18 22x11
+    .............EEEDDEEE.
+    EE..........EFFFFFFFFE
+    FFEEEEEEE.EEFFFFFFFFFA
+    FFFFFFFFFEFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @5 grid 10,18 = 10,18 10x9
+    .....D....
+    ...D......
+    ..........
+    ..........
+    DE........
+    EE........
+    ..........
+    ..........
+    .........E
+liquid @6 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @6 clear 0,0 32,32 = 11,21 19,27 .
+liquid @6 grid 5,18 = 5,18 22x11
+    ................EEDDE.
+    EEEEE.......EEEEFFFFFE
+    FFFFFEEEEEEEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @6 grid 10,21 = 10,21 11x5
+    DE.........
+    EE.........
+    ...........
+    ...........
+    ..........E
+liquid @7 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @7 clear 0,0 32,32 = 11,21 19,27 .
+liquid @7 grid 5,18 = 5,18 22x11
+    .EE..EE...........EED.
+    EFFEEFFE......EEEEFFFD
+    FFFFFFFFEEEEEEFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @7 grid 10,18 = 10,18 12x10
+    DD..........
+    ..D.........
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    .....E......
+liquid @8 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @8 clear 0,0 32,32 = 11,21 19,27 .
+liquid @8 grid 5,18 = 5,18 22x11
+    .DDEE...............E.
+    EFFFF...E.......EEEEFE
+    FFFFFEEEFEEEEEEEFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @8 grid 11,18 = 11,18 10x9
+    D.........
+    ..........
+    ..........
+    ..........
+    ..........
+    ........DE
+    ........EE
+    ..........
+    ....E.....
+liquid @9 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @9 clear 0,0 32,32 = 11,21 19,27 .
+liquid @9 grid 5,18 = 5,18 22x11
+    .EEDDEE...............
+    EFFFFFFEEEE.......EEEE
+    FFFFFFFFFFFEEEEEEEFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .EFFFFFFFFFFFFFFFFFFA.
+    ..EFFFFFFFFFFFFFFFFA..
+    ...EFFFFFFFFFFFFFFA...
+    ....EEEEEFAAAAAAAA....
+bubbles @9 grid 16,22 = 16,22 4x4
+    ..DE
+    ..EE
+    ....
+    E...
+glass @0 clear 0,0 32,32 = 4,7 27,29 .
+liquid @0 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @0 clear 0,0 32,32 = 11,21 19,27 .
+shine @0 clear 0,0 32,32 = 8,8 25,20 .
+cork @0 clear 0,0 32,32 = 11,2 20,6 .
+glass @0 grid 4,7 = 4,7 24x23
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    ........ABBBBBBA........
+    ......AABBBBBBBBAA......
+    ....AABBBBBBBBBBBBAA....
+    ...ABBBBBBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBBBBBA..
+    ...ABBBBBBBBBBBBBBBBA...
+    ....ABBBBBBBBBBBBBBA....
+    .....AAAAAAAAAAAAAA.....
+cork @0 grid 11,2 = 11,2 10x5
+    AAAAAAAAAA
+    ACCCCCCCCA
+    ACCCCCCCCA
+    .ACCCCCCA.
+    .AAAAAAAA.
+shine @0 grid 8,8 = 8,8 18x13
+    ......D...........
+    ......D...........
+    ......D...........
+    ..................
+    ..................
+    ..................
+    ..................
+    ...D..........D...
+    .D.D...........D..
+    DD..............D.
+    DD...............D
+    DD................
+    D.................
+liquid @0 clear 0,0 32,32 ~
+bubbles @0 clear 0,0 32,32 ~
+liquid @0 grid 5,18 = 5,18 22x11
+    ..EEEDDEEE............
+    EEFEFEFEFEEEE........E
+    EFFFFFFFFFEFEEEEEEEEEF
+    FFFFFFFFFFFFFEFEFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @0 grid 11,21 = 11,21 9x7
+    .......DE
+    .......EE
+    .........
+    .....DE..
+    .....EE..
+    .........
+    E........
+liquid @1 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @1 clear 0,0 32,32 = 11,18 20,26 .
+liquid @1 grid 5,18 = 5,18 22x11
+    .....EEDDEEE.EEE......
+    .EEEEEFEFEFEEEFE......
+    EFEFEFFFFFFFEFFFEEEEEE
+    FFFFFFFFFFFFFFFFFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @1 grid 11,18 = 11,18 10x9
+    .......DDD
+    ..........
+    ..........
+    ..........
+    ....DE....
+    ....EE....
+    ..........
+    ..........
+    E.........
+liquid @2 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @2 clear 0,0 32,32 = 12,18 19,25 .
+liquid @2 grid 5,18 = 5,18 22x11
+    .......EEDDEE.........
+    ...EEEEEFEFEFE..EE....
+    EEEFEFEFFFFFFFEEEFEEEE
+    FEFFFFFFFFFFFFFEFFFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @2 grid 12,18 = 12,18 8x8
+    .......D
+    ........
+    ........
+    ..DE....
+    ..EE....
+    ........
+    ........
+    E.......
+liquid @3 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @3 clear 0,0 32,32 = 12,19 15,25 .
+liquid @3 grid 5,18 = 5,18 22x11
+    .........EEEDDEE......
+    .....EEEEEFEFEFEEEEE..
+    EEEEEFEFEFFFFFFFEFEFEE
+    FEFEFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @3 grid 12,19 = 12,19 4x7
+    ..DE
+    ..EE
+    ....
+    ....
+    ....
+    DE..
+    EE..
+liquid @4 clear 0,0 32,32 = 5,17 26,28 .
+bubbles @4 clear 0,0 32,32 = 11,17 19,27 .
+liquid @4 grid 5,17 = 5,17 22x12
+    ...........E..........
+    .........EEFEEDDEE....
+    .......EEEFFFEFEFEEEEE
+    EEEEEEEFEFFFFFFFFFEFEF
+    FEFEFEFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @4 grid 11,17 = 11,17 9x11
+    .....D...
+    ...DD....
+    .........
+    .........
+    .........
+    .........
+    DE.......
+    EE.......
+    .........
+    .........
+    ........E
+liquid @5 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @5 clear 0,0 32,32 = 10,18 19,26 .
+liquid @5 grid 5,18 = 5,18 22x11
+    .............EEEDDEEE.
+    EE..........EEFEFEFEFE
+    EFEEEEEEE.EEEFFFFFFFFF
+    FFFEFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @5 grid 10,18 = 10,18 10x9
+    .....D....
+    ...D......
+    ..........
+    ..........
+    DE........
+    EE........
+    ..........
+    ..........
+    .........E
+liquid @6 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @6 clear 0,0 32,32 = 10,21 20,25 .
+liquid @6 grid 5,18 = 5,18 22x11
+    ................EEDDE.
+    EEEEE.......EEEEFEFEFE
+    EFEFEEEEEEEEEFEFFFFFFF
+    FFFFFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @6 grid 10,21 = 10,21 11x5
+    DE.........
+    EE.........
+    ...........
+    ...........
+    ..........E
+liquid @7 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @7 clear 0,0 32,32 = 10,18 21,27 .
+liquid @7 grid 5,18 = 5,18 22x11
+    .EE..EE...........EED.
+    EEFEEEFE......EEEEFEFD
+    EFFFEFFFEEEEEEEFEFFFFF
+    FFFFFFFFFEFEFEFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @7 grid 10,18 = 10,18 12x10
+    DD..........
+    ..D.........
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    .....E......
+liquid @8 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @8 clear 0,0 32,32 = 11,18 20,26 .
+liquid @8 grid 5,18 = 5,18 22x11
+    .DDEE...............E.
+    EEFEF...E.......EEEEFE
+    EFFFFEEEEEEEEEEEEFEFFF
+    FFFFFEFEFEFEFEFEFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @8 grid 11,18 = 11,18 10x9
+    D.........
+    ..........
+    ..........
+    ..........
+    ..........
+    ........DE
+    ........EE
+    ..........
+    ....E.....
+liquid @9 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @9 clear 0,0 32,32 = 16,22 19,25 .
+liquid @9 grid 5,18 = 5,18 22x11
+    .EEDDEE...............
+    EEFEFEFEEEE.......EEEE
+    EFFFFFFFEFEEEEEEEEEFEF
+    FFFFFFFFFFFEFEFEFEFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    .FFFFFFFFFFFFFFFFFFFA.
+    ..FFFFFFFFFFFFFFFFFA..
+    ...FAFAFAFAFAFAFAFA...
+    ....AAAAAAAAAAAAAA....
+bubbles @9 grid 16,22 = 16,22 4x4
+    ..DE
+    ..EE
+    ....
+    E...
+glass @0 clear 0,0 32,32 = 4,7 27,29 .
+liquid @0 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @0 clear 0,0 32,32 = 11,21 19,27 .
+shine @0 clear 0,0 32,32 = 8,8 25,20 .
+cork @0 clear 0,0 32,32 = 11,2 20,6 .
+glass @0 grid 4,7 = 4,7 24x23
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    ........ABBBBBBA........
+    ......AABBBBBBBBAA......
+    ....AABBBBBBBBBBBBAA....
+    ...ABBBBBBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBBBBBA..
+    ...ABBBBBBBBBBBBBBBBA...
+    ....ABBBBBBBBBBBBBBA....
+    .....AAAAAAAAAAAAAA.....
+cork @0 grid 11,2 = 11,2 10x5
+    AAAAAAAAAA
+    ACCCCCCCCA
+    ACCCCCCCCA
+    .ACCCCCCA.
+    .AAAAAAAA.
+shine @0 grid 8,8 = 8,8 18x13
+    ......D...........
+    ......D...........
+    ......D...........
+    ..................
+    ..................
+    ..................
+    ..................
+    ...D..........D...
+    .D.D...........D..
+    DD..............D.
+    DD...............D
+    DD................
+    D.................
+liquid @0 clear 0,0 32,32 ~
+bubbles @0 clear 0,0 32,32 ~
+liquid @0 grid 5,18 = 5,18 22x11
+    ..EEEDDEEE............
+    EEFEFEFEFEEEE........E
+    EFFFFFFFFFEFEEEEEEEEEF
+    FFFFFFFFFFFFFEFEFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @0 grid 11,21 = 11,21 9x7
+    .......DE
+    .......EE
+    .........
+    .....DE..
+    .....EE..
+    .........
+    E........
+liquid @1 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @1 clear 0,0 32,32 = 11,18 20,26 .
+liquid @1 grid 5,18 = 5,18 22x11
+    .....EEDDEEE.EEE......
+    .EEEEEFEFEFEEEFE......
+    EFEFEFFFFFFFEFFFEEEEEE
+    FFFFFFFFFFFFFFFFFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @1 grid 11,18 = 11,18 10x9
+    .......DDD
+    ..........
+    ..........
+    ..........
+    ....DE....
+    ....EE....
+    ..........
+    ..........
+    E.........
+liquid @2 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @2 clear 0,0 32,32 = 12,18 19,25 .
+liquid @2 grid 5,18 = 5,18 22x11
+    .......EEDDEE.........
+    ...EEEEEFEFEFE..EE....
+    EEEFEFEFFFFFFFEEEFEEEE
+    FEFFFFFFFFFFFFFEFFFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @2 grid 12,18 = 12,18 8x8
+    .......D
+    ........
+    ........
+    ..DE....
+    ..EE....
+    ........
+    ........
+    E.......
+liquid @3 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @3 clear 0,0 32,32 = 12,19 15,25 .
+liquid @3 grid 5,18 = 5,18 22x11
+    .........EEEDDEE......
+    .....EEEEEFEFEFEEEEE..
+    EEEEEFEFEFFFFFFFEFEFEE
+    FEFEFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @3 grid 12,19 = 12,19 4x7
+    ..DE
+    ..EE
+    ....
+    ....
+    ....
+    DE..
+    EE..
+liquid @4 clear 0,0 32,32 = 5,17 26,28 .
+bubbles @4 clear 0,0 32,32 = 11,17 19,27 .
+liquid @4 grid 5,17 = 5,17 22x12
+    ...........E..........
+    .........EEFEEDDEE....
+    .......EEEFFFEFEFEEEEE
+    EEEEEEEFEFFFFFFFFFEFEF
+    FEFEFEFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @4 grid 11,17 = 11,17 9x11
+    .....D...
+    ...DD....
+    .........
+    .........
+    .........
+    .........
+    DE.......
+    EE.......
+    .........
+    .........
+    ........E
+liquid @5 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @5 clear 0,0 32,32 = 10,18 19,26 .
+liquid @5 grid 5,18 = 5,18 22x11
+    .............EEEDDEEE.
+    EE..........EEFEFEFEFE
+    EFEEEEEEE.EEEFFFFFFFFF
+    FFFEFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @5 grid 10,18 = 10,18 10x9
+    .....D....
+    ...D......
+    ..........
+    ..........
+    DE........
+    EE........
+    ..........
+    ..........
+    .........E
+liquid @6 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @6 clear 0,0 32,32 = 10,21 20,25 .
+liquid @6 grid 5,18 = 5,18 22x11
+    ................EEDDE.
+    EEEEE.......EEEEFEFEFE
+    EFEFEEEEEEEEEFEFFFFFFF
+    FFFFFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @6 grid 10,21 = 10,21 11x5
+    DE.........
+    EE.........
+    ...........
+    ...........
+    ..........E
+liquid @7 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @7 clear 0,0 32,32 = 10,18 21,27 .
+liquid @7 grid 5,18 = 5,18 22x11
+    .EE..EE...........EED.
+    EEFEEEFE......EEEEFEFD
+    EFFFEFFFEEEEEEEFEFFFFF
+    FFFFFFFFFEFEFEFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @7 grid 10,18 = 10,18 12x10
+    DD..........
+    ..D.........
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    .....E......
+liquid @8 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @8 clear 0,0 32,32 = 11,18 20,26 .
+liquid @8 grid 5,18 = 5,18 22x11
+    .DDEE...............E.
+    EEFEF...E.......EEEEFE
+    EFFFFEEEEEEEEEEEEFEFFF
+    FFFFFEFEFEFEFEFEFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @8 grid 11,18 = 11,18 10x9
+    D.........
+    ..........
+    ..........
+    ..........
+    ..........
+    ........DE
+    ........EE
+    ..........
+    ....E.....
+liquid @9 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @9 clear 0,0 32,32 = 16,22 19,25 .
+liquid @9 grid 5,18 = 5,18 22x11
+    .EEDDEE...............
+    EEFEFEFEEEE.......EEEE
+    EFFFFFFFEFEEEEEEEEEFEF
+    FFFFFFFFFFFEFEFEFEFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @9 grid 16,22 = 16,22 4x4
+    ..DE
+    ..EE
+    ....
+    E...
+glass @0 clear 0,0 32,32 = 4,7 27,29 .
+liquid @0 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @0 clear 0,0 32,32 = 11,21 19,27 .
+shine @0 clear 0,0 32,32 = 8,8 25,20 .
+cork @0 clear 0,0 32,32 = 11,2 20,6 .
+glass @0 grid 4,7 = 4,7 24x23
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    ........ABBBBBBA........
+    ......AABBBBBBBBAA......
+    ....AABBBBBBBBBBBBAA....
+    ...ABBBBBBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBBBBBA..
+    ...ABBBBBBBBBBBBBBBBA...
+    ....ABBBBBBBBBBBBBBA....
+    .....AAAAAAAAAAAAAA.....
+cork @0 grid 11,2 = 11,2 10x5
+    AAAAAAAAAA
+    ACCCCCCCCA
+    ACCCCCCCCA
+    .ACCCCCCA.
+    .AAAAAAAA.
+shine @0 grid 8,8 = 8,8 18x13
+    ......D...........
+    ......D...........
+    ......D...........
+    ..................
+    ..................
+    ..................
+    ..................
+    ...D..........D...
+    .D.D...........D..
+    DD..............D.
+    DD...............D
+    DD................
+    D.................
+liquid @0 clear 0,0 32,32 ~
+bubbles @0 clear 0,0 32,32 ~
+liquid @0 grid 5,18 = 5,18 22x11
+    ..EEEDDEEE............
+    EEFEFEFEFEEEE........E
+    EFFFFFFFFFEFEEEEEEEEEF
+    FFFFFFFFFFFFFEFEFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @0 grid 11,21 = 11,21 9x7
+    .......DE
+    .......EE
+    .........
+    .....DE..
+    .....EE..
+    .........
+    D........
+liquid @1 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @1 clear 0,0 32,32 = 11,18 20,26 .
+liquid @1 grid 5,18 = 5,18 22x11
+    .....EEDDEEE.EEE......
+    .EEEEEFEFEFEEEFE......
+    EFEFEFFFFFFFEFFFEEEEEE
+    FFFFFFFFFFFFFFFFFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @1 grid 11,18 = 11,18 10x9
+    .......DDD
+    ..........
+    ..........
+    ..........
+    ....DE....
+    ....EE....
+    ..........
+    ..........
+    D.........
+liquid @2 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @2 clear 0,0 32,32 = 12,18 19,25 .
+liquid @2 grid 5,18 = 5,18 22x11
+    .......EEDDEE.........
+    ...EEEEEFEFEFE..EE....
+    EEEFEFEFFFFFFFEEEFEEEE
+    FEFFFFFFFFFFFFFEFFFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @2 grid 12,17 = 12,17 10x9
+    .....D....
+    .......D.D
+    ..........
+    ..........
+    ..DE......
+    ..EE......
+    ..........
+    ..........
+    D.........
+liquid @3 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @3 clear 0,0 32,32 = 12,19 15,25 .
+liquid @3 grid 5,18 = 5,18 22x11
+    .........EEEDDEE......
+    .....EEEEEFEFEFEEEEE..
+    EEEEEFEFEFFFFFFFEFEFEE
+    FEFEFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @3 grid 12,19 = 12,19 4x7
+    ..DE
+    ..EE
+    ....
+    ....
+    ....
+    DE..
+    EE..
+liquid @4 clear 0,0 32,32 = 5,17 26,28 .
+bubbles @4 clear 0,0 32,32 = 11,17 19,27 .
+liquid @4 grid 5,17 = 5,17 22x12
+    ...........E..........
+    .........EEFEEDDEE....
+    .......EEEFFFEFEFEEEEE
+    EEEEEEEFEFFFFFFFFFEFEF
+    FEFEFEFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @4 grid 11,17 = 11,17 9x11
+    .....D...
+    ...DD....
+    .........
+    .........
+    .........
+    .........
+    DE.......
+    EE.......
+    .........
+    .........
+    ........D
+liquid @5 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @5 clear 0,0 32,32 = 10,18 19,26 .
+liquid @5 grid 5,18 = 5,18 22x11
+    .............EEEDDEEE.
+    EE..........EEFEFEFEFE
+    EFEEEEEEE.EEEFFFFFFFFF
+    FFFEFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @5 grid 10,18 = 10,18 10x9
+    .....D.D..
+    ...D......
+    ..........
+    ..........
+    DE........
+    EE........
+    ..........
+    ..........
+    .........D
+liquid @6 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @6 clear 0,0 32,32 = 10,21 20,25 .
+liquid @6 grid 5,18 = 5,18 22x11
+    ................EEDDE.
+    EEEEE.......EEEEFEFEFE
+    EFEFEEEEEEEEEFEFFFFFFF
+    FFFFFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @6 grid 10,21 = 10,21 11x5
+    DE.........
+    EE.........
+    ...........
+    ...........
+    ..........D
+liquid @7 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @7 clear 0,0 32,32 = 10,18 21,27 .
+liquid @7 grid 5,18 = 5,18 22x11
+    .EE..EE...........EED.
+    EEFEEEFE......EEEEFEFD
+    EFFFEFFFEEEEEEEFEFFFFF
+    FFFFFFFFFEFEFEFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @7 grid 10,18 = 10,18 12x10
+    DD..........
+    ..D.........
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    .....D......
+liquid @8 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @8 clear 0,0 32,32 = 11,18 20,26 .
+liquid @8 grid 5,18 = 5,18 22x11
+    .DDEE...............E.
+    EEFEF...E.......EEEEFE
+    EFFFFEEEEEEEEEEEEFEFFF
+    FFFFFEFEFEFEFEFEFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @8 grid 9,17 = 9,17 12x10
+    D...........
+    ..D.D.......
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    ......D.....
+liquid @9 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @9 clear 0,0 32,32 = 16,22 19,25 .
+liquid @9 grid 5,18 = 5,18 22x11
+    .EEDDEE...............
+    EEFEFEFEEEE.......EEEE
+    EFFFFFFFEFEEEEEEEEEFEF
+    FFFFFFFFFFFEFEFEFEFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .FFFFFFFFFFFFFFFFFFAA.
+    ..FFFFFFFFFFFFFFFFAA..
+    ...FFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @9 grid 16,22 = 16,22 4x4
+    ..DE
+    ..EE
+    ....
+    D...
+glass @0 clear 0,0 32,32 = 4,7 27,29 .
+liquid @0 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @0 clear 0,0 32,32 = 11,21 19,27 .
+shine @0 clear 0,0 32,32 = 8,8 25,20 .
+cork @0 clear 0,0 32,32 = 11,2 20,6 .
+glass @0 grid 4,7 = 4,7 24x23
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    ........ABBBBBBA........
+    ......AABBBBBBBBAA......
+    ....AABBBBBBBBBBBBAA....
+    ...ABBBBBBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBBBBBA..
+    ...ABBBBBBBBBBBBBBBBA...
+    ....ABBBBBBBBBBBBBBA....
+    .....AAAAAAAAAAAAAA.....
+cork @0 grid 11,2 = 11,2 10x5
+    AAAAAAAAAA
+    ACCCCCCCAA
+    ACCCCCCCAA
+    .ACCCCCAA.
+    .AAAAAAAA.
+shine @0 grid 8,8 = 8,8 18x13
+    ......D...........
+    ......D...........
+    ......D...........
+    ..................
+    ..................
+    ..................
+    ..................
+    ...D..........D...
+    .D.D...........D..
+    DD..............D.
+    DD...............D
+    DD................
+    D.................
+liquid @0 clear 0,0 32,32 ~
+bubbles @0 clear 0,0 32,32 ~
+liquid @0 grid 5,18 = 5,18 22x11
+    ..EEEDDEEE............
+    EEFEFEFEFEEEE........E
+    EFFFFFFFFFEFEEEEEEEEEF
+    FFFFFFFFFFFFFEFEFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @0 grid 11,21 = 11,21 9x7
+    .......DE
+    .......EE
+    .........
+    .....DE..
+    .....EE..
+    .........
+    D........
+liquid @1 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @1 clear 0,0 32,32 = 11,18 20,26 .
+liquid @1 grid 5,18 = 5,18 22x11
+    .....EEDDEEE.EEE......
+    .EEEEEFEFEFEEEFE......
+    EFEFEFFFFFFFEFFFEEEEEE
+    FFFFFFFFFFFFFFFFFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @1 grid 11,18 = 11,18 10x9
+    .......DDD
+    ..........
+    ..........
+    ..........
+    ....DE....
+    ....EE....
+    ..........
+    ..........
+    D.........
+liquid @2 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @2 clear 0,0 32,32 = 12,17 21,25 .
+liquid @2 grid 5,18 = 5,18 22x11
+    .......EEDDEE.........
+    ...EEEEEFEFEFE..EE....
+    EEEFEFEFFFFFFFEEEFEEEE
+    FEFFFFFFFFFFFFFEFFFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @2 grid 12,17 = 12,17 10x9
+    .....D....
+    .......D.D
+    ..........
+    ..........
+    ..DE......
+    ..EE......
+    ..........
+    ..........
+    D.........
+liquid @3 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @3 clear 0,0 32,32 = 12,19 15,25 .
+liquid @3 grid 5,18 = 5,18 22x11
+    .........EEEDDEE......
+    .....EEEEEFEFEFEEEEE..
+    EEEEEFEFEFFFFFFFEFEFEE
+    FEFEFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @3 grid 12,19 = 12,19 4x7
+    ..DE
+    ..EE
+    ....
+    ....
+    ....
+    DE..
+    EE..
+liquid @4 clear 0,0 32,32 = 5,17 26,28 .
+bubbles @4 clear 0,0 32,32 = 11,17 19,27 .
+liquid @4 grid 5,17 = 5,17 22x12
+    ...........E..........
+    .........EEFEEDDEE....
+    .......EEEFFFEFEFEEEEE
+    EEEEEEEFEFFFFFFFFFEFEF
+    FEFEFEFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @4 grid 11,17 = 11,17 9x11
+    .....D...
+    ...DD....
+    .........
+    .........
+    .........
+    .........
+    DE.......
+    EE.......
+    .........
+    .........
+    ........D
+liquid @5 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @5 clear 0,0 32,32 = 10,18 19,26 .
+liquid @5 grid 5,18 = 5,18 22x11
+    .............EEEDDEEE.
+    EE..........EEFEFEFEFE
+    EFEEEEEEE.EEEFFFFFFFFF
+    FFFEFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @5 grid 10,18 = 10,18 10x9
+    .....D.D..
+    ...D......
+    ..........
+    ..........
+    DE........
+    EE........
+    ..........
+    ..........
+    .........D
+liquid @6 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @6 clear 0,0 32,32 = 10,21 20,25 .
+liquid @6 grid 5,18 = 5,18 22x11
+    ................EEDDE.
+    EEEEE.......EEEEFEFEFE
+    EFEFEEEEEEEEEFEFFFFFFF
+    FFFFFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @6 grid 10,21 = 10,21 11x5
+    DE.........
+    EE.........
+    ...........
+    ...........
+    ..........D
+liquid @7 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @7 clear 0,0 32,32 = 10,18 21,27 .
+liquid @7 grid 5,18 = 5,18 22x11
+    .EE..EE...........EED.
+    EEFEEEFE......EEEEFEFD
+    EFFFEFFFEEEEEEEFEFFFFF
+    FFFFFFFFFEFEFEFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @7 grid 10,18 = 10,18 12x10
+    DD..........
+    ..D.........
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    .....D......
+liquid @8 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @8 clear 0,0 32,32 = 9,17 20,26 .
+liquid @8 grid 5,18 = 5,18 22x11
+    .DDEE...............E.
+    EEFEF...E.......EEEEFE
+    EFFFFEEEEEEEEEEEEFEFFF
+    FFFFFEFEFEFEFEFEFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @8 grid 9,17 = 9,17 12x10
+    D...........
+    ..D.D.......
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    ......D.....
+liquid @9 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @9 clear 0,0 32,32 = 16,22 19,25 .
+liquid @9 grid 5,18 = 5,18 22x11
+    .EEDDEE...............
+    EEFEFEFEEEE.......EEEE
+    EFFFFFFFEFEEEEEEEEEFEF
+    FFFFFFFFFFFEFEFEFEFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @9 grid 16,22 = 16,22 4x4
+    ..DE
+    ..EE
+    ....
+    D...
+glass @0 clear 0,0 32,32 = 4,7 27,29 .
+liquid @0 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @0 clear 0,0 32,32 = 11,21 19,27 .
+shine @0 clear 0,0 32,32 = 8,8 25,20 .
+cork @0 clear 0,0 32,32 = 11,2 20,6 .
+glass @0 grid 4,7 = 4,7 24x23
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    .........ABBBBA.........
+    ........ABBBBBBA........
+    ......AABBBBBBBBAA......
+    ....AABBBBBBBBBBBBAA....
+    ...ABBBBBBBBBBBBBBBBA...
+    ..ABBBBBBBBBBBBBBBBBBA..
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    .ABBBBBBBBBBBBBBBBBBBBA.
+    ..ABBBBBBBBBBBBBBBBBBA..
+    ...ABBBBBBBBBBBBBBBBA...
+    ....ABBBBBBBBBBBBBBA....
+    .....AAAAAAAAAAAAAA.....
+cork @0 grid 11,2 = 11,2 10x5
+    AAAAAAAAAA
+    ACCCCCCCCA
+    ACCCCCCCCA
+    .ACCCCCCA.
+    .AAAAAAAA.
+shine @0 grid 8,8 = 8,8 18x13
+    ......D...........
+    ......D...........
+    ......D...........
+    ..................
+    ..................
+    ..................
+    ..................
+    ...D..........D...
+    .D.D...........D..
+    DD..............D.
+    DD...............D
+    DD................
+    D.................
+liquid @0 clear 0,0 32,32 ~
+bubbles @0 clear 0,0 32,32 ~
+liquid @0 grid 5,18 = 5,18 22x11
+    ..EEEDDEEE............
+    EEFEFEFEFEEEE........E
+    EFFFFFFFFFEFEEEEEEEEEF
+    FFFFFFFFFFFFFEFEFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @0 grid 11,21 = 11,21 9x7
+    .......DE
+    .......EE
+    .........
+    .....DE..
+    .....EE..
+    .........
+    D........
+liquid @1 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @1 clear 0,0 32,32 = 11,18 20,26 .
+liquid @1 grid 5,18 = 5,18 22x11
+    .....EEDDEEE.EEE......
+    .EEEEEFEFEFEEEFE......
+    EFEFEFFFFFFFEFFFEEEEEE
+    FFFFFFFFFFFFFFFFFEFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @1 grid 11,18 = 11,18 10x9
+    .......DDD
+    ..........
+    ..........
+    ..........
+    ....DE....
+    ....EE....
+    ..........
+    ..........
+    D.........
+liquid @2 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @2 clear 0,0 32,32 = 12,17 21,25 .
+liquid @2 grid 5,18 = 5,18 22x11
+    .......EEDDEE.........
+    ...EEEEEFEFEFE..EE....
+    EEEFEFEFFFFFFFEEEFEEEE
+    FEFFFFFFFFFFFFFEFFFEFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @2 grid 12,17 = 12,17 10x9
+    .....D....
+    .......D.D
+    ..........
+    ..........
+    ..DE......
+    ..EE......
+    ..........
+    ..........
+    D.........
+liquid @3 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @3 clear 0,0 32,32 = 12,19 15,25 .
+liquid @3 grid 5,18 = 5,18 22x11
+    .........EEEDDEE......
+    .....EEEEEFEFEFEEEEE..
+    EEEEEFEFEFFFFFFFEFEFEE
+    FEFEFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @3 grid 12,19 = 12,19 4x7
+    ..DE
+    ..EE
+    ....
+    ....
+    ....
+    DE..
+    EE..
+liquid @4 clear 0,0 32,32 = 5,17 26,28 .
+bubbles @4 clear 0,0 32,32 = 11,17 19,27 .
+liquid @4 grid 5,17 = 5,17 22x12
+    ...........E..........
+    .........EEFEEDDEE....
+    .......EEEFFFEFEFEEEEE
+    EEEEEEEFEFFFFFFFFFEFEF
+    FEFEFEFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @4 grid 11,17 = 11,17 9x11
+    .....D...
+    ...DD....
+    .........
+    .........
+    .........
+    .........
+    DE.......
+    EE.......
+    .........
+    .........
+    ........D
+liquid @5 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @5 clear 0,0 32,32 = 10,18 19,26 .
+liquid @5 grid 5,18 = 5,18 22x11
+    .............EEEDDEEE.
+    EE..........EEFEFEFEFE
+    EFEEEEEEE.EEEFFFFFFFFF
+    FFFEFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @5 grid 10,18 = 10,18 10x9
+    .....D.D..
+    ...D......
+    ..........
+    ..........
+    DE........
+    EE........
+    ..........
+    ..........
+    .........D
+liquid @6 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @6 clear 0,0 32,32 = 10,21 20,25 .
+liquid @6 grid 5,18 = 5,18 22x11
+    ................EEDDE.
+    EEEEE.......EEEEFEFEFE
+    EFEFEEEEEEEEEFEFFFFFFF
+    FFFFFEFEFEFEFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @6 grid 10,21 = 10,21 11x5
+    DE.........
+    EE.........
+    ...........
+    ...........
+    ..........D
+liquid @7 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @7 clear 0,0 32,32 = 10,18 21,27 .
+liquid @7 grid 5,18 = 5,18 22x11
+    .EE..EE...........EED.
+    EEFEEEFE......EEEEFEFD
+    EFFFEFFFEEEEEEEFEFFFFF
+    FFFFFFFFFEFEFEFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @7 grid 10,18 = 10,18 12x10
+    DD..........
+    ..D.........
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    .....D......
+liquid @8 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @8 clear 0,0 32,32 = 9,17 20,26 .
+liquid @8 grid 5,18 = 5,18 22x11
+    .DDEE...............E.
+    EEFEF...E.......EEEEFE
+    EFFFFEEEEEEEEEEEEFEFFF
+    FFFFFEFEFEFEFEFEFFFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @8 grid 9,17 = 9,17 12x10
+    D...........
+    ..D.D.......
+    ............
+    ............
+    ............
+    ............
+    ..........DE
+    ..........EE
+    ............
+    ......D.....
+liquid @9 clear 0,0 32,32 = 5,18 26,28 .
+bubbles @9 clear 0,0 32,32 = 16,22 19,25 .
+liquid @9 grid 5,18 = 5,18 22x11
+    .EEDDEE...............
+    EEFEFEFEEEE.......EEEE
+    EFFFFFFFEFEEEEEEEEEFEF
+    FFFFFFFFFFFEFEFEFEFFFA
+    FFFFFFFFFFFFFFFFFFFFFA
+    FFFFFFFFFFFFFFFFFFFFAA
+    FFFFFFFFFFFFFFFFFFFFAA
+    .EFFFFFFFFFFFFFFFFFAA.
+    ..EFFFFFFFFFFFFFFFAA..
+    ...EFFFFFFFFFFFFFAA...
+    ....AAAAAAAAAAAAAA....
+bubbles @9 grid 16,22 = 16,22 4x4
+    ..DE
+    ..EE
+    ....
+    D...
 add_tag name=bubble direction=forward from=0 to=9

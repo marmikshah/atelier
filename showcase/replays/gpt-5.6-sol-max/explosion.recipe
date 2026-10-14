@@ -1,107 +1,744 @@
-atelier 4 ddbf569a-7dbe-4c98-8166-eae0b157e10c 0.1.0
+atelier 5 ddbf569a-7dbe-4c98-8166-eae0b157e10c 0.1.0
 new name=gpt56-explosion width=32 height=32
-palette op=set colors=#fff5c3,#ffd23f,#ff7a1a,#b8331a,#68556a,#393241
-layer op=rename index=0 name="Core Fire"
-layer op=add name="Sparks and Debris"
-layer op=add name="Rising Smoke"
-frame op=add copy_from=0 count=9 duration_ms=100
+palette set colors=#fff5c3,#ffd23f,#ff7a1a,#b8331a,#68556a,#393241
+layer rename index=0 name="Core Fire"
+layer add name="Sparks and Debris"
+layer add name="Rising Smoke"
+frame add copy_from=0 count=9 duration_ms=100
 add_tag name=explode direction=forward from=0 to=9
-draw op=polygon layer=0 frame=1 color=#b8331a fill=true points=12,21 13,18 15,18 16,15 18,18 20,18 21,21 19,24 14,24
-draw op=ellipse layer=0 frame=1 color=#ff7a1a cx=16 cy=21 fill=true rx=3 ry=3
-draw op=polygon layer=0 frame=1 color=#ffd23f fill=true points=14,22 14,19 16,17 18,19 19,22 17,23 15,23
-draw op=rect layer=0 frame=1 color=#fff5c3 fill=true x0=15 x1=17 y0=19 y1=21
-draw op=pencil layer=0 frame=1 color=#fff5c3 points=16,18 14,21 18,21 size=1
-draw op=polygon layer=0 frame=2 color=#b8331a fill=true points=5,20 11,17 8,12 14,15 16,6 18,15 25,11 21,17 29,20 21,22 25,27 18,24 16,30 14,24 7,27 11,22
-draw op=polygon layer=0 frame=2 color=#ff7a1a fill=true points=9,20 13,16 12,12 16,16 20,13 19,17 25,20 20,22 21,25 17,23 15,27 14,23 10,24 12,21
-draw op=ellipse layer=0 frame=2 color=#ffd23f cx=16 cy=20 fill=true rx=5 ry=4
-draw op=polygon layer=0 frame=2 color=#fff5c3 fill=true points=13,21 14,17 16,18 18,16 20,19 19,22 16,24
-draw op=polygon layer=0 frame=3 color=#b8331a fill=true points=8,22 11,17 9,14 14,16 15,10 18,16 23,13 21,18 27,20 21,22 23,27 18,24 15,29 13,24 8,26
-draw op=polygon layer=0 frame=3 color=#ff7a1a fill=true points=11,22 13,17 16,14 19,17 23,18 20,21 21,24 17,23 15,26 14,22
-draw op=polygon layer=0 frame=3 color=#ffd23f fill=true points=13,21 14,17 17,16 20,19 18,23 15,23
-draw op=rect layer=0 frame=3 color=#fff5c3 fill=true x0=15 x1=18 y0=18 y1=21
-draw op=polygon layer=0 frame=4 color=#b8331a fill=true points=10,24 12,19 10,17 15,18 17,14 19,18 23,17 21,21 25,23 20,24 20,27 16,25 13,28 13,24
-draw op=polygon layer=0 frame=4 color=#ff7a1a fill=true points=13,23 14,19 17,17 20,19 19,23 22,24 18,25 16,24 14,26
-draw op=polygon layer=0 frame=4 color=#ffd23f fill=true points=15,22 16,19 18,19 19,22 17,24 15,23
-draw op=polygon layer=0 frame=5 color=#b8331a fill=true points=12,25 13,21 16,22 18,19 20,22 22,24 19,26 15,25 14,28
-draw op=polygon layer=0 frame=5 color=#ff7a1a fill=true points=15,24 16,21 19,22 20,24 18,25
-draw op=pencil layer=0 frame=5 color=#ffd23f points=[[17,23]] size=1
-draw op=polygon layer=0 frame=6 color=#b8331a fill=true points=13,26 14,23 17,24 19,22 21,24 19,26 16,25 15,28
-draw op=pencil layer=0 frame=6 color=#ff7a1a points=17,24 18,24 size=1
-draw op=pencil layer=0 frame=7 color=#b8331a points=15,26 18,25 20,26 size=1
-draw op=pencil layer=1 frame=1 color=#ffd23f points=11,19 21,18 13,16 20,22 size=1
-draw op=pencil layer=1 frame=1 color=#ff7a1a points=10,22 22,21 size=1
-draw op=line layer=1 frame=2 color=#ffd23f size=1 x0=9 x1=6 y0=17 y1=15
-draw op=line layer=1 frame=2 color=#ffd23f size=1 x0=22 x1=25 y0=16 y1=13
-draw op=line layer=1 frame=2 color=#fff5c3 size=1 x0=15 x1=14 y0=12 y1=8
-draw op=line layer=1 frame=2 color=#ff7a1a size=1 x0=11 x1=7 y0=23 y1=25
-draw op=line layer=1 frame=2 color=#ff7a1a size=1 x0=21 x1=26 y0=23 y1=25
-draw op=rect layer=1 frame=2 color=#b8331a fill=true x0=9 x1=10 y0=11 y1=12
-draw op=rect layer=1 frame=2 color=#b8331a fill=true x0=23 x1=24 y0=9 y1=10
-draw op=line layer=1 frame=3 color=#ffd23f size=1 x0=7 x1=4 y0=14 y1=12
-draw op=line layer=1 frame=3 color=#ffd23f size=1 x0=25 x1=28 y0=12 y1=10
-draw op=line layer=1 frame=3 color=#ffd23f size=1 x0=14 x1=13 y0=8 y1=4
-draw op=line layer=1 frame=3 color=#ff7a1a size=1 x0=8 x1=4 y0=25 y1=27
-draw op=line layer=1 frame=3 color=#ff7a1a size=1 x0=25 x1=29 y0=25 y1=27
-draw op=rect layer=1 frame=3 color=#b8331a fill=true x0=6 x1=7 y0=8 y1=9
-draw op=rect layer=1 frame=3 color=#b8331a fill=true x0=27 x1=28 y0=6 y1=7
-draw op=pencil layer=1 frame=3 color=#ff7a1a points=2,20 30,18 18,6 11,5 size=1
-draw op=line layer=1 frame=4 color=#ff7a1a size=1 x0=5 x1=2 y0=11 y1=10
-draw op=line layer=1 frame=4 color=#ff7a1a size=1 x0=28 x1=30 y0=10 y1=10
-draw op=line layer=1 frame=4 color=#ff7a1a size=1 x0=13 x1=12 y0=5 y1=2
-draw op=pencil layer=1 frame=4 color=#b8331a points=2,28 30,29 1,16 30,15 19,4 7,6 size=1
-draw op=rect layer=1 frame=4 color=#b8331a fill=true x0=4 x1=5 y0=7 y1=8
-draw op=rect layer=1 frame=4 color=#b8331a fill=true x0=28 x1=29 y0=5 y1=6
-draw op=line layer=1 frame=5 color=#b8331a size=1 x0=3 x1=1 y0=10 y1=11
-draw op=line layer=1 frame=5 color=#b8331a size=1 x0=12 x1=11 y0=3 y1=1
-draw op=pencil layer=1 frame=5 color=#b8331a points=0,29 31,30 1,18 30,17 20,5 6,7 29,9 size=1
-draw op=rect layer=1 frame=5 color=#393241 fill=true x0=2 x1=3 y0=9 y1=10
-draw op=rect layer=1 frame=5 color=#393241 fill=true x0=29 x1=30 y0=7 y1=8
-draw op=pencil layer=1 frame=6 color=#b8331a points=1,13 10,3 21,8 5,10 28,11 30,20 size=1
-draw op=pencil layer=1 frame=6 color=#393241 points=3,12 29,10 22,7 9,5 size=1
-draw op=rect layer=1 frame=6 color=#393241 fill=true x0=0 x1=1 y0=13 y1=14
-draw op=pencil layer=1 frame=7 color=#393241 points=2,16 8,8 23,11 28,14 11,6 size=1
-draw op=pencil layer=1 frame=7 color=#b8331a points=0,17 30,15 size=1
-draw op=pencil layer=1 frame=8 color=#393241 points=6,12 26,16 10,10 size=1
-draw op=polygon layer=2 frame=2 color=#393241 fill=true points=14,17 13,15 15,14 16,12 18,14 19,16 18,18
-draw op=ellipse layer=2 frame=2 color=#68556a cx=16 cy=15 fill=true rx=2 ry=2
-draw op=polygon layer=2 frame=3 color=#393241 fill=true points=12,18 11,15 13,13 12,10 15,9 17,11 20,10 22,13 21,16 19,18
-draw op=ellipse layer=2 frame=3 color=#68556a cx=15 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=2 frame=3 color=#68556a cx=19 cy=14 fill=true rx=2 ry=2
-draw op=pencil layer=2 frame=3 color=#393241 points=13,11 18,11 20,16 size=1
-draw op=polygon layer=2 frame=4 color=#393241 fill=true points=11,19 10,16 12,14 11,11 13,9 16,10 17,7 20,7 22,10 21,12 24,14 23,17 20,18 18,20
-draw op=ellipse layer=2 frame=4 color=#68556a cx=15 cy=14 fill=true rx=3 ry=4
-draw op=ellipse layer=2 frame=4 color=#68556a cx=20 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=2 frame=4 color=#68556a cx=20 cy=16 fill=true rx=2 ry=2
-draw op=pencil layer=2 frame=4 color=#393241 points=13,10 16,11 19,8 22,14 18,18 size=1
-draw op=polygon layer=2 frame=5 color=#393241 fill=true points=11,19 9,17 10,14 8,12 10,9 13,8 13,5 16,3 19,4 20,7 23,8 24,11 22,13 23,16 20,18 16,17 14,20
-draw op=ellipse layer=2 frame=5 color=#68556a cx=12 cy=13 fill=true rx=3 ry=4
-draw op=ellipse layer=2 frame=5 color=#68556a cx=17 cy=7 fill=true rx=3 ry=3
-draw op=ellipse layer=2 frame=5 color=#68556a cx=20 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=2 frame=5 color=#68556a cx=16 cy=15 fill=true rx=4 ry=3
-draw op=pencil layer=2 frame=5 color=#393241 points=10,10 14,8 16,4 20,7 22,11 20,15 14,17 size=1
-draw op=pencil layer=2 frame=5 color=#393241 points=15,10 16,10 17,11 size=1
-draw op=polygon layer=2 frame=6 color=#393241 fill=true points=10,16 8,13 9,10 7,8 9,5 12,4 13,1 17,0 20,2 20,5 23,6 24,9 22,12 20,14 16,13 14,16
-draw op=ellipse layer=2 frame=6 color=#68556a cx=11 cy=9 fill=true rx=3 ry=3
-draw op=ellipse layer=2 frame=6 color=#68556a cx=16 cy=4 fill=true rx=4 ry=3
-draw op=ellipse layer=2 frame=6 color=#68556a cx=20 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=2 frame=6 color=#68556a cx=15 cy=12 fill=true rx=4 ry=2
-draw op=pencil layer=2 frame=6 color=#393241 points=9,6 13,4 16,1 20,4 22,8 20,12 13,13 size=1
-draw op=pencil layer=2 frame=6 color=#393241 points=14,7 15,7 16,8 17,8 18,7 size=1
-draw op=polygon layer=2 frame=7 color=#393241 fill=true points=8,12 7,9 9,7 8,4 11,2 14,3 16,0 19,0 21,2 20,5 23,7 22,10 19,11 17,9 14,11 11,10
-draw op=ellipse layer=2 frame=7 color=#68556a cx=11 cy=7 fill=true rx=2 ry=3
-draw op=ellipse layer=2 frame=7 color=#68556a cx=17 cy=3 fill=true rx=3 ry=2
-draw op=ellipse layer=2 frame=7 color=#68556a cx=19 cy=8 fill=true rx=2 ry=2
-draw op=pencil layer=2 frame=7 color=#393241 points=8,9 10,4 15,3 19,1 21,7 17,9 size=1
-draw op=pencil layer=2 frame=7 color=#393241 points=13,6 14,6 15,7 size=1
-draw op=pencil layer=2 frame=8 color=#68556a points=8,8 9,7 10,8 14,4 15,3 17,3 18,4 21,7 22,8 19,10 17,10 size=1
-draw op=pencil layer=2 frame=8 color=#393241 points=8,7 13,4 18,3 22,7 18,10 size=1
-draw op=line layer=2 frame=8 color=#68556a size=1 x0=11 x1=13 y0=6 y1=5
-draw op=line layer=2 frame=8 color=#68556a size=1 x0=19 x1=21 y0=5 y1=6
-layer op=move index=2 to_index=0
-draw op=ellipse layer=0 frame=5 color=#393241 cx=15 cy=10 erase=true fill=true rx=2 ry=1
-draw op=polygon layer=0 frame=5 color=#393241 erase=true fill=true points=8,14 11,14 12,15 11,17 8,17
-draw op=polygon layer=0 frame=5 color=#393241 erase=true fill=true points=24,10 21,10 20,12 22,13 24,13
-draw op=ellipse layer=0 frame=6 color=#393241 cx=15 cy=8 erase=true fill=true rx=2 ry=1
-draw op=polygon layer=0 frame=6 color=#393241 erase=true fill=true points=7,10 10,10 12,12 10,13 7,13
-draw op=polygon layer=0 frame=6 color=#393241 erase=true fill=true points=13,16 14,13 16,12 17,14 17,16
-draw op=polygon layer=0 frame=6 color=#393241 erase=true fill=true points=24,7 21,7 20,9 22,10 24,10
+legend A=#b8331a
+"Core Fire" @1 polygon #b8331a fill = 12,15 10x10
+    ....A.....
+    ....AA....
+    ...AAA....
+    .AAAAAAAA.
+    .AAAAAAAA.
+    AAAAAAAAAA
+    AAAAAAAAAA
+    .AAAAAAAA.
+    .AAAAAAAA.
+    ..AAAAAA..
+legend B=#ff7a1a
+"Core Fire" @1 ellipse #ff7a1a 16,21 3,3 fill = 13,18 7x7
+    AABBBAA
+    ABBBBBA
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    ABBBBBA
+    .ABBBAA
+legend C=#ffd23f
+"Core Fire" @1 polygon #ffd23f fill = 14,17 6x7
+    .ACA..
+    ACCCAA
+    CCCCCA
+    CCCCCB
+    CCCCCC
+    CCCCCC
+    BCCCCA
+"Core Fire" @1 rect #fff5c3 15,19 17,21 fill = 15,19 17,21 #fff5c3
+legend D=#fff5c3
+"Core Fire" @1 pencil #fff5c3 size 1 = 14,18 5x4
+    ACDCA
+    CDDDC
+    CDDDC
+    DDDDD
+"Core Fire" @2 polygon #b8331a fill = 5,6 25x25
+    ...........A.............
+    ...........A.............
+    ...........A.............
+    ..........AAA............
+    ..........AAA............
+    ..........AAA.......A....
+    ...AA.....AAA.....AA.....
+    ....AAA..AAAAA..AAAA.....
+    ....AAAAAAAAAAAAAAA......
+    .....AAAAAAAAAAAAA.......
+    .....AAAAAAAAAAAAA.......
+    .....AAAAAAAAAAAAA.......
+    ...AAAAAAAAAAAAAAAAAA....
+    .AAAAAAAAAAAAAAAAAAAAAA..
+    AAAAAAAAAAAAAAAAAAAAAAAAA
+    ..AAAAAAAAAAAAAAAAAAAAA..
+    .....AAAAAAAAAAAAAA......
+    .....AAAAAAAAAAAAA.......
+    ....AAAAAAAAAAAAAAA......
+    ....AAAA.AAAAA.AAAA......
+    ...AAA....AAA....AAA.....
+    ..AA......AAA......AA....
+    ..........AAA............
+    ...........A.............
+    ...........A.............
+"Core Fire" @2 polygon #ff7a1a fill = 9,12 17x16
+    A..B..AAA.....AA.
+    AAABBAAAAA.BAAAA.
+    AAABBBAAABBBAAA..
+    .AAABBBABBBAAA...
+    .AAABBBBBBBAAA...
+    .AABBBBBBBBBAA...
+    AABBBBBBBBBBBBAAA
+    ABBBBBBBBBBBBBBBA
+    BBBBBBBBBBBBBBBBB
+    AABBBBBBBBBBBBBAA
+    .ABBBBBBBBBBBAA..
+    .ABBBBBBBBBBAA...
+    ABBBABBBAABBBAA..
+    AAAA.BBBAA.ABAA..
+    AA....BAA....AAA.
+    ......BAA......AA
+"Core Fire" @2 ellipse #ffd23f 16,20 5,4 fill = 11,16 11x9
+    AABCCCCCBAA
+    ACCCCCCCCCA
+    BCCCCCCCCCB
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    BCCCCCCCCCB
+    BCCCCCCCCCA
+    BBACCCCCBBB
+"Core Fire" @2 polygon #fff5c3 fill = 13,16 8x9
+    BCCCCDBA
+    CDDCDDDC
+    CDDDDDDC
+    CDDDDDDD
+    DDDDDDDD
+    DDDDDDDC
+    CDDDDDDC
+    CCDDDDCC
+    ACCDCCBB
+"Core Fire" @3 polygon #b8331a fill = 8,10 20x20
+    .......A............
+    .......AA...........
+    .......AA...........
+    .......AAA.....A....
+    .AA...AAAA...AAA....
+    ..AAA.AAAAAAAAA.....
+    ..AAAAAAAAAAAAA.....
+    ...AAAAAAAAAAA......
+    ..AAAAAAAAAAAAA.....
+    ..AAAAAAAAAAAAAAAA..
+    .AAAAAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAAAAA..
+    AAAAAAAAAAAAAAA.....
+    AAAAAAAAAAAAAA......
+    AAAAAAAAAAAAAAA.....
+    AAAA.AAAAA.AAAA.....
+    AA....AAAA...AAA....
+    ......AAA......A....
+    .......AA...........
+    .......A............
+"Core Fire" @3 polygon #ff7a1a fill = 11,14 13x13
+    ...AABA...AAA
+    AA.ABBBAAAAA.
+    AAABBBBBAAAA.
+    AABBBBBBBBB..
+    AABBBBBBBBBBB
+    ABBBBBBBBBBBA
+    ABBBBBBBBBBAA
+    BBBBBBBBBBAAA
+    BBBBBBBBBBAA.
+    AAABBBBBBBB..
+    AAABBBAAABBA.
+    A.AABBA.AAAA.
+    ...ABAA...AAA
+"Core Fire" @3 polygon #ffd23f fill = 13,16 8x8
+    ABBCCBAA
+    BCCCCCBB
+    BCCCCCCB
+    BCCCCCCC
+    CCCCCCCB
+    CCCCCCCB
+    BCCCCCBB
+    ABCCCCBB
+"Core Fire" @3 rect #fff5c3 15,18 18,21 fill = 15,18 18,21 #fff5c3
+"Core Fire" @4 polygon #b8331a fill = 10,14 16x15
+    .......A........
+    .......AA.......
+    ......AAA.......
+    AAA...AAAA.AAA..
+    .AAAAAAAAAAAA...
+    ..AAAAAAAAAAA...
+    ..AAAAAAAAAA....
+    .AAAAAAAAAAAA...
+    .AAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAA...
+    ...AAAAAAAA.....
+    ...AAA..AAA.....
+    ...AA.....A.....
+    ...A............
+"Core Fire" @4 polygon #ff7a1a fill = 13,17 10x10
+    ...ABAA.AA
+    AABBBBBAAA
+    ABBBBBBBAA
+    ABBBBBBBA.
+    ABBBBBBAAA
+    BBBBBBBAAA
+    BBBBBBBBAA
+    BBBBBBBBBB
+    ABBAABBB..
+    ABA..AAA..
+"Core Fire" @4 polygon #ffd23f fill = 15,19 5x6
+    BCCCB
+    BCCCB
+    CCCCC
+    CCCCC
+    CCCCB
+    BBCBB
+"Core Fire" @5 polygon #b8331a fill = 12,19 11x10
+    ......A....
+    .....AAA...
+    .AA..AAA...
+    .AAAAAAAA..
+    .AAAAAAAAA.
+    AAAAAAAAAAA
+    AAAAAAAAAA.
+    .AAA..AA...
+    .AA........
+    ..A........
+"Core Fire" @5 polygon #ff7a1a fill = 15,21 6x5
+    .BBAA.
+    ABBBBA
+    BBBBBB
+    BBBBBB
+    AABBBA
+"Core Fire" @5 pencil #ffd23f size 1 = 17,23 17,23 #ffd23f
+"Core Fire" @6 polygon #b8331a fill = 13,22 9x7
+    ......A..
+    .AA..AAA.
+    .AAAAAAAA
+    AAAAAAAA.
+    AAAA.AA..
+    .AA......
+    ..A......
+"Core Fire" @6 pencil #ff7a1a size 1 = 17,24 18,24 #ff7a1a
+"Core Fire" @7 pencil #b8331a size 1 = 15,25 6x2
+    ...A..
+    A....A
+"Sparks and Debris" @1 pencil #ffd23f size 1 = 11,16 11x7
+    ..C........
+    ...........
+    ..........C
+    C..........
+    ...........
+    ...........
+    .........C.
+"Sparks and Debris" @1 pencil #ff7a1a size 1 = 10,21 13x2
+    ............B
+    B.........C..
+"Sparks and Debris" @2 line #ffd23f 9,17 6,15 size 1 = 6,15 4x3
+    C...
+    .CC.
+    ...C
+"Sparks and Debris" @2 line #ffd23f 22,16 25,13 size 1 = 22,13 4x4
+    ...C
+    ..C.
+    .C..
+    C...
+"Sparks and Debris" @2 line #fff5c3 15,12 14,8 size 1 = 14,8 2x5
+    D.
+    D.
+    D.
+    .D
+    .D
+"Sparks and Debris" @2 line #ff7a1a 11,23 7,25 size 1 = 7,23 5x3
+    ....B
+    ..BB.
+    BB...
+"Sparks and Debris" @2 line #ff7a1a 21,23 26,25 size 1 = 21,23 6x3
+    BB....
+    ..BB..
+    ....BB
+"Sparks and Debris" @2 rect #b8331a 9,11 10,12 fill = 9,11 10,12 #b8331a
+"Sparks and Debris" @2 rect #b8331a 23,9 24,10 fill = 23,9 24,10 #b8331a
+"Sparks and Debris" @3 line #ffd23f 7,14 4,12 size 1 = 4,12 4x3
+    C...
+    .CC.
+    ...C
+"Sparks and Debris" @3 line #ffd23f 25,12 28,10 size 1 = 25,10 4x3
+    ...C
+    .CC.
+    C...
+"Sparks and Debris" @3 line #ffd23f 14,8 13,4 size 1 = 13,4 2x5
+    C.
+    C.
+    C.
+    .C
+    .C
+"Sparks and Debris" @3 line #ff7a1a 8,25 4,27 size 1 = 4,25 5x3
+    ....B
+    ..BB.
+    BB...
+"Sparks and Debris" @3 line #ff7a1a 25,25 29,27 size 1 = 25,25 5x3
+    B....
+    .BB..
+    ...BB
+"Sparks and Debris" @3 rect #b8331a 6,8 7,9 fill = 6,8 7,9 #b8331a
+"Sparks and Debris" @3 rect #b8331a 27,6 28,7 fill = 27,6 28,7 #b8331a
+"Sparks and Debris" @3 pencil #ff7a1a size 1 = 2,5 29x16
+    .........B.C.................
+    ...........C....B........AA..
+    ............C............AA..
+    ....AA......C................
+    ....AA.......................
+    ..........................C..
+    ........................CC...
+    ..C....................C.....
+    ...CC........................
+    .....C.......................
+    .............................
+    .............................
+    .............................
+    ............................B
+    .............................
+    B............................
+"Sparks and Debris" @4 line #ff7a1a 5,11 2,10 size 1 = 2,10 4x2
+    BB..
+    ..BB
+"Sparks and Debris" @4 line #ff7a1a 28,10 30,10 size 1 = 28,10 30,10 #ff7a1a
+"Sparks and Debris" @4 line #ff7a1a 13,5 12,2 size 1 = 12,2 2x4
+    B.
+    B.
+    .B
+    .B
+"Sparks and Debris" @4 pencil #b8331a size 1 = 1,4 30x26
+    ............B.....A...........
+    ............B.................
+    ......A.......................
+    ..............................
+    ..............................
+    ..............................
+    .BB........................BBB
+    ...BB.........................
+    ..............................
+    ..............................
+    ..............................
+    .............................A
+    A.............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    .A............................
+    .............................A
+"Sparks and Debris" @4 rect #b8331a 4,7 5,8 fill = 4,7 5,8 #b8331a
+"Sparks and Debris" @4 rect #b8331a 28,5 29,6 fill = 28,5 29,6 #b8331a
+"Sparks and Debris" @5 line #b8331a 3,10 1,11 size 1 = 1,10 3x2
+    ..A
+    AA.
+"Sparks and Debris" @5 line #b8331a 12,3 11,1 size 1 = 11,1 2x3
+    A.
+    A.
+    .A
+"Sparks and Debris" @5 pencil #b8331a size 1 = 0,5 32x26
+    ....................A...........
+    ................................
+    ......A.........................
+    ................................
+    .............................A..
+    ...A............................
+    .AA.............................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ..............................A.
+    .A..............................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    A...............................
+    ...............................A
+"Sparks and Debris" @5 rect #393241 2,9 3,10 fill = 2,9 3,10 #393241
+"Sparks and Debris" @5 rect #393241 29,7 30,8 fill = 29,7 30,8 #393241
+"Sparks and Debris" @6 pencil #b8331a size 1 = 1,3 30x18
+    .........A....................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ....................A.........
+    ..............................
+    ....A.........................
+    ...........................A..
+    ..............................
+    A.............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    ..............................
+    .............................A
+legend E=#393241
+"Sparks and Debris" @6 pencil #393241 size 1 = 3,5 27x8
+    ......E....................
+    ...........................
+    ...................E.......
+    ..................A........
+    ...........................
+    ..A.......................E
+    .........................A.
+    E..........................
+"Sparks and Debris" @6 rect #393241 0,13 1,14 fill = 0,13 1,14 #393241
+"Sparks and Debris" @7 pencil #393241 size 1 = 2,6 27x11
+    .........E.................
+    ...........................
+    ......E....................
+    ...........................
+    ...........................
+    .....................E.....
+    ...........................
+    ...........................
+    ..........................E
+    ...........................
+    E..........................
+"Sparks and Debris" @7 pencil #b8331a size 1 = 0,15 31x3
+    ..............................A
+    ..E............................
+    A..............................
+"Sparks and Debris" @8 pencil #393241 size 1 = 6,10 21x7
+    ....E................
+    .....................
+    E....................
+    .....................
+    .....................
+    .....................
+    ....................E
+"Rising Smoke" @2 polygon #393241 fill = 13,12 7x7
+    ...E...
+    ...EE..
+    .EEEEE.
+    EEEEEEE
+    EEEEEEE
+    .EEEEE.
+    ....EE.
+legend F=#68556a
+"Rising Smoke" @2 ellipse #68556a 16,15 2,2 fill = 14,13 5x5
+    .FFF.
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFFE
+"Rising Smoke" @3 polygon #393241 fill = 11,9 12x10
+    ...EE.......
+    .EEEEE..EE..
+    .EEEEEEEEEE.
+    ..EEEEEEEEE.
+    ..EEEEEEEEEE
+    .EEEEEEEEEEE
+    EEEEEEEEEEE.
+    EEEEEEEEEEE.
+    .EEEEEEEEE..
+    .EEEEEEEE...
+"Rising Smoke" @3 ellipse #68556a 15,14 3,3 fill = 12,11 7x7
+    EEFFFEE
+    .FFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+"Rising Smoke" @3 ellipse #68556a 19,14 2,2 fill = 18,12 4x5
+    FFFE
+    FFFF
+    FFFF
+    FFFF
+    FFFE
+"Rising Smoke" @3 pencil #393241 size 1 = 20,16 20,16 #393241
+"Rising Smoke" @4 polygon #393241 fill = 10,7 15x14
+    .......EEEE....
+    .......EEEEE...
+    ...EE.EEEEEE...
+    ..EEEEEEEEEEE..
+    .EEEEEEEEEEE...
+    .EEEEEEEEEEE...
+    ..EEEEEEEEEEEE.
+    ..EEEEEEEEEEEEE
+    .EEEEEEEEEEEEEE
+    EEEEEEEEEEEEEE.
+    EEEEEEEEEEEEEE.
+    .EEEEEEEEEEE...
+    .EEEEEEEEE.....
+    .....EEEE......
+"Rising Smoke" @4 ellipse #68556a 15,14 3,4 fill = 12,10 7x9
+    EEFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+"Rising Smoke" @4 ellipse #68556a 20,12 3,3 fill = 18,9 6x7
+    EFFF..
+    FFFFF.
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFFE
+    FFFFEE
+"Rising Smoke" @4 ellipse #68556a 20,16 2,2 fill = 18,15 5x4
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFF.
+"Rising Smoke" @4 pencil #393241 size 1 = 16,11 7x4
+    EFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFE
+"Rising Smoke" @5 polygon #393241 fill = 8,3 17x18
+    ........EE.......
+    ......EEEEEE.....
+    .....EEEEEEE.....
+    .....EEEEEEEE....
+    .....EEEEEEEEE...
+    ....EEEEEEEEEEEE.
+    ..EEEEEEEEEEEEEE.
+    .EEEEEEEEEEEEEEEE
+    .EEEEEEEEEEEEEEEE
+    EEEEEEEEEEEEEEEE.
+    .EEEEEEEEEEEEEE..
+    ..EEEEEEEEEEEEE..
+    ..EEEEEEEEEEEEEE.
+    .EEEEEEEEEEEEEEE.
+    .EEEEEEEEEEEEEE..
+    ..EEEEEE...EE....
+    ...EEEEE.........
+    .....EE..........
+"Rising Smoke" @5 ellipse #68556a 12,13 3,4 fill = 9,9 7x9
+    .EFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+"Rising Smoke" @5 ellipse #68556a 17,7 3,3 fill = 14,4 7x7
+    EEFFFE.
+    EFFFFF.
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    FEFFFEE
+"Rising Smoke" @5 ellipse #68556a 20,11 3,3 fill = 17,8 7x7
+    FFFFFEE
+    FFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFF.
+    EEFFFE.
+"Rising Smoke" @5 ellipse #68556a 16,15 4,3 fill = 14,12 7x7
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFE
+    FFFFFEE
+"Rising Smoke" @5 pencil #393241 size 1 = 10,4 13x14
+    ....EEEFFE...
+    ...EEFFFFF...
+    ...EFFFFFFF..
+    ...EFFFFFFEE.
+    ..EEEFFFFFFFE
+    EFFFEFFFFFFFF
+    EFFFFEFFFFFFF
+    FFFFFFEFFFFFE
+    FFFFFFFFFFFFF
+    FFFFFFFFFFFFF
+    FFFFFFFFFFFFE
+    FFFFFFFFFFEEE
+    FFFFFFFFFFFEE
+    EFFFEFFFFFEEE
+"Rising Smoke" @5 pencil #393241 size 1 = 16,10 2x2
+    EF
+    EE
+"Rising Smoke" @6 polygon #393241 fill = 7,0 18x17
+    ........EEE.......
+    ......EEEEEEE.....
+    ......EEEEEEEE....
+    .....EEEEEEEEE....
+    ....EEEEEEEEEE....
+    ..EEEEEEEEEEEEE...
+    .EEEEEEEEEEEEEEEE.
+    .EEEEEEEEEEEEEEEE.
+    EEEEEEEEEEEEEEEEEE
+    .EEEEEEEEEEEEEEEEE
+    ..EEEEEEEEEEEEEEE.
+    ..EEEEEEEEEEEEEEE.
+    .EEEEEEEEEEEEEEE..
+    .EEEEEEEEEEEEEE...
+    ..EEEEEEE...EE....
+    ..EEEEEEE.........
+    ...EEEEE..........
+"Rising Smoke" @6 ellipse #68556a 11,9 3,3 fill = 8,6 7x7
+    EEFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    .FFFFFE
+    EEFFFEE
+"Rising Smoke" @6 ellipse #68556a 16,4 4,3 fill = 12,1 9x7
+    .EFFFFFE.
+    .FFFFFFFE
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFE
+    FFFFFFFEE
+"Rising Smoke" @6 ellipse #68556a 20,8 3,3 fill = 17,5 7x7
+    FFFFF..
+    FFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+"Rising Smoke" @6 ellipse #68556a 15,12 4,2 fill = 11,10 9x5
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    EEFFFFF.E
+"Rising Smoke" @6 pencil #393241 size 1 = 13,1 10x13
+    EFFEFFE...
+    FFFFFFFE..
+    FFFFFFFF..
+    EFFFFFFE..
+    FFFFFFFFF.
+    FFFFFFFFFF
+    FFFFFFFFFF
+    FFEEFFFFFE
+    FFEEFFFFFF
+    FFFFFFFFFF
+    FFFFFFFFFE
+    FFFFFFFEEE
+    EFFFFFFEE.
+"Rising Smoke" @6 pencil #393241 size 1 = 14,7 5x2
+    EEFFE
+    FEEEF
+"Rising Smoke" @7 polygon #393241 fill = 7,0 17x13
+    .........EEEE....
+    ........EEEEEE...
+    ....EE..EEEEEEE..
+    ..EEEEEEEEEEEEE..
+    .EEEEEEEEEEEEE...
+    .EEEEEEEEEEEEE...
+    ..EEEEEEEEEEEEEE.
+    ..EEEEEEEEEEEEEEE
+    .EEEEEEEEEEEEEEEE
+    EEEEEEEEEEEEEEEE.
+    EEEEEEEEEE.EEEEE.
+    .EEE..EE....EE...
+    .E...............
+"Rising Smoke" @7 ellipse #68556a 11,7 2,3 fill = 9,4 5x7
+    EFFFE
+    FFFFF
+    FFFFF
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFFE
+"Rising Smoke" @7 ellipse #68556a 17,3 3,2 fill = 14,1 7x5
+    .FFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+"Rising Smoke" @7 ellipse #68556a 19,8 2,2 fill = 17,6 5x5
+    EFFFE
+    FFFFF
+    FFFFF
+    FFFFF
+    .FFFE
+"Rising Smoke" @7 pencil #393241 size 1 = 10,1 12x9
+    .....FFFFEE.
+    .EE.FFFFFFFE
+    EEEEFEFFFFFE
+    EFFEFFFFFFF.
+    FFFFEFFFFFE.
+    FFFFEEEEFFFE
+    FFFFEEEFFFFE
+    FFFFEEEFFFFF
+    FFFFEEEEFFFF
+"Rising Smoke" @7 pencil #393241 size 1 = 13,6 13,6 #393241
+"Rising Smoke" @8 pencil #68556a size 1 = 8,3 15x8
+    .......F.F.....
+    ......F...F....
+    ...............
+    ...............
+    .F...........F.
+    F.F...........F
+    ...............
+    .........F.F...
+"Rising Smoke" @8 pencil #393241 size 1 = 8,3 15x8
+    .......F.FE....
+    .....EF...F....
+    ...............
+    ...............
+    EF...........FE
+    F.F...........F
+    ...............
+    .........FEF...
+"Rising Smoke" @8 line #68556a 11,6 13,5 size 1 = 11,5 3x2
+    .FF
+    F..
+"Rising Smoke" @8 line #68556a 19,5 21,6 size 1 = 19,5 3x2
+    F..
+    .FF
+layer move index=2 to_index=0
+"Rising Smoke" @5 erase ellipse 15,10 2,1 fill = 13,9 5x3
+    FE..F
+    ..EE.
+    F..EE
+"Rising Smoke" @5 erase polygon fill = 9,14 4x4
+    ...F
+    ....
+    E..F
+    EE.F
+"Rising Smoke" @5 erase polygon fill = 20,10 4x4
+    F...
+    ..E.
+    ....
+    F...
+"Rising Smoke" @6 erase ellipse 15,8 2,1 fill = 13,7 4x3
+    FEE.
+    ..EE
+    F.EE
+"Rising Smoke" @6 erase polygon fill = 8,10 5x4
+    ...FF
+    ....F
+    EE...
+    EEE.F
+"Rising Smoke" @6 erase polygon fill = 14,12 4x3
+    F..F
+    ....
+    ....
+"Rising Smoke" @6 erase polygon fill = 20,7 4x4
+    F...
+    ..E.
+    ....
+    F..E

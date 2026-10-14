@@ -1,658 +1,660 @@
-atelier 4 343b578a-010c-41e7-99ab-984251fa85e0 0.1.0
+atelier 5 343b578a-010c-41e7-99ab-984251fa85e0 0.1.0
 new name=adventurer-jump width=32 height=32
-palette op=set colors=#282434,#ecba8c,#4a8c54,#2c603e,#96c876,#96643a
-layer op=rename index=0 name=legs
-layer op=add name=body
-layer op=add name=arms
-frame op=add count=9 duration_ms=100
-draw op=clear_cel layer=0 frame=0
-paint_grid layer=0 frame=0 x=12 y=18 legend=D:0,P:5 rows:10
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=0
-paint_grid layer=1 frame=0 x=12 y=4 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=0
-paint_grid layer=2 frame=0 x=10 y=12 legend=S:1,T:2 rows:5
-  |.T........T.|
-  |.T........T.|
-  |.S........S.|
-  |.S........S.|
-  |SS........SS|
-draw op=clear_cel layer=0 frame=1
-paint_grid layer=0 frame=1 x=12 y=19 legend=D:0,P:5 rows:9
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=1
-paint_grid layer=1 frame=1 x=12 y=6 legend=D:0,L:4,S:1,T:2,g:3 rows:13
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=1
-paint_grid layer=2 frame=1 x=9 y=13 legend=S:1,T:2 rows:5
-  |..T........T..|
-  |.T..........T.|
-  |.S..........S.|
-  |S............S|
-  |S............S|
-draw op=clear_cel layer=0 frame=2
-paint_grid layer=0 frame=2 x=12 y=21 legend=D:0,P:5 rows:7
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=2
-paint_grid layer=1 frame=2 x=12 y=8 legend=D:0,L:4,S:1,T:2,g:3 rows:13
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=2
-paint_grid layer=2 frame=2 x=9 y=15 legend=S:1,T:2 rows:5
-  |..T........T..|
-  |.T..........T.|
-  |.S..........S.|
-  |S............S|
-  |S............S|
-draw op=clear_cel layer=0 frame=3
-paint_grid layer=0 frame=3 x=13 y=17 legend=D:0,P:5 rows:11
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |.D..D.|
-  |.D..D.|
-draw op=clear_cel layer=1 frame=3
-paint_grid layer=1 frame=3 x=12 y=2 legend=D:0,L:4,S:1,T:2,g:3 rows:15
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=3
-paint_grid layer=2 frame=3 x=10 y=7 legend=S:1,T:2 rows:5
-  |S..........S|
-  |S..........S|
-  |S..........S|
-  |.T........T.|
-  |.T........T.|
-draw op=clear_cel layer=0 frame=4
-paint_grid layer=0 frame=4 x=12 y=15 legend=D:0,P:5 rows:6
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |.DD..DD.|
-draw op=clear_cel layer=1 frame=4
-paint_grid layer=1 frame=4 x=12 y=1 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=4
-paint_grid layer=2 frame=4 x=11 y=5 legend=S:1,T:2 rows:5
-  |S........S|
-  |S........S|
-  |S........S|
-  |T........T|
-  |T........T|
-draw op=clear_cel layer=0 frame=5
-paint_grid layer=0 frame=5 x=11 y=14 legend=D:0,P:5 rows:5
-  |.PP....PP.|
-  |PP......PP|
-  |.PP....PP.|
-  |..DD..DD..|
-  |..DD..DD..|
-draw op=clear_cel layer=1 frame=5
-paint_grid layer=1 frame=5 x=12 y=0 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=5
-paint_grid layer=2 frame=5 x=11 y=3 legend=S:1,T:2 rows:6
-  |S........S|
-  |S........S|
-  |S........S|
-  |S........S|
-  |T........T|
-  |T........T|
-draw op=clear_cel layer=0 frame=6
-paint_grid layer=0 frame=6 x=13 y=15 legend=D:0,P:5 rows:7
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |DD..DD|
-  |DD..DD|
-draw op=clear_cel layer=1 frame=6
-paint_grid layer=1 frame=6 x=12 y=1 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=6
-paint_grid layer=2 frame=6 x=9 y=5 legend=S:1,T:2 rows:5
-  |S............S|
-  |S............S|
-  |.S..........S.|
-  |..T........T..|
-  |..T........T..|
-draw op=clear_cel layer=0 frame=7
-paint_grid layer=0 frame=7 x=13 y=17 legend=D:0,P:5 rows:9
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |DD..DD|
-  |DD..DD|
-draw op=clear_cel layer=1 frame=7
-paint_grid layer=1 frame=7 x=12 y=3 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=7
-paint_grid layer=2 frame=7 x=8 y=11 legend=S:1,T:2 rows:1
-  |SSST........TSSS|
-draw op=clear_cel layer=0 frame=8
-paint_grid layer=0 frame=8 x=11 y=20 legend=D:0,P:5 rows:8
-  |PP......PP|
-  |.PP....PP.|
-  |..PP..PP..|
-  |..PP..PP..|
-  |..PP..PP..|
-  |..PP..PP..|
-  |.DDD..DDD.|
-  |DDDD..DDDD|
-draw op=clear_cel layer=1 frame=8
-paint_grid layer=1 frame=8 x=12 y=7 legend=D:0,L:4,S:1,T:2,g:3 rows:13
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=8
-paint_grid layer=2 frame=8 x=8 y=14 legend=S:1,T:2 rows:3
-  |...T........T...|
-  |.SS..........SS.|
-  |S..............S|
-draw op=clear_cel layer=0 frame=9
-paint_grid layer=0 frame=9 x=12 y=19 legend=D:0,P:5 rows:9
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=9
-paint_grid layer=1 frame=9 x=12 y=5 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=9
-paint_grid layer=2 frame=9 x=10 y=13 legend=S:1,T:2 rows:5
-  |.T........T.|
-  |.T........T.|
-  |S..........S|
-  |S..........S|
-  |S..........S|
-draw op=clear_cel layer=0 frame=0
-paint_grid layer=0 frame=0 x=12 y=18 legend=D:0,P:5 rows:10
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=0
-paint_grid layer=1 frame=0 x=12 y=4 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=0
-paint_grid layer=2 frame=0 x=10 y=12 legend=S:1,T:2 rows:5
-  |.T........T.|
-  |.T........T.|
-  |.S........S.|
-  |.S........S.|
-  |SS........SS|
-draw op=clear_cel layer=0 frame=1
-paint_grid layer=0 frame=1 x=12 y=19 legend=D:0,P:5 rows:9
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=1
-paint_grid layer=1 frame=1 x=12 y=6 legend=D:0,L:4,S:1,T:2,g:3 rows:13
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=1
-paint_grid layer=2 frame=1 x=9 y=13 legend=S:1,T:2 rows:5
-  |..T........T..|
-  |.T..........T.|
-  |.S..........S.|
-  |S............S|
-  |S............S|
-draw op=clear_cel layer=0 frame=2
-paint_grid layer=0 frame=2 x=12 y=21 legend=D:0,P:5 rows:7
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=2
-paint_grid layer=1 frame=2 x=12 y=8 legend=D:0,L:4,S:1,T:2,g:3 rows:13
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=2
-paint_grid layer=2 frame=2 x=9 y=15 legend=S:1,T:2 rows:5
-  |..T........T..|
-  |.T..........T.|
-  |.S..........S.|
-  |S............S|
-  |S............S|
-draw op=clear_cel layer=0 frame=3
-paint_grid layer=0 frame=3 x=13 y=17 legend=D:0,P:5 rows:11
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |.D..D.|
-  |.D..D.|
-draw op=clear_cel layer=1 frame=3
-paint_grid layer=1 frame=3 x=12 y=2 legend=D:0,L:4,S:1,T:2,g:3 rows:15
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=3
-paint_grid layer=2 frame=3 x=10 y=7 legend=S:1,T:2 rows:5
-  |S..........S|
-  |S..........S|
-  |S..........S|
-  |.T........T.|
-  |.T........T.|
-draw op=clear_cel layer=0 frame=4
-paint_grid layer=0 frame=4 x=12 y=15 legend=D:0,P:5 rows:6
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |.DD..DD.|
-draw op=clear_cel layer=1 frame=4
-paint_grid layer=1 frame=4 x=12 y=1 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=4
-paint_grid layer=2 frame=4 x=11 y=5 legend=S:1,T:2 rows:5
-  |S........S|
-  |S........S|
-  |S........S|
-  |T........T|
-  |T........T|
-draw op=clear_cel layer=0 frame=5
-paint_grid layer=0 frame=5 x=11 y=14 legend=D:0,P:5 rows:5
-  |.PP....PP.|
-  |PP......PP|
-  |.PP....PP.|
-  |..DD..DD..|
-  |..DD..DD..|
-draw op=clear_cel layer=1 frame=5
-paint_grid layer=1 frame=5 x=12 y=0 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=5
-paint_grid layer=2 frame=5 x=11 y=3 legend=S:1,T:2 rows:6
-  |S........S|
-  |S........S|
-  |S........S|
-  |S........S|
-  |T........T|
-  |T........T|
-draw op=clear_cel layer=0 frame=6
-paint_grid layer=0 frame=6 x=13 y=15 legend=D:0,P:5 rows:7
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |DD..DD|
-  |DD..DD|
-draw op=clear_cel layer=1 frame=6
-paint_grid layer=1 frame=6 x=12 y=1 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=6
-paint_grid layer=2 frame=6 x=9 y=5 legend=S:1,T:2 rows:5
-  |S............S|
-  |S............S|
-  |.S..........S.|
-  |..T........T..|
-  |..T........T..|
-draw op=clear_cel layer=0 frame=7
-paint_grid layer=0 frame=7 x=13 y=17 legend=D:0,P:5 rows:9
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |PP..PP|
-  |DD..DD|
-  |DD..DD|
-draw op=clear_cel layer=1 frame=7
-paint_grid layer=1 frame=7 x=12 y=3 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=7
-paint_grid layer=2 frame=7 x=8 y=11 legend=S:1,T:2 rows:3
-  |..ST........TS..|
-  |.S............S.|
-  |S..............S|
-draw op=clear_cel layer=0 frame=8
-paint_grid layer=0 frame=8 x=11 y=20 legend=D:0,P:5 rows:8
-  |PP......PP|
-  |.PP....PP.|
-  |..PP..PP..|
-  |..PP..PP..|
-  |..PP..PP..|
-  |..PP..PP..|
-  |.DDD..DDD.|
-  |DDDD..DDDD|
-draw op=clear_cel layer=1 frame=8
-paint_grid layer=1 frame=8 x=12 y=7 legend=D:0,L:4,S:1,T:2,g:3 rows:13
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=8
-paint_grid layer=2 frame=8 x=8 y=14 legend=S:1,T:2 rows:3
-  |...T........T...|
-  |.SS..........SS.|
-  |S..............S|
-draw op=clear_cel layer=0 frame=9
-paint_grid layer=0 frame=9 x=12 y=19 legend=D:0,P:5 rows:9
-  |PP....PP|
-  |PP....PP|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.PP..PP.|
-  |.DD..DD.|
-  |DDD..DDD|
-draw op=clear_cel layer=1 frame=9
-paint_grid layer=1 frame=9 x=12 y=5 legend=D:0,L:4,S:1,T:2,g:3 rows:14
-  |.DDDDD..|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DSSSSSD.|
-  |DSDSDSD.|
-  |.SSSSS..|
-  |..SSS...|
-  |...SS...|
-  |LLLLLLLL|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |TTTTTTTT|
-  |gggggggg|
-  |DDDDDDDD|
-draw op=clear_cel layer=2 frame=9
-paint_grid layer=2 frame=9 x=10 y=13 legend=S:1,T:2 rows:5
-  |.T........T.|
-  |.T........T.|
-  |S..........S|
-  |S..........S|
-  |S..........S|
+palette set colors=#282434,#ecba8c,#4a8c54,#2c603e,#96c876,#96643a
+layer rename index=0 name=legs
+layer add name=body
+layer add name=arms
+frame add count=9 duration_ms=100
+legs @0 clear_cel ~
+legend A=#96643a B=#282434
+legs @0 grid 12,18 = 12,18 8x10
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @0 clear_cel ~
+legend C=#ecba8c D=#96c876 E=#4a8c54 F=#2c603e
+body @0 grid 12,4 = 12,4 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @0 clear_cel ~
+arms @0 grid 10,12 = 10,12 12x5
+    .E........E.
+    .E........E.
+    .C........C.
+    .C........C.
+    CC........CC
+legs @1 clear_cel ~
+legs @1 grid 12,19 = 12,19 8x9
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @1 clear_cel ~
+body @1 grid 12,6 = 12,6 8x13
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @1 clear_cel ~
+arms @1 grid 9,13 = 9,13 14x5
+    ..E........E..
+    .E..........E.
+    .C..........C.
+    C............C
+    C............C
+legs @2 clear_cel ~
+legs @2 grid 12,21 = 12,21 8x7
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @2 clear_cel ~
+body @2 grid 12,8 = 12,8 8x13
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @2 clear_cel ~
+arms @2 grid 9,15 = 9,15 14x5
+    ..E........E..
+    .E..........E.
+    .C..........C.
+    C............C
+    C............C
+legs @3 clear_cel ~
+legs @3 grid 13,17 = 13,17 6x11
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    .B..B.
+    .B..B.
+body @3 clear_cel ~
+body @3 grid 12,2 = 12,2 8x15
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @3 clear_cel ~
+arms @3 grid 10,7 = 10,7 12x5
+    C..........C
+    C..........C
+    C..........C
+    .E........E.
+    .E........E.
+legs @4 clear_cel ~
+legs @4 grid 12,15 = 12,15 8x6
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    .BB..BB.
+body @4 clear_cel ~
+body @4 grid 12,1 = 12,1 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @4 clear_cel ~
+arms @4 grid 11,5 = 11,5 10x5
+    C........C
+    C........C
+    C........C
+    E........E
+    E........E
+legs @5 clear_cel ~
+legs @5 grid 11,14 = 11,14 10x5
+    .AA....AA.
+    AA......AA
+    .AA....AA.
+    ..BB..BB..
+    ..BB..BB..
+body @5 clear_cel ~
+body @5 grid 12,0 = 12,0 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @5 clear_cel ~
+arms @5 grid 11,3 = 11,3 10x6
+    C........C
+    C........C
+    C........C
+    C........C
+    E........E
+    E........E
+legs @6 clear_cel ~
+legs @6 grid 13,15 = 13,15 6x7
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    BB..BB
+    BB..BB
+body @6 clear_cel ~
+body @6 grid 12,1 = 12,1 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @6 clear_cel ~
+arms @6 grid 9,5 = 9,5 14x5
+    C............C
+    C............C
+    .C..........C.
+    ..E........E..
+    ..E........E..
+legs @7 clear_cel ~
+legs @7 grid 13,17 = 13,17 6x9
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    BB..BB
+    BB..BB
+body @7 clear_cel ~
+body @7 grid 12,3 = 12,3 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @7 clear_cel ~
+arms @7 grid 8,11 = 8,11 16x1
+    CCCE........ECCC
+legs @8 clear_cel ~
+legs @8 grid 11,20 = 11,20 10x8
+    AA......AA
+    .AA....AA.
+    ..AA..AA..
+    ..AA..AA..
+    ..AA..AA..
+    ..AA..AA..
+    .BBB..BBB.
+    BBBB..BBBB
+body @8 clear_cel ~
+body @8 grid 12,7 = 12,7 8x13
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @8 clear_cel ~
+arms @8 grid 8,14 = 8,14 16x3
+    ...E........E...
+    .CC..........CC.
+    C..............C
+legs @9 clear_cel ~
+legs @9 grid 12,19 = 12,19 8x9
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @9 clear_cel ~
+body @9 grid 12,5 = 12,5 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @9 clear_cel ~
+arms @9 grid 10,13 = 10,13 12x5
+    .E........E.
+    .E........E.
+    C..........C
+    C..........C
+    C..........C
+legs @0 clear_cel = 12,18 19,27 .
+legs @0 grid 12,18 = 12,18 8x10
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @0 clear_cel = 12,4 19,17 .
+body @0 grid 12,4 = 12,4 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @0 clear_cel = 10,12 21,16 .
+arms @0 grid 10,12 = 10,12 12x5
+    .E........E.
+    .E........E.
+    .C........C.
+    .C........C.
+    CC........CC
+legs @1 clear_cel = 12,19 19,27 .
+legs @1 grid 12,19 = 12,19 8x9
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @1 clear_cel = 12,6 19,18 .
+body @1 grid 12,6 = 12,6 8x13
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @1 clear_cel = 9,13 22,17 .
+arms @1 grid 9,13 = 9,13 14x5
+    ..E........E..
+    .E..........E.
+    .C..........C.
+    C............C
+    C............C
+legs @2 clear_cel = 12,21 19,27 .
+legs @2 grid 12,21 = 12,21 8x7
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @2 clear_cel = 12,8 19,20 .
+body @2 grid 12,8 = 12,8 8x13
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @2 clear_cel = 9,15 22,19 .
+arms @2 grid 9,15 = 9,15 14x5
+    ..E........E..
+    .E..........E.
+    .C..........C.
+    C............C
+    C............C
+legs @3 clear_cel = 13,17 18,27 .
+legs @3 grid 13,17 = 13,17 6x11
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    .B..B.
+    .B..B.
+body @3 clear_cel = 12,2 19,16 .
+body @3 grid 12,2 = 12,2 8x15
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @3 clear_cel = 10,7 21,11 .
+arms @3 grid 10,7 = 10,7 12x5
+    C..........C
+    C..........C
+    C..........C
+    .E........E.
+    .E........E.
+legs @4 clear_cel = 12,15 19,20 .
+legs @4 grid 12,15 = 12,15 8x6
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    .BB..BB.
+body @4 clear_cel = 12,1 19,14 .
+body @4 grid 12,1 = 12,1 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @4 clear_cel = 11,5 20,9 .
+arms @4 grid 11,5 = 11,5 10x5
+    C........C
+    C........C
+    C........C
+    E........E
+    E........E
+legs @5 clear_cel = 11,14 20,18 .
+legs @5 grid 11,14 = 11,14 10x5
+    .AA....AA.
+    AA......AA
+    .AA....AA.
+    ..BB..BB..
+    ..BB..BB..
+body @5 clear_cel = 12,0 19,13 .
+body @5 grid 12,0 = 12,0 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @5 clear_cel = 11,3 20,8 .
+arms @5 grid 11,3 = 11,3 10x6
+    C........C
+    C........C
+    C........C
+    C........C
+    E........E
+    E........E
+legs @6 clear_cel = 13,15 18,21 .
+legs @6 grid 13,15 = 13,15 6x7
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    BB..BB
+    BB..BB
+body @6 clear_cel = 12,1 19,14 .
+body @6 grid 12,1 = 12,1 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @6 clear_cel = 9,5 22,9 .
+arms @6 grid 9,5 = 9,5 14x5
+    C............C
+    C............C
+    .C..........C.
+    ..E........E..
+    ..E........E..
+legs @7 clear_cel = 13,17 18,25 .
+legs @7 grid 13,17 = 13,17 6x9
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    AA..AA
+    BB..BB
+    BB..BB
+body @7 clear_cel = 12,3 19,16 .
+body @7 grid 12,3 = 12,3 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @7 clear_cel = 8,11 23,11 .
+arms @7 grid 8,11 = 8,11 16x3
+    ..CE........EC..
+    .C............C.
+    C..............C
+legs @8 clear_cel = 11,20 20,27 .
+legs @8 grid 11,20 = 11,20 10x8
+    AA......AA
+    .AA....AA.
+    ..AA..AA..
+    ..AA..AA..
+    ..AA..AA..
+    ..AA..AA..
+    .BBB..BBB.
+    BBBB..BBBB
+body @8 clear_cel = 12,7 19,19 .
+body @8 grid 12,7 = 12,7 8x13
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @8 clear_cel = 8,14 23,16 .
+arms @8 grid 8,14 = 8,14 16x3
+    ...E........E...
+    .CC..........CC.
+    C..............C
+legs @9 clear_cel = 12,19 19,27 .
+legs @9 grid 12,19 = 12,19 8x9
+    AA....AA
+    AA....AA
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .AA..AA.
+    .BB..BB.
+    BBB..BBB
+body @9 clear_cel = 12,5 19,18 .
+body @9 grid 12,5 = 12,5 8x14
+    .BBBBB..
+    BBBBBBB.
+    BBBBBBB.
+    BCCCCCB.
+    BCBCBCB.
+    .CCCCC..
+    ..CCC...
+    ...CC...
+    DDDDDDDD
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    FFFFFFFF
+    BBBBBBBB
+arms @9 clear_cel = 10,13 21,17 .
+arms @9 grid 10,13 = 10,13 12x5
+    .E........E.
+    .E........E.
+    C..........C
+    C..........C
+    C..........C
 add_tag name=jump direction=forward from=0 to=9

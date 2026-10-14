@@ -1,155 +1,641 @@
-atelier 4 a077d752-cf75-4e4a-8d31-85eaccd119e1 0.1.0
+atelier 5 a077d752-cf75-4e4a-8d31-85eaccd119e1 0.1.0
 new name=gpt56-alien width=32 height=32
-layer op=rename index=0 name=Body
-layer op=add name=Antennae
-layer op=add name=Head
-layer op=add name=Face
-layer op=add name=Highlights
-palette op=set colors=#18382b,#4faf68,#a8e063,#e8f7c7
-draw op=polygon layer=0 frame=0 color=#18382b fill=true points=11,18 20,18 22,20 23,24 21,28 19,29 12,29 10,28 8,24 9,20
-draw op=line layer=0 frame=0 color=#18382b size=2 x0=9 x1=6 y0=21 y1=25
-draw op=line layer=0 frame=0 color=#18382b size=2 x0=22 x1=25 y0=21 y1=25
-draw op=polygon layer=0 frame=0 color=#4faf68 fill=true points=12,19 19,19 21,21 21,25 19,28 12,28 10,25 10,21
-draw op=line layer=0 frame=0 color=#18382b size=1 x0=12 x1=19 y0=24 y1=24
-draw op=line layer=1 frame=0 color=#18382b size=2 x0=11 x1=7 y0=8 y1=3
-draw op=line layer=1 frame=0 color=#18382b size=2 x0=20 x1=24 y0=8 y1=3
-draw op=ellipse layer=1 frame=0 color=#18382b cx=7 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=0 color=#18382b cx=24 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=0 color=#a8e063 cx=7 cy=3 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=0 color=#a8e063 cx=24 cy=3 fill=true rx=1 ry=1
-draw op=polygon layer=2 frame=0 color=#18382b fill=true points=12,5 19,5 23,7 26,11 26,16 23,19 19,21 12,21 8,19 5,16 5,11 8,7
-draw op=polygon layer=2 frame=0 color=#4faf68 fill=true points=12,6 19,6 22,8 24,11 24,16 22,18 19,19 12,19 9,18 7,16 7,11 9,8
-draw op=polygon layer=3 frame=0 color=#e8f7c7 fill=true points=8,11 14,12 13,16 10,16
-draw op=polygon layer=3 frame=0 color=#e8f7c7 fill=true points=23,11 17,12 18,16 21,16
-draw op=ellipse layer=3 frame=0 color=#18382b cx=12 cy=14 fill=true rx=1 ry=2
-draw op=ellipse layer=3 frame=0 color=#18382b cx=19 cy=14 fill=true rx=1 ry=2
-draw op=line layer=3 frame=0 color=#18382b size=1 x0=14 x1=17 y0=18 y1=18
-draw op=line layer=4 frame=0 color=#a8e063 size=1 x0=10 x1=13 y0=9 y1=7
-draw op=pencil layer=4 frame=0 color=#a8e063 points=9,11 11,7 12,20 19,20 size=1
-draw op=polygon layer=4 frame=0 color=#e8f7c7 fill=true points=14,21 17,21 18,23 16,25 13,23
-draw op=pencil layer=4 frame=0 color=#a8e063 points=15,22 16,22 15,23 16,23 size=1
-frame op=add copy_from=0 count=9 duration_ms=100
-fx op=shift layer=0 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=0 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=0 frame=2 frame_to=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=0 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=0 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=0 frame=7 frame_to=8 dx=0 dy=2 wrap=false
-fx op=shift layer=2 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=2 frame_to=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=2 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=2 frame=7 frame_to=8 dx=0 dy=2 wrap=false
-fx op=shift layer=3 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=2 frame_to=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=3 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=3 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=3 frame=7 frame_to=8 dx=0 dy=2 wrap=false
-fx op=shift layer=4 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=4 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=4 frame=2 frame_to=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=4 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=4 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=4 frame=7 frame_to=8 dx=0 dy=2 wrap=false
-draw op=clear_cel layer=1 frame=1
-draw op=line layer=1 frame=1 color=#18382b size=2 x0=11 x1=6 y0=7 y1=2
-draw op=line layer=1 frame=1 color=#18382b size=2 x0=20 x1=25 y0=7 y1=2
-draw op=ellipse layer=1 frame=1 color=#18382b cx=6 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=1 color=#18382b cx=25 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=1 color=#a8e063 cx=6 cy=2 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=1 color=#a8e063 cx=25 cy=2 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=2
-draw op=line layer=1 frame=2 color=#18382b size=2 x0=11 x1=5 y0=6 y1=2
-draw op=line layer=1 frame=2 color=#18382b size=2 x0=20 x1=26 y0=6 y1=2
-draw op=ellipse layer=1 frame=2 color=#18382b cx=5 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=2 color=#18382b cx=26 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=2 color=#a8e063 cx=5 cy=2 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=2 color=#a8e063 cx=26 cy=2 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=3
-draw op=line layer=1 frame=3 color=#18382b size=2 x0=11 x1=9 y0=6 y1=2
-draw op=line layer=1 frame=3 color=#18382b size=2 x0=20 x1=22 y0=6 y1=2
-draw op=ellipse layer=1 frame=3 color=#18382b cx=9 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=3 color=#18382b cx=22 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=3 color=#a8e063 cx=9 cy=2 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=3 color=#a8e063 cx=22 cy=2 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=4
-draw op=line layer=1 frame=4 color=#18382b size=2 x0=11 x1=9 y0=7 y1=2
-draw op=line layer=1 frame=4 color=#18382b size=2 x0=20 x1=22 y0=7 y1=2
-draw op=ellipse layer=1 frame=4 color=#18382b cx=9 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=4 color=#18382b cx=22 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=4 color=#a8e063 cx=9 cy=2 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=4 color=#a8e063 cx=22 cy=2 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=5
-draw op=line layer=1 frame=5 color=#18382b size=2 x0=11 x1=10 y0=8 y1=3
-draw op=line layer=1 frame=5 color=#18382b size=2 x0=20 x1=21 y0=8 y1=3
-draw op=ellipse layer=1 frame=5 color=#18382b cx=10 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=5 color=#18382b cx=21 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=5 color=#a8e063 cx=10 cy=3 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=5 color=#a8e063 cx=21 cy=3 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=6
-draw op=line layer=1 frame=6 color=#18382b size=2 x0=11 x1=10 y0=9 y1=4
-draw op=line layer=1 frame=6 color=#18382b size=2 x0=20 x1=21 y0=9 y1=4
-draw op=ellipse layer=1 frame=6 color=#18382b cx=10 cy=4 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=6 color=#18382b cx=21 cy=4 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=6 color=#a8e063 cx=10 cy=4 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=6 color=#a8e063 cx=21 cy=4 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=7
-draw op=line layer=1 frame=7 color=#18382b size=2 x0=11 x1=9 y0=10 y1=5
-draw op=line layer=1 frame=7 color=#18382b size=2 x0=20 x1=22 y0=10 y1=5
-draw op=ellipse layer=1 frame=7 color=#18382b cx=9 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=7 color=#18382b cx=22 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=7 color=#a8e063 cx=9 cy=5 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=7 color=#a8e063 cx=22 cy=5 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=8
-draw op=line layer=1 frame=8 color=#18382b size=2 x0=11 x1=6 y0=10 y1=5
-draw op=line layer=1 frame=8 color=#18382b size=2 x0=20 x1=25 y0=10 y1=5
-draw op=ellipse layer=1 frame=8 color=#18382b cx=6 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=8 color=#18382b cx=25 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=8 color=#a8e063 cx=6 cy=5 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=8 color=#a8e063 cx=25 cy=5 fill=true rx=1 ry=1
-draw op=clear_cel layer=1 frame=9
-draw op=line layer=1 frame=9 color=#18382b size=2 x0=11 x1=7 y0=9 y1=4
-draw op=line layer=1 frame=9 color=#18382b size=2 x0=20 x1=24 y0=9 y1=4
-draw op=ellipse layer=1 frame=9 color=#18382b cx=7 cy=4 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=9 color=#18382b cx=24 cy=4 fill=true rx=2 ry=2
-draw op=ellipse layer=1 frame=9 color=#a8e063 cx=7 cy=4 fill=true rx=1 ry=1
-draw op=ellipse layer=1 frame=9 color=#a8e063 cx=24 cy=4 fill=true rx=1 ry=1
-draw op=clear_cel layer=3 frame=4
-draw op=polygon layer=3 frame=4 color=#e8f7c7 fill=true points=8,12 14,12 13,14 10,14
-draw op=polygon layer=3 frame=4 color=#e8f7c7 fill=true points=23,12 17,12 18,14 21,14
-draw op=line layer=3 frame=4 color=#18382b size=1 x0=10 x1=13 y0=13 y1=13
-draw op=line layer=3 frame=4 color=#18382b size=1 x0=18 x1=21 y0=13 y1=13
-draw op=line layer=3 frame=4 color=#18382b size=1 x0=14 x1=17 y0=17 y1=17
-draw op=clear_cel layer=3 frame=5
-draw op=line layer=3 frame=5 color=#18382b size=1 x0=9 x1=13 y0=14 y1=15
-draw op=line layer=3 frame=5 color=#18382b size=1 x0=18 x1=22 y0=15 y1=14
-draw op=line layer=3 frame=5 color=#18382b size=1 x0=14 x1=17 y0=18 y1=18
-draw op=clear_cel layer=3 frame=6
-draw op=polygon layer=3 frame=6 color=#e8f7c7 fill=true points=8,14 14,14 13,16 10,16
-draw op=polygon layer=3 frame=6 color=#e8f7c7 fill=true points=23,14 17,14 18,16 21,16
-draw op=line layer=3 frame=6 color=#18382b size=1 x0=10 x1=13 y0=15 y1=15
-draw op=line layer=3 frame=6 color=#18382b size=1 x0=18 x1=21 y0=15 y1=15
-draw op=line layer=3 frame=6 color=#18382b size=1 x0=14 x1=17 y0=19 y1=19
-draw op=line layer=1 frame=0 color=#4faf68 size=1 x0=11 x1=7 y0=8 y1=3
-draw op=line layer=1 frame=0 color=#4faf68 size=1 x0=20 x1=24 y0=8 y1=3
-draw op=line layer=1 frame=1 color=#4faf68 size=1 x0=11 x1=6 y0=7 y1=2
-draw op=line layer=1 frame=1 color=#4faf68 size=1 x0=20 x1=25 y0=7 y1=2
-draw op=line layer=1 frame=2 color=#4faf68 size=1 x0=11 x1=5 y0=6 y1=2
-draw op=line layer=1 frame=2 color=#4faf68 size=1 x0=20 x1=26 y0=6 y1=2
-draw op=line layer=1 frame=3 color=#4faf68 size=1 x0=11 x1=9 y0=6 y1=2
-draw op=line layer=1 frame=3 color=#4faf68 size=1 x0=20 x1=22 y0=6 y1=2
-draw op=line layer=1 frame=4 color=#4faf68 size=1 x0=11 x1=9 y0=7 y1=2
-draw op=line layer=1 frame=4 color=#4faf68 size=1 x0=20 x1=22 y0=7 y1=2
-draw op=line layer=1 frame=5 color=#4faf68 size=1 x0=11 x1=10 y0=8 y1=3
-draw op=line layer=1 frame=5 color=#4faf68 size=1 x0=20 x1=21 y0=8 y1=3
-draw op=line layer=1 frame=6 color=#4faf68 size=1 x0=11 x1=10 y0=9 y1=4
-draw op=line layer=1 frame=6 color=#4faf68 size=1 x0=20 x1=21 y0=9 y1=4
-draw op=line layer=1 frame=7 color=#4faf68 size=1 x0=11 x1=9 y0=10 y1=5
-draw op=line layer=1 frame=7 color=#4faf68 size=1 x0=20 x1=22 y0=10 y1=5
-draw op=line layer=1 frame=8 color=#4faf68 size=1 x0=11 x1=6 y0=10 y1=5
-draw op=line layer=1 frame=8 color=#4faf68 size=1 x0=20 x1=25 y0=10 y1=5
-draw op=line layer=1 frame=9 color=#4faf68 size=1 x0=11 x1=7 y0=9 y1=4
-draw op=line layer=1 frame=9 color=#4faf68 size=1 x0=20 x1=24 y0=9 y1=4
+layer rename index=0 name=Body
+layer add name=Antennae
+layer add name=Head
+layer add name=Face
+layer add name=Highlights
+palette set colors=#18382b,#4faf68,#a8e063,#e8f7c7
+legend A=#18382b
+Body @0 polygon #18382b fill = 8,18 16x12
+    ...AAAAAAAAAA...
+    ..AAAAAAAAAAAA..
+    .AAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAA..
+    ..AAAAAAAAAAAA..
+    ....AAAAAAAAA...
+Body @0 line #18382b 9,21 6,25 size 2 = 5,20 4x6
+    ...A
+    ..AA
+    .AAA
+    .AAA
+    AAAA
+    AA.A
+Body @0 line #18382b 22,21 25,25 size 2 = 23,21 3x5
+    A..
+    AA.
+    AA.
+    AAA
+    .AA
+legend B=#4faf68
+Body @0 polygon #4faf68 fill = 10,19 12x10
+    AABBBBBBBBAA
+    ABBBBBBBBBBA
+    BBBBBBBBBBBB
+    BBBBBBBBBBBB
+    BBBBBBBBBBBB
+    BBBBBBBBBBBB
+    BBBBBBBBBBBB
+    ABBBBBBBBBBA
+    ABBBBBBBBBBA
+    AABBBBBBBBAA
+Body @0 line #18382b 12,24 19,24 size 1 = 12,24 19,24 #18382b
+Antennae @0 line #18382b 11,8 7,3 size 2 = 6,2 6x7
+    AA....
+    AAA...
+    .AAA..
+    ..AA..
+    ..AAA.
+    ...AAA
+    ....AA
+Antennae @0 line #18382b 20,8 24,3 size 2 = 19,2 6x7
+    ....AA
+    ...AAA
+    ..AAA.
+    ..AA..
+    .AAA..
+    AAA...
+    AA....
+Antennae @0 ellipse #18382b 7,3 2,2 fill = 5,1 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAAA
+Antennae @0 ellipse #18382b 24,3 2,2 fill = 22,1 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @0 ellipse #a8e063 7,3 1,1 fill = 6,2 8,4 #a8e063
+Antennae @0 ellipse #a8e063 24,3 1,1 fill = 23,2 25,4 #a8e063
+Head @0 polygon #18382b fill = 5,5 22x17
+    ......AAAAAAAAAA......
+    ....AAAAAAAAAAAAAA....
+    ...AAAAAAAAAAAAAAAA...
+    ..AAAAAAAAAAAAAAAAAA..
+    ..AAAAAAAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAAAAAAAA.
+    ..AAAAAAAAAAAAAAAAAA..
+    ...AAAAAAAAAAAAAAAA...
+    .....AAAAAAAAAAAAA....
+    .......AAAAAAAAA......
+Head @0 polygon #4faf68 fill = 7,6 18x14
+    ..AAABBBBBBBBAAA..
+    .AABBBBBBBBBBBBAA.
+    AABBBBBBBBBBBBBBAA
+    ABBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBA
+    BBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBB
+    BBBBBBBBBBBBBBBBBB
+    ABBBBBBBBBBBBBBBBA
+    AABBBBBBBBBBBBBBAA
+    .AAABBBBBBBBBBAAA.
+legend C=#e8f7c7
+Face @0 polygon #e8f7c7 fill = 8,11 7x6
+    CCCC...
+    CCCCCCC
+    .CCCCCC
+    .CCCCC.
+    ..CCCC.
+    ..CCCC.
+Face @0 polygon #e8f7c7 fill = 17,11 7x6
+    ...CCCC
+    CCCCCCC
+    CCCCCC.
+    .CCCCC.
+    .CCCC..
+    .CCCC..
+Face @0 ellipse #18382b 12,14 1,2 fill = 11,12 3x5
+    CAC
+    AAA
+    AAA
+    AAA
+    CAC
+Face @0 ellipse #18382b 19,14 1,2 fill = 18,12 3x5
+    CAC
+    AAA
+    AAA
+    AAA
+    CAC
+Face @0 line #18382b 14,18 17,18 size 1 = 14,18 17,18 #18382b
+legend D=#a8e063
+Highlights @0 line #a8e063 10,9 13,7 size 1 = 10,7 4x3
+    ...D
+    .DD.
+    D...
+Highlights @0 pencil #a8e063 size 1 = 9,7 11x14
+    ..D.D......
+    ..DD.......
+    .D.........
+    ...........
+    D..........
+    ...........
+    ...........
+    ...........
+    ...........
+    ...........
+    ...........
+    ...........
+    ...........
+    ...D......D
+Highlights @0 polygon #e8f7c7 fill = 13,21 6x5
+    .CCCC.
+    .CCCCC
+    CCCCCC
+    .CCCC.
+    ...C..
+Highlights @0 pencil #a8e063 size 1 = 15,22 16,23 #a8e063
+frame add copy_from=0 count=9 duration_ms=100
+Body @1 shift dx=0 dy=-1 wrap=false
+Body @4 shift dx=0 dy=-1 wrap=false
+Body @2 shift dx=0 dy=-2 wrap=false
+Body @3 shift dx=0 dy=-2 wrap=false
+Body @6 shift dx=0 dy=1 wrap=false
+Body @9 shift dx=0 dy=1 wrap=false
+Body @7 shift dx=0 dy=2 wrap=false
+Body @8 shift dx=0 dy=2 wrap=false
+Head @1 shift dx=0 dy=-1 wrap=false
+Head @4 shift dx=0 dy=-1 wrap=false
+Head @2 shift dx=0 dy=-2 wrap=false
+Head @3 shift dx=0 dy=-2 wrap=false
+Head @6 shift dx=0 dy=1 wrap=false
+Head @9 shift dx=0 dy=1 wrap=false
+Head @7 shift dx=0 dy=2 wrap=false
+Head @8 shift dx=0 dy=2 wrap=false
+Face @1 shift dx=0 dy=-1 wrap=false
+Face @4 shift dx=0 dy=-1 wrap=false
+Face @2 shift dx=0 dy=-2 wrap=false
+Face @3 shift dx=0 dy=-2 wrap=false
+Face @6 shift dx=0 dy=1 wrap=false
+Face @9 shift dx=0 dy=1 wrap=false
+Face @7 shift dx=0 dy=2 wrap=false
+Face @8 shift dx=0 dy=2 wrap=false
+Highlights @1 shift dx=0 dy=-1 wrap=false
+Highlights @4 shift dx=0 dy=-1 wrap=false
+Highlights @2 shift dx=0 dy=-2 wrap=false
+Highlights @3 shift dx=0 dy=-2 wrap=false
+Highlights @6 shift dx=0 dy=1 wrap=false
+Highlights @9 shift dx=0 dy=1 wrap=false
+Highlights @7 shift dx=0 dy=2 wrap=false
+Highlights @8 shift dx=0 dy=2 wrap=false
+Antennae @1 clear_cel = 5,1 26,8 .
+Antennae @1 line #18382b 11,7 6,2 size 2 = 5,1 7x7
+    AA.....
+    AAA....
+    .AAA...
+    ..AAA..
+    ...AAA.
+    ....AAA
+    .....AA
+Antennae @1 line #18382b 20,7 25,2 size 2 = 19,1 7x7
+    .....AA
+    ....AAA
+    ...AAA.
+    ..AAA..
+    .AAA...
+    AAA....
+    AA.....
+Antennae @1 ellipse #18382b 6,2 2,2 fill = 4,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAAA
+Antennae @1 ellipse #18382b 25,2 2,2 fill = 23,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @1 ellipse #a8e063 6,2 1,1 fill = 5,1 7,3 #a8e063
+Antennae @1 ellipse #a8e063 25,2 1,1 fill = 24,1 26,3 #a8e063
+Antennae @2 clear_cel = 5,1 26,8 .
+Antennae @2 line #18382b 11,6 5,2 size 2 = 4,1 8x6
+    AA......
+    AAAA....
+    .AAAA...
+    ...AAAA.
+    ....AAAA
+    ......AA
+Antennae @2 line #18382b 20,6 26,2 size 2 = 19,1 8x6
+    ......AA
+    ....AAAA
+    ...AAAA.
+    .AAAA...
+    AAAA....
+    AA......
+Antennae @2 ellipse #18382b 5,2 2,2 fill = 3,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAAA
+Antennae @2 ellipse #18382b 26,2 2,2 fill = 24,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAA.
+Antennae @2 ellipse #a8e063 5,2 1,1 fill = 4,1 6,3 #a8e063
+Antennae @2 ellipse #a8e063 26,2 1,1 fill = 25,1 27,3 #a8e063
+Antennae @3 clear_cel = 5,1 26,8 .
+Antennae @3 line #18382b 11,6 9,2 size 2 = 8,1 4x6
+    AA..
+    AA..
+    AAA.
+    .AA.
+    .AAA
+    ..AA
+Antennae @3 line #18382b 20,6 22,2 size 2 = 19,1 4x6
+    ..AA
+    ..AA
+    .AAA
+    .AA.
+    AAA.
+    AA..
+Antennae @3 ellipse #18382b 9,2 2,2 fill = 7,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAA.
+Antennae @3 ellipse #18382b 22,2 2,2 fill = 20,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @3 ellipse #a8e063 9,2 1,1 fill = 8,1 10,3 #a8e063
+Antennae @3 ellipse #a8e063 22,2 1,1 fill = 21,1 23,3 #a8e063
+Antennae @4 clear_cel = 5,1 26,8 .
+Antennae @4 line #18382b 11,7 9,2 size 2 = 8,1 4x7
+    AA..
+    AA..
+    AAA.
+    .AA.
+    .AAA
+    ..AA
+    ..AA
+Antennae @4 line #18382b 20,7 22,2 size 2 = 19,1 4x7
+    ..AA
+    ..AA
+    .AAA
+    .AA.
+    AAA.
+    AA..
+    AA..
+Antennae @4 ellipse #18382b 9,2 2,2 fill = 7,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAA.
+Antennae @4 ellipse #18382b 22,2 2,2 fill = 20,0 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @4 ellipse #a8e063 9,2 1,1 fill = 8,1 10,3 #a8e063
+Antennae @4 ellipse #a8e063 22,2 1,1 fill = 21,1 23,3 #a8e063
+Antennae @5 clear_cel = 5,1 26,8 .
+Antennae @5 line #18382b 11,8 10,3 size 2 = 9,2 3x7
+    AA.
+    AA.
+    AA.
+    AAA
+    .AA
+    .AA
+    .AA
+Antennae @5 line #18382b 20,8 21,3 size 2 = 19,2 3x7
+    .AA
+    .AA
+    .AA
+    AAA
+    AA.
+    AA.
+    AA.
+Antennae @5 ellipse #18382b 10,3 2,2 fill = 8,1 5x4
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+Antennae @5 ellipse #18382b 21,3 2,2 fill = 19,1 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @5 ellipse #a8e063 10,3 1,1 fill = 9,2 11,4 #a8e063
+Antennae @5 ellipse #a8e063 21,3 1,1 fill = 20,2 22,4 #a8e063
+Antennae @6 clear_cel = 5,1 26,8 .
+Antennae @6 line #18382b 11,9 10,4 size 2 = 9,3 3x7
+    AA.
+    AA.
+    AA.
+    AAA
+    .AA
+    .AA
+    .AA
+Antennae @6 line #18382b 20,9 21,4 size 2 = 19,3 3x7
+    .AA
+    .AA
+    .AA
+    AAA
+    AA.
+    AA.
+    AA.
+Antennae @6 ellipse #18382b 10,4 2,2 fill = 8,2 5x4
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+Antennae @6 ellipse #18382b 21,4 2,2 fill = 19,2 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @6 ellipse #a8e063 10,4 1,1 fill = 9,3 11,5 #a8e063
+Antennae @6 ellipse #a8e063 21,4 1,1 fill = 20,3 22,5 #a8e063
+Antennae @7 clear_cel = 5,1 26,8 .
+Antennae @7 line #18382b 11,10 9,5 size 2 = 8,4 4x7
+    AA..
+    AA..
+    AAA.
+    .AA.
+    .AAA
+    ..AA
+    ..AA
+Antennae @7 line #18382b 20,10 22,5 size 2 = 19,4 4x7
+    ..AA
+    ..AA
+    .AAA
+    .AA.
+    AAA.
+    AA..
+    AA..
+Antennae @7 ellipse #18382b 9,5 2,2 fill = 7,3 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAA.
+Antennae @7 ellipse #18382b 22,5 2,2 fill = 20,3 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @7 ellipse #a8e063 9,5 1,1 fill = 8,4 10,6 #a8e063
+Antennae @7 ellipse #a8e063 22,5 1,1 fill = 21,4 23,6 #a8e063
+Antennae @8 clear_cel = 5,1 26,8 .
+Antennae @8 line #18382b 11,10 6,5 size 2 = 5,4 7x7
+    AA.....
+    AAA....
+    .AAA...
+    ..AAA..
+    ...AAA.
+    ....AAA
+    .....AA
+Antennae @8 line #18382b 20,10 25,5 size 2 = 19,4 7x7
+    .....AA
+    ....AAA
+    ...AAA.
+    ..AAA..
+    .AAA...
+    AAA....
+    AA.....
+Antennae @8 ellipse #18382b 6,5 2,2 fill = 4,3 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAAA
+Antennae @8 ellipse #18382b 25,5 2,2 fill = 23,3 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @8 ellipse #a8e063 6,5 1,1 fill = 5,4 7,6 #a8e063
+Antennae @8 ellipse #a8e063 25,5 1,1 fill = 24,4 26,6 #a8e063
+Antennae @9 clear_cel = 5,1 26,8 .
+Antennae @9 line #18382b 11,9 7,4 size 2 = 6,3 6x7
+    AA....
+    AAA...
+    .AAA..
+    ..AA..
+    ..AAA.
+    ...AAA
+    ....AA
+Antennae @9 line #18382b 20,9 24,4 size 2 = 19,3 6x7
+    ....AA
+    ...AAA
+    ..AAA.
+    ..AA..
+    .AAA..
+    AAA...
+    AA....
+Antennae @9 ellipse #18382b 7,4 2,2 fill = 5,2 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAAA
+Antennae @9 ellipse #18382b 24,4 2,2 fill = 22,2 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    AAAA.
+Antennae @9 ellipse #a8e063 7,4 1,1 fill = 6,3 8,5 #a8e063
+Antennae @9 ellipse #a8e063 24,4 1,1 fill = 23,3 25,5 #a8e063
+Face @4 clear_cel = 8,10 23,17 .
+Face @4 polygon #e8f7c7 fill = 8,12 7x3
+    CCCCCCC
+    .CCCCC.
+    ..CCCC.
+Face @4 polygon #e8f7c7 fill = 17,12 7x3
+    CCCCCCC
+    .CCCCC.
+    .CCCC..
+Face @4 line #18382b 10,13 13,13 size 1 = 10,13 13,13 #18382b
+Face @4 line #18382b 18,13 21,13 size 1 = 18,13 21,13 #18382b
+Face @4 line #18382b 14,17 17,17 size 1 = 14,17 17,17 #18382b
+Face @5 clear_cel = 8,11 23,18 .
+Face @5 line #18382b 9,14 13,15 size 1 = 9,14 5x2
+    AA...
+    ..AAA
+Face @5 line #18382b 18,15 22,14 size 1 = 18,14 5x2
+    ..AAA
+    AA...
+Face @5 line #18382b 14,18 17,18 size 1 = 14,18 17,18 #18382b
+Face @6 clear_cel = 8,12 23,19 .
+Face @6 polygon #e8f7c7 fill = 8,14 7x3
+    CCCCCCC
+    .CCCCC.
+    ..CCCC.
+Face @6 polygon #e8f7c7 fill = 17,14 7x3
+    CCCCCCC
+    .CCCCC.
+    .CCCC..
+Face @6 line #18382b 10,15 13,15 size 1 = 10,15 13,15 #18382b
+Face @6 line #18382b 18,15 21,15 size 1 = 18,15 21,15 #18382b
+Face @6 line #18382b 14,19 17,19 size 1 = 14,19 17,19 #18382b
+Antennae @0 line #4faf68 11,8 7,3 size 1 = 7,3 5x6
+    BDA..
+    DBA..
+    AAB..
+    .ABA.
+    ..ABA
+    ...AB
+Antennae @0 line #4faf68 20,8 24,3 size 1 = 20,3 5x6
+    ..ADB
+    .AABD
+    .ABAA
+    AAB..
+    AB...
+    B....
+Antennae @1 line #4faf68 11,7 6,2 size 1 = 6,2 6x6
+    BDA...
+    DBA...
+    AABA..
+    ..ABA.
+    ...ABA
+    ....AB
+Antennae @1 line #4faf68 20,7 25,2 size 1 = 20,2 6x6
+    ...ADB
+    ..AABD
+    .AABAA
+    AAB...
+    AB....
+    B.....
+Antennae @2 line #4faf68 11,6 5,2 size 1 = 5,2 7x5
+    BDA....
+    DBBA...
+    AAABAA.
+    ...ABBA
+    .....AB
+Antennae @2 line #4faf68 20,6 26,2 size 1 = 20,2 7x5
+    ...AADB
+    ..AABBD
+    AAAB.AA
+    ABB....
+    B......
+Antennae @3 line #4faf68 11,6 9,2 size 1 = 9,2 3x5
+    BDA
+    BDA
+    AB.
+    ABA
+    .AB
+Antennae @3 line #4faf68 20,6 22,2 size 1 = 20,2 3x5
+    ADB
+    ADB
+    ABA
+    AB.
+    B..
+Antennae @4 line #4faf68 11,7 9,2 size 1 = 9,2 3x6
+    BDA
+    BDA
+    AB.
+    ABA
+    .AB
+    .AB
+Antennae @4 line #4faf68 20,7 22,2 size 1 = 20,2 3x6
+    ADB
+    ADB
+    ABA
+    AB.
+    B..
+    B..
+Antennae @5 line #4faf68 11,8 10,3 size 1 = 10,3 2x6
+    BD
+    BD
+    BA
+    AB
+    AB
+    AB
+Antennae @5 line #4faf68 20,8 21,3 size 1 = 20,3 2x6
+    DB
+    DB
+    AB
+    B.
+    B.
+    B.
+Antennae @6 line #4faf68 11,9 10,4 size 1 = 10,4 2x6
+    BD
+    BD
+    BA
+    AB
+    AB
+    AB
+Antennae @6 line #4faf68 20,9 21,4 size 1 = 20,4 2x6
+    DB
+    DB
+    AB
+    B.
+    B.
+    B.
+Antennae @7 line #4faf68 11,10 9,5 size 1 = 9,5 3x6
+    BDA
+    BDA
+    AB.
+    ABA
+    .AB
+    .AB
+Antennae @7 line #4faf68 20,10 22,5 size 1 = 20,5 3x6
+    ADB
+    ADB
+    ABA
+    AB.
+    B..
+    B..
+Antennae @8 line #4faf68 11,10 6,5 size 1 = 6,5 6x6
+    BDA...
+    DBA...
+    AABA..
+    ..ABA.
+    ...ABA
+    ....AB
+Antennae @8 line #4faf68 20,10 25,5 size 1 = 20,5 6x6
+    ...ADB
+    ..AABD
+    .AABAA
+    AAB...
+    AB....
+    B.....
+Antennae @9 line #4faf68 11,9 7,4 size 1 = 7,4 5x6
+    BDA..
+    DBA..
+    AAB..
+    .ABA.
+    ..ABA
+    ...AB
+Antennae @9 line #4faf68 20,9 24,4 size 1 = 20,4 5x6
+    ..ADB
+    .AABD
+    .ABAA
+    AAB..
+    AB...
+    B....
 add_tag name=idle direction=forward from=0 to=9

@@ -1,603 +1,651 @@
-atelier 4 99db6dfb-926b-4408-8542-c4a6d56a4ede 0.1.0
+atelier 5 99db6dfb-926b-4408-8542-c4a6d56a4ede 0.1.0
 new name=car-drive-in-place width=32 height=32
-layer op=add name=chassis
-palette op=set colors=#1d1d2b,#e63946,#9b1d2a,#8ecae6,#adb5bd,#f1f5f9
-layer op=delete index=1
-layer op=rename index=0 name=speed_fx
-layer op=add name=chassis
-layer op=add name=wheel_rear
-layer op=add name=wheel_front
-layer op=add name=exhaust_fx
-paint_grid layer=1 frame=0 x=4 y=10 legend=D:2,G:3,K:0,R:1,W:5 rows:10
-  |.........KKKKKKKK.........|
-  |........KRRRRRRRRK........|
-  |.......KGGGGRGGGGGK.......|
-  |......KGGGGGRGGGGGGK......|
-  |.KKKKKRRRRRRRRRRRRRRKKKKKK|
-  |KRRRRRRRRRRRRRRRRRRRRRWRK.|
-  |KDRRRRRRRRRRRRRRRRRRRRRRK.|
-  |KRRRRRRRRRRRRRRRRRRRRRRRK.|
-  |KDDDDDDDDDDDDDDDDDDDDDDDK.|
-  |KKKKKKKKKKKKKKKKKKKKKKKKKK|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=4 y=10 legend=D:2,G:3,K:0,R:1,W:5 rows:10
-  |.........KKKKKKKK.........|
-  |........KRRRRRRRRK........|
-  |.......KGGGGRGGGGGK.......|
-  |......KGGGGGRGGGGGGK......|
-  |.KKKKKRRRRRRRRRRRRRRKKKKKK|
-  |KRRRRRRRRRRRRRRRRRRRRRRRWK|
-  |KDRRRRRRRRRRRRRRRRRRRRRRRK|
-  |KRRRRRRRRRRRRRRRRRRRRRRRRK|
-  |KDDDDDDDDDDDDDDDDDDDDDDDDK|
-  |KKKKKKKKKKKKKKKKKKKKKKKKKK|
-frame op=add copy_from=0 count=1
-frame op=add copy_from=0 count=8
-region op=clear layer=2 frame=0 rect=6,19,9,9
-paint_grid layer=2 frame=0 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSSSSK|
-  |KSKKKKKSK|
-  |KSSSSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=0 rect=20,19,9,9
-paint_grid layer=3 frame=0 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSSSSK|
-  |KSKKKKKSK|
-  |KSSSSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=6 y=4 legend=S:4 rows:26
-  |SSSSSSS..................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |....................SSSSS|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |..........SSSSSSSS.......|
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=4 frame=0 x=2 y=17 legend=S:4 rows:1
-  |SS|
-region op=move layer=1 frame=1 offset=0,-1 rect=4,8,26,14
-region op=clear layer=2 frame=1 rect=6,19,9,9
-paint_grid layer=2 frame=1 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSKKSSSSK|
-  |KSSSKSSSK|
-  |KSSSSKKSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=1 rect=20,19,9,9
-paint_grid layer=3 frame=1 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSKKSSSSK|
-  |KSSSKSSSK|
-  |KSSSSKKSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=1 rect=0,0,32,32
-paint_grid layer=0 frame=1 x=2 y=4 legend=S:4 rows:26
-  |SSSSSSS..................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |....................SSSSS|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |.........................|
-  |..........SSSSSSSS.......|
-region op=clear layer=4 frame=1 rect=0,0,32,32
-paint_grid layer=4 frame=1 x=1 y=16 legend=S:4,W:5 rows:2
-  |SWS|
-  |.SS|
-region op=move layer=1 frame=2 offset=0,-1 rect=4,8,26,14
-region op=clear layer=2 frame=2 rect=6,19,9,9
-paint_grid layer=2 frame=2 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSKSSSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSSSKSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=2 rect=20,19,9,9
-paint_grid layer=3 frame=2 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSKSSSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSSSKSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=2 rect=0,0,32,32
-paint_grid layer=0 frame=2 x=0 y=4 legend=S:4 rows:26
-  |SSSSS..................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |..................SSSSS|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |.......................|
-  |........SSSSSSSS.......|
-region op=clear layer=4 frame=2 rect=0,0,32,32
-paint_grid layer=4 frame=2 x=0 y=14 legend=S:4,W:5 rows:3
-  |.SS.|
-  |SWSS|
-  |.SS.|
-region op=move layer=1 frame=3 offset=0,-1 rect=4,8,26,14
-region op=clear layer=2 frame=3 rect=6,19,9,9
-paint_grid layer=2 frame=3 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSKSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSKSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=3 rect=20,19,9,9
-paint_grid layer=3 frame=3 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSKSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSKSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=3 rect=0,0,32,32
-paint_grid layer=0 frame=3 x=4 y=8 legend=S:4 rows:22
-  |..........SSSSS|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |...............|
-  |SSSSSSSS.......|
-region op=clear layer=4 frame=3 rect=0,0,32,32
-paint_grid layer=4 frame=3 x=0 y=12 legend=S:4,W:5 rows:3
-  |..S|
-  |SW.|
-  |S..|
-region op=move layer=1 frame=4 offset=0,-1 rect=4,8,26,14
-region op=clear layer=2 frame=4 rect=6,19,9,9
-paint_grid layer=2 frame=4 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSKKSK|
-  |KSSSKSSSK|
-  |KSKKSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=4 rect=20,19,9,9
-paint_grid layer=3 frame=4 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSKKSK|
-  |KSSSKSSSK|
-  |KSKKSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=4 rect=0,0,32,32
-paint_grid layer=0 frame=4 x=0 y=4 legend=S:4 rows:26
-  |..............................SS|
-  |................................|
-  |................................|
-  |................................|
-  |..........SSSSS.................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |SSSSSSSS........................|
-region op=clear layer=4 frame=4 rect=0,0,32,32
-paint_grid layer=4 frame=4 x=0 y=10 legend=S:4 rows:2
-  |S.|
-  |.S|
-region op=clear layer=2 frame=5 rect=6,19,9,9
-paint_grid layer=2 frame=5 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSSSSK|
-  |KSKKKKKSK|
-  |KSSSSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=5 rect=20,19,9,9
-paint_grid layer=3 frame=5 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSSSSK|
-  |KSKKKKKSK|
-  |KSSSSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=5 rect=0,0,32,32
-paint_grid layer=0 frame=5 x=0 y=4 legend=S:4 rows:26
-  |..........................SSSSSS|
-  |................................|
-  |................................|
-  |................................|
-  |......SSSSS.....................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |SSSS............................|
-region op=clear layer=4 frame=5 rect=0,0,32,32
-paint_grid layer=4 frame=5 x=2 y=17 legend=S:4 rows:1
-  |SS|
-region op=move layer=1 frame=6 offset=0,1 rect=4,8,26,14
-region op=clear layer=2 frame=6 rect=6,19,9,9
-paint_grid layer=2 frame=6 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSKKSSSSK|
-  |KSSSKSSSK|
-  |KSSSSKKSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=6 rect=20,19,9,9
-paint_grid layer=3 frame=6 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSKKSSSSK|
-  |KSSSKSSSK|
-  |KSSSSKKSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=6 rect=0,0,32,32
-paint_grid layer=0 frame=6 x=2 y=4 legend=S:4 rows:5
-  |....................SSSSSSS|
-  |...........................|
-  |...........................|
-  |...........................|
-  |SSSSS......................|
-region op=clear layer=4 frame=6 rect=0,0,32,32
-paint_grid layer=4 frame=6 x=1 y=16 legend=S:4,W:5 rows:2
-  |SWS|
-  |.SS|
-region op=move layer=1 frame=7 offset=0,1 rect=4,8,26,14
-region op=clear layer=2 frame=7 rect=6,19,9,9
-paint_grid layer=2 frame=7 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSKSSSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSSSKSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=7 rect=20,19,9,9
-paint_grid layer=3 frame=7 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSKSSSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSSSKSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=7 rect=0,0,32,32
-paint_grid layer=0 frame=7 x=0 y=4 legend=S:4 rows:26
-  |..................SSSSSSS.......|
-  |................................|
-  |................................|
-  |................................|
-  |SSS.............................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |................................|
-  |............................SSSS|
-region op=clear layer=4 frame=7 rect=0,0,32,32
-paint_grid layer=4 frame=7 x=0 y=14 legend=S:4,W:5 rows:3
-  |.SS.|
-  |SWSS|
-  |.SS.|
-region op=move layer=1 frame=8 offset=0,1 rect=4,8,26,14
-region op=clear layer=2 frame=8 rect=6,19,9,9
-paint_grid layer=2 frame=8 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSKSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSKSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=8 rect=20,19,9,9
-paint_grid layer=3 frame=8 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSKSKK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KSSSKSSSK|
-  |KKSKSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=8 rect=0,0,32,32
-paint_grid layer=0 frame=8 x=14 y=4 legend=S:4 rows:26
-  |SSSSSSS...........|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..................|
-  |..........SSSSSSSS|
-region op=clear layer=4 frame=8 rect=0,0,32,32
-paint_grid layer=4 frame=8 x=0 y=12 legend=S:4,W:5 rows:3
-  |..S|
-  |SW.|
-  |S..|
-region op=move layer=1 frame=9 offset=0,1 rect=4,8,26,14
-region op=clear layer=2 frame=9 rect=6,19,9,9
-paint_grid layer=2 frame=9 x=6 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSKKSK|
-  |KSSSKSSSK|
-  |KSKKSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=3 frame=9 rect=20,19,9,9
-paint_grid layer=3 frame=9 x=20 y=19 legend=K:0,S:4 rows:9
-  |..KKKKK..|
-  |.KKSSSKK.|
-  |KKSSSSSKK|
-  |KSSSSKKSK|
-  |KSSSKSSSK|
-  |KSKKSSSSK|
-  |KKSSSSSKK|
-  |.KKSSSKK.|
-  |..KKKKK..|
-region op=clear layer=0 frame=9 rect=0,0,32,32
-paint_grid layer=0 frame=9 x=10 y=4 legend=S:4 rows:26
-  |SSSSSSS...............|
-  |......................|
-  |......................|
-  |......................|
-  |....................SS|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |......................|
-  |..........SSSSSSSS....|
-region op=clear layer=4 frame=9 rect=0,0,32,32
-paint_grid layer=4 frame=9 x=0 y=10 legend=S:4 rows:2
-  |S.|
-  |.S|
-region op=clear layer=4 frame=0 rect=0,0,32,32
-paint_grid layer=4 frame=0 x=2 y=16 legend=S:4,W:5 rows:2
-  |SS|
-  |.W|
-region op=clear layer=4 frame=1 rect=0,0,32,32
-paint_grid layer=4 frame=1 x=1 y=15 legend=S:4,W:5 rows:2
-  |SWS|
-  |.SS|
-region op=clear layer=4 frame=2 rect=0,0,32,32
-paint_grid layer=4 frame=2 x=0 y=13 legend=S:4,W:5 rows:3
-  |.SS.|
-  |SWWS|
-  |.SS.|
-region op=clear layer=4 frame=3 rect=0,0,32,32
-paint_grid layer=4 frame=3 x=0 y=11 legend=S:4,W:5 rows:3
-  |SS.|
-  |.WS|
-  |S..|
-region op=clear layer=4 frame=4 rect=0,0,32,32
-paint_grid layer=4 frame=4 x=0 y=10 legend=S:4 rows:1
-  |S.S|
-region op=clear layer=4 frame=5 rect=0,0,32,32
-paint_grid layer=4 frame=5 x=2 y=16 legend=S:4,W:5 rows:2
-  |SS|
-  |.W|
-region op=clear layer=4 frame=6 rect=0,0,32,32
-paint_grid layer=4 frame=6 x=1 y=15 legend=S:4,W:5 rows:2
-  |SWS|
-  |.SS|
-region op=clear layer=4 frame=7 rect=0,0,32,32
-paint_grid layer=4 frame=7 x=0 y=13 legend=S:4,W:5 rows:3
-  |.SS.|
-  |SWWS|
-  |.SS.|
-region op=clear layer=4 frame=8 rect=0,0,32,32
-paint_grid layer=4 frame=8 x=0 y=11 legend=S:4,W:5 rows:3
-  |SS.|
-  |.WS|
-  |S..|
-region op=clear layer=4 frame=9 rect=0,0,32,32
-paint_grid layer=4 frame=9 x=0 y=10 legend=S:4 rows:1
-  |S.S|
+layer add name=chassis
+palette set colors=#1d1d2b,#e63946,#9b1d2a,#8ecae6,#adb5bd,#f1f5f9
+layer delete index=1
+layer rename index=0 name=speed_fx
+layer add name=chassis
+layer add name=wheel_rear
+layer add name=wheel_front
+layer add name=exhaust_fx
+legend A=#1d1d2b B=#e63946 C=#8ecae6 D=#f1f5f9 E=#9b1d2a
+chassis @0 grid 4,10 = 4,10 26x10
+    .........AAAAAAAA.........
+    ........ABBBBBBBBA........
+    .......ACCCCBCCCCCA.......
+    ......ACCCCCBCCCCCCA......
+    .AAAAABBBBBBBBBBBBBBAAAAAA
+    ABBBBBBBBBBBBBBBBBBBBBDBA.
+    AEBBBBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBBA.
+    AEEEEEEEEEEEEEEEEEEEEEEEA.
+    AAAAAAAAAAAAAAAAAAAAAAAAAA
+chassis @0 clear 0,0 32,32 = 4,10 29,19 .
+chassis @0 grid 4,10 = 4,10 26x10
+    .........AAAAAAAA.........
+    ........ABBBBBBBBA........
+    .......ACCCCBCCCCCA.......
+    ......ACCCCCBCCCCCCA......
+    .AAAAABBBBBBBBBBBBBBAAAAAA
+    ABBBBBBBBBBBBBBBBBBBBBBBDA
+    AEBBBBBBBBBBBBBBBBBBBBBBBA
+    ABBBBBBBBBBBBBBBBBBBBBBBBA
+    AEEEEEEEEEEEEEEEEEEEEEEEEA
+    AAAAAAAAAAAAAAAAAAAAAAAAAA
+frame add copy_from=0 count=1
+frame add copy_from=0 count=8
+wheel_rear @0 clear 6,19 9,9 ~
+legend F=#adb5bd
+wheel_rear @0 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFFFFA
+    AFAAAAAFA
+    AFFFFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @0 clear 20,19 9,9 ~
+wheel_front @0 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFFFFA
+    AFAAAAAFA
+    AFFFFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @0 clear 0,0 32,32 ~
+speed_fx @0 grid 6,4 = 6,4 25x26
+    FFFFFFF..................
+    .........................
+    .........................
+    .........................
+    ....................FFFFF
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    ..........FFFFFFFF.......
+exhaust_fx @0 clear 0,0 32,32 ~
+exhaust_fx @0 grid 2,17 = 2,17 3,17 #adb5bd
+chassis @1 move 4,8 26,14 0,-1 = 5,9 22x6
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+    ......................
+wheel_rear @1 clear 6,19 9,9 ~
+wheel_rear @1 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFAAFFFFA
+    AFFFAFFFA
+    AFFFFAAFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @1 clear 20,19 9,9 ~
+wheel_front @1 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFAAFFFFA
+    AFFFAFFFA
+    AFFFFAAFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @1 clear 0,0 32,32 ~
+speed_fx @1 grid 2,4 = 2,4 25x26
+    FFFFFFF..................
+    .........................
+    .........................
+    .........................
+    ....................FFFFF
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    .........................
+    ..........FFFFFFFF.......
+exhaust_fx @1 clear 0,0 32,32 ~
+exhaust_fx @1 grid 1,16 = 1,16 3x2
+    FDF
+    .FF
+chassis @2 move 4,8 26,14 0,-1 = 5,9 22x6
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+    ......................
+wheel_rear @2 clear 6,19 9,9 ~
+wheel_rear @2 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFAFFFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFFFAFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @2 clear 20,19 9,9 ~
+wheel_front @2 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFAFFFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFFFAFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @2 clear 0,0 32,32 ~
+speed_fx @2 grid 0,4 = 0,4 23x26
+    FFFFF..................
+    .......................
+    .......................
+    .......................
+    ..................FFFFF
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    .......................
+    ........FFFFFFFF.......
+exhaust_fx @2 clear 0,0 32,32 ~
+exhaust_fx @2 grid 0,14 = 0,14 4x3
+    .FF.
+    FDFF
+    .FF.
+chassis @3 move 4,8 26,14 0,-1 = 5,9 22x6
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+    ......................
+wheel_rear @3 clear 6,19 9,9 ~
+wheel_rear @3 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFAFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFAFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @3 clear 20,19 9,9 ~
+wheel_front @3 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFAFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFAFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @3 clear 0,0 32,32 ~
+speed_fx @3 grid 4,8 = 4,8 15x22
+    ..........FFFFF
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    FFFFFFFF.......
+exhaust_fx @3 clear 0,0 32,32 ~
+exhaust_fx @3 grid 0,12 = 0,12 3x3
+    ..F
+    FD.
+    F..
+chassis @4 move 4,8 26,14 0,-1 = 5,9 22x6
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+    ......................
+wheel_rear @4 clear 6,19 9,9 ~
+wheel_rear @4 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFAAFA
+    AFFFAFFFA
+    AFAAFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @4 clear 20,19 9,9 ~
+wheel_front @4 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFAAFA
+    AFFFAFFFA
+    AFAAFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @4 clear 0,0 32,32 ~
+speed_fx @4 grid 0,4 = 0,4 32x26
+    ..............................FF
+    ................................
+    ................................
+    ................................
+    ..........FFFFF.................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    FFFFFFFF........................
+exhaust_fx @4 clear 0,0 32,32 ~
+exhaust_fx @4 grid 0,10 = 0,10 2x2
+    F.
+    .F
+wheel_rear @5 clear 6,19 9,9 ~
+wheel_rear @5 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFFFFA
+    AFAAAAAFA
+    AFFFFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @5 clear 20,19 9,9 ~
+wheel_front @5 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFFFFA
+    AFAAAAAFA
+    AFFFFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @5 clear 0,0 32,32 ~
+speed_fx @5 grid 0,4 = 0,4 32x26
+    ..........................FFFFFF
+    ................................
+    ................................
+    ................................
+    ......FFFFF.....................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    FFFF............................
+exhaust_fx @5 clear 0,0 32,32 ~
+exhaust_fx @5 grid 2,17 = 2,17 3,17 #adb5bd
+chassis @6 move 4,8 26,14 0,1 = 5,10 22x6
+    ......................
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+wheel_rear @6 clear 6,19 9,9 ~
+wheel_rear @6 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFAAFFFFA
+    AFFFAFFFA
+    AFFFFAAFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @6 clear 20,19 9,9 ~
+wheel_front @6 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFAAFFFFA
+    AFFFAFFFA
+    AFFFFAAFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @6 clear 0,0 32,32 ~
+speed_fx @6 grid 2,4 = 2,4 27x5
+    ....................FFFFFFF
+    ...........................
+    ...........................
+    ...........................
+    FFFFF......................
+exhaust_fx @6 clear 0,0 32,32 ~
+exhaust_fx @6 grid 1,16 = 1,16 3x2
+    FDF
+    .FF
+chassis @7 move 4,8 26,14 0,1 = 5,10 22x6
+    ......................
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+wheel_rear @7 clear 6,19 9,9 ~
+wheel_rear @7 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFAFFFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFFFAFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @7 clear 20,19 9,9 ~
+wheel_front @7 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFAFFFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFFFAFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @7 clear 0,0 32,32 ~
+speed_fx @7 grid 0,4 = 0,4 32x26
+    ..................FFFFFFF.......
+    ................................
+    ................................
+    ................................
+    FFF.............................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ................................
+    ............................FFFF
+exhaust_fx @7 clear 0,0 32,32 ~
+exhaust_fx @7 grid 0,14 = 0,14 4x3
+    .FF.
+    FDFF
+    .FF.
+chassis @8 move 4,8 26,14 0,1 = 5,10 22x6
+    ......................
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+wheel_rear @8 clear 6,19 9,9 ~
+wheel_rear @8 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFAFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFAFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @8 clear 20,19 9,9 ~
+wheel_front @8 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFAFAA
+    AFFFAFFFA
+    AFFFAFFFA
+    AFFFAFFFA
+    AAFAFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @8 clear 0,0 32,32 ~
+speed_fx @8 grid 14,4 = 14,4 18x26
+    FFFFFFF...........
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..................
+    ..........FFFFFFFF
+exhaust_fx @8 clear 0,0 32,32 ~
+exhaust_fx @8 grid 0,12 = 0,12 3x3
+    ..F
+    FD.
+    F..
+chassis @9 move 4,8 26,14 0,1 = 5,10 22x6
+    ......................
+    ........AAAAAAAA......
+    .......ABBBBBBBBA.....
+    ......ACCCCBCCCCCA....
+    .....ACCCCCBCCCCCCA...
+    AAAAABBBBBBBBBBBBBBAAA
+wheel_rear @9 clear 6,19 9,9 ~
+wheel_rear @9 grid 6,19 = 6,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFAAFA
+    AFFFAFFFA
+    AFAAFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+wheel_front @9 clear 20,19 9,9 ~
+wheel_front @9 grid 20,19 = 20,19 9x9
+    ..AAAAA..
+    .AAFFFAA.
+    AAFFFFFAA
+    AFFFFAAFA
+    AFFFAFFFA
+    AFAAFFFFA
+    AAFFFFFAA
+    .AAFFFAA.
+    ..AAAAA..
+speed_fx @9 clear 0,0 32,32 ~
+speed_fx @9 grid 10,4 = 10,4 22x26
+    FFFFFFF...............
+    ......................
+    ......................
+    ......................
+    ....................FF
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ......................
+    ..........FFFFFFFF....
+exhaust_fx @9 clear 0,0 32,32 ~
+exhaust_fx @9 grid 0,10 = 0,10 2x2
+    F.
+    .F
+exhaust_fx @0 clear 0,0 32,32 = 2,17 3,17 .
+exhaust_fx @0 grid 2,16 = 2,16 2x2
+    FF
+    .D
+exhaust_fx @1 clear 0,0 32,32 = 1,16 3,17 .
+exhaust_fx @1 grid 1,15 = 1,15 3x2
+    FDF
+    .FF
+exhaust_fx @2 clear 0,0 32,32 = 0,14 3,16 .
+exhaust_fx @2 grid 0,13 = 0,13 4x3
+    .FF.
+    FDDF
+    .FF.
+exhaust_fx @3 clear 0,0 32,32 = 0,12 2,14 .
+exhaust_fx @3 grid 0,11 = 0,11 3x3
+    FF.
+    .DF
+    F..
+exhaust_fx @4 clear 0,0 32,32 = 0,10 1,11 .
+exhaust_fx @4 grid 0,10 = 0,10 3x1
+    F.F
+exhaust_fx @5 clear 0,0 32,32 = 2,17 3,17 .
+exhaust_fx @5 grid 2,16 = 2,16 2x2
+    FF
+    .D
+exhaust_fx @6 clear 0,0 32,32 = 1,16 3,17 .
+exhaust_fx @6 grid 1,15 = 1,15 3x2
+    FDF
+    .FF
+exhaust_fx @7 clear 0,0 32,32 = 0,14 3,16 .
+exhaust_fx @7 grid 0,13 = 0,13 4x3
+    .FF.
+    FDDF
+    .FF.
+exhaust_fx @8 clear 0,0 32,32 = 0,12 2,14 .
+exhaust_fx @8 grid 0,11 = 0,11 3x3
+    FF.
+    .DF
+    F..
+exhaust_fx @9 clear 0,0 32,32 = 0,10 1,11 .
+exhaust_fx @9 grid 0,10 = 0,10 3x1
+    F.F
 add_tag name=drive direction=forward from=0 to=9

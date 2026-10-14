@@ -1,754 +1,724 @@
-atelier 4 8c76c8e1-f4aa-4186-b4b7-92163444f654 0.1.0
+atelier 5 8c76c8e1-f4aa-4186-b4b7-92163444f654 0.1.0
 new name=adventurer-jump width=32 height=32
-layer op=rename index=0 name=shadow
-layer op=add name=scarf
-layer op=add name=leg_l
-layer op=add name=leg_r
-layer op=add name=torso
-layer op=add name=arm_l
-layer op=add name=arm_r
-layer op=add name=head
-palette op=set colors=#1e1830,#f4c8a0,#99512e,#45a85f,#2d4f68,#e04a3a
-paint_grid layer=4 frame=0 x=10 y=9 legend=K:#1e1830 rows:21
-  |..KKKKKKKK..|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |..KKKKKKKK..|
-  |.KKKKKKKKKK.|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |.KKKKKKKKKK.|
-  |..KKKKKKKK..|
-  |..KKKKKKKK..|
-  |..KKKKKKKK..|
-  |..KKKKKKKK..|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-draw op=clear_cel layer=4 frame=0
-paint_grid layer=4 frame=0 x=10 y=9 legend=K:#1e1830 rows:21
-  |..KKKKKKKK..|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |..KKKKKKKK..|
-  |.KKKKKKKKKK.|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |KKKKKKKKKKKK|
-  |.KKKKKKKKKK.|
-  |.KKKKKKKKKK.|
-  |.KKKK..KKKK.|
-  |.KKKK..KKKK.|
-  |.KKKK..KKKK.|
-  |KKKKK..KKKKK|
-  |KKKKK..KKKKK|
-draw op=clear_cel layer=4 frame=0
-paint_grid layer=7 frame=0 x=11 y=9 legend=H:#99512e,K:#1e1830,S:#f4c8a0 rows:8
-  |.KKKKKKKK.|
-  |KHHHHHHHHK|
-  |KHHHHHHHHK|
-  |KHHHSSSHHK|
-  |KHSKSSKSHK|
-  |KSSKSSKSSK|
-  |KSSSSSSSSK|
-  |.KSSSSSSK.|
-paint_grid layer=4 frame=0 x=11 y=17 legend=D:#2d4f68,G:#45a85f,H:#99512e,K:#1e1830,R:#e04a3a rows:8
-  |KRRRRRRRRK|
-  |.KGGGGGGK.|
-  |.KGGGGGGK.|
-  |.KGGGGGGK.|
-  |.KHHHHHHK.|
-  |.KGGGGGGK.|
-  |.KDDDDDDK.|
-  |...KKKK...|
-paint_grid layer=5 frame=0 x=10 y=18 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:6
-  |KGG|
-  |KSS|
-  |KSS|
-  |KSS|
-  |KSS|
-  |.KK|
-paint_grid layer=6 frame=0 x=19 y=18 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:6
-  |GGK|
-  |SSK|
-  |SSK|
-  |SSK|
-  |SSK|
-  |KK.|
-paint_grid layer=2 frame=0 x=10 y=22 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:8
-  |.KDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KHHK|
-  |KHHHK|
-  |KKKKK|
-paint_grid layer=3 frame=0 x=17 y=22 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:8
-  |KDDK.|
-  |KDDK.|
-  |KDDK.|
-  |KDDK.|
-  |KDDK.|
-  |KHHK.|
-  |KHHHK|
-  |KKKKK|
-paint_grid layer=0 frame=0 x=8 y=28 legend=D:#2d4f68 rows:3
-  |..DDDDDDDDDDDD..|
-  |DDDDDDDDDDDDDDDD|
-  |..DDDDDDDDDDDD..|
-layer op=move index=1 to_index=6
-draw op=clear_cel layer=0 frame=0
-paint_grid layer=0 frame=0 x=9 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDDDDDD|
-  |..DDDDDDDDDD..|
-paint_grid layer=3 frame=0 x=18 y=18 legend=D:#2d4f68 rows:3
-  |D|
-  |D|
-  |D|
-paint_grid layer=3 frame=0 x=18 y=22 legend=D:#2d4f68 rows:1
-  |D|
-paint_grid layer=3 frame=0 x=15 y=21 legend=S:#f4c8a0 rows:1
-  |SS|
-paint_grid layer=6 frame=0 x=17 y=18 legend=R:#e04a3a rows:3
-  |RR|
-  |RR|
-  |.R|
-paint_grid layer=7 frame=0 x=15 y=15 legend=H:#99512e rows:1
-  |HH|
-paint_grid layer=7 frame=0 x=16 y=8 legend=H:#99512e,K:#1e1830 rows:2
-  |KK|
-  |HH|
-paint_grid layer=3 frame=0 x=18 y=22 legend=G:#45a85f rows:1
-  |G|
-frame op=add copy_from=0 count=9
-fx op=shift layer=7 frame=2 dx=0 dy=4 wrap=false
-draw op=clear_cel layer=3 frame=2
-paint_grid layer=3 frame=2 x=11 y=21 legend=D:#2d4f68,G:#45a85f,H:#99512e,K:#1e1830,R:#e04a3a,S:#f4c8a0 rows:7
-  |KRRRRRRRRK|
-  |.KGGGGGDK.|
-  |.KGGGGGDK.|
-  |.KHHSSHHK.|
-  |.KGGGGGGK.|
-  |.KDDDDDDK.|
-  |...KKKK...|
-draw op=clear_cel layer=1 frame=2
-draw op=clear_cel layer=2 frame=2
-paint_grid layer=1 frame=2 x=9 y=25 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:5
-  |.KK...|
-  |KDDD..|
-  |KDDDDK|
-  |.KHHHK|
-  |.KKKKK|
-paint_grid layer=2 frame=2 x=17 y=25 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:5
-  |...KK.|
-  |..DDDK|
-  |KDDDDK|
-  |KHHHK.|
-  |KKKKK.|
-draw op=clear_cel layer=4 frame=2
-draw op=clear_cel layer=5 frame=2
-paint_grid layer=4 frame=2 x=8 y=22 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:4
-  |.KKGG|
-  |KSSS.|
-  |KSSK.|
-  |.KK..|
-paint_grid layer=5 frame=2 x=19 y=22 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:4
-  |GGKK.|
-  |.SSSK|
-  |.KSSK|
-  |..KK.|
-draw op=clear_cel layer=6 frame=2
-paint_grid layer=6 frame=2 x=17 y=22 legend=R:#e04a3a rows:3
-  |RR|
-  |RR|
-  |.R|
-draw op=clear_cel layer=0 frame=2
-paint_grid layer=0 frame=2 x=8 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDDDDDDDD|
-  |..DDDDDDDDDDDD..|
-fx op=shift layer=7 frame=3 dx=0 dy=-2 wrap=false
-region op=clear layer=7 frame=3 rect=16,6,2,1
-paint_grid layer=7 frame=3 x=16 y=7 legend=K:#1e1830 rows:1
-  |KK|
-paint_grid layer=7 frame=3 x=15 y=13 legend=K:#1e1830 rows:1
-  |KK|
-draw op=clear_cel layer=3 frame=3
-paint_grid layer=3 frame=3 x=11 y=15 legend=D:#2d4f68,G:#45a85f,H:#99512e,K:#1e1830,R:#e04a3a,S:#f4c8a0 rows:9
-  |KRRRRRRRRK|
-  |.KGGGGGDK.|
-  |.KGGGGGDK.|
-  |.KGGGGGDK.|
-  |.KGGGGGGK.|
-  |.KHHSSHHK.|
-  |.KGGGGGGK.|
-  |.KDDDDDDK.|
-  |...KKKK...|
-draw op=clear_cel layer=1 frame=3
-draw op=clear_cel layer=2 frame=3
-paint_grid layer=1 frame=3 x=11 y=21 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KHHK|
-  |KHHK|
-  |.KK.|
-paint_grid layer=2 frame=3 x=17 y=21 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KHHK|
-  |KHHK|
-  |.KK.|
-draw op=clear_cel layer=4 frame=3
-draw op=clear_cel layer=5 frame=3
-paint_grid layer=4 frame=3 x=5 y=12 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:6
-  |.KK.....|
-  |KSSK....|
-  |.KSSK...|
-  |..KSSKK.|
-  |...KSSGG|
-  |....KKK.|
-paint_grid layer=5 frame=3 x=19 y=12 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:6
-  |.....KK.|
-  |....KSSK|
-  |...KSSK.|
-  |.KKSSK..|
-  |GGSSK...|
-  |.KKK....|
-draw op=clear_cel layer=6 frame=3
-paint_grid layer=6 frame=3 x=17 y=16 legend=R:#e04a3a rows:4
-  |RR|
-  |RR|
-  |.R|
-  |.R|
-region op=clear layer=7 frame=3 rect=17,6,17,6
-draw op=clear_cel layer=4 frame=3
-draw op=clear_cel layer=5 frame=3
-paint_grid layer=4 frame=3 x=4 y=10 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:7
-  |.KKK....|
-  |KSSSK...|
-  |KSSSSK..|
-  |.KKSSSK.|
-  |...KSSSK|
-  |....KGG.|
-  |.....KKK|
-paint_grid layer=5 frame=3 x=20 y=10 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:7
-  |....KKK.|
-  |...KSSSK|
-  |..KSSSSK|
-  |.KSSSKK.|
-  |KSSSK...|
-  |.GGK....|
-  |KKK.....|
-fx op=shift layer=7 frame=4 dx=0 dy=-6 wrap=false
-region op=clear layer=7 frame=4 rect=16,2,17,2
-paint_grid layer=7 frame=4 x=16 y=3 legend=K:#1e1830 rows:1
-  |KK|
-paint_grid layer=7 frame=4 x=15 y=9 legend=K:#1e1830 rows:1
-  |KK|
-draw op=clear_cel layer=3 frame=4
-paint_grid layer=3 frame=4 x=11 y=11 legend=D:#2d4f68,G:#45a85f,H:#99512e,K:#1e1830,R:#e04a3a,S:#f4c8a0 rows:8
-  |KRRRRRRRRK|
-  |.KGGGGGDK.|
-  |.KGGGGGDK.|
-  |.KGGGGGDK.|
-  |.KGGGGGGK.|
-  |.KHHSSHHK.|
-  |.KGGGGGGK.|
-  |.KDDDDDDK.|
-draw op=clear_cel layer=1 frame=4
-draw op=clear_cel layer=2 frame=4
-paint_grid layer=1 frame=4 x=12 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:10
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KHHK|
-  |KHHK|
-  |.KK.|
-paint_grid layer=2 frame=4 x=16 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:10
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KHHK|
-  |KHHK|
-  |.KK.|
-draw op=clear_cel layer=4 frame=4
-draw op=clear_cel layer=5 frame=4
-paint_grid layer=4 frame=4 x=8 y=3 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:10
-  |.KK.|
-  |KSS.|
-  |KSS.|
-  |KSS.|
-  |KSS.|
-  |KSS.|
-  |KSS.|
-  |KSSK|
-  |KGG.|
-  |.KKK|
-paint_grid layer=5 frame=4 x=20 y=3 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:10
-  |.KK.|
-  |.SSK|
-  |.SSK|
-  |.SSK|
-  |.SSK|
-  |.SSK|
-  |.SSK|
-  |KSSK|
-  |.GGK|
-  |KKK.|
-draw op=clear_cel layer=6 frame=4
-paint_grid layer=6 frame=4 x=17 y=12 legend=R:#e04a3a rows:4
-  |RR|
-  |RR|
-  |.R|
-  |.R|
-draw op=clear_cel layer=0 frame=4
-paint_grid layer=0 frame=4 x=11 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDD|
-  |.DDDDDDDD.|
-fx op=shift layer=7 frame=6 dx=0 dy=-7 wrap=false
-paint_grid layer=7 frame=6 x=15 y=8 legend=K:#1e1830 rows:1
-  |KK|
-fx op=shift layer=3 frame=6 dx=0 dy=-7 wrap=false
-paint_grid layer=3 frame=6 x=18 y=11 legend=D:#2d4f68 rows:3
-  |D|
-  |D|
-  |D|
-draw op=clear_cel layer=1 frame=6
-draw op=clear_cel layer=2 frame=6
-paint_grid layer=1 frame=6 x=9 y=16 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:4
-  |.KK....|
-  |KDDDDK.|
-  |.KKHHHK|
-  |...KKK.|
-paint_grid layer=2 frame=6 x=16 y=16 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:4
-  |....KK.|
-  |.KDDDDK|
-  |KHHHKK.|
-  |.KKK...|
-draw op=clear_cel layer=4 frame=6
-draw op=clear_cel layer=5 frame=6
-paint_grid layer=4 frame=6 x=5 y=4 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:8
-  |.KK....|
-  |KSSK...|
-  |.KSSK..|
-  |.KSSK..|
-  |..KSSK.|
-  |...KSSK|
-  |...KGG.|
-  |....KKK|
-paint_grid layer=5 frame=6 x=20 y=4 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:8
-  |....KK.|
-  |...KSSK|
-  |..KSSK.|
-  |..KSSK.|
-  |.KSSK..|
-  |KSSK...|
-  |.GGK...|
-  |KKK....|
-draw op=clear_cel layer=6 frame=6
-paint_grid layer=6 frame=6 x=17 y=11 legend=R:#e04a3a rows:2
-  |RR...|
-  |.RRRR|
-draw op=clear_cel layer=0 frame=6
-paint_grid layer=0 frame=6 x=12 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDD|
-  |.DDDDDD.|
-draw op=clear_cel layer=4 frame=6
-draw op=clear_cel layer=5 frame=6
-paint_grid layer=4 frame=6 x=5 y=3 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:9
-  |.KK....|
-  |KSSK...|
-  |KSSK...|
-  |.KSSK..|
-  |.KSSK..|
-  |..KSSK.|
-  |...KSSK|
-  |...KGG.|
-  |....KKK|
-paint_grid layer=5 frame=6 x=20 y=3 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:9
-  |....KK.|
-  |...KSSK|
-  |...KSSK|
-  |..KSSK.|
-  |..KSSK.|
-  |.KSSK..|
-  |KSSK...|
-  |.GGK...|
-  |KKK....|
-fx op=shift layer=7 frame=8 dx=0 dy=5 wrap=false
-region op=clear layer=7 frame=8 rect=16,13,17,13
-paint_grid layer=7 frame=8 x=16 y=14 legend=K:#1e1830 rows:1
-  |KK|
-paint_grid layer=7 frame=8 x=12 y=17 legend=H:#99512e,K:#1e1830,S:#f4c8a0 rows:3
-  |HHHHHHHH|
-  |HSSSSSSH|
-  |SKKSSKKS|
-draw op=clear_cel layer=3 frame=8
-paint_grid layer=3 frame=8 x=11 y=22 legend=D:#2d4f68,G:#45a85f,H:#99512e,K:#1e1830,R:#e04a3a,S:#f4c8a0 rows:6
-  |KRRRRRRRRK|
-  |.KGGGGGDK.|
-  |.KHHSSHHK.|
-  |.KGGGGGGK.|
-  |.KDDDDDDK.|
-  |...KKKK...|
-draw op=clear_cel layer=1 frame=8
-draw op=clear_cel layer=2 frame=8
-paint_grid layer=1 frame=8 x=8 y=24 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:6
-  |.KK....|
-  |KDDK...|
-  |KDDD...|
-  |KDDDDDK|
-  |.KKHHHK|
-  |..KKKKK|
-paint_grid layer=2 frame=8 x=17 y=24 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:6
-  |....KK.|
-  |...KDDK|
-  |...DDDK|
-  |KDDDDDK|
-  |KHHHKK.|
-  |KKKKK..|
-draw op=clear_cel layer=4 frame=8
-draw op=clear_cel layer=5 frame=8
-paint_grid layer=4 frame=8 x=4 y=22 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:4
-  |....KKK..|
-  |.KKKSSSGG|
-  |KSSSSKKK.|
-  |.KKKK....|
-paint_grid layer=5 frame=8 x=19 y=22 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:4
-  |..KKK....|
-  |GGSSSKKK.|
-  |.KKKSSSSK|
-  |....KKKK.|
-draw op=clear_cel layer=6 frame=8
-paint_grid layer=6 frame=8 x=17 y=20 legend=R:#e04a3a rows:4
-  |....R|
-  |...R.|
-  |..R..|
-  |RR...|
-draw op=clear_cel layer=0 frame=8
-paint_grid layer=0 frame=8 x=7 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDDDDDDDDDD|
-  |..DDDDDDDDDDDDDD..|
-draw op=clear_cel layer=4 frame=8
-draw op=clear_cel layer=5 frame=8
-paint_grid layer=4 frame=8 x=4 y=22 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:4
-  |..KKKKK..|
-  |.KSSSSSGG|
-  |KSSSSSKK.|
-  |.KKKKK...|
-paint_grid layer=5 frame=8 x=19 y=22 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:4
-  |..KKKKK..|
-  |GGSSSSSK.|
-  |.KKSSSSSK|
-  |...KKKKK.|
-fx op=shift layer=7 frame=1 dx=0 dy=2 wrap=false
-fx op=shift layer=3 frame=1 dx=0 dy=2 wrap=false
-paint_grid layer=3 frame=1 x=18 y=22 legend=D:#2d4f68 rows:1
-  |D|
-draw op=clear_cel layer=1 frame=1
-draw op=clear_cel layer=2 frame=1
-paint_grid layer=1 frame=1 x=10 y=24 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:6
-  |.KK..|
-  |KDDDK|
-  |KDDDK|
-  |.KHHK|
-  |KHHHK|
-  |KKKKK|
-paint_grid layer=2 frame=1 x=17 y=24 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:6
-  |..KK.|
-  |KDDDK|
-  |KDDDK|
-  |KHHK.|
-  |KHHHK|
-  |KKKKK|
-draw op=clear_cel layer=4 frame=1
-draw op=clear_cel layer=5 frame=1
-paint_grid layer=4 frame=1 x=9 y=20 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:5
-  |.KGG|
-  |KSS.|
-  |KSS.|
-  |KSS.|
-  |.KK.|
-paint_grid layer=5 frame=1 x=19 y=20 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:5
-  |GGK.|
-  |.SSK|
-  |.SSK|
-  |.SSK|
-  |.KK.|
-draw op=clear_cel layer=6 frame=1
-paint_grid layer=6 frame=1 x=17 y=20 legend=R:#e04a3a rows:2
-  |RR|
-  |.R|
-draw op=clear_cel layer=0 frame=1
-paint_grid layer=0 frame=1 x=9 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDDDDDD|
-  |.DDDDDDDDDDDD.|
-fx op=shift layer=7 frame=5 dx=0 dy=-7 wrap=false
-paint_grid layer=7 frame=5 x=15 y=8 legend=K:#1e1830 rows:1
-  |KK|
-fx op=shift layer=3 frame=5 dx=0 dy=-7 wrap=false
-paint_grid layer=3 frame=5 x=18 y=14 legend=H:#99512e rows:1
-  |H|
-paint_grid layer=3 frame=5 x=18 y=11 legend=D:#2d4f68 rows:3
-  |D|
-  |D|
-  |D|
-draw op=clear_cel layer=1 frame=5
-draw op=clear_cel layer=2 frame=5
-paint_grid layer=1 frame=5 x=10 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:5
-  |KDDDK|
-  |KDDK.|
-  |.KHHK|
-  |.KHHK|
-  |..KK.|
-paint_grid layer=2 frame=5 x=17 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:5
-  |KDDDK|
-  |.KDDK|
-  |KHHK.|
-  |KHHK.|
-  |.KK..|
-draw op=clear_cel layer=4 frame=5
-draw op=clear_cel layer=5 frame=5
-paint_grid layer=4 frame=5 x=7 y=3 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:9
-  |.KK..|
-  |KSSK.|
-  |KSSK.|
-  |KSSK.|
-  |.KSS.|
-  |.KSS.|
-  |.KSSK|
-  |.KGG.|
-  |..KKK|
-paint_grid layer=5 frame=5 x=20 y=3 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:9
-  |..KK.|
-  |.KSSK|
-  |.KSSK|
-  |.KSSK|
-  |.SSK.|
-  |.SSK.|
-  |KSSK.|
-  |.GGK.|
-  |KKK..|
-draw op=clear_cel layer=6 frame=5
-paint_grid layer=6 frame=5 x=17 y=11 legend=R:#e04a3a rows:3
-  |RR|
-  |RR|
-  |.R|
-draw op=clear_cel layer=0 frame=5
-paint_grid layer=0 frame=5 x=12 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDD|
-  |.DDDDDD.|
-fx op=shift layer=7 frame=7 dx=0 dy=-5 wrap=false
-paint_grid layer=7 frame=7 x=15 y=1 legend=H:#99512e,K:#1e1830 rows:3
-  |.KK.|
-  |KHHK|
-  |KHHK|
-paint_grid layer=7 frame=7 x=13 y=7 legend=S:#f4c8a0 rows:1
-  |SSSSSS|
-paint_grid layer=7 frame=7 x=15 y=10 legend=K:#1e1830 rows:1
-  |KK|
-fx op=shift layer=3 frame=7 dx=0 dy=-5 wrap=false
-paint_grid layer=3 frame=7 x=18 y=13 legend=D:#2d4f68 rows:3
-  |D|
-  |D|
-  |D|
-draw op=clear_cel layer=1 frame=7
-draw op=clear_cel layer=2 frame=7
-paint_grid layer=1 frame=7 x=10 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |.KDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KHHK|
-  |KHHHK|
-  |KKKKK|
-paint_grid layer=2 frame=7 x=17 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |KDDK.|
-  |KDDK.|
-  |KDDK.|
-  |KDDK.|
-  |KDDK.|
-  |KDDK.|
-  |KHHK.|
-  |KHHHK|
-  |KKKKK|
-draw op=clear_cel layer=4 frame=7
-draw op=clear_cel layer=5 frame=7
-paint_grid layer=4 frame=7 x=3 y=8 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:6
-  |.KKK.....|
-  |KSSSKK...|
-  |KSSSSSKK.|
-  |.KKKSSSSK|
-  |....KKGG.|
-  |......KKK|
-paint_grid layer=5 frame=7 x=20 y=8 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:6
-  |.....KKK.|
-  |...KKSSSK|
-  |.KKSSSSSK|
-  |KSSSSKKK.|
-  |.GGKK....|
-  |KKK......|
-draw op=clear_cel layer=6 frame=7
-paint_grid layer=6 frame=7 x=17 y=8 legend=R:#e04a3a rows:6
-  |.....R|
-  |....R.|
-  |....R.|
-  |...R..|
-  |......|
-  |RR....|
-draw op=clear_cel layer=0 frame=7
-paint_grid layer=0 frame=7 x=11 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDD|
-  |.DDDDDDDD.|
-fx op=shift layer=7 frame=9 dx=0 dy=3 wrap=false
-draw op=clear_cel layer=3 frame=9
-paint_grid layer=3 frame=9 x=11 y=20 legend=D:#2d4f68,G:#45a85f,H:#99512e,K:#1e1830,R:#e04a3a,S:#f4c8a0 rows:7
-  |KRRRRRRRRK|
-  |.KGGGGGDK.|
-  |.KGGGGGDK.|
-  |.KHHSSHHK.|
-  |.KGGGGGGK.|
-  |.KDDDDDDK.|
-  |...KKKK...|
-draw op=clear_cel layer=1 frame=9
-draw op=clear_cel layer=2 frame=9
-paint_grid layer=1 frame=9 x=10 y=24 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:6
-  |.KK..|
-  |KDDDK|
-  |KDDDK|
-  |.KHHK|
-  |KHHHK|
-  |KKKKK|
-paint_grid layer=2 frame=9 x=17 y=24 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:6
-  |..KK.|
-  |KDDDK|
-  |KDDDK|
-  |KHHK.|
-  |KHHHK|
-  |KKKKK|
-draw op=clear_cel layer=4 frame=9
-draw op=clear_cel layer=5 frame=9
-paint_grid layer=4 frame=9 x=8 y=21 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:5
-  |..KGG|
-  |.KSS.|
-  |.KSS.|
-  |KSSK.|
-  |.KK..|
-paint_grid layer=5 frame=9 x=19 y=21 legend=G:#45a85f,K:#1e1830,S:#f4c8a0 rows:5
-  |GGK..|
-  |.SSK.|
-  |.SSK.|
-  |.KSSK|
-  |..KK.|
-draw op=clear_cel layer=6 frame=9
-paint_grid layer=6 frame=9 x=17 y=21 legend=R:#e04a3a rows:4
-  |RR|
-  |RR|
-  |.R|
-  |.R|
-draw op=clear_cel layer=0 frame=9
-paint_grid layer=0 frame=9 x=8 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDDDDDDDD|
-  |..DDDDDDDDDDDD..|
-draw op=clear_cel layer=1 frame=4
-draw op=clear_cel layer=2 frame=4
-paint_grid layer=1 frame=4 x=12 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KHHK|
-  |KHHK|
-  |.KK.|
-paint_grid layer=2 frame=4 x=16 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KDDK|
-  |KHHK|
-  |KHHK|
-  |.KK.|
-paint_grid layer=7 frame=7 x=15 y=1 replace=true legend=H:#99512e,K:#1e1830 rows:3
-  |..K.|
-  |.KHK|
-  |KHHK|
-draw op=clear_cel layer=1 frame=7
-draw op=clear_cel layer=2 frame=7
-paint_grid layer=1 frame=7 x=10 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |.KDDK|
-  |.KDDK|
-  |KDDDK|
-  |KDDDK|
-  |.KDDK|
-  |.KDDK|
-  |.KHHK|
-  |.KHHK|
-  |..KK.|
-paint_grid layer=2 frame=7 x=17 y=17 legend=D:#2d4f68,H:#99512e,K:#1e1830 rows:9
-  |KDDK.|
-  |KDDK.|
-  |KDDDK|
-  |KDDDK|
-  |KDDK.|
-  |KDDK.|
-  |KHHK.|
-  |KHHK.|
-  |.KK..|
-paint_grid layer=3 frame=7 x=11 y=17 legend=G:#45a85f,K:#1e1830 rows:1
-  |KGGGGGGGGK|
-fx op=shift layer=7 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=3 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=4 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=5 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=1 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=2 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=6 frame=7 dx=0 dy=2 wrap=false
-draw op=clear_cel layer=0 frame=7
-paint_grid layer=0 frame=7 x=10 y=29 legend=D:#2d4f68 rows:2
-  |DDDDDDDDDDDD|
-  |.DDDDDDDDDD.|
-paint_grid layer=4 frame=0 x=11 y=22 legend=H:#99512e rows:1
-  |HH|
-paint_grid layer=5 frame=0 x=19 y=22 legend=H:#99512e rows:1
-  |HH|
-paint_grid layer=4 frame=0 x=11 y=22 legend=S:#f4c8a0 rows:1
-  |SS|
-paint_grid layer=5 frame=0 x=19 y=22 legend=S:#f4c8a0 rows:1
-  |SS|
-paint_grid layer=6 frame=7 x=22 y=11 legend=R:#e04a3a rows:1
-  |R|
+layer rename index=0 name=shadow
+layer add name=scarf
+layer add name=leg_l
+layer add name=leg_r
+layer add name=torso
+layer add name=arm_l
+layer add name=arm_r
+layer add name=head
+palette set colors=#1e1830,#f4c8a0,#99512e,#45a85f,#2d4f68,#e04a3a
+legend A=#1e1830
+torso @0 grid 10,9 = 10,9 12x21
+    ..AAAAAAAA..
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    ..AAAAAAAA..
+    .AAAAAAAAAA.
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    .AAAAAAAAAA.
+    ..AAAAAAAA..
+    ..AAAAAAAA..
+    ..AAAAAAAA..
+    ..AAAAAAAA..
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+torso @0 clear_cel = 10,9 21,29 .
+torso @0 grid 10,9 = 10,9 12x21
+    ..AAAAAAAA..
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    ..AAAAAAAA..
+    .AAAAAAAAAA.
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    AAAAAAAAAAAA
+    .AAAAAAAAAA.
+    .AAAAAAAAAA.
+    .AAAA..AAAA.
+    .AAAA..AAAA.
+    .AAAA..AAAA.
+    AAAAA..AAAAA
+    AAAAA..AAAAA
+torso @0 clear_cel = 10,9 21,29 .
+legend B=#99512e C=#f4c8a0
+head @0 grid 11,9 = 11,9 10x8
+    .AAAAAAAA.
+    ABBBBBBBBA
+    ABBBBBBBBA
+    ABBBCCCBBA
+    ABCACCACBA
+    ACCACCACCA
+    ACCCCCCCCA
+    .ACCCCCCA.
+legend D=#e04a3a E=#45a85f F=#2d4f68
+torso @0 grid 11,17 = 11,17 10x8
+    ADDDDDDDDA
+    .AEEEEEEA.
+    .AEEEEEEA.
+    .AEEEEEEA.
+    .ABBBBBBA.
+    .AEEEEEEA.
+    .AFFFFFFA.
+    ...AAAA...
+arm_l @0 grid 10,18 = 10,18 3x6
+    AEE
+    ACC
+    ACC
+    ACC
+    ACC
+    .AA
+arm_r @0 grid 19,18 = 19,18 3x6
+    EEA
+    CCA
+    CCA
+    CCA
+    CCA
+    AA.
+leg_l @0 grid 10,22 = 10,22 5x8
+    .AFFA
+    .AFFA
+    .AFFA
+    .AFFA
+    .AFFA
+    .ABBA
+    ABBBA
+    AAAAA
+leg_r @0 grid 17,22 = 17,22 5x8
+    AFFA.
+    AFFA.
+    AFFA.
+    AFFA.
+    AFFA.
+    ABBA.
+    ABBBA
+    AAAAA
+shadow @0 grid 8,28 = 8,28 16x3
+    ..FFFFFFFFFFFF..
+    FFFFFFFFFFFFFFFF
+    ..FFFFFFFFFFFF..
+layer move index=1 to_index=6
+shadow @0 clear_cel = 8,28 23,30 .
+shadow @0 grid 9,29 = 9,29 14x2
+    FFFFFFFFFFFFFF
+    ..FFFFFFFFFF..
+torso @0 grid 18,18 = 18,18 18,20 #2d4f68
+torso @0 grid 18,22 = 18,22 18,22 #2d4f68
+torso @0 grid 15,21 = 15,21 16,21 #f4c8a0
+scarf @0 grid 17,18 = 17,18 2x3
+    DD
+    DD
+    .D
+head @0 grid 15,15 = 15,15 16,15 #99512e
+head @0 grid 16,8 = 16,8 2x2
+    AA
+    BB
+torso @0 grid 18,22 = 18,22 18,22 #45a85f
+frame add copy_from=0 count=9
+head @2 shift dx=0 dy=4 wrap=false
+torso @2 clear_cel = 11,17 20,24 .
+torso @2 grid 11,21 = 11,21 10x7
+    ADDDDDDDDA
+    .AEEEEEFA.
+    .AEEEEEFA.
+    .ABBCCBBA.
+    .AEEEEEEA.
+    .AFFFFFFA.
+    ...AAAA...
+leg_l @2 clear_cel = 10,22 14,29 .
+leg_r @2 clear_cel = 17,22 21,29 .
+leg_l @2 grid 9,25 = 9,25 6x5
+    .AA...
+    AFFF..
+    AFFFFA
+    .ABBBA
+    .AAAAA
+leg_r @2 grid 17,25 = 17,25 6x5
+    ...AA.
+    ..FFFA
+    AFFFFA
+    ABBBA.
+    AAAAA.
+arm_l @2 clear_cel = 10,18 12,23 .
+arm_r @2 clear_cel = 19,18 21,23 .
+arm_l @2 grid 8,22 = 8,22 5x4
+    .AAEE
+    ACCC.
+    ACCA.
+    .AA..
+arm_r @2 grid 19,22 = 19,22 5x4
+    EEAA.
+    .CCCA
+    .ACCA
+    ..AA.
+scarf @2 clear_cel = 17,18 18,20 .
+scarf @2 grid 17,22 = 17,22 2x3
+    DD
+    DD
+    .D
+shadow @2 clear_cel = 9,29 22,30 .
+shadow @2 grid 8,29 = 8,29 16x2
+    FFFFFFFFFFFFFFFF
+    ..FFFFFFFFFFFF..
+head @3 shift dx=0 dy=-2 wrap=false
+head @3 clear 16,6 2,1 = 16,6 16,6 .
+head @3 grid 16,7 = 16,7 17,7 #1e1830
+head @3 grid 15,13 = 15,13 16,13 #1e1830
+torso @3 clear_cel = 11,17 20,24 .
+torso @3 grid 11,15 = 11,15 10x9
+    ADDDDDDDDA
+    .AEEEEEFA.
+    .AEEEEEFA.
+    .AEEEEEFA.
+    .AEEEEEEA.
+    .ABBCCBBA.
+    .AEEEEEEA.
+    .AFFFFFFA.
+    ...AAAA...
+leg_l @3 clear_cel = 10,22 14,29 .
+leg_r @3 clear_cel = 17,22 21,29 .
+leg_l @3 grid 11,21 = 11,21 4x9
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    ABBA
+    ABBA
+    .AA.
+leg_r @3 grid 17,21 = 17,21 4x9
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    ABBA
+    ABBA
+    .AA.
+arm_l @3 clear_cel = 10,18 12,23 .
+arm_r @3 clear_cel = 19,18 21,23 .
+arm_l @3 grid 5,12 = 5,12 8x6
+    .AA.....
+    ACCA....
+    .ACCA...
+    ..ACCAA.
+    ...ACCEE
+    ....AAA.
+arm_r @3 grid 19,12 = 19,12 8x6
+    .....AA.
+    ....ACCA
+    ...ACCA.
+    .AACCA..
+    EECCA...
+    .AAA....
+scarf @3 clear_cel = 17,18 18,20 .
+scarf @3 grid 17,16 = 17,16 2x4
+    DD
+    DD
+    .D
+    .D
+head @3 clear 17,6 17,6 = 17,6 17,6 .
+arm_l @3 clear_cel = 5,12 12,17 .
+arm_r @3 clear_cel = 19,12 26,17 .
+arm_l @3 grid 4,10 = 4,10 8x7
+    .AAA....
+    ACCCA...
+    ACCCCA..
+    .AACCCA.
+    ...ACCCA
+    ....AEE.
+    .....AAA
+arm_r @3 grid 20,10 = 20,10 8x7
+    ....AAA.
+    ...ACCCA
+    ..ACCCCA
+    .ACCCAA.
+    ACCCA...
+    .EEA....
+    AAA.....
+head @4 shift dx=0 dy=-6 wrap=false
+head @4 clear 16,2 17,2 = 16,2 17,2 .
+head @4 grid 16,3 = 16,3 17,3 #1e1830
+head @4 grid 15,9 = 15,9 16,9 #1e1830
+torso @4 clear_cel = 11,17 20,24 .
+torso @4 grid 11,11 = 11,11 10x8
+    ADDDDDDDDA
+    .AEEEEEFA.
+    .AEEEEEFA.
+    .AEEEEEFA.
+    .AEEEEEEA.
+    .ABBCCBBA.
+    .AEEEEEEA.
+    .AFFFFFFA.
+leg_l @4 clear_cel = 10,22 14,29 .
+leg_r @4 clear_cel = 17,22 21,29 .
+leg_l @4 grid 12,17 = 12,17 4x10
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    ABBA
+    ABBA
+    .AA.
+leg_r @4 grid 16,17 = 16,17 4x10
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    ABBA
+    ABBA
+    .AA.
+arm_l @4 clear_cel = 10,18 12,23 .
+arm_r @4 clear_cel = 19,18 21,23 .
+arm_l @4 grid 8,3 = 8,3 4x10
+    .AA.
+    ACC.
+    ACC.
+    ACC.
+    ACC.
+    ACC.
+    ACC.
+    ACCA
+    AEE.
+    .AAA
+arm_r @4 grid 20,3 = 20,3 4x10
+    .AA.
+    .CCA
+    .CCA
+    .CCA
+    .CCA
+    .CCA
+    .CCA
+    ACCA
+    .EEA
+    AAA.
+scarf @4 clear_cel = 17,18 18,20 .
+scarf @4 grid 17,12 = 17,12 2x4
+    DD
+    DD
+    .D
+    .D
+shadow @4 clear_cel = 9,29 22,30 .
+shadow @4 grid 11,29 = 11,29 10x2
+    FFFFFFFFFF
+    .FFFFFFFF.
+head @6 shift dx=0 dy=-7 wrap=false
+head @6 grid 15,8 = 15,8 16,8 #1e1830
+torso @6 shift dx=0 dy=-7 wrap=false
+torso @6 grid 18,11 ~
+leg_l @6 clear_cel = 10,22 14,29 .
+leg_r @6 clear_cel = 17,22 21,29 .
+leg_l @6 grid 9,16 = 9,16 7x4
+    .AA....
+    AFFFFA.
+    .AABBBA
+    ...AAA.
+leg_r @6 grid 16,16 = 16,16 7x4
+    ....AA.
+    .AFFFFA
+    ABBBAA.
+    .AAA...
+arm_l @6 clear_cel = 10,18 12,23 .
+arm_r @6 clear_cel = 19,18 21,23 .
+arm_l @6 grid 5,4 = 5,4 7x8
+    .AA....
+    ACCA...
+    .ACCA..
+    .ACCA..
+    ..ACCA.
+    ...ACCA
+    ...AEE.
+    ....AAA
+arm_r @6 grid 20,4 = 20,4 7x8
+    ....AA.
+    ...ACCA
+    ..ACCA.
+    ..ACCA.
+    .ACCA..
+    ACCA...
+    .EEA...
+    AAA....
+scarf @6 clear_cel = 17,18 18,20 .
+scarf @6 grid 17,11 = 17,11 5x2
+    DD...
+    .DDDD
+shadow @6 clear_cel = 9,29 22,30 .
+shadow @6 grid 12,29 = 12,29 8x2
+    FFFFFFFF
+    .FFFFFF.
+arm_l @6 clear_cel = 5,4 11,11 .
+arm_r @6 clear_cel = 20,4 26,11 .
+arm_l @6 grid 5,3 = 5,3 7x9
+    .AA....
+    ACCA...
+    ACCA...
+    .ACCA..
+    .ACCA..
+    ..ACCA.
+    ...ACCA
+    ...AEE.
+    ....AAA
+arm_r @6 grid 20,3 = 20,3 7x9
+    ....AA.
+    ...ACCA
+    ...ACCA
+    ..ACCA.
+    ..ACCA.
+    .ACCA..
+    ACCA...
+    .EEA...
+    AAA....
+head @8 shift dx=0 dy=5 wrap=false
+head @8 clear 16,13 17,13 = 16,13 17,13 .
+head @8 grid 16,14 = 16,14 17,14 #1e1830
+head @8 grid 12,17 = 13,17 6x3
+    BBBBBB
+    CCCCCC
+    AACCAA
+torso @8 clear_cel = 11,17 20,24 .
+torso @8 grid 11,22 = 11,22 10x6
+    ADDDDDDDDA
+    .AEEEEEFA.
+    .ABBCCBBA.
+    .AEEEEEEA.
+    .AFFFFFFA.
+    ...AAAA...
+leg_l @8 clear_cel = 10,22 14,29 .
+leg_r @8 clear_cel = 17,22 21,29 .
+leg_l @8 grid 8,24 = 8,24 7x6
+    .AA....
+    AFFA...
+    AFFF...
+    AFFFFFA
+    .AABBBA
+    ..AAAAA
+leg_r @8 grid 17,24 = 17,24 7x6
+    ....AA.
+    ...AFFA
+    ...FFFA
+    AFFFFFA
+    ABBBAA.
+    AAAAA..
+arm_l @8 clear_cel = 10,18 12,23 .
+arm_r @8 clear_cel = 19,18 21,23 .
+arm_l @8 grid 4,22 = 4,22 9x4
+    ....AAA..
+    .AAACCCEE
+    ACCCCAAA.
+    .AAAA....
+arm_r @8 grid 19,22 = 19,22 9x4
+    ..AAA....
+    EECCCAAA.
+    .AAACCCCA
+    ....AAAA.
+scarf @8 clear_cel = 17,18 18,20 .
+scarf @8 grid 17,20 = 17,20 5x4
+    ....D
+    ...D.
+    ..D..
+    DD...
+shadow @8 clear_cel = 9,29 22,30 .
+shadow @8 grid 7,29 = 7,29 18x2
+    FFFFFFFFFFFFFFFFFF
+    ..FFFFFFFFFFFFFF..
+arm_l @8 clear_cel = 4,22 12,25 .
+arm_r @8 clear_cel = 19,22 27,25 .
+arm_l @8 grid 4,22 = 4,22 9x4
+    ..AAAAA..
+    .ACCCCCEE
+    ACCCCCAA.
+    .AAAAA...
+arm_r @8 grid 19,22 = 19,22 9x4
+    ..AAAAA..
+    EECCCCCA.
+    .AACCCCCA
+    ...AAAAA.
+head @1 shift dx=0 dy=2 wrap=false
+torso @1 shift dx=0 dy=2 wrap=false
+torso @1 grid 18,22 ~
+leg_l @1 clear_cel = 10,22 14,29 .
+leg_r @1 clear_cel = 17,22 21,29 .
+leg_l @1 grid 10,24 = 10,24 5x6
+    .AA..
+    AFFFA
+    AFFFA
+    .ABBA
+    ABBBA
+    AAAAA
+leg_r @1 grid 17,24 = 17,24 5x6
+    ..AA.
+    AFFFA
+    AFFFA
+    ABBA.
+    ABBBA
+    AAAAA
+arm_l @1 clear_cel = 10,18 12,23 .
+arm_r @1 clear_cel = 19,18 21,23 .
+arm_l @1 grid 9,20 = 9,20 4x5
+    .AEE
+    ACC.
+    ACC.
+    ACC.
+    .AA.
+arm_r @1 grid 19,20 = 19,20 4x5
+    EEA.
+    .CCA
+    .CCA
+    .CCA
+    .AA.
+scarf @1 clear_cel = 17,18 18,20 .
+scarf @1 grid 17,20 = 17,20 2x2
+    DD
+    .D
+shadow @1 clear_cel = 9,29 22,30 .
+shadow @1 grid 9,29 = 9,29 14x2
+    FFFFFFFFFFFFFF
+    .FFFFFFFFFFFF.
+head @5 shift dx=0 dy=-7 wrap=false
+head @5 grid 15,8 = 15,8 16,8 #1e1830
+torso @5 shift dx=0 dy=-7 wrap=false
+torso @5 grid 18,14 ~
+torso @5 grid 18,11 ~
+leg_l @5 clear_cel = 10,22 14,29 .
+leg_r @5 clear_cel = 17,22 21,29 .
+leg_l @5 grid 10,17 = 10,17 5x5
+    AFFFA
+    AFFA.
+    .ABBA
+    .ABBA
+    ..AA.
+leg_r @5 grid 17,17 = 17,17 5x5
+    AFFFA
+    .AFFA
+    ABBA.
+    ABBA.
+    .AA..
+arm_l @5 clear_cel = 10,18 12,23 .
+arm_r @5 clear_cel = 19,18 21,23 .
+arm_l @5 grid 7,3 = 7,3 5x9
+    .AA..
+    ACCA.
+    ACCA.
+    ACCA.
+    .ACC.
+    .ACC.
+    .ACCA
+    .AEE.
+    ..AAA
+arm_r @5 grid 20,3 = 20,3 5x9
+    ..AA.
+    .ACCA
+    .ACCA
+    .ACCA
+    .CCA.
+    .CCA.
+    ACCA.
+    .EEA.
+    AAA..
+scarf @5 clear_cel = 17,18 18,20 .
+scarf @5 grid 17,11 = 17,11 2x3
+    DD
+    DD
+    .D
+shadow @5 clear_cel = 9,29 22,30 .
+shadow @5 grid 12,29 = 12,29 8x2
+    FFFFFFFF
+    .FFFFFF.
+head @7 shift dx=0 dy=-5 wrap=false
+head @7 grid 15,1 = 15,1 4x3
+    .AA.
+    ABBA
+    ABBA
+head @7 grid 13,7 = 13,7 18,7 #f4c8a0
+head @7 grid 15,10 = 15,10 16,10 #1e1830
+torso @7 shift dx=0 dy=-5 wrap=false
+torso @7 grid 18,13 ~
+leg_l @7 clear_cel = 10,22 14,29 .
+leg_r @7 clear_cel = 17,22 21,29 .
+leg_l @7 grid 10,17 = 10,17 5x9
+    .AFFA
+    .AFFA
+    .AFFA
+    .AFFA
+    .AFFA
+    .AFFA
+    .ABBA
+    ABBBA
+    AAAAA
+leg_r @7 grid 17,17 = 17,17 5x9
+    AFFA.
+    AFFA.
+    AFFA.
+    AFFA.
+    AFFA.
+    AFFA.
+    ABBA.
+    ABBBA
+    AAAAA
+arm_l @7 clear_cel = 10,18 12,23 .
+arm_r @7 clear_cel = 19,18 21,23 .
+arm_l @7 grid 3,8 = 3,8 9x6
+    .AAA.....
+    ACCCAA...
+    ACCCCCAA.
+    .AAACCCCA
+    ....AAEE.
+    ......AAA
+arm_r @7 grid 20,8 = 20,8 9x6
+    .....AAA.
+    ...AACCCA
+    .AACCCCCA
+    ACCCCAAA.
+    .EEAA....
+    AAA......
+scarf @7 clear_cel = 17,18 18,20 .
+scarf @7 grid 17,8 = 17,8 6x6
+    .....D
+    ....D.
+    ....D.
+    ...D..
+    ......
+    DD....
+shadow @7 clear_cel = 9,29 22,30 .
+shadow @7 grid 11,29 = 11,29 10x2
+    FFFFFFFFFF
+    .FFFFFFFF.
+head @9 shift dx=0 dy=3 wrap=false
+torso @9 clear_cel = 11,17 20,24 .
+torso @9 grid 11,20 = 11,20 10x7
+    ADDDDDDDDA
+    .AEEEEEFA.
+    .AEEEEEFA.
+    .ABBCCBBA.
+    .AEEEEEEA.
+    .AFFFFFFA.
+    ...AAAA...
+leg_l @9 clear_cel = 10,22 14,29 .
+leg_r @9 clear_cel = 17,22 21,29 .
+leg_l @9 grid 10,24 = 10,24 5x6
+    .AA..
+    AFFFA
+    AFFFA
+    .ABBA
+    ABBBA
+    AAAAA
+leg_r @9 grid 17,24 = 17,24 5x6
+    ..AA.
+    AFFFA
+    AFFFA
+    ABBA.
+    ABBBA
+    AAAAA
+arm_l @9 clear_cel = 10,18 12,23 .
+arm_r @9 clear_cel = 19,18 21,23 .
+arm_l @9 grid 8,21 = 8,21 5x5
+    ..AEE
+    .ACC.
+    .ACC.
+    ACCA.
+    .AA..
+arm_r @9 grid 19,21 = 19,21 5x5
+    EEA..
+    .CCA.
+    .CCA.
+    .ACCA
+    ..AA.
+scarf @9 clear_cel = 17,18 18,20 .
+scarf @9 grid 17,21 = 17,21 2x4
+    DD
+    DD
+    .D
+    .D
+shadow @9 clear_cel = 9,29 22,30 .
+shadow @9 grid 8,29 = 8,29 16x2
+    FFFFFFFFFFFFFFFF
+    ..FFFFFFFFFFFF..
+leg_l @4 clear_cel = 12,17 15,26 .
+leg_r @4 clear_cel = 16,17 19,26 .
+leg_l @4 grid 12,17 = 12,17 4x9
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    ABBA
+    ABBA
+    .AA.
+leg_r @4 grid 16,17 = 16,17 4x9
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    AFFA
+    ABBA
+    ABBA
+    .AA.
+head @7 grid 15,1 replace = 15,1 2x2
+    ..
+    .A
+leg_l @7 clear_cel = 10,17 14,25 .
+leg_r @7 clear_cel = 17,17 21,25 .
+leg_l @7 grid 10,17 = 10,17 5x9
+    .AFFA
+    .AFFA
+    AFFFA
+    AFFFA
+    .AFFA
+    .AFFA
+    .ABBA
+    .ABBA
+    ..AA.
+leg_r @7 grid 17,17 = 17,17 5x9
+    AFFA.
+    AFFA.
+    AFFFA
+    AFFFA
+    AFFA.
+    AFFA.
+    ABBA.
+    ABBA.
+    .AA..
+torso @7 grid 11,17 = 11,17 10x1
+    AEEEEEEEEA
+head @7 shift dx=0 dy=2 wrap=false
+torso @7 shift dx=0 dy=2 wrap=false
+arm_l @7 shift dx=0 dy=2 wrap=false
+arm_r @7 shift dx=0 dy=2 wrap=false
+leg_l @7 shift dx=0 dy=2 wrap=false
+leg_r @7 shift dx=0 dy=2 wrap=false
+scarf @7 shift dx=0 dy=2 wrap=false
+shadow @7 clear_cel = 11,29 20,30 .
+shadow @7 grid 10,29 = 10,29 12x2
+    FFFFFFFFFFFF
+    .FFFFFFFFFF.
+arm_l @0 grid 11,22 = 11,22 12,22 #99512e
+arm_r @0 grid 19,22 = 19,22 20,22 #99512e
+arm_l @0 grid 11,22 = 11,22 12,22 #f4c8a0
+arm_r @0 grid 19,22 = 19,22 20,22 #f4c8a0
+scarf @7 grid 22,11 = 22,11 22,11 #e04a3a
 add_tag name=jump direction=forward from=0 to=9

@@ -1,893 +1,885 @@
-atelier 4 7528e7e7-ba48-4bbe-b13b-d628e8aaf5d3 0.1.0
+atelier 5 7528e7e7-ba48-4bbe-b13b-d628e8aaf5d3 0.1.0
 new name=rubber-ball-bounce width=32 height=32
-layer op=add name=ball
-layer op=add name=gloss
-layer op=rename index=0 name=shadow
-palette op=set colors=#2a2432,#a32940,#e8495c,#ffd9c2
-paint_grid layer=1 frame=0 x=10 y=10 legend=a:#e8495c rows:3
-  |aaa|
-  |a.a|
-  |aaa|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-frame op=add count=9 duration_ms=100
-paint_grid layer=0 frame=0 x=14 y=28 legend=d:#2a2432 rows:2
-  |ddddd|
-  |..d..|
-paint_grid layer=1 frame=0 x=11 y=2 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-paint_grid layer=2 frame=0 x=13 y=3 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-paint_grid layer=0 frame=1 x=13 y=28 legend=d:#2a2432 rows:2
-  |ddddddd|
-  |..ddd..|
-paint_grid layer=1 frame=1 x=11 y=3 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-paint_grid layer=2 frame=1 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-paint_grid layer=0 frame=2 x=12 y=28 legend=d:#2a2432 rows:2
-  |ddddddddd|
-  |..ddddd..|
-paint_grid layer=1 frame=2 x=11 y=4 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:12
-  |...bbbb...|
-  |..bbbbbb..|
-  |.bbbbbbbs.|
-  |bbbbbbbbss|
-  |bbbbbbbbss|
-  |bbbbbbbsss|
-  |bbbbbbsssd|
-  |bbbbbssssd|
-  |sbbsssssdd|
-  |.ssssssdd.|
-  |..ssssdd..|
-  |...dddd...|
-paint_grid layer=2 frame=2 x=12 y=5 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-paint_grid layer=0 frame=3 x=11 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddd|
-  |..ddddddd..|
-paint_grid layer=1 frame=3 x=12 y=6 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:13
-  |...bbb...|
-  |..bbbbb..|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |bbbbssssd|
-  |.ssssssd.|
-  |.sssssdd.|
-  |..sssdd..|
-  |...ddd...|
-paint_grid layer=2 frame=3 x=13 y=7 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-paint_grid layer=0 frame=4 x=9 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddddddd|
-  |..ddddddddddd..|
-paint_grid layer=1 frame=4 x=12 y=9 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:14
-  |...bb...|
-  |..bbbb..|
-  |.bbbbbs.|
-  |.bbbbbs.|
-  |bbbbbbss|
-  |bbbbbbss|
-  |bbbbbbss|
-  |bbbbbssd|
-  |bbbbsssd|
-  |sbbssssd|
-  |.sssssd.|
-  |.ssssdd.|
-  |..ssdd..|
-  |...dd...|
-paint_grid layer=2 frame=4 x=13 y=10 legend=L:#ffd9c2 rows:4
-  |.L|
-  |LL|
-  |LL|
-  |L.|
-paint_grid layer=0 frame=5 x=7 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddddddddddd|
-  |..ddddddddddddddd..|
-paint_grid layer=1 frame=5 x=9 y=21 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:7
-  |....bbbbbbb....|
-  |.bbbbbbbbbbbss.|
-  |bbbbbbbbbbbsssd|
-  |bbbbbbbbbbssssd|
-  |sbbbbbbssssssdd|
-  |.ssssssssssddd.|
-  |....ddddddd....|
-paint_grid layer=2 frame=5 x=11 y=22 legend=L:#ffd9c2 rows:1
-  |LLLL|
-paint_grid layer=0 frame=6 x=9 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddddddd|
-  |..ddddddddddd..|
-paint_grid layer=1 frame=6 x=12 y=8 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:15
-  |...bb...|
-  |..bbbb..|
-  |.bbbbbs.|
-  |.bbbbbs.|
-  |bbbbbbss|
-  |bbbbbbss|
-  |bbbbbbss|
-  |bbbbbsss|
-  |bbbbbssd|
-  |bbbbsssd|
-  |sbbsssdd|
-  |.sssssd.|
-  |.ssssdd.|
-  |..ssdd..|
-  |...dd...|
-paint_grid layer=2 frame=6 x=13 y=9 legend=L:#ffd9c2 rows:4
-  |.L|
-  |LL|
-  |LL|
-  |L.|
-paint_grid layer=0 frame=7 x=11 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddd|
-  |..ddddddd..|
-paint_grid layer=1 frame=7 x=12 y=5 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:14
-  |...bbb...|
-  |..bbbbb..|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |sbbbsssdd|
-  |.ssssssd.|
-  |.sssssdd.|
-  |..sssdd..|
-  |...ddd...|
-paint_grid layer=2 frame=7 x=13 y=6 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-paint_grid layer=0 frame=8 x=12 y=28 legend=d:#2a2432 rows:2
-  |ddddddddd|
-  |..ddddd..|
-paint_grid layer=1 frame=8 x=11 y=4 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:12
-  |...bbbb...|
-  |..bbbbbb..|
-  |.bbbbbbbs.|
-  |bbbbbbbbss|
-  |bbbbbbbbss|
-  |bbbbbbbsss|
-  |bbbbbbsssd|
-  |bbbbbssssd|
-  |sbbsssssdd|
-  |.ssssssdd.|
-  |..ssssdd..|
-  |...dddd...|
-paint_grid layer=2 frame=8 x=12 y=5 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-paint_grid layer=0 frame=9 x=13 y=28 legend=d:#2a2432 rows:2
-  |ddddddd|
-  |..ddd..|
-paint_grid layer=1 frame=9 x=11 y=3 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-paint_grid layer=2 frame=9 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=14 y=28 legend=d:#2a2432 rows:1
-  |ddddd|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=11 y=2 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=2 frame=0 x=13 y=3 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=1 rect=0,0,32,32
-paint_grid layer=0 frame=1 x=13 y=28 legend=d:#2a2432 rows:1
-  |ddddddd|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=11 y=3 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=2 frame=1 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=2 rect=0,0,32,32
-paint_grid layer=0 frame=2 x=12 y=28 legend=d:#2a2432 rows:2
-  |ddddddddd|
-  |...ddd...|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=11 y=4 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:12
-  |...bbbb...|
-  |..bbbbbb..|
-  |.bbbbbbbs.|
-  |bbbbbbbbss|
-  |bbbbbbbbss|
-  |bbbbbbbsss|
-  |bbbbbbsssd|
-  |bbbbbssssd|
-  |sbbsssssdd|
-  |.ssssssdd.|
-  |..ssssdd..|
-  |...dddd...|
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=2 frame=2 x=12 y=5 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=3 rect=0,0,32,32
-paint_grid layer=0 frame=3 x=11 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddd|
-  |...ddddd...|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=11 y=6 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:13
-  |...bbbb...|
-  |..bbbbbb..|
-  |.bbbbbbbs.|
-  |bbbbbbbbsd|
-  |bbbbbbbbss|
-  |bbbbbbbsss|
-  |bbbbbbbssd|
-  |bbbbbbsssd|
-  |bbbbbsssdd|
-  |ssssssssdd|
-  |.ssssssdd.|
-  |..sssddd..|
-  |...dddd...|
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=2 frame=3 x=12 y=7 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |.LL|
-  |LL.|
-region op=clear layer=0 frame=4 rect=0,0,32,32
-paint_grid layer=0 frame=4 x=9 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddddddd|
-  |...ddddddddd...|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=12 y=9 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:14
-  |..bbbbs..|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |sbbbsssdd|
-  |sssssssdd|
-  |.sssssdd.|
-  |.dsssddd.|
-  |..ddddd..|
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=2 frame=4 x=13 y=10 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=5 rect=0,0,32,32
-paint_grid layer=0 frame=5 x=7 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddddddddddd|
-  |...ddddddddddddd...|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=9 y=21 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:7
-  |...bbbbbbbbs...|
-  |.bbbbbbbbbbbss.|
-  |bbbbbbbbbbbsssd|
-  |bbbbbbbbbbssssd|
-  |sbbbbbbssssssdd|
-  |.ssssssssssddd.|
-  |...ddddddddd...|
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=2 frame=5 x=11 y=22 legend=L:#ffd9c2 rows:1
-  |LLLL|
-region op=clear layer=0 frame=6 rect=0,0,32,32
-paint_grid layer=0 frame=6 x=9 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddddddd|
-  |...ddddddddd...|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=12 y=8 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:15
-  |...bbb...|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |bbbbbsssd|
-  |sbbssssdd|
-  |sssssssdd|
-  |.sssssdd.|
-  |.dssdddd.|
-  |...ddd...|
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=2 frame=6 x=13 y=9 legend=L:#ffd9c2 rows:4
-  |.L.|
-  |.LL|
-  |LL.|
-  |LL.|
-region op=clear layer=0 frame=7 rect=0,0,32,32
-paint_grid layer=0 frame=7 x=11 y=28 legend=d:#2a2432 rows:2
-  |ddddddddddd|
-  |...ddddd...|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=11 y=5 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:14
-  |...bbbb...|
-  |..bbbbbb..|
-  |.bbbbbbbs.|
-  |.bbbbbbbs.|
-  |bbbbbbbbss|
-  |bbbbbbbsss|
-  |bbbbbbbssd|
-  |bbbbbbsssd|
-  |bbbbbbsssd|
-  |sbbbssssdd|
-  |.sssssssd.|
-  |.ssssssdd.|
-  |..sssddd..|
-  |...dddd...|
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=2 frame=7 x=12 y=6 legend=L:#ffd9c2 rows:4
-  |.LL|
-  |.LL|
-  |LLL|
-  |.L.|
-region op=clear layer=0 frame=8 rect=0,0,32,32
-paint_grid layer=0 frame=8 x=12 y=28 legend=d:#2a2432 rows:2
-  |ddddddddd|
-  |...ddd...|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=11 y=4 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:12
-  |...bbbb...|
-  |..bbbbbb..|
-  |.bbbbbbbs.|
-  |bbbbbbbbss|
-  |bbbbbbbbss|
-  |bbbbbbbsss|
-  |bbbbbbsssd|
-  |bbbbbssssd|
-  |sbbsssssdd|
-  |.ssssssdd.|
-  |..ssssdd..|
-  |...dddd...|
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=2 frame=8 x=12 y=5 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=9 rect=0,0,32,32
-paint_grid layer=0 frame=9 x=13 y=28 legend=d:#2a2432 rows:1
-  |ddddddd|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=11 y=3 legend=b:#e8495c,d:#2a2432,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=2 frame=9 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-palette op=swap from=["#2a2432"] set_doc="7528e7e7-ba48-4bbe-b13b-d628e8aaf5d3" to=["#3e2440"]
-region op=clear layer=0 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=14 y=28 legend=d:#3e2440 rows:1
-  |ddddd|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=11 y=2 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=2 frame=0 x=13 y=3 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=1 rect=0,0,32,32
-paint_grid layer=0 frame=1 x=13 y=28 legend=d:#3e2440 rows:1
-  |ddddddd|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=11 y=3 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=2 frame=1 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=2 rect=0,0,32,32
-paint_grid layer=0 frame=2 x=12 y=28 legend=d:#3e2440 rows:2
-  |ddddddddd|
-  |...ddd...|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=11 y=4 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:12
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbsd|
-  |bbbbbbbbsss|
-  |bbbbbbbbssd|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbsssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=2 frame=2 x=13 y=5 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=3 rect=0,0,32,32
-paint_grid layer=0 frame=3 x=11 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddd|
-  |...ddddd...|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=12 y=6 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:13
-  |...bbb...|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbsd|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |bbbbssssd|
-  |sssssssdd|
-  |.sssssdd.|
-  |.dsssddd.|
-  |...ddd...|
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=2 frame=3 x=13 y=7 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=4 rect=0,0,32,32
-paint_grid layer=0 frame=4 x=9 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddddddd|
-  |...ddddddddd...|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=12 y=9 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:14
-  |..bbbbs..|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |sbbbsssdd|
-  |sssssssdd|
-  |.sssssdd.|
-  |.dsssddd.|
-  |..ddddd..|
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=2 frame=4 x=13 y=10 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=5 rect=0,0,32,32
-paint_grid layer=0 frame=5 x=7 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddddddddddd|
-  |...ddddddddddddd...|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=9 y=21 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:7
-  |...bbbbbbbbs...|
-  |.bbbbbbbbbbbss.|
-  |bbbbbbbbbbbsssd|
-  |bbbbbbbbbbssssd|
-  |sbbbbbbssssssdd|
-  |.ssssssssssddd.|
-  |...ddddddddd...|
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=2 frame=5 x=11 y=22 legend=L:#ffd9c2 rows:1
-  |LLLL|
-region op=clear layer=0 frame=6 rect=0,0,32,32
-paint_grid layer=0 frame=6 x=9 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddddddd|
-  |...ddddddddd...|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=12 y=8 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:15
-  |...bbb...|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |bbbbbsssd|
-  |sbbssssdd|
-  |sssssssdd|
-  |.sssssdd.|
-  |.dssdddd.|
-  |...ddd...|
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=2 frame=6 x=13 y=9 legend=L:#ffd9c2 rows:4
-  |.L.|
-  |.LL|
-  |LL.|
-  |LL.|
-region op=clear layer=0 frame=7 rect=0,0,32,32
-paint_grid layer=0 frame=7 x=11 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddd|
-  |...ddddd...|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=12 y=5 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:14
-  |...bbb...|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |sbbbsssdd|
-  |sssssssdd|
-  |.sssssdd.|
-  |.dsssddd.|
-  |...ddd...|
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=2 frame=7 x=13 y=6 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=8 rect=0,0,32,32
-paint_grid layer=0 frame=8 x=12 y=28 legend=d:#3e2440 rows:2
-  |ddddddddd|
-  |...ddd...|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=11 y=4 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:12
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbsd|
-  |bbbbbbbbsss|
-  |bbbbbbbbssd|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbsssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=2 frame=8 x=13 y=5 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=9 rect=0,0,32,32
-paint_grid layer=0 frame=9 x=13 y=28 legend=d:#3e2440 rows:1
-  |ddddddd|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=11 y=3 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=2 frame=9 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=14 y=28 legend=d:#3e2440 rows:1
-  |ddddd|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=11 y=2 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=2 frame=0 x=13 y=3 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=1 rect=0,0,32,32
-paint_grid layer=0 frame=1 x=13 y=28 legend=d:#3e2440 rows:1
-  |ddddddd|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=11 y=3 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=1 rect=0,0,32,32
-paint_grid layer=2 frame=1 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=2 rect=0,0,32,32
-paint_grid layer=0 frame=2 x=12 y=28 legend=d:#3e2440 rows:2
-  |ddddddddd|
-  |...ddd...|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=11 y=4 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:12
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |.bbbbbbbbs.|
-  |bbbbbbbbsss|
-  |bbbbbbbbssd|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |.bbbsssssd.|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=2 rect=0,0,32,32
-paint_grid layer=2 frame=2 x=13 y=5 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=3 rect=0,0,32,32
-paint_grid layer=0 frame=3 x=11 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddd|
-  |...ddddd...|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=12 y=6 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:13
-  |...bbb...|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbsd|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |bbbbssssd|
-  |sssssssdd|
-  |.sssssdd.|
-  |.dsssddd.|
-  |...ddd...|
-region op=clear layer=2 frame=3 rect=0,0,32,32
-paint_grid layer=2 frame=3 x=13 y=7 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=4 rect=0,0,32,32
-paint_grid layer=0 frame=4 x=9 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddddddd|
-  |...ddddddddd...|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=12 y=9 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:14
-  |...bbb...|
-  |..bbbbb..|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |sbbbsssdd|
-  |.ssssssd.|
-  |.sssssdd.|
-  |..sssdd..|
-  |...ddd...|
-region op=clear layer=2 frame=4 rect=0,0,32,32
-paint_grid layer=2 frame=4 x=13 y=10 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=5 rect=0,0,32,32
-paint_grid layer=0 frame=5 x=7 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddddddddddd|
-  |...ddddddddddddd...|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=9 y=21 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:7
-  |..bbbbbbbbbss..|
-  |.bbbbbbbbbbbss.|
-  |bbbbbbbbbbbsssd|
-  |bbbbbbbbbbssssd|
-  |sbbbbbbssssssdd|
-  |.ssssssssssddd.|
-  |..ddddddddddd..|
-region op=clear layer=2 frame=5 rect=0,0,32,32
-paint_grid layer=2 frame=5 x=11 y=22 legend=L:#ffd9c2 rows:1
-  |LLLL|
-region op=clear layer=0 frame=6 rect=0,0,32,32
-paint_grid layer=0 frame=6 x=9 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddddddd|
-  |...ddddddddd...|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=12 y=8 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:15
-  |...bbb...|
-  |..bbbbb..|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |bbbbbsssd|
-  |sbbssssdd|
-  |.ssssssd.|
-  |.sssssdd.|
-  |..ssddd..|
-  |...ddd...|
-region op=clear layer=2 frame=6 rect=0,0,32,32
-paint_grid layer=2 frame=6 x=13 y=9 legend=L:#ffd9c2 rows:4
-  |.L.|
-  |.LL|
-  |LL.|
-  |LL.|
-region op=clear layer=0 frame=7 rect=0,0,32,32
-paint_grid layer=0 frame=7 x=11 y=28 legend=d:#3e2440 rows:2
-  |ddddddddddd|
-  |...ddddd...|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=12 y=5 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:14
-  |...bbb...|
-  |..bbbbb..|
-  |.bbbbbbs.|
-  |.bbbbbbs.|
-  |bbbbbbbss|
-  |bbbbbbbss|
-  |bbbbbbsss|
-  |bbbbbbssd|
-  |bbbbbsssd|
-  |sbbbsssdd|
-  |.ssssssd.|
-  |.sssssdd.|
-  |..sssdd..|
-  |...ddd...|
-region op=clear layer=2 frame=7 rect=0,0,32,32
-paint_grid layer=2 frame=7 x=13 y=6 legend=L:#ffd9c2 rows:3
-  |.LL|
-  |LLL|
-  |LL.|
-region op=clear layer=0 frame=8 rect=0,0,32,32
-paint_grid layer=0 frame=8 x=12 y=28 legend=d:#3e2440 rows:2
-  |ddddddddd|
-  |...ddd...|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=11 y=4 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:12
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |.bbbbbbbbs.|
-  |bbbbbbbbsss|
-  |bbbbbbbbssd|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |.bbbsssssd.|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=8 rect=0,0,32,32
-paint_grid layer=2 frame=8 x=13 y=5 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
-region op=clear layer=0 frame=9 rect=0,0,32,32
-paint_grid layer=0 frame=9 x=13 y=28 legend=d:#3e2440 rows:1
-  |ddddddd|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=11 y=3 legend=b:#e8495c,d:#3e2440,s:#a32940 rows:11
-  |...bbbbb...|
-  |..bbbbbbb..|
-  |.bbbbbbbbs.|
-  |bbbbbbbbbss|
-  |bbbbbbbbsss|
-  |bbbbbbbsssd|
-  |bbbbbbssssd|
-  |sbbbbssssdd|
-  |.sssssssdd.|
-  |..ssssddd..|
-  |...ddddd...|
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=2 frame=9 x=13 y=4 legend=L:#ffd9c2 rows:3
-  |LL|
-  |LL|
-  |L.|
+layer add name=ball
+layer add name=gloss
+layer rename index=0 name=shadow
+palette set colors=#2a2432,#a32940,#e8495c,#ffd9c2
+legend A=#e8495c
+ball @0 grid 10,10 = 10,10 3x3
+    AAA
+    A.A
+    AAA
+ball @0 clear 0,0 32,32 = 10,10 12,12 .
+frame add count=9 duration_ms=100
+legend B=#2a2432
+shadow @0 grid 14,28 = 14,28 5x2
+    BBBBB
+    ..B..
+legend C=#a32940
+ball @0 grid 11,2 = 11,2 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCB
+    AAAAAACCCCB
+    CAAAACCCCBB
+    .CCCCCCCBB.
+    ..CCCCBBB..
+    ...BBBBB...
+legend D=#ffd9c2
+gloss @0 grid 13,3 = 13,3 2x3
+    DD
+    DD
+    D.
+shadow @1 grid 13,28 = 13,28 7x2
+    BBBBBBB
+    ..BBB..
+ball @1 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCB
+    AAAAAACCCCB
+    CAAAACCCCBB
+    .CCCCCCCBB.
+    ..CCCCBBB..
+    ...BBBBB...
+gloss @1 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
+shadow @2 grid 12,28 = 12,28 9x2
+    BBBBBBBBB
+    ..BBBBB..
+ball @2 grid 11,4 = 11,4 10x12
+    ...AAAA...
+    ..AAAAAA..
+    .AAAAAAAC.
+    AAAAAAAACC
+    AAAAAAAACC
+    AAAAAAACCC
+    AAAAAACCCB
+    AAAAACCCCB
+    CAACCCCCBB
+    .CCCCCCBB.
+    ..CCCCBB..
+    ...BBBB...
+gloss @2 grid 12,5 = 12,5 3x3
+    .DD
+    DDD
+    DD.
+shadow @3 grid 11,28 = 11,28 11x2
+    BBBBBBBBBBB
+    ..BBBBBBB..
+ball @3 grid 12,6 = 12,6 9x13
+    ...AAA...
+    ..AAAAA..
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCB
+    AAAAACCCB
+    AAAACCCCB
+    .CCCCCCB.
+    .CCCCCBB.
+    ..CCCBB..
+    ...BBB...
+gloss @3 grid 13,7 = 13,7 3x3
+    .DD
+    DDD
+    DD.
+shadow @4 grid 9,28 = 9,28 15x2
+    BBBBBBBBBBBBBBB
+    ..BBBBBBBBBBB..
+ball @4 grid 12,9 = 12,9 8x14
+    ...AA...
+    ..AAAA..
+    .AAAAAC.
+    .AAAAAC.
+    AAAAAACC
+    AAAAAACC
+    AAAAAACC
+    AAAAACCB
+    AAAACCCB
+    CAACCCCB
+    .CCCCCB.
+    .CCCCBB.
+    ..CCBB..
+    ...BB...
+gloss @4 grid 13,10 = 13,10 2x4
+    .D
+    DD
+    DD
+    D.
+shadow @5 grid 7,28 = 7,28 19x2
+    BBBBBBBBBBBBBBBBBBB
+    ..BBBBBBBBBBBBBBB..
+ball @5 grid 9,21 = 9,21 15x7
+    ....AAAAAAA....
+    .AAAAAAAAAAACC.
+    AAAAAAAAAAACCCB
+    AAAAAAAAAACCCCB
+    CAAAAAACCCCCCBB
+    .CCCCCCCCCCBBB.
+    ....BBBBBBB....
+gloss @5 grid 11,22 = 11,22 14,22 #ffd9c2
+shadow @6 grid 9,28 = 9,28 15x2
+    BBBBBBBBBBBBBBB
+    ..BBBBBBBBBBB..
+ball @6 grid 12,8 = 12,8 8x15
+    ...AA...
+    ..AAAA..
+    .AAAAAC.
+    .AAAAAC.
+    AAAAAACC
+    AAAAAACC
+    AAAAAACC
+    AAAAACCC
+    AAAAACCB
+    AAAACCCB
+    CAACCCBB
+    .CCCCCB.
+    .CCCCBB.
+    ..CCBB..
+    ...BB...
+gloss @6 grid 13,9 = 13,9 2x4
+    .D
+    DD
+    DD
+    D.
+shadow @7 grid 11,28 = 11,28 11x2
+    BBBBBBBBBBB
+    ..BBBBBBB..
+ball @7 grid 12,5 = 12,5 9x14
+    ...AAA...
+    ..AAAAA..
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCB
+    AAAAACCCB
+    CAAACCCBB
+    .CCCCCCB.
+    .CCCCCBB.
+    ..CCCBB..
+    ...BBB...
+gloss @7 grid 13,6 = 13,6 3x3
+    .DD
+    DDD
+    DD.
+shadow @8 grid 12,28 = 12,28 9x2
+    BBBBBBBBB
+    ..BBBBB..
+ball @8 grid 11,4 = 11,4 10x12
+    ...AAAA...
+    ..AAAAAA..
+    .AAAAAAAC.
+    AAAAAAAACC
+    AAAAAAAACC
+    AAAAAAACCC
+    AAAAAACCCB
+    AAAAACCCCB
+    CAACCCCCBB
+    .CCCCCCBB.
+    ..CCCCBB..
+    ...BBBB...
+gloss @8 grid 12,5 = 12,5 3x3
+    .DD
+    DDD
+    DD.
+shadow @9 grid 13,28 = 13,28 7x2
+    BBBBBBB
+    ..BBB..
+ball @9 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCB
+    AAAAAACCCCB
+    CAAAACCCCBB
+    .CCCCCCCBB.
+    ..CCCCBBB..
+    ...BBBBB...
+gloss @9 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
+shadow @0 clear 0,0 32,32 = 14,28 18,29 .
+shadow @0 grid 14,28 = 14,28 18,28 #2a2432
+ball @0 clear 0,0 32,32 = 11,2 21,12 .
+ball @0 grid 11,2 = 11,2 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCB
+    AAAAAACCCCB
+    CAAAACCCCBB
+    .CCCCCCCBB.
+    ..CCCCBBB..
+    ...BBBBB...
+gloss @0 clear 0,0 32,32 = 13,3 14,5 .
+gloss @0 grid 13,3 = 13,3 2x3
+    DD
+    DD
+    D.
+shadow @1 clear 0,0 32,32 = 13,28 19,29 .
+shadow @1 grid 13,28 = 13,28 19,28 #2a2432
+ball @1 clear 0,0 32,32 = 11,3 21,13 .
+ball @1 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCB
+    AAAAAACCCCB
+    CAAAACCCCBB
+    .CCCCCCCBB.
+    ..CCCCBBB..
+    ...BBBBB...
+gloss @1 clear 0,0 32,32 = 13,4 14,6 .
+gloss @1 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
+shadow @2 clear 0,0 32,32 = 12,28 20,29 .
+shadow @2 grid 12,28 = 12,28 9x2
+    BBBBBBBBB
+    ...BBB...
+ball @2 clear 0,0 32,32 = 11,4 20,15 .
+ball @2 grid 11,4 = 11,4 10x12
+    ...AAAA...
+    ..AAAAAA..
+    .AAAAAAAC.
+    AAAAAAAACC
+    AAAAAAAACC
+    AAAAAAACCC
+    AAAAAACCCB
+    AAAAACCCCB
+    CAACCCCCBB
+    .CCCCCCBB.
+    ..CCCCBB..
+    ...BBBB...
+gloss @2 clear 0,0 32,32 = 12,5 14,7 .
+gloss @2 grid 12,5 = 12,5 3x3
+    .DD
+    DDD
+    DD.
+shadow @3 clear 0,0 32,32 = 11,28 21,29 .
+shadow @3 grid 11,28 = 11,28 11x2
+    BBBBBBBBBBB
+    ...BBBBB...
+ball @3 clear 0,0 32,32 = 12,6 20,18 .
+ball @3 grid 11,6 = 11,6 10x13
+    ...AAAA...
+    ..AAAAAA..
+    .AAAAAAAC.
+    AAAAAAAACB
+    AAAAAAAACC
+    AAAAAAACCC
+    AAAAAAACCB
+    AAAAAACCCB
+    AAAAACCCBB
+    CCCCCCCCBB
+    .CCCCCCBB.
+    ..CCCBBB..
+    ...BBBB...
+gloss @3 clear 0,0 32,32 = 13,7 15,9 .
+gloss @3 grid 12,7 = 12,7 3x3
+    .DD
+    .DD
+    DD.
+shadow @4 clear 0,0 32,32 = 9,28 23,29 .
+shadow @4 grid 9,28 = 9,28 15x2
+    BBBBBBBBBBBBBBB
+    ...BBBBBBBBB...
+ball @4 clear 0,0 32,32 = 12,9 19,22 .
+ball @4 grid 12,9 = 12,9 9x14
+    ..AAAAC..
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCB
+    AAAAACCCB
+    CAAACCCBB
+    CCCCCCCBB
+    .CCCCCBB.
+    .BCCCBBB.
+    ..BBBBB..
+gloss @4 clear 0,0 32,32 = 13,10 14,13 .
+gloss @4 grid 13,10 = 13,10 3x3
+    .DD
+    DDD
+    DD.
+shadow @5 clear 0,0 32,32 = 7,28 25,29 .
+shadow @5 grid 7,28 = 7,28 19x2
+    BBBBBBBBBBBBBBBBBBB
+    ...BBBBBBBBBBBBB...
+ball @5 clear 0,0 32,32 = 9,21 23,27 .
+ball @5 grid 9,21 = 9,21 15x7
+    ...AAAAAAAAC...
+    .AAAAAAAAAAACC.
+    AAAAAAAAAAACCCB
+    AAAAAAAAAACCCCB
+    CAAAAAACCCCCCBB
+    .CCCCCCCCCCBBB.
+    ...BBBBBBBBB...
+gloss @5 clear 0,0 32,32 = 11,22 14,22 .
+gloss @5 grid 11,22 = 11,22 14,22 #ffd9c2
+shadow @6 clear 0,0 32,32 = 9,28 23,29 .
+shadow @6 grid 9,28 = 9,28 15x2
+    BBBBBBBBBBBBBBB
+    ...BBBBBBBBB...
+ball @6 clear 0,0 32,32 = 12,8 19,22 .
+ball @6 grid 12,8 = 12,8 9x15
+    ...AAA...
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCB
+    AAAAACCCB
+    AAAAACCCB
+    CAACCCCBB
+    CCCCCCCBB
+    .CCCCCBB.
+    .BCCBBBB.
+    ...BBB...
+gloss @6 clear 0,0 32,32 = 13,9 14,12 .
+gloss @6 grid 13,9 = 13,9 3x4
+    .D.
+    .DD
+    DD.
+    DD.
+shadow @7 clear 0,0 32,32 = 11,28 21,29 .
+shadow @7 grid 11,28 = 11,28 11x2
+    BBBBBBBBBBB
+    ...BBBBB...
+ball @7 clear 0,0 32,32 = 12,5 20,18 .
+ball @7 grid 11,5 = 11,5 10x14
+    ...AAAA...
+    ..AAAAAA..
+    .AAAAAAAC.
+    .AAAAAAAC.
+    AAAAAAAACC
+    AAAAAAACCC
+    AAAAAAACCB
+    AAAAAACCCB
+    AAAAAACCCB
+    CAAACCCCBB
+    .CCCCCCCB.
+    .CCCCCCBB.
+    ..CCCBBB..
+    ...BBBB...
+gloss @7 clear 0,0 32,32 = 13,6 15,8 .
+gloss @7 grid 12,6 = 12,6 3x4
+    .DD
+    .DD
+    DDD
+    .D.
+shadow @8 clear 0,0 32,32 = 12,28 20,29 .
+shadow @8 grid 12,28 = 12,28 9x2
+    BBBBBBBBB
+    ...BBB...
+ball @8 clear 0,0 32,32 = 11,4 20,15 .
+ball @8 grid 11,4 = 11,4 10x12
+    ...AAAA...
+    ..AAAAAA..
+    .AAAAAAAC.
+    AAAAAAAACC
+    AAAAAAAACC
+    AAAAAAACCC
+    AAAAAACCCB
+    AAAAACCCCB
+    CAACCCCCBB
+    .CCCCCCBB.
+    ..CCCCBB..
+    ...BBBB...
+gloss @8 clear 0,0 32,32 = 12,5 14,7 .
+gloss @8 grid 12,5 = 12,5 3x3
+    .DD
+    DDD
+    DD.
+shadow @9 clear 0,0 32,32 = 13,28 19,29 .
+shadow @9 grid 13,28 = 13,28 19,28 #2a2432
+ball @9 clear 0,0 32,32 = 11,3 21,13 .
+ball @9 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCB
+    AAAAAACCCCB
+    CAAAACCCCBB
+    .CCCCCCCBB.
+    ..CCCCBBB..
+    ...BBBBB...
+gloss @9 clear 0,0 32,32 = 13,4 14,6 .
+gloss @9 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
+palette swap from=["#2a2432"] set_doc="7528e7e7-ba48-4bbe-b13b-d628e8aaf5d3" to=["#3e2440"]
+shadow @0 clear 0,0 32,32 = 14,28 18,28 .
+shadow @0 grid 14,28 = 14,28 18,28 #3e2440
+ball @0 clear 0,0 32,32 = 11,2 21,12 .
+legend E=#3e2440
+ball @0 grid 11,2 = 11,2 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAAACCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @0 clear 0,0 32,32 = 13,3 14,5 .
+gloss @0 grid 13,3 = 13,3 2x3
+    DD
+    DD
+    D.
+shadow @1 clear 0,0 32,32 = 13,28 19,28 .
+shadow @1 grid 13,28 = 13,28 19,28 #3e2440
+ball @1 clear 0,0 32,32 = 11,3 21,13 .
+ball @1 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAAACCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @1 clear 0,0 32,32 = 13,4 14,6 .
+gloss @1 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
+shadow @2 clear 0,0 32,32 = 12,28 20,29 .
+shadow @2 grid 12,28 = 12,28 9x2
+    EEEEEEEEE
+    ...EEE...
+ball @2 clear 0,0 32,32 = 11,4 20,15 .
+ball @2 grid 11,4 = 11,4 11x12
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACE
+    AAAAAAAACCC
+    AAAAAAAACCE
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAACCCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @2 clear 0,0 32,32 = 12,5 14,7 .
+gloss @2 grid 13,5 = 13,5 2x3
+    DD
+    DD
+    D.
+shadow @3 clear 0,0 32,32 = 11,28 21,29 .
+shadow @3 grid 11,28 = 11,28 11x2
+    EEEEEEEEEEE
+    ...EEEEE...
+ball @3 clear 0,0 32,32 = 11,6 20,18 .
+ball @3 grid 12,6 = 12,6 9x13
+    ...AAA...
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACE
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCE
+    AAAAACCCE
+    AAAACCCCE
+    CCCCCCCEE
+    .CCCCCEE.
+    .ECCCEEE.
+    ...EEE...
+gloss @3 clear 0,0 32,32 = 12,7 14,9 .
+gloss @3 grid 13,7 = 13,7 3x3
+    .DD
+    DDD
+    DD.
+shadow @4 clear 0,0 32,32 = 9,28 23,29 .
+shadow @4 grid 9,28 = 9,28 15x2
+    EEEEEEEEEEEEEEE
+    ...EEEEEEEEE...
+ball @4 clear 0,0 32,32 = 12,9 20,22 .
+ball @4 grid 12,9 = 12,9 9x14
+    ..AAAAC..
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCE
+    AAAAACCCE
+    CAAACCCEE
+    CCCCCCCEE
+    .CCCCCEE.
+    .ECCCEEE.
+    ..EEEEE..
+gloss @4 clear 0,0 32,32 = 13,10 15,12 .
+gloss @4 grid 13,10 = 13,10 3x3
+    .DD
+    DDD
+    DD.
+shadow @5 clear 0,0 32,32 = 7,28 25,29 .
+shadow @5 grid 7,28 = 7,28 19x2
+    EEEEEEEEEEEEEEEEEEE
+    ...EEEEEEEEEEEEE...
+ball @5 clear 0,0 32,32 = 9,21 23,27 .
+ball @5 grid 9,21 = 9,21 15x7
+    ...AAAAAAAAC...
+    .AAAAAAAAAAACC.
+    AAAAAAAAAAACCCE
+    AAAAAAAAAACCCCE
+    CAAAAAACCCCCCEE
+    .CCCCCCCCCCEEE.
+    ...EEEEEEEEE...
+gloss @5 clear 0,0 32,32 = 11,22 14,22 .
+gloss @5 grid 11,22 = 11,22 14,22 #ffd9c2
+shadow @6 clear 0,0 32,32 = 9,28 23,29 .
+shadow @6 grid 9,28 = 9,28 15x2
+    EEEEEEEEEEEEEEE
+    ...EEEEEEEEE...
+ball @6 clear 0,0 32,32 = 12,8 20,22 .
+ball @6 grid 12,8 = 12,8 9x15
+    ...AAA...
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCE
+    AAAAACCCE
+    AAAAACCCE
+    CAACCCCEE
+    CCCCCCCEE
+    .CCCCCEE.
+    .ECCEEEE.
+    ...EEE...
+gloss @6 clear 0,0 32,32 = 13,9 15,12 .
+gloss @6 grid 13,9 = 13,9 3x4
+    .D.
+    .DD
+    DD.
+    DD.
+shadow @7 clear 0,0 32,32 = 11,28 21,29 .
+shadow @7 grid 11,28 = 11,28 11x2
+    EEEEEEEEEEE
+    ...EEEEE...
+ball @7 clear 0,0 32,32 = 11,5 20,18 .
+ball @7 grid 12,5 = 12,5 9x14
+    ...AAA...
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCE
+    AAAAACCCE
+    CAAACCCEE
+    CCCCCCCEE
+    .CCCCCEE.
+    .ECCCEEE.
+    ...EEE...
+gloss @7 clear 0,0 32,32 = 12,6 14,9 .
+gloss @7 grid 13,6 = 13,6 3x3
+    .DD
+    DDD
+    DD.
+shadow @8 clear 0,0 32,32 = 12,28 20,29 .
+shadow @8 grid 12,28 = 12,28 9x2
+    EEEEEEEEE
+    ...EEE...
+ball @8 clear 0,0 32,32 = 11,4 20,15 .
+ball @8 grid 11,4 = 11,4 11x12
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACE
+    AAAAAAAACCC
+    AAAAAAAACCE
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAACCCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @8 clear 0,0 32,32 = 12,5 14,7 .
+gloss @8 grid 13,5 = 13,5 2x3
+    DD
+    DD
+    D.
+shadow @9 clear 0,0 32,32 = 13,28 19,28 .
+shadow @9 grid 13,28 = 13,28 19,28 #3e2440
+ball @9 clear 0,0 32,32 = 11,3 21,13 .
+ball @9 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAAACCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @9 clear 0,0 32,32 = 13,4 14,6 .
+gloss @9 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
+shadow @0 clear 0,0 32,32 = 14,28 18,28 .
+shadow @0 grid 14,28 = 14,28 18,28 #3e2440
+ball @0 clear 0,0 32,32 = 11,2 21,12 .
+ball @0 grid 11,2 = 11,2 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAAACCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @0 clear 0,0 32,32 = 13,3 14,5 .
+gloss @0 grid 13,3 = 13,3 2x3
+    DD
+    DD
+    D.
+shadow @1 clear 0,0 32,32 = 13,28 19,28 .
+shadow @1 grid 13,28 = 13,28 19,28 #3e2440
+ball @1 clear 0,0 32,32 = 11,3 21,13 .
+ball @1 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAAACCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @1 clear 0,0 32,32 = 13,4 14,6 .
+gloss @1 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
+shadow @2 clear 0,0 32,32 = 12,28 20,29 .
+shadow @2 grid 12,28 = 12,28 9x2
+    EEEEEEEEE
+    ...EEE...
+ball @2 clear 0,0 32,32 = 11,4 21,15 .
+ball @2 grid 11,4 = 11,4 11x12
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    .AAAAAAAAC.
+    AAAAAAAACCC
+    AAAAAAAACCE
+    AAAAAAACCCE
+    AAAAAACCCCE
+    .AAACCCCCE.
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @2 clear 0,0 32,32 = 13,5 14,7 .
+gloss @2 grid 13,5 = 13,5 2x3
+    DD
+    DD
+    D.
+shadow @3 clear 0,0 32,32 = 11,28 21,29 .
+shadow @3 grid 11,28 = 11,28 11x2
+    EEEEEEEEEEE
+    ...EEEEE...
+ball @3 clear 0,0 32,32 = 12,6 20,18 .
+ball @3 grid 12,6 = 12,6 9x13
+    ...AAA...
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACE
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCE
+    AAAAACCCE
+    AAAACCCCE
+    CCCCCCCEE
+    .CCCCCEE.
+    .ECCCEEE.
+    ...EEE...
+gloss @3 clear 0,0 32,32 = 13,7 15,9 .
+gloss @3 grid 13,7 = 13,7 3x3
+    .DD
+    DDD
+    DD.
+shadow @4 clear 0,0 32,32 = 9,28 23,29 .
+shadow @4 grid 9,28 = 9,28 15x2
+    EEEEEEEEEEEEEEE
+    ...EEEEEEEEE...
+ball @4 clear 0,0 32,32 = 12,9 20,22 .
+ball @4 grid 12,9 = 12,9 9x14
+    ...AAA...
+    ..AAAAA..
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCE
+    AAAAACCCE
+    CAAACCCEE
+    .CCCCCCE.
+    .CCCCCEE.
+    ..CCCEE..
+    ...EEE...
+gloss @4 clear 0,0 32,32 = 13,10 15,12 .
+gloss @4 grid 13,10 = 13,10 3x3
+    .DD
+    DDD
+    DD.
+shadow @5 clear 0,0 32,32 = 7,28 25,29 .
+shadow @5 grid 7,28 = 7,28 19x2
+    EEEEEEEEEEEEEEEEEEE
+    ...EEEEEEEEEEEEE...
+ball @5 clear 0,0 32,32 = 9,21 23,27 .
+ball @5 grid 9,21 = 9,21 15x7
+    ..AAAAAAAAACC..
+    .AAAAAAAAAAACC.
+    AAAAAAAAAAACCCE
+    AAAAAAAAAACCCCE
+    CAAAAAACCCCCCEE
+    .CCCCCCCCCCEEE.
+    ..EEEEEEEEEEE..
+gloss @5 clear 0,0 32,32 = 11,22 14,22 .
+gloss @5 grid 11,22 = 11,22 14,22 #ffd9c2
+shadow @6 clear 0,0 32,32 = 9,28 23,29 .
+shadow @6 grid 9,28 = 9,28 15x2
+    EEEEEEEEEEEEEEE
+    ...EEEEEEEEE...
+ball @6 clear 0,0 32,32 = 12,8 20,22 .
+ball @6 grid 12,8 = 12,8 9x15
+    ...AAA...
+    ..AAAAA..
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCE
+    AAAAACCCE
+    AAAAACCCE
+    CAACCCCEE
+    .CCCCCCE.
+    .CCCCCEE.
+    ..CCEEE..
+    ...EEE...
+gloss @6 clear 0,0 32,32 = 13,9 15,12 .
+gloss @6 grid 13,9 = 13,9 3x4
+    .D.
+    .DD
+    DD.
+    DD.
+shadow @7 clear 0,0 32,32 = 11,28 21,29 .
+shadow @7 grid 11,28 = 11,28 11x2
+    EEEEEEEEEEE
+    ...EEEEE...
+ball @7 clear 0,0 32,32 = 12,5 20,18 .
+ball @7 grid 12,5 = 12,5 9x14
+    ...AAA...
+    ..AAAAA..
+    .AAAAAAC.
+    .AAAAAAC.
+    AAAAAAACC
+    AAAAAAACC
+    AAAAAACCC
+    AAAAAACCE
+    AAAAACCCE
+    CAAACCCEE
+    .CCCCCCE.
+    .CCCCCEE.
+    ..CCCEE..
+    ...EEE...
+gloss @7 clear 0,0 32,32 = 13,6 15,8 .
+gloss @7 grid 13,6 = 13,6 3x3
+    .DD
+    DDD
+    DD.
+shadow @8 clear 0,0 32,32 = 12,28 20,29 .
+shadow @8 grid 12,28 = 12,28 9x2
+    EEEEEEEEE
+    ...EEE...
+ball @8 clear 0,0 32,32 = 11,4 21,15 .
+ball @8 grid 11,4 = 11,4 11x12
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    .AAAAAAAAC.
+    AAAAAAAACCC
+    AAAAAAAACCE
+    AAAAAAACCCE
+    AAAAAACCCCE
+    .AAACCCCCE.
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @8 clear 0,0 32,32 = 13,5 14,7 .
+gloss @8 grid 13,5 = 13,5 2x3
+    DD
+    DD
+    D.
+shadow @9 clear 0,0 32,32 = 13,28 19,28 .
+shadow @9 grid 13,28 = 13,28 19,28 #3e2440
+ball @9 clear 0,0 32,32 = 11,3 21,13 .
+ball @9 grid 11,3 = 11,3 11x11
+    ...AAAAA...
+    ..AAAAAAA..
+    .AAAAAAAAC.
+    AAAAAAAAACC
+    AAAAAAAACCC
+    AAAAAAACCCE
+    AAAAAACCCCE
+    CAAAACCCCEE
+    .CCCCCCCEE.
+    ..CCCCEEE..
+    ...EEEEE...
+gloss @9 clear 0,0 32,32 = 13,4 14,6 .
+gloss @9 grid 13,4 = 13,4 2x3
+    DD
+    DD
+    D.
 add_tag name=bounce direction=forward from=0 to=9

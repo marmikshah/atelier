@@ -1,324 +1,400 @@
-atelier 4 ea978c75-9f3c-476c-abf4-18213d9214ce 0.1.0
+atelier 5 ea978c75-9f3c-476c-abf4-18213d9214ce 0.1.0
 new name="Redline — driving loop" width=32 height=32
-palette op=set colors=#192030,#45576e,#79c0d2,#e54c3f,#8d2b40,#ffe4a8
-layer op=rename index=0 name="Speed lines"
-layer op=add name=Exhaust
-layer op=add name="Rear wheel"
-layer op=add name="Front wheel"
-layer op=add name=Chassis
-paint_grid layer=4 frame=0 x=4 y=11 legend=k:0 rows:13
-  |........kkkkkkkkk.........|
-  |.......kkkkkkkkkkk........|
-  |......kkkkkkkkkkkkk.......|
-  |......kkkkkkkkkkkkkk......|
-  |.....kkkkkkkkkkkkkkkk.....|
-  |.kkkkkkkkkkkkkkkkkkkkkkk..|
-  |.kkkkkkkkkkkkkkkkkkkkkkkk.|
-  |kkkkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkkkkkkkkkkkkkkkkkkkkkkk|
-  |kkkkk...kkkkkkkkkkk...kkkk|
-  |kkkk.....kkkkkkkkk.....kkk|
-  |.kk.......kkkkkkk.......kk|
-  |..k.......kkkkkkk.......k.|
-paint_grid layer=4 frame=0 x=4 y=11 legend=b:2,d:4,k:0,r:3 rows:13
-  |........kkkkkkkkk.........|
-  |.......krrrrrrrrrk........|
-  |......krbbbbkbbbbrk.......|
-  |......kbbbbbkbbbbbrk......|
-  |.....kbbbbbbkbbbbbbrk.....|
-  |.krrrrrrrrrrrrrrrrrrrrrk..|
-  |.krrrrrrrrrrrrrrrrrrrrrrk.|
-  |krrrrrrrrrrrrrrrrrrrrrrrrk|
-  |krrrrkkkrrrrrrrrrrrkkkrrrk|
-  |kdddk...kdddddddddk...kddk|
-  |kddk.....kdddddddk.....kdk|
-  |.kk.......kdddddk.......kk|
-  |..k.......kkkkkkk.......k.|
-paint_grid layer=2 frame=0 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.ksssk.|
-  |..kkk..|
-paint_grid layer=3 frame=0 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.ksssk.|
-  |..kkk..|
-draw op=line layer=4 frame=0 color=#45576e size=1 x0=10 x1=15 y0=15 y1=15
-draw op=line layer=4 frame=0 color=#45576e size=1 x0=17 x1=22 y0=15 y1=15
-draw op=pencil layer=4 frame=0 color=#ffe4a8 points=12,13 13,13 18,13 19,14 size=1
-draw op=line layer=4 frame=0 color=#ffe4a8 size=1 x0=13 x1=18 y0=12 y1=12
-draw op=line layer=4 frame=0 color=#ffe4a8 size=1 x0=6 x1=14 y0=17 y1=17
-draw op=line layer=4 frame=0 color=#ffe4a8 size=1 x0=24 x1=27 y0=17 y1=17
-draw op=line layer=4 frame=0 color=#8d2b40 size=1 x0=16 x1=16 y0=17 y1=21
-draw op=line layer=4 frame=0 color=#ffe4a8 size=1 x0=18 x1=19 y0=18 y1=18
-draw op=pencil layer=4 frame=0 color=#ffe4a8 points=28,18 28,19 size=1
-draw op=pencil layer=4 frame=0 color=#192030 points=5,18 28,20 size=1
-draw op=pencil layer=4 frame=0 color=#8d2b40 points=6,18 6,19 size=1
-draw op=line layer=4 frame=0 color=#45576e size=1 x0=4 x1=6 y0=21 y1=21
-draw op=line layer=4 frame=0 color=#45576e size=1 x0=27 x1=29 y0=21 y1=21
-draw op=line layer=4 frame=0 color=#45576e size=1 x0=4 x1=5 y0=22 y1=22
-draw op=line layer=4 frame=0 color=#45576e size=1 x0=15 x1=19 y0=22 y1=22
-paint_grid layer=2 frame=0 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.kshsk.|
-  |ksbhbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.ksbsk.|
-  |..kkk..|
-paint_grid layer=3 frame=0 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.kshsk.|
-  |ksbhbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.ksbsk.|
-  |..kkk..|
-draw op=line layer=0 frame=0 color=#79c0d2 size=1 x0=29 x1=31 y0=7 y1=7
-draw op=line layer=0 frame=0 color=#79c0d2 size=1 x0=14 x1=16 y0=9 y1=9
-draw op=pencil layer=0 frame=0 color=#45576e points=[[16,9]] size=1
-draw op=line layer=0 frame=0 color=#45576e size=1 x0=20 x1=25 y0=29 y1=29
-paint_grid layer=1 frame=0 x=2 y=22 legend=b:2,s:1 rows:1
-  |sb|
-frame op=add copy_from=0 count=9 duration_ms=100
-region op=move layer=4 frame=1 offset=0,1 rect=4,11,29,23
-paint_grid layer=2 frame=1 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksshk.|
-  |ksbhbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.kbssk.|
-  |..kkk..|
-paint_grid layer=3 frame=1 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksshk.|
-  |ksbhbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.kbssk.|
-  |..kkk..|
-region op=clear layer=0 frame=1 rect=0,0,31,31
-region op=clear layer=1 frame=1 rect=0,0,31,31
-draw op=line layer=0 frame=1 color=#79c0d2 size=1 x0=25 x1=30 y0=7 y1=7
-draw op=pencil layer=0 frame=1 color=#45576e points=[[30,7]] size=1
-draw op=line layer=0 frame=1 color=#79c0d2 size=1 x0=10 x1=12 y0=9 y1=9
-draw op=pencil layer=0 frame=1 color=#45576e points=[[12,9]] size=1
-draw op=line layer=0 frame=1 color=#45576e size=1 x0=16 x1=21 y0=29 y1=29
-paint_grid layer=1 frame=1 x=1 y=21 legend=b:2,s:1 rows:3
-  |.s|
-  |bb|
-  |.s|
-region op=move layer=4 frame=2 offset=0,1 rect=4,11,29,23
-paint_grid layer=2 frame=2 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |ksbbbhk|
-  |ksbhhsk|
-  |kbbbbsk|
-  |.ksssk.|
-  |..kkk..|
-paint_grid layer=3 frame=2 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |ksbbbhk|
-  |ksbhhsk|
-  |kbbbbsk|
-  |.ksssk.|
-  |..kkk..|
-region op=clear layer=0 frame=2 rect=0,0,31,31
-region op=clear layer=1 frame=2 rect=0,0,31,31
-draw op=line layer=0 frame=2 color=#79c0d2 size=1 x0=21 x1=26 y0=7 y1=7
-draw op=pencil layer=0 frame=2 color=#45576e points=[[26,7]] size=1
-draw op=line layer=0 frame=2 color=#79c0d2 size=1 x0=6 x1=8 y0=9 y1=9
-draw op=pencil layer=0 frame=2 color=#45576e points=[[8,9]] size=1
-draw op=line layer=0 frame=2 color=#45576e size=1 x0=12 x1=17 y0=29 y1=29
-paint_grid layer=1 frame=2 x=0 y=20 legend=b:2,s:1 rows:3
-  |sb.|
-  |bbs|
-  |ss.|
-paint_grid layer=2 frame=3 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |kbbbbsk|
-  |ksbhhsk|
-  |ksbbbhk|
-  |.ksssk.|
-  |..kkk..|
-paint_grid layer=3 frame=3 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |kbbbbsk|
-  |ksbhhsk|
-  |ksbbbhk|
-  |.ksssk.|
-  |..kkk..|
-region op=clear layer=0 frame=3 rect=0,0,31,31
-region op=clear layer=1 frame=3 rect=0,0,31,31
-draw op=line layer=0 frame=3 color=#79c0d2 size=1 x0=17 x1=22 y0=7 y1=7
-draw op=pencil layer=0 frame=3 color=#45576e points=[[22,7]] size=1
-draw op=line layer=0 frame=3 color=#79c0d2 size=1 x0=2 x1=4 y0=9 y1=9
-draw op=pencil layer=0 frame=3 color=#45576e points=[[4,9]] size=1
-draw op=line layer=0 frame=3 color=#45576e size=1 x0=8 x1=13 y0=29 y1=29
-paint_grid layer=1 frame=3 x=0 y=19 legend=b:2,s:1 rows:3
-  |ss.|
-  |bbs|
-  |ss.|
-region op=move layer=4 frame=4 offset=0,-1 rect=4,11,29,23
-paint_grid layer=2 frame=4 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.kbssk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbhbsk|
-  |.ksshk.|
-  |..kkk..|
-paint_grid layer=3 frame=4 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.kbssk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbhbsk|
-  |.ksshk.|
-  |..kkk..|
-region op=clear layer=0 frame=4 rect=0,0,31,31
-region op=clear layer=1 frame=4 rect=0,0,31,31
-draw op=line layer=0 frame=4 color=#79c0d2 size=1 x0=13 x1=18 y0=7 y1=7
-draw op=pencil layer=0 frame=4 color=#45576e points=[[18,7]] size=1
-draw op=line layer=0 frame=4 color=#79c0d2 size=1 x0=0 x1=0 y0=9 y1=9
-draw op=pencil layer=0 frame=4 color=#45576e points=[[0,9]] size=1
-draw op=line layer=0 frame=4 color=#45576e size=1 x0=4 x1=9 y0=29 y1=29
-paint_grid layer=1 frame=4 x=0 y=18 legend=b:2,s:1 rows:3
-  |s.|
-  |sb|
-  |s.|
-paint_grid layer=2 frame=5 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksbsk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbhbsk|
-  |.kshsk.|
-  |..kkk..|
-paint_grid layer=3 frame=5 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksbsk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbhbsk|
-  |.kshsk.|
-  |..kkk..|
-region op=clear layer=0 frame=5 rect=0,0,31,31
-region op=clear layer=1 frame=5 rect=0,0,31,31
-draw op=line layer=0 frame=5 color=#79c0d2 size=1 x0=9 x1=14 y0=7 y1=7
-draw op=pencil layer=0 frame=5 color=#45576e points=[[14,7]] size=1
-draw op=line layer=0 frame=5 color=#45576e size=1 x0=0 x1=5 y0=29 y1=29
-paint_grid layer=1 frame=5 x=0 y=18 legend=s:1 rows:2
-  |s|
-  |s|
-region op=move layer=4 frame=6 offset=0,1 rect=4,11,29,23
-paint_grid layer=2 frame=6 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.kssbk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbhbsk|
-  |.khssk.|
-  |..kkk..|
-paint_grid layer=3 frame=6 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.kssbk.|
-  |ksbbbsk|
-  |ksbhbsk|
-  |ksbhbsk|
-  |.khssk.|
-  |..kkk..|
-region op=clear layer=0 frame=6 rect=0,0,31,31
-region op=clear layer=1 frame=6 rect=0,0,31,31
-draw op=line layer=0 frame=6 color=#79c0d2 size=1 x0=5 x1=10 y0=7 y1=7
-draw op=pencil layer=0 frame=6 color=#45576e points=[[10,7]] size=1
-draw op=line layer=0 frame=6 color=#79c0d2 size=1 x0=30 x1=31 y0=9 y1=9
-draw op=line layer=0 frame=6 color=#45576e size=1 x0=0 x1=1 y0=29 y1=29
-paint_grid layer=1 frame=6 x=0 y=17 legend=s:1 rows:1
-  |s|
-region op=move layer=4 frame=7 offset=0,1 rect=4,11,29,23
-paint_grid layer=2 frame=7 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |ksbbbbk|
-  |kshhbsk|
-  |khbbbsk|
-  |.ksssk.|
-  |..kkk..|
-paint_grid layer=3 frame=7 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |ksbbbbk|
-  |kshhbsk|
-  |khbbbsk|
-  |.ksssk.|
-  |..kkk..|
-region op=clear layer=0 frame=7 rect=0,0,31,31
-region op=clear layer=1 frame=7 rect=0,0,31,31
-draw op=line layer=0 frame=7 color=#79c0d2 size=1 x0=1 x1=6 y0=7 y1=7
-draw op=pencil layer=0 frame=7 color=#45576e points=[[6,7]] size=1
-draw op=line layer=0 frame=7 color=#79c0d2 size=1 x0=26 x1=28 y0=9 y1=9
-draw op=pencil layer=0 frame=7 color=#45576e points=[[28,9]] size=1
-paint_grid layer=2 frame=8 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |khbbbsk|
-  |kshhbsk|
-  |ksbbbbk|
-  |.ksssk.|
-  |..kkk..|
-paint_grid layer=3 frame=8 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.ksssk.|
-  |khbbbsk|
-  |kshhbsk|
-  |ksbbbbk|
-  |.ksssk.|
-  |..kkk..|
-region op=clear layer=0 frame=8 rect=0,0,31,31
-region op=clear layer=1 frame=8 rect=0,0,31,31
-draw op=line layer=0 frame=8 color=#79c0d2 size=1 x0=0 x1=2 y0=7 y1=7
-draw op=pencil layer=0 frame=8 color=#45576e points=[[2,7]] size=1
-draw op=line layer=0 frame=8 color=#79c0d2 size=1 x0=22 x1=24 y0=9 y1=9
-draw op=pencil layer=0 frame=8 color=#45576e points=[[24,9]] size=1
-draw op=line layer=0 frame=8 color=#45576e size=1 x0=28 x1=31 y0=29 y1=29
-region op=move layer=4 frame=9 offset=0,-1 rect=4,11,29,23
-paint_grid layer=2 frame=9 x=7 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.khssk.|
-  |ksbhbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.kssbk.|
-  |..kkk..|
-paint_grid layer=3 frame=9 x=21 y=21 legend=b:2,h:5,k:0,s:1 rows:7
-  |..kkk..|
-  |.khssk.|
-  |ksbhbsk|
-  |ksbhbsk|
-  |ksbbbsk|
-  |.kssbk.|
-  |..kkk..|
-region op=clear layer=0 frame=9 rect=0,0,31,31
-region op=clear layer=1 frame=9 rect=0,0,31,31
-draw op=line layer=0 frame=9 color=#79c0d2 size=1 x0=18 x1=20 y0=9 y1=9
-draw op=pencil layer=0 frame=9 color=#45576e points=[[20,9]] size=1
-draw op=line layer=0 frame=9 color=#45576e size=1 x0=24 x1=29 y0=29 y1=29
-paint_grid layer=1 frame=9 x=3 y=21 legend=s:1 rows:1
-  |s|
+palette set colors=#192030,#45576e,#79c0d2,#e54c3f,#8d2b40,#ffe4a8
+layer rename index=0 name="Speed lines"
+layer add name=Exhaust
+layer add name="Rear wheel"
+layer add name="Front wheel"
+layer add name=Chassis
+legend A=#192030
+Chassis @0 grid 4,11 = 4,11 26x13
+    ........AAAAAAAAA.........
+    .......AAAAAAAAAAA........
+    ......AAAAAAAAAAAAA.......
+    ......AAAAAAAAAAAAAA......
+    .....AAAAAAAAAAAAAAAA.....
+    .AAAAAAAAAAAAAAAAAAAAAAA..
+    .AAAAAAAAAAAAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAA...AAAAAAAAAAA...AAAA
+    AAAA.....AAAAAAAAA.....AAA
+    .AA.......AAAAAAA.......AA
+    ..A.......AAAAAAA.......A.
+legend B=#e54c3f C=#79c0d2 D=#8d2b40
+Chassis @0 grid 4,11 = 5,12 24x11
+    ......ABBBBBBBBBA.......
+    .....ABCCCCACCCCBA......
+    .....ACCCCCACCCCCBA.....
+    ....ACCCCCCACCCCCCBA....
+    ABBBBBBBBBBBBBBBBBBBBBA.
+    ABBBBBBBBBBBBBBBBBBBBBBA
+    BBBBBBBBBBBBBBBBBBBBBBBB
+    BBBBAAABBBBBBBBBBBAAABBB
+    DDDA...ADDDDDDDDDA...ADD
+    DDA.....ADDDDDDDA.....AD
+    AA.......ADDDDDA.......A
+legend E=#45576e F=#ffe4a8
+"Rear wheel" @0 grid 7,21 = 7,21 7x7
+    ..AAA..
+    .AEEEA.
+    AECCCEA
+    AECFCEA
+    AECCCEA
+    .AEEEA.
+    ..AAA..
+"Front wheel" @0 grid 21,21 = 21,21 7x7
+    ..AAA..
+    .AEEEA.
+    AECCCEA
+    AECFCEA
+    AECCCEA
+    .AEEEA.
+    ..AAA..
+Chassis @0 line #45576e 10,15 15,15 size 1 = 10,15 15,15 #45576e
+Chassis @0 line #45576e 17,15 22,15 size 1 = 17,15 22,15 #45576e
+Chassis @0 pencil #ffe4a8 size 1 = 12,13 8x2
+    FFCCACFC
+    CCCCACCF
+Chassis @0 line #ffe4a8 13,12 18,12 size 1 = 13,12 18,12 #ffe4a8
+Chassis @0 line #ffe4a8 6,17 14,17 size 1 = 6,17 14,17 #ffe4a8
+Chassis @0 line #ffe4a8 24,17 27,17 size 1 = 24,17 27,17 #ffe4a8
+Chassis @0 line #8d2b40 16,17 16,21 size 1 = 16,17 16,19 #8d2b40
+Chassis @0 line #ffe4a8 18,18 19,18 size 1 = 18,18 19,18 #ffe4a8
+Chassis @0 pencil #ffe4a8 size 1 = 28,18 28,19 #ffe4a8
+Chassis @0 pencil #192030 size 1 = 5,18 24x3
+    ABBBBBBBBBBDBFFBBBBBBBBF
+    BBBBAAABBBBDBBBBBBAAABBF
+    DDDA...ADDDDDDDDDA...ADA
+Chassis @0 pencil #8d2b40 size 1 = 6,18 6,19 #8d2b40
+Chassis @0 line #45576e 4,21 6,21 size 1 = 4,21 6,21 #45576e
+Chassis @0 line #45576e 27,21 29,21 size 1 = 27,21 29,21 #45576e
+Chassis @0 line #45576e 4,22 5,22 size 1 = 4,22 5,22 #45576e
+Chassis @0 line #45576e 15,22 19,22 size 1 = 15,22 19,22 #45576e
+"Rear wheel" @0 grid 7,21 = 10,22 1x5
+    F
+    F
+    F
+    C
+    C
+"Front wheel" @0 grid 21,21 = 24,22 1x5
+    F
+    F
+    F
+    C
+    C
+"Speed lines" @0 line #79c0d2 29,7 31,7 size 1 = 29,7 31,7 #79c0d2
+"Speed lines" @0 line #79c0d2 14,9 16,9 size 1 = 14,9 16,9 #79c0d2
+"Speed lines" @0 pencil #45576e size 1 = 16,9 16,9 #45576e
+"Speed lines" @0 line #45576e 20,29 25,29 size 1 = 20,29 25,29 #45576e
+Exhaust @0 grid 2,22 = 2,22 2x1
+    EC
+frame add copy_from=0 count=9 duration_ms=100
+Chassis @1 move 4,11 29,23 0,1 = 4,11 26x14
+    ..........................
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+"Rear wheel" @1 grid 7,21 = 9,22 3x5
+    EEF
+    CFC
+    CFC
+    CCC
+    CEE
+"Front wheel" @1 grid 21,21 = 23,22 3x5
+    EEF
+    CFC
+    CFC
+    CCC
+    CEE
+"Speed lines" @1 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @1 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @1 line #79c0d2 25,7 30,7 size 1 = 25,7 30,7 #79c0d2
+"Speed lines" @1 pencil #45576e size 1 = 30,7 30,7 #45576e
+"Speed lines" @1 line #79c0d2 10,9 12,9 size 1 = 10,9 12,9 #79c0d2
+"Speed lines" @1 pencil #45576e size 1 = 12,9 12,9 #45576e
+"Speed lines" @1 line #45576e 16,29 21,29 size 1 = 16,29 21,29 #45576e
+Exhaust @1 grid 1,21 = 1,21 2x3
+    .E
+    CC
+    .E
+Chassis @2 move 4,11 29,23 0,1 = 4,11 26x14
+    ..........................
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+"Rear wheel" @2 grid 7,21 = 8,22 5x5
+    AEEEA
+    ECCCF
+    ECFFE
+    CCCCE
+    AEEEA
+"Front wheel" @2 grid 21,21 = 22,22 5x5
+    AEEEA
+    ECCCF
+    ECFFE
+    CCCCE
+    AEEEA
+"Speed lines" @2 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @2 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @2 line #79c0d2 21,7 26,7 size 1 = 21,7 26,7 #79c0d2
+"Speed lines" @2 pencil #45576e size 1 = 26,7 26,7 #45576e
+"Speed lines" @2 line #79c0d2 6,9 8,9 size 1 = 6,9 8,9 #79c0d2
+"Speed lines" @2 pencil #45576e size 1 = 8,9 8,9 #45576e
+"Speed lines" @2 line #45576e 12,29 17,29 size 1 = 12,29 17,29 #45576e
+Exhaust @2 grid 0,20 = 0,20 3x3
+    EC.
+    CCE
+    EE.
+"Rear wheel" @3 grid 7,21 = 8,22 5x5
+    AEEEA
+    CCCCE
+    ECFFE
+    ECCCF
+    AEEEA
+"Front wheel" @3 grid 21,21 = 22,22 5x5
+    AEEEA
+    CCCCE
+    ECFFE
+    ECCCF
+    AEEEA
+"Speed lines" @3 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @3 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @3 line #79c0d2 17,7 22,7 size 1 = 17,7 22,7 #79c0d2
+"Speed lines" @3 pencil #45576e size 1 = 22,7 22,7 #45576e
+"Speed lines" @3 line #79c0d2 2,9 4,9 size 1 = 2,9 4,9 #79c0d2
+"Speed lines" @3 pencil #45576e size 1 = 4,9 4,9 #45576e
+"Speed lines" @3 line #45576e 8,29 13,29 size 1 = 8,29 13,29 #45576e
+Exhaust @3 grid 0,19 = 0,19 3x3
+    EE.
+    CCE
+    EE.
+Chassis @4 move 4,11 29,23 0,-1 = 4,10 26x14
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+    ..........................
+"Rear wheel" @4 grid 7,21 = 9,22 3x5
+    CEE
+    CCC
+    CFC
+    CFC
+    EEF
+"Front wheel" @4 grid 21,21 = 23,22 3x5
+    CEE
+    CCC
+    CFC
+    CFC
+    EEF
+"Speed lines" @4 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @4 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @4 line #79c0d2 13,7 18,7 size 1 = 13,7 18,7 #79c0d2
+"Speed lines" @4 pencil #45576e size 1 = 18,7 18,7 #45576e
+"Speed lines" @4 line #79c0d2 0,9 0,9 size 1 = 0,9 0,9 #79c0d2
+"Speed lines" @4 pencil #45576e size 1 = 0,9 0,9 #45576e
+"Speed lines" @4 line #45576e 4,29 9,29 size 1 = 4,29 9,29 #45576e
+Exhaust @4 grid 0,18 = 0,18 2x3
+    E.
+    EC
+    E.
+"Rear wheel" @5 grid 7,21 = 10,22 1x5
+    C
+    C
+    F
+    F
+    F
+"Front wheel" @5 grid 21,21 = 24,22 1x5
+    C
+    C
+    F
+    F
+    F
+"Speed lines" @5 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @5 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @5 line #79c0d2 9,7 14,7 size 1 = 9,7 14,7 #79c0d2
+"Speed lines" @5 pencil #45576e size 1 = 14,7 14,7 #45576e
+"Speed lines" @5 line #45576e 0,29 5,29 size 1 = 0,29 5,29 #45576e
+Exhaust @5 grid 0,18 = 0,18 0,19 #45576e
+Chassis @6 move 4,11 29,23 0,1 = 4,11 26x14
+    ..........................
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+"Rear wheel" @6 grid 7,21 = 9,22 3x5
+    EEC
+    CCC
+    CFC
+    CFC
+    FEE
+"Front wheel" @6 grid 21,21 = 23,22 3x5
+    EEC
+    CCC
+    CFC
+    CFC
+    FEE
+"Speed lines" @6 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @6 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @6 line #79c0d2 5,7 10,7 size 1 = 5,7 10,7 #79c0d2
+"Speed lines" @6 pencil #45576e size 1 = 10,7 10,7 #45576e
+"Speed lines" @6 line #79c0d2 30,9 31,9 size 1 = 30,9 31,9 #79c0d2
+"Speed lines" @6 line #45576e 0,29 1,29 size 1 = 0,29 1,29 #45576e
+Exhaust @6 grid 0,17 = 0,17 0,17 #45576e
+Chassis @7 move 4,11 29,23 0,1 = 4,11 26x14
+    ..........................
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+"Rear wheel" @7 grid 7,21 = 8,22 5x5
+    AEEEA
+    ECCCC
+    EFFCE
+    FCCCE
+    AEEEA
+"Front wheel" @7 grid 21,21 = 22,22 5x5
+    AEEEA
+    ECCCC
+    EFFCE
+    FCCCE
+    AEEEA
+"Speed lines" @7 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @7 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @7 line #79c0d2 1,7 6,7 size 1 = 1,7 6,7 #79c0d2
+"Speed lines" @7 pencil #45576e size 1 = 6,7 6,7 #45576e
+"Speed lines" @7 line #79c0d2 26,9 28,9 size 1 = 26,9 28,9 #79c0d2
+"Speed lines" @7 pencil #45576e size 1 = 28,9 28,9 #45576e
+"Rear wheel" @8 grid 7,21 = 8,22 5x5
+    AEEEA
+    FCCCE
+    EFFCE
+    ECCCC
+    AEEEA
+"Front wheel" @8 grid 21,21 = 22,22 5x5
+    AEEEA
+    FCCCE
+    EFFCE
+    ECCCC
+    AEEEA
+"Speed lines" @8 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @8 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @8 line #79c0d2 0,7 2,7 size 1 = 0,7 2,7 #79c0d2
+"Speed lines" @8 pencil #45576e size 1 = 2,7 2,7 #45576e
+"Speed lines" @8 line #79c0d2 22,9 24,9 size 1 = 22,9 24,9 #79c0d2
+"Speed lines" @8 pencil #45576e size 1 = 24,9 24,9 #45576e
+"Speed lines" @8 line #45576e 28,29 31,29 size 1 = 28,29 31,29 #45576e
+Chassis @9 move 4,11 29,23 0,-1 = 4,10 26x14
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+    ..........................
+"Rear wheel" @9 grid 7,21 = 9,22 3x5
+    FEE
+    CFC
+    CFC
+    CCC
+    EEC
+"Front wheel" @9 grid 21,21 = 23,22 3x5
+    FEE
+    CFC
+    CFC
+    CCC
+    EEC
+"Speed lines" @9 clear 0,0 31,31 = 14,7 31,29 .
+Exhaust @9 clear 0,0 31,31 = 2,22 3,22 .
+"Speed lines" @9 line #79c0d2 18,9 20,9 size 1 = 18,9 20,9 #79c0d2
+"Speed lines" @9 pencil #45576e size 1 = 20,9 20,9 #45576e
+"Speed lines" @9 line #45576e 24,29 29,29 size 1 = 24,29 29,29 #45576e
+Exhaust @9 grid 3,21 = 3,21 3,21 #45576e
 add_tag name=drive direction=forward from=0 to=9
-region op=move layer=4 frame=4 offset=0,1 rect=4,10,29,22
-region op=move layer=4 frame=9 offset=0,1 rect=4,10,29,22
-region op=move layer=1 frame=9 offset=0,1 rect=3,21,3,21
+Chassis @4 move 4,10 29,22 0,1 = 4,10 26x14
+    ..........................
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+Chassis @9 move 4,10 29,22 0,1 = 4,10 26x14
+    ..........................
+    ........AAAAAAAAA.........
+    .......ABFFFFFFBBA........
+    ......ABFFCCACFCCBA.......
+    ......ACCCCCACCFCCBA......
+    .....AEEEEEEAEEEEEEBA.....
+    .ABBBBBBBBBBBBBBBBBBBBBA..
+    .AFFFFFFFFFBDBBBBBBBFFFFA.
+    AADBBBBBBBBBDBFFBBBBBBBBFA
+    ABDBBAAABBBBDBBBBBBAAABBFA
+    ADDDA...ADDDDDDDDDA...ADAA
+    EEEA.....ADDDDDDDA.....EEE
+    EEA.......AEEEEEA.......AA
+    ..A.......AAAAAAA.......A.
+Exhaust @9 move 3,21 3,21 0,1 = 3,21 1x2
+    .
+    E

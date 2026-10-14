@@ -1,450 +1,440 @@
-atelier 4 30801732-895b-4cf6-af84-a2e7c05b6bcd 0.1.0
+atelier 5 30801732-895b-4cf6-af84-a2e7c05b6bcd 0.1.0
 new name=sc-gpt-6-astra-xhigh-alien width=32 height=32
-palette op=set colors=#122b31,#2f834d,#75d351,#d6f891
-layer op=rename index=0 name=body
-layer op=add name="left arm"
-layer op=add name="right arm"
-layer op=add name="left antenna"
-layer op=add name="right antenna"
-layer op=add name=head
-layer op=add name=eyes
-paint_grid layer=0 frame=0 x=11 y=21 legend=K:0 rows:8
-  |..KKKKKK..|
-  |.KKKKKKKK.|
-  |.KKKKKKKK.|
-  |.KKKKKKKK.|
-  |.KKKKKKKK.|
-  |.KKKKKKKK.|
-  |KKK....KKK|
-  |.K......K.|
-paint_grid layer=1 frame=0 x=8 y=21 legend=K:0 rows:6
-  |...K|
-  |..KK|
-  |.KKK|
-  |KKK.|
-  |KKK.|
-  |.K..|
-paint_grid layer=2 frame=0 x=20 y=21 legend=K:0 rows:6
-  |K...|
-  |KK..|
-  |KKK.|
-  |.KKK|
-  |.KKK|
-  |..K.|
-paint_grid layer=3 frame=0 x=7 y=3 legend=K:0 rows:6
-  |.K...|
-  |KKK..|
-  |.KK..|
-  |..KK.|
-  |...KK|
-  |....K|
-paint_grid layer=4 frame=0 x=20 y=3 legend=K:0 rows:6
-  |...K.|
-  |..KKK|
-  |..KK.|
-  |.KK..|
-  |KK...|
-  |K....|
-paint_grid layer=5 frame=0 x=4 y=8 legend=K:0 rows:14
-  |.......KKKKKKKKKK.......|
-  |....KKKKKKKKKKKKKKKK....|
-  |..KKKKKKKKKKKKKKKKKKKK..|
-  |.KKKKKKKKKKKKKKKKKKKKKK.|
-  |KKKKKKKKKKKKKKKKKKKKKKKK|
-  |KKKKKKKKKKKKKKKKKKKKKKKK|
-  |KKKKKKKKKKKKKKKKKKKKKKKK|
-  |.KKKKKKKKKKKKKKKKKKKKKK.|
-  |.KKKKKKKKKKKKKKKKKKKKKK.|
-  |..KKKKKKKKKKKKKKKKKKKK..|
-  |...KKKKKKKKKKKKKKKKKK...|
-  |....KKKKKKKKKKKKKKKK....|
-  |......KKKKKKKKKKKK......|
-  |........KKKKKKKK........|
-paint_grid layer=0 frame=0 x=11 y=21 legend=G:2,H:3,K:0,S:1 rows:8
-  |..KKKKKK..|
-  |.KSGGGGSK.|
-  |.KGHGGHGK.|
-  |.KSGGGGSK.|
-  |.KSSSSSSK.|
-  |.KGKKKKGK.|
-  |KGK....KGK|
-  |.K......K.|
-paint_grid layer=1 frame=0 x=8 y=21 legend=G:2,K:0,S:1 rows:6
-  |...K|
-  |..KS|
-  |.KGK|
-  |KGK.|
-  |KGK.|
-  |.K..|
-paint_grid layer=2 frame=0 x=20 y=21 legend=G:2,K:0,S:1 rows:6
-  |K...|
-  |SK..|
-  |KGK.|
-  |.KGK|
-  |.KGK|
-  |..K.|
-paint_grid layer=3 frame=0 x=7 y=3 legend=G:2,H:3,K:0 rows:6
-  |.K...|
-  |KHK..|
-  |.KG..|
-  |..KG.|
-  |...KG|
-  |....K|
-paint_grid layer=4 frame=0 x=20 y=3 legend=G:2,H:3,K:0 rows:6
-  |...K.|
-  |..KHK|
-  |..GK.|
-  |.GK..|
-  |GK...|
-  |K....|
-paint_grid layer=5 frame=0 x=4 y=8 legend=G:2,H:3,K:0,S:1 rows:14
-  |.......KKKKKKKKKK.......|
-  |....KKKGGGGGGGGGGKKK....|
-  |..KKGGHHHHHHHHHHHHGGKK..|
-  |.KGGHHGGGGGGGGGGGGHHGGK.|
-  |KSGHGGGGGGGGGGGGGGGGHGSK|
-  |KSGGGGGGGGGGGGGGGGGGGGSK|
-  |KSGGGGGGGGGGGGGGGGGGGGSK|
-  |.KSGGGGGGGGGGGGGGGGGGSK.|
-  |.KSGGGGGGGGGGGGGGGGGGSK.|
-  |..KSGGGGGGGGGGGGGGGGSK..|
-  |...KSGGGGGGGGGGGGGGSK...|
-  |....KKSGGGGGGGGGGSKK....|
-  |......KKSSSSSSSSKK......|
-  |........KKKKKKKK........|
-paint_grid layer=6 frame=0 x=7 y=12 legend=H:3,K:0 rows:7
-  |KKK............KKK|
-  |KHKK..........KKHK|
-  |KKKKK........KKKKK|
-  |.KKKKK......KKKKK.|
-  |..KKKK......KKKK..|
-  |....KK......KK....|
-  |........KK........|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=5 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=6 frame=1 dx=0 dy=-1 wrap=false
-draw op=clear_cel layer=3 frame=1
-draw op=clear_cel layer=4 frame=1
-paint_grid layer=3 frame=1 x=6 y=2 legend=G:2,H:3,K:0 rows:6
-  |.K....|
-  |KHK...|
-  |.KG...|
-  |..KGG.|
-  |....KG|
-  |.....K|
-paint_grid layer=4 frame=1 x=20 y=2 legend=G:2,H:3,K:0 rows:6
-  |....K.|
-  |...KHK|
-  |...GK.|
-  |.GGK..|
-  |GK....|
-  |K.....|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=2 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=2 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=2 dx=0 dy=-2 wrap=false
-fx op=shift layer=5 frame=2 dx=0 dy=-2 wrap=false
-fx op=shift layer=6 frame=2 dx=0 dy=-2 wrap=false
-draw op=clear_cel layer=3 frame=2
-draw op=clear_cel layer=4 frame=2
-paint_grid layer=3 frame=2 x=5 y=1 legend=G:2,H:3,K:0 rows:6
-  |.K.....|
-  |KHK....|
-  |.KG....|
-  |..KGG..|
-  |....KGG|
-  |......K|
-paint_grid layer=4 frame=2 x=20 y=1 legend=G:2,H:3,K:0 rows:6
-  |.....K.|
-  |....KHK|
-  |....GK.|
-  |..GGK..|
-  |GGK....|
-  |K......|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=5 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=6 frame=3 dx=0 dy=-2 wrap=false
-draw op=clear_cel layer=3 frame=3
-draw op=clear_cel layer=4 frame=3
-paint_grid layer=3 frame=3 x=6 y=1 legend=G:2,H:3,K:0 rows:6
-  |.K....|
-  |KHK...|
-  |.KG...|
-  |..KGG.|
-  |....KG|
-  |.....K|
-paint_grid layer=4 frame=3 x=20 y=1 legend=G:2,H:3,K:0 rows:6
-  |....K.|
-  |...KHK|
-  |...GK.|
-  |.GGK..|
-  |GK....|
-  |K.....|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=5 frame=4 dx=0 dy=-1 wrap=false
-fx op=shift layer=6 frame=4 dx=0 dy=-1 wrap=false
-draw op=clear_cel layer=3 frame=4
-draw op=clear_cel layer=4 frame=4
-paint_grid layer=3 frame=4 x=7 y=2 legend=G:2,H:3,K:0 rows:6
-  |.K...|
-  |KHK..|
-  |.KG..|
-  |..KG.|
-  |...KG|
-  |....K|
-paint_grid layer=4 frame=4 x=20 y=2 legend=G:2,H:3,K:0 rows:6
-  |...K.|
-  |..KHK|
-  |..GK.|
-  |.GK..|
-  |GK...|
-  |K....|
-draw op=clear_cel layer=6 frame=4
-paint_grid layer=6 frame=4 x=7 y=13 legend=H:3,K:0,S:1 rows:5
-  |SSSSS........SSSSS|
-  |.KHKKK......KKKHK.|
-  |..KKKK......KKKK..|
-  |....KK......KK....|
-  |........KK........|
-frame op=add copy_from=0 duration_ms=100
-draw op=clear_cel layer=3 frame=5
-draw op=clear_cel layer=4 frame=5
-paint_grid layer=3 frame=5 x=8 y=3 legend=G:2,H:3,K:0 rows:6
-  |.K..|
-  |KHK.|
-  |.KG.|
-  |..KG|
-  |..KG|
-  |...K|
-paint_grid layer=4 frame=5 x=20 y=3 legend=G:2,H:3,K:0 rows:6
-  |..K.|
-  |.KHK|
-  |.GK.|
-  |GK..|
-  |GK..|
-  |K...|
-draw op=clear_cel layer=6 frame=5
-paint_grid layer=6 frame=5 x=7 y=14 legend=K:0 rows:5
-  |K....K......K....K|
-  |.KKKK........KKKK.|
-  |..................|
-  |..................|
-  |........KK........|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=1 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=2 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=5 frame=6 dx=0 dy=1 wrap=false
-fx op=shift layer=6 frame=6 dx=0 dy=1 wrap=false
-draw op=clear_cel layer=3 frame=6
-draw op=clear_cel layer=4 frame=6
-paint_grid layer=3 frame=6 x=9 y=4 legend=G:2,H:3,K:0 rows:6
-  |.K.|
-  |KHK|
-  |.KG|
-  |.KG|
-  |.KG|
-  |..K|
-paint_grid layer=4 frame=6 x=20 y=4 legend=G:2,H:3,K:0 rows:6
-  |.K.|
-  |KHK|
-  |GK.|
-  |GK.|
-  |GK.|
-  |K..|
-draw op=clear_cel layer=6 frame=6
-paint_grid layer=6 frame=6 x=7 y=15 legend=H:3,K:0,S:1 rows:5
-  |SSSSS........SSSSS|
-  |.KHKKK......KKKHK.|
-  |..KKKK......KKKK..|
-  |....KK......KK....|
-  |........KK........|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=1 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=2 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=5 frame=7 dx=0 dy=2 wrap=false
-fx op=shift layer=6 frame=7 dx=0 dy=2 wrap=false
-draw op=clear_cel layer=3 frame=7
-draw op=clear_cel layer=4 frame=7
-paint_grid layer=3 frame=7 x=8 y=5 legend=G:2,H:3,K:0 rows:6
-  |.K..|
-  |KHK.|
-  |.KG.|
-  |..KG|
-  |..KG|
-  |...K|
-paint_grid layer=4 frame=7 x=20 y=5 legend=G:2,H:3,K:0 rows:6
-  |..K.|
-  |.KHK|
-  |.GK.|
-  |GK..|
-  |GK..|
-  |K...|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=8 dx=0 dy=2 wrap=false
-fx op=shift layer=1 frame=8 dx=0 dy=2 wrap=false
-fx op=shift layer=2 frame=8 dx=0 dy=2 wrap=false
-fx op=shift layer=5 frame=8 dx=0 dy=2 wrap=false
-fx op=shift layer=6 frame=8 dx=0 dy=2 wrap=false
-draw op=clear_cel layer=3 frame=8
-draw op=clear_cel layer=4 frame=8
-paint_grid layer=3 frame=8 x=7 y=5 legend=G:2,H:3,K:0 rows:6
-  |.K...|
-  |KHK..|
-  |.KG..|
-  |..KG.|
-  |...KG|
-  |....K|
-paint_grid layer=4 frame=8 x=20 y=5 legend=G:2,H:3,K:0 rows:6
-  |...K.|
-  |..KHK|
-  |..GK.|
-  |.GK..|
-  |GK...|
-  |K....|
-frame op=add copy_from=0 duration_ms=100
-fx op=shift layer=0 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=1 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=2 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=5 frame=9 dx=0 dy=1 wrap=false
-fx op=shift layer=6 frame=9 dx=0 dy=1 wrap=false
-draw op=clear_cel layer=3 frame=9
-draw op=clear_cel layer=4 frame=9
-paint_grid layer=3 frame=9 x=6 y=4 legend=G:2,H:3,K:0 rows:6
-  |.K....|
-  |KHK...|
-  |.KG...|
-  |..KGG.|
-  |....KG|
-  |.....K|
-paint_grid layer=4 frame=9 x=20 y=4 legend=G:2,H:3,K:0 rows:6
-  |....K.|
-  |...KHK|
-  |...GK.|
-  |.GGK..|
-  |GK....|
-  |K.....|
-frame op=duration frame=0 count=10 duration_ms=100
+palette set colors=#122b31,#2f834d,#75d351,#d6f891
+layer rename index=0 name=body
+layer add name="left arm"
+layer add name="right arm"
+layer add name="left antenna"
+layer add name="right antenna"
+layer add name=head
+layer add name=eyes
+legend A=#122b31
+body @0 grid 11,21 = 11,21 10x8
+    ..AAAAAA..
+    .AAAAAAAA.
+    .AAAAAAAA.
+    .AAAAAAAA.
+    .AAAAAAAA.
+    .AAAAAAAA.
+    AAA....AAA
+    .A......A.
+"left arm" @0 grid 8,21 = 8,21 4x6
+    ...A
+    ..AA
+    .AAA
+    AAA.
+    AAA.
+    .A..
+"right arm" @0 grid 20,21 = 20,21 4x6
+    A...
+    AA..
+    AAA.
+    .AAA
+    .AAA
+    ..A.
+"left antenna" @0 grid 7,3 = 7,3 5x6
+    .A...
+    AAA..
+    .AA..
+    ..AA.
+    ...AA
+    ....A
+"right antenna" @0 grid 20,3 = 20,3 5x6
+    ...A.
+    ..AAA
+    ..AA.
+    .AA..
+    AA...
+    A....
+head @0 grid 4,8 = 4,8 24x14
+    .......AAAAAAAAAA.......
+    ....AAAAAAAAAAAAAAAA....
+    ..AAAAAAAAAAAAAAAAAAAA..
+    .AAAAAAAAAAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAAAAAAAAAA.
+    .AAAAAAAAAAAAAAAAAAAAAA.
+    ..AAAAAAAAAAAAAAAAAAAA..
+    ...AAAAAAAAAAAAAAAAAA...
+    ....AAAAAAAAAAAAAAAA....
+    ......AAAAAAAAAAAA......
+    ........AAAAAAAA........
+legend B=#2f834d C=#75d351 D=#d6f891
+body @0 grid 11,21 = 12,22 8x6
+    ABCCCCBA
+    ACDCCDCA
+    ABCCCCBA
+    ABBBBBBA
+    ACAAAACA
+    CA....AC
+"left arm" @0 grid 8,21 = 9,22 3x4
+    .AB
+    ACA
+    CA.
+    CA.
+"right arm" @0 grid 20,21 = 20,22 3x4
+    BA.
+    ACA
+    .AC
+    .AC
+"left antenna" @0 grid 7,3 = 8,4 4x4
+    DA..
+    AC..
+    .AC.
+    ..AC
+"right antenna" @0 grid 20,3 = 20,4 4x4
+    ..AD
+    ..CA
+    .CA.
+    CA..
+head @0 grid 4,8 = 5,9 22x12
+    ...AAACCCCCCCCCCAAA...
+    .AACCDDDDDDDDDDDDCCAA.
+    ACCDDCCCCCCCCCCCCDDCCA
+    BCDCCCCCCCCCCCCCCCCDCB
+    BCCCCCCCCCCCCCCCCCCCCB
+    BCCCCCCCCCCCCCCCCCCCCB
+    ABCCCCCCCCCCCCCCCCCCBA
+    ABCCCCCCCCCCCCCCCCCCBA
+    .ABCCCCCCCCCCCCCCCCBA.
+    ..ABCCCCCCCCCCCCCCBA..
+    ...AABCCCCCCCCCCBAA...
+    .....AABBBBBBBBAA.....
+eyes @0 grid 7,12 = 7,12 18x7
+    AAA............AAA
+    ADAA..........AADA
+    AAAAA........AAAAA
+    .AAAAA......AAAAA.
+    ..AAAA......AAAA..
+    ....AA......AA....
+    ........AA........
+frame add copy_from=0 duration_ms=100
+body @1 shift dx=0 dy=-1 wrap=false
+"left arm" @1 shift dx=0 dy=-1 wrap=false
+"right arm" @1 shift dx=0 dy=-1 wrap=false
+head @1 shift dx=0 dy=-1 wrap=false
+eyes @1 shift dx=0 dy=-1 wrap=false
+"left antenna" @1 clear_cel = 7,3 11,8 .
+"right antenna" @1 clear_cel = 20,3 24,8 .
+"left antenna" @1 grid 6,2 = 6,2 6x6
+    .A....
+    ADA...
+    .AC...
+    ..ACC.
+    ....AC
+    .....A
+"right antenna" @1 grid 20,2 = 20,2 6x6
+    ....A.
+    ...ADA
+    ...CA.
+    .CCA..
+    CA....
+    A.....
+frame add copy_from=0 duration_ms=100
+body @2 shift dx=0 dy=-2 wrap=false
+"left arm" @2 shift dx=0 dy=-2 wrap=false
+"right arm" @2 shift dx=0 dy=-2 wrap=false
+head @2 shift dx=0 dy=-2 wrap=false
+eyes @2 shift dx=0 dy=-2 wrap=false
+"left antenna" @2 clear_cel = 7,3 11,8 .
+"right antenna" @2 clear_cel = 20,3 24,8 .
+"left antenna" @2 grid 5,1 = 5,1 7x6
+    .A.....
+    ADA....
+    .AC....
+    ..ACC..
+    ....ACC
+    ......A
+"right antenna" @2 grid 20,1 = 20,1 7x6
+    .....A.
+    ....ADA
+    ....CA.
+    ..CCA..
+    CCA....
+    A......
+frame add copy_from=0 duration_ms=100
+body @3 shift dx=0 dy=-2 wrap=false
+"left arm" @3 shift dx=0 dy=-2 wrap=false
+"right arm" @3 shift dx=0 dy=-2 wrap=false
+head @3 shift dx=0 dy=-2 wrap=false
+eyes @3 shift dx=0 dy=-2 wrap=false
+"left antenna" @3 clear_cel = 7,3 11,8 .
+"right antenna" @3 clear_cel = 20,3 24,8 .
+"left antenna" @3 grid 6,1 = 6,1 6x6
+    .A....
+    ADA...
+    .AC...
+    ..ACC.
+    ....AC
+    .....A
+"right antenna" @3 grid 20,1 = 20,1 6x6
+    ....A.
+    ...ADA
+    ...CA.
+    .CCA..
+    CA....
+    A.....
+frame add copy_from=0 duration_ms=100
+body @4 shift dx=0 dy=-1 wrap=false
+"left arm" @4 shift dx=0 dy=-1 wrap=false
+"right arm" @4 shift dx=0 dy=-1 wrap=false
+head @4 shift dx=0 dy=-1 wrap=false
+eyes @4 shift dx=0 dy=-1 wrap=false
+"left antenna" @4 clear_cel = 7,3 11,8 .
+"right antenna" @4 clear_cel = 20,3 24,8 .
+"left antenna" @4 grid 7,2 = 7,2 5x6
+    .A...
+    ADA..
+    .AC..
+    ..AC.
+    ...AC
+    ....A
+"right antenna" @4 grid 20,2 = 20,2 5x6
+    ...A.
+    ..ADA
+    ..CA.
+    .CA..
+    CA...
+    A....
+eyes @4 clear_cel = 7,11 24,17 .
+eyes @4 grid 7,13 = 7,13 18x5
+    BBBBB........BBBBB
+    .ADAAA......AAADA.
+    ..AAAA......AAAA..
+    ....AA......AA....
+    ........AA........
+frame add copy_from=0 duration_ms=100
+"left antenna" @5 clear_cel = 7,3 11,8 .
+"right antenna" @5 clear_cel = 20,3 24,8 .
+"left antenna" @5 grid 8,3 = 8,3 4x6
+    .A..
+    ADA.
+    .AC.
+    ..AC
+    ..AC
+    ...A
+"right antenna" @5 grid 20,3 = 20,3 4x6
+    ..A.
+    .ADA
+    .CA.
+    CA..
+    CA..
+    A...
+eyes @5 clear_cel = 7,12 24,18 .
+eyes @5 grid 7,14 = 7,14 18x5
+    A....A......A....A
+    .AAAA........AAAA.
+    ..................
+    ..................
+    ........AA........
+frame add copy_from=0 duration_ms=100
+body @6 shift dx=0 dy=1 wrap=false
+"left arm" @6 shift dx=0 dy=1 wrap=false
+"right arm" @6 shift dx=0 dy=1 wrap=false
+head @6 shift dx=0 dy=1 wrap=false
+eyes @6 shift dx=0 dy=1 wrap=false
+"left antenna" @6 clear_cel = 7,3 11,8 .
+"right antenna" @6 clear_cel = 20,3 24,8 .
+"left antenna" @6 grid 9,4 = 9,4 3x6
+    .A.
+    ADA
+    .AC
+    .AC
+    .AC
+    ..A
+"right antenna" @6 grid 20,4 = 20,4 3x6
+    .A.
+    ADA
+    CA.
+    CA.
+    CA.
+    A..
+eyes @6 clear_cel = 7,13 24,19 .
+eyes @6 grid 7,15 = 7,15 18x5
+    BBBBB........BBBBB
+    .ADAAA......AAADA.
+    ..AAAA......AAAA..
+    ....AA......AA....
+    ........AA........
+frame add copy_from=0 duration_ms=100
+body @7 shift dx=0 dy=2 wrap=false
+"left arm" @7 shift dx=0 dy=2 wrap=false
+"right arm" @7 shift dx=0 dy=2 wrap=false
+head @7 shift dx=0 dy=2 wrap=false
+eyes @7 shift dx=0 dy=2 wrap=false
+"left antenna" @7 clear_cel = 7,3 11,8 .
+"right antenna" @7 clear_cel = 20,3 24,8 .
+"left antenna" @7 grid 8,5 = 8,5 4x6
+    .A..
+    ADA.
+    .AC.
+    ..AC
+    ..AC
+    ...A
+"right antenna" @7 grid 20,5 = 20,5 4x6
+    ..A.
+    .ADA
+    .CA.
+    CA..
+    CA..
+    A...
+frame add copy_from=0 duration_ms=100
+body @8 shift dx=0 dy=2 wrap=false
+"left arm" @8 shift dx=0 dy=2 wrap=false
+"right arm" @8 shift dx=0 dy=2 wrap=false
+head @8 shift dx=0 dy=2 wrap=false
+eyes @8 shift dx=0 dy=2 wrap=false
+"left antenna" @8 clear_cel = 7,3 11,8 .
+"right antenna" @8 clear_cel = 20,3 24,8 .
+"left antenna" @8 grid 7,5 = 7,5 5x6
+    .A...
+    ADA..
+    .AC..
+    ..AC.
+    ...AC
+    ....A
+"right antenna" @8 grid 20,5 = 20,5 5x6
+    ...A.
+    ..ADA
+    ..CA.
+    .CA..
+    CA...
+    A....
+frame add copy_from=0 duration_ms=100
+body @9 shift dx=0 dy=1 wrap=false
+"left arm" @9 shift dx=0 dy=1 wrap=false
+"right arm" @9 shift dx=0 dy=1 wrap=false
+head @9 shift dx=0 dy=1 wrap=false
+eyes @9 shift dx=0 dy=1 wrap=false
+"left antenna" @9 clear_cel = 7,3 11,8 .
+"right antenna" @9 clear_cel = 20,3 24,8 .
+"left antenna" @9 grid 6,4 = 6,4 6x6
+    .A....
+    ADA...
+    .AC...
+    ..ACC.
+    ....AC
+    .....A
+"right antenna" @9 grid 20,4 = 20,4 6x6
+    ....A.
+    ...ADA
+    ...CA.
+    .CCA..
+    CA....
+    A.....
+frame duration frame=0 count=10 duration_ms=100
 add_tag name=hover direction=forward from=0 to=9
-region op=clear layer=3 frame=3 rect=4,0,11,10
-region op=clear layer=4 frame=3 rect=20,0,27,10
-paint_grid layer=3 frame=3 x=5 y=1 legend=G:2,H:3,K:0 rows:6
-  |.K.....|
-  |KHK....|
-  |.KG....|
-  |..KG...|
-  |...KGGG|
-  |......K|
-paint_grid layer=4 frame=3 x=20 y=1 legend=G:2,H:3,K:0 rows:6
-  |.....K.|
-  |....KHK|
-  |....GK.|
-  |...GK..|
-  |GGGK...|
-  |K......|
-region op=clear layer=3 frame=4 rect=4,0,11,10
-region op=clear layer=4 frame=4 rect=20,0,27,10
-paint_grid layer=3 frame=4 x=6 y=2 legend=G:2,H:3,K:0 rows:6
-  |.K....|
-  |KHK...|
-  |.KG...|
-  |..KGG.|
-  |....KG|
-  |.....K|
-paint_grid layer=4 frame=4 x=20 y=2 legend=G:2,H:3,K:0 rows:6
-  |....K.|
-  |...KHK|
-  |...GK.|
-  |.GGK..|
-  |GK....|
-  |K.....|
-region op=clear layer=3 frame=5 rect=4,0,11,10
-region op=clear layer=4 frame=5 rect=20,0,27,10
-paint_grid layer=3 frame=5 x=7 y=3 legend=G:2,H:3,K:0 rows:6
-  |.K...|
-  |KHK..|
-  |.KG..|
-  |..KG.|
-  |...KG|
-  |....K|
-paint_grid layer=4 frame=5 x=20 y=3 legend=G:2,H:3,K:0 rows:6
-  |...K.|
-  |..KHK|
-  |..GK.|
-  |.GK..|
-  |GK...|
-  |K....|
-region op=clear layer=3 frame=6 rect=4,0,11,10
-region op=clear layer=4 frame=6 rect=20,0,27,10
-paint_grid layer=3 frame=6 x=8 y=4 legend=G:2,H:3,K:0 rows:6
-  |.K..|
-  |KHK.|
-  |.KG.|
-  |..KG|
-  |..KG|
-  |...K|
-paint_grid layer=4 frame=6 x=20 y=4 legend=G:2,H:3,K:0 rows:6
-  |..K.|
-  |.KHK|
-  |.GK.|
-  |GK..|
-  |GK..|
-  |K...|
-region op=clear layer=3 frame=7 rect=4,0,11,10
-region op=clear layer=4 frame=7 rect=20,0,27,10
-paint_grid layer=3 frame=7 x=9 y=5 legend=G:2,H:3,K:0 rows:6
-  |.K.|
-  |KHK|
-  |.KG|
-  |.KG|
-  |.KG|
-  |..K|
-paint_grid layer=4 frame=7 x=20 y=5 legend=G:2,H:3,K:0 rows:6
-  |.K.|
-  |KHK|
-  |GK.|
-  |GK.|
-  |GK.|
-  |K..|
-region op=clear layer=3 frame=8 rect=4,0,11,10
-region op=clear layer=4 frame=8 rect=20,0,27,10
-paint_grid layer=3 frame=8 x=9 y=5 legend=G:2,H:3,K:0 rows:6
-  |.K.|
-  |KHK|
-  |.KG|
-  |KG.|
-  |.KG|
-  |..K|
-paint_grid layer=4 frame=8 x=20 y=5 legend=G:2,H:3,K:0 rows:6
-  |.K.|
-  |KHK|
-  |GK.|
-  |.GK|
-  |GK.|
-  |K..|
-region op=clear layer=3 frame=9 rect=4,0,11,10
-region op=clear layer=4 frame=9 rect=20,0,27,10
-paint_grid layer=3 frame=9 x=8 y=4 legend=G:2,H:3,K:0 rows:6
-  |.K..|
-  |KHK.|
-  |.KG.|
-  |..KG|
-  |..KG|
-  |...K|
-paint_grid layer=4 frame=9 x=20 y=4 legend=G:2,H:3,K:0 rows:6
-  |..K.|
-  |.KHK|
-  |.GK.|
-  |GK..|
-  |GK..|
-  |K...|
+"left antenna" @3 clear 4,0 11,10 = 6,1 11,6 .
+"right antenna" @3 clear 20,0 27,10 = 20,1 25,6 .
+"left antenna" @3 grid 5,1 = 5,1 7x6
+    .A.....
+    ADA....
+    .AC....
+    ..AC...
+    ...ACCC
+    ......A
+"right antenna" @3 grid 20,1 = 20,1 7x6
+    .....A.
+    ....ADA
+    ....CA.
+    ...CA..
+    CCCA...
+    A......
+"left antenna" @4 clear 4,0 11,10 = 7,2 11,7 .
+"right antenna" @4 clear 20,0 27,10 = 20,2 24,7 .
+"left antenna" @4 grid 6,2 = 6,2 6x6
+    .A....
+    ADA...
+    .AC...
+    ..ACC.
+    ....AC
+    .....A
+"right antenna" @4 grid 20,2 = 20,2 6x6
+    ....A.
+    ...ADA
+    ...CA.
+    .CCA..
+    CA....
+    A.....
+"left antenna" @5 clear 4,0 11,10 = 8,3 11,8 .
+"right antenna" @5 clear 20,0 27,10 = 20,3 23,8 .
+"left antenna" @5 grid 7,3 = 7,3 5x6
+    .A...
+    ADA..
+    .AC..
+    ..AC.
+    ...AC
+    ....A
+"right antenna" @5 grid 20,3 = 20,3 5x6
+    ...A.
+    ..ADA
+    ..CA.
+    .CA..
+    CA...
+    A....
+"left antenna" @6 clear 4,0 11,10 = 9,4 11,9 .
+"right antenna" @6 clear 20,0 27,10 = 20,4 22,9 .
+"left antenna" @6 grid 8,4 = 8,4 4x6
+    .A..
+    ADA.
+    .AC.
+    ..AC
+    ..AC
+    ...A
+"right antenna" @6 grid 20,4 = 20,4 4x6
+    ..A.
+    .ADA
+    .CA.
+    CA..
+    CA..
+    A...
+"left antenna" @7 clear 4,0 11,10 = 8,5 11,10 .
+"right antenna" @7 clear 20,0 27,10 = 20,5 23,10 .
+"left antenna" @7 grid 9,5 = 9,5 3x6
+    .A.
+    ADA
+    .AC
+    .AC
+    .AC
+    ..A
+"right antenna" @7 grid 20,5 = 20,5 3x6
+    .A.
+    ADA
+    CA.
+    CA.
+    CA.
+    A..
+"left antenna" @8 clear 4,0 11,10 = 7,5 11,10 .
+"right antenna" @8 clear 20,0 27,10 = 20,5 24,10 .
+"left antenna" @8 grid 9,5 = 9,5 3x6
+    .A.
+    ADA
+    .AC
+    AC.
+    .AC
+    ..A
+"right antenna" @8 grid 20,5 = 20,5 3x6
+    .A.
+    ADA
+    CA.
+    .CA
+    CA.
+    A..
+"left antenna" @9 clear 4,0 11,10 = 6,4 11,9 .
+"right antenna" @9 clear 20,0 27,10 = 20,4 25,9 .
+"left antenna" @9 grid 8,4 = 8,4 4x6
+    .A..
+    ADA.
+    .AC.
+    ..AC
+    ..AC
+    ...A
+"right antenna" @9 grid 20,4 = 20,4 4x6
+    ..A.
+    .ADA
+    .CA.
+    CA..
+    CA..
+    A...

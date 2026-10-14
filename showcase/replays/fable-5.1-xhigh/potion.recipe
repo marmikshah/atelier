@@ -1,591 +1,677 @@
-atelier 4 a0b7fd72-9e46-4043-a42f-dafaf90064c0 0.1.0
+atelier 5 a0b7fd72-9e46-4043-a42f-dafaf90064c0 0.1.0
 new name=corked-flask width=32 height=32
-layer op=rename index=0 name=liquid
-layer op=add name=surface
-layer op=add name=bubbles
-layer op=add name=glass
-layer op=add name=cork
-palette op=set colors=#241a3d,#d6f3ff,#8c1f78,#d93fb0,#ff8fdc,#c17f45
-frame op=add count=9 duration_ms=100
-draw op=clear_cel layer=3 frame=0
-paint_grid layer=3 frame=0 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=0 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=0 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=1 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=1 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=1 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=2 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=2 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=2 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=3 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=3 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=3 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=4 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=4 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=4 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=5 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=5 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=5 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=6 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=6 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=6 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=7 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=7 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=7 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=8 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=8 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=8 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=3 frame=9 x=7 y=6 legend=g:#d6f3ff,o:#241a3d rows:25
-  |...oooooooooooo...|
-  |....o........o....|
-  |....o........o....|
-  |....o........o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....og.......o....|
-  |....o........o....|
-  |....o........o....|
-  |..oo..........oo..|
-  |.o.g..........g.o.|
-  |.o.g............o.|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.gg.............o|
-  |o.g..............o|
-  |o.g..............o|
-  |o................o|
-  |o................o|
-  |.o..............o.|
-  |.o..............o.|
-  |..oo..........oo..|
-  |....oo......oo....|
-  |......oooooo......|
-paint_grid layer=4 frame=9 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occccoco|
-  |occoccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=0 frame=9 x=8 y=21 legend=d:#8c1f78,m:#d93fb0 rows:9
-  |mmmmmmmmmmmmmmmm|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmmdd|
-  |mmmmmmmmmmmmmddd|
-  |mmmmmmmmmmmmmddd|
-  |.mmmmmmmmmmmddd.|
-  |.mmmmmmmmmmmddd.|
-  |...mmdddddddd...|
-  |.....dddddd.....|
-paint_grid layer=1 frame=0 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:2
-  |l.llll.lll..llll|
-  |mlmmmmlmmmllmmmm|
-paint_grid layer=2 frame=0 x=12 y=18 legend=g:#d6f3ff,l:#ff8fdc rows:11
-  |....g...|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |.......l|
-  |........|
-  |........|
-  |gl......|
-  |l.......|
-paint_grid layer=1 frame=1 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:3
-  |l..lll.l.l...lll|
-  |mllmmmlm.mlllmmm|
-  |........l.......|
-paint_grid layer=2 frame=1 x=12 y=23 legend=g:#d6f3ff,l:#ff8fdc rows:5
-  |.......l|
-  |........|
-  |........|
-  |gl......|
-  |l.......|
-paint_grid layer=1 frame=2 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:2
-  |l...lll...l...ll|
-  |mlllmmmlllmlllmm|
-paint_grid layer=2 frame=2 x=12 y=22 legend=g:#d6f3ff,l:#ff8fdc rows:5
-  |.......l|
-  |........|
-  |........|
-  |gl......|
-  |l.......|
-paint_grid layer=1 frame=3 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:2
-  |l....llll......l|
-  |mllllmmmmllllllm|
-paint_grid layer=2 frame=3 x=13 y=21 legend=g:#d6f3ff,l:#ff8fdc rows:5
-  |......l|
-  |.......|
-  |.......|
-  |gl.....|
-  |l......|
-paint_grid layer=1 frame=4 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:2
-  |l.....lllllll..l|
-  |mlllllmmmmmmmllm|
-paint_grid layer=2 frame=4 x=13 y=18 legend=g:#d6f3ff,l:#ff8fdc rows:7
-  |......g|
-  |.......|
-  |.......|
-  |.......|
-  |.......|
-  |gl.....|
-  |l......|
-paint_grid layer=1 frame=5 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:3
-  |l......ll.l.l..l|
-  |mllllllmmlm.mllm|
-  |...........l....|
-paint_grid layer=2 frame=5 x=13 y=22 legend=g:#d6f3ff,l:#ff8fdc rows:8
-  |gl...|
-  |l....|
-  |.....|
-  |.....|
-  |.....|
-  |...g.|
-  |..l.l|
-  |...l.|
-paint_grid layer=1 frame=6 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:2
-  |ll......ll...l.l|
-  |mmllllllmmlllmlm|
-paint_grid layer=2 frame=6 x=12 y=21 legend=g:#d6f3ff,l:#ff8fdc rows:8
-  |gl......|
-  |l.......|
-  |........|
-  |........|
-  |....g...|
-  |...l.l..|
-  |....l...|
-  |.......l|
-paint_grid layer=1 frame=7 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:2
-  |llllll...llll..l|
-  |mmmmmmlllmmmmllm|
-paint_grid layer=2 frame=7 x=12 y=18 legend=g:#d6f3ff,l:#ff8fdc rows:10
-  |g.......|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |....g...|
-  |...l.l..|
-  |....l...|
-  |.......l|
-paint_grid layer=1 frame=8 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:3
-  |ll.l.l....llll.l|
-  |mmlm.mllllmmmmlm|
-  |....l...........|
-paint_grid layer=2 frame=8 x=15 y=22 legend=g:#d6f3ff,l:#ff8fdc rows:5
-  |.g...|
-  |l.l..|
-  |.l...|
-  |.....|
-  |....l|
-paint_grid layer=1 frame=9 x=8 y=19 legend=l:#ff8fdc,m:#d93fb0 rows:2
-  |lll...l....lllll|
-  |mmmlllmllllmmmmm|
-paint_grid layer=2 frame=9 x=15 y=21 legend=g:#d6f3ff,l:#ff8fdc rows:5
-  |.g...|
-  |l.l..|
-  |.l...|
-  |.....|
-  |....l|
-paint_grid layer=4 frame=0 frame_to=9 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |ococccco|
-  |ococccco|
-  |occccoco|
-  |occccoco|
-  |........|
-  |cccccccc|
-  |oooooooo|
-paint_grid layer=4 frame=0 frame_to=9 x=12 y=1 legend=c:#c17f45,o:#241a3d rows:8
-  |.oooooo.|
-  |occcccco|
-  |ococccco|
-  |occoccco|
-  |occcccco|
-  |........|
-  |cccccccc|
-  |oooooooo|
+layer rename index=0 name=liquid
+layer add name=surface
+layer add name=bubbles
+layer add name=glass
+layer add name=cork
+palette set colors=#241a3d,#d6f3ff,#8c1f78,#d93fb0,#ff8fdc,#c17f45
+frame add count=9 duration_ms=100
+glass @0 clear_cel ~
+legend A=#241a3d B=#d6f3ff
+glass @0 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+legend C=#c17f45
+cork @0 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+legend D=#d93fb0 E=#8c1f78
+liquid @0 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @1 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @1 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @1 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @2 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @2 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @2 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @3 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @3 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @3 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @4 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @4 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @4 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @5 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @5 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @5 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @6 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @6 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @6 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @7 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @7 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @7 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @8 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @8 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @8 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+glass @9 grid 7,6 = 7,6 18x25
+    ...AAAAAAAAAAAA...
+    ....A........A....
+    ....A........A....
+    ....A........A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....AB.......A....
+    ....A........A....
+    ....A........A....
+    ..AA..........AA..
+    .A.B..........B.A.
+    .A.B............A.
+    A.BB.............A
+    A.BB.............A
+    A.BB.............A
+    A.B..............A
+    A.B..............A
+    A................A
+    A................A
+    .A..............A.
+    .A..............A.
+    ..AA..........AA..
+    ....AA......AA....
+    ......AAAAAA......
+cork @9 grid 12,1 = 12,1 8x8
+    .AAAAAA.
+    ACCCCCCA
+    ACACCCCA
+    ACCCCACA
+    ACCACCCA
+    ........
+    CCCCCCCC
+    AAAAAAAA
+liquid @9 grid 8,21 = 8,21 16x9
+    DDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDDEE
+    DDDDDDDDDDDDDEEE
+    DDDDDDDDDDDDDEEE
+    .DDDDDDDDDDDEEE.
+    .DDDDDDDDDDDEEE.
+    ...DDEEEEEEEE...
+    .....EEEEEE.....
+legend F=#ff8fdc
+surface @0 grid 8,19 = 8,19 16x2
+    F.FFFF.FFF..FFFF
+    DFDDDDFDDDFFDDDD
+bubbles @0 grid 12,18 = 12,18 8x11
+    ....B...
+    ........
+    ........
+    ........
+    ........
+    ........
+    .......F
+    ........
+    ........
+    BF......
+    F.......
+surface @1 grid 8,19 = 8,19 16x3
+    F..FFF.F.F...FFF
+    DFFDDDFD.DFFFDDD
+    ........F.......
+bubbles @1 grid 12,23 = 12,23 8x5
+    .......F
+    ........
+    ........
+    BF......
+    F.......
+surface @2 grid 8,19 = 8,19 16x2
+    F...FFF...F...FF
+    DFFFDDDFFFDFFFDD
+bubbles @2 grid 12,22 = 12,22 8x5
+    .......F
+    ........
+    ........
+    BF......
+    F.......
+surface @3 grid 8,19 = 8,19 16x2
+    F....FFFF......F
+    DFFFFDDDDFFFFFFD
+bubbles @3 grid 13,21 = 13,21 7x5
+    ......F
+    .......
+    .......
+    BF.....
+    F......
+surface @4 grid 8,19 = 8,19 16x2
+    F.....FFFFFFF..F
+    DFFFFFDDDDDDDFFD
+bubbles @4 grid 13,18 = 13,18 7x7
+    ......B
+    .......
+    .......
+    .......
+    .......
+    BF.....
+    F......
+surface @5 grid 8,19 = 8,19 16x3
+    F......FF.F.F..F
+    DFFFFFFDDFD.DFFD
+    ...........F....
+bubbles @5 grid 13,22 = 13,22 5x8
+    BF...
+    F....
+    .....
+    .....
+    .....
+    ...B.
+    ..F.F
+    ...F.
+surface @6 grid 8,19 = 8,19 16x2
+    FF......FF...F.F
+    DDFFFFFFDDFFFDFD
+bubbles @6 grid 12,21 = 12,21 8x8
+    BF......
+    F.......
+    ........
+    ........
+    ....B...
+    ...F.F..
+    ....F...
+    .......F
+surface @7 grid 8,19 = 8,19 16x2
+    FFFFFF...FFFF..F
+    DDDDDDFFFDDDDFFD
+bubbles @7 grid 12,18 = 12,18 8x10
+    B.......
+    ........
+    ........
+    ........
+    ........
+    ........
+    ....B...
+    ...F.F..
+    ....F...
+    .......F
+surface @8 grid 8,19 = 8,19 16x3
+    FF.F.F....FFFF.F
+    DDFD.DFFFFDDDDFD
+    ....F...........
+bubbles @8 grid 15,22 = 15,22 5x5
+    .B...
+    F.F..
+    .F...
+    .....
+    ....F
+surface @9 grid 8,19 = 8,19 16x2
+    FFF...F....FFFFF
+    DDDFFFDFFFFDDDDD
+bubbles @9 grid 15,21 = 15,21 5x5
+    .B...
+    F.F..
+    .F...
+    .....
+    ....F
+cork @0 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @1 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @2 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @3 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @4 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @5 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @6 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @7 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @8 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @9 grid 12,1 = 14,2 4x4
+    ACCC
+    ACCC
+    CCCA
+    CCCA
+cork @0 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @1 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @2 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @3 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @4 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @5 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @6 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @7 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @8 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
+cork @9 grid 12,1 = 14,2 4x4
+    CCCC
+    ACCC
+    CACC
+    CCCC
 add_tag name=loop direction=forward from=0 to=9
