@@ -40,7 +40,7 @@ const USAGE: &str = "usage: atelier replay <file.recipe | doc-id> [--show] [--ho
 ///
 /// For a document ID, source and destination use the same selected store.
 /// Pass a journal file to replay into a different store with `--home`.
-pub(crate) fn read_source(path: &Path, label: &str) -> Result<String, String> {
+fn read_source(path: &Path, label: &str) -> Result<String, String> {
     let file =
         std::fs::File::open(path).map_err(|error| format!("cannot read {label}: {error}"))?;
     let metadata = file
@@ -485,7 +485,7 @@ fn print_step(idx: usize, step: &Statement, summary: &str) {
 /// JSON payload in a text content block — but image-first results (doc_look,
 /// diff overlays) put the PNG block before it, so take the first TEXT block
 /// rather than dumping base64; fall back to a debug dump of the shape.
-pub(crate) fn summarize(result: &CallToolResult) -> String {
+fn summarize(result: &CallToolResult) -> String {
     let line = match result.content.iter().find_map(|c| c.as_text()) {
         Some(t) => t.text.clone(),
         None => format!("{result:?}"),
