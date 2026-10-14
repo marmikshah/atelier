@@ -14,7 +14,7 @@ use rmcp::service::RequestContext;
 use rmcp::{ErrorData, RoleServer, ServerHandler, tool_handler};
 use serde_json::{Value, json};
 
-use atelier_studio::{AlphaMode, Studio, ToolName};
+use atelier_studio::{AlphaMode, Statement, Studio, ToolName};
 
 mod params;
 mod reference;
@@ -940,10 +940,22 @@ impl Atelier {
 
         if journaled {
             let recorded = journal_args(tool, args, Some(&target));
-            if let Err(error) = transaction
+            let Some(recorded) = recorded.as_object() else {
+                return Ok(res(Err(format!(
+                    "{tool} was called with non-object arguments"
+                ))));
+            };
+            let report = result_json(&result).unwrap_or(Value::Null);
+            // What the call did is read from the staged document, so the
+            // recipe records the pixels this very call left behind.
+            let statements = match transaction
                 .studio()
-                .journal_append(&target, tool, &recorded)
+                .statements_for_call(&target, tool, recorded, &report)
             {
+                Ok(statements) => statements,
+                Err(error) => return Ok(res(Err(format!("cannot record {tool}: {error}")))),
+            };
+            if let Err(error) = transaction.studio().journal_append(&target, &statements) {
                 return Ok(res(Err(error)));
             }
         }
@@ -971,6 +983,110 @@ impl Atelier {
             Some(revision) => attach_result_field(result, "revision", json!(revision)),
             None => attach_result_field(result, "deleted_revision", json!(current_revision)),
         };
+        if let Some(warning) = commit_warning {
+            result = attach_commit_warning(result, &warning);
+        }
+        Ok(result)
+    }
+
+    /// The index of the layer a recipe scope names, in `doc_id` as it stands
+    /// now. Replay resolves a cel call's layer with this before dispatching it.
+    pub fn layer_index(
+        &self,
+        doc_id: &str,
+        layer: &atelier_studio::LayerRef,
+    ) -> Result<usize, String> {
+        self.studio().layer_index(doc_id, layer)
+    }
+
+    /// Apply a recorded effect to `doc_id` exactly as its recipe states it,
+    /// recording the statement itself. This is how `atelier replay` rebuilds
+    /// a cel without calling the tool that drew it: the pixels come from the
+    /// file, under the same ordering and transaction rules as a tool call.
+    pub async fn replay_effect(
+        &self,
+        doc_id: &str,
+        statement: Statement,
+    ) -> Result<CallToolResult, ErrorData> {
+        let order = self.write_order.clone().lock_owned().await;
+        let work = self
+            .work_permits
+            .clone()
+            .acquire_owned()
+            .await
+            .map_err(|_| ErrorData::internal_error("tool worker pool closed", None))?;
+        let worker = self.clone();
+        let doc_id = doc_id.to_owned();
+        tokio::task::spawn_blocking(move || {
+            let _order = order;
+            let _work = work;
+            worker.replay_effect_blocking(&doc_id, &statement)
+        })
+        .await
+        .map_err(|error| {
+            ErrorData::internal_error(format!("tool worker failed unexpectedly: {error}"), None)
+        })?
+    }
+
+    fn replay_effect_blocking(
+        &self,
+        doc_id: &str,
+        statement: &Statement,
+    ) -> Result<CallToolResult, ErrorData> {
+        let Statement::Effect { scope, change, .. } = statement else {
+            return Err(ErrorData::invalid_params(
+                "only an effect statement is replayed as pixels",
+                None,
+            ));
+        };
+        if !atelier_studio::DocumentId::is_valid(doc_id) {
+            return Err(ErrorData::invalid_params(
+                format!("invalid document id '{doc_id}'"),
+                None,
+            ));
+        }
+        let _store_lock = self
+            .studio()
+            .lock_store_exclusive()
+            .map_err(|error| ErrorData::internal_error(error, None))?;
+        if let Err(error) = self.studio().cleanup_stale_transactions() {
+            return Ok(res(Err(error)));
+        }
+        let current_revision = match self.studio().document_revision(doc_id) {
+            Ok(revision) => revision,
+            Err(error) => return Ok(res(Err(error))),
+        };
+        let Some(next_revision) = current_revision.checked_add(1) else {
+            return Ok(res(Err(format!(
+                "document revision overflow for {doc_id}; no effect was applied"
+            ))));
+        };
+        let transaction = match self.studio().begin_transaction(Some(doc_id)) {
+            Ok(transaction) => transaction,
+            Err(error) => return Ok(res(Err(error))),
+        };
+        let report = match transaction.studio().apply_change(doc_id, scope, change) {
+            Ok(report) => report,
+            Err(error) => return Ok(res(Err(error))),
+        };
+        if let Err(error) = transaction
+            .studio()
+            .journal_append(doc_id, std::slice::from_ref(statement))
+        {
+            return Ok(res(Err(error)));
+        }
+        if let Err(error) = transaction
+            .studio()
+            .set_document_revision(doc_id, next_revision)
+        {
+            return Ok(res(Err(error)));
+        }
+        let commit_warning = match transaction.commit(doc_id) {
+            Ok(atelier_studio::CommitOutcome::Durable) => None,
+            Ok(atelier_studio::CommitOutcome::DurabilityUncertain { warning }) => Some(warning),
+            Err(error) => return Ok(res(Err(error))),
+        };
+        let mut result = attach_result_field(res(Ok(report)), "revision", json!(next_revision));
         if let Some(warning) = commit_warning {
             result = attach_commit_warning(result, &warning);
         }
@@ -2025,7 +2141,11 @@ mod tests {
         assert_eq!(atelier.studio().document_revision(&doc_id).unwrap(), 2);
         let journal = atelier.studio().journal(&doc_id).unwrap();
         assert_eq!(journal.len(), 2);
-        assert!(!journal[1].args.contains_key("expected_revision"));
+        assert!(
+            matches!(&journal[1], Statement::Effect { annotation, .. } if annotation == "pencil #0c2238"),
+            "the recipe records the stroke, not the caller's revision guard: {:?}",
+            journal[1]
+        );
 
         let stale = atelier
             .dispatch(
@@ -2212,16 +2332,22 @@ mod tests {
             "restore must discard post-checkpoint provenance"
         );
         assert_eq!(
-            Value::Object(journal[1].args.clone()),
-            json!({
-                "doc_id": doc_id,
-                "layer": 0,
-                "frame": 0,
-                "op": "pencil",
-                "points": [[1, 1]],
-                "color": [200, 0, 0]
-            }),
-            "the journal stores the explicit target"
+            journal[1],
+            Statement::Effect {
+                scope: atelier_studio::Scope {
+                    layer: atelier_studio::LayerRef::Name("Layer 1".into()),
+                    frame: 0
+                },
+                annotation: "pencil #c80000".into(),
+                change: atelier_studio::Change::Solid {
+                    x0: 1,
+                    y0: 1,
+                    x1: 1,
+                    y1: 1,
+                    color: [200, 0, 0, 255]
+                }
+            },
+            "the journal keeps the pixels the checkpointed call left"
         );
         assert_eq!(
             atelier

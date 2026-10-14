@@ -39,7 +39,7 @@ fn short_ids_read_and_write_and_are_journaled_in_full() {
     assert!(ok, "{drawn}");
     let journal = fs::read_to_string(home.join("documents").join(id).join("doc.recipe")).unwrap();
     assert!(
-        journal.starts_with(&format!("atelier 4 {id} ")),
+        journal.starts_with(&format!("atelier 5 {id} ")),
         "the header names the full id: {journal}"
     );
     assert!(!journal.contains(&format!("={short}")), "{journal}");

@@ -50,6 +50,7 @@ compile_error!("atelier needs an atomic directory exchange; only Linux and macOS
 use atelier_mcp::server;
 
 mod call;
+mod convert;
 mod fsutil;
 mod init;
 mod library;
@@ -264,6 +265,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("init") => std::process::exit(init::run(&args[2..])),
         // Runs inside this runtime: an in-process dispatch loop, no transport.
         Some("replay") => std::process::exit(replay::run(&args[2..]).await),
+        // Temporary: re-encode a format 4 recipe as format 5.
+        Some("convert") => std::process::exit(convert::run(&args[2..]).await),
         Some("--version") | Some("-V") => {
             println!("atelier {}", env!("CARGO_PKG_VERSION"));
             return Ok(());

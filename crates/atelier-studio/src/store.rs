@@ -10,10 +10,10 @@ use serde_json::{Value, json};
 
 use atelier_core::document::{AnalysisDocument, Document};
 
-use super::journal::ParsedJournal;
+use super::journal::{ParsedJournal, Statement, encode_statements};
 use super::{
-    DocumentId, JOURNAL_FILE, JournalEntry, MAX_CANVAS, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES,
-    REVISION_FILE, Studio, ToolName, parse_journal, validate_journal,
+    DocumentId, JOURNAL_FILE, MAX_CANVAS, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES, REVISION_FILE,
+    Studio, ToolName, parse_journal, validate_journal,
 };
 
 /// Twenty decimal digits for `u64::MAX`, plus one trailing newline.
@@ -74,11 +74,8 @@ pub(crate) fn parse_journal_file(
 ) -> Result<ParsedJournal, String> {
     let body = read_bounded_utf8(path, JOURNAL_FILE, MAX_JOURNAL_BYTES)?;
     let journal = parse_journal(&body)?;
-    let entries = &journal.entries;
-    if let Some(recorded_id) = entries
-        .first()
-        .and_then(|entry| entry.args.get("doc_id"))
-        .and_then(Value::as_str)
+    if let Some(Statement::Call { args, .. }) = journal.statements.first()
+        && let Some(recorded_id) = args.get("doc_id").and_then(Value::as_str)
         && recorded_id != id
     {
         return Err(format!(
@@ -574,17 +571,16 @@ impl Studio {
         self.docs_dir.join(id).join(JOURNAL_FILE)
     }
 
-    /// Append one call to `id`'s journal.
+    /// Append one call's statements to `id`'s journal.
     ///
     /// The journal is what makes "every document is a replayable recipe" true
     /// rather than aspirational: it lives beside the art it produced, so a
     /// document carries its own provenance and nothing has to be turned on
     /// beforehand to get it.
     ///
-    /// JSON Lines, appended: one versioned call per line. Failure is explicit;
-    /// the dispatch transaction must not publish pixels whose recipe could not
-    /// be persisted.
-    pub fn journal_append(&self, id: &str, tool: ToolName, args: &Value) -> Result<(), String> {
+    /// Failure is explicit; the dispatch transaction must not publish pixels
+    /// whose recipe could not be persisted.
+    pub fn journal_append(&self, id: &str, statements: &[Statement]) -> Result<(), String> {
         // Defence in depth: `id` is joined onto the store path, so validate it
         // here too rather than trust every caller forever — a bad id must never
         // write doc.recipe outside the store (the repo has had a traversal bug
@@ -595,13 +591,14 @@ impl Studio {
         if !self.exists(id) {
             return Err(format!("no document '{id}' to journal"));
         }
-        let args = args
-            .as_object()
-            .ok_or_else(|| format!("refusing to journal non-object args for {tool}"))?;
-        let entry = JournalEntry::new(tool, args.clone());
+        if statements.is_empty() {
+            return Err("refusing to journal an empty record".into());
+        }
         let path = self.journal_path(id);
-        let (mut existing_entries, existing_bytes, headed) = match fs::symlink_metadata(&path) {
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (Vec::new(), 0, false),
+        let (mut existing, existing_bytes, headed, mut legend) = match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                (Vec::new(), 0, false, Default::default())
+            }
             Err(error) => return Err(format!("cannot inspect journal for '{id}': {error}")),
             Ok(metadata) if !metadata.file_type().is_file() => {
                 return Err(format!(
@@ -615,23 +612,25 @@ impl Studio {
                         "journal for '{id}' has an incomplete final line; run `atelier library verify` and repair it before editing"
                     ));
                 }
-                (parsed.entries, metadata.len(), parsed.headed)
+                (
+                    parsed.statements,
+                    metadata.len(),
+                    parsed.headed,
+                    parsed.legend,
+                )
             }
         };
-        if existing_entries.len() >= MAX_JOURNAL_ENTRIES {
+        if existing.len() + statements.len() > MAX_JOURNAL_ENTRIES {
             return Err(format!(
                 "journal for '{id}' reached the {MAX_JOURNAL_ENTRIES}-entry safety limit"
             ));
         }
-        existing_entries.push(entry.clone());
-        validate_journal(&existing_entries)
-            .map_err(|error| format!("refusing journal append: {error}"))?;
-        if existing_entries
-            .first()
-            .and_then(|first| first.args.get("doc_id"))
-            .and_then(Value::as_str)
-            != Some(id)
-        {
+        existing.extend(statements.iter().cloned());
+        validate_journal(&existing).map_err(|error| format!("refusing journal append: {error}"))?;
+        if !matches!(
+            existing.first(),
+            Some(Statement::Call { args, .. }) if args.get("doc_id").and_then(Value::as_str) == Some(id)
+        ) {
             return Err(format!(
                 "refusing journal append: doc_new stamp does not match document '{id}'"
             ));
@@ -642,7 +641,7 @@ impl Studio {
         } else {
             String::new()
         };
-        line.push_str(&crate::journal::encode_entry(&entry, id)?);
+        line.push_str(&encode_statements(statements, &mut legend, id)?);
         let line_bytes = u64::try_from(line.len()).unwrap_or(u64::MAX);
         if existing_bytes > MAX_JOURNAL_BYTES.saturating_sub(line_bytes) {
             return Err(format!(
@@ -663,19 +662,27 @@ impl Studio {
             .open(&path)
             .map_err(|e| format!("could not open journal for '{id}': {e}"))?;
         std::io::Write::write_all(&mut file, line.as_bytes())
-            .map_err(|e| format!("could not journal {tool} for '{id}': {e}"))?;
+            .map_err(|e| format!("could not journal for '{id}': {e}"))?;
         file.sync_data()
             .map_err(|e| format!("could not sync journal for '{id}': {e}"))
     }
 
-    /// Read a document's journal back as its ordered calls.
+    /// Record one document-level call in `id`'s journal.
+    pub fn journal_call(&self, id: &str, tool: ToolName, args: &Value) -> Result<(), String> {
+        let args = args
+            .as_object()
+            .ok_or_else(|| format!("refusing to journal non-object args for {tool}"))?;
+        self.journal_append(id, &[Statement::call(tool, args.clone())])
+    }
+
+    /// Read a document's journal back as its ordered statements.
     ///
     /// Same parser as external replay files: a torn
     /// FINAL line is a crash mid-append and is dropped, but a malformed line
     /// with content after it is real corruption and errors — silently skipping
     /// it would report "N steps / replayable" for a journal that `atelier
     /// replay` then refuses.
-    pub fn journal(&self, id: &str) -> Result<Vec<JournalEntry>, String> {
+    pub fn journal(&self, id: &str) -> Result<Vec<Statement>, String> {
         if !self.exists(id) {
             return Err(format!("no document '{id}'"));
         }
@@ -690,7 +697,7 @@ impl Studio {
             }
             Ok(_) => {}
         }
-        parse_journal_file(id, &path).map(|journal| journal.entries)
+        parse_journal_file(id, &path).map(|journal| journal.statements)
     }
 }
 
@@ -768,27 +775,31 @@ mod tests {
         let id = created["doc_id"].as_str().unwrap();
         assert!(s.journal(id).unwrap().is_empty(), "nothing recorded yet");
         assert!(
-            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            s.journal_call(id, ToolName::DocLayer, &json!({"doc_id": id, "op": "add"}))
                 .is_err(),
             "a recipe cannot begin with an edit"
         );
 
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+        s.journal_call(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
-        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+        s.journal_call(id, ToolName::DocLayer, &json!({"doc_id": id, "op": "add"}))
             .unwrap();
         let steps = s.journal(id).unwrap();
         assert_eq!(steps.len(), 2, "appends accumulate in order");
-        assert_eq!(steps[0].tool, ToolName::DocNew);
-        assert_eq!(steps[1].args["op"], "rect");
+        assert_eq!(steps[0].tool(), Some(ToolName::DocNew));
+        assert_eq!(steps[1].tool(), Some(ToolName::DocLayer));
 
         // Journaling an unknown document is a no-op, never a panic or a stray
         // directory: a failed create must not leave a journal behind.
         assert!(
-            s.journal_append("nope", ToolName::DocDraw, &json!({}))
+            s.journal_call("nope", ToolName::DocLayer, &json!({}))
                 .is_err()
         );
         assert!(s.journal("nope").is_err(), "no document, no journal");
+        assert!(
+            s.journal_append(id, &[]).is_err(),
+            "an empty record is refused"
+        );
     }
 
     #[test]
@@ -798,22 +809,22 @@ mod tests {
         let s = studio("journal-policy");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+        s.journal_call(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
-        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+        s.journal_call(id, ToolName::DocLayer, &json!({"doc_id": id, "op": "add"}))
             .unwrap();
         let path = s.journal_path(id);
 
         let clean = fs::read_to_string(&path).unwrap();
-        fs::write(&path, format!("{clean}draw op=re")).unwrap();
+        fs::write(&path, format!("{clean}layer ad")).unwrap();
         assert_eq!(s.journal(id).unwrap().len(), 2, "torn final line dropped");
         assert!(
-            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            s.journal_call(id, ToolName::DocLayer, &json!({"doc_id": id, "op": "add"}))
                 .is_err(),
             "new writes must not cement a torn tail into the journal"
         );
 
-        fs::write(&path, format!("{clean}draw op=\n")).unwrap();
+        fs::write(&path, format!("{clean}layer op=\n")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 4"),
@@ -831,7 +842,7 @@ mod tests {
             "complete final corruption errors: {err}"
         );
 
-        fs::write(&path, "atelier 4 not-an-id 0.1.0\n").unwrap();
+        fs::write(&path, "atelier 5 not-an-id 0.1.0\n").unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 1"),
@@ -840,7 +851,7 @@ mod tests {
 
         fs::write(
             &path,
-            "atelier 4 123e4567-e89b-42d3-a456-426614174000 0.1.0\nnew name=d\n",
+            "atelier 5 123e4567-e89b-42d3-a456-426614174000 0.1.0\nnew name=d\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -851,27 +862,27 @@ mod tests {
     fn journal_contract_rejects_context_and_cross_document_steps() {
         let id = "550e8400-e29b-41d4-a716-446655440000";
         let other = "123e4567-e89b-42d3-a456-426614174000";
-        let create = JournalEntry::new(
+        let create = Statement::call(
             ToolName::DocNew,
             serde_json::from_value(json!({"name": "d", "doc_id": id})).unwrap(),
         );
         for entry in [
-            JournalEntry::new(
+            Statement::call(
                 ToolName::DocCheckpoint,
                 serde_json::from_value(json!({"doc_id": id, "action": "save"})).unwrap(),
             ),
-            JournalEntry::new(
-                ToolName::DocDraw,
-                serde_json::from_value(json!({"doc_id": other, "op": "clear_cel"})).unwrap(),
+            Statement::call(
+                ToolName::DocLayer,
+                serde_json::from_value(json!({"doc_id": other, "op": "add"})).unwrap(),
             ),
-            JournalEntry::new(
-                ToolName::DocDraw,
-                serde_json::from_value(json!({"op": "clear_cel"})).unwrap(),
+            Statement::call(
+                ToolName::DocLayer,
+                serde_json::from_value(json!({"op": "add"})).unwrap(),
             ),
         ] {
             assert!(validate_journal(&[create.clone(), entry]).is_err());
         }
-        let palette = JournalEntry::new(
+        let palette = Statement::call(
             ToolName::DocPalette,
             serde_json::from_value(json!({
                 "op": "generate",
@@ -916,21 +927,24 @@ mod tests {
         let s = studio("journal-version");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
+        s.journal_call(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
-        s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+        s.journal_call(id, ToolName::DocLayer, &json!({"doc_id": id, "op": "add"}))
             .unwrap();
         let path = s.journal_path(id);
         let written = fs::read_to_string(&path).unwrap();
         assert_eq!(
             written,
             format!(
-                "atelier {JOURNAL_SCHEMA} {id} {}\nnew name=d\ndraw op=rect\n",
+                "atelier {JOURNAL_SCHEMA} {id} {}\nnew name=d\nlayer add\n",
                 env!("CARGO_PKG_VERSION")
             ),
             "one header, then calls that leave the document id to it"
         );
-        assert_eq!(s.journal(id).unwrap()[1].args["doc_id"], id);
+        let Statement::Call { args, .. } = &s.journal(id).unwrap()[1] else {
+            panic!("not a call");
+        };
+        assert_eq!(args["doc_id"], id);
 
         let calls = written.split_once('\n').unwrap().1;
         fs::write(&path, calls).unwrap();
@@ -1061,14 +1075,14 @@ mod tests {
 
         fs::remove_file(&metadata).unwrap();
         fs::rename(&held_metadata, &metadata).unwrap();
-        s.journal_append(id, ToolName::DocNew, &json!({"name": "safe", "doc_id": id}))
+        s.journal_call(id, ToolName::DocNew, &json!({"name": "safe", "doc_id": id}))
             .unwrap();
         let journal = s.journal_path(id);
         let held_journal = document.join("held-doc.recipe");
         fs::rename(&journal, &held_journal).unwrap();
         symlink(&held_journal, &journal).unwrap();
         assert!(
-            s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
+            s.journal_call(id, ToolName::DocLayer, &json!({"doc_id": id, "op": "add"}))
                 .is_err()
         );
         let error = s.journal(id).unwrap_err();
