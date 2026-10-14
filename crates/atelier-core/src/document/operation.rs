@@ -45,9 +45,17 @@ impl Document {
             return self.apply_op_raw(layer, frame, op);
         }
         let before = self.cel_canvas(layer, frame)?.clone();
-        self.apply_op_raw(layer, frame, op)?;
         if erase {
-            // The op is only a stencil: everything it marked goes transparent.
+            // The op is only a stencil: everything it marks goes transparent.
+            // It marks in a colour the cel does not hold, so a stroke over
+            // pixels that already match the op's colour still counts.
+            let mut stencil = op.clone();
+            if let Some(object) = stencil.as_object_mut()
+                && object.contains_key("color")
+            {
+                object.insert("color".into(), json!(Self::unused_colour(&before)));
+            }
+            self.apply_op_raw(layer, frame, &stencil)?;
             let img = self.cel_canvas(layer, frame)?;
             for y in 0..img.height() {
                 for x in 0..img.width() {
@@ -58,6 +66,7 @@ impl Document {
             }
             return Ok(());
         }
+        self.apply_op_raw(layer, frame, op)?;
         let of = opacity.unwrap_or(255) as f32 / 255.0;
         let m = mode.unwrap_or(raster::Blend::Normal);
         let img = self.cel_canvas(layer, frame)?;
@@ -71,6 +80,15 @@ impl Document {
             }
         }
         Ok(())
+    }
+
+    /// An opaque colour no pixel of `img` has, for marking a stencil on it.
+    fn unused_colour(img: &image::RgbaImage) -> [u8; 4] {
+        let present: std::collections::HashSet<[u8; 4]> = img.pixels().map(|p| p.0).collect();
+        (1u32..)
+            .map(|n| [n as u8, (n >> 8) as u8, (n >> 16) as u8, 255])
+            .find(|candidate| !present.contains(candidate))
+            .unwrap_or([255, 255, 255, 255])
     }
 
     /// Dispatch one op through the [`OPS`] table, then run the shared post-op

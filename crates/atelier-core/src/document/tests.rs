@@ -2054,6 +2054,50 @@ fn erase_turns_any_op_into_an_eraser() {
 }
 
 #[test]
+fn erase_removes_pixels_that_already_match_the_stroke_colour() {
+    // The stencil used to be found by diffing before and after the stroke,
+    // so erasing with the colour already there changed nothing.
+    let mut d = Document::new("t", 4, 1);
+    d.fill_cel(0, 0, [200, 0, 0, 255]).unwrap();
+    d.apply_op(
+        0,
+        0,
+        &json!({"op":"pencil","points":[[1,0],[2,0]],"color":[200,0,0],"erase":true}),
+    )
+    .unwrap();
+    assert_eq!(d.get_pixel(0, 0, 0, 0).unwrap(), [200, 0, 0, 255]);
+    assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]);
+    assert_eq!(d.get_pixel(0, 0, 2, 0).unwrap(), [0, 0, 0, 0]);
+    assert_eq!(d.get_pixel(0, 0, 3, 0).unwrap(), [200, 0, 0, 255]);
+    // A flood fill still erases the region it finds, not the whole cel.
+    let mut d = Document::new("t", 4, 1);
+    d.fill_cel(0, 0, [200, 0, 0, 255]).unwrap();
+    d.apply_op(
+        0,
+        0,
+        &json!({"op":"pencil","points":[[2,0]],"color":[0,0,200]}),
+    )
+    .unwrap();
+    d.apply_op(
+        0,
+        0,
+        &json!({"op":"fill","x":0,"y":0,"color":[200,0,0],"erase":true}),
+    )
+    .unwrap();
+    assert_eq!(d.get_pixel(0, 0, 1, 0).unwrap(), [0, 0, 0, 0]);
+    assert_eq!(
+        d.get_pixel(0, 0, 2, 0).unwrap(),
+        [0, 0, 200, 255],
+        "stopped at the edge"
+    );
+    assert_eq!(
+        d.get_pixel(0, 0, 3, 0).unwrap(),
+        [200, 0, 0, 255],
+        "beyond the edge"
+    );
+}
+
+#[test]
 fn silhouette_center_of_known_shape() {
     let mut d = Document::new("t", 6, 6);
     // Filled 3×3 block from (1,1) to (3,3): bbox-centre is (2,2).
