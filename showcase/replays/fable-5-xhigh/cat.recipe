@@ -1,243 +1,612 @@
-atelier 4 f0728373-d9e6-4493-8b43-59f0828d8825 0.1.0
+atelier 5 f0728373-d9e6-4493-8b43-59f0828d8825 0.1.0
 new name=wizard-cat width=32 height=32
-palette op=set colors=#1b1230,#5a4a7e,#e8a33d,#8a5230,#7de0e8,#ffffff
-layer op=rename index=0 name=tail
-layer op=add name=body
-layer op=add name=staff
-layer op=add name=hat
-layer op=add name=orb
-layer op=add name=sparkles
-layer op=move index=2 to_index=1
-paint_grid layer=2 frame=0 x=5 y=7 legend=k:#1b1230,o:#e8a33d rows:2
-  |k.|
-  |ko|
-paint_grid layer=2 frame=0 x=5 y=7 legend=c:#7de0e8,k:#1b1230,o:#e8a33d,w:#ffffff rows:22
-  |k................k...|
-  |kok............kok...|
-  |kooo..........oook...|
-  |kooo..........oook...|
-  |.kokooooooooookok....|
-  |...kooooooooook......|
-  |...koocoooocook......|
-  |...koocoooocook......|
-  |...kooowkkwoook......|
-  |...koookwwkoook......|
-  |...kooowwwwoook......|
-  |....koowwwwook.......|
-  |....koowwwwookkkkk...|
-  |...kooowwwwoooooooook|
-  |...kooowwwwookkkooook|
-  |..kooooowwoook..kkkk.|
-  |..kooooowwoook.......|
-  |.kooooooooooook......|
-  |.kooooooooooook......|
-  |.kooooooooooook......|
-  |.koowwwkwwwoook......|
-  |..kkkkkkkkkkkk.......|
-paint_grid layer=3 frame=0 x=7 y=2 legend=c:#7de0e8,k:#1b1230,p:#5a4a7e rows:9
-  |.kk...........|
-  |kpppk.........|
-  |.kppppk.......|
-  |..kppppk......|
-  |..kpppppk.....|
-  |..kppppppk....|
-  |..kkkkckkk....|
-  |kppppppppppppk|
-  |.kkkkkkkkkkkk.|
-paint_grid layer=1 frame=0 x=23 y=11 legend=b:#8a5230,k:#1b1230 rows:19
-  |kk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |bk|
-  |kk|
-draw op=polyline layer=0 frame=0 color=#1b1230 points=8,26 6,25 4,23 4,21 size=3
-draw op=polyline layer=0 frame=0 color=#e8a33d points=8,26 6,25 4,23 4,21 size=1
-paint_grid layer=4 frame=0 x=22 y=6 legend=c:#7de0e8,w:#ffffff rows:5
-  |.ccc.|
-  |cwwwc|
-  |cwwwc|
-  |cwwwc|
-  |.ccc.|
-paint_grid layer=2 frame=0 x=7 y=24 legend=b:#8a5230 rows:3
-  |b|
-  |b|
-  |b|
-paint_grid layer=2 frame=0 x=9 y=12 legend=b:#8a5230 rows:1
-  |b|
-draw op=pencil layer=0 frame=0 color=#ffffff points=4,21 4,22
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-frame op=add copy_from=0
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=4 frame=0 rect=0,0,32,32
-region op=clear layer=5 frame=0 rect=0,0,32,32
-draw op=polyline layer=0 frame=0 color=#1b1230 points=8,26 6,25 4,23 4,21 size=3
-draw op=polyline layer=0 frame=0 color=#e8a33d points=8,26 6,25 4,23 4,21 size=1
-draw op=pencil layer=0 frame=0 color=#ffffff points=4,21 4,22
-draw op=pencil layer=4 frame=0 color=#7de0e8 points=24,7 23,8 25,8 24,9
-draw op=pencil layer=4 frame=0 color=#ffffff points=[[24,8]]
-draw op=pencil layer=5 frame=0 color=#7de0e8 points=26,7 25,8 27,8 26,9 20,7
-draw op=pencil layer=5 frame=0 color=#ffffff points=[[26,8]]
-region op=clear layer=0 frame=1 rect=0,0,32,32
-region op=clear layer=4 frame=1 rect=0,0,32,32
-region op=clear layer=5 frame=1 rect=0,0,32,32
-draw op=polyline layer=0 frame=1 color=#1b1230 points=8,26 6,25 4,23 5,21 size=3
-draw op=polyline layer=0 frame=1 color=#e8a33d points=8,26 6,25 4,23 5,21 size=1
-draw op=pencil layer=0 frame=1 color=#ffffff points=5,21 5,22
-draw op=pencil layer=4 frame=1 color=#7de0e8 points=23,7 23,8 23,9 24,7 24,9 25,7 25,8 25,9
-draw op=pencil layer=4 frame=1 color=#ffffff points=[[24,8]]
-draw op=pencil layer=5 frame=1 color=#7de0e8 points=[[21,11]]
-draw op=pencil layer=5 frame=1 color=#ffffff points=26,7 20,6
-region op=clear layer=0 frame=2 rect=0,0,32,32
-region op=clear layer=4 frame=2 rect=0,0,32,32
-region op=clear layer=5 frame=2 rect=0,0,32,32
-draw op=polyline layer=0 frame=2 color=#1b1230 points=8,26 6,25 5,23 6,20 size=3
-draw op=polyline layer=0 frame=2 color=#e8a33d points=8,26 6,25 5,23 6,20 size=1
-draw op=pencil layer=0 frame=2 color=#ffffff points=6,20 6,21
-draw op=pencil layer=4 frame=2 color=#7de0e8 points=23,7 25,7 23,9 25,9 24,6 22,8 26,8 24,10
-draw op=pencil layer=4 frame=2 color=#ffffff points=24,7 23,8 24,8 25,8 24,9
-draw op=pencil layer=5 frame=2 color=#7de0e8 points=20,10 27,6
-draw op=pencil layer=5 frame=2 color=#ffffff points=[[19,5]]
-region op=clear layer=0 frame=3 rect=0,0,32,32
-region op=clear layer=4 frame=3 rect=0,0,32,32
-region op=clear layer=5 frame=3 rect=0,0,32,32
-draw op=polyline layer=0 frame=3 color=#1b1230 points=8,26 6,25 5,23 6,20 size=3
-draw op=polyline layer=0 frame=3 color=#e8a33d points=8,26 6,25 5,23 6,20 size=1
-draw op=pencil layer=0 frame=3 color=#ffffff points=6,20 6,21
-draw op=pencil layer=4 frame=3 color=#7de0e8 points=23,6 24,6 25,6 22,7 26,7 22,8 26,8 22,9 26,9 23,10 24,10 25,10 20,9
-draw op=pencil layer=4 frame=3 color=#ffffff points=23,7 23,8 23,9 24,7 24,8 24,9 25,7 25,8 25,9 23,12 23,13
-draw op=pencil layer=5 frame=3 color=#7de0e8 points=20,9 27,5
-draw op=pencil layer=5 frame=3 color=#ffffff points=[[19,4]]
-region op=clear layer=0 frame=4 rect=0,0,32,32
-region op=clear layer=4 frame=4 rect=0,0,32,32
-region op=clear layer=5 frame=4 rect=0,0,32,32
-draw op=polyline layer=0 frame=4 color=#1b1230 points=8,26 6,25 4,23 5,21 size=3
-draw op=polyline layer=0 frame=4 color=#e8a33d points=8,26 6,25 4,23 5,21 size=1
-draw op=pencil layer=0 frame=4 color=#ffffff points=5,21 5,22
-draw op=pencil layer=4 frame=4 color=#7de0e8 points=23,6 24,6 25,6 22,7 26,7 22,8 26,8 22,9 26,9 23,10 24,10 25,10 20,9 24,4 24,5 20,8 21,8 27,8 28,8 24,11 22,7 19,13 19,14 20,19 21,19 22,19
-draw op=pencil layer=4 frame=4 color=#ffffff points=23,7 23,8 23,9 24,7 24,8 24,9 25,7 25,8 25,9 23,12 23,13
-draw op=pencil layer=5 frame=4 color=#7de0e8 points=[[18,3]]
-draw op=pencil layer=5 frame=4 color=#ffffff points=[[21,8]]
-region op=clear layer=0 frame=5 rect=0,0,32,32
-region op=clear layer=4 frame=5 rect=0,0,32,32
-region op=clear layer=5 frame=5 rect=0,0,32,32
-draw op=polyline layer=0 frame=5 color=#1b1230 points=8,26 6,25 4,23 4,21 size=3
-draw op=polyline layer=0 frame=5 color=#e8a33d points=8,26 6,25 4,23 4,21 size=1
-draw op=pencil layer=0 frame=5 color=#ffffff points=4,21 4,22
-draw op=pencil layer=4 frame=5 color=#7de0e8 points=23,6 24,6 25,6 22,7 26,7 22,8 26,8 22,9 26,9 23,10 24,10 25,10 20,9 24,4 24,5 20,8 21,8 27,8 28,8 24,11 22,7 19,13 19,14 20,19 21,19 22,19
-draw op=pencil layer=4 frame=5 color=#ffffff points=23,7 23,8 23,9 24,7 24,8 24,9 25,7 25,8 25,9 23,12 23,13
-draw op=pencil layer=5 frame=5 color=#7de0e8 points=21,6 20,7 22,7 21,8 19,2
-draw op=pencil layer=5 frame=5 color=#ffffff points=[[21,7]]
-region op=clear layer=0 frame=6 rect=0,0,32,32
-region op=clear layer=4 frame=6 rect=0,0,32,32
-region op=clear layer=5 frame=6 rect=0,0,32,32
-draw op=polyline layer=0 frame=6 color=#1b1230 points=8,26 6,25 4,23 3,21 size=3
-draw op=polyline layer=0 frame=6 color=#e8a33d points=8,26 6,25 4,23 3,21 size=1
-draw op=pencil layer=0 frame=6 color=#ffffff points=3,21 3,22
-draw op=pencil layer=4 frame=6 color=#7de0e8 points=23,6 24,6 25,6 22,7 26,7 22,8 26,8 22,9 26,9 23,10 24,10 25,10 20,9
-draw op=pencil layer=4 frame=6 color=#ffffff points=23,7 23,8 23,9 24,7 24,8 24,9 25,7 25,8 25,9 23,12 23,13
-draw op=pencil layer=5 frame=6 color=#7de0e8 points=[[28,12]]
-draw op=pencil layer=5 frame=6 color=#ffffff points=[[22,6]]
-region op=clear layer=0 frame=7 rect=0,0,32,32
-region op=clear layer=4 frame=7 rect=0,0,32,32
-region op=clear layer=5 frame=7 rect=0,0,32,32
-draw op=polyline layer=0 frame=7 color=#1b1230 points=8,26 6,25 3,23 2,20 size=3
-draw op=polyline layer=0 frame=7 color=#e8a33d points=8,26 6,25 3,23 2,20 size=1
-draw op=pencil layer=0 frame=7 color=#ffffff points=2,20 2,21
-draw op=pencil layer=4 frame=7 color=#7de0e8 points=23,7 25,7 23,9 25,9 24,6 22,8 26,8 24,10
-draw op=pencil layer=4 frame=7 color=#ffffff points=24,7 23,8 24,8 25,8 24,9
-draw op=pencil layer=5 frame=7 color=#7de0e8 points=22,5 28,11
-region op=clear layer=0 frame=8 rect=0,0,32,32
-region op=clear layer=4 frame=8 rect=0,0,32,32
-region op=clear layer=5 frame=8 rect=0,0,32,32
-draw op=polyline layer=0 frame=8 color=#1b1230 points=8,26 6,25 3,23 2,20 size=3
-draw op=polyline layer=0 frame=8 color=#e8a33d points=8,26 6,25 3,23 2,20 size=1
-draw op=pencil layer=0 frame=8 color=#ffffff points=2,20 2,21
-draw op=pencil layer=4 frame=8 color=#7de0e8 points=23,7 23,8 23,9 24,7 24,9 25,7 25,8 25,9
-draw op=pencil layer=4 frame=8 color=#ffffff points=[[24,8]]
-draw op=pencil layer=5 frame=8 color=#7de0e8 points=21,4 27,10 19,9
-region op=clear layer=0 frame=9 rect=0,0,32,32
-region op=clear layer=4 frame=9 rect=0,0,32,32
-region op=clear layer=5 frame=9 rect=0,0,32,32
-draw op=polyline layer=0 frame=9 color=#1b1230 points=8,26 6,25 4,23 3,21 size=3
-draw op=polyline layer=0 frame=9 color=#e8a33d points=8,26 6,25 4,23 3,21 size=1
-draw op=pencil layer=0 frame=9 color=#ffffff points=3,21 3,22
-draw op=pencil layer=4 frame=9 color=#7de0e8 points=24,7 23,8 25,8 24,9
-draw op=pencil layer=4 frame=9 color=#ffffff points=[[24,8]]
-draw op=pencil layer=5 frame=9 color=#7de0e8 points=[[19,8]]
-draw op=pencil layer=5 frame=9 color=#ffffff points=[[27,9]]
-region op=clear layer=5 frame=0 rect=0,0,32,32
-draw op=pencil layer=5 frame=0 color=#7de0e8 points=28,7 27,8 29,8 28,9 20,7
-draw op=pencil layer=5 frame=0 color=#ffffff points=[[28,8]]
-region op=clear layer=5 frame=1 rect=0,0,32,32
-draw op=pencil layer=5 frame=1 color=#7de0e8 points=[[21,11]]
-draw op=pencil layer=5 frame=1 color=#ffffff points=28,7 20,6
-region op=clear layer=5 frame=2 rect=0,0,32,32
-draw op=pencil layer=5 frame=2 color=#7de0e8 points=20,10 29,6
-draw op=pencil layer=5 frame=2 color=#ffffff points=[[19,5]]
-region op=clear layer=5 frame=3 rect=0,0,32,32
-draw op=pencil layer=5 frame=3 color=#7de0e8 points=20,9 29,5
-draw op=pencil layer=5 frame=3 color=#ffffff points=[[19,4]]
-region op=clear layer=5 frame=4 rect=0,0,32,32
-draw op=pencil layer=5 frame=4 color=#7de0e8 points=[[18,3]]
-draw op=pencil layer=5 frame=4 color=#ffffff points=[[21,8]]
-region op=clear layer=5 frame=5 rect=0,0,32,32
-draw op=pencil layer=5 frame=5 color=#7de0e8 points=21,6 20,7 22,7 21,8 19,2
-draw op=pencil layer=5 frame=5 color=#ffffff points=[[21,7]]
-region op=clear layer=5 frame=6 rect=0,0,32,32
-draw op=pencil layer=5 frame=6 color=#7de0e8 points=[[30,12]]
-draw op=pencil layer=5 frame=6 color=#ffffff points=[[22,6]]
-region op=clear layer=5 frame=7 rect=0,0,32,32
-draw op=pencil layer=5 frame=7 color=#7de0e8 points=22,5 30,11
-region op=clear layer=5 frame=8 rect=0,0,32,32
-draw op=pencil layer=5 frame=8 color=#7de0e8 points=21,4 29,10 19,9
-region op=clear layer=5 frame=9 rect=0,0,32,32
-draw op=pencil layer=5 frame=9 color=#7de0e8 points=[[19,8]]
-draw op=pencil layer=5 frame=9 color=#ffffff points=[[29,9]]
-region op=clear layer=5 frame=0 rect=0,0,32,32
-draw op=pencil layer=5 frame=0 color=#7de0e8 points=30,12 20,7
-region op=clear layer=5 frame=1 rect=0,0,32,32
-draw op=pencil layer=5 frame=1 color=#7de0e8 points=21,11 30,11
-draw op=pencil layer=5 frame=1 color=#ffffff points=[[20,6]]
-region op=clear layer=5 frame=2 rect=0,0,32,32
-draw op=pencil layer=5 frame=2 color=#7de0e8 points=20,10 29,10
-draw op=pencil layer=5 frame=2 color=#ffffff points=[[19,5]]
-region op=clear layer=5 frame=3 rect=0,0,32,32
-draw op=pencil layer=5 frame=3 color=#7de0e8 points=[[20,9]]
-draw op=pencil layer=5 frame=3 color=#ffffff points=29,9 19,4
-region op=clear layer=5 frame=4 rect=0,0,32,32
-draw op=pencil layer=5 frame=4 color=#7de0e8 points=28,7 27,8 29,8 28,9 18,3
-draw op=pencil layer=5 frame=4 color=#ffffff points=21,8 28,8
-region op=clear layer=5 frame=5 rect=0,0,32,32
-draw op=pencil layer=5 frame=5 color=#7de0e8 points=21,6 20,7 22,7 21,8 19,2
-draw op=pencil layer=5 frame=5 color=#ffffff points=21,7 28,7
-region op=clear layer=5 frame=6 rect=0,0,32,32
-draw op=pencil layer=5 frame=6 color=#7de0e8 points=[[29,6]]
-draw op=pencil layer=5 frame=6 color=#ffffff points=[[22,6]]
-region op=clear layer=5 frame=7 rect=0,0,32,32
-draw op=pencil layer=5 frame=7 color=#7de0e8 points=22,5 29,5
-region op=clear layer=5 frame=8 rect=0,0,32,32
-draw op=pencil layer=5 frame=8 color=#7de0e8 points=21,4 19,9
-region op=clear layer=5 frame=9 rect=0,0,32,32
-draw op=pencil layer=5 frame=9 color=#7de0e8 points=[[19,8]]
+palette set colors=#1b1230,#5a4a7e,#e8a33d,#8a5230,#7de0e8,#ffffff
+layer rename index=0 name=tail
+layer add name=body
+layer add name=staff
+layer add name=hat
+layer add name=orb
+layer add name=sparkles
+layer move index=2 to_index=1
+legend A=#1b1230 B=#e8a33d
+body @0 grid 5,7 = 5,7 2x2
+    A.
+    AB
+legend C=#7de0e8 D=#ffffff
+body @0 grid 5,7 = 5,7 21x22
+    A................A...
+    ABA............ABA...
+    ABBB..........BBBA...
+    ABBB..........BBBA...
+    .ABABBBBBBBBBBABA....
+    ...ABBBBBBBBBBA......
+    ...ABBCBBBBCBBA......
+    ...ABBCBBBBCBBA......
+    ...ABBBDAADBBBA......
+    ...ABBBADDABBBA......
+    ...ABBBDDDDBBBA......
+    ....ABBDDDDBBA.......
+    ....ABBDDDDBBAAAAA...
+    ...ABBBDDDDBBBBBBBBBA
+    ...ABBBDDDDBBAAABBBBA
+    ..ABBBBBDDBBBA..AAAA.
+    ..ABBBBBDDBBBA.......
+    .ABBBBBBBBBBBBA......
+    .ABBBBBBBBBBBBA......
+    .ABBBBBBBBBBBBA......
+    .ABBDDDADDDBBBA......
+    ..AAAAAAAAAAAA.......
+legend E=#5a4a7e
+hat @0 grid 7,2 = 7,2 14x9
+    .AA...........
+    AEEEA.........
+    .AEEEEA.......
+    ..AEEEEA......
+    ..AEEEEEA.....
+    ..AEEEEEEA....
+    ..AAAACAAA....
+    AEEEEEEEEEEEEA
+    .AAAAAAAAAAAA.
+legend F=#8a5230
+staff @0 grid 23,11 = 23,11 2x19
+    AA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    FA
+    AA
+tail @0 polyline #1b1230 size 3 = 3,20 7x8
+    AAA....
+    AAA....
+    AAA....
+    AAAA...
+    AAAAAA.
+    .AAAAAA
+    ..AAAAA
+    ....AAA
+tail @0 polyline #e8a33d size 1 = 4,21 5x6
+    BA...
+    BA...
+    BAA..
+    ABAAA
+    AABBA
+    .AAAB
+orb @0 grid 22,6 = 22,6 5x5
+    .CCC.
+    CDDDC
+    CDDDC
+    CDDDC
+    .CCC.
+body @0 grid 7,24 = 7,24 7,26 #8a5230
+body @0 grid 9,12 = 9,12 9,12 #8a5230
+tail @0 pencil #ffffff = 4,21 4,22 #ffffff
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+frame add copy_from=0
+tail @0 clear 0,0 32,32 = 3,20 9,27 .
+orb @0 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @0 clear 0,0 32,32 ~
+tail @0 polyline #1b1230 size 3 = 3,20 7x8
+    AAA....
+    AAA....
+    AAA....
+    AAAA...
+    AAAAAA.
+    .AAAAAA
+    ..AAAAA
+    ....AAA
+tail @0 polyline #e8a33d size 1 = 4,21 5x6
+    BA...
+    BA...
+    BAA..
+    ABAAA
+    AABBA
+    .AAAB
+tail @0 pencil #ffffff = 4,21 4,22 #ffffff
+orb @0 pencil #7de0e8 = 23,7 3x3
+    .C.
+    C.C
+    .C.
+orb @0 pencil #ffffff = 24,8 24,8 #ffffff
+sparkles @0 pencil #7de0e8 = 20,7 8x3
+    C.....C.
+    .....C.C
+    ......C.
+sparkles @0 pencil #ffffff = 26,8 26,8 #ffffff
+tail @1 clear 0,0 32,32 = 3,20 9,27 .
+orb @1 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @1 clear 0,0 32,32 ~
+tail @1 polyline #1b1230 size 3 = 3,20 7x8
+    .AAA...
+    .AAA...
+    AAAA...
+    AAAA...
+    AAAAAA.
+    .AAAAAA
+    ..AAAAA
+    ....AAA
+tail @1 polyline #e8a33d size 1 = 4,21 5x6
+    ABA..
+    ABA..
+    BAA..
+    ABAAA
+    AABBA
+    .AAAB
+tail @1 pencil #ffffff = 5,21 5,22 #ffffff
+orb @1 pencil #7de0e8 = 23,7 3x3
+    CCC
+    C.C
+    CCC
+orb @1 pencil #ffffff = 24,8 24,8 #ffffff
+sparkles @1 pencil #7de0e8 = 21,11 21,11 #7de0e8
+sparkles @1 pencil #ffffff = 20,6 7x2
+    D......
+    ......D
+tail @2 clear 0,0 32,32 = 3,20 9,27 .
+orb @2 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @2 clear 0,0 32,32 ~
+tail @2 polyline #1b1230 size 3 = 4,19 6x9
+    .AAA..
+    .AAA..
+    AAAA..
+    AAAA..
+    AAA...
+    AAAAA.
+    AAAAAA
+    .AAAAA
+    ...AAA
+tail @2 polyline #e8a33d size 1 = 5,20 4x7
+    ABA.
+    ABA.
+    BAA.
+    BA..
+    BAAA
+    ABBA
+    AAAB
+tail @2 pencil #ffffff = 6,20 6,21 #ffffff
+orb @2 pencil #7de0e8 = 22,6 5x5
+    ..C..
+    .C.C.
+    C...C
+    .C.C.
+    ..C..
+orb @2 pencil #ffffff = 23,7 3x3
+    CDC
+    DDD
+    CDC
+sparkles @2 pencil #7de0e8 = 20,6 8x5
+    .......C
+    ........
+    ........
+    ........
+    C.......
+sparkles @2 pencil #ffffff = 19,5 19,5 #ffffff
+tail @3 clear 0,0 32,32 = 3,20 9,27 .
+orb @3 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @3 clear 0,0 32,32 ~
+tail @3 polyline #1b1230 size 3 = 4,19 6x9
+    .AAA..
+    .AAA..
+    AAAA..
+    AAAA..
+    AAA...
+    AAAAA.
+    AAAAAA
+    .AAAAA
+    ...AAA
+tail @3 polyline #e8a33d size 1 = 5,20 4x7
+    ABA.
+    ABA.
+    BAA.
+    BA..
+    BAAA
+    ABBA
+    AAAB
+tail @3 pencil #ffffff = 6,20 6,21 #ffffff
+orb @3 pencil #7de0e8 = 20,6 7x5
+    ...CCC.
+    ..C...C
+    ..C...C
+    C.C...C
+    ...CCC.
+orb @3 pencil #ffffff = 23,7 3x7
+    DDD
+    DDD
+    DDD
+    CCC
+    ...
+    D..
+    D..
+sparkles @3 pencil #7de0e8 = 20,5 8x5
+    .......C
+    ........
+    ........
+    ........
+    C.......
+sparkles @3 pencil #ffffff = 19,4 19,4 #ffffff
+tail @4 clear 0,0 32,32 = 3,20 9,27 .
+orb @4 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @4 clear 0,0 32,32 ~
+tail @4 polyline #1b1230 size 3 = 3,20 7x8
+    .AAA...
+    .AAA...
+    AAAA...
+    AAAA...
+    AAAAAA.
+    .AAAAAA
+    ..AAAAA
+    ....AAA
+tail @4 polyline #e8a33d size 1 = 4,21 5x6
+    ABA..
+    ABA..
+    BAA..
+    ABAAA
+    AABBA
+    .AAAB
+tail @4 pencil #ffffff = 5,21 5,22 #ffffff
+orb @4 pencil #7de0e8 = 19,4 10x16
+    .....C....
+    .....C....
+    ....CCC...
+    ...C...C..
+    .CCC...CCC
+    .C.C...C..
+    ....CCC...
+    .....C....
+    ..........
+    C.........
+    C.........
+    ..........
+    ..........
+    ..........
+    ..........
+    .CCC......
+orb @4 pencil #ffffff = 23,7 3x7
+    DDD
+    DDD
+    DDD
+    CCC
+    .C.
+    D..
+    D..
+sparkles @4 pencil #7de0e8 = 18,3 18,3 #7de0e8
+sparkles @4 pencil #ffffff = 21,8 21,8 #ffffff
+tail @5 clear 0,0 32,32 = 3,20 9,27 .
+orb @5 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @5 clear 0,0 32,32 ~
+tail @5 polyline #1b1230 size 3 = 3,20 7x8
+    AAA....
+    AAA....
+    AAA....
+    AAAA...
+    AAAAAA.
+    .AAAAAA
+    ..AAAAA
+    ....AAA
+tail @5 polyline #e8a33d size 1 = 4,21 5x6
+    BA...
+    BA...
+    BAA..
+    ABAAA
+    AABBA
+    .AAAB
+tail @5 pencil #ffffff = 4,21 4,22 #ffffff
+orb @5 pencil #7de0e8 = 19,4 10x16
+    .....C....
+    .....C....
+    ....CCC...
+    ...C...C..
+    .CCC...CCC
+    .C.C...C..
+    ....CCC...
+    .....C....
+    ..........
+    C.........
+    C.........
+    ..........
+    ..........
+    ..........
+    ..........
+    .CCC......
+orb @5 pencil #ffffff = 23,7 3x7
+    DDD
+    DDD
+    DDD
+    CCC
+    .C.
+    D..
+    D..
+sparkles @5 pencil #7de0e8 = 19,2 4x7
+    C...
+    ....
+    ....
+    ....
+    ..C.
+    .C.C
+    ..C.
+sparkles @5 pencil #ffffff = 21,7 21,7 #ffffff
+tail @6 clear 0,0 32,32 = 3,20 9,27 .
+orb @6 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @6 clear 0,0 32,32 ~
+tail @6 polyline #1b1230 size 3 = 2,20 8x8
+    AAA.....
+    AAA.....
+    AAAA....
+    AAAAA...
+    .AAAAAA.
+    ..AAAAAA
+    ...AAAAA
+    .....AAA
+tail @6 polyline #e8a33d size 1 = 3,21 6x6
+    BA....
+    BAA...
+    ABAA..
+    AABAAA
+    .AABBA
+    ..AAAB
+tail @6 pencil #ffffff = 3,21 3,22 #ffffff
+orb @6 pencil #7de0e8 = 20,6 7x5
+    ...CCC.
+    ..C...C
+    ..C...C
+    C.C...C
+    ...CCC.
+orb @6 pencil #ffffff = 23,7 3x7
+    DDD
+    DDD
+    DDD
+    CCC
+    ...
+    D..
+    D..
+sparkles @6 pencil #7de0e8 = 28,12 28,12 #7de0e8
+sparkles @6 pencil #ffffff = 22,6 22,6 #ffffff
+tail @7 clear 0,0 32,32 = 3,20 9,27 .
+orb @7 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @7 clear 0,0 32,32 ~
+tail @7 polyline #1b1230 size 3 = 1,19 9x9
+    AAA......
+    AAA......
+    AAAA.....
+    AAAA.....
+    .AAAAA...
+    .AAAAAAA.
+    ..AAAAAAA
+    ....AAAAA
+    ......AAA
+tail @7 polyline #e8a33d size 1 = 2,20 7x7
+    BA.....
+    BAA....
+    ABA....
+    ABAAA..
+    AABBAAA
+    .AAABBA
+    ...AAAB
+tail @7 pencil #ffffff = 2,20 2,21 #ffffff
+orb @7 pencil #7de0e8 = 22,6 5x5
+    ..C..
+    .C.C.
+    C...C
+    .C.C.
+    ..C..
+orb @7 pencil #ffffff = 23,7 3x3
+    CDC
+    DDD
+    CDC
+sparkles @7 pencil #7de0e8 = 22,5 7x7
+    C......
+    .......
+    .......
+    .......
+    .......
+    .......
+    ......C
+tail @8 clear 0,0 32,32 = 3,20 9,27 .
+orb @8 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @8 clear 0,0 32,32 ~
+tail @8 polyline #1b1230 size 3 = 1,19 9x9
+    AAA......
+    AAA......
+    AAAA.....
+    AAAA.....
+    .AAAAA...
+    .AAAAAAA.
+    ..AAAAAAA
+    ....AAAAA
+    ......AAA
+tail @8 polyline #e8a33d size 1 = 2,20 7x7
+    BA.....
+    BAA....
+    ABA....
+    ABAAA..
+    AABBAAA
+    .AAABBA
+    ...AAAB
+tail @8 pencil #ffffff = 2,20 2,21 #ffffff
+orb @8 pencil #7de0e8 = 23,7 3x3
+    CCC
+    C.C
+    CCC
+orb @8 pencil #ffffff = 24,8 24,8 #ffffff
+sparkles @8 pencil #7de0e8 = 19,4 9x7
+    ..C......
+    .........
+    .........
+    .........
+    .........
+    C........
+    ........C
+tail @9 clear 0,0 32,32 = 3,20 9,27 .
+orb @9 clear 0,0 32,32 = 22,6 26,10 .
+sparkles @9 clear 0,0 32,32 ~
+tail @9 polyline #1b1230 size 3 = 2,20 8x8
+    AAA.....
+    AAA.....
+    AAAA....
+    AAAAA...
+    .AAAAAA.
+    ..AAAAAA
+    ...AAAAA
+    .....AAA
+tail @9 polyline #e8a33d size 1 = 3,21 6x6
+    BA....
+    BAA...
+    ABAA..
+    AABAAA
+    .AABBA
+    ..AAAB
+tail @9 pencil #ffffff = 3,21 3,22 #ffffff
+orb @9 pencil #7de0e8 = 23,7 3x3
+    .C.
+    C.C
+    .C.
+orb @9 pencil #ffffff = 24,8 24,8 #ffffff
+sparkles @9 pencil #7de0e8 = 19,8 19,8 #7de0e8
+sparkles @9 pencil #ffffff = 27,9 27,9 #ffffff
+sparkles @0 clear 0,0 32,32 = 20,7 27,9 .
+sparkles @0 pencil #7de0e8 = 20,7 10x3
+    C.......C.
+    .......C.C
+    ........C.
+sparkles @0 pencil #ffffff = 28,8 28,8 #ffffff
+sparkles @1 clear 0,0 32,32 = 20,6 26,11 .
+sparkles @1 pencil #7de0e8 = 21,11 21,11 #7de0e8
+sparkles @1 pencil #ffffff = 20,6 9x2
+    D........
+    ........D
+sparkles @2 clear 0,0 32,32 = 19,5 27,10 .
+sparkles @2 pencil #7de0e8 = 20,6 10x5
+    .........C
+    ..........
+    ..........
+    ..........
+    C.........
+sparkles @2 pencil #ffffff = 19,5 19,5 #ffffff
+sparkles @3 clear 0,0 32,32 = 19,4 27,9 .
+sparkles @3 pencil #7de0e8 = 20,5 10x5
+    .........C
+    ..........
+    ..........
+    ..........
+    C.........
+sparkles @3 pencil #ffffff = 19,4 19,4 #ffffff
+sparkles @4 clear 0,0 32,32 = 18,3 21,8 .
+sparkles @4 pencil #7de0e8 = 18,3 18,3 #7de0e8
+sparkles @4 pencil #ffffff = 21,8 21,8 #ffffff
+sparkles @5 clear 0,0 32,32 = 19,2 22,8 .
+sparkles @5 pencil #7de0e8 = 19,2 4x7
+    C...
+    ....
+    ....
+    ....
+    ..C.
+    .C.C
+    ..C.
+sparkles @5 pencil #ffffff = 21,7 21,7 #ffffff
+sparkles @6 clear 0,0 32,32 = 22,6 28,12 .
+sparkles @6 pencil #7de0e8 = 30,12 30,12 #7de0e8
+sparkles @6 pencil #ffffff = 22,6 22,6 #ffffff
+sparkles @7 clear 0,0 32,32 = 22,5 28,11 .
+sparkles @7 pencil #7de0e8 = 22,5 9x7
+    C........
+    .........
+    .........
+    .........
+    .........
+    .........
+    ........C
+sparkles @8 clear 0,0 32,32 = 19,4 27,10 .
+sparkles @8 pencil #7de0e8 = 19,4 11x7
+    ..C........
+    ...........
+    ...........
+    ...........
+    ...........
+    C..........
+    ..........C
+sparkles @9 clear 0,0 32,32 = 19,8 27,9 .
+sparkles @9 pencil #7de0e8 = 19,8 19,8 #7de0e8
+sparkles @9 pencil #ffffff = 29,9 29,9 #ffffff
+sparkles @0 clear 0,0 32,32 = 20,7 29,9 .
+sparkles @0 pencil #7de0e8 = 20,7 11x6
+    C..........
+    ...........
+    ...........
+    ...........
+    ...........
+    ..........C
+sparkles @1 clear 0,0 32,32 = 20,6 28,11 .
+sparkles @1 pencil #7de0e8 = 21,11 10x1
+    C........C
+sparkles @1 pencil #ffffff = 20,6 20,6 #ffffff
+sparkles @2 clear 0,0 32,32 = 19,5 29,10 .
+sparkles @2 pencil #7de0e8 = 20,10 10x1
+    C........C
+sparkles @2 pencil #ffffff = 19,5 19,5 #ffffff
+sparkles @3 clear 0,0 32,32 = 19,4 29,9 .
+sparkles @3 pencil #7de0e8 = 20,9 20,9 #7de0e8
+sparkles @3 pencil #ffffff = 19,4 11x6
+    D..........
+    ...........
+    ...........
+    ...........
+    ...........
+    .C........D
+sparkles @4 clear 0,0 32,32 = 18,3 21,8 .
+sparkles @4 pencil #7de0e8 = 18,3 12x7
+    C...........
+    ............
+    ............
+    ............
+    ..........C.
+    .........C.C
+    ..........C.
+sparkles @4 pencil #ffffff = 21,8 8x1
+    D.....CD
+sparkles @5 clear 0,0 32,32 = 19,2 22,8 .
+sparkles @5 pencil #7de0e8 = 19,2 4x7
+    C...
+    ....
+    ....
+    ....
+    ..C.
+    .C.C
+    ..C.
+sparkles @5 pencil #ffffff = 21,7 8x1
+    DC.....D
+sparkles @6 clear 0,0 32,32 = 22,6 30,12 .
+sparkles @6 pencil #7de0e8 = 29,6 29,6 #7de0e8
+sparkles @6 pencil #ffffff = 22,6 22,6 #ffffff
+sparkles @7 clear 0,0 32,32 = 22,5 30,11 .
+sparkles @7 pencil #7de0e8 = 22,5 8x1
+    C......C
+sparkles @8 clear 0,0 32,32 = 19,4 29,10 .
+sparkles @8 pencil #7de0e8 = 19,4 3x6
+    ..C
+    ...
+    ...
+    ...
+    ...
+    C..
+sparkles @9 clear 0,0 32,32 = 19,8 29,9 .
+sparkles @9 pencil #7de0e8 = 19,8 19,8 #7de0e8
 add_tag name=loop from=0 to=9

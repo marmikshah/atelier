@@ -1,932 +1,1063 @@
-atelier 4 9862ad92-f040-4476-b642-1864c7d903ec 0.1.0
+atelier 5 9862ad92-f040-4476-b642-1864c7d903ec 0.1.0
 new name=sword-slash-arc width=32 height=32
-layer op=rename index=0 name=trail
-layer op=add name=arc
-layer op=add name=edge
-layer op=add name=flash
-layer op=add name=sparks
-palette op=set colors=#ffffff,#ffe268,#7eeeff,#2ea4f4,#3050c4,#22185c
-frame op=add count=9 duration_ms=100
-draw op=clear_cel layer=0 frame=3
-paint_grid layer=0 frame=3 x=2 y=3 legend=A:3 rows:22
-  |.....A..................|
-  |AAAAAAAAAAA.............|
-  |.....AAAAAAAAA..........|
-  |.......AAAAAAAA.........|
-  |.........AAAAAAAA.......|
-  |..........AAAAAAAA......|
-  |...........AAAAAAAA.....|
-  |............AAAAAAAA....|
-  |.............AAAAAAA....|
-  |.............AAAAAAAA...|
-  |..............AAAAAAAA..|
-  |..............AAAAAAAA..|
-  |..............AAAAAAAA..|
-  |...............AAAAAAAA.|
-  |................AAAAAAA.|
-  |................AAAAAAA.|
-  |.................AAAAAA.|
-  |..................AAAAA.|
-  |...................AAAAA|
-  |...................AAAA.|
-  |....................AAA.|
-  |.....................AA.|
-draw op=clear_cel layer=0 frame=3
-paint_grid layer=0 frame=3 x=2 y=4 legend=A:3 rows:21
-  |....AAAAAAAAA............|
-  |..AAAAAAAAAAAAA..........|
-  |AAAAAAAAAAAAAAAAA........|
-  |........AAAAAAAAAAA......|
-  |..........AAAAAAAAAA.....|
-  |............AAAAAAAAA....|
-  |.............AAAAAAAAA...|
-  |.............AAAAAAAAA...|
-  |..............AAAAAAAAA..|
-  |..............AAAAAAAAA..|
-  |...............AAAAAAAAA.|
-  |.................AAAAAAA.|
-  |..................AAAAAAA|
-  |...................AAAAAA|
-  |....................AAAAA|
-  |.....................AAAA|
-  |......................AAA|
-  |.......................AA|
-  |.......................AA|
-  |........................A|
-  |........................A|
-draw op=clear_cel layer=0 frame=0
-paint_grid layer=0 frame=0 x=2 y=4 legend=A:3 rows:3
-  |....AA|
-  |..AAA.|
-  |AAAAA.|
-draw op=clear_cel layer=0 frame=1
-paint_grid layer=0 frame=1 x=2 y=4 legend=A:3 rows:6
-  |....AAAAAAAAA.....|
-  |..AAAAAAAAAAAAA...|
-  |AA.....AAAAAAAAAA.|
-  |.........AAAAAAAAA|
-  |...........AAAAA..|
-  |............AA....|
-draw op=clear_cel layer=0 frame=2
-paint_grid layer=0 frame=2 x=2 y=4 legend=A:3 rows:15
-  |....AAAAAAAAA............|
-  |..AA.AAAAAAAAAA..........|
-  |AA.......AAAAAAAA........|
-  |...........AAAAAAAA......|
-  |.............AAAAAAA.....|
-  |..............AAAAAAA....|
-  |..............AAAAAAAA...|
-  |...............AAAAAAA...|
-  |...............AAAAAAAA..|
-  |...............AAAAAAAA..|
-  |................AAAAAAAA.|
-  |..................AAAAAA.|
-  |.....................AAAA|
-  |.......................AA|
-  |........................A|
-draw op=clear_cel layer=0 frame=3
-paint_grid layer=0 frame=3 x=2 y=4 legend=A:3 rows:21
-  |....AAAAAAAAA............|
-  |..AAAAAAAAAAAAA..........|
-  |AA.......AAAAAAAA........|
-  |..........AAAAAAAAA......|
-  |............AAAAAAAA.....|
-  |.............AAAAAAAA....|
-  |.............AAAAAAAAA...|
-  |..............AAAAAAAA...|
-  |..............AAAAAAAAA..|
-  |...............AAAAAAAA..|
-  |...............AAAAAAAAA.|
-  |.................AAAAAAA.|
-  |..................AAAAAAA|
-  |...................AAAAAA|
-  |....................AAAAA|
-  |.....................AAAA|
-  |......................AAA|
-  |.......................AA|
-  |.......................AA|
-  |........................A|
-  |........................A|
-draw op=clear_cel layer=0 frame=4
-paint_grid layer=0 frame=4 x=9 y=4 legend=A:3 rows:21
-  |AAAAAAA...........|
-  |...AAAAAA.........|
-  |.....AAAAAA.......|
-  |......AAAAAA......|
-  |.......AAAAAA.....|
-  |.......AAAAAAA....|
-  |........AAAAAAA...|
-  |.........AAAAAAA..|
-  |.........AAAAAAA..|
-  |..........AAAAAAA.|
-  |..........AAAAAAA.|
-  |...........AAAAAAA|
-  |............AAAAAA|
-  |.............AAAAA|
-  |.............AAAAA|
-  |..............AAAA|
-  |...............AAA|
-  |...............AAA|
-  |................AA|
-  |.................A|
-  |.................A|
-draw op=clear_cel layer=0 frame=5
-paint_grid layer=0 frame=5 x=13 y=4 legend=A:3 rows:21
-  |AAAA...........|
-  |...AAA.........|
-  |....AAA........|
-  |.....AAAA......|
-  |.....AAAAA.....|
-  |......AAAAA....|
-  |.......AAAA....|
-  |.......AAAAA...|
-  |........AAAAA..|
-  |........AAAAA..|
-  |........AAAAAA.|
-  |.........AAAAA.|
-  |.........AAAAA.|
-  |..........AAAA.|
-  |...........AAA.|
-  |...........AAAA|
-  |............AAA|
-  |............AAA|
-  |.............A.|
-  |.............A.|
-  |.............A.|
-draw op=clear_cel layer=0 frame=6
-paint_grid layer=0 frame=6 x=17 y=5 legend=A:3 rows:20
-  |AA.........|
-  |..AA.......|
-  |...AA......|
-  |....AA.....|
-  |....AAA....|
-  |.....AAA...|
-  |.....AAA...|
-  |......AAA..|
-  |......AAA..|
-  |......AAAA.|
-  |.......AAA.|
-  |.......AAA.|
-  |.......AAAA|
-  |........AAA|
-  |........AAA|
-  |.........AA|
-  |.........AA|
-  |.........AA|
-  |..........A|
-  |.........A.|
-draw op=clear_cel layer=0 frame=7
-paint_grid layer=0 frame=7 x=21 y=7 legend=A:3 rows:17
-  |A......|
-  |.A.....|
-  |..A....|
-  |...A...|
-  |...AA..|
-  |...AA..|
-  |....AA.|
-  |....AA.|
-  |....AA.|
-  |....AAA|
-  |.....AA|
-  |.....AA|
-  |.....AA|
-  |......A|
-  |......A|
-  |......A|
-  |......A|
-draw op=clear_cel layer=0 frame=8
-paint_grid layer=0 frame=8 x=24 y=10 legend=A:3 rows:13
-  |A...|
-  |.A..|
-  |.A..|
-  |..A.|
-  |..A.|
-  |..AA|
-  |...A|
-  |...A|
-  |...A|
-  |...A|
-  |...A|
-  |...A|
-  |...A|
-draw op=clear_cel layer=0 frame=0
-draw op=clear_cel layer=1 frame=0
-draw op=clear_cel layer=2 frame=0
-paint_grid layer=0 frame=0 x=2 y=4 legend=I:4 rows:3
-  |....II|
-  |..III.|
-  |IIIII.|
-paint_grid layer=1 frame=0 x=4 y=4 legend=A:3,C:2 rows:3
-  |..AC|
-  |AAC.|
-  |ACC.|
-paint_grid layer=2 frame=0 x=6 y=4 legend=W:0,Y:1 rows:2
-  |.Y|
-  |W.|
-draw op=clear_cel layer=0 frame=1
-draw op=clear_cel layer=1 frame=1
-draw op=clear_cel layer=2 frame=1
-paint_grid layer=0 frame=1 x=2 y=4 legend=I:4,V:5 rows:6
-  |....IIIIIIIII.....|
-  |..IIIIIIIIIIIII...|
-  |VI.....IIIIIIIIII.|
-  |.........IIIIIIIII|
-  |...........IIIII..|
-  |............II....|
-paint_grid layer=1 frame=1 x=6 y=4 legend=A:3,C:2 rows:6
-  |.AAAAAAAA.....|
-  |AAACCCCCCAA...|
-  |...AAACCCCCAC.|
-  |......ACCCCCCC|
-  |.......AACAC..|
-  |.........A....|
-paint_grid layer=2 frame=1 x=11 y=5 legend=W:0,Y:1 rows:4
-  |WWWW.....|
-  |..WWWW.Y.|
-  |....WWWWY|
-  |......Y..|
-draw op=clear_cel layer=0 frame=2
-draw op=clear_cel layer=1 frame=2
-draw op=clear_cel layer=2 frame=2
-paint_grid layer=0 frame=2 x=2 y=4 legend=I:4,V:5 rows:15
-  |....IIIIIIIII............|
-  |..II.IIIIIIIIII..........|
-  |VV.......VIIIIIII........|
-  |...........VIIIIIII......|
-  |.............IIIIIII.....|
-  |..............IIIIIII....|
-  |..............IIIIIIII...|
-  |...............IIIIIII...|
-  |...............IIIIIIII..|
-  |...............IIIIIIII..|
-  |................IIIIIIII.|
-  |..................IIIIII.|
-  |.....................IIII|
-  |.......................II|
-  |........................I|
-paint_grid layer=1 frame=2 x=10 y=4 legend=A:3,C:2 rows:15
-  |.AAAA............|
-  |AACCCAA..........|
-  |...ACCCAA........|
-  |....AACCCAA......|
-  |......ACCCCA.....|
-  |......AACCCCA....|
-  |.......ACCCCCA...|
-  |........ACCCCA...|
-  |........ACCCCCA..|
-  |........AACCCCA..|
-  |..........AACCCA.|
-  |............ACCC.|
-  |..............CCC|
-  |...............CC|
-  |................C|
-paint_grid layer=2 frame=2 x=16 y=6 legend=W:0,Y:1 rows:13
-  |W..........|
-  |.WW........|
-  |..WWW......|
-  |...WWW.....|
-  |....WWW....|
-  |....WWW....|
-  |.....WWW...|
-  |......WW...|
-  |.......WW..|
-  |........WY.|
-  |.........WY|
-  |..........Y|
-  |..........Y|
-draw op=clear_cel layer=0 frame=3
-draw op=clear_cel layer=1 frame=3
-draw op=clear_cel layer=2 frame=3
-paint_grid layer=0 frame=3 x=2 y=4 legend=I:4,V:5 rows:21
-  |....IIIIIIIII............|
-  |..IIIIIIIIIIIII..........|
-  |VV.......IIIIIIII........|
-  |..........VIIIIIIII......|
-  |............IIIIIIII.....|
-  |.............IIIIIIII....|
-  |.............VIIIIIIII...|
-  |..............IIIIIIII...|
-  |..............VIIIIIIII..|
-  |...............IIIIIIII..|
-  |...............VIIIIIIII.|
-  |.................IIIIIII.|
-  |..................IIIIIII|
-  |...................IIIIII|
-  |....................IIIII|
-  |.....................IIII|
-  |......................III|
-  |.......................II|
-  |.......................II|
-  |........................I|
-  |........................I|
-paint_grid layer=1 frame=3 x=10 y=4 legend=A:3,C:2 rows:21
-  |..AAA............|
-  |AAACCAA..........|
-  |...AACCAA........|
-  |....AACCCAA......|
-  |.....AACCCCA.....|
-  |......AACCCCA....|
-  |.......ACCCCCA...|
-  |.......AACCCCA...|
-  |.......AACCCCCA..|
-  |........AACCCCA..|
-  |.........AACCCCA.|
-  |..........AACCCA.|
-  |...........AACCCA|
-  |............ACCCA|
-  |.............ACCA|
-  |..............CCA|
-  |..............CCC|
-  |...............CC|
-  |...............CC|
-  |................C|
-  |................C|
-paint_grid layer=2 frame=3 x=18 y=7 legend=W:0,Y:1 rows:18
-  |W........|
-  |.WW......|
-  |.WWW.....|
-  |..WWW....|
-  |...WW....|
-  |...WWW...|
-  |....WW...|
-  |....WWW..|
-  |.....WW..|
-  |......WW.|
-  |......WW.|
-  |.......W.|
-  |.......W.|
-  |......YWY|
-  |........Y|
-  |.......YY|
-  |........Y|
-  |........Y|
-draw op=clear_cel layer=0 frame=4
-draw op=clear_cel layer=1 frame=4
-draw op=clear_cel layer=2 frame=4
-paint_grid layer=0 frame=4 x=9 y=4 legend=I:4,V:5 rows:21
-  |IIIIIII...........|
-  |...IIIIII.........|
-  |.....IIIIII.......|
-  |......IIIIII......|
-  |.......IIIIII.....|
-  |.......VIIIIII....|
-  |........IIIIIII...|
-  |.........IIIIIII..|
-  |.........IIIIIII..|
-  |..........IIIIIII.|
-  |..........VIIIIII.|
-  |...........IIIIIII|
-  |............IIIIII|
-  |.............IIIII|
-  |.............IIIII|
-  |..............IIII|
-  |...............III|
-  |...............III|
-  |................II|
-  |.................I|
-  |.................I|
-paint_grid layer=1 frame=4 x=13 y=4 legend=A:3,C:2 rows:19
-  |AAA...........|
-  |ACCAA.........|
-  |..ACCAA.......|
-  |...ACCCA......|
-  |....ACCCA.....|
-  |....AACCCA....|
-  |.....ACCCCA...|
-  |......ACCCCA..|
-  |......AACCCA..|
-  |.......AACCCA.|
-  |........ACCCA.|
-  |........AACCCA|
-  |.........ACCCA|
-  |..........ACCA|
-  |..........ACCA|
-  |...........ACA|
-  |...........ACA|
-  |...........AAA|
-  |............AA|
-paint_grid layer=2 frame=4 x=17 y=6 legend=W:0 rows:13
-  |W........|
-  |.WW......|
-  |..WW.....|
-  |...WW....|
-  |....WW...|
-  |.....WW..|
-  |......W..|
-  |......WW.|
-  |.......W.|
-  |.......WW|
-  |........W|
-  |........W|
-  |........W|
-draw op=clear_cel layer=0 frame=5
-draw op=clear_cel layer=1 frame=5
-draw op=clear_cel layer=2 frame=5
-paint_grid layer=0 frame=5 x=13 y=4 legend=I:4,V:5 rows:21
-  |IIII...........|
-  |...III.........|
-  |....III........|
-  |.....IIII......|
-  |.....VIIII.....|
-  |......IIIII....|
-  |.......IIII....|
-  |.......IIIII...|
-  |........IIIII..|
-  |........IIIII..|
-  |........VIIIII.|
-  |.........IIIII.|
-  |.........VIIII.|
-  |..........IIII.|
-  |...........III.|
-  |...........IIII|
-  |............III|
-  |............III|
-  |.............I.|
-  |.............I.|
-  |.............I.|
-paint_grid layer=1 frame=5 x=16 y=5 legend=A:3,C:2 rows:17
-  |A...........|
-  |.ACA........|
-  |..ACAA......|
-  |...ACCA.....|
-  |....ACCA....|
-  |.....ACA....|
-  |.....ACCA...|
-  |......ACCA..|
-  |......AACA..|
-  |.......ACCA.|
-  |.......AACA.|
-  |........ACA.|
-  |........ACA.|
-  |........ACA.|
-  |.........ACA|
-  |.........ACA|
-  |..........CA|
-draw op=clear_cel layer=0 frame=6
-draw op=clear_cel layer=1 frame=6
-draw op=clear_cel layer=2 frame=6
-paint_grid layer=0 frame=6 x=17 y=5 legend=I:4,V:5 rows:20
-  |VV.........|
-  |..II.......|
-  |...II......|
-  |....II.....|
-  |....VII....|
-  |.....III...|
-  |.....VII...|
-  |......III..|
-  |......III..|
-  |......VIII.|
-  |.......III.|
-  |.......III.|
-  |.......VIII|
-  |........III|
-  |........III|
-  |.........II|
-  |.........II|
-  |.........II|
-  |..........I|
-  |.........V.|
-paint_grid layer=1 frame=6 x=21 y=8 legend=A:3 rows:13
-  |A.....|
-  |.A....|
-  |..A...|
-  |..A...|
-  |...A..|
-  |...A..|
-  |....A.|
-  |....A.|
-  |....A.|
-  |.....A|
-  |.....A|
-  |.....A|
-  |.....A|
-draw op=clear_cel layer=0 frame=7
-draw op=clear_cel layer=1 frame=7
-draw op=clear_cel layer=2 frame=7
-paint_grid layer=0 frame=7 x=21 y=7 legend=I:4,V:5 rows:17
-  |V......|
-  |.V.....|
-  |..V....|
-  |...I...|
-  |...II..|
-  |...VI..|
-  |....II.|
-  |....II.|
-  |....VI.|
-  |....VII|
-  |.....II|
-  |.....II|
-  |.....VI|
-  |......I|
-  |......V|
-  |......V|
-  |......V|
-paint_grid layer=1 frame=7 x=25 y=13 legend=A:3 rows:4
-  |A.|
-  |..|
-  |..|
-  |.A|
-draw op=clear_cel layer=0 frame=8
-draw op=clear_cel layer=1 frame=8
-draw op=clear_cel layer=2 frame=8
-paint_grid layer=0 frame=8 x=24 y=10 legend=V:5 rows:13
-  |V...|
-  |.V..|
-  |.V..|
-  |..V.|
-  |..V.|
-  |..VV|
-  |...V|
-  |...V|
-  |...V|
-  |...V|
-  |...V|
-  |...V|
-  |...V|
-draw op=clear_cel layer=0 frame=9
-draw op=clear_cel layer=1 frame=9
-draw op=clear_cel layer=2 frame=9
-draw op=clear_cel layer=0 frame=0
-draw op=clear_cel layer=1 frame=0
-draw op=clear_cel layer=2 frame=0
-paint_grid layer=0 frame=0 x=2 y=4 legend=I:4 rows:3
-  |....III|
-  |..IIII.|
-  |II...I.|
-paint_grid layer=1 frame=0 x=4 y=4 legend=A:3,C:2 rows:3
-  |..AAC|
-  |AACC.|
-  |...A.|
-paint_grid layer=2 frame=0 x=6 y=4 legend=W:0,Y:1 rows:2
-  |..Y|
-  |WW.|
-draw op=clear_cel layer=0 frame=1
-draw op=clear_cel layer=1 frame=1
-draw op=clear_cel layer=2 frame=1
-paint_grid layer=0 frame=1 x=2 y=4 legend=I:4,V:5 rows:6
-  |....IIIIIIIII......|
-  |..IIIIIIIIIIIII....|
-  |VI.......IIIIIIII..|
-  |...........IIIIIIII|
-  |............IIIII..|
-  |.............II....|
-paint_grid layer=1 frame=1 x=7 y=4 legend=A:3,C:2 rows:6
-  |AAAAAAAA......|
-  |..ACCCCCAA....|
-  |.....ACCCCAA..|
-  |.......ACCCCCC|
-  |........ACAC..|
-  |.........A....|
-paint_grid layer=2 frame=1 x=12 y=5 legend=W:0,Y:1 rows:4
-  |WWW......|
-  |..WWW....|
-  |....WWWYY|
-  |......Y..|
-draw op=clear_cel layer=0 frame=2
-draw op=clear_cel layer=1 frame=2
-draw op=clear_cel layer=2 frame=2
-paint_grid layer=0 frame=2 x=2 y=4 legend=I:4,V:5 rows:15
-  |....IIIIIIIII............|
-  |..II...IIIIIIII..........|
-  |VV........VIIIIII........|
-  |............IIIIIII......|
-  |.............VIIIIII.....|
-  |..............IIIIIII....|
-  |...............IIIIIII...|
-  |................IIIIII...|
-  |................IIIIIII..|
-  |................IIIIIII..|
-  |.................IIIIIII.|
-  |..................IIIIII.|
-  |.....................IIII|
-  |.......................II|
-  |........................I|
-paint_grid layer=1 frame=2 x=11 y=4 legend=A:3,C:2 rows:15
-  |AAAA............|
-  |AACCAA..........|
-  |...ACCAA........|
-  |....ACCCAA......|
-  |.....ACCCCA.....|
-  |......ACCCCA....|
-  |.......ACCCCA...|
-  |.......ACCCCA...|
-  |........ACCCCA..|
-  |........ACCCCA..|
-  |.........AACCCA.|
-  |...........ACCC.|
-  |............ACCC|
-  |..............CC|
-  |...............C|
-paint_grid layer=2 frame=2 x=16 y=6 legend=W:0,Y:1 rows:13
-  |W..........|
-  |..W........|
-  |...WW......|
-  |...WWW.....|
-  |....WWW....|
-  |.....WW....|
-  |.....WWW...|
-  |......WW...|
-  |.......WW..|
-  |........WY.|
-  |.........WY|
-  |..........Y|
-  |..........Y|
-draw op=clear_cel layer=0 frame=1
-draw op=clear_cel layer=1 frame=1
-draw op=clear_cel layer=2 frame=1
-paint_grid layer=0 frame=1 x=2 y=4 legend=I:4 rows:5
-  |....IIIIIIIII...|
-  |..IIIIIIIIIIIII.|
-  |II......IIIIIIII|
-  |..........IIII..|
-  |...........II...|
-paint_grid layer=1 frame=1 x=6 y=4 legend=A:3,C:2 rows:5
-  |AAAAAAAAA...|
-  |CACCCCCCCAC.|
-  |....AACCCCCC|
-  |......ACCC..|
-  |........A...|
-paint_grid layer=2 frame=1 x=11 y=5 legend=W:0,Y:1 rows:3
-  |WWWW.Y.|
-  |..WWWWY|
-  |....Y..|
-draw op=clear_cel layer=0 frame=2
-draw op=clear_cel layer=1 frame=2
-draw op=clear_cel layer=2 frame=2
-paint_grid layer=0 frame=2 x=2 y=4 legend=I:4,V:5 rows:11
-  |....IIIIIIIII...........|
-  |..II..IIIIIIIII.........|
-  |VI........IIIIIII.......|
-  |...........VIIIIIII.....|
-  |.............IIIIIII....|
-  |..............IIIIIII...|
-  |..............IIIIIIII..|
-  |...............IIIIIII..|
-  |...............IIIIIIII.|
-  |................IIIIIII.|
-  |.......................I|
-paint_grid layer=1 frame=2 x=9 y=4 legend=A:3,C:2 rows:11
-  |AAAAAA...........|
-  |.AACCCAA.........|
-  |....ACCCAA.......|
-  |.....AACCCAA.....|
-  |.......ACCCCA....|
-  |.......ACCCCCA...|
-  |........ACCCCCA..|
-  |.........ACCCCA..|
-  |.........AACCCCC.|
-  |...........AACCC.|
-  |................C|
-paint_grid layer=2 frame=2 x=14 y=5 legend=W:0,Y:1 rows:10
-  |W...........|
-  |..W.........|
-  |...WW.......|
-  |....WWW.....|
-  |.....WWW....|
-  |......WWW...|
-  |.......WW...|
-  |........WWY.|
-  |.........WY.|
-  |...........Y|
-draw op=pencil layer=1 frame=0 color=#000000 erase=true points=[[6,4]]
-draw op=pencil layer=2 frame=0 color=#000000 erase=true points=6,4 8,4
-draw op=pencil layer=0 frame=0 color=#3050c4 points=6,4 8,4 9,4 10,4 11,4
-draw op=pencil layer=1 frame=0 color=#7eeeff points=8,4 9,4 10,4 11,4
-draw op=pencil layer=2 frame=0 color=#ffffff points=9,4 10,4
-draw op=pencil layer=2 frame=0 color=#ffe268 points=[[11,4]]
-draw op=pencil layer=0 frame=0 color=#000000 erase=true points=6,5 7,5
-draw op=pencil layer=1 frame=0 color=#000000 erase=true points=4,5 5,5 6,5 7,5
-draw op=pencil layer=2 frame=0 color=#000000 erase=true points=4,5 5,5 6,5 7,5 9,5 10,5
-draw op=pencil layer=0 frame=0 color=#3050c4 points=4,5 5,5 9,5 10,5 11,5
-draw op=pencil layer=1 frame=0 color=#7eeeff points=10,5 11,5
-draw op=pencil layer=1 frame=0 color=#2ea4f4 points=[[9,5]]
-draw op=pencil layer=2 frame=0 color=#ffe268 points=[[11,5]]
-draw op=pencil layer=0 frame=0 color=#000000 erase=true points=[[7,6]]
-draw op=pencil layer=1 frame=0 color=#000000 erase=true points=2,6 3,6 7,6
-draw op=pencil layer=2 frame=0 color=#000000 erase=true points=2,6 3,6 7,6
-draw op=pencil layer=0 frame=0 color=#22185c points=2,6 3,6
-draw op=pencil layer=1 frame=1 color=#000000 erase=true points=6,4 7,4
-draw op=pencil layer=2 frame=1 color=#000000 erase=true points=6,4 7,4
-draw op=pencil layer=0 frame=1 color=#3050c4 points=6,4 7,4
-draw op=pencil layer=0 frame=1 color=#000000 erase=true points=6,5 7,5
-draw op=pencil layer=1 frame=1 color=#000000 erase=true points=6,5 7,5 8,5
-draw op=pencil layer=2 frame=1 color=#000000 erase=true points=6,5 7,5 8,5 9,5 11,5
-draw op=pencil layer=0 frame=1 color=#3050c4 points=8,5 9,5 11,5
-draw op=pencil layer=1 frame=1 color=#7eeeff points=[[11,5]]
-draw op=pencil layer=1 frame=1 color=#2ea4f4 points=[[9,5]]
-draw op=pencil layer=1 frame=1 color=#000000 erase=true points=2,6 10,6
-draw op=pencil layer=2 frame=1 color=#000000 erase=true points=2,6 10,6 13,6
-draw op=pencil layer=0 frame=1 color=#3050c4 points=10,6 13,6 17,6 18,6
-draw op=pencil layer=0 frame=1 color=#22185c points=[[2,6]]
-draw op=pencil layer=1 frame=1 color=#7eeeff points=13,6 17,6 18,6
-draw op=pencil layer=2 frame=1 color=#ffffff points=[[17,6]]
-draw op=pencil layer=2 frame=1 color=#ffe268 points=[[18,6]]
-draw op=pencil layer=1 frame=1 color=#000000 erase=true points=[[12,7]]
-draw op=pencil layer=2 frame=1 color=#000000 erase=true points=12,7 13,7 15,7
-draw op=pencil layer=0 frame=1 color=#3050c4 points=12,7 13,7 15,7 16,7 17,7 18,7
-draw op=pencil layer=1 frame=1 color=#7eeeff points=15,7 16,7 17,7 18,7
-draw op=pencil layer=1 frame=1 color=#2ea4f4 points=[[13,7]]
-draw op=pencil layer=2 frame=1 color=#ffffff points=16,7 17,7
-draw op=pencil layer=2 frame=1 color=#ffe268 points=[[18,7]]
-draw op=pencil layer=0 frame=1 color=#000000 erase=true points=[[13,8]]
-draw op=pencil layer=1 frame=1 color=#000000 erase=true points=13,8 14,8
-draw op=pencil layer=2 frame=1 color=#000000 erase=true points=13,8 14,8 15,8 16,8
-draw op=pencil layer=0 frame=1 color=#3050c4 points=14,8 15,8 16,8 17,8
-draw op=pencil layer=1 frame=1 color=#7eeeff points=[[17,8]]
-draw op=pencil layer=1 frame=1 color=#2ea4f4 points=15,8 16,8
-draw op=pencil layer=2 frame=1 color=#ffe268 points=[[17,8]]
-draw op=pencil layer=2 frame=2 color=#000000 erase=true points=[[24,12]]
-draw op=pencil layer=0 frame=2 color=#3050c4 points=[[24,12]]
-draw op=pencil layer=1 frame=2 color=#2ea4f4 points=[[24,12]]
-draw op=pencil layer=2 frame=2 color=#000000 erase=true points=19,13 20,13 21,13
-draw op=pencil layer=0 frame=2 color=#3050c4 points=19,13 20,13 21,13 22,13 24,13 25,13
-draw op=pencil layer=1 frame=2 color=#7eeeff points=20,13 21,13 22,13 24,13 25,13
-draw op=pencil layer=1 frame=2 color=#2ea4f4 points=[[19,13]]
-draw op=pencil layer=2 frame=2 color=#ffffff points=22,13 24,13
-draw op=pencil layer=2 frame=2 color=#ffe268 points=[[25,13]]
-draw op=pencil layer=1 frame=2 color=#000000 erase=true points=[[19,14]]
-draw op=pencil layer=2 frame=2 color=#000000 erase=true points=19,14 20,14 21,14
-draw op=pencil layer=0 frame=2 color=#3050c4 points=19,14 20,14 21,14 22,14 23,14 24,14
-draw op=pencil layer=1 frame=2 color=#7eeeff points=21,14 22,14 23,14 24,14
-draw op=pencil layer=1 frame=2 color=#2ea4f4 points=[[20,14]]
-draw op=pencil layer=2 frame=2 color=#ffffff points=22,14 23,14 24,14
-draw op=pencil layer=1 frame=2 color=#000000 erase=true points=[[20,15]]
-draw op=pencil layer=2 frame=2 color=#000000 erase=true points=20,15 21,15
-draw op=pencil layer=0 frame=2 color=#3050c4 points=20,15 21,15 22,15 23,15 24,15 25,15 26,15
-draw op=pencil layer=1 frame=2 color=#7eeeff points=22,15 23,15 24,15 25,15 26,15
-draw op=pencil layer=1 frame=2 color=#2ea4f4 points=[[21,15]]
-draw op=pencil layer=2 frame=2 color=#ffffff points=23,15 24,15 25,15
-draw op=pencil layer=2 frame=2 color=#ffe268 points=22,15 26,15
-draw op=pencil layer=0 frame=2 color=#3050c4 points=23,16 24,16 25,16 26,16
-draw op=pencil layer=1 frame=2 color=#7eeeff points=23,16 24,16 25,16 26,16
-draw op=pencil layer=2 frame=2 color=#ffffff points=24,16 25,16
-draw op=pencil layer=2 frame=2 color=#ffe268 points=23,16 26,16
-draw op=pencil layer=0 frame=2 color=#3050c4 points=24,17 25,17 26,17
-draw op=pencil layer=1 frame=2 color=#7eeeff points=24,17 25,17 26,17
-draw op=pencil layer=2 frame=2 color=#ffe268 points=24,17 25,17 26,17
-draw op=pencil layer=0 frame=3 color=#000000 erase=true points=6,5 7,5 8,5
-draw op=pencil layer=1 frame=3 color=#000000 erase=true points=6,5 7,5 8,5
-draw op=pencil layer=2 frame=3 color=#000000 erase=true points=6,5 7,5 8,5
-draw op=pencil layer=0 frame=3 color=#3050c4 points=[[26,16]]
-draw op=pencil layer=1 frame=3 color=#7eeeff points=[[26,16]]
-draw op=pencil layer=2 frame=3 color=#ffe268 points=[[26,16]]
-draw op=pencil layer=0 frame=3 color=#3050c4 points=[[26,17]]
-draw op=pencil layer=1 frame=3 color=#7eeeff points=[[26,17]]
-draw op=pencil layer=2 frame=3 color=#ffe268 points=[[26,17]]
-draw op=pencil layer=0 frame=3 color=#3050c4 points=24,18 26,18
-draw op=pencil layer=1 frame=3 color=#7eeeff points=24,18 26,18
-draw op=pencil layer=2 frame=3 color=#ffffff points=[[24,18]]
-draw op=pencil layer=2 frame=3 color=#ffe268 points=[[26,18]]
-draw op=pencil layer=2 frame=3 color=#000000 erase=true points=[[23,19]]
-draw op=pencil layer=0 frame=3 color=#3050c4 points=23,19 24,19 26,19
-draw op=pencil layer=1 frame=3 color=#7eeeff points=24,19 26,19
-draw op=pencil layer=1 frame=3 color=#2ea4f4 points=[[23,19]]
-draw op=pencil layer=2 frame=3 color=#ffffff points=[[24,19]]
-draw op=pencil layer=2 frame=3 color=#ffe268 points=[[26,19]]
-draw op=pencil layer=0 frame=3 color=#3050c4 points=[[25,21]]
-draw op=pencil layer=1 frame=3 color=#7eeeff points=[[25,21]]
-draw op=pencil layer=2 frame=3 color=#ffffff points=[[25,21]]
-draw op=pencil layer=0 frame=3 color=#3050c4 points=[[25,22]]
-draw op=pencil layer=1 frame=3 color=#7eeeff points=[[25,22]]
-draw op=pencil layer=2 frame=3 color=#ffffff points=[[25,22]]
-paint_grid layer=3 frame=3 x=20 y=18 legend=W:0,Y:1 rows:11
-  |.....W.....|
-  |.....W.....|
-  |..Y..W..Y..|
-  |...YYWYY...|
-  |...YWWWY...|
-  |YWWWWWWWWWY|
-  |...YWWWY...|
-  |...YYWYY...|
-  |..Y..W..Y..|
-  |.....W.....|
-  |.....Y.....|
-draw op=clear_cel layer=3 frame=3
-paint_grid layer=3 frame=3 x=20 y=18 legend=W:0,Y:1 rows:11
-  |.....W.....|
-  |.....W.....|
-  |..Y..W..Y..|
-  |...YWWWY...|
-  |...WWWWW...|
-  |YWWWWWWWWWY|
-  |...WWWWW...|
-  |...YWWWY...|
-  |..Y..W..Y..|
-  |.....W.....|
-  |.....Y.....|
-paint_grid layer=3 frame=4 x=19 y=22 legend=W:0,Y:1 rows:3
-  |.....Y.....|
-  |YY..YWY..YY|
-  |.....Y.....|
-paint_grid layer=3 frame=4 x=25 y=28 legend=Y:1 rows:2
-  |Y|
-  |Y|
-draw op=clear_cel layer=3 frame=4
-paint_grid layer=3 frame=4 x=20 y=21 legend=W:0,Y:1 rows:8
-  |.....Y.....|
-  |.....W.....|
-  |Y.YYWWWYY.Y|
-  |.....W.....|
-  |.....Y.....|
-  |.....Y.....|
-  |...........|
-  |.....Y.....|
-draw op=pencil layer=4 frame=1 color=#ffe268 points=[[20,4]]
-draw op=pencil layer=4 frame=2 color=#2ea4f4 points=[[22,2]]
-draw op=pencil layer=4 frame=2 color=#ffe268 points=[[25,9]]
-draw op=pencil layer=4 frame=3 color=#3050c4 points=[[23,1]]
-draw op=pencil layer=4 frame=3 color=#2ea4f4 points=[[27,8]]
-draw op=pencil layer=4 frame=3 color=#ffe268 points=[[27,13]]
-draw op=pencil layer=4 frame=4 color=#3050c4 points=[[28,7]]
-draw op=pencil layer=4 frame=4 color=#2ea4f4 points=[[28,12]]
-draw op=pencil layer=4 frame=4 color=#ffffff points=[[21,27]]
-draw op=pencil layer=4 frame=4 color=#ffe268 points=21,19 29,19 29,27
-draw op=pencil layer=4 frame=5 color=#3050c4 points=[[29,11]]
-draw op=pencil layer=4 frame=5 color=#2ea4f4 points=19,18 30,28 30,23 25,30
-draw op=pencil layer=4 frame=5 color=#ffe268 points=19,29 30,17 18,23
-draw op=pencil layer=4 frame=6 color=#3050c4 points=18,17 30,29 16,24
-draw op=pencil layer=4 frame=6 color=#2ea4f4 points=18,30 30,16
-draw op=pencil layer=4 frame=7 color=#3050c4 points=17,30 30,15
-draw op=pencil layer=0 frame=7 color=#000000 erase=true points=[[23,9]]
-draw op=pencil layer=1 frame=7 color=#000000 erase=true points=[[23,9]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[23,9]]
-draw op=pencil layer=0 frame=7 color=#000000 erase=true points=[[24,12]]
-draw op=pencil layer=1 frame=7 color=#000000 erase=true points=[[24,12]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[24,12]]
-draw op=pencil layer=0 frame=7 color=#000000 erase=true points=[[25,15]]
-draw op=pencil layer=1 frame=7 color=#000000 erase=true points=[[25,15]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[25,15]]
-draw op=pencil layer=0 frame=7 color=#000000 erase=true points=25,16 26,16 27,16
-draw op=pencil layer=1 frame=7 color=#000000 erase=true points=25,16 26,16 27,16
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=25,16 26,16 27,16
-draw op=pencil layer=0 frame=7 color=#000000 erase=true points=[[26,19]]
-draw op=pencil layer=1 frame=7 color=#000000 erase=true points=[[26,19]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[26,19]]
-draw op=pencil layer=0 frame=7 color=#000000 erase=true points=[[27,22]]
-draw op=pencil layer=1 frame=7 color=#000000 erase=true points=[[27,22]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[27,22]]
-draw op=pencil layer=0 frame=7 color=#000000 erase=true points=[[27,23]]
-draw op=pencil layer=1 frame=7 color=#000000 erase=true points=[[27,23]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[27,23]]
-draw op=pencil layer=0 frame=8 color=#000000 erase=true points=[[24,10]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[24,10]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[24,10]]
-draw op=pencil layer=0 frame=8 color=#000000 erase=true points=[[26,13]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[26,13]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[26,13]]
-draw op=pencil layer=0 frame=8 color=#000000 erase=true points=[[26,14]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[26,14]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[26,14]]
-draw op=pencil layer=0 frame=8 color=#000000 erase=true points=[[27,15]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[27,15]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[27,15]]
-draw op=pencil layer=0 frame=8 color=#000000 erase=true points=[[27,18]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[27,18]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[27,18]]
-draw op=pencil layer=0 frame=8 color=#000000 erase=true points=[[27,19]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[27,19]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[27,19]]
-draw op=pencil layer=0 frame=8 color=#000000 erase=true points=[[27,22]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[27,22]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[27,22]]
-draw op=pencil layer=0 frame=9 color=#22185c points=26,13 27,18
-draw op=pencil layer=0 frame=4 color=#000000 erase=true points=[[26,24]]
-draw op=clear_cel layer=4 frame=3 frame_to=7
-draw op=pencil layer=4 frame=3 color=#2ea4f4 points=[[27,8]]
-draw op=pencil layer=4 frame=3 color=#ffe268 points=[[27,13]]
-draw op=pencil layer=4 frame=4 color=#3050c4 points=[[28,7]]
-draw op=pencil layer=4 frame=4 color=#2ea4f4 points=[[28,12]]
-draw op=pencil layer=4 frame=4 color=#ffe268 points=22,26 28,26 22,20 21,19 28,20 29,19
-draw op=pencil layer=4 frame=4 color=#ffffff points=21,27 29,27
-draw op=pencil layer=4 frame=5 color=#3050c4 points=[[29,11]]
-draw op=pencil layer=4 frame=5 color=#2ea4f4 points=19,18 30,18 17,23 25,30
-draw op=pencil layer=4 frame=5 color=#ffe268 points=19,29 30,29
-draw op=pencil layer=4 frame=6 color=#3050c4 points=18,17 30,17 16,24
-draw op=pencil layer=4 frame=6 color=#2ea4f4 points=18,30 30,30
-draw op=pencil layer=4 frame=7 color=#3050c4 points=[[17,30]]
-draw op=pencil layer=3 frame=3 color=#ffe268 points=21,23 29,23 25,27
-draw op=pencil layer=2 frame=6 color=#000000 erase=true points=25,15 25,16
-draw op=pencil layer=0 frame=6 color=#3050c4 points=25,15 25,16
-draw op=pencil layer=1 frame=6 color=#7eeeff points=25,15 25,16
-draw op=pencil layer=2 frame=6 color=#000000 erase=true points=26,17 26,18
-draw op=pencil layer=0 frame=6 color=#3050c4 points=26,17 26,18
-draw op=pencil layer=1 frame=6 color=#7eeeff points=26,17 26,18
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=[[25,14]]
-draw op=pencil layer=0 frame=7 color=#3050c4 points=[[25,14]]
-draw op=pencil layer=1 frame=7 color=#2ea4f4 points=[[25,14]]
-draw op=pencil layer=2 frame=7 color=#000000 erase=true points=26,17 26,18
-draw op=pencil layer=0 frame=7 color=#3050c4 points=26,17 26,18
-draw op=pencil layer=1 frame=7 color=#2ea4f4 points=26,17 26,18
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[25,12]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[25,12]]
-draw op=pencil layer=0 frame=8 color=#3050c4 points=[[25,12]]
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=27,16 27,17
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=27,16 27,17
-draw op=pencil layer=0 frame=8 color=#3050c4 points=27,16 27,17
-draw op=pencil layer=1 frame=8 color=#000000 erase=true points=[[27,20]]
-draw op=pencil layer=2 frame=8 color=#000000 erase=true points=[[27,20]]
-draw op=pencil layer=0 frame=8 color=#3050c4 points=[[27,20]]
-draw op=pencil layer=0 frame=1 color=#3050c4 points=[[17,6]]
-draw op=pencil layer=1 frame=1 color=#7eeeff points=[[17,6]]
-draw op=pencil layer=2 frame=1 color=#ffe268 points=[[17,6]]
+layer rename index=0 name=trail
+layer add name=arc
+layer add name=edge
+layer add name=flash
+layer add name=sparks
+palette set colors=#ffffff,#ffe268,#7eeeff,#2ea4f4,#3050c4,#22185c
+frame add count=9 duration_ms=100
+trail @3 clear_cel ~
+legend A=#2ea4f4
+trail @3 grid 2,3 = 2,3 24x22
+    .....A..................
+    AAAAAAAAAAA.............
+    .....AAAAAAAAA..........
+    .......AAAAAAAA.........
+    .........AAAAAAAA.......
+    ..........AAAAAAAA......
+    ...........AAAAAAAA.....
+    ............AAAAAAAA....
+    .............AAAAAAA....
+    .............AAAAAAAA...
+    ..............AAAAAAAA..
+    ..............AAAAAAAA..
+    ..............AAAAAAAA..
+    ...............AAAAAAAA.
+    ................AAAAAAA.
+    ................AAAAAAA.
+    .................AAAAAA.
+    ..................AAAAA.
+    ...................AAAAA
+    ...................AAAA.
+    ....................AAA.
+    .....................AA.
+trail @3 clear_cel = 2,3 25,24 .
+trail @3 grid 2,4 = 2,4 25x21
+    ....AAAAAAAAA............
+    ..AAAAAAAAAAAAA..........
+    AAAAAAAAAAAAAAAAA........
+    ........AAAAAAAAAAA......
+    ..........AAAAAAAAAA.....
+    ............AAAAAAAAA....
+    .............AAAAAAAAA...
+    .............AAAAAAAAA...
+    ..............AAAAAAAAA..
+    ..............AAAAAAAAA..
+    ...............AAAAAAAAA.
+    .................AAAAAAA.
+    ..................AAAAAAA
+    ...................AAAAAA
+    ....................AAAAA
+    .....................AAAA
+    ......................AAA
+    .......................AA
+    .......................AA
+    ........................A
+    ........................A
+trail @0 clear_cel ~
+trail @0 grid 2,4 = 2,4 6x3
+    ....AA
+    ..AAA.
+    AAAAA.
+trail @1 clear_cel ~
+trail @1 grid 2,4 = 2,4 18x6
+    ....AAAAAAAAA.....
+    ..AAAAAAAAAAAAA...
+    AA.....AAAAAAAAAA.
+    .........AAAAAAAAA
+    ...........AAAAA..
+    ............AA....
+trail @2 clear_cel ~
+trail @2 grid 2,4 = 2,4 25x15
+    ....AAAAAAAAA............
+    ..AA.AAAAAAAAAA..........
+    AA.......AAAAAAAA........
+    ...........AAAAAAAA......
+    .............AAAAAAA.....
+    ..............AAAAAAA....
+    ..............AAAAAAAA...
+    ...............AAAAAAA...
+    ...............AAAAAAAA..
+    ...............AAAAAAAA..
+    ................AAAAAAAA.
+    ..................AAAAAA.
+    .....................AAAA
+    .......................AA
+    ........................A
+trail @3 clear_cel = 2,4 26,24 .
+trail @3 grid 2,4 = 2,4 25x21
+    ....AAAAAAAAA............
+    ..AAAAAAAAAAAAA..........
+    AA.......AAAAAAAA........
+    ..........AAAAAAAAA......
+    ............AAAAAAAA.....
+    .............AAAAAAAA....
+    .............AAAAAAAAA...
+    ..............AAAAAAAA...
+    ..............AAAAAAAAA..
+    ...............AAAAAAAA..
+    ...............AAAAAAAAA.
+    .................AAAAAAA.
+    ..................AAAAAAA
+    ...................AAAAAA
+    ....................AAAAA
+    .....................AAAA
+    ......................AAA
+    .......................AA
+    .......................AA
+    ........................A
+    ........................A
+trail @4 clear_cel ~
+trail @4 grid 9,4 = 9,4 18x21
+    AAAAAAA...........
+    ...AAAAAA.........
+    .....AAAAAA.......
+    ......AAAAAA......
+    .......AAAAAA.....
+    .......AAAAAAA....
+    ........AAAAAAA...
+    .........AAAAAAA..
+    .........AAAAAAA..
+    ..........AAAAAAA.
+    ..........AAAAAAA.
+    ...........AAAAAAA
+    ............AAAAAA
+    .............AAAAA
+    .............AAAAA
+    ..............AAAA
+    ...............AAA
+    ...............AAA
+    ................AA
+    .................A
+    .................A
+trail @5 clear_cel ~
+trail @5 grid 13,4 = 13,4 15x21
+    AAAA...........
+    ...AAA.........
+    ....AAA........
+    .....AAAA......
+    .....AAAAA.....
+    ......AAAAA....
+    .......AAAA....
+    .......AAAAA...
+    ........AAAAA..
+    ........AAAAA..
+    ........AAAAAA.
+    .........AAAAA.
+    .........AAAAA.
+    ..........AAAA.
+    ...........AAA.
+    ...........AAAA
+    ............AAA
+    ............AAA
+    .............A.
+    .............A.
+    .............A.
+trail @6 clear_cel ~
+trail @6 grid 17,5 = 17,5 11x20
+    AA.........
+    ..AA.......
+    ...AA......
+    ....AA.....
+    ....AAA....
+    .....AAA...
+    .....AAA...
+    ......AAA..
+    ......AAA..
+    ......AAAA.
+    .......AAA.
+    .......AAA.
+    .......AAAA
+    ........AAA
+    ........AAA
+    .........AA
+    .........AA
+    .........AA
+    ..........A
+    .........A.
+trail @7 clear_cel ~
+trail @7 grid 21,7 = 21,7 7x17
+    A......
+    .A.....
+    ..A....
+    ...A...
+    ...AA..
+    ...AA..
+    ....AA.
+    ....AA.
+    ....AA.
+    ....AAA
+    .....AA
+    .....AA
+    .....AA
+    ......A
+    ......A
+    ......A
+    ......A
+trail @8 clear_cel ~
+trail @8 grid 24,10 = 24,10 4x13
+    A...
+    .A..
+    .A..
+    ..A.
+    ..A.
+    ..AA
+    ...A
+    ...A
+    ...A
+    ...A
+    ...A
+    ...A
+    ...A
+trail @0 clear_cel = 2,4 7,6 .
+arc @0 clear_cel ~
+edge @0 clear_cel ~
+legend B=#3050c4
+trail @0 grid 2,4 = 2,4 6x3
+    ....BB
+    ..BBB.
+    BBBBB.
+legend C=#7eeeff
+arc @0 grid 4,4 = 4,4 4x3
+    ..AC
+    AAC.
+    ACC.
+legend D=#ffe268 E=#ffffff
+edge @0 grid 6,4 = 6,4 2x2
+    .D
+    E.
+trail @1 clear_cel = 2,4 19,9 .
+arc @1 clear_cel ~
+edge @1 clear_cel ~
+legend F=#22185c
+trail @1 grid 2,4 = 2,4 18x6
+    ....BBBBBBBBB.....
+    ..BBBBBBBBBBBBB...
+    FB.....BBBBBBBBBB.
+    .........BBBBBBBBB
+    ...........BBBBB..
+    ............BB....
+arc @1 grid 6,4 = 6,4 14x6
+    .AAAAAAAA.....
+    AAACCCCCCAA...
+    ...AAACCCCCAC.
+    ......ACCCCCCC
+    .......AACAC..
+    .........A....
+edge @1 grid 11,5 = 11,5 9x4
+    EEEE.....
+    ..EEEE.D.
+    ....EEEED
+    ......D..
+trail @2 clear_cel = 2,4 26,18 .
+arc @2 clear_cel ~
+edge @2 clear_cel ~
+trail @2 grid 2,4 = 2,4 25x15
+    ....BBBBBBBBB............
+    ..BB.BBBBBBBBBB..........
+    FF.......FBBBBBBB........
+    ...........FBBBBBBB......
+    .............BBBBBBB.....
+    ..............BBBBBBB....
+    ..............BBBBBBBB...
+    ...............BBBBBBB...
+    ...............BBBBBBBB..
+    ...............BBBBBBBB..
+    ................BBBBBBBB.
+    ..................BBBBBB.
+    .....................BBBB
+    .......................BB
+    ........................B
+arc @2 grid 10,4 = 10,4 17x15
+    .AAAA............
+    AACCCAA..........
+    ...ACCCAA........
+    ....AACCCAA......
+    ......ACCCCA.....
+    ......AACCCCA....
+    .......ACCCCCA...
+    ........ACCCCA...
+    ........ACCCCCA..
+    ........AACCCCA..
+    ..........AACCCA.
+    ............ACCC.
+    ..............CCC
+    ...............CC
+    ................C
+edge @2 grid 16,6 = 16,6 11x13
+    E..........
+    .EE........
+    ..EEE......
+    ...EEE.....
+    ....EEE....
+    ....EEE....
+    .....EEE...
+    ......EE...
+    .......EE..
+    ........ED.
+    .........ED
+    ..........D
+    ..........D
+trail @3 clear_cel = 2,4 26,24 .
+arc @3 clear_cel ~
+edge @3 clear_cel ~
+trail @3 grid 2,4 = 2,4 25x21
+    ....BBBBBBBBB............
+    ..BBBBBBBBBBBBB..........
+    FF.......BBBBBBBB........
+    ..........FBBBBBBBB......
+    ............BBBBBBBB.....
+    .............BBBBBBBB....
+    .............FBBBBBBBB...
+    ..............BBBBBBBB...
+    ..............FBBBBBBBB..
+    ...............BBBBBBBB..
+    ...............FBBBBBBBB.
+    .................BBBBBBB.
+    ..................BBBBBBB
+    ...................BBBBBB
+    ....................BBBBB
+    .....................BBBB
+    ......................BBB
+    .......................BB
+    .......................BB
+    ........................B
+    ........................B
+arc @3 grid 10,4 = 10,4 17x21
+    ..AAA............
+    AAACCAA..........
+    ...AACCAA........
+    ....AACCCAA......
+    .....AACCCCA.....
+    ......AACCCCA....
+    .......ACCCCCA...
+    .......AACCCCA...
+    .......AACCCCCA..
+    ........AACCCCA..
+    .........AACCCCA.
+    ..........AACCCA.
+    ...........AACCCA
+    ............ACCCA
+    .............ACCA
+    ..............CCA
+    ..............CCC
+    ...............CC
+    ...............CC
+    ................C
+    ................C
+edge @3 grid 18,7 = 18,7 9x18
+    E........
+    .EE......
+    .EEE.....
+    ..EEE....
+    ...EE....
+    ...EEE...
+    ....EE...
+    ....EEE..
+    .....EE..
+    ......EE.
+    ......EE.
+    .......E.
+    .......E.
+    ......DED
+    ........D
+    .......DD
+    ........D
+    ........D
+trail @4 clear_cel = 9,4 26,24 .
+arc @4 clear_cel ~
+edge @4 clear_cel ~
+trail @4 grid 9,4 = 9,4 18x21
+    BBBBBBB...........
+    ...BBBBBB.........
+    .....BBBBBB.......
+    ......BBBBBB......
+    .......BBBBBB.....
+    .......FBBBBBB....
+    ........BBBBBBB...
+    .........BBBBBBB..
+    .........BBBBBBB..
+    ..........BBBBBBB.
+    ..........FBBBBBB.
+    ...........BBBBBBB
+    ............BBBBBB
+    .............BBBBB
+    .............BBBBB
+    ..............BBBB
+    ...............BBB
+    ...............BBB
+    ................BB
+    .................B
+    .................B
+arc @4 grid 13,4 = 13,4 14x19
+    AAA...........
+    ACCAA.........
+    ..ACCAA.......
+    ...ACCCA......
+    ....ACCCA.....
+    ....AACCCA....
+    .....ACCCCA...
+    ......ACCCCA..
+    ......AACCCA..
+    .......AACCCA.
+    ........ACCCA.
+    ........AACCCA
+    .........ACCCA
+    ..........ACCA
+    ..........ACCA
+    ...........ACA
+    ...........ACA
+    ...........AAA
+    ............AA
+edge @4 grid 17,6 = 17,6 9x13
+    E........
+    .EE......
+    ..EE.....
+    ...EE....
+    ....EE...
+    .....EE..
+    ......E..
+    ......EE.
+    .......E.
+    .......EE
+    ........E
+    ........E
+    ........E
+trail @5 clear_cel = 13,4 27,24 .
+arc @5 clear_cel ~
+edge @5 clear_cel ~
+trail @5 grid 13,4 = 13,4 15x21
+    BBBB...........
+    ...BBB.........
+    ....BBB........
+    .....BBBB......
+    .....FBBBB.....
+    ......BBBBB....
+    .......BBBB....
+    .......BBBBB...
+    ........BBBBB..
+    ........BBBBB..
+    ........FBBBBB.
+    .........BBBBB.
+    .........FBBBB.
+    ..........BBBB.
+    ...........BBB.
+    ...........BBBB
+    ............BBB
+    ............BBB
+    .............B.
+    .............B.
+    .............B.
+arc @5 grid 16,5 = 16,5 12x17
+    A...........
+    .ACA........
+    ..ACAA......
+    ...ACCA.....
+    ....ACCA....
+    .....ACA....
+    .....ACCA...
+    ......ACCA..
+    ......AACA..
+    .......ACCA.
+    .......AACA.
+    ........ACA.
+    ........ACA.
+    ........ACA.
+    .........ACA
+    .........ACA
+    ..........CA
+trail @6 clear_cel = 17,5 27,24 .
+arc @6 clear_cel ~
+edge @6 clear_cel ~
+trail @6 grid 17,5 = 17,5 11x20
+    FF.........
+    ..BB.......
+    ...BB......
+    ....BB.....
+    ....FBB....
+    .....BBB...
+    .....FBB...
+    ......BBB..
+    ......BBB..
+    ......FBBB.
+    .......BBB.
+    .......BBB.
+    .......FBBB
+    ........BBB
+    ........BBB
+    .........BB
+    .........BB
+    .........BB
+    ..........B
+    .........F.
+arc @6 grid 21,8 = 21,8 6x13
+    A.....
+    .A....
+    ..A...
+    ..A...
+    ...A..
+    ...A..
+    ....A.
+    ....A.
+    ....A.
+    .....A
+    .....A
+    .....A
+    .....A
+trail @7 clear_cel = 21,7 27,23 .
+arc @7 clear_cel ~
+edge @7 clear_cel ~
+trail @7 grid 21,7 = 21,7 7x17
+    F......
+    .F.....
+    ..F....
+    ...B...
+    ...BB..
+    ...FB..
+    ....BB.
+    ....BB.
+    ....FB.
+    ....FBB
+    .....BB
+    .....BB
+    .....FB
+    ......B
+    ......F
+    ......F
+    ......F
+arc @7 grid 25,13 = 25,13 2x4
+    A.
+    ..
+    ..
+    .A
+trail @8 clear_cel = 24,10 27,22 .
+arc @8 clear_cel ~
+edge @8 clear_cel ~
+trail @8 grid 24,10 = 24,10 4x13
+    F...
+    .F..
+    .F..
+    ..F.
+    ..F.
+    ..FF
+    ...F
+    ...F
+    ...F
+    ...F
+    ...F
+    ...F
+    ...F
+trail @9 clear_cel ~
+arc @9 clear_cel ~
+edge @9 clear_cel ~
+trail @0 clear_cel = 2,4 7,6 .
+arc @0 clear_cel = 4,4 7,6 .
+edge @0 clear_cel = 6,4 7,5 .
+trail @0 grid 2,4 = 2,4 7x3
+    ....BBB
+    ..BBBB.
+    BB...B.
+arc @0 grid 4,4 = 4,4 5x3
+    ..AAC
+    AACC.
+    ...A.
+edge @0 grid 6,4 = 6,4 3x2
+    ..D
+    EE.
+trail @1 clear_cel = 2,4 19,9 .
+arc @1 clear_cel = 6,4 19,9 .
+edge @1 clear_cel = 11,5 19,8 .
+trail @1 grid 2,4 = 2,4 19x6
+    ....BBBBBBBBB......
+    ..BBBBBBBBBBBBB....
+    FB.......BBBBBBBB..
+    ...........BBBBBBBB
+    ............BBBBB..
+    .............BB....
+arc @1 grid 7,4 = 7,4 14x6
+    AAAAAAAA......
+    ..ACCCCCAA....
+    .....ACCCCAA..
+    .......ACCCCCC
+    ........ACAC..
+    .........A....
+edge @1 grid 12,5 = 12,5 9x4
+    EEE......
+    ..EEE....
+    ....EEEDD
+    ......D..
+trail @2 clear_cel = 2,4 26,18 .
+arc @2 clear_cel = 10,4 26,18 .
+edge @2 clear_cel = 16,6 26,18 .
+trail @2 grid 2,4 = 2,4 25x15
+    ....BBBBBBBBB............
+    ..BB...BBBBBBBB..........
+    FF........FBBBBBB........
+    ............BBBBBBB......
+    .............FBBBBBB.....
+    ..............BBBBBBB....
+    ...............BBBBBBB...
+    ................BBBBBB...
+    ................BBBBBBB..
+    ................BBBBBBB..
+    .................BBBBBBB.
+    ..................BBBBBB.
+    .....................BBBB
+    .......................BB
+    ........................B
+arc @2 grid 11,4 = 11,4 16x15
+    AAAA............
+    AACCAA..........
+    ...ACCAA........
+    ....ACCCAA......
+    .....ACCCCA.....
+    ......ACCCCA....
+    .......ACCCCA...
+    .......ACCCCA...
+    ........ACCCCA..
+    ........ACCCCA..
+    .........AACCCA.
+    ...........ACCC.
+    ............ACCC
+    ..............CC
+    ...............C
+edge @2 grid 16,6 = 16,6 11x13
+    E..........
+    ..E........
+    ...EE......
+    ...EEE.....
+    ....EEE....
+    .....EE....
+    .....EEE...
+    ......EE...
+    .......EE..
+    ........ED.
+    .........ED
+    ..........D
+    ..........D
+trail @1 clear_cel = 2,4 20,9 .
+arc @1 clear_cel = 7,4 20,9 .
+edge @1 clear_cel = 12,5 20,8 .
+trail @1 grid 2,4 = 2,4 16x5
+    ....BBBBBBBBB...
+    ..BBBBBBBBBBBBB.
+    BB......BBBBBBBB
+    ..........BBBB..
+    ...........BB...
+arc @1 grid 6,4 = 6,4 12x5
+    AAAAAAAAA...
+    CACCCCCCCAC.
+    ....AACCCCCC
+    ......ACCC..
+    ........A...
+edge @1 grid 11,5 = 11,5 7x3
+    EEEE.D.
+    ..EEEED
+    ....D..
+trail @2 clear_cel = 2,4 26,18 .
+arc @2 clear_cel = 11,4 26,18 .
+edge @2 clear_cel = 16,6 26,18 .
+trail @2 grid 2,4 = 2,4 24x11
+    ....BBBBBBBBB...........
+    ..BB..BBBBBBBBB.........
+    FB........BBBBBBB.......
+    ...........FBBBBBBB.....
+    .............BBBBBBB....
+    ..............BBBBBBB...
+    ..............BBBBBBBB..
+    ...............BBBBBBB..
+    ...............BBBBBBBB.
+    ................BBBBBBB.
+    .......................B
+arc @2 grid 9,4 = 9,4 17x11
+    AAAAAA...........
+    .AACCCAA.........
+    ....ACCCAA.......
+    .....AACCCAA.....
+    .......ACCCCA....
+    .......ACCCCCA...
+    ........ACCCCCA..
+    .........ACCCCA..
+    .........AACCCCC.
+    ...........AACCC.
+    ................C
+edge @2 grid 14,5 = 14,5 12x10
+    E...........
+    ..E.........
+    ...EE.......
+    ....EEE.....
+    .....EEE....
+    ......EEE...
+    .......EE...
+    ........EED.
+    .........ED.
+    ...........D
+arc @0 erase pencil = 6,4 6,4 .
+edge @0 erase pencil = 8,4 8,4 .
+trail @0 pencil #3050c4 = 9,4 11,4 #3050c4
+arc @0 pencil #7eeeff = 9,4 11,4 #7eeeff
+edge @0 pencil #ffffff = 9,4 10,4 #ffffff
+edge @0 pencil #ffe268 = 11,4 11,4 #ffe268
+trail @0 erase pencil = 6,5 7,5 .
+arc @0 erase pencil = 4,5 7,5 .
+edge @0 erase pencil = 6,5 7,5 .
+trail @0 pencil #3050c4 = 9,5 11,5 #3050c4
+arc @0 pencil #7eeeff = 10,5 11,5 #7eeeff
+arc @0 pencil #2ea4f4 = 9,5 9,5 #2ea4f4
+edge @0 pencil #ffe268 = 11,5 11,5 #ffe268
+trail @0 erase pencil = 7,6 7,6 .
+arc @0 erase pencil = 7,6 7,6 .
+edge @0 erase pencil ~
+trail @0 pencil #22185c = 2,6 3,6 #22185c
+arc @1 erase pencil = 6,4 7,4 .
+edge @1 erase pencil ~
+trail @1 pencil #3050c4 ~
+trail @1 erase pencil = 6,5 7,5 .
+arc @1 erase pencil = 6,5 8,5 .
+edge @1 erase pencil = 11,5 11,5 .
+trail @1 pencil #3050c4 ~
+arc @1 pencil #7eeeff ~
+arc @1 pencil #2ea4f4 = 9,5 9,5 #2ea4f4
+arc @1 erase pencil = 10,6 10,6 .
+edge @1 erase pencil = 13,6 13,6 .
+trail @1 pencil #3050c4 = 18,6 18,6 #3050c4
+trail @1 pencil #22185c = 2,6 2,6 #22185c
+arc @1 pencil #7eeeff = 18,6 18,6 #7eeeff
+edge @1 pencil #ffffff = 17,6 17,6 #ffffff
+edge @1 pencil #ffe268 = 18,6 18,6 #ffe268
+arc @1 erase pencil = 12,7 12,7 .
+edge @1 erase pencil = 15,7 15,7 .
+trail @1 pencil #3050c4 = 16,7 18,7 #3050c4
+arc @1 pencil #7eeeff = 16,7 18,7 #7eeeff
+arc @1 pencil #2ea4f4 = 13,7 13,7 #2ea4f4
+edge @1 pencil #ffffff = 16,7 17,7 #ffffff
+edge @1 pencil #ffe268 = 18,7 18,7 #ffe268
+trail @1 erase pencil = 13,8 13,8 .
+arc @1 erase pencil = 14,8 14,8 .
+edge @1 erase pencil ~
+trail @1 pencil #3050c4 = 15,8 17,8 #3050c4
+arc @1 pencil #7eeeff = 17,8 17,8 #7eeeff
+arc @1 pencil #2ea4f4 = 15,8 16,8 #2ea4f4
+edge @1 pencil #ffe268 = 17,8 17,8 #ffe268
+edge @2 erase pencil = 24,12 24,12 .
+trail @2 pencil #3050c4 ~
+arc @2 pencil #2ea4f4 = 24,12 24,12 #2ea4f4
+edge @2 erase pencil ~
+trail @2 pencil #3050c4 = 25,13 25,13 #3050c4
+arc @2 pencil #7eeeff = 20,13 25,13 #7eeeff
+arc @2 pencil #2ea4f4 = 19,13 19,13 #2ea4f4
+edge @2 pencil #ffffff = 22,13 24,13 #ffffff
+edge @2 pencil #ffe268 = 25,13 25,13 #ffe268
+arc @2 erase pencil ~
+edge @2 erase pencil ~
+trail @2 pencil #3050c4 = 19,14 24,14 #3050c4
+arc @2 pencil #7eeeff = 21,14 24,14 #7eeeff
+arc @2 pencil #2ea4f4 = 20,14 20,14 #2ea4f4
+edge @2 pencil #ffffff = 22,14 24,14 #ffffff
+arc @2 erase pencil ~
+edge @2 erase pencil ~
+trail @2 pencil #3050c4 = 20,15 26,15 #3050c4
+arc @2 pencil #7eeeff = 22,15 26,15 #7eeeff
+arc @2 pencil #2ea4f4 = 21,15 21,15 #2ea4f4
+edge @2 pencil #ffffff = 23,15 25,15 #ffffff
+edge @2 pencil #ffe268 = 22,15 5x1
+    DEEED
+trail @2 pencil #3050c4 = 23,16 26,16 #3050c4
+arc @2 pencil #7eeeff = 23,16 26,16 #7eeeff
+edge @2 pencil #ffffff = 24,16 25,16 #ffffff
+edge @2 pencil #ffe268 = 23,16 4x1
+    DEED
+trail @2 pencil #3050c4 = 24,17 26,17 #3050c4
+arc @2 pencil #7eeeff = 24,17 26,17 #7eeeff
+edge @2 pencil #ffe268 = 24,17 26,17 #ffe268
+trail @3 erase pencil = 6,5 8,5 .
+arc @3 erase pencil ~
+edge @3 erase pencil ~
+trail @3 pencil #3050c4 ~
+arc @3 pencil #7eeeff = 26,16 26,16 #7eeeff
+edge @3 pencil #ffe268 = 26,16 26,16 #ffe268
+trail @3 pencil #3050c4 ~
+arc @3 pencil #7eeeff = 26,17 26,17 #7eeeff
+edge @3 pencil #ffe268 = 26,17 26,17 #ffe268
+trail @3 pencil #3050c4 ~
+arc @3 pencil #7eeeff = 26,18 26,18 #7eeeff
+edge @3 pencil #ffffff = 24,18 24,18 #ffffff
+edge @3 pencil #ffe268 = 26,18 26,18 #ffe268
+edge @3 erase pencil ~
+trail @3 pencil #3050c4 ~
+arc @3 pencil #7eeeff = 26,19 26,19 #7eeeff
+arc @3 pencil #2ea4f4 = 23,19 23,19 #2ea4f4
+edge @3 pencil #ffffff = 24,19 24,19 #ffffff
+edge @3 pencil #ffe268 = 26,19 26,19 #ffe268
+trail @3 pencil #3050c4 ~
+arc @3 pencil #7eeeff ~
+edge @3 pencil #ffffff = 25,21 25,21 #ffffff
+trail @3 pencil #3050c4 ~
+arc @3 pencil #7eeeff ~
+edge @3 pencil #ffffff = 25,22 25,22 #ffffff
+flash @3 grid 20,18 = 20,18 11x11
+    .....E.....
+    .....E.....
+    ..D..E..D..
+    ...DDEDD...
+    ...DEEED...
+    DEEEEEEEEED
+    ...DEEED...
+    ...DDEDD...
+    ..D..E..D..
+    .....E.....
+    .....D.....
+flash @3 clear_cel = 20,18 30,28 .
+flash @3 grid 20,18 = 20,18 11x11
+    .....E.....
+    .....E.....
+    ..D..E..D..
+    ...DEEED...
+    ...EEEEE...
+    DEEEEEEEEED
+    ...EEEEE...
+    ...DEEED...
+    ..D..E..D..
+    .....E.....
+    .....D.....
+flash @4 grid 19,22 = 19,22 11x3
+    .....D.....
+    DD..DED..DD
+    .....D.....
+flash @4 grid 25,28 = 25,28 25,29 #ffe268
+flash @4 clear_cel = 19,22 29,29 .
+flash @4 grid 20,21 = 20,21 11x8
+    .....D.....
+    .....E.....
+    D.DDEEEDD.D
+    .....E.....
+    .....D.....
+    .....D.....
+    ...........
+    .....D.....
+sparks @1 pencil #ffe268 = 20,4 20,4 #ffe268
+sparks @2 pencil #2ea4f4 = 22,2 22,2 #2ea4f4
+sparks @2 pencil #ffe268 = 25,9 25,9 #ffe268
+sparks @3 pencil #3050c4 = 23,1 23,1 #3050c4
+sparks @3 pencil #2ea4f4 = 27,8 27,8 #2ea4f4
+sparks @3 pencil #ffe268 = 27,13 27,13 #ffe268
+sparks @4 pencil #3050c4 = 28,7 28,7 #3050c4
+sparks @4 pencil #2ea4f4 = 28,12 28,12 #2ea4f4
+sparks @4 pencil #ffffff = 21,27 21,27 #ffffff
+sparks @4 pencil #ffe268 = 21,19 9x9
+    D.......D
+    .........
+    .........
+    .........
+    .........
+    .........
+    .........
+    .........
+    E.......D
+sparks @5 pencil #3050c4 = 29,11 29,11 #3050c4
+sparks @5 pencil #2ea4f4 = 19,18 12x13
+    A...........
+    ............
+    ............
+    ............
+    ............
+    ...........A
+    ............
+    ............
+    ............
+    ............
+    ...........A
+    ............
+    ......A.....
+sparks @5 pencil #ffe268 = 18,17 13x13
+    ............D
+    .A...........
+    .............
+    .............
+    .............
+    .............
+    D...........A
+    .............
+    .............
+    .............
+    .............
+    ............A
+    .D...........
+sparks @6 pencil #3050c4 = 16,17 15x13
+    ..B............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    B..............
+    ...............
+    ...............
+    ...............
+    ...............
+    ..............B
+sparks @6 pencil #2ea4f4 = 18,16 13x15
+    ............A
+    B............
+    .............
+    .............
+    .............
+    .............
+    .............
+    .............
+    .............
+    .............
+    .............
+    .............
+    .............
+    ............B
+    A............
+sparks @7 pencil #3050c4 = 17,15 14x16
+    .............B
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    B.............
+trail @7 erase pencil = 23,9 23,9 .
+arc @7 erase pencil ~
+edge @7 erase pencil ~
+trail @7 erase pencil = 24,12 24,12 .
+arc @7 erase pencil ~
+edge @7 erase pencil ~
+trail @7 erase pencil = 25,15 25,15 .
+arc @7 erase pencil ~
+edge @7 erase pencil ~
+trail @7 erase pencil = 25,16 27,16 .
+arc @7 erase pencil = 26,16 26,16 .
+edge @7 erase pencil ~
+trail @7 erase pencil = 26,19 26,19 .
+arc @7 erase pencil ~
+edge @7 erase pencil ~
+trail @7 erase pencil = 27,22 27,22 .
+arc @7 erase pencil ~
+edge @7 erase pencil ~
+trail @7 erase pencil = 27,23 27,23 .
+arc @7 erase pencil ~
+edge @7 erase pencil ~
+trail @8 erase pencil = 24,10 24,10 .
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 erase pencil = 26,13 26,13 .
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 erase pencil = 26,14 26,14 .
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 erase pencil = 27,15 27,15 .
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 erase pencil = 27,18 27,18 .
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 erase pencil = 27,19 27,19 .
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 erase pencil = 27,22 27,22 .
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @9 pencil #22185c = 26,13 2x6
+    F.
+    ..
+    ..
+    ..
+    ..
+    .F
+trail @4 erase pencil = 26,24 26,24 .
+sparks @3 clear_cel = 23,1 27,13 .
+sparks @4 clear_cel = 21,7 29,27 .
+sparks @5 clear_cel = 18,11 30,30 .
+sparks @6 clear_cel = 16,16 30,30 .
+sparks @7 clear_cel = 17,15 30,30 .
+sparks @3 pencil #2ea4f4 = 27,8 27,8 #2ea4f4
+sparks @3 pencil #ffe268 = 27,13 27,13 #ffe268
+sparks @4 pencil #3050c4 = 28,7 28,7 #3050c4
+sparks @4 pencil #2ea4f4 = 28,12 28,12 #2ea4f4
+sparks @4 pencil #ffe268 = 21,19 9x8
+    D.......D
+    .D.....D.
+    .........
+    .........
+    .........
+    .........
+    .........
+    .D.....D.
+sparks @4 pencil #ffffff = 21,27 9x1
+    E.......E
+sparks @5 pencil #3050c4 = 29,11 29,11 #3050c4
+sparks @5 pencil #2ea4f4 = 17,18 14x13
+    ..A..........A
+    ..............
+    ..............
+    ..............
+    ..............
+    A.............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ..............
+    ........A.....
+sparks @5 pencil #ffe268 = 19,29 12x1
+    D..........D
+sparks @6 pencil #3050c4 = 16,17 15x8
+    ..B...........B
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+    B..............
+sparks @6 pencil #2ea4f4 = 18,30 13x1
+    A...........A
+sparks @7 pencil #3050c4 = 17,30 17,30 #3050c4
+flash @3 pencil #ffe268 = 21,23 9x5
+    DEEEEEEED
+    ..EEEEE..
+    ..DEEED..
+    .D..E..D.
+    ....D....
+edge @6 erase pencil ~
+trail @6 pencil #3050c4 ~
+arc @6 pencil #7eeeff = 25,15 25,16 #7eeeff
+edge @6 erase pencil ~
+trail @6 pencil #3050c4 ~
+arc @6 pencil #7eeeff = 26,17 26,18 #7eeeff
+edge @7 erase pencil ~
+trail @7 pencil #3050c4 ~
+arc @7 pencil #2ea4f4 = 25,14 25,14 #2ea4f4
+edge @7 erase pencil ~
+trail @7 pencil #3050c4 ~
+arc @7 pencil #2ea4f4 = 26,17 26,18 #2ea4f4
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 pencil #3050c4 = 25,12 25,12 #3050c4
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 pencil #3050c4 = 27,16 27,17 #3050c4
+arc @8 erase pencil ~
+edge @8 erase pencil ~
+trail @8 pencil #3050c4 = 27,20 27,20 #3050c4
+trail @1 pencil #3050c4 ~
+arc @1 pencil #7eeeff ~
+edge @1 pencil #ffe268 = 17,6 17,6 #ffe268
 add_tag name=slash direction=forward from=0 to=9

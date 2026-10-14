@@ -1,220 +1,254 @@
-atelier 4 b4637ea0-62a9-4904-a55c-933b5ff27f25 0.1.0
+atelier 5 b4637ea0-62a9-4904-a55c-933b5ff27f25 0.1.0
 new name=wall-torch width=32 height=32
-layer op=rename index=0 name=bracket
-layer op=add name=pulse
-layer op=add name=flame
-layer op=add name=embers
-palette op=set colors=#3f2a1c,#aa7239,#d9481f,#f79617,#ffe478
-paint_grid layer=0 frame=0 x=12 y=15 legend=d:#3f2a1c,t:#aa7239 rows:13
-  |..dddd..|
-  |..dddd..|
-  |..dttd..|
-  |..dttd..|
-  |..dttd..|
-  |..dttd..|
-  |..dttd..|
-  |dddddddd|
-  |dtddddtd|
-  |.dddddd.|
-  |..dttd..|
-  |..dddd..|
-  |...dd...|
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-paint_grid layer=2 frame=0 x=11 y=6 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:13
-  |....o....|
-  |...ror...|
-  |...ooo...|
-  |..rooor..|
-  |..rooor..|
-  |..oyyyo..|
-  |.royyyor.|
-  |.royyyor.|
-  |.oyyyyyo.|
-  |ooyyyyyoo|
-  |ooyyyyyoo|
-  |ooyyyyyoo|
-  |ooyyyyyoo|
-draw op=pencil layer=3 frame=0 color=#ffe478 points=[[12,10]]
-draw op=pencil layer=3 frame=0 color=#f79617 points=[[14,6]]
-draw op=pencil layer=3 frame=0 color=#d9481f points=[[14,2]]
-draw op=pencil layer=1 frame=0 color=#aa7239 points=15,22 16,22
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=2 frame=0 x=11 y=6 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:13
-  |....o....|
-  |...ror...|
-  |...ooo...|
-  |...ooo...|
-  |..rooor..|
-  |..oyyyo..|
-  |.royyyor.|
-  |.royyyor.|
-  |.ryyyyyr.|
-  |.oyyyyyo.|
-  |ooyyyyyoo|
-  |.ooyyyoo.|
-  |.oyyyyyo.|
-paint_grid layer=2 frame=2 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
-  |.......r.|
-  |.......o.|
-  |......o..|
-  |.....oo..|
-  |....roo..|
-  |....ooor.|
-  |...oooor.|
-  |..roooor.|
-  |..rooooo.|
-  |.royyyyo.|
-  |.royyyyor|
-  |ooyyyyyoo|
-  |ooyyyyyoo|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=2 color=#f79617 points=[[13,6]]
-draw op=pencil layer=3 frame=2 color=#d9481f points=[[12,2]]
-draw op=pencil layer=1 frame=2 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17
-paint_grid layer=2 frame=5 x=11 y=6 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:13
-  |....o....|
-  |...ror...|
-  |...ooo...|
-  |...ooo...|
-  |..rooor..|
-  |..ooooo..|
-  |.rooooor.|
-  |.royyyor.|
-  |.ryyyyyr.|
-  |.oyyyyyo.|
-  |ooyyyyyoo|
-  |.ooyyyoo.|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=5 color=#f79617 points=[[20,6]]
-draw op=pencil layer=3 frame=5 color=#d9481f points=[[12,0]]
-draw op=pencil layer=1 frame=5 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17
-paint_grid layer=2 frame=7 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
-  |..r......|
-  |..o......|
-  |..o......|
-  |..oo.....|
-  |..oor....|
-  |.rooo....|
-  |.ryyyo...|
-  |.ryyyor..|
-  |.oyyyyr..|
-  |.oyyyyor.|
-  |royyyyor.|
-  |ooyyyyyoo|
-  |ooyyyyyoo|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=7 color=#ffe478 points=[[16,8]]
-draw op=pencil layer=3 frame=7 color=#d9481f points=[[18,2]]
-draw op=pencil layer=1 frame=7 color=#aa7239 points=15,22 16,22
-paint_grid layer=2 frame=1 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
-  |.....o...|
-  |.....or..|
-  |....oor..|
-  |....ooo..|
-  |...rooo..|
-  |...oooor.|
-  |..roooor.|
-  |..oyyyyr.|
-  |.royyyyr.|
-  |.royyyyo.|
-  |.oyyyyyoo|
-  |ooyyyyyoo|
-  |.ooyyyoo.|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=1 color=#ffe478 points=[[13,8]]
-draw op=pencil layer=3 frame=1 color=#f79617 points=[[13,4]]
-draw op=pencil layer=3 frame=1 color=#d9481f points=[[15,0]]
-draw op=pencil layer=1 frame=1 color=#aa7239 points=14,22 15,22 16,22 17,22 14,17 17,17
-paint_grid layer=2 frame=3 x=11 y=7 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:12
-  |.......r.|
-  |.......o.|
-  |.....oo..|
-  |....roo..|
-  |....ooor.|
-  |...oooor.|
-  |..royyyr.|
-  |..oyyyyo.|
-  |.royyyyor|
-  |.oyyyyyoo|
-  |ooyyyyyoo|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=3 color=#ffe478 points=[[19,10]]
-draw op=pencil layer=3 frame=3 color=#f79617 points=[[12,4]]
-draw op=pencil layer=3 frame=3 color=#d9481f points=[[13,0]]
-draw op=pencil layer=1 frame=3 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17 14,18 17,18
-draw op=pencil layer=1 frame=3 color=#f79617 points=13,23 18,23
-paint_grid layer=2 frame=4 x=11 y=8 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:11
-  |.....o...|
-  |....oor..|
-  |...rooo..|
-  |...oooo..|
-  |..royyor.|
-  |..oyyyyr.|
-  |.royyyyr.|
-  |.royyyyo.|
-  |ooyyyyyoo|
-  |ooyyyyyoo|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=4 color=#ffe478 points=[[20,8]]
-draw op=pencil layer=3 frame=4 color=#d9481f points=[[11,2]]
-draw op=pencil layer=1 frame=4 color=#aa7239 points=13,22 14,22 15,22 16,22 17,22 18,22 14,17 17,17 14,18 17,18
-draw op=pencil layer=1 frame=4 color=#f79617 points=13,23 18,23
-paint_grid layer=2 frame=6 x=11 y=5 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:14
-  |...o.....|
-  |..ro.....|
-  |..roo....|
-  |..ooo....|
-  |..ooor...|
-  |.roooo...|
-  |.roooor..|
-  |.ryyyyo..|
-  |.ryyyyor.|
-  |.oyyyyor.|
-  |ooyyyyyo.|
-  |ooyyyyyoo|
-  |.ooyyyoo.|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=6 color=#ffe478 points=[[15,10]]
-draw op=pencil layer=3 frame=6 color=#f79617 points=[[19,4]]
-draw op=pencil layer=1 frame=6 color=#aa7239 points=14,22 15,22 16,22 17,22
-paint_grid layer=2 frame=8 x=11 y=7 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:12
-  |..r......|
-  |..o......|
-  |..oo.....|
-  |..oor....|
-  |.rooo....|
-  |.roooo...|
-  |.roooor..|
-  |.oyyyyo..|
-  |royyyyor.|
-  |ooyyyyyo.|
-  |ooyyyyyoo|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=8 color=#ffe478 points=[[13,10]]
-draw op=pencil layer=3 frame=8 color=#f79617 points=[[16,6]]
-draw op=pencil layer=3 frame=8 color=#d9481f points=[[19,0]]
-draw op=pencil layer=1 frame=8 color=#aa7239 points=15,22 16,22
-paint_grid layer=2 frame=9 x=11 y=8 legend=o:#f79617,r:#d9481f,y:#ffe478 rows:11
-  |...o.....|
-  |..roo....|
-  |..ooor...|
-  |..oooo...|
-  |.roooor..|
-  |.rooooo..|
-  |.ryyyyor.|
-  |.oyyyyor.|
-  |ooyyyyyoo|
-  |ooyyyyyoo|
-  |.oyyyyyo.|
-draw op=pencil layer=3 frame=9 color=#ffe478 points=[[14,8]]
-draw op=pencil layer=3 frame=9 color=#f79617 points=[[15,4]]
-draw op=pencil layer=1 frame=9 color=#aa7239 points=15,22 16,22
+layer rename index=0 name=bracket
+layer add name=pulse
+layer add name=flame
+layer add name=embers
+palette set colors=#3f2a1c,#aa7239,#d9481f,#f79617,#ffe478
+legend A=#3f2a1c B=#aa7239
+bracket @0 grid 12,15 = 12,15 8x13
+    ..AAAA..
+    ..AAAA..
+    ..ABBA..
+    ..ABBA..
+    ..ABBA..
+    ..ABBA..
+    ..ABBA..
+    AAAAAAAA
+    ABAAAABA
+    .AAAAAA.
+    ..ABBA..
+    ..AAAA..
+    ...AA...
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+frame add copy_from=0 duration_ms=100
+legend C=#f79617 D=#d9481f E=#ffe478
+flame @0 grid 11,6 = 11,6 9x13
+    ....C....
+    ...DCD...
+    ...CCC...
+    ..DCCCD..
+    ..DCCCD..
+    ..CEEEC..
+    .DCEEECD.
+    .DCEEECD.
+    .CEEEEEC.
+    CCEEEEECC
+    CCEEEEECC
+    CCEEEEECC
+    CCEEEEECC
+embers @0 pencil #ffe478 = 12,10 12,10 #ffe478
+embers @0 pencil #f79617 = 14,6 14,6 #f79617
+embers @0 pencil #d9481f = 14,2 14,2 #d9481f
+pulse @0 pencil #aa7239 = 15,22 16,22 #aa7239
+flame @0 clear 0,0 32,32 = 11,6 19,18 .
+flame @0 grid 11,6 = 11,6 9x13
+    ....C....
+    ...DCD...
+    ...CCC...
+    ...CCC...
+    ..DCCCD..
+    ..CEEEC..
+    .DCEEECD.
+    .DCEEECD.
+    .DEEEEED.
+    .CEEEEEC.
+    CCEEEEECC
+    .CCEEECC.
+    .CEEEEEC.
+flame @2 grid 11,5 = 11,5 9x14
+    .......D.
+    .......C.
+    ......C..
+    .....CC..
+    ....DCC..
+    ....CCCD.
+    ...CCCCD.
+    ..DCCCCD.
+    ..DCCCCC.
+    .DCEEEEC.
+    .DCEEEECD
+    CCEEEEECC
+    CCEEEEECC
+    .CEEEEEC.
+embers @2 pencil #f79617 = 13,6 13,6 #f79617
+embers @2 pencil #d9481f = 12,2 12,2 #d9481f
+pulse @2 pencil #aa7239 = 13,17 6x6
+    .B..B.
+    ......
+    ......
+    ......
+    ......
+    BBBBBB
+flame @5 grid 11,6 = 11,6 9x13
+    ....C....
+    ...DCD...
+    ...CCC...
+    ...CCC...
+    ..DCCCD..
+    ..CCCCC..
+    .DCCCCCD.
+    .DCEEECD.
+    .DEEEEED.
+    .CEEEEEC.
+    CCEEEEECC
+    .CCEEECC.
+    .CEEEEEC.
+embers @5 pencil #f79617 = 20,6 20,6 #f79617
+embers @5 pencil #d9481f = 12,0 12,0 #d9481f
+pulse @5 pencil #aa7239 = 13,17 6x6
+    .B..B.
+    ......
+    ......
+    ......
+    ......
+    BBBBBB
+flame @7 grid 11,5 = 11,5 9x14
+    ..D......
+    ..C......
+    ..C......
+    ..CC.....
+    ..CCD....
+    .DCCC....
+    .DEEEC...
+    .DEEECD..
+    .CEEEED..
+    .CEEEECD.
+    DCEEEECD.
+    CCEEEEECC
+    CCEEEEECC
+    .CEEEEEC.
+embers @7 pencil #ffe478 = 16,8 16,8 #ffe478
+embers @7 pencil #d9481f = 18,2 18,2 #d9481f
+pulse @7 pencil #aa7239 = 15,22 16,22 #aa7239
+flame @1 grid 11,5 = 11,5 9x14
+    .....C...
+    .....CD..
+    ....CCD..
+    ....CCC..
+    ...DCCC..
+    ...CCCCD.
+    ..DCCCCD.
+    ..CEEEED.
+    .DCEEEED.
+    .DCEEEEC.
+    .CEEEEECC
+    CCEEEEECC
+    .CCEEECC.
+    .CEEEEEC.
+embers @1 pencil #ffe478 = 13,8 13,8 #ffe478
+embers @1 pencil #f79617 = 13,4 13,4 #f79617
+embers @1 pencil #d9481f = 15,0 15,0 #d9481f
+pulse @1 pencil #aa7239 = 14,17 4x6
+    B..B
+    ....
+    ....
+    ....
+    ....
+    BBBB
+flame @3 grid 11,7 = 11,7 9x12
+    .......D.
+    .......C.
+    .....CC..
+    ....DCC..
+    ....CCCD.
+    ...CCCCD.
+    ..DCEEED.
+    ..CEEEEC.
+    .DCEEEECD
+    .CEEEEECC
+    CCEEEEECC
+    .CEEEEEC.
+embers @3 pencil #ffe478 = 19,10 19,10 #ffe478
+embers @3 pencil #f79617 = 12,4 12,4 #f79617
+embers @3 pencil #d9481f = 13,0 13,0 #d9481f
+pulse @3 pencil #aa7239 = 13,17 6x6
+    .B..B.
+    .B..B.
+    ......
+    ......
+    ......
+    BBBBBB
+pulse @3 pencil #f79617 = 13,23 6x1
+    C....C
+flame @4 grid 11,8 = 11,8 9x11
+    .....C...
+    ....CCD..
+    ...DCCC..
+    ...CCCC..
+    ..DCEECD.
+    ..CEEEED.
+    .DCEEEED.
+    .DCEEEEC.
+    CCEEEEECC
+    CCEEEEECC
+    .CEEEEEC.
+embers @4 pencil #ffe478 = 20,8 20,8 #ffe478
+embers @4 pencil #d9481f = 11,2 11,2 #d9481f
+pulse @4 pencil #aa7239 = 13,17 6x6
+    .B..B.
+    .B..B.
+    ......
+    ......
+    ......
+    BBBBBB
+pulse @4 pencil #f79617 = 13,23 6x1
+    C....C
+flame @6 grid 11,5 = 11,5 9x14
+    ...C.....
+    ..DC.....
+    ..DCC....
+    ..CCC....
+    ..CCCD...
+    .DCCCC...
+    .DCCCCD..
+    .DEEEEC..
+    .DEEEECD.
+    .CEEEECD.
+    CCEEEEEC.
+    CCEEEEECC
+    .CCEEECC.
+    .CEEEEEC.
+embers @6 pencil #ffe478 = 15,10 15,10 #ffe478
+embers @6 pencil #f79617 = 19,4 19,4 #f79617
+pulse @6 pencil #aa7239 = 14,22 17,22 #aa7239
+flame @8 grid 11,7 = 11,7 9x12
+    ..D......
+    ..C......
+    ..CC.....
+    ..CCD....
+    .DCCC....
+    .DCCCC...
+    .DCCCCD..
+    .CEEEEC..
+    DCEEEECD.
+    CCEEEEEC.
+    CCEEEEECC
+    .CEEEEEC.
+embers @8 pencil #ffe478 = 13,10 13,10 #ffe478
+embers @8 pencil #f79617 = 16,6 16,6 #f79617
+embers @8 pencil #d9481f = 19,0 19,0 #d9481f
+pulse @8 pencil #aa7239 = 15,22 16,22 #aa7239
+flame @9 grid 11,8 = 11,8 9x11
+    ...C.....
+    ..DCC....
+    ..CCCD...
+    ..CCCC...
+    .DCCCCD..
+    .DCCCCC..
+    .DEEEECD.
+    .CEEEECD.
+    CCEEEEECC
+    CCEEEEECC
+    .CEEEEEC.
+embers @9 pencil #ffe478 = 14,8 14,8 #ffe478
+embers @9 pencil #f79617 = 15,4 15,4 #f79617
+pulse @9 pencil #aa7239 = 15,22 16,22 #aa7239
 add_tag name=burn direction=forward from=0 to=9

@@ -1,715 +1,700 @@
-atelier 4 6458d3d3-af8a-45ec-a420-eb994d0e5f3b 0.1.0
+atelier 5 6458d3d3-af8a-45ec-a420-eb994d0e5f3b 0.1.0
 new name=beam width=48 height=48
-layer op=add name=legs
-palette op=set colors=#1d1a2e,#f2b48c,#3d7bd9,#6a3d2b,#52e8ff,#ffffff
-layer op=add name=head
-layer op=add name=arm
-layer op=add name=beam
-layer op=add name=orb
-layer op=rename index=0 name=legs
-layer op=rename index=1 name=torso
-paint_grid layer=0 frame=0 x=0 y=0 legend=A:0,B:1 rows:2
-  |A.B|
-  |..A|
-paint_grid layer=0 frame=0 x=0 y=1 legend={} rows:0
-region op=clear layer=0 frame=0 rect=0,0,48,48
-region op=clear layer=0 frame=0 rect=0,0,48,48
-region op=clear layer=1 frame=0 rect=0,0,48,48
-region op=clear layer=2 frame=0 rect=0,0,48,48
-region op=clear layer=3 frame=0 rect=0,0,48,48
-paint_grid layer=0 frame=0 x=19 y=27 legend=D:0 rows:11
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |DDDDDDD.|
-  |.DDD.DD.|
-  |.DDD.DD.|
-  |.DDD.DD.|
-  |.DDD.DD.|
-  |.DDD.DD.|
-  |DDDD.DDD|
-  |DDDD.DDD|
-paint_grid layer=1 frame=0 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=0 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=0 x=23 y=17 legend=B:2,D:0,S:1 rows:9
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBD.|
-  |.SSD|
-  |.SSD|
-  |.SSD|
-  |..DD|
-frame op=add copy_from=0 count=9
-region op=clear layer=1 frame=0 rect=0,0,48,48
-region op=clear layer=2 frame=0 rect=0,0,48,48
-region op=clear layer=3 frame=0 rect=0,0,48,48
-paint_grid layer=1 frame=0 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=0 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=0 x=23 y=17 legend=B:2,D:0,S:1 rows:9
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBD.|
-  |.SSD|
-  |.SSD|
-  |.SSD|
-  |..DD|
-region op=clear layer=5 frame=0 rect=0,0,48,48
-region op=clear layer=4 frame=0 rect=0,0,48,48
-region op=clear layer=1 frame=1 rect=0,0,48,48
-region op=clear layer=2 frame=1 rect=0,0,48,48
-region op=clear layer=3 frame=1 rect=0,0,48,48
-paint_grid layer=1 frame=1 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=1 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=1 x=24 y=17 legend=B:2,D:0,S:1 rows:5
-  |BBBD....|
-  |BBBBDSS.|
-  |BBBBSSSD|
-  |DDDDSSSD|
-  |....DSD.|
-region op=clear layer=5 frame=1 rect=0,0,48,48
-paint_grid layer=5 frame=1 x=30 y=20 legend=C:4,W:5 rows:2
-  |CC|
-  |CW|
-region op=clear layer=4 frame=1 rect=0,0,48,48
-region op=clear layer=1 frame=2 rect=0,0,48,48
-region op=clear layer=2 frame=2 rect=0,0,48,48
-region op=clear layer=3 frame=2 rect=0,0,48,48
-paint_grid layer=1 frame=2 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=2 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=2 x=24 y=17 legend=B:2,D:0,S:1 rows:5
-  |BBBD....|
-  |BBBBDSS.|
-  |BBBBSSSD|
-  |DDDDSSSD|
-  |....DSD.|
-region op=clear layer=5 frame=2 rect=0,0,48,48
-paint_grid layer=5 frame=2 x=31 y=20 legend=C:4,W:5 rows:3
-  |CCC|
-  |CWC|
-  |CCC|
-region op=clear layer=4 frame=2 rect=0,0,48,48
-region op=clear layer=1 frame=3 rect=0,0,48,48
-region op=clear layer=2 frame=3 rect=0,0,48,48
-region op=clear layer=3 frame=3 rect=0,0,48,48
-paint_grid layer=1 frame=3 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=3 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=3 x=24 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBB....|
-  |BBBBBSS..|
-  |BBBBBSSS.|
-  |DDDDDSSSD|
-  |....DDD..|
-region op=clear layer=5 frame=3 rect=0,0,48,48
-paint_grid layer=5 frame=3 x=30 y=19 legend=C:4,W:5 rows:5
-  |.CCC.|
-  |CCWCC|
-  |CWWWC|
-  |CCWCC|
-  |.CCC.|
-region op=clear layer=4 frame=3 rect=0,0,48,48
-region op=clear layer=1 frame=4 rect=0,0,48,48
-region op=clear layer=2 frame=4 rect=0,0,48,48
-region op=clear layer=3 frame=4 rect=0,0,48,48
-paint_grid layer=1 frame=4 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=4 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=4 x=24 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBB....|
-  |BBBBBSS..|
-  |BBBBBSSS.|
-  |DDDDDSSSD|
-  |....DDD..|
-region op=clear layer=5 frame=4 rect=0,0,48,48
-paint_grid layer=5 frame=4 x=30 y=18 legend=C:4,W:5 rows:7
-  |..CCC..|
-  |.CCCCC.|
-  |CCCWCCC|
-  |CCWWWCC|
-  |CCCWCCC|
-  |.CCCCC.|
-  |..CCC..|
-region op=clear layer=4 frame=4 rect=0,0,48,48
-region op=clear layer=1 frame=5 rect=0,0,48,48
-region op=clear layer=2 frame=5 rect=0,0,48,48
-region op=clear layer=3 frame=5 rect=0,0,48,48
-paint_grid layer=1 frame=5 x=17 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=5 x=17 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=5 x=23 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBBB...|
-  |BBBBBBSS.|
-  |BBBBBBSSS|
-  |DDDDDDSSD|
-  |.....DDD.|
-region op=clear layer=5 frame=5 rect=0,0,48,48
-region op=clear layer=4 frame=5 rect=0,0,48,48
-paint_grid layer=4 frame=5 x=34 y=20 legend=C:4 rows:1
-  |CCCCCCCC|
-paint_grid layer=4 frame=5 x=33 y=21 legend=W:5 rows:1
-  |WWWWWWWWW|
-paint_grid layer=4 frame=5 x=34 y=22 legend=C:4 rows:1
-  |CCCCCCCC|
-region op=clear layer=1 frame=6 rect=0,0,48,48
-region op=clear layer=2 frame=6 rect=0,0,48,48
-region op=clear layer=3 frame=6 rect=0,0,48,48
-paint_grid layer=1 frame=6 x=16 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=6 x=16 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=6 x=22 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBBB...|
-  |BBBBBBSS.|
-  |BBBBBBSSS|
-  |DDDDDDSSD|
-  |.....DDD.|
-region op=clear layer=5 frame=6 rect=0,0,48,48
-region op=clear layer=4 frame=6 rect=0,0,48,48
-paint_grid layer=4 frame=6 x=33 y=19 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCC|
-paint_grid layer=4 frame=6 x=31 y=20 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCCCC|
-paint_grid layer=4 frame=6 x=31 y=21 legend=W:5 rows:1
-  |WWWWWWWWWWWWWWWWW|
-paint_grid layer=4 frame=6 x=31 y=22 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCCCC|
-paint_grid layer=4 frame=6 x=33 y=23 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCC|
-region op=clear layer=1 frame=7 rect=0,0,48,48
-region op=clear layer=2 frame=7 rect=0,0,48,48
-region op=clear layer=3 frame=7 rect=0,0,48,48
-paint_grid layer=1 frame=7 x=16 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=7 x=16 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=7 x=22 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBBB...|
-  |BBBBBBSS.|
-  |BBBBBBSSS|
-  |DDDDDDSSD|
-  |.....DDD.|
-region op=clear layer=5 frame=7 rect=0,0,48,48
-region op=clear layer=4 frame=7 rect=0,0,48,48
-paint_grid layer=4 frame=7 x=33 y=19 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCC|
-paint_grid layer=4 frame=7 x=31 y=20 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCCCC|
-paint_grid layer=4 frame=7 x=31 y=21 legend=W:5 rows:1
-  |WWWWWWWWWWWWWWWWW|
-paint_grid layer=4 frame=7 x=31 y=22 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCCCC|
-paint_grid layer=4 frame=7 x=33 y=23 legend=C:4 rows:1
-  |CCCCCCCCCCCCCCC|
-region op=clear layer=1 frame=8 rect=0,0,48,48
-region op=clear layer=2 frame=8 rect=0,0,48,48
-region op=clear layer=3 frame=8 rect=0,0,48,48
-paint_grid layer=1 frame=8 x=17 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=8 x=17 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=8 x=22 y=17 legend=B:2,D:0,S:1 rows:9
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBD.|
-  |.SSD|
-  |.SSD|
-  |.SSD|
-  |..DD|
-region op=clear layer=5 frame=8 rect=0,0,48,48
-region op=clear layer=4 frame=8 rect=0,0,48,48
-paint_grid layer=4 frame=8 x=32 y=20 legend=C:4 rows:1
-  |C.C.C.C.C.C.C|
-paint_grid layer=4 frame=8 x=32 y=21 legend=W:5 rows:1
-  |WWWWWWWWWWWWW|
-paint_grid layer=4 frame=8 x=32 y=22 legend=C:4 rows:1
-  |C.C.C.C.C.C.C|
-region op=clear layer=1 frame=9 rect=0,0,48,48
-region op=clear layer=2 frame=9 rect=0,0,48,48
-region op=clear layer=3 frame=9 rect=0,0,48,48
-paint_grid layer=1 frame=9 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=9 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=9 x=23 y=17 legend=B:2,D:0,S:1 rows:9
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBBD|
-  |BBD.|
-  |.SSD|
-  |.SSD|
-  |.SSD|
-  |..DD|
-region op=clear layer=5 frame=9 rect=0,0,48,48
-region op=clear layer=4 frame=9 rect=0,0,48,48
-region op=clear layer=1 frame=3 rect=0,0,48,48
-region op=clear layer=2 frame=3 rect=0,0,48,48
-region op=clear layer=3 frame=3 rect=0,0,48,48
-paint_grid layer=1 frame=3 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=3 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=3 x=24 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBB....|
-  |BBBBBSS..|
-  |BBBBBSSS.|
-  |DDDDDSSSD|
-  |....DDD..|
-region op=clear layer=5 frame=3 rect=0,0,48,48
-paint_grid layer=5 frame=3 x=30 y=19 legend=C:4,W:5 rows:5
-  |.CCC.|
-  |CWWCC|
-  |CWWCC|
-  |CCCCC|
-  |.CCC.|
-region op=clear layer=4 frame=3 rect=0,0,48,48
-region op=clear layer=1 frame=4 rect=0,0,48,48
-region op=clear layer=2 frame=4 rect=0,0,48,48
-region op=clear layer=3 frame=4 rect=0,0,48,48
-paint_grid layer=1 frame=4 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=4 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=4 x=24 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBB....|
-  |BBBBBSS..|
-  |BBBBBSSS.|
-  |DDDDDSSSD|
-  |....DDD..|
-region op=clear layer=5 frame=4 rect=0,0,48,48
-paint_grid layer=5 frame=4 x=30 y=18 legend=C:4,W:5 rows:7
-  |..CCC..|
-  |.CCCCC.|
-  |CCWWWCC|
-  |CCWWWCC|
-  |CCWWWCC|
-  |.CCCCC.|
-  |..CCC..|
-region op=clear layer=4 frame=4 rect=0,0,48,48
-region op=clear layer=1 frame=8 rect=0,0,48,48
-region op=clear layer=2 frame=8 rect=0,0,48,48
-region op=clear layer=3 frame=8 rect=0,0,48,48
-paint_grid layer=1 frame=8 x=17 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=8 x=17 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=8 x=22 y=17 legend=B:2,D:0,S:1 rows:9
-  |BBBD.|
-  |BBBD.|
-  |BBBD.|
-  |BBBD.|
-  |BBD..|
-  |..SSD|
-  |..SSD|
-  |..SSD|
-  |...DD|
-region op=clear layer=5 frame=8 rect=0,0,48,48
-region op=clear layer=4 frame=8 rect=0,0,48,48
-paint_grid layer=4 frame=8 x=32 y=20 legend=C:4 rows:1
-  |C.C.C.C.C.C.C|
-paint_grid layer=4 frame=8 x=32 y=21 legend=W:5 rows:1
-  |WWWWWWWWWWWWW|
-paint_grid layer=4 frame=8 x=32 y=22 legend=C:4 rows:1
-  |C.C.C.C.C.C.C|
-region op=clear layer=1 frame=9 rect=0,0,48,48
-region op=clear layer=2 frame=9 rect=0,0,48,48
-region op=clear layer=3 frame=9 rect=0,0,48,48
-paint_grid layer=1 frame=9 x=18 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=9 x=18 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=9 x=23 y=17 legend=B:2,D:0,S:1 rows:9
-  |BBBD.|
-  |BBBD.|
-  |BBBD.|
-  |BBBD.|
-  |BBD..|
-  |..SSD|
-  |..SSD|
-  |..SSD|
-  |...DD|
-region op=clear layer=5 frame=9 rect=0,0,48,48
-region op=clear layer=4 frame=9 rect=0,0,48,48
-region op=clear layer=1 frame=5 rect=0,0,48,48
-region op=clear layer=2 frame=5 rect=0,0,48,48
-region op=clear layer=3 frame=5 rect=0,0,48,48
-paint_grid layer=1 frame=5 x=17 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=5 x=17 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=5 x=23 y=18 legend=B:2,D:0,S:1 rows:5
-  |BBBBBB...|
-  |BBBBBBSS.|
-  |BBBBBBSSS|
-  |DDDDDDSSD|
-  |.....DDD.|
-region op=clear layer=5 frame=5 rect=0,0,48,48
-region op=clear layer=4 frame=5 rect=0,0,48,48
-paint_grid layer=4 frame=5 x=33 y=20 legend=C:4 rows:1
-  |CCCCCCCCC|
-paint_grid layer=4 frame=5 x=32 y=21 legend=W:5 rows:1
-  |WWWWWWWWWW|
-paint_grid layer=4 frame=5 x=33 y=22 legend=C:4 rows:1
-  |CCCCCCCCC|
-region op=clear layer=1 frame=8 rect=0,0,48,48
-region op=clear layer=2 frame=8 rect=0,0,48,48
-region op=clear layer=3 frame=8 rect=0,0,48,48
-paint_grid layer=1 frame=8 x=17 y=15 legend=B:2,D:0,S:1 rows:12
-  |...SS....|
-  |...SS....|
-  |..DBBBBD.|
-  |.DBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |DBBBBBBBD|
-  |.DBBBBBBD|
-  |..DBBBBD.|
-  |..DDDDDD.|
-paint_grid layer=2 frame=8 x=17 y=6 legend=D:0,H:3,S:1 rows:9
-  |...DDDD...|
-  |..DHHHHHD.|
-  |.DHHHHHHD.|
-  |DHHHHHHSSD|
-  |DHHHHHSDSD|
-  |DHHHHSSSSD|
-  |.DHHSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=3 frame=8 x=23 y=17 legend=B:2,D:0,S:1 rows:5
-  |BBBD....|
-  |BBBBDSS.|
-  |BBBBSSSD|
-  |DDDDSSSD|
-  |....DSD.|
-region op=clear layer=5 frame=8 rect=0,0,48,48
-region op=clear layer=4 frame=8 rect=0,0,48,48
-paint_grid layer=4 frame=8 x=30 y=20 legend=C:4 rows:1
-  |C.C.C.C.C.C.C|
-paint_grid layer=4 frame=8 x=30 y=21 legend=W:5 rows:1
-  |WWWWWWWWWWWWWW|
-paint_grid layer=4 frame=8 x=30 y=22 legend=C:4 rows:1
-  |C.C.C.C.C.C.C|
+layer add name=legs
+palette set colors=#1d1a2e,#f2b48c,#3d7bd9,#6a3d2b,#52e8ff,#ffffff
+layer add name=head
+layer add name=arm
+layer add name=beam
+layer add name=orb
+layer rename index=0 name=legs
+layer rename index=1 name=torso
+legend A=#1d1a2e B=#f2b48c
+legs @0 grid 0,0 = 0,0 3x2
+    A.B
+    ..A
+legs @0 grid 0,1 ~
+legs @0 clear 0,0 48,48 = 0,0 2,1 .
+legs @0 clear 0,0 48,48 ~
+torso @0 clear 0,0 48,48 ~
+head @0 clear 0,0 48,48 ~
+arm @0 clear 0,0 48,48 ~
+legs @0 grid 19,27 = 19,27 8x11
+    AAAAAAA.
+    AAAAAAA.
+    AAAAAAA.
+    AAAAAAA.
+    .AAA.AA.
+    .AAA.AA.
+    .AAA.AA.
+    .AAA.AA.
+    .AAA.AA.
+    AAAA.AAA
+    AAAA.AAA
+legend C=#3d7bd9
+torso @0 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+legend D=#6a3d2b
+head @0 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @0 grid 23,17 = 23,17 4x9
+    CCCA
+    CCCA
+    CCCA
+    CCCA
+    CCA.
+    .BBA
+    .BBA
+    .BBA
+    ..AA
+frame add copy_from=0 count=9
+torso @0 clear 0,0 48,48 = 18,15 26,26 .
+head @0 clear 0,0 48,48 = 18,6 27,14 .
+arm @0 clear 0,0 48,48 = 23,17 26,25 .
+torso @0 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @0 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @0 grid 23,17 = 23,17 4x9
+    CCCA
+    CCCA
+    CCCA
+    CCCA
+    CCA.
+    .BBA
+    .BBA
+    .BBA
+    ..AA
+orb @0 clear 0,0 48,48 ~
+beam @0 clear 0,0 48,48 ~
+torso @1 clear 0,0 48,48 = 18,15 26,26 .
+head @1 clear 0,0 48,48 = 18,6 27,14 .
+arm @1 clear 0,0 48,48 = 23,17 26,25 .
+torso @1 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @1 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @1 grid 24,17 = 24,17 8x5
+    CCCA....
+    CCCCABB.
+    CCCCBBBA
+    AAAABBBA
+    ....ABA.
+orb @1 clear 0,0 48,48 ~
+legend E=#52e8ff F=#ffffff
+orb @1 grid 30,20 = 30,20 2x2
+    EE
+    EF
+beam @1 clear 0,0 48,48 ~
+torso @2 clear 0,0 48,48 = 18,15 26,26 .
+head @2 clear 0,0 48,48 = 18,6 27,14 .
+arm @2 clear 0,0 48,48 = 23,17 26,25 .
+torso @2 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @2 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @2 grid 24,17 = 24,17 8x5
+    CCCA....
+    CCCCABB.
+    CCCCBBBA
+    AAAABBBA
+    ....ABA.
+orb @2 clear 0,0 48,48 ~
+orb @2 grid 31,20 = 31,20 3x3
+    EEE
+    EFE
+    EEE
+beam @2 clear 0,0 48,48 ~
+torso @3 clear 0,0 48,48 = 18,15 26,26 .
+head @3 clear 0,0 48,48 = 18,6 27,14 .
+arm @3 clear 0,0 48,48 = 23,17 26,25 .
+torso @3 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @3 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @3 grid 24,18 = 24,18 9x5
+    CCCCC....
+    CCCCCBB..
+    CCCCCBBB.
+    AAAAABBBA
+    ....AAA..
+orb @3 clear 0,0 48,48 ~
+orb @3 grid 30,19 = 30,19 5x5
+    .EEE.
+    EEFEE
+    EFFFE
+    EEFEE
+    .EEE.
+beam @3 clear 0,0 48,48 ~
+torso @4 clear 0,0 48,48 = 18,15 26,26 .
+head @4 clear 0,0 48,48 = 18,6 27,14 .
+arm @4 clear 0,0 48,48 = 23,17 26,25 .
+torso @4 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @4 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @4 grid 24,18 = 24,18 9x5
+    CCCCC....
+    CCCCCBB..
+    CCCCCBBB.
+    AAAAABBBA
+    ....AAA..
+orb @4 clear 0,0 48,48 ~
+orb @4 grid 30,18 = 30,18 7x7
+    ..EEE..
+    .EEEEE.
+    EEEFEEE
+    EEFFFEE
+    EEEFEEE
+    .EEEEE.
+    ..EEE..
+beam @4 clear 0,0 48,48 ~
+torso @5 clear 0,0 48,48 = 18,15 26,26 .
+head @5 clear 0,0 48,48 = 18,6 27,14 .
+arm @5 clear 0,0 48,48 = 23,17 26,25 .
+torso @5 grid 17,15 = 17,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @5 grid 17,6 = 17,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @5 grid 23,18 = 23,18 9x5
+    CCCCCC...
+    CCCCCCBB.
+    CCCCCCBBB
+    AAAAAABBA
+    .....AAA.
+orb @5 clear 0,0 48,48 ~
+beam @5 clear 0,0 48,48 ~
+beam @5 grid 34,20 = 34,20 41,20 #52e8ff
+beam @5 grid 33,21 = 33,21 41,21 #ffffff
+beam @5 grid 34,22 = 34,22 41,22 #52e8ff
+torso @6 clear 0,0 48,48 = 18,15 26,26 .
+head @6 clear 0,0 48,48 = 18,6 27,14 .
+arm @6 clear 0,0 48,48 = 23,17 26,25 .
+torso @6 grid 16,15 = 16,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @6 grid 16,6 = 16,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @6 grid 22,18 = 22,18 9x5
+    CCCCCC...
+    CCCCCCBB.
+    CCCCCCBBB
+    AAAAAABBA
+    .....AAA.
+orb @6 clear 0,0 48,48 ~
+beam @6 clear 0,0 48,48 ~
+beam @6 grid 33,19 = 33,19 47,19 #52e8ff
+beam @6 grid 31,20 = 31,20 47,20 #52e8ff
+beam @6 grid 31,21 = 31,21 47,21 #ffffff
+beam @6 grid 31,22 = 31,22 47,22 #52e8ff
+beam @6 grid 33,23 = 33,23 47,23 #52e8ff
+torso @7 clear 0,0 48,48 = 18,15 26,26 .
+head @7 clear 0,0 48,48 = 18,6 27,14 .
+arm @7 clear 0,0 48,48 = 23,17 26,25 .
+torso @7 grid 16,15 = 16,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @7 grid 16,6 = 16,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @7 grid 22,18 = 22,18 9x5
+    CCCCCC...
+    CCCCCCBB.
+    CCCCCCBBB
+    AAAAAABBA
+    .....AAA.
+orb @7 clear 0,0 48,48 ~
+beam @7 clear 0,0 48,48 ~
+beam @7 grid 33,19 = 33,19 47,19 #52e8ff
+beam @7 grid 31,20 = 31,20 47,20 #52e8ff
+beam @7 grid 31,21 = 31,21 47,21 #ffffff
+beam @7 grid 31,22 = 31,22 47,22 #52e8ff
+beam @7 grid 33,23 = 33,23 47,23 #52e8ff
+torso @8 clear 0,0 48,48 = 18,15 26,26 .
+head @8 clear 0,0 48,48 = 18,6 27,14 .
+arm @8 clear 0,0 48,48 = 23,17 26,25 .
+torso @8 grid 17,15 = 17,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @8 grid 17,6 = 17,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @8 grid 22,17 = 22,17 4x9
+    CCCA
+    CCCA
+    CCCA
+    CCCA
+    CCA.
+    .BBA
+    .BBA
+    .BBA
+    ..AA
+orb @8 clear 0,0 48,48 ~
+beam @8 clear 0,0 48,48 ~
+beam @8 grid 32,20 = 32,20 13x1
+    E.E.E.E.E.E.E
+beam @8 grid 32,21 = 32,21 44,21 #ffffff
+beam @8 grid 32,22 = 32,22 13x1
+    E.E.E.E.E.E.E
+torso @9 clear 0,0 48,48 = 18,15 26,26 .
+head @9 clear 0,0 48,48 = 18,6 27,14 .
+arm @9 clear 0,0 48,48 = 23,17 26,25 .
+torso @9 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @9 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @9 grid 23,17 = 23,17 4x9
+    CCCA
+    CCCA
+    CCCA
+    CCCA
+    CCA.
+    .BBA
+    .BBA
+    .BBA
+    ..AA
+orb @9 clear 0,0 48,48 ~
+beam @9 clear 0,0 48,48 ~
+torso @3 clear 0,0 48,48 = 18,15 26,26 .
+head @3 clear 0,0 48,48 = 18,6 27,14 .
+arm @3 clear 0,0 48,48 = 24,18 32,22 .
+torso @3 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @3 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @3 grid 24,18 = 24,18 9x5
+    CCCCC....
+    CCCCCBB..
+    CCCCCBBB.
+    AAAAABBBA
+    ....AAA..
+orb @3 clear 0,0 48,48 = 30,19 34,23 .
+orb @3 grid 30,19 = 30,19 5x5
+    .EEE.
+    EFFEE
+    EFFEE
+    EEEEE
+    .EEE.
+beam @3 clear 0,0 48,48 ~
+torso @4 clear 0,0 48,48 = 18,15 26,26 .
+head @4 clear 0,0 48,48 = 18,6 27,14 .
+arm @4 clear 0,0 48,48 = 24,18 32,22 .
+torso @4 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @4 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @4 grid 24,18 = 24,18 9x5
+    CCCCC....
+    CCCCCBB..
+    CCCCCBBB.
+    AAAAABBBA
+    ....AAA..
+orb @4 clear 0,0 48,48 = 30,18 36,24 .
+orb @4 grid 30,18 = 30,18 7x7
+    ..EEE..
+    .EEEEE.
+    EEFFFEE
+    EEFFFEE
+    EEFFFEE
+    .EEEEE.
+    ..EEE..
+beam @4 clear 0,0 48,48 ~
+torso @8 clear 0,0 48,48 = 17,15 25,26 .
+head @8 clear 0,0 48,48 = 17,6 26,14 .
+arm @8 clear 0,0 48,48 = 22,17 25,25 .
+torso @8 grid 17,15 = 17,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @8 grid 17,6 = 17,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @8 grid 22,17 = 22,17 5x9
+    CCCA.
+    CCCA.
+    CCCA.
+    CCCA.
+    CCA..
+    ..BBA
+    ..BBA
+    ..BBA
+    ...AA
+orb @8 clear 0,0 48,48 ~
+beam @8 clear 0,0 48,48 = 32,20 44,22 .
+beam @8 grid 32,20 = 32,20 13x1
+    E.E.E.E.E.E.E
+beam @8 grid 32,21 = 32,21 44,21 #ffffff
+beam @8 grid 32,22 = 32,22 13x1
+    E.E.E.E.E.E.E
+torso @9 clear 0,0 48,48 = 18,15 26,26 .
+head @9 clear 0,0 48,48 = 18,6 27,14 .
+arm @9 clear 0,0 48,48 = 23,17 26,25 .
+torso @9 grid 18,15 = 18,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @9 grid 18,6 = 18,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @9 grid 23,17 = 23,17 5x9
+    CCCA.
+    CCCA.
+    CCCA.
+    CCCA.
+    CCA..
+    ..BBA
+    ..BBA
+    ..BBA
+    ...AA
+orb @9 clear 0,0 48,48 ~
+beam @9 clear 0,0 48,48 ~
+torso @5 clear 0,0 48,48 = 17,15 25,26 .
+head @5 clear 0,0 48,48 = 17,6 26,14 .
+arm @5 clear 0,0 48,48 = 23,18 31,22 .
+torso @5 grid 17,15 = 17,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @5 grid 17,6 = 17,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @5 grid 23,18 = 23,18 9x5
+    CCCCCC...
+    CCCCCCBB.
+    CCCCCCBBB
+    AAAAAABBA
+    .....AAA.
+orb @5 clear 0,0 48,48 ~
+beam @5 clear 0,0 48,48 = 33,20 41,22 .
+beam @5 grid 33,20 = 33,20 41,20 #52e8ff
+beam @5 grid 32,21 = 32,21 41,21 #ffffff
+beam @5 grid 33,22 = 33,22 41,22 #52e8ff
+torso @8 clear 0,0 48,48 = 17,15 25,26 .
+head @8 clear 0,0 48,48 = 17,6 26,14 .
+arm @8 clear 0,0 48,48 = 22,17 26,25 .
+torso @8 grid 17,15 = 17,15 9x12
+    ...BB....
+    ...BB....
+    ..ACCCCA.
+    .ACCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    ACCCCCCCA
+    .ACCCCCCA
+    ..ACCCCA.
+    ..AAAAAA.
+head @8 grid 17,6 = 17,6 10x9
+    ...AAAA...
+    ..ADDDDDA.
+    .ADDDDDDA.
+    ADDDDDDBBA
+    ADDDDDBABA
+    ADDDDBBBBA
+    .ADDBBBBA.
+    ..ABBBBA..
+    ...AAAA...
+arm @8 grid 23,17 = 23,17 8x5
+    CCCA....
+    CCCCABB.
+    CCCCBBBA
+    AAAABBBA
+    ....ABA.
+orb @8 clear 0,0 48,48 ~
+beam @8 clear 0,0 48,48 = 32,20 44,22 .
+beam @8 grid 30,20 = 30,20 13x1
+    E.E.E.E.E.E.E
+beam @8 grid 30,21 = 30,21 43,21 #ffffff
+beam @8 grid 30,22 = 30,22 13x1
+    E.E.E.E.E.E.E
 add_tag name=beam direction=forward from=0 to=9

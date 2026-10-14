@@ -1,141 +1,428 @@
-atelier 4 7c12078f-90ed-4b5e-b6b5-40a5745770a0 0.1.0
+atelier 5 7c12078f-90ed-4b5e-b6b5-40a5745770a0 0.1.0
 new name=explosion width=32 height=32
-layer op=rename index=0 name=smoke
-layer op=add name=debris
-layer op=add name=core
-palette op=set colors=#ffffff,#ffe066,#ff9640,#c8423a,#b8b8b8,#5a5a5a
-draw op=ellipse layer=2 frame=0 color=#ff9640 cx=16 cy=16 fill=true rx=6 ry=6
-draw op=ellipse layer=2 frame=0 color=#ffe066 cx=16 cy=16 fill=true rx=4 ry=4
-draw op=ellipse layer=2 frame=0 color=#ffffff cx=16 cy=16 fill=true rx=2 ry=2
-draw op=line layer=2 frame=0 color=#ffffff size=1 x0=19 x1=24 y0=16 y1=16
-draw op=line layer=2 frame=0 color=#ffe066 size=1 x0=18 x1=22 y0=18 y1=22
-draw op=line layer=2 frame=0 color=#ffffff size=1 x0=16 x1=16 y0=19 y1=24
-draw op=line layer=2 frame=0 color=#ffe066 size=1 x0=14 x1=10 y0=18 y1=22
-draw op=line layer=2 frame=0 color=#ffffff size=1 x0=13 x1=8 y0=16 y1=16
-draw op=line layer=2 frame=0 color=#ffe066 size=1 x0=14 x1=10 y0=14 y1=10
-draw op=line layer=2 frame=0 color=#ffffff size=1 x0=16 x1=16 y0=13 y1=8
-draw op=line layer=2 frame=0 color=#ffe066 size=1 x0=18 x1=22 y0=14 y1=10
-frame op=add copy_from=0 duration_ms=100
-region op=clear layer=2 frame=1 rect=0,0,31,31
-region op=clear layer=1 frame=1 rect=0,0,31,31
-region op=clear layer=0 frame=1 rect=0,0,31,31
-draw op=ellipse layer=2 frame=1 color=#ff9640 cx=16 cy=16 fill=true rx=4 ry=4
-draw op=ellipse layer=2 frame=1 color=#ffe066 cx=16 cy=16 fill=true rx=3 ry=3
-draw op=ellipse layer=2 frame=1 color=#ffffff cx=16 cy=16 fill=true rx=1 ry=1
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=18 x1=21 y0=16 y1=16
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=17 x1=20 y0=17 y1=20
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=16 x1=16 y0=18 y1=21
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=15 x1=12 y0=17 y1=20
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=14 x1=11 y0=16 y1=16
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=15 x1=12 y0=15 y1=12
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=16 x1=16 y0=14 y1=11
-draw op=line layer=2 frame=1 color=#ff9640 size=1 x0=17 x1=20 y0=15 y1=12
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=18 y0=16 y1=14
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=17 y0=16 y1=14
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=15 y0=16 y1=14
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=14 y0=16 y1=14
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=14 y0=16 y1=16
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=14 y0=16 y1=18
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=16 y0=16 y1=19
-draw op=line layer=1 frame=1 color=#ffffff size=1 x0=16 x1=18 y0=16 y1=17
-draw op=ellipse layer=0 frame=1 color=#b8b8b8 cx=16 cy=15 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=1 color=#5a5a5a cx=15 cy=16 fill=true rx=1 ry=1
-frame op=add copy_from=1 duration_ms=100
-region op=clear layer=2 frame=2 rect=0,0,31,31
-region op=clear layer=1 frame=2 rect=0,0,31,31
-region op=clear layer=0 frame=2 rect=0,0,31,31
-draw op=ellipse layer=2 frame=2 color=#ff9640 cx=16 cy=16 fill=true rx=2 ry=2
-draw op=pencil layer=2 frame=2 color=#ffffff points=[[16,16]] size=1
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=18 x1=20 y0=14 y1=13
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=17 x1=19 y0=14 y1=12
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=15 x1=15 y0=14 y1=12
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=14 x1=12 y0=14 y1=13
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=14 x1=11 y0=16 y1=16
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=14 x1=13 y0=18 y1=20
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=16 x1=17 y0=19 y1=22
-draw op=line layer=1 frame=2 color=#ffe066 size=1 x0=18 x1=21 y0=17 y1=19
-draw op=ellipse layer=0 frame=2 color=#b8b8b8 cx=16 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=2 color=#5a5a5a cx=15 cy=13 fill=true rx=1 ry=1
-frame op=add copy_from=2 duration_ms=100
-region op=clear layer=2 frame=3 rect=0,0,31,31
-region op=clear layer=1 frame=3 rect=0,0,31,31
-region op=clear layer=0 frame=3 rect=0,0,31,31
-draw op=pencil layer=2 frame=3 color=#c8423a points=[[16,16]] size=1
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=20 x1=22 y0=13 y1=12
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=19 x1=20 y0=12 y1=10
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=15 x1=14 y0=12 y1=10
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=12 x1=10 y0=13 y1=12
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=11 x1=8 y0=16 y1=17
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=13 x1=11 y0=20 y1=22
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=17 x1=18 y0=22 y1=25
-draw op=line layer=1 frame=3 color=#ffe066 size=1 x0=21 x1=23 y0=19 y1=21
-draw op=ellipse layer=0 frame=3 color=#b8b8b8 cx=15 cy=12 fill=true rx=4 ry=3
-draw op=ellipse layer=0 frame=3 color=#5a5a5a cx=14 cy=11 fill=true rx=2 ry=1
-frame op=add copy_from=3 duration_ms=100
-region op=clear layer=2 frame=4 rect=0,0,31,31
-region op=clear layer=1 frame=4 rect=0,0,31,31
-region op=clear layer=0 frame=4 rect=0,0,31,31
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=22 x1=24 y0=12 y1=12
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=20 x1=21 y0=10 y1=9
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=14 x1=14 y0=10 y1=9
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=10 x1=8 y0=12 y1=12
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=8 x1=6 y0=17 y1=18
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=11 x1=10 y0=22 y1=25
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=18 x1=18 y0=25 y1=29
-draw op=line layer=1 frame=4 color=#ff9640 size=1 x0=23 x1=25 y0=21 y1=24
-draw op=ellipse layer=0 frame=4 color=#b8b8b8 cx=14 cy=10 fill=true rx=5 ry=4
-draw op=ellipse layer=0 frame=4 color=#5a5a5a cx=13 cy=9 fill=true rx=2 ry=2
-frame op=add copy_from=4 duration_ms=100
-region op=clear layer=2 frame=5 rect=0,0,31,31
-region op=clear layer=1 frame=5 rect=0,0,31,31
-region op=clear layer=0 frame=5 rect=0,0,31,31
-draw op=line layer=1 frame=5 color=#ff9640 size=1 x0=24 x1=26 y0=12 y1=12
-draw op=line layer=1 frame=5 color=#ff9640 size=1 x0=21 x1=22 y0=9 y1=9
-draw op=line layer=1 frame=5 color=#ff9640 size=1 x0=14 x1=13 y0=9 y1=8
-draw op=line layer=1 frame=5 color=#ff9640 size=1 x0=8 x1=6 y0=12 y1=12
-draw op=line layer=1 frame=5 color=#ff9640 size=1 x0=6 x1=4 y0=18 y1=20
-draw op=line layer=1 frame=5 color=#ff9640 size=1 x0=10 x1=8 y0=25 y1=29
-draw op=line layer=1 frame=5 color=#ff9640 size=1 x0=25 x1=28 y0=24 y1=27
-draw op=ellipse layer=0 frame=5 color=#b8b8b8 cx=13 cy=8 fill=true rx=5 ry=4
-draw op=ellipse layer=0 frame=5 color=#5a5a5a cx=12 cy=7 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=5 color=#b8b8b8 cx=14 cy=9 erase=true fill=true rx=2 ry=2
-frame op=add copy_from=5 duration_ms=100
-region op=clear layer=2 frame=6 rect=0,0,31,31
-region op=clear layer=1 frame=6 rect=0,0,31,31
-region op=clear layer=0 frame=6 rect=0,0,31,31
-draw op=line layer=1 frame=6 color=#c8423a size=1 x0=26 x1=29 y0=12 y1=12
-draw op=line layer=1 frame=6 color=#c8423a size=1 x0=22 x1=24 y0=9 y1=8
-draw op=line layer=1 frame=6 color=#c8423a size=1 x0=13 x1=12 y0=8 y1=8
-draw op=line layer=1 frame=6 color=#c8423a size=1 x0=6 x1=5 y0=12 y1=13
-draw op=line layer=1 frame=6 color=#c8423a size=1 x0=4 x1=1 y0=20 y1=22
-draw op=line layer=1 frame=6 color=#c8423a size=1 x0=28 x1=30 y0=27 y1=31
-draw op=scatter layer=0 frame=6 colors=#b8b8b8,#5a5a5a density=0.35 seed=6 size=1 x0=9 x1=16 y0=3 y1=9
-frame op=add copy_from=6 duration_ms=100
-region op=clear layer=2 frame=7 rect=0,0,31,31
-region op=clear layer=1 frame=7 rect=0,0,31,31
-region op=clear layer=0 frame=7 rect=0,0,31,31
-draw op=scatter layer=0 frame=7 colors=#b8b8b8,#5a5a5a density=0.22 seed=7 size=1 x0=7 x1=14 y0=1 y1=7
-frame op=add copy_from=7 duration_ms=100
-region op=clear layer=2 frame=8 rect=0,0,31,31
-region op=clear layer=1 frame=8 rect=0,0,31,31
-region op=clear layer=0 frame=8 rect=0,0,31,31
-draw op=scatter layer=0 frame=8 colors=#b8b8b8,#5a5a5a density=0.12 seed=8 size=1 x0=6 x1=13 y0=0 y1=6
-frame op=add copy_from=8 duration_ms=100
-region op=clear layer=2 frame=9 rect=0,0,31,31
-region op=clear layer=1 frame=9 rect=0,0,31,31
-region op=clear layer=0 frame=9 rect=0,0,31,31
-region op=clear layer=0 frame=1 rect=0,0,31,31
-draw op=ellipse layer=0 frame=1 color=#b8b8b8 cx=16 cy=15 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=1 color=#5a5a5a cx=15 cy=16 fill=true rx=1 ry=1
-region op=clear layer=0 frame=2 rect=0,0,31,31
-draw op=ellipse layer=0 frame=2 color=#b8b8b8 cx=16 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=2 color=#5a5a5a cx=14 cy=16 fill=true rx=1 ry=1
-region op=clear layer=0 frame=3 rect=0,0,31,31
-draw op=ellipse layer=0 frame=3 color=#b8b8b8 cx=15 cy=12 fill=true rx=4 ry=3
-draw op=ellipse layer=0 frame=3 color=#5a5a5a cx=13 cy=14 fill=true rx=2 ry=1
-region op=clear layer=0 frame=4 rect=0,0,31,31
-draw op=ellipse layer=0 frame=4 color=#b8b8b8 cx=14 cy=10 fill=true rx=5 ry=4
-draw op=ellipse layer=0 frame=4 color=#5a5a5a cx=11 cy=12 fill=true rx=2 ry=2
-region op=clear layer=0 frame=5 rect=0,0,31,31
-draw op=ellipse layer=0 frame=5 color=#b8b8b8 cx=13 cy=8 fill=true rx=5 ry=4
-draw op=ellipse layer=0 frame=5 color=#5a5a5a cx=10 cy=10 fill=true rx=2 ry=2
+layer rename index=0 name=smoke
+layer add name=debris
+layer add name=core
+palette set colors=#ffffff,#ffe066,#ff9640,#c8423a,#b8b8b8,#5a5a5a
+legend A=#ff9640
+core @0 ellipse #ff9640 16,16 6,6 fill = 10,10 13x13
+    ....AAAAA....
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ....AAAAA....
+legend B=#ffe066
+core @0 ellipse #ffe066 16,16 4,4 fill = 12,12 9x9
+    AABBBBBAA
+    ABBBBBBBA
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    ABBBBBBBA
+    AABBBBBAA
+legend C=#ffffff
+core @0 ellipse #ffffff 16,16 2,2 fill = 14,14 5x5
+    BCCCB
+    CCCCC
+    CCCCC
+    CCCCC
+    BCCCB
+core @0 line #ffffff 19,16 24,16 size 1 = 19,16 24,16 #ffffff
+core @0 line #ffe066 18,18 22,22 size 1 = 20,20 3x3
+    BA.
+    AB.
+    ..B
+core @0 line #ffffff 16,19 16,24 size 1 = 16,19 16,24 #ffffff
+core @0 line #ffe066 14,18 10,22 size 1 = 10,20 3x3
+    .AB
+    .BA
+    B..
+core @0 line #ffffff 13,16 8,16 size 1 = 8,16 13,16 #ffffff
+core @0 line #ffe066 14,14 10,10 size 1 = 10,10 3x3
+    B..
+    .BA
+    .AB
+core @0 line #ffffff 16,13 16,8 size 1 = 16,8 16,13 #ffffff
+core @0 line #ffe066 18,14 22,10 size 1 = 20,10 3x3
+    ..B
+    AB.
+    BA.
+frame add copy_from=0 duration_ms=100
+core @1 clear 0,0 31,31 = 8,8 24,24 .
+debris @1 clear 0,0 31,31 ~
+smoke @1 clear 0,0 31,31 ~
+core @1 ellipse #ff9640 16,16 4,4 fill = 12,12 9x9
+    ..AAAAA..
+    .AAAAAAA.
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    .AAAAAAA.
+    ..AAAAA..
+core @1 ellipse #ffe066 16,16 3,3 fill = 13,13 7x7
+    AABBBAA
+    ABBBBBA
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    ABBBBBA
+    AABBBAA
+core @1 ellipse #ffffff 16,16 1,1 fill = 15,15 17,17 #ffffff
+core @1 line #ff9640 18,16 21,16 size 1 = 18,16 21,16 #ff9640
+core @1 line #ff9640 17,17 20,20 size 1 = 17,17 4x4
+    ABBA
+    BAAA
+    BAA.
+    AA.A
+core @1 line #ff9640 16,18 16,21 size 1 = 16,18 16,21 #ff9640
+core @1 line #ff9640 15,17 12,20 size 1 = 12,17 4x4
+    ABBA
+    AAAB
+    .AAB
+    A.AA
+core @1 line #ff9640 14,16 11,16 size 1 = 11,16 14,16 #ff9640
+core @1 line #ff9640 15,15 12,12 size 1 = 12,12 4x4
+    A.AA
+    .AAB
+    AAAB
+    ABBA
+core @1 line #ff9640 16,14 16,11 size 1 = 16,11 16,14 #ff9640
+core @1 line #ff9640 17,15 20,12 size 1 = 17,12 4x4
+    AA.A
+    BAA.
+    BAAA
+    ABBA
+debris @1 line #ffffff 16,16 18,14 size 1 = 16,14 3x3
+    ..C
+    .C.
+    C..
+debris @1 line #ffffff 16,16 17,14 size 1 = 17,14 17,14 #ffffff
+debris @1 line #ffffff 16,16 15,14 size 1 = 15,14 15,15 #ffffff
+debris @1 line #ffffff 16,16 14,14 size 1 = 14,14 14,14 #ffffff
+debris @1 line #ffffff 16,16 14,16 size 1 = 14,16 15,16 #ffffff
+debris @1 line #ffffff 16,16 14,18 size 1 = 14,17 2x2
+    .C
+    C.
+debris @1 line #ffffff 16,16 16,19 size 1 = 16,17 16,19 #ffffff
+debris @1 line #ffffff 16,16 18,17 size 1 = 17,17 18,17 #ffffff
+legend D=#b8b8b8
+smoke @1 ellipse #b8b8b8 16,15 2,2 fill = 14,13 5x5
+    .DDD.
+    DDDDD
+    DDDDD
+    DDDDD
+    .DDD.
+smoke @1 ellipse #5a5a5a 15,16 1,1 fill = 14,15 16,17 #5a5a5a
+frame add copy_from=1 duration_ms=100
+core @2 clear 0,0 31,31 = 11,11 21,21 .
+debris @2 clear 0,0 31,31 = 14,14 18,19 .
+smoke @2 clear 0,0 31,31 = 14,13 18,17 .
+core @2 ellipse #ff9640 16,16 2,2 fill = 14,14 5x5
+    .AAA.
+    AAAAA
+    AAAAA
+    AAAAA
+    .AAA.
+core @2 pencil #ffffff size 1 = 16,16 16,16 #ffffff
+debris @2 line #ffe066 18,14 20,13 size 1 = 18,13 3x2
+    .BB
+    B..
+debris @2 line #ffe066 17,14 19,12 size 1 = 17,12 3x3
+    ..B
+    .BB
+    BB.
+debris @2 line #ffe066 15,14 15,12 size 1 = 15,12 15,14 #ffe066
+debris @2 line #ffe066 14,14 12,13 size 1 = 12,13 3x2
+    BB.
+    ..B
+debris @2 line #ffe066 14,16 11,16 size 1 = 11,16 14,16 #ffe066
+debris @2 line #ffe066 14,18 13,20 size 1 = 13,18 2x3
+    .B
+    B.
+    B.
+debris @2 line #ffe066 16,19 17,22 size 1 = 16,19 2x4
+    B.
+    B.
+    .B
+    .B
+debris @2 line #ffe066 18,17 21,19 size 1 = 18,17 4x3
+    B...
+    .BB.
+    ...B
+smoke @2 ellipse #b8b8b8 16,14 3,3 fill = 13,11 7x7
+    ..DDD..
+    .DDDDD.
+    DDDDDDD
+    DDDDDDD
+    DDDDDDD
+    .DDDDD.
+    ..DDD..
+smoke @2 ellipse #5a5a5a 15,13 1,1 fill = 14,12 16,14 #5a5a5a
+frame add copy_from=2 duration_ms=100
+core @3 clear 0,0 31,31 = 14,14 18,18 .
+debris @3 clear 0,0 31,31 = 11,12 21,22 .
+smoke @3 clear 0,0 31,31 = 13,11 19,17 .
+core @3 pencil #c8423a size 1 = 16,16 16,16 #c8423a
+debris @3 line #ffe066 20,13 22,12 size 1 = 20,12 3x2
+    .BB
+    B..
+debris @3 line #ffe066 19,12 20,10 size 1 = 19,10 2x3
+    .B
+    .B
+    B.
+debris @3 line #ffe066 15,12 14,10 size 1 = 14,10 2x3
+    B.
+    B.
+    .B
+debris @3 line #ffe066 12,13 10,12 size 1 = 10,12 3x2
+    BB.
+    ..B
+debris @3 line #ffe066 11,16 8,17 size 1 = 8,16 4x2
+    ..BB
+    BB..
+debris @3 line #ffe066 13,20 11,22 size 1 = 11,20 3x3
+    ..B
+    .B.
+    B..
+debris @3 line #ffe066 17,22 18,25 size 1 = 17,22 2x4
+    B.
+    B.
+    .B
+    .B
+debris @3 line #ffe066 21,19 23,21 size 1 = 21,19 3x3
+    B..
+    .B.
+    ..B
+smoke @3 ellipse #b8b8b8 15,12 4,3 fill = 11,9 9x7
+    ..DDDDD..
+    .DDDDDDD.
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    .DDDDDDD.
+    ..DDDDD..
+legend E=#5a5a5a
+smoke @3 ellipse #5a5a5a 14,11 2,1 fill = 12,10 5x3
+    DEEED
+    EEEEE
+    DEEED
+frame add copy_from=3 duration_ms=100
+core @4 clear 0,0 31,31 = 16,16 16,16 .
+debris @4 clear 0,0 31,31 = 8,10 23,25 .
+smoke @4 clear 0,0 31,31 = 11,9 19,15 .
+debris @4 line #ff9640 22,12 24,12 size 1 = 22,12 24,12 #ff9640
+debris @4 line #ff9640 20,10 21,9 size 1 = 20,9 2x2
+    .A
+    A.
+debris @4 line #ff9640 14,10 14,9 size 1 = 14,9 14,10 #ff9640
+debris @4 line #ff9640 10,12 8,12 size 1 = 8,12 10,12 #ff9640
+debris @4 line #ff9640 8,17 6,18 size 1 = 6,17 3x2
+    ..A
+    AA.
+debris @4 line #ff9640 11,22 10,25 size 1 = 10,22 2x4
+    .A
+    .A
+    A.
+    A.
+debris @4 line #ff9640 18,25 18,29 size 1 = 18,25 18,29 #ff9640
+debris @4 line #ff9640 23,21 25,24 size 1 = 23,21 3x4
+    A..
+    .A.
+    .A.
+    ..A
+smoke @4 ellipse #b8b8b8 14,10 5,4 fill = 9,6 11x9
+    ...DDDDD...
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    ...DDDDD...
+smoke @4 ellipse #5a5a5a 13,9 2,2 fill = 11,7 5x5
+    DEEED
+    EEEEE
+    EEEEE
+    EEEEE
+    DEEED
+frame add copy_from=4 duration_ms=100
+core @5 clear 0,0 31,31 ~
+debris @5 clear 0,0 31,31 = 6,9 25,29 .
+smoke @5 clear 0,0 31,31 = 9,6 19,14 .
+debris @5 line #ff9640 24,12 26,12 size 1 = 24,12 26,12 #ff9640
+debris @5 line #ff9640 21,9 22,9 size 1 = 21,9 22,9 #ff9640
+debris @5 line #ff9640 14,9 13,8 size 1 = 13,8 2x2
+    A.
+    .A
+debris @5 line #ff9640 8,12 6,12 size 1 = 6,12 8,12 #ff9640
+debris @5 line #ff9640 6,18 4,20 size 1 = 4,18 3x3
+    ..A
+    .A.
+    A..
+debris @5 line #ff9640 10,25 8,29 size 1 = 8,25 3x5
+    ..A
+    .A.
+    .A.
+    A..
+    A..
+debris @5 line #ff9640 25,24 28,27 size 1 = 25,24 4x4
+    A...
+    .A..
+    ..A.
+    ...A
+smoke @5 ellipse #b8b8b8 13,8 5,4 fill = 8,4 11x9
+    ...DDDDD...
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    ...DDDDD...
+smoke @5 ellipse #5a5a5a 12,7 2,2 fill = 10,5 5x5
+    DEEED
+    EEEEE
+    EEEEE
+    EEEEE
+    DEEED
+smoke @5 erase ellipse 14,9 2,2 fill = 12,7 3x3
+    E..
+    ...
+    ..D
+frame add copy_from=5 duration_ms=100
+core @6 clear 0,0 31,31 ~
+debris @6 clear 0,0 31,31 = 4,8 28,29 .
+smoke @6 clear 0,0 31,31 = 8,4 18,12 .
+debris @6 line #c8423a 26,12 29,12 size 1 = 26,12 29,12 #c8423a
+legend F=#c8423a
+debris @6 line #c8423a 22,9 24,8 size 1 = 22,8 3x2
+    .FF
+    F..
+debris @6 line #c8423a 13,8 12,8 size 1 = 12,8 13,8 #c8423a
+debris @6 line #c8423a 6,12 5,13 size 1 = 5,12 2x2
+    .F
+    F.
+debris @6 line #c8423a 4,20 1,22 size 1 = 1,20 4x3
+    ...F
+    .FF.
+    F...
+debris @6 line #c8423a 28,27 30,31 size 1 = 28,27 3x5
+    F..
+    .F.
+    .F.
+    ..F
+    ..F
+smoke @6 scatter 9,3 16,9 size 1 = 9,3 8x7
+    .D..ED.E
+    ED..EDDD
+    DDEED...
+    E.D....D
+    ....D..E
+    ....D...
+    ..E..D..
+frame add copy_from=6 duration_ms=100
+core @7 clear 0,0 31,31 ~
+debris @7 clear 0,0 31,31 = 1,8 30,31 .
+smoke @7 clear 0,0 31,31 = 9,3 16,9 .
+smoke @7 scatter 7,1 14,7 size 1 = 8,1 7x7
+    ..E..E.
+    .......
+    D.E..EE
+    .D..E..
+    .......
+    ..E....
+    ...D...
+frame add copy_from=7 duration_ms=100
+core @8 clear 0,0 31,31 ~
+debris @8 clear 0,0 31,31 ~
+smoke @8 clear 0,0 31,31 = 8,1 14,7 .
+smoke @8 scatter 6,0 13,6 size 1 = 6,0 6x6
+    ..D...
+    .D....
+    ....D.
+    D.....
+    .....D
+    D.....
+frame add copy_from=8 duration_ms=100
+core @9 clear 0,0 31,31 ~
+debris @9 clear 0,0 31,31 ~
+smoke @9 clear 0,0 31,31 = 6,0 11,5 .
+smoke @1 clear 0,0 31,31 = 14,13 18,17 .
+smoke @1 ellipse #b8b8b8 16,15 2,2 fill = 14,13 5x5
+    .DDD.
+    DDDDD
+    DDDDD
+    DDDDD
+    .DDD.
+smoke @1 ellipse #5a5a5a 15,16 1,1 fill = 14,15 16,17 #5a5a5a
+smoke @2 clear 0,0 31,31 = 13,11 19,17 .
+smoke @2 ellipse #b8b8b8 16,14 3,3 fill = 13,11 7x7
+    ..DDD..
+    .DDDDD.
+    DDDDDDD
+    DDDDDDD
+    DDDDDDD
+    .DDDDD.
+    ..DDD..
+smoke @2 ellipse #5a5a5a 14,16 1,1 fill = 13,15 15,17 #5a5a5a
+smoke @3 clear 0,0 31,31 = 11,9 19,15 .
+smoke @3 ellipse #b8b8b8 15,12 4,3 fill = 11,9 9x7
+    ..DDDDD..
+    .DDDDDDD.
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    .DDDDDDD.
+    ..DDDDD..
+smoke @3 ellipse #5a5a5a 13,14 2,1 fill = 11,13 5x3
+    DEEED
+    EEEEE
+    .EEED
+smoke @4 clear 0,0 31,31 = 9,6 19,14 .
+smoke @4 ellipse #b8b8b8 14,10 5,4 fill = 9,6 11x9
+    ...DDDDD...
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    ...DDDDD...
+smoke @4 ellipse #5a5a5a 11,12 2,2 fill = 9,10 5x5
+    DEEED
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEED
+smoke @5 clear 0,0 31,31 = 8,4 18,12 .
+smoke @5 ellipse #b8b8b8 13,8 5,4 fill = 8,4 11x9
+    ...DDDDD...
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    DDDDDDDDDDD
+    .DDDDDDDDD.
+    .DDDDDDDDD.
+    ...DDDDD...
+smoke @5 ellipse #5a5a5a 10,10 2,2 fill = 8,8 5x5
+    DEEED
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEED

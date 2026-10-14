@@ -1,316 +1,319 @@
-atelier 4 90aa8793-41b6-4b0c-8271-f4a6e1f74231 0.1.0
+atelier 5 90aa8793-41b6-4b0c-8271-f4a6e1f74231 0.1.0
 new name=corked-flask width=32 height=32
-palette op=set colors=#2a2235,#b57a42,#cfe9f2,#1e8142,#36c45e,#b8f58f
-layer op=rename index=0 name=liquid
-layer op=add name=bubbles
-layer op=add name=glass
-paint_grid layer=2 frame=0 x=0 y=0 legend=K:#2a2235 rows:2
-  |K..|
-  |..K|
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=2 frame=0 x=6 y=1 legend=C:#b57a42,K:#2a2235,P:#cfe9f2 rows:29
-  |........KKKK........|
-  |.......KCCCCK.......|
-  |.......KCCCCK.......|
-  |.......KCCCCK.......|
-  |......KKKKKKKK......|
-  |......KP.....K......|
-  |......KP.....K......|
-  |......KP.....K......|
-  |......KP.....K......|
-  |......K......K......|
-  |.....K........K.....|
-  |....K..........K....|
-  |...KP...........K...|
-  |..KP.............K..|
-  |.KP...............K.|
-  |.KP...............K.|
-  |KP.................K|
-  |KP.................K|
-  |K..................K|
-  |K..................K|
-  |K..................K|
-  |K..................K|
-  |.K................K.|
-  |.K................K.|
-  |..K..............K..|
-  |...K............K...|
-  |....K..........K....|
-  |.....K........K.....|
-  |......KKKKKKKK......|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |...LLL......LLL...|
-  |..LMMMLL..LLMMMLL.|
-  |LLMMMMMMLLMMMMMMDL|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=12 y=21 legend=L:#b8f58f rows:5
-  |.......L...|
-  |..........L|
-  |...LL......|
-  |...LL......|
-  |L..........|
-frame op=add copy_from=0
-region op=clear layer=0 frame=1 rect=0,0,32,32
-paint_grid layer=0 frame=1 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |...LL.......LL....|
-  |.LLMMLL...LLMMLL..|
-  |LMMMMMMLLLMMMMMMLL|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=1 rect=0,0,32,32
-paint_grid layer=1 frame=1 x=12 y=20 legend=L:#b8f58f rows:5
-  |.......L...|
-  |..........L|
-  |...LL......|
-  |...LL......|
-  |L..........|
-frame op=add copy_from=0
-region op=clear layer=0 frame=2 rect=0,0,32,32
-paint_grid layer=0 frame=2 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |..LL.......LL.....|
-  |.LMMLL...LLMMLL...|
-  |MMMMMMLLLMMMMMMLLL|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=2 rect=0,0,32,32
-paint_grid layer=1 frame=2 x=12 y=19 legend=L:#b8f58f rows:5
-  |.......L...|
-  |..........L|
-  |...LL......|
-  |...LL......|
-  |L..........|
-frame op=add copy_from=0
-region op=clear layer=0 frame=3 rect=0,0,32,32
-paint_grid layer=0 frame=3 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |.LL.......LL......|
-  |.MMLL...LLMMLL....|
-  |MMMMMLLLMMMMMMLLLD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=3 rect=0,0,32,32
-paint_grid layer=1 frame=3 x=12 y=18 legend=L:#b8f58f rows:5
-  |.......L...|
-  |..........L|
-  |...LL......|
-  |...LL......|
-  |L..........|
-frame op=add copy_from=0
-region op=clear layer=0 frame=4 rect=0,0,32,32
-paint_grid layer=0 frame=4 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |.L.......LL.......|
-  |.MLL...LLMMLL...L.|
-  |MMMMLLLMMMMMMLLLDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=4 rect=0,0,32,32
-paint_grid layer=1 frame=4 x=12 y=15 legend=L:#b8f58f rows:7
-  |......L.L..|
-  |...........|
-  |...........|
-  |..........L|
-  |...LL......|
-  |...LL......|
-  |L..........|
-frame op=add copy_from=0
-region op=clear layer=0 frame=5 rect=0,0,32,32
-paint_grid layer=0 frame=5 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |.L......LL........|
-  |.ML...LLMMLL...LL.|
-  |MMMLLLMMMMMMLLLMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=5 rect=0,0,32,32
-paint_grid layer=1 frame=5 x=12 y=17 legend=L:#b8f58f rows:10
-  |..........L|
-  |...LL......|
-  |...LL......|
-  |L..........|
-  |...........|
-  |...........|
-  |...........|
-  |...........|
-  |...........|
-  |.......L...|
-frame op=add copy_from=0
-region op=clear layer=0 frame=6 rect=0,0,32,32
-paint_grid layer=0 frame=6 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |.......LLL......L.|
-  |.LL..LLMMMLL..LLD.|
-  |MMMLLMMMMMMMLLMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=6 rect=0,0,32,32
-paint_grid layer=1 frame=6 x=12 y=13 legend=L:#b8f58f rows:13
-  |...LL...|
-  |..L..L..|
-  |........|
-  |........|
-  |........|
-  |........|
-  |L.......|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |.......L|
-frame op=add copy_from=0
-region op=clear layer=0 frame=7 rect=0,0,32,32
-paint_grid layer=0 frame=7 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |......LLL......LL.|
-  |.L..LLMMMLL..LLDD.|
-  |MMLLMMMMMMMLLMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=7 rect=0,0,32,32
-paint_grid layer=1 frame=7 x=12 y=14 legend=L:#b8f58f rows:14
-  |.........L|
-  |..........|
-  |..........|
-  |..........|
-  |L.........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |.......L..|
-  |..........|
-  |...LL.....|
-  |...LL.....|
-frame op=add copy_from=0
-region op=clear layer=0 frame=8 rect=0,0,32,32
-paint_grid layer=0 frame=8 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |.....LLL......LLL.|
-  |...LLMMMLL..LLMDD.|
-  |MLLMMMMMMMLLMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=8 rect=0,0,32,32
-paint_grid layer=1 frame=8 x=12 y=17 legend=L:#b8f58f rows:10
-  |L..........|
-  |...........|
-  |...........|
-  |...........|
-  |...........|
-  |...........|
-  |.......L...|
-  |..........L|
-  |...LL......|
-  |...LL......|
-frame op=add copy_from=0
-region op=clear layer=0 frame=9 rect=0,0,32,32
-paint_grid layer=0 frame=9 x=7 y=15 legend=D:#1e8142,L:#b8f58f,M:#36c45e rows:14
-  |....LLL......LLL..|
-  |..LLMMMLL..LLMMDL.|
-  |LLMMMMMMMLLMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |MMMMMMMMMMMMMMMMDD|
-  |.MMMMMMMMMMMMMMDD.|
-  |.MMMMMMMMMMMMMMDD.|
-  |..MMMMMMMMMMMMDD..|
-  |...MMMMMMMMMMDD...|
-  |....DDDDDDDDDD....|
-  |.....DDDDDDDD.....|
-region op=clear layer=1 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=9 x=11 y=14 legend=L:#b8f58f rows:12
-  |L.L.........|
-  |............|
-  |............|
-  |............|
-  |............|
-  |............|
-  |............|
-  |............|
-  |........L...|
-  |...........L|
-  |....LL......|
-  |....LL......|
+palette set colors=#2a2235,#b57a42,#cfe9f2,#1e8142,#36c45e,#b8f58f
+layer rename index=0 name=liquid
+layer add name=bubbles
+layer add name=glass
+legend A=#2a2235
+glass @0 grid 0,0 = 0,0 3x2
+    A..
+    ..A
+glass @0 clear 0,0 32,32 = 0,0 2,1 .
+legend B=#b57a42 C=#cfe9f2
+glass @0 grid 6,1 = 6,1 20x29
+    ........AAAA........
+    .......ABBBBA.......
+    .......ABBBBA.......
+    .......ABBBBA.......
+    ......AAAAAAAA......
+    ......AC.....A......
+    ......AC.....A......
+    ......AC.....A......
+    ......AC.....A......
+    ......A......A......
+    .....A........A.....
+    ....A..........A....
+    ...AC...........A...
+    ..AC.............A..
+    .AC...............A.
+    .AC...............A.
+    AC.................A
+    AC.................A
+    A..................A
+    A..................A
+    A..................A
+    A..................A
+    .A................A.
+    .A................A.
+    ..A..............A..
+    ...A............A...
+    ....A..........A....
+    .....A........A.....
+    ......AAAAAAAA......
+liquid @0 clear 0,0 32,32 ~
+legend D=#b8f58f E=#36c45e F=#1e8142
+liquid @0 grid 7,15 = 7,15 18x14
+    ...DDD......DDD...
+    ..DEEEDD..DDEEEDD.
+    DDEEEEEEDDEEEEEEFD
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @0 clear 0,0 32,32 ~
+bubbles @0 grid 12,21 = 12,21 11x5
+    .......D...
+    ..........D
+    ...DD......
+    ...DD......
+    D..........
+frame add copy_from=0
+liquid @1 clear 0,0 32,32 = 7,15 24,28 .
+liquid @1 grid 7,15 = 7,15 18x14
+    ...DD.......DD....
+    .DDEEDD...DDEEDD..
+    DEEEEEEDDDEEEEEEDD
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @1 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @1 grid 12,20 = 12,20 11x5
+    .......D...
+    ..........D
+    ...DD......
+    ...DD......
+    D..........
+frame add copy_from=0
+liquid @2 clear 0,0 32,32 = 7,15 24,28 .
+liquid @2 grid 7,15 = 7,15 18x14
+    ..DD.......DD.....
+    .DEEDD...DDEEDD...
+    EEEEEEDDDEEEEEEDDD
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @2 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @2 grid 12,19 = 12,19 11x5
+    .......D...
+    ..........D
+    ...DD......
+    ...DD......
+    D..........
+frame add copy_from=0
+liquid @3 clear 0,0 32,32 = 7,15 24,28 .
+liquid @3 grid 7,15 = 7,15 18x14
+    .DD.......DD......
+    .EEDD...DDEEDD....
+    EEEEEDDDEEEEEEDDDF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @3 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @3 grid 12,18 = 12,18 11x5
+    .......D...
+    ..........D
+    ...DD......
+    ...DD......
+    D..........
+frame add copy_from=0
+liquid @4 clear 0,0 32,32 = 7,15 24,28 .
+liquid @4 grid 7,15 = 7,15 18x14
+    .D.......DD.......
+    .EDD...DDEEDD...D.
+    EEEEDDDEEEEEEDDDFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @4 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @4 grid 12,15 = 12,15 11x7
+    ......D.D..
+    ...........
+    ...........
+    ..........D
+    ...DD......
+    ...DD......
+    D..........
+frame add copy_from=0
+liquid @5 clear 0,0 32,32 = 7,15 24,28 .
+liquid @5 grid 7,15 = 7,15 18x14
+    .D......DD........
+    .ED...DDEEDD...DD.
+    EEEDDDEEEEEEDDDEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @5 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @5 grid 12,17 = 12,17 11x10
+    ..........D
+    ...DD......
+    ...DD......
+    D..........
+    ...........
+    ...........
+    ...........
+    ...........
+    ...........
+    .......D...
+frame add copy_from=0
+liquid @6 clear 0,0 32,32 = 7,15 24,28 .
+liquid @6 grid 7,15 = 7,15 18x14
+    .......DDD......D.
+    .DD..DDEEEDD..DDF.
+    EEEDDEEEEEEEDDEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @6 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @6 grid 12,13 = 12,13 8x13
+    ...DD...
+    ..D..D..
+    ........
+    ........
+    ........
+    ........
+    D.......
+    ........
+    ........
+    ........
+    ........
+    ........
+    .......D
+frame add copy_from=0
+liquid @7 clear 0,0 32,32 = 7,15 24,28 .
+liquid @7 grid 7,15 = 7,15 18x14
+    ......DDD......DD.
+    .D..DDEEEDD..DDFF.
+    EEDDEEEEEEEDDEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @7 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @7 grid 12,14 = 12,14 10x14
+    .........D
+    ..........
+    ..........
+    ..........
+    D.........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    .......D..
+    ..........
+    ...DD.....
+    ...DD.....
+frame add copy_from=0
+liquid @8 clear 0,0 32,32 = 7,15 24,28 .
+liquid @8 grid 7,15 = 7,15 18x14
+    .....DDD......DDD.
+    ...DDEEEDD..DDEFF.
+    EDDEEEEEEEDDEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @8 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @8 grid 12,17 = 12,17 11x10
+    D..........
+    ...........
+    ...........
+    ...........
+    ...........
+    ...........
+    .......D...
+    ..........D
+    ...DD......
+    ...DD......
+frame add copy_from=0
+liquid @9 clear 0,0 32,32 = 7,15 24,28 .
+liquid @9 grid 7,15 = 7,15 18x14
+    ....DDD......DDD..
+    ..DDEEEDD..DDEEFD.
+    DDEEEEEEEDDEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    EEEEEEEEEEEEEEEEFF
+    .EEEEEEEEEEEEEEFF.
+    .EEEEEEEEEEEEEEFF.
+    ..EEEEEEEEEEEEFF..
+    ...EEEEEEEEEEFF...
+    ....FFFFFFFFFF....
+    .....FFFFFFFF.....
+bubbles @9 clear 0,0 32,32 = 12,21 22,25 .
+bubbles @9 grid 11,14 = 11,14 12x12
+    D.D.........
+    ............
+    ............
+    ............
+    ............
+    ............
+    ............
+    ............
+    ........D...
+    ...........D
+    ....DD......
+    ....DD......
 add_tag name=loop from=0 to=9

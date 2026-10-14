@@ -1,846 +1,851 @@
-atelier 4 dbcaae73-25fb-488e-be60-17f167380e76 0.1.0
+atelier 5 dbcaae73-25fb-488e-be60-17f167380e76 0.1.0
 new name=wizard-cat width=32 height=32
-palette op=set colors=#1e1630,#574a86,#9a8ec0,#d8cff0,#38d0c8,#ccfff6
-layer op=rename index=0 name=tail
-layer op=add name=body
-layer op=add name=head
-layer op=add name=hat
-layer op=add name=staff
-layer op=add name=light
-layer op=add name=orb
-layer op=add name=sparkles
-paint_grid layer=1 frame=0 x=9 y=18 legend=3:2 rows:11
-  |...33333333...|
-  |..3333333333..|
-  |..3333333333..|
-  |.333333333333.|
-  |.333333333333.|
-  |.333333333333.|
-  |.3333333333333|
-  |33333333333333|
-  |33333333333333|
-  |33333333333333|
-  |.333333333333.|
-paint_grid layer=2 frame=0 x=9 y=6 legend=3:2 rows:13
-  |.3.........3.|
-  |333.......333|
-  |333.......333|
-  |.33.......33.|
-  |...3333333...|
-  |..333333333..|
-  |.33333333333.|
-  |.33333333333.|
-  |3333333333333|
-  |3333333333333|
-  |.33333333333.|
-  |..333333333..|
-  |...3333333...|
-paint_grid layer=3 frame=0 x=10 y=1 legend=2:1 rows:10
-  |.....2.....|
-  |....222....|
-  |....222....|
-  |...22222...|
-  |...22222...|
-  |..2222222..|
-  |..2222222..|
-  |.222222222.|
-  |22222222222|
-  |.222222222.|
-draw op=clear_cel layer=2 frame=0
-paint_grid layer=2 frame=0 x=9 y=4 legend=3:2 rows:15
-  |33........33.|
-  |33........33.|
-  |333......333.|
-  |333......333.|
-  |3333....3333.|
-  |.333....333..|
-  |...3333333...|
-  |..333333333..|
-  |.33333333333.|
-  |.33333333333.|
-  |3333333333333|
-  |3333333333333|
-  |.33333333333.|
-  |..333333333..|
-  |...3333333...|
-paint_grid layer=0 frame=0 x=4 y=18 legend=3:2 rows:10
-  |.333...|
-  |333....|
-  |333....|
-  |33.....|
-  |33.....|
-  |333....|
-  |.333...|
-  |..333..|
-  |...333.|
-  |....333|
-paint_grid layer=4 frame=0 x=23 y=8 legend=1:0 rows:19
-  |1.1|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |111|
-paint_grid layer=6 frame=0 x=22 y=4 legend=5:4,6:5 rows:5
-  |..5..|
-  |.565.|
-  |56665|
-  |.565.|
-  |..5..|
-paint_grid layer=2 frame=0 x=9 y=8 legend=1:0,2:1,4:3,5:4,6:5 rows:11
-  |.22......22.|
-  |............|
-  |.......4....|
-  |........4...|
-  |.2........4.|
-  |.2.56...65.4|
-  |2..55...55.4|
-  |2.....1.....|
-  |.2...4.4..4.|
-  |..2.........|
-  |....22222...|
-paint_grid layer=1 frame=0 x=9 y=19 legend=2:1,3:2,4:3 rows:10
-  |...........4...|
-  |......44.......|
-  |.2.....4....4..|
-  |.2..........4..|
-  |.2..........4..|
-  |.2.........4.34|
-  |2............33|
-  |2..............|
-  |..2.2..2..2....|
-  |...22222222....|
-paint_grid layer=3 frame=0 x=10 y=4 legend=1:0,4:3,6:5 rows:7
-  |.....4.....|
-  |....464....|
-  |.....4.....|
-  |...........|
-  |......444..|
-  |1....444..1|
-  |111.....111|
-draw op=clear_cel layer=6 frame=0
-draw op=clear_cel layer=4 frame=0
-paint_grid layer=4 frame=0 x=23 y=8 legend=1:0 rows:19
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |.1.|
-  |111|
-paint_grid layer=6 frame=0 x=22 y=4 legend=5:4,6:5 rows:4
-  |.55.|
-  |5665|
-  |5665|
-  |.55.|
-frame op=add copy_from=0 count=9 duration_ms=100
-draw op=clear_cel layer=0 frame=0
-paint_grid layer=0 frame=0 x=4 y=18 legend=2:1,3:2 rows:10
-  |.233...|
-  |233....|
-  |233....|
-  |23.....|
-  |23.....|
-  |233....|
-  |.233...|
-  |..233..|
-  |...233.|
-  |....233|
-draw op=clear_cel layer=6 frame=0
-paint_grid layer=6 frame=0 x=22 y=4 legend=5:4,6:5 rows:4
-  |.55.|
-  |5665|
-  |5665|
-  |.55.|
-draw op=clear_cel layer=5 frame=0
-paint_grid layer=5 frame=0 x=18 y=3 legend=5:4 rows:10
-  |.....55..|
-  |....5..5.|
-  |...5....5|
-  |...5....5|
-  |.........|
-  |.55.5555.|
-  |.55...5..|
-  |5.....5..|
-  |.........|
-  |..5......|
-draw op=clear_cel layer=7 frame=0
-paint_grid layer=7 frame=0 x=17 y=1 legend=5:4,6:5 rows:9
-  |.......5....|
-  |5...........|
-  |............|
-  |...6........|
-  |............|
-  |........6...|
-  |...........6|
-  |....5.......|
-  |....6.......|
-draw op=clear_cel layer=0 frame=1
-paint_grid layer=0 frame=1 x=4 y=18 legend=2:1,3:2 rows:10
-  |..233..|
-  |.233...|
-  |.233...|
-  |.23....|
-  |23.....|
-  |233....|
-  |.233...|
-  |..233..|
-  |...233.|
-  |....233|
-draw op=clear_cel layer=6 frame=1
-paint_grid layer=6 frame=1 x=22 y=4 legend=5:4,6:5 rows:4
-  |.66.|
-  |5665|
-  |5665|
-  |.66.|
-draw op=clear_cel layer=5 frame=1
-paint_grid layer=5 frame=1 x=18 y=2 legend=5:4 rows:21
-  |.....55...|
-  |.....55...|
-  |...55..55.|
-  |..55....55|
-  |...5....5.|
-  |..........|
-  |.55.5555..|
-  |.55...5...|
-  |5.....5...|
-  |......5...|
-  |..5.......|
-  |..5.......|
-  |...5......|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |....5.....|
-draw op=clear_cel layer=7 frame=1
-paint_grid layer=7 frame=1 x=17 y=1 legend=5:4,6:5 rows:10
-  |5..........|
-  |...........|
-  |..5........|
-  |...........|
-  |........6..|
-  |..........6|
-  |....5......|
-  |....6......|
-  |.........5.|
-  |.........6.|
-draw op=clear_cel layer=0 frame=2
-paint_grid layer=0 frame=2 x=5 y=18 legend=2:1,3:2 rows:10
-  |..233.|
-  |.233..|
-  |233...|
-  |23....|
-  |23....|
-  |233...|
-  |233...|
-  |.233..|
-  |..233.|
-  |...233|
-draw op=clear_cel layer=6 frame=2
-paint_grid layer=6 frame=2 x=22 y=4 legend=5:4,6:5 rows:4
-  |.66.|
-  |5665|
-  |5665|
-  |.66.|
-draw op=clear_cel layer=5 frame=2
-paint_grid layer=5 frame=2 x=18 y=1 legend=5:4,6:5 rows:24
-  |.....55...|
-  |.....55...|
-  |.....65...|
-  |...55..55.|
-  |..55....55|
-  |..55....55|
-  |...5....5.|
-  |.55.5565..|
-  |.55.5.55..|
-  |5.....5...|
-  |......5...|
-  |..5.......|
-  |..5.......|
-  |...5......|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |....5.....|
-  |....5.....|
-  |....5.....|
-draw op=clear_cel layer=7 frame=2
-paint_grid layer=7 frame=2 x=19 y=2 legend=5:4,6:5 rows:9
-  |5........|
-  |.........|
-  |......6..|
-  |........6|
-  |.........|
-  |..6......|
-  |.......5.|
-  |5......6.|
-  |6........|
-draw op=clear_cel layer=0 frame=3
-paint_grid layer=0 frame=3 x=5 y=18 legend=2:1,3:2 rows:10
-  |..233.|
-  |.233..|
-  |233...|
-  |23....|
-  |23....|
-  |233...|
-  |233...|
-  |.233..|
-  |..233.|
-  |...233|
-draw op=clear_cel layer=6 frame=3
-paint_grid layer=6 frame=3 x=22 y=4 legend=5:4,6:5 rows:4
-  |.66.|
-  |5665|
-  |5665|
-  |.66.|
-draw op=clear_cel layer=5 frame=3
-paint_grid layer=5 frame=3 x=18 y=1 legend=5:4,6:5 rows:24
-  |.....55...|
-  |.....55...|
-  |.....65...|
-  |...55..55.|
-  |..55....55|
-  |..55....55|
-  |...5....5.|
-  |.55.5565..|
-  |.55.5.55..|
-  |5.....5...|
-  |......5...|
-  |..5.......|
-  |..5.......|
-  |...5......|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |....5.....|
-  |....5.....|
-  |....5.....|
-draw op=clear_cel layer=7 frame=3
-paint_grid layer=7 frame=3 x=19 y=1 legend=5:4,6:5 rows:9
-  |5........|
-  |.........|
-  |.....5...|
-  |........6|
-  |.........|
-  |.6.......|
-  |.......5.|
-  |5......6.|
-  |6........|
-draw op=clear_cel layer=0 frame=4
-paint_grid layer=0 frame=4 x=4 y=18 legend=2:1,3:2 rows:10
-  |..233..|
-  |.233...|
-  |.233...|
-  |.23....|
-  |23.....|
-  |233....|
-  |.233...|
-  |..233..|
-  |...233.|
-  |....233|
-draw op=clear_cel layer=6 frame=4
-paint_grid layer=6 frame=4 x=22 y=4 legend=5:4,6:5 rows:4
-  |.66.|
-  |5665|
-  |5665|
-  |.66.|
-draw op=clear_cel layer=5 frame=4
-paint_grid layer=5 frame=4 x=18 y=2 legend=5:4 rows:21
-  |.....55...|
-  |.....55...|
-  |...55..55.|
-  |..55....55|
-  |...5....5.|
-  |..........|
-  |.55.5555..|
-  |.55...5...|
-  |5.....5...|
-  |......5...|
-  |..5.......|
-  |..5.......|
-  |...5......|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |..........|
-  |....5.....|
-draw op=clear_cel layer=7 frame=4
-paint_grid layer=7 frame=4 x=19 y=2 legend=5:4,6:5 rows:9
-  |.....5..|
-  |.......5|
-  |........|
-  |.6......|
-  |........|
-  |5......6|
-  |6.......|
-  |..5.....|
-  |..6.....|
-draw op=clear_cel layer=0 frame=5
-paint_grid layer=0 frame=5 x=4 y=18 legend=2:1,3:2 rows:10
-  |.233...|
-  |233....|
-  |233....|
-  |23.....|
-  |23.....|
-  |233....|
-  |.233...|
-  |..233..|
-  |...233.|
-  |....233|
-draw op=clear_cel layer=6 frame=5
-paint_grid layer=6 frame=5 x=22 y=4 legend=5:4,6:5 rows:4
-  |.55.|
-  |5665|
-  |5665|
-  |.55.|
-draw op=clear_cel layer=5 frame=5
-paint_grid layer=5 frame=5 x=18 y=3 legend=5:4 rows:10
-  |.....55..|
-  |....5..5.|
-  |...5....5|
-  |...5....5|
-  |.........|
-  |.55.5555.|
-  |.55...5..|
-  |5.....5..|
-  |.........|
-  |..5......|
-draw op=clear_cel layer=7 frame=5
-paint_grid layer=7 frame=5 x=19 y=1 legend=5:4,6:5 rows:9
-  |.....5..|
-  |.......5|
-  |........|
-  |.6......|
-  |........|
-  |......6.|
-  |6.......|
-  |..5.....|
-  |..6.....|
-draw op=clear_cel layer=0 frame=6
-paint_grid layer=0 frame=6 x=3 y=18 legend=2:1,3:2 rows:10
-  |.233....|
-  |233.....|
-  |233.....|
-  |23......|
-  |.23.....|
-  |.233....|
-  |..233...|
-  |...233..|
-  |....233.|
-  |.....233|
-draw op=clear_cel layer=6 frame=6
-paint_grid layer=6 frame=6 x=22 y=4 legend=5:4,6:5 rows:4
-  |.55.|
-  |5665|
-  |5665|
-  |.55.|
-draw op=clear_cel layer=5 frame=6
-paint_grid layer=5 frame=6 x=21 y=3 legend=5:4 rows:7
-  |..55..|
-  |.5..5.|
-  |5....5|
-  |5....5|
-  |......|
-  |.5555.|
-  |...5..|
-draw op=clear_cel layer=7 frame=6
-paint_grid layer=7 frame=6 x=18 y=1 legend=5:4,6:5 rows:10
-  |........5|
-  |.........|
-  |.5.......|
-  |.........|
-  |.......6.|
-  |6........|
-  |...5.....|
-  |...6.....|
-  |........5|
-  |........6|
-draw op=clear_cel layer=0 frame=7
-paint_grid layer=0 frame=7 x=2 y=18 legend=2:1,3:2 rows:10
-  |.233.....|
-  |233......|
-  |.233.....|
-  |.23......|
-  |.23......|
-  |.233.....|
-  |...233...|
-  |....233..|
-  |.....233.|
-  |......233|
-draw op=clear_cel layer=6 frame=7
-paint_grid layer=6 frame=7 x=22 y=4 legend=5:4,6:5 rows:4
-  |.55.|
-  |5665|
-  |5665|
-  |.55.|
-draw op=clear_cel layer=5 frame=7
-paint_grid layer=5 frame=7 x=21 y=3 legend=5:4 rows:6
-  |..55..|
-  |......|
-  |.....5|
-  |5.....|
-  |......|
-  |..55..|
-draw op=clear_cel layer=7 frame=7
-paint_grid layer=7 frame=7 x=18 y=2 legend=5:4,6:5 rows:9
-  |.5.........|
-  |...........|
-  |.......6...|
-  |6..........|
-  |...........|
-  |...6.......|
-  |........5..|
-  |........6.5|
-  |..........6|
-draw op=clear_cel layer=0 frame=8
-paint_grid layer=0 frame=8 x=2 y=18 legend=2:1,3:2 rows:10
-  |.233.....|
-  |233......|
-  |.233.....|
-  |.23......|
-  |.23......|
-  |.233.....|
-  |...233...|
-  |....233..|
-  |.....233.|
-  |......233|
-draw op=clear_cel layer=6 frame=8
-paint_grid layer=6 frame=8 x=22 y=4 legend=5:4,6:5 rows:4
-  |.55.|
-  |5665|
-  |5665|
-  |.55.|
-draw op=clear_cel layer=5 frame=8
-paint_grid layer=5 frame=8 x=21 y=3 legend=5:4 rows:6
-  |..55..|
-  |......|
-  |.....5|
-  |5.....|
-  |......|
-  |..55..|
-draw op=clear_cel layer=7 frame=8
-paint_grid layer=7 frame=8 x=18 y=1 legend=5:4,6:5 rows:9
-  |.5.........|
-  |...........|
-  |......5....|
-  |6..........|
-  |...........|
-  |..6........|
-  |........5..|
-  |........6.5|
-  |..........6|
-draw op=clear_cel layer=0 frame=9
-paint_grid layer=0 frame=9 x=3 y=18 legend=2:1,3:2 rows:10
-  |.233....|
-  |233.....|
-  |233.....|
-  |23......|
-  |.23.....|
-  |.233....|
-  |..233...|
-  |...233..|
-  |....233.|
-  |.....233|
-draw op=clear_cel layer=6 frame=9
-paint_grid layer=6 frame=9 x=22 y=4 legend=5:4,6:5 rows:4
-  |.55.|
-  |5665|
-  |5665|
-  |.55.|
-draw op=clear_cel layer=5 frame=9
-paint_grid layer=5 frame=9 x=21 y=3 legend=5:4 rows:7
-  |..55..|
-  |.5..5.|
-  |5....5|
-  |5....5|
-  |......|
-  |.5555.|
-  |...5..|
-draw op=clear_cel layer=7 frame=9
-paint_grid layer=7 frame=9 x=17 y=2 legend=5:4,6:5 rows:9
-  |.......5....|
-  |5...........|
-  |............|
-  |...6........|
-  |............|
-  |.........6.5|
-  |...........6|
-  |....5.......|
-  |....6.......|
-draw op=clear_cel layer=5 frame=0
-paint_grid layer=5 frame=0 x=20 y=3 legend=5:4 rows:8
-  |...55..|
-  |..5..5.|
-  |.5....5|
-  |.5....5|
-  |..5..5.|
-  |...55..|
-  |5...5..|
-  |....5..|
-draw op=clear_cel layer=7 frame=0
-paint_grid layer=7 frame=0 x=20 y=1 legend=5:4,6:5 rows:8
-  |.....5...|
-  |.........|
-  |.........|
-  |........6|
-  |.........|
-  |......6..|
-  |.........|
-  |6........|
-draw op=clear_cel layer=5 frame=1
-paint_grid layer=5 frame=1 x=20 y=2 legend=5:4 rows:12
-  |...55...|
-  |...55...|
-  |..5..5..|
-  |55....55|
-  |55....55|
-  |..5..5..|
-  |...55...|
-  |5..55...|
-  |....5...|
-  |....5...|
-  |........|
-  |5.......|
-draw op=clear_cel layer=7 frame=1
-paint_grid layer=7 frame=1 x=20 y=3 legend=5:4,6:5 rows:8
-  |.......5|
-  |........|
-  |......6.|
-  |........|
-  |6.......|
-  |........|
-  |........|
-  |.......6|
-draw op=clear_cel layer=5 frame=2
-paint_grid layer=5 frame=2 x=20 y=1 legend=5:4,6:5 rows:23
-  |...6....|
-  |...55...|
-  |..5665..|
-  |.55..55.|
-  |56....65|
-  |56....65|
-  |..5..5..|
-  |..5665..|
-  |5..55...|
-  |....5...|
-  |....5...|
-  |........|
-  |5.......|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |..5.....|
-draw op=clear_cel layer=7 frame=2
-paint_grid layer=7 frame=2 x=19 y=2 legend=5:4,6:5 rows:8
-  |........5|
-  |.........|
-  |.......6.|
-  |.........|
-  |6........|
-  |.........|
-  |........5|
-  |.......56|
-draw op=clear_cel layer=5 frame=3
-paint_grid layer=5 frame=3 x=20 y=1 legend=5:4,6:5 rows:23
-  |...6....|
-  |...55...|
-  |..5665..|
-  |.55..55.|
-  |56....65|
-  |56....65|
-  |..5..5..|
-  |..5665..|
-  |5..55...|
-  |....5...|
-  |....5...|
-  |........|
-  |5.......|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |........|
-  |..5.....|
-draw op=clear_cel layer=7 frame=3
-paint_grid layer=7 frame=3 x=19 y=1 legend=5:4,6:5 rows:8
-  |........5|
-  |.........|
-  |......5..|
-  |.........|
-  |6........|
-  |.........|
-  |.........|
-  |........6|
-draw op=clear_cel layer=5 frame=4
-paint_grid layer=5 frame=4 x=20 y=2 legend=5:4 rows:12
-  |...55...|
-  |...55...|
-  |..5..5..|
-  |55....55|
-  |55....55|
-  |..5..5..|
-  |...55...|
-  |5..55...|
-  |....5...|
-  |....5...|
-  |........|
-  |5.......|
-draw op=clear_cel layer=7 frame=4
-paint_grid layer=7 frame=4 x=19 y=2 legend=5:4,6:5 rows:9
-  |......5....|
-  |...........|
-  |6..........|
-  |...........|
-  |...........|
-  |........6..|
-  |...........|
-  |...........|
-  |..........6|
-draw op=clear_cel layer=5 frame=5
-paint_grid layer=5 frame=5 x=20 y=3 legend=5:4 rows:8
-  |...55..|
-  |..5..5.|
-  |.5....5|
-  |.5....5|
-  |..5..5.|
-  |...55..|
-  |5...5..|
-  |....5..|
-draw op=clear_cel layer=7 frame=5
-paint_grid layer=7 frame=5 x=18 y=1 legend=5:4,6:5 rows:9
-  |.......5....|
-  |............|
-  |5...........|
-  |............|
-  |............|
-  |........6...|
-  |............|
-  |...........5|
-  |..........56|
-draw op=clear_cel layer=5 frame=6
-paint_grid layer=5 frame=6 x=21 y=3 legend=5:4 rows:7
-  |..55..|
-  |......|
-  |5....5|
-  |5....5|
-  |......|
-  |..55..|
-  |...5..|
-draw op=clear_cel layer=7 frame=6
-paint_grid layer=7 frame=6 x=18 y=2 legend=5:4,6:5 rows:9
-  |5...........|
-  |............|
-  |............|
-  |........6...|
-  |............|
-  |............|
-  |...........6|
-  |............|
-  |.........6..|
-draw op=clear_cel layer=5 frame=7
-paint_grid layer=5 frame=7 x=21 y=3 legend=5:4 rows:6
-  |..5...|
-  |......|
-  |.....5|
-  |5.....|
-  |......|
-  |..5...|
-draw op=clear_cel layer=7 frame=7
-paint_grid layer=7 frame=7 x=18 y=1 legend=5:4,6:5 rows:9
-  |5...........|
-  |............|
-  |............|
-  |........6...|
-  |............|
-  |............|
-  |...........6|
-  |.........5..|
-  |........56..|
-draw op=clear_cel layer=5 frame=8
-paint_grid layer=5 frame=8 x=21 y=3 legend=5:4 rows:6
-  |..5...|
-  |......|
-  |.....5|
-  |5.....|
-  |......|
-  |..5...|
-draw op=clear_cel layer=7 frame=8
-paint_grid layer=7 frame=8 x=20 y=3 legend=5:4,6:5 rows:8
-  |.....5...|
-  |.........|
-  |.........|
-  |........6|
-  |.........|
-  |.......6.|
-  |.........|
-  |6........|
-draw op=clear_cel layer=5 frame=9
-paint_grid layer=5 frame=9 x=21 y=3 legend=5:4 rows:7
-  |..55..|
-  |......|
-  |5....5|
-  |5....5|
-  |......|
-  |..55..|
-  |...5..|
-draw op=clear_cel layer=7 frame=9
-paint_grid layer=7 frame=9 x=19 y=2 legend=5:4,6:5 rows:8
-  |......5...|
-  |..........|
-  |..........|
-  |.........6|
-  |..........|
-  |........6.|
-  |.5........|
-  |56........|
+palette set colors=#1e1630,#574a86,#9a8ec0,#d8cff0,#38d0c8,#ccfff6
+layer rename index=0 name=tail
+layer add name=body
+layer add name=head
+layer add name=hat
+layer add name=staff
+layer add name=light
+layer add name=orb
+layer add name=sparkles
+legend A=#9a8ec0
+body @0 grid 9,18 = 9,18 14x11
+    ...AAAAAAAA...
+    ..AAAAAAAAAA..
+    ..AAAAAAAAAA..
+    .AAAAAAAAAAAA.
+    .AAAAAAAAAAAA.
+    .AAAAAAAAAAAA.
+    .AAAAAAAAAAAAA
+    AAAAAAAAAAAAAA
+    AAAAAAAAAAAAAA
+    AAAAAAAAAAAAAA
+    .AAAAAAAAAAAA.
+head @0 grid 9,6 = 9,6 13x13
+    .A.........A.
+    AAA.......AAA
+    AAA.......AAA
+    .AA.......AA.
+    ...AAAAAAA...
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ...AAAAAAA...
+legend B=#574a86
+hat @0 grid 10,1 = 10,1 11x10
+    .....B.....
+    ....BBB....
+    ....BBB....
+    ...BBBBB...
+    ...BBBBB...
+    ..BBBBBBB..
+    ..BBBBBBB..
+    .BBBBBBBBB.
+    BBBBBBBBBBB
+    .BBBBBBBBB.
+head @0 clear_cel = 9,6 21,18 .
+head @0 grid 9,4 = 9,4 13x15
+    AA........AA.
+    AA........AA.
+    AAA......AAA.
+    AAA......AAA.
+    AAAA....AAAA.
+    .AAA....AAA..
+    ...AAAAAAA...
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ...AAAAAAA...
+tail @0 grid 4,18 = 4,18 7x10
+    .AAA...
+    AAA....
+    AAA....
+    AA.....
+    AA.....
+    AAA....
+    .AAA...
+    ..AAA..
+    ...AAA.
+    ....AAA
+legend C=#1e1630
+staff @0 grid 23,8 = 23,8 3x19
+    C.C
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    CCC
+legend D=#38d0c8 E=#ccfff6
+orb @0 grid 22,4 = 22,4 5x5
+    ..D..
+    .DED.
+    DEEED
+    .DED.
+    ..D..
+legend F=#d8cff0
+head @0 grid 9,8 = 9,8 12x11
+    ABBA....ABBA
+    .AAA....AAA.
+    ...AAAAFAA..
+    ..AAAAAAFAA.
+    .BAAAAAAAAFA
+    .BADEAAAEDAF
+    BAADDAAADDAF
+    BAAAAACAAAAA
+    .BAAAFAFAAFA
+    ..BAAAAAAAA.
+    ...ABBBBBA..
+body @0 grid 9,19 = 9,19 15x10
+    ..AAAAAAAAAF...
+    ..AAAAFFAAAA...
+    .BAAAAAFAAAAF..
+    .BAAAAAAAAAAF..
+    .BAAAAAAAAAAF..
+    .BAAAAAAAAAFAAF
+    BAAAAAAAAAAAAAA
+    BAAAAAAAAAAAAA.
+    AABABAABAABAAA.
+    .AABBBBBBBBAA..
+hat @0 grid 10,4 = 10,4 11x7
+    ...BBFBB...
+    ...BFEFB...
+    ..BBBFBBB..
+    ..BBBBBBB..
+    .BBBBBFFFB.
+    CBBBBFFFBBC
+    CCCBBBBBCCC
+orb @0 clear_cel = 22,4 26,8 .
+staff @0 clear_cel = 23,8 25,26 .
+staff @0 grid 23,8 = 23,8 3x19
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    .C.
+    CCC
+orb @0 grid 22,4 = 22,4 4x4
+    .DD.
+    DEED
+    DEED
+    .DD.
+frame add copy_from=0 count=9 duration_ms=100
+tail @0 clear_cel = 4,18 10,27 .
+tail @0 grid 4,18 = 4,18 7x10
+    .BAA...
+    BAA....
+    BAA....
+    BA.....
+    BA.....
+    BAA....
+    .BAA...
+    ..BAA..
+    ...BAA.
+    ....BAA
+orb @0 clear_cel = 22,4 25,7 .
+orb @0 grid 22,4 = 22,4 4x4
+    .DD.
+    DEED
+    DEED
+    .DD.
+light @0 clear_cel ~
+light @0 grid 18,3 = 18,3 9x10
+    .....DD..
+    ....D..D.
+    ...D....D
+    ...D....D
+    .........
+    .DD.DDDD.
+    .DD...D..
+    D.....D..
+    .........
+    ..D......
+sparkles @0 clear_cel ~
+sparkles @0 grid 17,1 = 17,1 12x9
+    .......D....
+    D...........
+    ............
+    ...E........
+    ............
+    ........E...
+    ...........E
+    ....D.......
+    ....E.......
+tail @1 clear_cel = 4,18 10,27 .
+tail @1 grid 4,18 = 4,18 7x10
+    ..BAA..
+    .BAA...
+    .BAA...
+    .BA....
+    BA.....
+    BAA....
+    .BAA...
+    ..BAA..
+    ...BAA.
+    ....BAA
+orb @1 clear_cel = 22,4 25,7 .
+orb @1 grid 22,4 = 22,4 4x4
+    .EE.
+    DEED
+    DEED
+    .EE.
+light @1 clear_cel ~
+light @1 grid 18,2 = 18,2 10x21
+    .....DD...
+    .....DD...
+    ...DD..DD.
+    ..DD....DD
+    ...D....D.
+    ..........
+    .DD.DDDD..
+    .DD...D...
+    D.....D...
+    ......D...
+    ..D.......
+    ..D.......
+    ...D......
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ....D.....
+sparkles @1 clear_cel ~
+sparkles @1 grid 17,1 = 17,1 11x10
+    D..........
+    ...........
+    ..D........
+    ...........
+    ........E..
+    ..........E
+    ....D......
+    ....E......
+    .........D.
+    .........E.
+tail @2 clear_cel = 4,18 10,27 .
+tail @2 grid 5,18 = 5,18 6x10
+    ..BAA.
+    .BAA..
+    BAA...
+    BA....
+    BA....
+    BAA...
+    BAA...
+    .BAA..
+    ..BAA.
+    ...BAA
+orb @2 clear_cel = 22,4 25,7 .
+orb @2 grid 22,4 = 22,4 4x4
+    .EE.
+    DEED
+    DEED
+    .EE.
+light @2 clear_cel ~
+light @2 grid 18,1 = 18,1 10x24
+    .....DD...
+    .....DD...
+    .....ED...
+    ...DD..DD.
+    ..DD....DD
+    ..DD....DD
+    ...D....D.
+    .DD.DDED..
+    .DD.D.DD..
+    D.....D...
+    ......D...
+    ..D.......
+    ..D.......
+    ...D......
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ....D.....
+    ....D.....
+    ....D.....
+sparkles @2 clear_cel ~
+sparkles @2 grid 19,2 = 19,2 9x9
+    D........
+    .........
+    ......E..
+    ........E
+    .........
+    ..E......
+    .......D.
+    D......E.
+    E........
+tail @3 clear_cel = 4,18 10,27 .
+tail @3 grid 5,18 = 5,18 6x10
+    ..BAA.
+    .BAA..
+    BAA...
+    BA....
+    BA....
+    BAA...
+    BAA...
+    .BAA..
+    ..BAA.
+    ...BAA
+orb @3 clear_cel = 22,4 25,7 .
+orb @3 grid 22,4 = 22,4 4x4
+    .EE.
+    DEED
+    DEED
+    .EE.
+light @3 clear_cel ~
+light @3 grid 18,1 = 18,1 10x24
+    .....DD...
+    .....DD...
+    .....ED...
+    ...DD..DD.
+    ..DD....DD
+    ..DD....DD
+    ...D....D.
+    .DD.DDED..
+    .DD.D.DD..
+    D.....D...
+    ......D...
+    ..D.......
+    ..D.......
+    ...D......
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ....D.....
+    ....D.....
+    ....D.....
+sparkles @3 clear_cel ~
+sparkles @3 grid 19,1 = 19,1 9x9
+    D........
+    .........
+    .....D...
+    ........E
+    .........
+    .E.......
+    .......D.
+    D......E.
+    E........
+tail @4 clear_cel = 4,18 10,27 .
+tail @4 grid 4,18 = 4,18 7x10
+    ..BAA..
+    .BAA...
+    .BAA...
+    .BA....
+    BA.....
+    BAA....
+    .BAA...
+    ..BAA..
+    ...BAA.
+    ....BAA
+orb @4 clear_cel = 22,4 25,7 .
+orb @4 grid 22,4 = 22,4 4x4
+    .EE.
+    DEED
+    DEED
+    .EE.
+light @4 clear_cel ~
+light @4 grid 18,2 = 18,2 10x21
+    .....DD...
+    .....DD...
+    ...DD..DD.
+    ..DD....DD
+    ...D....D.
+    ..........
+    .DD.DDDD..
+    .DD...D...
+    D.....D...
+    ......D...
+    ..D.......
+    ..D.......
+    ...D......
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ..........
+    ....D.....
+sparkles @4 clear_cel ~
+sparkles @4 grid 19,2 = 19,2 8x9
+    .....D..
+    .......D
+    ........
+    .E......
+    ........
+    D......E
+    E.......
+    ..D.....
+    ..E.....
+tail @5 clear_cel = 4,18 10,27 .
+tail @5 grid 4,18 = 4,18 7x10
+    .BAA...
+    BAA....
+    BAA....
+    BA.....
+    BA.....
+    BAA....
+    .BAA...
+    ..BAA..
+    ...BAA.
+    ....BAA
+orb @5 clear_cel = 22,4 25,7 .
+orb @5 grid 22,4 = 22,4 4x4
+    .DD.
+    DEED
+    DEED
+    .DD.
+light @5 clear_cel ~
+light @5 grid 18,3 = 18,3 9x10
+    .....DD..
+    ....D..D.
+    ...D....D
+    ...D....D
+    .........
+    .DD.DDDD.
+    .DD...D..
+    D.....D..
+    .........
+    ..D......
+sparkles @5 clear_cel ~
+sparkles @5 grid 19,1 = 19,1 8x9
+    .....D..
+    .......D
+    ........
+    .E......
+    ........
+    ......E.
+    E.......
+    ..D.....
+    ..E.....
+tail @6 clear_cel = 4,18 10,27 .
+tail @6 grid 3,18 = 3,18 8x10
+    .BAA....
+    BAA.....
+    BAA.....
+    BA......
+    .BA.....
+    .BAA....
+    ..BAA...
+    ...BAA..
+    ....BAA.
+    .....BAA
+orb @6 clear_cel = 22,4 25,7 .
+orb @6 grid 22,4 = 22,4 4x4
+    .DD.
+    DEED
+    DEED
+    .DD.
+light @6 clear_cel ~
+light @6 grid 21,3 = 21,3 6x7
+    ..DD..
+    .D..D.
+    D....D
+    D....D
+    ......
+    .DDDD.
+    ...D..
+sparkles @6 clear_cel ~
+sparkles @6 grid 18,1 = 18,1 9x10
+    ........D
+    .........
+    .D.......
+    .........
+    .......E.
+    E........
+    ...D.....
+    ...E.....
+    ........D
+    ........E
+tail @7 clear_cel = 4,18 10,27 .
+tail @7 grid 2,18 = 2,18 9x10
+    .BAA.....
+    BAA......
+    .BAA.....
+    .BA......
+    .BA......
+    .BAA.....
+    ...BAA...
+    ....BAA..
+    .....BAA.
+    ......BAA
+orb @7 clear_cel = 22,4 25,7 .
+orb @7 grid 22,4 = 22,4 4x4
+    .DD.
+    DEED
+    DEED
+    .DD.
+light @7 clear_cel ~
+light @7 grid 21,3 = 21,3 6x6
+    ..DD..
+    ......
+    .....D
+    D.....
+    ......
+    ..DD..
+sparkles @7 clear_cel ~
+sparkles @7 grid 18,2 = 18,2 11x9
+    .D.........
+    ...........
+    .......E...
+    E..........
+    ...........
+    ...E.......
+    ........D..
+    ........E.D
+    ..........E
+tail @8 clear_cel = 4,18 10,27 .
+tail @8 grid 2,18 = 2,18 9x10
+    .BAA.....
+    BAA......
+    .BAA.....
+    .BA......
+    .BA......
+    .BAA.....
+    ...BAA...
+    ....BAA..
+    .....BAA.
+    ......BAA
+orb @8 clear_cel = 22,4 25,7 .
+orb @8 grid 22,4 = 22,4 4x4
+    .DD.
+    DEED
+    DEED
+    .DD.
+light @8 clear_cel ~
+light @8 grid 21,3 = 21,3 6x6
+    ..DD..
+    ......
+    .....D
+    D.....
+    ......
+    ..DD..
+sparkles @8 clear_cel ~
+sparkles @8 grid 18,1 = 18,1 11x9
+    .D.........
+    ...........
+    ......D....
+    E..........
+    ...........
+    ..E........
+    ........D..
+    ........E.D
+    ..........E
+tail @9 clear_cel = 4,18 10,27 .
+tail @9 grid 3,18 = 3,18 8x10
+    .BAA....
+    BAA.....
+    BAA.....
+    BA......
+    .BA.....
+    .BAA....
+    ..BAA...
+    ...BAA..
+    ....BAA.
+    .....BAA
+orb @9 clear_cel = 22,4 25,7 .
+orb @9 grid 22,4 = 22,4 4x4
+    .DD.
+    DEED
+    DEED
+    .DD.
+light @9 clear_cel ~
+light @9 grid 21,3 = 21,3 6x7
+    ..DD..
+    .D..D.
+    D....D
+    D....D
+    ......
+    .DDDD.
+    ...D..
+sparkles @9 clear_cel ~
+sparkles @9 grid 17,2 = 17,2 12x9
+    .......D....
+    D...........
+    ............
+    ...E........
+    ............
+    .........E.D
+    ...........E
+    ....D.......
+    ....E.......
+light @0 clear_cel = 18,3 26,12 .
+light @0 grid 20,3 = 20,3 7x8
+    ...DD..
+    ..D..D.
+    .D....D
+    .D....D
+    ..D..D.
+    ...DD..
+    D...D..
+    ....D..
+sparkles @0 clear_cel = 17,1 28,9 .
+sparkles @0 grid 20,1 = 20,1 9x8
+    .....D...
+    .........
+    .........
+    ........E
+    .........
+    ......E..
+    .........
+    E........
+light @1 clear_cel = 18,2 27,22 .
+light @1 grid 20,2 = 20,2 8x12
+    ...DD...
+    ...DD...
+    ..D..D..
+    DD....DD
+    DD....DD
+    ..D..D..
+    ...DD...
+    D..DD...
+    ....D...
+    ....D...
+    ........
+    D.......
+sparkles @1 clear_cel = 17,1 27,10 .
+sparkles @1 grid 20,3 = 20,3 8x8
+    .......D
+    ........
+    ......E.
+    ........
+    E.......
+    ........
+    ........
+    .......E
+light @2 clear_cel = 18,1 27,24 .
+light @2 grid 20,1 = 20,1 8x23
+    ...E....
+    ...DD...
+    ..DEED..
+    .DD..DD.
+    DE....ED
+    DE....ED
+    ..D..D..
+    ..DEED..
+    D..DD...
+    ....D...
+    ....D...
+    ........
+    D.......
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ..D.....
+sparkles @2 clear_cel = 19,2 27,10 .
+sparkles @2 grid 19,2 = 19,2 9x8
+    ........D
+    .........
+    .......E.
+    .........
+    E........
+    .........
+    ........D
+    .......DE
+light @3 clear_cel = 18,1 27,24 .
+light @3 grid 20,1 = 20,1 8x23
+    ...E....
+    ...DD...
+    ..DEED..
+    .DD..DD.
+    DE....ED
+    DE....ED
+    ..D..D..
+    ..DEED..
+    D..DD...
+    ....D...
+    ....D...
+    ........
+    D.......
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ........
+    ..D.....
+sparkles @3 clear_cel = 19,1 27,9 .
+sparkles @3 grid 19,1 = 19,1 9x8
+    ........D
+    .........
+    ......D..
+    .........
+    E........
+    .........
+    .........
+    ........E
+light @4 clear_cel = 18,2 27,22 .
+light @4 grid 20,2 = 20,2 8x12
+    ...DD...
+    ...DD...
+    ..D..D..
+    DD....DD
+    DD....DD
+    ..D..D..
+    ...DD...
+    D..DD...
+    ....D...
+    ....D...
+    ........
+    D.......
+sparkles @4 clear_cel = 19,2 26,10 .
+sparkles @4 grid 19,2 = 19,2 11x9
+    ......D....
+    ...........
+    E..........
+    ...........
+    ...........
+    ........E..
+    ...........
+    ...........
+    ..........E
+light @5 clear_cel = 18,3 26,12 .
+light @5 grid 20,3 = 20,3 7x8
+    ...DD..
+    ..D..D.
+    .D....D
+    .D....D
+    ..D..D.
+    ...DD..
+    D...D..
+    ....D..
+sparkles @5 clear_cel = 19,1 26,9 .
+sparkles @5 grid 18,1 = 18,1 12x9
+    .......D....
+    ............
+    D...........
+    ............
+    ............
+    ........E...
+    ............
+    ...........D
+    ..........DE
+light @6 clear_cel = 21,3 26,9 .
+light @6 grid 21,3 = 21,3 6x7
+    ..DD..
+    ......
+    D....D
+    D....D
+    ......
+    ..DD..
+    ...D..
+sparkles @6 clear_cel = 18,1 26,10 .
+sparkles @6 grid 18,2 = 18,2 12x9
+    D...........
+    ............
+    ............
+    ........E...
+    ............
+    ............
+    ...........E
+    ............
+    .........E..
+light @7 clear_cel = 21,3 26,8 .
+light @7 grid 21,3 = 21,3 6x6
+    ..D...
+    ......
+    .....D
+    D.....
+    ......
+    ..D...
+sparkles @7 clear_cel = 18,2 28,10 .
+sparkles @7 grid 18,1 = 18,1 12x9
+    D...........
+    ............
+    ............
+    ........E...
+    ............
+    ............
+    ...........E
+    .........D..
+    ........DE..
+light @8 clear_cel = 21,3 26,8 .
+light @8 grid 21,3 = 21,3 6x6
+    ..D...
+    ......
+    .....D
+    D.....
+    ......
+    ..D...
+sparkles @8 clear_cel = 18,1 28,9 .
+sparkles @8 grid 20,3 = 20,3 9x8
+    .....D...
+    .........
+    .........
+    ........E
+    .........
+    .......E.
+    .........
+    E........
+light @9 clear_cel = 21,3 26,9 .
+light @9 grid 21,3 = 21,3 6x7
+    ..DD..
+    ......
+    D....D
+    D....D
+    ......
+    ..DD..
+    ...D..
+sparkles @9 clear_cel = 17,2 28,10 .
+sparkles @9 grid 19,2 = 19,2 10x8
+    ......D...
+    ..........
+    ..........
+    .........E
+    ..........
+    ........E.
+    .D........
+    DE........
 add_tag name=loop direction=forward from=0 to=9

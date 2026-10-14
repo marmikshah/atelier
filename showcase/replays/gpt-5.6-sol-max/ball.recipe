@@ -1,64 +1,440 @@
-atelier 4 f0d6ef74-7433-46c3-9175-bc2e161745d2 0.1.0
+atelier 5 f0d6ef74-7433-46c3-9175-bc2e161745d2 0.1.0
 new name="gpt-5.6-sol-max — Rubber Ball Bounce" width=32 height=32
-layer op=rename index=0 name="Cast Shadow"
-layer op=add name=Ball
-palette op=set colors=#1e2749,#d52d4b,#ff6952,#ffe6b3
-frame op=add copy_from=0 count=9 duration_ms=100
-draw op=ellipse layer=0 frame=0 frame_to=1 color=#1e2749 cx=16 cy=29 fill=true rx=3 ry=1
-draw op=ellipse layer=0 frame=2 color=#1e2749 cx=16 cy=29 fill=true rx=4 ry=1
-draw op=ellipse layer=0 frame=3 color=#1e2749 cx=16 cy=29 fill=true rx=6 ry=1
-draw op=ellipse layer=0 frame=4 color=#1e2749 cx=16 cy=29 fill=true rx=10 ry=2
-draw op=ellipse layer=0 frame=5 color=#1e2749 cx=16 cy=29 fill=true rx=7 ry=1
-draw op=ellipse layer=0 frame=6 color=#1e2749 cx=16 cy=29 fill=true rx=4 ry=1
-draw op=ellipse layer=0 frame=7 frame_to=9 color=#1e2749 cx=16 cy=29 fill=true rx=3 ry=1
-draw op=ellipse layer=1 frame=0 color=#1e2749 cx=16 cy=6 fill=true rx=6 ry=6
-draw op=ellipse layer=1 frame=0 color=#d52d4b cx=16 cy=6 fill=true rx=5 ry=5
-draw op=polygon layer=1 frame=0 color=#ff6952 fill=true points=14,2 18,3 20,5 19,8 16,10 13,8 13,5
-draw op=ellipse layer=1 frame=0 color=#ffe6b3 cx=14 cy=3 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=0 color=#ffe6b3 points=[[13,4]] size=1
-draw op=ellipse layer=1 frame=1 color=#1e2749 cx=16 cy=7 fill=true rx=6 ry=6
-draw op=ellipse layer=1 frame=1 color=#d52d4b cx=16 cy=7 fill=true rx=5 ry=5
-draw op=polygon layer=1 frame=1 color=#ff6952 fill=true points=14,3 18,4 20,6 19,9 16,11 13,9 13,6
-draw op=ellipse layer=1 frame=1 color=#ffe6b3 cx=14 cy=4 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=1 color=#ffe6b3 points=[[13,5]] size=1
-draw op=ellipse layer=1 frame=2 color=#1e2749 cx=16 cy=10 fill=true rx=6 ry=6
-draw op=ellipse layer=1 frame=2 color=#d52d4b cx=16 cy=10 fill=true rx=5 ry=5
-draw op=polygon layer=1 frame=2 color=#ff6952 fill=true points=14,6 18,7 20,9 19,12 16,14 13,12 13,9
-draw op=ellipse layer=1 frame=2 color=#ffe6b3 cx=14 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=2 color=#ffe6b3 points=[[13,8]] size=1
-draw op=ellipse layer=1 frame=3 color=#1e2749 cx=16 cy=16 fill=true rx=5 ry=7
-draw op=ellipse layer=1 frame=3 color=#d52d4b cx=16 cy=16 fill=true rx=4 ry=6
-draw op=polygon layer=1 frame=3 color=#ff6952 fill=true points=14,11 17,11 19,14 18,19 16,21 13,18 13,14
-draw op=ellipse layer=1 frame=3 color=#ffe6b3 cx=14 cy=12 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=3 color=#ffe6b3 points=[[13,13]] size=1
-draw op=ellipse layer=1 frame=4 color=#1e2749 cx=16 cy=26 fill=true rx=9 ry=3
-draw op=ellipse layer=1 frame=4 color=#d52d4b cx=16 cy=25 fill=true rx=8 ry=2
-draw op=polygon layer=1 frame=4 color=#ff6952 fill=true points=13,23 20,23 23,25 20,26 15,27 10,25
-draw op=rect layer=1 frame=4 color=#ffe6b3 fill=true x0=12 x1=14 y0=23 y1=24
-draw op=pencil layer=1 frame=4 color=#ffe6b3 points=[[15,23]] size=1
-draw op=ellipse layer=1 frame=5 color=#1e2749 cx=16 cy=16 fill=true rx=4 ry=8
-draw op=ellipse layer=1 frame=5 color=#d52d4b cx=16 cy=16 fill=true rx=3 ry=7
-draw op=polygon layer=1 frame=5 color=#ff6952 fill=true points=15,10 18,12 18,17 17,21 15,22 13,18 14,13
-draw op=ellipse layer=1 frame=5 color=#ffe6b3 cx=15 cy=11 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=5 color=#ffe6b3 points=[[14,12]] size=1
-draw op=ellipse layer=1 frame=6 color=#1e2749 cx=16 cy=10 fill=true rx=5 ry=7
-draw op=ellipse layer=1 frame=6 color=#d52d4b cx=16 cy=10 fill=true rx=4 ry=6
-draw op=polygon layer=1 frame=6 color=#ff6952 fill=true points=14,5 17,5 19,8 18,13 16,15 13,12 13,8
-draw op=ellipse layer=1 frame=6 color=#ffe6b3 cx=14 cy=6 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=6 color=#ffe6b3 points=[[13,7]] size=1
-draw op=ellipse layer=1 frame=7 color=#1e2749 cx=16 cy=7 fill=true rx=6 ry=6
-draw op=ellipse layer=1 frame=7 color=#d52d4b cx=16 cy=7 fill=true rx=5 ry=5
-draw op=polygon layer=1 frame=7 color=#ff6952 fill=true points=14,3 18,4 20,6 19,9 16,11 13,9 13,6
-draw op=ellipse layer=1 frame=7 color=#ffe6b3 cx=14 cy=4 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=7 color=#ffe6b3 points=[[13,5]] size=1
-draw op=ellipse layer=1 frame=8 color=#1e2749 cx=16 cy=6 fill=true rx=6 ry=6
-draw op=ellipse layer=1 frame=8 color=#d52d4b cx=16 cy=6 fill=true rx=5 ry=5
-draw op=polygon layer=1 frame=8 color=#ff6952 fill=true points=14,2 18,3 20,5 19,8 16,10 13,8 13,5
-draw op=ellipse layer=1 frame=8 color=#ffe6b3 cx=14 cy=3 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=8 color=#ffe6b3 points=[[13,4]] size=1
-draw op=ellipse layer=1 frame=9 color=#1e2749 cx=16 cy=6 fill=true rx=6 ry=6
-draw op=ellipse layer=1 frame=9 color=#d52d4b cx=16 cy=6 fill=true rx=5 ry=5
-draw op=polygon layer=1 frame=9 color=#ff6952 fill=true points=14,2 18,3 20,5 19,8 16,10 13,8 13,5
-draw op=ellipse layer=1 frame=9 color=#ffe6b3 cx=14 cy=3 fill=true rx=1 ry=1
-draw op=pencil layer=1 frame=9 color=#ffe6b3 points=[[13,4]] size=1
+layer rename index=0 name="Cast Shadow"
+layer add name=Ball
+palette set colors=#1e2749,#d52d4b,#ff6952,#ffe6b3
+frame add copy_from=0 count=9 duration_ms=100
+legend A=#1e2749
+"Cast Shadow" @0 ellipse #1e2749 16,29 3,1 fill = 13,28 7x3
+    .AAAAA.
+    AAAAAAA
+    .AAAAA.
+"Cast Shadow" @1 ellipse #1e2749 16,29 3,1 fill = 13,28 7x3
+    .AAAAA.
+    AAAAAAA
+    .AAAAA.
+"Cast Shadow" @2 ellipse #1e2749 16,29 4,1 fill = 12,28 9x3
+    .AAAAAAA.
+    AAAAAAAAA
+    .AAAAAAA.
+"Cast Shadow" @3 ellipse #1e2749 16,29 6,1 fill = 10,28 13x3
+    ..AAAAAAAAA..
+    AAAAAAAAAAAAA
+    ..AAAAAAAAA..
+"Cast Shadow" @4 ellipse #1e2749 16,29 10,2 fill = 6,27 21x5
+    ....AAAAAAAAAAAAA....
+    .AAAAAAAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAAAAAAA.
+    ....AAAAAAAAAAAAA....
+"Cast Shadow" @5 ellipse #1e2749 16,29 7,1 fill = 9,28 15x3
+    ..AAAAAAAAAAA..
+    AAAAAAAAAAAAAAA
+    ..AAAAAAAAAAA..
+"Cast Shadow" @6 ellipse #1e2749 16,29 4,1 fill = 12,28 9x3
+    .AAAAAAA.
+    AAAAAAAAA
+    .AAAAAAA.
+"Cast Shadow" @7 ellipse #1e2749 16,29 3,1 fill = 13,28 7x3
+    .AAAAA.
+    AAAAAAA
+    .AAAAA.
+"Cast Shadow" @8 ellipse #1e2749 16,29 3,1 fill = 13,28 7x3
+    .AAAAA.
+    AAAAAAA
+    .AAAAA.
+"Cast Shadow" @9 ellipse #1e2749 16,29 3,1 fill = 13,28 7x3
+    .AAAAA.
+    AAAAAAA
+    .AAAAA.
+Ball @0 ellipse #1e2749 16,6 6,6 fill = 10,0 13x13
+    ....AAAAA....
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ....AAAAA....
+legend B=#d52d4b
+Ball @0 ellipse #d52d4b 16,6 5,5 fill = 11,1 11x11
+    .AABBBBBAA.
+    AABBBBBBBAA
+    ABBBBBBBBBA
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    ABBBBBBBBBA
+    AABBBBBBBAA
+    .AABBBBBAA.
+legend C=#ff6952
+Ball @0 polygon #ff6952 fill = 13,2 8x9
+    BCCCBBBA
+    BCCCCCBB
+    CCCCCCCB
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCB
+    CCCCCCCB
+    BCCCCCBB
+    BBBCBBBA
+Ball @0 ellipse #ffe6b3 14,3 1,1 fill = 13,2 15,4 #ffe6b3
+Ball @0 pencil #ffe6b3 size 1 ~
+Ball @1 ellipse #1e2749 16,7 6,6 fill = 10,1 13x13
+    ....AAAAA....
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ....AAAAA....
+Ball @1 ellipse #d52d4b 16,7 5,5 fill = 11,2 11x11
+    .AABBBBBAA.
+    AABBBBBBBAA
+    ABBBBBBBBBA
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    ABBBBBBBBBA
+    AABBBBBBBAA
+    .AABBBBBAA.
+Ball @1 polygon #ff6952 fill = 13,3 8x9
+    BCCCBBBA
+    BCCCCCBB
+    CCCCCCCB
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCB
+    CCCCCCCB
+    BCCCCCBB
+    BBBCBBBA
+Ball @1 ellipse #ffe6b3 14,4 1,1 fill = 13,3 15,5 #ffe6b3
+Ball @1 pencil #ffe6b3 size 1 ~
+Ball @2 ellipse #1e2749 16,10 6,6 fill = 10,4 13x13
+    ....AAAAA....
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ....AAAAA....
+Ball @2 ellipse #d52d4b 16,10 5,5 fill = 11,5 11x11
+    .AABBBBBAA.
+    AABBBBBBBAA
+    ABBBBBBBBBA
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    ABBBBBBBBBA
+    AABBBBBBBAA
+    .AABBBBBAA.
+Ball @2 polygon #ff6952 fill = 13,6 8x9
+    BCCCBBBA
+    BCCCCCBB
+    CCCCCCCB
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCB
+    CCCCCCCB
+    BCCCCCBB
+    BBBCBBBA
+Ball @2 ellipse #ffe6b3 14,7 1,1 fill = 13,6 15,8 #ffe6b3
+Ball @2 pencil #ffe6b3 size 1 ~
+Ball @3 ellipse #1e2749 16,16 5,7 fill = 11,9 11x15
+    ....AAA....
+    ..AAAAAAA..
+    .AAAAAAAAA.
+    .AAAAAAAAA.
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    .AAAAAAAAA.
+    .AAAAAAAAA.
+    ..AAAAAAA..
+    ....AAA....
+Ball @3 ellipse #d52d4b 16,16 4,6 fill = 12,10 9x13
+    .AABBBAA.
+    AABBBBBAA
+    ABBBBBBBA
+    ABBBBBBBA
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    ABBBBBBBA
+    ABBBBBBBA
+    AABBBBBAA
+    .AABBBAA.
+Ball @3 polygon #ff6952 fill = 13,11 7x11
+    ACCCCBA
+    BCCCCCB
+    CCCCCCB
+    CCCCCCC
+    CCCCCCC
+    CCCCCCC
+    CCCCCCB
+    CCCCCCB
+    BCCCCCB
+    BBCCCBB
+    ABBCBBA
+Ball @3 ellipse #ffe6b3 14,12 1,1 fill = 13,11 15,13 #ffe6b3
+Ball @3 pencil #ffe6b3 size 1 ~
+Ball @4 ellipse #1e2749 16,26 9,3 fill = 7,23 19x7
+    .....AAAAAAAAA.....
+    ..AAAAAAAAAAAAAAA..
+    AAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAAAAA
+    ..AAAAAAAAAAAAAAA..
+    .....AAAAAAAAA.....
+Ball @4 ellipse #d52d4b 16,25 8,2 fill = 8,23 17x5
+    ...BBBBBBBBBBB...
+    .BBBBBBBBBBBBBBB.
+    BBBBBBBBBBBBBBBBB
+    ABBBBBBBBBBBBBBBA
+    AAABBBBBBBBBBBAAA
+Ball @4 polygon #ff6952 fill = 10,23 14x5
+    .BBCCCCCCCCB..
+    BCCCCCCCCCCCCB
+    CCCCCCCCCCCCCC
+    BBCCCCCCCCCCBB
+    ABBBCCCCBBBBAA
+Ball @4 rect #ffe6b3 12,23 14,24 fill = 12,23 14,24 #ffe6b3
+Ball @4 pencil #ffe6b3 size 1 = 15,23 15,23 #ffe6b3
+Ball @5 ellipse #1e2749 16,16 4,8 fill = 12,8 9x17
+    ...AAA...
+    ..AAAAA..
+    .AAAAAAA.
+    .AAAAAAA.
+    .AAAAAAA.
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    .AAAAAAA.
+    .AAAAAAA.
+    .AAAAAAA.
+    ..AAAAA..
+    ...AAA...
+Ball @5 ellipse #d52d4b 16,16 3,7 fill = 13,9 7x15
+    .ABBBA.
+    ABBBBBA
+    ABBBBBA
+    ABBBBBA
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    ABBBBBA
+    ABBBBBA
+    ABBBBBA
+    .ABBBA.
+Ball @5 polygon #ff6952 fill = 13,10 6x13
+    ABCBBB
+    ABCCCB
+    ACCCCC
+    BCCCCC
+    BCCCCC
+    BCCCCC
+    CCCCCC
+    CCCCCC
+    CCCCCC
+    CCCCCB
+    ACCCCB
+    ACCCCB
+    ABCCBB
+Ball @5 ellipse #ffe6b3 15,11 1,1 fill = 14,10 16,12 #ffe6b3
+Ball @5 pencil #ffe6b3 size 1 ~
+Ball @6 ellipse #1e2749 16,10 5,7 fill = 11,3 11x15
+    ....AAA....
+    ..AAAAAAA..
+    .AAAAAAAAA.
+    .AAAAAAAAA.
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    AAAAAAAAAAA
+    .AAAAAAAAA.
+    .AAAAAAAAA.
+    ..AAAAAAA..
+    ....AAA....
+Ball @6 ellipse #d52d4b 16,10 4,6 fill = 12,4 9x13
+    .AABBBAA.
+    AABBBBBAA
+    ABBBBBBBA
+    ABBBBBBBA
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    ABBBBBBBA
+    ABBBBBBBA
+    AABBBBBAA
+    .AABBBAA.
+Ball @6 polygon #ff6952 fill = 13,5 7x11
+    ACCCCBA
+    BCCCCCB
+    CCCCCCB
+    CCCCCCC
+    CCCCCCC
+    CCCCCCC
+    CCCCCCB
+    CCCCCCB
+    BCCCCCB
+    BBCCCBB
+    ABBCBBA
+Ball @6 ellipse #ffe6b3 14,6 1,1 fill = 13,5 15,7 #ffe6b3
+Ball @6 pencil #ffe6b3 size 1 ~
+Ball @7 ellipse #1e2749 16,7 6,6 fill = 10,1 13x13
+    ....AAAAA....
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ....AAAAA....
+Ball @7 ellipse #d52d4b 16,7 5,5 fill = 11,2 11x11
+    .AABBBBBAA.
+    AABBBBBBBAA
+    ABBBBBBBBBA
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    ABBBBBBBBBA
+    AABBBBBBBAA
+    .AABBBBBAA.
+Ball @7 polygon #ff6952 fill = 13,3 8x9
+    BCCCBBBA
+    BCCCCCBB
+    CCCCCCCB
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCB
+    CCCCCCCB
+    BCCCCCBB
+    BBBCBBBA
+Ball @7 ellipse #ffe6b3 14,4 1,1 fill = 13,3 15,5 #ffe6b3
+Ball @7 pencil #ffe6b3 size 1 ~
+Ball @8 ellipse #1e2749 16,6 6,6 fill = 10,0 13x13
+    ....AAAAA....
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ....AAAAA....
+Ball @8 ellipse #d52d4b 16,6 5,5 fill = 11,1 11x11
+    .AABBBBBAA.
+    AABBBBBBBAA
+    ABBBBBBBBBA
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    ABBBBBBBBBA
+    AABBBBBBBAA
+    .AABBBBBAA.
+Ball @8 polygon #ff6952 fill = 13,2 8x9
+    BCCCBBBA
+    BCCCCCBB
+    CCCCCCCB
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCB
+    CCCCCCCB
+    BCCCCCBB
+    BBBCBBBA
+Ball @8 ellipse #ffe6b3 14,3 1,1 fill = 13,2 15,4 #ffe6b3
+Ball @8 pencil #ffe6b3 size 1 ~
+Ball @9 ellipse #1e2749 16,6 6,6 fill = 10,0 13x13
+    ....AAAAA....
+    ..AAAAAAAAA..
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    AAAAAAAAAAAAA
+    .AAAAAAAAAAA.
+    .AAAAAAAAAAA.
+    ..AAAAAAAAA..
+    ....AAAAA....
+Ball @9 ellipse #d52d4b 16,6 5,5 fill = 11,1 11x11
+    .AABBBBBAA.
+    AABBBBBBBAA
+    ABBBBBBBBBA
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    ABBBBBBBBBA
+    AABBBBBBBAA
+    .AABBBBBAA.
+Ball @9 polygon #ff6952 fill = 13,2 8x9
+    BCCCBBBA
+    BCCCCCBB
+    CCCCCCCB
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCB
+    CCCCCCCB
+    BCCCCCBB
+    BBBCBBBA
+Ball @9 ellipse #ffe6b3 14,3 1,1 fill = 13,2 15,4 #ffe6b3
+Ball @9 pencil #ffe6b3 size 1 ~
 add_tag name=bounce direction=forward from=0 to=9

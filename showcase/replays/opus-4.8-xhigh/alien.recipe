@@ -1,220 +1,208 @@
-atelier 4 0bd5608a-2d2e-44c8-beb7-be12dea4a1b9 0.1.0
+atelier 5 0bd5608a-2d2e-44c8-beb7-be12dea4a1b9 0.1.0
 new name=green-alien-idle width=32 height=32
-palette op=set colors=#14281c,#2e663c,#56b05c,#96e08c
-layer op=rename index=0 name=body
-layer op=add name=head
-layer op=add name=antennae
-layer op=add name=eyes
-paint_grid layer=1 frame=0 x=8 y=5 legend=o:2 rows:15
-  |....oooooooo....|
-  |...oooooooooo...|
-  |..oooooooooooo..|
-  |.oooooooooooooo.|
-  |oooooooooooooooo|
-  |oooooooooooooooo|
-  |oooooooooooooooo|
-  |.oooooooooooooo.|
-  |..oooooooooooo..|
-  |...oooooooooo...|
-  |....oooooooo....|
-  |.....oooooo.....|
-  |......oooo......|
-  |......oooo......|
-  |.......oo.......|
-paint_grid layer=0 frame=0 x=12 y=20 legend=o:2 rows:8
-  |..oooo..|
-  |.oooooo.|
-  |oooooooo|
-  |oooooooo|
-  |oooooooo|
-  |.oooooo.|
-  |.oooooo.|
-  |..oooo..|
-paint_grid layer=2 frame=0 x=10 y=2 legend=b:2,s:0 rows:3
-  |bb........bb|
-  |bbs......sbb|
-  |...s....s...|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=8 y=5 legend=D:0,L:3,S:1,o:2 rows:17
-  |......DLLD......|
-  |....DLLLLLLD....|
-  |..DLLLLLLLLLLD..|
-  |.DLLLLLLLLLLLLD.|
-  |DooooooooooooooD|
-  |DooooooooooooooD|
-  |DooooooooooooooD|
-  |.DooooooooooooD.|
-  |..DooooooooooD..|
-  |..DooooooooooD..|
-  |...DSSSSSSSSD...|
-  |...DSSSSSSSSD...|
-  |....DSSSSSSD....|
-  |.....DSSSSD.....|
-  |.....DSSSSD.....|
-  |......DSSD......|
-  |.......DD.......|
-paint_grid layer=0 frame=0 x=12 y=22 legend=D:0,S:1,o:2 rows:8
-  |..DooD..|
-  |.DooooD.|
-  |DooooooD|
-  |DooooooD|
-  |DSSSSSSD|
-  |.DSSSSD.|
-  |.DSSSSD.|
-  |..DSSD..|
-paint_grid layer=2 frame=0 x=10 y=3 legend=D:0,L:3,o:2 rows:3
-  |LL........LL|
-  |ooD......Doo|
-  |...D....D...|
-paint_grid layer=3 frame=0 x=10 y=10 legend=e:0 rows:4
-  |eee......eee|
-  |eeee....eeee|
-  |.eeee..eeee.|
-  |..eee..eee..|
-frame op=add copy_from=0 count=9
-fx op=shift layer=0 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=1 dx=0 dy=-1 wrap=false
-region op=clear layer=2 frame=2 rect=8,2,16,5
-paint_grid layer=2 frame=2 x=9 y=3 legend=D:0,L:3,o:2 rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
-fx op=shift layer=0 frame=2 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=2 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=2 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=2 dx=0 dy=-1 wrap=false
-region op=clear layer=2 frame=3 rect=8,2,16,5
-paint_grid layer=2 frame=3 x=9 y=3 legend=D:0,L:3,o:2 rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
-fx op=shift layer=0 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=3 frame=3 dx=0 dy=-2 wrap=false
-region op=clear layer=2 frame=4 rect=8,2,16,5
-paint_grid layer=2 frame=4 x=9 y=3 legend=D:0,L:3,o:2 rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
-fx op=shift layer=0 frame=4 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=4 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=4 dx=0 dy=-2 wrap=false
-fx op=shift layer=3 frame=4 dx=0 dy=-2 wrap=false
-region op=clear layer=2 frame=5 rect=8,2,16,5
-paint_grid layer=2 frame=5 x=9 y=3 legend=D:0,L:3,o:2 rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
-fx op=shift layer=0 frame=5 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=5 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=5 dx=0 dy=-2 wrap=false
-fx op=shift layer=3 frame=5 dx=0 dy=-2 wrap=false
-region op=clear layer=2 frame=6 rect=8,2,16,5
-paint_grid layer=2 frame=6 x=9 y=3 legend=D:0,L:3,o:2 rows:3
-  |LL..........LL|
-  |ooD........Doo|
-  |...D......D...|
-region op=clear layer=3 frame=6 rect=10,10,12,4
-paint_grid layer=3 frame=6 x=11 y=12 legend=e:0 rows:2
-  |eeee..eeee|
-  |.eee..eee.|
-fx op=shift layer=0 frame=6 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=6 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=6 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=6 dx=0 dy=-1 wrap=false
-region op=clear layer=3 frame=7 rect=10,10,12,4
-paint_grid layer=3 frame=7 x=12 y=13 legend=e:0 rows:1
-  |eee..eee|
-fx op=shift layer=0 frame=7 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=7 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=7 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=7 dx=0 dy=-1 wrap=false
-region op=clear layer=3 frame=8 rect=10,10,12,4
-paint_grid layer=3 frame=8 x=11 y=12 legend=e:0 rows:2
-  |eeee..eeee|
-  |.eee..eee.|
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=delete frame=1
-frame op=add copy_from=0 count=9
-fx op=shift layer=0 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=1 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=1 dx=0 dy=-1 wrap=false
-paint_grid layer=2 frame=2 x=8 y=2 replace=true legend=D:0,L:3,o:2 rows:5
-  |................|
-  |.LL..........LL.|
-  |.ooD........Doo.|
-  |....D......D....|
-  |................|
-fx op=shift layer=0 frame=2 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=2 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=2 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=2 dx=0 dy=-1 wrap=false
-paint_grid layer=2 frame=3 x=8 y=2 replace=true legend=D:0,L:3,o:2 rows:5
-  |................|
-  |.LL..........LL.|
-  |.ooD........Doo.|
-  |....D......D....|
-  |................|
-fx op=shift layer=0 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=3 dx=0 dy=-2 wrap=false
-fx op=shift layer=3 frame=3 dx=0 dy=-2 wrap=false
-paint_grid layer=2 frame=4 x=8 y=2 replace=true legend=D:0,L:3,o:2 rows:5
-  |................|
-  |.LL..........LL.|
-  |.ooD........Doo.|
-  |....D......D....|
-  |................|
-fx op=shift layer=0 frame=4 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=4 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=4 dx=0 dy=-2 wrap=false
-fx op=shift layer=3 frame=4 dx=0 dy=-2 wrap=false
-paint_grid layer=2 frame=5 x=8 y=2 replace=true legend=D:0,L:3,o:2 rows:5
-  |................|
-  |.LL..........LL.|
-  |.ooD........Doo.|
-  |....D......D....|
-  |................|
-fx op=shift layer=0 frame=5 dx=0 dy=-2 wrap=false
-fx op=shift layer=1 frame=5 dx=0 dy=-2 wrap=false
-fx op=shift layer=2 frame=5 dx=0 dy=-2 wrap=false
-fx op=shift layer=3 frame=5 dx=0 dy=-2 wrap=false
-paint_grid layer=2 frame=6 x=8 y=2 replace=true legend=D:0,L:3,o:2 rows:5
-  |................|
-  |.LL..........LL.|
-  |.ooD........Doo.|
-  |....D......D....|
-  |................|
-region op=clear layer=3 frame=6 rect=9,9,22,14
-paint_grid layer=3 frame=6 x=11 y=12 legend=e:0 rows:2
-  |eeee..eeee|
-  |.eee..eee.|
-fx op=shift layer=0 frame=6 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=6 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=6 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=6 dx=0 dy=-1 wrap=false
-region op=clear layer=3 frame=7 rect=9,9,22,14
-paint_grid layer=3 frame=7 x=12 y=13 legend=e:0 rows:1
-  |eee..eee|
-fx op=shift layer=0 frame=7 dx=0 dy=-1 wrap=false
-fx op=shift layer=1 frame=7 dx=0 dy=-1 wrap=false
-fx op=shift layer=2 frame=7 dx=0 dy=-1 wrap=false
-fx op=shift layer=3 frame=7 dx=0 dy=-1 wrap=false
-region op=clear layer=3 frame=8 rect=9,9,22,14
-paint_grid layer=3 frame=8 x=11 y=12 legend=e:0 rows:2
-  |eeee..eeee|
-  |.eee..eee.|
+palette set colors=#14281c,#2e663c,#56b05c,#96e08c
+layer rename index=0 name=body
+layer add name=head
+layer add name=antennae
+layer add name=eyes
+legend A=#56b05c
+head @0 grid 8,5 = 8,5 16x15
+    ....AAAAAAAA....
+    ...AAAAAAAAAA...
+    ..AAAAAAAAAAAA..
+    .AAAAAAAAAAAAAA.
+    AAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAA
+    AAAAAAAAAAAAAAAA
+    .AAAAAAAAAAAAAA.
+    ..AAAAAAAAAAAA..
+    ...AAAAAAAAAA...
+    ....AAAAAAAA....
+    .....AAAAAA.....
+    ......AAAA......
+    ......AAAA......
+    .......AA.......
+body @0 grid 12,20 = 12,20 8x8
+    ..AAAA..
+    .AAAAAA.
+    AAAAAAAA
+    AAAAAAAA
+    AAAAAAAA
+    .AAAAAA.
+    .AAAAAA.
+    ..AAAA..
+legend B=#14281c
+antennae @0 grid 10,2 = 10,2 12x3
+    AA........AA
+    AAB......BAA
+    ...B....B...
+body @0 clear 0,0 32,32 = 12,20 19,27 .
+head @0 clear 0,0 32,32 = 8,5 23,19 .
+antennae @0 clear 0,0 32,32 = 10,2 21,4 .
+legend C=#96e08c D=#2e663c
+head @0 grid 8,5 = 8,5 16x17
+    ......BCCB......
+    ....BCCCCCCB....
+    ..BCCCCCCCCCCB..
+    .BCCCCCCCCCCCCB.
+    BAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAB
+    BAAAAAAAAAAAAAAB
+    .BAAAAAAAAAAAAB.
+    ..BAAAAAAAAAAB..
+    ..BAAAAAAAAAAB..
+    ...BDDDDDDDDB...
+    ...BDDDDDDDDB...
+    ....BDDDDDDB....
+    .....BDDDDB.....
+    .....BDDDDB.....
+    ......BDDB......
+    .......BB.......
+body @0 grid 12,22 = 12,22 8x8
+    ..BAAB..
+    .BAAAAB.
+    BAAAAAAB
+    BAAAAAAB
+    BDDDDDDB
+    .BDDDDB.
+    .BDDDDB.
+    ..BDDB..
+antennae @0 grid 10,3 = 10,3 12x3
+    CC........CC
+    AAB......BAA
+    ...B....B...
+eyes @0 grid 10,10 = 10,10 12x4
+    BBB......BBB
+    BBBB....BBBB
+    .BBBB..BBBB.
+    ..BBB..BBB..
+frame add copy_from=0 count=9
+body @1 shift dx=0 dy=-1 wrap=false
+head @1 shift dx=0 dy=-1 wrap=false
+antennae @1 shift dx=0 dy=-1 wrap=false
+eyes @1 shift dx=0 dy=-1 wrap=false
+antennae @2 clear 8,2 16,5 = 10,3 13,5 .
+antennae @2 grid 9,3 = 9,3 14x3
+    CC.........CCC
+    AAB.......BBAA
+    ...B.....BB...
+body @2 shift dx=0 dy=-1 wrap=false
+head @2 shift dx=0 dy=-1 wrap=false
+antennae @2 shift dx=0 dy=-1 wrap=false
+eyes @2 shift dx=0 dy=-1 wrap=false
+antennae @3 clear 8,2 16,5 = 10,3 13,5 .
+antennae @3 grid 9,3 = 9,3 14x3
+    CC.........CCC
+    AAB.......BBAA
+    ...B.....BB...
+body @3 shift dx=0 dy=-2 wrap=false
+head @3 shift dx=0 dy=-2 wrap=false
+antennae @3 shift dx=0 dy=-2 wrap=false
+eyes @3 shift dx=0 dy=-2 wrap=false
+antennae @4 clear 8,2 16,5 = 10,3 13,5 .
+antennae @4 grid 9,3 = 9,3 14x3
+    CC.........CCC
+    AAB.......BBAA
+    ...B.....BB...
+body @4 shift dx=0 dy=-2 wrap=false
+head @4 shift dx=0 dy=-2 wrap=false
+antennae @4 shift dx=0 dy=-2 wrap=false
+eyes @4 shift dx=0 dy=-2 wrap=false
+antennae @5 clear 8,2 16,5 = 10,3 13,5 .
+antennae @5 grid 9,3 = 9,3 14x3
+    CC.........CCC
+    AAB.......BBAA
+    ...B.....BB...
+body @5 shift dx=0 dy=-2 wrap=false
+head @5 shift dx=0 dy=-2 wrap=false
+antennae @5 shift dx=0 dy=-2 wrap=false
+eyes @5 shift dx=0 dy=-2 wrap=false
+antennae @6 clear 8,2 16,5 = 10,3 13,5 .
+antennae @6 grid 9,3 = 9,3 14x3
+    CC.........CCC
+    AAB.......BBAA
+    ...B.....BB...
+eyes @6 clear 10,10 12,4 = 10,10 12,10 .
+eyes @6 grid 11,12 ~
+body @6 shift dx=0 dy=-1 wrap=false
+head @6 shift dx=0 dy=-1 wrap=false
+antennae @6 shift dx=0 dy=-1 wrap=false
+eyes @6 shift dx=0 dy=-1 wrap=false
+eyes @7 clear 10,10 12,4 = 10,10 12,10 .
+eyes @7 grid 12,13 ~
+body @7 shift dx=0 dy=-1 wrap=false
+head @7 shift dx=0 dy=-1 wrap=false
+antennae @7 shift dx=0 dy=-1 wrap=false
+eyes @7 shift dx=0 dy=-1 wrap=false
+eyes @8 clear 10,10 12,4 = 10,10 12,10 .
+eyes @8 grid 11,12 ~
+frame delete frame=1
+frame delete frame=1
+frame delete frame=1
+frame delete frame=1
+frame delete frame=1
+frame delete frame=1
+frame delete frame=1
+frame delete frame=1
+frame delete frame=1
+frame add copy_from=0 count=9
+body @1 shift dx=0 dy=-1 wrap=false
+head @1 shift dx=0 dy=-1 wrap=false
+antennae @1 shift dx=0 dy=-1 wrap=false
+eyes @1 shift dx=0 dy=-1 wrap=false
+antennae @2 grid 8,2 replace = 9,3 14x3
+    CC..........CC
+    AAB........BAA
+    ...B......B...
+body @2 shift dx=0 dy=-1 wrap=false
+head @2 shift dx=0 dy=-1 wrap=false
+antennae @2 shift dx=0 dy=-1 wrap=false
+eyes @2 shift dx=0 dy=-1 wrap=false
+antennae @3 grid 8,2 replace = 9,3 14x3
+    CC..........CC
+    AAB........BAA
+    ...B......B...
+body @3 shift dx=0 dy=-2 wrap=false
+head @3 shift dx=0 dy=-2 wrap=false
+antennae @3 shift dx=0 dy=-2 wrap=false
+eyes @3 shift dx=0 dy=-2 wrap=false
+antennae @4 grid 8,2 replace = 9,3 14x3
+    CC..........CC
+    AAB........BAA
+    ...B......B...
+body @4 shift dx=0 dy=-2 wrap=false
+head @4 shift dx=0 dy=-2 wrap=false
+antennae @4 shift dx=0 dy=-2 wrap=false
+eyes @4 shift dx=0 dy=-2 wrap=false
+antennae @5 grid 8,2 replace = 9,3 14x3
+    CC..........CC
+    AAB........BAA
+    ...B......B...
+body @5 shift dx=0 dy=-2 wrap=false
+head @5 shift dx=0 dy=-2 wrap=false
+antennae @5 shift dx=0 dy=-2 wrap=false
+eyes @5 shift dx=0 dy=-2 wrap=false
+antennae @6 grid 8,2 replace = 9,3 14x3
+    CC..........CC
+    AAB........BAA
+    ...B......B...
+eyes @6 clear 9,9 22,14 = 10,10 21,13 .
+eyes @6 grid 11,12 = 11,12 10x2
+    BBBB..BBBB
+    .BBB..BBB.
+body @6 shift dx=0 dy=-1 wrap=false
+head @6 shift dx=0 dy=-1 wrap=false
+antennae @6 shift dx=0 dy=-1 wrap=false
+eyes @6 shift dx=0 dy=-1 wrap=false
+eyes @7 clear 9,9 22,14 = 10,10 21,13 .
+eyes @7 grid 12,13 = 12,13 8x1
+    BBB..BBB
+body @7 shift dx=0 dy=-1 wrap=false
+head @7 shift dx=0 dy=-1 wrap=false
+antennae @7 shift dx=0 dy=-1 wrap=false
+eyes @7 shift dx=0 dy=-1 wrap=false
+eyes @8 clear 9,9 22,14 = 10,10 21,13 .
+eyes @8 grid 11,12 = 11,12 10x2
+    BBBB..BBBB
+    .BBB..BBB.
 add_tag name=idle direction=forward from=0 to=9

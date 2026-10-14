@@ -1,960 +1,3856 @@
-atelier 4 7c2f3e7f-1b08-4704-a24a-f1f95933e5fa 0.1.0
+atelier 5 7c2f3e7f-1b08-4704-a24a-f1f95933e5fa 0.1.0
 new name=explosion width=32 height=32
-layer op=rename index=0 name=smoke
-layer op=add name=debris
-layer op=add name=sparks
-layer op=add name=core
-palette op=set colors=#fff4c2,#ffc628,#f2781c,#a8321e,#6b5a63,#2e2630
-layer op=set index=1 name=debris
-frame op=add count=9
-draw op=ellipse layer=3 frame=0 color=#fff4c2 cx=16 cy=17 fill=true rx=3 ry=3
-draw op=pencil layer=2 frame=9 color=#ffc628 points=20,2 22,3
-draw op=pencil layer=2 frame=9 color=#ffc628 erase=true points=[[22,3]]
-draw op=rect layer=2 frame=9 color=#ffc628 fill=true x0=10 x1=11 y0=10 y1=11
-draw op=line layer=2 frame=9 color=#ffc628 x0=2 x1=8 y0=2 y1=5
-draw op=clear_cel layer=2 frame=9
-draw op=clear_cel layer=3 frame=0
-draw op=pencil layer=2 frame=9 color=#ffc628 points=20,2 22,3 5,5 6,5
-draw op=pencil layer=2 frame=9 color=#ffc628 erase=true points=[[22,3]] size=1
-draw op=rect layer=2 frame=9 color=#ffc628 erase=true fill=true x0=5 x1=5 y0=5 y1=5
-draw op=ellipse layer=2 frame=9 color=#ffc628 cx=20 cy=2 erase=true fill=true rx=1 ry=1
-draw op=rect layer=2 frame=9 color=#00000000 erase=true fill=true x0=5 x1=5 y0=5 y1=5
-draw op=rect layer=2 frame=9 color=#ff0000 erase=true fill=true x0=6 x1=6 y0=5 y1=5
-draw op=line layer=2 frame=9 color=#ff0000 erase=true x0=20 x1=22 y0=2 y1=3
-draw op=clear_cel layer=3 frame=0 frame_to=9
-draw op=ellipse layer=3 frame=0 color=#ffc628 cx=16 cy=18 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=0 color=#fff4c2 cx=16 cy=18 fill=true rx=2 ry=2
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=28 y0=18 y1=18
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=4 y0=18 y1=18
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=16 y0=18 y1=29
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=16 y0=18 y1=5
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=25 y0=18 y1=27
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=7 y0=18 y1=9
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=25 y0=18 y1=9
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=7 y0=18 y1=27
-draw op=ellipse layer=3 frame=1 color=#f2781c cx=16 cy=18 fill=true rx=8 ry=8
-draw op=ellipse layer=3 frame=1 color=#ffc628 cx=16 cy=18 fill=true rx=6 ry=6
-draw op=ellipse layer=3 frame=1 color=#fff4c2 cx=16 cy=18 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=16 cy=18 fill=true rx=7 ry=7
-draw op=ellipse layer=3 frame=2 color=#ffc628 cx=16 cy=18 fill=true rx=5 ry=5
-draw op=ellipse layer=3 frame=2 color=#fff4c2 cx=16 cy=18 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=16 cy=18 fill=true rx=6 ry=6
-draw op=ellipse layer=3 frame=3 color=#f2781c cx=16 cy=18 fill=true rx=5 ry=5
-draw op=ellipse layer=3 frame=3 color=#ffc628 cx=16 cy=18 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=4 color=#a8321e cx=16 cy=19 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=4 color=#f2781c cx=16 cy=19 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=4 color=#ffc628 cx=16 cy=19 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=5 color=#a8321e cx=16 cy=19 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=5 color=#f2781c cx=16 cy=19 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=6 color=#a8321e cx=16 cy=19 fill=true rx=1 ry=1
-draw op=clear_cel layer=0 frame=0 frame_to=9
-draw op=ellipse layer=0 frame=3 color=#2e2630 cx=16 cy=12 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=3 color=#2e2630 cx=12 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#2e2630 cx=20 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#6b5a63 cx=17 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#6b5a63 cx=13 cy=15 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=3 color=#6b5a63 cx=21 cy=15 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=16 cy=10 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=11 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=21 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=16 cy=14 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=17 cy=11 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=12 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=22 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=17 cy=15 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=17 cy=8 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=12 cy=11 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=22 cy=10 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=16 cy=13 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=15 cy=16 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=18 cy=9 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=13 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=23 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=17 cy=14 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=16 cy=17 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=18 cy=6 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=13 cy=9 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=23 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=16 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=15 cy=15 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=19 cy=7 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=14 cy=10 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=24 cy=9 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=17 cy=13 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=16 cy=16 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=19 cy=4 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=14 cy=7 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=23 cy=6 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=17 cy=10 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=20 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=15 cy=8 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=24 cy=7 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=18 cy=11 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#2e2630 cx=20 cy=3 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=8 color=#2e2630 cx=16 cy=6 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#6b5a63 cx=21 cy=4 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#6b5a63 cx=17 cy=7 fill=true rx=1 ry=1
-draw op=clear_cel layer=0 frame=0 frame_to=9
-draw op=ellipse layer=0 frame=3 color=#2e2630 cx=16 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=3 color=#2e2630 cx=12 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#2e2630 cx=20 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#6b5a63 cx=17 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#6b5a63 cx=13 cy=13 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=3 color=#6b5a63 cx=21 cy=13 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=16 cy=11 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=11 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=21 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#2e2630 cx=16 cy=14 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=17 cy=10 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=12 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=22 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#6b5a63 cx=17 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=16 cy=15 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=15 cy=12 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=15 cy=9 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=5 color=#2e2630 cx=20 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=17 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=16 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=16 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#6b5a63 cx=21 cy=7 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=16 cy=15 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=16 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=16 cy=9 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=19 cy=6 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=23 cy=6 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=24 cy=9 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#2e2630 cx=22 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=17 cy=14 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=17 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=17 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=20 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=24 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=25 cy=8 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#6b5a63 cx=23 cy=10 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=19 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=21 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=24 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#2e2630 cx=25 cy=8 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=20 cy=7 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=22 cy=4 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=25 cy=4 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#6b5a63 cx=26 cy=7 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#2e2630 cx=22 cy=4 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#2e2630 cx=24 cy=6 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#6b5a63 cx=23 cy=3 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#6b5a63 cx=25 cy=5 fill=true rx=1 ry=1
-draw op=clear_cel layer=2 frame=2 frame_to=6
-draw op=clear_cel layer=2 frame=0 frame_to=1
-draw op=clear_cel layer=2 frame=7 frame_to=9
-draw op=line layer=2 frame=2 color=#ffc628 x0=16 x1=15 y0=15 y1=12
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[15,12]]
-draw op=line layer=2 frame=3 color=#f2781c x0=15 x1=14 y0=13 y1=10
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[14,10]]
-draw op=line layer=2 frame=4 color=#f2781c x0=16 x1=14 y0=11 y1=10
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[14,10]]
-draw op=line layer=2 frame=5 color=#a8321e x0=14 x1=14 y0=8 y1=10
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[14,10]]
-draw op=line layer=2 frame=6 color=#a8321e x0=14 x1=14 y0=12 y1=13
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[14,13]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=17 x1=19 y0=16 y1=13
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[19,13]]
-draw op=line layer=2 frame=3 color=#f2781c x0=18 x1=20 y0=14 y1=12
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[20,12]]
-draw op=line layer=2 frame=4 color=#f2781c x0=19 x1=21 y0=11 y1=11
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[21,11]]
-draw op=line layer=2 frame=5 color=#a8321e x0=21 x1=22 y0=11 y1=13
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[22,13]]
-draw op=line layer=2 frame=6 color=#a8321e x0=22 x1=22 y0=14 y1=15
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[22,15]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=19 x1=22 y0=16 y1=15
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[22,15]]
-draw op=line layer=2 frame=3 color=#f2781c x0=22 x1=25 y0=15 y1=15
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[25,15]]
-draw op=line layer=2 frame=4 color=#f2781c x0=25 x1=27 y0=14 y1=15
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[27,15]]
-draw op=line layer=2 frame=5 color=#a8321e x0=27 x1=28 y0=15 y1=16
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[28,16]]
-draw op=line layer=2 frame=6 color=#a8321e x0=29 x1=29 y0=18 y1=19
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[29,19]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=19 x1=22 y0=18 y1=19
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[22,19]]
-draw op=line layer=2 frame=3 color=#f2781c x0=22 x1=25 y0=19 y1=20
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[25,20]]
-draw op=line layer=2 frame=4 color=#f2781c x0=26 x1=27 y0=21 y1=22
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[27,22]]
-draw op=line layer=2 frame=5 color=#a8321e x0=28 x1=29 y0=23 y1=25
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[29,25]]
-draw op=line layer=2 frame=6 color=#a8321e x0=30 x1=30 y0=26 y1=27
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[30,27]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=18 x1=20 y0=19 y1=21
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[20,21]]
-draw op=line layer=2 frame=3 color=#f2781c x0=20 x1=22 y0=21 y1=24
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[22,24]]
-draw op=line layer=2 frame=4 color=#f2781c x0=22 x1=23 y0=24 y1=27
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[23,27]]
-draw op=line layer=2 frame=5 color=#a8321e x0=23 x1=24 y0=28 y1=29
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[24,29]]
-draw op=line layer=2 frame=6 color=#a8321e x0=24 x1=24 y0=32 y1=33
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[24,33]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=16 x1=17 y0=19 y1=22
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[17,22]]
-draw op=line layer=2 frame=3 color=#f2781c x0=17 x1=18 y0=22 y1=25
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[18,25]]
-draw op=line layer=2 frame=4 color=#f2781c x0=18 x1=18 y0=25 y1=28
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[18,28]]
-draw op=line layer=2 frame=5 color=#a8321e x0=18 x1=18 y0=28 y1=30
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[18,30]]
-draw op=line layer=2 frame=6 color=#a8321e x0=18 x1=18 y0=32 y1=33
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[18,33]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=15 x1=14 y0=19 y1=22
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[14,22]]
-draw op=line layer=2 frame=3 color=#f2781c x0=14 x1=14 y0=22 y1=25
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[14,25]]
-draw op=line layer=2 frame=4 color=#f2781c x0=13 x1=13 y0=26 y1=28
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[13,28]]
-draw op=line layer=2 frame=5 color=#a8321e x0=13 x1=12 y0=29 y1=31
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[12,31]]
-draw op=line layer=2 frame=6 color=#a8321e x0=12 x1=12 y0=33 y1=34
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[12,34]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=14 x1=12 y0=19 y1=21
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[12,21]]
-draw op=line layer=2 frame=3 color=#f2781c x0=11 x1=9 y0=21 y1=23
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[9,23]]
-draw op=line layer=2 frame=4 color=#f2781c x0=9 x1=8 y0=24 y1=26
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[8,26]]
-draw op=line layer=2 frame=5 color=#a8321e x0=7 x1=6 y0=27 y1=29
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[6,29]]
-draw op=line layer=2 frame=6 color=#a8321e x0=6 x1=6 y0=31 y1=32
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[6,32]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=13 x1=11 y0=16 y1=15
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[11,15]]
-draw op=line layer=2 frame=3 color=#f2781c x0=11 x1=8 y0=15 y1=15
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[8,15]]
-draw op=line layer=2 frame=4 color=#f2781c x0=8 x1=6 y0=14 y1=15
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[6,15]]
-draw op=line layer=2 frame=5 color=#a8321e x0=6 x1=5 y0=15 y1=17
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[5,17]]
-draw op=line layer=2 frame=6 color=#a8321e x0=4 x1=4 y0=18 y1=19
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[4,19]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=15 x1=13 y0=17 y1=15
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[13,15]]
-draw op=line layer=2 frame=3 color=#f2781c x0=15 x1=12 y0=15 y1=14
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[12,14]]
-draw op=line layer=2 frame=4 color=#f2781c x0=13 x1=11 y0=13 y1=14
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[11,14]]
-draw op=line layer=2 frame=5 color=#a8321e x0=11 x1=10 y0=14 y1=15
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[10,15]]
-draw op=line layer=2 frame=6 color=#a8321e x0=10 x1=10 y0=17 y1=18
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[10,18]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=16 x1=17 y0=17 y1=14
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[17,14]]
-draw op=line layer=2 frame=3 color=#f2781c x0=16 x1=17 y0=16 y1=13
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[17,13]]
-draw op=line layer=2 frame=4 color=#f2781c x0=16 x1=17 y0=11 y1=13
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[17,13]]
-draw op=line layer=2 frame=5 color=#a8321e x0=17 x1=17 y0=13 y1=14
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[17,14]]
-draw op=line layer=2 frame=6 color=#a8321e x0=18 x1=18 y0=16 y1=17
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[18,17]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=16 x1=18 y0=18 y1=16
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[18,16]]
-draw op=line layer=2 frame=3 color=#f2781c x0=17 x1=20 y0=16 y1=15
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[20,15]]
-draw op=line layer=2 frame=4 color=#f2781c x0=19 x1=21 y0=14 y1=16
-draw op=pencil layer=2 frame=4 color=#ffc628 points=[[21,16]]
-draw op=line layer=2 frame=5 color=#a8321e x0=21 x1=21 y0=16 y1=17
-draw op=pencil layer=2 frame=5 color=#f2781c points=[[21,17]]
-draw op=line layer=2 frame=6 color=#a8321e x0=22 x1=22 y0=19 y1=20
-draw op=pencil layer=2 frame=6 color=#a8321e points=[[22,20]]
-draw op=clear_cel layer=2 frame=0 frame_to=9
-draw op=line layer=2 frame=2 color=#ffc628 x0=14 x1=12 y0=13 y1=9
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[12,9]]
-draw op=line layer=2 frame=3 color=#f2781c x0=13 x1=11 y0=10 y1=7
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[11,7]]
-draw op=line layer=2 frame=4 color=#a8321e x0=13 x1=11 y0=5 y1=6
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[11,6]]
-draw op=line layer=2 frame=5 color=#a8321e x0=10 x1=10 y0=6 y1=8
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[10,8]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=18 x1=19 y0=13 y1=9
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[19,9]]
-draw op=line layer=2 frame=3 color=#f2781c x0=18 x1=20 y0=10 y1=7
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[20,7]]
-draw op=line layer=2 frame=4 color=#a8321e x0=18 x1=20 y0=5 y1=7
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[20,7]]
-draw op=line layer=2 frame=5 color=#a8321e x0=20 x1=20 y0=7 y1=8
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[20,8]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=21 x1=24 y0=15 y1=13
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[24,13]]
-draw op=line layer=2 frame=3 color=#f2781c x0=24 x1=27 y0=13 y1=12
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[27,12]]
-draw op=line layer=2 frame=4 color=#a8321e x0=26 x1=28 y0=10 y1=12
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[28,12]]
-draw op=line layer=2 frame=5 color=#a8321e x0=28 x1=28 y0=12 y1=13
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[28,13]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=22 x1=26 y0=18 y1=19
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[26,19]]
-draw op=line layer=2 frame=3 color=#f2781c x0=26 x1=29 y0=18 y1=19
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[29,19]]
-draw op=line layer=2 frame=4 color=#a8321e x0=29 x1=31 y0=19 y1=20
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[31,20]]
-draw op=line layer=2 frame=5 color=#a8321e x0=31 x1=31 y0=21 y1=22
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[31,22]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=19 x1=22 y0=20 y1=22
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[22,22]]
-draw op=line layer=2 frame=3 color=#f2781c x0=22 x1=24 y0=22 y1=25
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[24,25]]
-draw op=line layer=2 frame=4 color=#a8321e x0=24 x1=25 y0=24 y1=26
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[25,26]]
-draw op=line layer=2 frame=5 color=#a8321e x0=25 x1=25 y0=26 y1=28
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[25,28]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=17 x1=18 y0=20 y1=24
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[18,24]]
-draw op=line layer=2 frame=3 color=#f2781c x0=18 x1=18 y0=23 y1=26
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[18,26]]
-draw op=line layer=2 frame=4 color=#a8321e x0=18 x1=19 y0=26 y1=28
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[19,28]]
-draw op=line layer=2 frame=5 color=#a8321e x0=19 x1=19 y0=29 y1=30
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[19,30]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=15 x1=14 y0=20 y1=24
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[14,24]]
-draw op=line layer=2 frame=3 color=#f2781c x0=14 x1=14 y0=23 y1=26
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[14,26]]
-draw op=line layer=2 frame=4 color=#a8321e x0=14 x1=13 y0=26 y1=28
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[13,28]]
-draw op=line layer=2 frame=5 color=#a8321e x0=13 x1=13 y0=29 y1=30
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[13,30]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=13 x1=9 y0=20 y1=23
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[9,23]]
-draw op=line layer=2 frame=3 color=#f2781c x0=10 x1=7 y0=22 y1=25
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[7,25]]
-draw op=line layer=2 frame=4 color=#a8321e x0=7 x1=6 y0=24 y1=27
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[6,27]]
-draw op=line layer=2 frame=5 color=#a8321e x0=6 x1=6 y0=27 y1=28
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[6,28]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=11 x1=7 y0=15 y1=14
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[7,14]]
-draw op=line layer=2 frame=3 color=#f2781c x0=8 x1=4 y0=13 y1=13
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[4,13]]
-draw op=line layer=2 frame=4 color=#a8321e x0=5 x1=3 y0=12 y1=13
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[3,13]]
-draw op=line layer=2 frame=5 color=#a8321e x0=3 x1=3 y0=13 y1=14
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[3,14]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=16 x1=16 y0=16 y1=12
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[16,12]]
-draw op=line layer=2 frame=3 color=#f2781c x0=16 x1=16 y0=14 y1=10
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[16,10]]
-draw op=line layer=2 frame=4 color=#a8321e x0=16 x1=16 y0=8 y1=10
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[16,10]]
-draw op=line layer=2 frame=5 color=#a8321e x0=16 x1=16 y0=10 y1=12
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[16,12]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=13 x1=9 y0=18 y1=18
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[9,18]]
-draw op=line layer=2 frame=3 color=#f2781c x0=10 x1=6 y0=18 y1=19
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[6,19]]
-draw op=line layer=2 frame=4 color=#a8321e x0=7 x1=5 y0=18 y1=20
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[5,20]]
-draw op=line layer=2 frame=5 color=#a8321e x0=5 x1=5 y0=20 y1=22
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[5,22]]
-draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=rect layer=1 frame=2 color=#f2781c fill=true x0=12 x1=13 y0=13 y1=14
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[12,13]]
-draw op=rect layer=1 frame=3 color=#a8321e fill=true x0=11 x1=12 y0=12 y1=13
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[11,12]]
-draw op=rect layer=1 frame=4 color=#2e2630 fill=true x0=10 x1=11 y0=13 y1=14
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[10,13]]
-draw op=rect layer=1 frame=5 color=#2e2630 fill=true x0=9 x1=10 y0=15 y1=16
-draw op=pencil layer=1 frame=6 color=#2e2630 points=9,19 10,19 9,20
-draw op=pencil layer=1 frame=7 color=#6b5a63 points=9,23 10,24
-draw op=rect layer=1 frame=2 color=#f2781c fill=true x0=20 x1=21 y0=12 y1=13
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[20,12]]
-draw op=rect layer=1 frame=3 color=#a8321e fill=true x0=21 x1=22 y0=10 y1=11
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[21,10]]
-draw op=rect layer=1 frame=4 color=#2e2630 fill=true x0=22 x1=23 y0=10 y1=11
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[22,10]]
-draw op=rect layer=1 frame=5 color=#2e2630 fill=true x0=22 x1=23 y0=13 y1=14
-draw op=pencil layer=1 frame=6 color=#2e2630 points=23,16 24,16 23,17
-draw op=pencil layer=1 frame=7 color=#6b5a63 points=23,21 24,22
-draw op=rect layer=1 frame=2 color=#f2781c fill=true x0=23 x1=24 y0=16 y1=17
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[23,16]]
-draw op=rect layer=1 frame=3 color=#a8321e fill=true x0=26 x1=27 y0=17 y1=18
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[26,17]]
-draw op=rect layer=1 frame=4 color=#2e2630 fill=true x0=27 x1=28 y0=18 y1=19
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[27,18]]
-draw op=rect layer=1 frame=5 color=#2e2630 fill=true x0=28 x1=29 y0=21 y1=22
-draw op=pencil layer=1 frame=6 color=#2e2630 points=28,24 29,24 28,25
-draw op=pencil layer=1 frame=7 color=#6b5a63 points=28,29 29,30
-draw op=rect layer=1 frame=2 color=#f2781c fill=true x0=9 x1=10 y0=19 y1=20
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[9,19]]
-draw op=rect layer=1 frame=3 color=#a8321e fill=true x0=7 x1=8 y0=21 y1=22
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[7,21]]
-draw op=rect layer=1 frame=4 color=#2e2630 fill=true x0=5 x1=6 y0=23 y1=24
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[5,23]]
-draw op=rect layer=1 frame=5 color=#2e2630 fill=true x0=4 x1=5 y0=26 y1=27
-draw op=pencil layer=1 frame=6 color=#2e2630 points=4,30 5,30 4,31
-draw op=pencil layer=1 frame=7 color=#6b5a63 points=4,35 5,36
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[13,23]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[12,26]]
-draw op=pencil layer=1 frame=4 color=#2e2630 points=[[12,29]]
-draw op=pencil layer=1 frame=5 color=#2e2630 points=[[11,32]]
-draw op=pencil layer=1 frame=6 color=#6b5a63 points=[[11,36]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[19,23]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[20,26]]
-draw op=pencil layer=1 frame=4 color=#2e2630 points=[[21,30]]
-draw op=pencil layer=1 frame=5 color=#2e2630 points=[[21,33]]
-draw op=pencil layer=1 frame=6 color=#6b5a63 points=[[21,37]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[16,13]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[16,12]]
-draw op=pencil layer=1 frame=4 color=#2e2630 points=[[16,13]]
-draw op=pencil layer=1 frame=5 color=#2e2630 points=[[16,15]]
-draw op=pencil layer=1 frame=6 color=#6b5a63 points=[[16,19]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[11,17]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[9,17]]
-draw op=pencil layer=1 frame=4 color=#2e2630 points=[[7,19]]
-draw op=pencil layer=1 frame=5 color=#2e2630 points=[[7,21]]
-draw op=pencil layer=1 frame=6 color=#6b5a63 points=[[7,25]]
-palette op=swap from=#2e2630,#6b5a63 to=#4e3c4a,#968590
-draw op=clear_cel layer=0 frame=0 frame_to=9
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=12 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#968590 cx=13 cy=13 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=20 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#968590 cx=21 cy=13 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=16 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=3 color=#968590 cx=17 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=11 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=12 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=21 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=22 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=16 cy=14 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=17 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=16 cy=11 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=4 color=#968590 cx=17 cy=10 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=10 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#968590 cx=11 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=16 cy=15 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=17 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=15 cy=12 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=16 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=20 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=21 cy=7 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=15 cy=9 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=5 color=#968590 cx=16 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=9 cy=10 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#968590 cx=10 cy=9 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=15 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=14 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=9 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=19 cy=6 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#968590 cx=20 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=23 cy=6 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=24 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=24 cy=9 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=25 cy=8 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=22 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#968590 cx=23 cy=10 fill=true rx=1 ry=1
-draw op=pencil layer=0 frame=6 color=#00000000 erase=true points=15,4 22,6 15,7 11,10 16,12 13,15 15,15
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=17 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=18 cy=10 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=17 cy=6 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#968590 cx=18 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=20 cy=3 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#968590 cx=21 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=24 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=25 cy=2 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=25 cy=6 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=26 cy=5 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=23 cy=8 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#968590 cx=24 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=0 frame=7 color=#00000000 erase=true points=18,1 26,3 19,4 23,4 26,4 27,4 14,6 15,6 17,6 14,7 25,8 22,9 24,9 15,10 15,11 18,12 19,12
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=19 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#968590 cx=20 cy=2 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=22 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#968590 cx=23 cy=1 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=25 cy=4 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#968590 cx=26 cy=3 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=24 cy=7 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#968590 cx=25 cy=6 fill=true rx=1 ry=1
-draw op=pencil layer=0 frame=8 color=#00000000 erase=true points=21,0 24,0 18,1 19,1 24,1 24,2 25,2 24,3 20,4 26,4 27,4 20,5 26,5 26,7 24,8
-draw op=clear_cel layer=3 frame=0 frame_to=9
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=28 y0=18 y1=18
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=4 y0=18 y1=18
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=16 y0=18 y1=29
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=16 y0=18 y1=5
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=27 y0=18 y1=29
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=5 y0=18 y1=7
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=27 y0=18 y1=7
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=6 y0=18 y1=28
-draw op=ellipse layer=3 frame=1 color=#f2781c cx=16 cy=18 fill=true rx=8 ry=8
-draw op=ellipse layer=3 frame=1 color=#ffc628 cx=16 cy=18 fill=true rx=6 ry=6
-draw op=ellipse layer=3 frame=1 color=#fff4c2 cx=16 cy=18 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=0 color=#ffc628 cx=16 cy=18 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=0 color=#fff4c2 cx=16 cy=18 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=16 cy=18 fill=true rx=7 ry=7
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=11 cy=15 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=20 cy=23 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=22 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#ffc628 cx=16 cy=18 fill=true rx=5 ry=5
-draw op=ellipse layer=3 frame=2 color=#ffc628 cx=13 cy=16 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#ffc628 cx=19 cy=21 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#fff4c2 cx=16 cy=18 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=2 color=#fff4c2 cx=15 cy=17 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=16 cy=18 fill=true rx=6 ry=6
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=12 cy=21 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=20 cy=16 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=16 cy=22 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=3 color=#f2781c cx=16 cy=18 fill=true rx=5 ry=5
-draw op=ellipse layer=3 frame=3 color=#f2781c cx=13 cy=21 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=3 color=#f2781c cx=19 cy=16 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=3 color=#ffc628 cx=16 cy=19 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=3 color=#ffc628 cx=15 cy=18 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#a8321e cx=16 cy=19 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=4 color=#a8321e cx=13 cy=21 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#a8321e cx=19 cy=21 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#f2781c cx=16 cy=19 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=4 color=#f2781c cx=14 cy=20 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#ffc628 cx=16 cy=19 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=5 color=#a8321e cx=16 cy=19 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=5 color=#a8321e cx=15 cy=21 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=5 color=#f2781c cx=16 cy=19 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=6 color=#a8321e cx=16 cy=19 fill=true rx=1 ry=1
-draw op=clear_cel layer=2 frame=0 frame_to=9
-draw op=line layer=2 frame=2 color=#ffc628 x0=14 x1=13 y0=13 y1=9
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[13,9]]
-draw op=line layer=2 frame=3 color=#f2781c x0=13 x1=12 y0=8 y1=6
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[12,6]]
-draw op=line layer=2 frame=4 color=#a8321e x0=12 x1=11 y0=6 y1=6
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[11,6]]
-draw op=line layer=2 frame=5 color=#a8321e x0=11 x1=11 y0=6 y1=7
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[11,7]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=18 x1=20 y0=14 y1=11
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[20,11]]
-draw op=line layer=2 frame=3 color=#f2781c x0=20 x1=21 y0=11 y1=10
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[21,10]]
-draw op=line layer=2 frame=4 color=#a8321e x0=21 x1=22 y0=10 y1=10
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[22,10]]
-draw op=line layer=2 frame=5 color=#a8321e x0=22 x1=22 y0=10 y1=11
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[22,11]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=21 x1=25 y0=16 y1=15
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[25,15]]
-draw op=line layer=2 frame=3 color=#f2781c x0=25 x1=27 y0=15 y1=14
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[27,14]]
-draw op=line layer=2 frame=4 color=#a8321e x0=27 x1=29 y0=14 y1=15
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[29,15]]
-draw op=line layer=2 frame=5 color=#a8321e x0=29 x1=29 y0=15 y1=16
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[29,16]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=20 x1=22 y0=19 y1=20
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[22,20]]
-draw op=line layer=2 frame=3 color=#f2781c x0=23 x1=25 y0=20 y1=21
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[25,21]]
-draw op=line layer=2 frame=4 color=#a8321e x0=25 x1=26 y0=21 y1=22
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[26,22]]
-draw op=line layer=2 frame=5 color=#a8321e x0=26 x1=26 y0=22 y1=24
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[26,24]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=18 x1=19 y0=20 y1=22
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[19,22]]
-draw op=line layer=2 frame=3 color=#f2781c x0=20 x1=20 y0=23 y1=24
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[20,24]]
-draw op=line layer=2 frame=4 color=#a8321e x0=20 x1=21 y0=24 y1=26
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[21,26]]
-draw op=line layer=2 frame=5 color=#a8321e x0=21 x1=21 y0=26 y1=28
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[21,28]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=16 x1=15 y0=21 y1=23
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[15,23]]
-draw op=line layer=2 frame=3 color=#f2781c x0=15 x1=15 y0=24 y1=26
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[15,26]]
-draw op=line layer=2 frame=4 color=#a8321e x0=15 x1=15 y0=26 y1=28
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[15,28]]
-draw op=line layer=2 frame=5 color=#a8321e x0=15 x1=15 y0=28 y1=29
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[15,29]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=13 x1=11 y0=21 y1=23
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[11,23]]
-draw op=line layer=2 frame=3 color=#f2781c x0=10 x1=9 y0=24 y1=26
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[9,26]]
-draw op=line layer=2 frame=4 color=#a8321e x0=9 x1=8 y0=26 y1=27
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[8,27]]
-draw op=line layer=2 frame=5 color=#a8321e x0=8 x1=8 y0=27 y1=29
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[8,29]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=12 x1=9 y0=16 y1=14
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[9,14]]
-draw op=line layer=2 frame=3 color=#f2781c x0=8 x1=6 y0=14 y1=13
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[6,13]]
-draw op=line layer=2 frame=4 color=#a8321e x0=6 x1=5 y0=13 y1=14
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[5,14]]
-draw op=line layer=2 frame=5 color=#a8321e x0=5 x1=5 y0=14 y1=15
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[5,15]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=13 x1=11 y0=18 y1=18
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[11,18]]
-draw op=line layer=2 frame=3 color=#f2781c x0=10 x1=9 y0=18 y1=18
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[9,18]]
-draw op=line layer=2 frame=4 color=#a8321e x0=9 x1=8 y0=18 y1=19
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[8,19]]
-draw op=line layer=2 frame=5 color=#a8321e x0=8 x1=8 y0=19 y1=21
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[8,21]]
-draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=pencil layer=1 frame=2 color=#f2781c points=12,13 13,13 14,13 12,14 13,14
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[12,13]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=11,12 12,12 13,12 11,13 12,13
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[11,12]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=10,13 11,13 12,13 10,14 11,14
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[10,13]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=9,15 10,15 11,15 9,16 10,16
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=9,19 10,19 11,19
-draw op=pencil layer=1 frame=7 color=#968590 points=9,23 10,24
-draw op=pencil layer=1 frame=2 color=#f2781c points=20,12 21,12 20,13 21,13
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[20,12]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=21,10 22,10 21,11 22,11
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[21,10]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=22,10 23,10 22,11 23,11
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[22,10]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=22,13 23,13 22,14 23,14
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=23,16 24,16
-draw op=pencil layer=1 frame=7 color=#968590 points=23,21 24,22
-draw op=pencil layer=1 frame=2 color=#f2781c points=23,16 24,16 25,16 23,17 24,17
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[23,16]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=26,17 27,17 28,17 26,18 27,18
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[26,17]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=27,18 28,18 29,18 27,19 28,19
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[27,18]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=28,21 29,21 30,21 28,22 29,22
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=28,24 29,24 30,24
-draw op=pencil layer=1 frame=7 color=#968590 points=28,29 29,30
-draw op=pencil layer=1 frame=2 color=#f2781c points=9,19 10,19 9,20 10,20
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[9,19]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=7,21 8,21 7,22 8,22
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[7,21]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=5,23 6,23 5,24 6,24
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[5,23]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=4,26 5,26 4,27 5,27
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=4,30 5,30
-draw op=pencil layer=1 frame=7 color=#968590 points=4,35 5,36
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[13,23]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[12,26]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=[[12,29]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=[[11,32]]
-draw op=pencil layer=1 frame=6 color=#968590 points=[[11,36]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[19,23]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[20,26]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=[[21,30]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=[[21,33]]
-draw op=pencil layer=1 frame=6 color=#968590 points=[[21,37]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[16,13]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[16,12]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=[[16,13]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=[[16,15]]
-draw op=pencil layer=1 frame=6 color=#968590 points=[[16,19]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[11,17]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[9,17]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=[[7,19]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=[[7,21]]
-draw op=pencil layer=1 frame=6 color=#968590 points=[[7,25]]
-draw op=pencil layer=0 frame=9 color=#968590 points=24,2 21,4 27,5
-draw op=clear_cel layer=3 frame=0 frame_to=9
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=28 y0=18 y1=18
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=4 y0=18 y1=18
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=16 y0=18 y1=29
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=16 y0=18 y1=5
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=27 y0=18 y1=29
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=5 y0=18 y1=7
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=27 y0=18 y1=7
-draw op=line layer=3 frame=1 color=#ffc628 x0=16 x1=6 y0=18 y1=28
-draw op=ellipse layer=3 frame=1 color=#f2781c cx=16 cy=18 fill=true rx=8 ry=8
-draw op=ellipse layer=3 frame=1 color=#ffc628 cx=16 cy=18 fill=true rx=6 ry=6
-draw op=ellipse layer=3 frame=1 color=#fff4c2 cx=16 cy=18 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=0 color=#ffc628 cx=16 cy=18 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=0 color=#fff4c2 cx=16 cy=18 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=16 cy=18 fill=true rx=6 ry=6
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=12 cy=15 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=19 cy=22 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=20 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#f2781c cx=12 cy=22 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=2 color=#ffc628 cx=16 cy=18 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=2 color=#ffc628 cx=14 cy=16 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=2 color=#ffc628 cx=18 cy=20 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=2 color=#fff4c2 cx=16 cy=18 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=16 cy=18 fill=true rx=6 ry=6
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=12 cy=21 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=20 cy=16 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=3 color=#a8321e cx=16 cy=22 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=3 color=#f2781c cx=16 cy=18 fill=true rx=5 ry=5
-draw op=ellipse layer=3 frame=3 color=#f2781c cx=13 cy=21 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=3 color=#f2781c cx=19 cy=16 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=3 color=#ffc628 cx=16 cy=19 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=3 color=#ffc628 cx=15 cy=18 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#a8321e cx=16 cy=19 fill=true rx=4 ry=4
-draw op=ellipse layer=3 frame=4 color=#a8321e cx=13 cy=21 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#a8321e cx=19 cy=21 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#f2781c cx=16 cy=19 fill=true rx=3 ry=3
-draw op=ellipse layer=3 frame=4 color=#f2781c cx=14 cy=20 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=4 color=#ffc628 cx=16 cy=19 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=5 color=#a8321e cx=16 cy=19 fill=true rx=2 ry=2
-draw op=ellipse layer=3 frame=5 color=#a8321e cx=15 cy=21 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=5 color=#f2781c cx=16 cy=19 fill=true rx=1 ry=1
-draw op=ellipse layer=3 frame=6 color=#a8321e cx=16 cy=19 fill=true rx=1 ry=1
-draw op=clear_cel layer=2 frame=0 frame_to=9
-draw op=line layer=2 frame=2 color=#ffc628 x0=14 x1=12 y0=12 y1=7
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[12,7]]
-draw op=line layer=2 frame=3 color=#f2781c x0=12 x1=11 y0=6 y1=4
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[11,4]]
-draw op=line layer=2 frame=4 color=#a8321e x0=11 x1=11 y0=4 y1=4
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[11,4]]
-draw op=line layer=2 frame=5 color=#a8321e x0=11 x1=11 y0=4 y1=5
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[11,5]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=19 x1=21 y0=13 y1=10
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[21,10]]
-draw op=line layer=2 frame=3 color=#f2781c x0=21 x1=22 y0=9 y1=8
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[22,8]]
-draw op=line layer=2 frame=4 color=#a8321e x0=22 x1=23 y0=8 y1=8
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[23,8]]
-draw op=line layer=2 frame=5 color=#a8321e x0=23 x1=23 y0=8 y1=9
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[23,9]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=22 x1=26 y0=16 y1=14
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[26,14]]
-draw op=line layer=2 frame=3 color=#f2781c x0=27 x1=30 y0=14 y1=13
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[30,13]]
-draw op=line layer=2 frame=4 color=#a8321e x0=30 x1=31 y0=13 y1=14
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[31,14]]
-draw op=line layer=2 frame=5 color=#a8321e x0=31 x1=31 y0=14 y1=16
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[31,16]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=21 x1=24 y0=19 y1=20
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[24,20]]
-draw op=line layer=2 frame=3 color=#f2781c x0=25 x1=27 y0=20 y1=21
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[27,21]]
-draw op=line layer=2 frame=4 color=#a8321e x0=27 x1=28 y0=21 y1=22
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[28,22]]
-draw op=line layer=2 frame=5 color=#a8321e x0=28 x1=28 y0=22 y1=24
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[28,24]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=19 x1=21 y0=21 y1=24
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[21,24]]
-draw op=line layer=2 frame=3 color=#f2781c x0=21 x1=22 y0=24 y1=26
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[22,26]]
-draw op=line layer=2 frame=4 color=#a8321e x0=22 x1=22 y0=26 y1=28
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[22,28]]
-draw op=line layer=2 frame=5 color=#a8321e x0=22 x1=22 y0=28 y1=29
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[22,29]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=16 x1=15 y0=22 y1=24
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[15,24]]
-draw op=line layer=2 frame=3 color=#f2781c x0=15 x1=15 y0=25 y1=27
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[15,27]]
-draw op=line layer=2 frame=4 color=#a8321e x0=15 x1=15 y0=27 y1=29
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[15,29]]
-draw op=line layer=2 frame=5 color=#a8321e x0=15 x1=15 y0=29 y1=30
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[15,30]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=12 x1=9 y0=22 y1=25
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[9,25]]
-draw op=line layer=2 frame=3 color=#f2781c x0=9 x1=7 y0=25 y1=27
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[7,27]]
-draw op=line layer=2 frame=4 color=#a8321e x0=7 x1=7 y0=27 y1=29
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[7,29]]
-draw op=line layer=2 frame=5 color=#a8321e x0=7 x1=7 y0=29 y1=31
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[7,31]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=11 x1=7 y0=15 y1=13
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[7,13]]
-draw op=line layer=2 frame=3 color=#f2781c x0=6 x1=4 y0=13 y1=12
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[4,12]]
-draw op=line layer=2 frame=4 color=#a8321e x0=4 x1=3 y0=12 y1=13
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[3,13]]
-draw op=line layer=2 frame=5 color=#a8321e x0=3 x1=3 y0=13 y1=14
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[3,14]]
-draw op=line layer=2 frame=2 color=#ffc628 x0=12 x1=9 y0=18 y1=18
-draw op=pencil layer=2 frame=2 color=#fff4c2 points=[[9,18]]
-draw op=line layer=2 frame=3 color=#f2781c x0=8 x1=7 y0=18 y1=19
-draw op=pencil layer=2 frame=3 color=#ffc628 points=[[7,19]]
-draw op=line layer=2 frame=4 color=#a8321e x0=7 x1=6 y0=19 y1=20
-draw op=pencil layer=2 frame=4 color=#f2781c points=[[6,20]]
-draw op=line layer=2 frame=5 color=#a8321e x0=6 x1=6 y0=20 y1=21
-draw op=pencil layer=2 frame=5 color=#a8321e points=[[6,21]]
-draw op=clear_cel layer=1 frame=0 frame_to=9
-draw op=pencil layer=1 frame=2 color=#f2781c points=11,12 12,12 13,12 11,13 12,13
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[11,12]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=9,10 10,10 11,10 9,11 10,11
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[9,10]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=8,10 9,10 10,10 8,11 9,11
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[8,10]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=7,13 8,13 9,13 7,14 8,14
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=7,16 8,16 9,16
-draw op=pencil layer=1 frame=7 color=#968590 points=7,21 8,22
-draw op=pencil layer=1 frame=2 color=#f2781c points=20,11 21,11 20,12 21,12
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[20,11]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=22,9 23,9 22,10 23,10
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[22,9]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=23,9 24,9 23,10 24,10
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[23,9]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=23,11 24,11 23,12 24,12
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=24,14 25,14
-draw op=pencil layer=1 frame=7 color=#968590 points=24,19 25,20
-draw op=pencil layer=1 frame=2 color=#f2781c points=24,16 25,16 26,16 24,17 25,17
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[24,16]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=27,16 28,16 29,16 27,17 28,17
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[27,16]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=29,17 30,17 31,17 29,18 30,18
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[29,17]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=30,20 31,20 32,20 30,21 31,21
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=30,24 31,24 32,24
-draw op=pencil layer=1 frame=7 color=#968590 points=30,28 31,29
-draw op=pencil layer=1 frame=2 color=#f2781c points=8,19 9,19 8,20 9,20
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[8,19]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=5,21 6,21 5,22 6,22
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[5,21]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=3,24 4,24 3,25 4,25
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[3,24]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=2,27 3,27 2,28 3,28
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=2,30 3,30
-draw op=pencil layer=1 frame=7 color=#968590 points=2,35 3,36
-draw op=pencil layer=1 frame=2 color=#f2781c points=13,23 14,23 13,24 14,24
-draw op=pencil layer=1 frame=2 color=#ffc628 points=[[13,23]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=11,27 12,27 11,28 12,28
-draw op=pencil layer=1 frame=3 color=#f2781c points=[[11,27]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=11,30 12,30 11,31 12,31
-draw op=pencil layer=1 frame=4 color=#a8321e points=[[11,30]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=10,34 11,34 10,35 11,35
-draw op=pencil layer=1 frame=6 color=#4e3c4a points=10,38 11,38
-draw op=pencil layer=1 frame=7 color=#968590 points=10,42 11,43
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[19,24]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[21,28]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=[[22,31]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=[[22,35]]
-draw op=pencil layer=1 frame=6 color=#968590 points=[[22,39]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[16,12]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[16,11]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=[[16,12]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=[[16,14]]
-draw op=pencil layer=1 frame=6 color=#968590 points=[[16,18]]
-draw op=pencil layer=1 frame=2 color=#f2781c points=[[10,16]]
-draw op=pencil layer=1 frame=3 color=#a8321e points=[[7,16]]
-draw op=pencil layer=1 frame=4 color=#4e3c4a points=[[6,18]]
-draw op=pencil layer=1 frame=5 color=#4e3c4a points=[[5,21]]
-draw op=pencil layer=1 frame=6 color=#968590 points=[[5,24]]
-draw op=clear_cel layer=0 frame=0 frame_to=9
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=12 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#968590 cx=13 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=20 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#968590 cx=21 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=16 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=3 color=#968590 cx=17 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=11 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=12 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=21 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=22 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=16 cy=14 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=17 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=16 cy=11 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=4 color=#968590 cx=17 cy=10 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=10 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#968590 cx=11 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=16 cy=15 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=17 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=15 cy=12 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=16 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=20 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=21 cy=7 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=15 cy=9 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=5 color=#968590 cx=16 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=9 cy=10 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#968590 cx=10 cy=9 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=15 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=9 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=19 cy=6 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#968590 cx=20 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=23 cy=6 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=24 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=24 cy=9 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=25 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=22 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#968590 cx=23 cy=10 fill=true rx=2 ry=2
-draw op=pencil layer=0 frame=6 color=#00000000 erase=true points=15,4 22,6 15,7 28,8 11,10 16,12 13,15 15,15
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=17 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=18 cy=10 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=17 cy=6 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#968590 cx=18 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=20 cy=3 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#968590 cx=21 cy=2 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=24 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=25 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=25 cy=6 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=26 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=23 cy=8 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#968590 cx=24 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=0 frame=7 color=#00000000 erase=true points=26,0 18,1 26,3 19,4 23,4 26,4 27,4 14,6 15,6 17,6 14,7 25,8 22,9 24,9 15,10 15,11 18,12 19,12
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=19 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#968590 cx=20 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=22 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#968590 cx=23 cy=1 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=25 cy=4 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#968590 cx=26 cy=3 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=24 cy=7 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#968590 cx=25 cy=6 fill=true rx=1 ry=1
-draw op=pencil layer=0 frame=8 color=#00000000 erase=true points=19,0 20,0 21,0 24,0 25,0 18,1 19,1 24,1 25,1 24,2 25,2 24,3 20,4 26,4 27,4 20,5 26,5 26,7 24,8
-draw op=clear_cel layer=0 frame=0 frame_to=9
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=12 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#968590 cx=13 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=20 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#968590 cx=21 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=3 color=#4e3c4a cx=16 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=3 color=#968590 cx=17 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=11 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=12 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=21 cy=13 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=22 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=16 cy=14 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=4 color=#968590 cx=17 cy=13 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=4 color=#4e3c4a cx=16 cy=11 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=4 color=#968590 cx=17 cy=10 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=10 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#968590 cx=11 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=16 cy=15 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=17 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=15 cy=12 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=16 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=20 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=5 color=#968590 cx=21 cy=7 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=5 color=#4e3c4a cx=15 cy=9 fill=true rx=5 ry=5
-draw op=ellipse layer=0 frame=5 color=#968590 cx=16 cy=8 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=9 cy=10 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#968590 cx=10 cy=9 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=15 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=14 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=12 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=11 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=16 cy=9 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#968590 cx=17 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=19 cy=6 fill=true rx=4 ry=4
-draw op=ellipse layer=0 frame=6 color=#968590 cx=20 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=23 cy=6 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=24 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=24 cy=9 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#968590 cx=25 cy=8 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=6 color=#4e3c4a cx=22 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=6 color=#968590 cx=23 cy=10 fill=true rx=2 ry=2
-draw op=pencil layer=0 frame=6 color=#00000000 erase=true points=15,4 22,6 15,7 28,8 11,10 16,12 13,15 15,15
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=17 cy=11 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=18 cy=10 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=17 cy=6 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#968590 cx=18 cy=5 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=20 cy=3 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#968590 cx=21 cy=2 fill=true rx=3 ry=3
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=24 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=25 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=25 cy=6 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#968590 cx=26 cy=5 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=7 color=#4e3c4a cx=23 cy=8 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=7 color=#968590 cx=24 cy=7 fill=true rx=1 ry=1
-draw op=pencil layer=0 frame=7 color=#00000000 erase=true points=26,0 18,1 26,3 19,4 23,4 26,4 27,4 14,6 15,6 17,6 14,7 25,8 22,9 24,9 15,10 15,11 18,12 19,12
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=19 cy=3 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#968590 cx=20 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=22 cy=2 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#968590 cx=23 cy=1 fill=true rx=2 ry=2
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=25 cy=4 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#968590 cx=26 cy=3 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#4e3c4a cx=24 cy=7 fill=true rx=1 ry=1
-draw op=ellipse layer=0 frame=8 color=#968590 cx=25 cy=6 fill=true rx=1 ry=1
-draw op=pencil layer=0 frame=8 color=#00000000 erase=true points=19,0 20,0 21,0 24,0 25,0 18,1 19,1 24,1 25,1 24,2 25,2 24,3 20,4 26,4 27,4 20,5 26,5 26,7 24,8
-draw op=pencil layer=0 frame=9 color=#968590 points=24,2 21,4 27,5
-draw op=clear_cel layer=3 frame=6
-draw op=pencil layer=3 frame=6 color=#a8321e points=16,19 16,20
+layer rename index=0 name=smoke
+layer add name=debris
+layer add name=sparks
+layer add name=core
+palette set colors=#fff4c2,#ffc628,#f2781c,#a8321e,#6b5a63,#2e2630
+layer set index=1 name=debris
+frame add count=9
+legend A=#fff4c2
+core @0 ellipse #fff4c2 16,17 3,3 fill = 13,14 7x7
+    ..AAA..
+    .AAAAA.
+    AAAAAAA
+    AAAAAAA
+    AAAAAAA
+    .AAAAA.
+    ..AAA..
+legend B=#ffc628
+sparks @9 pencil #ffc628 = 20,2 3x2
+    B..
+    ..B
+sparks @9 erase pencil ~
+sparks @9 rect #ffc628 10,10 11,11 fill = 10,10 11,11 #ffc628
+sparks @9 line #ffc628 2,2 8,5 = 2,2 7x4
+    B......
+    .BB....
+    ...BB..
+    .....BB
+sparks @9 clear_cel = 2,2 22,11 .
+core @0 clear_cel = 13,14 19,20 .
+sparks @9 pencil #ffc628 = 5,2 18x4
+    ...............B..
+    .................B
+    ..................
+    BB................
+sparks @9 erase pencil size 1 ~
+sparks @9 erase rect 5,5 5,5 fill ~
+sparks @9 erase ellipse 20,2 1,1 fill ~
+sparks @9 erase rect 5,5 5,5 fill = 5,5 5,5 .
+sparks @9 erase rect 6,5 6,5 fill = 6,5 6,5 .
+sparks @9 erase line 20,2 22,3 = 20,2 22,3 .
+core @0 clear_cel ~
+core @1 clear_cel ~
+core @2 clear_cel ~
+core @3 clear_cel ~
+core @4 clear_cel ~
+core @5 clear_cel ~
+core @6 clear_cel ~
+core @7 clear_cel ~
+core @8 clear_cel ~
+core @9 clear_cel ~
+core @0 ellipse #ffc628 16,18 3,3 fill = 13,15 7x7
+    ..BBB..
+    .BBBBB.
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    .BBBBB.
+    ..BBB..
+core @0 ellipse #fff4c2 16,18 2,2 fill = 14,16 5x5
+    BAAAB
+    AAAAA
+    AAAAA
+    AAAAA
+    BAAAB
+core @1 line #ffc628 16,18 28,18 = 16,18 28,18 #ffc628
+core @1 line #ffc628 16,18 4,18 = 4,18 15,18 #ffc628
+core @1 line #ffc628 16,18 16,29 = 16,19 16,29 #ffc628
+core @1 line #ffc628 16,18 16,5 = 16,5 16,17 #ffc628
+core @1 line #ffc628 16,18 25,27 = 17,19 9x9
+    B........
+    .B.......
+    ..B......
+    ...B.....
+    ....B....
+    .....B...
+    ......B..
+    .......B.
+    ........B
+core @1 line #ffc628 16,18 7,9 = 7,9 9x9
+    B........
+    .B.......
+    ..B......
+    ...B.....
+    ....B....
+    .....B...
+    ......B..
+    .......B.
+    ........B
+core @1 line #ffc628 16,18 25,9 = 17,9 9x9
+    ........B
+    .......B.
+    ......B..
+    .....B...
+    ....B....
+    ...B.....
+    ..B......
+    .B.......
+    B........
+core @1 line #ffc628 16,18 7,27 = 7,19 9x9
+    ........B
+    .......B.
+    ......B..
+    .....B...
+    ....B....
+    ...B.....
+    ..B......
+    .B.......
+    B........
+legend C=#f2781c
+core @1 ellipse #f2781c 16,18 8,8 fill = 8,10 17x17
+    B.....CCCCC.....B
+    .B..CCCCCCCCC..B.
+    ..CCCCCCCCCCCCC..
+    ..CCCCCCCCCCCCC..
+    .CCCCCCCCCCCCCCC.
+    .CCCCCCCCCCCCCCC.
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    .CCCCCCCCCCCCCCC.
+    .CCCCCCCCCCCCCCC.
+    ..CCCCCCCCCCCCC..
+    ..CCCCCCCCCCCCC..
+    .B..CCCCCCCCC..B.
+    B.....CCCCC.....B
+core @1 ellipse #ffc628 16,18 6,6 fill = 10,12 13x13
+    CCCCBBBBBCCCC
+    CCBBBBBBBBBCC
+    CBBBBBBBBBBBC
+    CBBBBBBBBBBBC
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    CBBBBBBBBBBBC
+    CBBBBBBBBBBBC
+    CCBBBBBBBBBCC
+    CCCCBBBBBCCCC
+core @1 ellipse #fff4c2 16,18 4,4 fill = 12,14 9x9
+    BBAAAAABB
+    BAAAAAAAB
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    BAAAAAAAB
+    BBAAAAABB
+core @2 ellipse #f2781c 16,18 7,7 fill = 9,11 15x15
+    .....CCCCC.....
+    ...CCCCCCCCC...
+    ..CCCCCCCCCCC..
+    .CCCCCCCCCCCCC.
+    .CCCCCCCCCCCCC.
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    .CCCCCCCCCCCCC.
+    .CCCCCCCCCCCCC.
+    ..CCCCCCCCCCC..
+    ...CCCCCCCCC...
+    .....CCCCC.....
+core @2 ellipse #ffc628 16,18 5,5 fill = 11,13 11x11
+    CCCBBBBBCCC
+    CCBBBBBBBCC
+    CBBBBBBBBBC
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    CBBBBBBBBBC
+    CCBBBBBBBCC
+    CCCBBBBBCCC
+core @2 ellipse #fff4c2 16,18 2,2 fill = 14,16 5x5
+    BAAAB
+    AAAAA
+    AAAAA
+    AAAAA
+    BAAAB
+legend D=#a8321e
+core @3 ellipse #a8321e 16,18 6,6 fill = 10,12 13x13
+    ....DDDDD....
+    ..DDDDDDDDD..
+    .DDDDDDDDDDD.
+    .DDDDDDDDDDD.
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    .DDDDDDDDDDD.
+    .DDDDDDDDDDD.
+    ..DDDDDDDDD..
+    ....DDDDD....
+core @3 ellipse #f2781c 16,18 5,5 fill = 11,13 11x11
+    .DDCCCCCDD.
+    DDCCCCCCCDD
+    DCCCCCCCCCD
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    DCCCCCCCCCD
+    DDCCCCCCCDD
+    .DDCCCCCDD.
+core @3 ellipse #ffc628 16,18 3,3 fill = 13,15 7x7
+    CCBBBCC
+    CBBBBBC
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    CBBBBBC
+    CCBBBCC
+core @4 ellipse #a8321e 16,19 4,4 fill = 12,15 9x9
+    ..DDDDD..
+    .DDDDDDD.
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    .DDDDDDD.
+    ..DDDDD..
+core @4 ellipse #f2781c 16,19 3,3 fill = 13,16 7x7
+    DDCCCDD
+    DCCCCCD
+    CCCCCCC
+    CCCCCCC
+    CCCCCCC
+    DCCCCCD
+    DDCCCDD
+core @4 ellipse #ffc628 16,19 1,1 fill = 15,18 17,20 #ffc628
+core @5 ellipse #a8321e 16,19 2,2 fill = 14,17 5x5
+    .DDD.
+    DDDDD
+    DDDDD
+    DDDDD
+    .DDD.
+core @5 ellipse #f2781c 16,19 1,1 fill = 15,18 17,20 #f2781c
+core @6 ellipse #a8321e 16,19 1,1 fill = 15,18 17,20 #a8321e
+smoke @0 clear_cel ~
+smoke @1 clear_cel ~
+smoke @2 clear_cel ~
+smoke @3 clear_cel ~
+smoke @4 clear_cel ~
+smoke @5 clear_cel ~
+smoke @6 clear_cel ~
+smoke @7 clear_cel ~
+smoke @8 clear_cel ~
+smoke @9 clear_cel ~
+legend E=#2e2630
+smoke @3 ellipse #2e2630 16,12 4,4 fill = 12,8 9x9
+    ..EEEEE..
+    .EEEEEEE.
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    .EEEEEEE.
+    ..EEEEE..
+smoke @3 ellipse #2e2630 12,14 3,3 fill = 9,11 5x7
+    ..EEE
+    .EEEE
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEEE
+    ..EEE
+smoke @3 ellipse #2e2630 20,14 3,3 fill = 19,11 5x7
+    EEE..
+    EEEE.
+    EEEEE
+    EEEEE
+    EEEEE
+    EEEE.
+    EEE..
+legend F=#6b5a63
+smoke @3 ellipse #6b5a63 17,13 3,3 fill = 14,10 7x7
+    EEFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+smoke @3 ellipse #6b5a63 13,15 2,2 fill = 11,13 5x5
+    EFFFF
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFF.
+smoke @3 ellipse #6b5a63 21,15 2,2 fill = 19,13 5x5
+    FFFFE
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFF.
+smoke @4 ellipse #2e2630 16,10 5,5 fill = 11,5 11x11
+    ...EEEEE...
+    ..EEEEEEE..
+    .EEEEEEEEE.
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    .EEEEEEEEE.
+    ..EEEEEEE..
+    ...EEEEE...
+smoke @4 ellipse #2e2630 11,13 4,4 fill = 7,9 8x9
+    ..EEEEEE
+    .EEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    .EEEEEEE
+    ..EEEEE.
+smoke @4 ellipse #2e2630 21,13 4,4 fill = 18,9 8x9
+    EEEEEE..
+    EEEEEEE.
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEE.
+    .EEEEE..
+smoke @4 ellipse #2e2630 16,14 4,4 fill = 14,16 18,18 #2e2630
+smoke @4 ellipse #6b5a63 17,11 4,4 fill = 13,7 9x9
+    EEFFFFFE.
+    EFFFFFFFE
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    EFFFFFFFE
+    EEFFFFFEE
+smoke @4 ellipse #6b5a63 12,14 3,3 fill = 9,11 6x7
+    EEFFFF
+    EFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    EFFFFF
+    EEFFFE
+smoke @4 ellipse #6b5a63 22,14 3,3 fill = 20,11 6x7
+    FFFFEE
+    FFFFFE
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFF.
+    EFFF..
+smoke @4 ellipse #6b5a63 17,15 3,3 fill = 15,16 5x3
+    FFFFF
+    FFFFF
+    EFFF.
+smoke @5 ellipse #2e2630 17,8 5,5 fill = 12,3 11x11
+    ...EEEEE...
+    ..EEEEEEE..
+    .EEEEEEEEE.
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    .EEEEEEEEE.
+    ..EEEEEEE..
+    ...EEEEE...
+smoke @5 ellipse #2e2630 12,11 4,4 fill = 8,7 8x9
+    ..EEEEEE
+    .EEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    .EEEEEEE
+    ..EEEEE.
+smoke @5 ellipse #2e2630 22,10 4,4 fill = 20,6 7x9
+    EEEEE..
+    EEEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEE.
+    EEEEE..
+smoke @5 ellipse #2e2630 16,13 5,5 fill = 12,14 10x5
+    EEEEEEEEEE
+    EEEEEEEEEE
+    EEEEEEEEE.
+    .EEEEEEE..
+    ..EEEEE...
+smoke @5 ellipse #2e2630 15,16 3,3 fill = 12,17 5x3
+    EEEEE
+    .EEEE
+    ..EEE
+smoke @5 ellipse #6b5a63 18,9 4,4 fill = 14,5 9x9
+    EEFFFFFE.
+    EFFFFFFFE
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    EFFFFFFFE
+    EEFFFFFEE
+smoke @5 ellipse #6b5a63 13,12 3,3 fill = 10,9 6x7
+    EEFFFF
+    EFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    EFFFFF
+    EEFFFE
+smoke @5 ellipse #6b5a63 23,11 3,3 fill = 21,8 6x7
+    FFFFEE
+    FFFFFE
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFF.
+    EFFF..
+smoke @5 ellipse #6b5a63 17,14 4,4 fill = 13,14 9x5
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    EFFFFFFF.
+    EEFFFFF..
+smoke @5 ellipse #6b5a63 16,17 2,2 fill = 14,18 4x2
+    FFFF
+    EFFF
+smoke @6 ellipse #2e2630 18,6 5,5 fill = 13,1 11x11
+    ...EEEEE...
+    ..EEEEEEE..
+    .EEEEEEEEE.
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    .EEEEEEEEE.
+    ..EEEEEEE..
+    ...EEEEE...
+smoke @6 ellipse #2e2630 13,9 4,4 fill = 9,5 8x9
+    ..EEEEEE
+    .EEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    EEEEEEEE
+    .EEEEEEE
+    ..EEEEE.
+smoke @6 ellipse #2e2630 23,8 3,3 fill = 22,5 5x7
+    EEE..
+    EEEE.
+    EEEEE
+    EEEEE
+    EEEEE
+    EEEE.
+    EEE..
+smoke @6 ellipse #2e2630 16,12 3,3 fill = 14,12 6x4
+    EEEEEE
+    EEEEEE
+    EEEEE.
+    .EEE..
+smoke @6 ellipse #2e2630 15,15 2,2 fill = 13,14 5x4
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEE.
+smoke @6 ellipse #6b5a63 19,7 4,4 fill = 15,3 9x9
+    EEFFFFFE.
+    EFFFFFFFE
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    EFFFFFFFE
+    EEFFFFFEE
+smoke @6 ellipse #6b5a63 14,10 3,3 fill = 11,7 6x7
+    EEFFFF
+    EFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    EFFFFF
+    EEFFFE
+smoke @6 ellipse #6b5a63 24,9 2,2 fill = 23,7 4x5
+    FFFE
+    FFFF
+    FFFF
+    FFFF
+    FFF.
+smoke @6 ellipse #6b5a63 17,13 2,2 fill = 15,12 5x4
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFF.
+smoke @6 ellipse #6b5a63 16,16 1,1 fill = 15,15 17,17 #6b5a63
+smoke @7 ellipse #2e2630 19,4 4,4 fill = 15,0 9x9
+    ..EEEEE..
+    .EEEEEEE.
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    .EEEEEEE.
+    ..EEEEE..
+smoke @7 ellipse #2e2630 14,7 3,3 fill = 11,4 6x7
+    ..EEEE
+    .EEEEE
+    EEEEEE
+    EEEEEE
+    EEEEEE
+    .EEEEE
+    ..EEE.
+smoke @7 ellipse #2e2630 23,6 2,2 fill = 22,4 4x5
+    EEE.
+    EEEE
+    EEEE
+    EEEE
+    EEE.
+smoke @7 ellipse #2e2630 17,10 2,2 fill = 15,9 5x4
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEE.
+smoke @7 ellipse #6b5a63 20,5 3,3 fill = 17,2 7x7
+    EEFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+smoke @7 ellipse #6b5a63 15,8 2,2 fill = 13,6 5x5
+    EFFFF
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFFE
+smoke @7 ellipse #6b5a63 24,7 1,1 fill = 23,6 25,8 #6b5a63
+smoke @7 ellipse #6b5a63 18,11 1,1 fill = 17,10 19,12 #6b5a63
+smoke @8 ellipse #2e2630 20,3 3,3 fill = 17,0 7x7
+    ..EEE..
+    .EEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    .EEEEE.
+    ..EEE..
+smoke @8 ellipse #2e2630 16,6 2,2 fill = 14,4 5x5
+    .EEEE
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEE.
+smoke @8 ellipse #6b5a63 21,4 2,2 fill = 19,2 5x5
+    EFFFE
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFF.
+smoke @8 ellipse #6b5a63 17,7 1,1 fill = 16,6 18,8 #6b5a63
+smoke @0 clear_cel ~
+smoke @1 clear_cel ~
+smoke @2 clear_cel ~
+smoke @3 clear_cel = 9,8 23,17 .
+smoke @4 clear_cel = 7,5 25,18 .
+smoke @5 clear_cel = 8,3 26,19 .
+smoke @6 clear_cel = 9,1 26,17 .
+smoke @7 clear_cel = 11,0 25,12 .
+smoke @8 clear_cel = 14,0 23,8 .
+smoke @9 clear_cel ~
+smoke @3 ellipse #2e2630 16,13 4,4 fill = 12,9 9x9
+    ..EEEEE..
+    .EEEEEEE.
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    .EEEEEEE.
+    ..EEEEE..
+smoke @3 ellipse #2e2630 12,14 3,3 fill = 9,11 5x7
+    ..EEE
+    .EEEE
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEEE
+    ..EEE
+smoke @3 ellipse #2e2630 20,14 3,3 fill = 19,11 5x7
+    EEE..
+    EEEE.
+    EEEEE
+    EEEEE
+    EEEEE
+    EEEE.
+    EEE..
+smoke @3 ellipse #6b5a63 17,12 3,3 fill = 14,9 7x7
+    EEFFF..
+    EFFFFF.
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+smoke @3 ellipse #6b5a63 13,13 2,2 fill = 11,11 4x5
+    EFFF
+    FFFF
+    FFFF
+    FFFF
+    EFFF
+smoke @3 ellipse #6b5a63 21,13 2,2 fill = 20,11 4x5
+    FFF.
+    FFFF
+    FFFF
+    FFFF
+    FFFE
+smoke @4 ellipse #2e2630 16,11 5,5 fill = 11,6 11x11
+    ...EEEEE...
+    ..EEEEEEE..
+    .EEEEEEEEE.
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    .EEEEEEEEE.
+    ..EEEEEEE..
+    ...EEEEE...
+smoke @4 ellipse #2e2630 11,13 4,4 fill = 7,9 7x9
+    ..EEEEE
+    .EEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    .EEEEEE
+    ..EEEEE
+smoke @4 ellipse #2e2630 21,13 4,4 fill = 19,9 7x9
+    EEEEE..
+    EEEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEE.
+    EEEEE..
+smoke @4 ellipse #2e2630 16,14 4,4 fill = 14,17 18,18 #2e2630
+smoke @4 ellipse #6b5a63 17,10 4,4 fill = 13,6 9x9
+    .EFFFFF..
+    EFFFFFFF.
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    EFFFFFFFE
+    EEFFFFFEE
+smoke @4 ellipse #6b5a63 12,12 3,3 fill = 9,9 6x7
+    EEFFFF
+    EFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    EFFFFF
+    EEFFFE
+smoke @4 ellipse #6b5a63 22,12 3,3 fill = 20,9 6x7
+    FFFF..
+    FFFFF.
+    FFFFFF
+    FFFFFF
+    FFFFFF
+    FFFFFE
+    EFFFEE
+smoke @4 ellipse #6b5a63 17,13 3,3 fill = 15,15 5x2
+    FFFFF
+    EFFFE
+smoke @5 ellipse #2e2630 16,15 4,4 fill = 12,11 9x9
+    ..EEEEE..
+    .EEEEEEE.
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    .EEEEEEE.
+    ..EEEEE..
+smoke @5 ellipse #2e2630 15,12 4,4 fill = 11,8 9x7
+    ..EEEEE..
+    .EEEEEEE.
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+smoke @5 ellipse #2e2630 15,9 5,5 fill = 10,4 11x8
+    ...EEEEE...
+    ..EEEEEEE..
+    .EEEEEEEEE.
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+    EEEEEEEEEEE
+smoke @5 ellipse #2e2630 20,8 4,4 fill = 18,4 7x9
+    EEEEE..
+    EEEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEE.
+    EEEEE..
+smoke @5 ellipse #6b5a63 17,14 3,3 fill = 14,11 7x7
+    EEFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    EFFFFFE
+    EEFFFEE
+smoke @5 ellipse #6b5a63 16,11 3,3 fill = 13,8 7x5
+    EEFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+smoke @5 ellipse #6b5a63 16,8 4,4 fill = 12,4 9x7
+    .EFFFFFEE
+    EFFFFFFFE
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+    FFFFFFFFF
+smoke @5 ellipse #6b5a63 21,7 3,3 fill = 20,4 5x7
+    FFF..
+    FFFF.
+    FFFFF
+    FFFFF
+    FFFFF
+    FFFFE
+    FFFEE
+smoke @6 ellipse #2e2630 16,15 3,3 fill = 13,12 7x7
+    ..EEE..
+    .EEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    .EEEEE.
+    ..EEE..
+smoke @6 ellipse #2e2630 16,12 3,3 fill = 13,9 7x5
+    ..EEE..
+    .EEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+smoke @6 ellipse #2e2630 16,9 4,4 fill = 12,5 9x7
+    ..EEEEE..
+    .EEEEEEE.
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+smoke @6 ellipse #2e2630 19,6 4,4 fill = 15,2 9x9
+    ..EEEEE..
+    .EEEEEEE.
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEEE
+    EEEEEEEE.
+    EEEEEEE..
+smoke @6 ellipse #2e2630 23,6 3,3 fill = 23,3 4x7
+    EE..
+    EEE.
+    EEEE
+    EEEE
+    EEEE
+    EEE.
+    EE..
+smoke @6 ellipse #2e2630 24,9 3,3 fill = 22,8 6x5
+    EEEEEE
+    EEEEEE
+    EEEEEE
+    EEEEE.
+    .EEE..
+smoke @6 ellipse #2e2630 22,11 2,2 fill = 20,11 4x3
+    EEEE
+    EEEE
+    .EEE
+smoke @6 ellipse #6b5a63 17,14 2,2 fill = 15,12 5x5
+    EFFFE
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFFE
+smoke @6 ellipse #6b5a63 17,11 2,2 fill = 15,9 5x4
+    EFFFE
+    FFFFF
+    FFFFF
+    FFFFF
+smoke @6 ellipse #6b5a63 17,8 3,3 fill = 14,5 7x5
+    EEFFFEE
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+smoke @6 ellipse #6b5a63 20,5 3,3 fill = 17,2 7x7
+    EEFFF..
+    EFFFFFE
+    FFFFFFF
+    FFFFFFF
+    FFFFFFF
+    FFFFFFE
+    FFFFFEE
+smoke @6 ellipse #6b5a63 24,5 2,2 fill = 23,3 4x5
+    FFF.
+    FFFF
+    FFFF
+    FFFF
+    FFFE
+smoke @6 ellipse #6b5a63 25,8 2,2 fill = 23,7 5x4
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFFE
+smoke @6 ellipse #6b5a63 23,10 1,1 fill = 22,9 24,11 #6b5a63
+smoke @7 ellipse #2e2630 19,8 3,3 fill = 16,5 7x7
+    ..EEE..
+    .EEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    .EEEEE.
+    ..EEE..
+smoke @7 ellipse #2e2630 21,5 3,3 fill = 18,2 7x6
+    ..EEE..
+    .EEEEE.
+    EEEEEEE
+    EEEEEEE
+    EEEEEEE
+    EEEEEE.
+smoke @7 ellipse #2e2630 24,5 2,2 fill = 24,3 3x5
+    EE.
+    EEE
+    EEE
+    EEE
+    EE.
+smoke @7 ellipse #2e2630 25,8 2,2 fill = 23,7 5x4
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEE.
+smoke @7 ellipse #6b5a63 20,7 2,2 fill = 18,5 5x5
+    EFFFE
+    FFFFF
+    FFFFF
+    FFFFF
+    EFFFE
+smoke @7 ellipse #6b5a63 22,4 2,2 fill = 20,2 5x5
+    EFFF.
+    FFFFF
+    FFFFF
+    FFFFF
+    FFFFE
+smoke @7 ellipse #6b5a63 25,4 1,1 fill = 25,3 26,5 #6b5a63
+smoke @7 ellipse #6b5a63 26,7 1,1 fill = 25,6 27,8 #6b5a63
+smoke @8 ellipse #2e2630 22,4 2,2 fill = 20,2 5x5
+    .EEE.
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEE.
+smoke @8 ellipse #2e2630 24,6 2,2 fill = 22,4 5x5
+    EEEE.
+    EEEEE
+    EEEEE
+    EEEEE
+    .EEE.
+smoke @8 ellipse #6b5a63 23,3 1,1 fill = 22,2 24,4 #6b5a63
+smoke @8 ellipse #6b5a63 25,5 1,1 fill = 24,4 26,6 #6b5a63
+sparks @2 clear_cel ~
+sparks @3 clear_cel ~
+sparks @4 clear_cel ~
+sparks @5 clear_cel ~
+sparks @6 clear_cel ~
+sparks @0 clear_cel ~
+sparks @1 clear_cel ~
+sparks @7 clear_cel ~
+sparks @8 clear_cel ~
+sparks @9 clear_cel ~
+sparks @2 line #ffc628 16,15 15,12 = 15,12 2x4
+    B.
+    B.
+    .B
+    .B
+sparks @2 pencil #fff4c2 = 15,12 15,12 #fff4c2
+sparks @3 line #f2781c 15,13 14,10 = 14,10 2x4
+    C.
+    C.
+    .C
+    .C
+sparks @3 pencil #ffc628 = 14,10 14,10 #ffc628
+sparks @4 line #f2781c 16,11 14,10 = 14,10 3x2
+    CC.
+    ..C
+sparks @4 pencil #ffc628 = 14,10 14,10 #ffc628
+sparks @5 line #a8321e 14,8 14,10 = 14,8 14,10 #a8321e
+sparks @5 pencil #f2781c = 14,10 14,10 #f2781c
+sparks @6 line #a8321e 14,12 14,13 = 14,12 14,13 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 17,16 19,13 = 17,13 3x4
+    ..B
+    .B.
+    .B.
+    B..
+sparks @2 pencil #fff4c2 = 19,13 19,13 #fff4c2
+sparks @3 line #f2781c 18,14 20,12 = 18,12 3x3
+    ..C
+    .C.
+    C..
+sparks @3 pencil #ffc628 = 20,12 20,12 #ffc628
+sparks @4 line #f2781c 19,11 21,11 = 19,11 21,11 #f2781c
+sparks @4 pencil #ffc628 = 21,11 21,11 #ffc628
+sparks @5 line #a8321e 21,11 22,13 = 21,11 2x3
+    D.
+    .D
+    .D
+sparks @5 pencil #f2781c = 22,13 22,13 #f2781c
+sparks @6 line #a8321e 22,14 22,15 = 22,14 22,15 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 19,16 22,15 = 19,15 4x2
+    ..BB
+    BB..
+sparks @2 pencil #fff4c2 = 22,15 22,15 #fff4c2
+sparks @3 line #f2781c 22,15 25,15 = 22,15 25,15 #f2781c
+sparks @3 pencil #ffc628 = 25,15 25,15 #ffc628
+sparks @4 line #f2781c 25,14 27,15 = 25,14 3x2
+    C..
+    .CC
+sparks @4 pencil #ffc628 = 27,15 27,15 #ffc628
+sparks @5 line #a8321e 27,15 28,16 = 27,15 2x2
+    D.
+    .D
+sparks @5 pencil #f2781c = 28,16 28,16 #f2781c
+sparks @6 line #a8321e 29,18 29,19 = 29,18 29,19 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 19,18 22,19 = 19,18 4x2
+    BB..
+    ..BB
+sparks @2 pencil #fff4c2 = 22,19 22,19 #fff4c2
+sparks @3 line #f2781c 22,19 25,20 = 22,19 4x2
+    CC..
+    ..CC
+sparks @3 pencil #ffc628 = 25,20 25,20 #ffc628
+sparks @4 line #f2781c 26,21 27,22 = 26,21 2x2
+    C.
+    .C
+sparks @4 pencil #ffc628 = 27,22 27,22 #ffc628
+sparks @5 line #a8321e 28,23 29,25 = 28,23 2x3
+    D.
+    .D
+    .D
+sparks @5 pencil #f2781c = 29,25 29,25 #f2781c
+sparks @6 line #a8321e 30,26 30,27 = 30,26 30,27 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 18,19 20,21 = 18,19 3x3
+    B..
+    .B.
+    ..B
+sparks @2 pencil #fff4c2 = 20,21 20,21 #fff4c2
+sparks @3 line #f2781c 20,21 22,24 = 20,21 3x4
+    C..
+    .C.
+    .C.
+    ..C
+sparks @3 pencil #ffc628 = 22,24 22,24 #ffc628
+sparks @4 line #f2781c 22,24 23,27 = 22,24 2x4
+    C.
+    C.
+    .C
+    .C
+sparks @4 pencil #ffc628 = 23,27 23,27 #ffc628
+sparks @5 line #a8321e 23,28 24,29 = 23,28 2x2
+    D.
+    .D
+sparks @5 pencil #f2781c = 24,29 24,29 #f2781c
+sparks @6 line #a8321e 24,32 24,33 ~
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 16,19 17,22 = 16,19 2x4
+    B.
+    B.
+    .B
+    .B
+sparks @2 pencil #fff4c2 = 17,22 17,22 #fff4c2
+sparks @3 line #f2781c 17,22 18,25 = 17,22 2x4
+    C.
+    C.
+    .C
+    .C
+sparks @3 pencil #ffc628 = 18,25 18,25 #ffc628
+sparks @4 line #f2781c 18,25 18,28 = 18,25 18,28 #f2781c
+sparks @4 pencil #ffc628 = 18,28 18,28 #ffc628
+sparks @5 line #a8321e 18,28 18,30 = 18,28 18,30 #a8321e
+sparks @5 pencil #f2781c = 18,30 18,30 #f2781c
+sparks @6 line #a8321e 18,32 18,33 ~
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 15,19 14,22 = 14,19 2x4
+    .B
+    .B
+    B.
+    B.
+sparks @2 pencil #fff4c2 = 14,22 14,22 #fff4c2
+sparks @3 line #f2781c 14,22 14,25 = 14,22 14,25 #f2781c
+sparks @3 pencil #ffc628 = 14,25 14,25 #ffc628
+sparks @4 line #f2781c 13,26 13,28 = 13,26 13,28 #f2781c
+sparks @4 pencil #ffc628 = 13,28 13,28 #ffc628
+sparks @5 line #a8321e 13,29 12,31 = 12,29 2x3
+    .D
+    D.
+    D.
+sparks @5 pencil #f2781c = 12,31 12,31 #f2781c
+sparks @6 line #a8321e 12,33 12,34 ~
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 14,19 12,21 = 12,19 3x3
+    ..B
+    .B.
+    B.B
+sparks @2 pencil #fff4c2 = 12,21 12,21 #fff4c2
+sparks @3 line #f2781c 11,21 9,23 = 9,21 3x3
+    ..C
+    .C.
+    C..
+sparks @3 pencil #ffc628 = 9,23 9,23 #ffc628
+sparks @4 line #f2781c 9,24 8,26 = 8,24 2x3
+    .C
+    C.
+    C.
+sparks @4 pencil #ffc628 = 8,26 8,26 #ffc628
+sparks @5 line #a8321e 7,27 6,29 = 6,27 2x3
+    .D
+    D.
+    D.
+sparks @5 pencil #f2781c = 6,29 6,29 #f2781c
+sparks @6 line #a8321e 6,31 6,32 = 6,31 6,31 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 13,16 11,15 = 11,15 3x2
+    BB.
+    ..B
+sparks @2 pencil #fff4c2 = 11,15 11,15 #fff4c2
+sparks @3 line #f2781c 11,15 8,15 = 8,15 11,15 #f2781c
+sparks @3 pencil #ffc628 = 8,15 8,15 #ffc628
+sparks @4 line #f2781c 8,14 6,15 = 6,14 3x2
+    ..C
+    CC.
+sparks @4 pencil #ffc628 = 6,15 6,15 #ffc628
+sparks @5 line #a8321e 6,15 5,17 = 5,15 2x3
+    .D
+    D.
+    D.
+sparks @5 pencil #f2781c = 5,17 5,17 #f2781c
+sparks @6 line #a8321e 4,18 4,19 = 4,18 4,19 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 15,17 13,15 = 13,15 3x3
+    B..
+    BB.
+    ..B
+sparks @2 pencil #fff4c2 = 13,15 13,15 #fff4c2
+sparks @3 line #f2781c 15,15 12,14 = 12,14 4x2
+    CC..
+    ..CC
+sparks @3 pencil #ffc628 = 12,14 12,14 #ffc628
+sparks @4 line #f2781c 13,13 11,14 = 11,13 3x2
+    ..C
+    CC.
+sparks @4 pencil #ffc628 = 11,14 11,14 #ffc628
+sparks @5 line #a8321e 11,14 10,15 = 10,14 2x2
+    .D
+    D.
+sparks @5 pencil #f2781c = 10,15 10,15 #f2781c
+sparks @6 line #a8321e 10,17 10,18 = 10,17 10,18 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 16,17 17,14 = 16,14 2x4
+    BB
+    BB
+    BB
+    B.
+sparks @2 pencil #fff4c2 = 17,14 17,14 #fff4c2
+sparks @3 line #f2781c 16,16 17,13 = 16,13 2x4
+    .C
+    .C
+    C.
+    C.
+sparks @3 pencil #ffc628 = 17,13 17,13 #ffc628
+sparks @4 line #f2781c 16,11 17,13 = 17,12 17,13 #f2781c
+sparks @4 pencil #ffc628 = 17,13 17,13 #ffc628
+sparks @5 line #a8321e 17,13 17,14 = 17,13 17,14 #a8321e
+sparks @5 pencil #f2781c = 17,14 17,14 #f2781c
+sparks @6 line #a8321e 18,16 18,17 = 18,16 18,17 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @2 line #ffc628 16,18 18,16 = 16,16 3x3
+    BBB
+    BB.
+    B..
+sparks @2 pencil #fff4c2 = 18,16 18,16 #fff4c2
+sparks @3 line #f2781c 17,16 20,15 = 17,15 4x2
+    ..CC
+    CC..
+sparks @3 pencil #ffc628 = 20,15 20,15 #ffc628
+sparks @4 line #f2781c 19,14 21,16 = 19,14 3x3
+    C..
+    .C.
+    ..C
+sparks @4 pencil #ffc628 = 21,16 21,16 #ffc628
+sparks @5 line #a8321e 21,16 21,17 = 21,16 21,17 #a8321e
+sparks @5 pencil #f2781c = 21,17 21,17 #f2781c
+sparks @6 line #a8321e 22,19 22,20 = 22,19 22,20 #a8321e
+sparks @6 pencil #a8321e ~
+sparks @0 clear_cel ~
+sparks @1 clear_cel ~
+sparks @2 clear_cel = 11,12 22,22 .
+sparks @3 clear_cel = 8,10 25,25 .
+sparks @4 clear_cel = 6,10 27,28 .
+sparks @5 clear_cel = 5,8 29,31 .
+sparks @6 clear_cel = 4,12 30,31 .
+sparks @7 clear_cel ~
+sparks @8 clear_cel ~
+sparks @9 clear_cel ~
+sparks @2 line #ffc628 14,13 12,9 = 12,9 3x5
+    B..
+    B..
+    .B.
+    .B.
+    ..B
+sparks @2 pencil #fff4c2 = 12,9 12,9 #fff4c2
+sparks @3 line #f2781c 13,10 11,7 = 11,7 3x4
+    C..
+    .C.
+    .C.
+    ..C
+sparks @3 pencil #ffc628 = 11,7 11,7 #ffc628
+sparks @4 line #a8321e 13,5 11,6 = 11,5 3x2
+    ..D
+    DD.
+sparks @4 pencil #f2781c = 11,6 11,6 #f2781c
+sparks @5 line #a8321e 10,6 10,8 = 10,6 10,8 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 18,13 19,9 = 18,9 2x5
+    .B
+    .B
+    .B
+    B.
+    B.
+sparks @2 pencil #fff4c2 = 19,9 19,9 #fff4c2
+sparks @3 line #f2781c 18,10 20,7 = 18,7 3x4
+    ..C
+    .C.
+    .C.
+    C..
+sparks @3 pencil #ffc628 = 20,7 20,7 #ffc628
+sparks @4 line #a8321e 18,5 20,7 = 18,5 3x3
+    D..
+    .D.
+    ..D
+sparks @4 pencil #f2781c = 20,7 20,7 #f2781c
+sparks @5 line #a8321e 20,7 20,8 = 20,7 20,8 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 21,15 24,13 = 21,13 4x3
+    ...B
+    .BB.
+    B...
+sparks @2 pencil #fff4c2 = 24,13 24,13 #fff4c2
+sparks @3 line #f2781c 24,13 27,12 = 24,12 4x2
+    ..CC
+    CC..
+sparks @3 pencil #ffc628 = 27,12 27,12 #ffc628
+sparks @4 line #a8321e 26,10 28,12 = 26,10 3x3
+    D..
+    .D.
+    ..D
+sparks @4 pencil #f2781c = 28,12 28,12 #f2781c
+sparks @5 line #a8321e 28,12 28,13 = 28,12 28,13 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 22,18 26,19 = 22,18 5x2
+    BB...
+    ..BBB
+sparks @2 pencil #fff4c2 = 26,19 26,19 #fff4c2
+sparks @3 line #f2781c 26,18 29,19 = 26,18 4x2
+    CC..
+    ..CC
+sparks @3 pencil #ffc628 = 29,19 29,19 #ffc628
+sparks @4 line #a8321e 29,19 31,20 = 29,19 3x2
+    D..
+    .DD
+sparks @4 pencil #f2781c = 31,20 31,20 #f2781c
+sparks @5 line #a8321e 31,21 31,22 = 31,21 31,22 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 19,20 22,22 = 19,20 4x3
+    B...
+    .BB.
+    ...B
+sparks @2 pencil #fff4c2 = 22,22 22,22 #fff4c2
+sparks @3 line #f2781c 22,22 24,25 = 22,22 3x4
+    C..
+    .C.
+    .C.
+    ..C
+sparks @3 pencil #ffc628 = 24,25 24,25 #ffc628
+sparks @4 line #a8321e 24,24 25,26 = 24,24 2x3
+    D.
+    .D
+    .D
+sparks @4 pencil #f2781c = 25,26 25,26 #f2781c
+sparks @5 line #a8321e 25,26 25,28 = 25,26 25,28 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 17,20 18,24 = 17,20 2x5
+    B.
+    B.
+    .B
+    .B
+    .B
+sparks @2 pencil #fff4c2 = 18,24 18,24 #fff4c2
+sparks @3 line #f2781c 18,23 18,26 = 18,23 18,26 #f2781c
+sparks @3 pencil #ffc628 = 18,26 18,26 #ffc628
+sparks @4 line #a8321e 18,26 19,28 = 18,26 2x3
+    D.
+    .D
+    .D
+sparks @4 pencil #f2781c = 19,28 19,28 #f2781c
+sparks @5 line #a8321e 19,29 19,30 = 19,29 19,30 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 15,20 14,24 = 14,20 2x5
+    .B
+    .B
+    B.
+    B.
+    B.
+sparks @2 pencil #fff4c2 = 14,24 14,24 #fff4c2
+sparks @3 line #f2781c 14,23 14,26 = 14,23 14,26 #f2781c
+sparks @3 pencil #ffc628 = 14,26 14,26 #ffc628
+sparks @4 line #a8321e 14,26 13,28 = 13,26 2x3
+    .D
+    D.
+    D.
+sparks @4 pencil #f2781c = 13,28 13,28 #f2781c
+sparks @5 line #a8321e 13,29 13,30 = 13,29 13,30 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 13,20 9,23 = 9,20 5x4
+    ....B
+    ...B.
+    .BB..
+    B....
+sparks @2 pencil #fff4c2 = 9,23 9,23 #fff4c2
+sparks @3 line #f2781c 10,22 7,25 = 7,22 4x4
+    ...C
+    ..C.
+    .C..
+    C...
+sparks @3 pencil #ffc628 = 7,25 7,25 #ffc628
+sparks @4 line #a8321e 7,24 6,27 = 6,24 2x4
+    .D
+    .D
+    D.
+    D.
+sparks @4 pencil #f2781c = 6,27 6,27 #f2781c
+sparks @5 line #a8321e 6,27 6,28 = 6,27 6,28 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 11,15 7,14 = 7,14 5x2
+    BBB..
+    ...BB
+sparks @2 pencil #fff4c2 = 7,14 7,14 #fff4c2
+sparks @3 line #f2781c 8,13 4,13 = 4,13 8,13 #f2781c
+sparks @3 pencil #ffc628 = 4,13 4,13 #ffc628
+sparks @4 line #a8321e 5,12 3,13 = 3,12 3x2
+    ..D
+    DD.
+sparks @4 pencil #f2781c = 3,13 3,13 #f2781c
+sparks @5 line #a8321e 3,13 3,14 = 3,13 3,14 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 16,16 16,12 = 16,12 16,16 #ffc628
+sparks @2 pencil #fff4c2 = 16,12 16,12 #fff4c2
+sparks @3 line #f2781c 16,14 16,10 = 16,10 16,14 #f2781c
+sparks @3 pencil #ffc628 = 16,10 16,10 #ffc628
+sparks @4 line #a8321e 16,8 16,10 = 16,8 16,10 #a8321e
+sparks @4 pencil #f2781c = 16,10 16,10 #f2781c
+sparks @5 line #a8321e 16,10 16,12 = 16,10 16,12 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 13,18 9,18 = 9,18 13,18 #ffc628
+sparks @2 pencil #fff4c2 = 9,18 9,18 #fff4c2
+sparks @3 line #f2781c 10,18 6,19 = 6,18 5x2
+    ...CC
+    CCC..
+sparks @3 pencil #ffc628 = 6,19 6,19 #ffc628
+sparks @4 line #a8321e 7,18 5,20 = 5,18 3x3
+    ..D
+    .D.
+    D..
+sparks @4 pencil #f2781c = 5,20 5,20 #f2781c
+sparks @5 line #a8321e 5,20 5,22 = 5,20 5,22 #a8321e
+sparks @5 pencil #a8321e ~
+debris @0 clear_cel ~
+debris @1 clear_cel ~
+debris @2 clear_cel ~
+debris @3 clear_cel ~
+debris @4 clear_cel ~
+debris @5 clear_cel ~
+debris @6 clear_cel ~
+debris @7 clear_cel ~
+debris @8 clear_cel ~
+debris @9 clear_cel ~
+debris @2 rect #f2781c 12,13 13,14 fill = 12,13 13,14 #f2781c
+debris @2 pencil #ffc628 = 12,13 12,13 #ffc628
+debris @3 rect #a8321e 11,12 12,13 fill = 11,12 12,13 #a8321e
+debris @3 pencil #f2781c = 11,12 11,12 #f2781c
+debris @4 rect #2e2630 10,13 11,14 fill = 10,13 11,14 #2e2630
+debris @4 pencil #a8321e = 10,13 10,13 #a8321e
+debris @5 rect #2e2630 9,15 10,16 fill = 9,15 10,16 #2e2630
+debris @6 pencil #2e2630 = 9,19 2x2
+    EE
+    E.
+debris @7 pencil #6b5a63 = 9,23 2x2
+    F.
+    .F
+debris @2 rect #f2781c 20,12 21,13 fill = 20,12 21,13 #f2781c
+debris @2 pencil #ffc628 = 20,12 20,12 #ffc628
+debris @3 rect #a8321e 21,10 22,11 fill = 21,10 22,11 #a8321e
+debris @3 pencil #f2781c = 21,10 21,10 #f2781c
+debris @4 rect #2e2630 22,10 23,11 fill = 22,10 23,11 #2e2630
+debris @4 pencil #a8321e = 22,10 22,10 #a8321e
+debris @5 rect #2e2630 22,13 23,14 fill = 22,13 23,14 #2e2630
+debris @6 pencil #2e2630 = 23,16 2x2
+    EE
+    E.
+debris @7 pencil #6b5a63 = 23,21 2x2
+    F.
+    .F
+debris @2 rect #f2781c 23,16 24,17 fill = 23,16 24,17 #f2781c
+debris @2 pencil #ffc628 = 23,16 23,16 #ffc628
+debris @3 rect #a8321e 26,17 27,18 fill = 26,17 27,18 #a8321e
+debris @3 pencil #f2781c = 26,17 26,17 #f2781c
+debris @4 rect #2e2630 27,18 28,19 fill = 27,18 28,19 #2e2630
+debris @4 pencil #a8321e = 27,18 27,18 #a8321e
+debris @5 rect #2e2630 28,21 29,22 fill = 28,21 29,22 #2e2630
+debris @6 pencil #2e2630 = 28,24 2x2
+    EE
+    E.
+debris @7 pencil #6b5a63 = 28,29 2x2
+    F.
+    .F
+debris @2 rect #f2781c 9,19 10,20 fill = 9,19 10,20 #f2781c
+debris @2 pencil #ffc628 = 9,19 9,19 #ffc628
+debris @3 rect #a8321e 7,21 8,22 fill = 7,21 8,22 #a8321e
+debris @3 pencil #f2781c = 7,21 7,21 #f2781c
+debris @4 rect #2e2630 5,23 6,24 fill = 5,23 6,24 #2e2630
+debris @4 pencil #a8321e = 5,23 5,23 #a8321e
+debris @5 rect #2e2630 4,26 5,27 fill = 4,26 5,27 #2e2630
+debris @6 pencil #2e2630 = 4,30 2x2
+    EE
+    E.
+debris @7 pencil #6b5a63 ~
+debris @2 pencil #f2781c = 13,23 13,23 #f2781c
+debris @3 pencil #a8321e = 12,26 12,26 #a8321e
+debris @4 pencil #2e2630 = 12,29 12,29 #2e2630
+debris @5 pencil #2e2630 ~
+debris @6 pencil #6b5a63 ~
+debris @2 pencil #f2781c = 19,23 19,23 #f2781c
+debris @3 pencil #a8321e = 20,26 20,26 #a8321e
+debris @4 pencil #2e2630 = 21,30 21,30 #2e2630
+debris @5 pencil #2e2630 ~
+debris @6 pencil #6b5a63 ~
+debris @2 pencil #f2781c = 16,13 16,13 #f2781c
+debris @3 pencil #a8321e = 16,12 16,12 #a8321e
+debris @4 pencil #2e2630 = 16,13 16,13 #2e2630
+debris @5 pencil #2e2630 = 16,15 16,15 #2e2630
+debris @6 pencil #6b5a63 = 16,19 16,19 #6b5a63
+debris @2 pencil #f2781c = 11,17 11,17 #f2781c
+debris @3 pencil #a8321e = 9,17 9,17 #a8321e
+debris @4 pencil #2e2630 = 7,19 7,19 #2e2630
+debris @5 pencil #2e2630 = 7,21 7,21 #2e2630
+debris @6 pencil #6b5a63 = 7,25 7,25 #6b5a63
+palette swap from=#2e2630,#6b5a63 to=#4e3c4a,#968590
+smoke @0 clear_cel ~
+smoke @1 clear_cel ~
+smoke @2 clear_cel ~
+smoke @3 clear_cel = 9,9 23,17 .
+smoke @4 clear_cel = 7,6 25,18 .
+smoke @5 clear_cel = 10,4 24,19 .
+smoke @6 clear_cel = 12,2 27,18 .
+smoke @7 clear_cel = 16,2 27,11 .
+smoke @8 clear_cel = 20,2 26,8 .
+smoke @9 clear_cel ~
+legend G=#4e3c4a
+smoke @3 ellipse #4e3c4a 12,14 3,3 fill = 9,11 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+legend H=#968590
+smoke @3 ellipse #968590 13,13 2,2 fill = 11,11 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @3 ellipse #4e3c4a 20,14 3,3 fill = 17,11 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @3 ellipse #968590 21,13 2,2 fill = 19,11 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @3 ellipse #4e3c4a 16,13 4,4 fill = 12,9 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+smoke @3 ellipse #968590 17,12 3,3 fill = 14,9 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 11,13 4,4 fill = 7,9 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @4 ellipse #968590 12,12 3,3 fill = 9,9 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 21,13 4,4 fill = 17,9 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @4 ellipse #968590 22,12 3,3 fill = 19,9 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 16,14 4,4 fill = 12,10 9x9
+    HHGGGGGGH
+    HGGGGGGGH
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    ..GGGGG..
+smoke @4 ellipse #968590 17,13 3,3 fill = 14,10 7x7
+    GGHHHGH
+    GHHHHHH
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 16,11 5,5 fill = 11,6 11x11
+    ...GGGGG...
+    ..GGGGGGG..
+    .GGGGGGGGG.
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    HGGGGGGGGGH
+    HGGGGGGGGGH
+    GGGGGGGGGGG
+smoke @4 ellipse #968590 17,10 4,4 fill = 13,6 9x9
+    .GHHHHH..
+    GHHHHHHH.
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    GHHHHHHHG
+    GGHHHHHGH
+smoke @5 ellipse #4e3c4a 10,12 3,3 fill = 7,9 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @5 ellipse #968590 11,11 2,2 fill = 9,9 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @5 ellipse #4e3c4a 16,15 4,4 fill = 12,11 9x9
+    HHGGGGG..
+    HGGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @5 ellipse #968590 17,14 3,3 fill = 14,11 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 15,12 4,4 fill = 11,8 9x9
+    ..GGGGG..
+    HGGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGH
+    .GGGGGGHH
+smoke @5 ellipse #968590 16,11 3,3 fill = 13,8 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 20,8 4,4 fill = 16,4 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGG.
+    HHGGGGG..
+smoke @5 ellipse #968590 21,7 3,3 fill = 18,4 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 15,9 5,5 fill = 10,4 11x11
+    ...GGGGGGGH
+    ..GGGGGGGHH
+    .GGGGGGGGGH
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    HGGGGGGGGGG
+    HGGGGGGGGGH
+    GGGGGGGGGGH
+smoke @5 ellipse #968590 16,8 4,4 fill = 12,4 9x9
+    .GHHHHHGH
+    GHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    GHHHHHHHG
+    GGHHHHHGG
+smoke @6 ellipse #4e3c4a 9,10 2,2 fill = 7,8 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @6 ellipse #968590 10,9 1,1 fill = 9,8 11,10 #968590
+smoke @6 ellipse #4e3c4a 16,15 3,3 fill = 13,12 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @6 ellipse #968590 17,14 2,2 fill = 15,12 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @6 ellipse #4e3c4a 16,12 3,3 fill = 13,9 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    GGGGGGH
+    GGGGGHH
+smoke @6 ellipse #968590 17,11 2,2 fill = 15,9 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @6 ellipse #4e3c4a 16,9 4,4 fill = 12,5 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    .GGGGGGG.
+smoke @6 ellipse #968590 17,8 3,3 fill = 14,5 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @6 ellipse #4e3c4a 19,6 4,4 fill = 15,2 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGG.
+    HHGGGGG..
+smoke @6 ellipse #968590 20,5 3,3 fill = 17,2 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @6 ellipse #4e3c4a 23,6 3,3 fill = 20,3 7x7
+    HHGGG..
+    HGGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    HGGGGG.
+    GGGGG..
+smoke @6 ellipse #968590 24,5 2,2 fill = 22,3 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @6 ellipse #4e3c4a 24,9 3,3 fill = 22,6 6x7
+    HGGGH.
+    GGGGG.
+    GGGGGG
+    GGGGGG
+    GGGGGG
+    GGGGG.
+    .GGG..
+smoke @6 ellipse #968590 25,8 2,2 fill = 23,6 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @6 ellipse #4e3c4a 22,11 2,2 fill = 20,9 5x5
+    GGGGH
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @6 ellipse #968590 23,10 1,1 fill = 22,9 24,11 #968590
+smoke @6 erase pencil = 11,4 12x12
+    .....GHHHHGH
+    ...GGGHHHGGH
+    ..GGGGHHHGG.
+    .GGH.GGHHGGG
+    HGGHGGGGHHGG
+    HGGHHGGGGGGH
+    .GGGHHGGGGGH
+    GGGGGHHHGGGH
+    ..GGG.GGGGGG
+    ..GGGGGGG.GG
+    ..GGGGGGH...
+    ...G.GGHH...
+smoke @7 ellipse #4e3c4a 17,11 2,2 fill = 15,9 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @7 ellipse #968590 18,10 1,1 fill = 17,9 19,11 #968590
+smoke @7 ellipse #4e3c4a 17,6 3,3 fill = 14,3 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGGH.
+smoke @7 ellipse #968590 18,5 2,2 fill = 16,3 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @7 ellipse #4e3c4a 20,3 3,3 fill = 17,0 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    HGGGGG.
+    HHGGG..
+smoke @7 ellipse #968590 21,2 2,2 fill = 19,0 5x5
+    GHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHHG
+smoke @7 ellipse #4e3c4a 24,3 2,2 fill = 22,1 5x5
+    HGGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    GGGG.
+smoke @7 ellipse #968590 25,2 1,1 fill = 24,1 26,3 #968590
+smoke @7 ellipse #4e3c4a 25,6 2,2 fill = 23,5 5x4
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @7 ellipse #968590 26,5 1,1 fill = 25,4 27,6 #968590
+smoke @7 ellipse #4e3c4a 23,8 1,1 fill = 22,7 24,9 #4e3c4a
+smoke @7 ellipse #968590 24,7 1,1 fill = 23,6 25,8 #968590
+smoke @7 erase pencil = 14,1 14x12
+    .....HHHHGHHH.
+    ...GGHHHGGHHH.
+    ..GGGHHHGGHH..
+    .GHGG.HHG.GH..
+    GGHHGGGGGGGHHH
+    ..H.HGGG.HHHHH
+    .GGHHHG.GHHHGG
+    .GGGGG..GHH.G.
+    ..GGGH...G....
+    ..GHHH........
+    ..GHHH........
+    .GGG..........
+smoke @8 ellipse #4e3c4a 19,3 2,2 fill = 17,1 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @8 ellipse #968590 20,2 1,1 fill = 19,1 21,3 #968590
+smoke @8 ellipse #4e3c4a 22,2 2,2 fill = 20,0 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    GGGG.
+smoke @8 ellipse #968590 23,1 1,1 fill = 22,0 24,2 #968590
+smoke @8 ellipse #4e3c4a 25,4 1,1 fill = 24,3 26,5 #4e3c4a
+smoke @8 ellipse #968590 26,3 1,1 fill = 25,2 27,4 #968590
+smoke @8 ellipse #4e3c4a 24,7 1,1 fill = 23,6 25,8 #4e3c4a
+smoke @8 ellipse #968590 25,6 1,1 fill = 24,5 26,7 #968590
+smoke @8 erase pencil = 18,0 10x9
+    ....HH....
+    ..GGHH....
+    GHGGHH..HH
+    GHGGGG.HHH
+    GG.GGGGH..
+    GG....HH..
+    .....GHHH.
+    .....GHH..
+    .....G.G..
+core @0 clear_cel = 13,15 19,21 .
+core @1 clear_cel = 4,5 28,29 .
+core @2 clear_cel = 9,11 23,25 .
+core @3 clear_cel = 10,12 22,24 .
+core @4 clear_cel = 12,15 20,23 .
+core @5 clear_cel = 14,17 18,21 .
+core @6 clear_cel = 15,18 17,20 .
+core @7 clear_cel ~
+core @8 clear_cel ~
+core @9 clear_cel ~
+core @1 line #ffc628 16,18 28,18 = 16,18 28,18 #ffc628
+core @1 line #ffc628 16,18 4,18 = 4,18 15,18 #ffc628
+core @1 line #ffc628 16,18 16,29 = 16,19 16,29 #ffc628
+core @1 line #ffc628 16,18 16,5 = 16,5 16,17 #ffc628
+core @1 line #ffc628 16,18 27,29 = 17,19 11x11
+    B..........
+    .B.........
+    ..B........
+    ...B.......
+    ....B......
+    .....B.....
+    ......B....
+    .......B...
+    ........B..
+    .........B.
+    ..........B
+core @1 line #ffc628 16,18 5,7 = 5,7 11x11
+    B..........
+    .B.........
+    ..B........
+    ...B.......
+    ....B......
+    .....B.....
+    ......B....
+    .......B...
+    ........B..
+    .........B.
+    ..........B
+core @1 line #ffc628 16,18 27,7 = 17,7 11x11
+    ..........B
+    .........B.
+    ........B..
+    .......B...
+    ......B....
+    .....B.....
+    ....B......
+    ...B.......
+    ..B........
+    .B.........
+    B..........
+core @1 line #ffc628 16,18 6,28 = 6,19 10x10
+    .........B
+    ........B.
+    .......B..
+    ......B...
+    .....B....
+    ....B.....
+    ...B......
+    ..B.......
+    .B........
+    B.........
+core @1 ellipse #f2781c 16,18 8,8 fill = 8,10 17x17
+    B.....CCCCC.....B
+    .B..CCCCCCCCC..B.
+    ..CCCCCCCCCCCCC..
+    ..CCCCCCCCCCCCC..
+    .CCCCCCCCCCCCCCC.
+    .CCCCCCCCCCCCCCC.
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    .CCCCCCCCCCCCCCC.
+    .CCCCCCCCCCCCCCC.
+    ..CCCCCCCCCCCCC..
+    ..CCCCCCCCCCCCC..
+    .B..CCCCCCCCC..B.
+    B.....CCCCC.....B
+core @1 ellipse #ffc628 16,18 6,6 fill = 10,12 13x13
+    CCCCBBBBBCCCC
+    CCBBBBBBBBBCC
+    CBBBBBBBBBBBC
+    CBBBBBBBBBBBC
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    CBBBBBBBBBBBC
+    CBBBBBBBBBBBC
+    CCBBBBBBBBBCC
+    CCCCBBBBBCCCC
+core @1 ellipse #fff4c2 16,18 4,4 fill = 12,14 9x9
+    BBAAAAABB
+    BAAAAAAAB
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    BAAAAAAAB
+    BBAAAAABB
+core @0 ellipse #ffc628 16,18 3,3 fill = 13,15 7x7
+    ..BBB..
+    .BBBBB.
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    .BBBBB.
+    ..BBB..
+core @0 ellipse #fff4c2 16,18 2,2 fill = 14,16 5x5
+    BAAAB
+    AAAAA
+    AAAAA
+    AAAAA
+    BAAAB
+core @2 ellipse #f2781c 16,18 7,7 fill = 9,11 15x15
+    .....CCCCC.....
+    ...CCCCCCCCC...
+    ..CCCCCCCCCCC..
+    .CCCCCCCCCCCCC.
+    .CCCCCCCCCCCCC.
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCC
+    .CCCCCCCCCCCCC.
+    .CCCCCCCCCCCCC.
+    ..CCCCCCCCCCC..
+    ...CCCCCCCCC...
+    .....CCCCC.....
+core @2 ellipse #f2781c 11,15 3,3 fill = 8,12 4x5
+    ..CC
+    .CCC
+    CCCC
+    CCCC
+    CCCC
+core @2 ellipse #f2781c 20,23 4,4 fill = 17,21 8x7
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCCC
+    CCCCCCC.
+    .CCCCC..
+core @2 ellipse #f2781c 22,14 3,3 fill = 21,11 5x6
+    CCC..
+    CCCC.
+    CCCCC
+    CCCCC
+    CCCCC
+    CCCC.
+core @2 ellipse #ffc628 16,18 5,5 fill = 11,13 11x11
+    CCCBBBBBCCC
+    CCBBBBBBBCC
+    CBBBBBBBBBC
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    BBBBBBBBBBB
+    CBBBBBBBBBC
+    CCBBBBBBBCC
+    CCCBBBBBCCC
+core @2 ellipse #ffc628 13,16 3,3 fill = 10,13 4x5
+    CCBB
+    CBBB
+    BBBB
+    BBBB
+    BBBB
+core @2 ellipse #ffc628 19,21 3,3 fill = 18,20 5x5
+    BBBBB
+    BBBBB
+    BBBBB
+    BBBBC
+    BBBCC
+core @2 ellipse #fff4c2 16,18 2,2 fill = 14,16 5x5
+    BAAAB
+    AAAAA
+    AAAAA
+    AAAAA
+    BAAAB
+core @2 ellipse #fff4c2 15,17 2,2 fill = 13,15 4x4
+    BAAA
+    AAAA
+    AAAA
+    AAAA
+core @3 ellipse #a8321e 16,18 6,6 fill = 10,12 13x13
+    ....DDDDD....
+    ..DDDDDDDDD..
+    .DDDDDDDDDDD.
+    .DDDDDDDDDDD.
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    .DDDDDDDDDDD.
+    .DDDDDDDDDDD.
+    ..DDDDDDDDD..
+    ....DDDDD....
+core @3 ellipse #a8321e 12,21 3,3 fill = 9,20 5x5
+    DDDDD
+    DDDDD
+    DDDDD
+    .DDDD
+    ..DDD
+core @3 ellipse #a8321e 20,16 4,4 fill = 19,12 6x8
+    DDDD..
+    DDDDD.
+    DDDDDD
+    DDDDDD
+    DDDDDD
+    DDDDDD
+    DDDDDD
+    DDDDD.
+core @3 ellipse #a8321e 16,22 4,4 fill = 13,24 8x3
+    DDDDDDDD
+    DDDDDDD.
+    .DDDDD..
+core @3 ellipse #f2781c 16,18 5,5 fill = 11,13 11x11
+    .DDCCCCCDDD
+    DDCCCCCCCDD
+    DCCCCCCCCCD
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    DCCCCCCCCCD
+    DDCCCCCCCDD
+    DDDCCCCCDD.
+core @3 ellipse #f2781c 13,21 2,2 fill = 11,21 3x3
+    CCC
+    CCC
+    DCC
+core @3 ellipse #f2781c 19,16 3,3 fill = 19,13 4x5
+    CCDD
+    CCCD
+    CCCC
+    CCCC
+    CCCC
+core @3 ellipse #ffc628 16,19 3,3 fill = 13,16 7x7
+    CCBBBCC
+    CBBBBBC
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    CBBBBBC
+    CCBBBCC
+core @3 ellipse #ffc628 15,18 2,2 fill = 13,16 2x2
+    CB
+    BB
+core @4 ellipse #a8321e 16,19 4,4 fill = 12,15 9x9
+    ..DDDDD..
+    .DDDDDDD.
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    .DDDDDDD.
+    ..DDDDD..
+core @4 ellipse #a8321e 13,21 2,2 fill = 11,20 3x4
+    DDD
+    DDD
+    DDD
+    .DD
+core @4 ellipse #a8321e 19,21 2,2 fill = 19,20 3x4
+    DDD
+    DDD
+    DDD
+    DD.
+core @4 ellipse #f2781c 16,19 3,3 fill = 13,16 7x7
+    DDCCCDD
+    DCCCCCD
+    CCCCCCC
+    CCCCCCC
+    CCCCCCC
+    DCCCCCD
+    DDCCCDD
+core @4 ellipse #f2781c 14,20 2,2 fill = 12,19 3x4
+    CCC
+    CCC
+    CCC
+    DCC
+core @4 ellipse #ffc628 16,19 1,1 fill = 15,18 17,20 #ffc628
+core @5 ellipse #a8321e 16,19 2,2 fill = 14,17 5x5
+    .DDD.
+    DDDDD
+    DDDDD
+    DDDDD
+    .DDD.
+core @5 ellipse #a8321e 15,21 1,1 fill = 14,21 16,22 #a8321e
+core @5 ellipse #f2781c 16,19 1,1 fill = 15,18 17,20 #f2781c
+core @6 ellipse #a8321e 16,19 1,1 fill = 15,18 17,20 #a8321e
+sparks @0 clear_cel ~
+sparks @1 clear_cel ~
+sparks @2 clear_cel = 7,9 26,24 .
+sparks @3 clear_cel = 4,7 29,26 .
+sparks @4 clear_cel = 3,5 31,28 .
+sparks @5 clear_cel = 3,6 31,30 .
+sparks @6 clear_cel ~
+sparks @7 clear_cel ~
+sparks @8 clear_cel ~
+sparks @9 clear_cel ~
+sparks @2 line #ffc628 14,13 13,9 = 13,9 2x5
+    B.
+    B.
+    B.
+    .B
+    .B
+sparks @2 pencil #fff4c2 = 13,9 13,9 #fff4c2
+sparks @3 line #f2781c 13,8 12,6 = 12,6 2x3
+    C.
+    C.
+    .C
+sparks @3 pencil #ffc628 = 12,6 12,6 #ffc628
+sparks @4 line #a8321e 12,6 11,6 = 11,6 12,6 #a8321e
+sparks @4 pencil #f2781c = 11,6 11,6 #f2781c
+sparks @5 line #a8321e 11,6 11,7 = 11,6 11,7 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 18,14 20,11 = 18,11 3x4
+    ..B
+    .B.
+    .B.
+    B..
+sparks @2 pencil #fff4c2 = 20,11 20,11 #fff4c2
+sparks @3 line #f2781c 20,11 21,10 = 20,10 2x2
+    .C
+    C.
+sparks @3 pencil #ffc628 = 21,10 21,10 #ffc628
+sparks @4 line #a8321e 21,10 22,10 = 21,10 22,10 #a8321e
+sparks @4 pencil #f2781c = 22,10 22,10 #f2781c
+sparks @5 line #a8321e 22,10 22,11 = 22,10 22,11 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 21,16 25,15 = 21,15 5x2
+    ..BBB
+    BB...
+sparks @2 pencil #fff4c2 = 25,15 25,15 #fff4c2
+sparks @3 line #f2781c 25,15 27,14 = 25,14 3x2
+    .CC
+    C..
+sparks @3 pencil #ffc628 = 27,14 27,14 #ffc628
+sparks @4 line #a8321e 27,14 29,15 = 27,14 3x2
+    D..
+    .DD
+sparks @4 pencil #f2781c = 29,15 29,15 #f2781c
+sparks @5 line #a8321e 29,15 29,16 = 29,15 29,16 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 20,19 22,20 = 20,19 3x2
+    B..
+    .BB
+sparks @2 pencil #fff4c2 = 22,20 22,20 #fff4c2
+sparks @3 line #f2781c 23,20 25,21 = 23,20 3x2
+    C..
+    .CC
+sparks @3 pencil #ffc628 = 25,21 25,21 #ffc628
+sparks @4 line #a8321e 25,21 26,22 = 25,21 2x2
+    D.
+    .D
+sparks @4 pencil #f2781c = 26,22 26,22 #f2781c
+sparks @5 line #a8321e 26,22 26,24 = 26,22 26,24 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 18,20 19,22 = 18,20 2x3
+    B.
+    .B
+    .B
+sparks @2 pencil #fff4c2 = 19,22 19,22 #fff4c2
+sparks @3 line #f2781c 20,23 20,24 = 20,23 20,24 #f2781c
+sparks @3 pencil #ffc628 = 20,24 20,24 #ffc628
+sparks @4 line #a8321e 20,24 21,26 = 20,24 2x3
+    D.
+    .D
+    .D
+sparks @4 pencil #f2781c = 21,26 21,26 #f2781c
+sparks @5 line #a8321e 21,26 21,28 = 21,26 21,28 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 16,21 15,23 = 15,21 2x3
+    .B
+    B.
+    B.
+sparks @2 pencil #fff4c2 = 15,23 15,23 #fff4c2
+sparks @3 line #f2781c 15,24 15,26 = 15,24 15,26 #f2781c
+sparks @3 pencil #ffc628 = 15,26 15,26 #ffc628
+sparks @4 line #a8321e 15,26 15,28 = 15,26 15,28 #a8321e
+sparks @4 pencil #f2781c = 15,28 15,28 #f2781c
+sparks @5 line #a8321e 15,28 15,29 = 15,28 15,29 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 13,21 11,23 = 11,21 3x3
+    ..B
+    .B.
+    B..
+sparks @2 pencil #fff4c2 = 11,23 11,23 #fff4c2
+sparks @3 line #f2781c 10,24 9,26 = 9,24 2x3
+    .C
+    C.
+    C.
+sparks @3 pencil #ffc628 = 9,26 9,26 #ffc628
+sparks @4 line #a8321e 9,26 8,27 = 8,26 2x2
+    .D
+    D.
+sparks @4 pencil #f2781c = 8,27 8,27 #f2781c
+sparks @5 line #a8321e 8,27 8,29 = 8,27 8,29 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 12,16 9,14 = 9,14 4x3
+    B...
+    .BB.
+    ...B
+sparks @2 pencil #fff4c2 = 9,14 9,14 #fff4c2
+sparks @3 line #f2781c 8,14 6,13 = 6,13 3x2
+    CC.
+    ..C
+sparks @3 pencil #ffc628 = 6,13 6,13 #ffc628
+sparks @4 line #a8321e 6,13 5,14 = 5,13 2x2
+    .D
+    D.
+sparks @4 pencil #f2781c = 5,14 5,14 #f2781c
+sparks @5 line #a8321e 5,14 5,15 = 5,14 5,15 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 13,18 11,18 = 11,18 13,18 #ffc628
+sparks @2 pencil #fff4c2 = 11,18 11,18 #fff4c2
+sparks @3 line #f2781c 10,18 9,18 = 9,18 10,18 #f2781c
+sparks @3 pencil #ffc628 = 9,18 9,18 #ffc628
+sparks @4 line #a8321e 9,18 8,19 = 8,18 2x2
+    .D
+    D.
+sparks @4 pencil #f2781c = 8,19 8,19 #f2781c
+sparks @5 line #a8321e 8,19 8,21 = 8,19 8,21 #a8321e
+sparks @5 pencil #a8321e ~
+debris @0 clear_cel ~
+debris @1 clear_cel ~
+debris @2 clear_cel = 9,12 24,23 .
+debris @3 clear_cel = 7,10 27,26 .
+debris @4 clear_cel = 5,10 28,30 .
+debris @5 clear_cel = 4,13 29,27 .
+debris @6 clear_cel = 4,16 29,31 .
+debris @7 clear_cel = 9,21 29,30 .
+debris @8 clear_cel ~
+debris @9 clear_cel ~
+debris @2 pencil #f2781c = 12,13 3x2
+    CCC
+    CC.
+debris @2 pencil #ffc628 = 12,13 12,13 #ffc628
+debris @3 pencil #a8321e = 11,12 3x2
+    DDD
+    DD.
+debris @3 pencil #f2781c = 11,12 11,12 #f2781c
+debris @4 pencil #4e3c4a = 10,13 3x2
+    GGG
+    GG.
+debris @4 pencil #a8321e = 10,13 10,13 #a8321e
+debris @5 pencil #4e3c4a = 9,15 3x2
+    GGG
+    GG.
+debris @6 pencil #4e3c4a = 9,19 11,19 #4e3c4a
+debris @7 pencil #968590 = 9,23 2x2
+    H.
+    .H
+debris @2 pencil #f2781c = 20,12 21,13 #f2781c
+debris @2 pencil #ffc628 = 20,12 20,12 #ffc628
+debris @3 pencil #a8321e = 21,10 22,11 #a8321e
+debris @3 pencil #f2781c = 21,10 21,10 #f2781c
+debris @4 pencil #4e3c4a = 22,10 23,11 #4e3c4a
+debris @4 pencil #a8321e = 22,10 22,10 #a8321e
+debris @5 pencil #4e3c4a = 22,13 23,14 #4e3c4a
+debris @6 pencil #4e3c4a = 23,16 24,16 #4e3c4a
+debris @7 pencil #968590 = 23,21 2x2
+    H.
+    .H
+debris @2 pencil #f2781c = 23,16 3x2
+    CCC
+    CC.
+debris @2 pencil #ffc628 = 23,16 23,16 #ffc628
+debris @3 pencil #a8321e = 26,17 3x2
+    DDD
+    DD.
+debris @3 pencil #f2781c = 26,17 26,17 #f2781c
+debris @4 pencil #4e3c4a = 27,18 3x2
+    GGG
+    GG.
+debris @4 pencil #a8321e = 27,18 27,18 #a8321e
+debris @5 pencil #4e3c4a = 28,21 3x2
+    GGG
+    GG.
+debris @6 pencil #4e3c4a = 28,24 30,24 #4e3c4a
+debris @7 pencil #968590 = 28,29 2x2
+    H.
+    .H
+debris @2 pencil #f2781c = 9,19 10,20 #f2781c
+debris @2 pencil #ffc628 = 9,19 9,19 #ffc628
+debris @3 pencil #a8321e = 7,21 8,22 #a8321e
+debris @3 pencil #f2781c = 7,21 7,21 #f2781c
+debris @4 pencil #4e3c4a = 5,23 6,24 #4e3c4a
+debris @4 pencil #a8321e = 5,23 5,23 #a8321e
+debris @5 pencil #4e3c4a = 4,26 5,27 #4e3c4a
+debris @6 pencil #4e3c4a = 4,30 5,30 #4e3c4a
+debris @7 pencil #968590 ~
+debris @2 pencil #f2781c = 13,23 13,23 #f2781c
+debris @3 pencil #a8321e = 12,26 12,26 #a8321e
+debris @4 pencil #4e3c4a = 12,29 12,29 #4e3c4a
+debris @5 pencil #4e3c4a ~
+debris @6 pencil #968590 ~
+debris @2 pencil #f2781c = 19,23 19,23 #f2781c
+debris @3 pencil #a8321e = 20,26 20,26 #a8321e
+debris @4 pencil #4e3c4a = 21,30 21,30 #4e3c4a
+debris @5 pencil #4e3c4a ~
+debris @6 pencil #968590 ~
+debris @2 pencil #f2781c = 16,13 16,13 #f2781c
+debris @3 pencil #a8321e = 16,12 16,12 #a8321e
+debris @4 pencil #4e3c4a = 16,13 16,13 #4e3c4a
+debris @5 pencil #4e3c4a = 16,15 16,15 #4e3c4a
+debris @6 pencil #968590 = 16,19 16,19 #968590
+debris @2 pencil #f2781c = 11,17 11,17 #f2781c
+debris @3 pencil #a8321e = 9,17 9,17 #a8321e
+debris @4 pencil #4e3c4a = 7,19 7,19 #4e3c4a
+debris @5 pencil #4e3c4a = 7,21 7,21 #4e3c4a
+debris @6 pencil #968590 = 7,25 7,25 #968590
+smoke @9 pencil #968590 = 21,2 7x4
+    ...H...
+    .......
+    H......
+    ......H
+core @0 clear_cel = 13,15 19,21 .
+core @1 clear_cel = 4,5 28,29 .
+core @2 clear_cel = 8,11 25,27 .
+core @3 clear_cel = 9,12 24,26 .
+core @4 clear_cel = 11,15 21,23 .
+core @5 clear_cel = 14,17 18,22 .
+core @6 clear_cel = 15,18 17,20 .
+core @7 clear_cel ~
+core @8 clear_cel ~
+core @9 clear_cel ~
+core @1 line #ffc628 16,18 28,18 = 16,18 28,18 #ffc628
+core @1 line #ffc628 16,18 4,18 = 4,18 15,18 #ffc628
+core @1 line #ffc628 16,18 16,29 = 16,19 16,29 #ffc628
+core @1 line #ffc628 16,18 16,5 = 16,5 16,17 #ffc628
+core @1 line #ffc628 16,18 27,29 = 17,19 11x11
+    B..........
+    .B.........
+    ..B........
+    ...B.......
+    ....B......
+    .....B.....
+    ......B....
+    .......B...
+    ........B..
+    .........B.
+    ..........B
+core @1 line #ffc628 16,18 5,7 = 5,7 11x11
+    B..........
+    .B.........
+    ..B........
+    ...B.......
+    ....B......
+    .....B.....
+    ......B....
+    .......B...
+    ........B..
+    .........B.
+    ..........B
+core @1 line #ffc628 16,18 27,7 = 17,7 11x11
+    ..........B
+    .........B.
+    ........B..
+    .......B...
+    ......B....
+    .....B.....
+    ....B......
+    ...B.......
+    ..B........
+    .B.........
+    B..........
+core @1 line #ffc628 16,18 6,28 = 6,19 10x10
+    .........B
+    ........B.
+    .......B..
+    ......B...
+    .....B....
+    ....B.....
+    ...B......
+    ..B.......
+    .B........
+    B.........
+core @1 ellipse #f2781c 16,18 8,8 fill = 8,10 17x17
+    B.....CCCCC.....B
+    .B..CCCCCCCCC..B.
+    ..CCCCCCCCCCCCC..
+    ..CCCCCCCCCCCCC..
+    .CCCCCCCCCCCCCCC.
+    .CCCCCCCCCCCCCCC.
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    CCCCCCCCCCCCCCCCC
+    .CCCCCCCCCCCCCCC.
+    .CCCCCCCCCCCCCCC.
+    ..CCCCCCCCCCCCC..
+    ..CCCCCCCCCCCCC..
+    .B..CCCCCCCCC..B.
+    B.....CCCCC.....B
+core @1 ellipse #ffc628 16,18 6,6 fill = 10,12 13x13
+    CCCCBBBBBCCCC
+    CCBBBBBBBBBCC
+    CBBBBBBBBBBBC
+    CBBBBBBBBBBBC
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    BBBBBBBBBBBBB
+    CBBBBBBBBBBBC
+    CBBBBBBBBBBBC
+    CCBBBBBBBBBCC
+    CCCCBBBBBCCCC
+core @1 ellipse #fff4c2 16,18 4,4 fill = 12,14 9x9
+    BBAAAAABB
+    BAAAAAAAB
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    AAAAAAAAA
+    BAAAAAAAB
+    BBAAAAABB
+core @0 ellipse #ffc628 16,18 3,3 fill = 13,15 7x7
+    ..BBB..
+    .BBBBB.
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    .BBBBB.
+    ..BBB..
+core @0 ellipse #fff4c2 16,18 2,2 fill = 14,16 5x5
+    BAAAB
+    AAAAA
+    AAAAA
+    AAAAA
+    BAAAB
+core @2 ellipse #f2781c 16,18 6,6 fill = 10,12 13x13
+    ....CCCCC....
+    ..CCCCCCCCC..
+    .CCCCCCCCCCC.
+    .CCCCCCCCCCC.
+    CCCCCCCCCCCCC
+    CCCCCCCCCCCCC
+    CCCCCCCCCCCCC
+    CCCCCCCCCCCCC
+    CCCCCCCCCCCCC
+    .CCCCCCCCCCC.
+    .CCCCCCCCCCC.
+    ..CCCCCCCCC..
+    ....CCCCC....
+core @2 ellipse #f2781c 12,15 3,3 fill = 9,12 5x5
+    ..CCC
+    .CCCC
+    CCCCC
+    CCCCC
+    CCCCC
+core @2 ellipse #f2781c 19,22 3,3 fill = 18,21 5x5
+    CCCCC
+    CCCCC
+    CCCCC
+    CCCC.
+    CCC..
+core @2 ellipse #f2781c 20,14 3,3 fill = 19,11 5x5
+    CCC..
+    CCCC.
+    CCCCC
+    CCCCC
+    CCCCC
+core @2 ellipse #f2781c 12,22 2,2 fill = 10,21 4x4
+    CCCC
+    CCCC
+    CCCC
+    .CCC
+core @2 ellipse #ffc628 16,18 4,4 fill = 12,14 9x9
+    CCBBBBBCC
+    CBBBBBBBC
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    BBBBBBBBB
+    CBBBBBBBC
+    CCBBBBBCC
+core @2 ellipse #ffc628 14,16 3,3 fill = 11,13 5x5
+    CCBBB
+    CBBBB
+    BBBBB
+    BBBBB
+    BBBBB
+core @2 ellipse #ffc628 18,20 2,2 fill = 19,21 2x2
+    BB
+    BC
+core @2 ellipse #fff4c2 16,18 2,2 fill = 14,16 5x5
+    BAAAB
+    AAAAA
+    AAAAA
+    AAAAA
+    BAAAB
+core @3 ellipse #a8321e 16,18 6,6 fill = 10,12 13x13
+    ....DDDDD....
+    ..DDDDDDDDD..
+    .DDDDDDDDDDD.
+    .DDDDDDDDDDD.
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    DDDDDDDDDDDDD
+    .DDDDDDDDDDD.
+    .DDDDDDDDDDD.
+    ..DDDDDDDDD..
+    ....DDDDD....
+core @3 ellipse #a8321e 12,21 3,3 fill = 9,20 5x5
+    DDDDD
+    DDDDD
+    DDDDD
+    .DDDD
+    ..DDD
+core @3 ellipse #a8321e 20,16 4,4 fill = 19,12 6x8
+    DDDD..
+    DDDDD.
+    DDDDDD
+    DDDDDD
+    DDDDDD
+    DDDDDD
+    DDDDDD
+    DDDDD.
+core @3 ellipse #a8321e 16,22 4,4 fill = 13,24 8x3
+    DDDDDDDD
+    DDDDDDD.
+    .DDDDD..
+core @3 ellipse #f2781c 16,18 5,5 fill = 11,13 11x11
+    .DDCCCCCDDD
+    DDCCCCCCCDD
+    DCCCCCCCCCD
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    CCCCCCCCCCC
+    DCCCCCCCCCD
+    DDCCCCCCCDD
+    DDDCCCCCDD.
+core @3 ellipse #f2781c 13,21 2,2 fill = 11,21 3x3
+    CCC
+    CCC
+    DCC
+core @3 ellipse #f2781c 19,16 3,3 fill = 19,13 4x5
+    CCDD
+    CCCD
+    CCCC
+    CCCC
+    CCCC
+core @3 ellipse #ffc628 16,19 3,3 fill = 13,16 7x7
+    CCBBBCC
+    CBBBBBC
+    BBBBBBB
+    BBBBBBB
+    BBBBBBB
+    CBBBBBC
+    CCBBBCC
+core @3 ellipse #ffc628 15,18 2,2 fill = 13,16 2x2
+    CB
+    BB
+core @4 ellipse #a8321e 16,19 4,4 fill = 12,15 9x9
+    ..DDDDD..
+    .DDDDDDD.
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    DDDDDDDDD
+    .DDDDDDD.
+    ..DDDDD..
+core @4 ellipse #a8321e 13,21 2,2 fill = 11,20 3x4
+    DDD
+    DDD
+    DDD
+    .DD
+core @4 ellipse #a8321e 19,21 2,2 fill = 19,20 3x4
+    DDD
+    DDD
+    DDD
+    DD.
+core @4 ellipse #f2781c 16,19 3,3 fill = 13,16 7x7
+    DDCCCDD
+    DCCCCCD
+    CCCCCCC
+    CCCCCCC
+    CCCCCCC
+    DCCCCCD
+    DDCCCDD
+core @4 ellipse #f2781c 14,20 2,2 fill = 12,19 3x4
+    CCC
+    CCC
+    CCC
+    DCC
+core @4 ellipse #ffc628 16,19 1,1 fill = 15,18 17,20 #ffc628
+core @5 ellipse #a8321e 16,19 2,2 fill = 14,17 5x5
+    .DDD.
+    DDDDD
+    DDDDD
+    DDDDD
+    .DDD.
+core @5 ellipse #a8321e 15,21 1,1 fill = 14,21 16,22 #a8321e
+core @5 ellipse #f2781c 16,19 1,1 fill = 15,18 17,20 #f2781c
+core @6 ellipse #a8321e 16,19 1,1 fill = 15,18 17,20 #a8321e
+sparks @0 clear_cel ~
+sparks @1 clear_cel ~
+sparks @2 clear_cel = 9,9 25,23 .
+sparks @3 clear_cel = 6,6 27,26 .
+sparks @4 clear_cel = 5,6 29,28 .
+sparks @5 clear_cel = 5,6 29,29 .
+sparks @6 clear_cel ~
+sparks @7 clear_cel ~
+sparks @8 clear_cel ~
+sparks @9 clear_cel ~
+sparks @2 line #ffc628 14,12 12,7 = 12,7 3x6
+    B..
+    B..
+    .B.
+    .B.
+    ..B
+    ..B
+sparks @2 pencil #fff4c2 = 12,7 12,7 #fff4c2
+sparks @3 line #f2781c 12,6 11,4 = 11,4 2x3
+    C.
+    C.
+    .C
+sparks @3 pencil #ffc628 = 11,4 11,4 #ffc628
+sparks @4 line #a8321e 11,4 11,4 = 11,4 11,4 #a8321e
+sparks @4 pencil #f2781c = 11,4 11,4 #f2781c
+sparks @5 line #a8321e 11,4 11,5 = 11,4 11,5 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 19,13 21,10 = 19,10 3x4
+    ..B
+    .B.
+    .B.
+    B..
+sparks @2 pencil #fff4c2 = 21,10 21,10 #fff4c2
+sparks @3 line #f2781c 21,9 22,8 = 21,8 2x2
+    .C
+    C.
+sparks @3 pencil #ffc628 = 22,8 22,8 #ffc628
+sparks @4 line #a8321e 22,8 23,8 = 22,8 23,8 #a8321e
+sparks @4 pencil #f2781c = 23,8 23,8 #f2781c
+sparks @5 line #a8321e 23,8 23,9 = 23,8 23,9 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 22,16 26,14 = 22,14 5x3
+    ...BB
+    .BB..
+    B....
+sparks @2 pencil #fff4c2 = 26,14 26,14 #fff4c2
+sparks @3 line #f2781c 27,14 30,13 = 27,13 4x2
+    ..CC
+    CC..
+sparks @3 pencil #ffc628 = 30,13 30,13 #ffc628
+sparks @4 line #a8321e 30,13 31,14 = 30,13 2x2
+    D.
+    .D
+sparks @4 pencil #f2781c = 31,14 31,14 #f2781c
+sparks @5 line #a8321e 31,14 31,16 = 31,14 31,16 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 21,19 24,20 = 21,19 4x2
+    BB..
+    ..BB
+sparks @2 pencil #fff4c2 = 24,20 24,20 #fff4c2
+sparks @3 line #f2781c 25,20 27,21 = 25,20 3x2
+    C..
+    .CC
+sparks @3 pencil #ffc628 = 27,21 27,21 #ffc628
+sparks @4 line #a8321e 27,21 28,22 = 27,21 2x2
+    D.
+    .D
+sparks @4 pencil #f2781c = 28,22 28,22 #f2781c
+sparks @5 line #a8321e 28,22 28,24 = 28,22 28,24 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 19,21 21,24 = 19,21 3x4
+    B..
+    .B.
+    .B.
+    ..B
+sparks @2 pencil #fff4c2 = 21,24 21,24 #fff4c2
+sparks @3 line #f2781c 21,24 22,26 = 21,24 2x3
+    C.
+    .C
+    .C
+sparks @3 pencil #ffc628 = 22,26 22,26 #ffc628
+sparks @4 line #a8321e 22,26 22,28 = 22,26 22,28 #a8321e
+sparks @4 pencil #f2781c = 22,28 22,28 #f2781c
+sparks @5 line #a8321e 22,28 22,29 = 22,28 22,29 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 16,22 15,24 = 15,22 2x3
+    .B
+    B.
+    B.
+sparks @2 pencil #fff4c2 = 15,24 15,24 #fff4c2
+sparks @3 line #f2781c 15,25 15,27 = 15,25 15,27 #f2781c
+sparks @3 pencil #ffc628 = 15,27 15,27 #ffc628
+sparks @4 line #a8321e 15,27 15,29 = 15,27 15,29 #a8321e
+sparks @4 pencil #f2781c = 15,29 15,29 #f2781c
+sparks @5 line #a8321e 15,29 15,30 = 15,29 15,30 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 12,22 9,25 = 9,22 4x4
+    ...B
+    ..B.
+    .B..
+    B...
+sparks @2 pencil #fff4c2 = 9,25 9,25 #fff4c2
+sparks @3 line #f2781c 9,25 7,27 = 7,25 3x3
+    ..C
+    .C.
+    C..
+sparks @3 pencil #ffc628 = 7,27 7,27 #ffc628
+sparks @4 line #a8321e 7,27 7,29 = 7,27 7,29 #a8321e
+sparks @4 pencil #f2781c = 7,29 7,29 #f2781c
+sparks @5 line #a8321e 7,29 7,31 = 7,29 7,31 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 11,15 7,13 = 7,13 5x3
+    BB...
+    ..BB.
+    ....B
+sparks @2 pencil #fff4c2 = 7,13 7,13 #fff4c2
+sparks @3 line #f2781c 6,13 4,12 = 4,12 3x2
+    CC.
+    ..C
+sparks @3 pencil #ffc628 = 4,12 4,12 #ffc628
+sparks @4 line #a8321e 4,12 3,13 = 3,12 2x2
+    .D
+    D.
+sparks @4 pencil #f2781c = 3,13 3,13 #f2781c
+sparks @5 line #a8321e 3,13 3,14 = 3,13 3,14 #a8321e
+sparks @5 pencil #a8321e ~
+sparks @2 line #ffc628 12,18 9,18 = 9,18 12,18 #ffc628
+sparks @2 pencil #fff4c2 = 9,18 9,18 #fff4c2
+sparks @3 line #f2781c 8,18 7,19 = 7,18 2x2
+    .C
+    C.
+sparks @3 pencil #ffc628 = 7,19 7,19 #ffc628
+sparks @4 line #a8321e 7,19 6,20 = 6,19 2x2
+    .D
+    D.
+sparks @4 pencil #f2781c = 6,20 6,20 #f2781c
+sparks @5 line #a8321e 6,20 6,21 = 6,20 6,21 #a8321e
+sparks @5 pencil #a8321e ~
+debris @0 clear_cel ~
+debris @1 clear_cel ~
+debris @2 clear_cel = 9,12 25,23 .
+debris @3 clear_cel = 7,10 28,26 .
+debris @4 clear_cel = 5,10 29,30 .
+debris @5 clear_cel = 4,13 30,27 .
+debris @6 clear_cel = 4,16 30,30 .
+debris @7 clear_cel = 9,21 29,30 .
+debris @8 clear_cel ~
+debris @9 clear_cel ~
+debris @2 pencil #f2781c = 11,12 3x2
+    CCC
+    CC.
+debris @2 pencil #ffc628 = 11,12 11,12 #ffc628
+debris @3 pencil #a8321e = 9,10 3x2
+    DDD
+    DD.
+debris @3 pencil #f2781c = 9,10 9,10 #f2781c
+debris @4 pencil #4e3c4a = 8,10 3x2
+    GGG
+    GG.
+debris @4 pencil #a8321e = 8,10 8,10 #a8321e
+debris @5 pencil #4e3c4a = 7,13 3x2
+    GGG
+    GG.
+debris @6 pencil #4e3c4a = 7,16 9,16 #4e3c4a
+debris @7 pencil #968590 = 7,21 2x2
+    H.
+    .H
+debris @2 pencil #f2781c = 20,11 21,12 #f2781c
+debris @2 pencil #ffc628 = 20,11 20,11 #ffc628
+debris @3 pencil #a8321e = 22,9 23,10 #a8321e
+debris @3 pencil #f2781c = 22,9 22,9 #f2781c
+debris @4 pencil #4e3c4a = 23,9 24,10 #4e3c4a
+debris @4 pencil #a8321e = 23,9 23,9 #a8321e
+debris @5 pencil #4e3c4a = 23,11 24,12 #4e3c4a
+debris @6 pencil #4e3c4a = 24,14 25,14 #4e3c4a
+debris @7 pencil #968590 = 24,19 2x2
+    H.
+    .H
+debris @2 pencil #f2781c = 24,16 3x2
+    CCC
+    CC.
+debris @2 pencil #ffc628 = 24,16 24,16 #ffc628
+debris @3 pencil #a8321e = 27,16 3x2
+    DDD
+    DD.
+debris @3 pencil #f2781c = 27,16 27,16 #f2781c
+debris @4 pencil #4e3c4a = 29,17 3x2
+    GGG
+    GG.
+debris @4 pencil #a8321e = 29,17 29,17 #a8321e
+debris @5 pencil #4e3c4a = 30,20 31,21 #4e3c4a
+debris @6 pencil #4e3c4a = 30,24 31,24 #4e3c4a
+debris @7 pencil #968590 = 30,28 2x2
+    H.
+    .H
+debris @2 pencil #f2781c = 8,19 9,20 #f2781c
+debris @2 pencil #ffc628 = 8,19 8,19 #ffc628
+debris @3 pencil #a8321e = 5,21 6,22 #a8321e
+debris @3 pencil #f2781c = 5,21 5,21 #f2781c
+debris @4 pencil #4e3c4a = 3,24 4,25 #4e3c4a
+debris @4 pencil #a8321e = 3,24 3,24 #a8321e
+debris @5 pencil #4e3c4a = 2,27 3,28 #4e3c4a
+debris @6 pencil #4e3c4a = 2,30 3,30 #4e3c4a
+debris @7 pencil #968590 ~
+debris @2 pencil #f2781c = 13,23 14,24 #f2781c
+debris @2 pencil #ffc628 = 13,23 13,23 #ffc628
+debris @3 pencil #a8321e = 11,27 12,28 #a8321e
+debris @3 pencil #f2781c = 11,27 11,27 #f2781c
+debris @4 pencil #4e3c4a = 11,30 12,31 #4e3c4a
+debris @4 pencil #a8321e = 11,30 11,30 #a8321e
+debris @5 pencil #4e3c4a ~
+debris @6 pencil #4e3c4a ~
+debris @7 pencil #968590 ~
+debris @2 pencil #f2781c = 19,24 19,24 #f2781c
+debris @3 pencil #a8321e = 21,28 21,28 #a8321e
+debris @4 pencil #4e3c4a = 22,31 22,31 #4e3c4a
+debris @5 pencil #4e3c4a ~
+debris @6 pencil #968590 ~
+debris @2 pencil #f2781c = 16,12 16,12 #f2781c
+debris @3 pencil #a8321e = 16,11 16,11 #a8321e
+debris @4 pencil #4e3c4a = 16,12 16,12 #4e3c4a
+debris @5 pencil #4e3c4a = 16,14 16,14 #4e3c4a
+debris @6 pencil #968590 = 16,18 16,18 #968590
+debris @2 pencil #f2781c = 10,16 10,16 #f2781c
+debris @3 pencil #a8321e = 7,16 7,16 #a8321e
+debris @4 pencil #4e3c4a = 6,18 6,18 #4e3c4a
+debris @5 pencil #4e3c4a = 5,21 5,21 #4e3c4a
+debris @6 pencil #968590 = 5,24 5,24 #968590
+smoke @0 clear_cel ~
+smoke @1 clear_cel ~
+smoke @2 clear_cel ~
+smoke @3 clear_cel = 9,9 23,17 .
+smoke @4 clear_cel = 7,6 25,18 .
+smoke @5 clear_cel = 7,4 24,19 .
+smoke @6 clear_cel = 7,2 27,18 .
+smoke @7 clear_cel = 14,0 27,13 .
+smoke @8 clear_cel = 17,0 27,8 .
+smoke @9 clear_cel = 21,2 27,5 .
+smoke @3 ellipse #4e3c4a 12,14 3,3 fill = 9,11 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @3 ellipse #968590 13,13 3,3 fill = 10,10 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @3 ellipse #4e3c4a 20,14 3,3 fill = 17,11 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @3 ellipse #968590 21,13 3,3 fill = 18,10 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @3 ellipse #4e3c4a 16,13 4,4 fill = 12,9 9x9
+    ..GGGGG..
+    HGGGGGGGH
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGGH
+    GGGGGGGGG
+smoke @3 ellipse #968590 17,12 3,3 fill = 14,9 7x7
+    GGHHH..
+    GHHHHHH
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 11,13 4,4 fill = 7,9 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @4 ellipse #968590 12,12 3,3 fill = 9,9 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 21,13 4,4 fill = 17,9 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @4 ellipse #968590 22,12 3,3 fill = 19,9 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 16,14 4,4 fill = 12,10 9x9
+    HHGGGGGGH
+    HGGGGGGGH
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    ..GGGGG..
+smoke @4 ellipse #968590 17,13 3,3 fill = 14,10 7x7
+    GGHHHGH
+    GHHHHHH
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 16,11 5,5 fill = 11,6 11x11
+    ...GGGGG...
+    ..GGGGGGG..
+    .GGGGGGGGG.
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    HGGGGGGGGGH
+    HGGGGGGGGGH
+    GGGGGGGGGGG
+smoke @4 ellipse #968590 17,10 4,4 fill = 13,6 9x9
+    .GHHHHH..
+    GHHHHHHH.
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    GHHHHHHHG
+    GGHHHHHGH
+smoke @5 ellipse #4e3c4a 10,12 3,3 fill = 7,9 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @5 ellipse #968590 11,11 3,3 fill = 8,8 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @5 ellipse #4e3c4a 16,15 4,4 fill = 12,11 9x9
+    HHGGGGG..
+    HGGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @5 ellipse #968590 17,14 3,3 fill = 14,11 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 15,12 4,4 fill = 11,8 9x9
+    HHGGGGG..
+    HGGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGH
+    .GGGGGGHH
+smoke @5 ellipse #968590 16,11 3,3 fill = 13,8 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 20,8 4,4 fill = 16,4 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGG.
+    HHGGGGG..
+smoke @5 ellipse #968590 21,7 3,3 fill = 18,4 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 15,9 5,5 fill = 10,4 11x11
+    ...GGGGGGGH
+    ..GGGGGGGHH
+    .GGGGGGGGGH
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    HGGGGGGGGGG
+    HGGGGGGGGGH
+    HGGGGGGGGGH
+smoke @5 ellipse #968590 16,8 4,4 fill = 12,4 9x9
+    .GHHHHHGH
+    GHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    GHHHHHHHG
+    GGHHHHHGG
+smoke @6 ellipse #4e3c4a 9,10 2,2 fill = 7,8 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @6 ellipse #968590 10,9 2,2 fill = 8,7 5x5
+    .HHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @6 ellipse #4e3c4a 16,15 3,3 fill = 13,12 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @6 ellipse #968590 17,14 3,3 fill = 14,11 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @6 ellipse #4e3c4a 16,12 3,3 fill = 13,9 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    GGGGGGH
+    GHGGGHH
+smoke @6 ellipse #968590 17,11 3,3 fill = 14,8 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHH
+    GGHHHHH
+smoke @6 ellipse #4e3c4a 16,9 4,4 fill = 12,5 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGGH
+    .GGGGGGHH
+smoke @6 ellipse #968590 17,8 3,3 fill = 14,5 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @6 ellipse #4e3c4a 19,6 4,4 fill = 15,2 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGG.
+    HHGGGGG..
+smoke @6 ellipse #968590 20,5 3,3 fill = 17,2 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @6 ellipse #4e3c4a 23,6 3,3 fill = 20,3 7x7
+    HHGGG..
+    HGGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    HGGGGG.
+    GGGGG..
+smoke @6 ellipse #968590 24,5 3,3 fill = 21,2 7x7
+    H.HHH..
+    HHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @6 ellipse #4e3c4a 24,9 3,3 fill = 22,6 6x7
+    HGGGHH
+    GGGGG.
+    GGGGGG
+    GGGGGG
+    GGGGGG
+    GGGGG.
+    .GGG..
+smoke @6 ellipse #968590 25,8 3,3 fill = 22,6 7x6
+    HHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @6 ellipse #4e3c4a 22,11 2,2 fill = 20,9 5x5
+    GGGGH
+    GGGGG
+    GGGGG
+    GGGGG
+    HGGG.
+smoke @6 ellipse #968590 23,10 2,2 fill = 21,9 4x4
+    HHHH
+    HHHH
+    HHHH
+    GHHH
+smoke @6 erase pencil = 11,4 18x12
+    .....GHHHHHHHHHHH.
+    ...GGGHHHGHHHHHHH.
+    ..GGGGHHHGH.HHHHH.
+    HGGH.GGHHGGHHHHHHH
+    HGGHGGGGHHGHHHHHH.
+    HGGHHGGGGGHHHHHHHH
+    .GGGHHGGGGHHHHHHH.
+    HGGGGHHHGGHHHHHH..
+    ..GGG.GGGGGHHHG...
+    ..GGGGGGHHGGG.....
+    ..GGGHHHHH........
+    ...H.GGHHH........
+smoke @7 ellipse #4e3c4a 17,11 2,2 fill = 15,9 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @7 ellipse #968590 18,10 2,2 fill = 16,8 5x5
+    .HHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @7 ellipse #4e3c4a 17,6 3,3 fill = 14,3 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGGHH
+smoke @7 ellipse #968590 18,5 3,3 fill = 15,2 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @7 ellipse #4e3c4a 20,3 3,3 fill = 17,0 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    HGGGGG.
+    HHGGG..
+smoke @7 ellipse #968590 21,2 3,3 fill = 18,0 7x6
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @7 ellipse #4e3c4a 24,3 2,2 fill = 22,1 5x5
+    HGGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    HGGG.
+smoke @7 ellipse #968590 25,2 2,2 fill = 23,0 5x5
+    HHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @7 ellipse #4e3c4a 25,6 2,2 fill = 23,4 5x5
+    GGGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @7 ellipse #968590 26,5 2,2 fill = 24,4 5x4
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @7 ellipse #4e3c4a 23,8 1,1 fill = 22,7 24,9 #4e3c4a
+smoke @7 ellipse #968590 24,7 1,1 fill = 23,6 25,8 #968590
+smoke @7 erase pencil = 14,0 14x13
+    .....HHHHHHH..
+    .....HHHHHHHHH
+    ...GHHHHGHHHHH
+    ..HGHHHHGHHH.H
+    .HHGG.HHG.HH..
+    GHHHGGHHHGHHHH
+    ..H.HGGG.HHHHH
+    .GHHHHH.GHHHHH
+    .GGHHH..GHH.G.
+    ..GGGHH..G....
+    ..HHHHH.......
+    ..HHHHH.......
+    .GGH..........
+smoke @8 ellipse #4e3c4a 19,3 2,2 fill = 17,1 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @8 ellipse #968590 20,2 2,2 fill = 18,0 5x5
+    .HHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @8 ellipse #4e3c4a 22,2 2,2 fill = 20,0 5x5
+    HGGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    HGGG.
+smoke @8 ellipse #968590 23,1 2,2 fill = 21,0 5x4
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @8 ellipse #4e3c4a 25,4 1,1 fill = 24,3 26,5 #4e3c4a
+smoke @8 ellipse #968590 26,3 1,1 fill = 25,2 27,4 #968590
+smoke @8 ellipse #4e3c4a 24,7 1,1 fill = 23,6 25,8 #4e3c4a
+smoke @8 ellipse #968590 25,6 1,1 fill = 24,5 26,7 #968590
+smoke @8 erase pencil = 18,0 10x9
+    ....HH....
+    ..GHHH....
+    HHGHHH..HH
+    HHGGHH.HHH
+    GH.GGGGH..
+    GG....HH..
+    .....GHHH.
+    .....GHH..
+    .....G.G..
+smoke @0 clear_cel ~
+smoke @1 clear_cel ~
+smoke @2 clear_cel ~
+smoke @3 clear_cel = 9,9 24,17 .
+smoke @4 clear_cel = 7,6 25,18 .
+smoke @5 clear_cel = 7,4 24,19 .
+smoke @6 clear_cel = 7,2 28,18 .
+smoke @7 clear_cel = 14,0 28,13 .
+smoke @8 clear_cel = 17,0 27,8 .
+smoke @9 clear_cel ~
+smoke @3 ellipse #4e3c4a 12,14 3,3 fill = 9,11 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @3 ellipse #968590 13,13 3,3 fill = 10,10 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @3 ellipse #4e3c4a 20,14 3,3 fill = 17,11 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @3 ellipse #968590 21,13 3,3 fill = 18,10 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @3 ellipse #4e3c4a 16,13 4,4 fill = 12,9 9x9
+    ..GGGGG..
+    HGGGGGGGH
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGGH
+    GGGGGGGGG
+smoke @3 ellipse #968590 17,12 3,3 fill = 14,9 7x7
+    GGHHH..
+    GHHHHHH
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 11,13 4,4 fill = 7,9 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @4 ellipse #968590 12,12 3,3 fill = 9,9 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 21,13 4,4 fill = 17,9 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @4 ellipse #968590 22,12 3,3 fill = 19,9 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 16,14 4,4 fill = 12,10 9x9
+    HHGGGGGGH
+    HGGGGGGGH
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    ..GGGGG..
+smoke @4 ellipse #968590 17,13 3,3 fill = 14,10 7x7
+    GGHHHGH
+    GHHHHHH
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @4 ellipse #4e3c4a 16,11 5,5 fill = 11,6 11x11
+    ...GGGGG...
+    ..GGGGGGG..
+    .GGGGGGGGG.
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    HGGGGGGGGGH
+    HGGGGGGGGGH
+    GGGGGGGGGGG
+smoke @4 ellipse #968590 17,10 4,4 fill = 13,6 9x9
+    .GHHHHH..
+    GHHHHHHH.
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    GHHHHHHHG
+    GGHHHHHGH
+smoke @5 ellipse #4e3c4a 10,12 3,3 fill = 7,9 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @5 ellipse #968590 11,11 3,3 fill = 8,8 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @5 ellipse #4e3c4a 16,15 4,4 fill = 12,11 9x9
+    HHGGGGG..
+    HGGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGG.
+    ..GGGGG..
+smoke @5 ellipse #968590 17,14 3,3 fill = 14,11 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 15,12 4,4 fill = 11,8 9x9
+    HHGGGGG..
+    HGGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGH
+    .GGGGGGHH
+smoke @5 ellipse #968590 16,11 3,3 fill = 13,8 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 20,8 4,4 fill = 16,4 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGG.
+    HHGGGGG..
+smoke @5 ellipse #968590 21,7 3,3 fill = 18,4 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @5 ellipse #4e3c4a 15,9 5,5 fill = 10,4 11x11
+    ...GGGGGGGH
+    ..GGGGGGGHH
+    .GGGGGGGGGH
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    GGGGGGGGGGG
+    HGGGGGGGGGG
+    HGGGGGGGGGH
+    HGGGGGGGGGH
+smoke @5 ellipse #968590 16,8 4,4 fill = 12,4 9x9
+    .GHHHHHGH
+    GHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    HHHHHHHHH
+    GHHHHHHHG
+    GGHHHHHGG
+smoke @6 ellipse #4e3c4a 9,10 2,2 fill = 7,8 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @6 ellipse #968590 10,9 2,2 fill = 8,7 5x5
+    .HHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @6 ellipse #4e3c4a 16,15 3,3 fill = 13,12 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGG..
+smoke @6 ellipse #968590 17,14 3,3 fill = 14,11 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @6 ellipse #4e3c4a 16,12 3,3 fill = 13,9 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    GGGGGGH
+    GHGGGHH
+smoke @6 ellipse #968590 17,11 3,3 fill = 14,8 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHH
+    GGHHHHH
+smoke @6 ellipse #4e3c4a 16,9 4,4 fill = 12,5 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    .GGGGGGGH
+    .GGGGGGHH
+smoke @6 ellipse #968590 17,8 3,3 fill = 14,5 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @6 ellipse #4e3c4a 19,6 4,4 fill = 15,2 9x9
+    ..GGGGG..
+    .GGGGGGG.
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    GGGGGGGGG
+    HGGGGGGG.
+    HHGGGGG..
+smoke @6 ellipse #968590 20,5 3,3 fill = 17,2 7x7
+    GGHHH..
+    GHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHHG
+    GGHHHGG
+smoke @6 ellipse #4e3c4a 23,6 3,3 fill = 20,3 7x7
+    HHGGG..
+    HGGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    HGGGGG.
+    GGGGG..
+smoke @6 ellipse #968590 24,5 3,3 fill = 21,2 7x7
+    H.HHH..
+    HHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @6 ellipse #4e3c4a 24,9 3,3 fill = 22,6 6x7
+    HGGGHH
+    GGGGG.
+    GGGGGG
+    GGGGGG
+    GGGGGG
+    GGGGG.
+    .GGG..
+smoke @6 ellipse #968590 25,8 3,3 fill = 22,6 7x6
+    HHHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @6 ellipse #4e3c4a 22,11 2,2 fill = 20,9 5x5
+    GGGGH
+    GGGGG
+    GGGGG
+    GGGGG
+    HGGG.
+smoke @6 ellipse #968590 23,10 2,2 fill = 21,9 4x4
+    HHHH
+    HHHH
+    HHHH
+    GHHH
+smoke @6 erase pencil = 11,4 18x12
+    .....GHHHHHHHHHHH.
+    ...GGGHHHGHHHHHHH.
+    ..GGGGHHHGH.HHHHH.
+    HGGH.GGHHGGHHHHHHH
+    HGGHGGGGHHGHHHHHH.
+    HGGHHGGGGGHHHHHHHH
+    .GGGHHGGGGHHHHHHH.
+    HGGGGHHHGGHHHHHH..
+    ..GGG.GGGGGHHHG...
+    ..GGGGGGHHGGG.....
+    ..GGGHHHHH........
+    ...H.GGHHH........
+smoke @7 ellipse #4e3c4a 17,11 2,2 fill = 15,9 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @7 ellipse #968590 18,10 2,2 fill = 16,8 5x5
+    .HHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @7 ellipse #4e3c4a 17,6 3,3 fill = 14,3 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    .GGGGG.
+    ..GGGHH
+smoke @7 ellipse #968590 18,5 3,3 fill = 15,2 7x7
+    ..HHH..
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @7 ellipse #4e3c4a 20,3 3,3 fill = 17,0 7x7
+    ..GGG..
+    .GGGGG.
+    GGGGGGG
+    GGGGGGG
+    GGGGGGG
+    HGGGGG.
+    HHGGG..
+smoke @7 ellipse #968590 21,2 3,3 fill = 18,0 7x6
+    .HHHHH.
+    HHHHHHH
+    HHHHHHH
+    HHHHHHH
+    GHHHHH.
+    GGHHH..
+smoke @7 ellipse #4e3c4a 24,3 2,2 fill = 22,1 5x5
+    HGGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    HGGG.
+smoke @7 ellipse #968590 25,2 2,2 fill = 23,0 5x5
+    HHHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @7 ellipse #4e3c4a 25,6 2,2 fill = 23,4 5x5
+    GGGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @7 ellipse #968590 26,5 2,2 fill = 24,4 5x4
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @7 ellipse #4e3c4a 23,8 1,1 fill = 22,7 24,9 #4e3c4a
+smoke @7 ellipse #968590 24,7 1,1 fill = 23,6 25,8 #968590
+smoke @7 erase pencil = 14,0 14x13
+    .....HHHHHHH..
+    .....HHHHHHHHH
+    ...GHHHHGHHHHH
+    ..HGHHHHGHHH.H
+    .HHGG.HHG.HH..
+    GHHHGGHHHGHHHH
+    ..H.HGGG.HHHHH
+    .GHHHHH.GHHHHH
+    .GGHHH..GHH.G.
+    ..GGGHH..G....
+    ..HHHHH.......
+    ..HHHHH.......
+    .GGH..........
+smoke @8 ellipse #4e3c4a 19,3 2,2 fill = 17,1 5x5
+    .GGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    .GGG.
+smoke @8 ellipse #968590 20,2 2,2 fill = 18,0 5x5
+    .HHH.
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @8 ellipse #4e3c4a 22,2 2,2 fill = 20,0 5x5
+    HGGG.
+    GGGGG
+    GGGGG
+    GGGGG
+    HGGG.
+smoke @8 ellipse #968590 23,1 2,2 fill = 21,0 5x4
+    HHHHH
+    HHHHH
+    HHHHH
+    GHHH.
+smoke @8 ellipse #4e3c4a 25,4 1,1 fill = 24,3 26,5 #4e3c4a
+smoke @8 ellipse #968590 26,3 1,1 fill = 25,2 27,4 #968590
+smoke @8 ellipse #4e3c4a 24,7 1,1 fill = 23,6 25,8 #4e3c4a
+smoke @8 ellipse #968590 25,6 1,1 fill = 24,5 26,7 #968590
+smoke @8 erase pencil = 18,0 10x9
+    ....HH....
+    ..GHHH....
+    HHGHHH..HH
+    HHGGHH.HHH
+    GH.GGGGH..
+    GG....HH..
+    .....GHHH.
+    .....GHH..
+    .....G.G..
+smoke @9 pencil #968590 = 21,2 7x4
+    ...H...
+    .......
+    H......
+    ......H
+core @6 clear_cel = 15,18 17,20 .
+core @6 pencil #a8321e = 16,19 16,20 #a8321e
 add_tag name=explosion from=0 to=9
