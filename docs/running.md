@@ -85,57 +85,43 @@ passed; open it with the Atelier version that wrote it instead.
 ## Recipes
 
 Every document keeps a recipe, `doc.recipe`, beside its pixels: a text file
-that records what happened to it. `atelier replay` rebuilds the document from
-that file alone, and the picture it rebuilds is the one that was recorded,
-because every change to a cel is stored as the pixels it left behind.
+with one line per call that changed it. `atelier replay` rebuilds the document
+from that file alone.
 
 ```text
-atelier 5 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
+atelier 4 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
 new name=potion-flask width=32 height=32
-palette set colors=#1a1630,#f0b07a,#5ad8f8
-layer rename index=0 name="glass back"
-legend A=#1a1630 B=#5ad8f8
-"glass back" @0 grid 12,2 = 12,2 8x4
-    .AAAAAA.
-    ABBBBBBA
-    ABBBBBBA
-    .AAAAAA.
-"glass back" @0 erase pencil = 12,2 13,2 .
-"glass back" @1 shift dx=1 wrap=true
-"glass back" @1 erase pencil ~
+palette op=set colors=#1a1630,#f0b07a,#5ad8f8
+layer op=rename index=0 name="glass back"
+region op=clear layer=3 frame=0 rect=0,0,32,32
+paint_grid layer=3 frame=0 x=12 y=2 legend=C:#5ad8f8,K:0 rows:4
+  |.KKKKKK.|
+  |KCCCCCCK|
+  |KCCCCCCK|
+  |.KKKKKK.|
 ```
 
 - The first line gives the format number, the document ID, and the Atelier
-  version that created the file. Nothing else repeats the document ID.
-- A **call** that changes the document's structure is recorded as itself: the
-  tool name without its `doc_` prefix, its `op` as a bare word, then `key=value`
-  arguments. Numbers, plain words, and `#` colours are written as they are, a
-  list of them joined by commas (`0,0,32,32`), a list of such lists by spaces
-  (`7,33 17,33`), a map as `key:value` pairs; any other value is JSON.
-- An **effect** is what a call did to one cel. It starts with the cel, `<layer>
-  @<frame>`, then the call in words, then `=` and the pixels: `x,y WxH` with
-  that many rows below it, or `x0,y0 x1,y1 C` when the block is one colour.
-  `~` in place of the `=` part marks a call that changed nothing. The words
-  between the cel and the `=` are for the reader; replay ignores them.
-- A **legend** line binds one-letter glyphs to colours for the rows that
-  follow. Bindings persist, and a later legend may rebind a glyph. In a row,
-  `.` is a transparent pixel.
-- `shift`, `flip` and `rotate` only move pixels, so they are recorded as calls
-  on a cel rather than as pixels.
-- A layer is named by its name, JSON-quoted when it is not a plain word, or by
-  `#N` with its index while two layers share a name.
+  version that created the file. Calls do not repeat the document ID.
+- Each call is the tool name without its `doc_` prefix, followed by
+  `key=value` arguments.
+- Numbers, plain words, and `#` colours are written as they are. A list of
+  them is joined by commas (`0,0,32,32`), a list of such lists by spaces
+  (`points=7,33 17,33 18,33`), and a map of them is written as `key:value`
+  pairs (`C:#5ad8f8,K:0`). Any other value is JSON, such as `"glass back"`.
+- `rows:N` ends a grid call and is followed by N rows between `|` bars.
 - Blank lines and lines that start with `#` are ignored, so a recipe can carry
   notes.
 
-Replay performs the calls and pastes the effects; it never calls a drawing
-tool. So a fix that changes what a tool draws changes nothing about an
-existing recipe, and a recipe written by one version of Atelier replays to the
-same picture in every later version that reads format 5. The showcase's CI job
-replays every recipe and compares the result with the committed animation,
-which now checks the reader rather than the tools.
+A recipe records calls, not pixels, so what it draws depends on how the tools
+behave. The header names the Atelier version that wrote it, and later versions
+are expected to replay it to the same picture. When a fix changes what a tool
+draws, the recipes that depend on it are re-recorded rather than edited; the
+showcase's CI job replays every recipe and compares the result with the
+committed animation, so such a change cannot slip through unnoticed.
 
-To see what a recipe holds without touching any store, add `--show`. Each
-statement is printed as the file spells it, with its pixels in terminal colour:
+To see what a recipe draws without saving anything, add `--show`. Each step is
+printed with its layer name and the pixels it changed, in terminal colour:
 
 ```sh
 atelier replay sprite.recipe --show | less -R

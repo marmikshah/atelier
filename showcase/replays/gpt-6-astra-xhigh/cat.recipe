@@ -1,641 +1,585 @@
-atelier 5 8b048e7a-cb15-488b-9cb4-658759feb3d4 0.1.0
+atelier 4 8b048e7a-cb15-488b-9cb4-658759feb3d4 0.1.0
 new name=sc-gpt-6-astra-xhigh-cat width=32 height=32
-palette set colors=#28243f,#655598,#b86662,#efa76e,#6ed8ce,#fff1bc
-layer rename index=0 name="Cat body"
-layer add name="Swaying tail"
-layer move index=1 to_index=0
-layer add name="Cat head"
-layer add name="Crooked wizard hat"
-layer add name="Wooden staff"
-layer add name="Holding paw"
-layer add name="Pulsing orb"
-layer add name="Cast light"
-layer add name="Rising sparkles"
-legend A=#28243f
-"Cat body" @0 grid 9,20 = 9,20 12x10
-    ...AAAAAA...
-    ..AAAAAAAA..
-    .AAAAAAAAAA.
-    .AAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    .AAAAAAAAAAA
-    .AAAAAAAAAAA
-    ..AAAA..AAAA
-"Cat head" @0 grid 9,10 = 9,10 14x13
-    A............A
-    AA..........AA
-    AAA........AAA
-    AAAA......AAAA
-    AAAAAAAAAAAAAA
-    AAAAAAAAAAAAAA
-    AAAAAAAAAAAAAA
-    .AAAAAAAAAAAA.
-    .AAAAAAAAAAAA.
-    AAAAAAAAAAAAA.
-    .AAAAAAAAAAA..
-    ..AAAAAAAAA...
-    ....AAAAA.....
-"Crooked wizard hat" @0 grid 7,2 = 7,2 15x13
-    ....AAAA.......
-    ...AAAAAA......
-    ...AAAAAAA.....
-    ......AAAAA....
-    ......AAAAAA...
-    .....AAAAAAA...
-    .....AAAAAAAA..
-    ....AAAAAAAAA..
-    ....AAAAAAAAA..
-    ...AAAAAAAAAAA.
-    ..AAAAAAAAAAAA.
-    AAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAA.
-"Wooden staff" @0 grid 23,12 = 23,12 5x18
-    A...A
-    AAAAA
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    .AAA.
-    ..A..
-"Holding paw" @0 grid 19,21 = 19,21 7x4
-    .AAAAA.
-    AAAAAAA
-    AAAAAA.
-    .AAAA..
-"Swaying tail" @0 grid 3,20 = 3,20 10x9
-    ..AA......
-    .AAAA.....
-    AAAA......
-    AAAA......
-    AAAA......
-    .AAAA.....
-    ..AAAAAAA.
-    ...AAAAAAA
-    ....AAAAA.
-"Pulsing orb" @0 grid 23,8 = 23,8 5x5
-    .AAA.
-    AAAAA
-    AAAAA
-    AAAAA
-    .AAA.
-"Wooden staff" @0 move 23,12 27,29 2,0 = 23,12 7x18
-    ..A...A
-    ..AAAAA
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ...AAA.
-    ....A..
-"Pulsing orb" @0 move 23,8 27,12 2,0 = 23,8 7x5
-    ...AAA.
-    ..AAAAA
-    ..AAAAA
-    ..AAAAA
-    ...AAA.
-"Holding paw" @0 rect #28243f 24,21 27,23 fill = 25,21 27,23 #28243f
-legend B=#b86662 C=#efa76e D=#fff1bc
-"Cat body" @0 grid 9,20 = 10,21 10x8
-    .ABBBCCCA.
-    ABBBCCCCCA
-    ABBBCCDCCC
-    BBBBCCDCCC
-    BBBBCCDCCC
-    BBBBCCDCCC
-    ABBBCCACCC
-    ABCCCAACCC
-"Cat head" @0 grid 9,10 = 10,12 12x10
-    CA........AC
-    CBA......ABC
-    CCBAAAAAABCC
-    BCCCCCCCCCCC
-    BCCBCCCCBCCC
-    ACCCCCCCCCCA
-    ABCCCCCCCCCA
-    CBCCCCCCCCCA
-    ACBCCCCCCCA.
-    .AABCCCCAA..
-legend E=#655598 F=#6ed8ce
-"Crooked wizard hat" @0 grid 7,2 = 8,3 13x11
-    ..AEEEEA.....
-    ..AEAAEEA....
-    .....AEEEA...
-    .....AEEEEA..
-    ....AEEEEEA..
-    ....AEEEEEEA.
-    ...AEEEEEEEA.
-    ...AEEEEEEEA.
-    ..AEFFFFFFEEA
-    .AFFFFFFFFFFA
-    EEEEEEEEEEEEE
-"Wooden staff" @0 grid 25,12 = 26,13 3x16
-    CAC
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-    ACA
-"Holding paw" @0 grid 19,21 = 20,22 9x2
-    CCCDCCDCA
-    BCCCCCAA.
-"Swaying tail" @0 grid 3,20 = 4,21 8x7
-    ACCA....
-    CBA.....
-    BBA.....
-    BBA.....
-    ABBA....
-    .ABBAAAA
-    ..ABBCCC
-"Pulsing orb" @0 grid 25,8 = 25,8 5x5
-    .FFF.
-    FDDFF
-    FDFFF
-    FFFFF
-    .FFF.
-"Cat head" @0 pencil #28243f size 1 = 13,17 7x4
-    AACCCAA
-    AACCCAA
-    CCCACCC
-    CCCACCC
-"Cat head" @0 pencil #fff1bc size 1 = 13,17 6x4
-    DACCCD
-    AACCCA
-    CCDADC
-    CCDADC
-"Cat head" @0 pencil #b86662 size 1 = 8,18 5x3
-    BBABC
-    .ACBB
-    BBACB
-"Cat head" @0 pencil #efa76e size 1 = 21,18 3x3
-    ACC
-    A..
-    CC.
-"Crooked wizard hat" @0 pencil #fff1bc size 1 = 15,6 3x7
-    EDD
-    DEE
-    DEE
-    EDD
-    EEE
-    FDF
-    FDF
-"Crooked wizard hat" @0 pencil #28243f size 1 = 12,8 2x3
-    AA
-    AE
-    AE
-"Cat body" @0 pencil #fff1bc size 1 = 15,22 17,23 #fff1bc
-"Cat body" @0 pencil #efa76e size 1 = 16,25 16,26 #efa76e
-"Cat body" @0 pencil #b86662 size 1 = 18,25 2x3
-    BB
-    CC
-    BC
-"Wooden staff" @0 pencil #b86662 size 1 = 27,16 1x13
-    B
-    C
-    C
-    C
-    B
-    C
-    C
-    C
-    C
-    B
-    C
-    C
-    B
-"Wooden staff" @0 pencil #fff1bc size 1 = 27,14 27,15 #fff1bc
-"Swaying tail" @0 clear_cel = 3,20 12,28 .
-"Pulsing orb" @0 clear_cel = 25,8 29,12 .
-"Cast light" @0 clear_cel ~
-"Rising sparkles" @0 clear_cel ~
-"Swaying tail" @0 grid 3,20 = 3,20 10x9
-    ..AA......
-    .ACCA.....
-    ACBA......
-    ABBA......
-    ABBA......
-    .ABBA.....
-    ..ABBAAAA.
-    ...ABBCCCA
-    ....AAAAA.
-"Pulsing orb" @0 grid 25,8 = 25,8 5x5
-    .FFF.
-    FDDFF
-    FDFFF
-    FFFFF
-    .FFF.
-"Rising sparkles" @0 grid 4,2 = 4,2 26x15
-    ........................F.
-    .......................FDF
-    ........................F.
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    .F........................
-    FDF.......................
-    .F........................
-frame add copy_from=0 count=9 duration_ms=100
-"Swaying tail" @1 clear_cel = 3,20 12,28 .
-"Pulsing orb" @1 clear_cel = 25,8 29,12 .
-"Cast light" @1 clear_cel ~
-"Rising sparkles" @1 clear_cel = 4,2 29,16 .
-"Swaying tail" @1 grid 4,20 = 4,20 9x9
-    ..AA.....
-    .ACCA....
-    ACBA.....
-    ABBA.....
-    ABBA.....
-    .ABBA....
-    ..ABAAAA.
-    ..ABBCCCA
-    ...AAAAA.
-"Pulsing orb" @1 grid 25,8 = 25,8 5x5
-    .FFF.
-    FDDDF
-    FDDDF
-    FFDFF
-    .FFF.
-"Cast light" @1 grid 21,15 = 21,15 21,16 #6ed8ce
-"Rising sparkles" @1 grid 4,2 = 4,2 25x14
-    ........................D
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .F.......................
-    FDF......................
-    .F.......................
-"Swaying tail" @2 clear_cel = 3,20 12,28 .
-"Pulsing orb" @2 clear_cel = 25,8 29,12 .
-"Cast light" @2 clear_cel ~
-"Rising sparkles" @2 clear_cel = 4,2 29,16 .
-"Swaying tail" @2 grid 5,20 = 5,20 8x9
-    ..AA....
-    .ACCA...
-    ACBA....
-    ABBA....
-    ABBA....
-    .ABA....
-    .ABAAAA.
-    .ABBCCCA
-    ..AAAAA.
-"Pulsing orb" @2 grid 24,7 = 24,7 7x7
-    ..FFF..
-    .FFFFF.
-    FFDDDFF
-    FFDDDFF
-    FFDDFFF
-    .FFFFF.
-    ..FFF..
-"Cast light" @2 grid 18,10 = 18,10 6x13
-    F.....
-    ......
-    ...D..
-    ......
-    ......
-    ...F..
-    ...F..
-    ..F...
-    ..F...
-    ......
-    ......
-    ......
-    ....FF
-"Rising sparkles" @2 grid 3,1 = 3,1 25x14
-    ........................F
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .F.......................
-    FDF......................
-    .F.......................
-"Swaying tail" @3 clear_cel = 3,20 12,28 .
-"Pulsing orb" @3 clear_cel = 25,8 29,12 .
-"Cast light" @3 clear_cel ~
-"Rising sparkles" @3 clear_cel = 4,2 29,16 .
-"Swaying tail" @3 grid 5,20 = 5,20 8x9
-    ..AA....
-    .ACCA...
-    ACBA....
-    ABBA....
-    ABBA....
-    .ABA....
-    .ABAAAA.
-    .ABBCCCA
-    ..AAAAA.
-"Pulsing orb" @3 grid 24,7 = 24,7 7x7
-    ..FFF..
-    .FDDDF.
-    FDDDDFF
-    FDDDDDF
-    FFDDDFF
-    .FFDFF.
-    ..FFF..
-"Cast light" @3 grid 18,10 = 18,10 10x13
-    FF........
-    ..F.......
-    ...D......
-    ..F.......
-    ..........
-    ...D......
-    ...F.....D
-    ..F......D
-    ..F.......
-    ..F.......
-    ..F.......
-    ..........
-    ....FFF...
-"Rising sparkles" @3 grid 3,11 = 3,11 3x3
-    .F.
-    FDF
-    .F.
-"Swaying tail" @4 clear_cel = 3,20 12,28 .
-"Pulsing orb" @4 clear_cel = 25,8 29,12 .
-"Cast light" @4 clear_cel ~
-"Rising sparkles" @4 clear_cel = 4,2 29,16 .
-"Swaying tail" @4 grid 4,20 = 4,20 9x9
-    ..AA.....
-    .ACCA....
-    ACBA.....
-    ABBA.....
-    ABBA.....
-    .ABBA....
-    ..ABAAAA.
-    ..ABBCCCA
-    ...AAAAA.
-"Pulsing orb" @4 grid 24,7 = 24,7 7x7
-    ..FFF..
-    .FDDDF.
-    FDDDDDF
-    FDDDDDF
-    FDDDDDF
-    .FDDDF.
-    ..FFF..
-"Cast light" @4 grid 18,9 = 18,9 10x14
-    F.........
-    FF........
-    ..F.......
-    ...D......
-    ..FF......
-    ..........
-    ...D......
-    ...D.....D
-    ..F......D
-    ..F.......
-    ..F.......
-    ..F.......
-    ..........
-    ....FFFD..
-"Rising sparkles" @4 grid 4,11 = 4,11 4,11 #fff1bc
-"Swaying tail" @5 clear_cel = 3,20 12,28 .
-"Pulsing orb" @5 clear_cel = 25,8 29,12 .
-"Cast light" @5 clear_cel ~
-"Rising sparkles" @5 clear_cel = 4,2 29,16 .
-"Swaying tail" @5 grid 3,20 = 3,20 10x9
-    ..AA......
-    .ACCA.....
-    ACBA......
-    ABBA......
-    ABBA......
-    .ABBA.....
-    ..ABBAAAA.
-    ...ABBCCCA
-    ....AAAAA.
-"Pulsing orb" @5 grid 24,7 = 24,7 7x7
-    ..FFF..
-    .FDDDF.
-    FDDDDDF
-    FDDDDDF
-    FDDDDDF
-    .FDDDF.
-    ..FFF..
-"Cast light" @5 grid 18,9 = 18,9 10x14
-    F.........
-    FF........
-    ..F.......
-    ...D......
-    ..FF......
-    ..........
-    ...D......
-    ...D.....D
-    ..F......D
-    ..F.......
-    ..F.......
-    ..F.......
-    ..........
-    ....FFFD..
-"Rising sparkles" @5 grid 4,8 = 4,8 27x3
-    ..........................F
-    ...........................
-    F..........................
-"Swaying tail" @6 clear_cel = 3,20 12,28 .
-"Pulsing orb" @6 clear_cel = 25,8 29,12 .
-"Cast light" @6 clear_cel ~
-"Rising sparkles" @6 clear_cel = 4,2 29,16 .
-"Swaying tail" @6 grid 3,20 = 3,20 10x9
-    .AA.......
-    ACCA......
-    ABBA......
-    ABBA......
-    ABBA......
-    .ABBA.....
-    ..ABBAAAA.
-    ...ABBCCCA
-    ....AAAAA.
-"Pulsing orb" @6 grid 24,7 = 24,7 7x7
-    ..FFF..
-    .FDDDF.
-    FDDDDFF
-    FDDDDDF
-    FFDDDFF
-    .FFDFF.
-    ..FFF..
-"Cast light" @6 grid 18,10 = 18,10 10x13
-    FF........
-    ..F.......
-    ...D......
-    ..F.......
-    ..........
-    ...D......
-    ...F.....D
-    ..F......D
-    ..F.......
-    ..F.......
-    ..F.......
-    ..........
-    ....FFF...
-"Rising sparkles" @6 grid 30,7 = 30,7 30,7 #6ed8ce
-"Swaying tail" @7 clear_cel = 3,20 12,28 .
-"Pulsing orb" @7 clear_cel = 25,8 29,12 .
-"Cast light" @7 clear_cel ~
-"Rising sparkles" @7 clear_cel = 4,2 29,16 .
-"Swaying tail" @7 grid 2,20 = 2,20 11x9
-    .AA........
-    ACCA.......
-    ABBA.......
-    ABBA.......
-    .ABBA......
-    ..ABBA.....
-    ...ABBAAAA.
-    ....ABBCCCA
-    .....AAAAA.
-"Pulsing orb" @7 grid 24,7 = 24,7 7x7
-    ..FFF..
-    .FFFFF.
-    FFDDDFF
-    FFDDDFF
-    FFDDFFF
-    .FFFFF.
-    ..FFF..
-"Cast light" @7 grid 18,10 = 18,10 6x13
-    F.....
-    ......
-    ...D..
-    ......
-    ......
-    ...F..
-    ...F..
-    ..F...
-    ..F...
-    ......
-    ......
-    ......
-    ....FF
-"Rising sparkles" @7 grid 28,5 = 28,5 3x3
-    .F.
-    FDF
-    .F.
-"Swaying tail" @8 clear_cel = 3,20 12,28 .
-"Pulsing orb" @8 clear_cel = 25,8 29,12 .
-"Cast light" @8 clear_cel ~
-"Rising sparkles" @8 clear_cel = 4,2 29,16 .
-"Swaying tail" @8 grid 2,20 = 2,20 11x9
-    .AA........
-    ACCA.......
-    ABBA.......
-    ABBA.......
-    .ABBA......
-    ..ABBA.....
-    ...ABBAAAA.
-    ....ABBCCCA
-    .....AAAAA.
-"Pulsing orb" @8 grid 25,8 = 25,8 5x5
-    .FFF.
-    FDDDF
-    FDDDF
-    FFDFF
-    .FFF.
-"Cast light" @8 grid 21,15 = 21,15 21,16 #6ed8ce
-"Rising sparkles" @8 grid 5,4 = 5,4 26x14
-    ........................F.
-    .......................FDF
-    ........................F.
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    F.........................
-"Swaying tail" @9 clear_cel = 3,20 12,28 .
-"Pulsing orb" @9 clear_cel = 25,8 29,12 .
-"Cast light" @9 clear_cel ~
-"Rising sparkles" @9 clear_cel = 4,2 29,16 .
-"Swaying tail" @9 grid 3,20 = 3,20 10x9
-    .AA.......
-    ACCA......
-    ABBA......
-    ABBA......
-    ABBA......
-    .ABBA.....
-    ..ABBAAAA.
-    ...ABBCCCA
-    ....AAAAA.
-"Pulsing orb" @9 grid 25,8 = 25,8 5x5
-    .FFF.
-    FDDFF
-    FDFFF
-    FFFFF
-    .FFF.
-"Rising sparkles" @9 grid 5,3 = 5,3 25x14
-    .......................F.
-    ......................FDF
-    .......................F.
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    F........................
-frame duration frame=0 count=10 duration_ms=100
+palette op=set colors=#28243f,#655598,#b86662,#efa76e,#6ed8ce,#fff1bc
+layer op=rename index=0 name="Cat body"
+layer op=add name="Swaying tail"
+layer op=move index=1 to_index=0
+layer op=add name="Cat head"
+layer op=add name="Crooked wizard hat"
+layer op=add name="Wooden staff"
+layer op=add name="Holding paw"
+layer op=add name="Pulsing orb"
+layer op=add name="Cast light"
+layer op=add name="Rising sparkles"
+paint_grid layer=1 frame=0 x=9 y=20 legend=O:#28243f rows:10
+  |...OOOOOO...|
+  |..OOOOOOOO..|
+  |.OOOOOOOOOO.|
+  |.OOOOOOOOOOO|
+  |OOOOOOOOOOOO|
+  |OOOOOOOOOOOO|
+  |OOOOOOOOOOOO|
+  |.OOOOOOOOOOO|
+  |.OOOOOOOOOOO|
+  |..OOOO..OOOO|
+paint_grid layer=2 frame=0 x=9 y=10 legend=O:#28243f rows:13
+  |O............O|
+  |OO..........OO|
+  |OOO........OOO|
+  |OOOO......OOOO|
+  |OOOOOOOOOOOOOO|
+  |OOOOOOOOOOOOOO|
+  |OOOOOOOOOOOOOO|
+  |.OOOOOOOOOOOO.|
+  |.OOOOOOOOOOOO.|
+  |OOOOOOOOOOOOO.|
+  |.OOOOOOOOOOO..|
+  |..OOOOOOOOO...|
+  |....OOOOO.....|
+paint_grid layer=3 frame=0 x=7 y=2 legend=O:#28243f rows:13
+  |....OOOO.......|
+  |...OOOOOO......|
+  |...OOOOOOO.....|
+  |......OOOOO....|
+  |......OOOOOO...|
+  |.....OOOOOOO...|
+  |.....OOOOOOOO..|
+  |....OOOOOOOOO..|
+  |....OOOOOOOOO..|
+  |...OOOOOOOOOOO.|
+  |..OOOOOOOOOOOO.|
+  |OOOOOOOOOOOOOOO|
+  |.OOOOOOOOOOOOO.|
+paint_grid layer=4 frame=0 x=23 y=12 legend=O:#28243f rows:18
+  |O...O|
+  |OOOOO|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |.OOO.|
+  |..O..|
+paint_grid layer=5 frame=0 x=19 y=21 legend=O:#28243f rows:4
+  |.OOOOO.|
+  |OOOOOOO|
+  |OOOOOO.|
+  |.OOOO..|
+paint_grid layer=0 frame=0 x=3 y=20 legend=O:#28243f rows:9
+  |..OO......|
+  |.OOOO.....|
+  |OOOO......|
+  |OOOO......|
+  |OOOO......|
+  |.OOOO.....|
+  |..OOOOOOO.|
+  |...OOOOOOO|
+  |....OOOOO.|
+paint_grid layer=6 frame=0 x=23 y=8 legend=O:#28243f rows:5
+  |.OOO.|
+  |OOOOO|
+  |OOOOO|
+  |OOOOO|
+  |.OOO.|
+region op=move layer=4 frame=0 offset=2,0 rect=23,12,27,29
+region op=move layer=6 frame=0 offset=2,0 rect=23,8,27,12
+draw op=rect layer=5 frame=0 color=#28243f fill=true x0=24 x1=27 y0=21 y1=23
+paint_grid layer=1 frame=0 x=9 y=20 legend=F:#efa76e,L:#fff1bc,O:#28243f,S:#b86662 rows:10
+  |...OOOOOO...|
+  |..OSSSFFFO..|
+  |.OSSSFFFFFO.|
+  |.OSSSFFLFFFO|
+  |OSSSSFFLFFFO|
+  |OSSSSFFLFFFO|
+  |OSSSSFFLFFFO|
+  |.OSSSFFOFFFO|
+  |.OSFFFOOFFFO|
+  |..OOOO..OOOO|
+paint_grid layer=2 frame=0 x=9 y=10 legend=F:#efa76e,O:#28243f,S:#b86662 rows:13
+  |O............O|
+  |OO..........OO|
+  |OFO........OFO|
+  |OFSO......OSFO|
+  |OFFSOOOOOOSFFO|
+  |OSFFFFFFFFFFFO|
+  |OSFFSFFFFSFFFO|
+  |.OFFFFFFFFFFO.|
+  |.OSFFFFFFFFFO.|
+  |OFSFFFFFFFFFO.|
+  |.OFSFFFFFFFO..|
+  |..OOSFFFFOO...|
+  |....OOOOO.....|
+paint_grid layer=3 frame=0 x=7 y=2 legend=C:#6ed8ce,O:#28243f,P:#655598 rows:13
+  |....OOOO.......|
+  |...OPPPPO......|
+  |...OPOOPPO.....|
+  |......OPPPO....|
+  |......OPPPPO...|
+  |.....OPPPPPO...|
+  |.....OPPPPPPO..|
+  |....OPPPPPPPO..|
+  |....OPPPPPPPO..|
+  |...OPCCCCCCPPO.|
+  |..OCCCCCCCCCCO.|
+  |OPPPPPPPPPPPPPO|
+  |.OOOOOOOOOOOOO.|
+paint_grid layer=4 frame=0 x=25 y=12 legend=F:#efa76e,O:#28243f rows:18
+  |O...O|
+  |OFOFO|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |.OFO.|
+  |..O..|
+paint_grid layer=5 frame=0 x=19 y=21 legend=F:#efa76e,L:#fff1bc,O:#28243f,S:#b86662 rows:4
+  |.OOOOOOOO.|
+  |OFFFLFFLFO|
+  |OSFFFFFOO.|
+  |.OOOO.....|
+paint_grid layer=0 frame=0 x=3 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |..OO......|
+  |.OFFO.....|
+  |OFSO......|
+  |OSSO......|
+  |OSSO......|
+  |.OSSO.....|
+  |..OSSOOOO.|
+  |...OSSFFFO|
+  |....OOOOO.|
+paint_grid layer=6 frame=0 x=25 y=8 legend=C:#6ed8ce,L:#fff1bc rows:5
+  |.CCC.|
+  |CLLCC|
+  |CLCCC|
+  |CCCCC|
+  |.CCC.|
+draw op=pencil layer=2 frame=0 color=#28243f points=13,17 14,17 18,17 19,17 13,18 14,18 18,18 19,18 16,19 16,20 size=1
+draw op=pencil layer=2 frame=0 color=#fff1bc points=13,17 18,17 15,19 17,19 15,20 17,20 size=1
+draw op=pencil layer=2 frame=0 color=#b86662 points=8,18 9,18 8,20 9,20 12,19 size=1
+draw op=pencil layer=2 frame=0 color=#efa76e points=22,18 23,18 21,20 22,20 size=1
+draw op=pencil layer=3 frame=0 color=#fff1bc points=16,6 17,6 15,7 15,8 16,9 17,9 16,11 16,12 size=1
+draw op=pencil layer=3 frame=0 color=#28243f points=12,9 12,10 13,8 size=1
+draw op=pencil layer=1 frame=0 color=#fff1bc points=15,22 16,22 17,22 15,23 17,23 16,24 size=1
+draw op=pencil layer=1 frame=0 color=#efa76e points=16,25 16,26 size=1
+draw op=pencil layer=1 frame=0 color=#b86662 points=18,25 19,25 18,27 11,24 12,24 size=1
+draw op=pencil layer=4 frame=0 color=#b86662 points=27,16 27,20 27,25 27,28 size=1
+draw op=pencil layer=4 frame=0 color=#fff1bc points=27,14 27,15 size=1
+draw op=clear_cel layer=0 frame=0
+draw op=clear_cel layer=6 frame=0
+draw op=clear_cel layer=7 frame=0
+draw op=clear_cel layer=8 frame=0
+paint_grid layer=0 frame=0 x=3 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |..OO......|
+  |.OFFO.....|
+  |OFSO......|
+  |OSSO......|
+  |OSSO......|
+  |.OSSO.....|
+  |..OSSOOOO.|
+  |...OSSFFFO|
+  |....OOOOO.|
+paint_grid layer=6 frame=0 x=25 y=8 legend=C:#6ed8ce,L:#fff1bc rows:5
+  |.CCC.|
+  |CLLCC|
+  |CLCCC|
+  |CCCCC|
+  |.CCC.|
+paint_grid layer=8 frame=0 x=4 y=2 legend=C:#6ed8ce,L:#fff1bc rows:15
+  |........................C.|
+  |.......................CLC|
+  |........................C.|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |.C........................|
+  |CLC.......................|
+  |.C........................|
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=clear_cel layer=0 frame=1
+draw op=clear_cel layer=6 frame=1
+draw op=clear_cel layer=7 frame=1
+draw op=clear_cel layer=8 frame=1
+paint_grid layer=0 frame=1 x=4 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |..OO.....|
+  |.OFFO....|
+  |OFSO.....|
+  |OSSO.....|
+  |OSSO.....|
+  |.OSSO....|
+  |..OSOOOO.|
+  |..OSSFFFO|
+  |...OOOOO.|
+paint_grid layer=6 frame=1 x=25 y=8 legend=C:#6ed8ce,L:#fff1bc rows:5
+  |.CCC.|
+  |CLLLC|
+  |CLLLC|
+  |CCLCC|
+  |.CCC.|
+paint_grid layer=7 frame=1 x=21 y=15 legend=C:#6ed8ce rows:2
+  |C|
+  |C|
+paint_grid layer=8 frame=1 x=4 y=2 legend=C:#6ed8ce,L:#fff1bc rows:14
+  |........................L|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.C.......................|
+  |CLC......................|
+  |.C.......................|
+draw op=clear_cel layer=0 frame=2
+draw op=clear_cel layer=6 frame=2
+draw op=clear_cel layer=7 frame=2
+draw op=clear_cel layer=8 frame=2
+paint_grid layer=0 frame=2 x=5 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |..OO....|
+  |.OFFO...|
+  |OFSO....|
+  |OSSO....|
+  |OSSO....|
+  |.OSO....|
+  |.OSOOOO.|
+  |.OSSFFFO|
+  |..OOOOO.|
+paint_grid layer=6 frame=2 x=24 y=7 legend=C:#6ed8ce,L:#fff1bc rows:7
+  |..CCC..|
+  |.CCCCC.|
+  |CCLLLCC|
+  |CCLLLCC|
+  |CCLLCCC|
+  |.CCCCC.|
+  |..CCC..|
+paint_grid layer=7 frame=2 x=18 y=10 legend=C:#6ed8ce,L:#fff1bc rows:13
+  |C.....|
+  |......|
+  |...L..|
+  |......|
+  |......|
+  |...C..|
+  |...C..|
+  |..C...|
+  |..C...|
+  |......|
+  |......|
+  |......|
+  |....CC|
+paint_grid layer=8 frame=2 x=3 y=1 legend=C:#6ed8ce,L:#fff1bc rows:14
+  |........................C|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.C.......................|
+  |CLC......................|
+  |.C.......................|
+draw op=clear_cel layer=0 frame=3
+draw op=clear_cel layer=6 frame=3
+draw op=clear_cel layer=7 frame=3
+draw op=clear_cel layer=8 frame=3
+paint_grid layer=0 frame=3 x=5 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |..OO....|
+  |.OFFO...|
+  |OFSO....|
+  |OSSO....|
+  |OSSO....|
+  |.OSO....|
+  |.OSOOOO.|
+  |.OSSFFFO|
+  |..OOOOO.|
+paint_grid layer=6 frame=3 x=24 y=7 legend=C:#6ed8ce,L:#fff1bc rows:7
+  |..CCC..|
+  |.CLLLC.|
+  |CLLLLCC|
+  |CLLLLLC|
+  |CCLLLCC|
+  |.CCLCC.|
+  |..CCC..|
+paint_grid layer=7 frame=3 x=18 y=10 legend=C:#6ed8ce,L:#fff1bc rows:13
+  |CC........|
+  |..C.......|
+  |...L......|
+  |..C.......|
+  |..........|
+  |...L......|
+  |...C.....L|
+  |..C......L|
+  |..C.......|
+  |..C.......|
+  |..C.......|
+  |..........|
+  |....CCC...|
+paint_grid layer=8 frame=3 x=3 y=11 legend=C:#6ed8ce,L:#fff1bc rows:3
+  |.C.|
+  |CLC|
+  |.C.|
+draw op=clear_cel layer=0 frame=4
+draw op=clear_cel layer=6 frame=4
+draw op=clear_cel layer=7 frame=4
+draw op=clear_cel layer=8 frame=4
+paint_grid layer=0 frame=4 x=4 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |..OO.....|
+  |.OFFO....|
+  |OFSO.....|
+  |OSSO.....|
+  |OSSO.....|
+  |.OSSO....|
+  |..OSOOOO.|
+  |..OSSFFFO|
+  |...OOOOO.|
+paint_grid layer=6 frame=4 x=24 y=7 legend=C:#6ed8ce,L:#fff1bc rows:7
+  |..CCC..|
+  |.CLLLC.|
+  |CLLLLLC|
+  |CLLLLLC|
+  |CLLLLLC|
+  |.CLLLC.|
+  |..CCC..|
+paint_grid layer=7 frame=4 x=18 y=9 legend=C:#6ed8ce,L:#fff1bc rows:14
+  |C.........|
+  |CC........|
+  |..C.......|
+  |...L......|
+  |..CC......|
+  |..........|
+  |...L......|
+  |...L.....L|
+  |..C......L|
+  |..C.......|
+  |..C.......|
+  |..C.......|
+  |..........|
+  |....CCCL..|
+paint_grid layer=8 frame=4 x=4 y=11 legend=L:#fff1bc rows:1
+  |L|
+draw op=clear_cel layer=0 frame=5
+draw op=clear_cel layer=6 frame=5
+draw op=clear_cel layer=7 frame=5
+draw op=clear_cel layer=8 frame=5
+paint_grid layer=0 frame=5 x=3 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |..OO......|
+  |.OFFO.....|
+  |OFSO......|
+  |OSSO......|
+  |OSSO......|
+  |.OSSO.....|
+  |..OSSOOOO.|
+  |...OSSFFFO|
+  |....OOOOO.|
+paint_grid layer=6 frame=5 x=24 y=7 legend=C:#6ed8ce,L:#fff1bc rows:7
+  |..CCC..|
+  |.CLLLC.|
+  |CLLLLLC|
+  |CLLLLLC|
+  |CLLLLLC|
+  |.CLLLC.|
+  |..CCC..|
+paint_grid layer=7 frame=5 x=18 y=9 legend=C:#6ed8ce,L:#fff1bc rows:14
+  |C.........|
+  |CC........|
+  |..C.......|
+  |...L......|
+  |..CC......|
+  |..........|
+  |...L......|
+  |...L.....L|
+  |..C......L|
+  |..C.......|
+  |..C.......|
+  |..C.......|
+  |..........|
+  |....CCCL..|
+paint_grid layer=8 frame=5 x=4 y=8 legend=C:#6ed8ce rows:3
+  |..........................C|
+  |...........................|
+  |C..........................|
+draw op=clear_cel layer=0 frame=6
+draw op=clear_cel layer=6 frame=6
+draw op=clear_cel layer=7 frame=6
+draw op=clear_cel layer=8 frame=6
+paint_grid layer=0 frame=6 x=3 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |.OO.......|
+  |OFFO......|
+  |OSSO......|
+  |OSSO......|
+  |OSSO......|
+  |.OSSO.....|
+  |..OSSOOOO.|
+  |...OSSFFFO|
+  |....OOOOO.|
+paint_grid layer=6 frame=6 x=24 y=7 legend=C:#6ed8ce,L:#fff1bc rows:7
+  |..CCC..|
+  |.CLLLC.|
+  |CLLLLCC|
+  |CLLLLLC|
+  |CCLLLCC|
+  |.CCLCC.|
+  |..CCC..|
+paint_grid layer=7 frame=6 x=18 y=10 legend=C:#6ed8ce,L:#fff1bc rows:13
+  |CC........|
+  |..C.......|
+  |...L......|
+  |..C.......|
+  |..........|
+  |...L......|
+  |...C.....L|
+  |..C......L|
+  |..C.......|
+  |..C.......|
+  |..C.......|
+  |..........|
+  |....CCC...|
+paint_grid layer=8 frame=6 x=30 y=7 legend=C:#6ed8ce rows:1
+  |C|
+draw op=clear_cel layer=0 frame=7
+draw op=clear_cel layer=6 frame=7
+draw op=clear_cel layer=7 frame=7
+draw op=clear_cel layer=8 frame=7
+paint_grid layer=0 frame=7 x=2 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |.OO........|
+  |OFFO.......|
+  |OSSO.......|
+  |OSSO.......|
+  |.OSSO......|
+  |..OSSO.....|
+  |...OSSOOOO.|
+  |....OSSFFFO|
+  |.....OOOOO.|
+paint_grid layer=6 frame=7 x=24 y=7 legend=C:#6ed8ce,L:#fff1bc rows:7
+  |..CCC..|
+  |.CCCCC.|
+  |CCLLLCC|
+  |CCLLLCC|
+  |CCLLCCC|
+  |.CCCCC.|
+  |..CCC..|
+paint_grid layer=7 frame=7 x=18 y=10 legend=C:#6ed8ce,L:#fff1bc rows:13
+  |C.....|
+  |......|
+  |...L..|
+  |......|
+  |......|
+  |...C..|
+  |...C..|
+  |..C...|
+  |..C...|
+  |......|
+  |......|
+  |......|
+  |....CC|
+paint_grid layer=8 frame=7 x=28 y=5 legend=C:#6ed8ce,L:#fff1bc rows:3
+  |.C.|
+  |CLC|
+  |.C.|
+draw op=clear_cel layer=0 frame=8
+draw op=clear_cel layer=6 frame=8
+draw op=clear_cel layer=7 frame=8
+draw op=clear_cel layer=8 frame=8
+paint_grid layer=0 frame=8 x=2 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |.OO........|
+  |OFFO.......|
+  |OSSO.......|
+  |OSSO.......|
+  |.OSSO......|
+  |..OSSO.....|
+  |...OSSOOOO.|
+  |....OSSFFFO|
+  |.....OOOOO.|
+paint_grid layer=6 frame=8 x=25 y=8 legend=C:#6ed8ce,L:#fff1bc rows:5
+  |.CCC.|
+  |CLLLC|
+  |CLLLC|
+  |CCLCC|
+  |.CCC.|
+paint_grid layer=7 frame=8 x=21 y=15 legend=C:#6ed8ce rows:2
+  |C|
+  |C|
+paint_grid layer=8 frame=8 x=5 y=4 legend=C:#6ed8ce,L:#fff1bc rows:14
+  |........................C.|
+  |.......................CLC|
+  |........................C.|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |C.........................|
+draw op=clear_cel layer=0 frame=9
+draw op=clear_cel layer=6 frame=9
+draw op=clear_cel layer=7 frame=9
+draw op=clear_cel layer=8 frame=9
+paint_grid layer=0 frame=9 x=3 y=20 legend=F:#efa76e,O:#28243f,S:#b86662 rows:9
+  |.OO.......|
+  |OFFO......|
+  |OSSO......|
+  |OSSO......|
+  |OSSO......|
+  |.OSSO.....|
+  |..OSSOOOO.|
+  |...OSSFFFO|
+  |....OOOOO.|
+paint_grid layer=6 frame=9 x=25 y=8 legend=C:#6ed8ce,L:#fff1bc rows:5
+  |.CCC.|
+  |CLLCC|
+  |CLCCC|
+  |CCCCC|
+  |.CCC.|
+paint_grid layer=8 frame=9 x=5 y=3 legend=C:#6ed8ce,L:#fff1bc rows:14
+  |.......................C.|
+  |......................CLC|
+  |.......................C.|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |C........................|
+frame op=duration frame=0 count=10 duration_ms=100
 add_tag name="Enchanted idle" direction=forward from=0 to=9
-"Cat head" @0 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @1 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @2 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @3 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @4 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @5 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @6 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @7 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @8 erase rect 8,20 9,20 fill = 8,20 9,20 .
-"Cat head" @9 erase rect 8,20 9,20 fill = 8,20 9,20 .
+draw op=rect layer=2 frame=0 frame_to=9 color=#28243f erase=true fill=true x0=8 x1=9 y0=20 y1=20

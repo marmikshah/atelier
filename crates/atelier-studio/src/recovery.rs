@@ -55,7 +55,7 @@ impl Studio {
                 ));
             }
             let journal = super::store::parse_journal_file(id, &dir.join(crate::JOURNAL_FILE))?;
-            if journal.statements.is_empty() {
+            if journal.entries.is_empty() {
                 return Err("document has no complete recipe".into());
             }
             // A torn append cannot be extended without changing its meaning.
@@ -90,7 +90,7 @@ impl Studio {
         fs::create_dir(&staged_dir).map_err(|error| error.to_string())?;
         Document::new(&name, width, height).save(&staged_dir)?;
         staged.set_document_revision(id, 0)?;
-        staged.journal_call(
+        staged.journal_append(
             id,
             ToolName::DocNew,
             &json!({

@@ -1,537 +1,232 @@
-atelier 5 e44f7eb4-36fe-4f75-94b7-d7bd5dfb55d4 0.1.0
+atelier 4 e44f7eb4-36fe-4f75-94b7-d7bd5dfb55d4 0.1.0
 new name=car-driving width=32 height=32
-layer rename index=0 name=body
-layer add name=wheel_back
-layer add name=wheel_front
-layer add name=exhaust
-layer add name=speedlines
-palette set colors=#14141f,#d7263d,#ff6b6b,#d9d9d9,#a8dadc,#f1f1f1
-legend A=#14141f
-body @0 polygon #14141f fill = 2,12 28x11
-    ........AAAAAAAAAAA.........
-    .......AAAAAAAAAAAAA........
-    ......AAAAAAAAAAAAAAAA......
-    ......AAAAAAAAAAAAAAAAA.....
-    .....AAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-wheel_back @0 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @0 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-legend B=#d7263d
-body @0 polygon #d7263d fill = 2,12 28x11
-    ........BBBBBBBBBBB.........
-    .......BBBBBBBBBBBBB........
-    ......BBBBBBBBBBBBBBBB......
-    ......BBBBBBBBBBBBBBBBB.....
-    .....BBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBBBBB
-body @0 polygon #14141f = 2,12 28x11
-    ........AAAAAAAAAAA.........
-    .......ABBBBBBBBBBBA........
-    ......ABBBBBBBBBBBBBAA......
-    ......ABBBBBBBBBBBBBBBA.....
-    .....ABBBBBBBBBBBBBBBBBAAAAA
-    AAAAABBBBBBBBBBBBBBBBBBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-body @0 line #14141f 2,22 29,22 ~
-legend C=#a8dadc
-body @0 polygon #a8dadc fill = 9,13 15x4
-    ABCCCCCCCCCBA..
-    BCCCCCCCCCCCCAA
-    BCCCCCCCCCCCCCB
-    CCCCCCCCCCCCCCC
-body @0 line #d9d9d9 3,21 28,21 = 3,21 28,21 #d9d9d9
-body @0 line #ff6b6b 7,17 24,17 = 7,17 24,17 #ff6b6b
-legend D=#d9d9d9
-wheel_back @0 ellipse #d9d9d9 9,24 2,2 fill = 7,22 5x5
-    ADDDA
-    DDDDD
-    DDDDD
-    DDDDD
-    ADDDA
-wheel_front @0 ellipse #d9d9d9 24,24 2,2 fill = 22,22 5x5
-    ADDDA
-    DDDDD
-    DDDDD
-    DDDDD
-    ADDDA
-body @0 line #d9d9d9 0,21 1,21 = 0,21 1,21 #d9d9d9
-frame add copy_from=0 count=9 duration_ms=100
-wheel_back @0 pencil #d9d9d9 = 12,24 12,24 #d9d9d9
-wheel_back @0 pencil #d9d9d9 = 6,24 6,24 #d9d9d9
-wheel_front @0 pencil #d9d9d9 = 27,24 27,24 #d9d9d9
-wheel_front @0 pencil #d9d9d9 = 21,24 21,24 #d9d9d9
-wheel_back @1 pencil #d9d9d9 = 11,26 11,26 #d9d9d9
-wheel_back @1 pencil #d9d9d9 = 7,22 7,22 #d9d9d9
-wheel_front @1 pencil #d9d9d9 = 26,26 26,26 #d9d9d9
-wheel_front @1 pencil #d9d9d9 = 22,22 22,22 #d9d9d9
-wheel_back @2 pencil #d9d9d9 = 10,27 10,27 #d9d9d9
-wheel_back @2 pencil #d9d9d9 = 8,21 8,21 #d9d9d9
-wheel_front @2 pencil #d9d9d9 = 25,27 25,27 #d9d9d9
-wheel_front @2 pencil #d9d9d9 = 23,21 23,21 #d9d9d9
-wheel_back @3 pencil #d9d9d9 = 8,27 8,27 #d9d9d9
-wheel_back @3 pencil #d9d9d9 = 10,21 10,21 #d9d9d9
-wheel_front @3 pencil #d9d9d9 = 23,27 23,27 #d9d9d9
-wheel_front @3 pencil #d9d9d9 = 25,21 25,21 #d9d9d9
-wheel_back @4 pencil #d9d9d9 = 7,26 7,26 #d9d9d9
-wheel_back @4 pencil #d9d9d9 = 11,22 11,22 #d9d9d9
-wheel_front @4 pencil #d9d9d9 = 22,26 22,26 #d9d9d9
-wheel_front @4 pencil #d9d9d9 = 26,22 26,22 #d9d9d9
-wheel_back @5 pencil #d9d9d9 = 6,24 6,24 #d9d9d9
-wheel_back @5 pencil #d9d9d9 = 12,24 12,24 #d9d9d9
-wheel_front @5 pencil #d9d9d9 = 21,24 21,24 #d9d9d9
-wheel_front @5 pencil #d9d9d9 = 27,24 27,24 #d9d9d9
-wheel_back @6 pencil #d9d9d9 = 7,22 7,22 #d9d9d9
-wheel_back @6 pencil #d9d9d9 = 11,26 11,26 #d9d9d9
-wheel_front @6 pencil #d9d9d9 = 22,22 22,22 #d9d9d9
-wheel_front @6 pencil #d9d9d9 = 26,26 26,26 #d9d9d9
-wheel_back @7 pencil #d9d9d9 = 8,21 8,21 #d9d9d9
-wheel_back @7 pencil #d9d9d9 = 10,27 10,27 #d9d9d9
-wheel_front @7 pencil #d9d9d9 = 23,21 23,21 #d9d9d9
-wheel_front @7 pencil #d9d9d9 = 25,27 25,27 #d9d9d9
-wheel_back @8 pencil #d9d9d9 = 10,21 10,21 #d9d9d9
-wheel_back @8 pencil #d9d9d9 = 8,27 8,27 #d9d9d9
-wheel_front @8 pencil #d9d9d9 = 25,21 25,21 #d9d9d9
-wheel_front @8 pencil #d9d9d9 = 23,27 23,27 #d9d9d9
-wheel_back @9 pencil #d9d9d9 = 11,22 11,22 #d9d9d9
-wheel_back @9 pencil #d9d9d9 = 7,26 7,26 #d9d9d9
-wheel_front @9 pencil #d9d9d9 = 26,22 26,22 #d9d9d9
-wheel_front @9 pencil #d9d9d9 = 22,26 22,26 #d9d9d9
-legend E=#ff6b6b
-body @2 move 0,0 32,32 0,1 = 0,12 30x12
-    ..............................
-    ..........AAAAAAAAAAA.........
-    .........ABCCCCCCCCCBA........
-    ........ABCCCCCCCCCCCCAA......
-    ........ABCCCCCCCCCCCCCBA.....
-    .......ABCCCCCCCCCCCCCCCBAAAAA
-    ..AAAAAEEEEEEEEEEEEEEEEEEBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    DDADDDDDDDDDDDDDDDDDDDDDDDDDDA
-    ..AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-body @3 move 0,0 32,32 0,1 = 0,12 30x12
-    ..............................
-    ..........AAAAAAAAAAA.........
-    .........ABCCCCCCCCCBA........
-    ........ABCCCCCCCCCCCCAA......
-    ........ABCCCCCCCCCCCCCBA.....
-    .......ABCCCCCCCCCCCCCCCBAAAAA
-    ..AAAAAEEEEEEEEEEEEEEEEEEBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    DDADDDDDDDDDDDDDDDDDDDDDDDDDDA
-    ..AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-body @6 move 0,0 32,32 0,-1 = 0,11 30x12
-    ..........AAAAAAAAAAA.........
-    .........ABCCCCCCCCCBA........
-    ........ABCCCCCCCCCCCCAA......
-    ........ABCCCCCCCCCCCCCBA.....
-    .......ABCCCCCCCCCCCCCCCBAAAAA
-    ..AAAAAEEEEEEEEEEEEEEEEEEBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    DDADDDDDDDDDDDDDDDDDDDDDDDDDDA
-    ..AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    ..............................
-body @7 move 0,0 32,32 0,-1 = 0,11 30x12
-    ..........AAAAAAAAAAA.........
-    .........ABCCCCCCCCCBA........
-    ........ABCCCCCCCCCCCCAA......
-    ........ABCCCCCCCCCCCCCBA.....
-    .......ABCCCCCCCCCCCCCCCBAAAAA
-    ..AAAAAEEEEEEEEEEEEEEEEEEBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    ..ABBBBBBBBBBBBBBBBBBBBBBBBBBA
-    DDADDDDDDDDDDDDDDDDDDDDDDDDDDA
-    ..AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    ..............................
-exhaust @0 pencil #f1f1f1 = 1,20 1,20 #f1f1f1
-legend F=#f1f1f1
-exhaust @1 pencil #f1f1f1 = 0,19 2x2
-    .F
-    F.
-exhaust @2 pencil #f1f1f1 = 0,18 2x2
-    FF
-    F.
-exhaust @3 pencil #f1f1f1 = 0,17 2x2
-    FF
-    F.
-exhaust @4 pencil #f1f1f1 = 0,16 1,16 #f1f1f1
-exhaust @5 pencil #f1f1f1 = 0,15 0,15 #f1f1f1
-exhaust @6 pencil #f1f1f1 = 0,14 0,14 #f1f1f1
-speedlines @0 line #f1f1f1 0,10 1,10 = 0,10 1,10 #f1f1f1
-speedlines @0 line #f1f1f1 0,30 1,30 = 0,30 1,30 #f1f1f1
-speedlines @0 line #f1f1f1 10,10 11,10 = 10,10 11,10 #f1f1f1
-speedlines @0 line #f1f1f1 10,30 11,30 = 10,30 11,30 #f1f1f1
-speedlines @0 line #f1f1f1 20,10 21,10 = 20,10 21,10 #f1f1f1
-speedlines @0 line #f1f1f1 20,30 21,30 = 20,30 21,30 #f1f1f1
-speedlines @1 line #f1f1f1 27,10 28,10 = 27,10 28,10 #f1f1f1
-speedlines @1 line #f1f1f1 27,30 28,30 = 27,30 28,30 #f1f1f1
-speedlines @1 line #f1f1f1 7,10 8,10 = 7,10 8,10 #f1f1f1
-speedlines @1 line #f1f1f1 7,30 8,30 = 7,30 8,30 #f1f1f1
-speedlines @1 line #f1f1f1 17,10 18,10 = 17,10 18,10 #f1f1f1
-speedlines @1 line #f1f1f1 17,30 18,30 = 17,30 18,30 #f1f1f1
-speedlines @2 line #f1f1f1 24,10 25,10 = 24,10 25,10 #f1f1f1
-speedlines @2 line #f1f1f1 24,30 25,30 = 24,30 25,30 #f1f1f1
-speedlines @2 line #f1f1f1 4,10 5,10 = 4,10 5,10 #f1f1f1
-speedlines @2 line #f1f1f1 4,30 5,30 = 4,30 5,30 #f1f1f1
-speedlines @2 line #f1f1f1 14,10 15,10 = 14,10 15,10 #f1f1f1
-speedlines @2 line #f1f1f1 14,30 15,30 = 14,30 15,30 #f1f1f1
-speedlines @3 line #f1f1f1 21,10 22,10 = 21,10 22,10 #f1f1f1
-speedlines @3 line #f1f1f1 21,30 22,30 = 21,30 22,30 #f1f1f1
-speedlines @3 line #f1f1f1 1,10 2,10 = 1,10 2,10 #f1f1f1
-speedlines @3 line #f1f1f1 1,30 2,30 = 1,30 2,30 #f1f1f1
-speedlines @3 line #f1f1f1 11,10 12,10 = 11,10 12,10 #f1f1f1
-speedlines @3 line #f1f1f1 11,30 12,30 = 11,30 12,30 #f1f1f1
-speedlines @4 line #f1f1f1 18,10 19,10 = 18,10 19,10 #f1f1f1
-speedlines @4 line #f1f1f1 18,30 19,30 = 18,30 19,30 #f1f1f1
-speedlines @4 line #f1f1f1 28,10 29,10 = 28,10 29,10 #f1f1f1
-speedlines @4 line #f1f1f1 28,30 29,30 = 28,30 29,30 #f1f1f1
-speedlines @4 line #f1f1f1 8,10 9,10 = 8,10 9,10 #f1f1f1
-speedlines @4 line #f1f1f1 8,30 9,30 = 8,30 9,30 #f1f1f1
-speedlines @5 line #f1f1f1 15,10 16,10 = 15,10 16,10 #f1f1f1
-speedlines @5 line #f1f1f1 15,30 16,30 = 15,30 16,30 #f1f1f1
-speedlines @5 line #f1f1f1 25,10 26,10 = 25,10 26,10 #f1f1f1
-speedlines @5 line #f1f1f1 25,30 26,30 = 25,30 26,30 #f1f1f1
-speedlines @5 line #f1f1f1 5,10 6,10 = 5,10 6,10 #f1f1f1
-speedlines @5 line #f1f1f1 5,30 6,30 = 5,30 6,30 #f1f1f1
-speedlines @6 line #f1f1f1 12,10 13,10 = 12,10 13,10 #f1f1f1
-speedlines @6 line #f1f1f1 12,30 13,30 = 12,30 13,30 #f1f1f1
-speedlines @6 line #f1f1f1 22,10 23,10 = 22,10 23,10 #f1f1f1
-speedlines @6 line #f1f1f1 22,30 23,30 = 22,30 23,30 #f1f1f1
-speedlines @6 line #f1f1f1 2,10 3,10 = 2,10 3,10 #f1f1f1
-speedlines @6 line #f1f1f1 2,30 3,30 = 2,30 3,30 #f1f1f1
-speedlines @7 line #f1f1f1 9,10 10,10 = 9,10 10,10 #f1f1f1
-speedlines @7 line #f1f1f1 9,30 10,30 = 9,30 10,30 #f1f1f1
-speedlines @7 line #f1f1f1 19,10 20,10 = 19,10 20,10 #f1f1f1
-speedlines @7 line #f1f1f1 19,30 20,30 = 19,30 20,30 #f1f1f1
-speedlines @7 line #f1f1f1 29,10 30,10 = 29,10 30,10 #f1f1f1
-speedlines @7 line #f1f1f1 29,30 30,30 = 29,30 30,30 #f1f1f1
-speedlines @8 line #f1f1f1 6,10 7,10 = 6,10 7,10 #f1f1f1
-speedlines @8 line #f1f1f1 6,30 7,30 = 6,30 7,30 #f1f1f1
-speedlines @8 line #f1f1f1 16,10 17,10 = 16,10 17,10 #f1f1f1
-speedlines @8 line #f1f1f1 16,30 17,30 = 16,30 17,30 #f1f1f1
-speedlines @8 line #f1f1f1 26,10 27,10 = 26,10 27,10 #f1f1f1
-speedlines @8 line #f1f1f1 26,30 27,30 = 26,30 27,30 #f1f1f1
-speedlines @9 line #f1f1f1 3,10 4,10 = 3,10 4,10 #f1f1f1
-speedlines @9 line #f1f1f1 3,30 4,30 = 3,30 4,30 #f1f1f1
-speedlines @9 line #f1f1f1 13,10 14,10 = 13,10 14,10 #f1f1f1
-speedlines @9 line #f1f1f1 13,30 14,30 = 13,30 14,30 #f1f1f1
-speedlines @9 line #f1f1f1 23,10 24,10 = 23,10 24,10 #f1f1f1
-speedlines @9 line #f1f1f1 23,30 24,30 = 23,30 24,30 #f1f1f1
-wheel_back @0 clear_cel = 5,20 13,28 .
-wheel_back @0 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @0 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @0 pencil #d9d9d9 = 12,24 12,24 #d9d9d9
-wheel_front @0 clear_cel = 20,20 28,28 .
-wheel_front @0 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @0 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @0 pencil #d9d9d9 = 27,24 27,24 #d9d9d9
-wheel_back @1 clear_cel = 5,20 13,28 .
-wheel_back @1 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @1 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @1 pencil #d9d9d9 = 11,26 11,26 #d9d9d9
-wheel_front @1 clear_cel = 20,20 28,28 .
-wheel_front @1 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @1 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @1 pencil #d9d9d9 = 26,26 26,26 #d9d9d9
-wheel_back @2 clear_cel = 5,20 13,28 .
-wheel_back @2 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @2 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @2 pencil #d9d9d9 = 10,27 10,27 #d9d9d9
-wheel_front @2 clear_cel = 20,20 28,28 .
-wheel_front @2 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @2 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @2 pencil #d9d9d9 = 25,27 25,27 #d9d9d9
-wheel_back @3 clear_cel = 5,20 13,28 .
-wheel_back @3 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @3 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @3 pencil #d9d9d9 = 8,27 8,27 #d9d9d9
-wheel_front @3 clear_cel = 20,20 28,28 .
-wheel_front @3 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @3 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @3 pencil #d9d9d9 = 23,27 23,27 #d9d9d9
-wheel_back @4 clear_cel = 5,20 13,28 .
-wheel_back @4 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @4 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @4 pencil #d9d9d9 = 7,26 7,26 #d9d9d9
-wheel_front @4 clear_cel = 20,20 28,28 .
-wheel_front @4 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @4 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @4 pencil #d9d9d9 = 22,26 22,26 #d9d9d9
-wheel_back @5 clear_cel = 5,20 13,28 .
-wheel_back @5 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @5 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @5 pencil #d9d9d9 = 6,24 6,24 #d9d9d9
-wheel_front @5 clear_cel = 20,20 28,28 .
-wheel_front @5 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @5 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @5 pencil #d9d9d9 = 21,24 21,24 #d9d9d9
-wheel_back @6 clear_cel = 5,20 13,28 .
-wheel_back @6 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @6 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @6 pencil #d9d9d9 = 7,22 7,22 #d9d9d9
-wheel_front @6 clear_cel = 20,20 28,28 .
-wheel_front @6 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @6 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @6 pencil #d9d9d9 = 22,22 22,22 #d9d9d9
-wheel_back @7 clear_cel = 5,20 13,28 .
-wheel_back @7 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @7 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @7 pencil #d9d9d9 = 8,21 8,21 #d9d9d9
-wheel_front @7 clear_cel = 20,20 28,28 .
-wheel_front @7 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @7 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @7 pencil #d9d9d9 = 23,21 23,21 #d9d9d9
-wheel_back @8 clear_cel = 5,20 13,28 .
-wheel_back @8 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @8 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @8 pencil #d9d9d9 = 10,21 10,21 #d9d9d9
-wheel_front @8 clear_cel = 20,20 28,28 .
-wheel_front @8 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @8 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @8 pencil #d9d9d9 = 25,21 25,21 #d9d9d9
-wheel_back @9 clear_cel = 5,20 13,28 .
-wheel_back @9 ellipse #14141f 9,24 4,4 fill = 5,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_back @9 ellipse #d9d9d9 9,24 1,1 fill = 8,23 10,25 #d9d9d9
-wheel_back @9 pencil #d9d9d9 = 11,22 11,22 #d9d9d9
-wheel_front @9 clear_cel = 20,20 28,28 .
-wheel_front @9 ellipse #14141f 24,24 4,4 fill = 20,20 9x9
-    ..AAAAA..
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    ..AAAAA..
-wheel_front @9 ellipse #d9d9d9 24,24 1,1 fill = 23,23 25,25 #d9d9d9
-wheel_front @9 pencil #d9d9d9 = 26,22 26,22 #d9d9d9
-exhaust @0 clear_cel = 1,20 1,20 .
-exhaust @0 pencil #f1f1f1 = 1,20 1,20 #f1f1f1
-exhaust @1 clear_cel = 0,19 1,20 .
-exhaust @1 pencil #f1f1f1 = 0,20 1,20 #f1f1f1
-exhaust @2 clear_cel = 0,18 1,19 .
-exhaust @2 pencil #f1f1f1 = 0,19 1,19 #f1f1f1
-exhaust @3 clear_cel = 0,17 1,18 .
-exhaust @3 pencil #f1f1f1 = 0,18 1,18 #f1f1f1
-exhaust @4 clear_cel = 0,16 1,16 .
-exhaust @4 pencil #f1f1f1 = 0,17 0,17 #f1f1f1
-exhaust @5 clear_cel = 0,15 0,15 .
-exhaust @5 pencil #f1f1f1 = 0,16 0,16 #f1f1f1
-exhaust @6 clear_cel = 0,14 0,14 .
-exhaust @6 pencil #f1f1f1 = 0,15 0,15 #f1f1f1
-exhaust @7 clear_cel ~
-exhaust @7 pencil #f1f1f1 = 0,14 0,14 #f1f1f1
-exhaust @8 clear_cel ~
-exhaust @8 pencil #f1f1f1 = 0,13 0,13 #f1f1f1
-exhaust @9 clear_cel ~
-exhaust @9 pencil #f1f1f1 = 0,12 0,12 #f1f1f1
+layer op=rename index=0 name=body
+layer op=add name=wheel_back
+layer op=add name=wheel_front
+layer op=add name=exhaust
+layer op=add name=speedlines
+palette op=set colors=#14141f,#d7263d,#ff6b6b,#d9d9d9,#a8dadc,#f1f1f1
+draw op=polygon layer=0 frame=0 color=#14141f fill=true points=2,22 2,17 6,17 10,12 20,12 25,16 29,16 29,22
+draw op=ellipse layer=1 frame=0 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=0 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=polygon layer=0 frame=0 color=#d7263d fill=true points=2,22 2,17 6,17 10,12 20,12 25,16 29,16 29,22
+draw op=polygon layer=0 frame=0 color=#14141f fill=false points=2,22 2,17 6,17 10,12 20,12 25,16 29,16 29,22
+draw op=line layer=0 frame=0 color=#14141f x0=2 x1=29 y0=22 y1=22
+draw op=polygon layer=0 frame=0 color=#a8dadc fill=true points=11,13 19,13 23,16 9,16
+draw op=line layer=0 frame=0 color=#d9d9d9 x0=3 x1=28 y0=21 y1=21
+draw op=line layer=0 frame=0 color=#ff6b6b x0=7 x1=24 y0=17 y1=17
+draw op=ellipse layer=1 frame=0 color=#d9d9d9 cx=9 cy=24 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=0 color=#d9d9d9 cx=24 cy=24 fill=true rx=2 ry=2
+draw op=line layer=0 frame=0 color=#d9d9d9 x0=0 x1=1 y0=21 y1=21
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=pencil layer=1 frame=0 color=#d9d9d9 points=[[12,24]]
+draw op=pencil layer=1 frame=0 color=#d9d9d9 points=[[6,24]]
+draw op=pencil layer=2 frame=0 color=#d9d9d9 points=[[27,24]]
+draw op=pencil layer=2 frame=0 color=#d9d9d9 points=[[21,24]]
+draw op=pencil layer=1 frame=1 color=#d9d9d9 points=[[11,26]]
+draw op=pencil layer=1 frame=1 color=#d9d9d9 points=[[7,22]]
+draw op=pencil layer=2 frame=1 color=#d9d9d9 points=[[26,26]]
+draw op=pencil layer=2 frame=1 color=#d9d9d9 points=[[22,22]]
+draw op=pencil layer=1 frame=2 color=#d9d9d9 points=[[10,27]]
+draw op=pencil layer=1 frame=2 color=#d9d9d9 points=[[8,21]]
+draw op=pencil layer=2 frame=2 color=#d9d9d9 points=[[25,27]]
+draw op=pencil layer=2 frame=2 color=#d9d9d9 points=[[23,21]]
+draw op=pencil layer=1 frame=3 color=#d9d9d9 points=[[8,27]]
+draw op=pencil layer=1 frame=3 color=#d9d9d9 points=[[10,21]]
+draw op=pencil layer=2 frame=3 color=#d9d9d9 points=[[23,27]]
+draw op=pencil layer=2 frame=3 color=#d9d9d9 points=[[25,21]]
+draw op=pencil layer=1 frame=4 color=#d9d9d9 points=[[7,26]]
+draw op=pencil layer=1 frame=4 color=#d9d9d9 points=[[11,22]]
+draw op=pencil layer=2 frame=4 color=#d9d9d9 points=[[22,26]]
+draw op=pencil layer=2 frame=4 color=#d9d9d9 points=[[26,22]]
+draw op=pencil layer=1 frame=5 color=#d9d9d9 points=[[6,24]]
+draw op=pencil layer=1 frame=5 color=#d9d9d9 points=[[12,24]]
+draw op=pencil layer=2 frame=5 color=#d9d9d9 points=[[21,24]]
+draw op=pencil layer=2 frame=5 color=#d9d9d9 points=[[27,24]]
+draw op=pencil layer=1 frame=6 color=#d9d9d9 points=[[7,22]]
+draw op=pencil layer=1 frame=6 color=#d9d9d9 points=[[11,26]]
+draw op=pencil layer=2 frame=6 color=#d9d9d9 points=[[22,22]]
+draw op=pencil layer=2 frame=6 color=#d9d9d9 points=[[26,26]]
+draw op=pencil layer=1 frame=7 color=#d9d9d9 points=[[8,21]]
+draw op=pencil layer=1 frame=7 color=#d9d9d9 points=[[10,27]]
+draw op=pencil layer=2 frame=7 color=#d9d9d9 points=[[23,21]]
+draw op=pencil layer=2 frame=7 color=#d9d9d9 points=[[25,27]]
+draw op=pencil layer=1 frame=8 color=#d9d9d9 points=[[10,21]]
+draw op=pencil layer=1 frame=8 color=#d9d9d9 points=[[8,27]]
+draw op=pencil layer=2 frame=8 color=#d9d9d9 points=[[25,21]]
+draw op=pencil layer=2 frame=8 color=#d9d9d9 points=[[23,27]]
+draw op=pencil layer=1 frame=9 color=#d9d9d9 points=[[11,22]]
+draw op=pencil layer=1 frame=9 color=#d9d9d9 points=[[7,26]]
+draw op=pencil layer=2 frame=9 color=#d9d9d9 points=[[26,22]]
+draw op=pencil layer=2 frame=9 color=#d9d9d9 points=[[22,26]]
+region op=move layer=0 frame=2 offset=0,1 rect=0,0,32,32
+region op=move layer=0 frame=3 offset=0,1 rect=0,0,32,32
+region op=move layer=0 frame=6 offset=0,-1 rect=0,0,32,32
+region op=move layer=0 frame=7 offset=0,-1 rect=0,0,32,32
+draw op=pencil layer=3 frame=0 color=#f1f1f1 points=[[1,20]]
+draw op=pencil layer=3 frame=1 color=#f1f1f1 points=1,19 0,20
+draw op=pencil layer=3 frame=2 color=#f1f1f1 points=0,18 1,18 0,19
+draw op=pencil layer=3 frame=3 color=#f1f1f1 points=0,17 1,17 0,18
+draw op=pencil layer=3 frame=4 color=#f1f1f1 points=0,16 1,16
+draw op=pencil layer=3 frame=5 color=#f1f1f1 points=[[0,15]]
+draw op=pencil layer=3 frame=6 color=#f1f1f1 points=[[0,14]]
+draw op=line layer=4 frame=0 color=#f1f1f1 x0=0 x1=1 y0=10 y1=10
+draw op=line layer=4 frame=0 color=#f1f1f1 x0=0 x1=1 y0=30 y1=30
+draw op=line layer=4 frame=0 color=#f1f1f1 x0=10 x1=11 y0=10 y1=10
+draw op=line layer=4 frame=0 color=#f1f1f1 x0=10 x1=11 y0=30 y1=30
+draw op=line layer=4 frame=0 color=#f1f1f1 x0=20 x1=21 y0=10 y1=10
+draw op=line layer=4 frame=0 color=#f1f1f1 x0=20 x1=21 y0=30 y1=30
+draw op=line layer=4 frame=1 color=#f1f1f1 x0=27 x1=28 y0=10 y1=10
+draw op=line layer=4 frame=1 color=#f1f1f1 x0=27 x1=28 y0=30 y1=30
+draw op=line layer=4 frame=1 color=#f1f1f1 x0=7 x1=8 y0=10 y1=10
+draw op=line layer=4 frame=1 color=#f1f1f1 x0=7 x1=8 y0=30 y1=30
+draw op=line layer=4 frame=1 color=#f1f1f1 x0=17 x1=18 y0=10 y1=10
+draw op=line layer=4 frame=1 color=#f1f1f1 x0=17 x1=18 y0=30 y1=30
+draw op=line layer=4 frame=2 color=#f1f1f1 x0=24 x1=25 y0=10 y1=10
+draw op=line layer=4 frame=2 color=#f1f1f1 x0=24 x1=25 y0=30 y1=30
+draw op=line layer=4 frame=2 color=#f1f1f1 x0=4 x1=5 y0=10 y1=10
+draw op=line layer=4 frame=2 color=#f1f1f1 x0=4 x1=5 y0=30 y1=30
+draw op=line layer=4 frame=2 color=#f1f1f1 x0=14 x1=15 y0=10 y1=10
+draw op=line layer=4 frame=2 color=#f1f1f1 x0=14 x1=15 y0=30 y1=30
+draw op=line layer=4 frame=3 color=#f1f1f1 x0=21 x1=22 y0=10 y1=10
+draw op=line layer=4 frame=3 color=#f1f1f1 x0=21 x1=22 y0=30 y1=30
+draw op=line layer=4 frame=3 color=#f1f1f1 x0=1 x1=2 y0=10 y1=10
+draw op=line layer=4 frame=3 color=#f1f1f1 x0=1 x1=2 y0=30 y1=30
+draw op=line layer=4 frame=3 color=#f1f1f1 x0=11 x1=12 y0=10 y1=10
+draw op=line layer=4 frame=3 color=#f1f1f1 x0=11 x1=12 y0=30 y1=30
+draw op=line layer=4 frame=4 color=#f1f1f1 x0=18 x1=19 y0=10 y1=10
+draw op=line layer=4 frame=4 color=#f1f1f1 x0=18 x1=19 y0=30 y1=30
+draw op=line layer=4 frame=4 color=#f1f1f1 x0=28 x1=29 y0=10 y1=10
+draw op=line layer=4 frame=4 color=#f1f1f1 x0=28 x1=29 y0=30 y1=30
+draw op=line layer=4 frame=4 color=#f1f1f1 x0=8 x1=9 y0=10 y1=10
+draw op=line layer=4 frame=4 color=#f1f1f1 x0=8 x1=9 y0=30 y1=30
+draw op=line layer=4 frame=5 color=#f1f1f1 x0=15 x1=16 y0=10 y1=10
+draw op=line layer=4 frame=5 color=#f1f1f1 x0=15 x1=16 y0=30 y1=30
+draw op=line layer=4 frame=5 color=#f1f1f1 x0=25 x1=26 y0=10 y1=10
+draw op=line layer=4 frame=5 color=#f1f1f1 x0=25 x1=26 y0=30 y1=30
+draw op=line layer=4 frame=5 color=#f1f1f1 x0=5 x1=6 y0=10 y1=10
+draw op=line layer=4 frame=5 color=#f1f1f1 x0=5 x1=6 y0=30 y1=30
+draw op=line layer=4 frame=6 color=#f1f1f1 x0=12 x1=13 y0=10 y1=10
+draw op=line layer=4 frame=6 color=#f1f1f1 x0=12 x1=13 y0=30 y1=30
+draw op=line layer=4 frame=6 color=#f1f1f1 x0=22 x1=23 y0=10 y1=10
+draw op=line layer=4 frame=6 color=#f1f1f1 x0=22 x1=23 y0=30 y1=30
+draw op=line layer=4 frame=6 color=#f1f1f1 x0=2 x1=3 y0=10 y1=10
+draw op=line layer=4 frame=6 color=#f1f1f1 x0=2 x1=3 y0=30 y1=30
+draw op=line layer=4 frame=7 color=#f1f1f1 x0=9 x1=10 y0=10 y1=10
+draw op=line layer=4 frame=7 color=#f1f1f1 x0=9 x1=10 y0=30 y1=30
+draw op=line layer=4 frame=7 color=#f1f1f1 x0=19 x1=20 y0=10 y1=10
+draw op=line layer=4 frame=7 color=#f1f1f1 x0=19 x1=20 y0=30 y1=30
+draw op=line layer=4 frame=7 color=#f1f1f1 x0=29 x1=30 y0=10 y1=10
+draw op=line layer=4 frame=7 color=#f1f1f1 x0=29 x1=30 y0=30 y1=30
+draw op=line layer=4 frame=8 color=#f1f1f1 x0=6 x1=7 y0=10 y1=10
+draw op=line layer=4 frame=8 color=#f1f1f1 x0=6 x1=7 y0=30 y1=30
+draw op=line layer=4 frame=8 color=#f1f1f1 x0=16 x1=17 y0=10 y1=10
+draw op=line layer=4 frame=8 color=#f1f1f1 x0=16 x1=17 y0=30 y1=30
+draw op=line layer=4 frame=8 color=#f1f1f1 x0=26 x1=27 y0=10 y1=10
+draw op=line layer=4 frame=8 color=#f1f1f1 x0=26 x1=27 y0=30 y1=30
+draw op=line layer=4 frame=9 color=#f1f1f1 x0=3 x1=4 y0=10 y1=10
+draw op=line layer=4 frame=9 color=#f1f1f1 x0=3 x1=4 y0=30 y1=30
+draw op=line layer=4 frame=9 color=#f1f1f1 x0=13 x1=14 y0=10 y1=10
+draw op=line layer=4 frame=9 color=#f1f1f1 x0=13 x1=14 y0=30 y1=30
+draw op=line layer=4 frame=9 color=#f1f1f1 x0=23 x1=24 y0=10 y1=10
+draw op=line layer=4 frame=9 color=#f1f1f1 x0=23 x1=24 y0=30 y1=30
+draw op=clear_cel layer=1 frame=0
+draw op=ellipse layer=1 frame=0 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=0 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=0 color=#d9d9d9 points=[[12,24]]
+draw op=clear_cel layer=2 frame=0
+draw op=ellipse layer=2 frame=0 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=0 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=0 color=#d9d9d9 points=[[27,24]]
+draw op=clear_cel layer=1 frame=1
+draw op=ellipse layer=1 frame=1 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=1 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=1 color=#d9d9d9 points=[[11,26]]
+draw op=clear_cel layer=2 frame=1
+draw op=ellipse layer=2 frame=1 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=1 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=1 color=#d9d9d9 points=[[26,26]]
+draw op=clear_cel layer=1 frame=2
+draw op=ellipse layer=1 frame=2 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=2 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=2 color=#d9d9d9 points=[[10,27]]
+draw op=clear_cel layer=2 frame=2
+draw op=ellipse layer=2 frame=2 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=2 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=2 color=#d9d9d9 points=[[25,27]]
+draw op=clear_cel layer=1 frame=3
+draw op=ellipse layer=1 frame=3 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=3 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=3 color=#d9d9d9 points=[[8,27]]
+draw op=clear_cel layer=2 frame=3
+draw op=ellipse layer=2 frame=3 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=3 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=3 color=#d9d9d9 points=[[23,27]]
+draw op=clear_cel layer=1 frame=4
+draw op=ellipse layer=1 frame=4 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=4 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=4 color=#d9d9d9 points=[[7,26]]
+draw op=clear_cel layer=2 frame=4
+draw op=ellipse layer=2 frame=4 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=4 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=4 color=#d9d9d9 points=[[22,26]]
+draw op=clear_cel layer=1 frame=5
+draw op=ellipse layer=1 frame=5 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=5 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=5 color=#d9d9d9 points=[[6,24]]
+draw op=clear_cel layer=2 frame=5
+draw op=ellipse layer=2 frame=5 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=5 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=5 color=#d9d9d9 points=[[21,24]]
+draw op=clear_cel layer=1 frame=6
+draw op=ellipse layer=1 frame=6 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=6 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=6 color=#d9d9d9 points=[[7,22]]
+draw op=clear_cel layer=2 frame=6
+draw op=ellipse layer=2 frame=6 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=6 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=6 color=#d9d9d9 points=[[22,22]]
+draw op=clear_cel layer=1 frame=7
+draw op=ellipse layer=1 frame=7 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=7 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=7 color=#d9d9d9 points=[[8,21]]
+draw op=clear_cel layer=2 frame=7
+draw op=ellipse layer=2 frame=7 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=7 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=7 color=#d9d9d9 points=[[23,21]]
+draw op=clear_cel layer=1 frame=8
+draw op=ellipse layer=1 frame=8 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=8 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=8 color=#d9d9d9 points=[[10,21]]
+draw op=clear_cel layer=2 frame=8
+draw op=ellipse layer=2 frame=8 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=8 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=8 color=#d9d9d9 points=[[25,21]]
+draw op=clear_cel layer=1 frame=9
+draw op=ellipse layer=1 frame=9 color=#14141f cx=9 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=9 color=#d9d9d9 cx=9 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=1 frame=9 color=#d9d9d9 points=[[11,22]]
+draw op=clear_cel layer=2 frame=9
+draw op=ellipse layer=2 frame=9 color=#14141f cx=24 cy=24 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=9 color=#d9d9d9 cx=24 cy=24 fill=true rx=1 ry=1
+draw op=pencil layer=2 frame=9 color=#d9d9d9 points=[[26,22]]
+draw op=clear_cel layer=3 frame=0
+draw op=pencil layer=3 frame=0 color=#f1f1f1 points=[[1,20]]
+draw op=clear_cel layer=3 frame=1
+draw op=pencil layer=3 frame=1 color=#f1f1f1 points=1,20 0,20
+draw op=clear_cel layer=3 frame=2
+draw op=pencil layer=3 frame=2 color=#f1f1f1 points=0,19 1,19
+draw op=clear_cel layer=3 frame=3
+draw op=pencil layer=3 frame=3 color=#f1f1f1 points=0,18 1,18
+draw op=clear_cel layer=3 frame=4
+draw op=pencil layer=3 frame=4 color=#f1f1f1 points=[[0,17]]
+draw op=clear_cel layer=3 frame=5
+draw op=pencil layer=3 frame=5 color=#f1f1f1 points=[[0,16]]
+draw op=clear_cel layer=3 frame=6
+draw op=pencil layer=3 frame=6 color=#f1f1f1 points=[[0,15]]
+draw op=clear_cel layer=3 frame=7
+draw op=pencil layer=3 frame=7 color=#f1f1f1 points=[[0,14]]
+draw op=clear_cel layer=3 frame=8
+draw op=pencil layer=3 frame=8 color=#f1f1f1 points=[[0,13]]
+draw op=clear_cel layer=3 frame=9
+draw op=pencil layer=3 frame=9 color=#f1f1f1 points=[[0,12]]

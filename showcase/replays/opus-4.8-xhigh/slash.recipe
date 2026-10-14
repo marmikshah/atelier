@@ -1,151 +1,148 @@
-atelier 5 ad5b9f2b-d328-4bfa-a369-b67a2eabfc84 0.1.0
+atelier 4 ad5b9f2b-d328-4bfa-a369-b67a2eabfc84 0.1.0
 new name=slash-arc width=32 height=32
-palette set colors=#ffffff,#b6f0ff,#53d1f4,#2e8bd6,#27489e,#15285c
-layer rename index=0 name=trail
-layer add name=edge
-layer add name=flash
-legend A=#53d1f4 B=#ffffff
-trail @0 grid 1,0 = 1,0 3x3
-    .A.
-    ABA
-    .A.
-trail @0 clear_cel = 1,0 3,2 .
-frame add count=9
-legend C=#27489e D=#2e8bd6
-trail @0 grid 5,5 = 5,5 4x3
-    CDAA
-    .DAA
-    ..AA
-trail @1 grid 6,5 = 6,5 6x4
-    CDDD..
-    CDDDAA
-    .DDAA.
-    ..DAA.
-legend E=#b6f0ff
-edge @1 grid 10,7 = 10,7 4x3
-    .EE.
-    .EEB
-    EEB.
-legend F=#15285c
-trail @2 grid 7,6 = 7,6 9x6
-    FCCDD....
-    .CCDDDA..
-    ..DDDAAAA
-    ...DDAAA.
-    ....AAAA.
-    .....AA..
-edge @2 grid 14,9 = 14,9 4x5
-    .EE.
-    .EEE
-    EEEB
-    EEBB
-    .BB.
-trail @3 grid 8,6 = 8,6 11x9
-    FF.........
-    .CCCC......
-    ..CCDDD....
-    ...CDDDDA..
-    ....DDDAAA.
-    .....DDAAAA
-    ......AAAAA
-    .......AAA.
-    .......AA..
-edge @3 grid 16,12 = 16,12 7x7
-    ...E...
-    ..EEE..
-    .EEEEE.
-    EEEEEB.
-    .EEEBB.
-    ..EBBBB
-    ....BB.
-trail @4 grid 9,7 = 9,7 14x12
-    FFF...........
-    .FCCC.........
-    ..CCCCD.......
-    ...CCDDDD.....
-    ....DDDDDD....
-    .....DDDDDA...
-    ......DDDAAA..
-    .......DAAAAA.
-    ........AAAAAA
-    ........AAAAAA
-    .........AAAA.
-    ..........A...
-edge @4 grid 19,17 = 19,17 7x9
-    ...EE..
-    .EEEE..
-    EEEEEE.
-    .EEEEE.
-    ..EEEBB
-    ..EBBBB
-    ...BBBB
-    ....BBB
-    ....BBB
-flash @4 grid 19,20 = 19,20 11x11
-    .....E.....
-    .....E.....
-    ..E..E..E..
-    ...E.B.E...
-    ....BBB....
-    EEEBBBBBEEE
-    ....BBB....
-    ...E.B.E...
-    ..E..E..E..
-    .....E.....
-    .....E.....
-trail @5 grid 13,9 = 13,9 11x11
-    CC.........
-    CCCD.......
-    .CDDD......
-    ..DDDD.....
-    ...DDDD....
-    ....DDDA...
-    ....DAAAA..
-    .....AAAAA.
-    ......AAAA.
-    ......AAAAA
-    .......AA..
-edge @5 grid 21,19 = 21,19 5x6
-    .EEE.
-    EEEE.
-    EEEE.
-    .EEE.
-    .EBBB
-    ..BBB
-flash @5 grid 21,22 = 21,22 7x7
-    ...E...
-    .E.E.E.
-    ..BBB..
-    EEBBBEE
-    ..BBB..
-    .E.E.E.
-    ...E...
-trail @6 grid 16,12 = 16,12 8x9
-    CC......
-    .DD.....
-    ..DD....
-    ..DDD...
-    ...DDA..
-    ...DAAA.
-    ....AAA.
-    .....AAA
-    .....AAA
-edge @6 grid 22,21 = 22,21 3x3
-    EEE
-    EEE
-    .EE
-trail @7 grid 19,15 = 19,15 5x8
-    C....
-    .C...
-    .DD..
-    ..DD.
-    ..DD.
-    ...AA
-    ...AA
-    ....A
-trail @8 grid 21,18 = 21,18 2x3
-    C.
-    CD
-    .D
-trail @9 grid 21,18 = 21,18 21,18 #15285c
+palette op=set colors=#ffffff,#b6f0ff,#53d1f4,#2e8bd6,#27489e,#15285c
+layer op=rename index=0 name=trail
+layer op=add name=edge
+layer op=add name=flash
+paint_grid layer=0 frame=0 x=1 y=0 legend=2:2,W:0 rows:3
+  |.2.|
+  |2W2|
+  |.2.|
+draw op=clear_cel layer=0 frame=0
+frame op=add count=9
+paint_grid layer=0 frame=0 x=5 y=5 legend=2:2,3:3,4:4 rows:3
+  |4322|
+  |.322|
+  |..22|
+paint_grid layer=0 frame=1 x=6 y=5 legend=2:2,3:3,4:4 rows:4
+  |4333..|
+  |433322|
+  |.3322.|
+  |..322.|
+paint_grid layer=1 frame=1 x=10 y=7 legend=0:0,1:1 rows:3
+  |.11.|
+  |.110|
+  |110.|
+paint_grid layer=0 frame=2 x=7 y=6 legend=2:2,3:3,4:4,5:5 rows:6
+  |54433....|
+  |.443332..|
+  |..3332222|
+  |...33222.|
+  |....2222.|
+  |.....22..|
+paint_grid layer=1 frame=2 x=14 y=9 legend=0:0,1:1 rows:5
+  |.11.|
+  |.111|
+  |1110|
+  |1100|
+  |.00.|
+paint_grid layer=0 frame=3 x=8 y=6 legend=2:2,3:3,4:4,5:5 rows:9
+  |55.........|
+  |.4444......|
+  |..44333....|
+  |...433332..|
+  |....333222.|
+  |.....332222|
+  |......22222|
+  |.......222.|
+  |.......22..|
+paint_grid layer=1 frame=3 x=16 y=12 legend=0:0,1:1 rows:7
+  |...1...|
+  |..111..|
+  |.11111.|
+  |111110.|
+  |.11100.|
+  |..10000|
+  |....00.|
+paint_grid layer=0 frame=4 x=9 y=7 legend=2:2,3:3,4:4,5:5 rows:12
+  |555...........|
+  |.5444.........|
+  |..44443.......|
+  |...443333.....|
+  |....333333....|
+  |.....333332...|
+  |......333222..|
+  |.......322222.|
+  |........222222|
+  |........222222|
+  |.........2222.|
+  |..........2...|
+paint_grid layer=1 frame=4 x=19 y=17 legend=0:0,1:1 rows:9
+  |...11..|
+  |.1111..|
+  |111111.|
+  |.11111.|
+  |..11100|
+  |..10000|
+  |...0000|
+  |....000|
+  |....000|
+paint_grid layer=2 frame=4 x=19 y=20 legend=0:0,1:1 rows:11
+  |.....1.....|
+  |.....1.....|
+  |..1..1..1..|
+  |...1.0.1...|
+  |....000....|
+  |11100000111|
+  |....000....|
+  |...1.0.1...|
+  |..1..1..1..|
+  |.....1.....|
+  |.....1.....|
+paint_grid layer=0 frame=5 x=13 y=9 legend=2:2,3:3,4:4 rows:11
+  |44.........|
+  |4443.......|
+  |.4333......|
+  |..3333.....|
+  |...3333....|
+  |....3332...|
+  |....32222..|
+  |.....22222.|
+  |......2222.|
+  |......22222|
+  |.......22..|
+paint_grid layer=1 frame=5 x=21 y=19 legend=0:0,1:1 rows:6
+  |.111.|
+  |1111.|
+  |1111.|
+  |.111.|
+  |.1000|
+  |..000|
+paint_grid layer=2 frame=5 x=21 y=22 legend=0:0,1:1 rows:7
+  |...1...|
+  |.1.1.1.|
+  |..000..|
+  |1100011|
+  |..000..|
+  |.1.1.1.|
+  |...1...|
+paint_grid layer=0 frame=6 x=16 y=12 legend=2:2,3:3,4:4 rows:9
+  |44......|
+  |.33.....|
+  |..33....|
+  |..333...|
+  |...332..|
+  |...3222.|
+  |....222.|
+  |.....222|
+  |.....222|
+paint_grid layer=1 frame=6 x=22 y=21 legend=1:1 rows:3
+  |111|
+  |111|
+  |.11|
+paint_grid layer=0 frame=7 x=19 y=15 legend=2:2,3:3,4:4 rows:8
+  |4....|
+  |.4...|
+  |.33..|
+  |..33.|
+  |..33.|
+  |...22|
+  |...22|
+  |....2|
+paint_grid layer=0 frame=8 x=21 y=18 legend=3:3,4:4 rows:3
+  |4.|
+  |43|
+  |.3|
+paint_grid layer=0 frame=9 x=21 y=18 legend=5:5 rows:1
+  |5|
 add_tag name=slash direction=forward from=0 to=9

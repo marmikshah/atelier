@@ -194,68 +194,6 @@ impl Document {
         let py = i64::from(ay) + i64::from(dy);
         self.write_block(layer, frame, px, py, rw, rh, &buf)
     }
-
-    /// Write `rows` of pixels into a cel with their top-left corner at
-    /// `(x, y)`, replacing what is there, transparent pixels included. Every
-    /// row must be the same width and the block must lie on the canvas.
-    /// Returns the number of pixels written. This is how a recorded effect is
-    /// replayed, so it composites nothing.
-    pub fn paste(
-        &mut self,
-        layer: usize,
-        frame: usize,
-        x: u32,
-        y: u32,
-        rows: &[Vec<[u8; 4]>],
-    ) -> Result<u64, String> {
-        let width = rows.first().map(Vec::len).unwrap_or(0);
-        if width == 0 || rows.iter().any(|row| row.len() != width) {
-            return Err("a pasted block needs rows of one non-zero width".into());
-        }
-        let (w, h) = (self.meta.w, self.meta.h);
-        let fits = u64::from(x) + width as u64 <= u64::from(w)
-            && u64::from(y) + rows.len() as u64 <= u64::from(h);
-        if !fits {
-            return Err(format!(
-                "a {width}x{} block at {x},{y} does not fit the {w}x{h} canvas",
-                rows.len()
-            ));
-        }
-        let img = self.cel_canvas(layer, frame)?;
-        for (dy, row) in rows.iter().enumerate() {
-            for (dx, pixel) in row.iter().enumerate() {
-                img.put_pixel(x + dx as u32, y + dy as u32, image::Rgba(*pixel));
-            }
-        }
-        Ok(width as u64 * rows.len() as u64)
-    }
-
-    /// Set every pixel of an inclusive rectangle on the canvas to `color`,
-    /// replacing what is there. Returns the number of pixels written.
-    pub fn fill_rect(
-        &mut self,
-        layer: usize,
-        frame: usize,
-        x0: u32,
-        y0: u32,
-        x1: u32,
-        y1: u32,
-        color: [u8; 4],
-    ) -> Result<u64, String> {
-        let (w, h) = (self.meta.w, self.meta.h);
-        if x1 < x0 || y1 < y0 || x1 >= w || y1 >= h {
-            return Err(format!(
-                "rectangle {x0},{y0} {x1},{y1} is not an ordered box on the {w}x{h} canvas"
-            ));
-        }
-        let img = self.cel_canvas(layer, frame)?;
-        for y in y0..=y1 {
-            for x in x0..=x1 {
-                img.put_pixel(x, y, image::Rgba(color));
-            }
-        }
-        Ok(u64::from(x1 - x0 + 1) * u64::from(y1 - y0 + 1))
-    }
 }
 
 #[cfg(test)]

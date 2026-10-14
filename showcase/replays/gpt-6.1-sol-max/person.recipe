@@ -1,786 +1,519 @@
-atelier 5 3e546dc3-21ce-40b7-8996-29eb68245a1d 0.1.0
+atelier 4 3e546dc3-21ce-40b7-8996-29eb68245a1d 0.1.0
 new name="Wayfarer — Front-facing Jump" width=32 height=32
-palette set colors=#212233,#734539,#da855b,#ffcf90,#2f6e73,#6fb9a0
-layer rename index=0 name="Torso · tunic, belt & satchel"
-legend A=#212233
-"Torso · tunic, belt & satchel" @0 grid 7,8 = 7,8 18x23
-    ......AAAAAA......
-    .....AAAAAAAA.....
-    ....AAAAAAAAAA....
-    ....AAAAAAAAAA....
-    ...AAAAAAAAAAAA...
-    ...AAAAAAAAAAAA...
-    ....AAAAAAAAAA....
-    .....AAAAAAAA.....
-    ......AAAAAA......
-    ...AAAAAAAAAAAA...
-    ..AAAAAAAAAAAAAA..
-    ..AAAAAAAAAAAAAA..
-    ..AAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAA
-    .AAA.AAAAAAAA.AAA.
-    ....AAAA..AAAA....
-    ....AAAA..AAAA....
-    ....AAAA..AAAA....
-    ...AAAAA..AAAAA...
-    ...AAAAA..AAAAA...
-"Torso · tunic, belt & satchel" @0 clear 0,0 31,31 = 7,8 24,30 .
-layer add name="Leg · viewer left"
-layer add name="Leg · viewer right"
-layer move index=0 to_index=2
-layer add name="Arm · viewer left"
-layer add name="Arm · viewer right"
-layer add name="Head · front-facing"
-legend B=#2f6e73 C=#734539
-"Leg · viewer left" @0 grid 10,24 = 10,24 6x7
-    ..ABBA
-    ..ABBA
-    .ABBA.
-    .ACCA.
-    .ACCA.
-    ACCCA.
-    AAAAA.
-"Leg · viewer right" @0 grid 16,24 = 16,24 6x7
-    ABBA..
-    ABBA..
-    .ABBA.
-    .ACCA.
-    .ACCA.
-    .ACCCA
-    .AAAAA
-legend D=#da855b E=#6fb9a0
-"Torso · tunic, belt & satchel" @0 grid 11,16 = 11,16 10x9
-    ...DDDD...
-    .AEEAABBA.
-    AEEEBBBBBA
-    AEEEBBBBBA
-    AEEBEBBBBA
-    .AEEBBBBA.
-    .ABBBBBBA.
-    .ACCCCCCA.
-    .ABBAABBA.
-legend F=#ffcf90
-"Arm · viewer left" @0 grid 7,17 = 7,17 6x9
-    ...AAA
-    ..AEEA
-    ..AEBA
-    ..ABBA
-    .ABBA.
-    .ADFA.
-    ADFFA.
-    ADFDA.
-    .AAA..
-"Arm · viewer right" @0 grid 19,17 = 19,17 6x9
-    AAA...
-    ABBA..
-    ABBA..
-    ABBA..
-    .ABBA.
-    .AFDA.
-    .AFFDA
-    .ADFDA
-    ..AAA.
-"Head · front-facing" @0 grid 10,8 = 10,8 12x10
-    ...AAAAAA...
-    ..ACCCCCCA..
-    .ACCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFFFFFFFDA
-    .ADFFFFFFDA.
-    ..ADFFFFDA..
-    ...ADDDDA...
-    ....ADDA....
-"Torso · tunic, belt & satchel" @0 pencil #734539 size 1 = 13,18 3x5
-    EEC
-    ECB
-    CBE
-    CEB
-    CCB
-"Torso · tunic, belt & satchel" @0 pencil #ffcf90 size 1 = 15,23 16,23 #ffcf90
-"Leg · viewer left" @0 pencil #da855b size 1 = 12,28 12,28 #da855b
-"Leg · viewer right" @0 pencil #da855b size 1 = 18,28 18,28 #da855b
-"Head · front-facing" @0 pencil #da855b size 1 = 12,9 3x2
-    ADD
-    DCC
-"Head · front-facing" @0 pencil #212233 size 1 = 14,13 4x1
-    AFFA
-"Head · front-facing" @0 pencil #da855b size 1 = 16,14 16,14 #da855b
-"Head · front-facing" @0 pencil #734539 size 1 = 15,15 16,15 #734539
-frame add copy_from=0 duration_ms=100
-"Head · front-facing" @1 move 10,8 21,17 0,4 = 10,8 12x14
-    ............
-    ............
-    ............
-    ............
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-"Torso · tunic, belt & satchel" @1 clear 10,16 21,24 = 11,16 20,24 .
-"Torso · tunic, belt & satchel" @1 grid 10,20 = 10,20 12x8
-    ....DDDD....
-    .AEEAABBBBA.
-    AEEEBBBBBBBA
-    AEEEBBBBBBBA
-    .AEEBEBBBBA.
-    .ABBBBBBBBA.
-    ..ACCCCCCA..
-    ..ABBAABBA..
-"Torso · tunic, belt & satchel" @1 pencil #734539 size 1 = 13,22 3x4
-    EBC
-    ECB
-    CBE
-    CCB
-"Torso · tunic, belt & satchel" @1 pencil #ffcf90 size 1 = 15,26 16,26 #ffcf90
-"Leg · viewer left" @1 clear 10,24 15,30 = 10,24 15,30 .
-"Leg · viewer left" @1 grid 9,24 = 9,24 6x7
-    ..AAAA
-    .ABBBA
-    ABBBA.
-    ABBA..
-    ..ACCA
-    ACCCCA
-    AAAAAA
-"Leg · viewer right" @1 clear 16,24 21,30 = 16,24 21,30 .
-"Leg · viewer right" @1 grid 17,24 = 17,24 6x7
-    AAAA..
-    ABBBA.
-    .ABBBA
-    ..ABBA
-    ACCA..
-    ACCCCA
-    AAAAAA
-"Leg · viewer left" @1 pencil #da855b size 1 = 10,29 10,29 #da855b
-"Leg · viewer right" @1 pencil #da855b size 1 = 18,29 18,29 #da855b
-"Arm · viewer left" @1 clear 7,17 12,25 = 7,17 12,25 .
-"Arm · viewer left" @1 grid 6,20 = 6,20 7x8
-    ....AA.
-    ...AEEA
-    ..AEBA.
-    .ABBA..
-    .ABBA..
-    ADFFA..
-    ADFDA..
-    .AAA...
-"Arm · viewer right" @1 clear 19,17 24,25 = 19,17 24,25 .
-"Arm · viewer right" @1 grid 19,20 = 19,20 7x8
-    .AA....
-    ABBA...
-    .ABBA..
-    ..ABBA.
-    ..ABBA.
-    ..AFFDA
-    ..ADFDA
-    ...AAA.
-frame add copy_from=1 duration_ms=100
-"Head · front-facing" @2 move 10,12 21,21 0,-7 = 10,5 12x17
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-"Torso · tunic, belt & satchel" @2 clear 10,20 21,27 = 10,20 21,27 .
-"Torso · tunic, belt & satchel" @2 grid 11,13 = 11,13 10x10
-    ...DDDD...
-    .AEEAABBA.
-    AEEEBBBBBA
-    AEEEBBBBBA
-    AEEBEBBBBA
-    AEEBEBBBBA
-    .AEEBBBBA.
-    .ABBBBBBA.
-    .ACCCCCCA.
-    .ABBAABBA.
-"Torso · tunic, belt & satchel" @2 pencil #734539 size 1 = 13,15 3x6
-    EEC
-    ECB
-    CBE
-    CBE
-    CEB
-    CCB
-"Torso · tunic, belt & satchel" @2 pencil #ffcf90 size 1 = 15,21 16,21 #ffcf90
-"Leg · viewer left" @2 clear 8,24 14,30 = 9,24 14,30 .
-"Leg · viewer left" @2 grid 12,22 = 12,22 4x9
-    ABBA
-    ABBA
-    ABBA
-    ABBA
-    ABBA
-    ACCA
-    ACCA
-    ACCA
-    .AAA
-"Leg · viewer right" @2 clear 17,24 23,30 = 17,24 22,30 .
-"Leg · viewer right" @2 grid 16,22 = 16,22 4x9
-    ABBA
-    ABBA
-    ABBA
-    ABBA
-    ABBA
-    ACCA
-    ACCA
-    ACCA
-    AAA.
-"Leg · viewer left" @2 pencil #da855b size 1 = 13,28 13,28 #da855b
-"Leg · viewer right" @2 pencil #da855b size 1 = 17,28 17,28 #da855b
-"Arm · viewer left" @2 clear 6,20 12,27 = 6,20 12,27 .
-"Arm · viewer left" @2 grid 5,5 = 5,5 9x11
-    .AAA.....
-    AFFFA....
-    ADFDA....
-    .ADA.....
-    .ABBA....
-    ..AEBA...
-    ...AEBA..
-    ....AEEA.
-    .....AEEA
-    .....AEEA
-    ......AA.
-"Arm · viewer right" @2 clear 19,20 25,27 = 19,20 25,27 .
-"Arm · viewer right" @2 grid 18,5 = 18,5 9x11
-    .....AAA.
-    ....AFFFA
-    ....ADFDA
-    .....ADA.
-    ....ABBA.
-    ...ABBA..
-    ..ABBA...
-    .ABBA....
-    ABBA.....
-    ABBA.....
-    .AA......
-frame add copy_from=2 duration_ms=100
-"Head · front-facing" @3 move 10,5 21,14 0,-2 = 10,3 12x12
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-    ............
-    ............
-"Torso · tunic, belt & satchel" @3 clear 10,13 21,22 = 11,13 20,22 .
-"Torso · tunic, belt & satchel" @3 grid 11,11 = 11,11 10x9
-    ...DDDD...
-    .AEEAABBA.
-    AEEEBBBBBA
-    AEEEBBBBBA
-    AEEBEBBBBA
-    .AEEBBBBA.
-    .ABBBBBBA.
-    .ACCCCCCA.
-    .ABBAABBA.
-"Torso · tunic, belt & satchel" @3 pencil #734539 size 1 = 13,13 3x5
-    EEC
-    ECB
-    CBE
-    CEB
-    CCB
-"Torso · tunic, belt & satchel" @3 pencil #ffcf90 size 1 = 15,18 16,18 #ffcf90
-"Leg · viewer left" @3 clear 10,22 15,30 = 12,22 15,30 .
-"Leg · viewer left" @3 grid 9,19 = 9,19 7x7
-    ...ABBA
-    ..ABBBA
-    .ABBBA.
-    ABBBA..
-    ACCA...
-    .ACCCA.
-    ..AAAA.
-"Leg · viewer right" @3 clear 16,22 21,30 = 16,22 19,30 .
-"Leg · viewer right" @3 grid 16,19 = 16,19 7x7
-    ABBA...
-    ABBBA..
-    .ABBBA.
-    ..ABBBA
-    ...ACCA
-    .ACCCA.
-    .AAAA..
-"Leg · viewer left" @3 pencil #da855b size 1 = 11,24 11,24 #da855b
-"Leg · viewer right" @3 pencil #da855b size 1 = 18,24 18,24 #da855b
-"Arm · viewer left" @3 clear 5,5 13,15 = 5,5 13,15 .
-"Arm · viewer left" @3 grid 5,2 = 5,2 8x12
-    .AAA....
-    AFFFA...
-    ADFDA...
-    .ADA....
-    .ABBA...
-    ..AEBA..
-    ..AEEA..
-    ...AEBA.
-    ...AEEA.
-    ....AEEA
-    ....AEEA
-    .....AA.
-"Arm · viewer right" @3 clear 18,5 26,15 = 18,5 26,15 .
-"Arm · viewer right" @3 grid 19,2 = 19,2 8x12
-    ....AAA.
-    ...AFFFA
-    ...ADFDA
-    ....ADA.
-    ...ABBA.
-    ..ABBA..
-    ..ABBA..
-    .ABBA...
-    .ABBA...
-    ABBA....
-    ABBA....
-    .AA.....
-frame add copy_from=3 duration_ms=100
-"Head · front-facing" @4 move 10,3 21,12 0,-1 = 10,2 12x11
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-    ............
-"Torso · tunic, belt & satchel" @4 move 10,11 21,19 0,-1 = 11,10 10x10
-    ...DDDD...
-    .AEEAABBA.
-    AEEECBBBBA
-    AEECBBBBBA
-    AECBEBBBBA
-    .ACEBBBBA.
-    .ACCBBBBA.
-    .ACCFFCCA.
-    .ABBAABBA.
-    ..........
-"Leg · viewer left" @4 clear 9,19 15,25 = 9,19 15,25 .
-"Leg · viewer left" @4 grid 8,18 = 8,18 8x6
-    ...AABBA
-    .ABBBBBA
-    ABBAAAA.
-    ACCA....
-    .ACCCA..
-    ..AAAA..
-"Leg · viewer right" @4 clear 16,19 22,25 = 16,19 22,25 .
-"Leg · viewer right" @4 grid 16,18 = 16,18 8x6
-    ABBAA...
-    ABBBBBA.
-    .AAAABBA
-    ....ACCA
-    ..ACCCA.
-    ..AAAA..
-"Leg · viewer left" @4 pencil #da855b size 1 = 10,22 10,22 #da855b
-"Leg · viewer right" @4 pencil #da855b size 1 = 19,22 19,22 #da855b
-"Arm · viewer left" @4 move 4,2 12,13 0,-1 = 5,1 8x13
-    .AAA....
-    AFFFA...
-    ADFDA...
-    .ADA....
-    .ABBA...
-    ..AEBA..
-    ..AEEA..
-    ...AEBA.
-    ...AEEA.
-    ....AEEA
-    ....AEEA
-    .....AA.
-    ........
-"Arm · viewer right" @4 move 19,2 27,13 0,-1 = 19,1 8x13
-    ....AAA.
-    ...AFFFA
-    ...ADFDA
-    ....ADA.
-    ...ABBA.
-    ..ABBA..
-    ..ABBA..
-    .ABBA...
-    .ABBA...
-    ABBA....
-    ABBA....
-    .AA.....
-    ........
-"Leg · viewer left" @4 grid 8,21 replace = 8,21 7x3
-    ..ACCA.
-    ...ADCA
-    ...AAAA
-"Leg · viewer right" @4 grid 16,21 replace = 17,21 7x3
-    .ACCA..
-    ADCA...
-    AAAA...
-frame add copy_from=4 duration_ms=100
-"Head · front-facing" @5 move 10,2 21,11 0,1 = 10,2 12x11
-    ............
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-"Torso · tunic, belt & satchel" @5 move 10,10 21,18 0,1 = 11,10 10x10
-    ..........
-    ...DDDD...
-    .AEEAABBA.
-    AEEECBBBBA
-    AEECBBBBBA
-    AECBEBBBBA
-    .ACEBBBBA.
-    .ACCBBBBA.
-    .ACCFFCCA.
-    .ABBAABBA.
-"Leg · viewer left" @5 clear 8,18 15,23 = 8,18 15,23 .
-"Leg · viewer left" @5 grid 9,19 = 9,19 7x7
-    ..AABBA
-    .ABBBBA
-    ABBBAA.
-    ABBA...
-    ACCA...
-    .ACCCA.
-    ..AAAA.
-"Leg · viewer right" @5 clear 16,18 23,23 = 16,18 23,23 .
-"Leg · viewer right" @5 grid 16,19 = 16,19 7x7
-    ABBAA..
-    ABBBBA.
-    .AABBBA
-    ...ABBA
-    ...ACCA
-    .ACCCA.
-    .AAAA..
-"Leg · viewer left" @5 pencil #da855b size 1 = 11,24 11,24 #da855b
-"Leg · viewer right" @5 pencil #da855b size 1 = 18,24 18,24 #da855b
-"Arm · viewer left" @5 move 4,1 12,12 0,1 = 5,1 8x13
-    ........
-    .AAA....
-    AFFFA...
-    ADFDA...
-    .ADA....
-    .ABBA...
-    ..AEBA..
-    ..AEEA..
-    ...AEBA.
-    ...AEEA.
-    ....AEEA
-    ....AEEA
-    .....AA.
-"Arm · viewer right" @5 move 19,1 27,12 0,1 = 19,1 8x13
-    ........
-    ....AAA.
-    ...AFFFA
-    ...ADFDA
-    ....ADA.
-    ...ABBA.
-    ..ABBA..
-    ..ABBA..
-    .ABBA...
-    .ABBA...
-    ABBA....
-    ABBA....
-    .AA.....
-frame add copy_from=5 duration_ms=100
-"Head · front-facing" @6 move 10,3 21,12 0,2 = 10,3 12x12
-    ............
-    ............
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-"Torso · tunic, belt & satchel" @6 move 10,11 21,19 0,2 = 11,11 10x11
-    ..........
-    ..........
-    ...DDDD...
-    .AEEAABBA.
-    AEEECBBBBA
-    AEECBBBBBA
-    AECBEBBBBA
-    .ACEBBBBA.
-    .ACCBBBBA.
-    .ACCFFCCA.
-    .ABBAABBA.
-"Leg · viewer left" @6 clear 8,19 15,25 = 9,19 15,25 .
-"Leg · viewer left" @6 grid 10,21 = 10,21 6x7
-    ..ABBA
-    ..ABBA
-    .ABBA.
-    .ACCA.
-    .ACCA.
-    ACCCA.
-    AAAAA.
-"Leg · viewer right" @6 clear 16,19 23,25 = 16,19 22,25 .
-"Leg · viewer right" @6 grid 16,21 = 16,21 6x7
-    ABBA..
-    ABBA..
-    .ABBA.
-    .ACCA.
-    .ACCA.
-    .ACCCA
-    .AAAAA
-"Leg · viewer left" @6 pencil #da855b size 1 = 12,25 12,25 #da855b
-"Leg · viewer right" @6 pencil #da855b size 1 = 18,25 18,25 #da855b
-"Arm · viewer left" @6 clear 4,2 12,13 = 5,2 12,13 .
-"Arm · viewer left" @6 grid 4,10 = 4,10 9x9
-    .AAA.....
-    AFFFA....
-    ADFDA....
-    .ADA.....
-    ..ABBA...
-    ...AEBA..
-    ....AEEA.
-    .....AEEA
-    ......AA.
-"Arm · viewer right" @6 clear 19,2 27,13 = 19,2 26,13 .
-"Arm · viewer right" @6 grid 19,10 = 19,10 9x9
-    .....AAA.
-    ....AFFFA
-    ....ADFDA
-    .....ADA.
-    ...ABBA..
-    ..ABBA...
-    .ABBA....
-    ABBA.....
-    .AA......
-frame add copy_from=6 duration_ms=100
-"Head · front-facing" @7 move 10,5 21,14 0,3 = 10,5 12x13
-    ............
-    ............
-    ............
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-"Torso · tunic, belt & satchel" @7 move 10,13 21,21 0,3 = 11,13 10x12
-    ..........
-    ..........
-    ..........
-    ...DDDD...
-    .AEEAABBA.
-    AEEECBBBBA
-    AEECBBBBBA
-    AECBEBBBBA
-    .ACEBBBBA.
-    .ACCBBBBA.
-    .ACCFFCCA.
-    .ABBAABBA.
-"Leg · viewer left" @7 move 10,21 15,27 0,3 = 10,21 6x10
-    ......
-    ......
-    ......
-    ..ABBA
-    ..ABBA
-    .ABBA.
-    .ACCA.
-    .ADCA.
-    ACCCA.
-    AAAAA.
-"Leg · viewer right" @7 move 16,21 21,27 0,3 = 16,21 6x10
-    ......
-    ......
-    ......
-    ABBA..
-    ABBA..
-    .ABBA.
-    .ACCA.
-    .ADCA.
-    .ACCCA
-    .AAAAA
-"Arm · viewer left" @7 clear 4,10 12,18 = 4,10 12,18 .
-"Arm · viewer left" @7 grid 5,17 = 5,17 8x8
-    .....AA.
-    ....AEEA
-    ...AEEA.
-    ..AEBA..
-    .ABBA...
-    ADFFA...
-    ADFDA...
-    .AAA....
-"Arm · viewer right" @7 clear 19,10 27,18 = 19,10 27,18 .
-"Arm · viewer right" @7 grid 19,17 = 19,17 8x8
-    .AA.....
-    ABBA....
-    .ABBA...
-    ..ABBA..
-    ...ABBA.
-    ...AFFDA
-    ...ADFDA
-    ....AAA.
-frame add copy_from=7 duration_ms=100
-"Head · front-facing" @8 move 10,8 21,17 0,4 = 10,8 12x14
-    ............
-    ............
-    ............
-    ............
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-"Torso · tunic, belt & satchel" @8 clear 10,16 21,24 = 11,16 20,24 .
-"Torso · tunic, belt & satchel" @8 grid 10,20 = 10,20 12x8
-    ....DDDD....
-    .AEEAABBBBA.
-    AEEEBBBBBBBA
-    AEEEBBBBBBBA
-    .AEEBEBBBBA.
-    .ABBBBBBBBA.
-    ..ACCCCCCA..
-    ..ABBAABBA..
-"Torso · tunic, belt & satchel" @8 pencil #734539 size 1 = 13,22 3x4
-    EBC
-    ECB
-    CBE
-    CCB
-"Torso · tunic, belt & satchel" @8 pencil #ffcf90 size 1 = 15,26 16,26 #ffcf90
-"Leg · viewer left" @8 clear 10,24 15,30 = 10,24 15,30 .
-"Leg · viewer left" @8 grid 9,24 = 9,24 6x7
-    ..AAAA
-    .ABBBA
-    ABBBA.
-    ABBA..
-    ..ACCA
-    ACCCCA
-    AAAAAA
-"Leg · viewer right" @8 clear 16,24 21,30 = 16,24 21,30 .
-"Leg · viewer right" @8 grid 17,24 = 17,24 6x7
-    AAAA..
-    ABBBA.
-    .ABBBA
-    ..ABBA
-    ACCA..
-    ACCCCA
-    AAAAAA
-"Leg · viewer left" @8 pencil #da855b size 1 = 10,29 10,29 #da855b
-"Leg · viewer right" @8 pencil #da855b size 1 = 18,29 18,29 #da855b
-"Arm · viewer left" @8 clear 5,17 12,24 = 5,17 12,24 .
-"Arm · viewer left" @8 grid 6,22 = 6,22 7x7
-    ....AA.
-    ...AEEA
-    ..AEBA.
-    .ABBA..
-    ADFFA..
-    ADFDA..
-    .AAA...
-"Arm · viewer right" @8 clear 19,17 26,24 = 19,17 26,24 .
-"Arm · viewer right" @8 grid 19,22 = 19,22 7x7
-    .AA....
-    ABBA...
-    .ABBA..
-    ..ABBA.
-    ..AFFDA
-    ..ADFDA
-    ...AAA.
-frame add copy_from=8 duration_ms=100
-"Head · front-facing" @9 move 10,12 21,21 0,-3 = 10,9 12x13
-    ...AAAAAA...
-    ..ADDCCCCA..
-    .ADCCCCCCCA.
-    .ACCFFFFCCA.
-    ADFFFFFFFFDA
-    ADFFAFFAFFDA
-    .ADFFFDFFDA.
-    ..ADFCCFDA..
-    ...ADDDDA...
-    ....ADDA....
-    ............
-    ............
-    ............
-"Torso · tunic, belt & satchel" @9 clear 10,20 21,27 = 10,20 21,27 .
-"Torso · tunic, belt & satchel" @9 grid 11,17 = 11,17 10x8
-    ...DDDD...
-    .AEEAABBA.
-    AEEEBBBBBA
-    AEEEBBBBBA
-    AEEBEBBBBA
-    .ABBBBBBA.
-    .ACCCCCCA.
-    .ABBAABBA.
-"Torso · tunic, belt & satchel" @9 pencil #734539 size 1 = 13,19 3x4
-    EEC
-    ECB
-    CBE
-    CCB
-"Torso · tunic, belt & satchel" @9 pencil #ffcf90 size 1 = 15,23 16,23 #ffcf90
-"Leg · viewer left" @9 clear 8,24 14,30 = 9,24 14,30 .
-"Leg · viewer left" @9 grid 10,24 = 10,24 6x7
-    ..ABBA
-    ..ABBA
-    .ABBA.
-    .ACCA.
-    .ACCA.
-    ACCCA.
-    AAAAA.
-"Leg · viewer right" @9 clear 17,24 23,30 = 17,24 22,30 .
-"Leg · viewer right" @9 grid 16,24 = 16,24 6x7
-    ABBA..
-    ABBA..
-    .ABBA.
-    .ACCA.
-    .ACCA.
-    .ACCCA
-    .AAAAA
-"Leg · viewer left" @9 pencil #da855b size 1 = 12,28 12,28 #da855b
-"Leg · viewer right" @9 pencil #da855b size 1 = 18,28 18,28 #da855b
-"Arm · viewer left" @9 clear 6,22 12,28 = 6,22 12,28 .
-"Arm · viewer left" @9 grid 7,18 = 7,18 6x9
-    ...AAA
-    ..AEEA
-    ..AEBA
-    ..ABBA
-    .ABBA.
-    .ADFA.
-    ADFFA.
-    ADFDA.
-    .AAA..
-"Arm · viewer right" @9 clear 19,22 25,28 = 19,22 25,28 .
-"Arm · viewer right" @9 grid 19,18 = 19,18 6x9
-    AAA...
-    ABBA..
-    ABBA..
-    ABBA..
-    .ABBA.
-    .AFDA.
-    .AFFDA
-    .ADFDA
-    ..AAA.
-frame duration frame=0 count=10 duration_ms=100
+palette op=set colors=#212233,#734539,#da855b,#ffcf90,#2f6e73,#6fb9a0
+layer op=rename index=0 name="Torso · tunic, belt & satchel"
+paint_grid layer=0 frame=0 x=7 y=8 legend=K:#212233 rows:23
+  |......KKKKKK......|
+  |.....KKKKKKKK.....|
+  |....KKKKKKKKKK....|
+  |....KKKKKKKKKK....|
+  |...KKKKKKKKKKKK...|
+  |...KKKKKKKKKKKK...|
+  |....KKKKKKKKKK....|
+  |.....KKKKKKKK.....|
+  |......KKKKKK......|
+  |...KKKKKKKKKKKK...|
+  |..KKKKKKKKKKKKKK..|
+  |..KKKKKKKKKKKKKK..|
+  |..KKKKKKKKKKKKKK..|
+  |.KKKKKKKKKKKKKKKK.|
+  |.KKKKKKKKKKKKKKKK.|
+  |KKKKKKKKKKKKKKKKKK|
+  |KKKKKKKKKKKKKKKKKK|
+  |.KKK.KKKKKKKK.KKK.|
+  |....KKKK..KKKK....|
+  |....KKKK..KKKK....|
+  |....KKKK..KKKK....|
+  |...KKKKK..KKKKK...|
+  |...KKKKK..KKKKK...|
+region op=clear layer=0 frame=0 rect=0,0,31,31
+layer op=add name="Leg · viewer left"
+layer op=add name="Leg · viewer right"
+layer op=move index=0 to_index=2
+layer op=add name="Arm · viewer left"
+layer op=add name="Arm · viewer right"
+layer op=add name="Head · front-facing"
+paint_grid layer=0 frame=0 x=10 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |..KTTK|
+  |..KTTK|
+  |.KTTK.|
+  |.KBBK.|
+  |.KBBK.|
+  |KBBBK.|
+  |KKKKK.|
+paint_grid layer=1 frame=0 x=16 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |KTTK..|
+  |KTTK..|
+  |.KTTK.|
+  |.KBBK.|
+  |.KBBK.|
+  |.KBBBK|
+  |.KKKKK|
+paint_grid layer=2 frame=0 x=11 y=16 legend=B:#734539,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:9
+  |...SSSS...|
+  |.KLLKKTTK.|
+  |KLLLTTTTTK|
+  |KLLLTTTTTK|
+  |KLLTLTTTTK|
+  |.KLLTTTTK.|
+  |.KTTTTTTK.|
+  |.KBBBBBBK.|
+  |.KTTKKTTK.|
+paint_grid layer=3 frame=0 x=7 y=17 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:9
+  |...KKK|
+  |..KLLK|
+  |..KLTK|
+  |..KTTK|
+  |.KTTK.|
+  |.KSHK.|
+  |KSHHK.|
+  |KSHSK.|
+  |.KKK..|
+paint_grid layer=4 frame=0 x=19 y=17 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:9
+  |KKK...|
+  |KTTK..|
+  |KTTK..|
+  |KTTK..|
+  |.KTTK.|
+  |.KHSK.|
+  |.KHHSK|
+  |.KSHSK|
+  |..KKK.|
+paint_grid layer=5 frame=0 x=10 y=8 legend=B:#734539,H:#ffcf90,K:#212233,S:#da855b rows:10
+  |...KKKKKK...|
+  |..KBBBBBBK..|
+  |.KBBBBBBBBK.|
+  |.KBBHHHHBBK.|
+  |KSHHHHHHHHSK|
+  |KSHHHHHHHHSK|
+  |.KSHHHHHHSK.|
+  |..KSHHHHSK..|
+  |...KSSSSK...|
+  |....KSSK....|
+draw op=pencil layer=2 frame=0 color=#734539 points=15,18 14,19 13,20 13,21 13,22 14,22 size=1
+draw op=pencil layer=2 frame=0 color=#ffcf90 points=15,23 16,23 size=1
+draw op=pencil layer=0 frame=0 color=#da855b points=[[12,28]] size=1
+draw op=pencil layer=1 frame=0 color=#da855b points=[[18,28]] size=1
+draw op=pencil layer=5 frame=0 color=#da855b points=13,9 14,9 12,10 size=1
+draw op=pencil layer=5 frame=0 color=#212233 points=14,13 17,13 size=1
+draw op=pencil layer=5 frame=0 color=#da855b points=[[16,14]] size=1
+draw op=pencil layer=5 frame=0 color=#734539 points=15,15 16,15 size=1
+frame op=add copy_from=0 duration_ms=100
+region op=move layer=5 frame=1 offset=0,4 rect=10,8,21,17
+region op=clear layer=2 frame=1 rect=10,16,21,24
+paint_grid layer=2 frame=1 x=10 y=20 legend=B:#734539,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:8
+  |....SSSS....|
+  |.KLLKKTTTTK.|
+  |KLLLTTTTTTTK|
+  |KLLLTTTTTTTK|
+  |.KLLTLTTTTK.|
+  |.KTTTTTTTTK.|
+  |..KBBBBBBK..|
+  |..KTTKKTTK..|
+draw op=pencil layer=2 frame=1 color=#734539 points=15,22 14,23 13,24 13,25 13,25 14,25 size=1
+draw op=pencil layer=2 frame=1 color=#ffcf90 points=15,26 16,26 size=1
+region op=clear layer=0 frame=1 rect=10,24,15,30
+paint_grid layer=0 frame=1 x=9 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |..KKKK|
+  |.KTTTK|
+  |KTTTK.|
+  |KTTK..|
+  |..KBBK|
+  |KBBBBK|
+  |KKKKKK|
+region op=clear layer=1 frame=1 rect=16,24,21,30
+paint_grid layer=1 frame=1 x=17 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |KKKK..|
+  |KTTTK.|
+  |.KTTTK|
+  |..KTTK|
+  |KBBK..|
+  |KBBBBK|
+  |KKKKKK|
+draw op=pencil layer=0 frame=1 color=#da855b points=[[10,29]] size=1
+draw op=pencil layer=1 frame=1 color=#da855b points=[[18,29]] size=1
+region op=clear layer=3 frame=1 rect=7,17,12,25
+paint_grid layer=3 frame=1 x=6 y=20 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:8
+  |....KK.|
+  |...KLLK|
+  |..KLTK.|
+  |.KTTK..|
+  |.KTTK..|
+  |KSHHK..|
+  |KSHSK..|
+  |.KKK...|
+region op=clear layer=4 frame=1 rect=19,17,24,25
+paint_grid layer=4 frame=1 x=19 y=20 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:8
+  |.KK....|
+  |KTTK...|
+  |.KTTK..|
+  |..KTTK.|
+  |..KTTK.|
+  |..KHHSK|
+  |..KSHSK|
+  |...KKK.|
+frame op=add copy_from=1 duration_ms=100
+region op=move layer=5 frame=2 offset=0,-7 rect=10,12,21,21
+region op=clear layer=2 frame=2 rect=10,20,21,27
+paint_grid layer=2 frame=2 x=11 y=13 legend=B:#734539,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:10
+  |...SSSS...|
+  |.KLLKKTTK.|
+  |KLLLTTTTTK|
+  |KLLLTTTTTK|
+  |KLLTLTTTTK|
+  |KLLTLTTTTK|
+  |.KLLTTTTK.|
+  |.KTTTTTTK.|
+  |.KBBBBBBK.|
+  |.KTTKKTTK.|
+draw op=pencil layer=2 frame=2 color=#734539 points=15,15 14,16 13,17 13,18 13,19 13,20 14,20 size=1
+draw op=pencil layer=2 frame=2 color=#ffcf90 points=15,21 16,21 size=1
+region op=clear layer=0 frame=2 rect=8,24,14,30
+paint_grid layer=0 frame=2 x=12 y=22 legend=B:#734539,K:#212233,T:#2f6e73 rows:9
+  |KTTK|
+  |KTTK|
+  |KTTK|
+  |KTTK|
+  |KTTK|
+  |KBBK|
+  |KBBK|
+  |KBBK|
+  |.KKK|
+region op=clear layer=1 frame=2 rect=17,24,23,30
+paint_grid layer=1 frame=2 x=16 y=22 legend=B:#734539,K:#212233,T:#2f6e73 rows:9
+  |KTTK|
+  |KTTK|
+  |KTTK|
+  |KTTK|
+  |KTTK|
+  |KBBK|
+  |KBBK|
+  |KBBK|
+  |KKK.|
+draw op=pencil layer=0 frame=2 color=#da855b points=[[13,28]] size=1
+draw op=pencil layer=1 frame=2 color=#da855b points=[[17,28]] size=1
+region op=clear layer=3 frame=2 rect=6,20,12,27
+paint_grid layer=3 frame=2 x=5 y=5 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:11
+  |.KKK.....|
+  |KHHHK....|
+  |KSHSK....|
+  |.KSK.....|
+  |.KTTK....|
+  |..KLTK...|
+  |...KLTK..|
+  |....KLLK.|
+  |.....KLLK|
+  |.....KLLK|
+  |......KK.|
+region op=clear layer=4 frame=2 rect=19,20,25,27
+paint_grid layer=4 frame=2 x=18 y=5 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:11
+  |.....KKK.|
+  |....KHHHK|
+  |....KSHSK|
+  |.....KSK.|
+  |....KTTK.|
+  |...KTTK..|
+  |..KTTK...|
+  |.KTTK....|
+  |KTTK.....|
+  |KTTK.....|
+  |.KK......|
+frame op=add copy_from=2 duration_ms=100
+region op=move layer=5 frame=3 offset=0,-2 rect=10,5,21,14
+region op=clear layer=2 frame=3 rect=10,13,21,22
+paint_grid layer=2 frame=3 x=11 y=11 legend=B:#734539,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:9
+  |...SSSS...|
+  |.KLLKKTTK.|
+  |KLLLTTTTTK|
+  |KLLLTTTTTK|
+  |KLLTLTTTTK|
+  |.KLLTTTTK.|
+  |.KTTTTTTK.|
+  |.KBBBBBBK.|
+  |.KTTKKTTK.|
+draw op=pencil layer=2 frame=3 color=#734539 points=15,13 14,14 13,15 13,16 13,17 14,17 size=1
+draw op=pencil layer=2 frame=3 color=#ffcf90 points=15,18 16,18 size=1
+region op=clear layer=0 frame=3 rect=10,22,15,30
+paint_grid layer=0 frame=3 x=9 y=19 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |...KTTK|
+  |..KTTTK|
+  |.KTTTK.|
+  |KTTTK..|
+  |KBBK...|
+  |.KBBBK.|
+  |..KKKK.|
+region op=clear layer=1 frame=3 rect=16,22,21,30
+paint_grid layer=1 frame=3 x=16 y=19 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |KTTK...|
+  |KTTTK..|
+  |.KTTTK.|
+  |..KTTTK|
+  |...KBBK|
+  |.KBBBK.|
+  |.KKKK..|
+draw op=pencil layer=0 frame=3 color=#da855b points=[[11,24]] size=1
+draw op=pencil layer=1 frame=3 color=#da855b points=[[18,24]] size=1
+region op=clear layer=3 frame=3 rect=5,5,13,15
+paint_grid layer=3 frame=3 x=5 y=2 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:12
+  |.KKK....|
+  |KHHHK...|
+  |KSHSK...|
+  |.KSK....|
+  |.KTTK...|
+  |..KLTK..|
+  |..KLLK..|
+  |...KLTK.|
+  |...KLLK.|
+  |....KLLK|
+  |....KLLK|
+  |.....KK.|
+region op=clear layer=4 frame=3 rect=18,5,26,15
+paint_grid layer=4 frame=3 x=19 y=2 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:12
+  |....KKK.|
+  |...KHHHK|
+  |...KSHSK|
+  |....KSK.|
+  |...KTTK.|
+  |..KTTK..|
+  |..KTTK..|
+  |.KTTK...|
+  |.KTTK...|
+  |KTTK....|
+  |KTTK....|
+  |.KK.....|
+frame op=add copy_from=3 duration_ms=100
+region op=move layer=5 frame=4 offset=0,-1 rect=10,3,21,12
+region op=move layer=2 frame=4 offset=0,-1 rect=10,11,21,19
+region op=clear layer=0 frame=4 rect=9,19,15,25
+paint_grid layer=0 frame=4 x=8 y=18 legend=B:#734539,K:#212233,T:#2f6e73 rows:6
+  |...KKTTK|
+  |.KTTTTTK|
+  |KTTKKKK.|
+  |KBBK....|
+  |.KBBBK..|
+  |..KKKK..|
+region op=clear layer=1 frame=4 rect=16,19,22,25
+paint_grid layer=1 frame=4 x=16 y=18 legend=B:#734539,K:#212233,T:#2f6e73 rows:6
+  |KTTKK...|
+  |KTTTTTK.|
+  |.KKKKTTK|
+  |....KBBK|
+  |..KBBBK.|
+  |..KKKK..|
+draw op=pencil layer=0 frame=4 color=#da855b points=[[10,22]] size=1
+draw op=pencil layer=1 frame=4 color=#da855b points=[[19,22]] size=1
+region op=move layer=3 frame=4 offset=0,-1 rect=4,2,12,13
+region op=move layer=4 frame=4 offset=0,-1 rect=19,2,27,13
+paint_grid layer=0 frame=4 x=8 y=21 replace=true legend=B:#734539,K:#212233,S:#da855b rows:3
+  |..KBBK..|
+  |...KSBK.|
+  |...KKKK.|
+paint_grid layer=1 frame=4 x=16 y=21 replace=true legend=B:#734539,K:#212233,S:#da855b rows:3
+  |..KBBK..|
+  |.KSBK...|
+  |.KKKK...|
+frame op=add copy_from=4 duration_ms=100
+region op=move layer=5 frame=5 offset=0,1 rect=10,2,21,11
+region op=move layer=2 frame=5 offset=0,1 rect=10,10,21,18
+region op=clear layer=0 frame=5 rect=8,18,15,23
+paint_grid layer=0 frame=5 x=9 y=19 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |..KKTTK|
+  |.KTTTTK|
+  |KTTTKK.|
+  |KTTK...|
+  |KBBK...|
+  |.KBBBK.|
+  |..KKKK.|
+region op=clear layer=1 frame=5 rect=16,18,23,23
+paint_grid layer=1 frame=5 x=16 y=19 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |KTTKK..|
+  |KTTTTK.|
+  |.KKTTTK|
+  |...KTTK|
+  |...KBBK|
+  |.KBBBK.|
+  |.KKKK..|
+draw op=pencil layer=0 frame=5 color=#da855b points=[[11,24]] size=1
+draw op=pencil layer=1 frame=5 color=#da855b points=[[18,24]] size=1
+region op=move layer=3 frame=5 offset=0,1 rect=4,1,12,12
+region op=move layer=4 frame=5 offset=0,1 rect=19,1,27,12
+frame op=add copy_from=5 duration_ms=100
+region op=move layer=5 frame=6 offset=0,2 rect=10,3,21,12
+region op=move layer=2 frame=6 offset=0,2 rect=10,11,21,19
+region op=clear layer=0 frame=6 rect=8,19,15,25
+paint_grid layer=0 frame=6 x=10 y=21 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |..KTTK|
+  |..KTTK|
+  |.KTTK.|
+  |.KBBK.|
+  |.KBBK.|
+  |KBBBK.|
+  |KKKKK.|
+region op=clear layer=1 frame=6 rect=16,19,23,25
+paint_grid layer=1 frame=6 x=16 y=21 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |KTTK..|
+  |KTTK..|
+  |.KTTK.|
+  |.KBBK.|
+  |.KBBK.|
+  |.KBBBK|
+  |.KKKKK|
+draw op=pencil layer=0 frame=6 color=#da855b points=[[12,25]] size=1
+draw op=pencil layer=1 frame=6 color=#da855b points=[[18,25]] size=1
+region op=clear layer=3 frame=6 rect=4,2,12,13
+paint_grid layer=3 frame=6 x=4 y=10 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:9
+  |.KKK.....|
+  |KHHHK....|
+  |KSHSK....|
+  |.KSK.....|
+  |..KTTK...|
+  |...KLTK..|
+  |....KLLK.|
+  |.....KLLK|
+  |......KK.|
+region op=clear layer=4 frame=6 rect=19,2,27,13
+paint_grid layer=4 frame=6 x=19 y=10 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:9
+  |.....KKK.|
+  |....KHHHK|
+  |....KSHSK|
+  |.....KSK.|
+  |...KTTK..|
+  |..KTTK...|
+  |.KTTK....|
+  |KTTK.....|
+  |.KK......|
+frame op=add copy_from=6 duration_ms=100
+region op=move layer=5 frame=7 offset=0,3 rect=10,5,21,14
+region op=move layer=2 frame=7 offset=0,3 rect=10,13,21,21
+region op=move layer=0 frame=7 offset=0,3 rect=10,21,15,27
+region op=move layer=1 frame=7 offset=0,3 rect=16,21,21,27
+region op=clear layer=3 frame=7 rect=4,10,12,18
+paint_grid layer=3 frame=7 x=5 y=17 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:8
+  |.....KK.|
+  |....KLLK|
+  |...KLLK.|
+  |..KLTK..|
+  |.KTTK...|
+  |KSHHK...|
+  |KSHSK...|
+  |.KKK....|
+region op=clear layer=4 frame=7 rect=19,10,27,18
+paint_grid layer=4 frame=7 x=19 y=17 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:8
+  |.KK.....|
+  |KTTK....|
+  |.KTTK...|
+  |..KTTK..|
+  |...KTTK.|
+  |...KHHSK|
+  |...KSHSK|
+  |....KKK.|
+frame op=add copy_from=7 duration_ms=100
+region op=move layer=5 frame=8 offset=0,4 rect=10,8,21,17
+region op=clear layer=2 frame=8 rect=10,16,21,24
+paint_grid layer=2 frame=8 x=10 y=20 legend=B:#734539,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:8
+  |....SSSS....|
+  |.KLLKKTTTTK.|
+  |KLLLTTTTTTTK|
+  |KLLLTTTTTTTK|
+  |.KLLTLTTTTK.|
+  |.KTTTTTTTTK.|
+  |..KBBBBBBK..|
+  |..KTTKKTTK..|
+draw op=pencil layer=2 frame=8 color=#734539 points=15,22 14,23 13,24 13,25 13,25 14,25 size=1
+draw op=pencil layer=2 frame=8 color=#ffcf90 points=15,26 16,26 size=1
+region op=clear layer=0 frame=8 rect=10,24,15,30
+paint_grid layer=0 frame=8 x=9 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |..KKKK|
+  |.KTTTK|
+  |KTTTK.|
+  |KTTK..|
+  |..KBBK|
+  |KBBBBK|
+  |KKKKKK|
+region op=clear layer=1 frame=8 rect=16,24,21,30
+paint_grid layer=1 frame=8 x=17 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |KKKK..|
+  |KTTTK.|
+  |.KTTTK|
+  |..KTTK|
+  |KBBK..|
+  |KBBBBK|
+  |KKKKKK|
+draw op=pencil layer=0 frame=8 color=#da855b points=[[10,29]] size=1
+draw op=pencil layer=1 frame=8 color=#da855b points=[[18,29]] size=1
+region op=clear layer=3 frame=8 rect=5,17,12,24
+paint_grid layer=3 frame=8 x=6 y=22 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:7
+  |....KK.|
+  |...KLLK|
+  |..KLTK.|
+  |.KTTK..|
+  |KSHHK..|
+  |KSHSK..|
+  |.KKK...|
+region op=clear layer=4 frame=8 rect=19,17,26,24
+paint_grid layer=4 frame=8 x=19 y=22 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:7
+  |.KK....|
+  |KTTK...|
+  |.KTTK..|
+  |..KTTK.|
+  |..KHHSK|
+  |..KSHSK|
+  |...KKK.|
+frame op=add copy_from=8 duration_ms=100
+region op=move layer=5 frame=9 offset=0,-3 rect=10,12,21,21
+region op=clear layer=2 frame=9 rect=10,20,21,27
+paint_grid layer=2 frame=9 x=11 y=17 legend=B:#734539,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:8
+  |...SSSS...|
+  |.KLLKKTTK.|
+  |KLLLTTTTTK|
+  |KLLLTTTTTK|
+  |KLLTLTTTTK|
+  |.KTTTTTTK.|
+  |.KBBBBBBK.|
+  |.KTTKKTTK.|
+draw op=pencil layer=2 frame=9 color=#734539 points=15,19 14,20 13,21 13,22 13,22 14,22 size=1
+draw op=pencil layer=2 frame=9 color=#ffcf90 points=15,23 16,23 size=1
+region op=clear layer=0 frame=9 rect=8,24,14,30
+paint_grid layer=0 frame=9 x=10 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |..KTTK|
+  |..KTTK|
+  |.KTTK.|
+  |.KBBK.|
+  |.KBBK.|
+  |KBBBK.|
+  |KKKKK.|
+region op=clear layer=1 frame=9 rect=17,24,23,30
+paint_grid layer=1 frame=9 x=16 y=24 legend=B:#734539,K:#212233,T:#2f6e73 rows:7
+  |KTTK..|
+  |KTTK..|
+  |.KTTK.|
+  |.KBBK.|
+  |.KBBK.|
+  |.KBBBK|
+  |.KKKKK|
+draw op=pencil layer=0 frame=9 color=#da855b points=[[12,28]] size=1
+draw op=pencil layer=1 frame=9 color=#da855b points=[[18,28]] size=1
+region op=clear layer=3 frame=9 rect=6,22,12,28
+paint_grid layer=3 frame=9 x=7 y=18 legend=H:#ffcf90,K:#212233,L:#6fb9a0,S:#da855b,T:#2f6e73 rows:9
+  |...KKK|
+  |..KLLK|
+  |..KLTK|
+  |..KTTK|
+  |.KTTK.|
+  |.KSHK.|
+  |KSHHK.|
+  |KSHSK.|
+  |.KKK..|
+region op=clear layer=4 frame=9 rect=19,22,25,28
+paint_grid layer=4 frame=9 x=19 y=18 legend=H:#ffcf90,K:#212233,S:#da855b,T:#2f6e73 rows:9
+  |KKK...|
+  |KTTK..|
+  |KTTK..|
+  |KTTK..|
+  |.KTTK.|
+  |.KHSK.|
+  |.KHHSK|
+  |.KSHSK|
+  |..KKK.|
+frame op=duration frame=0 count=10 duration_ms=100
 add_tag name=jump direction=forward from=0 to=9

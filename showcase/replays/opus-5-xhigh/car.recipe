@@ -1,437 +1,477 @@
-atelier 5 4270c213-1852-4596-a362-1204a4570b97 0.1.0
+atelier 4 4270c213-1852-4596-a362-1204a4570b97 0.1.0
 new name=car-drive width=32 height=32
-palette set colors=#17161f,#8c2230,#e0392f,#ff8352,#74cfee,#cbd3e0
-layer add name=well
-layer add name=wheel_r
-layer add name=wheel_f
-layer add name=body
-layer add name=exhaust
-layer rename index=0 name=speedlines
-legend A=#e0392f
-body @0 grid 4,11 = 4,11 26x11
-    ........AAAAAAA...........
-    .......AAAAAAAAA..........
-    ......AAAAAAAAAAA.........
-    .....AAAAAAAAAAAAA........
-    ..AAAAAAAAAAAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAA...AAAAAAAAAAAA...AAAA
-    AAA.....AAAAAAAAAA.....AAA
-    AA.......AAAAAAAA.......AA
-body @0 clear 0,0 32,32 = 4,11 29,21 .
-body @0 grid 4,11 = 4,11 26x11
-    .......AAAAAA.............
-    ......AAAAAAAAA...........
-    ......AAAAAAAAAAA.........
-    .....AAAAAAAAAAAAA........
-    .AAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAA...AAAAAAAAAAAA...AAAA
-    AAA.....AAAAAAAAAA.....AAA
-    AA.......AAAAAAAA.......AA
-legend B=#17161f
-well @0 grid 5,17 = 5,17 22x3
-    ..BBBBB........BBBBB..
-    .BBBBBBB......BBBBBBB.
-    BBBBBBBBB....BBBBBBBBB
-legend C=#cbd3e0
-wheel_r @0 grid 6,19 = 6,19 7x7
-    ..BCB..
-    .BBBBB.
-    BBCBCBB
-    CBBBBBC
-    BBCBCBB
-    .BBBBB.
-    ..BCB..
-wheel_f @0 grid 21,19 = 21,19 7x7
-    ..BCB..
-    .BBBBB.
-    BBCBCBB
-    CBBBBBC
-    BBCBCBB
-    .BBBBB.
-    ..BCB..
-body @0 clear 0,0 32,32 = 4,11 29,21 .
-legend D=#ff8352 E=#74cfee F=#8c2230
-body @0 grid 4,11 = 4,11 26x11
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    ......BEEEBEEEEBB.........
-    .....BEEEEBEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDFDDDDDDDDDDDDDDB
-    BDAAAAAAAAFAADDAAAAAAAAACB
-    BDAAAAAAAAFAAAAAAAAAAAAACB
-    BAAA...AAAAAAAAAAAA...AAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-body @0 grid 4,16 = 5,16 22x4
-    DDDDDAAAAAAAAAAAADDDDD
-    DAAAAAAAAAADDAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAA
-    AAF...FAAAAAAAAAAF...F
-body @0 grid 4,13 = 5,13 10x4
-    ....BEEEBE
-    ..BEEEEEBE
-    BBBBBBBBBB
-    AAAAAAAAAA
-body @0 grid 4,16 = 5,16 21,16 #ff8352
-body @0 grid 4,17 = 5,17 13x2
-    AAAAAAAAAAAAA
-    DAAAAAAAAAADD
-wheel_r @0 grid 6,19 = 6,19 7x7
-    ..BBB..
-    .BBCBB.
-    BBCCCBB
-    BCCBCCB
-    BBCCCBB
-    .BBCBB.
-    ..BBB..
-wheel_f @0 grid 21,19 = 21,19 7x7
-    ..BBB..
-    .BBCBB.
-    BBCCCBB
-    BCCBCCB
-    BBCCCBB
-    .BBCBB.
-    ..BBB..
-frame add copy_from=0 count=9
-body @1 move 0,0 32,32 0,-2 = 4,9 26x13
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-    ..........................
-    ..........................
-body @1 move 0,0 32,32 0,1 = 4,9 26x12
-    ..........................
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-body @1 move 0,0 32,32 0,1 = 4,10 26x12
-    ..........................
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-wheel_r @0 grid 6,19 ~
-wheel_f @0 grid 21,19 ~
-speedlines @0 clear 0,0 32,32 ~
-speedlines @0 grid 2,3 = 2,3 7,3 #cbd3e0
-speedlines @0 grid 25,5 = 25,5 31,5 #cbd3e0
-speedlines @0 grid 14,7 = 14,7 18,7 #cbd3e0
-speedlines @0 grid 6,27 = 6,27 16,27 #cbd3e0
-speedlines @0 grid 21,29 = 21,29 27,29 #cbd3e0
-speedlines @0 grid 0,31 = 0,31 1,31 #cbd3e0
-exhaust @0 clear 0,0 32,32 ~
-exhaust @0 grid 3,21 = 3,21 3,21 #cbd3e0
-wheel_r @1 grid 6,19 = 7,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-wheel_f @1 grid 21,19 = 22,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-body @1 move 0,0 32,32 0,-1 = 4,10 26x12
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-    ..........................
-speedlines @1 clear 0,0 32,32 ~
-speedlines @1 grid 0,3 = 0,3 3,3 #cbd3e0
-speedlines @1 grid 21,5 = 21,5 29,5 #cbd3e0
-speedlines @1 grid 10,7 = 10,7 14,7 #cbd3e0
-speedlines @1 grid 2,27 = 2,27 12,27 #cbd3e0
-speedlines @1 grid 17,29 = 17,29 23,29 #cbd3e0
-speedlines @1 grid 29,31 = 29,31 31,31 #cbd3e0
-exhaust @1 clear 0,0 32,32 ~
-exhaust @1 grid 2,20 = 2,20 3,21 #cbd3e0
-wheel_r @2 grid 6,19 ~
-wheel_f @2 grid 21,19 ~
-body @2 move 0,0 32,32 0,-2 = 4,9 26x13
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-    ..........................
-    ..........................
-speedlines @2 clear 0,0 32,32 ~
-speedlines @2 grid 17,5 = 17,5 25,5 #cbd3e0
-speedlines @2 grid 6,7 = 6,7 10,7 #cbd3e0
-speedlines @2 grid 0,27 = 0,27 8,27 #cbd3e0
-speedlines @2 grid 13,29 = 13,29 19,29 #cbd3e0
-speedlines @2 grid 25,31 = 25,31 31,31 #cbd3e0
-exhaust @2 clear 0,0 32,32 ~
-exhaust @2 grid 1,18 = 1,18 3x3
-    .C.
-    CCC
-    .C.
-wheel_r @3 grid 6,19 = 7,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-wheel_f @3 grid 21,19 = 22,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-body @3 move 0,0 32,32 0,-1 = 4,10 26x12
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-    ..........................
-speedlines @3 clear 0,0 32,32 ~
-speedlines @3 grid 30,3 = 30,3 31,3 #cbd3e0
-speedlines @3 grid 13,5 = 13,5 21,5 #cbd3e0
-speedlines @3 grid 2,7 = 2,7 6,7 #cbd3e0
-speedlines @3 grid 0,27 = 0,27 4,27 #cbd3e0
-speedlines @3 grid 9,29 = 9,29 15,29 #cbd3e0
-speedlines @3 grid 21,31 = 21,31 29,31 #cbd3e0
-exhaust @3 clear 0,0 32,32 ~
-exhaust @3 grid 0,17 = 0,17 4x3
-    .CC.
-    C..C
-    .CC.
-wheel_r @4 grid 6,19 ~
-wheel_f @4 grid 21,19 ~
-speedlines @4 clear 0,0 32,32 ~
-speedlines @4 grid 26,3 = 26,3 31,3 #cbd3e0
-speedlines @4 grid 9,5 = 9,5 17,5 #cbd3e0
-speedlines @4 grid 0,7 = 0,7 2,7 #cbd3e0
-speedlines @4 grid 30,27 = 30,27 31,27 #cbd3e0
-speedlines @4 grid 0,27 = 0,27 0,27 #cbd3e0
-speedlines @4 grid 5,29 = 5,29 11,29 #cbd3e0
-speedlines @4 grid 17,31 = 17,31 25,31 #cbd3e0
-exhaust @4 clear 0,0 32,32 ~
-exhaust @4 grid 0,16 = 0,16 3x2
-    C.C
-    .C.
-wheel_r @5 grid 6,19 = 7,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-wheel_f @5 grid 21,19 = 22,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-speedlines @5 clear 0,0 32,32 ~
-speedlines @5 grid 22,3 = 22,3 27,3 #cbd3e0
-speedlines @5 grid 5,5 = 5,5 13,5 #cbd3e0
-speedlines @5 grid 26,27 = 26,27 31,27 #cbd3e0
-speedlines @5 grid 1,29 = 1,29 7,29 #cbd3e0
-speedlines @5 grid 13,31 = 13,31 21,31 #cbd3e0
-exhaust @5 clear 0,0 32,32 ~
-exhaust @5 grid 3,21 = 3,21 3,21 #cbd3e0
-wheel_r @6 grid 6,19 ~
-wheel_f @6 grid 21,19 ~
-body @6 move 0,0 32,32 0,-1 = 4,10 26x12
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-    ..........................
-speedlines @6 clear 0,0 32,32 ~
-speedlines @6 grid 18,3 = 18,3 23,3 #cbd3e0
-speedlines @6 grid 1,5 = 1,5 9,5 #cbd3e0
-speedlines @6 grid 30,7 = 30,7 31,7 #cbd3e0
-speedlines @6 grid 22,27 = 22,27 31,27 #cbd3e0
-speedlines @6 grid 0,29 = 0,29 3,29 #cbd3e0
-speedlines @6 grid 9,31 = 9,31 17,31 #cbd3e0
-exhaust @6 clear 0,0 32,32 ~
-exhaust @6 grid 2,20 = 2,20 2x2
-    CC
-    C.
-wheel_r @7 grid 6,19 = 7,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-wheel_f @7 grid 21,19 = 22,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-body @7 move 0,0 32,32 0,-2 = 4,9 26x13
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-    ..........................
-    ..........................
-speedlines @7 clear 0,0 32,32 ~
-speedlines @7 grid 14,3 = 14,3 19,3 #cbd3e0
-speedlines @7 grid 0,5 = 0,5 5,5 #cbd3e0
-speedlines @7 grid 26,7 = 26,7 30,7 #cbd3e0
-speedlines @7 grid 18,27 = 18,27 28,27 #cbd3e0
-speedlines @7 grid 5,31 = 5,31 13,31 #cbd3e0
-exhaust @7 clear 0,0 32,32 ~
-exhaust @7 grid 1,19 = 1,19 3x2
-    .CC
-    CC.
-wheel_r @8 grid 6,19 ~
-wheel_f @8 grid 21,19 ~
-body @8 move 0,0 32,32 0,-1 = 4,10 26x12
-    .......BBBBBB.............
-    ......BDDDDDDBB...........
-    .....BEEEBEEEEEBB.........
-    ...BEEEEEBEEEEEEBB........
-    .BBBBBBBBBBBBBBBBBBBBBBBB.
-    BDDDDDDDDDDDDDDDDDDDDDDDDB
-    BAAAAAAAAAAAAAAAAAAAAAAACB
-    BDAAAAAAAAAADDAAAAAAAAAACB
-    BAAF...FAAAAAAAAAAF...FAAB
-    BFF.....FFFFFFFFFF.....FFB
-    BB.......BBBBBBBB.......BB
-    ..........................
-speedlines @8 clear 0,0 32,32 ~
-speedlines @8 grid 10,3 = 10,3 15,3 #cbd3e0
-speedlines @8 grid 0,5 = 0,5 1,5 #cbd3e0
-speedlines @8 grid 22,7 = 22,7 26,7 #cbd3e0
-speedlines @8 grid 14,27 = 14,27 24,27 #cbd3e0
-speedlines @8 grid 29,29 = 29,29 31,29 #cbd3e0
-speedlines @8 grid 1,31 = 1,31 9,31 #cbd3e0
-exhaust @8 clear 0,0 32,32 ~
-exhaust @8 grid 0,18 = 0,18 3x2
-    C.C
-    .C.
-wheel_r @9 grid 6,19 = 7,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-wheel_f @9 grid 21,19 = 22,20 5x5
-    CBBBC
-    BCCCB
-    BCBCB
-    BCCCB
-    CBBBC
-speedlines @9 clear 0,0 32,32 ~
-speedlines @9 grid 6,3 = 6,3 11,3 #cbd3e0
-speedlines @9 grid 29,5 = 29,5 31,5 #cbd3e0
-speedlines @9 grid 18,7 = 18,7 22,7 #cbd3e0
-speedlines @9 grid 10,27 = 10,27 20,27 #cbd3e0
-speedlines @9 grid 25,29 = 25,29 31,29 #cbd3e0
-speedlines @9 grid 0,31 = 0,31 5,31 #cbd3e0
-exhaust @9 clear 0,0 32,32 ~
-exhaust @9 grid 0,17 = 0,17 2x2
-    .C
-    C.
-exhaust @0 clear 0,0 32,32 = 3,21 3,21 .
-exhaust @0 grid 2,21 = 2,21 3,21 #cbd3e0
-exhaust @1 clear 0,0 32,32 = 2,20 3,21 .
-exhaust @1 grid 1,19 = 1,19 3x2
-    .CC
-    CCC
-exhaust @2 clear 0,0 32,32 = 1,18 3,20 .
-exhaust @2 grid 0,17 = 0,17 4x3
-    .CC.
-    CCCC
-    CCC.
-exhaust @3 clear 0,0 32,32 = 0,17 3,19 .
-exhaust @3 grid 0,16 = 0,16 4x3
-    .CC.
-    C..C
-    .CC.
-exhaust @4 clear 0,0 32,32 = 0,16 2,17 .
-exhaust @4 grid 0,15 = 0,15 4x2
-    C..C
-    .C..
-exhaust @5 clear 0,0 32,32 = 3,21 3,21 .
-exhaust @5 grid 2,21 = 2,21 3,21 #cbd3e0
-exhaust @6 clear 0,0 32,32 = 2,20 3,21 .
-exhaust @6 grid 1,19 = 1,19 3x2
-    .C.
-    CCC
-exhaust @7 clear 0,0 32,32 = 1,19 3,20 .
-exhaust @7 grid 0,18 = 0,18 3x2
-    .CC
-    CCC
-exhaust @8 clear 0,0 32,32 = 0,18 2,19 .
-exhaust @8 grid 0,17 = 0,17 3x2
-    C.C
-    .C.
-exhaust @9 clear 0,0 32,32 = 0,17 1,18 .
-exhaust @9 grid 0,16 = 0,16 2x2
-    .C
-    C.
+palette op=set colors=#17161f,#8c2230,#e0392f,#ff8352,#74cfee,#cbd3e0
+layer op=add name=well
+layer op=add name=wheel_r
+layer op=add name=wheel_f
+layer op=add name=body
+layer op=add name=exhaust
+layer op=rename index=0 name=speedlines
+paint_grid layer=4 frame=0 x=4 y=11 legend=X:#e0392f rows:11
+  |........XXXXXXX...........|
+  |.......XXXXXXXXX..........|
+  |......XXXXXXXXXXX.........|
+  |.....XXXXXXXXXXXXX........|
+  |..XXXXXXXXXXXXXXXXXXXXXXX.|
+  |.XXXXXXXXXXXXXXXXXXXXXXXXX|
+  |XXXXXXXXXXXXXXXXXXXXXXXXXX|
+  |XXXXXXXXXXXXXXXXXXXXXXXXXX|
+  |XXXX...XXXXXXXXXXXX...XXXX|
+  |XXX.....XXXXXXXXXX.....XXX|
+  |XX.......XXXXXXXX.......XX|
+region op=clear layer=4 frame=0 rect=0,0,32,32
+paint_grid layer=4 frame=0 x=4 y=11 legend=X:#e0392f rows:11
+  |.......XXXXXX.............|
+  |......XXXXXXXXX...........|
+  |......XXXXXXXXXXX.........|
+  |.....XXXXXXXXXXXXX........|
+  |.XXXXXXXXXXXXXXXXXXXXXXXX.|
+  |XXXXXXXXXXXXXXXXXXXXXXXXXX|
+  |XXXXXXXXXXXXXXXXXXXXXXXXXX|
+  |XXXXXXXXXXXXXXXXXXXXXXXXXX|
+  |XXXX...XXXXXXXXXXXX...XXXX|
+  |XXX.....XXXXXXXXXX.....XXX|
+  |XX.......XXXXXXXX.......XX|
+paint_grid layer=1 frame=0 x=5 y=17 legend=K:#17161f rows:3
+  |..KKKKK........KKKKK..|
+  |.KKKKKKK......KKKKKKK.|
+  |KKKKKKKKK....KKKKKKKKK|
+paint_grid layer=2 frame=0 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KSK..|
+  |.KKKKK.|
+  |KKSKSKK|
+  |SKKKKKS|
+  |KKSKSKK|
+  |.KKKKK.|
+  |..KSK..|
+paint_grid layer=3 frame=0 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KSK..|
+  |.KKKKK.|
+  |KKSKSKK|
+  |SKKKKKS|
+  |KKSKSKK|
+  |.KKKKK.|
+  |..KSK..|
+region op=clear layer=4 frame=0 rect=0,0,32,32
+paint_grid layer=4 frame=0 x=4 y=11 legend=D:#8c2230,G:#74cfee,K:#17161f,L:#ff8352,R:#e0392f,S:#cbd3e0 rows:11
+  |.......KKKKKK.............|
+  |......KLLLLLLKK...........|
+  |......KGGGKGGGGKK.........|
+  |.....KGGGGKGGGGGKK........|
+  |.KKKKKKKKKKKKKKKKKKKKKKKK.|
+  |KLLLLLLLLLDLLLLLLLLLLLLLLK|
+  |KLRRRRRRRRDRRLLRRRRRRRRRSK|
+  |KLRRRRRRRRDRRRRRRRRRRRRRSK|
+  |KRRR...RRRRRRRRRRRR...RRRK|
+  |KDD.....DDDDDDDDDD.....DDK|
+  |KK.......KKKKKKKK.......KK|
+paint_grid layer=4 frame=0 x=4 y=16 legend=D:#8c2230,K:#17161f,L:#ff8352,R:#e0392f,S:#cbd3e0 rows:4
+  |KLLLLLRRRRRRRRRRRRLLLLLLLK|
+  |KLRRRRRRRRRRLLRRRRRRRRRRSK|
+  |KRRRRRRRRRRRRRRRRRRRRRRRSK|
+  |KRRD...DRRRRRRRRRRD...DRRK|
+paint_grid layer=4 frame=0 x=4 y=13 legend=G:#74cfee,K:#17161f,L:#ff8352,R:#e0392f rows:4
+  |.....KGGGKGGGGGKK.........|
+  |...KGGGGGKGGGGGGKK........|
+  |.KKKKKKKKKKKKKKKKKKKKKKKK.|
+  |KRRRRRRRRRRRRRRRRRLLLLLLLK|
+paint_grid layer=4 frame=0 x=4 y=16 legend=K:#17161f,L:#ff8352 rows:1
+  |KLLLLLLLLLLLLLLLLLLLLLLLLK|
+paint_grid layer=4 frame=0 x=4 y=17 legend=K:#17161f,L:#ff8352,R:#e0392f,S:#cbd3e0 rows:2
+  |KRRRRRRRRRRRRRRRRRRRRRRRSK|
+  |KLRRRRRRRRRRLLRRRRRRRRRRSK|
+paint_grid layer=2 frame=0 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+paint_grid layer=3 frame=0 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+frame op=add copy_from=0 count=9
+region op=move layer=4 frame=1 offset=0,-2 rect=0,0,32,32
+region op=move layer=4 frame=1 offset=0,1 rect=0,0,32,32
+region op=move layer=4 frame=1 offset=0,1 rect=0,0,32,32
+paint_grid layer=2 frame=0 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+paint_grid layer=3 frame=0 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+region op=clear layer=0 frame=0 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=2 y=3 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=0 x=25 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=0 x=14 y=7 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=0 x=6 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSSSS|
+paint_grid layer=0 frame=0 x=21 y=29 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=0 x=0 y=31 legend=S:#cbd3e0 rows:1
+  |SS|
+region op=clear layer=5 frame=0 rect=0,0,32,32
+paint_grid layer=5 frame=0 x=3 y=21 legend=S:#cbd3e0 rows:1
+  |S|
+paint_grid layer=2 frame=1 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+paint_grid layer=3 frame=1 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+region op=move layer=4 frame=1 offset=0,-1 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+paint_grid layer=0 frame=1 x=0 y=3 legend=S:#cbd3e0 rows:1
+  |SSSS|
+paint_grid layer=0 frame=1 x=21 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+paint_grid layer=0 frame=1 x=10 y=7 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=1 x=2 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSSSS|
+paint_grid layer=0 frame=1 x=17 y=29 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=1 x=29 y=31 legend=S:#cbd3e0 rows:1
+  |SSS|
+region op=clear layer=5 frame=1 rect=0,0,32,32
+paint_grid layer=5 frame=1 x=2 y=20 legend=S:#cbd3e0 rows:2
+  |SS|
+  |SS|
+paint_grid layer=2 frame=2 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+paint_grid layer=3 frame=2 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+region op=move layer=4 frame=2 offset=0,-2 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+paint_grid layer=0 frame=2 x=17 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+paint_grid layer=0 frame=2 x=6 y=7 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=2 x=0 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+paint_grid layer=0 frame=2 x=13 y=29 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=2 x=25 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+region op=clear layer=5 frame=2 rect=0,0,32,32
+paint_grid layer=5 frame=2 x=1 y=18 legend=S:#cbd3e0 rows:3
+  |.S.|
+  |SSS|
+  |.S.|
+paint_grid layer=2 frame=3 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+paint_grid layer=3 frame=3 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+region op=move layer=4 frame=3 offset=0,-1 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+paint_grid layer=0 frame=3 x=30 y=3 legend=S:#cbd3e0 rows:1
+  |SS|
+paint_grid layer=0 frame=3 x=13 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+paint_grid layer=0 frame=3 x=2 y=7 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=3 x=0 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=3 x=9 y=29 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=3 x=21 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+region op=clear layer=5 frame=3 rect=0,0,32,32
+paint_grid layer=5 frame=3 x=0 y=17 legend=S:#cbd3e0 rows:3
+  |.SS.|
+  |S..S|
+  |.SS.|
+paint_grid layer=2 frame=4 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+paint_grid layer=3 frame=4 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+region op=clear layer=0 frame=4 rect=0,0,32,32
+paint_grid layer=0 frame=4 x=26 y=3 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=4 x=9 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+paint_grid layer=0 frame=4 x=0 y=7 legend=S:#cbd3e0 rows:1
+  |SSS|
+paint_grid layer=0 frame=4 x=30 y=27 legend=S:#cbd3e0 rows:1
+  |SS|
+paint_grid layer=0 frame=4 x=0 y=27 legend=S:#cbd3e0 rows:1
+  |S|
+paint_grid layer=0 frame=4 x=5 y=29 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=4 x=17 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+region op=clear layer=5 frame=4 rect=0,0,32,32
+paint_grid layer=5 frame=4 x=0 y=16 legend=S:#cbd3e0 rows:2
+  |S.S|
+  |.S.|
+paint_grid layer=2 frame=5 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+paint_grid layer=3 frame=5 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+region op=clear layer=0 frame=5 rect=0,0,32,32
+paint_grid layer=0 frame=5 x=22 y=3 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=5 x=5 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+paint_grid layer=0 frame=5 x=26 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=5 x=1 y=29 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=5 x=13 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+region op=clear layer=5 frame=5 rect=0,0,32,32
+paint_grid layer=5 frame=5 x=3 y=21 legend=S:#cbd3e0 rows:1
+  |S|
+paint_grid layer=2 frame=6 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+paint_grid layer=3 frame=6 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+region op=move layer=4 frame=6 offset=0,-1 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+paint_grid layer=0 frame=6 x=18 y=3 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=6 x=1 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+paint_grid layer=0 frame=6 x=30 y=7 legend=S:#cbd3e0 rows:1
+  |SS|
+paint_grid layer=0 frame=6 x=22 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSSS|
+paint_grid layer=0 frame=6 x=0 y=29 legend=S:#cbd3e0 rows:1
+  |SSSS|
+paint_grid layer=0 frame=6 x=9 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+region op=clear layer=5 frame=6 rect=0,0,32,32
+paint_grid layer=5 frame=6 x=2 y=20 legend=S:#cbd3e0 rows:2
+  |SS|
+  |S.|
+paint_grid layer=2 frame=7 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+paint_grid layer=3 frame=7 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+region op=move layer=4 frame=7 offset=0,-2 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+paint_grid layer=0 frame=7 x=14 y=3 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=7 x=0 y=5 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=7 x=26 y=7 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=7 x=18 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSSSS|
+paint_grid layer=0 frame=7 x=5 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+region op=clear layer=5 frame=7 rect=0,0,32,32
+paint_grid layer=5 frame=7 x=1 y=19 legend=S:#cbd3e0 rows:2
+  |.SS|
+  |SS.|
+paint_grid layer=2 frame=8 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+paint_grid layer=3 frame=8 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.KKSKK.|
+  |KKSSSKK|
+  |KSSKSSK|
+  |KKSSSKK|
+  |.KKSKK.|
+  |..KKK..|
+region op=move layer=4 frame=8 offset=0,-1 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+paint_grid layer=0 frame=8 x=10 y=3 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=8 x=0 y=5 legend=S:#cbd3e0 rows:1
+  |SS|
+paint_grid layer=0 frame=8 x=22 y=7 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=8 x=14 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSSSS|
+paint_grid layer=0 frame=8 x=29 y=29 legend=S:#cbd3e0 rows:1
+  |SSS|
+paint_grid layer=0 frame=8 x=1 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSS|
+region op=clear layer=5 frame=8 rect=0,0,32,32
+paint_grid layer=5 frame=8 x=0 y=18 legend=S:#cbd3e0 rows:2
+  |S.S|
+  |.S.|
+paint_grid layer=2 frame=9 x=6 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+paint_grid layer=3 frame=9 x=21 y=19 legend=K:#17161f,S:#cbd3e0 rows:7
+  |..KKK..|
+  |.SKKKS.|
+  |KKSSSKK|
+  |KKSKSKK|
+  |KKSSSKK|
+  |.SKKKS.|
+  |..KKK..|
+region op=clear layer=0 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=9 x=6 y=3 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+paint_grid layer=0 frame=9 x=29 y=5 legend=S:#cbd3e0 rows:1
+  |SSS|
+paint_grid layer=0 frame=9 x=18 y=7 legend=S:#cbd3e0 rows:1
+  |SSSSS|
+paint_grid layer=0 frame=9 x=10 y=27 legend=S:#cbd3e0 rows:1
+  |SSSSSSSSSSS|
+paint_grid layer=0 frame=9 x=25 y=29 legend=S:#cbd3e0 rows:1
+  |SSSSSSS|
+paint_grid layer=0 frame=9 x=0 y=31 legend=S:#cbd3e0 rows:1
+  |SSSSSS|
+region op=clear layer=5 frame=9 rect=0,0,32,32
+paint_grid layer=5 frame=9 x=0 y=17 legend=S:#cbd3e0 rows:2
+  |.S|
+  |S.|
+region op=clear layer=5 frame=0 rect=0,0,32,32
+paint_grid layer=5 frame=0 x=2 y=21 legend=S:#cbd3e0 rows:1
+  |SS|
+region op=clear layer=5 frame=1 rect=0,0,32,32
+paint_grid layer=5 frame=1 x=1 y=19 legend=S:#cbd3e0 rows:2
+  |.SS|
+  |SSS|
+region op=clear layer=5 frame=2 rect=0,0,32,32
+paint_grid layer=5 frame=2 x=0 y=17 legend=S:#cbd3e0 rows:3
+  |.SS.|
+  |SSSS|
+  |SSS.|
+region op=clear layer=5 frame=3 rect=0,0,32,32
+paint_grid layer=5 frame=3 x=0 y=16 legend=S:#cbd3e0 rows:3
+  |.SS.|
+  |S..S|
+  |.SS.|
+region op=clear layer=5 frame=4 rect=0,0,32,32
+paint_grid layer=5 frame=4 x=0 y=15 legend=S:#cbd3e0 rows:2
+  |S..S|
+  |.S..|
+region op=clear layer=5 frame=5 rect=0,0,32,32
+paint_grid layer=5 frame=5 x=2 y=21 legend=S:#cbd3e0 rows:1
+  |SS|
+region op=clear layer=5 frame=6 rect=0,0,32,32
+paint_grid layer=5 frame=6 x=1 y=19 legend=S:#cbd3e0 rows:2
+  |.S.|
+  |SSS|
+region op=clear layer=5 frame=7 rect=0,0,32,32
+paint_grid layer=5 frame=7 x=0 y=18 legend=S:#cbd3e0 rows:2
+  |.SS|
+  |SSS|
+region op=clear layer=5 frame=8 rect=0,0,32,32
+paint_grid layer=5 frame=8 x=0 y=17 legend=S:#cbd3e0 rows:2
+  |S.S|
+  |.S.|
+region op=clear layer=5 frame=9 rect=0,0,32,32
+paint_grid layer=5 frame=9 x=0 y=16 legend=S:#cbd3e0 rows:2
+  |.S|
+  |S.|
 add_tag name=drive direction=forward from=0 to=9
-palette swap from=["#cbd3e0"] to=["#aeb9ce"]
-palette set colors=#17161f,#8c2230,#e0392f,#ff8352,#74cfee,#aeb9ce
+palette op=swap from=["#cbd3e0"] to=["#aeb9ce"]
+palette op=set colors=#17161f,#8c2230,#e0392f,#ff8352,#74cfee,#aeb9ce

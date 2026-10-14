@@ -1,784 +1,508 @@
-atelier 5 88e1121c-e33a-4184-b233-e1d280262dc5 0.1.0
+atelier 4 88e1121c-e33a-4184-b233-e1d280262dc5 0.1.0
 new name=sc-gpt-6-astra-xhigh-person width=32 height=32
-palette set colors=#232234,#734537,#e8a364,#ffde9d,#358984,#cb4d42
-layer rename index=0 name="Tunic and belt"
-layer add name="Left leg"
-layer add name="Right leg"
-layer add name="Left arm"
-layer add name="Right arm"
-layer add name="Red scarf"
-layer add name="Head and hair"
-frame duration frame=0 duration_ms=100
-legend A=#232234
-"Tunic and belt" @0 grid 12,17 = 12,17 8x8
-    .AAAAAA.
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    .AA..AA.
-"Left leg" @0 grid 11,24 = 11,24 5x7
-    .AAAA
-    .AAAA
-    .AAAA
-    .AAAA
-    .AAAA
-    AAAAA
-    AAAAA
-"Right leg" @0 grid 16,24 = 16,24 5x7
-    AAAA.
-    AAAA.
-    AAAA.
-    AAAA.
-    AAAA.
-    AAAAA
-    AAAAA
-"Left arm" @0 grid 9,17 = 9,17 4x8
-    ..AA
-    .AAA
-    AAAA
-    AAA.
-    AAA.
-    AAAA
-    .AAA
-    .AA.
-"Right arm" @0 grid 19,17 = 19,17 4x8
-    AA..
-    AAA.
-    AAAA
-    .AAA
-    .AAA
-    AAAA
-    AAA.
-    .AA.
-"Red scarf" @0 grid 12,16 = 12,16 10x6
-    .AAAAAA...
-    AAAAAAAA..
-    .AAAAAAAA.
-    ......AAAA
-    .......AAA
-    ........AA
-"Head and hair" @0 grid 11,8 = 11,8 10x9
-    ..AAAAA...
-    .AAAAAAA..
-    AAAAAAAAA.
-    AAAAAAAAAA
-    AAAAAAAAAA
-    AAAAAAAAAA
-    .AAAAAAAA.
-    ..AAAAAA..
-    ...AAAA...
-"Left leg" @0 move 11,24 15,30 -1,0 = 10,24 6x7
-    .AAAA.
-    .AAAA.
-    .AAAA.
-    .AAAA.
-    .AAAA.
-    AAAAA.
-    AAAAA.
-"Right leg" @0 move 16,24 20,30 1,0 = 16,24 6x7
-    .AAAA.
-    .AAAA.
-    .AAAA.
-    .AAAA.
-    .AAAA.
-    .AAAAA
-    .AAAAA
-"Left arm" @0 move 8,21 12,24 -2,0 = 7,21 6x4
-    AAA...
-    AAAA..
-    .AAA..
-    .AA...
-"Right arm" @0 move 19,21 23,24 2,0 = 19,21 6x4
-    ...AAA
-    ..AAAA
-    ..AAA.
-    ...AA.
-legend B=#358984 C=#734537 D=#ffde9d
-"Tunic and belt" @0 grid 12,17 = 13,17 6x7
-    ABBBBA
-    CBBBBC
-    CBBBBC
-    CBBBBC
-    BBBBBB
-    CCDDCC
-    BBAABB
-"Left leg" @0 grid 10,24 = 11,24 3x6
-    ACC
-    ACC
-    ACC
-    AAA
-    ACC
-    CCC
-"Right leg" @0 grid 17,24 = 18,24 3x6
-    CCA
-    CCA
-    CCA
-    AAA
-    CCA
-    CCC
-legend E=#e8a364
-"Left arm" @0 grid 7,17 = 8,18 5x6
-    ..ABB
-    .ABBA
-    .ABA.
-    EA...
-    DEA..
-    AEA..
-"Right arm" @0 grid 19,17 = 19,18 5x6
-    BBA..
-    ABBA.
-    .ABA.
-    ...AE
-    ..AED
-    ..AEA
-legend F=#cb4d42
-"Red scarf" @0 grid 12,16 = 13,16 8x5
-    AFFFFA..
-    FFFFFFA.
-    AAFFAAFA
-    .....AFF
-    ......AF
-"Head and hair" @0 grid 11,8 = 12,9 8x7
-    ACCCCCA.
-    CCCCCCCA
-    CCEEEECC
-    CEEEEEEC
-    EEEEEEEE
-    AEEEEEEA
-    .AEEEEA.
-"Head and hair" @0 pencil #232234 size 1 = 14,12 4x1
-    AEEA
-"Head and hair" @0 pencil #734537 size 1 = 15,14 16,14 #734537
-"Head and hair" @0 pencil #ffde9d size 1 = 13,11 2x3
-    CD
-    EA
-    DE
-frame add copy_from=0 duration_ms=100
-"Tunic and belt" @1 clear 12,17 19,24 = 12,17 19,24 .
-"Tunic and belt" @1 grid 11,20 = 11,20 10x7
-    .AABBBBAA.
-    ACCBBBBCCA
-    ACCBBBBCCA
-    ABBBBBBBBA
-    ACCCDDCCCA
-    ABBBAABBBA
-    .AAA..AAA.
-"Left leg" @1 clear 10,24 14,30 = 10,24 14,30 .
-"Left leg" @1 grid 8,25 = 8,25 7x6
-    ...AAAA
-    ..ACCCA
-    .ACCAA.
-    .ACA...
-    ACCCA..
-    AAAAA..
-"Right leg" @1 clear 17,24 21,30 = 17,24 21,30 .
-"Right leg" @1 grid 17,25 = 17,25 7x6
-    AAAA...
-    ACCCA..
-    .AACCA.
-    ...ACA.
-    ..ACCCA
-    ..AAAAA
-"Left arm" @1 clear 7,17 12,24 = 7,17 12,24 .
-"Left arm" @1 grid 6,20 = 6,20 7x7
-    ....AAA
-    ..AABBA
-    .ABBBA.
-    ABBAA..
-    AEA....
-    ADEA...
-    .AA....
-"Right arm" @1 clear 19,17 24,24 = 19,17 24,24 .
-"Right arm" @1 grid 19,20 = 19,20 7x7
-    AAA....
-    ABBAA..
-    .ABBBA.
-    ..AABBA
-    ....AEA
-    ...AEDA
-    ....AA.
-"Red scarf" @1 move 12,16 22,21 0,3 = 12,16 10x9
-    ..........
-    ..........
-    ..........
-    .AFFFFA...
-    AFFFFFFA..
-    .AAFFAAFA.
-    ......AFFA
-    .......AFA
-    ........AA
-"Head and hair" @1 move 11,8 20,16 0,3 = 11,8 10x12
-    ..........
-    ..........
-    ..........
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-frame add copy_from=1 duration_ms=100
-"Tunic and belt" @2 clear 11,20 20,26 = 11,20 20,26 .
-"Tunic and belt" @2 grid 12,15 = 12,15 8x9
-    .ABBBBA.
-    ACBBBBCA
-    ACBBBBCA
-    ACBBBBCA
-    ACBBBBCA
-    ABBBBBBA
-    ACCDDCCA
-    ABBAABBA
-    .AA..AA.
-"Left leg" @2 clear 8,25 14,30 = 8,25 14,30 .
-"Left leg" @2 grid 11,23 = 11,23 4x8
-    ACCA
-    ACCA
-    ACCA
-    ACCA
-    AAAA
-    ACCA
-    ACCA
-    AAAA
-"Right leg" @2 clear 17,25 23,30 = 17,25 23,30 .
-"Right leg" @2 grid 17,23 = 17,23 4x8
-    ACCA
-    ACCA
-    ACCA
-    ACCA
-    AAAA
-    ACCA
-    ACCA
-    AAAA
-"Left arm" @2 clear 6,20 12,26 = 6,20 12,26 .
-"Left arm" @2 grid 5,10 = 5,10 8x9
-    .AA.....
-    ADEA....
-    AEEA....
-    .ABBA...
-    ..ABBA..
-    ...ABBA.
-    ....ABBA
-    .....ABA
-    ......AA
-"Right arm" @2 clear 19,20 25,26 = 19,20 25,26 .
-"Right arm" @2 grid 19,10 = 19,10 8x9
-    .....AA.
-    ....AEDA
-    ....AEEA
-    ...ABBA.
-    ..ABBA..
-    .ABBA...
-    ABBA....
-    ABA.....
-    AA......
-"Red scarf" @2 move 12,19 22,24 0,-5 = 12,14 10x11
-    .AFFFFA...
-    AFFFFFFA..
-    .AAFFAAFA.
-    ......AFFA
-    .......AFA
-    ........AA
-    ..........
-    ..........
-    ..........
-    ..........
-    ..........
-"Head and hair" @2 move 11,11 20,19 0,-5 = 11,6 10x14
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-    ..........
-    ..........
-    ..........
-    ..........
-    ..........
-frame add copy_from=2 duration_ms=100
-"Tunic and belt" @3 clear 12,15 19,23 = 12,15 19,23 .
-"Tunic and belt" @3 grid 12,12 = 12,12 8x8
-    .ABBBBA.
-    ACBBBBCA
-    ACBBBBCA
-    ACBBBBCA
-    ABBBBBBA
-    ACCDDCCA
-    ABBAABBA
-    .AA..AA.
-"Left leg" @3 clear 10,23 14,30 = 11,23 14,30 .
-"Left leg" @3 grid 9,19 = 9,19 6x7
-    ..AAAA
-    .ACCCA
-    ACCAA.
-    ACCA..
-    .ACCA.
-    .ACCA.
-    .AAAA.
-"Right leg" @3 clear 17,23 21,30 = 17,23 20,30 .
-"Right leg" @3 grid 17,19 = 17,19 6x7
-    AAAA..
-    ACCCA.
-    .AACCA
-    ..ACCA
-    .ACCA.
-    .ACCA.
-    .AAAA.
-"Left arm" @3 clear 5,10 12,18 = 5,10 12,18 .
-"Left arm" @3 grid 6,2 = 6,2 7x11
-    .AA....
-    ADEA...
-    AEEA...
-    .AEA...
-    .ABBA..
-    ..ABA..
-    ..ABBA.
-    ...ABA.
-    ...ABBA
-    ....ABB
-    .....AA
-"Right arm" @3 clear 19,10 26,18 = 19,10 26,18 .
-"Right arm" @3 grid 19,2 = 19,2 7x11
-    ....AA.
-    ...AEDA
-    ...AEEA
-    ...AEA.
-    ..ABBA.
-    ..ABA..
-    .ABBA..
-    .ABA...
-    ABBA...
-    BBA....
-    AA.....
-"Red scarf" @3 move 12,14 22,19 0,-3 = 12,11 10x9
-    .AFFFFA...
-    AFFFFFFA..
-    .AAFFAAFA.
-    ......AFFA
-    .......AFA
-    ........AA
-    ..........
-    ..........
-    ..........
-"Head and hair" @3 move 11,6 20,14 0,-3 = 11,3 10x12
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-    ..........
-    ..........
-    ..........
-frame add copy_from=3 duration_ms=100
-"Tunic and belt" @4 move 12,12 19,19 0,-1 = 12,11 8x9
-    .ABBBBA.
-    ACBBBBCA
-    ACBBBBCA
-    ACBBBBCA
-    ABBBBBBA
-    ACCDDCCA
-    ABBAABBA
-    .AA..AA.
-    ........
-"Left leg" @4 clear 9,19 14,25 = 9,19 14,25 .
-"Left leg" @4 grid 8,17 = 8,17 7x6
-    ...AAAA
-    .AACCCA
-    ACCCAA.
-    ACCCA..
-    .AACCA.
-    ..AAAA.
-"Right leg" @4 clear 17,19 22,25 = 17,19 22,25 .
-"Right leg" @4 grid 17,17 = 17,17 7x6
-    AAAA...
-    ACCCAA.
-    .AACCCA
-    ..ACCCA
-    .ACCAA.
-    .AAAA..
-"Left arm" @4 move 6,2 12,12 0,-1 = 6,1 7x12
-    .AA....
-    ADEA...
-    AEEA...
-    .AEA...
-    .ABBA..
-    ..ABA..
-    ..ABBA.
-    ...ABA.
-    ...ABBA
-    ....ABB
-    .....AA
-    .......
-"Right arm" @4 move 19,2 25,12 0,-1 = 19,1 7x12
-    ....AA.
-    ...AEDA
-    ...AEEA
-    ...AEA.
-    ..ABBA.
-    ..ABA..
-    .ABBA..
-    .ABA...
-    ABBA...
-    BBA....
-    AA.....
-    .......
-"Red scarf" @4 clear 12,11 22,16 = 12,11 21,16 .
-"Red scarf" @4 grid 12,10 = 12,10 12x5
-    .AFFFFA.....
-    AFFFFFFA.AA.
-    .AAFFAAFAFFA
-    .......AFFA.
-    ........AA..
-"Head and hair" @4 move 11,3 20,11 0,-1 = 11,2 10x10
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-    ..........
-frame add copy_from=4 duration_ms=100
-"Left leg" @5 clear 8,17 14,22 = 8,17 14,22 .
-"Left leg" @5 grid 8,18 = 8,18 7x6
-    ...AAAA
-    .AACCCA
-    ACCCAA.
-    ACCCA..
-    .ACCA..
-    .AAAA..
-"Right leg" @5 clear 17,17 23,22 = 17,17 23,22 .
-"Right leg" @5 grid 17,18 = 17,18 7x6
-    AAAA...
-    ACCCAA.
-    .AACCCA
-    ..ACCCA
-    ..ACCA.
-    ..AAAA.
-"Left arm" @5 move 6,1 12,11 0,1 = 6,1 7x12
-    .......
-    .AA....
-    ADEA...
-    AEEA...
-    .AEA...
-    .ABBA..
-    ..ABA..
-    ..ABBA.
-    ...ABA.
-    ...ABBA
-    ....ABB
-    .....AA
-"Right arm" @5 move 19,1 25,11 0,1 = 19,1 7x12
-    .......
-    ....AA.
-    ...AEDA
-    ...AEEA
-    ...AEA.
-    ..ABBA.
-    ..ABA..
-    .ABBA..
-    .ABA...
-    ABBA...
-    BBA....
-    AA.....
-frame add copy_from=5 duration_ms=100
-"Tunic and belt" @6 move 12,11 19,18 0,2 = 12,11 8x10
-    ........
-    ........
-    .ABBBBA.
-    ACBBBBCA
-    ACBBBBCA
-    ACBBBBCA
-    ABBBBBBA
-    ACCDDCCA
-    ABBAABBA
-    .AA..AA.
-"Left leg" @6 clear 8,18 14,23 = 8,18 14,23 .
-"Left leg" @6 grid 10,20 = 10,20 5x7
-    .ACCA
-    .ACCA
-    .ACCA
-    .AAAA
-    .ACCA
-    ACCCA
-    AAAAA
-"Right leg" @6 clear 17,18 23,23 = 17,18 23,23 .
-"Right leg" @6 grid 17,20 = 17,20 5x7
-    ACCA.
-    ACCA.
-    ACCA.
-    AAAA.
-    ACCA.
-    ACCCA
-    AAAAA
-"Left arm" @6 clear 6,2 12,12 = 6,2 12,12 .
-"Left arm" @6 grid 5,8 = 5,8 8x9
-    .AA.....
-    ADEA....
-    AEEA....
-    .ABBA...
-    ..ABBA..
-    ...ABBA.
-    ....ABBA
-    .....ABA
-    ......AA
-"Right arm" @6 clear 19,2 25,12 = 19,2 25,12 .
-"Right arm" @6 grid 19,8 = 19,8 8x9
-    .....AA.
-    ....AEDA
-    ....AEEA
-    ...ABBA.
-    ..ABBA..
-    .ABBA...
-    ABBA....
-    ABA.....
-    AA......
-"Red scarf" @6 grid 12,10 replace = 12,10 12x5
-    .......AAA..
-    .......AFFA.
-    .AFFFFAAFA..
-    AFFFFFFFA...
-    .AAFFAAA....
-"Head and hair" @6 move 11,2 20,10 0,2 = 11,2 10x11
-    ..........
-    ..........
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-frame add copy_from=6 duration_ms=100
-"Tunic and belt" @7 move 12,13 19,20 0,4 = 12,13 8x12
-    ........
-    ........
-    ........
-    ........
-    .ABBBBA.
-    ACBBBBCA
-    ACBBBBCA
-    ACBBBBCA
-    ABBBBBBA
-    ACCDDCCA
-    ABBAABBA
-    .AA..AA.
-"Left leg" @7 move 10,20 14,26 0,4 = 10,20 5x11
-    .....
-    .....
-    .....
-    .....
-    .ACCA
-    .ACCA
-    .ACCA
-    .AAAA
-    .ACCA
-    ACCCA
-    AAAAA
-"Right leg" @7 move 17,20 21,26 0,4 = 17,20 5x11
-    .....
-    .....
-    .....
-    .....
-    ACCA.
-    ACCA.
-    ACCA.
-    AAAA.
-    ACCA.
-    ACCCA
-    AAAAA
-"Left arm" @7 clear 5,8 12,16 = 5,8 12,16 .
-"Left arm" @7 grid 6,17 = 6,17 7x7
-    ....AAA
-    ..AABBA
-    .ABBBA.
-    ABBAA..
-    AEA....
-    ADEA...
-    .AA....
-"Right arm" @7 clear 19,8 26,16 = 19,8 26,16 .
-"Right arm" @7 grid 19,17 = 19,17 7x7
-    AAA....
-    ABBAA..
-    .ABBBA.
-    ..AABBA
-    ....AEA
-    ...AEDA
-    ....AA.
-"Red scarf" @7 move 12,10 23,14 0,4 = 12,10 11x9
-    ...........
-    ...........
-    ...........
-    ...........
-    .......AAA.
-    .......AFFA
-    .AFFFFAAFA.
-    AFFFFFFFA..
-    .AAFFAAA...
-"Head and hair" @7 move 11,4 20,12 0,4 = 11,4 10x13
-    ..........
-    ..........
-    ..........
-    ..........
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-frame add copy_from=7 duration_ms=100
-"Tunic and belt" @8 clear 12,17 19,24 = 12,17 19,24 .
-"Tunic and belt" @8 grid 11,20 = 11,20 10x7
-    .AABBBBAA.
-    ACCBBBBCCA
-    ACCBBBBCCA
-    ABBBBBBBBA
-    ACCCDDCCCA
-    ABBBAABBBA
-    .AAA..AAA.
-"Left leg" @8 clear 10,24 14,30 = 10,24 14,30 .
-"Left leg" @8 grid 8,25 = 8,25 7x6
-    ...AAAA
-    ..ACCCA
-    .ACCAA.
-    .ACA...
-    ACCCA..
-    AAAAA..
-"Right leg" @8 clear 17,24 21,30 = 17,24 21,30 .
-"Right leg" @8 grid 17,25 = 17,25 7x6
-    AAAA...
-    ACCCA..
-    .AACCA.
-    ...ACA.
-    ..ACCCA
-    ..AAAAA
-"Left arm" @8 clear 6,17 12,23 = 6,17 12,23 .
-"Left arm" @8 grid 7,21 = 7,21 6x8
-    ....AA
-    ...ABB
-    ..ABBA
-    ..ABA.
-    AEA...
-    ADEA..
-    .AEA..
-    .AA...
-"Right arm" @8 clear 19,17 25,23 = 19,17 25,23 .
-"Right arm" @8 grid 19,21 = 19,21 6x8
-    AA....
-    BBA...
-    ABBA..
-    .ABA..
-    ...AEA
-    ..AEDA
-    ..AEA.
-    ...AA.
-"Red scarf" @8 clear 12,14 23,18 = 12,14 22,18 .
-"Red scarf" @8 grid 12,19 = 12,19 12x5
-    .AFFFFA.....
-    AFFFFFFA.AA.
-    .AAFFAAFAFFA
-    .......AFFA.
-    ........AA..
-"Head and hair" @8 move 11,8 20,16 0,3 = 11,8 10x12
-    ..........
-    ..........
-    ..........
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-frame add copy_from=8 duration_ms=100
-"Tunic and belt" @9 clear 11,20 20,26 = 11,20 20,26 .
-"Tunic and belt" @9 grid 12,18 = 12,18 8x8
-    .ABBBBA.
-    ACBBBBCA
-    ACBBBBCA
-    ACBBBBCA
-    ABBBBBBA
-    ACCDDCCA
-    ABBAABBA
-    .AA..AA.
-"Left leg" @9 grid 8,25 replace = 8,25 7x6
-    ...ACCA
-    ...ACCA
-    ...AAAA
-    ...ACCA
-    ..ACCCA
-    ..AAAAA
-"Right leg" @9 grid 17,25 replace = 17,25 7x6
-    ACCA...
-    ACCA...
-    AAAA...
-    ACCA...
-    ACCCA..
-    AAAAA..
-"Left arm" @9 move 7,21 12,28 0,-3 = 7,18 6x11
-    ....AA
-    ...ABB
-    ..ABBA
-    ..ABA.
-    AEA...
-    ADEA..
-    .AEA..
-    .AA...
-    ......
-    ......
-    ......
-"Right arm" @9 move 19,21 24,28 0,-3 = 19,18 6x11
-    AA....
-    BBA...
-    ABBA..
-    .ABA..
-    ...AEA
-    ..AEDA
-    ..AEA.
-    ...AA.
-    ......
-    ......
-    ......
-"Red scarf" @9 clear 12,19 23,23 = 12,19 23,23 .
-"Red scarf" @9 grid 12,17 = 12,17 10x6
-    .AFFFFA...
-    AFFFFFFA..
-    .AAFFAAFA.
-    ......AFFA
-    .......AFA
-    ........AA
-"Head and hair" @9 move 11,11 20,19 0,-2 = 11,9 10x11
-    ..AAAAA...
-    .ACCCCCA..
-    ACCCCCCCA.
-    ACCDEEECCA
-    ACEAEEAECA
-    AEDEEEEEEA
-    .AEECCEEA.
-    ..AEEEEA..
-    ...AAAA...
-    ..........
-    ..........
+palette op=set colors=#232234,#734537,#e8a364,#ffde9d,#358984,#cb4d42
+layer op=rename index=0 name="Tunic and belt"
+layer op=add name="Left leg"
+layer op=add name="Right leg"
+layer op=add name="Left arm"
+layer op=add name="Right arm"
+layer op=add name="Red scarf"
+layer op=add name="Head and hair"
+frame op=duration frame=0 duration_ms=100
+paint_grid layer=0 frame=0 x=12 y=17 legend=K:#232234 rows:8
+  |.KKKKKK.|
+  |KKKKKKKK|
+  |KKKKKKKK|
+  |KKKKKKKK|
+  |KKKKKKKK|
+  |KKKKKKKK|
+  |KKKKKKKK|
+  |.KK..KK.|
+paint_grid layer=1 frame=0 x=11 y=24 legend=K:#232234 rows:7
+  |.KKKK|
+  |.KKKK|
+  |.KKKK|
+  |.KKKK|
+  |.KKKK|
+  |KKKKK|
+  |KKKKK|
+paint_grid layer=2 frame=0 x=16 y=24 legend=K:#232234 rows:7
+  |KKKK.|
+  |KKKK.|
+  |KKKK.|
+  |KKKK.|
+  |KKKK.|
+  |KKKKK|
+  |KKKKK|
+paint_grid layer=3 frame=0 x=9 y=17 legend=K:#232234 rows:8
+  |..KK|
+  |.KKK|
+  |KKKK|
+  |KKK.|
+  |KKK.|
+  |KKKK|
+  |.KKK|
+  |.KK.|
+paint_grid layer=4 frame=0 x=19 y=17 legend=K:#232234 rows:8
+  |KK..|
+  |KKK.|
+  |KKKK|
+  |.KKK|
+  |.KKK|
+  |KKKK|
+  |KKK.|
+  |.KK.|
+paint_grid layer=5 frame=0 x=12 y=16 legend=K:#232234 rows:6
+  |.KKKKKK...|
+  |KKKKKKKK..|
+  |.KKKKKKKK.|
+  |......KKKK|
+  |.......KKK|
+  |........KK|
+paint_grid layer=6 frame=0 x=11 y=8 legend=K:#232234 rows:9
+  |..KKKKK...|
+  |.KKKKKKK..|
+  |KKKKKKKKK.|
+  |KKKKKKKKKK|
+  |KKKKKKKKKK|
+  |KKKKKKKKKK|
+  |.KKKKKKKK.|
+  |..KKKKKK..|
+  |...KKKK...|
+region op=move layer=1 frame=0 offset=-1,0 rect=11,24,15,30
+region op=move layer=2 frame=0 offset=1,0 rect=16,24,20,30
+region op=move layer=3 frame=0 offset=-2,0 rect=8,21,12,24
+region op=move layer=4 frame=0 offset=2,0 rect=19,21,23,24
+paint_grid layer=0 frame=0 x=12 y=17 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:8
+  |.KTTTTK.|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KTTTTTTK|
+  |KBBLLBBK|
+  |KTTKKTTK|
+  |.KK..KK.|
+paint_grid layer=1 frame=0 x=10 y=24 legend=B:#734537,K:#232234 rows:7
+  |.KBBK|
+  |.KBBK|
+  |.KBBK|
+  |.KKKK|
+  |.KBBK|
+  |KBBBK|
+  |KKKKK|
+paint_grid layer=2 frame=0 x=17 y=24 legend=B:#734537,K:#232234 rows:7
+  |KBBK.|
+  |KBBK.|
+  |KBBK.|
+  |KKKK.|
+  |KBBK.|
+  |KBBBK|
+  |KKKKK|
+paint_grid layer=3 frame=0 x=7 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
+  |....KK|
+  |...KTT|
+  |..KTTK|
+  |..KTK.|
+  |KSK...|
+  |KLSK..|
+  |.KSK..|
+  |.KK...|
+paint_grid layer=4 frame=0 x=19 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
+  |KK....|
+  |TTK...|
+  |KTTK..|
+  |.KTK..|
+  |...KSK|
+  |..KSLK|
+  |..KSK.|
+  |...KK.|
+paint_grid layer=5 frame=0 x=12 y=16 legend=K:#232234,R:#cb4d42 rows:6
+  |.KRRRRK...|
+  |KRRRRRRK..|
+  |.KKRRKKRK.|
+  |......KRRK|
+  |.......KRK|
+  |........KK|
+paint_grid layer=6 frame=0 x=11 y=8 legend=B:#734537,K:#232234,S:#e8a364 rows:9
+  |..KKKKK...|
+  |.KBBBBBK..|
+  |KBBBBBBBK.|
+  |KBBSSSSBBK|
+  |KBSSSSSSBK|
+  |KSSSSSSSSK|
+  |.KSSSSSSK.|
+  |..KSSSSK..|
+  |...KKKK...|
+draw op=pencil layer=6 frame=0 color=#232234 points=14,12 17,12 size=1
+draw op=pencil layer=6 frame=0 color=#734537 points=15,14 16,14 size=1
+draw op=pencil layer=6 frame=0 color=#ffde9d points=14,11 13,13 size=1
+frame op=add copy_from=0 duration_ms=100
+region op=clear layer=0 frame=1 rect=12,17,19,24
+paint_grid layer=0 frame=1 x=11 y=20 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:7
+  |.KKTTTTKK.|
+  |KBBTTTTBBK|
+  |KBBTTTTBBK|
+  |KTTTTTTTTK|
+  |KBBBLLBBBK|
+  |KTTTKKTTTK|
+  |.KKK..KKK.|
+region op=clear layer=1 frame=1 rect=10,24,14,30
+paint_grid layer=1 frame=1 x=8 y=25 legend=B:#734537,K:#232234 rows:6
+  |...KKKK|
+  |..KBBBK|
+  |.KBBKK.|
+  |.KBK...|
+  |KBBBK..|
+  |KKKKK..|
+region op=clear layer=2 frame=1 rect=17,24,21,30
+paint_grid layer=2 frame=1 x=17 y=25 legend=B:#734537,K:#232234 rows:6
+  |KKKK...|
+  |KBBBK..|
+  |.KKBBK.|
+  |...KBK.|
+  |..KBBBK|
+  |..KKKKK|
+region op=clear layer=3 frame=1 rect=7,17,12,24
+paint_grid layer=3 frame=1 x=6 y=20 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
+  |....KKK|
+  |..KKTTK|
+  |.KTTTK.|
+  |KTTKK..|
+  |KSK....|
+  |KLSK...|
+  |.KK....|
+region op=clear layer=4 frame=1 rect=19,17,24,24
+paint_grid layer=4 frame=1 x=19 y=20 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
+  |KKK....|
+  |KTTKK..|
+  |.KTTTK.|
+  |..KKTTK|
+  |....KSK|
+  |...KSLK|
+  |....KK.|
+region op=move layer=5 frame=1 offset=0,3 rect=12,16,22,21
+region op=move layer=6 frame=1 offset=0,3 rect=11,8,20,16
+frame op=add copy_from=1 duration_ms=100
+region op=clear layer=0 frame=2 rect=11,20,20,26
+paint_grid layer=0 frame=2 x=12 y=15 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:9
+  |.KTTTTK.|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KTTTTTTK|
+  |KBBLLBBK|
+  |KTTKKTTK|
+  |.KK..KK.|
+region op=clear layer=1 frame=2 rect=8,25,14,30
+paint_grid layer=1 frame=2 x=11 y=23 legend=B:#734537,K:#232234 rows:8
+  |KBBK|
+  |KBBK|
+  |KBBK|
+  |KBBK|
+  |KKKK|
+  |KBBK|
+  |KBBK|
+  |KKKK|
+region op=clear layer=2 frame=2 rect=17,25,23,30
+paint_grid layer=2 frame=2 x=17 y=23 legend=B:#734537,K:#232234 rows:8
+  |KBBK|
+  |KBBK|
+  |KBBK|
+  |KBBK|
+  |KKKK|
+  |KBBK|
+  |KBBK|
+  |KKKK|
+region op=clear layer=3 frame=2 rect=6,20,12,26
+paint_grid layer=3 frame=2 x=5 y=10 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
+  |.KK.....|
+  |KLSK....|
+  |KSSK....|
+  |.KTTK...|
+  |..KTTK..|
+  |...KTTK.|
+  |....KTTK|
+  |.....KTK|
+  |......KK|
+region op=clear layer=4 frame=2 rect=19,20,25,26
+paint_grid layer=4 frame=2 x=19 y=10 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
+  |.....KK.|
+  |....KSLK|
+  |....KSSK|
+  |...KTTK.|
+  |..KTTK..|
+  |.KTTK...|
+  |KTTK....|
+  |KTK.....|
+  |KK......|
+region op=move layer=5 frame=2 offset=0,-5 rect=12,19,22,24
+region op=move layer=6 frame=2 offset=0,-5 rect=11,11,20,19
+frame op=add copy_from=2 duration_ms=100
+region op=clear layer=0 frame=3 rect=12,15,19,23
+paint_grid layer=0 frame=3 x=12 y=12 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:8
+  |.KTTTTK.|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KTTTTTTK|
+  |KBBLLBBK|
+  |KTTKKTTK|
+  |.KK..KK.|
+region op=clear layer=1 frame=3 rect=10,23,14,30
+paint_grid layer=1 frame=3 x=9 y=19 legend=B:#734537,K:#232234 rows:7
+  |..KKKK|
+  |.KBBBK|
+  |KBBKK.|
+  |KBBK..|
+  |.KBBK.|
+  |.KBBK.|
+  |.KKKK.|
+region op=clear layer=2 frame=3 rect=17,23,21,30
+paint_grid layer=2 frame=3 x=17 y=19 legend=B:#734537,K:#232234 rows:7
+  |KKKK..|
+  |KBBBK.|
+  |.KKBBK|
+  |..KBBK|
+  |.KBBK.|
+  |.KBBK.|
+  |.KKKK.|
+region op=clear layer=3 frame=3 rect=5,10,12,18
+paint_grid layer=3 frame=3 x=6 y=2 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:11
+  |.KK....|
+  |KLSK...|
+  |KSSK...|
+  |.KSK...|
+  |.KTTK..|
+  |..KTK..|
+  |..KTTK.|
+  |...KTK.|
+  |...KTTK|
+  |....KTT|
+  |.....KK|
+region op=clear layer=4 frame=3 rect=19,10,26,18
+paint_grid layer=4 frame=3 x=19 y=2 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:11
+  |....KK.|
+  |...KSLK|
+  |...KSSK|
+  |...KSK.|
+  |..KTTK.|
+  |..KTK..|
+  |.KTTK..|
+  |.KTK...|
+  |KTTK...|
+  |TTK....|
+  |KK.....|
+region op=move layer=5 frame=3 offset=0,-3 rect=12,14,22,19
+region op=move layer=6 frame=3 offset=0,-3 rect=11,6,20,14
+frame op=add copy_from=3 duration_ms=100
+region op=move layer=0 frame=4 offset=0,-1 rect=12,12,19,19
+region op=clear layer=1 frame=4 rect=9,19,14,25
+paint_grid layer=1 frame=4 x=8 y=17 legend=B:#734537,K:#232234 rows:6
+  |...KKKK|
+  |.KKBBBK|
+  |KBBBKK.|
+  |KBBBK..|
+  |.KKBBK.|
+  |..KKKK.|
+region op=clear layer=2 frame=4 rect=17,19,22,25
+paint_grid layer=2 frame=4 x=17 y=17 legend=B:#734537,K:#232234 rows:6
+  |KKKK...|
+  |KBBBKK.|
+  |.KKBBBK|
+  |..KBBBK|
+  |.KBBKK.|
+  |.KKKK..|
+region op=move layer=3 frame=4 offset=0,-1 rect=6,2,12,12
+region op=move layer=4 frame=4 offset=0,-1 rect=19,2,25,12
+region op=clear layer=5 frame=4 rect=12,11,22,16
+paint_grid layer=5 frame=4 x=12 y=10 legend=K:#232234,R:#cb4d42 rows:5
+  |.KRRRRK.....|
+  |KRRRRRRK.KK.|
+  |.KKRRKKRKRRK|
+  |.......KRRK.|
+  |........KK..|
+region op=move layer=6 frame=4 offset=0,-1 rect=11,3,20,11
+frame op=add copy_from=4 duration_ms=100
+region op=clear layer=1 frame=5 rect=8,17,14,22
+paint_grid layer=1 frame=5 x=8 y=18 legend=B:#734537,K:#232234 rows:6
+  |...KKKK|
+  |.KKBBBK|
+  |KBBBKK.|
+  |KBBBK..|
+  |.KBBK..|
+  |.KKKK..|
+region op=clear layer=2 frame=5 rect=17,17,23,22
+paint_grid layer=2 frame=5 x=17 y=18 legend=B:#734537,K:#232234 rows:6
+  |KKKK...|
+  |KBBBKK.|
+  |.KKBBBK|
+  |..KBBBK|
+  |..KBBK.|
+  |..KKKK.|
+region op=move layer=3 frame=5 offset=0,1 rect=6,1,12,11
+region op=move layer=4 frame=5 offset=0,1 rect=19,1,25,11
+frame op=add copy_from=5 duration_ms=100
+region op=move layer=0 frame=6 offset=0,2 rect=12,11,19,18
+region op=clear layer=1 frame=6 rect=8,18,14,23
+paint_grid layer=1 frame=6 x=10 y=20 legend=B:#734537,K:#232234 rows:7
+  |.KBBK|
+  |.KBBK|
+  |.KBBK|
+  |.KKKK|
+  |.KBBK|
+  |KBBBK|
+  |KKKKK|
+region op=clear layer=2 frame=6 rect=17,18,23,23
+paint_grid layer=2 frame=6 x=17 y=20 legend=B:#734537,K:#232234 rows:7
+  |KBBK.|
+  |KBBK.|
+  |KBBK.|
+  |KKKK.|
+  |KBBK.|
+  |KBBBK|
+  |KKKKK|
+region op=clear layer=3 frame=6 rect=6,2,12,12
+paint_grid layer=3 frame=6 x=5 y=8 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
+  |.KK.....|
+  |KLSK....|
+  |KSSK....|
+  |.KTTK...|
+  |..KTTK..|
+  |...KTTK.|
+  |....KTTK|
+  |.....KTK|
+  |......KK|
+region op=clear layer=4 frame=6 rect=19,2,25,12
+paint_grid layer=4 frame=6 x=19 y=8 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
+  |.....KK.|
+  |....KSLK|
+  |....KSSK|
+  |...KTTK.|
+  |..KTTK..|
+  |.KTTK...|
+  |KTTK....|
+  |KTK.....|
+  |KK......|
+paint_grid layer=5 frame=6 x=12 y=10 replace=true legend=K:#232234,R:#cb4d42 rows:5
+  |.......KKK..|
+  |.......KRRK.|
+  |.KRRRRKKRK..|
+  |KRRRRRRRK...|
+  |.KKRRKKK....|
+region op=move layer=6 frame=6 offset=0,2 rect=11,2,20,10
+frame op=add copy_from=6 duration_ms=100
+region op=move layer=0 frame=7 offset=0,4 rect=12,13,19,20
+region op=move layer=1 frame=7 offset=0,4 rect=10,20,14,26
+region op=move layer=2 frame=7 offset=0,4 rect=17,20,21,26
+region op=clear layer=3 frame=7 rect=5,8,12,16
+paint_grid layer=3 frame=7 x=6 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
+  |....KKK|
+  |..KKTTK|
+  |.KTTTK.|
+  |KTTKK..|
+  |KSK....|
+  |KLSK...|
+  |.KK....|
+region op=clear layer=4 frame=7 rect=19,8,26,16
+paint_grid layer=4 frame=7 x=19 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
+  |KKK....|
+  |KTTKK..|
+  |.KTTTK.|
+  |..KKTTK|
+  |....KSK|
+  |...KSLK|
+  |....KK.|
+region op=move layer=5 frame=7 offset=0,4 rect=12,10,23,14
+region op=move layer=6 frame=7 offset=0,4 rect=11,4,20,12
+frame op=add copy_from=7 duration_ms=100
+region op=clear layer=0 frame=8 rect=12,17,19,24
+paint_grid layer=0 frame=8 x=11 y=20 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:7
+  |.KKTTTTKK.|
+  |KBBTTTTBBK|
+  |KBBTTTTBBK|
+  |KTTTTTTTTK|
+  |KBBBLLBBBK|
+  |KTTTKKTTTK|
+  |.KKK..KKK.|
+region op=clear layer=1 frame=8 rect=10,24,14,30
+paint_grid layer=1 frame=8 x=8 y=25 legend=B:#734537,K:#232234 rows:6
+  |...KKKK|
+  |..KBBBK|
+  |.KBBKK.|
+  |.KBK...|
+  |KBBBK..|
+  |KKKKK..|
+region op=clear layer=2 frame=8 rect=17,24,21,30
+paint_grid layer=2 frame=8 x=17 y=25 legend=B:#734537,K:#232234 rows:6
+  |KKKK...|
+  |KBBBK..|
+  |.KKBBK.|
+  |...KBK.|
+  |..KBBBK|
+  |..KKKKK|
+region op=clear layer=3 frame=8 rect=6,17,12,23
+paint_grid layer=3 frame=8 x=7 y=21 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
+  |....KK|
+  |...KTT|
+  |..KTTK|
+  |..KTK.|
+  |KSK...|
+  |KLSK..|
+  |.KSK..|
+  |.KK...|
+region op=clear layer=4 frame=8 rect=19,17,25,23
+paint_grid layer=4 frame=8 x=19 y=21 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
+  |KK....|
+  |TTK...|
+  |KTTK..|
+  |.KTK..|
+  |...KSK|
+  |..KSLK|
+  |..KSK.|
+  |...KK.|
+region op=clear layer=5 frame=8 rect=12,14,23,18
+paint_grid layer=5 frame=8 x=12 y=19 legend=K:#232234,R:#cb4d42 rows:5
+  |.KRRRRK.....|
+  |KRRRRRRK.KK.|
+  |.KKRRKKRKRRK|
+  |.......KRRK.|
+  |........KK..|
+region op=move layer=6 frame=8 offset=0,3 rect=11,8,20,16
+frame op=add copy_from=8 duration_ms=100
+region op=clear layer=0 frame=9 rect=11,20,20,26
+paint_grid layer=0 frame=9 x=12 y=18 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:8
+  |.KTTTTK.|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KBTTTTBK|
+  |KTTTTTTK|
+  |KBBLLBBK|
+  |KTTKKTTK|
+  |.KK..KK.|
+paint_grid layer=1 frame=9 x=8 y=25 replace=true legend=B:#734537,K:#232234 rows:6
+  |...KBBK|
+  |...KBBK|
+  |...KKKK|
+  |...KBBK|
+  |..KBBBK|
+  |..KKKKK|
+paint_grid layer=2 frame=9 x=17 y=25 replace=true legend=B:#734537,K:#232234 rows:6
+  |KBBK...|
+  |KBBK...|
+  |KKKK...|
+  |KBBK...|
+  |KBBBK..|
+  |KKKKK..|
+region op=move layer=3 frame=9 offset=0,-3 rect=7,21,12,28
+region op=move layer=4 frame=9 offset=0,-3 rect=19,21,24,28
+region op=clear layer=5 frame=9 rect=12,19,23,23
+paint_grid layer=5 frame=9 x=12 y=17 legend=K:#232234,R:#cb4d42 rows:6
+  |.KRRRRK...|
+  |KRRRRRRK..|
+  |.KKRRKKRK.|
+  |......KRRK|
+  |.......KRK|
+  |........KK|
+region op=move layer=6 frame=9 offset=0,-2 rect=11,11,20,19
 add_tag name=Jump direction=forward from=0 to=9

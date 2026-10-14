@@ -1,503 +1,218 @@
-atelier 5 fd3ad118-b792-4594-bf60-5e78e3227f88 0.1.0
+atelier 4 fd3ad118-b792-4594-bf60-5e78e3227f88 0.1.0
 new name=wizard_cat width=32 height=32
-layer rename index=0 name=tail
-layer add name=body
-layer add name=hat
-layer add name=staff
-layer add name=orb_glow
-layer add name=sparkles
-palette set colors=#2b1b17,#e09555,#a3603d,#6a3d94,#ffcb5c,#fff4d6
-legend A=#e09555
-body @0 grid 6,3 = 6,3 21x29
-    ....AA........AA.....
-    ...AAAA......AAAA....
-    ...AAAA......AAAA....
-    ...AAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAA.AA.
-    ....AAAAAAAAAAAA..AAA
-    .....AAAAAAAAAA...AAA
-    ......AAAAAAAA...AAA.
-    .......AAAAAA...AAA..
-    .....AAAAAAAAAAAAA...
-    ...AAAAAAAAAAAAAA....
-    ..AAAAAAAAAAAAAAAA...
-    .AAAAAAAAAAAAAAAAAA..
-    AAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAAAAAA..
-    ..AAAAAAAAAAAAAAAA...
-    ...AAAAA....AAAAA....
-    ...AAAA......AAAA....
-legend B=#6a3d94 C=#2b1b17
-hat @0 grid 6,0 = 6,0 20x11
-    ...........B........
-    ..........BB........
-    ..........BBB.......
-    .........BBBB.......
-    ........BBBBB.......
-    ........BBBBBB......
-    .......CCCCCCC......
-    ..BBBBBBBBBBBBBBBB..
-    BBBBBBBBBBBBBBBBBBBB
-    .BBBBBBBBBBBBBBBBBB.
-    BB................BB
-hat @0 pencil #ffcb5c = 16,3 16,3 #ffcb5c
-legend D=#a3603d
-staff @0 grid 24,5 = 24,5 2x8
-    CC
-    CC
-    CC
-    DD
-    CC
-    CC
-    CC
-    CC
-orb_glow @0 clear_cel ~
-orb_glow @0 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @0 ellipse #fff4d6 25,3 0,0 fill = 24,2 26,4 #fff4d6
-orb_glow @0 clear_cel = 24,2 26,4 .
-orb_glow @0 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-orb_glow @0 clear_cel = 25,3 25,3 .
-legend E=#fff4d6
-orb_glow @0 ellipse #fff4d6 25,3 2,2 fill = 23,1 5x5
-    .EEE.
-    EEEEE
-    EEEEE
-    EEEEE
-    .EEE.
-orb_glow @0 clear_cel = 23,1 27,5 .
-orb_glow @0 ellipse #fff4d6 25,3 2,2 fill = 23,1 5x5
-    .EEE.
-    EEEEE
-    EEEEE
-    EEEEE
-    .EEE.
-orb_glow @0 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @0 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-tail @0 clear_cel ~
-tail @0 curve #e09555 width 3 = 2,10 8x19
-    ...AAA..
-    ..AAAA..
-    ..AAAA..
-    .AAAA...
-    .AAA....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAAA....
-    .AAA....
-    .AAA....
-    .AAAA...
-    ..AAAA..
-    ...AAAA.
-    ...AAAAA
-    ....AAAA
-    .....AAA
-tail @0 curve #a3603d width 1 = 3,17 4x9
-    DA..
-    DA..
-    DA..
-    ADA.
-    ADA.
-    ADA.
-    AADA
-    .ADA
-    ..AD
-body @0 grid 11,7 = 11,7 15x23
-    AADAADAAAAAA...
-    AAAAAAAAAAAA...
-    DAAAAAADAAAA...
-    AAAAAAAAAAAA...
-    CCAAAAAACCAA...
-    AAAAAAAAAAAA.AA
-    AAEEEEEEAAA..AA
-    AEEECCEEEA...AA
-    .AAEEEEAA...AAA
-    ..AAAAAA...AAA.
-    AAAAAAAAAAAAA..
-    AAAAAAAAAADD...
-    AAAAAAAAAAADD..
-    AAAAAAAAAAAADD.
-    AAAAAAAAAAAAADD
-    AAAAAAAAAAAAADD
-    AAAAAAAAAAAAADD
-    AAAAAAAAAAAAADD
-    AAAAAAAAAAAAADD
-    AAAAAAAAAAAAADD
-    AAAAAAAAAAAAADD
-    AAAAAAAAAAAADD.
-    AAAAAAAAAAADD..
-body @0 grid 11,7 = 12,20 8x4
-    AEEEEEEA
-    EEEEEEEE
-    EEEEEEEE
-    AEEEEEEA
-sparkles @0 clear_cel ~
-sparkles @0 pencil #ffcb5c size 1 = 21,10 21,10 #ffcb5c
-sparkles @0 pencil #fff4d6 size 1 = 30,7 30,7 #fff4d6
-orb_glow @0 clear_cel = 23,1 27,5 .
-orb_glow @0 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-tail @1 clear_cel = 2,10 9,28 .
-tail @1 curve #e09555 width 3 = 3,10 7x19
-    ...AAA.
-    ..AAAA.
-    .AAAAA.
-    .AAAA..
-    AAAA...
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAAA...
-    .AAA...
-    .AAAA..
-    ..AAAA.
-    ..AAAAA
-    ...AAAA
-    ....AAA
-tail @1 curve #a3603d width 1 = 3,17 4x9
-    DAA.
-    DAA.
-    ADA.
-    ADA.
-    ADA.
-    AADA
-    .ADA
-    .ADA
-    ..AD
-orb_glow @1 clear_cel = 24,2 26,4 .
-orb_glow @1 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @1 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-sparkles @1 clear_cel = 21,7 30,10 .
-sparkles @1 pencil #ffcb5c size 1 = 22,9 22,9 #ffcb5c
-sparkles @1 pencil #fff4d6 size 1 = 28,6 28,6 #fff4d6
-tail @2 clear_cel = 2,10 9,28 .
-tail @2 curve #e09555 width 3 = 3,10 7x19
-    ....AAA
-    ...AAAA
-    ..AAAAA
-    ..AAA..
-    .AAAA..
-    .AAA...
-    AAAA...
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    .AAA...
-    .AAA...
-    .AAA...
-    .AAAA..
-    ..AAAA.
-    ...AAAA
-    ...AAAA
-    ....AAA
-tail @2 curve #a3603d width 1 = 4,17 3x9
-    DA.
-    DA.
-    DA.
-    DA.
-    ADA
-    ADA
-    ADA
-    AAD
-    .AD
-orb_glow @2 clear_cel = 24,2 26,4 .
-orb_glow @2 ellipse #fff4d6 25,3 2,2 fill = 23,1 5x5
-    .EEE.
-    EEEEE
-    EEEEE
-    EEEEE
-    .EEE.
-orb_glow @2 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @2 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-sparkles @2 clear_cel = 21,7 30,10 .
-sparkles @2 pencil #ffcb5c size 1 = 20,8 20,8 #ffcb5c
-sparkles @2 pencil #fff4d6 size 1 = 29,5 29,5 #fff4d6
-tail @3 clear_cel = 2,10 9,28 .
-tail @3 curve #e09555 width 3 = 3,10 7x19
-    ....AAA
-    ...AAAA
-    ..AAAAA
-    ..AAA..
-    .AAAA..
-    .AAA...
-    AAAA...
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    .AAA...
-    .AAA...
-    .AAA...
-    .AAAA..
-    ..AAAA.
-    ...AAAA
-    ...AAAA
-    ....AAA
-tail @3 curve #a3603d width 1 = 4,17 3x9
-    DA.
-    DA.
-    DA.
-    DA.
-    ADA
-    ADA
-    ADA
-    AAD
-    .AD
-orb_glow @3 clear_cel = 24,2 26,4 .
-orb_glow @3 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @3 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-sparkles @3 clear_cel = 21,7 30,10 .
-sparkles @3 pencil #ffcb5c size 1 = 21,7 21,7 #ffcb5c
-sparkles @3 pencil #ffcb5c size 1 = 25,12 25,12 #ffcb5c
-tail @4 clear_cel = 2,10 9,28 .
-tail @4 curve #e09555 width 3 = 3,10 7x19
-    ...AAA.
-    ..AAAA.
-    .AAAAA.
-    .AAAA..
-    AAAA...
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAA....
-    AAAA...
-    .AAA...
-    .AAAA..
-    ..AAAA.
-    ..AAAAA
-    ...AAAA
-    ....AAA
-tail @4 curve #a3603d width 1 = 3,17 4x9
-    DAA.
-    DAA.
-    ADA.
-    ADA.
-    ADA.
-    AADA
-    .ADA
-    .ADA
-    ..AD
-orb_glow @4 clear_cel = 24,2 26,4 .
-orb_glow @4 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-sparkles @4 clear_cel = 21,7 30,10 .
-sparkles @4 pencil #ffcb5c size 1 = 22,6 22,6 #ffcb5c
-sparkles @4 pencil #ffcb5c size 1 = 26,11 26,11 #ffcb5c
-tail @5 clear_cel = 2,10 9,28 .
-tail @5 curve #e09555 width 3 = 2,10 8x19
-    ...AAA..
-    ..AAAA..
-    ..AAAA..
-    .AAAA...
-    .AAA....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAAA....
-    .AAA....
-    .AAA....
-    .AAAA...
-    ..AAAA..
-    ...AAAA.
-    ...AAAAA
-    ....AAAA
-    .....AAA
-tail @5 curve #a3603d width 1 = 3,17 4x9
-    DA..
-    DA..
-    DA..
-    ADA.
-    ADA.
-    ADA.
-    AADA
-    .ADA
-    ..AD
-orb_glow @5 clear_cel = 24,2 26,4 .
-orb_glow @5 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-sparkles @5 clear_cel = 21,7 30,10 .
-sparkles @5 pencil #ffcb5c size 1 = 20,5 20,5 #ffcb5c
-sparkles @5 pencil #ffcb5c size 1 = 24,10 24,10 #ffcb5c
-tail @6 clear_cel = 2,10 9,28 .
-tail @6 curve #e09555 width 3 = 2,10 8x19
-    ..AAA...
-    .AAAA...
-    .AAAA...
-    AAAA....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAAA....
-    .AAA....
-    .AAAA...
-    ..AAA...
-    ..AAAA..
-    ...AAAAA
-    ....AAAA
-    .....AAA
-tail @6 curve #a3603d width 1 = 2,17 4x9
-    DAA.
-    DAA.
-    ADA.
-    ADA.
-    ADDA
-    .ADA
-    .ADA
-    ..AD
-    ..AD
-orb_glow @6 clear_cel = 24,2 26,4 .
-orb_glow @6 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @6 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-sparkles @6 clear_cel = 21,7 30,10 .
-sparkles @6 pencil #ffcb5c size 1 = 21,4 21,4 #ffcb5c
-sparkles @6 pencil #fff4d6 size 1 = 29,11 29,11 #fff4d6
-sparkles @6 pencil #ffcb5c size 1 = 25,9 25,9 #ffcb5c
-tail @7 clear_cel = 2,10 9,28 .
-tail @7 curve #e09555 width 3 = 1,10 9x19
-    ..AAA....
-    ..AAA....
-    .AAAA....
-    AAAA.....
-    AAA......
-    AAA......
-    AAA......
-    AAA......
-    AAA......
-    AAA......
-    .AAA.....
-    .AAA.....
-    .AAAA....
-    ..AAA....
-    ..AAAA...
-    ...AAAA..
-    ....AAAAA
-    .....AAAA
-    ......AAA
-tail @7 curve #a3603d width 1 = 1,17 5x9
-    DAA..
-    ADA..
-    ADA..
-    .ADA.
-    .ADA.
-    .AADA
-    ..ADA
-    ..AAD
-    ...AD
-orb_glow @7 clear_cel = 24,2 26,4 .
-orb_glow @7 ellipse #fff4d6 25,3 2,2 fill = 23,1 5x5
-    .EEE.
-    EEEEE
-    EEEEE
-    EEEEE
-    .EEE.
-orb_glow @7 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @7 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-sparkles @7 clear_cel = 21,7 30,10 .
-sparkles @7 pencil #fff4d6 size 1 = 30,10 30,10 #fff4d6
-sparkles @7 pencil #ffcb5c size 1 = 26,8 26,8 #ffcb5c
-tail @8 clear_cel = 2,10 9,28 .
-tail @8 curve #e09555 width 3 = 1,10 9x19
-    ..AAA....
-    ..AAA....
-    .AAAA....
-    AAAA.....
-    AAA......
-    AAA......
-    AAA......
-    AAA......
-    AAA......
-    AAA......
-    .AAA.....
-    .AAA.....
-    .AAAA....
-    ..AAA....
-    ..AAAA...
-    ...AAAA..
-    ....AAAAA
-    .....AAAA
-    ......AAA
-tail @8 curve #a3603d width 1 = 1,17 5x9
-    DAA..
-    ADA..
-    ADA..
-    .ADA.
-    .ADA.
-    .AADA
-    ..ADA
-    ..AAD
-    ...AD
-orb_glow @8 clear_cel = 24,2 26,4 .
-orb_glow @8 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-orb_glow @8 pencil #fff4d6 size 1 = 25,3 25,3 #fff4d6
-sparkles @8 clear_cel = 21,7 30,10 .
-sparkles @8 pencil #fff4d6 size 1 = 28,9 28,9 #fff4d6
-sparkles @8 pencil #ffcb5c size 1 = 24,7 24,7 #ffcb5c
-tail @9 clear_cel = 2,10 9,28 .
-tail @9 curve #e09555 width 3 = 2,10 8x19
-    ..AAA...
-    .AAAA...
-    .AAAA...
-    AAAA....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAA.....
-    AAAA....
-    .AAA....
-    .AAAA...
-    ..AAA...
-    ..AAAA..
-    ...AAAAA
-    ....AAAA
-    .....AAA
-tail @9 curve #a3603d width 1 = 2,17 4x9
-    DAA.
-    DAA.
-    ADA.
-    ADA.
-    ADDA
-    .ADA
-    .ADA
-    ..AD
-    ..AD
-orb_glow @9 clear_cel = 24,2 26,4 .
-orb_glow @9 ellipse #ffcb5c 25,3 1,1 fill = 24,2 26,4 #ffcb5c
-sparkles @9 clear_cel = 21,7 30,10 .
-sparkles @9 pencil #fff4d6 size 1 = 29,8 29,8 #fff4d6
-sparkles @9 pencil #ffcb5c size 1 = 25,6 25,6 #ffcb5c
+layer op=rename index=0 name=tail
+layer op=add name=body
+layer op=add name=hat
+layer op=add name=staff
+layer op=add name=orb_glow
+layer op=add name=sparkles
+palette op=set colors=#2b1b17,#e09555,#a3603d,#6a3d94,#ffcb5c,#fff4d6
+paint_grid layer=1 frame=0 x=6 y=3 legend=F:#e09555 rows:29
+  |....FF........FF.....|
+  |...FFFF......FFFF....|
+  |...FFFF......FFFF....|
+  |...FFFFFFFFFFFFFF....|
+  |...FFFFFFFFFFFFFF....|
+  |...FFFFFFFFFFFFFF....|
+  |...FFFFFFFFFFFFFF....|
+  |...FFFFFFFFFFFFFF....|
+  |...FFFFFFFFFFFFFF....|
+  |...FFFFFFFFFFFFFF.FF.|
+  |....FFFFFFFFFFFF..FFF|
+  |.....FFFFFFFFFF...FFF|
+  |......FFFFFFFF...FFF.|
+  |.......FFFFFF...FFF..|
+  |.....FFFFFFFFFFFFF...|
+  |...FFFFFFFFFFFFFF....|
+  |..FFFFFFFFFFFFFFFF...|
+  |.FFFFFFFFFFFFFFFFFF..|
+  |FFFFFFFFFFFFFFFFFFFF.|
+  |FFFFFFFFFFFFFFFFFFFF.|
+  |FFFFFFFFFFFFFFFFFFFF.|
+  |FFFFFFFFFFFFFFFFFFFF.|
+  |FFFFFFFFFFFFFFFFFFFF.|
+  |FFFFFFFFFFFFFFFFFFFF.|
+  |FFFFFFFFFFFFFFFFFFFF.|
+  |.FFFFFFFFFFFFFFFFFF..|
+  |..FFFFFFFFFFFFFFFF...|
+  |...FFFFF....FFFFF....|
+  |...FFFF......FFFF....|
+paint_grid layer=2 frame=0 x=6 y=0 legend=D:#2b1b17,P:#6a3d94 rows:11
+  |...........P........|
+  |..........PP........|
+  |..........PPP.......|
+  |.........PPPP.......|
+  |........PPPPP.......|
+  |........PPPPPP......|
+  |.......DDDDDDD......|
+  |..PPPPPPPPPPPPPPPP..|
+  |PPPPPPPPPPPPPPPPPPPP|
+  |.PPPPPPPPPPPPPPPPPP.|
+  |PP................PP|
+draw op=pencil layer=2 frame=0 color=#ffcb5c points=[[16,3]]
+paint_grid layer=3 frame=0 x=24 y=5 legend=D:#2b1b17,S:#a3603d rows:8
+  |DD|
+  |DD|
+  |DD|
+  |SS|
+  |DD|
+  |DD|
+  |DD|
+  |DD|
+draw op=clear_cel layer=4 frame=0
+draw op=ellipse layer=4 frame=0 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=ellipse layer=4 frame=0 color=#fff4d6 cx=25 cy=3 fill=true rx=0 ry=0
+draw op=clear_cel layer=4 frame=0
+draw op=pencil layer=4 frame=0 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=4 frame=0
+draw op=ellipse layer=4 frame=0 color=#fff4d6 cx=25 cy=3 fill=true rx=2 ry=2
+draw op=clear_cel layer=4 frame=0
+draw op=ellipse layer=4 frame=0 color=#fff4d6 cx=25 cy=3 fill=true rx=2 ry=2
+draw op=ellipse layer=4 frame=0 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=pencil layer=4 frame=0 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=0 frame=0
+draw op=curve layer=0 frame=0 width=3 aa=false color=#e09555 points=8.0,27 5.0,25 3.0,21 2.0,17 3.0,13 6.0,11
+draw op=curve layer=0 frame=0 width=1 aa=false color=#a3603d points=5.6,25 3.6,21 2.6,17
+paint_grid layer=1 frame=0 x=11 y=7 legend=C:#fff4d6,D:#2b1b17,S:#a3603d rows:23
+  |..S..S.........|
+  |...............|
+  |S......S.......|
+  |...............|
+  |DD......DD.....|
+  |...............|
+  |..CCCCCC.......|
+  |.CCCDDCCC......|
+  |...CCCC........|
+  |...............|
+  |...............|
+  |..........SS...|
+  |...........SS..|
+  |............SS.|
+  |.............SS|
+  |.............SS|
+  |.............SS|
+  |.............SS|
+  |.............SS|
+  |.............SS|
+  |.............SS|
+  |............SS.|
+  |...........SS..|
+paint_grid layer=1 frame=0 x=11 y=7 legend=C:#fff4d6,D:#2b1b17,S:#a3603d rows:23
+  |..S..S.........|
+  |...............|
+  |S......S.......|
+  |...............|
+  |DD......DD.....|
+  |...............|
+  |..CCCCCC.......|
+  |.CCCDDCCC......|
+  |...CCCC........|
+  |...............|
+  |...............|
+  |..........SS...|
+  |...........SS..|
+  |..CCCCCC....SS.|
+  |.CCCCCCCC....SS|
+  |.CCCCCCCC....SS|
+  |..CCCCCC.....SS|
+  |.............SS|
+  |.............SS|
+  |.............SS|
+  |.............SS|
+  |............SS.|
+  |...........SS..|
+draw op=clear_cel layer=5 frame=0
+draw op=pencil layer=5 frame=0 color=#ffcb5c points=[[21,10]] size=1
+draw op=pencil layer=5 frame=0 color=#fff4d6 points=[[30,7]] size=1
+draw op=clear_cel layer=4 frame=0
+draw op=ellipse layer=4 frame=0 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=0 frame=1
+draw op=curve layer=0 frame=1 width=3 aa=false color=#e09555 points=8.0,27 5.2,25 3.4,21 2.6,17 3.8,13 7.0,11
+draw op=curve layer=0 frame=1 width=1 aa=false color=#a3603d points=5.8,25 4.0,21 3.2,17
+draw op=clear_cel layer=4 frame=1
+draw op=ellipse layer=4 frame=1 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=pencil layer=4 frame=1 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=5 frame=1
+draw op=pencil layer=5 frame=1 color=#ffcb5c points=[[22,9]] size=1
+draw op=pencil layer=5 frame=1 color=#fff4d6 points=[[28,6]] size=1
+draw op=clear_cel layer=0 frame=2
+draw op=curve layer=0 frame=2 width=3 aa=false color=#e09555 points=8.0,27 5.4,25 3.8,21 3.2,17 4.6,13 8.0,11
+draw op=curve layer=0 frame=2 width=1 aa=false color=#a3603d points=6.0,25 4.3999999999999995,21 3.8,17
+draw op=clear_cel layer=4 frame=2
+draw op=ellipse layer=4 frame=2 color=#fff4d6 cx=25 cy=3 fill=true rx=2 ry=2
+draw op=ellipse layer=4 frame=2 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=pencil layer=4 frame=2 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=5 frame=2
+draw op=pencil layer=5 frame=2 color=#ffcb5c points=[[20,8]] size=1
+draw op=pencil layer=5 frame=2 color=#fff4d6 points=[[29,5]] size=1
+draw op=clear_cel layer=0 frame=3
+draw op=curve layer=0 frame=3 width=3 aa=false color=#e09555 points=8.0,27 5.4,25 3.8,21 3.2,17 4.6,13 8.0,11
+draw op=curve layer=0 frame=3 width=1 aa=false color=#a3603d points=6.0,25 4.3999999999999995,21 3.8,17
+draw op=clear_cel layer=4 frame=3
+draw op=ellipse layer=4 frame=3 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=pencil layer=4 frame=3 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=5 frame=3
+draw op=pencil layer=5 frame=3 color=#ffcb5c points=[[21,7]] size=1
+draw op=pencil layer=5 frame=3 color=#ffcb5c points=[[25,12]] size=1
+draw op=clear_cel layer=0 frame=4
+draw op=curve layer=0 frame=4 width=3 aa=false color=#e09555 points=8.0,27 5.2,25 3.4,21 2.6,17 3.8,13 7.0,11
+draw op=curve layer=0 frame=4 width=1 aa=false color=#a3603d points=5.8,25 4.0,21 3.2,17
+draw op=clear_cel layer=4 frame=4
+draw op=ellipse layer=4 frame=4 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=clear_cel layer=5 frame=4
+draw op=pencil layer=5 frame=4 color=#ffcb5c points=[[22,6]] size=1
+draw op=pencil layer=5 frame=4 color=#ffcb5c points=[[26,11]] size=1
+draw op=clear_cel layer=0 frame=5
+draw op=curve layer=0 frame=5 width=3 aa=false color=#e09555 points=8.0,27 5.0,25 3.0,21 2.0,17 3.0,13 6.0,11
+draw op=curve layer=0 frame=5 width=1 aa=false color=#a3603d points=5.6,25 3.6,21 2.6,17
+draw op=clear_cel layer=4 frame=5
+draw op=ellipse layer=4 frame=5 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=clear_cel layer=5 frame=5
+draw op=pencil layer=5 frame=5 color=#ffcb5c points=[[20,5]] size=1
+draw op=pencil layer=5 frame=5 color=#ffcb5c points=[[24,10]] size=1
+draw op=clear_cel layer=0 frame=6
+draw op=curve layer=0 frame=6 width=3 aa=false color=#e09555 points=8.0,27 4.8,25 2.6,21 1.4,17 2.2,13 5.0,11
+draw op=curve layer=0 frame=6 width=1 aa=false color=#a3603d points=5.3999999999999995,25 3.2,21 2.0,17
+draw op=clear_cel layer=4 frame=6
+draw op=ellipse layer=4 frame=6 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=pencil layer=4 frame=6 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=5 frame=6
+draw op=pencil layer=5 frame=6 color=#ffcb5c points=[[21,4]] size=1
+draw op=pencil layer=5 frame=6 color=#fff4d6 points=[[29,11]] size=1
+draw op=pencil layer=5 frame=6 color=#ffcb5c points=[[25,9]] size=1
+draw op=clear_cel layer=0 frame=7
+draw op=curve layer=0 frame=7 width=3 aa=false color=#e09555 points=8.0,27 4.6,25 2.2,21 0.8,17 1.4,13 4.0,11
+draw op=curve layer=0 frame=7 width=1 aa=false color=#a3603d points=5.199999999999999,25 2.8000000000000003,21 1.4,17
+draw op=clear_cel layer=4 frame=7
+draw op=ellipse layer=4 frame=7 color=#fff4d6 cx=25 cy=3 fill=true rx=2 ry=2
+draw op=ellipse layer=4 frame=7 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=pencil layer=4 frame=7 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=5 frame=7
+draw op=pencil layer=5 frame=7 color=#fff4d6 points=[[30,10]] size=1
+draw op=pencil layer=5 frame=7 color=#ffcb5c points=[[26,8]] size=1
+draw op=clear_cel layer=0 frame=8
+draw op=curve layer=0 frame=8 width=3 aa=false color=#e09555 points=8.0,27 4.6,25 2.2,21 0.8,17 1.4,13 4.0,11
+draw op=curve layer=0 frame=8 width=1 aa=false color=#a3603d points=5.199999999999999,25 2.8000000000000003,21 1.4,17
+draw op=clear_cel layer=4 frame=8
+draw op=ellipse layer=4 frame=8 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=pencil layer=4 frame=8 color=#fff4d6 points=[[25,3]] size=1
+draw op=clear_cel layer=5 frame=8
+draw op=pencil layer=5 frame=8 color=#fff4d6 points=[[28,9]] size=1
+draw op=pencil layer=5 frame=8 color=#ffcb5c points=[[24,7]] size=1
+draw op=clear_cel layer=0 frame=9
+draw op=curve layer=0 frame=9 width=3 aa=false color=#e09555 points=8.0,27 4.8,25 2.6,21 1.4,17 2.2,13 5.0,11
+draw op=curve layer=0 frame=9 width=1 aa=false color=#a3603d points=5.3999999999999995,25 3.2,21 2.0,17
+draw op=clear_cel layer=4 frame=9
+draw op=ellipse layer=4 frame=9 color=#ffcb5c cx=25 cy=3 fill=true rx=1 ry=1
+draw op=clear_cel layer=5 frame=9
+draw op=pencil layer=5 frame=9 color=#fff4d6 points=[[29,8]] size=1
+draw op=pencil layer=5 frame=9 color=#ffcb5c points=[[25,6]] size=1

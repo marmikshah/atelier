@@ -1,2252 +1,1716 @@
-atelier 5 cb0527c2-610e-4ddd-a1f0-b472be776f55 0.1.0
+atelier 4 cb0527c2-610e-4ddd-a1f0-b472be776f55 0.1.0
 new name=energy-beam width=48 height=48
-palette set colors=#1a1630,#f0b07a,#e0582a,#2a5fd0,#5ad8f8,#f6ffff
-layer rename index=0 name=arm_far
-layer add name=legs
-layer add name=torso
-layer add name=band
-layer add name=head
-layer add name=arm_near
-layer add name=light
-layer add name=beam
-layer add name=fx
-legend A=#1a1630 B=#f0b07a C=#e0582a D=#2a5fd0
-fx @0 grid 0,0 = 0,0 2x2
-    AB
-    CD
-fx @0 clear 0,0 48,48 = 0,0 1,1 .
-legs @0 grid 2,33 = 2,33 20x12
-    ......AAAAAAAAA.....
-    .....AAAAAAAAAAA....
-    ....AAAAAAAAAAAAA...
-    ...AAAAAAAAAAAAAAA..
-    ..AAAAAAA..AAAAAAAA.
-    ..AAAAAA....AAAAAAA.
-    .AAAAAA.......AAAAA.
-    .AAAAA........AAAAA.
-    .AAAAA........AAAAA.
-    .AAAAA........AAAAA.
-    AAAAAA........AAAAAA
-    AAAAAA........AAAAAA
-torso @0 grid 8,23 = 8,23 9x10
-    ...AAA...
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAAA
-    .AAAAAAA.
-    .AAAAAAA.
-    .AAAAAAA.
-    .AAAAAAA.
-head @0 grid 8,13 = 8,13 11x11
-    ...A..A.A..
-    ..AAAAAAAA.
-    .AAAAAAAAAA
-    AAAAAAAAAA.
-    .AAAAAAAAAA
-    AAAAAAAAAA.
-    .AAAAAAAAA.
-    .AAAAAAAAAA
-    ..AAAAAAAA.
-    ..AAAAAAA..
-    ...AAAAA...
-arm_near @0 grid 2,24 = 2,24 10x7
-    .......AA.
-    ......AAAA
-    ....AAAAAA
-    .AAAAAAAA.
-    AAAAAAAA..
-    AAAAAA....
-    .A........
-arm_far @0 grid 2,32 = 2,32 8x4
-    .A......
-    AAAAAA..
-    AAAAAAAA
-    .AAAAAA.
-legs @0 clear 0,0 48,48 = 2,33 21,44 .
-torso @0 clear 0,0 48,48 = 8,23 16,32 .
-head @0 clear 0,0 48,48 = 8,13 18,23 .
-arm_near @0 clear 0,0 48,48 = 2,24 11,30 .
-arm_far @0 clear 0,0 48,48 = 2,32 9,35 .
-legs @0 grid 2,33 = 2,33 20x12
-    ......AAAAAAAAA.....
-    .....ACCCCCCCCCA....
-    ....ACCCCCCCCCCCA...
-    ...ACCCCCAACCCCCCA..
-    ..ACCCCCA..ACCCCCCA.
-    ..ACCCCA....AACCCCA.
-    .ACCCCA.......ACCCA.
-    .ACCCA........ACCCA.
-    .ACCCA........ACCCA.
-    .ADDDA........ADDDA.
-    ADDDDA........ADDDDA
-    AAAAAA........AAAAAA
-torso @0 grid 8,23 = 8,23 9x10
-    ...ABA...
-    .AACBCAA.
-    ACCCCBCCA
-    ACCCCCCCA
-    ACCCCCCCA
-    .ACCCCCCA
-    .ACCCCCA.
-    .ACCCCCA.
-    .ADDDDDA.
-    .ACCCCCA.
-head @0 grid 7,11 = 7,11 12x13
-    ....A.......
-    .A..AA..A...
-    .AA.AAA.AA..
-    ..AAAAAAAAA.
-    .AAAAAAAAAAA
-    AAAAAAAAAAA.
-    ..ADDDDDDDDA
-    .AAAABBBBBA.
-    ..AABBBBABA.
-    ..AABBBBABBA
-    ...ABBBBBBA.
-    ...AABBBBA..
-    ....AAAAA...
-arm_near @0 grid 2,24 = 2,24 10x7
-    .......AA.
-    ......ACCA
-    ....AABCCA
-    .AAABBBBA.
-    ABBBDBAA..
-    ABAAAA....
-    .A........
-arm_far @0 grid 2,32 = 2,32 8x4
-    .A......
-    ABAAAA..
-    ABBBDBBA
-    .AAAAAA.
-frame add copy_from=0
-head @1 clear 7,11 3,2 ~
-head @1 clear 7,11 9,12 = 8,12 8,12 .
-legend E=#5ad8f8
-fx @1 pencil #5ad8f8 = 40,40 3x1
-    E.E
-head @1 grid 8,12 = 8,12 8,12 #1a1630
-fx @1 erase pencil = 40,40 42,40 .
-frame add copy_from=1
-arm_near @2 erase pencil ~
-arm_near @2 grid 2,26 = 2,26 6x4
-    .AAAAA
-    ABBBDB
-    ABAAAA
-    AAAAAA
-frame add copy_from=2
-arm_far @3 erase pencil ~
-arm_far @3 grid 1,32 = 1,32 8x4
-    .AA.....
-    ABAAAAA.
-    ABBBDBBA
-    .AAAAAAA
-torso @3 erase pencil ~
-torso @3 grid 7,23 = 7,23 9x5
-    ...ABAA..
-    .AACBCAAA
-    ACCCCBCCA
-    ACCCCCCCA
-    ACCCCCCCA
-head @3 erase pencil ~
-head @3 grid 6,11 = 6,11 12x13
-    ....AA......
-    .AA.AAA.AA..
-    .AAAAAAAAAA.
-    ..AAAAAAAAAA
-    .AAAAAAAAAAA
-    AAAAAAAAAAAA
-    ..ADDDDDDDDA
-    .AAAABBBBBAA
-    ..AABBBBABAA
-    ..AABBBBABBA
-    ...ABBBBBBAA
-    ...AABBBBAA.
-    ....AAAAAA..
-arm_near @3 erase pencil = 3,28 3,28 .
-arm_near @3 grid 1,24 = 1,24 10x4
-    .......AAA
-    .AAAAAACCA
-    ABBBDBBCCA
-    ABAAAABBAA
-frame add copy_from=3
-arm_far @4 erase pencil = 2,33 6x2
-    .AAAAA
-    ......
-arm_far @4 grid 17,27 = 17,27 11x4
-    ABBBBBDBA..
-    .AAAAADBBA.
-    ......ABBBA
-    .......AAA.
-legs @4 erase pencil = 5,34 4x4
-    ..A.
-    .A.C
-    A.CC
-    .CCC
-legs @4 grid 4,33 = 4,33 18x8
-    ....AAAAAAAAAAA...
-    ...A.ACCCCCCCCCA..
-    ..A.ACCCCCCCCCCCA.
-    .A.ACCCCCAACCCCCCA
-    A.ACCCCAAAAACCCCCA
-    AACCCCA...AAACCCCA
-    ACCCCA......ACCCA.
-    CCCCA.......ACCCA.
-torso @4 erase pencil = 8,23 4x10
-    ..A.
-    AA..
-    ...C
-    ...C
-    ...C
-    .A.C
-    .A.C
-    .A.C
-    .A.D
-    .A.C
-torso @4 grid 11,23 = 11,23 9x10
-    .AAABA...
-    .AACBCAA.
-    ACCCCBCCA
-    ACCCCCCCA
-    ACCCCCCCA
-    ACCCCCCA.
-    ACCCCCA..
-    ACCCCCA..
-    ADDDDDA..
-    ACCCCCA..
-head @4 erase pencil = 9,17 4x6
-    ...D
-    AABB
-    A..B
-    A..B
-    A...
-    AA..
-head @4 grid 11,11 = 11,11 11x13
-    A.A........
-    AAAAA.A....
-    AAAAAAAA...
-    AAAAAAAAAA.
-    AAAAAAAAAAA
-    AAAAAAAAAA.
-    .ADDDDDDDDA
-    AAAABBBBBA.
-    .AABBBBABA.
-    .AABBBBABBA
-    ..ABBBBBAA.
-    ..AABBBABA.
-    AAAAAAAAA..
-arm_near @4 erase pencil = 2,25 8x3
-    AAAAAA..
-    ........
-    .AAAA..A
-arm_near @4 grid 15,22 = 15,22 13x6
-    .........AAA.
-    ........ABBBA
-    .AAAAAAADBBA.
-    ACCBBBBBDBA..
-    ACCBBBBBDBA..
-    .AA..........
-frame add copy_from=4
-arm_far @5 erase pencil = 23,27 4x3
-    ..A.
-    D..A
-    AB..
-arm_far @5 grid 14,27 = 14,27 11x4
-    ABBBBBDBA..
-    .AAAAADBBA.
-    ......ABBBA
-    .......AAAA
-legs @5 erase pencil = 18,34 3x3
-    .A.
-    C.A
-    CC.
-legs @5 grid 4,34 = 4,34 17x7
-    ...ACCCCCCCCCA.A.
-    ..ACCCCCCCCCCCA.A
-    .ACCCCCAACCCCCCA.
-    ACCCCCAAAACCCCCCA
-    ACCCCAA...AACCCCA
-    CCCCAA......ACCCA
-    CCCAA.......ACCCA
-torso @5 erase pencil = 15,23 4x10
-    .A..
-    B.AA
-    CB..
-    CC..
-    CC..
-    CC.A
-    C.A.
-    C.A.
-    D.A.
-    C.A.
-torso @5 grid 8,23 = 8,23 9x10
-    ..AABAA.A
-    AAACBCAA.
-    ACCCCBCCA
-    ACCCCCCCA
-    ACCCCCCCA
-    .ACCCCCCA
-    .ACCCCCA.
-    .ACCCCCA.
-    .ADDDDDA.
-    .ACCCCCA.
-head @5 erase pencil = 18,17 3x6
-    D..
-    ..A
-    A.A
-    A..
-    .AA
-    A.A
-head @5 grid 9,17 = 9,17 10x6
-    ADDDDDDDDA
-    AAABBBBBA.
-    AABBBBABAA
-    AABBBBABBA
-    AABBBBBAA.
-    AAABBBABAA
-arm_near @5 erase pencil = 23,23 4x4
-    AB..
-    D..A
-    ..A.
-    ..A.
-arm_near @5 grid 12,22 = 12,22 13x6
-    .........AAAA
-    ........ABBBA
-    .AAAAAAADBBA.
-    ACCBBBBBDBA..
-    ACCBBBBBDBA..
-    .AA.AA.......
-frame add copy_from=5
-arm_far @6 erase pencil = 21,27 3x3
-    .A.
-    B.A
-    BB.
-arm_far @6 grid 12,27 = 12,27 11x4
-    ABBBBBDBA.A
-    .AAAAADBBA.
-    ......ABBBA
-    .......AAAA
-legs @6 erase pencil ~
-legs @6 grid 3,33 = 3,33 17x7
-    ....AAAAAAAAAAAA.
-    ...ACCCCCCCCCAA.A
-    ..ACCCCCCCCCCCAA.
-    .ACCCCCAACCCCCCAA
-    ACCCCCAAAACCCCCCA
-    ACCCCAAA..AACCCCC
-    ACCCAAA.....AACCC
-torso @6 erase pencil = 12,23 4x5
-    .AA.
-    BCAA
-    CBC.
-    CCC.
-    CCC.
-torso @6 grid 6,23 = 6,23 10x10
-    ...ABA.AA.
-    .AACBCAAAA
-    ACCCCBCCA.
-    ACCCCCCCA.
-    ACCCCCCCA.
-    ..ACCCCCCA
-    ..ACCCCCAA
-    ..ACCCCCAA
-    ..ADDDDDAA
-    ..ACCCCCAA
-head @6 erase pencil = 16,17 2x6
-    D.
-    .A
-    .A
-    B.
-    AA
-    .A
-head @6 grid 5,11 = 5,11 12x13
-    ...A.AA.A...
-    A.AAAAAAAAA.
-    AAAAAAAAAAAA
-    .AAAAAAAAAAA
-    .AAAAAAAAAAA
-    AAAAAAAAAAAA
-    ..ADDDDDDDDA
-    .AAAABBBBBA.
-    ..AABBBBABA.
-    ..AABBBBABBA
-    ...ABBBBBAAA
-    ...AABBBABA.
-    ....AAAAAAAA
-arm_near @6 erase pencil = 21,23 3x4
-    BB.
-    B.A
-    .A.
-    .A.
-arm_near @6 grid 11,22 = 11,22 12x6
-    ........AAAA
-    .......ABBBA
-    AAAAAAADBBA.
-    CCBBBBBDBA.A
-    CCBBBBBDBA.A
-    AAAA.AA.....
-frame add copy_from=6
-arm_far @7 erase pencil ~
-legs @7 erase pencil ~
-torso @7 erase pencil ~
-head @7 erase pencil ~
-arm_near @7 erase pencil ~
-frame add copy_from=7
-arm_far @8 erase pencil = 18,27 3x2
-    ..A
-    DB.
-arm_far @8 grid 12,26 = 12,26 12x8
-    .AAA........
-    ACCCAA..A.A.
-    ACCBBBAA.A.A
-    .AABBBBBAAA.
-    ...AABBBDBAA
-    .....AABDBBA
-    .......ABBBA
-    ........AAA.
-legs @8 erase pencil ~
-legs @8 grid 4,34 = 4,34 16x6
-    ..AACCCCCCCCCA.A
-    .AACCCCCCCCCCCA.
-    AACCCCCAACCCCCCA
-    ACCCCCAAAACCCCCC
-    ACCCCAA..AAACCCC
-    CCCCAA.....AACCC
-torso @8 erase pencil = 7,23 4x5
-    ..A.
-    AACB
-    .CCC
-    .CCC
-    .CCC
-torso @8 grid 8,23 = 8,23 8x10
-    .A.ABAA.
-    AAACBCAA
-    ACCCCBCC
-    ACCCCCCC
-    ACCCCCCC
-    AACCCCCC
-    AACCCCCA
-    AACCCCCA
-    AADDDDDA
-    AACCCCCA
-head @8 erase pencil = 8,17 2x5
-    .D
-    AA
-    AB
-    AB
-    A.
-head @8 grid 9,17 = 9,17 9x6
-    ADDDDDDDD
-    AAABBBBBA
-    AABBBBABA
-    AABBBBABB
-    .ABBBBBBA
-    AAABBBBAA
-arm_near @8 erase pencil = 17,23 5x4
-    .A...
-    A...A
-    ...A.
-    BD.A.
-arm_near @8 grid 11,25 = 11,25 12x7
-    ACCCAA...A.A
-    ACCBBBAA.A.A
-    AAABBBBBAA..
-    ...AABBBDBA.
-    .....AABDBBA
-    .......ABBBA
-    ........AAA.
-frame add copy_from=8
-arm_far @9 erase pencil = 13,27 10x6
-    ...AA..A.A
-    .....AA.A.
-    AA.BB..AAA
-    ..AABB...A
-    ....AA....
-    ......A...
-arm_far @9 grid 15,29 = 15,29 4x4
-    .AA.
-    ABBA
-    ABBA
-    .AA.
-legs @9 erase pencil ~
-torso @9 erase pencil ~
-head @9 erase pencil ~
-arm_near @9 erase pencil = 15,26 7x5
-    ..AA.A.
-    ....AA.
-    A.....A
-    .AA....
-    ...A...
-arm_near @9 grid 10,25 = 10,25 7x8
-    ACCCAAA
-    ACCCA..
-    ABBBA..
-    ABBBAA.
-    .ABBBAA
-    .ABDBBA
-    ..ABBBA
-    ...AAA.
-fx @1 erase pencil ~
-arm_near @2 erase pencil ~
-arm_far @3 erase pencil ~
-torso @3 erase pencil ~
-head @3 erase pencil ~
-arm_near @3 erase pencil ~
-arm_far @4 erase pencil ~
-legs @4 erase pencil ~
-torso @4 erase pencil ~
-head @4 erase pencil ~
-arm_near @4 erase pencil ~
-arm_far @5 erase pencil ~
-legs @5 erase pencil ~
-torso @5 erase pencil ~
-head @5 erase pencil ~
-arm_near @5 erase pencil ~
-arm_far @6 erase pencil ~
-legs @6 erase pencil ~
-torso @6 erase pencil ~
-head @6 erase pencil ~
-arm_near @6 erase pencil ~
-arm_far @7 erase pencil ~
-legs @7 erase pencil ~
-torso @7 erase pencil ~
-head @7 erase pencil ~
-arm_near @7 erase pencil ~
-arm_far @8 erase pencil ~
-legs @8 erase pencil ~
-torso @8 erase pencil ~
-head @8 erase pencil ~
-arm_near @8 erase pencil ~
-arm_far @9 erase pencil ~
-legs @9 erase pencil ~
-torso @9 erase pencil ~
-head @9 erase pencil ~
-arm_near @9 erase pencil ~
-arm_near @2 erase pencil ~
-arm_near @2 erase pencil ~
-arm_near @2 erase pencil = 2,29 2,29 .
-arm_near @2 erase rect 2,29 2,29 fill ~
-arm_near @2 erase line 4,29 7,29 ~
-arm_near @2 erase pencil = 3,29 5x2
-    A....
-    .....
-arm_far @3 erase pencil = 3,32 7x4
-    .......
-    AAAA...
-    BBDBBA.
-    AAAAA..
-torso @3 erase pencil = 13,23 4x5
-    ....
-    AA..
-    CCA.
-    CCA.
-    CCA.
-head @3 erase pencil = 8,11 11x13
-    ..A........
-    ..AA..A....
-    A.AAA.AA...
-    AAAAAAAAA..
-    AAAAAAAAAA.
-    AAAAAAAAA..
-    ADDDDDDDDA.
-    AAABBBBBA..
-    AABBBBABA..
-    AABBBBABBA.
-    .ABBBBBBA..
-    .AABBBBA...
-    ..AAAAA....
-arm_near @3 erase pencil = 2,24 10x7
-    ......AA..
-    AAAAAACCA.
-    BBBDBBCCA.
-    BAAAABBA..
-    A....AA...
-    ..........
-    ..........
-arm_far @4 erase pencil = 1,32 9,35 .
-legs @4 erase pencil = 3,33 13x7
-    .......AAAAAA
-    ......ACCCCCC
-    .....ACCCCCCC
-    ....ACCCCCAAC
-    ...ACCCCAA.AA
-    ..ACCCCA.....
-    .ACCCCA......
-torso @4 erase pencil = 7,23 7x10
-    .......
-    .....AA
-    ....ACC
-    ....ACC
-    ....ACC
-    ....ACC
-    ....ACC
-    ....ACC
-    ....ADD
-    ....ACC
-head @4 erase pencil = 6,11 11x13
-    .......A...
-    ....A..AA..
-    ....AA.AAA.
-    .....AAAAAA
-    .....AAAAAA
-    ....AAAAAAA
-    ......ADDDD
-    .....AAAABB
-    ......AABBB
-    ......AABBB
-    .......ABBB
-    .......AABB
-    ........AAA
-arm_near @4 erase pencil = 1,24 11,30 .
-arm_far @5 erase pencil = 1,27 27x9
-    .............ABBBBBDBA.....
-    ..............AAAAADBBA....
-    ...................ABBBA...
-    ....................AAA....
-    ...........................
-    ...........................
-    ...........................
-    ...........................
-    ...........................
-legs @5 erase pencil = 8,33 14x8
-    AAAAAAAAA.....
-    CCCCCCCCCA....
-    CCCCCCCCCCA...
-    CCCAACCCCCCA..
-    CCA..ACCCCCCA.
-    CA....AACCCCA.
-    A.......ACCCA.
-    ........ACCCA.
-torso @5 erase pencil = 7,23 13x10
-    ....ABA......
-    ..AACBCAA....
-    .ACCCCBCCA...
-    .ACCCCCCCA...
-    .ACCCCCCCA...
-    ..ACCCCCCA...
-    ..ACCCCCA....
-    ..ACCCCCA....
-    ..ADDDDDA....
-    ..ACCCCCA....
-head @5 erase pencil = 6,11 16x13
-    ....A...........
-    .A..AA..A.......
-    .AA.AAA.AA......
-    ..AAAAAAAAAA....
-    ..AAAAAAAAAAA...
-    .AAAAAAAAAAA....
-    ...ADDDDDDDDA...
-    ..AAAABBBBBA....
-    ...AABBBBABA....
-    ...AABBBBABBA...
-    ....ABBBBBAA....
-    ....AABBBABA....
-    .....AAAAAA.....
-arm_near @5 erase pencil = 1,22 27x9
-    ....................AAA....
-    ...................ABBBA...
-    ............AAAAAAADBBA....
-    ...........ACCBBBBBDBA.....
-    ...........ACCBBBBBDBA.....
-    ............AA.............
-    ...........................
-    ...........................
-    ...........................
-arm_far @6 erase pencil = 1,27 27x9
-    ...........ABBBBBDBA.......
-    ............AAAAADBBA......
-    .................ABBBA.....
-    ..................AAA......
-    ...........................
-    ...........................
-    ...........................
-    ...........................
-    ...........................
-legs @6 erase pencil = 8,33 14x8
-    AAAAAAAA......
-    CCCCCCCCA.....
-    CCCCCCCCCA....
-    CCAACCCCCCA...
-    CA..ACCCCCCA..
-    A....AACCCCCA.
-    .......AACCCA.
-    ........ACCCA.
-torso @6 erase pencil = 13,23 7x10
-    .......
-    A......
-    CA.....
-    CA.....
-    CA.....
-    CCA....
-    CA.....
-    CA.....
-    DA.....
-    CA.....
-head @6 erase pencil = 7,11 15x13
-    .A.............
-    .AA..A.........
-    .AAA.AA........
-    AAAAAAAAA......
-    AAAAAAAAAA.....
-    AAAAAAAAA......
-    ADDDDDDDDA.....
-    AAABBBBBA......
-    AABBBBABA......
-    AABBBBABBA.....
-    .ABBBBBAA......
-    .AABBBABA......
-    ..AAAAAA.......
-arm_near @6 erase pencil = 1,22 27x9
-    ..................AAA......
-    .................ABBBA.....
-    ..........AAAAAAADBBA......
-    .........ACCBBBBBDBA.......
-    .........ACCBBBBBDBA.......
-    ..........AA...............
-    ...........................
-    ...........................
-    ...........................
-arm_far @7 erase pencil = 1,27 27x9
-    ...........ABBBBBDBA.......
-    ............AAAAADBBA......
-    .................ABBBA.....
-    ..................AAA......
-    ...........................
-    ...........................
-    ...........................
-    ...........................
-    ...........................
-legs @7 erase pencil = 8,33 14x8
-    AAAAAAAA......
-    CCCCCCCCA.....
-    CCCCCCCCCA....
-    CCAACCCCCCA...
-    CA..ACCCCCCA..
-    A....AACCCCCA.
-    .......AACCCA.
-    ........ACCCA.
-torso @7 erase pencil = 13,23 7x10
-    .......
-    A......
-    CA.....
-    CA.....
-    CA.....
-    CCA....
-    CA.....
-    CA.....
-    DA.....
-    CA.....
-head @7 erase pencil = 7,11 15x13
-    .A.............
-    .AA..A.........
-    .AAA.AA........
-    AAAAAAAAA......
-    AAAAAAAAAA.....
-    AAAAAAAAA......
-    ADDDDDDDDA.....
-    AAABBBBBA......
-    AABBBBABA......
-    AABBBBABBA.....
-    .ABBBBBAA......
-    .AABBBABA......
-    ..AAAAAA.......
-arm_near @7 erase pencil = 1,22 27x9
-    ..................AAA......
-    .................ABBBA.....
-    ..........AAAAAAADBBA......
-    .........ACCBBBBBDBA.......
-    .........ACCBBBBBDBA.......
-    ..........AA...............
-    ...........................
-    ...........................
-    ...........................
-arm_far @8 erase pencil = 1,27 27x9
-    ...........ACCCAA..........
-    ...........ACCBBBAA........
-    ............AABBBBBAA......
-    ..............AABBBDBA.....
-    ................AABDBBA....
-    ..................ABBBA....
-    ...................AAA.....
-    ...........................
-    ...........................
-legs @8 erase pencil = 3,33 19x8
-    .....AAAAAAAAA.....
-    ....ACCCCCCCCCA....
-    ...ACCCCCCCCCCCA...
-    ..ACCCCCAACCCCCCA..
-    .ACCCCCA..ACCCCCCA.
-    .ACCCCA....AACCCCA.
-    ACCCCA.......ACCCA.
-    ACCCA........ACCCA.
-torso @8 erase pencil = 6,23 14x10
-    .....ABA......
-    ...AACBCAA....
-    ..ACCCCBCCA...
-    ..ACCCCCCCA...
-    ..ACCCCCCCA...
-    ...ACCCCCCA...
-    ...ACCCCCA....
-    ...ACCCCCA....
-    ...ADDDDDA....
-    ...ACCCCCA....
-head @8 erase pencil = 5,11 17x13
-    ......A..........
-    ...A..AA..A......
-    ...AA.AAA.AA.....
-    ....AAAAAAAAA....
-    ...AAAAAAAAAAA...
-    ..AAAAAAAAAAA....
-    ....ADDDDDDDDA...
-    ...AAAABBBBBA....
-    ....AABBBBABA....
-    ....AABBBBABBA...
-    .....ABBBBBBA....
-    .....AABBBBA.....
-    ......AAAAA......
-arm_near @8 erase pencil = 1,22 27x9
-    ...........................
-    ...........................
-    ...........AAA.............
-    ..........ACCCAA...........
-    ..........ACCBBBAA.........
-    ...........AABBBBBAA.......
-    .............AABBBDBA......
-    ...............AABDBBA.....
-    .................ABBBA.....
-arm_far @9 erase pencil = 1,26 27x10
-    ...........................
-    ...........................
-    ...........................
-    ...............AA..........
-    ..............ABBA.........
-    ..............ABBA.........
-    ...............AA..........
-    ...........................
-    ...........................
-    ...........................
-legs @9 erase pencil = 3,33 19x8
-    .....AAAAAAAAA.....
-    ....ACCCCCCCCCA....
-    ...ACCCCCCCCCCCA...
-    ..ACCCCCAACCCCCCA..
-    .ACCCCCA..ACCCCCCA.
-    .ACCCCA....AACCCCA.
-    ACCCCA.......ACCCA.
-    ACCCA........ACCCA.
-torso @9 erase pencil = 6,23 14x10
-    .....ABA......
-    ...AACBCAA....
-    ..ACCCCBCCA...
-    ..ACCCCCCCA...
-    ..ACCCCCCCA...
-    ...ACCCCCCA...
-    ...ACCCCCA....
-    ...ACCCCCA....
-    ...ADDDDDA....
-    ...ACCCCCA....
-head @9 erase pencil = 5,11 17x13
-    ......A..........
-    ...A..AA..A......
-    ...AA.AAA.AA.....
-    ....AAAAAAAAA....
-    ...AAAAAAAAAAA...
-    ..AAAAAAAAAAA....
-    ....ADDDDDDDDA...
-    ...AAAABBBBBA....
-    ....AABBBBABA....
-    ....AABBBBABBA...
-    .....ABBBBBBA....
-    .....AABBBBA.....
-    ......AAAAA......
-arm_near @9 erase pencil = 1,22 27x10
-    ...........................
-    ...........................
-    ..........AAA..............
-    .........ACCCA.............
-    .........ACCCA.............
-    .........ABBBA.............
-    .........ABBBA.............
-    ..........ABBBA............
-    ..........ABDBBA...........
-    ...........ABBBA...........
-band @0 grid 4,17 = 4,17 5x4
-    ...DD
-    .DDD.
-    D.DD.
-    ...D.
-arm_near @0 grid 5,25 = 5,25 4x5
-    ..AA
-    AABB
-    BBBB
-    BDBB
-    AAAA
-legend F=#f6ffff
-beam @0 grid 4,30 = 4,30 3x3
-    .E.
-    EFE
-    .E.
-band @1 grid 4,17 = 4,17 5x4
-    ...DD
-    .DDD.
-    D.DD.
-    ...D.
-arm_near @1 grid 5,25 = 5,25 4x5
-    ..AA
-    AABB
-    BBBB
-    BDBB
-    AAAA
-beam @1 grid 3,29 = 3,29 5x5
-    .DED.
-    DEFED
-    EFFFE
-    DEFED
-    .DED.
-fx @1 grid 0,22 = 0,22 12x16
-    .......E....
-    ............
-    ............
-    E...........
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-    ............
-    E..........E
-band @2 grid 4,14 = 4,14 5x4
-    D..D.
-    .D.D.
-    .DD..
-    ..DDD
-beam @2 grid 3,28 = 3,28 6x6
-    .DEED.
-    DEFFED
-    EFFFFE
-    EFFFFE
-    DEFFED
-    .DEED.
-fx @2 grid 1,24 = 1,24 10x13
-    ......E...
-    ......F...
-    E.........
-    .F........
-    ..........
-    ..........
-    ..........
-    ..........
-    ..........
-    ..........
-    ........F.
-    .F.......E
-    E.........
-band @3 grid 3,14 = 3,14 5x4
-    D..D.
-    .D.D.
-    .DD..
-    ..DDD
-beam @3 grid 1,27 = 1,27 7x7
-    .DEEED.
-    DEFFFED
-    EFFFFFE
-    EFFFFFE
-    EFFFFFE
-    DEFFFED
-    .DEEED.
-fx @3 grid 0,24 = 0,24 11x13
-    ....F......
-    ....F......
-    ...........
-    ...........
-    ...........
-    ...........
-    F........FF
-    ...........
-    ...........
-    ...........
-    ...........
-    ....F......
-    ....F......
-band @4 grid 5,16 = 5,16 7x3
-    DD.....
-    ..DDDDD
-    .DDD...
-beam @4 grid 24,20 = 24,20 19x13
-    ....DDDDD..........
-    ...DEEEEED.........
-    ..DEEFFFEEDDDDDDD..
-    .DEFFFFFFFEEEEEEED.
-    DEEFFFFFFFFFFFFFFED
-    DEFFFFFFFFFFFFFFFFE
-    DEFFFFFFFFFFFFFFFFF
-    DEFFFFFFFFFFFFFFFFE
-    DEEFFFFFFFFFFFFFFED
-    .DEFFFFFFFEEEEEEED.
-    ..DEEFFFEEDDDDDDD..
-    ...DEEEEED.........
-    ....DDDDD..........
-band @5 grid 2,16 = 2,16 7x4
-    .DD....
-    D..DDDD
-    ..DD...
-    DD.....
-beam @5 grid 22,21 = 22,21 26x11
-    ...DDDDD..DDD.....DDD.....
-    ..DDEEEDDDEEEDDDDDEEEDDDDD
-    .DEEFFFEEEFFFEEEEEFFFEEEEE
-    DDEFFFFFFFFFFFFFFFFFFFFFFF
-    DEFFFFEEEFFFFEEEFFFFEEEFFF
-    DEFFFFFFFFFFFFFFFFFFFFFFFF
-    DEFFFEFFFFEEEFFFFEEEFFFFEE
-    DDEFFFFFFFFFFFFFFFFFFFFFFF
-    .DEEFFFFFEEEEEFFFEEEEEFFFE
-    ..DDEEEEEDDDDDEEEDDDDDEEED
-    ...DDDDDD.....DDD.....DDD.
-band @6 grid 0,16 = 0,16 7x4
-    DD.....
-    ..DDDDD
-    .D.DD..
-    D......
-beam @6 grid 21,21 = 21,21 27x11
-    .......DDD.....DDD.....DDD.
-    ...DDDDEEEDDDDDEEEDDDDDEEED
-    .DDEEEEFFFEEEEEFFFEEEEEFFFE
-    .DEFFFFFFFFFFFFFFFFFFFFFFFF
-    DEFFFFEEEFFFFEEEFFFFEEEFFFF
-    DEFFFFFFFFFFFFFFFFFFFFFFFFF
-    DEFFEEFFFFEEEFFFFEEEFFFFEEE
-    .DEFFFFFFFFFFFFFFFFFFFFFFFF
-    .DDEFFEEEEEFFFEEEEEFFFEEEEE
-    ...DEEDDDDDEEEDDDDDEEEDDDDD
-    ....DD.....DDD.....DDD.....
-band @7 grid 0,16 = 0,16 7x4
-    .DD....
-    D..DDDD
-    ..DD...
-    DD.....
-beam @7 grid 25,24 = 25,24 23x5
-    ....DDDDDDDDDDDDDDDDDDD
-    ..DDEEEEEEEEEEEEEEEEEEE
-    DDEEFFFFFFFFFFFFFFFFFFF
-    ..DDEEEEEEEEEEEEEEEEEEE
-    ....DDDDDDDDDDDDDDDDDDD
-arm_far @8 erase pencil = 12,26 12x8
-    ............
-    ............
-    ............
-    ......BBA...
-    .....BBBDB..
-    .....AABDB..
-    .......AB...
-    ............
-arm_far @8 grid 17,29 = 17,29 5x4
-    .AAA.
-    ADBBA
-    ADBBA
-    .AAA.
-band @8 grid 2,16 = 2,16 7x3
-    DD.....
-    ..DDDDD
-    .DDD...
-arm_near @8 erase pencil = 14,24 9x8
-    .........
-    C........
-    B........
-    B........
-    AABB.....
-    ..AAB....
-    ....A....
-    .........
-arm_near @8 grid 10,24 = 10,24 9x8
-    .AAA.....
-    ACCCA....
-    ACCCA....
-    ABBBA....
-    ABBBAAAA.
-    ABBBBBDBA
-    .ABBBBDBA
-    ..AAAAAA.
-beam @8 grid 31,26 = 31,26 17x1
-    EE..EEE..EEE..EEE
-arm_far @9 erase pencil = 15,29 18,32 .
-band @9 grid 4,17 = 4,17 5x4
-    ...DD
-    .DDD.
-    D.DD.
-    ...D.
-arm_near @9 erase pencil = 11,24 6x9
-    AA....
-    CCC...
-    CC....
-    B.....
-    ......
-    ABB...
-    ABDB..
-    .ABB..
-    ..A...
-arm_near @9 grid 6,24 = 6,24 9x9
-    ....AAA..
-    ...ACCCA.
-    ..ACCCA..
-    .ABBBA...
-    ABBBA....
-    ABBBAAAA.
-    .ABBBBDBA
-    ..AABBDBA
-    ....AAAA.
-beam @9 grid 37,25 = 37,25 10x3
-    .....E....
-    D.........
-    .........D
-band @0 erase pencil = 4,18 4x3
-    ..DD
-    ..DD
-    ....
-band @0 grid 5,20 = 5,20 2x2
-    DD
-    D.
-band @1 erase pencil = 4,18 4x3
-    ..DD
-    ..DD
-    ....
-band @1 grid 5,20 = 5,20 2x2
-    DD
-    D.
-band @2 erase pencil = 7,14 7,15 .
-band @2 grid 4,15 = 4,15 4,15 #2a5fd0
-band @3 erase pencil = 6,14 6,15 .
-band @3 grid 3,15 = 3,15 3,15 #2a5fd0
-band @4 erase pencil = 5,16 4x3
-    .D..
-    ..DD
-    ....
-band @4 grid 5,16 = 5,16 6x3
-    .DD...
-    DDDDDD
-    ....DD
-band @5 erase pencil = 2,16 5x4
-    .D...
-    ...D.
-    ...D.
-    .....
-band @5 grid 2,16 = 2,16 6x3
-    DD....
-    .DDD.D
-    ...DDD
-band @6 erase pencil = 0,16 5x4
-    .....
-    ..DDD
-    .D...
-    .....
-band @6 grid 0,16 = 0,16 5x3
-    ...DD
-    .DDDD
-    DD...
-band @7 erase pencil = 0,16 5x4
-    .D...
-    ...D.
-    ...D.
-    .....
-band @7 grid 0,16 = 0,16 6x3
-    DD....
-    .DDD.D
-    ...DDD
-band @8 erase pencil = 2,16 4x3
-    .D..
-    ..DD
-    ....
-band @8 grid 2,16 = 2,16 6x3
-    .DD...
-    DDDDDD
-    ....DD
-band @9 erase pencil = 4,18 4x3
-    ..DD
-    ..DD
-    ....
-band @9 grid 5,20 = 5,20 2x2
-    DD
-    D.
-light @2 grid 3,25 = 3,25 8x16
-    ......E.
-    ........
-    F.......
-    F.......
-    .......E
-    .......E
-    .......E
-    .......E
-    F.......
-    F.......
-    ........
-    ...E....
-    ..E.....
-    ..E.....
-    .E......
-    .E......
-light @3 grid 2,21 = 2,21 9x22
-    ........F
-    .........
-    .........
-    .........
-    .........
-    F........
-    F........
-    .........
-    ........E
-    ........E
-    ........E
-    ........E
-    F........
-    F........
-    .........
-    ....E....
-    ...E.....
-    ...E.....
-    ..E......
-    ..E......
-    ..E......
-    ..E......
-light @4 grid 6,17 = 6,17 15x26
-    ..............E
-    .............F.
-    .............F.
-    ..............F
-    ...............
-    .............F.
-    ...............
-    ...............
-    ...............
-    ...............
-    ...............
-    ...............
-    ..........E....
-    ..........E....
-    ..........E....
-    ..........E....
-    ...............
-    ............E..
-    .............E.
-    ..............E
-    ..............E
-    ...E..........E
-    ..E..........E.
-    .E...........E.
-    E............E.
-    E............E.
-fx @4 grid 24,16 = 24,16 14x21
-    ......E.......
-    ......E.......
-    ......F.......
-    .............E
-    E...........E.
-    .F............
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    .F............
-    E...........E.
-    .............E
-    ......F.......
-    ......E.......
-    ......E.......
-light @5 grid 6,17 = 6,17 14x26
-    ...........E..
-    ..........F...
-    ..........F...
-    ...........F..
-    ..............
-    ..........F...
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    ........E.....
-    ........E.....
-    ........E.....
-    ........E.....
-    ..............
-    ..........E...
-    ...........E..
-    ............E.
-    ...E.........E
-    ..E..........E
-    .E...........E
-    E............E
-    E............E
-    E............E
-fx @5 grid 27,18 = 27,18 19x17
-    ..................D
-    E......ED..........
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    E.............ED...
-    ...........D.......
-light @6 grid 6,17 = 6,17 13x26
-    .........E...
-    ........F....
-    ........F....
-    .........F...
-    .............
-    ........F....
-    .............
-    .............
-    .............
-    .............
-    .............
-    .............
-    .......E.....
-    .......E.....
-    .......E.....
-    .......E.....
-    .............
-    .........E...
-    ..........E..
-    ...........E.
-    ..E.........E
-    .E...........
-    E............
-    E............
-    E............
-    E............
-fx @6 grid 30,17 = 30,17 17x18
-    ...........D.....
-    DD...............
-    ........E........
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    .................
-    ...D...........ED
-light @7 grid 13,17 = 13,17 3x18
-    ..E
-    .F.
-    .F.
-    ..F
-    ...
-    .F.
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    E..
-    E..
-    E..
-    E..
-    ...
-    ..E
-beam @7 erase pencil = 29,24 19x5
-    .DDD.....DDD.....DD
-    EEEEEEEEEEEEEEEEEEE
-    FFFFFFFFFFFFFFFFFFF
-    EEEEEEEEEEEEEEEEEEE
-    .....DDD.....DDD...
-beam @7 grid 29,25 = 29,25 19x3
-    DEEEDDDDDEEEDDDDDEE
-    EEEEEFFFEEEEEFFFEEE
-    DDDDDEEEDDDDDEEEDDD
-fx @7 grid 34,21 = 34,21 13x11
-    D............
-    ........E....
-    .............
-    .............
-    .............
-    .............
-    .............
-    .............
-    .............
-    ............D
-    ....D........
-beam @8 erase pencil = 35,26 12x1
-    .EE.........
-beam @8 grid 29,25 = 29,25 18x3
-    ....DD.....D....DD
-    .EEE...EEEE...EE..
-    D.....D.....DD....
-fx @8 grid 37,22 = 37,22 8x9
-    D.......
-    ........
-    ........
-    ........
-    ........
-    ........
-    ........
-    ........
-    .......D
-beam @9 erase pencil = 37,25 46,27 .
-beam @9 grid 36,25 = 36,25 10x3
-    .....E....
-    .........D
-    D.........
-light @2 erase pencil = 4,39 4,40 .
-light @3 erase pencil = 4,40 4,42 .
-light @4 erase pencil = 6,38 9,42 .
-light @5 erase pencil = 6,37 9,42 .
-light @6 erase pencil = 6,37 8,42 .
-beam @7 erase pencil = 25,26 25,26 .
-beam @7 grid 29,23 = 29,23 19x7
-    ..DD.....DDD.....DD
-    DDEEDDDDDEEEDDDDDEE
-    EEFFEEEEEFFFEEEEEFF
-    FFFFFFFFFFFFFFFFFFF
-    EEEEEFFFEEEEEFFFEEE
-    DDDDDEEEDDDDDEEEDDD
-    .....DDD.....DDD...
-palette set colors=#342862,#f0b07a,#e0582a,#2a5fd0,#5ad8f8,#f6ffff
-legend G=#342862
-arm_far @0 grid 2,32 = 2,32 8x4
-    .G......
-    GBGGGG..
-    GBBBDBBG
-    .GGGGGG.
-legs @0 grid 2,33 = 2,33 20x12
-    ......GGGGGGGGG.....
-    .....GCCCCCCCCCG....
-    ....GCCCCCCCCCCCG...
-    ...GCCCCCGGCCCCCCG..
-    ..GCCCCCG..GCCCCCCG.
-    ..GCCCCG....GGCCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @0 grid 8,23 = 8,23 9x10
-    ...GBG...
-    .GGCBCGG.
-    GCCCCBCCG
-    GCCCCCCCG
-    GCCCCCCCG
-    .GCCCCCCG
-    .GCCCCCG.
-    .GCCCCCG.
-    .GDDDDDG.
-    .GCCCCCG.
-head @0 grid 7,11 = 7,11 12x13
-    ....G.......
-    .G..GG..G...
-    .GG.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-arm_near @0 grid 2,24 = 2,24 10x7
-    .......GG.
-    .....GGCCG
-    ...GGBBCCG
-    .GGBBBBBG.
-    GBBBDBBG..
-    GBGGGGG...
-    .G........
-arm_far @1 grid 2,32 = 2,32 8x4
-    .G......
-    GBGGGG..
-    GBBBDBBG
-    .GGGGGG.
-legs @1 grid 2,33 = 2,33 20x12
-    ......GGGGGGGGG.....
-    .....GCCCCCCCCCG....
-    ....GCCCCCCCCCCCG...
-    ...GCCCCCGGCCCCCCG..
-    ..GCCCCCG..GCCCCCCG.
-    ..GCCCCG....GGCCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @1 grid 8,23 = 8,23 9x10
-    ...GBG...
-    .GGCBCGG.
-    GCCCCBCCG
-    GCCCCCCCG
-    GCCCCCCCG
-    .GCCCCCCG
-    .GCCCCCG.
-    .GCCCCCG.
-    .GDDDDDG.
-    .GCCCCCG.
-head @1 grid 7,11 = 7,11 12x13
-    ....G.......
-    .G..GG..G...
-    .GG.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-arm_near @1 grid 2,24 = 2,24 10x7
-    .......GG.
-    .....GGCCG
-    ...GGBBCCG
-    .GGBBBBBG.
-    GBBBDBBG..
-    GBGGGGG...
-    .G........
-arm_far @2 grid 2,32 = 2,32 8x4
-    .G......
-    GBGGGG..
-    GBBBDBBG
-    .GGGGGG.
-legs @2 grid 2,33 = 2,33 20x12
-    ......GGGGGGGGG.....
-    .....GCCCCCCCCCG....
-    ....GCCCCCCCCCCCG...
-    ...GCCCCCGGCCCCCCG..
-    ..GCCCCCG..GCCCCCCG.
-    ..GCCCCG....GGCCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @2 grid 8,23 = 8,23 9x10
-    ...GBG...
-    .GGCBCGG.
-    GCCCCBCCG
-    GCCCCCCCG
-    GCCCCCCCG
-    .GCCCCCCG
-    .GCCCCCG.
-    .GCCCCCG.
-    .GDDDDDG.
-    .GCCCCCG.
-head @2 grid 7,11 = 7,11 12x13
-    ....G.......
-    .G..GG..G...
-    .GG.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-arm_near @2 grid 2,24 = 2,24 10x6
-    .......GG.
-    ......GCCG
-    .GGGGGBCCG
-    GBBBDBBBG.
-    GBGGGGGG..
-    .G........
-arm_far @3 grid 1,32 = 1,32 8x4
-    .G......
-    GBGGGG..
-    GBBBDBBG
-    .GGGGGG.
-legs @3 grid 2,33 = 2,33 20x12
-    ......GGGGGGGGG.....
-    .....GCCCCCCCCCG....
-    ....GCCCCCCCCCCCG...
-    ...GCCCCCGGCCCCCCG..
-    ..GCCCCCG..GCCCCCCG.
-    ..GCCCCG....GGCCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @3 grid 7,23 = 7,23 10x10
-    ...GBG....
-    .GGCBCGG..
-    GCCCCBCCG.
-    GCCCCCCCG.
-    GCCCCCCCG.
-    ..GCCCCCCG
-    ..GCCCCCG.
-    ..GCCCCCG.
-    ..GDDDDDG.
-    ..GCCCCCG.
-head @3 grid 6,11 = 6,11 12x13
-    ....G.......
-    .G..GG..G...
-    .GG.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-arm_near @3 grid 1,24 = 1,24 10x5
-    .......GG.
-    .GGGGGGCCG
-    GBBBDBBCCG
-    GBGGGGBBG.
-    .G....GG..
-arm_far @4 grid 17,27 = 17,27 11x4
-    GBBBBBDBG..
-    .GGGGGDBBG.
-    ......GBBBG
-    .......GGG.
-legs @4 grid 2,33 = 2,33 20x12
-    ........GGGGGGGGG...
-    .......GCCCCCCCCCG..
-    ......GCCCCCCCCCCCG.
-    .....GCCCCCGGCCCCCCG
-    ....GCCCCGG.GGCCCCCG
-    ...GCCCCG.....GCCCCG
-    ..GCCCCG......GCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @4 grid 11,23 = 11,23 9x10
-    ...GBG...
-    .GGCBCGG.
-    GCCCCBCCG
-    GCCCCCCCG
-    GCCCCCCCG
-    GCCCCCCG.
-    GCCCCCG..
-    GCCCCCG..
-    GDDDDDG..
-    GCCCCCG..
-head @4 grid 10,11 = 10,11 12x13
-    ...G........
-    G..GG..G....
-    GG.GGG.GG...
-    .GGGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBGG.
-    ...GGBBBGBG.
-    ....GGGGGG..
-arm_near @4 grid 15,22 = 15,22 13x6
-    .........GGG.
-    ........GBBBG
-    .GGGGGGGDBBG.
-    GCCBBBBBDBG..
-    GCCBBBBBDBG..
-    .GG..........
-arm_far @5 grid 14,27 = 14,27 11x4
-    GBBBBBDBG..
-    .GGGGGDBBG.
-    ......GBBBG
-    .......GGG.
-legs @5 grid 2,33 = 2,33 20x12
-    ......GGGGGGGGG.....
-    .....GCCCCCCCCCG....
-    ....GCCCCCCCCCCCG...
-    ...GCCCCCGGCCCCCCG..
-    ..GCCCCCG..GCCCCCCG.
-    ..GCCCCG....GGCCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @5 grid 8,23 = 8,23 9x10
-    ...GBG...
-    .GGCBCGG.
-    GCCCCBCCG
-    GCCCCCCCG
-    GCCCCCCCG
-    .GCCCCCCG
-    .GCCCCCG.
-    .GCCCCCG.
-    .GDDDDDG.
-    .GCCCCCG.
-head @5 grid 7,11 = 7,11 12x13
-    ...G........
-    G..GG..G....
-    GG.GGG.GG...
-    .GGGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBGG.
-    ...GGBBBGBG.
-    ....GGGGGG..
-arm_near @5 grid 12,22 = 12,22 13x6
-    .........GGG.
-    ........GBBBG
-    .GGGGGGGDBBG.
-    GCCBBBBBDBG..
-    GCCBBBBBDBG..
-    .GG..........
-arm_far @6 grid 12,27 = 12,27 11x4
-    GBBBBBDBG..
-    .GGGGGDBBG.
-    ......GBBBG
-    .......GGG.
-legs @6 grid 2,33 = 2,33 20x12
-    .....GGGGGGGGG......
-    ....GCCCCCCCCCG.....
-    ...GCCCCCCCCCCCG....
-    ..GCCCCCGGCCCCCCG...
-    .GCCCCCG..GCCCCCCG..
-    .GCCCCG....GGCCCCCG.
-    .GCCCG.......GGCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @6 grid 6,23 = 6,23 10x10
-    ...GBG....
-    .GGCBCGG..
-    GCCCCBCCG.
-    GCCCCCCCG.
-    GCCCCCCCG.
-    ..GCCCCCCG
-    ..GCCCCCG.
-    ..GCCCCCG.
-    ..GDDDDDG.
-    ..GCCCCCG.
-head @6 grid 5,11 = 5,11 12x13
-    ...G........
-    G..GG..G....
-    GG.GGG.GG...
-    .GGGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBGG.
-    ...GGBBBGBG.
-    ....GGGGGG..
-arm_near @6 grid 10,22 = 10,22 13x6
-    .........GGG.
-    ........GBBBG
-    .GGGGGGGDBBG.
-    GCCBBBBBDBG..
-    GCCBBBBBDBG..
-    .GG..........
-arm_far @7 grid 12,27 = 12,27 11x4
-    GBBBBBDBG..
-    .GGGGGDBBG.
-    ......GBBBG
-    .......GGG.
-legs @7 grid 2,33 = 2,33 20x12
-    .....GGGGGGGGG......
-    ....GCCCCCCCCCG.....
-    ...GCCCCCCCCCCCG....
-    ..GCCCCCGGCCCCCCG...
-    .GCCCCCG..GCCCCCCG..
-    .GCCCCG....GGCCCCCG.
-    .GCCCG.......GGCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @7 grid 6,23 = 6,23 10x10
-    ...GBG....
-    .GGCBCGG..
-    GCCCCBCCG.
-    GCCCCCCCG.
-    GCCCCCCCG.
-    ..GCCCCCCG
-    ..GCCCCCG.
-    ..GCCCCCG.
-    ..GDDDDDG.
-    ..GCCCCCG.
-head @7 grid 5,11 = 5,11 12x13
-    ...G........
-    G..GG..G....
-    GG.GGG.GG...
-    .GGGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBGG.
-    ...GGBBBGBG.
-    ....GGGGGG..
-arm_near @7 grid 10,22 = 10,22 13x6
-    .........GGG.
-    ........GBBBG
-    .GGGGGGGDBBG.
-    GCCBBBBBDBG..
-    GCCBBBBBDBG..
-    .GG..........
-arm_far @8 grid 17,29 = 17,29 5x4
-    .GGG.
-    GDBBG
-    GDBBG
-    .GGG.
-legs @8 grid 2,33 = 2,33 20x12
-    ......GGGGGGGGG.....
-    .....GCCCCCCCCCG....
-    ....GCCCCCCCCCCCG...
-    ...GCCCCCGGCCCCCCG..
-    ..GCCCCCG..GCCCCCCG.
-    ..GCCCCG....GGCCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @8 grid 8,23 = 8,23 9x10
-    ...GBG...
-    .GGCBCGG.
-    GCCCCBCCG
-    GCCCCCCCG
-    GCCCCCCCG
-    .GCCCCCCG
-    .GCCCCCG.
-    .GCCCCCG.
-    .GDDDDDG.
-    .GCCCCCG.
-head @8 grid 7,11 = 7,11 12x13
-    ....G.......
-    .G..GG..G...
-    .GG.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-arm_near @8 grid 10,24 = 10,24 9x8
-    .GGG.....
-    GCCCG....
-    GCCCG....
-    GBBBG....
-    GBBBGGGG.
-    GBBBBBDBG
-    .GBBBBDBG
-    ..GGGGGG.
-legs @9 grid 2,33 = 2,33 20x12
-    ......GGGGGGGGG.....
-    .....GCCCCCCCCCG....
-    ....GCCCCCCCCCCCG...
-    ...GCCCCCGGCCCCCCG..
-    ..GCCCCCG..GCCCCCCG.
-    ..GCCCCG....GGCCCCG.
-    .GCCCCG.......GCCCG.
-    .GCCCG........GCCCG.
-    .GCCCG........GCCCG.
-    .GDDDG........GDDDG.
-    GDDDDG........GDDDDG
-    GGGGGG........GGGGGG
-torso @9 grid 8,23 = 8,23 9x10
-    ...GBG...
-    .GGCBCGG.
-    GCCCCBCCG
-    GCCCCCCCG
-    GCCCCCCCG
-    .GCCCCCCG
-    .GCCCCCG.
-    .GCCCCCG.
-    .GDDDDDG.
-    .GCCCCCG.
-head @9 grid 7,11 = 7,11 12x13
-    ....G.......
-    .G..GG..G...
-    .GG.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-arm_near @9 grid 6,24 = 6,24 9x9
-    ....GGG..
-    ...GCCCG.
-    ..GCCCG..
-    .GBBBG...
-    GBBBG....
-    GBBBGGGG.
-    .GBBBBDBG
-    ..GGBBDBG
-    ....GGGG.
-head @0 grid 12,13 = 12,13 4x3
-    DG.G
-    GDDG
-    GGGD
-head @1 grid 12,13 = 12,13 4x3
-    DG.G
-    GDDG
-    GGGD
-band @2 erase pencil = 4,14 5x4
-    .....
-    D....
-    .D...
-    ..D..
-band @2 grid 4,16 = 4,16 5x3
-    DD...
-    .DD..
-    ..DDD
-head @2 erase pencil = 7,11 12x10
-    ............
-    ....G.......
-    .G..GG..G...
-    ..G.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGG.
-    ..GDDDDDDDD.
-    ..GGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBB.
-head @2 grid 7,14 = 7,14 12x11
-    .GG.GDG.GG..
-    ..GGGGDDGGG.
-    .GGGGGGGDGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-band @3 erase pencil = 3,14 5x4
-    .....
-    D....
-    .D...
-    ..D..
-band @3 grid 3,16 = 3,16 5x3
-    DD...
-    .DD..
-    ..DDD
-head @3 erase pencil = 6,11 12x10
-    ............
-    ....G.......
-    .G..GG..G...
-    ..G.GGG.GG..
-    ..GGGGGGGGG.
-    .GGGGGGGGGG.
-    ..GDDDDDDDD.
-    ..GGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBB.
-head @3 grid 6,14 = 6,14 12x11
-    .GG.GDG.GG..
-    ..GGGGDDGGG.
-    .GGGGGGGDGGG
-    GGGGGGGGGGG.
-    ..GDDDDDDDDG
-    .GGGGBBBBBG.
-    ..GGBBBBGBG.
-    ..GGBBBBGBBG
-    ...GBBBBBBG.
-    ...GGBBBBG..
-    ....GGGGG...
-light @3 erase pencil = 10,21 10,21 .
-light @3 grid 10,22 = 10,22 10,22 #f6ffff
-head @4 grid 14,13 = 14,13 5x3
-    DG.GG
-    GDDGG
-    GGGGD
-head @5 grid 11,13 = 11,13 5x3
-    DG.GG
-    GDDGG
-    GGGGD
-head @6 grid 9,13 = 9,13 5x3
-    DG.GG
-    GDDGG
-    GGGGD
-head @7 grid 9,13 = 9,13 5x3
-    DG.GG
-    GDDGG
-    GGGGD
-head @8 grid 12,13 = 12,13 4x3
-    DG.G
-    GDDG
-    GGGD
-head @9 grid 12,13 = 12,13 4x3
-    DG.G
-    GDDG
-    GGGD
-light @3 erase pencil = 10,22 10,22 .
-arm_far @8 erase pencil = 17,29 5x2
-    .....
-    .DBB.
-arm_far @8 grid 17,30 = 17,30 5x4
-    .GGG.
-    GDBBG
-    GDBBG
-    .GGG.
-arm_near @8 erase pencil = 12,24 3x4
-    ...
-    C..
-    C..
-    B..
-arm_near @8 grid 9,24 = 9,24 5x8
-    .GG..
-    GCCG.
-    GCCG.
-    GCCG.
-    GBBGG
-    GBBBB
-    .GBBB
-    ..GGG
-arm_near @9 grid 7,27 = 7,27 4x2
-    GCCC
-    CCBG
-fx @5 erase pencil = 35,19 38,34 .
-fx @5 grid 33,17 = 33,17 9x19
-    E........
-    .E.......
-    .E.....ED
-    .E.......
-    .........
-    .........
-    .........
-    .........
-    .........
-    .........
-    .........
-    .........
-    .........
-    .........
-    .........
-    .E.......
-    .E......E
-    .E.......
-    E........
-fx @6 erase pencil = 38,17 45,34 .
-fx @6 grid 36,15 = 36,15 11x23
-    .....D.....
-    ......D....
-    .......D...
-    .......D...
-    E......D...
-    ........D..
-    ...........
-    ...........
-    ...........
-    ...........
-    ...........
-    ...........
-    ...........
-    ...........
-    ...........
-    ...........
-    ...........
-    ........D..
-    .......D...
-    .......D..E
-    .......D...
-    ......D....
-    .....D.....
-head @0 grid 14,18 = 14,18 15,18 #342862
-head @0 grid 15,20 = 15,20 15,20 #f0b07a
-head @0 grid 16,21 = 16,21 16,21 #342862
-head @1 grid 14,18 = 14,18 3x4
-    GGB
-    BGB
-    BBB
-    BBG
-head @2 grid 14,19 = 14,19 3x4
-    GGB
-    BGB
-    BBB
-    BBG
-head @3 grid 13,19 = 13,19 3x4
-    GGB
-    BGB
-    BBB
-    BBG
-head @4 grid 17,18 = 17,18 2x4
-    GG
-    BG
-    BB
-    BG
-head @5 grid 14,18 = 14,18 2x4
-    GG
-    BG
-    BB
-    BG
-head @6 grid 12,18 = 12,18 2x4
-    GG
-    BG
-    BB
-    BG
-head @7 grid 12,18 = 12,18 2x4
-    GG
-    BG
-    BB
-    BG
-head @8 grid 14,18 = 14,18 3x4
-    GGB
-    BGB
-    BBB
-    BBG
-head @9 grid 14,18 = 14,18 3x4
-    GGB
-    BGB
-    BBB
-    BBG
-beam @4 grid 29,25 = 29,25 12x3
-    EFFFFFEEFFFF
-    FFFFFFFFFFFF
-    FFFEEFFFFFEE
-fx @4 grid 3,29 = 3,29 4x5
-    D...
-    ....
-    ...E
-    ....
-    .D..
+palette op=set colors=#1a1630,#f0b07a,#e0582a,#2a5fd0,#5ad8f8,#f6ffff
+layer op=rename index=0 name=arm_far
+layer op=add name=legs
+layer op=add name=torso
+layer op=add name=band
+layer op=add name=head
+layer op=add name=arm_near
+layer op=add name=light
+layer op=add name=beam
+layer op=add name=fx
+paint_grid layer=8 frame=0 x=0 y=0 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:2
+  |KS|
+  |OB|
+region op=clear layer=8 frame=0 rect=0,0,48,48
+paint_grid layer=1 frame=0 x=2 y=33 legend=K:#1a1630 rows:12
+  |......KKKKKKKKK.....|
+  |.....KKKKKKKKKKK....|
+  |....KKKKKKKKKKKKK...|
+  |...KKKKKKKKKKKKKKK..|
+  |..KKKKKKK..KKKKKKKK.|
+  |..KKKKKK....KKKKKKK.|
+  |.KKKKKK.......KKKKK.|
+  |.KKKKK........KKKKK.|
+  |.KKKKK........KKKKK.|
+  |.KKKKK........KKKKK.|
+  |KKKKKK........KKKKKK|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=0 x=8 y=23 legend=K:#1a1630 rows:10
+  |...KKK...|
+  |.KKKKKKK.|
+  |KKKKKKKKK|
+  |KKKKKKKKK|
+  |KKKKKKKKK|
+  |.KKKKKKKK|
+  |.KKKKKKK.|
+  |.KKKKKKK.|
+  |.KKKKKKK.|
+  |.KKKKKKK.|
+paint_grid layer=4 frame=0 x=8 y=13 legend=K:#1a1630 rows:11
+  |...K..K.K..|
+  |..KKKKKKKK.|
+  |.KKKKKKKKKK|
+  |KKKKKKKKKK.|
+  |.KKKKKKKKKK|
+  |KKKKKKKKKK.|
+  |.KKKKKKKKK.|
+  |.KKKKKKKKKK|
+  |..KKKKKKKK.|
+  |..KKKKKKK..|
+  |...KKKKK...|
+paint_grid layer=5 frame=0 x=2 y=24 legend=K:#1a1630 rows:7
+  |.......KK.|
+  |......KKKK|
+  |....KKKKKK|
+  |.KKKKKKKK.|
+  |KKKKKKKK..|
+  |KKKKKK....|
+  |.K........|
+paint_grid layer=0 frame=0 x=2 y=32 legend=K:#1a1630 rows:4
+  |.K......|
+  |KKKKKK..|
+  |KKKKKKKK|
+  |.KKKKKK.|
+region op=clear layer=1 frame=0 rect=0,0,48,48
+region op=clear layer=2 frame=0 rect=0,0,48,48
+region op=clear layer=4 frame=0 rect=0,0,48,48
+region op=clear layer=5 frame=0 rect=0,0,48,48
+region op=clear layer=0 frame=0 rect=0,0,48,48
+paint_grid layer=1 frame=0 x=2 y=33 legend=B:#2a5fd0,K:#1a1630,O:#e0582a rows:12
+  |......KKKKKKKKK.....|
+  |.....KOOOOOOOOOK....|
+  |....KOOOOOOOOOOOK...|
+  |...KOOOOOKKOOOOOOK..|
+  |..KOOOOOK..KOOOOOOK.|
+  |..KOOOOK....KKOOOOK.|
+  |.KOOOOK.......KOOOK.|
+  |.KOOOK........KOOOK.|
+  |.KOOOK........KOOOK.|
+  |.KBBBK........KBBBK.|
+  |KBBBBK........KBBBBK|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=0 x=8 y=23 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:10
+  |...KSK...|
+  |.KKOSOKK.|
+  |KOOOOSOOK|
+  |KOOOOOOOK|
+  |KOOOOOOOK|
+  |.KOOOOOOK|
+  |.KOOOOOK.|
+  |.KOOOOOK.|
+  |.KBBBBBK.|
+  |.KOOOOOK.|
+paint_grid layer=4 frame=0 x=7 y=11 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:13
+  |....K.......|
+  |.K..KK..K...|
+  |.KK.KKK.KK..|
+  |..KKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..KBBBBBBBBK|
+  |.KKKKSSSSSK.|
+  |..KKSSSSKSK.|
+  |..KKSSSSKSSK|
+  |...KSSSSSSK.|
+  |...KKSSSSK..|
+  |....KKKKK...|
+paint_grid layer=5 frame=0 x=2 y=24 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:7
+  |.......KK.|
+  |......KOOK|
+  |....KKSOOK|
+  |.KKKSSSSK.|
+  |KSSSBSKK..|
+  |KSKKKK....|
+  |.K........|
+paint_grid layer=0 frame=0 x=2 y=32 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:4
+  |.K......|
+  |KSKKKK..|
+  |KSSSBSSK|
+  |.KKKKKK.|
+frame op=add copy_from=0
+region op=clear layer=4 frame=1 rect=7,11,3,2
+region op=clear layer=4 frame=1 rect=7,11,9,12
+draw op=pencil layer=8 frame=1 color=#5ad8f8 points=40,40 42,40
+paint_grid layer=4 frame=1 x=8 y=12 legend=K:#1a1630 rows:1
+  |K|
+draw op=pencil layer=8 frame=1 color=#1a1630 erase=true points=40,40 42,40
+frame op=add copy_from=1
+draw op=pencil layer=5 frame=2 color=#1a1630 erase=true points=2,29 4,29 5,29 6,29 7,29 3,30
+paint_grid layer=5 frame=2 x=2 y=26 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:4
+  |.KKK..|
+  |KSSSB.|
+  |..KKKK|
+  |.K....|
+frame op=add copy_from=2
+draw op=pencil layer=0 frame=3 color=#1a1630 erase=true points=3,32 7,33 9,34 8,35
+paint_grid layer=0 frame=3 x=1 y=32 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:4
+  |.K......|
+  |KSK.....|
+  |KS..BS.K|
+  |.K......|
+draw op=pencil layer=2 frame=3 color=#1a1630 erase=true points=13,23 15,24 16,25 16,26 16,27
+paint_grid layer=2 frame=3 x=7 y=23 legend=K:#1a1630,O:#e0582a,S:#f0b07a rows:5
+  |...KSK...|
+  |.K.OSOK..|
+  |KO...SO.K|
+  |KO......K|
+  |KO......K|
+draw op=pencil layer=4 frame=3 color=#1a1630 erase=true points=11,11 8,12 12,12 15,12 9,13 13,13 16,13 17,14 18,15 17,16 18,17 17,18 17,19 18,20 17,21 16,22 15,23
+paint_grid layer=4 frame=3 x=6 y=11 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:13
+  |....K.......|
+  |.K..K...K...|
+  |.K..K...K...|
+  |..K.........|
+  |.K..........|
+  |K...........|
+  |..KB.......K|
+  |.K...S....K.|
+  |..K.S...KSK.|
+  |..K.S...KS.K|
+  |...KS.....K.|
+  |...K.S...K..|
+  |....K.......|
+draw op=pencil layer=5 frame=3 color=#1a1630 erase=true points=10,24 11,25 11,26 10,27 3,28 4,28 5,28 6,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+paint_grid layer=5 frame=3 x=1 y=24 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:4
+  |.......K..|
+  |.KKKKKKO.K|
+  |KSSSBSSO.K|
+  |KSKKKK..K.|
+frame op=add copy_from=3
+draw op=pencil layer=0 frame=4 color=#1a1630 erase=true points=2,32 3,32 1,33 2,33 3,33 4,33 5,33 6,33 7,33 1,34 2,34 3,34 4,34 5,34 6,34 7,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+paint_grid layer=0 frame=4 x=17 y=27 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:4
+  |KSSSSSBSK..|
+  |.KKKKKBSSK.|
+  |......KSSSK|
+  |.......KKK.|
+draw op=pencil layer=1 frame=4 color=#1a1630 erase=true points=8,33 9,33 7,34 8,34 6,35 7,35 5,36 6,36 4,37 5,37 13,37 4,38 14,38 15,38 3,39
+paint_grid layer=1 frame=4 x=4 y=33 legend=K:#1a1630,O:#e0582a rows:8
+  |.............KK...|
+  |.....K.......OOK..|
+  |....K.........OOK.|
+  |...K...OOKK....OOK|
+  |..K...OKK.KK....OK|
+  |.K...OK.....K...OK|
+  |K...OK............|
+  |...OK.............|
+draw op=pencil layer=2 frame=4 color=#1a1630 erase=true points=10,23 11,23 12,23 13,23 8,24 9,24 10,24 11,24 7,25 8,25 9,25 10,25 7,26 8,26 9,26 10,26 7,27 8,27 9,27 10,27 9,28 10,28 9,29 10,29 9,30 10,30 9,31 10,31 9,32 10,32
+paint_grid layer=2 frame=4 x=11 y=23 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:10
+  |...KSK...|
+  |.K.OSOKK.|
+  |KO..OSOOK|
+  |K...OOOOK|
+  |K...OOOOK|
+  |K....OOK.|
+  |K...OOK..|
+  |K...OOK..|
+  |K...BBK..|
+  |K...OOK..|
+draw op=pencil layer=4 frame=4 color=#1a1630 erase=true points=10,11 11,11 7,12 8,12 11,12 12,12 15,12 7,13 8,13 9,13 12,13 16,13 8,14 9,14 10,14 7,15 8,15 9,15 10,15 6,16 7,16 8,16 9,16 8,17 9,17 10,17 11,17 7,18 8,18 9,18 10,18 8,19 9,19 10,19 11,19 8,20 9,20 10,20 11,20 9,21 10,21 11,21 12,21 9,22 10,22 11,22 12,22 10,23 11,23 12,23 13,23
+paint_grid layer=4 frame=4 x=11 y=11 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:13
+  |..K........|
+  |..K...K....|
+  |......KK...|
+  |.......KKK.|
+  |........KKK|
+  |.......KKK.|
+  |.K....BBBBK|
+  |KKKK.SSSSK.|
+  |.KKS.SSKSK.|
+  |.KKS..S.SSK|
+  |..K..SSSKK.|
+  |..KKSSSKSK.|
+  |.....KKKK..|
+draw op=pencil layer=5 frame=4 color=#1a1630 erase=true points=8,24 9,24 10,24 2,25 3,25 4,25 5,25 6,25 7,25 8,25 9,25 10,25 11,25 1,26 2,26 3,26 4,26 5,26 6,26 7,26 8,26 9,26 10,26 11,26 1,27 2,27 3,27 4,27 5,27 6,27 7,27 8,27 9,27 10,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+paint_grid layer=5 frame=4 x=15 y=22 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:6
+  |.........KKK.|
+  |........KSSSK|
+  |.KKKKKKKBSSK.|
+  |KOOSSSSSBSK..|
+  |KOOSSSSSBSK..|
+  |.KK..........|
+frame op=add copy_from=4
+draw op=pencil layer=0 frame=5 color=#1a1630 erase=true points=23,27 24,27 25,27 24,28 25,28 26,28 25,29 26,29 27,29 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+paint_grid layer=0 frame=5 x=14 y=27 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:4
+  |KSSS..B.K..|
+  |.KKK..BSSK.|
+  |......KSSSK|
+  |.......KKK.|
+draw op=pencil layer=1 frame=5 color=#1a1630 erase=true points=17,33 18,33 18,34 19,34 19,35 20,35 20,36 21,36 11,37 12,37 21,37 10,38 21,38 9,39 8,40
+paint_grid layer=1 frame=5 x=4 y=34 legend=K:#1a1630,O:#e0582a rows:7
+  |....OO.......K...|
+  |...OO.........K..|
+  |..OO...KKOO....K.|
+  |.OO...K...OO....K|
+  |.O...K......O...K|
+  |O...K............|
+  |...K.............|
+draw op=pencil layer=2 frame=5 color=#1a1630 erase=true points=10,23 14,23 15,23 16,23 8,24 16,24 17,24 18,24 7,25 17,25 18,25 19,25 7,26 17,26 18,26 19,26 7,27 17,27 18,27 19,27 17,28 18,28 16,29 17,29 16,30 17,30 16,31 17,31 16,32 17,32
+paint_grid layer=2 frame=5 x=8 y=23 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:10
+  |...KS....|
+  |..KOSOKK.|
+  |KOOO.S..K|
+  |KOOO....K|
+  |KOOO....K|
+  |..OO....K|
+  |..OO...K.|
+  |..OO...K.|
+  |..BB...K.|
+  |..OO...K.|
+draw op=pencil layer=4 frame=5 color=#1a1630 erase=true points=11,11 13,11 8,12 12,12 13,12 15,12 17,12 9,13 13,13 16,13 17,13 18,13 18,14 19,14 20,14 7,15 19,15 20,15 21,15 6,16 18,16 19,16 20,16 8,17 19,17 20,17 21,17 7,18 18,18 19,18 20,18 8,19 18,19 19,19 20,19 8,20 19,20 20,20 21,20 9,21 18,21 19,21 20,21 9,22 18,22 19,22 20,22 10,23 17,23 18,23 19,23
+paint_grid layer=4 frame=5 x=9 y=17 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:6
+  |KBBB.....K|
+  |...SSS..K.|
+  |.KSSS.K.K.|
+  |.KSSS.K...|
+  |.KSSS..KK.|
+  |..KSSSK.K.|
+draw op=pencil layer=5 frame=5 color=#1a1630 erase=true points=24,22 25,22 26,22 25,23 26,23 27,23 8,24 9,24 10,24 24,24 25,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 11,25 23,25 24,25 25,25 1,26 10,26 11,26 23,26 24,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+paint_grid layer=5 frame=5 x=12 y=22 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:6
+  |.........KKK.|
+  |........KSSSK|
+  |.KKK....BSSK.|
+  |KOOSSS..B.K..|
+  |KOOSSS..B.K..|
+  |.KK..........|
+frame op=add copy_from=5
+draw op=pencil layer=0 frame=6 color=#1a1630 erase=true points=21,27 22,27 25,27 22,28 23,28 26,28 23,29 24,29 27,29 22,30 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+paint_grid layer=0 frame=6 x=12 y=27 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:4
+  |KSS...B.K..|
+  |.KK...BSSK.|
+  |......KSS.K|
+  |.......KK..|
+draw op=pencil layer=1 frame=6 color=#1a1630 erase=true points=16,33 17,33 18,33 17,34 19,34 18,35 20,35 19,36 21,36 10,37 11,37 20,37 21,37 9,38 10,38 21,38 8,39 9,39 8,40
+paint_grid layer=1 frame=6 x=3 y=33 legend=K:#1a1630,O:#e0582a rows:7
+  |....K............|
+  |...KO........K...|
+  |..KO..........K..|
+  |.KO....K.O.....K.|
+  |KO....K...O.....K|
+  |KO...K....K.O....|
+  |....K.......K....|
+draw op=pencil layer=2 frame=6 color=#1a1630 erase=true points=12,23 13,23 14,23 16,23 14,24 15,24 17,24 18,24 15,25 16,25 19,25 15,26 16,26 19,26 15,27 16,27 19,27 16,28 18,28 15,29 17,29 15,30 17,30 15,31 17,31 15,32 17,32
+paint_grid layer=2 frame=6 x=6 y=23 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:10
+  |...KS.....|
+  |.K.OS.KK..|
+  |KOO..S.OK.|
+  |KOO.....K.|
+  |KOO.....K.|
+  |..KO.....K|
+  |..KO....K.|
+  |..KO....K.|
+  |..KB....K.|
+  |..KO....K.|
+draw op=pencil layer=4 frame=6 color=#1a1630 erase=true points=10,11 11,11 13,11 7,12 10,12 11,12 13,12 14,12 15,12 17,12 7,13 11,13 14,13 15,13 16,13 17,13 18,13 16,14 17,14 18,14 19,14 20,14 17,15 18,15 19,15 20,15 21,15 16,16 17,16 18,16 19,16 20,16 17,17 18,17 21,17 16,18 17,18 20,18 16,19 17,19 18,19 20,19 17,20 18,20 21,20 16,21 17,21 19,21 20,21 16,22 17,22 18,22 20,22 15,23 16,23 17,23 18,23 19,23
+paint_grid layer=4 frame=6 x=5 y=11 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:13
+  |...K........|
+  |K...K.......|
+  |KK..........|
+  |.KK.........|
+  |.K..........|
+  |K...........|
+  |..KBB......K|
+  |.K...SS...K.|
+  |..K.SS..K...|
+  |..K.SS..K.SK|
+  |...KSS...KK.|
+  |...K.SS.K...|
+  |....K.......|
+draw op=pencil layer=5 frame=6 color=#1a1630 erase=true points=22,22 23,22 24,22 25,22 26,22 23,23 24,23 27,23 8,24 9,24 10,24 22,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 21,25 22,25 25,25 1,26 21,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 13,27 14,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+paint_grid layer=5 frame=6 x=11 y=22 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:6
+  |........KK..|
+  |.......KSS.K|
+  |KK.....BSSK.|
+  |OOSS...B.K..|
+  |OOSS...B.K..|
+  |KK..........|
+frame op=add copy_from=6
+draw op=pencil layer=0 frame=7 color=#1a1630 erase=true points=22,27 25,27 23,28 26,28 24,29 27,29 22,30 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=7 color=#1a1630 erase=true points=16,33 17,33 18,33 17,34 19,34 18,35 20,35 19,36 21,36 10,37 11,37 20,37 21,37 9,38 10,38 21,38 8,39 9,39 8,40
+draw op=pencil layer=2 frame=7 color=#1a1630 erase=true points=13,23 14,23 16,23 14,24 15,24 17,24 18,24 16,25 19,25 16,26 19,26 16,27 19,27 16,28 18,28 15,29 17,29 15,30 17,30 15,31 17,31 15,32 17,32
+draw op=pencil layer=4 frame=7 color=#1a1630 erase=true points=10,11 11,11 13,11 7,12 10,12 11,12 13,12 14,12 15,12 17,12 7,13 11,13 14,13 15,13 16,13 17,13 18,13 16,14 17,14 18,14 19,14 20,14 17,15 18,15 19,15 20,15 21,15 16,16 17,16 18,16 19,16 20,16 18,17 21,17 17,18 20,18 17,19 18,19 20,19 18,20 21,20 16,21 17,21 19,21 20,21 17,22 18,22 20,22 15,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=7 color=#1a1630 erase=true points=22,22 23,22 24,22 25,22 26,22 24,23 27,23 8,24 9,24 10,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 22,25 25,25 1,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 13,27 14,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+frame op=add copy_from=7
+draw op=pencil layer=0 frame=8 color=#1a1630 erase=true points=18,27 19,27 20,27 22,27 25,27 20,28 21,28 23,28 26,28 22,29 24,29 27,29 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+paint_grid layer=0 frame=8 x=12 y=26 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:8
+  |.KKK........|
+  |.OOOKK......|
+  |KOOSSSKK....|
+  |.KKSSSS.KK..|
+  |...KKSSSBS..|
+  |.....KKSBSSK|
+  |.......KSSSK|
+  |........KKK.|
+draw op=pencil layer=1 frame=8 color=#1a1630 erase=true points=7,33 17,33 18,33 6,34 19,34 5,35 20,35 4,36 21,36 3,37 11,37 12,37 21,37 3,38 10,38 13,38 21,38 9,39 15,39 8,40
+paint_grid layer=1 frame=8 x=4 y=34 legend=K:#1a1630,O:#e0582a rows:6
+  |...K........O...|
+  |..K..........O..|
+  |.K....O.K.....O.|
+  |K....O...K.....O|
+  |K...O......K....|
+  |...O............|
+draw op=pencil layer=2 frame=8 color=#1a1630 erase=true points=9,23 10,23 14,23 16,23 7,24 8,24 17,24 18,24 6,25 7,25 19,25 6,26 7,26 19,26 6,27 7,27 19,27 8,28 18,28 8,29 17,29 8,30 17,30 8,31 17,31 8,32 17,32
+paint_grid layer=2 frame=8 x=8 y=23 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:10
+  |....S...|
+  |.KK.SO..|
+  |K..O.SOO|
+  |K.....OO|
+  |K.....OO|
+  |.K.....O|
+  |.K....O.|
+  |.K....O.|
+  |.K....B.|
+  |.K....O.|
+draw op=pencil layer=4 frame=8 color=#1a1630 erase=true points=8,11 10,11 13,11 5,12 7,12 9,12 10,12 13,12 14,12 17,12 5,13 6,13 7,13 10,13 14,13 17,13 18,13 6,14 7,14 8,14 18,14 19,14 20,14 6,15 7,15 19,15 20,15 21,15 5,16 6,16 18,16 19,16 20,16 7,17 8,17 21,17 6,18 7,18 20,18 7,19 8,19 18,19 20,19 7,20 8,20 21,20 8,21 9,21 19,21 20,21 8,22 9,22 17,22 18,22 20,22 9,23 10,23 16,23 17,23 18,23 19,23
+paint_grid layer=4 frame=8 x=9 y=17 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:6
+  |K......BB|
+  |.KK...SS.|
+  |KK..S..S.|
+  |KK..S.KSS|
+  |.K...SSS.|
+  |.KK.S.SK.|
+draw op=pencil layer=5 frame=8 color=#1a1630 erase=true points=19,22 20,22 21,22 22,22 23,22 24,22 25,22 26,22 18,23 19,23 20,23 21,23 22,23 24,23 27,23 8,24 9,24 10,24 11,24 15,24 16,24 17,24 18,24 19,24 20,24 21,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 17,25 18,25 19,25 20,25 22,25 25,25 1,26 10,26 19,26 20,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 11,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+paint_grid layer=5 frame=8 x=11 y=25 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:7
+  |K.OOKK......|
+  |K.O...KK....|
+  |...SSSSSKK..|
+  |...KKSSSBSK.|
+  |.....KKSBSSK|
+  |.......KSSSK|
+  |........KKK.|
+frame op=add copy_from=8
+draw op=pencil layer=0 frame=9 color=#1a1630 erase=true points=13,26 14,26 15,26 12,27 13,27 14,27 15,27 16,27 17,27 20,27 22,27 25,27 12,28 13,28 14,28 15,28 16,28 17,28 18,28 19,28 21,28 23,28 26,28 13,29 14,29 15,29 18,29 19,29 20,29 21,29 22,29 24,29 27,29 19,30 20,30 21,30 22,30 23,30 24,30 25,30 26,30 19,31 20,31 21,31 22,31 23,31 2,32 3,32 19,32 20,32 21,32 22,32 23,32 1,33 3,33 4,33 5,33 6,33 7,33 20,33 21,33 22,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+paint_grid layer=0 frame=9 x=15 y=29 legend=K:#1a1630,S:#f0b07a rows:4
+  |.KK.|
+  |.S.K|
+  |KSS.|
+  |.KK.|
+draw op=pencil layer=1 frame=9 color=#1a1630 erase=true points=7,33 17,33 18,33 6,34 19,34 5,35 20,35 4,36 21,36 3,37 11,37 12,37 21,37 3,38 10,38 13,38 21,38 9,39 15,39 8,40
+draw op=pencil layer=2 frame=9 color=#1a1630 erase=true points=9,23 14,23 16,23 7,24 8,24 17,24 18,24 6,25 19,25 6,26 19,26 6,27 19,27 8,28 18,28 8,29 17,29 8,30 17,30 8,31 17,31 8,32 17,32
+draw op=pencil layer=4 frame=9 color=#1a1630 erase=true points=8,11 10,11 13,11 5,12 7,12 9,12 10,12 13,12 14,12 17,12 5,13 6,13 7,13 10,13 14,13 17,13 18,13 6,14 7,14 8,14 18,14 19,14 20,14 6,15 7,15 19,15 20,15 21,15 5,16 6,16 18,16 19,16 20,16 7,17 21,17 6,18 7,18 20,18 7,19 8,19 18,19 20,19 7,20 8,20 21,20 8,21 19,21 20,21 8,22 9,22 17,22 18,22 20,22 9,23 10,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=9 color=#1a1630 erase=true points=19,22 20,22 21,22 22,22 23,22 24,22 25,22 26,22 18,23 22,23 24,23 27,23 8,24 9,24 10,24 14,24 15,24 16,24 17,24 21,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 15,25 16,25 20,25 22,25 25,25 1,26 15,26 16,26 17,26 18,26 20,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 15,27 16,27 17,27 18,27 19,27 20,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 15,28 16,28 17,28 18,28 19,28 20,28 21,28 2,29 3,29 4,29 5,29 6,29 7,29 16,29 17,29 18,29 19,29 20,29 21,29 22,29 3,30 18,30 19,30 20,30 21,30 22,30 19,31 20,31 21,31
+paint_grid layer=5 frame=9 x=10 y=25 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:8
+  |.O..K..|
+  |.O..K..|
+  |.SSSK..|
+  |KSSS...|
+  |.KSSSK.|
+  |.KSBSSK|
+  |..KSSSK|
+  |...KKK.|
+draw op=pencil layer=8 frame=1 color=#1a1630 erase=true points=40,40 42,40
+draw op=pencil layer=5 frame=2 color=#1a1630 erase=true points=2,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=3 color=#1a1630 erase=true points=3,32 7,33 9,34 8,35
+draw op=pencil layer=2 frame=3 color=#1a1630 erase=true points=13,23 15,24 16,25 16,26 16,27
+draw op=pencil layer=4 frame=3 color=#1a1630 erase=true points=11,11 8,12 12,12 15,12 9,13 13,13 16,13 17,14 18,15 17,16 18,17 17,18 17,19 18,20 17,21 16,22 15,23
+draw op=pencil layer=5 frame=3 color=#1a1630 erase=true points=10,24 11,25 11,26 10,27 4,28 5,28 6,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=4 color=#1a1630 erase=true points=2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=4 color=#1a1630 erase=true points=8,33 9,33 7,34 6,35 5,36 4,37 13,37 4,38 14,38 15,38 3,39
+draw op=pencil layer=2 frame=4 color=#1a1630 erase=true points=10,23 12,23 13,23 8,24 9,24 7,25 7,26 7,27 9,28 9,29 9,30 9,31 9,32
+draw op=pencil layer=4 frame=4 color=#1a1630 erase=true points=10,11 11,11 7,12 8,12 11,12 12,12 15,12 7,13 8,13 9,13 12,13 16,13 8,14 9,14 10,14 7,15 8,15 9,15 10,15 6,16 7,16 8,16 9,16 8,17 7,18 8,18 9,18 10,18 8,19 9,19 8,20 9,20 9,21 9,22 10,22 10,23 11,23 12,23 13,23
+draw op=pencil layer=5 frame=4 color=#1a1630 erase=true points=8,24 9,24 10,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 11,25 1,26 10,26 11,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=5 color=#1a1630 erase=true points=25,27 26,28 27,29 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=5 color=#1a1630 erase=true points=17,33 18,33 19,34 20,35 21,36 11,37 12,37 21,37 10,38 21,38 9,39 8,40
+draw op=pencil layer=2 frame=5 color=#1a1630 erase=true points=10,23 14,23 16,23 8,24 17,24 18,24 7,25 19,25 7,26 19,26 7,27 19,27 18,28 17,29 17,30 17,31 17,32
+draw op=pencil layer=4 frame=5 color=#1a1630 erase=true points=11,11 13,11 8,12 12,12 13,12 15,12 17,12 9,13 13,13 16,13 17,13 18,13 18,14 19,14 20,14 7,15 19,15 20,15 21,15 6,16 18,16 19,16 20,16 8,17 21,17 7,18 20,18 8,19 18,19 20,19 8,20 21,20 9,21 19,21 20,21 9,22 18,22 20,22 10,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=5 color=#1a1630 erase=true points=24,22 25,22 26,22 27,23 8,24 9,24 10,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 11,25 25,25 1,26 10,26 11,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=6 color=#1a1630 erase=true points=22,27 25,27 23,28 26,28 24,29 27,29 22,30 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=6 color=#1a1630 erase=true points=16,33 17,33 18,33 17,34 19,34 18,35 20,35 19,36 21,36 10,37 11,37 20,37 21,37 9,38 10,38 21,38 8,39 9,39 8,40
+draw op=pencil layer=2 frame=6 color=#1a1630 erase=true points=13,23 14,23 16,23 14,24 15,24 17,24 18,24 16,25 19,25 16,26 19,26 16,27 19,27 16,28 18,28 15,29 17,29 15,30 17,30 15,31 17,31 15,32 17,32
+draw op=pencil layer=4 frame=6 color=#1a1630 erase=true points=10,11 11,11 13,11 7,12 10,12 11,12 13,12 14,12 15,12 17,12 7,13 11,13 14,13 15,13 16,13 17,13 18,13 16,14 17,14 18,14 19,14 20,14 17,15 18,15 19,15 20,15 21,15 16,16 17,16 18,16 19,16 20,16 18,17 21,17 17,18 20,18 17,19 18,19 20,19 18,20 21,20 16,21 17,21 19,21 20,21 17,22 18,22 20,22 15,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=6 color=#1a1630 erase=true points=22,22 23,22 24,22 25,22 26,22 24,23 27,23 8,24 9,24 10,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 22,25 25,25 1,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 13,27 14,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=7 color=#1a1630 erase=true points=22,27 25,27 23,28 26,28 24,29 27,29 22,30 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=7 color=#1a1630 erase=true points=16,33 17,33 18,33 17,34 19,34 18,35 20,35 19,36 21,36 10,37 11,37 20,37 21,37 9,38 10,38 21,38 8,39 9,39 8,40
+draw op=pencil layer=2 frame=7 color=#1a1630 erase=true points=13,23 14,23 16,23 14,24 15,24 17,24 18,24 16,25 19,25 16,26 19,26 16,27 19,27 16,28 18,28 15,29 17,29 15,30 17,30 15,31 17,31 15,32 17,32
+draw op=pencil layer=4 frame=7 color=#1a1630 erase=true points=10,11 11,11 13,11 7,12 10,12 11,12 13,12 14,12 15,12 17,12 7,13 11,13 14,13 15,13 16,13 17,13 18,13 16,14 17,14 18,14 19,14 20,14 17,15 18,15 19,15 20,15 21,15 16,16 17,16 18,16 19,16 20,16 18,17 21,17 17,18 20,18 17,19 18,19 20,19 18,20 21,20 16,21 17,21 19,21 20,21 17,22 18,22 20,22 15,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=7 color=#1a1630 erase=true points=22,22 23,22 24,22 25,22 26,22 24,23 27,23 8,24 9,24 10,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 22,25 25,25 1,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 13,27 14,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=8 color=#1a1630 erase=true points=20,27 22,27 25,27 21,28 23,28 26,28 22,29 24,29 27,29 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=8 color=#1a1630 erase=true points=7,33 17,33 18,33 6,34 19,34 5,35 20,35 4,36 21,36 3,37 11,37 12,37 21,37 3,38 10,38 13,38 21,38 9,39 15,39 8,40
+draw op=pencil layer=2 frame=8 color=#1a1630 erase=true points=9,23 14,23 16,23 7,24 8,24 17,24 18,24 6,25 19,25 6,26 19,26 6,27 19,27 8,28 18,28 8,29 17,29 8,30 17,30 8,31 17,31 8,32 17,32
+draw op=pencil layer=4 frame=8 color=#1a1630 erase=true points=8,11 10,11 13,11 5,12 7,12 9,12 10,12 13,12 14,12 17,12 5,13 6,13 7,13 10,13 14,13 17,13 18,13 6,14 7,14 8,14 18,14 19,14 20,14 6,15 7,15 19,15 20,15 21,15 5,16 6,16 18,16 19,16 20,16 7,17 21,17 6,18 7,18 20,18 7,19 8,19 18,19 20,19 7,20 8,20 21,20 8,21 19,21 20,21 8,22 9,22 17,22 18,22 20,22 9,23 10,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=8 color=#1a1630 erase=true points=19,22 20,22 21,22 22,22 23,22 24,22 25,22 26,22 18,23 22,23 24,23 27,23 8,24 9,24 10,24 11,24 15,24 16,24 17,24 21,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 20,25 22,25 25,25 1,26 10,26 20,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 11,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=9 color=#1a1630 erase=true points=13,26 14,26 15,26 12,27 16,27 17,27 20,27 22,27 25,27 12,28 18,28 19,28 21,28 23,28 26,28 13,29 14,29 20,29 21,29 22,29 24,29 27,29 22,30 23,30 24,30 25,30 26,30 23,31 2,32 3,32 19,32 23,32 1,33 3,33 4,33 5,33 6,33 7,33 20,33 21,33 22,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=9 color=#1a1630 erase=true points=7,33 17,33 18,33 6,34 19,34 5,35 20,35 4,36 21,36 3,37 11,37 12,37 21,37 3,38 10,38 13,38 21,38 9,39 15,39 8,40
+draw op=pencil layer=2 frame=9 color=#1a1630 erase=true points=9,23 14,23 16,23 7,24 8,24 17,24 18,24 6,25 19,25 6,26 19,26 6,27 19,27 8,28 18,28 8,29 17,29 8,30 17,30 8,31 17,31 8,32 17,32
+draw op=pencil layer=4 frame=9 color=#1a1630 erase=true points=8,11 10,11 13,11 5,12 7,12 9,12 10,12 13,12 14,12 17,12 5,13 6,13 7,13 10,13 14,13 17,13 18,13 6,14 7,14 8,14 18,14 19,14 20,14 6,15 7,15 19,15 20,15 21,15 5,16 6,16 18,16 19,16 20,16 7,17 21,17 6,18 7,18 20,18 7,19 8,19 18,19 20,19 7,20 8,20 21,20 8,21 19,21 20,21 8,22 9,22 17,22 18,22 20,22 9,23 10,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=9 color=#1a1630 erase=true points=19,22 20,22 21,22 22,22 23,22 24,22 25,22 26,22 18,23 22,23 24,23 27,23 8,24 9,24 10,24 14,24 15,24 16,24 17,24 21,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 15,25 16,25 20,25 22,25 25,25 1,26 17,26 18,26 20,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 19,27 20,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 15,28 21,28 2,29 3,29 4,29 5,29 6,29 7,29 16,29 17,29 22,29 3,30 18,30 22,30 19,31 20,31 21,31
+draw op=pencil layer=5 frame=2 color=#1a1630 erase=true points=2,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=5 frame=2 color=#1a1630 erase=true points=[[2,29]]
+draw op=pencil layer=5 frame=2 color=#ff0000 erase=true points=[[2,29]]
+draw op=rect layer=5 frame=2 color=#1a1630 erase=true fill=true x0=2 x1=2 y0=29 y1=29
+draw op=line layer=5 frame=2 color=#1a1630 erase=true x0=4 x1=7 y0=29 y1=29
+draw op=pencil layer=5 frame=2 color=#ff00ff erase=true points=4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=3 color=#ff00ff erase=true points=3,32 7,33 9,34 8,35
+draw op=pencil layer=2 frame=3 color=#ff00ff erase=true points=13,23 15,24 16,25 16,26 16,27
+draw op=pencil layer=4 frame=3 color=#ff00ff erase=true points=11,11 8,12 12,12 15,12 9,13 13,13 16,13 17,14 18,15 17,16 18,17 17,18 17,19 18,20 17,21 16,22 15,23
+draw op=pencil layer=5 frame=3 color=#ff00ff erase=true points=10,24 11,25 11,26 10,27 4,28 5,28 6,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=4 color=#ff00ff erase=true points=2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=4 color=#ff00ff erase=true points=8,33 9,33 7,34 6,35 5,36 4,37 13,37 4,38 14,38 15,38 3,39
+draw op=pencil layer=2 frame=4 color=#ff00ff erase=true points=10,23 12,23 13,23 8,24 9,24 7,25 7,26 7,27 9,28 9,29 9,30 9,31 9,32
+draw op=pencil layer=4 frame=4 color=#ff00ff erase=true points=10,11 11,11 7,12 8,12 11,12 12,12 15,12 7,13 8,13 9,13 12,13 16,13 8,14 9,14 10,14 7,15 8,15 9,15 10,15 6,16 7,16 8,16 9,16 8,17 7,18 8,18 9,18 10,18 8,19 9,19 8,20 9,20 9,21 9,22 10,22 10,23 11,23 12,23 13,23
+draw op=pencil layer=5 frame=4 color=#ff00ff erase=true points=8,24 9,24 10,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 11,25 1,26 10,26 11,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=5 color=#ff00ff erase=true points=25,27 26,28 27,29 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=5 color=#ff00ff erase=true points=17,33 18,33 19,34 20,35 21,36 11,37 12,37 21,37 10,38 21,38 9,39 8,40
+draw op=pencil layer=2 frame=5 color=#ff00ff erase=true points=10,23 14,23 16,23 8,24 17,24 18,24 7,25 19,25 7,26 19,26 7,27 19,27 18,28 17,29 17,30 17,31 17,32
+draw op=pencil layer=4 frame=5 color=#ff00ff erase=true points=11,11 13,11 8,12 12,12 13,12 15,12 17,12 9,13 13,13 16,13 17,13 18,13 18,14 19,14 20,14 7,15 19,15 20,15 21,15 6,16 18,16 19,16 20,16 8,17 21,17 7,18 20,18 8,19 18,19 20,19 8,20 21,20 9,21 19,21 20,21 9,22 18,22 20,22 10,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=5 color=#ff00ff erase=true points=24,22 25,22 26,22 27,23 8,24 9,24 10,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 11,25 25,25 1,26 10,26 11,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=6 color=#ff00ff erase=true points=22,27 25,27 23,28 26,28 24,29 27,29 22,30 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=6 color=#ff00ff erase=true points=16,33 17,33 18,33 17,34 19,34 18,35 20,35 19,36 21,36 10,37 11,37 20,37 21,37 9,38 10,38 21,38 8,39 9,39 8,40
+draw op=pencil layer=2 frame=6 color=#ff00ff erase=true points=13,23 14,23 16,23 14,24 15,24 17,24 18,24 16,25 19,25 16,26 19,26 16,27 19,27 16,28 18,28 15,29 17,29 15,30 17,30 15,31 17,31 15,32 17,32
+draw op=pencil layer=4 frame=6 color=#ff00ff erase=true points=10,11 11,11 13,11 7,12 10,12 11,12 13,12 14,12 15,12 17,12 7,13 11,13 14,13 15,13 16,13 17,13 18,13 16,14 17,14 18,14 19,14 20,14 17,15 18,15 19,15 20,15 21,15 16,16 17,16 18,16 19,16 20,16 18,17 21,17 17,18 20,18 17,19 18,19 20,19 18,20 21,20 16,21 17,21 19,21 20,21 17,22 18,22 20,22 15,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=6 color=#ff00ff erase=true points=22,22 23,22 24,22 25,22 26,22 24,23 27,23 8,24 9,24 10,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 22,25 25,25 1,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 13,27 14,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=7 color=#ff00ff erase=true points=22,27 25,27 23,28 26,28 24,29 27,29 22,30 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=7 color=#ff00ff erase=true points=16,33 17,33 18,33 17,34 19,34 18,35 20,35 19,36 21,36 10,37 11,37 20,37 21,37 9,38 10,38 21,38 8,39 9,39 8,40
+draw op=pencil layer=2 frame=7 color=#ff00ff erase=true points=13,23 14,23 16,23 14,24 15,24 17,24 18,24 16,25 19,25 16,26 19,26 16,27 19,27 16,28 18,28 15,29 17,29 15,30 17,30 15,31 17,31 15,32 17,32
+draw op=pencil layer=4 frame=7 color=#ff00ff erase=true points=10,11 11,11 13,11 7,12 10,12 11,12 13,12 14,12 15,12 17,12 7,13 11,13 14,13 15,13 16,13 17,13 18,13 16,14 17,14 18,14 19,14 20,14 17,15 18,15 19,15 20,15 21,15 16,16 17,16 18,16 19,16 20,16 18,17 21,17 17,18 20,18 17,19 18,19 20,19 18,20 21,20 16,21 17,21 19,21 20,21 17,22 18,22 20,22 15,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=7 color=#ff00ff erase=true points=22,22 23,22 24,22 25,22 26,22 24,23 27,23 8,24 9,24 10,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 22,25 25,25 1,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 13,27 14,27 16,27 17,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=8 color=#ff00ff erase=true points=20,27 22,27 25,27 21,28 23,28 26,28 22,29 24,29 27,29 23,30 24,30 25,30 26,30 2,32 3,32 1,33 3,33 4,33 5,33 6,33 7,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=8 color=#ff00ff erase=true points=7,33 17,33 18,33 6,34 19,34 5,35 20,35 4,36 21,36 3,37 11,37 12,37 21,37 3,38 10,38 13,38 21,38 9,39 15,39 8,40
+draw op=pencil layer=2 frame=8 color=#ff00ff erase=true points=9,23 14,23 16,23 7,24 8,24 17,24 18,24 6,25 19,25 6,26 19,26 6,27 19,27 8,28 18,28 8,29 17,29 8,30 17,30 8,31 17,31 8,32 17,32
+draw op=pencil layer=4 frame=8 color=#ff00ff erase=true points=8,11 10,11 13,11 5,12 7,12 9,12 10,12 13,12 14,12 17,12 5,13 6,13 7,13 10,13 14,13 17,13 18,13 6,14 7,14 8,14 18,14 19,14 20,14 6,15 7,15 19,15 20,15 21,15 5,16 6,16 18,16 19,16 20,16 7,17 21,17 6,18 7,18 20,18 7,19 8,19 18,19 20,19 7,20 8,20 21,20 8,21 19,21 20,21 8,22 9,22 17,22 18,22 20,22 9,23 10,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=8 color=#ff00ff erase=true points=19,22 20,22 21,22 22,22 23,22 24,22 25,22 26,22 18,23 22,23 24,23 27,23 8,24 9,24 10,24 11,24 15,24 16,24 17,24 21,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 10,25 20,25 22,25 25,25 1,26 10,26 20,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 10,27 11,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 2,29 3,29 4,29 5,29 6,29 7,29 3,30
+draw op=pencil layer=0 frame=9 color=#ff00ff erase=true points=13,26 14,26 15,26 12,27 16,27 17,27 20,27 22,27 25,27 12,28 18,28 19,28 21,28 23,28 26,28 13,29 14,29 20,29 21,29 22,29 24,29 27,29 22,30 23,30 24,30 25,30 26,30 23,31 2,32 3,32 19,32 23,32 1,33 3,33 4,33 5,33 6,33 7,33 20,33 21,33 22,33 1,34 8,34 9,34 2,35 3,35 4,35 5,35 6,35 7,35 8,35
+draw op=pencil layer=1 frame=9 color=#ff00ff erase=true points=7,33 17,33 18,33 6,34 19,34 5,35 20,35 4,36 21,36 3,37 11,37 12,37 21,37 3,38 10,38 13,38 21,38 9,39 15,39 8,40
+draw op=pencil layer=2 frame=9 color=#ff00ff erase=true points=9,23 14,23 16,23 7,24 8,24 17,24 18,24 6,25 19,25 6,26 19,26 6,27 19,27 8,28 18,28 8,29 17,29 8,30 17,30 8,31 17,31 8,32 17,32
+draw op=pencil layer=4 frame=9 color=#ff00ff erase=true points=8,11 10,11 13,11 5,12 7,12 9,12 10,12 13,12 14,12 17,12 5,13 6,13 7,13 10,13 14,13 17,13 18,13 6,14 7,14 8,14 18,14 19,14 20,14 6,15 7,15 19,15 20,15 21,15 5,16 6,16 18,16 19,16 20,16 7,17 21,17 6,18 7,18 20,18 7,19 8,19 18,19 20,19 7,20 8,20 21,20 8,21 19,21 20,21 8,22 9,22 17,22 18,22 20,22 9,23 10,23 16,23 17,23 18,23 19,23
+draw op=pencil layer=5 frame=9 color=#ff00ff erase=true points=19,22 20,22 21,22 22,22 23,22 24,22 25,22 26,22 18,23 22,23 24,23 27,23 8,24 9,24 10,24 14,24 15,24 16,24 17,24 21,24 23,24 26,24 2,25 3,25 4,25 5,25 6,25 7,25 15,25 16,25 20,25 22,25 25,25 1,26 17,26 18,26 20,26 22,26 25,26 1,27 3,27 4,27 5,27 6,27 9,27 19,27 20,27 2,28 4,28 5,28 6,28 7,28 8,28 9,28 15,28 21,28 2,29 3,29 4,29 5,29 6,29 7,29 16,29 17,29 22,29 3,30 18,30 22,30 19,31 20,31 21,31
+paint_grid layer=3 frame=0 x=4 y=17 legend=B:#2a5fd0 rows:4
+  |...BB|
+  |.BBB.|
+  |B.BB.|
+  |...B.|
+paint_grid layer=5 frame=0 x=5 y=25 legend=K:#1a1630,S:#f0b07a rows:5
+  |..K.|
+  |K.S.|
+  |S...|
+  |...S|
+  |...K|
+paint_grid layer=7 frame=0 x=4 y=30 legend=C:#5ad8f8,W:#f6ffff rows:3
+  |.C.|
+  |CWC|
+  |.C.|
+paint_grid layer=3 frame=1 x=4 y=17 legend=B:#2a5fd0 rows:4
+  |...BB|
+  |.BBB.|
+  |B.BB.|
+  |...B.|
+paint_grid layer=5 frame=1 x=5 y=25 legend=K:#1a1630,S:#f0b07a rows:5
+  |..K.|
+  |K.S.|
+  |S...|
+  |...S|
+  |...K|
+paint_grid layer=7 frame=1 x=3 y=29 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:5
+  |.BCB.|
+  |BCWCB|
+  |CWWWC|
+  |BCWCB|
+  |.BCB.|
+paint_grid layer=8 frame=1 x=0 y=22 legend=C:#5ad8f8 rows:16
+  |.......C....|
+  |............|
+  |............|
+  |C...........|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |C..........C|
+paint_grid layer=3 frame=2 x=4 y=14 legend=B:#2a5fd0 rows:4
+  |B..B.|
+  |.B.B.|
+  |.BB..|
+  |..BBB|
+paint_grid layer=7 frame=2 x=3 y=28 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:6
+  |.BCCB.|
+  |BCWWCB|
+  |CWWWWC|
+  |CWWWWC|
+  |BCWWCB|
+  |.BCCB.|
+paint_grid layer=8 frame=2 x=1 y=24 legend=C:#5ad8f8,W:#f6ffff rows:13
+  |......C...|
+  |......W...|
+  |C.........|
+  |.W........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |........W.|
+  |.W.......C|
+  |C.........|
+paint_grid layer=3 frame=3 x=3 y=14 legend=B:#2a5fd0 rows:4
+  |B..B.|
+  |.B.B.|
+  |.BB..|
+  |..BBB|
+paint_grid layer=7 frame=3 x=1 y=27 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:7
+  |.BCCCB.|
+  |BCWWWCB|
+  |CWWWWWC|
+  |CWWWWWC|
+  |CWWWWWC|
+  |BCWWWCB|
+  |.BCCCB.|
+paint_grid layer=8 frame=3 x=0 y=24 legend=W:#f6ffff rows:13
+  |....W......|
+  |....W......|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |W........WW|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |....W......|
+  |....W......|
+paint_grid layer=3 frame=4 x=5 y=16 legend=B:#2a5fd0 rows:3
+  |BB.....|
+  |..BBBBB|
+  |.BBB...|
+paint_grid layer=7 frame=4 x=24 y=20 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:13
+  |....BBBBB..........|
+  |...BCCCCCB.........|
+  |..BCCWWWCCBBBBBBB..|
+  |.BCWWWWWWWCCCCCCCB.|
+  |BCCWWWWWWWWWWWWWWCB|
+  |BCWWWWWWWWWWWWWWWWC|
+  |BCWWWWWWWWWWWWWWWWW|
+  |BCWWWWWWWWWWWWWWWWC|
+  |BCCWWWWWWWWWWWWWWCB|
+  |.BCWWWWWWWCCCCCCCB.|
+  |..BCCWWWCCBBBBBBB..|
+  |...BCCCCCB.........|
+  |....BBBBB..........|
+paint_grid layer=3 frame=5 x=2 y=16 legend=B:#2a5fd0 rows:4
+  |.BB....|
+  |B..BBBB|
+  |..BB...|
+  |BB.....|
+paint_grid layer=7 frame=5 x=22 y=21 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:11
+  |...BBBBB..BBB.....BBB.....|
+  |..BBCCCBBBCCCBBBBBCCCBBBBB|
+  |.BCCWWWCCCWWWCCCCCWWWCCCCC|
+  |BBCWWWWWWWWWWWWWWWWWWWWWWW|
+  |BCWWWWCCCWWWWCCCWWWWCCCWWW|
+  |BCWWWWWWWWWWWWWWWWWWWWWWWW|
+  |BCWWWCWWWWCCCWWWWCCCWWWWCC|
+  |BBCWWWWWWWWWWWWWWWWWWWWWWW|
+  |.BCCWWWWWCCCCCWWWCCCCCWWWC|
+  |..BBCCCCCBBBBBCCCBBBBBCCCB|
+  |...BBBBBB.....BBB.....BBB.|
+paint_grid layer=3 frame=6 x=0 y=16 legend=B:#2a5fd0 rows:4
+  |BB.....|
+  |..BBBBB|
+  |.B.BB..|
+  |B......|
+paint_grid layer=7 frame=6 x=21 y=21 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:11
+  |.......BBB.....BBB.....BBB.|
+  |...BBBBCCCBBBBBCCCBBBBBCCCB|
+  |.BBCCCCWWWCCCCCWWWCCCCCWWWC|
+  |.BCWWWWWWWWWWWWWWWWWWWWWWWW|
+  |BCWWWWCCCWWWWCCCWWWWCCCWWWW|
+  |BCWWWWWWWWWWWWWWWWWWWWWWWWW|
+  |BCWWCCWWWWCCCWWWWCCCWWWWCCC|
+  |.BCWWWWWWWWWWWWWWWWWWWWWWWW|
+  |.BBCWWCCCCCWWWCCCCCWWWCCCCC|
+  |...BCCBBBBBCCCBBBBBCCCBBBBB|
+  |....BB.....BBB.....BBB.....|
+paint_grid layer=3 frame=7 x=0 y=16 legend=B:#2a5fd0 rows:4
+  |.BB....|
+  |B..BBBB|
+  |..BB...|
+  |BB.....|
+paint_grid layer=7 frame=7 x=25 y=24 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:5
+  |....BBBBBBBBBBBBBBBBBBB|
+  |..BBCCCCCCCCCCCCCCCCCCC|
+  |BBCCWWWWWWWWWWWWWWWWWWW|
+  |..BBCCCCCCCCCCCCCCCCCCC|
+  |....BBBBBBBBBBBBBBBBBBB|
+draw op=pencil layer=0 frame=8 color=#ff00ff erase=true points=13,26 14,26 15,26 12,27 13,27 14,27 15,27 16,27 17,27 12,28 13,28 14,28 15,28 16,28 17,28 18,28 19,28 13,29 14,29 15,29 16,29 17,29 21,29 15,30 16,30 22,30 22,31 23,31 21,32 22,32 23,32 20,33 21,33 22,33
+paint_grid layer=0 frame=8 x=17 y=29 legend=B:#2a5fd0,K:#1a1630,S:#f0b07a rows:4
+  |.KK..|
+  |KB.SK|
+  |.B.SK|
+  |.K.K.|
+paint_grid layer=3 frame=8 x=2 y=16 legend=B:#2a5fd0 rows:3
+  |BB.....|
+  |..BBBBB|
+  |.BBB...|
+draw op=pencil layer=5 frame=8 color=#ff00ff erase=true points=14,24 15,25 16,25 15,26 16,26 17,26 18,26 15,27 16,27 17,27 18,27 19,27 20,27 18,28 19,28 20,28 21,28 19,29 20,29 21,29 22,29 19,30 20,30 21,30 22,30 19,31 20,31 21,31
+paint_grid layer=5 frame=8 x=10 y=24 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:8
+  |.K.......|
+  |KO..K....|
+  |KO..K....|
+  |KSSSK....|
+  |KSSS..KK.|
+  |KSSSSSBSK|
+  |.KSSSSBS.|
+  |..KKKKKK.|
+paint_grid layer=7 frame=8 x=31 y=26 legend=C:#5ad8f8 rows:1
+  |CC..CCC..CCC..CCC|
+draw op=pencil layer=0 frame=9 color=#ff00ff erase=true points=16,29 17,29 15,30 16,30 17,30 18,30 15,31 16,31 17,31 18,31 16,32 17,32
+paint_grid layer=3 frame=9 x=4 y=17 legend=B:#2a5fd0 rows:4
+  |...BB|
+  |.BBB.|
+  |B.BB.|
+  |...B.|
+draw op=pencil layer=5 frame=9 color=#ff00ff erase=true points=13,24 14,25 13,26 14,26 12,27 13,27 14,27 11,28 12,28 13,28 14,28 14,29 15,29 15,30 16,30 15,31 16,31 14,32 15,32
+paint_grid layer=5 frame=9 x=6 y=24 legend=B:#2a5fd0,K:#1a1630,O:#e0582a,S:#f0b07a rows:9
+  |....K....|
+  |...KO..K.|
+  |..KOO.K..|
+  |.KSSSK...|
+  |KSSS.....|
+  |KSSSK.KK.|
+  |.KSSSSBSK|
+  |..KKSSB.K|
+  |....KKK..|
+paint_grid layer=7 frame=9 x=37 y=25 legend=B:#2a5fd0,C:#5ad8f8 rows:3
+  |.....C....|
+  |B.........|
+  |.........B|
+draw op=pencil layer=3 frame=0 color=#ff00ff erase=true points=5,18 4,19 7,20
+paint_grid layer=3 frame=0 x=5 y=20 legend=B:#2a5fd0 rows:2
+  |BB|
+  |B.|
+draw op=pencil layer=3 frame=1 color=#ff00ff erase=true points=5,18 4,19 7,20
+paint_grid layer=3 frame=1 x=5 y=20 legend=B:#2a5fd0 rows:2
+  |BB|
+  |B.|
+draw op=pencil layer=3 frame=2 color=#ff00ff erase=true points=7,14 7,15
+paint_grid layer=3 frame=2 x=4 y=15 legend=B:#2a5fd0 rows:1
+  |B|
+draw op=pencil layer=3 frame=3 color=#ff00ff erase=true points=6,14 6,15
+paint_grid layer=3 frame=3 x=3 y=15 legend=B:#2a5fd0 rows:1
+  |B|
+draw op=pencil layer=3 frame=4 color=#ff00ff erase=true points=5,16 6,18 7,18 8,18
+paint_grid layer=3 frame=4 x=5 y=16 legend=B:#2a5fd0 rows:3
+  |..B...|
+  |BB....|
+  |....BB|
+draw op=pencil layer=3 frame=5 color=#ff00ff erase=true points=4,16 2,17 6,17 4,18 2,19 3,19
+paint_grid layer=3 frame=5 x=2 y=16 legend=B:#2a5fd0 rows:3
+  |B.....|
+  |.BB...|
+  |....BB|
+draw op=pencil layer=3 frame=6 color=#ff00ff erase=true points=0,16 1,16 3,18 4,18 0,19
+paint_grid layer=3 frame=6 x=0 y=16 legend=B:#2a5fd0 rows:3
+  |...BB|
+  |.B...|
+  |B....|
+draw op=pencil layer=3 frame=7 color=#ff00ff erase=true points=2,16 0,17 4,17 2,18 0,19 1,19
+paint_grid layer=3 frame=7 x=0 y=16 legend=B:#2a5fd0 rows:3
+  |B.....|
+  |.BB...|
+  |....BB|
+draw op=pencil layer=3 frame=8 color=#ff00ff erase=true points=2,16 3,18 4,18 5,18
+paint_grid layer=3 frame=8 x=2 y=16 legend=B:#2a5fd0 rows:3
+  |..B...|
+  |BB....|
+  |....BB|
+draw op=pencil layer=3 frame=9 color=#ff00ff erase=true points=5,18 4,19 7,20
+paint_grid layer=3 frame=9 x=5 y=20 legend=B:#2a5fd0 rows:2
+  |BB|
+  |B.|
+paint_grid layer=6 frame=2 x=3 y=25 legend=C:#5ad8f8,W:#f6ffff rows:16
+  |......C.|
+  |........|
+  |W.......|
+  |W.......|
+  |.......C|
+  |.......C|
+  |.......C|
+  |.......C|
+  |W.......|
+  |W.......|
+  |........|
+  |...C....|
+  |..C.....|
+  |..C.....|
+  |.C......|
+  |.C......|
+paint_grid layer=6 frame=3 x=2 y=21 legend=C:#5ad8f8,W:#f6ffff rows:22
+  |........W|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |W........|
+  |W........|
+  |.........|
+  |........C|
+  |........C|
+  |........C|
+  |........C|
+  |W........|
+  |W........|
+  |.........|
+  |....C....|
+  |...C.....|
+  |...C.....|
+  |..C......|
+  |..C......|
+  |..C......|
+  |..C......|
+paint_grid layer=6 frame=4 x=6 y=17 legend=C:#5ad8f8,W:#f6ffff rows:26
+  |..............C|
+  |.............W.|
+  |.............W.|
+  |..............W|
+  |...............|
+  |.............W.|
+  |...............|
+  |...............|
+  |...............|
+  |...............|
+  |...............|
+  |...............|
+  |..........C....|
+  |..........C....|
+  |..........C....|
+  |..........C....|
+  |...............|
+  |............C..|
+  |.............C.|
+  |..............C|
+  |..............C|
+  |...C..........C|
+  |..C..........C.|
+  |.C...........C.|
+  |C............C.|
+  |C............C.|
+paint_grid layer=8 frame=4 x=24 y=16 legend=C:#5ad8f8,W:#f6ffff rows:21
+  |......C.......|
+  |......C.......|
+  |......W.......|
+  |.............C|
+  |C...........C.|
+  |.W............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |.W............|
+  |C...........C.|
+  |.............C|
+  |......W.......|
+  |......C.......|
+  |......C.......|
+paint_grid layer=6 frame=5 x=6 y=17 legend=C:#5ad8f8,W:#f6ffff rows:26
+  |...........C..|
+  |..........W...|
+  |..........W...|
+  |...........W..|
+  |..............|
+  |..........W...|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |........C.....|
+  |........C.....|
+  |........C.....|
+  |........C.....|
+  |..............|
+  |..........C...|
+  |...........C..|
+  |............C.|
+  |...C.........C|
+  |..C..........C|
+  |.C...........C|
+  |C............C|
+  |C............C|
+  |C............C|
+paint_grid layer=8 frame=5 x=27 y=18 legend=B:#2a5fd0,C:#5ad8f8 rows:17
+  |..................B|
+  |C......CB..........|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |C.............CB...|
+  |...........B.......|
+paint_grid layer=6 frame=6 x=6 y=17 legend=C:#5ad8f8,W:#f6ffff rows:26
+  |.........C...|
+  |........W....|
+  |........W....|
+  |.........W...|
+  |.............|
+  |........W....|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.......C.....|
+  |.......C.....|
+  |.......C.....|
+  |.......C.....|
+  |.............|
+  |.........C...|
+  |..........C..|
+  |...........C.|
+  |..C.........C|
+  |.C...........|
+  |C............|
+  |C............|
+  |C............|
+  |C............|
+paint_grid layer=8 frame=6 x=30 y=17 legend=B:#2a5fd0,C:#5ad8f8 rows:18
+  |...........B.....|
+  |BB...............|
+  |........C........|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |.................|
+  |...B...........CB|
+paint_grid layer=6 frame=7 x=13 y=17 legend=C:#5ad8f8,W:#f6ffff rows:18
+  |..C|
+  |.W.|
+  |.W.|
+  |..W|
+  |...|
+  |.W.|
+  |...|
+  |...|
+  |...|
+  |...|
+  |...|
+  |...|
+  |C..|
+  |C..|
+  |C..|
+  |C..|
+  |...|
+  |..C|
+draw op=pencil layer=7 frame=7 color=#ff00ff erase=true points=29,24 33,24 34,24 35,24 36,24 37,24 41,24 42,24 43,24 44,24 45,24 29,28 30,28 31,28 32,28 33,28 37,28 38,28 39,28 40,28 41,28 45,28 46,28 47,28
+paint_grid layer=7 frame=7 x=29 y=25 legend=B:#2a5fd0,C:#5ad8f8 rows:3
+  |B...BBBBB...BBBBB..|
+  |CCCCC...CCCCC...CCC|
+  |BBBBB...BBBBB...BBB|
+paint_grid layer=8 frame=7 x=34 y=21 legend=B:#2a5fd0,C:#5ad8f8 rows:11
+  |B............|
+  |........C....|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |............B|
+  |....B........|
+draw op=pencil layer=7 frame=8 color=#ff00ff erase=true points=35,26 40,26 41,26 42,26 45,26 46,26
+paint_grid layer=7 frame=8 x=29 y=25 legend=B:#2a5fd0,C:#5ad8f8 rows:3
+  |....BB.....B....BB|
+  |.C.......CC...CC..|
+  |B.....B.....BB....|
+paint_grid layer=8 frame=8 x=37 y=22 legend=B:#2a5fd0 rows:9
+  |B.......|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |........|
+  |.......B|
+draw op=pencil layer=7 frame=9 color=#ff00ff erase=true points=42,25 37,26 46,27
+paint_grid layer=7 frame=9 x=36 y=25 legend=B:#2a5fd0,C:#5ad8f8 rows:3
+  |.....C....|
+  |.........B|
+  |B.........|
+draw op=pencil layer=6 frame=2 color=#ff00ff erase=true points=4,39 4,40
+draw op=pencil layer=6 frame=3 color=#ff00ff erase=true points=4,40 4,41 4,42
+draw op=pencil layer=6 frame=4 color=#ff00ff erase=true points=9,38 8,39 7,40 6,41 6,42
+draw op=pencil layer=6 frame=5 color=#ff00ff erase=true points=9,37 8,38 7,39 6,40 6,41 6,42
+draw op=pencil layer=6 frame=6 color=#ff00ff erase=true points=8,37 7,38 6,39 6,40 6,41 6,42
+draw op=pencil layer=7 frame=7 color=#ff00ff erase=true points=[[25,26]]
+paint_grid layer=7 frame=7 x=29 y=23 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:7
+  |..BB.....BBB.....BB|
+  |B.CCBBBBBCCCBBBBBCC|
+  |C.WWCCCCCWWWCCCCCWW|
+  |WWWWW...WWWWW...WWW|
+  |CCCCCWWWCCCCCWWWCCC|
+  |BBBBBCCCBBBBBCCCBBB|
+  |.....BBB.....BBB...|
+palette op=set colors=#342862,#f0b07a,#e0582a,#2a5fd0,#5ad8f8,#f6ffff
+paint_grid layer=0 frame=0 x=2 y=32 legend=K:#342862 rows:4
+  |.K......|
+  |K.KKKK..|
+  |K......K|
+  |.KKKKKK.|
+paint_grid layer=1 frame=0 x=2 y=33 legend=K:#342862 rows:12
+  |......KKKKKKKKK.....|
+  |.....K.........K....|
+  |....K...........K...|
+  |...K.....KK......K..|
+  |..K.....K..K......K.|
+  |..K....K....KK....K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=0 x=8 y=23 legend=K:#342862 rows:10
+  |...K.K...|
+  |.KK...KK.|
+  |K.......K|
+  |K.......K|
+  |K.......K|
+  |.K......K|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+paint_grid layer=4 frame=0 x=7 y=11 legend=K:#342862 rows:13
+  |....K.......|
+  |.K..KK..K...|
+  |.KK.KKK.KK..|
+  |..KKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K......K.|
+  |...KK....K..|
+  |....KKKKK...|
+paint_grid layer=5 frame=0 x=2 y=24 legend=K:#342862 rows:7
+  |.......KK.|
+  |.....KK..K|
+  |...KK....K|
+  |.KK.....K.|
+  |K......K..|
+  |K.KKKKK...|
+  |.K........|
+paint_grid layer=0 frame=1 x=2 y=32 legend=K:#342862 rows:4
+  |.K......|
+  |K.KKKK..|
+  |K......K|
+  |.KKKKKK.|
+paint_grid layer=1 frame=1 x=2 y=33 legend=K:#342862 rows:12
+  |......KKKKKKKKK.....|
+  |.....K.........K....|
+  |....K...........K...|
+  |...K.....KK......K..|
+  |..K.....K..K......K.|
+  |..K....K....KK....K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=1 x=8 y=23 legend=K:#342862 rows:10
+  |...K.K...|
+  |.KK...KK.|
+  |K.......K|
+  |K.......K|
+  |K.......K|
+  |.K......K|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+paint_grid layer=4 frame=1 x=7 y=11 legend=K:#342862 rows:13
+  |....K.......|
+  |.K..KK..K...|
+  |.KK.KKK.KK..|
+  |..KKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K......K.|
+  |...KK....K..|
+  |....KKKKK...|
+paint_grid layer=5 frame=1 x=2 y=24 legend=K:#342862 rows:7
+  |.......KK.|
+  |.....KK..K|
+  |...KK....K|
+  |.KK.....K.|
+  |K......K..|
+  |K.KKKKK...|
+  |.K........|
+paint_grid layer=0 frame=2 x=2 y=32 legend=K:#342862 rows:4
+  |.K......|
+  |K.KKKK..|
+  |K......K|
+  |.KKKKKK.|
+paint_grid layer=1 frame=2 x=2 y=33 legend=K:#342862 rows:12
+  |......KKKKKKKKK.....|
+  |.....K.........K....|
+  |....K...........K...|
+  |...K.....KK......K..|
+  |..K.....K..K......K.|
+  |..K....K....KK....K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=2 x=8 y=23 legend=K:#342862 rows:10
+  |...K.K...|
+  |.KK...KK.|
+  |K.......K|
+  |K.......K|
+  |K.......K|
+  |.K......K|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+paint_grid layer=4 frame=2 x=7 y=11 legend=K:#342862 rows:13
+  |....K.......|
+  |.K..KK..K...|
+  |.KK.KKK.KK..|
+  |..KKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K......K.|
+  |...KK....K..|
+  |....KKKKK...|
+paint_grid layer=5 frame=2 x=2 y=24 legend=K:#342862 rows:6
+  |.......KK.|
+  |......K..K|
+  |.KKKKK...K|
+  |K.......K.|
+  |K.KKKKKK..|
+  |.K........|
+paint_grid layer=0 frame=3 x=1 y=32 legend=K:#342862 rows:4
+  |.K......|
+  |K.KKKK..|
+  |K......K|
+  |.KKKKKK.|
+paint_grid layer=1 frame=3 x=2 y=33 legend=K:#342862 rows:12
+  |......KKKKKKKKK.....|
+  |.....K.........K....|
+  |....K...........K...|
+  |...K.....KK......K..|
+  |..K.....K..K......K.|
+  |..K....K....KK....K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=3 x=7 y=23 legend=K:#342862 rows:10
+  |...K.K....|
+  |.KK...KK..|
+  |K.......K.|
+  |K.......K.|
+  |K.......K.|
+  |..K......K|
+  |..K.....K.|
+  |..K.....K.|
+  |..K.....K.|
+  |..K.....K.|
+paint_grid layer=4 frame=3 x=6 y=11 legend=K:#342862 rows:13
+  |....K.......|
+  |.K..KK..K...|
+  |.KK.KKK.KK..|
+  |..KKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K......K.|
+  |...KK....K..|
+  |....KKKKK...|
+paint_grid layer=5 frame=3 x=1 y=24 legend=K:#342862 rows:5
+  |.......KK.|
+  |.KKKKKK..K|
+  |K........K|
+  |K.KKKK..K.|
+  |.K....KK..|
+paint_grid layer=0 frame=4 x=17 y=27 legend=K:#342862 rows:4
+  |K.......K..|
+  |.KKKKK...K.|
+  |......K...K|
+  |.......KKK.|
+paint_grid layer=1 frame=4 x=2 y=33 legend=K:#342862 rows:12
+  |........KKKKKKKKK...|
+  |.......K.........K..|
+  |......K...........K.|
+  |.....K.....KK......K|
+  |....K....KK.KK.....K|
+  |...K....K.....K....K|
+  |..K....K......K...K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=4 x=11 y=23 legend=K:#342862 rows:10
+  |...K.K...|
+  |.KK...KK.|
+  |K.......K|
+  |K.......K|
+  |K.......K|
+  |K......K.|
+  |K.....K..|
+  |K.....K..|
+  |K.....K..|
+  |K.....K..|
+paint_grid layer=4 frame=4 x=10 y=11 legend=K:#342862 rows:13
+  |...K........|
+  |K..KK..K....|
+  |KK.KKK.KK...|
+  |.KKKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K.....KK.|
+  |...KK...K.K.|
+  |....KKKKKK..|
+paint_grid layer=5 frame=4 x=15 y=22 legend=K:#342862 rows:6
+  |.........KKK.|
+  |........K...K|
+  |.KKKKKKK...K.|
+  |K.........K..|
+  |K.........K..|
+  |.KK..........|
+paint_grid layer=0 frame=5 x=14 y=27 legend=K:#342862 rows:4
+  |K.......K..|
+  |.KKKKK...K.|
+  |......K...K|
+  |.......KKK.|
+paint_grid layer=1 frame=5 x=2 y=33 legend=K:#342862 rows:12
+  |......KKKKKKKKK.....|
+  |.....K.........K....|
+  |....K...........K...|
+  |...K.....KK......K..|
+  |..K.....K..K......K.|
+  |..K....K....KK....K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=5 x=8 y=23 legend=K:#342862 rows:10
+  |...K.K...|
+  |.KK...KK.|
+  |K.......K|
+  |K.......K|
+  |K.......K|
+  |.K......K|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+paint_grid layer=4 frame=5 x=7 y=11 legend=K:#342862 rows:13
+  |...K........|
+  |K..KK..K....|
+  |KK.KKK.KK...|
+  |.KKKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K.....KK.|
+  |...KK...K.K.|
+  |....KKKKKK..|
+paint_grid layer=5 frame=5 x=12 y=22 legend=K:#342862 rows:6
+  |.........KKK.|
+  |........K...K|
+  |.KKKKKKK...K.|
+  |K.........K..|
+  |K.........K..|
+  |.KK..........|
+paint_grid layer=0 frame=6 x=12 y=27 legend=K:#342862 rows:4
+  |K.......K..|
+  |.KKKKK...K.|
+  |......K...K|
+  |.......KKK.|
+paint_grid layer=1 frame=6 x=2 y=33 legend=K:#342862 rows:12
+  |.....KKKKKKKKK......|
+  |....K.........K.....|
+  |...K...........K....|
+  |..K.....KK......K...|
+  |.K.....K..K......K..|
+  |.K....K....KK.....K.|
+  |.K...K.......KK...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=6 x=6 y=23 legend=K:#342862 rows:10
+  |...K.K....|
+  |.KK...KK..|
+  |K.......K.|
+  |K.......K.|
+  |K.......K.|
+  |..K......K|
+  |..K.....K.|
+  |..K.....K.|
+  |..K.....K.|
+  |..K.....K.|
+paint_grid layer=4 frame=6 x=5 y=11 legend=K:#342862 rows:13
+  |...K........|
+  |K..KK..K....|
+  |KK.KKK.KK...|
+  |.KKKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K.....KK.|
+  |...KK...K.K.|
+  |....KKKKKK..|
+paint_grid layer=5 frame=6 x=10 y=22 legend=K:#342862 rows:6
+  |.........KKK.|
+  |........K...K|
+  |.KKKKKKK...K.|
+  |K.........K..|
+  |K.........K..|
+  |.KK..........|
+paint_grid layer=0 frame=7 x=12 y=27 legend=K:#342862 rows:4
+  |K.......K..|
+  |.KKKKK...K.|
+  |......K...K|
+  |.......KKK.|
+paint_grid layer=1 frame=7 x=2 y=33 legend=K:#342862 rows:12
+  |.....KKKKKKKKK......|
+  |....K.........K.....|
+  |...K...........K....|
+  |..K.....KK......K...|
+  |.K.....K..K......K..|
+  |.K....K....KK.....K.|
+  |.K...K.......KK...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=7 x=6 y=23 legend=K:#342862 rows:10
+  |...K.K....|
+  |.KK...KK..|
+  |K.......K.|
+  |K.......K.|
+  |K.......K.|
+  |..K......K|
+  |..K.....K.|
+  |..K.....K.|
+  |..K.....K.|
+  |..K.....K.|
+paint_grid layer=4 frame=7 x=5 y=11 legend=K:#342862 rows:13
+  |...K........|
+  |K..KK..K....|
+  |KK.KKK.KK...|
+  |.KKKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K.....KK.|
+  |...KK...K.K.|
+  |....KKKKKK..|
+paint_grid layer=5 frame=7 x=10 y=22 legend=K:#342862 rows:6
+  |.........KKK.|
+  |........K...K|
+  |.KKKKKKK...K.|
+  |K.........K..|
+  |K.........K..|
+  |.KK..........|
+paint_grid layer=0 frame=8 x=17 y=29 legend=K:#342862 rows:4
+  |.KKK.|
+  |K...K|
+  |K...K|
+  |.KKK.|
+paint_grid layer=1 frame=8 x=2 y=33 legend=K:#342862 rows:12
+  |......KKKKKKKKK.....|
+  |.....K.........K....|
+  |....K...........K...|
+  |...K.....KK......K..|
+  |..K.....K..K......K.|
+  |..K....K....KK....K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=8 x=8 y=23 legend=K:#342862 rows:10
+  |...K.K...|
+  |.KK...KK.|
+  |K.......K|
+  |K.......K|
+  |K.......K|
+  |.K......K|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+paint_grid layer=4 frame=8 x=7 y=11 legend=K:#342862 rows:13
+  |....K.......|
+  |.K..KK..K...|
+  |.KK.KKK.KK..|
+  |..KKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K......K.|
+  |...KK....K..|
+  |....KKKKK...|
+paint_grid layer=5 frame=8 x=10 y=24 legend=K:#342862 rows:8
+  |.KKK.....|
+  |K...K....|
+  |K...K....|
+  |K...K....|
+  |K...KKKK.|
+  |K.......K|
+  |.K......K|
+  |..KKKKKK.|
+paint_grid layer=1 frame=9 x=2 y=33 legend=K:#342862 rows:12
+  |......KKKKKKKKK.....|
+  |.....K.........K....|
+  |....K...........K...|
+  |...K.....KK......K..|
+  |..K.....K..K......K.|
+  |..K....K....KK....K.|
+  |.K....K.......K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |.K...K........K...K.|
+  |K....K........K....K|
+  |KKKKKK........KKKKKK|
+paint_grid layer=2 frame=9 x=8 y=23 legend=K:#342862 rows:10
+  |...K.K...|
+  |.KK...KK.|
+  |K.......K|
+  |K.......K|
+  |K.......K|
+  |.K......K|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+  |.K.....K.|
+paint_grid layer=4 frame=9 x=7 y=11 legend=K:#342862 rows:13
+  |....K.......|
+  |.K..KK..K...|
+  |.KK.KKK.KK..|
+  |..KKKKKKKKK.|
+  |.KKKKKKKKKKK|
+  |KKKKKKKKKKK.|
+  |..K........K|
+  |.KKKK.....K.|
+  |..KK....K.K.|
+  |..KK....K..K|
+  |...K......K.|
+  |...KK....K..|
+  |....KKKKK...|
+paint_grid layer=5 frame=9 x=6 y=24 legend=K:#342862 rows:9
+  |....KKK..|
+  |...K...K.|
+  |..K...K..|
+  |.K...K...|
+  |K...K....|
+  |K...KKKK.|
+  |.K......K|
+  |..KK....K|
+  |....KKKK.|
+paint_grid layer=4 frame=0 frame_to=1 x=12 y=13 legend=B:#2a5fd0 rows:3
+  |B...|
+  |.BB.|
+  |...B|
+draw op=pencil layer=3 frame=2 color=#ff00ff erase=true points=4,14 5,15 6,16 7,17 8,17
+paint_grid layer=3 frame=2 x=4 y=16 legend=B:#2a5fd0 rows:3
+  |B....|
+  |.B...|
+  |..BBB|
+draw op=pencil layer=4 frame=2 color=#ff00ff erase=true points=11,11 8,12 12,12 15,12 9,13 13,13 16,13 10,14 14,14 17,14 8,15 18,15 7,16 18,17 8,18 18,20
+paint_grid layer=4 frame=2 x=7 y=14 legend=B:#2a5fd0,K:#342862,S:#f0b07a rows:11
+  |.K...B......|
+  |......BB....|
+  |........B..K|
+  |KK.KKKKKKKK.|
+  |...BBBBBBBBK|
+  |.K..K...S...|
+  |..........K.|
+  |..K.....K.SK|
+  |....S....SK.|
+  |...K.SSSSK..|
+  |....KKKKK...|
+draw op=pencil layer=3 frame=3 color=#ff00ff erase=true points=3,14 4,15 5,16 6,17 7,17
+paint_grid layer=3 frame=3 x=3 y=16 legend=B:#2a5fd0 rows:3
+  |B....|
+  |.B...|
+  |..BBB|
+draw op=pencil layer=4 frame=3 color=#ff00ff erase=true points=10,11 7,12 11,12 14,12 8,13 12,13 15,13 9,14 13,14 16,14 7,15 17,15 6,16 17,17 7,18 17,20
+paint_grid layer=4 frame=3 x=6 y=14 legend=B:#2a5fd0,K:#342862,S:#f0b07a rows:11
+  |.K...B......|
+  |......BB....|
+  |........B..K|
+  |KK.KKKKKKKK.|
+  |...BBBBBBBBK|
+  |.K..K...S...|
+  |..........K.|
+  |..K.....K.SK|
+  |....S....SK.|
+  |...K.SSSSK..|
+  |....KKKKK...|
+draw op=pencil layer=6 frame=3 color=#ff00ff erase=true points=[[10,21]]
+paint_grid layer=6 frame=3 x=10 y=22 legend=W:#f6ffff rows:1
+  |W|
+paint_grid layer=4 frame=4 x=14 y=13 legend=B:#2a5fd0 rows:3
+  |B....|
+  |.BB..|
+  |....B|
+paint_grid layer=4 frame=5 x=11 y=13 legend=B:#2a5fd0 rows:3
+  |B....|
+  |.BB..|
+  |....B|
+paint_grid layer=4 frame=6 frame_to=7 x=9 y=13 legend=B:#2a5fd0 rows:3
+  |B....|
+  |.BB..|
+  |....B|
+paint_grid layer=4 frame=8 frame_to=9 x=12 y=13 legend=B:#2a5fd0 rows:3
+  |B...|
+  |.BB.|
+  |...B|
+draw op=pencil layer=6 frame=3 color=#ff00ff erase=true points=[[10,22]]
+draw op=pencil layer=0 frame=8 color=#ff00ff erase=true points=18,29 19,29 20,29 17,30 21,30
+paint_grid layer=0 frame=8 x=17 y=30 legend=B:#2a5fd0,K:#342862,S:#f0b07a rows:4
+  |.KKK.|
+  |.....|
+  |KBSSK|
+  |.KKK.|
+draw op=pencil layer=5 frame=8 color=#ff00ff erase=true points=12,24 13,24 13,25 14,25 13,26 14,26 13,27 14,27
+paint_grid layer=5 frame=8 x=9 y=24 legend=K:#342862,O:#e0582a,S:#f0b07a rows:8
+  |.K...|
+  |KO.K.|
+  |KO.K.|
+  |KOOK.|
+  |KS.KK|
+  |KS...|
+  |.KS..|
+  |..K..|
+paint_grid layer=5 frame=9 x=7 y=27 legend=O:#e0582a rows:2
+  |.OOO|
+  |OO..|
+draw op=pencil layer=8 frame=5 color=#ff00ff erase=true points=35,19 38,34
+paint_grid layer=8 frame=5 x=33 y=17 legend=B:#2a5fd0,C:#5ad8f8 rows:19
+  |C........|
+  |.C.......|
+  |.......CB|
+  |.C.......|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.........|
+  |.C.......|
+  |.C.......|
+  |.C.......|
+  |C........|
+draw op=pencil layer=8 frame=6 color=#ff00ff erase=true points=41,17 38,19 45,34
+paint_grid layer=8 frame=6 x=36 y=15 legend=B:#2a5fd0,C:#5ad8f8 rows:23
+  |.....B.....|
+  |......B....|
+  |.......B...|
+  |.......B...|
+  |C......B...|
+  |........B..|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |...........|
+  |........B..|
+  |.......B...|
+  |.......B..C|
+  |.......B...|
+  |......B....|
+  |.....B.....|
+paint_grid layer=4 frame=0 x=14 y=18 legend=K:#342862 rows:1
+  |KK|
+paint_grid layer=4 frame=0 x=15 y=20 legend=S:#f0b07a rows:1
+  |S|
+paint_grid layer=4 frame=0 x=16 y=21 legend=K:#342862 rows:1
+  |K|
+paint_grid layer=4 frame=1 x=14 y=18 legend=K:#342862,S:#f0b07a rows:4
+  |KK.|
+  |...|
+  |.S.|
+  |..K|
+paint_grid layer=4 frame=2 x=14 y=19 legend=K:#342862,S:#f0b07a rows:4
+  |KK.|
+  |...|
+  |.S.|
+  |..K|
+paint_grid layer=4 frame=3 x=13 y=19 legend=K:#342862,S:#f0b07a rows:4
+  |KK.|
+  |...|
+  |.S.|
+  |..K|
+paint_grid layer=4 frame=4 x=17 y=18 legend=K:#342862,S:#f0b07a rows:4
+  |KK|
+  |..|
+  |.S|
+  |.K|
+paint_grid layer=4 frame=5 x=14 y=18 legend=K:#342862,S:#f0b07a rows:4
+  |KK|
+  |..|
+  |.S|
+  |.K|
+paint_grid layer=4 frame=6 frame_to=7 x=12 y=18 legend=K:#342862,S:#f0b07a rows:4
+  |KK|
+  |..|
+  |.S|
+  |.K|
+paint_grid layer=4 frame=8 frame_to=9 x=14 y=18 legend=K:#342862,S:#f0b07a rows:4
+  |KK.|
+  |...|
+  |.S.|
+  |..K|
+paint_grid layer=7 frame=4 x=29 y=25 legend=C:#5ad8f8 rows:3
+  |C.....CC....|
+  |............|
+  |...CC.....CC|
+paint_grid layer=8 frame=4 x=3 y=29 legend=B:#2a5fd0,C:#5ad8f8 rows:5
+  |B...|
+  |....|
+  |...C|
+  |....|
+  |.B..|
 add_tag name=beam from=0 to=9
-beam @5 erase pencil = 22,21 4x11
-    ....
-    ...D
-    ..EE
-    .DEF
-    .EFF
-    .EFF
-    .EFF
-    .DEF
-    ..EE
-    ...D
-    ....
-beam @5 grid 23,20 = 23,20 25x13
-    .........DDD.....DDD.....
-    ...DDDDDDEEEDDDDDEEEDDDDD
-    ..DDEEEEEFFFEEEEEFFFEEEEE
-    .DEEFFFFFFFFFFFFFFFFFFFFF
-    DDEFFFFFFFFFFFFFFFFFFFFFF
-    DEFFFEEEFFFFEEEFFFFEEEFFF
-    DEFFFFFFFFFFFFFFFFFFFFFFF
-    DEFFFFFFFEEEFFFFEEEFFFFEE
-    DDEFFFFFFFFFFFFFFFFFFFFFF
-    .DEEFFFFFFFFFFFFFFFFFFFFF
-    ..DDEFFFEEEEEFFFEEEEEFFFE
-    ...DDEEEDDDDDEEEDDDDDEEED
-    .....DDD.....DDD.....DDD.
-beam @4 grid 30,23 = 30,23 30,23 #5ad8f8
-beam @5 grid 28,23 = 28,23 18x7
-    FFEEFFFFFEEFFFFFEE
-    FFFFFFFFFFFFFFFFFF
-    EEEFFFFEEEFFFFEEEF
-    FFFFFFFFFFFFFFFFFF
-    FFFFEEEFFFFEEEFFFF
-    FFFFFFFFFFFFFFFFFF
-    EFFFFFEEFFFFFEEFFF
-fx @5 erase pencil = 33,17 34,35 .
-fx @5 grid 34,15 = 34,15 2x23
-    E.
-    .E
-    .E
-    .E
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    ..
-    .E
-    .E
-    .E
-    E.
-beam @6 grid 26,23 = 26,23 19x7
-    EEFEEEEEEEEEFEEEEEE
-    FFFFFFFFFFFFFFFFFFF
-    FEEEFFFFEEEFFFFEEEF
-    FFFFFFFFFFFFFFFFFFF
-    EFFFFEEEFFFFEEEFFFF
-    FFFFFFFFFFFFFFFFFFF
-    EEEEEEFEEEEEEEEEFEE
-beam @7 erase pencil = 26,23 7x6
-    .......
-    .....EE
-    ...EEFF
-    ..EFFFF
-    ...EEEE
-    .....DD
-beam @7 grid 23,24 = 23,24 10x4
-    ........DD
-    .E....DDEE
-    EFE..DEEFF
-    .E....DDEE
-band @1 erase pencil = 5,18 3x4
-    .D.
-    ...
-    ...
-    ...
-band @1 grid 4,17 = 4,17 3x3
-    ..D
-    DDD
-    D..
+draw op=pencil layer=7 frame=5 color=#ff00ff erase=true points=25,21 24,22 23,23 22,24 22,25 22,26 22,27 22,28 23,29 24,30 25,31
+paint_grid layer=7 frame=5 x=23 y=20 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:13
+  |.........BBB.....BBB.....|
+  |.......BBCCCBBBBBCCCBBBBB|
+  |...B..CCCWWWCCCCCWWWCCCCC|
+  |.B.C..WWW...WWWWW...WWWWW|
+  |.BC......................|
+  |BC.......................|
+  |BC.......................|
+  |BC..W....................|
+  |.BC......................|
+  |.B.C....WWWWW...WWWWW...W|
+  |...B.WWWCCCCCWWWCCCCCWWWC|
+  |.....CCCBBBBBCCCBBBBBCCCB|
+  |.....BBB.....BBB.....BBB.|
+paint_grid layer=7 frame=4 x=30 y=23 legend=C:#5ad8f8 rows:1
+  |C|
+paint_grid layer=7 frame=5 x=28 y=23 legend=C:#5ad8f8 rows:7
+  |..CC.....CC.....CC|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |..................|
+  |C.....CC.....CC...|
+draw op=pencil layer=8 frame=5 color=#ff00ff erase=true points=33,17 34,18 34,19 34,20 34,32 34,33 34,34 33,35
+paint_grid layer=8 frame=5 x=34 y=15 legend=C:#5ad8f8 rows:23
+  |C.|
+  |.C|
+  |.C|
+  |.C|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |..|
+  |.C|
+  |.C|
+  |.C|
+  |C.|
+paint_grid layer=7 frame=6 x=26 y=23 legend=C:#5ad8f8 rows:7
+  |...CC.....CC......C|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |C......CC.....CC...|
+draw op=pencil layer=7 frame=7 color=#ff00ff erase=true points=31,23 32,23 29,24 30,24 27,25 28,25 26,26 27,26 27,27 28,27 29,28 30,28
+paint_grid layer=7 frame=7 x=23 y=24 legend=B:#2a5fd0,C:#5ad8f8,W:#f6ffff rows:4
+  |........BB|
+  |.C....BBCC|
+  |CWC..BCC..|
+  |.C....BB..|
+draw op=pencil layer=3 frame=1 color=#ff00ff erase=true points=7,18 6,19 7,19 5,20 6,20 5,21
+paint_grid layer=3 frame=1 x=4 y=17 legend=B:#2a5fd0 rows:3
+  |..B|
+  |BB.|
+  |B..|

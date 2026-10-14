@@ -1,428 +1,425 @@
-atelier 5 1e55d8b9-a696-48e7-a563-9e6d03ed1cd3 0.1.0
+atelier 4 1e55d8b9-a696-48e7-a563-9e6d03ed1cd3 0.1.0
 new name=alien-idle width=32 height=32
-layer rename index=0 name=body
-layer add name=head
-layer add name=eyes
-layer add name=antennae
-palette set colors=#16311f,#2f9a3e,#63dc52,#c8f796
-legend A=#16311f
-body @0 grid 0,0 = 0,0 2x2
-    A.
-    .A
-body @0 grid 0,2 ~
-body @0 clear_cel = 0,0 1,1 .
-legend B=#2f9a3e C=#63dc52
-body @0 grid 8,22 = 8,22 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBABBBBBBBBABBA
-    AAAAAAAAAAAAAAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-legend D=#c8f796
-head @0 grid 6,8 = 6,8 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @0 grid 8,12 = 8,12 16x7
-    .AA..........AA.
-    ADDA........ADDA
-    AAAAA......AAAAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @0 grid 12,2 = 12,2 8x6
-    .A....A.
-    ADA..ADA
-    .A....A.
-    .A....A.
-    .A....A.
-    .A....A.
-body @0 grid 8,26 = 12,26 8x1
-    ABBBBBBA
-body @0 erase pencil = 12,27 8x1
-    .AAAAAA.
-frame add count=9
-body @1 grid 8,21 = 8,21 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @1 grid 6,7 = 6,7 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @1 grid 8,11 = 8,11 16x7
-    .AA..........AA.
-    ADDA........ADDA
-    AAAAA......AAAAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @1 grid 11,1 = 11,1 10x6
-    .A......A.
-    ADA....ADA
-    .A......A.
-    .A......A.
-    ..A....A..
-    ..A....A..
-body @2 grid 8,20 = 8,20 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @2 grid 6,6 = 6,6 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @2 grid 8,10 = 8,10 16x7
-    .AA..........AA.
-    ADDA........ADDA
-    AAAAA......AAAAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @2 grid 10,0 = 10,0 12x6
-    .A........A.
-    ADA......ADA
-    .A........A.
-    .A........A.
-    ..A......A..
-    ...A....A...
-body @3 grid 8,20 = 8,20 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @3 grid 6,6 = 6,6 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @3 grid 8,10 = 8,10 16x7
-    .AA..........AA.
-    ADDA........ADDA
-    AAAAA......AAAAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @3 grid 9,1 = 9,1 14x5
-    .A..........A.
-    ADA........ADA
-    .A..........A.
-    ..AA......AA..
-    ....A....A....
-body @4 grid 8,21 = 8,21 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @4 grid 6,7 = 6,7 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @4 grid 8,11 = 8,11 16x7
-    .AA..........AA.
-    ADDA........ADDA
-    AAAAA......AAAAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @4 grid 8,2 = 8,2 16x5
-    .A............A.
-    ADA..........ADA
-    .A............A.
-    ..AAA......AAA..
-    .....A....A.....
-body @5 grid 8,22 = 8,22 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @5 grid 6,8 = 6,8 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @5 grid 8,15 = 8,15 16x4
-    AAAAAA....AAAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @5 grid 8,3 = 8,3 16x5
-    .A............A.
-    ADA..........ADA
-    .A............A.
-    ..AAA......AAA..
-    .....A....A.....
-body @6 grid 8,23 = 8,23 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @6 grid 6,9 = 6,9 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @6 grid 8,16 = 8,16 16x2
-    A..............A
-    .AAAAA....AAAAA.
-antennae @6 grid 9,4 = 9,4 14x5
-    .A..........A.
-    ADA........ADA
-    .A..........A.
-    ..AA......AA..
-    ....A....A....
-body @7 grid 8,24 = 8,24 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @7 grid 6,10 = 6,10 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @7 grid 8,17 = 8,17 16x4
-    AAAAAA....AAAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @7 grid 10,4 = 10,4 12x6
-    .A........A.
-    ADA......ADA
-    .A........A.
-    .A........A.
-    ..A......A..
-    ...A....A...
-body @8 grid 8,24 = 8,24 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @8 grid 6,10 = 6,10 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @8 grid 8,14 = 8,14 16x7
-    .AA..........AA.
-    ADDA........ADDA
-    AAAAA......AAAAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @8 grid 11,4 = 11,4 10x6
-    .A......A.
-    ADA....ADA
-    .A......A.
-    .A......A.
-    ..A....A..
-    ..A....A..
-body @9 grid 8,23 = 8,23 16x8
-    ......ABBA......
-    ...AAACCCCAAA...
-    AAAACCCCCCCCAAAA
-    ACCACCCCCCCCACCA
-    ABBAABBBBBBAABBA
-    AAAA.AAAAAA.AAAA
-    ....ACA..ACA....
-    ....AAA..AAA....
-head @9 grid 6,9 = 6,9 20x14
-    ......AAAAAAAA......
-    ....AACDDDDDDCAA....
-    ..AADDCCCCCCCCDDAA..
-    .ADCCCCCCCCCCCCCCDA.
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCA
-    .ABCCCCCCCCCCCCCCBA.
-    ..ABCCCCCCCCCCCCBA..
-    ...ABBBBBBBBBBBBA...
-    ....ABBBBAABBBBA....
-    .....ABBBBBBBBA.....
-    ......AAAAAAAA......
-eyes @9 grid 8,13 = 8,13 16x7
-    .AA..........AA.
-    ADDA........ADDA
-    AAAAA......AAAAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-    ...AA......AA...
-antennae @9 grid 12,3 = 12,3 8x6
-    .A....A.
-    ADA..ADA
-    .A....A.
-    .A....A.
-    .A....A.
-    .A....A.
+layer op=rename index=0 name=body
+layer op=add name=head
+layer op=add name=eyes
+layer op=add name=antennae
+palette op=set colors=#16311f,#2f9a3e,#63dc52,#c8f796
+paint_grid layer=0 frame=0 x=0 y=0 legend=d:#16311f rows:2
+  |d.|
+  |.d|
+paint_grid layer=0 frame=0 x=0 y=2 legend={} rows:0
+draw op=clear_cel layer=0 frame=0
+paint_grid layer=0 frame=0 x=8 y=22 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssdssssssssdssd|
+  |dddddddddddddddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=0 x=6 y=8 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=0 x=8 y=12 legend=d:#16311f,l:#c8f796 rows:7
+  |.dd..........dd.|
+  |dlld........dlld|
+  |ddddd......ddddd|
+  |ddddd......ddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=0 x=12 y=2 legend=d:#16311f,l:#c8f796 rows:6
+  |.d....d.|
+  |dld..dld|
+  |.d....d.|
+  |.d....d.|
+  |.d....d.|
+  |.d....d.|
+paint_grid layer=0 frame=0 x=8 y=26 legend=d:#16311f,s:#2f9a3e rows:2
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+draw op=pencil layer=0 frame=0 color=#00000000 erase=true points=12,27 19,27
+frame op=add count=9
+paint_grid layer=0 frame=1 x=8 y=21 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=1 x=6 y=7 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=1 x=8 y=11 legend=d:#16311f,l:#c8f796 rows:7
+  |.dd..........dd.|
+  |dlld........dlld|
+  |ddddd......ddddd|
+  |ddddd......ddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=1 x=11 y=1 legend=d:#16311f,l:#c8f796 rows:6
+  |.d......d.|
+  |dld....dld|
+  |.d......d.|
+  |.d......d.|
+  |..d....d..|
+  |..d....d..|
+paint_grid layer=0 frame=2 x=8 y=20 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=2 x=6 y=6 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=2 x=8 y=10 legend=d:#16311f,l:#c8f796 rows:7
+  |.dd..........dd.|
+  |dlld........dlld|
+  |ddddd......ddddd|
+  |ddddd......ddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=2 x=10 y=0 legend=d:#16311f,l:#c8f796 rows:6
+  |.d........d.|
+  |dld......dld|
+  |.d........d.|
+  |.d........d.|
+  |..d......d..|
+  |...d....d...|
+paint_grid layer=0 frame=3 x=8 y=20 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=3 x=6 y=6 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=3 x=8 y=10 legend=d:#16311f,l:#c8f796 rows:7
+  |.dd..........dd.|
+  |dlld........dlld|
+  |ddddd......ddddd|
+  |ddddd......ddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=3 x=9 y=1 legend=d:#16311f,l:#c8f796 rows:5
+  |.d..........d.|
+  |dld........dld|
+  |.d..........d.|
+  |..dd......dd..|
+  |....d....d....|
+paint_grid layer=0 frame=4 x=8 y=21 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=4 x=6 y=7 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=4 x=8 y=11 legend=d:#16311f,l:#c8f796 rows:7
+  |.dd..........dd.|
+  |dlld........dlld|
+  |ddddd......ddddd|
+  |ddddd......ddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=4 x=8 y=2 legend=d:#16311f,l:#c8f796 rows:5
+  |.d............d.|
+  |dld..........dld|
+  |.d............d.|
+  |..ddd......ddd..|
+  |.....d....d.....|
+paint_grid layer=0 frame=5 x=8 y=22 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=5 x=6 y=8 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=5 x=8 y=15 legend=d:#16311f rows:4
+  |dddddd....dddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=5 x=8 y=3 legend=d:#16311f,l:#c8f796 rows:5
+  |.d............d.|
+  |dld..........dld|
+  |.d............d.|
+  |..ddd......ddd..|
+  |.....d....d.....|
+paint_grid layer=0 frame=6 x=8 y=23 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=6 x=6 y=9 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=6 x=8 y=16 legend=d:#16311f rows:2
+  |d..............d|
+  |.ddddd....ddddd.|
+paint_grid layer=3 frame=6 x=9 y=4 legend=d:#16311f,l:#c8f796 rows:5
+  |.d..........d.|
+  |dld........dld|
+  |.d..........d.|
+  |..dd......dd..|
+  |....d....d....|
+paint_grid layer=0 frame=7 x=8 y=24 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=7 x=6 y=10 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=7 x=8 y=17 legend=d:#16311f rows:4
+  |dddddd....dddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=7 x=10 y=4 legend=d:#16311f,l:#c8f796 rows:6
+  |.d........d.|
+  |dld......dld|
+  |.d........d.|
+  |.d........d.|
+  |..d......d..|
+  |...d....d...|
+paint_grid layer=0 frame=8 x=8 y=24 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=8 x=6 y=10 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=8 x=8 y=14 legend=d:#16311f,l:#c8f796 rows:7
+  |.dd..........dd.|
+  |dlld........dlld|
+  |ddddd......ddddd|
+  |ddddd......ddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=8 x=11 y=4 legend=d:#16311f,l:#c8f796 rows:6
+  |.d......d.|
+  |dld....dld|
+  |.d......d.|
+  |.d......d.|
+  |..d....d..|
+  |..d....d..|
+paint_grid layer=0 frame=9 x=8 y=23 legend=b:#63dc52,d:#16311f,s:#2f9a3e rows:8
+  |......dssd......|
+  |...dddbbbbddd...|
+  |ddddbbbbbbbbdddd|
+  |dbbdbbbbbbbbdbbd|
+  |dssddssssssddssd|
+  |dddd.dddddd.dddd|
+  |....dbd..dbd....|
+  |....ddd..ddd....|
+paint_grid layer=1 frame=9 x=6 y=9 legend=b:#63dc52,d:#16311f,l:#c8f796,s:#2f9a3e rows:14
+  |......dddddddd......|
+  |....ddbllllllbdd....|
+  |..ddllbbbbbbbblldd..|
+  |.dlbbbbbbbbbbbbbbld.|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |dbbbbbbbbbbbbbbbbbbd|
+  |.dsbbbbbbbbbbbbbbsd.|
+  |..dsbbbbbbbbbbbbsd..|
+  |...dssssssssssssd...|
+  |....dssssddssssd....|
+  |.....dssssssssd.....|
+  |......dddddddd......|
+paint_grid layer=2 frame=9 x=8 y=13 legend=d:#16311f,l:#c8f796 rows:7
+  |.dd..........dd.|
+  |dlld........dlld|
+  |ddddd......ddddd|
+  |ddddd......ddddd|
+  |.ddddd....ddddd.|
+  |..dddd....dddd..|
+  |...dd......dd...|
+paint_grid layer=3 frame=9 x=12 y=3 legend=d:#16311f,l:#c8f796 rows:6
+  |.d....d.|
+  |dld..dld|
+  |.d....d.|
+  |.d....d.|
+  |.d....d.|
+  |.d....d.|
 add_tag name=idle direction=forward from=0 to=9
-antennae @3 clear_cel = 9,1 22,5 .
-antennae @3 grid 9,0 = 9,0 14x6
-    .A..........A.
-    ADA........ADA
-    .A..........A.
-    ..A........A..
-    ...A......A...
-    ....A....A....
-antennae @4 clear_cel = 8,2 23,6 .
-antennae @4 grid 8,1 = 8,1 16x6
-    .A............A.
-    ADA..........ADA
-    .A............A.
-    ..A..........A..
-    ...AA......AA...
-    .....A....A.....
-antennae @5 clear_cel = 8,3 23,7 .
-antennae @5 grid 8,2 = 8,2 16x6
-    .A............A.
-    ADA..........ADA
-    .A............A.
-    ..A..........A..
-    ...AA......AA...
-    .....A....A.....
-antennae @6 clear_cel = 9,4 22,8 .
-antennae @6 grid 9,3 = 9,3 14x6
-    .A..........A.
-    ADA........ADA
-    .A..........A.
-    ..A........A..
-    ...A......A...
-    ....A....A....
+draw op=clear_cel layer=3 frame=3
+paint_grid layer=3 frame=3 x=9 y=0 legend=d:#16311f,l:#c8f796 rows:6
+  |.d..........d.|
+  |dld........dld|
+  |.d..........d.|
+  |..d........d..|
+  |...d......d...|
+  |....d....d....|
+draw op=clear_cel layer=3 frame=4
+paint_grid layer=3 frame=4 x=8 y=1 legend=d:#16311f,l:#c8f796 rows:6
+  |.d............d.|
+  |dld..........dld|
+  |.d............d.|
+  |..d..........d..|
+  |...dd......dd...|
+  |.....d....d.....|
+draw op=clear_cel layer=3 frame=5
+paint_grid layer=3 frame=5 x=8 y=2 legend=d:#16311f,l:#c8f796 rows:6
+  |.d............d.|
+  |dld..........dld|
+  |.d............d.|
+  |..d..........d..|
+  |...dd......dd...|
+  |.....d....d.....|
+draw op=clear_cel layer=3 frame=6
+paint_grid layer=3 frame=6 x=9 y=3 legend=d:#16311f,l:#c8f796 rows:6
+  |.d..........d.|
+  |dld........dld|
+  |.d..........d.|
+  |..d........d..|
+  |...d......d...|
+  |....d....d....|

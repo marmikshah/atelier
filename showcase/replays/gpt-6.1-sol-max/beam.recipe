@@ -1,490 +1,359 @@
-atelier 5 e033b66f-de26-47fd-a225-53e573f00611 0.1.0
+atelier 4 e033b66f-de26-47fd-a225-53e573f00611 0.1.0
 new name="Cupped-Hand Beam" width=48 height=48
-palette set colors=#1e223d,#4d5277,#e47757,#f7cb8e,#44d7ce,#f8fff0
-layer rename index=0 name="Rear leg"
-layer add name="Front leg"
-layer add name=Scarf
-layer add name=Body
-layer add name="Rear arm"
-layer add name=Head
-layer add name="Front arm"
-layer add name="Energy beam"
-layer add name="Energy motes"
-legend A=#1e223d
-Body @0 grid 11,20 = 11,20 8x11
-    ...AAA..
-    ..AAAAA.
-    .AAAAAAA
-    .AAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    .AAAAAAA
-    .AAAAAA.
-    .AAAAAA.
-    ..AAAAA.
-"Rear leg" @0 grid 5,28 = 5,28 11x15
-    .......AAA.
-    ......AAAAA
-    ......AAAAA
-    .....AAAAA.
-    .....AAAAA.
-    ....AAAAA..
-    ....AAAAA..
-    ...AAAAA...
-    ...AAAA....
-    ..AAAA.....
-    ..AAAA.....
-    .AAAAA.....
-    .AAAAA.....
-    AAAAAAA....
-    AAAAAAA....
-"Front leg" @0 grid 13,29 = 13,29 13x14
-    .AAAA........
-    AAAAAA.......
-    AAAAAAA......
-    .AAAAAAA.....
-    ..AAAAAAA....
-    ...AAAAAAA...
-    ....AAAAAA...
-    .....AAAAA...
-    .....AAAAA...
-    .....AAAAA...
-    .....AAAAA...
-    .....AAAAA...
-    .....AAAAAAAA
-    .....AAAAAAAA
-Scarf @0 grid 5,21 = 5,21 10x6
-    ......AAA.
-    ....AAAAAA
-    ..AAAAAAA.
-    AAAAAAAA..
-    .AAAAA....
-    ..AA......
-"Rear arm" @0 grid 16,21 = 16,21 11x5
-    .AA.....AA.
-    AAAAA..AAAA
-    AAAAAAAAAAA
-    .AAAAAAAAA.
-    ..AAAAA....
-Head @0 grid 12,10 = 12,10 10x12
-    ....A.....
-    .A..AA.A..
-    .AAAAAAA..
-    AAAAAAAAA.
-    AAAAAAAAA.
-    .AAAAAAAA.
-    .AAAAAAAA.
-    .AAAAAAAAA
-    ..AAAAAAA.
-    ...AAAAA..
-    ....AAA...
-    ....AAAA..
-"Front arm" @0 grid 13,23 = 13,23 14x7
-    .AA...........
-    AAAAA.........
-    AAAAAAAA...AAA
-    .AAAAAAAAAAAAA
-    ..AAAAAAAAAAAA
-    ...AAAAAAAAAA.
-    .......AAAAA..
-legend B=#4d5277 C=#f7cb8e
-"Rear leg" @0 grid 5,28 = 6,29 9x13
-    .....ABBB
-    .....ABBB
-    ....ABBBA
-    ....ABBBA
-    ...ABBBA.
-    ...ABBBA.
-    ..ABBBA..
-    ..ABBA...
-    .ABBA....
-    .ACCA....
-    ACCCA....
-    ABBBA....
-    BBBBBA...
-legend D=#e47757
-"Front leg" @0 grid 13,29 = 14,30 11x12
-    BBBBA......
-    BBBBBA.....
-    ABBBBBA....
-    .ABBBBBA...
-    ..ABBDBBA..
-    ...ABBBBA..
-    ....ABBBA..
-    ....ABBBA..
-    ....ACCCA..
-    ....ACCCA..
-    ....ABBBA..
-    ....ABBBBBB
-Scarf @0 grid 5,21 = 7,22 7x4
-    ..AADDD
-    AADDDDA
-    DDBDAA.
-    DBAA...
-Body @0 grid 11,20 = 12,21 6x10
-    .ADBAA
-    ADDDDA
-    ADDDDC
-    DDDDCC
-    DDDCDD
-    DDDDBD
-    ADBBDD
-    ADBDDA
-    AAAAAA
-    .ABAAA
-"Rear arm" @0 grid 16,21 = 17,22 9x3
-    CCAA..ACC
-    DBCCAACCC
-    ADBCCCAAA
-Head @0 grid 12,10 = 14,12 7x10
-    AABAAA.
-    BBBBBAA
-    BBBACCA
-    AAACCCA
-    AACCACA
-    ACACCCC
-    AACCCCA
-    .ACCCA.
-    ..ACA..
-    ..ACCA.
-legend E=#f8fff0
-"Front arm" @0 grid 13,23 = 14,24 12x5
-    DDDA........
-    DDDDCAA...AC
-    ABDCCCCCAAAC
-    .ABBCCCCCECC
-    ..AAAACCCCCA
-Head @0 pencil #e47757 size 1 = 15,14 3x8
-    DDD
-    AAC
-    ACC
-    DAC
-    ADC
-    ADC
-    .AC
-    .AD
-Head @0 pencil #f8fff0 size 1 = 18,16 18,16 #f8fff0
-Head @0 pencil #1e223d size 1 = 18,15 2x4
-    AC
-    EA
-    CC
-    CA
-"Front arm" @0 pencil #e47757 size 1 = 18,27 3x2
-    DCC
-    ADD
-"Front arm" @0 pencil #f8fff0 size 1 = 20,26 21,26 #f8fff0
-"Front leg" @0 pencil #e47757 size 1 = 17,32 7x10
-    DBBA...
-    BDBBA..
-    BBDBBA.
-    ABBBBA.
-    .ABBBA.
-    .ABBBA.
-    .ACCCA.
-    .ACCCA.
-    .ABBBA.
-    .ADDDDD
-"Rear leg" @0 pencil #e47757 size 1 = 7,41 9,41 #e47757
-"Rear leg" @0 pencil #1e223d size 1 = 9,32 4x5
-    .ABA
-    ABBB
-    ABAB
-    BBBA
-    ABA.
-Body @0 pencil #f7cb8e size 1 = 13,22 13,23 #f7cb8e
-Body @0 pencil #4d5277 size 1 = 13,27 13,27 #4d5277
-Body @0 pencil #e47757 size 1 = 16,29 16,29 #e47757
-Scarf @0 pencil #f7cb8e size 1 = 9,23 2x2
-    DC
-    CD
-frame add copy_from=0 count=9 duration_ms=100
-Body @1 shift dx=-1 dy=1 wrap=false
-Head @1 shift dx=-1 dy=1 wrap=false
-"Rear arm" @1 shift dx=-1 dy=1 wrap=false
-"Front arm" @1 shift dx=-1 dy=1 wrap=false
-Scarf @1 shift dx=-1 dy=1 wrap=false
-legend F=#44d7ce
-"Energy beam" @1 grid 24,23 = 24,23 5x5
-    .FFF.
-    FFFFF
-    FFEFF
-    FFFFF
-    .FFF.
-"Energy motes" @1 pencil #44d7ce size 1 = 28,20 4x11
-    F...
-    ....
-    ....
-    ....
-    ...F
-    ....
-    ....
-    ....
-    ....
-    ....
-    F...
-Body @2 shift dx=-1 dy=1 wrap=false
-Head @2 shift dx=-1 dy=1 wrap=false
-"Rear arm" @2 shift dx=-1 dy=1 wrap=false
-"Front arm" @2 shift dx=-1 dy=1 wrap=false
-Scarf @2 shift dx=-1 dy=1 wrap=false
-"Energy beam" @2 grid 23,22 = 23,22 7x7
-    ..FFF..
-    .FFEFF.
-    FFEEEFF
-    FEEEEEF
-    FFEEEFF
-    .FFEFF.
-    ..FFF..
-"Energy motes" @2 pencil #44d7ce size 1 = 25,19 8x13
-    F.......
-    ....F...
-    .....F..
-    ........
-    ........
-    ........
-    .......F
-    ........
-    ........
-    ........
-    ........
-    ....F...
-    .....F..
-"Energy motes" @2 pencil #f8fff0 size 1 = 31,25 31,25 #f8fff0
-Body @3 shift dx=1 dy=-1 wrap=false
-Head @3 shift dx=1 dy=-1 wrap=false
-"Rear arm" @3 shift dx=2 dy=-1 wrap=false
-"Front arm" @3 shift dx=2 dy=-1 wrap=false
-Scarf @3 shift dx=1 dy=-1 wrap=false
-"Energy beam" @3 grid 25,20 = 25,20 15x7
-    ...F...........
-    ..FEF..........
-    .FEEEFFFFFFF...
-    FEEEEEEEEEEEEEF
-    .FEEEFFFFFFF...
-    ..FEF..........
-    ...F...........
-"Energy motes" @3 pencil #44d7ce size 1 = 30,18 7x11
-    F......
-    .......
-    .....FF
-    .......
-    .......
-    .......
-    .......
-    .......
-    .......
-    .......
-    ..FF...
-Head @3 pencil #f8fff0 size 1 = 21,16 21,16 #f8fff0
-Body @3 pencil #44d7ce size 1 = 18,22 18,23 #44d7ce
-Body @4 shift dx=-1 dy=0 wrap=false
-Head @4 shift dx=-2 dy=0 wrap=false
-"Rear arm" @4 clear 16,21 27,25 = 16,21 26,25 .
-"Rear arm" @4 grid 14,20 = 14,20 14x5
-    .AA...........
-    ACCA.......AA.
-    ADBCCAAAAACCCA
-    .ADBCCCCCCCCA.
-    ..AAAAAAAAAA..
-"Front arm" @4 clear 13,23 27,29 = 13,23 26,29 .
-"Front arm" @4 grid 12,22 = 12,22 15x7
-    .AA............
-    ADDDA.......AA.
-    ADDDDCA....ACCA
-    .ABDCCCCAAACCA.
-    ..ABDCCCCCCCCA.
-    ...AAACCCCCCA..
-    ......AAAAAA...
-Scarf @4 clear 5,21 14,26 = 5,21 14,26 .
-Scarf @4 grid 3,20 = 3,20 12x6
-    .......AAAA.
-    ....AAADDDAA
-    ..AADDDDCAA.
-    AADDCBBAA...
-    .AABBAA.....
-    ...AA.......
-"Energy beam" @4 grid 22,19 = 22,19 26x11
-    ....F.....................
-    ...FFF....................
-    ..FFEFF...................
-    .FFEEEFFFFFFFFFFFFFFFFFF..
-    FFEEEEEEEEEEEEEEEEEEEEEFF.
-    FEEEEEEEEEEEEEEEEEEEEEEEEF
-    FFEEEEEEEEEEEEEEEEEEEFFFF.
-    .FFEEEFFFFFFFFFFFFFFFFF...
-    ..FFEFF...................
-    ...FFF....................
-    ....F.....................
-"Energy motes" @4 pencil #44d7ce size 1 = 20,18 15x13
-    .............FF
-    ...............
-    .F.............
-    F..............
-    ...............
-    ...............
-    ...............
-    ...............
-    ...............
-    F..............
-    .F.............
-    ...............
-    ...........FF..
-"Energy motes" @4 pencil #f8fff0 size 1 = 33,18 3x13
-    FFE
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    E..
-Head @4 pencil #f8fff0 size 1 = 18,17 18,17 #f8fff0
-Body @4 pencil #44d7ce size 1 = 16,23 16,24 #44d7ce
-"Front arm" @4 pencil #f8fff0 size 1 = 20,25 3x2
-    EEA
-    CCE
-Body @5 shift dx=-2 dy=0 wrap=false
-Head @5 shift dx=-3 dy=0 wrap=false
-"Rear arm" @5 clear 16,21 27,25 = 16,21 26,25 .
-"Rear arm" @5 grid 13,20 = 13,20 14x5
-    .AA...........
-    ACCA.......AA.
-    ADBCCAAAAACCCA
-    .ADBCCCCCCCCA.
-    ..AAAAAAAAAA..
-"Front arm" @5 clear 13,23 27,29 = 13,23 26,29 .
-"Front arm" @5 grid 11,22 = 11,22 15x7
-    .AA............
-    ADDDA.......AA.
-    ADDDDCA....ACCA
-    .ABDCCCCAAACCA.
-    ..ABDCCCCCCCCA.
-    ...AAACCCCCCA..
-    ......AAAAAA...
-Scarf @5 clear 5,21 14,26 = 5,21 14,26 .
-Scarf @5 grid 2,19 = 2,19 13x5
-    ...AA........
-    AAADDDDA.....
-    ...AACDDDAAA.
-    .....AACDDDAA
-    .......AAAA..
-"Energy beam" @5 grid 21,20 = 21,20 27x9
-    ....F......................
-    ...FFF.....................
-    ..FFEFFFFFFFFFFFFFFFFFFF...
-    .FFEEEEEEEFFEEEEEEEEEEFFFF.
-    FEEEEEEEEEEEEEEEEEEEEEEEEEF
-    .FFEEEEEEEEEEEEFFEEEEEEFFF.
-    ..FFEFF.FFFFFFFFFFFFFFFF...
-    ...FFF.....................
-    ....F......................
-"Energy motes" @5 pencil #44d7ce size 1 = 18,17 20x15
-    .................FF.
-    ...................F
-    .F..................
-    F...................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    F...................
-    .F..................
-    ....................
-    ...............FFF..
-"Energy motes" @5 pencil #f8fff0 size 1 = 36,18 3x14
-    .FE
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    ...
-    E..
-Head @5 pencil #f8fff0 size 1 = 17,17 17,17 #f8fff0
-Body @5 pencil #44d7ce size 1 = 15,23 15,24 #44d7ce
-"Front arm" @5 pencil #f8fff0 size 1 = 19,25 3x2
-    EEA
-    CCE
-Body @6 shift dx=-2 dy=1 wrap=false
-Head @6 shift dx=-2 dy=1 wrap=false
-"Rear arm" @6 clear 16,21 27,25 = 16,21 26,25 .
-"Rear arm" @6 grid 13,21 = 13,21 14x5
-    .AA...........
-    ACCA.......AA.
-    ADBCCAAAAACCCA
-    .ADBCCCCCCCCA.
-    ..AAAAAAAAAA..
-"Front arm" @6 clear 13,23 27,29 = 13,23 26,29 .
-"Front arm" @6 grid 11,23 = 11,23 15x7
-    .AA............
-    ADDDA.......AA.
-    ADDDDCA....ACCA
-    .ABDCCCCAAACCA.
-    ..ABDCCCCCCCCA.
-    ...AAACCCCCCA..
-    ......AAAAAA...
-Scarf @6 clear 5,21 14,26 = 5,21 14,26 .
-Scarf @6 grid 3,21 = 3,21 12x6
-    .......AAAA.
-    ....AAADDDAA
-    ..AADDDDCAA.
-    AADDCBBAA...
-    .AABBAA.....
-    ...AA.......
-"Energy beam" @6 grid 22,22 = 22,22 26x7
-    ...F......................
-    ..FFF..FFFFFFFF...FFFFFF..
-    .FEEEEF.FEEEEEEFFF..FEEFF.
-    FEEEEEEFEEEEEEFF..FEEEF..F
-    .FEEEFF.FFFFFFFFF...FFFFF.
-    ..FFF....FFFFF.......FF...
-    ...F......................
-"Energy motes" @6 pencil #44d7ce size 1 = 36,20 5x11
-    ..FFF
-    .....
-    .....
-    .....
-    .....
-    .....
-    .....
-    .....
-    .....
-    .....
-    FFF..
-Head @6 pencil #f8fff0 size 1 = 18,18 18,18 #f8fff0
-"Front arm" @6 pencil #f8fff0 size 1 = 19,26 20,26 #f8fff0
-Body @7 shift dx=-1 dy=1 wrap=false
-Head @7 shift dx=-1 dy=1 wrap=false
-"Rear arm" @7 shift dx=-1 dy=1 wrap=false
-"Front arm" @7 shift dx=-1 dy=1 wrap=false
-Scarf @7 shift dx=-1 dy=1 wrap=false
-"Energy beam" @7 grid 24,24 = 24,24 22x4
-    .F..............FFF...
-    FFF...FFFFF..FFF....FF
-    .F.......FFF..........
-    ...............FF.....
-Body @8 shift dx=0 dy=1 wrap=false
-Head @8 shift dx=0 dy=1 wrap=false
-"Rear arm" @8 shift dx=0 dy=1 wrap=false
-"Front arm" @8 shift dx=0 dy=1 wrap=false
-Scarf @8 shift dx=0 dy=1 wrap=false
-"Energy motes" @8 pencil #44d7ce size 1 = 29,24 5x3
-    F....
-    .....
-    ...FF
+palette op=set colors=#1e223d,#4d5277,#e47757,#f7cb8e,#44d7ce,#f8fff0
+layer op=rename index=0 name="Rear leg"
+layer op=add name="Front leg"
+layer op=add name=Scarf
+layer op=add name=Body
+layer op=add name="Rear arm"
+layer op=add name=Head
+layer op=add name="Front arm"
+layer op=add name="Energy beam"
+layer op=add name="Energy motes"
+paint_grid layer=3 frame=0 x=11 y=20 legend=k:#1e223d rows:11
+  |...kkk..|
+  |..kkkkk.|
+  |.kkkkkkk|
+  |.kkkkkkk|
+  |kkkkkkkk|
+  |kkkkkkkk|
+  |kkkkkkkk|
+  |.kkkkkkk|
+  |.kkkkkk.|
+  |.kkkkkk.|
+  |..kkkkk.|
+paint_grid layer=0 frame=0 x=5 y=28 legend=k:#1e223d rows:15
+  |.......kkk.|
+  |......kkkkk|
+  |......kkkkk|
+  |.....kkkkk.|
+  |.....kkkkk.|
+  |....kkkkk..|
+  |....kkkkk..|
+  |...kkkkk...|
+  |...kkkk....|
+  |..kkkk.....|
+  |..kkkk.....|
+  |.kkkkk.....|
+  |.kkkkk.....|
+  |kkkkkkk....|
+  |kkkkkkk....|
+paint_grid layer=1 frame=0 x=13 y=29 legend=k:#1e223d rows:14
+  |.kkkk........|
+  |kkkkkk.......|
+  |kkkkkkk......|
+  |.kkkkkkk.....|
+  |..kkkkkkk....|
+  |...kkkkkkk...|
+  |....kkkkkk...|
+  |.....kkkkk...|
+  |.....kkkkk...|
+  |.....kkkkk...|
+  |.....kkkkk...|
+  |.....kkkkk...|
+  |.....kkkkkkkk|
+  |.....kkkkkkkk|
+paint_grid layer=2 frame=0 x=5 y=21 legend=k:#1e223d rows:6
+  |......kkk.|
+  |....kkkkkk|
+  |..kkkkkkk.|
+  |kkkkkkkk..|
+  |.kkkkk....|
+  |..kk......|
+paint_grid layer=4 frame=0 x=16 y=21 legend=k:#1e223d rows:5
+  |.kk.....kk.|
+  |kkkkk..kkkk|
+  |kkkkkkkkkkk|
+  |.kkkkkkkkk.|
+  |..kkkkk....|
+paint_grid layer=5 frame=0 x=12 y=10 legend=k:#1e223d rows:12
+  |....k.....|
+  |.k..kk.k..|
+  |.kkkkkkk..|
+  |kkkkkkkkk.|
+  |kkkkkkkkk.|
+  |.kkkkkkkk.|
+  |.kkkkkkkk.|
+  |.kkkkkkkkk|
+  |..kkkkkkk.|
+  |...kkkkk..|
+  |....kkk...|
+  |....kkkk..|
+paint_grid layer=6 frame=0 x=13 y=23 legend=k:#1e223d rows:7
+  |.kk...........|
+  |kkkkk.........|
+  |kkkkkkkk...kkk|
+  |.kkkkkkkkkkkkk|
+  |..kkkkkkkkkkkk|
+  |...kkkkkkkkkk.|
+  |.......kkkkk..|
+paint_grid layer=0 frame=0 x=5 y=28 legend=h:#f7cb8e,k:#1e223d,s:#4d5277 rows:15
+  |.......kkk.|
+  |......ksssk|
+  |......ksssk|
+  |.....ksssk.|
+  |.....ksssk.|
+  |....ksssk..|
+  |....ksssk..|
+  |...ksssk...|
+  |...kssk....|
+  |..kssk.....|
+  |..khhk.....|
+  |.khhhk.....|
+  |.ksssk.....|
+  |ksssssk....|
+  |kkkkkkk....|
+paint_grid layer=1 frame=0 x=13 y=29 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:14
+  |.kkkk........|
+  |kssssk.......|
+  |ksssssk......|
+  |.ksssssk.....|
+  |..ksssssk....|
+  |...kssossk...|
+  |....kssssk...|
+  |.....ksssk...|
+  |.....ksssk...|
+  |.....khhhk...|
+  |.....khhhk...|
+  |.....ksssk...|
+  |.....kssssssk|
+  |.....kkkkkkkk|
+paint_grid layer=2 frame=0 x=5 y=21 legend=k:#1e223d,o:#e47757,s:#4d5277 rows:6
+  |......kkk.|
+  |....kkoook|
+  |..kkooook.|
+  |kkoosokk..|
+  |.koskk....|
+  |..kk......|
+paint_grid layer=3 frame=0 x=11 y=20 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:11
+  |...kkk..|
+  |..koskk.|
+  |.kooookk|
+  |.koooohk|
+  |koooohhk|
+  |kooohook|
+  |koooosok|
+  |.kossook|
+  |.kosook.|
+  |.kkkkkk.|
+  |..kskkk.|
+paint_grid layer=4 frame=0 x=16 y=21 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:5
+  |.kk.....kk.|
+  |khhkk..khhk|
+  |koshhkkhhhk|
+  |.koshhhkkk.|
+  |..kkkkk....|
+paint_grid layer=5 frame=0 x=12 y=10 legend=h:#f7cb8e,k:#1e223d,s:#4d5277 rows:12
+  |....k.....|
+  |.k..kk.k..|
+  |.kkkskkk..|
+  |kkssssskk.|
+  |kkssskhhk.|
+  |.kkkkhhhk.|
+  |.kkkhhkhk.|
+  |.kkhkhhhhk|
+  |..kkhhhhk.|
+  |...khhhk..|
+  |....khk...|
+  |....khhk..|
+paint_grid layer=6 frame=0 x=13 y=23 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277,w:#f8fff0 rows:7
+  |.kk...........|
+  |koook.........|
+  |koooohkk...khk|
+  |.ksohhhhhkkkhk|
+  |..ksshhhhhwhhk|
+  |...kkkkhhhhhk.|
+  |.......kkkkk..|
+draw op=pencil layer=5 frame=0 color=#e47757 points=15,14 16,14 17,14 15,17 16,18 16,19 17,21 size=1
+draw op=pencil layer=5 frame=0 color=#f8fff0 points=[[18,16]] size=1
+draw op=pencil layer=5 frame=0 color=#1e223d points=18,15 19,16 19,18 size=1
+draw op=pencil layer=6 frame=0 color=#e47757 points=18,27 19,28 20,28 size=1
+draw op=pencil layer=6 frame=0 color=#f8fff0 points=20,26 21,26 size=1
+draw op=pencil layer=1 frame=0 color=#e47757 points=17,32 18,33 19,34 19,41 20,41 21,41 22,41 23,41 size=1
+draw op=pencil layer=0 frame=0 color=#e47757 points=7,41 8,41 9,41 size=1
+draw op=pencil layer=0 frame=0 color=#1e223d points=12,32 11,34 9,36 size=1
+draw op=pencil layer=3 frame=0 color=#f7cb8e points=13,22 13,23 size=1
+draw op=pencil layer=3 frame=0 color=#4d5277 points=13,27 14,28 size=1
+draw op=pencil layer=3 frame=0 color=#e47757 points=[[16,29]] size=1
+draw op=pencil layer=2 frame=0 color=#f7cb8e points=10,23 9,24 size=1
+frame op=add copy_from=0 count=9 duration_ms=100
+fx op=shift layer=3 frame=1 dx=-1 dy=1 wrap=false
+fx op=shift layer=5 frame=1 dx=-1 dy=1 wrap=false
+fx op=shift layer=4 frame=1 dx=-1 dy=1 wrap=false
+fx op=shift layer=6 frame=1 dx=-1 dy=1 wrap=false
+fx op=shift layer=2 frame=1 dx=-1 dy=1 wrap=false
+paint_grid layer=7 frame=1 x=24 y=23 legend=c:#44d7ce,w:#f8fff0 rows:5
+  |.ccc.|
+  |ccccc|
+  |ccwcc|
+  |ccccc|
+  |.ccc.|
+draw op=pencil layer=8 frame=1 color=#44d7ce points=28,20 31,24 28,30 size=1
+fx op=shift layer=3 frame=2 dx=-1 dy=1 wrap=false
+fx op=shift layer=5 frame=2 dx=-1 dy=1 wrap=false
+fx op=shift layer=4 frame=2 dx=-1 dy=1 wrap=false
+fx op=shift layer=6 frame=2 dx=-1 dy=1 wrap=false
+fx op=shift layer=2 frame=2 dx=-1 dy=1 wrap=false
+paint_grid layer=7 frame=2 x=23 y=22 legend=c:#44d7ce,w:#f8fff0 rows:7
+  |..ccc..|
+  |.ccwcc.|
+  |ccwwwcc|
+  |cwwwwwc|
+  |ccwwwcc|
+  |.ccwcc.|
+  |..ccc..|
+draw op=pencil layer=8 frame=2 color=#44d7ce points=25,19 29,20 30,21 32,25 29,30 30,31 size=1
+draw op=pencil layer=8 frame=2 color=#f8fff0 points=[[31,25]] size=1
+fx op=shift layer=3 frame=3 dx=1 dy=-1 wrap=false
+fx op=shift layer=5 frame=3 dx=1 dy=-1 wrap=false
+fx op=shift layer=4 frame=3 dx=2 dy=-1 wrap=false
+fx op=shift layer=6 frame=3 dx=2 dy=-1 wrap=false
+fx op=shift layer=2 frame=3 dx=1 dy=-1 wrap=false
+paint_grid layer=7 frame=3 x=25 y=20 legend=c:#44d7ce,w:#f8fff0 rows:7
+  |...c...........|
+  |..cwc..........|
+  |.cwwwccccccc...|
+  |cwwwwwwwwwwwwwc|
+  |.cwwwccccccc...|
+  |..cwc..........|
+  |...c...........|
+draw op=pencil layer=8 frame=3 color=#44d7ce points=30,18 32,28 33,28 35,20 36,20 size=1
+draw op=pencil layer=5 frame=3 color=#f8fff0 points=[[21,16]] size=1
+draw op=pencil layer=3 frame=3 color=#44d7ce points=18,22 18,23 size=1
+fx op=shift layer=3 frame=4 dx=-1 dy=0 wrap=false
+fx op=shift layer=5 frame=4 dx=-2 dy=0 wrap=false
+region op=clear layer=4 frame=4 rect=16,21,27,25
+paint_grid layer=4 frame=4 x=14 y=20 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:5
+  |.kk...........|
+  |khhk.......kk.|
+  |koshhkkkkkhhhk|
+  |.koshhhhhhhhk.|
+  |..kkkkkkkkkk..|
+region op=clear layer=6 frame=4 rect=13,23,27,29
+paint_grid layer=6 frame=4 x=12 y=22 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:7
+  |.kk............|
+  |koook.......kk.|
+  |koooohk....khhk|
+  |.ksohhhhkkkhhk.|
+  |..ksohhhhhhhhk.|
+  |...kkkhhhhhhk..|
+  |......kkkkkk...|
+region op=clear layer=2 frame=4 rect=5,21,14,26
+paint_grid layer=2 frame=4 x=3 y=20 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:6
+  |.......kkkk.|
+  |....kkkoookk|
+  |..kkoooohkk.|
+  |kkoohsskk...|
+  |.kksskk.....|
+  |...kk.......|
+paint_grid layer=7 frame=4 x=22 y=19 legend=c:#44d7ce,w:#f8fff0 rows:11
+  |....c.....................|
+  |...ccc....................|
+  |..ccwcc...................|
+  |.ccwwwcccccccccccccccccc..|
+  |ccwwwwwwwwwwwwwwwwwwwwwcc.|
+  |cwwwwwwwwwwwwwwwwwwwwwwwwc|
+  |ccwwwwwwwwwwwwwwwwwwwcccc.|
+  |.ccwwwccccccccccccccccc...|
+  |..ccwcc...................|
+  |...ccc....................|
+  |....c.....................|
+draw op=pencil layer=8 frame=4 color=#44d7ce points=33,18 34,18 31,30 32,30 21,20 20,21 20,27 21,28 size=1
+draw op=pencil layer=8 frame=4 color=#f8fff0 points=35,18 33,30 size=1
+draw op=pencil layer=5 frame=4 color=#f8fff0 points=[[18,17]] size=1
+draw op=pencil layer=3 frame=4 color=#44d7ce points=16,23 16,24 size=1
+draw op=pencil layer=6 frame=4 color=#f8fff0 points=20,25 21,25 22,26 size=1
+fx op=shift layer=3 frame=5 dx=-2 dy=0 wrap=false
+fx op=shift layer=5 frame=5 dx=-3 dy=0 wrap=false
+region op=clear layer=4 frame=5 rect=16,21,27,25
+paint_grid layer=4 frame=5 x=13 y=20 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:5
+  |.kk...........|
+  |khhk.......kk.|
+  |koshhkkkkkhhhk|
+  |.koshhhhhhhhk.|
+  |..kkkkkkkkkk..|
+region op=clear layer=6 frame=5 rect=13,23,27,29
+paint_grid layer=6 frame=5 x=11 y=22 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:7
+  |.kk............|
+  |koook.......kk.|
+  |koooohk....khhk|
+  |.ksohhhhkkkhhk.|
+  |..ksohhhhhhhhk.|
+  |...kkkhhhhhhk..|
+  |......kkkkkk...|
+region op=clear layer=2 frame=5 rect=5,21,14,26
+paint_grid layer=2 frame=5 x=2 y=19 legend=h:#f7cb8e,k:#1e223d,o:#e47757 rows:5
+  |...kk........|
+  |kkkooook.....|
+  |...kkhoookkk.|
+  |.....kkhoookk|
+  |.......kkkk..|
+paint_grid layer=7 frame=5 x=21 y=20 legend=c:#44d7ce,w:#f8fff0 rows:9
+  |....c......................|
+  |...ccc.....................|
+  |..ccwccccccccccccccccccc...|
+  |.ccwwwwwwwccwwwwwwwwwwcccc.|
+  |cwwwwwwwwwwwwwwwwwwwwwwwwwc|
+  |.ccwwwwwwwwwwwwccwwwwwwccc.|
+  |..ccwcc.cccccccccccccccc...|
+  |...ccc.....................|
+  |....c......................|
+draw op=pencil layer=8 frame=5 color=#44d7ce points=35,17 36,17 37,18 33,31 34,31 35,31 19,19 18,20 18,28 19,29 size=1
+draw op=pencil layer=8 frame=5 color=#f8fff0 points=38,18 36,31 size=1
+draw op=pencil layer=5 frame=5 color=#f8fff0 points=[[17,17]] size=1
+draw op=pencil layer=3 frame=5 color=#44d7ce points=15,23 15,24 size=1
+draw op=pencil layer=6 frame=5 color=#f8fff0 points=19,25 20,25 21,26 size=1
+fx op=shift layer=3 frame=6 dx=-2 dy=1 wrap=false
+fx op=shift layer=5 frame=6 dx=-2 dy=1 wrap=false
+region op=clear layer=4 frame=6 rect=16,21,27,25
+paint_grid layer=4 frame=6 x=13 y=21 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:5
+  |.kk...........|
+  |khhk.......kk.|
+  |koshhkkkkkhhhk|
+  |.koshhhhhhhhk.|
+  |..kkkkkkkkkk..|
+region op=clear layer=6 frame=6 rect=13,23,27,29
+paint_grid layer=6 frame=6 x=11 y=23 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:7
+  |.kk............|
+  |koook.......kk.|
+  |koooohk....khhk|
+  |.ksohhhhkkkhhk.|
+  |..ksohhhhhhhhk.|
+  |...kkkhhhhhhk..|
+  |......kkkkkk...|
+region op=clear layer=2 frame=6 rect=5,21,14,26
+paint_grid layer=2 frame=6 x=3 y=21 legend=h:#f7cb8e,k:#1e223d,o:#e47757,s:#4d5277 rows:6
+  |.......kkkk.|
+  |....kkkoookk|
+  |..kkoooohkk.|
+  |kkoohsskk...|
+  |.kksskk.....|
+  |...kk.......|
+paint_grid layer=7 frame=6 x=22 y=22 legend=c:#44d7ce,w:#f8fff0 rows:7
+  |...c......................|
+  |..ccc..cccccccc...cccccc..|
+  |.cwwwwc.cwwwwwwccc..cwwcc.|
+  |cwwwwwwcwwwwwwcc..cwwwc..c|
+  |.cwwwcc.ccccccccc...ccccc.|
+  |..ccc....ccccc.......cc...|
+  |...c......................|
+draw op=pencil layer=8 frame=6 color=#44d7ce points=38,20 39,20 40,20 36,30 37,30 38,30 size=1
+draw op=pencil layer=5 frame=6 color=#f8fff0 points=[[18,18]] size=1
+draw op=pencil layer=6 frame=6 color=#f8fff0 points=19,26 20,26 size=1
+fx op=shift layer=3 frame=7 dx=-1 dy=1 wrap=false
+fx op=shift layer=5 frame=7 dx=-1 dy=1 wrap=false
+fx op=shift layer=4 frame=7 dx=-1 dy=1 wrap=false
+fx op=shift layer=6 frame=7 dx=-1 dy=1 wrap=false
+fx op=shift layer=2 frame=7 dx=-1 dy=1 wrap=false
+paint_grid layer=7 frame=7 x=24 y=24 legend=c:#44d7ce rows:4
+  |.c..............ccc...|
+  |ccc...ccccc..ccc....cc|
+  |.c.......ccc..........|
+  |...............cc.....|
+fx op=shift layer=3 frame=8 dx=0 dy=1 wrap=false
+fx op=shift layer=5 frame=8 dx=0 dy=1 wrap=false
+fx op=shift layer=4 frame=8 dx=0 dy=1 wrap=false
+fx op=shift layer=6 frame=8 dx=0 dy=1 wrap=false
+fx op=shift layer=2 frame=8 dx=0 dy=1 wrap=false
+draw op=pencil layer=8 frame=8 color=#44d7ce points=29,24 32,26 33,26 size=1
 add_tag name="Gather · Release · Recoil · Settle" direction=forward from=0 to=9

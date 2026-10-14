@@ -1,230 +1,229 @@
-atelier 5 445c2873-e44f-4868-9b06-0c167ea33a04 0.1.0
+atelier 4 445c2873-e44f-4868-9b06-0c167ea33a04 0.1.0
 new name=sc-gpt-6-astra-xhigh-ball width=32 height=32
-palette set colors=#2a1c3a,#aa2e42,#f55b3d,#ffda99
-layer rename index=0 name="Cast shadow"
-layer add name="Rubber ball"
-legend A=#2a1c3a
-"Rubber ball" @0 grid 10,3 = 10,3 12x12
-    ....AAAA....
-    ..AAAAAAAA..
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    ..AAAAAAAA..
-    ....AAAA....
-legend B=#f55b3d C=#aa2e42
-"Rubber ball" @0 grid 10,3 = 11,4 10x10
-    .AABBBBAA.
-    ABBBBBBBBA
-    ABBBBBBBBA
-    BBBBBBBBBC
-    BBBBBBBBCC
-    BBBBBBBBCC
-    BBBBBBBCCC
-    ABBBBBCCCA
-    ABBBBCCCCA
-    .ACCCCCCA.
-"Cast shadow" @0 grid 12,27 = 12,27 8x3
-    ..AAAA..
-    AAAAAAAA
-    ..AAAA..
-legend D=#ffda99
-"Rubber ball" @0 grid 12,5 = 12,5 4x3
-    BDDD
-    DDDB
-    DDBB
-frame add copy_from=0 count=9 duration_ms=100
-"Cast shadow" @4 clear_cel = 12,27 19,29 .
-"Rubber ball" @4 clear_cel = 10,3 21,14 .
-"Rubber ball" @4 grid 6,22 = 6,22 20x7
-    ......AAAAAAAA......
-    ...AAABBBBBBBBAAA...
-    .AABBDDDDDDBBBBBBAA.
-    ABDDDDDBBBBBBBBBCCCA
-    ABBBBBBBBBBBCCCCCCCA
-    .AACCCCCCCCCCCCCCAA.
-    ....AAAAAAAAAAAA....
-"Cast shadow" @4 grid 5,27 = 5,27 22x3
-    ...AAAAAAAAAAAAAAAA...
-    AAAAAAAAAAAAAAAAAAAAAA
-    ...AAAAAAAAAAAAAAAA...
-"Cast shadow" @5 clear_cel = 12,27 19,29 .
-"Rubber ball" @5 clear_cel = 10,3 21,14 .
-"Rubber ball" @5 grid 12,10 = 12,10 8x18
-    ..AAAA..
-    .ABBBBA.
-    .ABDDBA.
-    .ABDDBA.
-    ABDDBBCA
-    ABDBBBCA
-    ABDBBCCA
-    ABDBBCCA
-    ABBBBCCA
-    ABBBBCCA
-    ABBBBCCA
-    ABBBBCCA
-    ABBBBCCA
-    ABBBCCCA
-    .ABBCCA.
-    .ABCCCA.
-    .ACCCCA.
-    ..AAAA..
-"Cast shadow" @5 grid 8,27 = 8,27 16x3
-    ...AAAAAAAAAA...
-    AAAAAAAAAAAAAAAA
-    ...AAAAAAAAAA...
-"Cast shadow" @1 clear_cel = 12,27 19,29 .
-"Rubber ball" @1 clear_cel = 10,3 21,14 .
-"Rubber ball" @1 grid 10,4 = 10,4 12x12
-    ....AAAA....
-    ..AABBBBAA..
-    .ABDDDBBBBA.
-    .ADDDBBBBBA.
-    ABDDBBBBBBCA
-    ABBBBBBBBCCA
-    ABBBBBBBBCCA
-    ABBBBBBBCCCA
-    .ABBBBBCCCA.
-    .ABBBBCCCCA.
-    ..ACCCCCCA..
-    ....AAAA....
-"Cast shadow" @1 grid 11,27 = 11,27 10x3
-    ..AAAAAA..
-    AAAAAAAAAA
-    ..AAAAAA..
-"Cast shadow" @2 clear_cel = 12,27 19,29 .
-"Rubber ball" @2 clear_cel = 10,3 21,14 .
-"Rubber ball" @2 grid 11,7 = 11,7 10x14
-    ...AAAA...
-    ..ABBBBA..
-    .ABBDDBBA.
-    .ABDDBBBA.
-    ABDDBBBBCA
-    ABDBBBBCCA
-    ABBBBBBCCA
-    ABBBBBBCCA
-    ABBBBBBCCA
-    ABBBBBCCCA
-    .ABBBBCCA.
-    .ABBCCCCA.
-    ..ACCCCA..
-    ...AAAA...
-"Cast shadow" @2 grid 10,27 = 10,27 12x3
-    ..AAAAAAAA..
-    AAAAAAAAAAAA
-    ..AAAAAAAA..
-"Cast shadow" @3 clear_cel = 12,27 19,29 .
-"Rubber ball" @3 clear_cel = 10,3 21,14 .
-"Rubber ball" @3 grid 12,12 = 12,12 8x16
-    ..AAAA..
-    .ABBBBA.
-    .ABDDBA.
-    .ABDDBA.
-    ABDDBBCA
-    ABDBBBCA
-    ABDBBCCA
-    ABBBBCCA
-    ABBBBCCA
-    ABBBBCCA
-    ABBBBCCA
-    ABBBCCCA
-    .ABBCCA.
-    .ABCCCA.
-    .ACCCCA.
-    ..AAAA..
-"Cast shadow" @3 grid 8,27 = 8,27 16x3
-    ...AAAAAAAAAA...
-    AAAAAAAAAAAAAAAA
-    ...AAAAAAAAAA...
-"Cast shadow" @6 clear_cel = 12,27 19,29 .
-"Rubber ball" @6 clear_cel = 10,3 21,14 .
-"Rubber ball" @6 grid 11,5 = 11,5 10x14
-    ...AAAA...
-    ..ABBBBA..
-    .ABBDDBBA.
-    .ABDDBBBA.
-    ABDDBBBBCA
-    ABDBBBBCCA
-    ABBBBBBCCA
-    ABBBBBBCCA
-    ABBBBBBCCA
-    ABBBBBCCCA
-    .ABBBBCCA.
-    .ABBCCCCA.
-    ..ACCCCA..
-    ...AAAA...
-"Cast shadow" @6 grid 10,27 = 10,27 12x3
-    ..AAAAAAAA..
-    AAAAAAAAAAAA
-    ..AAAAAAAA..
-"Cast shadow" @7 clear_cel = 12,27 19,29 .
-"Rubber ball" @7 clear_cel = 10,3 21,14 .
-"Rubber ball" @7 grid 10,2 = 10,2 12x12
-    ....AAAA....
-    ..AABBBBAA..
-    .ABDDDBBBBA.
-    .ADDDBBBBBA.
-    ABDDBBBBBBCA
-    ABBBBBBBBCCA
-    ABBBBBBBBCCA
-    ABBBBBBBCCCA
-    .ABBBBBCCCA.
-    .ABBBBCCCCA.
-    ..ACCCCCCA..
-    ....AAAA....
-"Cast shadow" @7 grid 11,27 = 11,27 10x3
-    ..AAAAAA..
-    AAAAAAAAAA
-    ..AAAAAA..
-"Cast shadow" @8 clear_cel = 12,27 19,29 .
-"Rubber ball" @8 clear_cel = 10,3 21,14 .
-"Rubber ball" @8 grid 10,1 = 10,1 12x12
-    ....AAAA....
-    ..AABBBBAA..
-    .ABDDDBBBBA.
-    .ADDDBBBBBA.
-    ABDDBBBBBBCA
-    ABBBBBBBBCCA
-    ABBBBBBBBCCA
-    ABBBBBBBCCCA
-    .ABBBBBCCCA.
-    .ABBBBCCCCA.
-    ..ACCCCCCA..
-    ....AAAA....
-"Cast shadow" @8 grid 12,27 = 12,27 8x3
-    ..AAAA..
-    AAAAAAAA
-    ..AAAA..
-"Cast shadow" @9 clear_cel = 12,27 19,29 .
-"Rubber ball" @9 clear_cel = 10,3 21,14 .
-"Rubber ball" @9 grid 10,2 = 10,2 12x12
-    ....AAAA....
-    ..AABBBBAA..
-    .ABDDDBBBBA.
-    .ADDDBBBBBA.
-    ABDDBBBBBBCA
-    ABBBBBBBBCCA
-    ABBBBBBBBCCA
-    ABBBBBBBCCCA
-    .ABBBBBCCCA.
-    .ABBBBCCCCA.
-    ..ACCCCCCA..
-    ....AAAA....
-"Cast shadow" @9 grid 12,27 = 12,27 8x3
-    ..AAAA..
-    AAAAAAAA
-    ..AAAA..
-"Cast shadow" @7 erase pencil size 1 ~
-"Cast shadow" @7 clear 13,27 13,27 = 13,27 13,27 .
-"Cast shadow" @7 clear 18,27 18,27 = 18,27 18,27 .
-"Cast shadow" @7 clear 11,28 11,28 = 11,28 11,28 .
-"Cast shadow" @7 clear 20,28 20,28 = 20,28 20,28 .
-"Cast shadow" @7 clear 13,29 13,29 = 13,29 13,29 .
-"Cast shadow" @7 clear 18,29 18,29 = 18,29 18,29 .
-frame duration frame=0 count=10 duration_ms=100
+palette op=set colors=#2a1c3a,#aa2e42,#f55b3d,#ffda99
+layer op=rename index=0 name="Cast shadow"
+layer op=add name="Rubber ball"
+paint_grid layer=1 frame=0 x=10 y=3 legend=k:0 rows:12
+  |....kkkk....|
+  |..kkkkkkkk..|
+  |.kkkkkkkkkk.|
+  |.kkkkkkkkkk.|
+  |kkkkkkkkkkkk|
+  |kkkkkkkkkkkk|
+  |kkkkkkkkkkkk|
+  |kkkkkkkkkkkk|
+  |.kkkkkkkkkk.|
+  |.kkkkkkkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+paint_grid layer=1 frame=0 x=10 y=3 legend=k:0,r:2,s:1 rows:12
+  |....kkkk....|
+  |..kkrrrrkk..|
+  |.krrrrrrrrk.|
+  |.krrrrrrrrk.|
+  |krrrrrrrrrsk|
+  |krrrrrrrrssk|
+  |krrrrrrrrssk|
+  |krrrrrrrsssk|
+  |.krrrrrsssk.|
+  |.krrrrssssk.|
+  |..kssssssk..|
+  |....kkkk....|
+paint_grid layer=0 frame=0 x=12 y=27 legend=k:0 rows:3
+  |..kkkk..|
+  |kkkkkkkk|
+  |..kkkk..|
+paint_grid layer=1 frame=0 x=12 y=5 legend=h:3 rows:3
+  |.hhh|
+  |hhh.|
+  |hh..|
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=clear_cel layer=0 frame=4
+draw op=clear_cel layer=1 frame=4
+paint_grid layer=1 frame=4 x=6 y=22 legend=h:3,k:0,r:2,s:1 rows:7
+  |......kkkkkkkk......|
+  |...kkkrrrrrrrrkkk...|
+  |.kkrrhhhhhhrrrrrrkk.|
+  |krhhhhhrrrrrrrrrsssk|
+  |krrrrrrrrrrrsssssssk|
+  |.kksssssssssssssskk.|
+  |....kkkkkkkkkkkk....|
+paint_grid layer=0 frame=4 x=5 y=27 legend=k:0 rows:3
+  |...kkkkkkkkkkkkkkkk...|
+  |kkkkkkkkkkkkkkkkkkkkkk|
+  |...kkkkkkkkkkkkkkkk...|
+draw op=clear_cel layer=0 frame=5
+draw op=clear_cel layer=1 frame=5
+paint_grid layer=1 frame=5 x=12 y=10 legend=h:3,k:0,r:2,s:1 rows:18
+  |..kkkk..|
+  |.krrrrk.|
+  |.krhhrk.|
+  |.krhhrk.|
+  |krhhrrsk|
+  |krhrrrsk|
+  |krhrrssk|
+  |krhrrssk|
+  |krrrrssk|
+  |krrrrssk|
+  |krrrrssk|
+  |krrrrssk|
+  |krrrrssk|
+  |krrrsssk|
+  |.krrssk.|
+  |.krsssk.|
+  |.kssssk.|
+  |..kkkk..|
+paint_grid layer=0 frame=5 x=8 y=27 legend=k:0 rows:3
+  |...kkkkkkkkkk...|
+  |kkkkkkkkkkkkkkkk|
+  |...kkkkkkkkkk...|
+draw op=clear_cel layer=0 frame=1
+draw op=clear_cel layer=1 frame=1
+paint_grid layer=1 frame=1 x=10 y=4 legend=h:3,k:0,r:2,s:1 rows:12
+  |....kkkk....|
+  |..kkrrrrkk..|
+  |.krhhhrrrrk.|
+  |.khhhrrrrrk.|
+  |krhhrrrrrrsk|
+  |krrrrrrrrssk|
+  |krrrrrrrrssk|
+  |krrrrrrrsssk|
+  |.krrrrrsssk.|
+  |.krrrrssssk.|
+  |..kssssssk..|
+  |....kkkk....|
+paint_grid layer=0 frame=1 x=11 y=27 legend=k:0 rows:3
+  |..kkkkkk..|
+  |kkkkkkkkkk|
+  |..kkkkkk..|
+draw op=clear_cel layer=0 frame=2
+draw op=clear_cel layer=1 frame=2
+paint_grid layer=1 frame=2 x=11 y=7 legend=h:3,k:0,r:2,s:1 rows:14
+  |...kkkk...|
+  |..krrrrk..|
+  |.krrhhrrk.|
+  |.krhhrrrk.|
+  |krhhrrrrsk|
+  |krhrrrrssk|
+  |krrrrrrssk|
+  |krrrrrrssk|
+  |krrrrrrssk|
+  |krrrrrsssk|
+  |.krrrrssk.|
+  |.krrssssk.|
+  |..kssssk..|
+  |...kkkk...|
+paint_grid layer=0 frame=2 x=10 y=27 legend=k:0 rows:3
+  |..kkkkkkkk..|
+  |kkkkkkkkkkkk|
+  |..kkkkkkkk..|
+draw op=clear_cel layer=0 frame=3
+draw op=clear_cel layer=1 frame=3
+paint_grid layer=1 frame=3 x=12 y=12 legend=h:3,k:0,r:2,s:1 rows:16
+  |..kkkk..|
+  |.krrrrk.|
+  |.krhhrk.|
+  |.krhhrk.|
+  |krhhrrsk|
+  |krhrrrsk|
+  |krhrrssk|
+  |krrrrssk|
+  |krrrrssk|
+  |krrrrssk|
+  |krrrrssk|
+  |krrrsssk|
+  |.krrssk.|
+  |.krsssk.|
+  |.kssssk.|
+  |..kkkk..|
+paint_grid layer=0 frame=3 x=8 y=27 legend=k:0 rows:3
+  |...kkkkkkkkkk...|
+  |kkkkkkkkkkkkkkkk|
+  |...kkkkkkkkkk...|
+draw op=clear_cel layer=0 frame=6
+draw op=clear_cel layer=1 frame=6
+paint_grid layer=1 frame=6 x=11 y=5 legend=h:3,k:0,r:2,s:1 rows:14
+  |...kkkk...|
+  |..krrrrk..|
+  |.krrhhrrk.|
+  |.krhhrrrk.|
+  |krhhrrrrsk|
+  |krhrrrrssk|
+  |krrrrrrssk|
+  |krrrrrrssk|
+  |krrrrrrssk|
+  |krrrrrsssk|
+  |.krrrrssk.|
+  |.krrssssk.|
+  |..kssssk..|
+  |...kkkk...|
+paint_grid layer=0 frame=6 x=10 y=27 legend=k:0 rows:3
+  |..kkkkkkkk..|
+  |kkkkkkkkkkkk|
+  |..kkkkkkkk..|
+draw op=clear_cel layer=0 frame=7
+draw op=clear_cel layer=1 frame=7
+paint_grid layer=1 frame=7 x=10 y=2 legend=h:3,k:0,r:2,s:1 rows:12
+  |....kkkk....|
+  |..kkrrrrkk..|
+  |.krhhhrrrrk.|
+  |.khhhrrrrrk.|
+  |krhhrrrrrrsk|
+  |krrrrrrrrssk|
+  |krrrrrrrrssk|
+  |krrrrrrrsssk|
+  |.krrrrrsssk.|
+  |.krrrrssssk.|
+  |..kssssssk..|
+  |....kkkk....|
+paint_grid layer=0 frame=7 x=11 y=27 legend=k:0 rows:3
+  |..kkkkkk..|
+  |kkkkkkkkkk|
+  |..kkkkkk..|
+draw op=clear_cel layer=0 frame=8
+draw op=clear_cel layer=1 frame=8
+paint_grid layer=1 frame=8 x=10 y=1 legend=h:3,k:0,r:2,s:1 rows:12
+  |....kkkk....|
+  |..kkrrrrkk..|
+  |.krhhhrrrrk.|
+  |.khhhrrrrrk.|
+  |krhhrrrrrrsk|
+  |krrrrrrrrssk|
+  |krrrrrrrrssk|
+  |krrrrrrrsssk|
+  |.krrrrrsssk.|
+  |.krrrrssssk.|
+  |..kssssssk..|
+  |....kkkk....|
+paint_grid layer=0 frame=8 x=12 y=27 legend=k:0 rows:3
+  |..kkkk..|
+  |kkkkkkkk|
+  |..kkkk..|
+draw op=clear_cel layer=0 frame=9
+draw op=clear_cel layer=1 frame=9
+paint_grid layer=1 frame=9 x=10 y=2 legend=h:3,k:0,r:2,s:1 rows:12
+  |....kkkk....|
+  |..kkrrrrkk..|
+  |.krhhhrrrrk.|
+  |.khhhrrrrrk.|
+  |krhhrrrrrrsk|
+  |krrrrrrrrssk|
+  |krrrrrrrrssk|
+  |krrrrrrrsssk|
+  |.krrrrrsssk.|
+  |.krrrrssssk.|
+  |..kssssssk..|
+  |....kkkk....|
+paint_grid layer=0 frame=9 x=12 y=27 legend=k:0 rows:3
+  |..kkkk..|
+  |kkkkkkkk|
+  |..kkkk..|
+draw op=pencil layer=0 frame=7 color=#2a1c3a erase=true points=13,27 18,27 11,28 20,28 13,29 18,29 size=1
+region op=clear layer=0 frame=7 rect=13,27,13,27
+region op=clear layer=0 frame=7 rect=18,27,18,27
+region op=clear layer=0 frame=7 rect=11,28,11,28
+region op=clear layer=0 frame=7 rect=20,28,20,28
+region op=clear layer=0 frame=7 rect=13,29,13,29
+region op=clear layer=0 frame=7 rect=18,29,18,29
+frame op=duration frame=0 count=10 duration_ms=100
 add_tag name=bounce direction=forward from=0 to=9

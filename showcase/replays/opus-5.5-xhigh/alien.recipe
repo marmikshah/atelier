@@ -1,414 +1,410 @@
-atelier 5 5a0ef05b-6e14-4a1b-9536-3004dc900f7e 0.1.0
+atelier 4 5a0ef05b-6e14-4a1b-9536-3004dc900f7e 0.1.0
 new name=alien-idle width=32 height=32
-layer rename index=0 name=shadow
-layer add name=legs
-layer add name=body
-layer add name=antennae
-layer add name=head
-layer add name=eyes
-palette set colors=#14282d,#23855a,#5cc848,#d6f68c
-legend A=#5cc848
-shadow @0 grid 10,29 = 10,29 12x2
-    AAAAAAAAAAAA
-    .AAAAAAAAAA.
-legs @0 grid 12,22 = 12,22 8x4
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-body @0 grid 10,19 = 10,19 12x5
-    ..AAAAAAAA..
-    .AAAAAAAAAA.
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    .AAAAAAAAAA.
-antennae @0 grid 6,3 = 6,3 20x6
-    .A................A.
-    AAA..............AAA
-    .AA..............AA.
-    ...A............A...
-    ....A..........A....
-    .....A........A.....
-head @0 grid 6,7 = 6,7 20x13
-    .....AAAAAAAAAA.....
-    ...AAAAAAAAAAAAAA...
-    ..AAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAA..
-    ...AAAAAAAAAAAAAA...
-    ....AAAAAAAAAAAA....
-    ......AAAAAAAA......
-eyes @0 grid 8,12 = 8,12 16x4
-    AAA..........AAA
-    AAAAA......AAAAA
-    .AAAAA....AAAAA.
-    ..AAAA....AAAA..
-head @0 clear_cel = 6,7 25,19 .
-head @0 grid 6,7 = 6,7 20x13
-    ....AAAAAAAAAAAA....
-    ..AAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAA..
-    ...AAAAAAAAAAAAAA...
-    ....AAAAAAAAAAAA....
-    .....AAAAAAAAAA.....
-    .......AAAAAA.......
-antennae @0 clear_cel = 6,3 25,8 .
-legend B=#14282d
-shadow @0 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    .BBBBBBBBBB.
-legend C=#23855a
-legs @0 grid 12,22 = 12,22 8x4
-    BCB..BCB
-    BCB..BCB
-    BCB..BCB
-    BBB..BBB
-body @0 grid 10,19 = 10,19 12x5
-    ..BCCCCCCB..
-    .BBCCCCCCBB.
-    BABAAAAAABAB
-    BCBCAAAACBCB
-    .BBCBBBBCBB.
-legend D=#d6f68c
-antennae @0 grid 6,3 = 6,3 20x5
-    .B................B.
-    BDB..............BDB
-    .BB..............BB.
-    ...B............B...
-    ....B..........B....
-head @0 grid 6,7 = 6,7 20x13
-    ....BBBBBBBBBBBB....
-    ..BBADDDDDDDDDDABB..
-    .BADDDAAAAAAAADDDAB.
-    BADDAAAAAAAAAAAADDAB
-    BAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAAAAB
-    .BAAAAAAAAAAAAAAAAB.
-    ..BCAAAAAAAAAAAACB..
-    ...BCAAAAAAAAAACB...
-    ....BCCAABBAACCB....
-    .....BBCCCCCCBB.....
-    .......BBBBBB.......
-eyes @0 grid 8,12 = 8,12 16x4
-    BDB..........BDB
-    BBBBB......BBBBB
-    .BBBBB....BBBBB.
-    ..BBBB....BBBB..
-head @0 clear_cel = 6,7 25,19 .
-head @0 grid 6,7 = 6,7 20x13
-    ......BBBBBBBB......
-    ....BBADDDDDDABB....
-    ..BBADDAAAAAADDABB..
-    .BADDAAAAAAAAAADDAB.
-    BADAAAAAAAAAAAAAADAB
-    BAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAAAAB
-    .BAAAAAAAAAAAAAAAAB.
-    ..BCAAAAAAAAAAAACB..
-    ...BCAAAAAAAAAACB...
-    ....BCCAABBAACCB....
-    .....BBCCCCCCBB.....
-    .......BBBBBB.......
-antennae @0 clear_cel = 6,3 25,7 .
-antennae @0 grid 6,3 = 6,3 20x6
-    .B................B.
-    BDB..............BDB
-    .BB..............BB.
-    ...B............B...
-    ....B..........B....
-    ....B..........B....
-head @0 clear_cel = 6,7 25,19 .
-head @0 grid 6,7 = 6,7 20x13
-    .....BBBBBBBBBB.....
-    ...BBADDDDDDDDABB...
-    .BBADDDAAAAAADDDABB.
-    BADDAAAAAAAAAAAADDAB
-    BAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAAAAB
-    .BAAAAAAAAAAAAAAAAB.
-    .BCAAAAAAAAAAAAAACB.
-    ..BCAAAAAAAAAAAACB..
-    ...BCCAAABBAAACCB...
-    ....BBCCCCCCCCBB....
-    ......BBBBBBBB......
-frame add copy_from=0 count=9
-legs @1 shift dx=0 dy=2
-legs @1 shift dx=0 dy=-2
-body @0 shift dx=0 dy=-1
-legs @0 shift dx=0 dy=-2
-antennae @0 clear_cel = 6,3 25,8 .
-antennae @0 grid 5,3 = 5,3 22x6
-    .B..................B.
-    BDB................BDB
-    .B.B..............B.B.
-    ....B............B....
-    .....B..........B.....
-    .....B..........B.....
-shadow @0 clear_cel = 10,29 21,30 .
-shadow @0 grid 11,29 = 11,29 10x2
-    BBBBBBBBBB
-    .BBBBBBBB.
-head @1 shift dx=0 dy=1
-eyes @1 shift dx=0 dy=1
-legs @1 shift dx=0 dy=-1
-antennae @1 clear_cel = 6,3 25,8 .
-antennae @1 grid 6,4 = 6,4 20x6
-    .B................B.
-    BDB..............BDB
-    .BB..............BB.
-    ...B............B...
-    ....B..........B....
-    ....B..........B....
-shadow @1 clear_cel = 10,29 21,30 .
-shadow @1 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    ..BBBBBBBB..
-head @2 shift dx=0 dy=2
-eyes @2 shift dx=0 dy=2
-body @2 shift dx=0 dy=1
-antennae @2 clear_cel = 6,3 25,8 .
-antennae @2 grid 6,4 = 6,4 20x7
-    .B................B.
-    BDB..............BDB
-    .B................B.
-    ..B..............B..
-    ...B............B...
-    ....B..........B....
-    ....B..........B....
-shadow @2 clear_cel = 10,29 21,30 .
-shadow @2 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    .BBBBBBBBBB.
-head @3 shift dx=0 dy=2
-eyes @3 shift dx=0 dy=2
-body @3 shift dx=0 dy=2
-legs @3 shift dx=0 dy=1
-antennae @3 clear_cel = 6,3 25,8 .
-antennae @3 grid 7,4 = 7,4 18x7
-    .B..............B.
-    BDB............BDB
-    .B..............B.
-    ..B............B..
-    ..B............B..
-    ...B..........B...
-    ...B..........B...
-shadow @3 clear_cel = 10,29 21,30 .
-shadow @3 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    ..BBBBBBBBBB..
-head @4 shift dx=0 dy=1
-eyes @4 shift dx=0 dy=1
-body @4 shift dx=0 dy=2
-legs @4 shift dx=0 dy=2
-antennae @4 clear_cel = 6,3 25,8 .
-antennae @4 grid 7,3 = 7,3 18x7
-    .B..............B.
-    BDB............BDB
-    .B..............B.
-    ..B............B..
-    ..B............B..
-    ...B..........B...
-    ...B..........B...
-shadow @4 clear_cel = 10,29 21,30 .
-shadow @4 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    .BBBBBBBBBBBB.
-body @5 shift dx=0 dy=1
-legs @5 shift dx=0 dy=2
-antennae @5 clear_cel = 6,3 25,8 .
-antennae @5 grid 6,2 = 6,2 20x7
-    .B................B.
-    BDB..............BDB
-    .B................B.
-    ..B..............B..
-    ...B............B...
-    ....B..........B....
-    ....B..........B....
-shadow @5 clear_cel = 10,29 21,30 .
-shadow @5 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    .BBBBBBBBBBBB.
-head @6 shift dx=0 dy=-1
-eyes @6 shift dx=0 dy=-1
-legs @6 shift dx=0 dy=1
-antennae @6 clear_cel = 6,3 25,8 .
-antennae @6 grid 6,2 = 6,2 20x6
-    .B................B.
-    BDB..............BDB
-    .BB..............BB.
-    ...B............B...
-    ....B..........B....
-    ....B..........B....
-shadow @6 clear_cel = 10,29 21,30 .
-shadow @6 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    ..BBBBBBBBBB..
-eyes @6 clear_cel = 8,11 23,14 .
-eyes @6 grid 9,13 = 9,13 14x2
-    BBBBB....BBBBB
-    .BBBB....BBBB.
-head @7 shift dx=0 dy=-2
-eyes @7 shift dx=0 dy=-2
-body @7 shift dx=0 dy=-1
-antennae @7 clear_cel = 6,3 25,8 .
-antennae @7 grid 5,1 = 5,1 22x6
-    .B..................B.
-    BDB................BDB
-    .B.B..............B.B.
-    ....B............B....
-    .....B..........B.....
-    .....B..........B.....
-shadow @7 clear_cel = 10,29 21,30 .
-shadow @7 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    .BBBBBBBBBB.
-eyes @7 clear_cel = 8,10 23,13 .
-eyes @7 grid 9,12 = 9,12 14x2
-    B............B
-    .BBBB....BBBB.
-head @8 shift dx=0 dy=-2
-eyes @8 shift dx=0 dy=-2
-body @8 shift dx=0 dy=-2
-legs @8 shift dx=0 dy=-1
-antennae @8 clear_cel = 6,3 25,8 .
-antennae @8 grid 5,2 = 5,2 22x5
-    .B..................B.
-    BDB................BDB
-    .B.BB............BB.B.
-    .....B..........B.....
-    .....B..........B.....
-shadow @8 clear_cel = 10,29 21,30 .
-shadow @8 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    ..BBBBBBBB..
-eyes @8 clear_cel = 8,10 23,13 .
-eyes @8 grid 9,12 = 9,12 14x2
-    BBBBB....BBBBB
-    .BBBB....BBBB.
-head @9 shift dx=0 dy=-1
-eyes @9 shift dx=0 dy=-1
-body @9 shift dx=0 dy=-2
-legs @9 shift dx=0 dy=-2
-antennae @9 clear_cel = 6,3 25,8 .
-antennae @9 grid 5,3 = 5,3 22x5
-    .B..................B.
-    BDB................BDB
-    .B.BB............BB.B.
-    .....B..........B.....
-    .....B..........B.....
-shadow @9 clear_cel = 10,29 21,30 .
-shadow @9 grid 11,29 = 11,29 10x2
-    BBBBBBBBBB
-    .BBBBBBBB.
-body @0 shift dx=0 dy=1
-legs @0 shift dx=0 dy=1
-shadow @0 clear_cel = 11,29 20,30 .
-shadow @0 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    ..BBBBBBBB..
-body @1 shift dx=0 dy=1
-legs @1 shift dx=0 dy=1
-shadow @1 clear_cel = 10,29 21,30 .
-shadow @1 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    .BBBBBBBBBB.
-body @2 shift dx=0 dy=1
-legs @2 shift dx=0 dy=1
-shadow @2 clear_cel = 10,29 21,30 .
-shadow @2 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    ..BBBBBBBBBB..
-legs @3 shift dx=0 dy=1
-shadow @3 clear_cel = 9,29 22,30 .
-shadow @3 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    .BBBBBBBBBBBB.
-body @4 shift dx=0 dy=-1
-shadow @4 clear_cel = 9,29 22,30 .
-shadow @4 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    .BBBBBBBBBBBB.
-body @5 shift dx=0 dy=-1
-legs @5 shift dx=0 dy=-1
-shadow @5 clear_cel = 9,29 22,30 .
-shadow @5 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    ..BBBBBBBBBB..
-body @6 shift dx=0 dy=-1
-legs @6 shift dx=0 dy=-1
-shadow @6 clear_cel = 9,29 22,30 .
-shadow @6 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    .BBBBBBBBBB.
-body @7 shift dx=0 dy=-1
-legs @7 shift dx=0 dy=-1
-shadow @7 clear_cel = 10,29 21,30 .
-shadow @7 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    ..BBBBBBBB..
-legs @8 shift dx=0 dy=-1
-shadow @8 clear_cel = 10,29 21,30 .
-shadow @8 grid 11,29 = 11,29 10x2
-    BBBBBBBBBB
-    .BBBBBBBB.
-body @9 shift dx=0 dy=1
-shadow @9 clear_cel = 11,29 20,30 .
-shadow @9 grid 11,29 = 11,29 10x2
-    BBBBBBBBBB
-    .BBBBBBBB.
-shadow @0 clear_cel = 10,29 21,30 .
-shadow @0 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    .BBBBBBBBBB.
-shadow @1 clear_cel = 10,29 21,30 .
-shadow @1 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    ..BBBBBBBBBB..
-shadow @2 clear_cel = 9,29 22,30 .
-shadow @2 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    .BBBBBBBBBBBB.
-legs @3 shift dx=0 dy=-1
-shadow @3 clear_cel = 9,29 22,30 .
-shadow @3 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    .BBBBBBBBBBBB.
-legs @4 shift dx=0 dy=-1
-shadow @4 clear_cel = 9,29 22,30 .
-shadow @4 grid 9,29 = 9,29 14x2
-    BBBBBBBBBBBBBB
-    ..BBBBBBBBBB..
-shadow @5 clear_cel = 9,29 22,30 .
-shadow @5 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    .BBBBBBBBBB.
-shadow @6 clear_cel = 10,29 21,30 .
-shadow @6 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    ..BBBBBBBB..
-shadow @7 clear_cel = 10,29 21,30 .
-shadow @7 grid 11,29 = 11,29 10x2
-    BBBBBBBBBB
-    .BBBBBBBB.
-shadow @8 clear_cel = 11,29 20,30 .
-shadow @8 grid 11,29 = 11,29 10x2
-    BBBBBBBBBB
-    .BBBBBBBB.
-shadow @9 clear_cel = 11,29 20,30 .
-shadow @9 grid 10,29 = 10,29 12x2
-    BBBBBBBBBBBB
-    ..BBBBBBBB..
+layer op=rename index=0 name=shadow
+layer op=add name=legs
+layer op=add name=body
+layer op=add name=antennae
+layer op=add name=head
+layer op=add name=eyes
+palette op=set colors=#14282d,#23855a,#5cc848,#d6f68c
+paint_grid layer=0 frame=0 x=10 y=29 legend=G:2 rows:2
+  |GGGGGGGGGGGG|
+  |.GGGGGGGGGG.|
+paint_grid layer=1 frame=0 x=12 y=22 legend=G:2 rows:4
+  |GGG..GGG|
+  |GGG..GGG|
+  |GGG..GGG|
+  |GGG..GGG|
+paint_grid layer=2 frame=0 x=10 y=19 legend=G:2 rows:5
+  |..GGGGGGGG..|
+  |.GGGGGGGGGG.|
+  |GGGGGGGGGGGG|
+  |GGGGGGGGGGGG|
+  |.GGGGGGGGGG.|
+paint_grid layer=3 frame=0 x=6 y=3 legend=G:2 rows:6
+  |.G................G.|
+  |GGG..............GGG|
+  |.GG..............GG.|
+  |...G............G...|
+  |....G..........G....|
+  |.....G........G.....|
+paint_grid layer=4 frame=0 x=6 y=7 legend=G:2 rows:13
+  |.....GGGGGGGGGG.....|
+  |...GGGGGGGGGGGGGG...|
+  |..GGGGGGGGGGGGGGGG..|
+  |.GGGGGGGGGGGGGGGGGG.|
+  |GGGGGGGGGGGGGGGGGGGG|
+  |GGGGGGGGGGGGGGGGGGGG|
+  |GGGGGGGGGGGGGGGGGGGG|
+  |.GGGGGGGGGGGGGGGGGG.|
+  |.GGGGGGGGGGGGGGGGGG.|
+  |..GGGGGGGGGGGGGGGG..|
+  |...GGGGGGGGGGGGGG...|
+  |....GGGGGGGGGGGG....|
+  |......GGGGGGGG......|
+paint_grid layer=5 frame=0 x=8 y=12 legend=G:2 rows:4
+  |GGG..........GGG|
+  |GGGGG......GGGGG|
+  |.GGGGG....GGGGG.|
+  |..GGGG....GGGG..|
+draw op=clear_cel layer=4 frame=0
+paint_grid layer=4 frame=0 x=6 y=7 legend=G:2 rows:13
+  |....GGGGGGGGGGGG....|
+  |..GGGGGGGGGGGGGGGG..|
+  |.GGGGGGGGGGGGGGGGGG.|
+  |GGGGGGGGGGGGGGGGGGGG|
+  |GGGGGGGGGGGGGGGGGGGG|
+  |GGGGGGGGGGGGGGGGGGGG|
+  |GGGGGGGGGGGGGGGGGGGG|
+  |.GGGGGGGGGGGGGGGGGG.|
+  |..GGGGGGGGGGGGGGGG..|
+  |...GGGGGGGGGGGGGG...|
+  |....GGGGGGGGGGGG....|
+  |.....GGGGGGGGGG.....|
+  |.......GGGGGG.......|
+draw op=clear_cel layer=3 frame=0
+paint_grid layer=0 frame=0 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |.KKKKKKKKKK.|
+paint_grid layer=1 frame=0 x=12 y=22 legend=K:0,S:1 rows:4
+  |KSK..KSK|
+  |KSK..KSK|
+  |KSK..KSK|
+  |KKK..KKK|
+paint_grid layer=2 frame=0 x=10 y=19 legend=G:2,K:0,S:1 rows:5
+  |..KSSSSSSK..|
+  |.KKSSSSSSKK.|
+  |KGKGGGGGGKGK|
+  |KSKSGGGGSKSK|
+  |.KKSKKKKSKK.|
+paint_grid layer=3 frame=0 x=6 y=3 legend=K:0,L:3 rows:5
+  |.K................K.|
+  |KLK..............KLK|
+  |.KK..............KK.|
+  |...K............K...|
+  |....K..........K....|
+paint_grid layer=4 frame=0 x=6 y=7 legend=G:2,K:0,L:3,S:1 rows:13
+  |....KKKKKKKKKKKK....|
+  |..KKGLLLLLLLLLLGKK..|
+  |.KGLLLGGGGGGGGLLLGK.|
+  |KGLLGGGGGGGGGGGGLLGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |.KGGGGGGGGGGGGGGGGK.|
+  |..KSGGGGGGGGGGGGSK..|
+  |...KSGGGGGGGGGGSK...|
+  |....KSSGGKKGGSSK....|
+  |.....KKSSSSSSKK.....|
+  |.......KKKKKK.......|
+paint_grid layer=5 frame=0 x=8 y=12 legend=K:0,L:3 rows:4
+  |KLK..........KLK|
+  |KKKKK......KKKKK|
+  |.KKKKK....KKKKK.|
+  |..KKKK....KKKK..|
+draw op=clear_cel layer=4 frame=0
+paint_grid layer=4 frame=0 x=6 y=7 legend=G:2,K:0,L:3,S:1 rows:13
+  |......KKKKKKKK......|
+  |....KKGLLLLLLGKK....|
+  |..KKGLLGGGGGGLLGKK..|
+  |.KGLLGGGGGGGGGGLLGK.|
+  |KGLGGGGGGGGGGGGGGLGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |.KGGGGGGGGGGGGGGGGK.|
+  |..KSGGGGGGGGGGGGSK..|
+  |...KSGGGGGGGGGGSK...|
+  |....KSSGGKKGGSSK....|
+  |.....KKSSSSSSKK.....|
+  |.......KKKKKK.......|
+draw op=clear_cel layer=3 frame=0
+paint_grid layer=3 frame=0 x=6 y=3 legend=K:0,L:3 rows:6
+  |.K................K.|
+  |KLK..............KLK|
+  |.KK..............KK.|
+  |...K............K...|
+  |....K..........K....|
+  |....K..........K....|
+draw op=clear_cel layer=4 frame=0
+paint_grid layer=4 frame=0 x=6 y=7 legend=G:2,K:0,L:3,S:1 rows:13
+  |.....KKKKKKKKKK.....|
+  |...KKGLLLLLLLLGKK...|
+  |.KKGLLLGGGGGGLLLGKK.|
+  |KGLLGGGGGGGGGGGGLLGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |KGGGGGGGGGGGGGGGGGGK|
+  |.KGGGGGGGGGGGGGGGGK.|
+  |.KSGGGGGGGGGGGGGGSK.|
+  |..KSGGGGGGGGGGGGSK..|
+  |...KSSGGGKKGGGSSK...|
+  |....KKSSSSSSSSKK....|
+  |......KKKKKKKK......|
+frame op=add copy_from=0 count=9
+fx op=shift layer=1 frame=1 dx=0 dy=2
+fx op=shift layer=1 frame=1 dx=0 dy=-2
+fx op=shift layer=2 frame=0 dx=0 dy=-1
+fx op=shift layer=1 frame=0 dx=0 dy=-2
+draw op=clear_cel layer=3 frame=0
+paint_grid layer=3 frame=0 x=5 y=3 legend=K:0,L:3 rows:6
+  |.K..................K.|
+  |KLK................KLK|
+  |.K.K..............K.K.|
+  |....K............K....|
+  |.....K..........K.....|
+  |.....K..........K.....|
+draw op=clear_cel layer=0 frame=0
+paint_grid layer=0 frame=0 x=11 y=29 legend=K:0 rows:2
+  |KKKKKKKKKK|
+  |.KKKKKKKK.|
+fx op=shift layer=4 frame=1 dx=0 dy=1
+fx op=shift layer=5 frame=1 dx=0 dy=1
+fx op=shift layer=1 frame=1 dx=0 dy=-1
+draw op=clear_cel layer=3 frame=1
+paint_grid layer=3 frame=1 x=6 y=4 legend=K:0,L:3 rows:6
+  |.K................K.|
+  |KLK..............KLK|
+  |.KK..............KK.|
+  |...K............K...|
+  |....K..........K....|
+  |....K..........K....|
+draw op=clear_cel layer=0 frame=1
+paint_grid layer=0 frame=1 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |..KKKKKKKK..|
+fx op=shift layer=4 frame=2 dx=0 dy=2
+fx op=shift layer=5 frame=2 dx=0 dy=2
+fx op=shift layer=2 frame=2 dx=0 dy=1
+draw op=clear_cel layer=3 frame=2
+paint_grid layer=3 frame=2 x=6 y=4 legend=K:0,L:3 rows:7
+  |.K................K.|
+  |KLK..............KLK|
+  |.K................K.|
+  |..K..............K..|
+  |...K............K...|
+  |....K..........K....|
+  |....K..........K....|
+draw op=clear_cel layer=0 frame=2
+paint_grid layer=0 frame=2 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |.KKKKKKKKKK.|
+fx op=shift layer=4 frame=3 dx=0 dy=2
+fx op=shift layer=5 frame=3 dx=0 dy=2
+fx op=shift layer=2 frame=3 dx=0 dy=2
+fx op=shift layer=1 frame=3 dx=0 dy=1
+draw op=clear_cel layer=3 frame=3
+paint_grid layer=3 frame=3 x=7 y=4 legend=K:0,L:3 rows:7
+  |.K..............K.|
+  |KLK............KLK|
+  |.K..............K.|
+  |..K............K..|
+  |..K............K..|
+  |...K..........K...|
+  |...K..........K...|
+draw op=clear_cel layer=0 frame=3
+paint_grid layer=0 frame=3 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |..KKKKKKKKKK..|
+fx op=shift layer=4 frame=4 dx=0 dy=1
+fx op=shift layer=5 frame=4 dx=0 dy=1
+fx op=shift layer=2 frame=4 dx=0 dy=2
+fx op=shift layer=1 frame=4 dx=0 dy=2
+draw op=clear_cel layer=3 frame=4
+paint_grid layer=3 frame=4 x=7 y=3 legend=K:0,L:3 rows:7
+  |.K..............K.|
+  |KLK............KLK|
+  |.K..............K.|
+  |..K............K..|
+  |..K............K..|
+  |...K..........K...|
+  |...K..........K...|
+draw op=clear_cel layer=0 frame=4
+paint_grid layer=0 frame=4 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |.KKKKKKKKKKKK.|
+fx op=shift layer=2 frame=5 dx=0 dy=1
+fx op=shift layer=1 frame=5 dx=0 dy=2
+draw op=clear_cel layer=3 frame=5
+paint_grid layer=3 frame=5 x=6 y=2 legend=K:0,L:3 rows:7
+  |.K................K.|
+  |KLK..............KLK|
+  |.K................K.|
+  |..K..............K..|
+  |...K............K...|
+  |....K..........K....|
+  |....K..........K....|
+draw op=clear_cel layer=0 frame=5
+paint_grid layer=0 frame=5 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |.KKKKKKKKKKKK.|
+fx op=shift layer=4 frame=6 dx=0 dy=-1
+fx op=shift layer=5 frame=6 dx=0 dy=-1
+fx op=shift layer=1 frame=6 dx=0 dy=1
+draw op=clear_cel layer=3 frame=6
+paint_grid layer=3 frame=6 x=6 y=2 legend=K:0,L:3 rows:6
+  |.K................K.|
+  |KLK..............KLK|
+  |.KK..............KK.|
+  |...K............K...|
+  |....K..........K....|
+  |....K..........K....|
+draw op=clear_cel layer=0 frame=6
+paint_grid layer=0 frame=6 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |..KKKKKKKKKK..|
+draw op=clear_cel layer=5 frame=6
+paint_grid layer=5 frame=6 x=9 y=13 legend=K:0 rows:2
+  |KKKKK....KKKKK|
+  |.KKKK....KKKK.|
+fx op=shift layer=4 frame=7 dx=0 dy=-2
+fx op=shift layer=5 frame=7 dx=0 dy=-2
+fx op=shift layer=2 frame=7 dx=0 dy=-1
+draw op=clear_cel layer=3 frame=7
+paint_grid layer=3 frame=7 x=5 y=1 legend=K:0,L:3 rows:6
+  |.K..................K.|
+  |KLK................KLK|
+  |.K.K..............K.K.|
+  |....K............K....|
+  |.....K..........K.....|
+  |.....K..........K.....|
+draw op=clear_cel layer=0 frame=7
+paint_grid layer=0 frame=7 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |.KKKKKKKKKK.|
+draw op=clear_cel layer=5 frame=7
+paint_grid layer=5 frame=7 x=9 y=12 legend=K:0 rows:2
+  |K............K|
+  |.KKKK....KKKK.|
+fx op=shift layer=4 frame=8 dx=0 dy=-2
+fx op=shift layer=5 frame=8 dx=0 dy=-2
+fx op=shift layer=2 frame=8 dx=0 dy=-2
+fx op=shift layer=1 frame=8 dx=0 dy=-1
+draw op=clear_cel layer=3 frame=8
+paint_grid layer=3 frame=8 x=5 y=2 legend=K:0,L:3 rows:5
+  |.K..................K.|
+  |KLK................KLK|
+  |.K.KK............KK.K.|
+  |.....K..........K.....|
+  |.....K..........K.....|
+draw op=clear_cel layer=0 frame=8
+paint_grid layer=0 frame=8 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |..KKKKKKKK..|
+draw op=clear_cel layer=5 frame=8
+paint_grid layer=5 frame=8 x=9 y=12 legend=K:0 rows:2
+  |KKKKK....KKKKK|
+  |.KKKK....KKKK.|
+fx op=shift layer=4 frame=9 dx=0 dy=-1
+fx op=shift layer=5 frame=9 dx=0 dy=-1
+fx op=shift layer=2 frame=9 dx=0 dy=-2
+fx op=shift layer=1 frame=9 dx=0 dy=-2
+draw op=clear_cel layer=3 frame=9
+paint_grid layer=3 frame=9 x=5 y=3 legend=K:0,L:3 rows:5
+  |.K..................K.|
+  |KLK................KLK|
+  |.K.KK............KK.K.|
+  |.....K..........K.....|
+  |.....K..........K.....|
+draw op=clear_cel layer=0 frame=9
+paint_grid layer=0 frame=9 x=11 y=29 legend=K:0 rows:2
+  |KKKKKKKKKK|
+  |.KKKKKKKK.|
+fx op=shift layer=2 frame=0 dx=0 dy=1
+fx op=shift layer=1 frame=0 dx=0 dy=1
+draw op=clear_cel layer=0 frame=0
+paint_grid layer=0 frame=0 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |..KKKKKKKK..|
+fx op=shift layer=2 frame=1 dx=0 dy=1
+fx op=shift layer=1 frame=1 dx=0 dy=1
+draw op=clear_cel layer=0 frame=1
+paint_grid layer=0 frame=1 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |.KKKKKKKKKK.|
+fx op=shift layer=2 frame=2 dx=0 dy=1
+fx op=shift layer=1 frame=2 dx=0 dy=1
+draw op=clear_cel layer=0 frame=2
+paint_grid layer=0 frame=2 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |..KKKKKKKKKK..|
+fx op=shift layer=1 frame=3 dx=0 dy=1
+draw op=clear_cel layer=0 frame=3
+paint_grid layer=0 frame=3 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |.KKKKKKKKKKKK.|
+fx op=shift layer=2 frame=4 dx=0 dy=-1
+draw op=clear_cel layer=0 frame=4
+paint_grid layer=0 frame=4 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |.KKKKKKKKKKKK.|
+fx op=shift layer=2 frame=5 dx=0 dy=-1
+fx op=shift layer=1 frame=5 dx=0 dy=-1
+draw op=clear_cel layer=0 frame=5
+paint_grid layer=0 frame=5 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |..KKKKKKKKKK..|
+fx op=shift layer=2 frame=6 dx=0 dy=-1
+fx op=shift layer=1 frame=6 dx=0 dy=-1
+draw op=clear_cel layer=0 frame=6
+paint_grid layer=0 frame=6 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |.KKKKKKKKKK.|
+fx op=shift layer=2 frame=7 dx=0 dy=-1
+fx op=shift layer=1 frame=7 dx=0 dy=-1
+draw op=clear_cel layer=0 frame=7
+paint_grid layer=0 frame=7 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |..KKKKKKKK..|
+fx op=shift layer=1 frame=8 dx=0 dy=-1
+draw op=clear_cel layer=0 frame=8
+paint_grid layer=0 frame=8 x=11 y=29 legend=K:0 rows:2
+  |KKKKKKKKKK|
+  |.KKKKKKKK.|
+fx op=shift layer=2 frame=9 dx=0 dy=1
+draw op=clear_cel layer=0 frame=9
+paint_grid layer=0 frame=9 x=11 y=29 legend=K:0 rows:2
+  |KKKKKKKKKK|
+  |.KKKKKKKK.|
+draw op=clear_cel layer=0 frame=0
+paint_grid layer=0 frame=0 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |.KKKKKKKKKK.|
+draw op=clear_cel layer=0 frame=1
+paint_grid layer=0 frame=1 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |..KKKKKKKKKK..|
+draw op=clear_cel layer=0 frame=2
+paint_grid layer=0 frame=2 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |.KKKKKKKKKKKK.|
+fx op=shift layer=1 frame=3 dx=0 dy=-1
+draw op=clear_cel layer=0 frame=3
+paint_grid layer=0 frame=3 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |.KKKKKKKKKKKK.|
+fx op=shift layer=1 frame=4 dx=0 dy=-1
+draw op=clear_cel layer=0 frame=4
+paint_grid layer=0 frame=4 x=9 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKKKK|
+  |..KKKKKKKKKK..|
+draw op=clear_cel layer=0 frame=5
+paint_grid layer=0 frame=5 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |.KKKKKKKKKK.|
+draw op=clear_cel layer=0 frame=6
+paint_grid layer=0 frame=6 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |..KKKKKKKK..|
+draw op=clear_cel layer=0 frame=7
+paint_grid layer=0 frame=7 x=11 y=29 legend=K:0 rows:2
+  |KKKKKKKKKK|
+  |.KKKKKKKK.|
+draw op=clear_cel layer=0 frame=8
+paint_grid layer=0 frame=8 x=11 y=29 legend=K:0 rows:2
+  |KKKKKKKKKK|
+  |.KKKKKKKK.|
+draw op=clear_cel layer=0 frame=9
+paint_grid layer=0 frame=9 x=10 y=29 legend=K:0 rows:2
+  |KKKKKKKKKKKK|
+  |..KKKKKKKK..|
 add_tag name=idle direction=forward from=0 to=9

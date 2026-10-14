@@ -1,228 +1,86 @@
-atelier 5 b0420ebd-5bdf-42d4-8dbb-5d59be5344d0 0.1.0
+atelier 4 b0420ebd-5bdf-42d4-8dbb-5d59be5344d0 0.1.0
 new name=profile-beam width=48 height=48
-layer rename index=0 name=legs
-layer add name=body
-layer add name=fx
-palette set colors=#2a1e33,#eab07e,#d2622e,#ffffff,#9fe8ff,#2f8fd8
-legend A=#2a1e33 B=#eab07e C=#d2622e
-body @0 grid 10,7 = 10,7 14x22
-    .AAAAA........
-    AAAAAAB.......
-    AAAAABB.......
-    AAABABB.......
-    AABBBBBB......
-    AABBBBB.......
-    .AABBB........
-    ..ABB.........
-    ..ABA.........
-    .ACCCA........
-    .ACCCCA.......
-    .ACCCCCA......
-    .ACCCCCCA.....
-    .ACCCCCCCA....
-    .ACCCCCCCBA...
-    .ACCCCCC.BBBA.
-    .ACCCCCA.BBBBA
-    .ACCCCA..BBB..
-    .ACCCCA..BBBA.
-    ..ACCCA..BBA..
-    ..ACCCA.......
-    ..ACCCA.......
-legs @0 rect #d2622e 11,30 17,32 fill = 11,30 17,32 #d2622e
-legs @0 line #d2622e 13,32 9,42 size 3 = 8,33 7x11
-    ...CCCC
-    ...CCCC
-    ..CCCC.
-    ..CCCC.
-    ..CCC..
-    .CCCC..
-    .CCCC..
-    CCCC...
-    CCCC...
-    CCC....
-    CCC....
-legs @0 line #d2622e 15,32 19,42 size 3 = 15,33 6x11
-    CCC...
-    CCC...
-    CCCC..
-    CCCC..
-    .CCC..
-    .CCCC.
-    .CCCC.
-    ..CCCC
-    ..CCCC
-    ...CCC
-    ...CCC
-legs @0 rect #2a1e33 7,42 11,43 fill = 7,42 11,43 #2a1e33
-legs @0 rect #2a1e33 16,42 21,43 fill = 16,42 21,43 #2a1e33
-legs @0 outline #2a1e33 = 6,29 17x16
-    .....AAAAAAA.....
-    ....ACCCCCCCA....
-    ....ACCCCCCCA....
-    ....ACCCCCCCA....
-    ....ACCCCCCCA....
-    ....ACCCCCCCA....
-    ...ACCCCACCCCA...
-    ...ACCCCACCCCA...
-    ...ACCCA.ACCCA...
-    ..ACCCCA.ACCCCA..
-    ..ACCCCA.ACCCCA..
-    .ACCCCA...ACCCCA.
-    .ACCCCA...ACCCCA.
-    AAAAAAA..AAAAAAAA
-    AAAAAAA..AAAAAAAA
-    .AAAAA....AAAAAA.
-body @0 grid 10,7 replace = 10,8 7x8
-    AAAAAAA
-    AAAAAAB
-    AAAABAB
-    AAABBBB
-    AABBBBB
-    AABBBB.
-    .ABBB..
-    ..AB...
-frame add copy_from=0 count=9 duration_ms=100
-body @1 shift dx=1 dy=0 wrap=false
-body @2 shift dx=1 dy=0 wrap=false
-body @4 shift dx=-1 dy=0 wrap=false
-body @5 shift dx=-2 dy=0 wrap=false
-body @6 shift dx=-1 dy=0 wrap=false
-fx @0 ellipse #9fe8ff 25,23 1,1 fill = 24,22 26,24 #9fe8ff
-fx @0 rect #ffffff 25,23 25,23 fill = 25,23 25,23 #ffffff
-legend D=#9fe8ff
-fx @1 ellipse #9fe8ff 25,23 2,2 fill = 23,21 5x5
-    .DDD.
-    DDDDD
-    DDDDD
-    DDDDD
-    .DDD.
-fx @1 ellipse #ffffff 25,23 1,1 fill = 24,22 26,24 #ffffff
-legend E=#2f8fd8
-fx @2 ellipse #2f8fd8 25,23 4,4 fill = 21,19 9x9
-    ..EEEEE..
-    .EEEEEEE.
-    EEEEEEEEE
-    EEEEEEEEE
-    EEEEEEEEE
-    EEEEEEEEE
-    EEEEEEEEE
-    .EEEEEEE.
-    ..EEEEE..
-fx @2 ellipse #9fe8ff 25,23 3,3 fill = 22,20 7x7
-    EEDDDEE
-    EDDDDDE
-    DDDDDDD
-    DDDDDDD
-    DDDDDDD
-    EDDDDDE
-    EEDDDEE
-legend F=#ffffff
-fx @2 ellipse #ffffff 25,23 2,2 fill = 23,21 5x5
-    DFFFD
-    FFFFF
-    FFFFF
-    FFFFF
-    DFFFD
-fx @2 pencil #9fe8ff size 1 = 20,17 11x13
-    .....D.....
-    ...........
-    ...EEEEE...
-    ..EEDDDEE..
-    .EEDFFFDEE.
-    .EDFFFFFDE.
-    DEDFFFFFDED
-    .EDFFFFFDE.
-    .EEDFFFDEE.
-    ..EEDDDEE..
-    ...EEEEE...
-    ...........
-    .....D.....
-fx @3 rect #2f8fd8 25,21 36,25 fill = 25,21 36,25 #2f8fd8
-fx @3 rect #9fe8ff 25,22 35,24 fill = 25,22 35,24 #9fe8ff
-fx @3 rect #ffffff 25,23 34,23 fill = 25,23 34,23 #ffffff
-fx @3 ellipse #9fe8ff 25,23 3,3 fill = 22,20 7x7
-    ..DDD..
-    .DDDDDE
-    DDDDDDD
-    DDDDDDD
-    DDDDDDD
-    .DDDDDE
-    ..DDD..
-fx @3 ellipse #ffffff 25,23 2,2 fill = 23,21 5x5
-    DFFFD
-    FFFFF
-    FFFFF
-    FFFFF
-    DFFFD
-fx @4 rect #2f8fd8 24,21 43,25 fill = 24,21 43,25 #2f8fd8
-fx @4 rect #9fe8ff 24,22 42,24 fill = 24,22 42,24 #9fe8ff
-fx @4 rect #ffffff 24,23 41,23 fill = 24,23 41,23 #ffffff
-fx @4 ellipse #9fe8ff 24,23 3,3 fill = 21,20 7x7
-    ..DDD..
-    .DDDDDE
-    DDDDDDD
-    DDDDDDD
-    DDDDDDD
-    .DDDDDE
-    ..DDD..
-fx @4 ellipse #ffffff 24,23 2,2 fill = 22,21 5x5
-    DFFFD
-    FFFFF
-    FFFFF
-    FFFFF
-    DFFFD
-fx @5 rect #2f8fd8 23,21 47,25 fill = 23,21 47,25 #2f8fd8
-fx @5 rect #9fe8ff 23,22 47,24 fill = 23,22 47,24 #9fe8ff
-fx @5 rect #ffffff 23,23 47,23 fill = 23,23 47,23 #ffffff
-fx @5 ellipse #2f8fd8 24,23 5,5 fill = 19,18 11x11
-    ...EEEEE...
-    ..EEEEEEE..
-    .EEEEEEEEE.
-    EEEEEEEEEEE
-    EEEEEEEEEEE
-    EEEEEEEEEEE
-    EEEEEEEEEEE
-    EEEEEEEEEEE
-    .EEEEEEEEE.
-    ..EEEEEEE..
-    ...EEEEE...
-fx @5 ellipse #9fe8ff 24,23 4,4 fill = 20,19 9x9
-    .EDDDDDE.
-    EDDDDDDDE
-    DDDDDDDDD
-    DDDDDDDDD
-    DDDDDDDDD
-    DDDDDDDDD
-    DDDDDDDDD
-    EDDDDDDDE
-    .EDDDDDE.
-fx @5 ellipse #ffffff 24,23 3,3 fill = 21,20 7x7
-    DDFFFDD
-    DFFFFFD
-    FFFFFFF
-    FFFFFFF
-    FFFFFFF
-    DFFFFFD
-    DDFFFDD
-fx @6 rect #2f8fd8 26,21 47,25 fill = 26,21 47,25 #2f8fd8
-fx @6 rect #9fe8ff 28,22 47,24 fill = 28,22 47,24 #9fe8ff
-fx @6 rect #ffffff 32,23 47,23 fill = 32,23 47,23 #ffffff
-fx @6 ellipse #9fe8ff 24,23 2,2 fill = 22,21 5x5
-    .DDDE
-    DDDDD
-    DDDDD
-    DDDDD
-    .DDDE
-fx @7 rect #2f8fd8 34,22 47,24 fill = 34,22 47,24 #2f8fd8
-fx @7 rect #9fe8ff 37,23 47,23 fill = 37,23 47,23 #9fe8ff
-fx @7 pencil #9fe8ff size 1 = 24,23 7x1
-    D..D..D
-fx @8 pencil #9fe8ff size 1 = 23,22 2x2
-    D.
-    .D
-fx @8 pencil #9fe8ff size 1 = 39,23 6x2
-    D....D
-    ...D..
-fx @9 ellipse #9fe8ff 25,23 1,1 fill = 24,22 26,24 #9fe8ff
-fx @9 rect #ffffff 25,23 25,23 fill = 25,23 25,23 #ffffff
+layer op=rename index=0 name=legs
+layer op=add name=body
+layer op=add name=fx
+palette op=set colors=#2a1e33,#eab07e,#d2622e,#ffffff,#9fe8ff,#2f8fd8
+paint_grid layer=1 frame=0 x=10 y=7 legend=K:0,O:2,S:1 rows:22
+  |.KKKKK........|
+  |KKKKKKS.......|
+  |KKKKKSS.......|
+  |KKKSKSS.......|
+  |KKSSSSSS......|
+  |KKSSSSS.......|
+  |.KKSSS........|
+  |..KSS.........|
+  |..KSK.........|
+  |.KOOOK........|
+  |.KOOOOK.......|
+  |.KOOOOOK......|
+  |.KOOOOOOK.....|
+  |.KOOOOOOOK....|
+  |.KOOOOOOOSK...|
+  |.KOOOOOO.SSSK.|
+  |.KOOOOOK.SSSSK|
+  |.KOOOOK..SSS..|
+  |.KOOOOK..SSSK.|
+  |..KOOOK..SSK..|
+  |..KOOOK.......|
+  |..KOOOK.......|
+draw op=rect layer=0 frame=0 color=#d2622e fill=true x0=11 x1=17 y0=30 y1=32
+draw op=line layer=0 frame=0 color=#d2622e size=3 x0=13 x1=9 y0=32 y1=42
+draw op=line layer=0 frame=0 color=#d2622e size=3 x0=15 x1=19 y0=32 y1=42
+draw op=rect layer=0 frame=0 color=#2a1e33 fill=true x0=7 x1=11 y0=42 y1=43
+draw op=rect layer=0 frame=0 color=#2a1e33 fill=true x0=16 x1=21 y0=42 y1=43
+fx op=outline layer=0 frame=0 aa=false color=#2a1e33
+paint_grid layer=1 frame=0 x=10 y=7 replace=true legend=K:0,S:1 rows:9
+  |.KKKKK...|
+  |KKKKKKK..|
+  |KKKKKKS..|
+  |KKKKSKS..|
+  |KKKSSSSS.|
+  |KKSSSSS..|
+  |KKSSSS...|
+  |.KSSS....|
+  |..KS.....|
+frame op=add copy_from=0 count=9 duration_ms=100
+fx op=shift layer=1 frame=1 frame_to=2 dx=1 dy=0 wrap=false
+fx op=shift layer=1 frame=4 dx=-1 dy=0 wrap=false
+fx op=shift layer=1 frame=5 dx=-2 dy=0 wrap=false
+fx op=shift layer=1 frame=6 dx=-1 dy=0 wrap=false
+draw op=ellipse layer=2 frame=0 color=#9fe8ff cx=25 cy=23 fill=true rx=1 ry=1
+draw op=rect layer=2 frame=0 color=#ffffff fill=true x0=25 x1=25 y0=23 y1=23
+draw op=ellipse layer=2 frame=1 color=#9fe8ff cx=25 cy=23 fill=true rx=2 ry=2
+draw op=ellipse layer=2 frame=1 color=#ffffff cx=25 cy=23 fill=true rx=1 ry=1
+draw op=ellipse layer=2 frame=2 color=#2f8fd8 cx=25 cy=23 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=2 color=#9fe8ff cx=25 cy=23 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=2 color=#ffffff cx=25 cy=23 fill=true rx=2 ry=2
+draw op=pencil layer=2 frame=2 color=#9fe8ff points=25,17 30,23 25,29 20,23 size=1
+draw op=rect layer=2 frame=3 color=#2f8fd8 fill=true x0=25 x1=36 y0=21 y1=25
+draw op=rect layer=2 frame=3 color=#9fe8ff fill=true x0=25 x1=35 y0=22 y1=24
+draw op=rect layer=2 frame=3 color=#ffffff fill=true x0=25 x1=34 y0=23 y1=23
+draw op=ellipse layer=2 frame=3 color=#9fe8ff cx=25 cy=23 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=3 color=#ffffff cx=25 cy=23 fill=true rx=2 ry=2
+draw op=rect layer=2 frame=4 color=#2f8fd8 fill=true x0=24 x1=43 y0=21 y1=25
+draw op=rect layer=2 frame=4 color=#9fe8ff fill=true x0=24 x1=42 y0=22 y1=24
+draw op=rect layer=2 frame=4 color=#ffffff fill=true x0=24 x1=41 y0=23 y1=23
+draw op=ellipse layer=2 frame=4 color=#9fe8ff cx=24 cy=23 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=4 color=#ffffff cx=24 cy=23 fill=true rx=2 ry=2
+draw op=rect layer=2 frame=5 color=#2f8fd8 fill=true x0=23 x1=47 y0=21 y1=25
+draw op=rect layer=2 frame=5 color=#9fe8ff fill=true x0=23 x1=47 y0=22 y1=24
+draw op=rect layer=2 frame=5 color=#ffffff fill=true x0=23 x1=47 y0=23 y1=23
+draw op=ellipse layer=2 frame=5 color=#2f8fd8 cx=24 cy=23 fill=true rx=5 ry=5
+draw op=ellipse layer=2 frame=5 color=#9fe8ff cx=24 cy=23 fill=true rx=4 ry=4
+draw op=ellipse layer=2 frame=5 color=#ffffff cx=24 cy=23 fill=true rx=3 ry=3
+draw op=rect layer=2 frame=6 color=#2f8fd8 fill=true x0=26 x1=47 y0=21 y1=25
+draw op=rect layer=2 frame=6 color=#9fe8ff fill=true x0=28 x1=47 y0=22 y1=24
+draw op=rect layer=2 frame=6 color=#ffffff fill=true x0=32 x1=47 y0=23 y1=23
+draw op=ellipse layer=2 frame=6 color=#9fe8ff cx=24 cy=23 fill=true rx=2 ry=2
+draw op=rect layer=2 frame=7 color=#2f8fd8 fill=true x0=34 x1=47 y0=22 y1=24
+draw op=rect layer=2 frame=7 color=#9fe8ff fill=true x0=37 x1=47 y0=23 y1=23
+draw op=pencil layer=2 frame=7 color=#9fe8ff points=27,23 30,23 24,23 size=1
+draw op=pencil layer=2 frame=8 color=#9fe8ff points=24,23 23,22 size=1
+draw op=pencil layer=2 frame=8 color=#9fe8ff points=39,23 44,23 42,24 size=1
+draw op=ellipse layer=2 frame=9 color=#9fe8ff cx=25 cy=23 fill=true rx=1 ry=1
+draw op=rect layer=2 frame=9 color=#ffffff fill=true x0=25 x1=25 y0=23 y1=23
 add_tag name=beam direction=forward from=0 to=9

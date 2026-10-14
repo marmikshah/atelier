@@ -1,445 +1,335 @@
-atelier 5 1a53f7e3-5854-4944-b66b-72edcee93c25 0.1.0
+atelier 4 1a53f7e3-5854-4944-b66b-72edcee93c25 0.1.0
 new name=rubber-ball-bounce width=32 height=32
-layer rename index=0 name=shadow
-layer add name=ball
-layer add name=shade
-layer add name=shine
-palette set colors=#4a1030,#e23b45,#ffd9c4,#4b4668
-legend A=#e23b45
-ball @0 grid 10,2 = 10,2 12x12
-    ....AAAA....
-    ..AAAAAAAA..
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    ..AAAAAAAA..
-    ....AAAA....
-legend B=#4a1030
-ball @0 grid 10,2 = 10,2 12x12
-    ....BBBB....
-    ..BBAAAABB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    ..BBAAAABB..
-    ....BBBB....
-shade @0 grid 15,8 = 15,8 6x5
-    .....B
-    .....B
-    ....B.
-    ..BBB.
-    BBB...
-legend C=#ffd9c4
-shine @0 grid 13,4 = 13,4 3x3
-    .CC
-    CC.
-    C..
-legend D=#4b4668
-shadow @0 grid 12,28 = 12,28 8x3
-    ..DDDD..
-    DDDDDDDD
-    ..DDDD..
-shade @0 erase pencil ~
-shade @0 erase rect 17,11 17,11 fill ~
-shade @0 pencil #4a1030 = 3,20 3,20 #4a1030
-shade @0 erase pencil ~
-shade @0 erase pencil = 3,20 3,20 .
-shade @0 erase pencil = 15,11 3x2
-    ...
-    .BB
-shadow @0 pencil #4b4668 = 13,28 18,30 #4b4668
-frame add copy_from=0
-ball @1 move 10,2 21,13 0,1 = 10,2 12x13
-    ............
-    ....BBBB....
-    ..BBAAAABB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    ..BBAAAABB..
-    ....BBBB....
-shade @1 move 10,2 21,13 0,1 = 16,8 5x6
-    .....
-    ....B
-    ....B
-    ...B.
-    ..BB.
-    BB...
-shine @1 move 10,2 21,13 0,1 = 13,4 3x4
-    ...
-    .CC
-    CC.
-    C..
-frame add copy_from=1
-ball @2 move 4,3 27,14 0,3 = 10,3 12x15
-    ............
-    ............
-    ............
-    ....BBBB....
-    ..BBAAAABB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    ..BBAAAABB..
-    ....BBBB....
-shade @2 move 4,3 27,14 0,3 = 16,9 5x8
-    .....
-    .....
-    .....
-    ....B
-    ....B
-    ...B.
-    ..BB.
-    BB...
-shine @2 move 4,3 27,14 0,3 = 13,5 3x6
-    ...
-    ...
-    ...
-    .CC
-    CC.
-    C..
-shadow @2 clear_cel = 12,28 19,30 .
-shadow @2 grid 11,28 = 11,28 10x3
-    .DDDDDDDD.
-    DDDDDDDDDD
-    .DDDDDDDD.
-frame add copy_from=2
-ball @3 clear_cel = 10,6 21,17 .
-ball @3 grid 11,9 = 11,9 10x14
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    .BAAAAAAB.
-    .BAAAAAAB.
-    ..BAAAAB..
-    ...BBBB...
-shade @3 clear_cel = 16,12 20,16 .
-shade @3 grid 16,16 = 16,16 4x6
-    ...B
-    ...B
-    ...B
-    ..B.
-    .BB.
-    BB..
-shine @3 clear_cel = 13,8 15,10 .
-shine @3 grid 14,11 = 14,11 2x4
-    .C
-    CC
-    C.
-    C.
-shadow @3 clear_cel = 11,28 20,30 .
-shadow @3 grid 10,28 = 10,28 12x3
-    ..DDDDDDDD..
-    DDDDDDDDDDDD
-    ..DDDDDDDD..
-frame add copy_from=3
-ball @4 clear_cel = 11,9 20,22 .
-ball @4 grid 11,13 = 11,13 10x15
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    .BAAAAAAB.
-    .BAAAAAAB.
-    ..BAAAAB..
-    ...BBBB...
-shade @4 clear_cel = 16,16 19,21 .
-shade @4 grid 16,20 = 16,20 4x7
-    ...B
-    ...B
-    ...B
-    ...B
-    ..B.
-    .BB.
-    BB..
-shine @4 clear_cel = 14,11 15,14 .
-shine @4 grid 14,15 = 14,15 2x4
-    .C
-    CC
-    C.
-    C.
-shadow @4 clear_cel = 10,28 21,30 .
-shadow @4 grid 8,28 = 8,28 16x3
-    ..DDDDDDDDDDDD..
-    DDDDDDDDDDDDDDDD
-    ..DDDDDDDDDDDD..
-frame add copy_from=4
-ball @5 clear_cel = 11,13 20,27 .
-ball @5 grid 6,22 = 6,22 20x7
-    .....BBBBBBBBBB.....
-    ..BBBAAAAAAAAAABBB..
-    BBAAAAAAAAAAAAAAAABB
-    BAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAAAAB
-    .BBAAAAAAAAAAAAAABB.
-    ...BBBBBBBBBBBBBB...
-shade @5 clear_cel = 16,20 19,26 .
-shade @5 grid 15,25 = 15,25 10x3
-    .........B
-    .......BBB
-    BBBBBBBB..
-shine @5 clear_cel = 14,15 15,18 .
-shine @5 grid 9,24 = 9,24 5x2
-    ..CCC
-    CC...
-shadow @5 clear_cel = 8,28 23,30 .
-shadow @5 grid 4,28 = 4,28 24x3
-    ...DDDDDDDDDDDDDDDDDD...
-    DDDDDDDDDDDDDDDDDDDDDDDD
-    ...DDDDDDDDDDDDDDDDDD...
-shade @5 erase pencil = 15,26 8x2
-    ........
-    ..BBBBBB
-shadow @5 pencil #4b4668 = 6,28 25,30 #4b4668
-frame add copy_from=5
-ball @6 clear_cel = 6,22 25,28 .
-ball @6 grid 12,12 = 12,12 8x17
-    ..BBBB..
-    .BAAAAB.
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    .BAAAAB.
-    .BAAAAB.
-    .BAAAAB.
-    ..BBBB..
-shade @6 clear_cel = 17,25 24,27 .
-shade @6 grid 16,21 = 16,21 3x7
-    ..B
-    ..B
-    ..B
-    ..B
-    .B.
-    .B.
-    BB.
-shine @6 clear_cel = 9,24 13,25 .
-shine @6 grid 14,14 = 14,14 2x5
-    .C
-    .C
-    CC
-    C.
-    C.
-shadow @6 clear_cel = 4,28 27,30 .
-shadow @6 grid 9,28 = 9,28 14x3
-    ..DDDDDDDDDD..
-    DDDDDDDDDDDDDD
-    ..DDDDDDDDDD..
-ball @6 clear_cel = 12,12 19,28 .
-ball @6 grid 12,12 = 12,12 8x17
-    ..AAAA..
-    ..AAAA..
-    .AAAAAA.
-    .AAAAAA.
-    .AAAAAA.
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    AAAAAAAA
-    .AAAAAA.
-    .AAAAAA.
-    .AAAAAA.
-    ..AAAA..
-    ..AAAA..
-shade @6 clear_cel = 16,21 18,27 .
-shine @6 clear_cel = 14,14 15,18 .
-ball @6 clear_cel = 12,12 19,28 .
-ball @6 grid 11,13 = 11,13 10x16
-    ...AAAA...
-    ..AAAAAA..
-    .AAAAAAAA.
-    .AAAAAAAA.
-    .AAAAAAAA.
-    AAAAAAAAAA
-    AAAAAAAAAA
-    AAAAAAAAAA
-    AAAAAAAAAA
-    AAAAAAAAAA
-    AAAAAAAAAA
-    .AAAAAAAA.
-    .AAAAAAAA.
-    .AAAAAAAA.
-    ..AAAAAA..
-    ...AAAA...
-shade @6 clear_cel ~
-shine @6 clear_cel ~
-ball @6 clear_cel = 11,13 20,28 .
-ball @6 grid 11,13 = 11,13 10x16
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    .BAAAAAAB.
-    .BAAAAAAB.
-    .BAAAAAAB.
-    ..BAAAAB..
-    ...BBBB...
-shade @6 clear_cel ~
-shade @6 grid 16,21 = 16,21 4x7
-    ...B
-    ...B
-    ...B
-    ..B.
-    ..B.
-    .BB.
-    BB..
-shine @6 clear_cel ~
-shine @6 grid 14,15 = 14,15 2x5
-    .C
-    CC
-    C.
-    C.
-    C.
-ball @4 clear_cel = 11,13 20,27 .
-ball @4 grid 11,14 = 11,14 10x14
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    .BAAAAAAB.
-    .BAAAAAAB.
-    ..BAAAAB..
-    ...BBBB...
-shade @4 clear_cel = 16,20 19,26 .
-shade @4 grid 16,21 = 16,21 4x6
-    ...B
-    ...B
-    ...B
-    ..B.
-    .BB.
-    BB..
-shine @4 clear_cel = 14,15 15,18 .
-shine @4 grid 14,16 = 14,16 2x4
-    .C
-    CC
-    C.
-    C.
-frame add copy_from=3
-ball @7 move 4,9 27,22 0,-1 = 11,8 10x15
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    .BAAAAAAB.
-    .BAAAAAAB.
-    ..BAAAAB..
-    ...BBBB...
-    ..........
-shade @7 move 4,9 27,22 0,-1 = 16,15 4x7
-    ...B
-    ...B
-    ...B
-    ..B.
-    .BB.
-    BB..
-    ....
-shine @7 move 4,9 27,22 0,-1 = 14,10 2x5
-    .C
-    CC
-    C.
-    C.
-    ..
-shadow @7 clear_cel = 10,28 21,30 .
-shadow @7 grid 10,28 = 10,28 12x3
-    ..DDDDDDDD..
-    DDDDDDDDDDDD
-    ..DDDDDDDD..
-frame add copy_from=2
-ball @8 move 4,6 27,17 0,-1 = 10,5 12x13
-    ....BBBB....
-    ..BBAAAABB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    ..BBAAAABB..
-    ....BBBB....
-    ............
-shade @8 move 4,6 27,17 0,-1 = 16,11 5x6
-    ....B
-    ....B
-    ...B.
-    ..BB.
-    BB...
-    .....
-shine @8 move 4,6 27,17 0,-1 = 13,7 3x4
-    .CC
-    CC.
-    C..
-    ...
-shadow @8 clear_cel = 11,28 20,30 .
-shadow @8 grid 11,28 = 11,28 10x3
-    .DDDDDDDD.
-    DDDDDDDDDD
-    .DDDDDDDD.
-frame add copy_from=1
+layer op=rename index=0 name=shadow
+layer op=add name=ball
+layer op=add name=shade
+layer op=add name=shine
+palette op=set colors=#4a1030,#e23b45,#ffd9c4,#4b4668
+paint_grid layer=1 frame=0 x=10 y=2 legend=B:#e23b45 rows:12
+  |....BBBB....|
+  |..BBBBBBBB..|
+  |.BBBBBBBBBB.|
+  |.BBBBBBBBBB.|
+  |BBBBBBBBBBBB|
+  |BBBBBBBBBBBB|
+  |BBBBBBBBBBBB|
+  |BBBBBBBBBBBB|
+  |.BBBBBBBBBB.|
+  |.BBBBBBBBBB.|
+  |..BBBBBBBB..|
+  |....BBBB....|
+paint_grid layer=1 frame=0 x=10 y=2 legend=D:#4a1030 rows:12
+  |....DDDD....|
+  |..DD....DD..|
+  |.D........D.|
+  |.D........D.|
+  |D..........D|
+  |D..........D|
+  |D..........D|
+  |D..........D|
+  |.D........D.|
+  |.D........D.|
+  |..DD....DD..|
+  |....DDDD....|
+paint_grid layer=2 frame=0 x=15 y=8 legend=D:#4a1030 rows:5
+  |.....D|
+  |.....D|
+  |....D.|
+  |..DDD.|
+  |DDD...|
+paint_grid layer=3 frame=0 x=13 y=4 legend=H:#ffd9c4 rows:3
+  |.HH|
+  |HH.|
+  |H..|
+paint_grid layer=0 frame=0 x=12 y=28 legend=S:#4b4668 rows:3
+  |..SSSS..|
+  |SSSSSSSS|
+  |..SSSS..|
+draw op=pencil layer=2 frame=0 color=#4a1030 erase=true points=17,11 15,12
+draw op=rect layer=2 frame=0 color=#4a1030 erase=true fill=true x0=17 x1=17 y0=11 y1=11
+draw op=pencil layer=2 frame=0 color=#4a1030 points=[[3,20]]
+draw op=pencil layer=2 frame=0 color=#4a1030 erase=true points=[[3,20]]
+draw op=pencil layer=2 frame=0 color=#00000000 erase=true points=[[3,20]]
+draw op=pencil layer=2 frame=0 color=#00000000 erase=true points=17,11 15,12
+draw op=pencil layer=0 frame=0 color=#4b4668 points=13,28 18,28 13,30 18,30
+frame op=add copy_from=0
+region op=move layer=1 frame=1 offset=0,1 rect=10,2,21,13
+region op=move layer=2 frame=1 offset=0,1 rect=10,2,21,13
+region op=move layer=3 frame=1 offset=0,1 rect=10,2,21,13
+frame op=add copy_from=1
+region op=move layer=1 frame=2 offset=0,3 rect=4,3,27,14
+region op=move layer=2 frame=2 offset=0,3 rect=4,3,27,14
+region op=move layer=3 frame=2 offset=0,3 rect=4,3,27,14
+draw op=clear_cel layer=0 frame=2
+paint_grid layer=0 frame=2 x=11 y=28 legend=S:#4b4668 rows:3
+  |.SSSSSSSS.|
+  |SSSSSSSSSS|
+  |.SSSSSSSS.|
+frame op=add copy_from=2
+draw op=clear_cel layer=1 frame=3
+paint_grid layer=1 frame=3 x=11 y=9 legend=B:#e23b45,D:#4a1030 rows:14
+  |...DDDD...|
+  |..DBBBBD..|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |..DBBBBD..|
+  |...DDDD...|
+draw op=clear_cel layer=2 frame=3
+paint_grid layer=2 frame=3 x=16 y=16 legend=D:#4a1030 rows:6
+  |...D|
+  |...D|
+  |...D|
+  |..D.|
+  |.DD.|
+  |DD..|
+draw op=clear_cel layer=3 frame=3
+paint_grid layer=3 frame=3 x=14 y=11 legend=H:#ffd9c4 rows:4
+  |.H|
+  |HH|
+  |H.|
+  |H.|
+draw op=clear_cel layer=0 frame=3
+paint_grid layer=0 frame=3 x=10 y=28 legend=S:#4b4668 rows:3
+  |..SSSSSSSS..|
+  |SSSSSSSSSSSS|
+  |..SSSSSSSS..|
+frame op=add copy_from=3
+draw op=clear_cel layer=1 frame=4
+paint_grid layer=1 frame=4 x=11 y=13 legend=B:#e23b45,D:#4a1030 rows:15
+  |...DDDD...|
+  |..DBBBBD..|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |..DBBBBD..|
+  |...DDDD...|
+draw op=clear_cel layer=2 frame=4
+paint_grid layer=2 frame=4 x=16 y=20 legend=D:#4a1030 rows:7
+  |...D|
+  |...D|
+  |...D|
+  |...D|
+  |..D.|
+  |.DD.|
+  |DD..|
+draw op=clear_cel layer=3 frame=4
+paint_grid layer=3 frame=4 x=14 y=15 legend=H:#ffd9c4 rows:4
+  |.H|
+  |HH|
+  |H.|
+  |H.|
+draw op=clear_cel layer=0 frame=4
+paint_grid layer=0 frame=4 x=8 y=28 legend=S:#4b4668 rows:3
+  |..SSSSSSSSSSSS..|
+  |SSSSSSSSSSSSSSSS|
+  |..SSSSSSSSSSSS..|
+frame op=add copy_from=4
+draw op=clear_cel layer=1 frame=5
+paint_grid layer=1 frame=5 x=6 y=22 legend=B:#e23b45,D:#4a1030 rows:7
+  |.....DDDDDDDDDD.....|
+  |..DDDBBBBBBBBBBDDD..|
+  |DDBBBBBBBBBBBBBBBBDD|
+  |DBBBBBBBBBBBBBBBBBBD|
+  |DBBBBBBBBBBBBBBBBBBD|
+  |.DDBBBBBBBBBBBBBBDD.|
+  |...DDDDDDDDDDDDDD...|
+draw op=clear_cel layer=2 frame=5
+paint_grid layer=2 frame=5 x=15 y=25 legend=D:#4a1030 rows:3
+  |.........D|
+  |.......DDD|
+  |DDDDDDDD..|
+draw op=clear_cel layer=3 frame=5
+paint_grid layer=3 frame=5 x=9 y=24 legend=H:#ffd9c4 rows:2
+  |..HHH|
+  |HH...|
+draw op=clear_cel layer=0 frame=5
+paint_grid layer=0 frame=5 x=4 y=28 legend=S:#4b4668 rows:3
+  |...SSSSSSSSSSSSSSSSSS...|
+  |SSSSSSSSSSSSSSSSSSSSSSSS|
+  |...SSSSSSSSSSSSSSSSSS...|
+draw op=pencil layer=2 frame=5 color=#00000000 erase=true points=15,27 16,27 22,26
+draw op=pencil layer=0 frame=5 color=#4b4668 points=6,28 25,28 6,30 25,30
+frame op=add copy_from=5
+draw op=clear_cel layer=1 frame=6
+paint_grid layer=1 frame=6 x=12 y=12 legend=B:#e23b45,D:#4a1030 rows:17
+  |..DDDD..|
+  |.DBBBBD.|
+  |.DBBBBD.|
+  |.DBBBBD.|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |DBBBBBBD|
+  |.DBBBBD.|
+  |.DBBBBD.|
+  |.DBBBBD.|
+  |..DDDD..|
+draw op=clear_cel layer=2 frame=6
+paint_grid layer=2 frame=6 x=16 y=21 legend=D:#4a1030 rows:7
+  |..D|
+  |..D|
+  |..D|
+  |..D|
+  |.D.|
+  |.D.|
+  |DD.|
+draw op=clear_cel layer=3 frame=6
+paint_grid layer=3 frame=6 x=14 y=14 legend=H:#ffd9c4 rows:5
+  |.H|
+  |.H|
+  |HH|
+  |H.|
+  |H.|
+draw op=clear_cel layer=0 frame=6
+paint_grid layer=0 frame=6 x=9 y=28 legend=S:#4b4668 rows:3
+  |..SSSSSSSSSS..|
+  |SSSSSSSSSSSSSS|
+  |..SSSSSSSSSS..|
+draw op=clear_cel layer=1 frame=6
+paint_grid layer=1 frame=6 x=12 y=12 legend=B:#e23b45 rows:17
+  |..BBBB..|
+  |..BBBB..|
+  |.BBBBBB.|
+  |.BBBBBB.|
+  |.BBBBBB.|
+  |BBBBBBBB|
+  |BBBBBBBB|
+  |BBBBBBBB|
+  |BBBBBBBB|
+  |BBBBBBBB|
+  |BBBBBBBB|
+  |BBBBBBBB|
+  |.BBBBBB.|
+  |.BBBBBB.|
+  |.BBBBBB.|
+  |..BBBB..|
+  |..BBBB..|
+draw op=clear_cel layer=2 frame=6
+draw op=clear_cel layer=3 frame=6
+draw op=clear_cel layer=1 frame=6
+paint_grid layer=1 frame=6 x=11 y=13 legend=B:#e23b45 rows:16
+  |...BBBB...|
+  |..BBBBBB..|
+  |.BBBBBBBB.|
+  |.BBBBBBBB.|
+  |.BBBBBBBB.|
+  |BBBBBBBBBB|
+  |BBBBBBBBBB|
+  |BBBBBBBBBB|
+  |BBBBBBBBBB|
+  |BBBBBBBBBB|
+  |BBBBBBBBBB|
+  |.BBBBBBBB.|
+  |.BBBBBBBB.|
+  |.BBBBBBBB.|
+  |..BBBBBB..|
+  |...BBBB...|
+draw op=clear_cel layer=2 frame=6
+draw op=clear_cel layer=3 frame=6
+draw op=clear_cel layer=1 frame=6
+paint_grid layer=1 frame=6 x=11 y=13 legend=B:#e23b45,D:#4a1030 rows:16
+  |...DDDD...|
+  |..DBBBBD..|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |..DBBBBD..|
+  |...DDDD...|
+draw op=clear_cel layer=2 frame=6
+paint_grid layer=2 frame=6 x=16 y=21 legend=D:#4a1030 rows:7
+  |...D|
+  |...D|
+  |...D|
+  |..D.|
+  |..D.|
+  |.DD.|
+  |DD..|
+draw op=clear_cel layer=3 frame=6
+paint_grid layer=3 frame=6 x=14 y=15 legend=H:#ffd9c4 rows:5
+  |.H|
+  |HH|
+  |H.|
+  |H.|
+  |H.|
+draw op=clear_cel layer=1 frame=4
+paint_grid layer=1 frame=4 x=11 y=14 legend=B:#e23b45,D:#4a1030 rows:14
+  |...DDDD...|
+  |..DBBBBD..|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |DBBBBBBBBD|
+  |.DBBBBBBD.|
+  |.DBBBBBBD.|
+  |..DBBBBD..|
+  |...DDDD...|
+draw op=clear_cel layer=2 frame=4
+paint_grid layer=2 frame=4 x=16 y=21 legend=D:#4a1030 rows:6
+  |...D|
+  |...D|
+  |...D|
+  |..D.|
+  |.DD.|
+  |DD..|
+draw op=clear_cel layer=3 frame=4
+paint_grid layer=3 frame=4 x=14 y=16 legend=H:#ffd9c4 rows:4
+  |.H|
+  |HH|
+  |H.|
+  |H.|
+frame op=add copy_from=3
+region op=move layer=1 frame=7 offset=0,-1 rect=4,9,27,22
+region op=move layer=2 frame=7 offset=0,-1 rect=4,9,27,22
+region op=move layer=3 frame=7 offset=0,-1 rect=4,9,27,22
+draw op=clear_cel layer=0 frame=7
+paint_grid layer=0 frame=7 x=10 y=28 legend=S:#4b4668 rows:3
+  |..SSSSSSSS..|
+  |SSSSSSSSSSSS|
+  |..SSSSSSSS..|
+frame op=add copy_from=2
+region op=move layer=1 frame=8 offset=0,-1 rect=4,6,27,17
+region op=move layer=2 frame=8 offset=0,-1 rect=4,6,27,17
+region op=move layer=3 frame=8 offset=0,-1 rect=4,6,27,17
+draw op=clear_cel layer=0 frame=8
+paint_grid layer=0 frame=8 x=11 y=28 legend=S:#4b4668 rows:3
+  |.SSSSSSSS.|
+  |SSSSSSSSSS|
+  |.SSSSSSSS.|
+frame op=add copy_from=1
 add_tag name=bounce from=0 to=9
-shade @0 pencil #4a1030 = 18,10 18,10 #4a1030
-shade @0 erase pencil = 18,10 18,10 .
+draw op=pencil layer=2 frame=0 color=#4a1030 points=[[18,10]]
+draw op=pencil layer=2 frame=0 color=#00000000 erase=true points=[[18,10]]

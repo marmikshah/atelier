@@ -1,587 +1,524 @@
-atelier 5 312032fb-1fc4-4591-a133-480ad9079e9f 0.1.0
+atelier 4 312032fb-1fc4-4591-a133-480ad9079e9f 0.1.0
 new name=car width=32 height=32
-layer rename index=0 name=speedlines
-layer add name=body
-layer add name=wheel_rear
-layer add name=wheel_front
-layer add name=exhaust
-palette set colors=#22202e,#d9402f,#8c2430,#86d0f0,#dce0e6,#f8d24a
-legend A=#22202e B=#d9402f C=#86d0f0 D=#f8d24a E=#8c2430
-body @0 grid 4,11 = 4,11 26x13
-    ......AAAAAAAAAA..........
-    .....ABBBBBBBBBBA.........
-    ....ACCCCBBCCCBCCA........
-    ....ACCCCBBCCCCBCCA.......
-    ...ACCCCCBBCCCCCBCCA......
-    ...ACCCCCBBCCCCCCBCCA.....
-    ..ABBBBBBBBBBBBBBBBBBAAAAA
-    .ABBBBBBBBBBBBBBBBBBBBBBDA
-    AEBBBBBBBBBBBBBBBBBBBBBBDA
-    AEBBBBBBBBBBBBBBBBBBBBBBBA
-    AEEE...EEEEEEEEEEE...EEEEA
-    AEE.....EEEEEEEEE.....EEA.
-    AA.......AAAAAAA.......AA.
-speedlines @0 clear_cel ~
-wheel_rear @0 clear_cel ~
-wheel_front @0 clear_cel ~
-exhaust @0 clear_cel ~
-legend F=#dce0e6
-wheel_rear @0 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFFFA
-    AAAAAAA
-    AFFFFFA
-    .AFFFA.
-    ..AAA..
-wheel_front @0 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFFFA
-    AAAAAAA
-    AFFFFFA
-    .AFFFA.
-    ..AAA..
-exhaust @0 grid 2,22 = 2,22 3,22 #dce0e6
-speedlines @0 grid 0,5 = 0,5 32x22
-    ..............FFF...............
-    ................................
-    ................................
-    .............................FFF
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    .......FFF......................
-    ................................
-    ................................
-    ................................
-    .FFF............................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    F...............................
-body @0 move 0,0 32,32 0,1 = 4,11 26x14
-    ..........................
-    ......AAAAAAAAAA..........
-    .....ABBBBBBBBBBA.........
-    ....ACCCCBBCCCBCCA........
-    ....ACCCCBBCCCCBCCA.......
-    ...ACCCCCBBCCCCCBCCA......
-    ...ACCCCCBBCCCCCCBCCA.....
-    ..ABBBBBBBBBBBBBBBBBBAAAAA
-    .ABBBBBBBBBBBBBBBBBBBBBBDA
-    AEBBBBBBBBBBBBBBBBBBBBBBDA
-    AEBBBBBBBBBBBBBBBBBBBBBBBA
-    AEEE...EEEEEEEEEEE...EEEEA
-    AEE.....EEEEEEEEE.....EEA.
-    AA.......AAAAAAA.......AA.
-body @0 erase pencil = 6,21 21x3
-    BB...BBBBBBBBBBB...BB
-    E.....EEEEEEEEE.....E
-    .......EEEEEEE.......
-speedlines @0 clear_cel = 0,5 31,26 .
-wheel_rear @0 clear_cel = 6,21 12,27 .
-wheel_front @0 clear_cel = 20,21 26,27 .
-exhaust @0 clear_cel = 2,22 3,22 .
-wheel_rear @0 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFFFA
-    AAAAAAA
-    AFFFFFA
-    .AFFFA.
-    ..AAA..
-wheel_front @0 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFFFA
-    AAAAAAA
-    AFFFFFA
-    .AFFFA.
-    ..AAA..
-exhaust @0 grid 2,23 = 2,23 3,23 #dce0e6
-speedlines @0 grid 0,5 = 0,5 32x22
-    ..............FFF...............
-    ................................
-    ................................
-    .............................FFF
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    .......FFF......................
-    ................................
-    ................................
-    ................................
-    .FFF............................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    F...............................
-body @0 line #8c2430 14,18 14,21 = 14,18 14,21 #8c2430
-body @0 pencil #22202e = 16,19 17,19 #22202e
-body @0 pencil #dce0e6 = 9,14 8x1
-    FFCCBBFF
-frame add copy_from=0 count=9 duration_ms=100
-speedlines @1 clear_cel = 0,5 31,26 .
-wheel_rear @1 clear_cel = 6,21 12,27 .
-wheel_front @1 clear_cel = 20,21 26,27 .
-exhaust @1 clear_cel = 2,23 3,23 .
-wheel_rear @1 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFFA.
-    AAAFFFA
-    AFFAFFA
-    AFFFAAA
-    .AFFFA.
-    ..AAA..
-wheel_front @1 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFFA.
-    AAAFFFA
-    AFFAFFA
-    AFFFAAA
-    .AFFFA.
-    ..AAA..
-exhaust @1 grid 1,22 = 1,22 2,23 #dce0e6
-speedlines @1 grid 0,5 = 0,5 30x16
-    ...........FFF................
-    ..............................
-    ..............................
-    ..........................FFFF
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ....FFF.......................
-    ..............................
-    ..............................
-    ..............................
-    F.............................
-speedlines @2 clear_cel = 0,5 31,26 .
-wheel_rear @2 clear_cel = 6,21 12,27 .
-wheel_front @2 clear_cel = 20,21 26,27 .
-exhaust @2 clear_cel = 2,23 3,23 .
-wheel_rear @2 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AAFFA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AFFAA.
-    ..AAA..
-wheel_front @2 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AAFFA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AFFAA.
-    ..AAA..
-exhaust @2 grid 0,21 = 0,21 3x3
-    .FF
-    FFF
-    FF.
-speedlines @2 grid 1,5 = 1,5 26x22
-    .......FFF................
-    ..........................
-    ..........................
-    ......................FFFF
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    FFF.......................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ......FFF.................
-body @2 move 0,0 32,32 0,-1 = 4,11 26x14
-    ......AAAAAAAAAA..........
-    .....ABBBBBBBBBBA.........
-    ....AFFCCBBFFCBCCA........
-    ....ACCCCBBCCCCBCCA.......
-    ...ACCCCCBBCCCCCBCCA......
-    ...ACCCCCBBCCCCCCBCCA.....
-    ..ABBBBBBBEBBBBBBBBBBAAAAA
-    .ABBBBBBBBEBAABBBBBBBBBBDA
-    AEBBBBBBBBEBBBBBBBBBBBBBDA
-    AEBB...BBBEBBBBBBB...BBBBA
-    AEE.....EEEEEEEEE.....EEEA
-    AE.......EEEEEEE.......EA.
-    AA.......AAAAAAA.......AA.
-    ..........................
-speedlines @3 clear_cel = 0,5 31,26 .
-wheel_rear @3 clear_cel = 6,21 12,27 .
-wheel_front @3 clear_cel = 20,21 26,27 .
-exhaust @3 clear_cel = 2,23 3,23 .
-wheel_rear @3 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFAA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AAFFA.
-    ..AAA..
-wheel_front @3 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFAA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AAFFA.
-    ..AAA..
-exhaust @3 grid 0,20 = 0,20 1,21 #dce0e6
-speedlines @3 grid 0,5 = 0,5 24x22
-    .....FFF................
-    ........................
-    ........................
-    ....................FFFF
-    ........................
-    ........................
-    ........................
-    ........................
-    ........................
-    ........................
-    ........................
-    F.......................
-    ........................
-    ........................
-    ........................
-    .......FFF..............
-    ........................
-    ........................
-    ........................
-    ........................
-    ........................
-    ....FFF.................
-body @3 move 0,0 32,32 0,-1 = 4,11 26x14
-    ......AAAAAAAAAA..........
-    .....ABBBBBBBBBBA.........
-    ....AFFCCBBFFCBCCA........
-    ....ACCCCBBCCCCBCCA.......
-    ...ACCCCCBBCCCCCBCCA......
-    ...ACCCCCBBCCCCCCBCCA.....
-    ..ABBBBBBBEBBBBBBBBBBAAAAA
-    .ABBBBBBBBEBAABBBBBBBBBBDA
-    AEBBBBBBBBEBBBBBBBBBBBBBDA
-    AEBB...BBBEBBBBBBB...BBBBA
-    AEE.....EEEEEEEEE.....EEEA
-    AE.......EEEEEEE.......EA.
-    AA.......AAAAAAA.......AA.
-    ..........................
-speedlines @4 clear_cel = 0,5 31,26 .
-wheel_rear @4 clear_cel = 6,21 12,27 .
-wheel_front @4 clear_cel = 20,21 26,27 .
-exhaust @4 clear_cel = 2,23 3,23 .
-wheel_rear @4 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFAAA
-    AFFAFFA
-    AAAFFFA
-    .AFFFA.
-    ..AAA..
-wheel_front @4 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFAAA
-    AFFAFFA
-    AAAFFFA
-    .AFFFA.
-    ..AAA..
-exhaust @4 grid 0,19 = 0,19 0,19 #dce0e6
-speedlines @4 grid 1,5 = 1,5 20x22
-    .FFF................
-    ....................
-    ....................
-    ................FFFF
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    ...FFF..............
-    ....................
-    ....................
-    ....................
-    ....................
-    ....................
-    FFF.................
-speedlines @5 clear_cel = 0,5 31,26 .
-wheel_rear @5 clear_cel = 6,21 12,27 .
-wheel_front @5 clear_cel = 20,21 26,27 .
-exhaust @5 clear_cel = 2,23 3,23 .
-wheel_rear @5 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFFFA
-    AAAAAAA
-    AFFFFFA
-    .AFFFA.
-    ..AAA..
-wheel_front @5 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFFFA
-    AAAAAAA
-    AFFFFFA
-    .AFFFA.
-    ..AAA..
-exhaust @5 grid 2,23 = 2,23 3,23 #dce0e6
-speedlines @5 grid 0,5 = 0,5 32x22
-    .............................FFF
-    ................................
-    ................................
-    ..............FFFF..............
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    .......FFF......................
-    ................................
-    ................................
-    ................................
-    .FFF............................
-    ................................
-    ................................
-    ................................
-    ................................
-    ................................
-    F...............................
-speedlines @6 clear_cel = 0,5 31,26 .
-wheel_rear @6 clear_cel = 6,21 12,27 .
-wheel_front @6 clear_cel = 20,21 26,27 .
-exhaust @6 clear_cel = 2,23 3,23 .
-wheel_rear @6 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFFA.
-    AAAFFFA
-    AFFAFFA
-    AFFFAAA
-    .AFFFA.
-    ..AAA..
-wheel_front @6 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFFA.
-    AAAFFFA
-    AFFAFFA
-    AFFFAAA
-    .AFFFA.
-    ..AAA..
-exhaust @6 grid 1,22 = 1,22 2,23 #dce0e6
-speedlines @6 grid 0,5 = 0,5 29x16
-    ..........................FFF
-    .............................
-    .............................
-    ...........FFFF..............
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    ....FFF......................
-    .............................
-    .............................
-    .............................
-    F............................
-speedlines @7 clear_cel = 0,5 31,26 .
-wheel_rear @7 clear_cel = 6,21 12,27 .
-wheel_front @7 clear_cel = 20,21 26,27 .
-exhaust @7 clear_cel = 2,23 3,23 .
-wheel_rear @7 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AAFFA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AFFAA.
-    ..AAA..
-wheel_front @7 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AAFFA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AFFAA.
-    ..AAA..
-exhaust @7 grid 0,21 = 0,21 3x3
-    .FF
-    FFF
-    FF.
-speedlines @7 grid 1,5 = 1,5 25x22
-    ......................FFF
-    .........................
-    .........................
-    .......FFFF..............
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    FFF......................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    .........................
-    ......FFF................
-body @7 move 0,0 32,32 0,-1 = 4,11 26x14
-    ......AAAAAAAAAA..........
-    .....ABBBBBBBBBBA.........
-    ....AFFCCBBFFCBCCA........
-    ....ACCCCBBCCCCBCCA.......
-    ...ACCCCCBBCCCCCBCCA......
-    ...ACCCCCBBCCCCCCBCCA.....
-    ..ABBBBBBBEBBBBBBBBBBAAAAA
-    .ABBBBBBBBEBAABBBBBBBBBBDA
-    AEBBBBBBBBEBBBBBBBBBBBBBDA
-    AEBB...BBBEBBBBBBB...BBBBA
-    AEE.....EEEEEEEEE.....EEEA
-    AE.......EEEEEEE.......EA.
-    AA.......AAAAAAA.......AA.
-    ..........................
-speedlines @8 clear_cel = 0,5 31,26 .
-wheel_rear @8 clear_cel = 6,21 12,27 .
-wheel_front @8 clear_cel = 20,21 26,27 .
-exhaust @8 clear_cel = 2,23 3,23 .
-wheel_rear @8 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFAA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AAFFA.
-    ..AAA..
-wheel_front @8 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFAA.
-    AFFAFFA
-    AFFAFFA
-    AFFAFFA
-    .AAFFA.
-    ..AAA..
-exhaust @8 grid 0,20 = 0,20 1,21 #dce0e6
-speedlines @8 grid 0,5 = 0,5 23x22
-    ....................FFF
-    .......................
-    .......................
-    .....FFFF..............
-    .......................
-    .......................
-    .......................
-    .......................
-    .......................
-    .......................
-    .......................
-    F......................
-    .......................
-    .......................
-    .......................
-    .......FFF.............
-    .......................
-    .......................
-    .......................
-    .......................
-    .......................
-    ....FFF................
-body @8 move 0,0 32,32 0,-1 = 4,11 26x14
-    ......AAAAAAAAAA..........
-    .....ABBBBBBBBBBA.........
-    ....AFFCCBBFFCBCCA........
-    ....ACCCCBBCCCCBCCA.......
-    ...ACCCCCBBCCCCCBCCA......
-    ...ACCCCCBBCCCCCCBCCA.....
-    ..ABBBBBBBEBBBBBBBBBBAAAAA
-    .ABBBBBBBBEBAABBBBBBBBBBDA
-    AEBBBBBBBBEBBBBBBBBBBBBBDA
-    AEBB...BBBEBBBBBBB...BBBBA
-    AEE.....EEEEEEEEE.....EEEA
-    AE.......EEEEEEE.......EA.
-    AA.......AAAAAAA.......AA.
-    ..........................
-speedlines @9 clear_cel = 0,5 31,26 .
-wheel_rear @9 clear_cel = 6,21 12,27 .
-wheel_front @9 clear_cel = 20,21 26,27 .
-exhaust @9 clear_cel = 2,23 3,23 .
-wheel_rear @9 grid 6,21 = 6,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFAAA
-    AFFAFFA
-    AAAFFFA
-    .AFFFA.
-    ..AAA..
-wheel_front @9 grid 20,21 = 20,21 7x7
-    ..AAA..
-    .AFFFA.
-    AFFFAAA
-    AFFAFFA
-    AAAFFFA
-    .AFFFA.
-    ..AAA..
-exhaust @9 grid 0,19 = 0,19 0,19 #dce0e6
-speedlines @9 grid 1,5 = 1,5 19x22
-    ................FFF
-    ...................
-    ...................
-    .FFFF..............
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    ...FFF.............
-    ...................
-    ...................
-    ...................
-    ...................
-    ...................
-    FFF................
+layer op=rename index=0 name=speedlines
+layer op=add name=body
+layer op=add name=wheel_rear
+layer op=add name=wheel_front
+layer op=add name=exhaust
+palette op=set colors=#22202e,#d9402f,#8c2430,#86d0f0,#dce0e6,#f8d24a
+paint_grid layer=1 frame=0 x=4 y=11 legend=d:#8c2430,g:#86d0f0,k:#22202e,r:#d9402f,y:#f8d24a rows:13
+  |......kkkkkkkkkk..........|
+  |.....krrrrrrrrrrk.........|
+  |....kggggrrgggrggk........|
+  |....kggggrrggggrggk.......|
+  |...kgggggrrgggggrggk......|
+  |...kgggggrrggggggrggk.....|
+  |..krrrrrrrrrrrrrrrrrrkkkkk|
+  |.krrrrrrrrrrrrrrrrrrrrrryk|
+  |kdrrrrrrrrrrrrrrrrrrrrrryk|
+  |kdrrrrrrrrrrrrrrrrrrrrrrrk|
+  |kddd...ddddddddddd...ddddk|
+  |kdd.....ddddddddd.....ddk.|
+  |kk.......kkkkkkk.......kk.|
+draw op=clear_cel layer=0 frame=0
+draw op=clear_cel layer=2 frame=0
+draw op=clear_cel layer=3 frame=0
+draw op=clear_cel layer=4 frame=0
+paint_grid layer=2 frame=0 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwwwk|
+  |kkkkkkk|
+  |kwwwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=0 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwwwk|
+  |kkkkkkk|
+  |kwwwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=0 x=2 y=22 legend=w:#dce0e6 rows:1
+  |ww|
+paint_grid layer=0 frame=0 x=0 y=5 legend=w:#dce0e6 rows:22
+  |..............www...............|
+  |................................|
+  |................................|
+  |.............................www|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |.......www......................|
+  |................................|
+  |................................|
+  |................................|
+  |.www............................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |w...............................|
+region op=move layer=1 frame=0 offset=0,1 rect=0,0,32,32
+draw op=pencil layer=1 frame=0 color=#00000000 erase=true points=8,21 9,21 10,21 22,21 23,21 24,21 7,22 11,22 21,22 25,22 6,23 12,23 20,23 26,23
+draw op=clear_cel layer=0 frame=0
+draw op=clear_cel layer=2 frame=0
+draw op=clear_cel layer=3 frame=0
+draw op=clear_cel layer=4 frame=0
+paint_grid layer=2 frame=0 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwwwk|
+  |kkkkkkk|
+  |kwwwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=0 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwwwk|
+  |kkkkkkk|
+  |kwwwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=0 x=2 y=23 legend=w:#dce0e6 rows:1
+  |ww|
+paint_grid layer=0 frame=0 x=0 y=5 legend=w:#dce0e6 rows:22
+  |..............www...............|
+  |................................|
+  |................................|
+  |.............................www|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |.......www......................|
+  |................................|
+  |................................|
+  |................................|
+  |.www............................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |w...............................|
+draw op=line layer=1 frame=0 color=#8c2430 x0=14 x1=14 y0=18 y1=21
+draw op=pencil layer=1 frame=0 color=#22202e points=16,19 17,19
+draw op=pencil layer=1 frame=0 color=#dce0e6 points=9,14 10,14 15,14 16,14
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=clear_cel layer=0 frame=1
+draw op=clear_cel layer=2 frame=1
+draw op=clear_cel layer=3 frame=1
+draw op=clear_cel layer=4 frame=1
+paint_grid layer=2 frame=1 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kkkwwwk|
+  |kwwkwwk|
+  |kwwwkkk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=1 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kkkwwwk|
+  |kwwkwwk|
+  |kwwwkkk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=1 x=1 y=22 legend=w:#dce0e6 rows:2
+  |ww|
+  |ww|
+paint_grid layer=0 frame=1 x=0 y=5 legend=w:#dce0e6 rows:16
+  |...........www................|
+  |..............................|
+  |..............................|
+  |..........................wwww|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |....www.......................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |w.............................|
+draw op=clear_cel layer=0 frame=2
+draw op=clear_cel layer=2 frame=2
+draw op=clear_cel layer=3 frame=2
+draw op=clear_cel layer=4 frame=2
+paint_grid layer=2 frame=2 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kkwwk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kwwkk.|
+  |..kkk..|
+paint_grid layer=3 frame=2 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kkwwk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kwwkk.|
+  |..kkk..|
+paint_grid layer=4 frame=2 x=0 y=21 legend=w:#dce0e6 rows:3
+  |.ww|
+  |www|
+  |ww.|
+paint_grid layer=0 frame=2 x=1 y=5 legend=w:#dce0e6 rows:22
+  |.......www................|
+  |..........................|
+  |..........................|
+  |......................wwww|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |www.......................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |..........................|
+  |......www.................|
+region op=move layer=1 frame=2 offset=0,-1 rect=0,0,32,32
+draw op=clear_cel layer=0 frame=3
+draw op=clear_cel layer=2 frame=3
+draw op=clear_cel layer=3 frame=3
+draw op=clear_cel layer=4 frame=3
+paint_grid layer=2 frame=3 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwkk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kkwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=3 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwkk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kkwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=3 x=0 y=20 legend=w:#dce0e6 rows:2
+  |ww|
+  |ww|
+paint_grid layer=0 frame=3 x=0 y=5 legend=w:#dce0e6 rows:22
+  |.....www................|
+  |........................|
+  |........................|
+  |....................wwww|
+  |........................|
+  |........................|
+  |........................|
+  |........................|
+  |........................|
+  |........................|
+  |........................|
+  |w.......................|
+  |........................|
+  |........................|
+  |........................|
+  |.......www..............|
+  |........................|
+  |........................|
+  |........................|
+  |........................|
+  |........................|
+  |....www.................|
+region op=move layer=1 frame=3 offset=0,-1 rect=0,0,32,32
+draw op=clear_cel layer=0 frame=4
+draw op=clear_cel layer=2 frame=4
+draw op=clear_cel layer=3 frame=4
+draw op=clear_cel layer=4 frame=4
+paint_grid layer=2 frame=4 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwkkk|
+  |kwwkwwk|
+  |kkkwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=4 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwkkk|
+  |kwwkwwk|
+  |kkkwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=4 x=0 y=19 legend=w:#dce0e6 rows:1
+  |w|
+paint_grid layer=0 frame=4 x=1 y=5 legend=w:#dce0e6 rows:22
+  |.www................|
+  |....................|
+  |....................|
+  |................wwww|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |...www..............|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |....................|
+  |www.................|
+draw op=clear_cel layer=0 frame=5
+draw op=clear_cel layer=2 frame=5
+draw op=clear_cel layer=3 frame=5
+draw op=clear_cel layer=4 frame=5
+paint_grid layer=2 frame=5 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwwwk|
+  |kkkkkkk|
+  |kwwwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=5 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwwwk|
+  |kkkkkkk|
+  |kwwwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=5 x=2 y=23 legend=w:#dce0e6 rows:1
+  |ww|
+paint_grid layer=0 frame=5 x=0 y=5 legend=w:#dce0e6 rows:22
+  |.............................www|
+  |................................|
+  |................................|
+  |..............wwww..............|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |.......www......................|
+  |................................|
+  |................................|
+  |................................|
+  |.www............................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |................................|
+  |w...............................|
+draw op=clear_cel layer=0 frame=6
+draw op=clear_cel layer=2 frame=6
+draw op=clear_cel layer=3 frame=6
+draw op=clear_cel layer=4 frame=6
+paint_grid layer=2 frame=6 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kkkwwwk|
+  |kwwkwwk|
+  |kwwwkkk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=6 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kkkwwwk|
+  |kwwkwwk|
+  |kwwwkkk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=6 x=1 y=22 legend=w:#dce0e6 rows:2
+  |ww|
+  |ww|
+paint_grid layer=0 frame=6 x=0 y=5 legend=w:#dce0e6 rows:16
+  |..........................www|
+  |.............................|
+  |.............................|
+  |...........wwww..............|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |....www......................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |w............................|
+draw op=clear_cel layer=0 frame=7
+draw op=clear_cel layer=2 frame=7
+draw op=clear_cel layer=3 frame=7
+draw op=clear_cel layer=4 frame=7
+paint_grid layer=2 frame=7 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kkwwk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kwwkk.|
+  |..kkk..|
+paint_grid layer=3 frame=7 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kkwwk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kwwkk.|
+  |..kkk..|
+paint_grid layer=4 frame=7 x=0 y=21 legend=w:#dce0e6 rows:3
+  |.ww|
+  |www|
+  |ww.|
+paint_grid layer=0 frame=7 x=1 y=5 legend=w:#dce0e6 rows:22
+  |......................www|
+  |.........................|
+  |.........................|
+  |.......wwww..............|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |www......................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |.........................|
+  |......www................|
+region op=move layer=1 frame=7 offset=0,-1 rect=0,0,32,32
+draw op=clear_cel layer=0 frame=8
+draw op=clear_cel layer=2 frame=8
+draw op=clear_cel layer=3 frame=8
+draw op=clear_cel layer=4 frame=8
+paint_grid layer=2 frame=8 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwkk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kkwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=8 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwkk.|
+  |kwwkwwk|
+  |kwwkwwk|
+  |kwwkwwk|
+  |.kkwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=8 x=0 y=20 legend=w:#dce0e6 rows:2
+  |ww|
+  |ww|
+paint_grid layer=0 frame=8 x=0 y=5 legend=w:#dce0e6 rows:22
+  |....................www|
+  |.......................|
+  |.......................|
+  |.....wwww..............|
+  |.......................|
+  |.......................|
+  |.......................|
+  |.......................|
+  |.......................|
+  |.......................|
+  |.......................|
+  |w......................|
+  |.......................|
+  |.......................|
+  |.......................|
+  |.......www.............|
+  |.......................|
+  |.......................|
+  |.......................|
+  |.......................|
+  |.......................|
+  |....www................|
+region op=move layer=1 frame=8 offset=0,-1 rect=0,0,32,32
+draw op=clear_cel layer=0 frame=9
+draw op=clear_cel layer=2 frame=9
+draw op=clear_cel layer=3 frame=9
+draw op=clear_cel layer=4 frame=9
+paint_grid layer=2 frame=9 x=6 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwkkk|
+  |kwwkwwk|
+  |kkkwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=3 frame=9 x=20 y=21 legend=k:#22202e,w:#dce0e6 rows:7
+  |..kkk..|
+  |.kwwwk.|
+  |kwwwkkk|
+  |kwwkwwk|
+  |kkkwwwk|
+  |.kwwwk.|
+  |..kkk..|
+paint_grid layer=4 frame=9 x=0 y=19 legend=w:#dce0e6 rows:1
+  |w|
+paint_grid layer=0 frame=9 x=1 y=5 legend=w:#dce0e6 rows:22
+  |................www|
+  |...................|
+  |...................|
+  |.wwww..............|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...www.............|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |...................|
+  |www................|
 add_tag name=drive direction=forward from=0 to=9

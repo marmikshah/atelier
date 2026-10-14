@@ -1,235 +1,232 @@
-atelier 5 0e5e4759-1d3d-48e3-978d-0ec56189280e 0.1.0
+atelier 4 0e5e4759-1d3d-48e3-978d-0ec56189280e 0.1.0
 new name=rubber-ball-bounce width=32 height=32
-layer rename index=0 name=shadow
-layer add name=ball
-palette set colors=#ffa68a,#de3e34,#801630,#3a304c
-legend A=#de3e34
-ball @0 grid 10,2 = 10,2 12x12
-    ....AAAA....
-    ..AAAAAAAA..
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    ..AAAAAAAA..
-    ....AAAA....
-ball @0 clear_cel = 10,2 21,13 .
-legend B=#801630 C=#ffa68a
-ball @0 grid 10,2 = 10,2 12x12
-    ....BBBB....
-    ..BBAAAABB..
-    .BCCAAAAABB.
-    .BCCAAAAAAB.
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAABBB
-    .BAAAAAAABB.
-    .BBAAAABBBB.
-    ..BBBBBBBB..
-    ....BBBB....
-shadow @0 clear_cel ~
-legend D=#3a304c
-shadow @0 grid 13,28 = 13,28 6x3
-    .DDDD.
-    DDDDDD
-    .DDDD.
-frame add copy_from=0 count=9 duration_ms=100
-ball @1 clear_cel = 10,2 21,13 .
-ball @1 grid 10,3 = 10,3 12x12
-    ....BBBB....
-    ..BBAAAABB..
-    .BCCAAAAABB.
-    .BCCAAAAAAB.
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAABBB
-    .BAAAAAAABB.
-    .BBAAAABBBB.
-    ..BBBBBBBB..
-    ....BBBB....
-shadow @1 clear_cel = 13,28 18,30 .
-shadow @1 grid 13,28 = 13,28 6x3
-    .DDDD.
-    DDDDDD
-    .DDDD.
-ball @2 clear_cel = 10,2 21,13 .
-ball @2 grid 10,5 = 10,5 12x12
-    ....BBBB....
-    ..BBAAAABB..
-    .BCCAAAAABB.
-    .BCCAAAAAAB.
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAABBB
-    .BAAAAAAABB.
-    .BBAAAABBBB.
-    ..BBBBBBBB..
-    ....BBBB....
-shadow @2 clear_cel = 13,28 18,30 .
-shadow @2 grid 12,28 = 12,28 8x3
-    .DDDDDD.
-    DDDDDDDD
-    .DDDDDD.
-ball @3 clear_cel = 10,2 21,13 .
-ball @3 grid 11,7 = 11,7 10x14
-    ...BBBB...
-    ..BAAAAB..
-    .BCAAAABB.
-    .BCAAAAAB.
-    BCCAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAABBB
-    .BAAAAABB.
-    .BAAAABBB.
-    ..BBBBBB..
-    ...BBBB...
-shadow @3 clear_cel = 13,28 18,30 .
-shadow @3 grid 11,28 = 11,28 10x3
-    .DDDDDDDD.
-    DDDDDDDDDD
-    .DDDDDDDD.
-ball @4 clear_cel = 10,2 21,13 .
-ball @4 grid 11,11 = 11,11 10x16
-    ...BBBB...
-    ..BBAABB..
-    .BBAAAABB.
-    .BCAAAABB.
-    .BCAAAAAB.
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAABBB
-    .BAAAAABB.
-    .BAAAABBB.
-    .BBAABBBB.
-    ..BBBBBB..
-    ...BBBB...
-shadow @4 clear_cel = 13,28 18,30 .
-shadow @4 grid 9,28 = 9,28 14x3
-    ..DDDDDDDDDD..
-    DDDDDDDDDDDDDD
-    ..DDDDDDDDDD..
-ball @5 clear_cel = 10,2 21,13 .
-ball @5 grid 7,21 = 7,21 18x8
-    .....BBBBBBBB.....
-    ...BBAAAAAAAABB...
-    .BBCCCCAAAAAAAABB.
-    BBAAAAAAAAAAAAAABB
-    BAAAAAAAAAAAAAAABB
-    BAAAAAAAAAAAAAABBB
-    BBAAAAAAAAAAAABBBB
-    .BBBBBBBBBBBBBBBB.
-shadow @5 clear_cel = 13,28 18,30 .
-shadow @5 grid 5,28 = 5,28 22x3
-    ...DDDDDDDDDDDDDDDD...
-    DDDDDDDDDDDDDDDDDDDDDD
-    ...DDDDDDDDDDDDDDDD...
-ball @6 clear_cel = 10,2 21,13 .
-ball @6 grid 12,10 = 12,10 8x18
-    ...BB...
-    ..BAAB..
-    .BAAABB.
-    .BAAABB.
-    .BAAAAB.
-    BCAAAABB
-    BCAAAABB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    BAAAABBB
-    .BAAABB.
-    .BAAABB.
-    .BAABBB.
-    ..BBBB..
-    ...BB...
-shadow @6 clear_cel = 13,28 18,30 .
-shadow @6 grid 9,28 = 9,28 14x3
-    ..DDDDDDDDDD..
-    DDDDDDDDDDDDDD
-    ..DDDDDDDDDD..
-ball @7 clear_cel = 10,2 21,13 .
-ball @7 grid 11,7 = 11,7 10x14
-    ...BBBB...
-    ..BAAAAB..
-    .BCAAAABB.
-    .BCAAAAAB.
-    BCCAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAABBB
-    .BAAAAABB.
-    .BAAAABBB.
-    ..BBBBBB..
-    ...BBBB...
-shadow @7 clear_cel = 13,28 18,30 .
-shadow @7 grid 11,28 = 11,28 10x3
-    .DDDDDDDD.
-    DDDDDDDDDD
-    .DDDDDDDD.
-ball @8 clear_cel = 10,2 21,13 .
-ball @8 grid 11,4 = 11,4 10x14
-    ...BBBB...
-    ..BAAAAB..
-    .BCAAAABB.
-    .BCAAAAAB.
-    BCCAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAABBB
-    .BAAAAABB.
-    .BAAAABBB.
-    ..BBBBBB..
-    ...BBBB...
-shadow @8 clear_cel = 13,28 18,30 .
-shadow @8 grid 12,28 = 12,28 8x3
-    .DDDDDD.
-    DDDDDDDD
-    .DDDDDD.
-ball @9 clear_cel = 10,2 21,13 .
-ball @9 grid 10,3 = 10,3 12x12
-    ....BBBB....
-    ..BBAAAABB..
-    .BCCAAAAABB.
-    .BCCAAAAAAB.
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    BAAAAAAAABBB
-    .BAAAAAAABB.
-    .BBAAAABBBB.
-    ..BBBBBBBB..
-    ....BBBB....
-shadow @9 clear_cel = 13,28 18,30 .
-shadow @9 grid 13,28 = 13,28 6x3
-    .DDDD.
-    DDDDDD
-    .DDDD.
-ball @5 clear_cel = 7,21 24,28 .
-ball @5 grid 7,21 = 7,21 18x8
-    .....BBBBBBBB.....
-    ...BBCCAAAAAABB...
-    .BBCCCCAAAAAAAABB.
-    BBAAAAAAAAAAAAAABB
-    BAAAAAAAAAAAAAAABB
-    BAAAAAAAAAAAAAABBB
-    BBAAAAAAAAAAAABBBB
-    .BBBBBBBBBBBBBBBB.
+layer op=rename index=0 name=shadow
+layer op=add name=ball
+palette op=set colors=#ffa68a,#de3e34,#801630,#3a304c
+paint_grid layer=1 frame=0 x=10 y=2 legend=m:1 rows:12
+  |....mmmm....|
+  |..mmmmmmmm..|
+  |.mmmmmmmmmm.|
+  |.mmmmmmmmmm.|
+  |mmmmmmmmmmmm|
+  |mmmmmmmmmmmm|
+  |mmmmmmmmmmmm|
+  |mmmmmmmmmmmm|
+  |.mmmmmmmmmm.|
+  |.mmmmmmmmmm.|
+  |..mmmmmmmm..|
+  |....mmmm....|
+draw op=clear_cel layer=1 frame=0
+paint_grid layer=1 frame=0 x=10 y=2 legend=k:2,l:0,m:1 rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+draw op=clear_cel layer=0 frame=0
+paint_grid layer=0 frame=0 x=13 y=28 legend=s:3 rows:3
+  |.ssss.|
+  |ssssss|
+  |.ssss.|
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=clear_cel layer=1 frame=1
+paint_grid layer=1 frame=1 x=10 y=3 legend=k:2,l:0,m:1 rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+draw op=clear_cel layer=0 frame=1
+paint_grid layer=0 frame=1 x=13 y=28 legend=s:3 rows:3
+  |.ssss.|
+  |ssssss|
+  |.ssss.|
+draw op=clear_cel layer=1 frame=2
+paint_grid layer=1 frame=2 x=10 y=5 legend=k:2,l:0,m:1 rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+draw op=clear_cel layer=0 frame=2
+paint_grid layer=0 frame=2 x=12 y=28 legend=s:3 rows:3
+  |.ssssss.|
+  |ssssssss|
+  |.ssssss.|
+draw op=clear_cel layer=1 frame=3
+paint_grid layer=1 frame=3 x=11 y=7 legend=k:2,l:0,m:1 rows:14
+  |...kkkk...|
+  |..kmmmmk..|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kllmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+draw op=clear_cel layer=0 frame=3
+paint_grid layer=0 frame=3 x=11 y=28 legend=s:3 rows:3
+  |.ssssssss.|
+  |ssssssssss|
+  |.ssssssss.|
+draw op=clear_cel layer=1 frame=4
+paint_grid layer=1 frame=4 x=11 y=11 legend=k:2,l:0,m:1 rows:16
+  |...kkkk...|
+  |..kkmmkk..|
+  |.kkmmmmkk.|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |.kkmmkkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+draw op=clear_cel layer=0 frame=4
+paint_grid layer=0 frame=4 x=9 y=28 legend=s:3 rows:3
+  |..ssssssssss..|
+  |ssssssssssssss|
+  |..ssssssssss..|
+draw op=clear_cel layer=1 frame=5
+paint_grid layer=1 frame=5 x=7 y=21 legend=k:2,l:0,m:1 rows:8
+  |.....kkkkkkkk.....|
+  |...kkmmmmmmmmkk...|
+  |.kkllllmmmmmmmmkk.|
+  |kkmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmkkk|
+  |kkmmmmmmmmmmmmkkkk|
+  |.kkkkkkkkkkkkkkkk.|
+draw op=clear_cel layer=0 frame=5
+paint_grid layer=0 frame=5 x=5 y=28 legend=s:3 rows:3
+  |...ssssssssssssssss...|
+  |ssssssssssssssssssssss|
+  |...ssssssssssssssss...|
+draw op=clear_cel layer=1 frame=6
+paint_grid layer=1 frame=6 x=12 y=10 legend=k:2,l:0,m:1 rows:18
+  |...kk...|
+  |..kmmk..|
+  |.kmmmkk.|
+  |.kmmmkk.|
+  |.kmmmmk.|
+  |klmmmmkk|
+  |klmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmmkk|
+  |kmmmmkkk|
+  |.kmmmkk.|
+  |.kmmmkk.|
+  |.kmmkkk.|
+  |..kkkk..|
+  |...kk...|
+draw op=clear_cel layer=0 frame=6
+paint_grid layer=0 frame=6 x=9 y=28 legend=s:3 rows:3
+  |..ssssssssss..|
+  |ssssssssssssss|
+  |..ssssssssss..|
+draw op=clear_cel layer=1 frame=7
+paint_grid layer=1 frame=7 x=11 y=7 legend=k:2,l:0,m:1 rows:14
+  |...kkkk...|
+  |..kmmmmk..|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kllmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+draw op=clear_cel layer=0 frame=7
+paint_grid layer=0 frame=7 x=11 y=28 legend=s:3 rows:3
+  |.ssssssss.|
+  |ssssssssss|
+  |.ssssssss.|
+draw op=clear_cel layer=1 frame=8
+paint_grid layer=1 frame=8 x=11 y=4 legend=k:2,l:0,m:1 rows:14
+  |...kkkk...|
+  |..kmmmmk..|
+  |.klmmmmkk.|
+  |.klmmmmmk.|
+  |kllmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmmkk|
+  |kmmmmmmkkk|
+  |.kmmmmmkk.|
+  |.kmmmmkkk.|
+  |..kkkkkk..|
+  |...kkkk...|
+draw op=clear_cel layer=0 frame=8
+paint_grid layer=0 frame=8 x=12 y=28 legend=s:3 rows:3
+  |.ssssss.|
+  |ssssssss|
+  |.ssssss.|
+draw op=clear_cel layer=1 frame=9
+paint_grid layer=1 frame=9 x=10 y=3 legend=k:2,l:0,m:1 rows:12
+  |....kkkk....|
+  |..kkmmmmkk..|
+  |.kllmmmmmkk.|
+  |.kllmmmmmmk.|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmmkk|
+  |kmmmmmmmmkkk|
+  |.kmmmmmmmkk.|
+  |.kkmmmmkkkk.|
+  |..kkkkkkkk..|
+  |....kkkk....|
+draw op=clear_cel layer=0 frame=9
+paint_grid layer=0 frame=9 x=13 y=28 legend=s:3 rows:3
+  |.ssss.|
+  |ssssss|
+  |.ssss.|
+draw op=clear_cel layer=1 frame=5
+paint_grid layer=1 frame=5 x=7 y=21 legend=k:2,l:0,m:1 rows:8
+  |.....kkkkkkkk.....|
+  |...kkllmmmmmmkk...|
+  |.kkllllmmmmmmmmkk.|
+  |kkmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmmkk|
+  |kmmmmmmmmmmmmmmkkk|
+  |kkmmmmmmmmmmmmkkkk|
+  |.kkkkkkkkkkkkkkkk.|
 add_tag name=bounce direction=forward from=0 to=9
