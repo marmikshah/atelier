@@ -1,666 +1,638 @@
-atelier 5 3ea29f91-60c0-4267-93ae-dd3c67a70fb7 0.1.0
+atelier 4 3ea29f91-60c0-4267-93ae-dd3c67a70fb7 0.1.0
 new name=wall-torch width=32 height=32
-palette set colors=#3a2a1e,#d23c0e,#f5841a,#ffd23c,#fff3c0
-layer add name=bracket
-layer add name=flame
-layer add name=embers
-layer rename index=0 name=handle
-handle @0 pencil #3a2a1e = 16,20 16,20 #3a2a1e
-handle @0 grid 0,0 = 0,0 1,1 #d23c0e
-handle @0 clear 0,0 32,32 = 0,0 16,20 .
-handle @0 grid 15,13 = 15,13 17,26 #3a2a1e
-legend A=#3a2a1e
-bracket @0 grid 2,17 = 2,17 19x11
-    AAA................
-    AAA................
-    AAA................
-    AAA................
-    AAA.......AAA...AAA
-    AAAAAAAAAAAAA...AAA
-    AAAAAAAAAAAAA...AAA
-    AAA.......AAA...AAA
-    AAA.......AAAAAAAAA
-    AAA........AAAAAAA.
-    AAA................
-legend B=#d23c0e C=#f5841a D=#ffd23c E=#fff3c0
-flame @0 grid 12,3 = 12,3 9x14
-    ....B....
-    ...BCB...
-    ..BCCCB..
-    ..BCDCB..
-    .BCDDDCB.
-    .BCDEDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDDEDDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-handle @0 move 0,0 32,32 0,3 = 15,13 3x17
-    ...
-    ...
-    ...
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-    AAA
-bracket @0 move 0,0 32,32 0,3 = 2,17 19x14
-    ...................
-    ...................
-    ...................
-    AAA................
-    AAA................
-    AAA................
-    AAA................
-    AAA.......AAA...AAA
-    AAAAAAAAAAAAA...AAA
-    AAAAAAAAAAAAA...AAA
-    AAA.......AAA...AAA
-    AAA.......AAAAAAAAA
-    AAA........AAAAAAA.
-    AAA................
-flame @0 move 0,0 32,32 0,3 = 12,3 9x17
-    .........
-    .........
-    .........
-    ....B....
-    ...BCB...
-    ..BCCCB..
-    ..BCDCB..
-    .BCDDDCB.
-    .BCDEDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDDEDDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-layer add name=glow
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-flame @0 clear 0,0 32,32 = 12,6 20,19 .
-flame @0 grid 12,5 = 12,5 9x15
-    ..B......
-    ...B.....
-    ..BCB....
-    ..BCB....
-    ..BCDCB..
-    ..BCDCB..
-    ..BCEEECB
-    ..BCEEECB
-    BCEEEEECB
-    BCEEEEECB
-    BCEEEEECB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @0 clear 0,0 32,32 ~
-embers @0 grid 15,0 = 15,0 3x7
-    ..B
-    ...
-    ...
-    ...
-    D..
-    ...
-    .E.
-glow @0 clear 0,0 32,32 ~
-glow @0 grid 6,20 = 6,20 14x6
-    .........DDC..
-    .........C.B..
-    .........B....
-    ..............
-    .......CB...BC
-    B.............
-flame @1 clear 0,0 32,32 = 12,6 20,19 .
-flame @1 grid 12,5 = 12,5 9x15
-    ...B.....
-    ...B.....
-    ..BCB....
-    ..BCB....
-    .BCDCB...
-    ..BCDCB..
-    .BCEEECB.
-    .BCEEECB.
-    BCEEEEECB
-    BCEEEEECB
-    BCEEEEECB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @1 clear 0,0 32,32 ~
-embers @1 grid 14,3 = 14,3 4x3
-    C...
-    ....
-    ...D
-glow @1 clear 0,0 32,32 ~
-glow @1 grid 6,20 = 6,20 14x6
-    .........DDC..
-    .........C.B..
-    .........B....
-    ..............
-    .......CB...BC
-    B.............
-flame @2 clear 0,0 32,32 = 12,6 20,19 .
-flame @2 grid 12,6 = 12,6 9x14
-    ...B.....
-    ..BCB....
-    ..BCB....
-    .BCDCB...
-    .BCDCB...
-    .BCDDDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @2 clear 0,0 32,32 ~
-embers @2 grid 14,2 = 14,2 4x3
-    C...
-    ....
-    ...D
-glow @2 clear 0,0 32,32 ~
-glow @2 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @3 clear 0,0 32,32 = 12,6 20,19 .
-flame @3 grid 12,6 = 12,6 9x14
-    ....B....
-    ...BCB...
-    ..BCB....
-    .BCDCB...
-    .BCDCB...
-    BCDDDCB..
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @3 clear 0,0 32,32 ~
-embers @3 grid 15,3 = 15,3 2x5
-    .C
-    ..
-    ..
-    ..
-    E.
-glow @3 clear 0,0 32,32 ~
-glow @3 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @4 clear 0,0 32,32 = 12,6 20,19 .
-flame @4 grid 12,7 = 12,7 9x13
-    ...BCB...
-    ...BCB...
-    .BCDCB...
-    .BCDCB...
-    BCDDDCB..
-    BCDDDCB..
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @4 clear 0,0 32,32 ~
-embers @4 grid 16,2 = 16,2 1x5
-    C
-    .
-    .
-    .
-    D
-glow @4 clear 0,0 32,32 ~
-glow @4 grid 15,20 = 15,20 15,20 #d23c0e
-flame @5 clear 0,0 32,32 = 12,6 20,19 .
-flame @5 grid 12,7 = 12,7 9x13
-    ....BCB..
-    ....BCB..
-    ..BCDCB..
-    ..BCDCB..
-    BCDDDCB..
-    BCDDDCB..
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @5 clear 0,0 32,32 ~
-embers @5 grid 15,1 = 15,1 4x5
-    B...
-    ....
-    ....
-    ....
-    .D.E
-glow @5 clear 0,0 32,32 ~
-glow @5 grid 15,20 = 15,20 15,20 #d23c0e
-flame @6 clear 0,0 32,32 = 12,6 20,19 .
-flame @6 grid 12,7 = 12,7 9x13
-    ....BCB..
-    ....BCB..
-    ...BCDCB.
-    ..BCDCB..
-    .BCDDDCB.
-    .BCDDDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @6 clear 0,0 32,32 ~
-embers @6 grid 15,0 = 15,0 5x5
-    B....
-    .....
-    .....
-    .....
-    C...D
-glow @6 clear 0,0 32,32 ~
-glow @6 grid 15,20 = 15,20 15,20 #d23c0e
-flame @7 clear 0,0 32,32 = 12,6 20,19 .
-flame @7 grid 12,6 = 12,6 9x14
-    .....B...
-    ....BCB..
-    ....BCB..
-    ...BCDCB.
-    ...BCDCB.
-    .BCDDDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @7 clear 0,0 32,32 ~
-embers @7 grid 15,3 = 15,3 5x1
-    C...D
-glow @7 clear 0,0 32,32 ~
-glow @7 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @8 clear 0,0 32,32 = 12,6 20,19 .
-flame @8 grid 12,6 = 12,6 9x14
-    ....B....
-    ...BCB...
-    ....BCB..
-    ...BCDCB.
-    ...BCDCB.
-    ..BCDDDCB
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @8 clear 0,0 32,32 ~
-embers @8 grid 14,2 = 14,2 5x5
-    B...C
-    .....
-    .....
-    .....
-    E....
-glow @8 clear 0,0 32,32 ~
-glow @8 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @9 clear 0,0 32,32 = 12,6 20,19 .
-flame @9 grid 12,5 = 12,5 9x15
-    ...B.....
-    ...B.....
-    ...BCB...
-    ...BCB...
-    ...BCDCB.
-    ...BCDCB.
-    ..BCEEECB
-    ..BCEEECB
-    BCEEEEECB
-    BCEEEEECB
-    BCEEEEECB
-    .BCDDDCB.
-    .BCCCCCB.
-    ..BCCCB..
-    ..BCCCB..
-embers @9 clear 0,0 32,32 ~
-embers @9 grid 15,1 = 15,1 4x5
-    ...C
-    ....
-    ....
-    ....
-    D...
-glow @9 clear 0,0 32,32 ~
-glow @9 grid 6,20 = 6,20 14x6
-    .........DDC..
-    .........C.B..
-    .........B....
-    ..............
-    .......CB...BC
-    B.............
-flame @0 clear 0,0 32,32 = 12,5 20,19 .
-flame @0 grid 12,5 = 12,5 9x15
-    ...B.....
-    ....B....
-    ...BCB...
-    ...BCB...
-    ...BCDCB.
-    ...BCDCB.
-    ..BCEEECB
-    ..BCEEECB
-    BCEEEEECB
-    BCEEEEECB
-    .BCEEECB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @0 clear 0,0 32,32 = 15,0 17,6 .
-embers @0 grid 15,0 = 15,0 3x7
-    ..B
-    ...
-    ...
-    ...
-    D..
-    ...
-    .E.
-glow @0 clear 0,0 32,32 = 6,20 19,25 .
-glow @0 grid 6,20 = 6,20 14x6
-    .........DDC..
-    .........C.B..
-    .........B....
-    ..............
-    .......CB...BC
-    B.............
-flame @1 clear 0,0 32,32 = 12,5 20,19 .
-flame @1 grid 12,5 = 12,5 9x15
-    ...B.....
-    ...B.....
-    ..BCB....
-    ...BCB...
-    ..BCDCB..
-    ..BCDCB..
-    .BCEEECB.
-    .BCEEECB.
-    BCEEEEECB
-    BCEEEEECB
-    .BCEEECB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @1 clear 0,0 32,32 = 14,3 17,5 .
-embers @1 grid 14,3 = 14,3 4x3
-    C...
-    ....
-    ...D
-glow @1 clear 0,0 32,32 = 6,20 19,25 .
-glow @1 grid 6,20 = 6,20 14x6
-    .........DDC..
-    .........C.B..
-    .........B....
-    ..............
-    .......CB...BC
-    B.............
-flame @2 clear 0,0 32,32 = 12,6 20,19 .
-flame @2 grid 12,6 = 12,6 9x14
-    ...B.....
-    ..BCB....
-    ..BCB....
-    .BCDCB...
-    ..BCDCB..
-    .BCDDDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDEDCB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @2 clear 0,0 32,32 = 14,2 17,4 .
-embers @2 grid 14,2 = 14,2 4x3
-    C...
-    ....
-    ...D
-glow @2 clear 0,0 32,32 = 13,20 19,24 .
-glow @2 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @3 clear 0,0 32,32 = 12,6 20,19 .
-flame @3 grid 12,6 = 12,6 9x14
-    ...B.....
-    ..BCB....
-    ..BCB....
-    .BCDCB...
-    .BCDCB...
-    .BCDDDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDEDCB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @3 clear 0,0 32,32 = 15,3 16,7 .
-embers @3 grid 15,3 = 15,3 2x5
-    .C
-    ..
-    ..
-    ..
-    E.
-glow @3 clear 0,0 32,32 = 13,20 19,24 .
-glow @3 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @4 clear 0,0 32,32 = 12,7 20,19 .
-flame @4 grid 12,7 = 12,7 9x13
-    ..BCB....
-    ..BCB....
-    .BCDCB...
-    .BCDCB...
-    BCDDDCB..
-    .BCDDDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDEDCB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @4 clear 0,0 32,32 = 16,2 16,6 .
-embers @4 grid 16,2 = 16,2 1x5
-    C
-    .
-    .
-    .
-    D
-glow @4 clear 0,0 32,32 = 15,20 15,20 .
-glow @4 grid 15,20 = 15,20 15,20 #d23c0e
-flame @5 clear 0,0 32,32 = 12,7 20,19 .
-flame @5 grid 12,7 = 12,7 9x13
-    ...BCB...
-    ...BCB...
-    .BCDCB...
-    .BCDCB...
-    BCDDDCB..
-    BCDDDCB..
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDEDCB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @5 clear 0,0 32,32 = 15,1 18,5 .
-embers @5 grid 15,1 = 15,1 4x5
-    B...
-    ....
-    ....
-    ....
-    .D.E
-glow @5 clear 0,0 32,32 = 15,20 15,20 .
-glow @5 grid 15,20 = 15,20 15,20 #d23c0e
-flame @6 clear 0,0 32,32 = 12,7 20,19 .
-flame @6 grid 12,7 = 12,7 9x13
-    ....BCB..
-    ...BCB...
-    ..BCDCB..
-    ..BCDCB..
-    .BCDDDCB.
-    .BCDDDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDEDCB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @6 clear 0,0 32,32 = 15,0 19,4 .
-embers @6 grid 15,0 = 15,0 5x5
-    B....
-    .....
-    .....
-    .....
-    C...D
-glow @6 clear 0,0 32,32 = 15,20 15,20 .
-glow @6 grid 15,20 = 15,20 15,20 #d23c0e
-flame @7 clear 0,0 32,32 = 12,6 20,19 .
-flame @7 grid 12,6 = 12,6 9x14
-    .....B...
-    ....BCB..
-    ....BCB..
-    ...BCDCB.
-    ..BCDCB..
-    .BCDDDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDEDCB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @7 clear 0,0 32,32 = 15,3 19,3 .
-embers @7 grid 15,3 = 15,3 5x1
-    C...D
-glow @7 clear 0,0 32,32 = 13,20 19,24 .
-glow @7 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @8 clear 0,0 32,32 = 12,6 20,19 .
-flame @8 grid 12,6 = 12,6 9x14
-    .....B...
-    ....BCB..
-    ....BCB..
-    ...BCDCB.
-    ...BCDCB.
-    .BCDDDCB.
-    .BCDEDCB.
-    BCDEEEDCB
-    BCDEEEDCB
-    .BCDEDCB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @8 clear 0,0 32,32 = 14,2 18,6 .
-embers @8 grid 14,2 = 14,2 5x5
-    B...C
-    .....
-    .....
-    .....
-    E....
-glow @8 clear 0,0 32,32 = 13,20 19,24 .
-glow @8 grid 13,20 = 13,20 7x5
-    ..C.B..
-    ..B....
-    .......
-    .......
-    B.....B
-flame @9 clear 0,0 32,32 = 12,5 20,19 .
-flame @9 grid 12,5 = 12,5 9x15
-    ....B....
-    ....B....
-    ....BCB..
-    ....BCB..
-    ...BCDCB.
-    ...BCDCB.
-    ..BCEEECB
-    .BCEEECB.
-    BCEEEEECB
-    BCEEEEECB
-    .BCEEECB.
-    .BCDDDCB.
-    ..BCCCB..
-    ..BCCCB..
-    ...BCB...
-embers @9 clear 0,0 32,32 = 15,1 18,5 .
-embers @9 grid 15,1 = 15,1 4x5
-    ...C
-    ....
-    ....
-    ....
-    D...
-glow @9 clear 0,0 32,32 = 6,20 19,25 .
-glow @9 grid 6,20 = 6,20 14x6
-    .........DDC..
-    .........C.B..
-    .........B....
-    ..............
-    .......CB...BC
-    B.............
+palette op=set colors=#3a2a1e,#d23c0e,#f5841a,#ffd23c,#fff3c0
+layer op=add name=bracket
+layer op=add name=flame
+layer op=add name=embers
+layer op=rename index=0 name=handle
+draw op=pencil layer=0 frame=0 color=#3a2a1e points=[[16,20]]
+paint_grid layer=0 frame=0 x=0 y=0 legend=a:1 rows:2
+  |aa|
+  |aa|
+region op=clear layer=0 frame=0 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=15 y=13 legend=w:0 rows:14
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+  |www|
+paint_grid layer=1 frame=0 x=2 y=17 legend=i:0 rows:11
+  |iii................|
+  |iii................|
+  |iii................|
+  |iii................|
+  |iii.......iii...iii|
+  |iiiiiiiiiiiii...iii|
+  |iiiiiiiiiiiii...iii|
+  |iii.......iii...iii|
+  |iii.......iiiiiiiii|
+  |iii........iiiiiii.|
+  |iii................|
+paint_grid layer=2 frame=0 x=12 y=3 legend=c:4,o:2,r:1,y:3 rows:14
+  |....r....|
+  |...ror...|
+  |..rooor..|
+  |..royor..|
+  |.royyyor.|
+  |.roycyor.|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |royycyyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=move layer=0 frame=0 offset=0,3 rect=0,0,32,32
+region op=move layer=1 frame=0 offset=0,3 rect=0,0,32,32
+region op=move layer=2 frame=0 offset=0,3 rect=0,0,32,32
+layer op=add name=glow
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+region op=clear layer=2 frame=0 rect=0,0,32,32
+paint_grid layer=2 frame=0 x=12 y=5 legend=c:4,o:2,r:1,y:3 rows:15
+  |..r......|
+  |...r.....|
+  |..ror....|
+  |..ror....|
+  |..royor..|
+  |..royor..|
+  |..rocccor|
+  |..rocccor|
+  |rocccccor|
+  |rocccccor|
+  |rocccccor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=0 rect=0,0,32,32
+paint_grid layer=3 frame=0 x=15 y=0 legend=c:4,r:1,y:3 rows:7
+  |..r|
+  |...|
+  |...|
+  |...|
+  |y..|
+  |...|
+  |.c.|
+region op=clear layer=4 frame=0 rect=0,0,32,32
+paint_grid layer=4 frame=0 x=6 y=20 legend=o:2,r:1,y:3 rows:6
+  |.........yyo..|
+  |.........o.r..|
+  |.........r....|
+  |..............|
+  |.......or...ro|
+  |r.............|
+region op=clear layer=2 frame=1 rect=0,0,32,32
+paint_grid layer=2 frame=1 x=12 y=5 legend=c:4,o:2,r:1,y:3 rows:15
+  |...r.....|
+  |...r.....|
+  |..ror....|
+  |..ror....|
+  |.royor...|
+  |..royor..|
+  |.rocccor.|
+  |.rocccor.|
+  |rocccccor|
+  |rocccccor|
+  |rocccccor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=1 rect=0,0,32,32
+paint_grid layer=3 frame=1 x=14 y=3 legend=o:2,y:3 rows:3
+  |o...|
+  |....|
+  |...y|
+region op=clear layer=4 frame=1 rect=0,0,32,32
+paint_grid layer=4 frame=1 x=6 y=20 legend=o:2,r:1,y:3 rows:6
+  |.........yyo..|
+  |.........o.r..|
+  |.........r....|
+  |..............|
+  |.......or...ro|
+  |r.............|
+region op=clear layer=2 frame=2 rect=0,0,32,32
+paint_grid layer=2 frame=2 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |...r.....|
+  |..ror....|
+  |..ror....|
+  |.royor...|
+  |.royor...|
+  |.royyyor.|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |roycccyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=2 rect=0,0,32,32
+paint_grid layer=3 frame=2 x=14 y=2 legend=o:2,y:3 rows:3
+  |o...|
+  |....|
+  |...y|
+region op=clear layer=4 frame=2 rect=0,0,32,32
+paint_grid layer=4 frame=2 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=3 rect=0,0,32,32
+paint_grid layer=2 frame=3 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |....r....|
+  |...ror...|
+  |..ror....|
+  |.royor...|
+  |.royor...|
+  |royyyor..|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |roycccyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=3 rect=0,0,32,32
+paint_grid layer=3 frame=3 x=15 y=3 legend=c:4,o:2 rows:5
+  |.o|
+  |..|
+  |..|
+  |..|
+  |c.|
+region op=clear layer=4 frame=3 rect=0,0,32,32
+paint_grid layer=4 frame=3 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=4 rect=0,0,32,32
+paint_grid layer=2 frame=4 x=12 y=7 legend=c:4,o:2,r:1,y:3 rows:13
+  |...ror...|
+  |...ror...|
+  |.royor...|
+  |.royor...|
+  |royyyor..|
+  |royyyor..|
+  |roycccyor|
+  |roycccyor|
+  |roycccyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=4 rect=0,0,32,32
+paint_grid layer=3 frame=4 x=16 y=2 legend=o:2,y:3 rows:5
+  |o|
+  |.|
+  |.|
+  |.|
+  |y|
+region op=clear layer=4 frame=4 rect=0,0,32,32
+paint_grid layer=4 frame=4 x=15 y=20 legend=r:1 rows:1
+  |r|
+region op=clear layer=2 frame=5 rect=0,0,32,32
+paint_grid layer=2 frame=5 x=12 y=7 legend=c:4,o:2,r:1,y:3 rows:13
+  |....ror..|
+  |....ror..|
+  |..royor..|
+  |..royor..|
+  |royyyor..|
+  |royyyor..|
+  |roycccyor|
+  |roycccyor|
+  |roycccyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=5 rect=0,0,32,32
+paint_grid layer=3 frame=5 x=15 y=1 legend=c:4,r:1,y:3 rows:5
+  |r...|
+  |....|
+  |....|
+  |....|
+  |.y.c|
+region op=clear layer=4 frame=5 rect=0,0,32,32
+paint_grid layer=4 frame=5 x=15 y=20 legend=r:1 rows:1
+  |r|
+region op=clear layer=2 frame=6 rect=0,0,32,32
+paint_grid layer=2 frame=6 x=12 y=7 legend=c:4,o:2,r:1,y:3 rows:13
+  |....ror..|
+  |....ror..|
+  |...royor.|
+  |..royor..|
+  |.royyyor.|
+  |.royyyor.|
+  |roycccyor|
+  |roycccyor|
+  |roycccyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=6 rect=0,0,32,32
+paint_grid layer=3 frame=6 x=15 y=0 legend=o:2,r:1,y:3 rows:5
+  |r....|
+  |.....|
+  |.....|
+  |.....|
+  |o...y|
+region op=clear layer=4 frame=6 rect=0,0,32,32
+paint_grid layer=4 frame=6 x=15 y=20 legend=r:1 rows:1
+  |r|
+region op=clear layer=2 frame=7 rect=0,0,32,32
+paint_grid layer=2 frame=7 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |.....r...|
+  |....ror..|
+  |....ror..|
+  |...royor.|
+  |...royor.|
+  |.royyyor.|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |roycccyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=7 rect=0,0,32,32
+paint_grid layer=3 frame=7 x=15 y=3 legend=o:2,y:3 rows:1
+  |o...y|
+region op=clear layer=4 frame=7 rect=0,0,32,32
+paint_grid layer=4 frame=7 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=8 rect=0,0,32,32
+paint_grid layer=2 frame=8 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |....r....|
+  |...ror...|
+  |....ror..|
+  |...royor.|
+  |...royor.|
+  |..royyyor|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |roycccyor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=8 rect=0,0,32,32
+paint_grid layer=3 frame=8 x=14 y=2 legend=c:4,o:2,r:1 rows:5
+  |r...o|
+  |.....|
+  |.....|
+  |.....|
+  |c....|
+region op=clear layer=4 frame=8 rect=0,0,32,32
+paint_grid layer=4 frame=8 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=2 frame=9 x=12 y=5 legend=c:4,o:2,r:1,y:3 rows:15
+  |...r.....|
+  |...r.....|
+  |...ror...|
+  |...ror...|
+  |...royor.|
+  |...royor.|
+  |..rocccor|
+  |..rocccor|
+  |rocccccor|
+  |rocccccor|
+  |rocccccor|
+  |.royyyor.|
+  |.rooooor.|
+  |..rooor..|
+  |..rooor..|
+region op=clear layer=3 frame=9 rect=0,0,32,32
+paint_grid layer=3 frame=9 x=15 y=1 legend=o:2,y:3 rows:5
+  |...o|
+  |....|
+  |....|
+  |....|
+  |y...|
+region op=clear layer=4 frame=9 rect=0,0,32,32
+paint_grid layer=4 frame=9 x=6 y=20 legend=o:2,r:1,y:3 rows:6
+  |.........yyo..|
+  |.........o.r..|
+  |.........r....|
+  |..............|
+  |.......or...ro|
+  |r.............|
+region op=clear layer=2 frame=0 rect=0,0,32,32
+paint_grid layer=2 frame=0 x=12 y=5 legend=c:4,o:2,r:1,y:3 rows:15
+  |...r.....|
+  |....r....|
+  |...ror...|
+  |...ror...|
+  |...royor.|
+  |...royor.|
+  |..rocccor|
+  |..rocccor|
+  |rocccccor|
+  |rocccccor|
+  |.rocccor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=0 rect=0,0,32,32
+paint_grid layer=3 frame=0 x=15 y=0 legend=c:4,r:1,y:3 rows:7
+  |..r|
+  |...|
+  |...|
+  |...|
+  |y..|
+  |...|
+  |.c.|
+region op=clear layer=4 frame=0 rect=0,0,32,32
+paint_grid layer=4 frame=0 x=6 y=20 legend=o:2,r:1,y:3 rows:6
+  |.........yyo..|
+  |.........o.r..|
+  |.........r....|
+  |..............|
+  |.......or...ro|
+  |r.............|
+region op=clear layer=2 frame=1 rect=0,0,32,32
+paint_grid layer=2 frame=1 x=12 y=5 legend=c:4,o:2,r:1,y:3 rows:15
+  |...r.....|
+  |...r.....|
+  |..ror....|
+  |...ror...|
+  |..royor..|
+  |..royor..|
+  |.rocccor.|
+  |.rocccor.|
+  |rocccccor|
+  |rocccccor|
+  |.rocccor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=1 rect=0,0,32,32
+paint_grid layer=3 frame=1 x=14 y=3 legend=o:2,y:3 rows:3
+  |o...|
+  |....|
+  |...y|
+region op=clear layer=4 frame=1 rect=0,0,32,32
+paint_grid layer=4 frame=1 x=6 y=20 legend=o:2,r:1,y:3 rows:6
+  |.........yyo..|
+  |.........o.r..|
+  |.........r....|
+  |..............|
+  |.......or...ro|
+  |r.............|
+region op=clear layer=2 frame=2 rect=0,0,32,32
+paint_grid layer=2 frame=2 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |...r.....|
+  |..ror....|
+  |..ror....|
+  |.royor...|
+  |..royor..|
+  |.royyyor.|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |.roycyor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=2 rect=0,0,32,32
+paint_grid layer=3 frame=2 x=14 y=2 legend=o:2,y:3 rows:3
+  |o...|
+  |....|
+  |...y|
+region op=clear layer=4 frame=2 rect=0,0,32,32
+paint_grid layer=4 frame=2 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=3 rect=0,0,32,32
+paint_grid layer=2 frame=3 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |...r.....|
+  |..ror....|
+  |..ror....|
+  |.royor...|
+  |.royor...|
+  |.royyyor.|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |.roycyor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=3 rect=0,0,32,32
+paint_grid layer=3 frame=3 x=15 y=3 legend=c:4,o:2 rows:5
+  |.o|
+  |..|
+  |..|
+  |..|
+  |c.|
+region op=clear layer=4 frame=3 rect=0,0,32,32
+paint_grid layer=4 frame=3 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=4 rect=0,0,32,32
+paint_grid layer=2 frame=4 x=12 y=7 legend=c:4,o:2,r:1,y:3 rows:13
+  |..ror....|
+  |..ror....|
+  |.royor...|
+  |.royor...|
+  |royyyor..|
+  |.royyyor.|
+  |roycccyor|
+  |roycccyor|
+  |.roycyor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=4 rect=0,0,32,32
+paint_grid layer=3 frame=4 x=16 y=2 legend=o:2,y:3 rows:5
+  |o|
+  |.|
+  |.|
+  |.|
+  |y|
+region op=clear layer=4 frame=4 rect=0,0,32,32
+paint_grid layer=4 frame=4 x=15 y=20 legend=r:1 rows:1
+  |r|
+region op=clear layer=2 frame=5 rect=0,0,32,32
+paint_grid layer=2 frame=5 x=12 y=7 legend=c:4,o:2,r:1,y:3 rows:13
+  |...ror...|
+  |...ror...|
+  |.royor...|
+  |.royor...|
+  |royyyor..|
+  |royyyor..|
+  |roycccyor|
+  |roycccyor|
+  |.roycyor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=5 rect=0,0,32,32
+paint_grid layer=3 frame=5 x=15 y=1 legend=c:4,r:1,y:3 rows:5
+  |r...|
+  |....|
+  |....|
+  |....|
+  |.y.c|
+region op=clear layer=4 frame=5 rect=0,0,32,32
+paint_grid layer=4 frame=5 x=15 y=20 legend=r:1 rows:1
+  |r|
+region op=clear layer=2 frame=6 rect=0,0,32,32
+paint_grid layer=2 frame=6 x=12 y=7 legend=c:4,o:2,r:1,y:3 rows:13
+  |....ror..|
+  |...ror...|
+  |..royor..|
+  |..royor..|
+  |.royyyor.|
+  |.royyyor.|
+  |roycccyor|
+  |roycccyor|
+  |.roycyor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=6 rect=0,0,32,32
+paint_grid layer=3 frame=6 x=15 y=0 legend=o:2,r:1,y:3 rows:5
+  |r....|
+  |.....|
+  |.....|
+  |.....|
+  |o...y|
+region op=clear layer=4 frame=6 rect=0,0,32,32
+paint_grid layer=4 frame=6 x=15 y=20 legend=r:1 rows:1
+  |r|
+region op=clear layer=2 frame=7 rect=0,0,32,32
+paint_grid layer=2 frame=7 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |.....r...|
+  |....ror..|
+  |....ror..|
+  |...royor.|
+  |..royor..|
+  |.royyyor.|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |.roycyor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=7 rect=0,0,32,32
+paint_grid layer=3 frame=7 x=15 y=3 legend=o:2,y:3 rows:1
+  |o...y|
+region op=clear layer=4 frame=7 rect=0,0,32,32
+paint_grid layer=4 frame=7 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=8 rect=0,0,32,32
+paint_grid layer=2 frame=8 x=12 y=6 legend=c:4,o:2,r:1,y:3 rows:14
+  |.....r...|
+  |....ror..|
+  |....ror..|
+  |...royor.|
+  |...royor.|
+  |.royyyor.|
+  |.roycyor.|
+  |roycccyor|
+  |roycccyor|
+  |.roycyor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=8 rect=0,0,32,32
+paint_grid layer=3 frame=8 x=14 y=2 legend=c:4,o:2,r:1 rows:5
+  |r...o|
+  |.....|
+  |.....|
+  |.....|
+  |c....|
+region op=clear layer=4 frame=8 rect=0,0,32,32
+paint_grid layer=4 frame=8 x=13 y=20 legend=o:2,r:1 rows:5
+  |..o.r..|
+  |..r....|
+  |.......|
+  |.......|
+  |r.....r|
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=2 frame=9 x=12 y=5 legend=c:4,o:2,r:1,y:3 rows:15
+  |....r....|
+  |....r....|
+  |....ror..|
+  |....ror..|
+  |...royor.|
+  |...royor.|
+  |..rocccor|
+  |.rocccor.|
+  |rocccccor|
+  |rocccccor|
+  |.rocccor.|
+  |.royyyor.|
+  |..rooor..|
+  |..rooor..|
+  |...ror...|
+region op=clear layer=3 frame=9 rect=0,0,32,32
+paint_grid layer=3 frame=9 x=15 y=1 legend=o:2,y:3 rows:5
+  |...o|
+  |....|
+  |....|
+  |....|
+  |y...|
+region op=clear layer=4 frame=9 rect=0,0,32,32
+paint_grid layer=4 frame=9 x=6 y=20 legend=o:2,r:1,y:3 rows:6
+  |.........yyo..|
+  |.........o.r..|
+  |.........r....|
+  |..............|
+  |.......or...ro|
+  |r.............|
 add_tag name=burn direction=forward from=0 to=9

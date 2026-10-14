@@ -1,458 +1,339 @@
-atelier 5 d9bf9313-9d1e-4d5e-a08f-d3aaf3929414 0.1.0
+atelier 4 d9bf9313-9d1e-4d5e-a08f-d3aaf3929414 0.1.0
 new name="Moss — Alien Idle" width=32 height=32
-palette set colors=#132b31,#287b4c,#70cf48,#cbf885
-layer rename index=0 name=Body
-legend A=#132b31
-Body @0 grid 4,2 = 4,2 24x27
-    .....A............A.....
-    ....AAA..........AAA....
-    .....AA..........AA.....
-    .....AAA........AAA.....
-    ......AAA......AAA......
-    .......AAA....AAA.......
-    .......AAAAAAAAAA.......
-    ....AAAAAAAAAAAAAAAA....
-    ..AAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAA..
-    ...AAAAAAAAAAAAAAAAAA...
-    ....AAAAAAAAAAAAAAAA....
-    ......AAAAAAAAAAAA......
-    ........AAAAAAAA........
-    .........AAAAAA.........
-    ......AAAAAAAAAAAA......
-    .....AAAAAAAAAAAAAA.....
-    ....AAAAAAAAAAAAAAAA....
-    ....AAAA.AAAAAA.AAAA....
-    .......AAAA..AAAA.......
-    .......AAAA..AAAA.......
-Body @0 clear 0,0 31,21 = 4,2 27,21 .
-legend B=#70cf48 C=#cbf885 D=#287b4c
-Body @0 grid 8,22 = 9,22 14x6
-    ....ABBBBA....
-    .AAABCCCCBAAA.
-    ABBABCCCCBABBA
-    BBAADBBBBDAABB
-    DDA.ABBBBA.ADD
-    ..ABBA..ABBA..
-layer add name="Antenna · left"
-layer add name="Antenna · right"
-layer add name=Head
-layer add name=Face
-Head @0 grid 4,8 = 4,8 24x15
-    .......AAAAAAAAAA.......
-    ....AABBBBBBBBBBBBAA....
-    ..AABBCCCCCCCCCCCCBBAA..
-    .ABBBCCCCCCCCCCCCCCBBBA.
-    ABBBCCCCCCCCCCCCCCCCBBBA
-    ABBBBBCCCCCCCCCCCCBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBA
-    .ABBBBBBBBBBBBBBBBBBBBA.
-    .ADBBBBBBBBBBBBBBBBBBDA.
-    ..ADBBBBBBBBBBBBBBBBDA..
-    ...ADBBBBBBBBBBBBBBDA...
-    ....ADDBBBBBBBBBBDDA....
-    ......ADDBBBBBBDDA......
-    ........ADDDDDDA........
-    ..........AAAA..........
-"Antenna · left" @0 grid 8,2 = 8,2 6x7
-    .A....
-    ACA...
-    .BA...
-    .ABA..
-    ..ADA.
-    ...ADA
-    ....AD
-"Antenna · right" @0 grid 18,2 = 18,2 6x7
-    ....A.
-    ...ACA
-    ...AB.
-    ..ABA.
-    .ADA..
-    ADA...
-    DA....
-Face @0 grid 7,13 = 7,13 18x7
-    AAAA..........AAAA
-    ACCAAA......AAACCA
-    .ACDAAA....AAADCA.
-    ..AAAAA....AAAAA..
-    ....AA..CC..AA....
-    ..C...A....A...C..
-    .......AAAA.......
-frame duration frame=0 duration_ms=100
-frame add copy_from=0 count=9 duration_ms=100
-Body @1 move 0,0 31,31 0,-1 = 8,21 16x8
-    .....ABBBBA.....
-    ..AAABCCCCBAAA..
-    .ABBABCCCCBABBA.
-    ABBAADBBBBDAABBA
-    ADDA.ABBBBA.ADDA
-    ...ABBA..ABBA...
-    ...AAAA..AAAA...
-    ................
-Head @1 move 0,0 31,31 0,-1 = 4,7 24x16
-    .......AAAAAAAAAA.......
-    ....AABBBBBBBBBBBBAA....
-    ..AABBCCCCCCCCCCCCBBAA..
-    .ABBBCCCCCCCCCCCCCCBBBA.
-    ABBBCCCCCCCCCCCCCCCCBBBA
-    ABBBBBCCCCCCCCCCCCBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBA
-    .ABBBBBBBBBBBBBBBBBBBBA.
-    .ADBBBBBBBBBBBBBBBBBBDA.
-    ..ADBBBBBBBBBBBBBBBBDA..
-    ...ADBBBBBBBBBBBBBBDA...
-    ....ADDBBBBBBBBBBDDA....
-    ......ADDBBBBBBDDA......
-    ........ADDDDDDA........
-    ..........AAAA..........
-    ........................
-Face @1 move 0,0 31,31 0,-1 = 7,12 18x8
-    AAAA..........AAAA
-    ACCAAA......AAACCA
-    .ACDAAA....AAADCA.
-    ..AAAAA....AAAAA..
-    ....AA..CC..AA....
-    ..C...A....A...C..
-    .......AAAA.......
-    ..................
-"Antenna · left" @1 grid 0,0 replace = 8,1 6x8
-    ..A...
-    .ACA..
-    ..BA..
-    .ABA..
-    ..ADA.
-    ...ADA
-    ....AD
-    ......
-"Antenna · right" @1 grid 0,0 replace = 18,1 6x8
-    ...A..
-    ..ACA.
-    ..AB..
-    ..ABA.
-    .ADA..
-    ADA...
-    DA....
-    ......
-Body @2 move 0,0 31,31 0,-1 = 8,21 16x8
-    .....ABBBBA.....
-    ..AAABCCCCBAAA..
-    .ABBABCCCCBABBA.
-    ABBAADBBBBDAABBA
-    ADDA.ABBBBA.ADDA
-    ...ABBA..ABBA...
-    ...AAAA..AAAA...
-    ................
-Head @2 move 0,0 31,31 0,-1 = 4,7 24x16
-    .......AAAAAAAAAA.......
-    ....AABBBBBBBBBBBBAA....
-    ..AABBCCCCCCCCCCCCBBAA..
-    .ABBBCCCCCCCCCCCCCCBBBA.
-    ABBBCCCCCCCCCCCCCCCCBBBA
-    ABBBBBCCCCCCCCCCCCBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBA
-    .ABBBBBBBBBBBBBBBBBBBBA.
-    .ADBBBBBBBBBBBBBBBBBBDA.
-    ..ADBBBBBBBBBBBBBBBBDA..
-    ...ADBBBBBBBBBBBBBBDA...
-    ....ADDBBBBBBBBBBDDA....
-    ......ADDBBBBBBDDA......
-    ........ADDDDDDA........
-    ..........AAAA..........
-    ........................
-Face @2 move 0,0 31,31 0,-1 = 7,12 18x8
-    AAAA..........AAAA
-    ACCAAA......AAACCA
-    .ACDAAA....AAADCA.
-    ..AAAAA....AAAAA..
-    ....AA..CC..AA....
-    ..C...A....A...C..
-    .......AAAA.......
-    ..................
-"Antenna · left" @2 grid 0,0 replace = 8,1 6x8
-    ...A..
-    ..ACA.
-    ...BA.
-    ..ABA.
-    ..ADA.
-    ...ADA
-    ....AD
-    ......
-"Antenna · right" @2 grid 0,0 replace = 18,1 6x8
-    ..A...
-    .ACA..
-    .AB...
-    .ABA..
-    .ADA..
-    ADA...
-    DA....
-    ......
-Body @3 move 0,0 31,31 0,-1 = 8,21 16x8
-    .....ABBBBA.....
-    ..AAABCCCCBAAA..
-    .ABBABCCCCBABBA.
-    ABBAADBBBBDAABBA
-    ADDA.ABBBBA.ADDA
-    ...ABBA..ABBA...
-    ...AAAA..AAAA...
-    ................
-Head @3 move 0,0 31,31 0,-1 = 4,7 24x16
-    .......AAAAAAAAAA.......
-    ....AABBBBBBBBBBBBAA....
-    ..AABBCCCCCCCCCCCCBBAA..
-    .ABBBCCCCCCCCCCCCCCBBBA.
-    ABBBCCCCCCCCCCCCCCCCBBBA
-    ABBBBBCCCCCCCCCCCCBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBA
-    .ABBBBBBBBBBBBBBBBBBBBA.
-    .ADBBBBBBBBBBBBBBBBBBDA.
-    ..ADBBBBBBBBBBBBBBBBDA..
-    ...ADBBBBBBBBBBBBBBDA...
-    ....ADDBBBBBBBBBBDDA....
-    ......ADDBBBBBBDDA......
-    ........ADDDDDDA........
-    ..........AAAA..........
-    ........................
-Face @3 move 0,0 31,31 0,-1 = 7,12 18x8
-    AAAA..........AAAA
-    ACCAAA......AAACCA
-    .ACDAAA....AAADCA.
-    ..AAAAA....AAAAA..
-    ....AA..CC..AA....
-    ..C...A....A...C..
-    .......AAAA.......
-    ..................
-"Antenna · left" @3 grid 0,0 replace = 8,1 6x8
-    ...A..
-    ..ACA.
-    ...BA.
-    ..ABA.
-    ..ADA.
-    ...ADA
-    ....AD
-    ......
-"Antenna · right" @3 grid 0,0 replace = 18,1 6x8
-    ..A...
-    .ACA..
-    .AB...
-    .ABA..
-    .ADA..
-    ADA...
-    DA....
-    ......
-Face @3 clear 7,12 13,16 = 7,12 13,16 .
-Face @3 clear 18,12 24,16 = 18,12 24,16 .
-Face @3 grid 8,13 = 8,13 16x3
-    AAAA........AAAA
-    ACAAAA....AAAACA
-    ..AAA......AAA..
-"Antenna · left" @4 grid 0,0 replace = 8,2 4x3
-    ..A.
-    .ACA
-    ..BA
-"Antenna · right" @4 grid 0,0 replace = 20,2 4x3
-    .A..
-    ACA.
-    AB..
-Face @4 clear 7,13 13,17 = 7,13 13,17 .
-Face @4 clear 18,13 24,17 = 18,13 24,17 .
-Face @4 grid 8,15 = 8,15 16x2
-    A....A....A....A
-    .AAAA......AAAA.
-Body @5 move 0,0 31,31 0,1 = 8,22 16x8
-    ................
-    .....ABBBBA.....
-    ..AAABCCCCBAAA..
-    .ABBABCCCCBABBA.
-    ABBAADBBBBDAABBA
-    ADDA.ABBBBA.ADDA
-    ...ABBA..ABBA...
-    ...AAAA..AAAA...
-Head @5 move 0,0 31,31 0,1 = 4,8 24x16
-    ........................
-    .......AAAAAAAAAA.......
-    ....AABBBBBBBBBBBBAA....
-    ..AABBCCCCCCCCCCCCBBAA..
-    .ABBBCCCCCCCCCCCCCCBBBA.
-    ABBBCCCCCCCCCCCCCCCCBBBA
-    ABBBBBCCCCCCCCCCCCBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBA
-    .ABBBBBBBBBBBBBBBBBBBBA.
-    .ADBBBBBBBBBBBBBBBBBBDA.
-    ..ADBBBBBBBBBBBBBBBBDA..
-    ...ADBBBBBBBBBBBBBBDA...
-    ....ADDBBBBBBBBBBDDA....
-    ......ADDBBBBBBDDA......
-    ........ADDDDDDA........
-    ..........AAAA..........
-Face @5 move 0,0 31,31 0,1 = 7,13 18x8
-    ..................
-    AAAA..........AAAA
-    ACCAAA......AAACCA
-    .ACDAAA....AAADCA.
-    ..AAAAA....AAAAA..
-    ....AA..CC..AA....
-    ..C...A....A...C..
-    .......AAAA.......
-"Antenna · left" @5 grid 0,0 replace = 8,2 6x8
-    ......
-    .A....
-    ACA...
-    .BA...
-    .ABA..
-    ..ADA.
-    ...ADA
-    ....AD
-"Antenna · right" @5 grid 0,0 replace = 18,2 6x8
-    ......
-    ....A.
-    ...ACA
-    ...AB.
-    ..ABA.
-    .ADA..
-    ADA...
-    DA....
-Face @5 clear 7,14 13,18 = 7,14 13,18 .
-Face @5 clear 18,14 24,18 = 18,14 24,18 .
-Face @5 grid 8,15 = 8,15 16x3
-    AAAA........AAAA
-    ACAAAA....AAAACA
-    ..AAA......AAA..
-Body @6 move 0,0 31,31 0,1 = 8,22 16x8
-    ................
-    .....ABBBBA.....
-    ..AAABCCCCBAAA..
-    .ABBABCCCCBABBA.
-    ABBAADBBBBDAABBA
-    ADDA.ABBBBA.ADDA
-    ...ABBA..ABBA...
-    ...AAAA..AAAA...
-Head @6 move 0,0 31,31 0,1 = 4,8 24x16
-    ........................
-    .......AAAAAAAAAA.......
-    ....AABBBBBBBBBBBBAA....
-    ..AABBCCCCCCCCCCCCBBAA..
-    .ABBBCCCCCCCCCCCCCCBBBA.
-    ABBBCCCCCCCCCCCCCCCCBBBA
-    ABBBBBCCCCCCCCCCCCBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBA
-    .ABBBBBBBBBBBBBBBBBBBBA.
-    .ADBBBBBBBBBBBBBBBBBBDA.
-    ..ADBBBBBBBBBBBBBBBBDA..
-    ...ADBBBBBBBBBBBBBBDA...
-    ....ADDBBBBBBBBBBDDA....
-    ......ADDBBBBBBDDA......
-    ........ADDDDDDA........
-    ..........AAAA..........
-Face @6 move 0,0 31,31 0,1 = 7,13 18x8
-    ..................
-    AAAA..........AAAA
-    ACCAAA......AAACCA
-    .ACDAAA....AAADCA.
-    ..AAAAA....AAAAA..
-    ....AA..CC..AA....
-    ..C...A....A...C..
-    .......AAAA.......
-"Antenna · left" @6 grid 0,0 replace = 7,2 7x8
-    .......
-    .A.....
-    ACA....
-    .BA....
-    .ABA...
-    ..ABDA.
-    ....ADA
-    .....AD
-"Antenna · right" @6 grid 0,0 replace = 18,2 7x8
-    .......
-    .....A.
-    ....ACA
-    ....AB.
-    ...ABA.
-    .ADBA..
-    ADA....
-    DA.....
-Body @7 move 0,0 31,31 0,1 = 8,22 16x8
-    ................
-    .....ABBBBA.....
-    ..AAABCCCCBAAA..
-    .ABBABCCCCBABBA.
-    ABBAADBBBBDAABBA
-    ADDA.ABBBBA.ADDA
-    ...ABBA..ABBA...
-    ...AAAA..AAAA...
-Head @7 move 0,0 31,31 0,1 = 4,8 24x16
-    ........................
-    .......AAAAAAAAAA.......
-    ....AABBBBBBBBBBBBAA....
-    ..AABBCCCCCCCCCCCCBBAA..
-    .ABBBCCCCCCCCCCCCCCBBBA.
-    ABBBCCCCCCCCCCCCCCCCBBBA
-    ABBBBBCCCCCCCCCCCCBBBBBA
-    ABBBBBBBBBBBBBBBBBBBBBBA
-    .ABBBBBBBBBBBBBBBBBBBBA.
-    .ADBBBBBBBBBBBBBBBBBBDA.
-    ..ADBBBBBBBBBBBBBBBBDA..
-    ...ADBBBBBBBBBBBBBBDA...
-    ....ADDBBBBBBBBBBDDA....
-    ......ADDBBBBBBDDA......
-    ........ADDDDDDA........
-    ..........AAAA..........
-Face @7 move 0,0 31,31 0,1 = 7,13 18x8
-    ..................
-    AAAA..........AAAA
-    ACCAAA......AAACCA
-    .ACDAAA....AAADCA.
-    ..AAAAA....AAAAA..
-    ....AA..CC..AA....
-    ..C...A....A...C..
-    .......AAAA.......
-"Antenna · left" @7 grid 0,0 replace = 6,2 8x8
-    ........
-    .A......
-    ACA.....
-    .BA.....
-    .ABA....
-    ..ABDA..
-    ....ADDA
-    ......AD
-"Antenna · right" @7 grid 0,0 replace = 18,2 8x8
-    ........
-    ......A.
-    .....ACA
-    .....AB.
-    ....ABA.
-    ..ADBA..
-    ADDA....
-    DA......
-"Antenna · left" @8 grid 0,0 replace = 6,2 7x6
-    .A.....
-    ACA....
-    .BA....
-    .ABA...
-    ..ABDA.
-    ....ADD
-"Antenna · right" @8 grid 0,0 replace = 19,2 7x6
-    .....A.
-    ....ACA
-    ....AB.
-    ...ABA.
-    .ADBA..
-    DDA....
-"Antenna · left" @9 grid 0,0 replace = 7,2 5x5
-    .A...
-    ACA..
-    .BA..
-    .ABA.
-    ..ABD
-"Antenna · right" @9 grid 0,0 replace = 20,2 5x5
-    ...A.
-    ..ACA
-    ..AB.
-    .ABA.
-    DBA..
+palette op=set colors=#132b31,#287b4c,#70cf48,#cbf885
+layer op=rename index=0 name=Body
+paint_grid layer=0 frame=0 x=4 y=2 legend=k:0 rows:27
+  |.....k............k.....|
+  |....kkk..........kkk....|
+  |.....kk..........kk.....|
+  |.....kkk........kkk.....|
+  |......kkk......kkk......|
+  |.......kkk....kkk.......|
+  |.......kkkkkkkkkk.......|
+  |....kkkkkkkkkkkkkkkk....|
+  |..kkkkkkkkkkkkkkkkkkkk..|
+  |.kkkkkkkkkkkkkkkkkkkkkk.|
+  |kkkkkkkkkkkkkkkkkkkkkkkk|
+  |kkkkkkkkkkkkkkkkkkkkkkkk|
+  |kkkkkkkkkkkkkkkkkkkkkkkk|
+  |.kkkkkkkkkkkkkkkkkkkkkk.|
+  |.kkkkkkkkkkkkkkkkkkkkkk.|
+  |..kkkkkkkkkkkkkkkkkkkk..|
+  |...kkkkkkkkkkkkkkkkkk...|
+  |....kkkkkkkkkkkkkkkk....|
+  |......kkkkkkkkkkkk......|
+  |........kkkkkkkk........|
+  |.........kkkkkk.........|
+  |......kkkkkkkkkkkk......|
+  |.....kkkkkkkkkkkkkk.....|
+  |....kkkkkkkkkkkkkkkk....|
+  |....kkkk.kkkkkk.kkkk....|
+  |.......kkkk..kkkk.......|
+  |.......kkkk..kkkk.......|
+region op=clear layer=0 frame=0 rect=0,0,31,21
+paint_grid layer=0 frame=0 x=8 y=22 legend=g:2,h:3,k:0,s:1 rows:7
+  |.....kggggk.....|
+  |..kkkghhhhgkkk..|
+  |.kggkghhhhgkggk.|
+  |kggkksggggskkggk|
+  |kssk.kggggk.kssk|
+  |...kggk..kggk...|
+  |...kkkk..kkkk...|
+layer op=add name="Antenna · left"
+layer op=add name="Antenna · right"
+layer op=add name=Head
+layer op=add name=Face
+paint_grid layer=3 frame=0 x=4 y=8 legend=g:2,h:3,k:0,s:1 rows:15
+  |.......kkkkkkkkkk.......|
+  |....kkggggggggggggkk....|
+  |..kkgghhhhhhhhhhhhggkk..|
+  |.kggghhhhhhhhhhhhhhgggk.|
+  |kggghhhhhhhhhhhhhhhhgggk|
+  |kggggghhhhhhhhhhhhgggggk|
+  |kggggggggggggggggggggggk|
+  |.kggggggggggggggggggggk.|
+  |.ksggggggggggggggggggsk.|
+  |..ksggggggggggggggggsk..|
+  |...ksggggggggggggggsk...|
+  |....kssggggggggggssk....|
+  |......kssggggggssk......|
+  |........kssssssk........|
+  |..........kkkk..........|
+paint_grid layer=1 frame=0 x=8 y=2 legend=g:2,h:3,k:0,s:1 rows:7
+  |.k....|
+  |khk...|
+  |.gk...|
+  |.kgk..|
+  |..ksk.|
+  |...ksk|
+  |....ks|
+paint_grid layer=2 frame=0 x=18 y=2 legend=g:2,h:3,k:0,s:1 rows:7
+  |....k.|
+  |...khk|
+  |...kg.|
+  |..kgk.|
+  |.ksk..|
+  |ksk...|
+  |sk....|
+paint_grid layer=4 frame=0 x=7 y=13 legend=h:3,k:0,s:1 rows:7
+  |kkkk..........kkkk|
+  |khhkkk......kkkhhk|
+  |.khskkk....kkkshk.|
+  |..kkkkk....kkkkk..|
+  |....kk..hh..kk....|
+  |..h...k....k...h..|
+  |.......kkkk.......|
+frame op=duration frame=0 duration_ms=100
+frame op=add copy_from=0 count=9 duration_ms=100
+region op=move layer=0 frame=1 offset=0,-1 rect=0,0,31,31
+region op=move layer=3 frame=1 offset=0,-1 rect=0,0,31,31
+region op=move layer=4 frame=1 offset=0,-1 rect=0,0,31,31
+paint_grid layer=1 frame=1 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |..........k.....................|
+  |.........khk....................|
+  |..........gk....................|
+  |.........kgk....................|
+  |..........ksk...................|
+  |...........ksk..................|
+  |............ks..................|
+  |................................|
+  |................................|
+  |................................|
+paint_grid layer=2 frame=1 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |.....................k..........|
+  |....................khk.........|
+  |....................kg..........|
+  |....................kgk.........|
+  |...................ksk..........|
+  |..................ksk...........|
+  |..................sk............|
+  |................................|
+  |................................|
+  |................................|
+region op=move layer=0 frame=2 offset=0,-1 rect=0,0,31,31
+region op=move layer=3 frame=2 offset=0,-1 rect=0,0,31,31
+region op=move layer=4 frame=2 offset=0,-1 rect=0,0,31,31
+paint_grid layer=1 frame=2 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |...........k....................|
+  |..........khk...................|
+  |...........gk...................|
+  |..........kgk...................|
+  |..........ksk...................|
+  |...........ksk..................|
+  |............ks..................|
+  |................................|
+  |................................|
+  |................................|
+paint_grid layer=2 frame=2 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |....................k...........|
+  |...................khk..........|
+  |...................kg...........|
+  |...................kgk..........|
+  |...................ksk..........|
+  |..................ksk...........|
+  |..................sk............|
+  |................................|
+  |................................|
+  |................................|
+region op=move layer=0 frame=3 offset=0,-1 rect=0,0,31,31
+region op=move layer=3 frame=3 offset=0,-1 rect=0,0,31,31
+region op=move layer=4 frame=3 offset=0,-1 rect=0,0,31,31
+paint_grid layer=1 frame=3 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |...........k....................|
+  |..........khk...................|
+  |...........gk...................|
+  |..........kgk...................|
+  |..........ksk...................|
+  |...........ksk..................|
+  |............ks..................|
+  |................................|
+  |................................|
+  |................................|
+paint_grid layer=2 frame=3 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |....................k...........|
+  |...................khk..........|
+  |...................kg...........|
+  |...................kgk..........|
+  |...................ksk..........|
+  |..................ksk...........|
+  |..................sk............|
+  |................................|
+  |................................|
+  |................................|
+region op=clear layer=4 frame=3 rect=7,12,13,16
+region op=clear layer=4 frame=3 rect=18,12,24,16
+paint_grid layer=4 frame=3 x=8 y=13 legend=h:3,k:0 rows:3
+  |kkkk........kkkk|
+  |khkkkk....kkkkhk|
+  |..kkk......kkk..|
+paint_grid layer=1 frame=4 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |..........k.....................|
+  |.........khk....................|
+  |..........gk....................|
+  |.........kgk....................|
+  |..........ksk...................|
+  |...........ksk..................|
+  |............ks..................|
+  |................................|
+  |................................|
+paint_grid layer=2 frame=4 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |.....................k..........|
+  |....................khk.........|
+  |....................kg..........|
+  |....................kgk.........|
+  |...................ksk..........|
+  |..................ksk...........|
+  |..................sk............|
+  |................................|
+  |................................|
+region op=clear layer=4 frame=4 rect=7,13,13,17
+region op=clear layer=4 frame=4 rect=18,13,24,17
+paint_grid layer=4 frame=4 x=8 y=15 legend=k:0 rows:2
+  |k....k....k....k|
+  |.kkkk......kkkk.|
+region op=move layer=0 frame=5 offset=0,1 rect=0,0,31,31
+region op=move layer=3 frame=5 offset=0,1 rect=0,0,31,31
+region op=move layer=4 frame=5 offset=0,1 rect=0,0,31,31
+paint_grid layer=1 frame=5 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |................................|
+  |.........k......................|
+  |........khk.....................|
+  |.........gk.....................|
+  |.........kgk....................|
+  |..........ksk...................|
+  |...........ksk..................|
+  |............ks..................|
+  |................................|
+paint_grid layer=2 frame=5 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |................................|
+  |......................k.........|
+  |.....................khk........|
+  |.....................kg.........|
+  |....................kgk.........|
+  |...................ksk..........|
+  |..................ksk...........|
+  |..................sk............|
+  |................................|
+region op=clear layer=4 frame=5 rect=7,14,13,18
+region op=clear layer=4 frame=5 rect=18,14,24,18
+paint_grid layer=4 frame=5 x=8 y=15 legend=h:3,k:0 rows:3
+  |kkkk........kkkk|
+  |khkkkk....kkkkhk|
+  |..kkk......kkk..|
+region op=move layer=0 frame=6 offset=0,1 rect=0,0,31,31
+region op=move layer=3 frame=6 offset=0,1 rect=0,0,31,31
+region op=move layer=4 frame=6 offset=0,1 rect=0,0,31,31
+paint_grid layer=1 frame=6 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |................................|
+  |........k.......................|
+  |.......khk......................|
+  |........gk......................|
+  |........kgk.....................|
+  |.........kgsk...................|
+  |...........ksk..................|
+  |............ks..................|
+  |................................|
+paint_grid layer=2 frame=6 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |................................|
+  |.......................k........|
+  |......................khk.......|
+  |......................kg........|
+  |.....................kgk........|
+  |...................ksgk.........|
+  |..................ksk...........|
+  |..................sk............|
+  |................................|
+region op=move layer=0 frame=7 offset=0,1 rect=0,0,31,31
+region op=move layer=3 frame=7 offset=0,1 rect=0,0,31,31
+region op=move layer=4 frame=7 offset=0,1 rect=0,0,31,31
+paint_grid layer=1 frame=7 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |................................|
+  |.......k........................|
+  |......khk.......................|
+  |.......gk.......................|
+  |.......kgk......................|
+  |........kgsk....................|
+  |..........kssk..................|
+  |............ks..................|
+  |................................|
+paint_grid layer=2 frame=7 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |................................|
+  |........................k.......|
+  |.......................khk......|
+  |.......................kg.......|
+  |......................kgk.......|
+  |....................ksgk........|
+  |..................kssk..........|
+  |..................sk............|
+  |................................|
+paint_grid layer=1 frame=8 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |.......k........................|
+  |......khk.......................|
+  |.......gk.......................|
+  |.......kgk......................|
+  |........kgsk....................|
+  |..........kssk..................|
+  |............ks..................|
+  |................................|
+  |................................|
+paint_grid layer=2 frame=8 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |........................k.......|
+  |.......................khk......|
+  |.......................kg.......|
+  |......................kgk.......|
+  |....................ksgk........|
+  |..................kssk..........|
+  |..................sk............|
+  |................................|
+  |................................|
+paint_grid layer=1 frame=9 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |........k.......................|
+  |.......khk......................|
+  |........gk......................|
+  |........kgk.....................|
+  |.........kgsk...................|
+  |...........ksk..................|
+  |............ks..................|
+  |................................|
+  |................................|
+paint_grid layer=2 frame=9 x=0 y=0 replace=true legend=g:2,h:3,k:0,s:1 rows:11
+  |................................|
+  |................................|
+  |.......................k........|
+  |......................khk.......|
+  |......................kg........|
+  |.....................kgk........|
+  |...................ksgk.........|
+  |..................ksk...........|
+  |..................sk............|
+  |................................|
+  |................................|
 add_tag name=idle direction=forward from=0 to=9

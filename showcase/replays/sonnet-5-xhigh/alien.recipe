@@ -1,446 +1,168 @@
-atelier 5 072db680-e39b-46d5-a4c7-3fa2c96c0ce8 0.1.0
+atelier 4 072db680-e39b-46d5-a4c7-3fa2c96c0ce8 0.1.0
 new name=alien width=32 height=32
-palette set colors=#142e18,#4a9c58,#a3e08c,#0c0c10
-layer rename index=0 name=torso
-layer add name=head
-layer add name=eyes
-layer add name=antennae
-head @0 clear_cel ~
-torso @0 clear_cel ~
-legend A=#4a9c58 B=#a3e08c
-head @0 grid 8,7 = 8,7 16x13
-    ...AAAAAAAAAA...
-    ..AABBBBBBBBAA..
-    .AAABBBBBBBBAAA.
-    AAAABBBBBBBBAAAA
-    AAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAA..
-    ...AAAAAAAAAA...
-    ....AAAAAAAA....
-    .....AAAAAA.....
-torso @0 grid 11,20 = 11,20 10x7
-    ..AAAAAA..
-    .AABBBBAA.
-    AAABBBBAAA
-    AAAAAAAAAA
-    .AAAAAAAA.
-    ..AAAAAA..
-    ...AAAA...
-torso @0 rect #4a9c58 9,22 10,23 fill = 9,22 10,23 #4a9c58
-torso @0 rect #4a9c58 21,22 22,23 fill = 21,22 22,23 #4a9c58
-legend C=#142e18
-head @0 outline #142e18 = 7,6 18x15
-    ....CCCCCCCCCC....
-    ...CAAAAAAAAAAC...
-    ..CAABBBBBBBBAAC..
-    .CAAABBBBBBBBAAAC.
-    CAAAABBBBBBBBAAAAC
-    CAAAAAAAAAAAAAAAAC
-    CAAAAAAAAAAAAAAAAC
-    CAAAAAAAAAAAAAAAAC
-    .CAAAAAAAAAAAAAAC.
-    .CAAAAAAAAAAAAAAC.
-    ..CAAAAAAAAAAAAC..
-    ...CAAAAAAAAAAC...
-    ....CAAAAAAAAC....
-    .....CAAAAAAC.....
-    ......CCCCCC......
-torso @0 outline #142e18 = 8,19 16x9
-    .....CCCCCC.....
-    ....CAAAAAAC....
-    .CCCAABBBBAACCC.
-    CAAAAABBBBAAAAAC
-    CAAAAAAAAAAAAAAC
-    .CCCAAAAAAAACCC.
-    ....CAAAAAAC....
-    .....CAAAAC.....
-    ......CCCC......
-eyes @0 clear_cel ~
-legend D=#0c0c10
-eyes @0 ellipse #0c0c10 11,14 2,1 fill = 9,13 5x3
-    .DDD.
-    DDDDD
-    .DDD.
-eyes @0 ellipse #0c0c10 20,14 2,1 fill = 18,13 5x3
-    .DDD.
-    DDDDD
-    .DDD.
-eyes @0 outline #142e18 = 8,12 16x5
-    ..CCC......CCC..
-    .CDDDC....CDDDC.
-    CDDDDDC..CDDDDDC
-    .CDDDC....CDDDC.
-    ..CCC......CCC..
-antennae @0 clear_cel ~
-antennae @0 line #142e18 12,7 9,2 size 1 = 9,2 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @0 line #142e18 19,7 22,2 size 1 = 19,2 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @0 pencil #a3e08c size 2 = 8,1 9,2 #a3e08c
-antennae @0 pencil #a3e08c size 2 = 21,1 22,2 #a3e08c
-frame add copy_from=0 count=9 duration_ms=100
-torso @1 shift dx=0 dy=1
-head @1 shift dx=0 dy=1
-eyes @1 shift dx=0 dy=1
-antennae @1 clear_cel = 8,1 22,7 .
-antennae @1 line #142e18 12,8 9,3 size 1 = 9,3 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @1 line #142e18 19,8 22,3 size 1 = 19,3 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @1 pencil #a3e08c size 2 = 8,2 9,3 #a3e08c
-antennae @1 pencil #a3e08c size 2 = 21,2 22,3 #a3e08c
-torso @2 shift dx=0 dy=2
-head @2 shift dx=0 dy=2
-eyes @2 shift dx=0 dy=2
-antennae @2 clear_cel = 8,1 22,7 .
-antennae @2 line #142e18 12,9 10,4 size 1 = 10,4 3x6
-    C..
-    C..
-    .C.
-    .C.
-    ..C
-    ..C
-antennae @2 line #142e18 19,9 23,4 size 1 = 19,4 5x6
-    ....C
-    ...C.
-    ..C..
-    ..C..
-    .C...
-    C....
-antennae @2 pencil #a3e08c size 2 = 9,3 10,4 #a3e08c
-antennae @2 pencil #a3e08c size 2 = 22,3 23,4 #a3e08c
-torso @3 shift dx=0 dy=2
-head @3 shift dx=0 dy=2
-eyes @3 shift dx=0 dy=2
-antennae @3 clear_cel = 8,1 22,7 .
-antennae @3 line #142e18 12,9 10,4 size 1 = 10,4 3x6
-    C..
-    C..
-    .C.
-    .C.
-    ..C
-    ..C
-antennae @3 line #142e18 19,9 23,4 size 1 = 19,4 5x6
-    ....C
-    ...C.
-    ..C..
-    ..C..
-    .C...
-    C....
-antennae @3 pencil #a3e08c size 2 = 9,3 10,4 #a3e08c
-antennae @3 pencil #a3e08c size 2 = 22,3 23,4 #a3e08c
-torso @4 shift dx=0 dy=1
-head @4 shift dx=0 dy=1
-eyes @4 shift dx=0 dy=1
-antennae @4 clear_cel = 8,1 22,7 .
-antennae @4 line #142e18 12,8 9,3 size 1 = 9,3 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @4 line #142e18 19,8 22,3 size 1 = 19,3 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @4 pencil #a3e08c size 2 = 8,2 9,3 #a3e08c
-antennae @4 pencil #a3e08c size 2 = 21,2 22,3 #a3e08c
-eyes @5 clear_cel = 8,12 23,16 .
-eyes @5 line #142e18 10,14 13,14 size 1 = 10,14 13,14 #142e18
-eyes @5 line #142e18 18,14 21,14 size 1 = 18,14 21,14 #142e18
-antennae @5 clear_cel = 8,1 22,7 .
-antennae @5 line #142e18 12,7 9,2 size 1 = 9,2 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @5 line #142e18 19,7 22,2 size 1 = 19,2 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @5 pencil #a3e08c size 2 = 8,1 9,2 #a3e08c
-antennae @5 pencil #a3e08c size 2 = 21,1 22,2 #a3e08c
-torso @6 shift dx=0 dy=-1
-head @6 shift dx=0 dy=-1
-eyes @6 shift dx=0 dy=-1
-antennae @6 clear_cel = 8,1 22,7 .
-antennae @6 line #142e18 12,6 8,1 size 1 = 8,1 5x6
-    C....
-    .C...
-    ..C..
-    ..C..
-    ...C.
-    ....C
-antennae @6 line #142e18 19,6 21,1 size 1 = 19,1 3x6
-    ..C
-    ..C
-    .C.
-    .C.
-    C..
-    C..
-antennae @6 pencil #a3e08c size 2 = 7,0 8,1 #a3e08c
-antennae @6 pencil #a3e08c size 2 = 20,0 21,1 #a3e08c
-torso @7 shift dx=0 dy=-2
-head @7 shift dx=0 dy=-2
-eyes @7 shift dx=0 dy=-2
-antennae @7 clear_cel = 8,1 22,7 .
-antennae @7 line #142e18 12,5 8,0 size 1 = 8,0 5x6
-    C....
-    .C...
-    ..C..
-    ..C..
-    ...C.
-    ....C
-antennae @7 line #142e18 19,5 21,0 size 1 = 19,0 3x6
-    ..C
-    ..C
-    .C.
-    .C.
-    C..
-    C..
-antennae @7 pencil #a3e08c size 2 = 7,0 8,0 #a3e08c
-antennae @7 pencil #a3e08c size 2 = 20,0 21,0 #a3e08c
-torso @8 shift dx=0 dy=-2
-head @8 shift dx=0 dy=-2
-eyes @8 shift dx=0 dy=-2
-antennae @8 clear_cel = 8,1 22,7 .
-antennae @8 line #142e18 12,5 9,0 size 1 = 9,0 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @8 line #142e18 19,5 22,0 size 1 = 19,0 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @8 pencil #a3e08c size 2 = 8,0 9,0 #a3e08c
-antennae @8 pencil #a3e08c size 2 = 21,0 22,0 #a3e08c
-torso @9 shift dx=0 dy=-1
-head @9 shift dx=0 dy=-1
-eyes @9 shift dx=0 dy=-1
-antennae @9 clear_cel = 8,1 22,7 .
-antennae @9 line #142e18 12,6 9,1 size 1 = 9,1 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @9 line #142e18 19,6 22,1 size 1 = 19,1 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @9 pencil #a3e08c size 2 = 8,0 9,1 #a3e08c
-antennae @9 pencil #a3e08c size 2 = 21,0 22,1 #a3e08c
+palette op=set colors=#142e18,#4a9c58,#a3e08c,#0c0c10
+layer op=rename index=0 name=torso
+layer op=add name=head
+layer op=add name=eyes
+layer op=add name=antennae
+draw op=clear_cel layer=1 frame=0
+draw op=clear_cel layer=0 frame=0
+paint_grid layer=1 frame=0 x=8 y=7 legend=b:#4a9c58,h:#a3e08c rows:13
+  |...bbbbbbbbbb...|
+  |..bbhhhhhhhhbb..|
+  |.bbbhhhhhhhhbbb.|
+  |bbbbhhhhhhhhbbbb|
+  |bbbbbbbbbbbbbbbb|
+  |bbbbbbbbbbbbbbbb|
+  |bbbbbbbbbbbbbbbb|
+  |.bbbbbbbbbbbbbb.|
+  |.bbbbbbbbbbbbbb.|
+  |..bbbbbbbbbbbb..|
+  |...bbbbbbbbbb...|
+  |....bbbbbbbb....|
+  |.....bbbbbb.....|
+paint_grid layer=0 frame=0 x=11 y=20 legend=b:#4a9c58,h:#a3e08c rows:7
+  |..bbbbbb..|
+  |.bbhhhhbb.|
+  |bbbhhhhbbb|
+  |bbbbbbbbbb|
+  |.bbbbbbbb.|
+  |..bbbbbb..|
+  |...bbbb...|
+draw op=rect layer=0 frame=0 color=#4a9c58 fill=true x0=9 x1=10 y0=22 y1=23
+draw op=rect layer=0 frame=0 color=#4a9c58 fill=true x0=21 x1=22 y0=22 y1=23
+fx op=outline layer=1 frame=0 aa=false color=#142e18
+fx op=outline layer=0 frame=0 aa=false color=#142e18
+draw op=clear_cel layer=2 frame=0
+draw op=ellipse layer=2 frame=0 color=#0c0c10 cx=11 cy=14 fill=true rx=2 ry=1
+draw op=ellipse layer=2 frame=0 color=#0c0c10 cx=20 cy=14 fill=true rx=2 ry=1
+fx op=outline layer=2 frame=0 aa=false color=#142e18
+draw op=clear_cel layer=3 frame=0
+draw op=line layer=3 frame=0 color=#142e18 size=1 x0=12 x1=9 y0=7 y1=2
+draw op=line layer=3 frame=0 color=#142e18 size=1 x0=19 x1=22 y0=7 y1=2
+draw op=pencil layer=3 frame=0 color=#a3e08c points=[[9,2]] size=2
+draw op=pencil layer=3 frame=0 color=#a3e08c points=[[22,2]] size=2
+frame op=add copy_from=0 count=9 duration_ms=100
+fx op=shift layer=0 frame=1 dx=0 dy=1
+fx op=shift layer=1 frame=1 dx=0 dy=1
+fx op=shift layer=2 frame=1 dx=0 dy=1
+draw op=clear_cel layer=3 frame=1
+draw op=line layer=3 frame=1 color=#142e18 size=1 x0=12 x1=9 y0=8 y1=3
+draw op=line layer=3 frame=1 color=#142e18 size=1 x0=19 x1=22 y0=8 y1=3
+draw op=pencil layer=3 frame=1 color=#a3e08c points=[[9,3]] size=2
+draw op=pencil layer=3 frame=1 color=#a3e08c points=[[22,3]] size=2
+fx op=shift layer=0 frame=2 dx=0 dy=2
+fx op=shift layer=1 frame=2 dx=0 dy=2
+fx op=shift layer=2 frame=2 dx=0 dy=2
+draw op=clear_cel layer=3 frame=2
+draw op=line layer=3 frame=2 color=#142e18 size=1 x0=12 x1=10 y0=9 y1=4
+draw op=line layer=3 frame=2 color=#142e18 size=1 x0=19 x1=23 y0=9 y1=4
+draw op=pencil layer=3 frame=2 color=#a3e08c points=[[10,4]] size=2
+draw op=pencil layer=3 frame=2 color=#a3e08c points=[[23,4]] size=2
+fx op=shift layer=0 frame=3 dx=0 dy=2
+fx op=shift layer=1 frame=3 dx=0 dy=2
+fx op=shift layer=2 frame=3 dx=0 dy=2
+draw op=clear_cel layer=3 frame=3
+draw op=line layer=3 frame=3 color=#142e18 size=1 x0=12 x1=10 y0=9 y1=4
+draw op=line layer=3 frame=3 color=#142e18 size=1 x0=19 x1=23 y0=9 y1=4
+draw op=pencil layer=3 frame=3 color=#a3e08c points=[[10,4]] size=2
+draw op=pencil layer=3 frame=3 color=#a3e08c points=[[23,4]] size=2
+fx op=shift layer=0 frame=4 dx=0 dy=1
+fx op=shift layer=1 frame=4 dx=0 dy=1
+fx op=shift layer=2 frame=4 dx=0 dy=1
+draw op=clear_cel layer=3 frame=4
+draw op=line layer=3 frame=4 color=#142e18 size=1 x0=12 x1=9 y0=8 y1=3
+draw op=line layer=3 frame=4 color=#142e18 size=1 x0=19 x1=22 y0=8 y1=3
+draw op=pencil layer=3 frame=4 color=#a3e08c points=[[9,3]] size=2
+draw op=pencil layer=3 frame=4 color=#a3e08c points=[[22,3]] size=2
+draw op=clear_cel layer=2 frame=5
+draw op=line layer=2 frame=5 color=#142e18 size=1 x0=10 x1=13 y0=14 y1=14
+draw op=line layer=2 frame=5 color=#142e18 size=1 x0=18 x1=21 y0=14 y1=14
+draw op=clear_cel layer=3 frame=5
+draw op=line layer=3 frame=5 color=#142e18 size=1 x0=12 x1=9 y0=7 y1=2
+draw op=line layer=3 frame=5 color=#142e18 size=1 x0=19 x1=22 y0=7 y1=2
+draw op=pencil layer=3 frame=5 color=#a3e08c points=[[9,2]] size=2
+draw op=pencil layer=3 frame=5 color=#a3e08c points=[[22,2]] size=2
+fx op=shift layer=0 frame=6 dx=0 dy=-1
+fx op=shift layer=1 frame=6 dx=0 dy=-1
+fx op=shift layer=2 frame=6 dx=0 dy=-1
+draw op=clear_cel layer=3 frame=6
+draw op=line layer=3 frame=6 color=#142e18 size=1 x0=12 x1=8 y0=6 y1=1
+draw op=line layer=3 frame=6 color=#142e18 size=1 x0=19 x1=21 y0=6 y1=1
+draw op=pencil layer=3 frame=6 color=#a3e08c points=[[8,1]] size=2
+draw op=pencil layer=3 frame=6 color=#a3e08c points=[[21,1]] size=2
+fx op=shift layer=0 frame=7 dx=0 dy=-2
+fx op=shift layer=1 frame=7 dx=0 dy=-2
+fx op=shift layer=2 frame=7 dx=0 dy=-2
+draw op=clear_cel layer=3 frame=7
+draw op=line layer=3 frame=7 color=#142e18 size=1 x0=12 x1=8 y0=5 y1=0
+draw op=line layer=3 frame=7 color=#142e18 size=1 x0=19 x1=21 y0=5 y1=0
+draw op=pencil layer=3 frame=7 color=#a3e08c points=[[8,0]] size=2
+draw op=pencil layer=3 frame=7 color=#a3e08c points=[[21,0]] size=2
+fx op=shift layer=0 frame=8 dx=0 dy=-2
+fx op=shift layer=1 frame=8 dx=0 dy=-2
+fx op=shift layer=2 frame=8 dx=0 dy=-2
+draw op=clear_cel layer=3 frame=8
+draw op=line layer=3 frame=8 color=#142e18 size=1 x0=12 x1=9 y0=5 y1=0
+draw op=line layer=3 frame=8 color=#142e18 size=1 x0=19 x1=22 y0=5 y1=0
+draw op=pencil layer=3 frame=8 color=#a3e08c points=[[9,0]] size=2
+draw op=pencil layer=3 frame=8 color=#a3e08c points=[[22,0]] size=2
+fx op=shift layer=0 frame=9 dx=0 dy=-1
+fx op=shift layer=1 frame=9 dx=0 dy=-1
+fx op=shift layer=2 frame=9 dx=0 dy=-1
+draw op=clear_cel layer=3 frame=9
+draw op=line layer=3 frame=9 color=#142e18 size=1 x0=12 x1=9 y0=6 y1=1
+draw op=line layer=3 frame=9 color=#142e18 size=1 x0=19 x1=22 y0=6 y1=1
+draw op=pencil layer=3 frame=9 color=#a3e08c points=[[9,1]] size=2
+draw op=pencil layer=3 frame=9 color=#a3e08c points=[[22,1]] size=2
 add_tag name=idle from=0 to=9
-antennae @0 clear_cel = 8,1 22,7 .
-antennae @0 line #142e18 12,7 9,2 size 1 = 9,2 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @0 line #142e18 19,7 22,2 size 1 = 19,2 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @0 rect #a3e08c 8,1 9,2 fill = 8,1 9,2 #a3e08c
-antennae @0 rect #a3e08c 22,1 23,2 fill = 22,1 23,2 #a3e08c
-antennae @1 clear_cel = 8,2 22,8 .
-antennae @1 line #142e18 12,8 9,3 size 1 = 9,3 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @1 line #142e18 19,8 22,3 size 1 = 19,3 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @1 rect #a3e08c 8,2 9,3 fill = 8,2 9,3 #a3e08c
-antennae @1 rect #a3e08c 22,2 23,3 fill = 22,2 23,3 #a3e08c
-antennae @2 clear_cel = 9,3 23,9 .
-antennae @2 line #142e18 12,9 10,4 size 1 = 10,4 3x6
-    C..
-    C..
-    .C.
-    .C.
-    ..C
-    ..C
-antennae @2 line #142e18 19,9 23,4 size 1 = 19,4 5x6
-    ....C
-    ...C.
-    ..C..
-    ..C..
-    .C...
-    C....
-antennae @2 rect #a3e08c 9,3 10,4 fill = 9,3 10,4 #a3e08c
-antennae @2 rect #a3e08c 23,3 24,4 fill = 23,3 24,4 #a3e08c
-antennae @3 clear_cel = 9,3 23,9 .
-antennae @3 line #142e18 12,9 10,4 size 1 = 10,4 3x6
-    C..
-    C..
-    .C.
-    .C.
-    ..C
-    ..C
-antennae @3 line #142e18 19,9 23,4 size 1 = 19,4 5x6
-    ....C
-    ...C.
-    ..C..
-    ..C..
-    .C...
-    C....
-antennae @3 rect #a3e08c 9,3 10,4 fill = 9,3 10,4 #a3e08c
-antennae @3 rect #a3e08c 23,3 24,4 fill = 23,3 24,4 #a3e08c
-antennae @4 clear_cel = 8,2 22,8 .
-antennae @4 line #142e18 12,8 9,3 size 1 = 9,3 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @4 line #142e18 19,8 22,3 size 1 = 19,3 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @4 rect #a3e08c 8,2 9,3 fill = 8,2 9,3 #a3e08c
-antennae @4 rect #a3e08c 22,2 23,3 fill = 22,2 23,3 #a3e08c
-antennae @5 clear_cel = 8,1 22,7 .
-antennae @5 line #142e18 12,7 9,2 size 1 = 9,2 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @5 line #142e18 19,7 22,2 size 1 = 19,2 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @5 rect #a3e08c 8,1 9,2 fill = 8,1 9,2 #a3e08c
-antennae @5 rect #a3e08c 22,1 23,2 fill = 22,1 23,2 #a3e08c
-antennae @6 clear_cel = 7,0 21,6 .
-antennae @6 line #142e18 12,6 8,1 size 1 = 8,1 5x6
-    C....
-    .C...
-    ..C..
-    ..C..
-    ...C.
-    ....C
-antennae @6 line #142e18 19,6 21,1 size 1 = 19,1 3x6
-    ..C
-    ..C
-    .C.
-    .C.
-    C..
-    C..
-antennae @6 rect #a3e08c 7,0 8,1 fill = 7,0 8,1 #a3e08c
-antennae @6 rect #a3e08c 21,0 22,1 fill = 21,0 22,1 #a3e08c
-antennae @7 clear_cel = 7,0 21,5 .
-antennae @7 line #142e18 12,5 8,0 size 1 = 8,0 5x6
-    C....
-    .C...
-    ..C..
-    ..C..
-    ...C.
-    ....C
-antennae @7 line #142e18 19,5 21,0 size 1 = 19,0 3x6
-    ..C
-    ..C
-    .C.
-    .C.
-    C..
-    C..
-antennae @7 rect #a3e08c 7,-1 8,0 fill = 7,0 8,0 #a3e08c
-antennae @7 rect #a3e08c 21,-1 22,0 fill = 21,0 22,0 #a3e08c
-antennae @8 clear_cel = 8,0 22,5 .
-antennae @8 line #142e18 12,5 9,0 size 1 = 9,0 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @8 line #142e18 19,5 22,0 size 1 = 19,0 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @8 rect #a3e08c 8,-1 9,0 fill = 8,0 9,0 #a3e08c
-antennae @8 rect #a3e08c 22,-1 23,0 fill = 22,0 23,0 #a3e08c
-antennae @9 clear_cel = 8,0 22,6 .
-antennae @9 line #142e18 12,6 9,1 size 1 = 9,1 4x6
-    C...
-    .C..
-    .C..
-    ..C.
-    ..C.
-    ...C
-antennae @9 line #142e18 19,6 22,1 size 1 = 19,1 4x6
-    ...C
-    ..C.
-    ..C.
-    .C..
-    .C..
-    C...
-antennae @9 rect #a3e08c 8,0 9,1 fill = 8,0 9,1 #a3e08c
-antennae @9 rect #a3e08c 22,0 23,1 fill = 22,0 23,1 #a3e08c
+draw op=clear_cel layer=3 frame=0
+draw op=line layer=3 frame=0 color=#142e18 size=1 x0=12 x1=9 y0=7 y1=2
+draw op=line layer=3 frame=0 color=#142e18 size=1 x0=19 x1=22 y0=7 y1=2
+draw op=rect layer=3 frame=0 color=#a3e08c fill=true x0=8 x1=9 y0=1 y1=2
+draw op=rect layer=3 frame=0 color=#a3e08c fill=true x0=22 x1=23 y0=1 y1=2
+draw op=clear_cel layer=3 frame=1
+draw op=line layer=3 frame=1 color=#142e18 size=1 x0=12 x1=9 y0=8 y1=3
+draw op=line layer=3 frame=1 color=#142e18 size=1 x0=19 x1=22 y0=8 y1=3
+draw op=rect layer=3 frame=1 color=#a3e08c fill=true x0=8 x1=9 y0=2 y1=3
+draw op=rect layer=3 frame=1 color=#a3e08c fill=true x0=22 x1=23 y0=2 y1=3
+draw op=clear_cel layer=3 frame=2
+draw op=line layer=3 frame=2 color=#142e18 size=1 x0=12 x1=10 y0=9 y1=4
+draw op=line layer=3 frame=2 color=#142e18 size=1 x0=19 x1=23 y0=9 y1=4
+draw op=rect layer=3 frame=2 color=#a3e08c fill=true x0=9 x1=10 y0=3 y1=4
+draw op=rect layer=3 frame=2 color=#a3e08c fill=true x0=23 x1=24 y0=3 y1=4
+draw op=clear_cel layer=3 frame=3
+draw op=line layer=3 frame=3 color=#142e18 size=1 x0=12 x1=10 y0=9 y1=4
+draw op=line layer=3 frame=3 color=#142e18 size=1 x0=19 x1=23 y0=9 y1=4
+draw op=rect layer=3 frame=3 color=#a3e08c fill=true x0=9 x1=10 y0=3 y1=4
+draw op=rect layer=3 frame=3 color=#a3e08c fill=true x0=23 x1=24 y0=3 y1=4
+draw op=clear_cel layer=3 frame=4
+draw op=line layer=3 frame=4 color=#142e18 size=1 x0=12 x1=9 y0=8 y1=3
+draw op=line layer=3 frame=4 color=#142e18 size=1 x0=19 x1=22 y0=8 y1=3
+draw op=rect layer=3 frame=4 color=#a3e08c fill=true x0=8 x1=9 y0=2 y1=3
+draw op=rect layer=3 frame=4 color=#a3e08c fill=true x0=22 x1=23 y0=2 y1=3
+draw op=clear_cel layer=3 frame=5
+draw op=line layer=3 frame=5 color=#142e18 size=1 x0=12 x1=9 y0=7 y1=2
+draw op=line layer=3 frame=5 color=#142e18 size=1 x0=19 x1=22 y0=7 y1=2
+draw op=rect layer=3 frame=5 color=#a3e08c fill=true x0=8 x1=9 y0=1 y1=2
+draw op=rect layer=3 frame=5 color=#a3e08c fill=true x0=22 x1=23 y0=1 y1=2
+draw op=clear_cel layer=3 frame=6
+draw op=line layer=3 frame=6 color=#142e18 size=1 x0=12 x1=8 y0=6 y1=1
+draw op=line layer=3 frame=6 color=#142e18 size=1 x0=19 x1=21 y0=6 y1=1
+draw op=rect layer=3 frame=6 color=#a3e08c fill=true x0=7 x1=8 y0=0 y1=1
+draw op=rect layer=3 frame=6 color=#a3e08c fill=true x0=21 x1=22 y0=0 y1=1
+draw op=clear_cel layer=3 frame=7
+draw op=line layer=3 frame=7 color=#142e18 size=1 x0=12 x1=8 y0=5 y1=0
+draw op=line layer=3 frame=7 color=#142e18 size=1 x0=19 x1=21 y0=5 y1=0
+draw op=rect layer=3 frame=7 color=#a3e08c fill=true x0=7 x1=8 y0=-1 y1=0
+draw op=rect layer=3 frame=7 color=#a3e08c fill=true x0=21 x1=22 y0=-1 y1=0
+draw op=clear_cel layer=3 frame=8
+draw op=line layer=3 frame=8 color=#142e18 size=1 x0=12 x1=9 y0=5 y1=0
+draw op=line layer=3 frame=8 color=#142e18 size=1 x0=19 x1=22 y0=5 y1=0
+draw op=rect layer=3 frame=8 color=#a3e08c fill=true x0=8 x1=9 y0=-1 y1=0
+draw op=rect layer=3 frame=8 color=#a3e08c fill=true x0=22 x1=23 y0=-1 y1=0
+draw op=clear_cel layer=3 frame=9
+draw op=line layer=3 frame=9 color=#142e18 size=1 x0=12 x1=9 y0=6 y1=1
+draw op=line layer=3 frame=9 color=#142e18 size=1 x0=19 x1=22 y0=6 y1=1
+draw op=rect layer=3 frame=9 color=#a3e08c fill=true x0=8 x1=9 y0=0 y1=1
+draw op=rect layer=3 frame=9 color=#a3e08c fill=true x0=22 x1=23 y0=0 y1=1

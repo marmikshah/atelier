@@ -1,534 +1,171 @@
-atelier 5 50545dba-e9cb-48fc-9e9f-135aca511118 0.1.0
+atelier 4 50545dba-e9cb-48fc-9e9f-135aca511118 0.1.0
 new name="Wall Torch" width=32 height=32
-palette set colors=#271c27,#5b3020,#be371c,#f4721c,#ffd655
-layer add name=light
-layer add name=flame
-layer add name=embers
-layer rename index=0 name=bracket
-bracket @0 rect #271c27 13,23 18,30 fill = 13,23 18,30 #271c27
-bracket @0 rect #5b3020 14,24 17,29 fill = 14,24 17,29 #5b3020
-legend A=#f4721c B=#5b3020
-bracket @0 pencil #f4721c = 15,25 2x4
-    AB
-    BB
-    BB
-    BA
-legend C=#271c27
-bracket @0 polyline #271c27 size 3 = 9,17 8x9
-    CCC.....
-    CCC.....
-    CCC.....
-    CCC.....
-    CCCCC...
-    CCCCCCC.
-    .CCCCCCC
-    ...CCCCC
-    ....CCCC
-bracket @0 polyline #271c27 size 3 = 16,17 7x9
-    ....CCC
-    ....CCC
-    ....CCC
-    ....CCC
-    ..CCCCC
-    CCCCCCC
-    CCCCCC.
-    CCCC...
-    CCC....
-bracket @0 rect #271c27 9,17 21,20 fill = 12,17 19,20 #271c27
-bracket @0 rect #5b3020 10,17 20,19 fill = 10,17 20,19 #5b3020
-bracket @0 line #271c27 8,17 22,17 size 2 = 7,16 22,17 #271c27
-light @0 line #be371c 10,17 20,17 size 1 = 10,17 20,17 #be371c
-light @0 line #f4721c 12,19 18,19 size 1 = 12,19 18,19 #f4721c
-light @0 pencil #be371c = 14,24 14,24 #be371c
-legend D=#be371c
-flame @0 ellipse #be371c 15,13 5,5 fill = 10,8 11x11
-    ...DDDDD...
-    ..DDDDDDD..
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    ..DDDDDDD..
-    ...DDDDD...
-flame @0 polyline #be371c size 3 = 12,3 6x6
-    ..DDD.
-    .DDDD.
-    .DDDD.
-    DDDDDD
-    DDDDDD
-    DDDDDD
-flame @0 polyline #be371c size 2 = 18,8 19,9 #be371c
-flame @0 ellipse #f4721c 15,14 3,4 fill = 12,10 7x9
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @0 polyline #f4721c size 2 = 14,7 15,9 #f4721c
-legend E=#ffd655
-flame @0 ellipse #ffd655 15,15 1,2 fill = 14,13 3x5
-    AEA
-    EEE
-    EEE
-    EEE
-    AEA
-flame @0 pencil #ffd655 = 15,12 15,12 #ffd655
-embers @0 pencil #f4721c = 10,8 12x4
-    A...........
-    ............
-    ............
-    ...........A
-embers @0 pencil #be371c = 22,7 22,7 #be371c
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-light @1 clear_cel = 10,17 20,24 .
-light @1 line #be371c 9,17 21,17 size 1 = 9,17 21,17 #be371c
-light @1 line #f4721c 11,19 19,19 size 1 = 11,19 19,19 #f4721c
-light @1 pencil #be371c = 14,24 4x1
-    D..D
-flame @1 clear_cel = 10,3 20,18 .
-flame @1 ellipse #be371c 15,13 5,5 fill = 10,8 11x11
-    ...DDDDD...
-    ..DDDDDDD..
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    ..DDDDDDD..
-    ...DDDDD...
-flame @1 polyline #be371c size 3 = 15,0 5x8
-    ..DDD
-    ..DDD
-    ..DDD
-    .DDDD
-    .DDDD
-    DDDD.
-    DDDD.
-    DDD..
-flame @1 polyline #be371c size 2 = 10,6 11,10 #be371c
-flame @1 ellipse #f4721c 15,14 3,4 fill = 12,10 7x9
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @1 polyline #f4721c size 2 = 16,6 17,10 #f4721c
-flame @1 ellipse #ffd655 15,15 1,2 fill = 14,13 3x5
-    AEA
-    EEE
-    EEE
-    EEE
-    AEA
-flame @1 pencil #ffd655 = 16,12 16,12 #ffd655
-embers @1 clear_cel = 10,7 22,11 .
-embers @1 pencil #ffd655 = 22,9 22,9 #ffd655
-embers @1 pencil #be371c = 10,5 14x2
-    .............D
-    D.............
-embers @1 pencil #f4721c = 20,13 20,13 #f4721c
-light @2 clear_cel = 10,17 20,24 .
-light @2 line #f4721c 9,17 21,17 size 1 = 9,17 21,17 #f4721c
-light @2 line #ffd655 11,19 19,19 size 1 = 11,19 19,19 #ffd655
-light @2 pencil #f4721c = 14,23 4x2
-    A..A
-    A..A
-flame @2 clear_cel = 10,3 20,18 .
-flame @2 ellipse #be371c 16,13 4,5 fill = 12,8 9x11
-    ...DDD...
-    .DDDDDDD.
-    .DDDDDDD.
-    DDDDDDDDD
-    DDDDDDDDD
-    DDDDDDDDD
-    DDDDDDDDD
-    DDDDDDDDD
-    .DDDDDDD.
-    .DDDDDDD.
-    ...DDD...
-flame @2 polyline #be371c size 3 = 17,4 5x5
-    ..DDD
-    .DDDD
-    DDDDD
-    DDDD.
-    DDD..
-flame @2 polyline #be371c size 2 = 11,7 3x6
-    .DD
-    .DD
-    DDD
-    DDD
-    DDD
-    DDD
-flame @2 ellipse #f4721c 16,14 3,4 fill = 13,10 7x9
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    ..AAA..
-flame @2 polyline #f4721c size 2 = 17,7 18,10 #f4721c
-flame @2 ellipse #ffd655 16,15 1,2 fill = 15,13 3x5
-    AEA
-    EEE
-    EEE
-    EEE
-    AEA
-embers @2 clear_cel = 10,7 22,11 .
-embers @2 pencil #f4721c = 23,7 23,7 #f4721c
-embers @2 pencil #be371c = 10,3 14x2
-    .............D
-    D.............
-embers @2 pencil #ffd655 = 20,11 20,11 #ffd655
-light @3 clear_cel = 10,17 20,24 .
-light @3 line #be371c 10,17 20,17 size 1 = 10,17 20,17 #be371c
-light @3 line #f4721c 13,19 17,19 size 1 = 13,19 17,19 #f4721c
-flame @3 clear_cel = 10,3 20,18 .
-flame @3 ellipse #be371c 15,14 5,4 fill = 10,10 11x9
-    ...DDDDD...
-    .DDDDDDDDD.
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    .DDDDDDDDD.
-    ...DDDDD...
-flame @3 polyline #be371c size 3 = 11,8 13,10 #be371c
-flame @3 polyline #be371c size 2 = 16,7 3x4
-    DD.
-    DD.
-    DDD
-    DDD
-flame @3 ellipse #f4721c 15,15 3,3 fill = 12,12 7x7
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @3 polyline #f4721c size 2 = 13,9 14,12 #f4721c
-flame @3 ellipse #ffd655 15,16 1,1 fill = 14,15 16,17 #ffd655
-embers @3 clear_cel = 10,7 22,11 .
-embers @3 pencil #be371c = 24,5 24,5 #be371c
-embers @3 pencil #271c27 = 9,2 9,2 #271c27
-embers @3 pencil #f4721c = 21,9 21,9 #f4721c
-light @4 clear_cel = 10,17 20,24 .
-light @4 line #be371c 11,17 19,17 size 1 = 11,17 19,17 #be371c
-light @4 pencil #f4721c = 15,19 15,19 #f4721c
-flame @4 clear_cel = 10,3 20,18 .
-flame @4 ellipse #be371c 14,13 5,5 fill = 9,8 11x11
-    ...DDDDD...
-    ..DDDDDDD..
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    ..DDDDDDD..
-    ...DDDDD...
-flame @4 polyline #be371c size 3 = 9,3 5x6
-    DDD..
-    DDDD.
-    DDDD.
-    .DDDD
-    .DDDD
-    ..DDD
-flame @4 polyline #be371c size 2 = 17,7 18,9 #be371c
-flame @4 ellipse #f4721c 14,14 3,4 fill = 11,10 7x9
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @4 polyline #f4721c size 2 = 12,6 13,10 #f4721c
-flame @4 ellipse #ffd655 14,15 1,2 fill = 13,13 3x5
-    AEA
-    EEE
-    EEE
-    EEE
-    AEA
-embers @4 clear_cel = 10,7 22,11 .
-embers @4 pencil #ffd655 = 20,12 20,12 #ffd655
-embers @4 pencil #be371c = 25,3 25,3 #be371c
-embers @4 pencil #f4721c = 8,8 8,8 #f4721c
-light @5 clear_cel = 10,17 20,24 .
-light @5 line #f4721c 8,17 22,17 size 1 = 8,17 22,17 #f4721c
-light @5 line #ffd655 10,19 20,19 size 1 = 10,19 20,19 #ffd655
-light @5 pencil #f4721c = 14,23 4x5
-    A..A
-    A..A
-    ....
-    ....
-    .AA.
-flame @5 clear_cel = 10,3 20,18 .
-flame @5 ellipse #be371c 15,13 6,5 fill = 9,8 13x11
-    ....DDDDD....
-    ..DDDDDDDDD..
-    .DDDDDDDDDDD.
-    DDDDDDDDDDDDD
-    DDDDDDDDDDDDD
-    DDDDDDDDDDDDD
-    DDDDDDDDDDDDD
-    DDDDDDDDDDDDD
-    .DDDDDDDDDDD.
-    ..DDDDDDDDD..
-    ....DDDDD....
-flame @5 polyline #be371c size 4 = 12,0 5x9
-    .DDDD
-    .DDDD
-    .DDDD
-    DDDDD
-    DDDDD
-    DDDDD
-    DDDD.
-    DDDD.
-    DDDDD
-flame @5 polyline #be371c size 3 = 18,6 4x5
-    DDD.
-    DDD.
-    DDD.
-    DDDD
-    DDDD
-flame @5 ellipse #f4721c 15,14 4,4 fill = 11,10 9x9
-    DDAAAAADD
-    DAAAAAAAD
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    DAAAAAAAD
-    ..AAAAA..
-flame @5 polyline #f4721c size 2 = 15,5 16,9 #f4721c
-flame @5 ellipse #ffd655 15,15 2,2 fill = 13,13 5x5
-    AEEEA
-    EEEEE
-    EEEEE
-    EEEEE
-    AEEEA
-flame @5 line #ffd655 15,14 15,11 size 1 = 15,11 15,12 #ffd655
-embers @5 clear_cel = 10,7 22,11 .
-embers @5 pencil #ffd655 = 9,6 13x5
-    E............
-    .............
-    .............
-    .............
-    ............E
-embers @5 pencil #be371c = 26,1 26,1 #be371c
-embers @5 pencil #f4721c = 8,5 8,5 #f4721c
-light @6 clear_cel = 10,17 20,24 .
-light @6 line #f4721c 9,17 21,17 size 1 = 9,17 21,17 #f4721c
-light @6 line #ffd655 11,19 19,19 size 1 = 11,19 19,19 #ffd655
-light @6 pencil #f4721c = 14,23 4x1
-    A..A
-flame @6 clear_cel = 10,3 20,18 .
-flame @6 ellipse #be371c 16,13 5,5 fill = 11,8 11x11
-    ...DDDDD...
-    ..DDDDDDD..
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    ..DDDDDDD..
-    ...DDDDD...
-flame @6 polyline #be371c size 3 = 16,3 5x5
-    ..DDD
-    .DDDD
-    .DDDD
-    DDDD.
-    DDDD.
-flame @6 polyline #be371c size 2 = 10,7 3x4
-    DD.
-    DD.
-    DDD
-    .DD
-flame @6 polyline #be371c size 2 = 20,7 21,10 #be371c
-flame @6 ellipse #f4721c 16,14 3,4 fill = 13,10 7x9
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @6 polyline #f4721c size 2 = 17,6 18,10 #f4721c
-flame @6 ellipse #ffd655 16,15 1,2 fill = 15,13 3x5
-    AEA
-    EEE
-    EEE
-    EEE
-    AEA
-embers @6 clear_cel = 10,7 22,11 .
-embers @6 pencil #f4721c = 9,4 14x5
-    A.............
-    ..............
-    ..............
-    ..............
-    .............A
-embers @6 pencil #be371c = 7,2 7,2 #be371c
-embers @6 pencil #ffd655 = 21,13 21,13 #ffd655
-light @7 clear_cel = 10,17 20,24 .
-light @7 line #be371c 10,17 20,17 size 1 = 10,17 20,17 #be371c
-light @7 line #f4721c 12,19 18,19 size 1 = 12,19 18,19 #f4721c
-light @7 pencil #be371c = 17,24 17,24 #be371c
-flame @7 clear_cel = 10,3 20,18 .
-flame @7 ellipse #be371c 16,14 5,4 fill = 11,10 11x9
-    ...DDDDD...
-    .DDDDDDDDD.
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    .DDDDDDDDD.
-    ...DDDDD...
-flame @7 polyline #be371c size 3 = 17,7 4x4
-    .DDD
-    .DDD
-    DDDD
-    DDDD
-flame @7 polyline #be371c size 2 = 12,8 3x3
-    .DD
-    .DD
-    DDD
-flame @7 ellipse #f4721c 16,15 3,3 fill = 13,12 7x7
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @7 polyline #f4721c size 2 = 16,9 17,11 #f4721c
-flame @7 ellipse #ffd655 16,16 1,1 fill = 15,15 17,17 #ffd655
-embers @7 clear_cel = 10,7 22,11 .
-embers @7 pencil #be371c = 8,2 16x5
-    D...............
-    ................
-    ................
-    ................
-    ...............D
-embers @7 pencil #ffd655 = 10,12 10,12 #ffd655
-light @8 clear_cel = 10,17 20,24 .
-light @8 line #be371c 11,17 19,17 size 1 = 11,17 19,17 #be371c
-light @8 line #f4721c 13,19 17,19 size 1 = 13,19 17,19 #f4721c
-flame @8 clear_cel = 10,3 20,18 .
-flame @8 ellipse #be371c 14,13 5,5 fill = 9,8 11x11
-    ...DDDDD...
-    ..DDDDDDD..
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    ..DDDDDDD..
-    ...DDDDD...
-flame @8 polyline #be371c size 3 = 10,5 12,9 #be371c
-flame @8 polyline #be371c size 2 = 18,8 19,10 #be371c
-flame @8 ellipse #f4721c 14,14 3,4 fill = 11,10 7x9
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @8 polyline #f4721c size 2 = 12,7 13,10 #f4721c
-flame @8 ellipse #ffd655 14,15 1,2 fill = 13,13 3x5
-    AEA
-    EEE
-    EEE
-    EEE
-    AEA
-embers @8 clear_cel = 10,7 22,11 .
-embers @8 pencil #f4721c = 9,10 9,10 #f4721c
-embers @8 pencil #be371c = 24,4 24,4 #be371c
-embers @8 pencil #ffd655 = 20,14 20,14 #ffd655
-light @9 clear_cel = 10,17 20,24 .
-light @9 line #be371c 10,17 20,17 size 1 = 10,17 20,17 #be371c
-light @9 line #f4721c 12,19 18,19 size 1 = 12,19 18,19 #f4721c
-light @9 pencil #be371c = 14,24 14,24 #be371c
-flame @9 clear_cel = 10,3 20,18 .
-flame @9 ellipse #be371c 15,13 5,5 fill = 10,8 11x11
-    ...DDDDD...
-    ..DDDDDDD..
-    .DDDDDDDDD.
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    DDDDDDDDDDD
-    .DDDDDDDDD.
-    ..DDDDDDD..
-    ...DDDDD...
-flame @9 polyline #be371c size 3 = 13,4 4x4
-    .DDD
-    .DDD
-    DDDD
-    DDDD
-flame @9 polyline #be371c size 2 = 19,9 19,9 #be371c
-flame @9 ellipse #f4721c 15,14 3,4 fill = 12,10 7x9
-    DDAAADD
-    DAAAAAD
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    DAAAAAD
-    .DAAAD.
-flame @9 polyline #f4721c size 2 = 14,8 15,9 #f4721c
-flame @9 ellipse #ffd655 15,15 1,2 fill = 14,13 3x5
-    AEA
-    EEE
-    EEE
-    EEE
-    AEA
-flame @9 pencil #ffd655 = 15,12 15,12 #ffd655
-embers @9 clear_cel = 10,7 22,11 .
-embers @9 pencil #ffd655 = 9,10 12x4
-    E...........
-    ............
-    ............
-    ...........E
-embers @9 pencil #be371c = 22,9 22,9 #be371c
+palette op=set colors=#271c27,#5b3020,#be371c,#f4721c,#ffd655
+layer op=add name=light
+layer op=add name=flame
+layer op=add name=embers
+layer op=rename index=0 name=bracket
+draw op=rect layer=0 frame=0 color=#271c27 fill=true x0=13 x1=18 y0=23 y1=30
+draw op=rect layer=0 frame=0 color=#5b3020 fill=true x0=14 x1=17 y0=24 y1=29
+draw op=pencil layer=0 frame=0 color=#f4721c points=15,25 16,28
+draw op=polyline layer=0 frame=0 color=#271c27 points=15,24 10,21 10,18 size=3
+draw op=polyline layer=0 frame=0 color=#271c27 points=16,24 21,21 21,18 size=3
+draw op=rect layer=0 frame=0 color=#271c27 fill=true x0=9 x1=21 y0=17 y1=20
+draw op=rect layer=0 frame=0 color=#5b3020 fill=true x0=10 x1=20 y0=17 y1=19
+draw op=line layer=0 frame=0 color=#271c27 size=2 x0=8 x1=22 y0=17 y1=17
+draw op=line layer=1 frame=0 color=#be371c size=1 x0=10 x1=20 y0=17 y1=17
+draw op=line layer=1 frame=0 color=#f4721c size=1 x0=12 x1=18 y0=19 y1=19
+draw op=pencil layer=1 frame=0 color=#be371c points=[[14,24]]
+draw op=ellipse layer=2 frame=0 color=#be371c cx=15 cy=13 fill=true rx=5 ry=5
+draw op=polyline layer=2 frame=0 color=#be371c points=12,14 13,10 13,7 15,4 16,9 size=3
+draw op=polyline layer=2 frame=0 color=#be371c points=18,15 19,12 19,9 size=2
+draw op=ellipse layer=2 frame=0 color=#f4721c cx=15 cy=14 fill=true rx=3 ry=4
+draw op=polyline layer=2 frame=0 color=#f4721c points=14,14 15,11 15,8 size=2
+draw op=ellipse layer=2 frame=0 color=#ffd655 cx=15 cy=15 fill=true rx=1 ry=2
+draw op=pencil layer=2 frame=0 color=#ffd655 points=[[15,12]]
+draw op=pencil layer=3 frame=0 color=#f4721c points=21,11 10,8
+draw op=pencil layer=3 frame=0 color=#be371c points=[[22,7]]
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=1 frame=1
+draw op=line layer=1 frame=1 color=#be371c size=1 x0=9 x1=21 y0=17 y1=17
+draw op=line layer=1 frame=1 color=#f4721c size=1 x0=11 x1=19 y0=19 y1=19
+draw op=pencil layer=1 frame=1 color=#be371c points=14,24 17,24
+draw op=clear_cel layer=2 frame=1
+draw op=ellipse layer=2 frame=1 color=#be371c cx=15 cy=13 fill=true rx=5 ry=5
+draw op=polyline layer=2 frame=1 color=#be371c points=14,13 16,9 16,6 18,3 18,1 size=3
+draw op=polyline layer=2 frame=1 color=#be371c points=12,13 11,10 11,7 size=2
+draw op=ellipse layer=2 frame=1 color=#f4721c cx=15 cy=14 fill=true rx=3 ry=4
+draw op=polyline layer=2 frame=1 color=#f4721c points=15,13 17,10 17,7 size=2
+draw op=ellipse layer=2 frame=1 color=#ffd655 cx=15 cy=15 fill=true rx=1 ry=2
+draw op=pencil layer=2 frame=1 color=#ffd655 points=[[16,12]]
+draw op=clear_cel layer=3 frame=1
+draw op=pencil layer=3 frame=1 color=#ffd655 points=[[22,9]]
+draw op=pencil layer=3 frame=1 color=#be371c points=10,6 23,5
+draw op=pencil layer=3 frame=1 color=#f4721c points=[[20,13]]
+draw op=clear_cel layer=1 frame=2
+draw op=line layer=1 frame=2 color=#f4721c size=1 x0=9 x1=21 y0=17 y1=17
+draw op=line layer=1 frame=2 color=#ffd655 size=1 x0=11 x1=19 y0=19 y1=19
+draw op=pencil layer=1 frame=2 color=#f4721c points=14,23 17,23 14,24 17,24
+draw op=clear_cel layer=2 frame=2
+draw op=ellipse layer=2 frame=2 color=#be371c cx=16 cy=13 fill=true rx=4 ry=5
+draw op=polyline layer=2 frame=2 color=#be371c points=16,13 18,10 18,7 20,5 size=3
+draw op=polyline layer=2 frame=2 color=#be371c points=13,14 12,11 13,8 size=2
+draw op=ellipse layer=2 frame=2 color=#f4721c cx=16 cy=14 fill=true rx=3 ry=4
+draw op=polyline layer=2 frame=2 color=#f4721c points=16,13 18,10 18,8 size=2
+draw op=ellipse layer=2 frame=2 color=#ffd655 cx=16 cy=15 fill=true rx=1 ry=2
+draw op=clear_cel layer=3 frame=2
+draw op=pencil layer=3 frame=2 color=#f4721c points=[[23,7]]
+draw op=pencil layer=3 frame=2 color=#be371c points=10,4 23,3
+draw op=pencil layer=3 frame=2 color=#ffd655 points=[[20,11]]
+draw op=clear_cel layer=1 frame=3
+draw op=line layer=1 frame=3 color=#be371c size=1 x0=10 x1=20 y0=17 y1=17
+draw op=line layer=1 frame=3 color=#f4721c size=1 x0=13 x1=17 y0=19 y1=19
+draw op=clear_cel layer=2 frame=3
+draw op=ellipse layer=2 frame=3 color=#be371c cx=15 cy=14 fill=true rx=5 ry=4
+draw op=polyline layer=2 frame=3 color=#be371c points=13,14 13,11 12,9 size=3
+draw op=polyline layer=2 frame=3 color=#be371c points=17,14 18,11 17,8 size=2
+draw op=ellipse layer=2 frame=3 color=#f4721c cx=15 cy=15 fill=true rx=3 ry=3
+draw op=polyline layer=2 frame=3 color=#f4721c points=15,14 14,12 14,10 size=2
+draw op=ellipse layer=2 frame=3 color=#ffd655 cx=15 cy=16 fill=true rx=1 ry=1
+draw op=clear_cel layer=3 frame=3
+draw op=pencil layer=3 frame=3 color=#be371c points=[[24,5]]
+draw op=pencil layer=3 frame=3 color=#271c27 points=[[9,2]]
+draw op=pencil layer=3 frame=3 color=#f4721c points=[[21,9]]
+draw op=clear_cel layer=1 frame=4
+draw op=line layer=1 frame=4 color=#be371c size=1 x0=11 x1=19 y0=17 y1=17
+draw op=pencil layer=1 frame=4 color=#f4721c points=[[15,19]]
+draw op=clear_cel layer=2 frame=4
+draw op=ellipse layer=2 frame=4 color=#be371c cx=14 cy=13 fill=true rx=5 ry=5
+draw op=polyline layer=2 frame=4 color=#be371c points=14,13 12,10 12,7 10,4 size=3
+draw op=polyline layer=2 frame=4 color=#be371c points=17,14 18,11 18,8 size=2
+draw op=ellipse layer=2 frame=4 color=#f4721c cx=14 cy=14 fill=true rx=3 ry=4
+draw op=polyline layer=2 frame=4 color=#f4721c points=14,13 13,10 13,7 size=2
+draw op=ellipse layer=2 frame=4 color=#ffd655 cx=14 cy=15 fill=true rx=1 ry=2
+draw op=clear_cel layer=3 frame=4
+draw op=pencil layer=3 frame=4 color=#ffd655 points=[[20,12]]
+draw op=pencil layer=3 frame=4 color=#be371c points=[[25,3]]
+draw op=pencil layer=3 frame=4 color=#f4721c points=[[8,8]]
+draw op=clear_cel layer=1 frame=5
+draw op=line layer=1 frame=5 color=#f4721c size=1 x0=8 x1=22 y0=17 y1=17
+draw op=line layer=1 frame=5 color=#ffd655 size=1 x0=10 x1=20 y0=19 y1=19
+draw op=pencil layer=1 frame=5 color=#f4721c points=14,23 17,23 14,24 17,24 15,27 16,27
+draw op=clear_cel layer=2 frame=5
+draw op=ellipse layer=2 frame=5 color=#be371c cx=15 cy=13 fill=true rx=6 ry=5
+draw op=polyline layer=2 frame=5 color=#be371c points=13,13 14,9 14,6 15,2 size=4
+draw op=polyline layer=2 frame=5 color=#be371c points=18,14 20,11 19,7 size=3
+draw op=ellipse layer=2 frame=5 color=#f4721c cx=15 cy=14 fill=true rx=4 ry=4
+draw op=polyline layer=2 frame=5 color=#f4721c points=15,13 16,10 16,6 size=2
+draw op=ellipse layer=2 frame=5 color=#ffd655 cx=15 cy=15 fill=true rx=2 ry=2
+draw op=line layer=2 frame=5 color=#ffd655 size=1 x0=15 x1=15 y0=14 y1=11
+draw op=clear_cel layer=3 frame=5
+draw op=pencil layer=3 frame=5 color=#ffd655 points=21,10 9,6
+draw op=pencil layer=3 frame=5 color=#be371c points=[[26,1]]
+draw op=pencil layer=3 frame=5 color=#f4721c points=[[8,5]]
+draw op=clear_cel layer=1 frame=6
+draw op=line layer=1 frame=6 color=#f4721c size=1 x0=9 x1=21 y0=17 y1=17
+draw op=line layer=1 frame=6 color=#ffd655 size=1 x0=11 x1=19 y0=19 y1=19
+draw op=pencil layer=1 frame=6 color=#f4721c points=14,23 17,23
+draw op=clear_cel layer=2 frame=6
+draw op=ellipse layer=2 frame=6 color=#be371c cx=16 cy=13 fill=true rx=5 ry=5
+draw op=polyline layer=2 frame=6 color=#be371c points=15,13 17,10 17,7 19,4 size=3
+draw op=polyline layer=2 frame=6 color=#be371c points=13,14 12,11 11,8 size=2
+draw op=polyline layer=2 frame=6 color=#be371c points=19,14 21,11 21,8 size=2
+draw op=ellipse layer=2 frame=6 color=#f4721c cx=16 cy=14 fill=true rx=3 ry=4
+draw op=polyline layer=2 frame=6 color=#f4721c points=16,13 18,10 18,7 size=2
+draw op=ellipse layer=2 frame=6 color=#ffd655 cx=16 cy=15 fill=true rx=1 ry=2
+draw op=clear_cel layer=3 frame=6
+draw op=pencil layer=3 frame=6 color=#f4721c points=22,8 9,4
+draw op=pencil layer=3 frame=6 color=#be371c points=[[7,2]]
+draw op=pencil layer=3 frame=6 color=#ffd655 points=[[21,13]]
+draw op=clear_cel layer=1 frame=7
+draw op=line layer=1 frame=7 color=#be371c size=1 x0=10 x1=20 y0=17 y1=17
+draw op=line layer=1 frame=7 color=#f4721c size=1 x0=12 x1=18 y0=19 y1=19
+draw op=pencil layer=1 frame=7 color=#be371c points=[[17,24]]
+draw op=clear_cel layer=2 frame=7
+draw op=ellipse layer=2 frame=7 color=#be371c cx=16 cy=14 fill=true rx=5 ry=4
+draw op=polyline layer=2 frame=7 color=#be371c points=16,14 18,11 19,8 size=3
+draw op=polyline layer=2 frame=7 color=#be371c points=13,14 13,11 14,9 size=2
+draw op=ellipse layer=2 frame=7 color=#f4721c cx=16 cy=15 fill=true rx=3 ry=3
+draw op=polyline layer=2 frame=7 color=#f4721c points=16,14 17,12 17,10 size=2
+draw op=ellipse layer=2 frame=7 color=#ffd655 cx=16 cy=16 fill=true rx=1 ry=1
+draw op=clear_cel layer=3 frame=7
+draw op=pencil layer=3 frame=7 color=#be371c points=23,6 8,2
+draw op=pencil layer=3 frame=7 color=#ffd655 points=[[10,12]]
+draw op=clear_cel layer=1 frame=8
+draw op=line layer=1 frame=8 color=#be371c size=1 x0=11 x1=19 y0=17 y1=17
+draw op=line layer=1 frame=8 color=#f4721c size=1 x0=13 x1=17 y0=19 y1=19
+draw op=clear_cel layer=2 frame=8
+draw op=ellipse layer=2 frame=8 color=#be371c cx=14 cy=13 fill=true rx=5 ry=5
+draw op=polyline layer=2 frame=8 color=#be371c points=14,13 12,10 11,6 size=3
+draw op=polyline layer=2 frame=8 color=#be371c points=17,14 18,11 19,9 size=2
+draw op=ellipse layer=2 frame=8 color=#f4721c cx=14 cy=14 fill=true rx=3 ry=4
+draw op=polyline layer=2 frame=8 color=#f4721c points=14,13 13,10 13,8 size=2
+draw op=ellipse layer=2 frame=8 color=#ffd655 cx=14 cy=15 fill=true rx=1 ry=2
+draw op=clear_cel layer=3 frame=8
+draw op=pencil layer=3 frame=8 color=#f4721c points=[[9,10]]
+draw op=pencil layer=3 frame=8 color=#be371c points=[[24,4]]
+draw op=pencil layer=3 frame=8 color=#ffd655 points=[[20,14]]
+draw op=clear_cel layer=1 frame=9
+draw op=line layer=1 frame=9 color=#be371c size=1 x0=10 x1=20 y0=17 y1=17
+draw op=line layer=1 frame=9 color=#f4721c size=1 x0=12 x1=18 y0=19 y1=19
+draw op=pencil layer=1 frame=9 color=#be371c points=[[14,24]]
+draw op=clear_cel layer=2 frame=9
+draw op=ellipse layer=2 frame=9 color=#be371c cx=15 cy=13 fill=true rx=5 ry=5
+draw op=polyline layer=2 frame=9 color=#be371c points=13,14 14,10 14,7 15,5 size=3
+draw op=polyline layer=2 frame=9 color=#be371c points=18,15 19,12 19,10 size=2
+draw op=ellipse layer=2 frame=9 color=#f4721c cx=15 cy=14 fill=true rx=3 ry=4
+draw op=polyline layer=2 frame=9 color=#f4721c points=14,14 15,11 15,9 size=2
+draw op=ellipse layer=2 frame=9 color=#ffd655 cx=15 cy=15 fill=true rx=1 ry=2
+draw op=pencil layer=2 frame=9 color=#ffd655 points=[[15,12]]
+draw op=clear_cel layer=3 frame=9
+draw op=pencil layer=3 frame=9 color=#ffd655 points=20,13 9,10
+draw op=pencil layer=3 frame=9 color=#be371c points=[[22,9]]
 add_tag name=flicker direction=forward from=0 to=9

@@ -31,7 +31,6 @@ mod integrity;
 mod journal;
 mod ops_export;
 mod ops_region;
-mod record;
 mod recovery;
 mod reference;
 mod store;
@@ -44,9 +43,8 @@ pub use control::{
 };
 pub use integrity::{IntegrityIssue, IntegritySeverity, StoreIntegrityReport};
 pub use journal::{
-    Change, JOURNAL_SCHEMA, LayerRef, Legend, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES,
-    ParsedJournal, Pixel, Scope, Statement, TRANSPARENT, encode_header, encode_statements,
-    hex_colour, is_exact_fx, is_pixel_tool, parse_colour, parse_journal, validate_journal,
+    JOURNAL_SCHEMA, JournalEntry, MAX_JOURNAL_BYTES, MAX_JOURNAL_ENTRIES, ParsedJournal,
+    parse_journal, validate_journal,
 };
 pub use recovery::is_format_mismatch;
 pub use transaction::{CommitOutcome, StoreTransaction};
@@ -476,7 +474,6 @@ impl Studio {
     {
         let (mut changed, mut bbox, mut frames_changed): (u64, Option<[u32; 4]>, usize) =
             (0, None, 0);
-        let mut frame_changes = Vec::new();
         for current in frame..=frame_to {
             let before = doc.cel_full(layer, current);
             edit(doc, current)?;
@@ -486,7 +483,6 @@ impl Studio {
                 frames_changed += 1;
             }
             if let Some([x0, y0, x1, y1]) = frame_bbox {
-                frame_changes.push(json!([current, [x0, y0, x1, y1]]));
                 bbox = Some(match bbox {
                     None => [x0, y0, x1, y1],
                     Some([a0, b0, a1, b1]) => [a0.min(x0), b0.min(y0), a1.max(x1), b1.max(y1)],
@@ -498,8 +494,6 @@ impl Studio {
         ack["frame_to"] = json!(frame_to);
         ack["frames_targeted"] = json!(count);
         ack["frames_changed"] = json!(frames_changed);
-        // Per-frame boxes, so the recipe can record each cel's own change.
-        ack["frame_changes"] = Value::Array(frame_changes);
         Ok(ack)
     }
 

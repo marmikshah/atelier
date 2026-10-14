@@ -1,350 +1,346 @@
-atelier 5 6ebbd952-9e16-4251-a98f-0ee0f3295cff 0.1.0
+atelier 4 6ebbd952-9e16-4251-a98f-0ee0f3295cff 0.1.0
 new name=corked-flask-potion width=32 height=32
-layer rename index=0 name=liquid
-layer add name=bubbles
-layer add name=glass
-layer add name=shine
-layer add name=cork
-palette set colors=#241433,#f2f0ff,#b83dd6,#7a1fa6,#e58ff0,#b9793f
-legend A=#241433
-glass @0 grid 4,6 = 4,6 24x24
-    .........AAAAAA.........
-    .........AAAAAA.........
-    .........AAAAAA.........
-    .........AAAAAA.........
-    .........AAAAAA.........
-    ........AAAAAAAA........
-    ......AAAAAAAAAAAA......
-    ....AAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAA...
-    ..AAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAA.
-    .AAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAA..
-    ...AAAAAAAAAAAAAAAAAA...
-    .....AAAAAAAAAAAAAA.....
-    .......AAAAAAAAAA.......
-    .........AAAAAA.........
-cork @0 grid 12,2 = 12,2 8x4
-    ..AAAA..
-    .AAAAAA.
-    AAAAAAAA
-    AAAAAAAA
-glass @0 clear_cel = 4,6 27,29 .
-cork @0 clear_cel = 12,2 19,5 .
-glass @0 grid 4,6 = 4,6 24x24
-    .........AAAAAA.........
-    .........A....A.........
-    .........A....A.........
-    .........A....A.........
-    .........A....A.........
-    ........A......A........
-    ......AA........AA......
-    ....AA............AA....
-    ...A................A...
-    ..A..................A..
-    .A....................A.
-    .A....................A.
-    A......................A
-    A......................A
-    A......................A
-    A......................A
-    A......................A
-    .A....................A.
-    .A....................A.
-    ..A..................A..
-    ...AA..............AA...
-    .....AA..........AA.....
-    .......AA......AA.......
-    .........AAAAAA.........
-legend B=#b9793f
-cork @0 grid 12,2 = 12,2 8x4
-    ..AAAA..
-    .ABAABA.
-    ABBBBBBA
-    AAAAAAAA
-legend C=#f2f0ff
-shine @0 grid 5,7 = 5,7 10x13
-    .........C
-    .........C
-    .........C
-    ..........
-    ..........
-    ..........
-    ..........
-    ..........
-    ..C.......
-    .C........
-    .C........
-    C.........
-    C.........
-legend D=#e58ff0 E=#b83dd6 F=#7a1fa6
-liquid @0 grid 5,17 = 5,17 22x12
-    .D...........DDDDD....
-    DEDDD.....DDDEEEEEDDD.
-    EEEEEDDDDDEEEEEEEEEEED
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @0 grid 11,20 = 11,20 6x9
-    ...DDD
-    .....C
-    .....D
-    ......
-    C.....
-    D.....
-    ......
-    ......
-    ....D.
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-frame add copy_from=0 duration_ms=100
-liquid @1 clear_cel = 5,17 26,28 .
-bubbles @1 clear_cel = 11,20 16,28 .
-liquid @1 grid 5,17 = 5,17 22x12
-    ...........DDDDDD.....
-    DDD......DDEEEEEEDD...
-    EEEDDDDDDEEEEEEEEEEDDD
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @1 grid 10,17 = 10,17 7x11
-    ....C..
-    ...C.C.
-    .......
-    ......C
-    ......D
-    .......
-    C......
-    D......
-    .......
-    .......
-    ......D
-liquid @2 clear_cel = 5,17 26,28 .
-bubbles @2 clear_cel = 11,20 16,28 .
-liquid @2 grid 5,17 = 5,17 22x12
-    ..........DDDDD.......
-    DD.....DDDEEEEEDDD....
-    EEDDDDDEEEEEEEEEEEDDDD
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @2 grid 10,20 = 10,20 9x9
-    ......DDD
-    .........
-    C........
-    D........
-    .........
-    .........
-    .......D.
-    .........
-    .....D...
-liquid @3 clear_cel = 5,17 26,28 .
-bubbles @3 clear_cel = 11,20 16,28 .
-liquid @3 grid 5,17 = 5,17 22x12
-    ........DDDDD.........
-    .....DDDEEEEEDDD.....D
-    DDDDDEEEEEEEEEEEDDDDDF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @3 grid 12,17 = 12,17 8x11
-    ......C.
-    .....C.C
-    ........
-    ........
-    C.......
-    D.......
-    ........
-    ....C...
-    ....D...
-    ........
-    ..D.....
-liquid @4 clear_cel = 5,17 26,28 .
-bubbles @4 clear_cel = 11,20 16,28 .
-liquid @4 grid 5,17 = 5,17 22x12
-    ......DDDDDD..........
-    ....DDEEEEEEDD......DD
-    DDDDEEEEEEEEEEDDDDDDEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @4 grid 12,20 = 12,20 6x9
-    .C....
-    .D....
-    ......
-    ...C..
-    ...D..
-    ......
-    D.....
-    ......
-    .....D
-liquid @5 clear_cel = 5,17 26,28 .
-bubbles @5 clear_cel = 11,20 16,28 .
-liquid @5 grid 5,17 = 5,17 22x12
-    .....DDDDD............
-    ..DDDEEEEEDDD.....DDDD
-    DDEEEEEEEEEEEDDDDDEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @5 grid 12,20 = 12,20 7x8
-    .DDD...
-    .......
-    .C.....
-    .D.....
-    C......
-    D......
-    .......
-    ......D
-liquid @6 clear_cel = 5,17 26,28 .
-bubbles @6 clear_cel = 11,20 16,28 .
-liquid @6 grid 5,17 = 5,17 22x12
-    ...DDDDDD..........DD.
-    .DDEEEEEEDD......DDEED
-    DEEEEEEEEEEDDDDDDEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @6 grid 13,17 = 13,17 8x10
-    .C......
-    C.C.....
-    ........
-    ........
-    C.......
-    D.......
-    C.......
-    D.......
-    ........
-    .......D
-liquid @7 clear_cel = 5,17 26,28 .
-bubbles @7 clear_cel = 11,20 16,28 .
-liquid @7 grid 5,17 = 5,17 22x12
-    ..DDDDD...........DDD.
-    DDEEEEEDDD.....DDDEEED
-    EEEEEEEEEEDDDDDEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @7 grid 14,20 = 14,20 7x9
-    C......
-    D......
-    C......
-    D......
-    ......C
-    ......D
-    .......
-    .......
-    D......
-liquid @8 clear_cel = 5,17 26,28 .
-bubbles @8 clear_cel = 11,20 16,28 .
-liquid @8 grid 5,17 = 5,17 22x12
-    .DDDD...........DDDDD.
-    DEEEEDDD.....DDDEEEEED
-    EEEEEEEEDDDDDEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @8 grid 14,20 = 14,20 6x8
-    DDD...
-    ..C...
-    ..D...
-    .....C
-    .....D
-    ......
-    ......
-    D.....
-liquid @9 clear_cel = 5,17 26,28 .
-bubbles @9 clear_cel = 11,20 16,28 .
-liquid @9 grid 5,17 = 5,17 22x12
-    .DDD..........DDDDDD..
-    DEEEDD......DDEEEEEEDD
-    EEEEEEDDDDDDEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    EEEEEEEEEEEEEEEEEEEEEF
-    .EEEEEEEEEEEEEEEEEEEF.
-    .EEEEEEEEEEEEEEEEEEEF.
-    ..EEEEEEEEEEEEEEEEEF..
-    ....EEEEEEEEEEEEEF....
-    ......FFFFFFFFFF......
-    ........FFFFFF........
-bubbles @9 grid 12,17 = 12,17 7x10
-    .....C.
-    ....C.C
-    .......
-    ....C..
-    ....D..
-    ......C
-    ......D
-    .......
-    .......
-    D......
+layer op=rename index=0 name=liquid
+layer op=add name=bubbles
+layer op=add name=glass
+layer op=add name=shine
+layer op=add name=cork
+palette op=set colors=#241433,#f2f0ff,#b83dd6,#7a1fa6,#e58ff0,#b9793f
+paint_grid layer=2 frame=0 x=4 y=6 legend=o:0 rows:24
+  |.........oooooo.........|
+  |.........oooooo.........|
+  |.........oooooo.........|
+  |.........oooooo.........|
+  |.........oooooo.........|
+  |........oooooooo........|
+  |......oooooooooooo......|
+  |....oooooooooooooooo....|
+  |...oooooooooooooooooo...|
+  |..oooooooooooooooooooo..|
+  |.oooooooooooooooooooooo.|
+  |.oooooooooooooooooooooo.|
+  |oooooooooooooooooooooooo|
+  |oooooooooooooooooooooooo|
+  |oooooooooooooooooooooooo|
+  |oooooooooooooooooooooooo|
+  |oooooooooooooooooooooooo|
+  |.oooooooooooooooooooooo.|
+  |.oooooooooooooooooooooo.|
+  |..oooooooooooooooooooo..|
+  |...oooooooooooooooooo...|
+  |.....oooooooooooooo.....|
+  |.......oooooooooo.......|
+  |.........oooooo.........|
+paint_grid layer=4 frame=0 x=12 y=2 legend=o:0 rows:4
+  |..oooo..|
+  |.oooooo.|
+  |oooooooo|
+  |oooooooo|
+draw op=clear_cel layer=2 frame=0
+draw op=clear_cel layer=4 frame=0
+paint_grid layer=2 frame=0 x=4 y=6 legend=o:0 rows:24
+  |.........oooooo.........|
+  |.........o....o.........|
+  |.........o....o.........|
+  |.........o....o.........|
+  |.........o....o.........|
+  |........o......o........|
+  |......oo........oo......|
+  |....oo............oo....|
+  |...o................o...|
+  |..o..................o..|
+  |.o....................o.|
+  |.o....................o.|
+  |o......................o|
+  |o......................o|
+  |o......................o|
+  |o......................o|
+  |o......................o|
+  |.o....................o.|
+  |.o....................o.|
+  |..o..................o..|
+  |...oo..............oo...|
+  |.....oo..........oo.....|
+  |.......oo......oo.......|
+  |.........oooooo.........|
+paint_grid layer=4 frame=0 x=12 y=2 legend=c:5,n:0,o:0 rows:4
+  |..oooo..|
+  |.ocnnco.|
+  |occcccco|
+  |oooooooo|
+paint_grid layer=3 frame=0 x=5 y=7 legend=s:1 rows:13
+  |.........s|
+  |.........s|
+  |.........s|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..........|
+  |..s.......|
+  |.s........|
+  |.s........|
+  |s.........|
+  |s.........|
+paint_grid layer=0 frame=0 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |.l...........lllll....|
+  |lblll.....lllbbbbblll.|
+  |bbbbblllllbbbbbbbbbbbl|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=0 x=11 y=20 legend=l:4,s:1 rows:9
+  |...lll|
+  |.....s|
+  |.....l|
+  |......|
+  |s.....|
+  |l.....|
+  |......|
+  |......|
+  |....l.|
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=0 frame=1
+draw op=clear_cel layer=1 frame=1
+paint_grid layer=0 frame=1 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |...........llllll.....|
+  |lll......llbbbbbbll...|
+  |bbbllllllbbbbbbbbbblll|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=1 x=10 y=17 legend=l:4,s:1 rows:11
+  |....s..|
+  |...s.s.|
+  |.......|
+  |......s|
+  |......l|
+  |.......|
+  |s......|
+  |l......|
+  |.......|
+  |.......|
+  |......l|
+draw op=clear_cel layer=0 frame=2
+draw op=clear_cel layer=1 frame=2
+paint_grid layer=0 frame=2 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |..........lllll.......|
+  |ll.....lllbbbbblll....|
+  |bblllllbbbbbbbbbbbllll|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=2 x=10 y=20 legend=l:4,s:1 rows:9
+  |......lll|
+  |.........|
+  |s........|
+  |l........|
+  |.........|
+  |.........|
+  |.......l.|
+  |.........|
+  |.....l...|
+draw op=clear_cel layer=0 frame=3
+draw op=clear_cel layer=1 frame=3
+paint_grid layer=0 frame=3 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |........lllll.........|
+  |.....lllbbbbblll.....l|
+  |lllllbbbbbbbbbbbllllld|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=3 x=12 y=17 legend=l:4,s:1 rows:11
+  |......s.|
+  |.....s.s|
+  |........|
+  |........|
+  |s.......|
+  |l.......|
+  |........|
+  |....s...|
+  |....l...|
+  |........|
+  |..l.....|
+draw op=clear_cel layer=0 frame=4
+draw op=clear_cel layer=1 frame=4
+paint_grid layer=0 frame=4 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |......llllll..........|
+  |....llbbbbbbll......ll|
+  |llllbbbbbbbbbbllllllbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=4 x=12 y=20 legend=l:4,s:1 rows:9
+  |.s....|
+  |.l....|
+  |......|
+  |...s..|
+  |...l..|
+  |......|
+  |l.....|
+  |......|
+  |.....l|
+draw op=clear_cel layer=0 frame=5
+draw op=clear_cel layer=1 frame=5
+paint_grid layer=0 frame=5 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |.....lllll............|
+  |..lllbbbbblll.....llll|
+  |llbbbbbbbbbbblllllbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=5 x=12 y=20 legend=l:4,s:1 rows:8
+  |.lll...|
+  |.......|
+  |.s.....|
+  |.l.....|
+  |s......|
+  |l......|
+  |.......|
+  |......l|
+draw op=clear_cel layer=0 frame=6
+draw op=clear_cel layer=1 frame=6
+paint_grid layer=0 frame=6 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |...llllll..........ll.|
+  |.llbbbbbbll......llbbl|
+  |lbbbbbbbbbbllllllbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=6 x=13 y=17 legend=l:4,s:1 rows:10
+  |.s......|
+  |s.s.....|
+  |........|
+  |........|
+  |s.......|
+  |l.......|
+  |s.......|
+  |l.......|
+  |........|
+  |.......l|
+draw op=clear_cel layer=0 frame=7
+draw op=clear_cel layer=1 frame=7
+paint_grid layer=0 frame=7 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |..lllll...........lll.|
+  |llbbbbblll.....lllbbbl|
+  |bbbbbbbbbblllllbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=7 x=14 y=20 legend=l:4,s:1 rows:9
+  |s......|
+  |l......|
+  |s......|
+  |l......|
+  |......s|
+  |......l|
+  |.......|
+  |.......|
+  |l......|
+draw op=clear_cel layer=0 frame=8
+draw op=clear_cel layer=1 frame=8
+paint_grid layer=0 frame=8 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |.llll...........lllll.|
+  |lbbbblll.....lllbbbbbl|
+  |bbbbbbbblllllbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=8 x=14 y=20 legend=l:4,s:1 rows:8
+  |lll...|
+  |..s...|
+  |..l...|
+  |.....s|
+  |.....l|
+  |......|
+  |......|
+  |l.....|
+draw op=clear_cel layer=0 frame=9
+draw op=clear_cel layer=1 frame=9
+paint_grid layer=0 frame=9 x=5 y=17 legend=b:2,d:3,l:4 rows:12
+  |.lll..........llllll..|
+  |lbbbll......llbbbbbbll|
+  |bbbbbbllllllbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |bbbbbbbbbbbbbbbbbbbbbd|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |.bbbbbbbbbbbbbbbbbbbd.|
+  |..bbbbbbbbbbbbbbbbbd..|
+  |....bbbbbbbbbbbbbd....|
+  |......dddddddddd......|
+  |........dddddd........|
+paint_grid layer=1 frame=9 x=12 y=17 legend=l:4,s:1 rows:10
+  |.....s.|
+  |....s.s|
+  |.......|
+  |....s..|
+  |....l..|
+  |......s|
+  |......l|
+  |.......|
+  |.......|
+  |l......|
 add_tag name=bubbling direction=forward from=0 to=9

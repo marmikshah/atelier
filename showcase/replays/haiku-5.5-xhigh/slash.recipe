@@ -1,527 +1,547 @@
-atelier 5 439e2374-bbc2-4e5c-9b91-2837b87444c8 0.1.0
+atelier 4 439e2374-bbc2-4e5c-9b91-2837b87444c8 0.1.0
 new name=slash_arc width=32 height=32
-layer add name=x
-palette set colors=#2b1d4f,#4f7fff,#8ff0ff,#ffffff,#ffd23f,#ff6a1f
-"Layer 1" @0 grid 0,1 ~
-"Layer 1" @0 grid 1,0 = 1,0 1,0 #ffd23f
-layer delete index=1
-layer rename index=0 name=shade
-shade @0 clear 0,0 32,32 = 1,0 1,0 .
-frame add count=9 duration_ms=100
-layer add name=body
-layer add name=core
-layer add name=hot
-layer add name=impact
-shade @0 grid 5,4 = 5,4 7,4 #2b1d4f
-legend A=#4f7fff B=#8ff0ff
-body @0 grid 5,5 = 5,5 3x1
-    ABB
-hot @0 grid 8,5 = 8,5 8,5 #ffd23f
-legend C=#2b1d4f
-shade @1 grid 6,4 = 6,4 7x2
-    CCCC...
-    ......C
-body @1 grid 5,5 = 5,5 9x3
-    AAAAABB..
-    ...ABBBBB
-    .......B.
-legend D=#ffffff
-core @1 grid 10,5 = 10,5 3x2
-    D..
-    .DD
-hot @1 grid 13,7 = 13,7 14,7 #ffd23f
-shade @2 grid 12,5 = 12,5 7x4
-    CC.....
-    ..CC...
-    ....C..
-    ......C
-body @2 grid 8,5 = 8,5 11x5
-    AAAA.......
-    .AAAAA.....
-    ...AAABB...
-    .....BBBBB.
-    .......BBBB
-core @2 grid 14,7 = 14,7 5x3
-    DD...
-    ..D..
-    ...DD
-hot @2 grid 18,10 = 18,10 19,10 #ffd23f
-shade @3 grid 14,6 = 14,6 9x7
-    CC.......
-    ..CC.....
-    ....CC...
-    .....CC..
-    .......C.
-    .......C.
-    ........C
-body @3 grid 11,6 = 11,6 12x9
-    AAA.........
-    .AAAA.......
-    ...AAAA.....
-    ....AAAB....
-    .....ABBBB..
-    .......BBB..
-    ........BBB.
-    .........BBB
-    ..........B.
-core @3 grid 18,9 = 18,9 5x5
-    D....
-    DD...
-    .DD..
-    ...D.
-    ...DD
-legend E=#ffd23f
-hot @3 grid 22,13 = 22,13 2x3
-    .E
-    EE
-    EE
-shade @4 grid 15,7 = 15,7 12x12
-    CC..........
-    ...C........
-    ....CC......
-    ......C.....
-    .......C....
-    ........C...
-    ........CC..
-    .........C..
-    ..........C.
-    ..........C.
-    ............
-    ...........C
-body @4 grid 15,8 = 15,8 11x12
-    AAA........
-    .AAA.......
-    ..AAAA.....
-    ...AAAA....
-    ....AAAB...
-    .....ABB...
-    .....BBBB..
-    ......BBBB.
-    .......BBB.
-    ........BBB
-    ........BBB
-    .........B.
-core @4 grid 21,13 = 21,13 5x6
-    DD...
-    .DD..
-    ..D..
-    ..DD.
-    ...D.
-    ....D
-hot @4 grid 25,19 = 25,19 26,21 #ffd23f
-legend F=#ff6a1f
-impact @4 grid 25,26 = 25,26 3x3
-    F..
-    .E.
-    ..F
-shade @5 grid 20,10 = 20,10 9x15
-    C........
-    .CC......
-    ...C.....
-    ...CC....
-    ....CC...
-    .....C...
-    ......C..
-    ......C..
-    ......CC.
-    .......C.
-    .......C.
-    .......C.
-    ........C
-    ........C
-    ........C
-body @5 grid 19,10 = 19,10 9x15
-    A........
-    AA.......
-    AAAA.....
-    .AAA.....
-    .AAAA....
-    ..AAAA...
-    ..AAAAA..
-    ...AABB..
-    ...BBBB..
-    ....BBBB.
-    ....BBBB.
-    .....BBB.
-    .....BBBB
-    ......BBB
-    ......BBB
-core @5 grid 24,17 = 24,17 3x8
-    DD.
-    DD.
-    .D.
-    .DD
-    .DD
-    ..D
-    ..D
-    ..D
-hot @5 grid 25,25 = 25,25 3x3
-    EEE
-    .EE
-    .EE
-impact @5 grid 22,23 = 22,23 9x9
-    ....F....
-    ....E....
-    ..F.E.F..
-    ...DDD...
-    FEEDDDEEF
-    ...DDD...
-    ..F.E.F..
-    ....E....
-    ....F....
-shade @6 grid 23,14 = 23,14 6x11
-    C.....
-    .C....
-    ..C...
-    ...C..
-    ...CC.
-    ....C.
-    ....C.
-    ....C.
-    .....C
-    .....C
-    .....C
-body @6 grid 22,14 = 22,14 6x12
-    A.....
-    AA....
-    AAA...
-    .AAA..
-    .AAA..
-    .AAAA.
-    ..BBB.
-    ..BBB.
-    ..BBBB
-    ...BBB
-    ...BBB
-    ...BB.
-core @6 grid 25,20 = 25,20 2x6
-    DD
-    DD
-    .D
-    .D
-    .D
-    .D
-hot @6 grid 26,25 = 26,25 2x2
-    .E
-    EE
-impact @6 grid 24,25 = 24,25 5x5
-    ..F..
-    ..E..
-    FEDEF
-    ..E..
-    ..F..
-shade @7 grid 26,20 = 26,20 2x4
-    C.
-    .C
-    .C
-    .C
-body @7 grid 25,19 = 25,19 3x7
-    A..
-    A..
-    AA.
-    AA.
-    BB.
-    BBB
-    .BB
-core @7 grid 26,23 = 26,23 26,25 #ffffff
-hot @7 grid 26,26 = 26,26 27,26 #ffd23f
-impact @7 grid 25,26 = 25,26 3x3
-    .F.
-    FEF
-    .F.
-shade @8 grid 27,25 = 27,25 27,26 #2b1d4f
-body @8 grid 26,24 = 26,24 1x3
-    A
-    A
-    B
-shade @0 clear 0,0 32,32 = 5,4 7,4 .
-body @0 clear 0,0 32,32 = 5,5 7,5 .
-core @0 clear 0,0 32,32 ~
-hot @0 clear 0,0 32,32 = 8,5 8,5 .
-impact @0 clear 0,0 32,32 ~
-shade @1 clear 0,0 32,32 = 6,4 12,5 .
-body @1 clear 0,0 32,32 = 5,5 13,7 .
-core @1 clear 0,0 32,32 = 10,5 12,6 .
-hot @1 clear 0,0 32,32 = 13,7 14,7 .
-impact @1 clear 0,0 32,32 ~
-shade @2 clear 0,0 32,32 = 12,5 18,8 .
-body @2 clear 0,0 32,32 = 8,5 18,9 .
-core @2 clear 0,0 32,32 = 14,7 18,9 .
-hot @2 clear 0,0 32,32 = 18,10 19,10 .
-impact @2 clear 0,0 32,32 ~
-shade @3 clear 0,0 32,32 = 14,6 22,12 .
-body @3 clear 0,0 32,32 = 11,6 22,14 .
-core @3 clear 0,0 32,32 = 18,9 22,13 .
-hot @3 clear 0,0 32,32 = 22,13 23,15 .
-impact @3 clear 0,0 32,32 ~
-shade @4 clear 0,0 32,32 = 15,7 26,18 .
-body @4 clear 0,0 32,32 = 15,8 25,19 .
-core @4 clear 0,0 32,32 = 21,13 25,18 .
-hot @4 clear 0,0 32,32 = 25,19 26,21 .
-impact @4 clear 0,0 32,32 = 25,26 27,28 .
-shade @5 clear 0,0 32,32 = 20,10 28,24 .
-body @5 clear 0,0 32,32 = 19,10 27,24 .
-core @5 clear 0,0 32,32 = 24,17 26,24 .
-hot @5 clear 0,0 32,32 = 25,25 27,27 .
-impact @5 clear 0,0 32,32 = 22,23 30,31 .
-shade @6 clear 0,0 32,32 = 23,14 28,24 .
-body @6 clear 0,0 32,32 = 22,14 27,25 .
-core @6 clear 0,0 32,32 = 25,20 26,25 .
-hot @6 clear 0,0 32,32 = 26,25 27,26 .
-impact @6 clear 0,0 32,32 = 24,25 28,29 .
-shade @7 clear 0,0 32,32 = 26,20 27,23 .
-body @7 clear 0,0 32,32 = 25,19 27,25 .
-core @7 clear 0,0 32,32 = 26,23 26,25 .
-hot @7 clear 0,0 32,32 = 26,26 27,26 .
-impact @7 clear 0,0 32,32 = 25,26 27,28 .
-shade @8 clear 0,0 32,32 = 27,25 27,26 .
-body @8 clear 0,0 32,32 = 26,24 26,26 .
-core @8 clear 0,0 32,32 ~
-hot @8 clear 0,0 32,32 ~
-impact @8 clear 0,0 32,32 ~
-shade @9 clear 0,0 32,32 ~
-body @9 clear 0,0 32,32 ~
-core @9 clear 0,0 32,32 ~
-hot @9 clear 0,0 32,32 ~
-impact @9 clear 0,0 32,32 ~
-shade @0 grid 5,4 = 5,4 7,4 #2b1d4f
-body @0 grid 5,5 = 5,5 3x1
-    ABB
-hot @0 grid 8,5 = 8,5 8,5 #ffd23f
-shade @1 grid 6,4 = 6,4 7x2
-    CCCC...
-    ......C
-body @1 grid 5,5 = 5,5 9x3
-    AAAAABB..
-    ...AABBBB
-    .......BB
-core @1 grid 10,5 = 10,5 3x2
-    D..
-    .DD
-hot @1 grid 14,6 = 14,6 14,7 #ffd23f
-shade @2 grid 12,5 = 12,5 8x5
-    CC......
-    ...C....
-    ....CC..
-    ......C.
-    .......C
-body @2 grid 8,5 = 8,5 12x6
-    AAAA........
-    .AAAAAA.....
-    ...AAAAB....
-    .....ABBBB..
-    .......BBBB.
-    .........BBB
-core @2 grid 15,7 = 15,7 5x4
-    D....
-    .D...
-    ..DD.
-    ....D
-hot @2 grid 19,10 = 19,10 3x3
-    .E.
-    EE.
-    .EE
-shade @3 grid 14,6 = 14,6 11x10
-    CC.........
-    ...C.......
-    ....CC.....
-    ......C....
-    .......C...
-    ........C..
-    .........C.
-    .........C.
-    ..........C
-    ..........C
-body @3 grid 12,6 = 12,6 13x11
-    AA...........
-    .AAAA........
-    ..AAAA.......
-    ...AAAAA.....
-    ....AAAAB....
-    .....AABBB...
-    ......BBBBB..
-    .......BBBB..
-    ........BBBB.
-    .........BBB.
-    ..........BBB
-core @3 grid 19,11 = 19,11 6x6
-    DD....
-    .DD...
-    ..DD..
-    ...DD.
-    ....D.
-    .....D
-hot @3 grid 23,16 = 23,16 3x3
-    ..E
-    EEE
-    .EE
-shade @4 grid 17,8 = 17,8 11x15
-    CC.........
-    ..CC.......
-    ....C......
-    .....C.....
-    ......C....
-    .......C...
-    .......CC..
-    ........C..
-    .........C.
-    .........C.
-    .........CC
-    ..........C
-    ..........C
-    ..........C
-    ..........C
-body @4 grid 16,9 = 16,9 12x16
-    AAA.........
-    .AAAA.......
-    ..AAAA......
-    ...AAAA.....
-    ...AAAAA....
-    ....AAAA....
-    .....AAAB...
-    .....ABBBB..
-    ......BBBB..
-    ......BBBB..
-    .......BBBB.
-    .......BBBB.
-    ........BBB.
-    ........BBB.
-    .........BBB
-    .........B..
-core @4 grid 23,15 = 23,15 4x9
-    .D..
-    DD..
-    .DD.
-    .DD.
-    ..D.
-    ..DD
-    ..DD
-    ...D
-    ...D
-hot @4 grid 25,24 = 25,24 3x4
-    .EE
-    EEE
-    .EE
-    .EE
-impact @4 grid 25,26 = 25,26 3x3
-    FEF
-    EDE
-    FEF
-shade @5 grid 21,11 = 21,11 8x14
-    CC......
-    ..C.....
-    ...C....
-    ...CC...
-    ....CC..
-    .....C..
-    .....CC.
-    ......C.
-    ......CC
-    ......CC
-    .......C
-    .......C
-    .......C
-    .......C
-body @5 grid 20,11 = 20,11 8x14
-    A.......
-    AAA.....
-    AAAA....
-    AAAA....
-    .AAAA...
-    .AAAAA..
-    .AAAAB..
-    ..ABBBB.
-    ..BBBBB.
-    ...BBBB.
-    ...BBBBB
-    ....BBBB
-    ....BBBB
-    .....BBB
-core @5 grid 24,17 = 24,17 4x8
-    .D..
-    DD..
-    DDD.
-    .DD.
-    .DD.
-    ..D.
-    ..D.
-    ..DD
-hot @5 grid 25,25 = 25,25 4x3
-    EEEE
-    .EE.
-    .EE.
-impact @5 grid 22,23 = 22,23 9x9
-    ....F....
-    ....E....
-    ..F.E.F..
-    ...DDD...
-    FEEDDDEEF
-    ...DDD...
-    ..F.E.F..
-    ....E....
-    ....F....
-shade @6 grid 24,15 = 24,15 5x10
-    C....
-    .C...
-    ..C..
-    ..CC.
-    ...C.
-    ...C.
-    ...CC
-    ....C
-    ....C
-    ....C
-body @6 grid 23,15 = 23,15 5x11
-    A....
-    AA...
-    AAA..
-    AAA..
-    AAAA.
-    AABB.
-    .BBB.
-    .BBBB
-    .BBBB
-    ..BBB
-    ..BBB
-core @6 grid 25,20 = 25,20 2x6
-    DD
-    DD
-    .D
-    .D
-    .D
-    .D
-hot @6 grid 26,25 = 26,25 3x3
-    ..E
-    EE.
-    EE.
-impact @6 grid 24,25 = 24,25 5x5
-    ..F..
-    ..E..
-    FEDEF
-    ..E..
-    ..F..
-shade @7 grid 26,19 = 26,19 2x4
-    C.
-    ..
-    .C
-    .C
-body @7 grid 25,19 = 25,19 3x7
-    A..
-    AA.
-    AA.
-    AA.
-    BBB
-    BBB
-    BBB
-core @7 grid 26,23 = 26,23 26,25 #ffffff
-hot @7 grid 26,26 = 26,26 27,26 #ffd23f
-impact @7 grid 25,26 = 25,26 3x3
-    .F.
-    FEF
-    .F.
-shade @8 grid 27,24 = 27,24 27,26 #2b1d4f
-body @8 grid 26,24 = 26,24 1x3
-    A
-    A
-    B
+layer op=add name=x
+palette op=set colors=#2b1d4f,#4f7fff,#8ff0ff,#ffffff,#ffd23f,#ff6a1f
+paint_grid layer=0 frame=0 x=0 y=1 legend={} rows:0
+paint_grid layer=0 frame=0 x=1 y=0 legend=2:4 rows:1
+  |2|
+layer op=delete index=1
+layer op=rename index=0 name=shade
+region op=clear layer=0 frame=0 rect=0,0,32,32
+frame op=add count=9 duration_ms=100
+layer op=add name=body
+layer op=add name=core
+layer op=add name=hot
+layer op=add name=impact
+paint_grid layer=0 frame=0 x=5 y=4 legend=0:0 rows:1
+  |000|
+paint_grid layer=1 frame=0 x=5 y=5 legend=1:1,2:2 rows:1
+  |122|
+paint_grid layer=3 frame=0 x=8 y=5 legend=4:4 rows:1
+  |4|
+paint_grid layer=0 frame=1 x=6 y=4 legend=0:0 rows:2
+  |0000...|
+  |......0|
+paint_grid layer=1 frame=1 x=5 y=5 legend=1:1,2:2 rows:3
+  |1111122..|
+  |...122222|
+  |.......2.|
+paint_grid layer=2 frame=1 x=10 y=5 legend=3:3 rows:2
+  |3..|
+  |.33|
+paint_grid layer=3 frame=1 x=13 y=7 legend=4:4 rows:1
+  |44|
+paint_grid layer=0 frame=2 x=12 y=5 legend=0:0 rows:4
+  |00.....|
+  |..00...|
+  |....0..|
+  |......0|
+paint_grid layer=1 frame=2 x=8 y=5 legend=1:1,2:2 rows:5
+  |1111.......|
+  |.11111.....|
+  |...11122...|
+  |.....22222.|
+  |.......2222|
+paint_grid layer=2 frame=2 x=14 y=7 legend=3:3 rows:3
+  |33...|
+  |..3..|
+  |...33|
+paint_grid layer=3 frame=2 x=18 y=10 legend=4:4 rows:1
+  |44|
+paint_grid layer=0 frame=3 x=14 y=6 legend=0:0 rows:7
+  |00.......|
+  |..00.....|
+  |....00...|
+  |.....00..|
+  |.......0.|
+  |.......0.|
+  |........0|
+paint_grid layer=1 frame=3 x=11 y=6 legend=1:1,2:2 rows:9
+  |111.........|
+  |.1111.......|
+  |...1111.....|
+  |....1112....|
+  |.....12222..|
+  |.......222..|
+  |........222.|
+  |.........222|
+  |..........2.|
+paint_grid layer=2 frame=3 x=18 y=9 legend=3:3 rows:5
+  |3....|
+  |33...|
+  |.33..|
+  |...3.|
+  |...33|
+paint_grid layer=3 frame=3 x=22 y=13 legend=4:4 rows:3
+  |.4|
+  |44|
+  |44|
+paint_grid layer=0 frame=4 x=15 y=7 legend=0:0 rows:12
+  |00..........|
+  |...0........|
+  |....00......|
+  |......0.....|
+  |.......0....|
+  |........0...|
+  |........00..|
+  |.........0..|
+  |..........0.|
+  |..........0.|
+  |............|
+  |...........0|
+paint_grid layer=1 frame=4 x=15 y=8 legend=1:1,2:2 rows:12
+  |111........|
+  |.111.......|
+  |..1111.....|
+  |...1111....|
+  |....1112...|
+  |.....122...|
+  |.....2222..|
+  |......2222.|
+  |.......222.|
+  |........222|
+  |........222|
+  |.........2.|
+paint_grid layer=2 frame=4 x=21 y=13 legend=3:3 rows:6
+  |33...|
+  |.33..|
+  |..3..|
+  |..33.|
+  |...3.|
+  |....3|
+paint_grid layer=3 frame=4 x=25 y=19 legend=4:4 rows:3
+  |44|
+  |44|
+  |44|
+paint_grid layer=4 frame=4 x=25 y=26 legend=4:4,5:5 rows:3
+  |5..|
+  |.4.|
+  |..5|
+paint_grid layer=0 frame=5 x=20 y=10 legend=0:0 rows:15
+  |0........|
+  |.00......|
+  |...0.....|
+  |...00....|
+  |....00...|
+  |.....0...|
+  |......0..|
+  |......0..|
+  |......00.|
+  |.......0.|
+  |.......0.|
+  |.......0.|
+  |........0|
+  |........0|
+  |........0|
+paint_grid layer=1 frame=5 x=19 y=10 legend=1:1,2:2 rows:15
+  |1........|
+  |11.......|
+  |1111.....|
+  |.111.....|
+  |.1111....|
+  |..1111...|
+  |..11111..|
+  |...1122..|
+  |...2222..|
+  |....2222.|
+  |....2222.|
+  |.....222.|
+  |.....2222|
+  |......222|
+  |......222|
+paint_grid layer=2 frame=5 x=24 y=17 legend=3:3 rows:8
+  |33.|
+  |33.|
+  |.3.|
+  |.33|
+  |.33|
+  |..3|
+  |..3|
+  |..3|
+paint_grid layer=3 frame=5 x=25 y=25 legend=4:4 rows:3
+  |444|
+  |.44|
+  |.44|
+paint_grid layer=4 frame=5 x=22 y=23 legend=3:3,4:4,5:5 rows:9
+  |....5....|
+  |....4....|
+  |..5.4.5..|
+  |...333...|
+  |544333445|
+  |...333...|
+  |..5.4.5..|
+  |....4....|
+  |....5....|
+paint_grid layer=0 frame=6 x=23 y=14 legend=0:0 rows:11
+  |0.....|
+  |.0....|
+  |..0...|
+  |...0..|
+  |...00.|
+  |....0.|
+  |....0.|
+  |....0.|
+  |.....0|
+  |.....0|
+  |.....0|
+paint_grid layer=1 frame=6 x=22 y=14 legend=1:1,2:2 rows:12
+  |1.....|
+  |11....|
+  |111...|
+  |.111..|
+  |.111..|
+  |.1111.|
+  |..222.|
+  |..222.|
+  |..2222|
+  |...222|
+  |...222|
+  |...22.|
+paint_grid layer=2 frame=6 x=25 y=20 legend=3:3 rows:6
+  |33|
+  |33|
+  |.3|
+  |.3|
+  |.3|
+  |.3|
+paint_grid layer=3 frame=6 x=26 y=25 legend=4:4 rows:2
+  |.4|
+  |44|
+paint_grid layer=4 frame=6 x=24 y=25 legend=3:3,4:4,5:5 rows:5
+  |..5..|
+  |..4..|
+  |54345|
+  |..4..|
+  |..5..|
+paint_grid layer=0 frame=7 x=26 y=20 legend=0:0 rows:4
+  |0.|
+  |.0|
+  |.0|
+  |.0|
+paint_grid layer=1 frame=7 x=25 y=19 legend=1:1,2:2 rows:7
+  |1..|
+  |1..|
+  |11.|
+  |11.|
+  |22.|
+  |222|
+  |.22|
+paint_grid layer=2 frame=7 x=26 y=23 legend=3:3 rows:3
+  |3|
+  |3|
+  |3|
+paint_grid layer=3 frame=7 x=26 y=26 legend=4:4 rows:1
+  |44|
+paint_grid layer=4 frame=7 x=25 y=26 legend=4:4,5:5 rows:3
+  |.5.|
+  |545|
+  |.5.|
+paint_grid layer=0 frame=8 x=27 y=25 legend=0:0 rows:2
+  |0|
+  |0|
+paint_grid layer=1 frame=8 x=26 y=24 legend=1:1,2:2 rows:3
+  |1|
+  |1|
+  |2|
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+region op=clear layer=3 frame=0 rect=0,0,32,32
+region op=clear layer=4 frame=0 rect=0,0,32,32
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+region op=clear layer=3 frame=1 rect=0,0,32,32
+region op=clear layer=4 frame=1 rect=0,0,32,32
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+region op=clear layer=3 frame=2 rect=0,0,32,32
+region op=clear layer=4 frame=2 rect=0,0,32,32
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+region op=clear layer=3 frame=3 rect=0,0,32,32
+region op=clear layer=4 frame=3 rect=0,0,32,32
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+region op=clear layer=3 frame=4 rect=0,0,32,32
+region op=clear layer=4 frame=4 rect=0,0,32,32
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+region op=clear layer=3 frame=5 rect=0,0,32,32
+region op=clear layer=4 frame=5 rect=0,0,32,32
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+region op=clear layer=3 frame=6 rect=0,0,32,32
+region op=clear layer=4 frame=6 rect=0,0,32,32
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+region op=clear layer=3 frame=7 rect=0,0,32,32
+region op=clear layer=4 frame=7 rect=0,0,32,32
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+region op=clear layer=3 frame=8 rect=0,0,32,32
+region op=clear layer=4 frame=8 rect=0,0,32,32
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+region op=clear layer=3 frame=9 rect=0,0,32,32
+region op=clear layer=4 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=5 y=4 legend=0:0 rows:1
+  |000|
+paint_grid layer=1 frame=0 x=5 y=5 legend=1:1,2:2 rows:1
+  |122|
+paint_grid layer=3 frame=0 x=8 y=5 legend=4:4 rows:1
+  |4|
+paint_grid layer=0 frame=1 x=6 y=4 legend=0:0 rows:2
+  |0000...|
+  |......0|
+paint_grid layer=1 frame=1 x=5 y=5 legend=1:1,2:2 rows:3
+  |1111122..|
+  |...112222|
+  |.......22|
+paint_grid layer=2 frame=1 x=10 y=5 legend=3:3 rows:2
+  |3..|
+  |.33|
+paint_grid layer=3 frame=1 x=14 y=6 legend=4:4 rows:2
+  |4|
+  |4|
+paint_grid layer=0 frame=2 x=12 y=5 legend=0:0 rows:5
+  |00......|
+  |...0....|
+  |....00..|
+  |......0.|
+  |.......0|
+paint_grid layer=1 frame=2 x=8 y=5 legend=1:1,2:2 rows:6
+  |1111........|
+  |.111111.....|
+  |...11112....|
+  |.....12222..|
+  |.......2222.|
+  |.........222|
+paint_grid layer=2 frame=2 x=15 y=7 legend=3:3 rows:4
+  |3....|
+  |.3...|
+  |..33.|
+  |....3|
+paint_grid layer=3 frame=2 x=19 y=10 legend=4:4 rows:3
+  |.4.|
+  |44.|
+  |.44|
+paint_grid layer=0 frame=3 x=14 y=6 legend=0:0 rows:10
+  |00.........|
+  |...0.......|
+  |....00.....|
+  |......0....|
+  |.......0...|
+  |........0..|
+  |.........0.|
+  |.........0.|
+  |..........0|
+  |..........0|
+paint_grid layer=1 frame=3 x=12 y=6 legend=1:1,2:2 rows:11
+  |11...........|
+  |.1111........|
+  |..1111.......|
+  |...11111.....|
+  |....11112....|
+  |.....11222...|
+  |......22222..|
+  |.......2222..|
+  |........2222.|
+  |.........222.|
+  |..........222|
+paint_grid layer=2 frame=3 x=19 y=11 legend=3:3 rows:6
+  |33....|
+  |.33...|
+  |..33..|
+  |...33.|
+  |....3.|
+  |.....3|
+paint_grid layer=3 frame=3 x=23 y=16 legend=4:4 rows:3
+  |..4|
+  |444|
+  |.44|
+paint_grid layer=0 frame=4 x=17 y=8 legend=0:0 rows:15
+  |00.........|
+  |..00.......|
+  |....0......|
+  |.....0.....|
+  |......0....|
+  |.......0...|
+  |.......00..|
+  |........0..|
+  |.........0.|
+  |.........0.|
+  |.........00|
+  |..........0|
+  |..........0|
+  |..........0|
+  |..........0|
+paint_grid layer=1 frame=4 x=16 y=9 legend=1:1,2:2 rows:16
+  |111.........|
+  |.1111.......|
+  |..1111......|
+  |...1111.....|
+  |...11111....|
+  |....1111....|
+  |.....1112...|
+  |.....12222..|
+  |......2222..|
+  |......2222..|
+  |.......2222.|
+  |.......2222.|
+  |........222.|
+  |........222.|
+  |.........222|
+  |.........2..|
+paint_grid layer=2 frame=4 x=23 y=15 legend=3:3 rows:9
+  |.3..|
+  |33..|
+  |.33.|
+  |.33.|
+  |..3.|
+  |..33|
+  |..33|
+  |...3|
+  |...3|
+paint_grid layer=3 frame=4 x=25 y=24 legend=4:4 rows:4
+  |.44|
+  |444|
+  |.44|
+  |.44|
+paint_grid layer=4 frame=4 x=25 y=26 legend=3:3,4:4,5:5 rows:3
+  |545|
+  |434|
+  |545|
+paint_grid layer=0 frame=5 x=21 y=11 legend=0:0 rows:14
+  |00......|
+  |..0.....|
+  |...0....|
+  |...00...|
+  |....00..|
+  |.....0..|
+  |.....00.|
+  |......0.|
+  |......00|
+  |......00|
+  |.......0|
+  |.......0|
+  |.......0|
+  |.......0|
+paint_grid layer=1 frame=5 x=20 y=11 legend=1:1,2:2 rows:14
+  |1.......|
+  |111.....|
+  |1111....|
+  |1111....|
+  |.1111...|
+  |.11111..|
+  |.11112..|
+  |..12222.|
+  |..22222.|
+  |...2222.|
+  |...22222|
+  |....2222|
+  |....2222|
+  |.....222|
+paint_grid layer=2 frame=5 x=24 y=17 legend=3:3 rows:8
+  |.3..|
+  |33..|
+  |333.|
+  |.33.|
+  |.33.|
+  |..3.|
+  |..3.|
+  |..33|
+paint_grid layer=3 frame=5 x=25 y=25 legend=4:4 rows:3
+  |4444|
+  |.44.|
+  |.44.|
+paint_grid layer=4 frame=5 x=22 y=23 legend=3:3,4:4,5:5 rows:9
+  |....5....|
+  |....4....|
+  |..5.4.5..|
+  |...333...|
+  |544333445|
+  |...333...|
+  |..5.4.5..|
+  |....4....|
+  |....5....|
+paint_grid layer=0 frame=6 x=24 y=15 legend=0:0 rows:10
+  |0....|
+  |.0...|
+  |..0..|
+  |..00.|
+  |...0.|
+  |...0.|
+  |...00|
+  |....0|
+  |....0|
+  |....0|
+paint_grid layer=1 frame=6 x=23 y=15 legend=1:1,2:2 rows:11
+  |1....|
+  |11...|
+  |111..|
+  |111..|
+  |1111.|
+  |1122.|
+  |.222.|
+  |.2222|
+  |.2222|
+  |..222|
+  |..222|
+paint_grid layer=2 frame=6 x=25 y=20 legend=3:3 rows:6
+  |33|
+  |33|
+  |.3|
+  |.3|
+  |.3|
+  |.3|
+paint_grid layer=3 frame=6 x=26 y=25 legend=4:4 rows:3
+  |..4|
+  |44.|
+  |44.|
+paint_grid layer=4 frame=6 x=24 y=25 legend=3:3,4:4,5:5 rows:5
+  |..5..|
+  |..4..|
+  |54345|
+  |..4..|
+  |..5..|
+paint_grid layer=0 frame=7 x=26 y=19 legend=0:0 rows:4
+  |0.|
+  |..|
+  |.0|
+  |.0|
+paint_grid layer=1 frame=7 x=25 y=19 legend=1:1,2:2 rows:7
+  |1..|
+  |11.|
+  |11.|
+  |11.|
+  |222|
+  |222|
+  |222|
+paint_grid layer=2 frame=7 x=26 y=23 legend=3:3 rows:3
+  |3|
+  |3|
+  |3|
+paint_grid layer=3 frame=7 x=26 y=26 legend=4:4 rows:1
+  |44|
+paint_grid layer=4 frame=7 x=25 y=26 legend=4:4,5:5 rows:3
+  |.5.|
+  |545|
+  |.5.|
+paint_grid layer=0 frame=8 x=27 y=24 legend=0:0 rows:3
+  |0|
+  |0|
+  |0|
+paint_grid layer=1 frame=8 x=26 y=24 legend=1:1,2:2 rows:3
+  |1|
+  |1|
+  |2|
 add_tag name=slash direction=forward from=0 to=9

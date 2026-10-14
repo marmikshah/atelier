@@ -1,318 +1,315 @@
-atelier 5 cb8cd815-e511-4659-beef-21129c007a0b 0.1.0
+atelier 4 cb8cd815-e511-4659-beef-21129c007a0b 0.1.0
 new name=adventurer-jump width=32 height=32
-layer rename index=0 name=legs
-layer add name=torso
-layer add name=arms
-layer add name=head
-palette set colors=#22202e,#eaa877,#8a4e2a,#3f9e49,#2a6134,#d9c27e
-legend A=#2a6134 B=#8a4e2a C=#22202e
-legs @0 grid 12,23 = 12,23 8x7
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-    BBB..BBB
-    BBB..BBB
-    CCC..CCC
-legend D=#3f9e49 E=#d9c27e
-torso @0 grid 12,16 = 12,16 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-legend F=#eaa877
-arms @0 grid 10,16 = 10,16 12x7
-    DD........DD
-    DD........DD
-    DD........DD
-    FF........FF
-    FF........FF
-    FF........FF
-    FF........FF
-head @0 grid 12,9 = 12,9 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-frame add count=9 duration_ms=100
-legs @1 grid 11,25 = 11,25 10x5
-    AAA....AAA
-    AAA....AAA
-    BBB....BBB
-    BBB....BBB
-    CCC....CCC
-torso @1 grid 12,18 = 12,18 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @1 grid 8,18 = 8,18 16x6
-    ..DD........DD..
-    .DD..........DD.
-    .DD..........DD.
-    FF............FF
-    FF............FF
-    FF............FF
-head @1 grid 12,11 = 12,11 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @2 grid 9,26 = 9,26 14x4
-    AAA........AAA
-    .AAA......AAA.
-    .BBB......BBB.
-    .CCC......CCC.
-torso @2 grid 12,20 = 12,20 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @2 grid 7,20 = 7,20 18x5
-    ...DD........DD...
-    ..DD..........DD..
-    .FF............FF.
-    FF..............FF
-    FF..............FF
-head @2 grid 12,14 = 12,14 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @3 grid 12,21 = 12,21 8x9
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-    BBB..BBB
-    BBB..BBB
-    .BB..BB.
-    .CC..CC.
-torso @3 grid 12,14 = 12,14 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @3 grid 9,8 = 9,8 14x7
-    FF..........FF
-    FF..........FF
-    FF..........FF
-    DD..........DD
-    DD..........DD
-    DD..........DD
-    DD..........DD
-head @3 grid 12,7 = 12,7 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @4 grid 11,17 = 11,17 10x4
-    AAA....AAA
-    AAA....AAA
-    BBB....BBB
-    CCC....CCC
-torso @4 grid 12,10 = 12,10 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @4 grid 9,4 = 9,4 14x7
-    FF..........FF
-    FF..........FF
-    FF..........FF
-    DD..........DD
-    DD..........DD
-    DD..........DD
-    DD..........DD
-head @4 grid 12,3 = 12,3 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @5 grid 10,15 = 10,15 12x4
-    AAA......AAA
-    AAAA....AAAA
-    .BBB....BBB.
-    .CCC....CCC.
-torso @5 grid 12,8 = 12,8 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @5 grid 9,2 = 9,2 14x7
-    FF..........FF
-    FF..........FF
-    FF..........FF
-    DD..........DD
-    DD..........DD
-    DD..........DD
-    DD..........DD
-head @5 grid 12,1 = 12,1 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @6 grid 11,19 = 11,19 10x6
-    AAA....AAA
-    AAA....AAA
-    AAA....AAA
-    BBB....BBB
-    BBB....BBB
-    CCC....CCC
-torso @6 grid 12,12 = 12,12 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @6 grid 8,6 = 8,6 16x7
-    FF............FF
-    FF............FF
-    .FF..........FF.
-    .DD..........DD.
-    .DD..........DD.
-    ..DD........DD..
-    ..DD........DD..
-head @6 grid 12,5 = 12,5 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @7 grid 11,24 = 11,24 10x6
-    AAA....AAA
-    AAA....AAA
-    AAA....AAA
-    BBB....BBB
-    BBB....BBB
-    CCC....CCC
-torso @7 grid 12,17 = 12,17 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @7 grid 7,17 = 7,17 18x4
-    ...DD........DD...
-    ..DD..........DD..
-    .FF............FF.
-    FF..............FF
-head @7 grid 12,10 = 12,10 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @8 grid 9,26 = 9,26 14x4
-    AAA........AAA
-    .AAA......AAA.
-    .BBB......BBB.
-    .CCC......CCC.
-torso @8 grid 12,20 = 12,20 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @8 grid 9,20 = 9,20 14x5
-    .DD........DD.
-    .DD........DD.
-    FF..........FF
-    FF..........FF
-    FF..........FF
-head @8 grid 12,14 = 12,14 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
-legs @9 grid 12,24 = 12,24 8x6
-    AAA..AAA
-    AAA..AAA
-    AAA..AAA
-    BBB..BBB
-    BBB..BBB
-    CCC..CCC
-torso @9 grid 12,17 = 12,17 8x7
-    CDDDDDDC
-    CDDDDDDC
-    CADDDDAC
-    CADDDDAC
-    CADDDDAC
-    CEECCEEC
-    CAAAAAAC
-arms @9 grid 10,17 = 10,17 12x6
-    DD........DD
-    DD........DD
-    DD........DD
-    FF........FF
-    FF........FF
-    FF........FF
-head @9 grid 12,10 = 12,10 8x8
-    ..CCCC..
-    .CBBBBC.
-    CBBBBBBC
-    CBFFFFBC
-    CFFFFFFC
-    CFCFFCFC
-    CFFFFFFC
-    .CFFFFC.
+layer op=rename index=0 name=legs
+layer op=add name=torso
+layer op=add name=arms
+layer op=add name=head
+palette op=set colors=#22202e,#eaa877,#8a4e2a,#3f9e49,#2a6134,#d9c27e
+paint_grid layer=0 frame=0 x=12 y=23 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:7
+  |DDD..DDD|
+  |DDD..DDD|
+  |DDD..DDD|
+  |DDD..DDD|
+  |BBB..BBB|
+  |BBB..BBB|
+  |KKK..KKK|
+paint_grid layer=1 frame=0 x=12 y=16 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=0 x=10 y=16 legend=G:#3f9e49,S:#eaa877 rows:7
+  |GG........GG|
+  |GG........GG|
+  |GG........GG|
+  |SS........SS|
+  |SS........SS|
+  |SS........SS|
+  |SS........SS|
+paint_grid layer=3 frame=0 x=12 y=9 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+frame op=add count=9 duration_ms=100
+paint_grid layer=0 frame=1 x=11 y=25 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:5
+  |DDD....DDD|
+  |DDD....DDD|
+  |BBB....BBB|
+  |BBB....BBB|
+  |KKK....KKK|
+paint_grid layer=1 frame=1 x=12 y=18 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=1 x=8 y=18 legend=G:#3f9e49,S:#eaa877 rows:6
+  |..GG........GG..|
+  |.GG..........GG.|
+  |.GG..........GG.|
+  |SS............SS|
+  |SS............SS|
+  |SS............SS|
+paint_grid layer=3 frame=1 x=12 y=11 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=2 x=9 y=26 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:4
+  |DDD........DDD|
+  |.DDD......DDD.|
+  |.BBB......BBB.|
+  |.KKK......KKK.|
+paint_grid layer=1 frame=2 x=12 y=20 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=2 x=7 y=20 legend=G:#3f9e49,S:#eaa877 rows:5
+  |...GG........GG...|
+  |..GG..........GG..|
+  |.SS............SS.|
+  |SS..............SS|
+  |SS..............SS|
+paint_grid layer=3 frame=2 x=12 y=14 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=3 x=12 y=21 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:9
+  |DDD..DDD|
+  |DDD..DDD|
+  |DDD..DDD|
+  |DDD..DDD|
+  |DDD..DDD|
+  |BBB..BBB|
+  |BBB..BBB|
+  |.BB..BB.|
+  |.KK..KK.|
+paint_grid layer=1 frame=3 x=12 y=14 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=3 x=9 y=8 legend=G:#3f9e49,S:#eaa877 rows:7
+  |SS..........SS|
+  |SS..........SS|
+  |SS..........SS|
+  |GG..........GG|
+  |GG..........GG|
+  |GG..........GG|
+  |GG..........GG|
+paint_grid layer=3 frame=3 x=12 y=7 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=4 x=11 y=17 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:4
+  |DDD....DDD|
+  |DDD....DDD|
+  |BBB....BBB|
+  |KKK....KKK|
+paint_grid layer=1 frame=4 x=12 y=10 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=4 x=9 y=4 legend=G:#3f9e49,S:#eaa877 rows:7
+  |SS..........SS|
+  |SS..........SS|
+  |SS..........SS|
+  |GG..........GG|
+  |GG..........GG|
+  |GG..........GG|
+  |GG..........GG|
+paint_grid layer=3 frame=4 x=12 y=3 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=5 x=10 y=15 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:4
+  |DDD......DDD|
+  |DDDD....DDDD|
+  |.BBB....BBB.|
+  |.KKK....KKK.|
+paint_grid layer=1 frame=5 x=12 y=8 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=5 x=9 y=2 legend=G:#3f9e49,S:#eaa877 rows:7
+  |SS..........SS|
+  |SS..........SS|
+  |SS..........SS|
+  |GG..........GG|
+  |GG..........GG|
+  |GG..........GG|
+  |GG..........GG|
+paint_grid layer=3 frame=5 x=12 y=1 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=6 x=11 y=19 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:6
+  |DDD....DDD|
+  |DDD....DDD|
+  |DDD....DDD|
+  |BBB....BBB|
+  |BBB....BBB|
+  |KKK....KKK|
+paint_grid layer=1 frame=6 x=12 y=12 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=6 x=8 y=6 legend=G:#3f9e49,S:#eaa877 rows:7
+  |SS............SS|
+  |SS............SS|
+  |.SS..........SS.|
+  |.GG..........GG.|
+  |.GG..........GG.|
+  |..GG........GG..|
+  |..GG........GG..|
+paint_grid layer=3 frame=6 x=12 y=5 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=7 x=11 y=24 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:6
+  |DDD....DDD|
+  |DDD....DDD|
+  |DDD....DDD|
+  |BBB....BBB|
+  |BBB....BBB|
+  |KKK....KKK|
+paint_grid layer=1 frame=7 x=12 y=17 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=7 x=7 y=17 legend=G:#3f9e49,S:#eaa877 rows:4
+  |...GG........GG...|
+  |..GG..........GG..|
+  |.SS............SS.|
+  |SS..............SS|
+paint_grid layer=3 frame=7 x=12 y=10 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=8 x=9 y=26 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:4
+  |DDD........DDD|
+  |.DDD......DDD.|
+  |.BBB......BBB.|
+  |.KKK......KKK.|
+paint_grid layer=1 frame=8 x=12 y=20 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=8 x=9 y=20 legend=G:#3f9e49,S:#eaa877 rows:5
+  |.GG........GG.|
+  |.GG........GG.|
+  |SS..........SS|
+  |SS..........SS|
+  |SS..........SS|
+paint_grid layer=3 frame=8 x=12 y=14 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
+paint_grid layer=0 frame=9 x=12 y=24 legend=B:#8a4e2a,D:#2a6134,K:#22202e rows:6
+  |DDD..DDD|
+  |DDD..DDD|
+  |DDD..DDD|
+  |BBB..BBB|
+  |BBB..BBB|
+  |KKK..KKK|
+paint_grid layer=1 frame=9 x=12 y=17 legend=D:#2a6134,G:#3f9e49,K:#22202e,T:#d9c27e rows:7
+  |KGGGGGGK|
+  |KGGGGGGK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KDGGGGDK|
+  |KTTKKTTK|
+  |KDDDDDDK|
+paint_grid layer=2 frame=9 x=10 y=17 legend=G:#3f9e49,S:#eaa877 rows:6
+  |GG........GG|
+  |GG........GG|
+  |GG........GG|
+  |SS........SS|
+  |SS........SS|
+  |SS........SS|
+paint_grid layer=3 frame=9 x=12 y=10 legend=B:#8a4e2a,K:#22202e,S:#eaa877 rows:8
+  |..KKKK..|
+  |.KBBBBK.|
+  |KBBBBBBK|
+  |KBSSSSBK|
+  |KSSSSSSK|
+  |KSKSSKSK|
+  |KSSSSSSK|
+  |.KSSSSK.|
 add_tag name=jump from=0 to=9

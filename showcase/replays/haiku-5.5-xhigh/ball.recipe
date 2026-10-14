@@ -1,461 +1,510 @@
-atelier 5 8c4943ed-47ee-44ef-84e8-fe32eaecc924 0.1.0
+atelier 4 8c4943ed-47ee-44ef-84e8-fe32eaecc924 0.1.0
 new name=rubber_ball width=32 height=32
-palette set colors=#3a0f1c,#e8483c,#ffc2b5,#5b5470
-layer add name=ball
-layer add name=highlight
-frame add copy_from=0 count=9
-layer rename index=0 name=shadow
-legend A=#e8483c
-ball @0 ellipse #e8483c 16,8 6,6 fill = 10,2 13x13
-    ....AAAAA....
-    ..AAAAAAAAA..
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    ..AAAAAAAAA..
-    ....AAAAA....
-ball @0 clear 0,0 32,32 = 10,2 22,14 .
-legend B=#3a0f1c
-ball @0 grid 0,0 = 0,0 3x2
-    ..B
-    BAB
-ball @0 grid 0,0 = 0,0 3x2
-    ..A
-    AAA
-shadow @0 clear 0,0 32,32 ~
-ball @0 clear 0,0 32,32 = 0,0 2,1 .
-highlight @0 clear 0,0 32,32 ~
-shadow @0 grid 13,27 = 13,27 18,28 #5b5470
-ball @0 grid 10,2 = 10,2 12x12
-    ....BBBB....
-    ..BBAAAABB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    ..BBAAAABB..
-    ....BBBB....
-legend C=#ffc2b5
-highlight @0 grid 12,4 = 12,4 3x3
-    ..C
-    .CC
-    CCC
-shadow @1 clear 0,0 32,32 ~
-ball @1 clear 0,0 32,32 ~
-highlight @1 clear 0,0 32,32 ~
-shadow @1 grid 12,27 = 12,27 19,28 #5b5470
-ball @1 grid 10,2 = 10,2 12x13
-    ....BBBB....
-    ..BBAAAABB..
-    ..BAAAAAAB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    ..BAAAAAAB..
-    ..BBAAAABB..
-    ....BBBB....
-highlight @1 grid 13,5 = 13,5 14,6 #ffc2b5
-shadow @2 clear 0,0 32,32 ~
-ball @2 clear 0,0 32,32 ~
-highlight @2 clear 0,0 32,32 ~
-shadow @2 grid 11,27 = 11,27 20,28 #5b5470
-ball @2 grid 11,1 = 11,1 10x15
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    .BAAAAAAB.
-    .BAAAAAAB.
-    ..BAAAAB..
-    ...BBBB...
-highlight @2 grid 13,4 = 13,4 2x3
-    .C
-    CC
-    CC
-shadow @3 clear 0,0 32,32 ~
-ball @3 clear 0,0 32,32 ~
-highlight @3 clear 0,0 32,32 ~
-shadow @3 grid 10,27 = 10,27 21,28 #5b5470
-ball @3 grid 12,3 = 12,3 8x16
-    ..BBBB..
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    .BAAAAB.
-    .BAAAAB.
-    ..BBBB..
-highlight @3 grid 14,6 = 14,6 14,8 #ffc2b5
-shadow @4 clear 0,0 32,32 ~
-ball @4 clear 0,0 32,32 ~
-highlight @4 clear 0,0 32,32 ~
-shadow @4 grid 8,27 = 8,27 23,28 #5b5470
-ball @4 grid 12,6 = 12,6 8x17
-    ...BB...
-    ..BAAB..
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    .BAAAAB.
-    .BAAAAB.
-    ..BAAB..
-    ...BB...
-highlight @4 grid 14,10 = 14,10 14,11 #ffc2b5
-shadow @5 clear 0,0 32,32 ~
-ball @5 clear 0,0 32,32 ~
-highlight @5 clear 0,0 32,32 ~
-legend D=#5b5470
-shadow @5 grid 4,26 = 4,26 24x4
-    ....DDDDDDDDDDDDDDDD....
-    DDDDDDDDDDDDDDDDDDDDDDDD
-    DDDDDDDDDDDDDDDDDDDDDDDD
-    ....DDDDDDDDDDDDDDDD....
-ball @5 grid 5,22 = 5,22 22x6
-    .....BBBBBBBBBBBB.....
-    .BBBBAAAAAAAAAAAABBBB.
-    BAAAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAAAAAAB
-    .BBBBAAAAAAAAAAAABBBB.
-    .....BBBBBBBBBBBB.....
-highlight @5 grid 10,23 = 10,23 12,23 #ffc2b5
-shadow @6 clear 0,0 32,32 ~
-ball @6 clear 0,0 32,32 ~
-highlight @6 clear 0,0 32,32 ~
-shadow @6 grid 8,27 = 8,27 23,28 #5b5470
-ball @6 grid 12,5 = 12,5 8x18
-    ...BB...
-    ..BAAB..
-    .BAAAAB.
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    .BAAAAB.
-    .BAAAAB.
-    .BAAAAB.
-    ..BAAB..
-    ...BB...
-highlight @6 grid 14,10 = 14,10 14,11 #ffc2b5
-shadow @7 clear 0,0 32,32 ~
-ball @7 clear 0,0 32,32 ~
-highlight @7 clear 0,0 32,32 ~
-shadow @7 grid 10,27 = 10,27 21,28 #5b5470
-ball @7 grid 12,3 = 12,3 8x16
-    ..BBBB..
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    .BAAAAB.
-    .BAAAAB.
-    ..BBBB..
-highlight @7 grid 14,6 = 14,6 14,8 #ffc2b5
-shadow @8 clear 0,0 32,32 ~
-ball @8 clear 0,0 32,32 ~
-highlight @8 clear 0,0 32,32 ~
-shadow @8 grid 11,27 = 11,27 20,28 #5b5470
-ball @8 grid 11,1 = 11,1 10x15
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    .BAAAAAAB.
-    .BAAAAAAB.
-    ..BAAAAB..
-    ...BBBB...
-highlight @8 grid 13,4 = 13,4 2x3
-    .C
-    CC
-    CC
-shadow @9 clear 0,0 32,32 ~
-ball @9 clear 0,0 32,32 ~
-highlight @9 clear 0,0 32,32 ~
-shadow @9 grid 12,27 = 12,27 19,28 #5b5470
-ball @9 grid 10,2 = 10,2 12x13
-    ....BBBB....
-    ..BBAAAABB..
-    ..BAAAAAAB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    ..BAAAAAAB..
-    ..BBAAAABB..
-    ....BBBB....
-highlight @9 grid 13,5 = 13,5 14,6 #ffc2b5
+palette op=set colors=#3a0f1c,#e8483c,#ffc2b5,#5b5470
+layer op=add name=ball
+layer op=add name=highlight
+frame op=add copy_from=0 count=9
+layer op=rename index=0 name=shadow
+draw op=ellipse layer=1 frame=0 color=#e8483c cx=16 cy=8 fill=true rx=6 ry=6
+region op=clear layer=1 frame=0 rect=0,0,32,32
+paint_grid layer=1 frame=0 x=0 y=0 legend=o:#3a0f1c,r:#e8483c rows:2
+  |..o|
+  |oro|
+paint_grid layer=1 frame=0 x=0 y=0 legend=o:1,r:1 rows:2
+  |..o|
+  |oro|
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=13 y=27 legend=s:3 rows:2
+  |ssssss|
+  |ssssss|
+paint_grid layer=1 frame=0 x=10 y=2 legend=o:0,r:1 rows:12
+  |....oooo....|
+  |..oorrrroo..|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |orrrrrrrrrro|
+  |orrrrrrrrrro|
+  |orrrrrrrrrro|
+  |orrrrrrrrrro|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |..oorrrroo..|
+  |....oooo....|
+paint_grid layer=2 frame=0 x=12 y=4 legend=h:2 rows:3
+  |..h|
+  |.hh|
+  |hhh|
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+paint_grid layer=0 frame=1 x=12 y=27 legend=s:3 rows:2
+  |ssssssss|
+  |ssssssss|
+paint_grid layer=1 frame=1 x=10 y=2 legend=o:0,r:1 rows:13
+  |....oooo....|
+  |..oorrrroo..|
+  |..orrrrrro..|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |orrrrrrrrrro|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |..orrrrrro..|
+  |..oorrrroo..|
+  |....oooo....|
+paint_grid layer=2 frame=1 x=13 y=5 legend=h:2 rows:2
+  |hh|
+  |hh|
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+paint_grid layer=0 frame=2 x=11 y=27 legend=s:3 rows:2
+  |ssssssssss|
+  |ssssssssss|
+paint_grid layer=1 frame=2 x=11 y=1 legend=o:0,r:1 rows:15
+  |...oooo...|
+  |..orrrro..|
+  |.orrrrrro.|
+  |.orrrrrro.|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |.orrrrrro.|
+  |.orrrrrro.|
+  |..orrrro..|
+  |...oooo...|
+paint_grid layer=2 frame=2 x=13 y=4 legend=h:2 rows:3
+  |.h|
+  |hh|
+  |hh|
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+paint_grid layer=0 frame=3 x=10 y=27 legend=s:3 rows:2
+  |ssssssssssss|
+  |ssssssssssss|
+paint_grid layer=1 frame=3 x=12 y=3 legend=o:0,r:1 rows:16
+  |..oooo..|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |.orrrro.|
+  |.orrrro.|
+  |..oooo..|
+paint_grid layer=2 frame=3 x=14 y=6 legend=h:2 rows:3
+  |h|
+  |h|
+  |h|
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+paint_grid layer=0 frame=4 x=8 y=27 legend=s:3 rows:2
+  |ssssssssssssssss|
+  |ssssssssssssssss|
+paint_grid layer=1 frame=4 x=12 y=6 legend=o:0,r:1 rows:17
+  |...oo...|
+  |..orro..|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |.orrrro.|
+  |.orrrro.|
+  |..orro..|
+  |...oo...|
+paint_grid layer=2 frame=4 x=14 y=10 legend=h:2 rows:2
+  |h|
+  |h|
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+paint_grid layer=0 frame=5 x=4 y=26 legend=s:3 rows:4
+  |....ssssssssssssssss....|
+  |ssssssssssssssssssssssss|
+  |ssssssssssssssssssssssss|
+  |....ssssssssssssssss....|
+paint_grid layer=1 frame=5 x=5 y=22 legend=o:0,r:1 rows:6
+  |.....oooooooooooo.....|
+  |.oooorrrrrrrrrrrroooo.|
+  |orrrrrrrrrrrrrrrrrrrro|
+  |orrrrrrrrrrrrrrrrrrrro|
+  |.oooorrrrrrrrrrrroooo.|
+  |.....oooooooooooo.....|
+paint_grid layer=2 frame=5 x=10 y=23 legend=h:2 rows:1
+  |hhh|
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+paint_grid layer=0 frame=6 x=8 y=27 legend=s:3 rows:2
+  |ssssssssssssssss|
+  |ssssssssssssssss|
+paint_grid layer=1 frame=6 x=12 y=5 legend=o:0,r:1 rows:18
+  |...oo...|
+  |..orro..|
+  |.orrrro.|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |.orrrro.|
+  |.orrrro.|
+  |.orrrro.|
+  |..orro..|
+  |...oo...|
+paint_grid layer=2 frame=6 x=14 y=10 legend=h:2 rows:2
+  |h|
+  |h|
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+paint_grid layer=0 frame=7 x=10 y=27 legend=s:3 rows:2
+  |ssssssssssss|
+  |ssssssssssss|
+paint_grid layer=1 frame=7 x=12 y=3 legend=o:0,r:1 rows:16
+  |..oooo..|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |.orrrro.|
+  |.orrrro.|
+  |..oooo..|
+paint_grid layer=2 frame=7 x=14 y=6 legend=h:2 rows:3
+  |h|
+  |h|
+  |h|
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+paint_grid layer=0 frame=8 x=11 y=27 legend=s:3 rows:2
+  |ssssssssss|
+  |ssssssssss|
+paint_grid layer=1 frame=8 x=11 y=1 legend=o:0,r:1 rows:15
+  |...oooo...|
+  |..orrrro..|
+  |.orrrrrro.|
+  |.orrrrrro.|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |.orrrrrro.|
+  |.orrrrrro.|
+  |..orrrro..|
+  |...oooo...|
+paint_grid layer=2 frame=8 x=13 y=4 legend=h:2 rows:3
+  |.h|
+  |hh|
+  |hh|
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=9 x=12 y=27 legend=s:3 rows:2
+  |ssssssss|
+  |ssssssss|
+paint_grid layer=1 frame=9 x=10 y=2 legend=o:0,r:1 rows:13
+  |....oooo....|
+  |..oorrrroo..|
+  |..orrrrrro..|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |orrrrrrrrrro|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |..orrrrrro..|
+  |..oorrrroo..|
+  |....oooo....|
+paint_grid layer=2 frame=9 x=13 y=5 legend=h:2 rows:2
+  |hh|
+  |hh|
 add_tag name=bounce direction=forward from=0 to=9
-shadow @0 clear 0,0 32,32 = 13,27 18,28 .
-ball @0 clear 0,0 32,32 = 10,2 21,13 .
-highlight @0 clear 0,0 32,32 = 12,4 14,6 .
-shadow @0 grid 13,27 = 13,27 18,28 #5b5470
-ball @0 grid 10,2 = 10,2 12x12
-    ....BBBB....
-    ..BBAAAABB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAAAB
-    BAAAAAAAAAAB
-    BAAAAAAAAABB
-    BAAAAAAAAABB
-    .BAAAAAAABB.
-    .BAAAAAABBB.
-    ..BBAABBBB..
-    ....BBBB....
-highlight @0 grid 12,4 = 12,4 3x3
-    ..C
-    .CC
-    CCC
-shadow @1 clear 0,0 32,32 = 12,27 19,28 .
-ball @1 clear 0,0 32,32 = 10,2 21,14 .
-highlight @1 clear 0,0 32,32 = 13,5 14,6 .
-shadow @1 grid 12,27 = 12,27 19,28 #5b5470
-ball @1 grid 10,2 = 10,2 12x13
-    ....BBBB....
-    ..BBAAAABB..
-    ..BAAAAAAB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAABB
-    .BAAAAAAABB.
-    .BAAAAAAABB.
-    .BAAAAAAABB.
-    ..BAAAAABB..
-    ..BBAABBBB..
-    ....BBBB....
-highlight @1 grid 13,5 = 13,5 14,6 #ffc2b5
-shadow @2 clear 0,0 32,32 = 11,27 20,28 .
-ball @2 clear 0,0 32,32 = 11,1 20,15 .
-highlight @2 clear 0,0 32,32 = 13,4 14,6 .
-shadow @2 grid 11,27 = 11,27 20,28 #5b5470
-ball @2 grid 11,1 = 11,1 10x15
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    .BAAAAABB.
-    .BAAAAABB.
-    ..BABBBB..
-    ...BBBB...
-highlight @2 grid 13,4 = 13,4 2x3
-    .C
-    CC
-    CC
-shadow @3 clear 0,0 32,32 = 10,27 21,28 .
-ball @3 clear 0,0 32,32 = 12,3 19,18 .
-highlight @3 clear 0,0 32,32 = 14,6 14,8 .
-shadow @3 grid 10,27 = 10,27 21,28 #5b5470
-ball @3 grid 12,3 = 12,3 8x16
-    ..BBBB..
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    .BAAABB.
-    .BABBBB.
-    ..BBBB..
-highlight @3 grid 14,6 = 14,6 14,8 #ffc2b5
-shadow @4 clear 0,0 32,32 = 8,27 23,28 .
-ball @4 clear 0,0 32,32 = 12,6 19,22 .
-highlight @4 clear 0,0 32,32 = 14,10 14,11 .
-shadow @4 grid 8,27 = 8,27 23,28 #5b5470
-ball @4 grid 12,6 = 12,6 8x17
-    ...BB...
-    ..BAAB..
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    .BAAABB.
-    .BAAABB.
-    ..BBBB..
-    ...BB...
-highlight @4 grid 14,10 = 14,10 14,11 #ffc2b5
-shadow @5 clear 0,0 32,32 = 4,26 27,29 .
-ball @5 clear 0,0 32,32 = 5,22 26,27 .
-highlight @5 clear 0,0 32,32 = 10,23 12,23 .
-shadow @5 grid 4,26 = 4,26 24x4
-    ....DDDDDDDDDDDDDDDD....
-    DDDDDDDDDDDDDDDDDDDDDDDD
-    DDDDDDDDDDDDDDDDDDDDDDDD
-    ....DDDDDDDDDDDDDDDD....
-ball @5 grid 5,22 = 5,22 22x6
-    .....BBBBBBBBBBBB.....
-    .BBBBAAAAAAAAAAAABBBB.
-    BAAAAAAAAAAAAAAAAAAAAB
-    BAAAAAAAAAAAAAAAABBBBB
-    .BBBBAAAAAAAABBBBBBBB.
-    .....BBBBBBBBBBBB.....
-highlight @5 grid 10,23 = 10,23 12,23 #ffc2b5
-shadow @6 clear 0,0 32,32 = 8,27 23,28 .
-ball @6 clear 0,0 32,32 = 12,5 19,22 .
-highlight @6 clear 0,0 32,32 = 14,10 14,11 .
-shadow @6 grid 8,27 = 8,27 23,28 #5b5470
-ball @6 grid 12,5 = 12,5 8x18
-    ...BB...
-    ..BAAB..
-    .BAAAAB.
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    .BAAABB.
-    .BAAABB.
-    .BAAABB.
-    ..BBBB..
-    ...BB...
-highlight @6 grid 14,10 = 14,10 14,11 #ffc2b5
-shadow @7 clear 0,0 32,32 = 10,27 21,28 .
-ball @7 clear 0,0 32,32 = 12,3 19,18 .
-highlight @7 clear 0,0 32,32 = 14,6 14,8 .
-shadow @7 grid 10,27 = 10,27 21,28 #5b5470
-ball @7 grid 12,3 = 12,3 8x16
-    ..BBBB..
-    .BAAAAB.
-    .BAAAAB.
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAAAB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    BAAAAABB
-    .BAAABB.
-    .BABBBB.
-    ..BBBB..
-highlight @7 grid 14,6 = 14,6 14,8 #ffc2b5
-shadow @8 clear 0,0 32,32 = 11,27 20,28 .
-ball @8 clear 0,0 32,32 = 11,1 20,15 .
-highlight @8 clear 0,0 32,32 = 13,4 14,6 .
-shadow @8 grid 11,27 = 11,27 20,28 #5b5470
-ball @8 grid 11,1 = 11,1 10x15
-    ...BBBB...
-    ..BAAAAB..
-    .BAAAAAAB.
-    .BAAAAAAB.
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAAAB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    BAAAAAAABB
-    .BAAAAABB.
-    .BAAAAABB.
-    ..BABBBB..
-    ...BBBB...
-highlight @8 grid 13,4 = 13,4 2x3
-    .C
-    CC
-    CC
-shadow @9 clear 0,0 32,32 = 12,27 19,28 .
-ball @9 clear 0,0 32,32 = 10,2 21,14 .
-highlight @9 clear 0,0 32,32 = 13,5 14,6 .
-shadow @9 grid 12,27 = 12,27 19,28 #5b5470
-ball @9 grid 10,2 = 10,2 12x13
-    ....BBBB....
-    ..BBAAAABB..
-    ..BAAAAAAB..
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    .BAAAAAAAAB.
-    BAAAAAAAAABB
-    .BAAAAAAABB.
-    .BAAAAAAABB.
-    .BAAAAAAABB.
-    ..BAAAAABB..
-    ..BBAABBBB..
-    ....BBBB....
-highlight @9 grid 13,5 = 13,5 14,6 #ffc2b5
+region op=clear layer=0 frame=0 rect=0,0,32,32
+region op=clear layer=1 frame=0 rect=0,0,32,32
+region op=clear layer=2 frame=0 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=13 y=27 legend=s:3 rows:2
+  |ssssss|
+  |ssssss|
+paint_grid layer=1 frame=0 x=10 y=2 legend=d:0,o:0,r:1 rows:12
+  |....oooo....|
+  |..oorrrroo..|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |orrrrrrrrrro|
+  |orrrrrrrrrro|
+  |orrrrrrrrrdo|
+  |orrrrrrrrrdo|
+  |.orrrrrrrdo.|
+  |.orrrrrrddo.|
+  |..oorrddoo..|
+  |....oooo....|
+paint_grid layer=2 frame=0 x=12 y=4 legend=h:2 rows:3
+  |..h|
+  |.hh|
+  |hhh|
+region op=clear layer=0 frame=1 rect=0,0,32,32
+region op=clear layer=1 frame=1 rect=0,0,32,32
+region op=clear layer=2 frame=1 rect=0,0,32,32
+paint_grid layer=0 frame=1 x=12 y=27 legend=s:3 rows:2
+  |ssssssss|
+  |ssssssss|
+paint_grid layer=1 frame=1 x=10 y=2 legend=d:0,o:0,r:1 rows:13
+  |....oooo....|
+  |..oorrrroo..|
+  |..orrrrrro..|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |orrrrrrrrrdo|
+  |.orrrrrrrdo.|
+  |.orrrrrrrdo.|
+  |.orrrrrrrdo.|
+  |..orrrrrdo..|
+  |..oorrddoo..|
+  |....oooo....|
+paint_grid layer=2 frame=1 x=13 y=5 legend=h:2 rows:2
+  |hh|
+  |hh|
+region op=clear layer=0 frame=2 rect=0,0,32,32
+region op=clear layer=1 frame=2 rect=0,0,32,32
+region op=clear layer=2 frame=2 rect=0,0,32,32
+paint_grid layer=0 frame=2 x=11 y=27 legend=s:3 rows:2
+  |ssssssssss|
+  |ssssssssss|
+paint_grid layer=1 frame=2 x=11 y=1 legend=d:0,o:0,r:1 rows:15
+  |...oooo...|
+  |..orrrro..|
+  |.orrrrrro.|
+  |.orrrrrro.|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrdo|
+  |orrrrrrrdo|
+  |orrrrrrrdo|
+  |orrrrrrrdo|
+  |.orrrrrdo.|
+  |.orrrrrdo.|
+  |..ordddo..|
+  |...oooo...|
+paint_grid layer=2 frame=2 x=13 y=4 legend=h:2 rows:3
+  |.h|
+  |hh|
+  |hh|
+region op=clear layer=0 frame=3 rect=0,0,32,32
+region op=clear layer=1 frame=3 rect=0,0,32,32
+region op=clear layer=2 frame=3 rect=0,0,32,32
+paint_grid layer=0 frame=3 x=10 y=27 legend=s:3 rows:2
+  |ssssssssssss|
+  |ssssssssssss|
+paint_grid layer=1 frame=3 x=12 y=3 legend=d:0,o:0,r:1 rows:16
+  |..oooo..|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrdo|
+  |orrrrrdo|
+  |orrrrrdo|
+  |orrrrrdo|
+  |.orrrdo.|
+  |.ordddo.|
+  |..oooo..|
+paint_grid layer=2 frame=3 x=14 y=6 legend=h:2 rows:3
+  |h|
+  |h|
+  |h|
+region op=clear layer=0 frame=4 rect=0,0,32,32
+region op=clear layer=1 frame=4 rect=0,0,32,32
+region op=clear layer=2 frame=4 rect=0,0,32,32
+paint_grid layer=0 frame=4 x=8 y=27 legend=s:3 rows:2
+  |ssssssssssssssss|
+  |ssssssssssssssss|
+paint_grid layer=1 frame=4 x=12 y=6 legend=d:0,o:0,r:1 rows:17
+  |...oo...|
+  |..orro..|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrdo|
+  |orrrrrdo|
+  |orrrrrdo|
+  |orrrrrdo|
+  |.orrrdo.|
+  |.orrrdo.|
+  |..oddo..|
+  |...oo...|
+paint_grid layer=2 frame=4 x=14 y=10 legend=h:2 rows:2
+  |h|
+  |h|
+region op=clear layer=0 frame=5 rect=0,0,32,32
+region op=clear layer=1 frame=5 rect=0,0,32,32
+region op=clear layer=2 frame=5 rect=0,0,32,32
+paint_grid layer=0 frame=5 x=4 y=26 legend=s:3 rows:4
+  |....ssssssssssssssss....|
+  |ssssssssssssssssssssssss|
+  |ssssssssssssssssssssssss|
+  |....ssssssssssssssss....|
+paint_grid layer=1 frame=5 x=5 y=22 legend=d:0,o:0,r:1 rows:6
+  |.....oooooooooooo.....|
+  |.oooorrrrrrrrrrrroooo.|
+  |orrrrrrrrrrrrrrrrrrrro|
+  |orrrrrrrrrrrrrrrrddddo|
+  |.oooorrrrrrrrddddoooo.|
+  |.....oooooooooooo.....|
+paint_grid layer=2 frame=5 x=10 y=23 legend=h:2 rows:1
+  |hhh|
+region op=clear layer=0 frame=6 rect=0,0,32,32
+region op=clear layer=1 frame=6 rect=0,0,32,32
+region op=clear layer=2 frame=6 rect=0,0,32,32
+paint_grid layer=0 frame=6 x=8 y=27 legend=s:3 rows:2
+  |ssssssssssssssss|
+  |ssssssssssssssss|
+paint_grid layer=1 frame=6 x=12 y=5 legend=d:0,o:0,r:1 rows:18
+  |...oo...|
+  |..orro..|
+  |.orrrro.|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrdo|
+  |orrrrrdo|
+  |orrrrrdo|
+  |.orrrdo.|
+  |.orrrdo.|
+  |.orrrdo.|
+  |..oddo..|
+  |...oo...|
+paint_grid layer=2 frame=6 x=14 y=10 legend=h:2 rows:2
+  |h|
+  |h|
+region op=clear layer=0 frame=7 rect=0,0,32,32
+region op=clear layer=1 frame=7 rect=0,0,32,32
+region op=clear layer=2 frame=7 rect=0,0,32,32
+paint_grid layer=0 frame=7 x=10 y=27 legend=s:3 rows:2
+  |ssssssssssss|
+  |ssssssssssss|
+paint_grid layer=1 frame=7 x=12 y=3 legend=d:0,o:0,r:1 rows:16
+  |..oooo..|
+  |.orrrro.|
+  |.orrrro.|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrro|
+  |orrrrrdo|
+  |orrrrrdo|
+  |orrrrrdo|
+  |orrrrrdo|
+  |.orrrdo.|
+  |.ordddo.|
+  |..oooo..|
+paint_grid layer=2 frame=7 x=14 y=6 legend=h:2 rows:3
+  |h|
+  |h|
+  |h|
+region op=clear layer=0 frame=8 rect=0,0,32,32
+region op=clear layer=1 frame=8 rect=0,0,32,32
+region op=clear layer=2 frame=8 rect=0,0,32,32
+paint_grid layer=0 frame=8 x=11 y=27 legend=s:3 rows:2
+  |ssssssssss|
+  |ssssssssss|
+paint_grid layer=1 frame=8 x=11 y=1 legend=d:0,o:0,r:1 rows:15
+  |...oooo...|
+  |..orrrro..|
+  |.orrrrrro.|
+  |.orrrrrro.|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrro|
+  |orrrrrrrdo|
+  |orrrrrrrdo|
+  |orrrrrrrdo|
+  |orrrrrrrdo|
+  |.orrrrrdo.|
+  |.orrrrrdo.|
+  |..ordddo..|
+  |...oooo...|
+paint_grid layer=2 frame=8 x=13 y=4 legend=h:2 rows:3
+  |.h|
+  |hh|
+  |hh|
+region op=clear layer=0 frame=9 rect=0,0,32,32
+region op=clear layer=1 frame=9 rect=0,0,32,32
+region op=clear layer=2 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=9 x=12 y=27 legend=s:3 rows:2
+  |ssssssss|
+  |ssssssss|
+paint_grid layer=1 frame=9 x=10 y=2 legend=d:0,o:0,r:1 rows:13
+  |....oooo....|
+  |..oorrrroo..|
+  |..orrrrrro..|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |.orrrrrrrro.|
+  |orrrrrrrrrdo|
+  |.orrrrrrrdo.|
+  |.orrrrrrrdo.|
+  |.orrrrrrrdo.|
+  |..orrrrrdo..|
+  |..oorrddoo..|
+  |....oooo....|
+paint_grid layer=2 frame=9 x=13 y=5 legend=h:2 rows:2
+  |hh|
+  |hh|

@@ -440,7 +440,7 @@ impl Studio {
             ),
             Ok(_) => match parse_journal_file(id, &journal_path) {
                 Ok(journal) => {
-                    report.journal_entries += journal.statements.len();
+                    report.journal_entries += journal.entries.len();
                     if journal.torn_tail {
                         report.issue(
                             IntegritySeverity::Warning,
@@ -905,14 +905,18 @@ mod tests {
             )
             .unwrap();
         studio
-            .journal_call(
+            .journal_append(
                 &id,
                 ToolName::DocNew,
                 &json!({"name":"verified","width":4,"height":4,"doc_id":id}),
             )
             .unwrap();
         studio
-            .journal_call(&id, ToolName::DocLayer, &json!({"doc_id":id,"op":"add"}))
+            .journal_append(
+                &id,
+                ToolName::DocDraw,
+                &json!({"doc_id":id,"op":"fill_cel","color":[9,8,7,255]}),
+            )
             .unwrap();
 
         let clean = studio.verify_store().unwrap();
@@ -954,7 +958,7 @@ mod tests {
         let created = studio.doc_new("verified", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
         studio
-            .journal_call(
+            .journal_append(
                 &id,
                 ToolName::DocNew,
                 &json!({"name":"verified","width":4,"height":4,"doc_id":id}),
@@ -1003,7 +1007,7 @@ mod tests {
         let created = studio.doc_new("verified", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
         studio
-            .journal_call(
+            .journal_append(
                 &id,
                 ToolName::DocNew,
                 &json!({"name":"verified","width":4,"height":4,"doc_id":id}),
@@ -1043,7 +1047,7 @@ mod tests {
         let created = studio.doc_new("bounded", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
         studio
-            .journal_call(
+            .journal_append(
                 &id,
                 ToolName::DocNew,
                 &json!({"name":"bounded","width":4,"height":4,"doc_id":id}),
@@ -1083,7 +1087,7 @@ mod tests {
         let created = studio.doc_new("linked", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap().to_string();
         studio
-            .journal_call(
+            .journal_append(
                 &id,
                 ToolName::DocNew,
                 &json!({"name":"linked","width":4,"height":4,"doc_id":id}),

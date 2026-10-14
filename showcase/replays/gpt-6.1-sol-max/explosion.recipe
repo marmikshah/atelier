@@ -1,504 +1,419 @@
-atelier 5 6d7a56fd-f983-40b6-a146-8fbf1d60201b 0.1.0
+atelier 4 6d7a56fd-f983-40b6-a146-8fbf1d60201b 0.1.0
 new name="Impulse — particle explosion" width=32 height=32
-palette set colors=#fff3cf,#ffca55,#f57538,#b84846,#8c8598,#54485f
-layer rename index=0 name="Smoke curl"
-layer add name="Core flash"
-layer add name="Flying debris"
-layer add name=Sparks
-legend A=#f57538
-"Core flash" @0 polygon #f57538 fill = 3,4 27x26
-    ............A..............
-    ............A..............
-    ............AA.............
-    ............AA.....A.......
-    .........A..AA....AA.......
-    .........A.AAA...AA........
-    ..AA.....AAAAAA.AAA........
-    ...AAA...AAAAAAAAAA........
-    ...AAAAA.AAAAAAAAAA........
-    ....AAAAAAAAAAAAAA...AAAAA.
-    ....AAAAAAAAAAAAAAAAAAAAA..
-    .....AAAAAAAAAAAAAAAAAAA...
-    .....AAAAAAAAAAAAAAAAA.....
-    .....AAAAAAAAAAAAAAAA......
-    ...AAAAAAAAAAAAAAAAAAA.....
-    .AAAAAAAAAAAAAAAAAAAAAAA...
-    AAAAAAAAAAAAAAAAAAAAAAAAA..
-    ....AAAAAAAAAAAAAAAAAAAAAA.
-    ......AAAAAAAAAAAAA....AAAA
-    .....AAAAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAA.......
-    ....AAAA...AAAA.AAAAA......
-    ....AA.....AAAA...AAA......
-    ...A.......AAA.....AAA.....
-    ............AA.......A.....
-    ............A..............
-legend B=#ffca55
-"Core flash" @0 polygon #ffca55 fill = 6,9 20x17
-    ......A.ABA...AA....
-    A.....AAABAA.AAA....
-    AAA...AAABBAAABA....
-    AAAAA.AAABBAABBA....
-    .AAAAAAABBBAABB...AA
-    .AABBAAABBBBBBAAAAAA
-    ..AABBBABBBBBBAABBBA
-    ..AABBBBBBBBBBBBBBA.
-    ..AAABBBBBBBBBBBBA..
-    AAABBBBBBBBBBBBBAAA.
-    ABBBBBBBBBBBBBBBBBAA
-    BBBAABBBBBBBBBBBBBBA
-    .AAAABBBBBBBBBBAABBB
-    ...ABBBBBBBBBBBA....
-    ..AABBAABBBABBBAA...
-    ..AAAAAAABBAAABAA...
-    .AAAA...ABAA.AAAAA..
-legend C=#fff3cf
-"Core flash" @0 polygon #fff3cf fill = 11,12 11x12
-    .AAACCAABBA
-    AAACCCAABB.
-    AAACCCCBBAA
-    BBACCCCBCCA
-    CCCCCCCCCCB
-    CCCCCCCCCBB
-    BCCCCCCCCCB
-    BCCCCCCCCCC
-    CCCCCCCCCBB
-    CCCCCCCCBBA
-    BBBBCCCBBBA
-    BAABBBCBBBA
-layer rename index=2 name="Shard NW"
-layer add name="Shard NE"
-layer add name="Shard W"
-layer add name="Shard E"
-layer add name="Shard SW"
-layer add name="Shard SE"
-Sparks @0 pencil #ffca55 size 1 = 3,5 26x22
-    .......B..................
-    ..........................
-    ..........................
-    .......................B..
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    B.........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    ..........................
-    .........................B
-Sparks @0 pencil #fff3cf size 1 = 10,4 18x5
-    C.................
-    B.................
-    ..................
-    ..................
-    ................BC
-frame add copy_from=0 duration_ms=100
-"Smoke curl" @1 clear_cel ~
-"Core flash" @1 clear_cel = 3,4 29,29 .
-"Shard NW" @1 clear_cel ~
-Sparks @1 clear_cel = 3,4 28,26 .
-"Shard NE" @1 clear_cel ~
-"Shard W" @1 clear_cel ~
-"Shard E" @1 clear_cel ~
-"Shard SW" @1 clear_cel ~
-"Shard SE" @1 clear_cel ~
-legend D=#54485f E=#8c8598
-"Smoke curl" @1 grid 12,15 = 12,15 7x8
-    ..DDD..
-    .DDEDD.
-    DDEEEDD
-    DEEDEED
-    DDDEEDD
-    .DDDDD.
-    ..DDD..
-    ...D...
-legend F=#b84846
-"Core flash" @1 grid 7,9 = 7,9 19x18
-    .....AA.....AA.....
-    ....ABBA...ABBA....
-    ...ABCBBA.ABCCBA...
-    ..ABBCCBBABBCCBBA..
-    .ABBCCBBAABBCBBBA..
-    AABBBBAA..ABBBAA...
-    ABBBAA.....ABBA....
-    AFBBA......ABAA.AA.
-    .FABA..........ABCA
-    ..AA...........ABBA
-    ..............ABAA.
-    .AA..........ABAF..
-    AFBBA.......ABAF...
-    .AFBBBAA..AABAF....
-    ..AFBBBBABBAAF.....
-    ...FABBBBAAAF......
-    ....FAAAFF.........
-    ......FF...........
-"Shard NW" @1 grid 7,8 = 7,8 3x3
-    .BA
-    AFF
-    DF.
-"Shard NE" @1 grid 22,8 = 22,8 3x3
-    BA.
-    FFA
-    .FD
-"Shard W" @1 grid 4,17 = 4,17 3x3
-    BA.
-    FFA
-    .D.
-"Shard E" @1 grid 26,18 = 26,18 3x3
-    .AB
-    FFA
-    DF.
-"Shard SW" @1 grid 8,26 = 8,26 3x3
-    AF.
-    FFA
-    .D.
-"Shard SE" @1 grid 21,26 = 21,26 3x3
-    .FA
-    AFF
-    .D.
-Sparks @1 grid 2,3 = 2,3 29x26
-    .........B...C...............
-    ........A....B...............
-    ........A....B...............
-    ............A...........BC...
-    .......................B.....
-    ......................A......
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    CB...........................
-    ..BA.........................
-    .............................
-    .........................AB..
-    ...........................BC
-    .............................
-    .....A.......................
-    ....B........................
-    ...B...................A.....
-    ..C.....................B....
-    .........................B...
-frame add copy_from=1 duration_ms=100
-"Smoke curl" @2 clear_cel = 12,15 18,22 .
-"Core flash" @2 clear_cel = 7,9 25,26 .
-"Shard NW" @2 clear_cel = 7,8 9,10 .
-Sparks @2 clear_cel = 2,3 30,28 .
-"Shard NE" @2 clear_cel = 22,8 24,10 .
-"Shard W" @2 clear_cel = 4,17 6,19 .
-"Shard E" @2 clear_cel = 26,18 28,20 .
-"Shard SW" @2 clear_cel = 8,26 10,28 .
-"Shard SE" @2 clear_cel = 21,26 23,28 .
-"Smoke curl" @2 grid 10,11 = 10,11 11x13
-    ....DDDD...
-    ...DEEEDD..
-    ..DEEEEEDD.
-    .DEEEEEEED.
-    .DEEEDDDED.
-    DDEEEDD.EDD
-    DEEEEEDDEED
-    DEEDEEEEDED
-    .DDEDEEEEDD
-    ..DDEEEEDD.
-    ...DDEDDD..
-    ....DDD....
-    .....D.....
-"Core flash" @2 grid 8,8 = 8,8 17x17
-    ...ABA......BA...
-    ..ABBA.....ABBA..
-    .ABBFA....ABCBA..
-    .ABFA......ABBA..
-    AFFA........AFA..
-    .FF..........FA..
-    .................
-    .................
-    .................
-    ..............ABA
-    ..............AFA
-    .FA..........AFF.
-    AFBA........AFF..
-    .AFBAA....AAF....
-    ..FAFBAAAAAF.....
-    ...FFAAAAFF......
-    .....FFFF........
-"Shard NW" @2 grid 4,5 = 4,5 3x3
-    AF.
-    FFD
-    .D.
-"Shard NE" @2 grid 25,5 = 25,5 3x3
-    .FA
-    DFF
-    .D.
-"Shard W" @2 grid 2,16 = 2,16 2x2
-    AF
-    FD
-"Shard E" @2 grid 28,16 = 28,16 2x2
-    FA
-    DF
-"Shard SW" @2 grid 5,28 = 5,28 3x3
-    .AF
-    FF.
-    D..
-"Shard SE" @2 grid 24,28 = 24,28 3x3
-    FA.
-    .FF
-    ..D
-Sparks @2 grid 1,2 = 1,2 30x29
-    .......A.........B............
-    .......A........A.............
-    ...............A............B.
-    ...............F...........A..
-    ..........................A...
-    .........................F....
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..AF..........................
-    .A............................
-    B.............................
-    ..........................F...
-    ...........................A..
-    ............................A.
-    .............................B
-    ..............................
-    ..............................
-    ....A.....................A...
-    ...A.......................A..
-    ..B.........................B.
-"Smoke curl" @2 pencil #8c8598 size 1 = 13,18 14,19 #8c8598
-frame add copy_from=2 duration_ms=100
-"Smoke curl" @3 clear_cel = 10,11 20,23 .
-"Core flash" @3 clear_cel = 8,8 24,24 .
-"Shard NW" @3 clear_cel = 4,5 6,7 .
-Sparks @3 clear_cel = 1,2 30,30 .
-"Shard NE" @3 clear_cel = 25,5 27,7 .
-"Shard W" @3 clear_cel = 2,16 3,17 .
-"Shard E" @3 clear_cel = 28,16 29,17 .
-"Shard SW" @3 clear_cel = 5,28 7,30 .
-"Shard SE" @3 clear_cel = 24,28 26,30 .
-"Smoke curl" @3 grid 9,8 = 9,8 13x15
-    .....DDDD....
-    ...DDEEEEDD..
-    ..DEEEEEEEED.
-    .DEEEEEEDDEDD
-    .DEEEEDD..EED
-    DDEEEDD...EED
-    DEEEDD....EED
-    DEEEDD....DD.
-    DEEEEDD......
-    .DEEEEDD.....
-    ..DDEEEEDD...
-    ...DEEEEEDD..
-    ...DDEEDDD...
-    ....DDDD.....
-    .....DD......
-"Core flash" @3 grid 10,8 = 10,8 14x16
-    A.............
-    FA..........A.
-    FF..........A.
-    ...........FF.
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    ..............
-    .............F
-    ..............
-    ..............
-    .......A.F....
-    .FF.AAAFF.....
-    ..FFFFF.......
-"Shard NW" @3 grid 2,4 = 2,4 2x2
-    FF
-    DD
-"Shard NE" @3 grid 28,4 = 28,4 2x2
-    FF
-    DD
-"Shard W" @3 grid 1,17 = 1,17 1x2
-    F
-    D
-"Shard E" @3 grid 30,17 = 30,17 1x2
-    F
-    D
-"Shard SW" @3 grid 4,30 = 4,30 2x1
-    FD
-"Shard SE" @3 grid 26,30 = 26,30 2x1
-    DF
-Sparks @3 grid 1,1 = 1,1 30x29
-    .....A........................
-    ....F.............FA..........
-    ....F.........................
-    ..............................
-    .............................A
-    ............................F.
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    ..............................
-    F.............................
-    A.............................
-    ..............................
-    ..............................
-    .............................F
-    .............................A
-frame add copy_from=3 duration_ms=100
-"Smoke curl" @4 clear_cel = 9,8 21,22 .
-"Core flash" @4 clear_cel = 10,8 23,23 .
-"Shard NW" @4 clear_cel = 2,4 3,5 .
-Sparks @4 clear_cel = 1,1 30,29 .
-"Shard NE" @4 clear_cel = 28,4 29,5 .
-"Shard W" @4 clear_cel = 1,17 1,18 .
-"Shard E" @4 clear_cel = 30,17 30,18 .
-"Shard SW" @4 clear_cel = 4,30 5,30 .
-"Shard SE" @4 clear_cel = 26,30 27,30 .
-"Smoke curl" @4 grid 11,6 = 11,6 12x14
-    .....DDD....
-    ...DDEEEDD..
-    ..DEEEEEEED.
-    .DEEEDDDEEDD
-    .DEEDD..DEED
-    DEEDD....EED
-    DEEDD....EED
-    DEEED....DD.
-    .DEEEDD.....
-    ..DEEEDD....
-    ...DDEEEDD..
-    ....DEEDD...
-    ....DDDD....
-    ...DDD......
-"Core flash" @4 grid 12,22 = 12,22 7x3
-    ......F
-    F......
-    .F.F...
-"Shard NW" @4 grid 1,5 = 1,5 2x1
-    FD
-"Shard NE" @4 grid 30,5 = 30,5 2x1
-    DF
-"Shard W" @4 grid 1,20 = 1,20 1,20 #54485f
-"Shard E" @4 grid 30,20 = 30,20 30,20 #54485f
-Sparks @4 grid 2,3 = 2,3 29x27
-    ...................F.........
-    .............................
-    ...F.........................
-    .............................
-    .............................
-    ............................F
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    .............................
-    F............................
-frame add copy_from=4 duration_ms=100
-"Smoke curl" @5 clear_cel = 11,6 22,19 .
-"Core flash" @5 clear_cel = 12,22 18,24 .
-"Shard NW" @5 clear_cel = 1,5 2,5 .
-Sparks @5 clear_cel = 2,3 30,29 .
-"Shard NE" @5 clear_cel = 30,5 31,5 .
-"Shard W" @5 clear_cel = 1,20 1,20 .
-"Shard E" @5 clear_cel = 30,20 30,20 .
-"Smoke curl" @5 grid 14,4 = 14,4 10x12
-    ....DDD...
-    ...DDEDD..
-    ..DDEEDDD.
-    .DDEDD.DDD
-    .DEDD...DD
-    DEDD....DD
-    DEDD......
-    DDEDD.....
-    .DDEDD....
-    ..DDEDDD..
-    ...DDDD...
-    ....DD....
-"Shard NW" @5 pencil #54485f size 1 = 1,8 1,8 #54485f
-"Shard NE" @5 pencil #54485f size 1 = 31,8 31,8 #54485f
-Sparks @5 grid 4,5 = 4,5 19x4
-    ..................D
-    ...................
-    ...................
-    D..................
-frame add copy_from=5 duration_ms=100
-"Smoke curl" @6 clear_cel = 14,4 23,15 .
-"Shard NW" @6 clear_cel = 1,8 1,8 .
-Sparks @6 clear_cel = 4,5 22,8 .
-"Shard NE" @6 clear_cel = 31,8 31,8 .
-"Smoke curl" @6 grid 17,3 = 17,3 6x10
-    ...DD.
-    ..DED.
-    ..DD..
-    ......
-    DD....
-    DD....
-    .D....
-    ....DD
-    ...DD.
-    ....D.
-frame add copy_from=6 duration_ms=100
-"Smoke curl" @7 clear_cel = 17,3 22,12 .
-"Smoke curl" @7 grid 19,3 = 19,3 4x4
-    ..D.
-    ...D
-    ....
-    D...
-frame add copy_from=7 duration_ms=100
-"Smoke curl" @8 clear_cel = 19,3 22,6 .
-frame add copy_from=8 duration_ms=100
-frame move frame=9 to_index=0
-"Core flash" @0 grid 13,16 = 13,16 5x5
-    ..B..
-    .ACA.
-    BCCCB
-    .ACA.
-    ..A..
-frame duration frame=0 count=10 duration_ms=100
+palette op=set colors=#fff3cf,#ffca55,#f57538,#b84846,#8c8598,#54485f
+layer op=rename index=0 name="Smoke curl"
+layer op=add name="Core flash"
+layer op=add name="Flying debris"
+layer op=add name=Sparks
+draw op=polygon layer=1 frame=0 color=#f57538 fill=true points=15,4 17,12 22,7 20,14 28,13 23,17 29,22 21,21 24,28 18,24 15,29 13,23 6,27 9,21 3,20 9,17 5,10 12,13 12,8 14,13
+draw op=polygon layer=1 frame=0 color=#ffca55 fill=true points=15,9 17,15 20,11 19,16 24,15 21,18 25,21 20,20 20,24 17,22 15,25 14,21 10,23 11,19 6,20 11,17 9,14 14,16
+draw op=polygon layer=1 frame=0 color=#fff3cf fill=true points=14,13 16,12 17,16 20,15 19,18 21,19 18,20 17,23 14,21 11,21 12,18 11,16 14,16
+layer op=rename index=2 name="Shard NW"
+layer op=add name="Shard NE"
+layer op=add name="Shard W"
+layer op=add name="Shard E"
+layer op=add name="Shard SW"
+layer op=add name="Shard SE"
+draw op=pencil layer=3 frame=0 color=#ffca55 points=10,5 26,8 3,14 28,26 size=1
+draw op=pencil layer=3 frame=0 color=#fff3cf points=10,4 27,8 size=1
+frame op=add copy_from=0 duration_ms=100
+draw op=clear_cel layer=0 frame=1
+draw op=clear_cel layer=1 frame=1
+draw op=clear_cel layer=2 frame=1
+draw op=clear_cel layer=3 frame=1
+draw op=clear_cel layer=4 frame=1
+draw op=clear_cel layer=5 frame=1
+draw op=clear_cel layer=6 frame=1
+draw op=clear_cel layer=7 frame=1
+draw op=clear_cel layer=8 frame=1
+paint_grid layer=0 frame=1 x=12 y=15 legend=D:5,M:4 rows:8
+  |..DDD..|
+  |.DDMDD.|
+  |DDMMMDD|
+  |DMMDMMD|
+  |DDDMMDD|
+  |.DDDDD.|
+  |..DDD..|
+  |...D...|
+paint_grid layer=1 frame=1 x=7 y=9 legend=O:2,R:3,W:0,Y:1 rows:18
+  |.....OO.....OO.....|
+  |....OYYO...OYYO....|
+  |...OYWYYO.OYWWYO...|
+  |..OYYWWYYOYYWWYYO..|
+  |.OYYWWYYOOYYWYYYO..|
+  |OOYYYYOO..OYYYOO...|
+  |OYYYOO.....OYYO....|
+  |ORYYO......OYOO.OO.|
+  |.ROYO..........OYWO|
+  |..OO...........OYYO|
+  |..............OYOO.|
+  |.OO..........OYOR..|
+  |ORYYO.......OYOR...|
+  |.ORYYYOO..OOYOR....|
+  |..ORYYYYOYYOOR.....|
+  |...ROYYYYOOOR......|
+  |....ROOORR.........|
+  |......RR...........|
+paint_grid layer=2 frame=1 x=7 y=8 legend=D:5,O:2,R:3,Y:1 rows:3
+  |.YO|
+  |ORR|
+  |DR.|
+paint_grid layer=4 frame=1 x=22 y=8 legend=D:5,O:2,R:3,Y:1 rows:3
+  |YO.|
+  |RRO|
+  |.RD|
+paint_grid layer=5 frame=1 x=4 y=17 legend=D:5,O:2,R:3,Y:1 rows:3
+  |YO.|
+  |RRO|
+  |.D.|
+paint_grid layer=6 frame=1 x=26 y=18 legend=D:5,O:2,R:3,Y:1 rows:3
+  |.OY|
+  |RRO|
+  |DR.|
+paint_grid layer=7 frame=1 x=8 y=26 legend=D:5,O:2,R:3 rows:3
+  |OR.|
+  |RRO|
+  |.D.|
+paint_grid layer=8 frame=1 x=21 y=26 legend=D:5,O:2,R:3 rows:3
+  |.RO|
+  |ORR|
+  |.D.|
+paint_grid layer=3 frame=1 x=2 y=3 legend=O:2,W:0,Y:1 rows:26
+  |.........Y...W...............|
+  |........O....Y...............|
+  |........O....Y...............|
+  |............O...........YW...|
+  |.......................Y.....|
+  |......................O......|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |WY...........................|
+  |..YO.........................|
+  |.............................|
+  |.........................OY..|
+  |...........................YW|
+  |.............................|
+  |.....O.......................|
+  |....Y........................|
+  |...Y...................O.....|
+  |..W.....................Y....|
+  |.........................Y...|
+frame op=add copy_from=1 duration_ms=100
+draw op=clear_cel layer=0 frame=2
+draw op=clear_cel layer=1 frame=2
+draw op=clear_cel layer=2 frame=2
+draw op=clear_cel layer=3 frame=2
+draw op=clear_cel layer=4 frame=2
+draw op=clear_cel layer=5 frame=2
+draw op=clear_cel layer=6 frame=2
+draw op=clear_cel layer=7 frame=2
+draw op=clear_cel layer=8 frame=2
+paint_grid layer=0 frame=2 x=10 y=11 legend=D:5,M:4 rows:13
+  |....DDDD...|
+  |...DMMMDD..|
+  |..DMMMMMDD.|
+  |.DMMMMMMMD.|
+  |.DMMMDDDMD.|
+  |DDMMMDD.MDD|
+  |DMMMMMDDMMD|
+  |DMMDMMMMDMD|
+  |.DDMDMMMMDD|
+  |..DDMMMMDD.|
+  |...DDMDDD..|
+  |....DDD....|
+  |.....D.....|
+paint_grid layer=1 frame=2 x=8 y=8 legend=O:2,R:3,W:0,Y:1 rows:17
+  |...OYO......YO...|
+  |..OYYO.....OYYO..|
+  |.OYYRO....OYWYO..|
+  |.OYRO......OYYO..|
+  |ORRO........ORO..|
+  |.RR..........RO..|
+  |.................|
+  |.................|
+  |.................|
+  |..............OYO|
+  |..............ORO|
+  |.RO..........ORR.|
+  |ORYO........ORR..|
+  |.ORYOO....OOR....|
+  |..RORYOOOOOR.....|
+  |...RROOOORR......|
+  |.....RRRR........|
+paint_grid layer=2 frame=2 x=4 y=5 legend=D:5,O:2,R:3 rows:3
+  |OR.|
+  |RRD|
+  |.D.|
+paint_grid layer=4 frame=2 x=25 y=5 legend=D:5,O:2,R:3 rows:3
+  |.RO|
+  |DRR|
+  |.D.|
+paint_grid layer=5 frame=2 x=2 y=16 legend=D:5,O:2,R:3 rows:2
+  |OR|
+  |RD|
+paint_grid layer=6 frame=2 x=28 y=16 legend=D:5,O:2,R:3 rows:2
+  |RO|
+  |DR|
+paint_grid layer=7 frame=2 x=5 y=28 legend=D:5,O:2,R:3 rows:3
+  |.OR|
+  |RR.|
+  |D..|
+paint_grid layer=8 frame=2 x=24 y=28 legend=D:5,O:2,R:3 rows:3
+  |RO.|
+  |.RR|
+  |..D|
+paint_grid layer=3 frame=2 x=1 y=2 legend=O:2,R:3,Y:1 rows:29
+  |.......O.........Y............|
+  |.......O........O.............|
+  |...............O............Y.|
+  |...............R...........O..|
+  |..........................O...|
+  |.........................R....|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..OR..........................|
+  |.O............................|
+  |Y.............................|
+  |..........................R...|
+  |...........................O..|
+  |............................O.|
+  |.............................Y|
+  |..............................|
+  |..............................|
+  |....O.....................O...|
+  |...O.......................O..|
+  |..Y.........................Y.|
+draw op=pencil layer=0 frame=2 color=#8c8598 points=13,18 14,19 size=1
+frame op=add copy_from=2 duration_ms=100
+draw op=clear_cel layer=0 frame=3
+draw op=clear_cel layer=1 frame=3
+draw op=clear_cel layer=2 frame=3
+draw op=clear_cel layer=3 frame=3
+draw op=clear_cel layer=4 frame=3
+draw op=clear_cel layer=5 frame=3
+draw op=clear_cel layer=6 frame=3
+draw op=clear_cel layer=7 frame=3
+draw op=clear_cel layer=8 frame=3
+paint_grid layer=0 frame=3 x=9 y=8 legend=D:5,M:4 rows:15
+  |.....DDDD....|
+  |...DDMMMMDD..|
+  |..DMMMMMMMMD.|
+  |.DMMMMMMDDMDD|
+  |.DMMMMDD..MMD|
+  |DDMMMDD...MMD|
+  |DMMMDD....MMD|
+  |DMMMDD....DD.|
+  |DMMMMDD......|
+  |.DMMMMDD.....|
+  |..DDMMMMDD...|
+  |...DMMMMMDD..|
+  |...DDMMDDD...|
+  |....DDDD.....|
+  |.....DD......|
+paint_grid layer=1 frame=3 x=10 y=8 legend=O:2,R:3 rows:16
+  |O.............|
+  |RO..........O.|
+  |RR..........O.|
+  |...........RR.|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |..............|
+  |.............R|
+  |..............|
+  |..............|
+  |.......O.R....|
+  |.RR.OOORR.....|
+  |..RRRRR.......|
+paint_grid layer=2 frame=3 x=2 y=4 legend=D:5,R:3 rows:2
+  |RR|
+  |DD|
+paint_grid layer=4 frame=3 x=28 y=4 legend=D:5,R:3 rows:2
+  |RR|
+  |DD|
+paint_grid layer=5 frame=3 x=1 y=17 legend=D:5,R:3 rows:2
+  |R|
+  |D|
+paint_grid layer=6 frame=3 x=30 y=17 legend=D:5,R:3 rows:2
+  |R|
+  |D|
+paint_grid layer=7 frame=3 x=4 y=30 legend=D:5,R:3 rows:1
+  |RD|
+paint_grid layer=8 frame=3 x=26 y=30 legend=D:5,R:3 rows:1
+  |DR|
+paint_grid layer=3 frame=3 x=1 y=1 legend=O:2,R:3 rows:29
+  |.....O........................|
+  |....R.............RO..........|
+  |....R.........................|
+  |..............................|
+  |.............................O|
+  |............................R.|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |..............................|
+  |R.............................|
+  |O.............................|
+  |..............................|
+  |..............................|
+  |.............................R|
+  |.............................O|
+frame op=add copy_from=3 duration_ms=100
+draw op=clear_cel layer=0 frame=4
+draw op=clear_cel layer=1 frame=4
+draw op=clear_cel layer=2 frame=4
+draw op=clear_cel layer=3 frame=4
+draw op=clear_cel layer=4 frame=4
+draw op=clear_cel layer=5 frame=4
+draw op=clear_cel layer=6 frame=4
+draw op=clear_cel layer=7 frame=4
+draw op=clear_cel layer=8 frame=4
+paint_grid layer=0 frame=4 x=11 y=6 legend=D:5,M:4 rows:14
+  |.....DDD....|
+  |...DDMMMDD..|
+  |..DMMMMMMMD.|
+  |.DMMMDDDMMDD|
+  |.DMMDD..DMMD|
+  |DMMDD....MMD|
+  |DMMDD....MMD|
+  |DMMMD....DD.|
+  |.DMMMDD.....|
+  |..DMMMDD....|
+  |...DDMMMDD..|
+  |....DMMDD...|
+  |....DDDD....|
+  |...DDD......|
+paint_grid layer=1 frame=4 x=12 y=22 legend=R:3 rows:3
+  |......R|
+  |R......|
+  |.R.R...|
+paint_grid layer=2 frame=4 x=1 y=5 legend=D:5,R:3 rows:1
+  |RD|
+paint_grid layer=4 frame=4 x=30 y=5 legend=D:5,R:3 rows:1
+  |DR|
+paint_grid layer=5 frame=4 x=1 y=20 legend=D:5 rows:1
+  |D|
+paint_grid layer=6 frame=4 x=30 y=20 legend=D:5 rows:1
+  |D|
+paint_grid layer=3 frame=4 x=2 y=3 legend=R:3 rows:27
+  |...................R.........|
+  |.............................|
+  |...R.........................|
+  |.............................|
+  |.............................|
+  |............................R|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |.............................|
+  |R............................|
+frame op=add copy_from=4 duration_ms=100
+draw op=clear_cel layer=0 frame=5
+draw op=clear_cel layer=1 frame=5
+draw op=clear_cel layer=2 frame=5
+draw op=clear_cel layer=3 frame=5
+draw op=clear_cel layer=4 frame=5
+draw op=clear_cel layer=5 frame=5
+draw op=clear_cel layer=6 frame=5
+paint_grid layer=0 frame=5 x=14 y=4 legend=D:5,M:4 rows:12
+  |....DDD...|
+  |...DDMDD..|
+  |..DDMMDDD.|
+  |.DDMDD.DDD|
+  |.DMDD...DD|
+  |DMDD....DD|
+  |DMDD......|
+  |DDMDD.....|
+  |.DDMDD....|
+  |..DDMDDD..|
+  |...DDDD...|
+  |....DD....|
+draw op=pencil layer=2 frame=5 color=#54485f points=[[1,8]] size=1
+draw op=pencil layer=4 frame=5 color=#54485f points=[[31,8]] size=1
+paint_grid layer=3 frame=5 x=4 y=5 legend=D:5 rows:4
+  |..................D|
+  |...................|
+  |...................|
+  |D..................|
+frame op=add copy_from=5 duration_ms=100
+draw op=clear_cel layer=0 frame=6
+draw op=clear_cel layer=2 frame=6
+draw op=clear_cel layer=3 frame=6
+draw op=clear_cel layer=4 frame=6
+paint_grid layer=0 frame=6 x=17 y=3 legend=D:5,M:4 rows:10
+  |...DD.|
+  |..DMD.|
+  |..DD..|
+  |......|
+  |DD....|
+  |DD....|
+  |.D....|
+  |....DD|
+  |...DD.|
+  |....D.|
+frame op=add copy_from=6 duration_ms=100
+draw op=clear_cel layer=0 frame=7
+paint_grid layer=0 frame=7 x=19 y=3 legend=D:5 rows:4
+  |..D.|
+  |...D|
+  |....|
+  |D...|
+frame op=add copy_from=7 duration_ms=100
+draw op=clear_cel layer=0 frame=8
+frame op=add copy_from=8 duration_ms=100
+frame op=move frame=9 to_index=0
+paint_grid layer=1 frame=0 x=13 y=16 legend=O:2,W:0,Y:1 rows:5
+  |..Y..|
+  |.OWO.|
+  |YWWWY|
+  |.OWO.|
+  |..O..|
+frame op=duration frame=0 count=10 duration_ms=100
 add_tag name=explosion direction=forward from=0 to=9

@@ -1,884 +1,275 @@
-atelier 5 498b6299-401e-472a-83e9-029c68f137d1 0.1.0
+atelier 4 498b6299-401e-472a-83e9-029c68f137d1 0.1.0
 new name=car-gpt56-max width=32 height=32
-layer rename index=0 name="Speed Lines"
-layer add name="Exhaust FX"
-layer add name="Rear Wheel"
-layer add name="Front Wheel"
-layer add name=Chassis
-palette set colors=#1c1a24,#2d3648,#cd3844,#f45c4e,#f5dca7,#889ba1
-frame add copy_from=0 count=9 duration_ms=100
-legend A=#1c1a24
-Chassis @0 polygon #1c1a24 fill = 3,11 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-legend B=#cd3844
-Chassis @0 polygon #cd3844 fill = 4,12 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-legend C=#2d3648
-Chassis @0 polygon #2d3648 fill = 12,12 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @0 line #1c1a24 18,12 18,16 size 1 = 18,12 18,16 #1c1a24
-Chassis @0 line #f45c4e 7,17 25,17 size 1 = 7,17 25,17 #f45c4e
-Chassis @0 rect #f5dca7 26,18 28,19 fill = 26,18 28,19 #f5dca7
-Chassis @0 rect #f5dca7 4,18 5,19 fill = 4,18 5,19 #f5dca7
-Chassis @0 rect #f45c4e 13,18 15,19 fill = 13,18 15,19 #f45c4e
-Chassis @0 line #1c1a24 5,22 27,22 size 1 = 6,22 27,22 #1c1a24
-Chassis @0 rect #2d3648 28,21 30,22 fill = 28,21 30,22 #2d3648
-Chassis @3 polygon #1c1a24 fill = 3,11 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @3 polygon #cd3844 fill = 4,12 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @3 polygon #2d3648 fill = 12,12 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @3 line #1c1a24 18,12 18,16 size 1 = 18,12 18,16 #1c1a24
-Chassis @3 line #f45c4e 7,17 25,17 size 1 = 7,17 25,17 #f45c4e
-Chassis @3 rect #f5dca7 26,18 28,19 fill = 26,18 28,19 #f5dca7
-Chassis @3 rect #f5dca7 4,18 5,19 fill = 4,18 5,19 #f5dca7
-Chassis @3 rect #f45c4e 13,18 15,19 fill = 13,18 15,19 #f45c4e
-Chassis @3 line #1c1a24 5,22 27,22 size 1 = 6,22 27,22 #1c1a24
-Chassis @3 rect #2d3648 28,21 30,22 fill = 28,21 30,22 #2d3648
-Chassis @6 polygon #1c1a24 fill = 3,11 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @6 polygon #cd3844 fill = 4,12 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @6 polygon #2d3648 fill = 12,12 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @6 line #1c1a24 18,12 18,16 size 1 = 18,12 18,16 #1c1a24
-Chassis @6 line #f45c4e 7,17 25,17 size 1 = 7,17 25,17 #f45c4e
-Chassis @6 rect #f5dca7 26,18 28,19 fill = 26,18 28,19 #f5dca7
-Chassis @6 rect #f5dca7 4,18 5,19 fill = 4,18 5,19 #f5dca7
-Chassis @6 rect #f45c4e 13,18 15,19 fill = 13,18 15,19 #f45c4e
-Chassis @6 line #1c1a24 5,22 27,22 size 1 = 6,22 27,22 #1c1a24
-Chassis @6 rect #2d3648 28,21 30,22 fill = 28,21 30,22 #2d3648
-Chassis @9 polygon #1c1a24 fill = 3,11 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @9 polygon #cd3844 fill = 4,12 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @9 polygon #2d3648 fill = 12,12 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @9 line #1c1a24 18,12 18,16 size 1 = 18,12 18,16 #1c1a24
-Chassis @9 line #f45c4e 7,17 25,17 size 1 = 7,17 25,17 #f45c4e
-Chassis @9 rect #f5dca7 26,18 28,19 fill = 26,18 28,19 #f5dca7
-Chassis @9 rect #f5dca7 4,18 5,19 fill = 4,18 5,19 #f5dca7
-Chassis @9 rect #f45c4e 13,18 15,19 fill = 13,18 15,19 #f45c4e
-Chassis @9 line #1c1a24 5,22 27,22 size 1 = 6,22 27,22 #1c1a24
-Chassis @9 rect #2d3648 28,21 30,22 fill = 28,21 30,22 #2d3648
-Chassis @1 polygon #1c1a24 fill = 3,10 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @1 polygon #cd3844 fill = 4,11 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @1 polygon #2d3648 fill = 12,11 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @1 line #1c1a24 18,11 18,15 size 1 = 18,11 18,15 #1c1a24
-Chassis @1 line #f45c4e 7,16 25,16 size 1 = 7,16 25,16 #f45c4e
-Chassis @1 rect #f5dca7 26,17 28,18 fill = 26,17 28,18 #f5dca7
-Chassis @1 rect #f5dca7 4,17 5,18 fill = 4,17 5,18 #f5dca7
-Chassis @1 rect #f45c4e 13,17 15,18 fill = 13,17 15,18 #f45c4e
-Chassis @1 line #1c1a24 5,21 27,21 size 1 = 6,21 27,21 #1c1a24
-Chassis @1 rect #2d3648 28,20 30,21 fill = 28,20 30,21 #2d3648
-Chassis @2 polygon #1c1a24 fill = 3,10 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @2 polygon #cd3844 fill = 4,11 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @2 polygon #2d3648 fill = 12,11 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @2 line #1c1a24 18,11 18,15 size 1 = 18,11 18,15 #1c1a24
-Chassis @2 line #f45c4e 7,16 25,16 size 1 = 7,16 25,16 #f45c4e
-Chassis @2 rect #f5dca7 26,17 28,18 fill = 26,17 28,18 #f5dca7
-Chassis @2 rect #f5dca7 4,17 5,18 fill = 4,17 5,18 #f5dca7
-Chassis @2 rect #f45c4e 13,17 15,18 fill = 13,17 15,18 #f45c4e
-Chassis @2 line #1c1a24 5,21 27,21 size 1 = 6,21 27,21 #1c1a24
-Chassis @2 rect #2d3648 28,20 30,21 fill = 28,20 30,21 #2d3648
-Chassis @7 polygon #1c1a24 fill = 3,10 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @7 polygon #cd3844 fill = 4,11 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @7 polygon #2d3648 fill = 12,11 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @7 line #1c1a24 18,11 18,15 size 1 = 18,11 18,15 #1c1a24
-Chassis @7 line #f45c4e 7,16 25,16 size 1 = 7,16 25,16 #f45c4e
-Chassis @7 rect #f5dca7 26,17 28,18 fill = 26,17 28,18 #f5dca7
-Chassis @7 rect #f5dca7 4,17 5,18 fill = 4,17 5,18 #f5dca7
-Chassis @7 rect #f45c4e 13,17 15,18 fill = 13,17 15,18 #f45c4e
-Chassis @7 line #1c1a24 5,21 27,21 size 1 = 6,21 27,21 #1c1a24
-Chassis @7 rect #2d3648 28,20 30,21 fill = 28,20 30,21 #2d3648
-Chassis @8 polygon #1c1a24 fill = 3,10 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @8 polygon #cd3844 fill = 4,11 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @8 polygon #2d3648 fill = 12,11 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @8 line #1c1a24 18,11 18,15 size 1 = 18,11 18,15 #1c1a24
-Chassis @8 line #f45c4e 7,16 25,16 size 1 = 7,16 25,16 #f45c4e
-Chassis @8 rect #f5dca7 26,17 28,18 fill = 26,17 28,18 #f5dca7
-Chassis @8 rect #f5dca7 4,17 5,18 fill = 4,17 5,18 #f5dca7
-Chassis @8 rect #f45c4e 13,17 15,18 fill = 13,17 15,18 #f45c4e
-Chassis @8 line #1c1a24 5,21 27,21 size 1 = 6,21 27,21 #1c1a24
-Chassis @8 rect #2d3648 28,20 30,21 fill = 28,20 30,21 #2d3648
-Chassis @4 polygon #1c1a24 fill = 3,12 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @4 polygon #cd3844 fill = 4,13 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @4 polygon #2d3648 fill = 12,13 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @4 line #1c1a24 18,13 18,17 size 1 = 18,13 18,17 #1c1a24
-Chassis @4 line #f45c4e 7,18 25,18 size 1 = 7,18 25,18 #f45c4e
-Chassis @4 rect #f5dca7 26,19 28,20 fill = 26,19 28,20 #f5dca7
-Chassis @4 rect #f5dca7 4,19 5,20 fill = 4,19 5,20 #f5dca7
-Chassis @4 rect #f45c4e 13,19 15,20 fill = 13,19 15,20 #f45c4e
-Chassis @4 line #1c1a24 5,23 27,23 size 1 = 6,23 27,23 #1c1a24
-Chassis @4 rect #2d3648 28,22 30,23 fill = 28,22 30,23 #2d3648
-Chassis @5 polygon #1c1a24 fill = 3,12 27x13
-    .........AAAAAAAA..........
-    ........AAAAAAAAAA.........
-    ........AAAAAAAAAAA........
-    .......AAAAAAAAAAAAA.......
-    .....AAAAAAAAAAAAAAAAAA....
-    ...AAAAAAAAAAAAAAAAAAAAAA..
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAAAAAAAAAAAA.
-    ..AAAAAAAAAAAAAAAAAAAAAAA..
-Chassis @5 polygon #cd3844 fill = 4,13 25x11
-    .......AABBBBBBAA........
-    .......ABBBBBBBBAA.......
-    ......AABBBBBBBBBAA......
-    ....AAABBBBBBBBBBBAAAA...
-    ..AAABBBBBBBBBBBBBBBBAAA.
-    AABBBBBBBBBBBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    BBBBBBBBBBBBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBBBBBBBBBBBB
-    AABBBBBBBBBBBBBBBBBBBBBBA
-Chassis @5 polygon #2d3648 fill = 12,13 10x5
-    ABCCCCCAA.
-    BBCCCCCCAA
-    BCCCCCCCCA
-    BCCCCCCCCB
-    CCCCCCCCCC
-Chassis @5 line #1c1a24 18,13 18,17 size 1 = 18,13 18,17 #1c1a24
-Chassis @5 line #f45c4e 7,18 25,18 size 1 = 7,18 25,18 #f45c4e
-Chassis @5 rect #f5dca7 26,19 28,20 fill = 26,19 28,20 #f5dca7
-Chassis @5 rect #f5dca7 4,19 5,20 fill = 4,19 5,20 #f5dca7
-Chassis @5 rect #f45c4e 13,19 15,20 fill = 13,19 15,20 #f45c4e
-Chassis @5 line #1c1a24 5,23 27,23 size 1 = 6,23 27,23 #1c1a24
-Chassis @5 rect #2d3648 28,22 30,23 fill = 28,22 30,23 #2d3648
-"Rear Wheel" @0 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @0 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @0 line #f5dca7 10,22 10,20 size 1 = 10,20 10,22 #f5dca7
-"Rear Wheel" @0 line #f45c4e 10,22 10,24 size 1 = 10,22 10,24 #f45c4e
-"Rear Wheel" @0 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @5 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @5 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @5 line #f5dca7 10,22 10,20 size 1 = 10,20 10,22 #f5dca7
-"Rear Wheel" @5 line #f45c4e 10,22 10,24 size 1 = 10,22 10,24 #f45c4e
-"Rear Wheel" @5 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @1 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @1 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-legend D=#f5dca7
-"Rear Wheel" @1 line #f5dca7 10,22 12,21 size 1 = 10,21 3x2
-    CDD
-    DCC
-legend E=#f45c4e
-"Rear Wheel" @1 line #f45c4e 10,22 8,23 size 1 = 8,22 3x2
-    CCE
-    EEC
-"Rear Wheel" @1 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @6 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @6 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @6 line #f5dca7 10,22 12,21 size 1 = 10,21 3x2
-    CDD
-    DCC
-"Rear Wheel" @6 line #f45c4e 10,22 8,23 size 1 = 8,22 3x2
-    CCE
-    EEC
-"Rear Wheel" @6 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @2 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @2 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @2 line #f5dca7 10,22 12,23 size 1 = 10,22 3x2
-    DCC
-    CDD
-"Rear Wheel" @2 line #f45c4e 10,22 8,21 size 1 = 8,21 3x2
-    EEC
-    CCE
-"Rear Wheel" @2 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @7 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @7 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @7 line #f5dca7 10,22 12,23 size 1 = 10,22 3x2
-    DCC
-    CDD
-"Rear Wheel" @7 line #f45c4e 10,22 8,21 size 1 = 8,21 3x2
-    EEC
-    CCE
-"Rear Wheel" @7 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @3 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @3 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @3 line #f5dca7 10,22 10,24 size 1 = 10,22 10,24 #f5dca7
-"Rear Wheel" @3 line #f45c4e 10,22 10,20 size 1 = 10,20 10,22 #f45c4e
-"Rear Wheel" @3 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @8 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @8 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @8 line #f5dca7 10,22 10,24 size 1 = 10,22 10,24 #f5dca7
-"Rear Wheel" @8 line #f45c4e 10,22 10,20 size 1 = 10,20 10,22 #f45c4e
-"Rear Wheel" @8 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @4 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @4 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @4 line #f5dca7 10,22 8,23 size 1 = 8,22 3x2
-    CCD
-    DDC
-"Rear Wheel" @4 line #f45c4e 10,22 12,21 size 1 = 10,21 3x2
-    CEE
-    ECC
-"Rear Wheel" @4 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Rear Wheel" @9 ellipse #1c1a24 10,22 3,3 fill = 7,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Rear Wheel" @9 ellipse #2d3648 10,22 2,2 fill = 8,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Rear Wheel" @9 line #f5dca7 10,22 8,23 size 1 = 8,22 3x2
-    CCD
-    DDC
-"Rear Wheel" @9 line #f45c4e 10,22 12,21 size 1 = 10,21 3x2
-    CEE
-    ECC
-"Rear Wheel" @9 pencil #f5dca7 = 10,22 10,22 #f5dca7
-"Front Wheel" @0 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @0 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @0 line #f5dca7 23,22 23,20 size 1 = 23,20 23,22 #f5dca7
-"Front Wheel" @0 line #f45c4e 23,22 23,24 size 1 = 23,22 23,24 #f45c4e
-"Front Wheel" @0 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @5 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @5 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @5 line #f5dca7 23,22 23,20 size 1 = 23,20 23,22 #f5dca7
-"Front Wheel" @5 line #f45c4e 23,22 23,24 size 1 = 23,22 23,24 #f45c4e
-"Front Wheel" @5 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @1 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @1 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @1 line #f5dca7 23,22 25,21 size 1 = 23,21 3x2
-    CDD
-    DCC
-"Front Wheel" @1 line #f45c4e 23,22 21,23 size 1 = 21,22 3x2
-    CCE
-    EEC
-"Front Wheel" @1 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @6 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @6 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @6 line #f5dca7 23,22 25,21 size 1 = 23,21 3x2
-    CDD
-    DCC
-"Front Wheel" @6 line #f45c4e 23,22 21,23 size 1 = 21,22 3x2
-    CCE
-    EEC
-"Front Wheel" @6 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @2 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @2 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @2 line #f5dca7 23,22 25,23 size 1 = 23,22 3x2
-    DCC
-    CDD
-"Front Wheel" @2 line #f45c4e 23,22 21,21 size 1 = 21,21 3x2
-    EEC
-    CCE
-"Front Wheel" @2 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @7 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @7 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @7 line #f5dca7 23,22 25,23 size 1 = 23,22 3x2
-    DCC
-    CDD
-"Front Wheel" @7 line #f45c4e 23,22 21,21 size 1 = 21,21 3x2
-    EEC
-    CCE
-"Front Wheel" @7 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @3 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @3 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @3 line #f5dca7 23,22 23,24 size 1 = 23,22 23,24 #f5dca7
-"Front Wheel" @3 line #f45c4e 23,22 23,20 size 1 = 23,20 23,22 #f45c4e
-"Front Wheel" @3 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @8 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @8 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @8 line #f5dca7 23,22 23,24 size 1 = 23,22 23,24 #f5dca7
-"Front Wheel" @8 line #f45c4e 23,22 23,20 size 1 = 23,20 23,22 #f45c4e
-"Front Wheel" @8 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @4 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @4 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @4 line #f5dca7 23,22 21,23 size 1 = 21,22 3x2
-    CCD
-    DDC
-"Front Wheel" @4 line #f45c4e 23,22 25,21 size 1 = 23,21 3x2
-    CEE
-    ECC
-"Front Wheel" @4 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Front Wheel" @9 ellipse #1c1a24 23,22 3,3 fill = 20,19 7x7
-    ..AAA..
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-    ..AAA..
-"Front Wheel" @9 ellipse #2d3648 23,22 2,2 fill = 21,20 5x5
-    ACCCA
-    CCCCC
-    CCCCC
-    CCCCC
-    ACCCA
-"Front Wheel" @9 line #f5dca7 23,22 21,23 size 1 = 21,22 3x2
-    CCD
-    DDC
-"Front Wheel" @9 line #f45c4e 23,22 25,21 size 1 = 23,21 3x2
-    CEE
-    ECC
-"Front Wheel" @9 pencil #f5dca7 = 23,22 23,22 #f5dca7
-"Speed Lines" @0 line #889ba1 1,11 7,11 size 1 = 1,11 7,11 #889ba1
-"Speed Lines" @0 line #889ba1 22,8 29,8 size 1 = 22,8 29,8 #889ba1
-"Speed Lines" @0 line #889ba1 0,27 5,27 size 1 = 0,27 5,27 #889ba1
-"Speed Lines" @0 line #889ba1 17,29 23,29 size 1 = 17,29 23,29 #889ba1
-"Speed Lines" @5 line #889ba1 1,11 7,11 size 1 = 1,11 7,11 #889ba1
-"Speed Lines" @5 line #889ba1 22,8 29,8 size 1 = 22,8 29,8 #889ba1
-"Speed Lines" @5 line #889ba1 0,27 5,27 size 1 = 0,27 5,27 #889ba1
-"Speed Lines" @5 line #889ba1 17,29 23,29 size 1 = 17,29 23,29 #889ba1
-"Speed Lines" @1 line #889ba1 0,11 2,11 size 1 = 0,11 2,11 #889ba1
-"Speed Lines" @1 line #889ba1 28,11 31,11 size 1 = 28,11 31,11 #889ba1
-"Speed Lines" @1 line #889ba1 17,8 24,8 size 1 = 17,8 24,8 #889ba1
-"Speed Lines" @1 line #889ba1 27,27 31,27 size 1 = 27,27 31,27 #889ba1
-"Speed Lines" @1 line #889ba1 12,29 18,29 size 1 = 12,29 18,29 #889ba1
-"Speed Lines" @6 line #889ba1 0,11 2,11 size 1 = 0,11 2,11 #889ba1
-"Speed Lines" @6 line #889ba1 28,11 31,11 size 1 = 28,11 31,11 #889ba1
-"Speed Lines" @6 line #889ba1 17,8 24,8 size 1 = 17,8 24,8 #889ba1
-"Speed Lines" @6 line #889ba1 27,27 31,27 size 1 = 27,27 31,27 #889ba1
-"Speed Lines" @6 line #889ba1 12,29 18,29 size 1 = 12,29 18,29 #889ba1
-"Speed Lines" @2 line #889ba1 23,11 29,11 size 1 = 23,11 29,11 #889ba1
-"Speed Lines" @2 line #889ba1 12,8 19,8 size 1 = 12,8 19,8 #889ba1
-"Speed Lines" @2 line #889ba1 22,27 27,27 size 1 = 22,27 27,27 #889ba1
-"Speed Lines" @2 line #889ba1 7,29 13,29 size 1 = 7,29 13,29 #889ba1
-"Speed Lines" @7 line #889ba1 23,11 29,11 size 1 = 23,11 29,11 #889ba1
-"Speed Lines" @7 line #889ba1 12,8 19,8 size 1 = 12,8 19,8 #889ba1
-"Speed Lines" @7 line #889ba1 22,27 27,27 size 1 = 22,27 27,27 #889ba1
-"Speed Lines" @7 line #889ba1 7,29 13,29 size 1 = 7,29 13,29 #889ba1
-"Speed Lines" @3 line #889ba1 18,11 24,11 size 1 = 18,11 24,11 #889ba1
-"Speed Lines" @3 line #889ba1 7,8 14,8 size 1 = 7,8 14,8 #889ba1
-"Speed Lines" @3 line #889ba1 17,27 22,27 size 1 = 17,27 22,27 #889ba1
-"Speed Lines" @3 line #889ba1 2,29 8,29 size 1 = 2,29 8,29 #889ba1
-"Speed Lines" @8 line #889ba1 18,11 24,11 size 1 = 18,11 24,11 #889ba1
-"Speed Lines" @8 line #889ba1 7,8 14,8 size 1 = 7,8 14,8 #889ba1
-"Speed Lines" @8 line #889ba1 17,27 22,27 size 1 = 17,27 22,27 #889ba1
-"Speed Lines" @8 line #889ba1 2,29 8,29 size 1 = 2,29 8,29 #889ba1
-"Speed Lines" @4 line #889ba1 13,11 19,11 size 1 = 13,11 19,11 #889ba1
-"Speed Lines" @4 line #889ba1 2,8 9,8 size 1 = 2,8 9,8 #889ba1
-"Speed Lines" @4 line #889ba1 12,27 17,27 size 1 = 12,27 17,27 #889ba1
-"Speed Lines" @4 line #889ba1 0,29 3,29 size 1 = 0,29 3,29 #889ba1
-"Speed Lines" @4 line #889ba1 29,29 31,29 size 1 = 29,29 31,29 #889ba1
-"Speed Lines" @9 line #889ba1 13,11 19,11 size 1 = 13,11 19,11 #889ba1
-"Speed Lines" @9 line #889ba1 2,8 9,8 size 1 = 2,8 9,8 #889ba1
-"Speed Lines" @9 line #889ba1 12,27 17,27 size 1 = 12,27 17,27 #889ba1
-"Speed Lines" @9 line #889ba1 0,29 3,29 size 1 = 0,29 3,29 #889ba1
-"Speed Lines" @9 line #889ba1 29,29 31,29 size 1 = 29,29 31,29 #889ba1
-"Exhaust FX" @0 pencil #889ba1 = 2,21 2,21 #889ba1
-"Exhaust FX" @5 pencil #889ba1 = 2,21 2,21 #889ba1
-legend F=#889ba1
-"Exhaust FX" @1 pencil #889ba1 = 1,20 2x2
-    .F
-    FF
-"Exhaust FX" @6 pencil #889ba1 = 1,20 2x2
-    .F
-    FF
-"Exhaust FX" @2 pencil #889ba1 = 0,19 3x3
-    .F.
-    FF.
-    ..F
-"Exhaust FX" @2 pencil #f5dca7 = 1,20 1,20 #f5dca7
-"Exhaust FX" @7 pencil #889ba1 = 0,19 3x3
-    .F.
-    FF.
-    ..F
-"Exhaust FX" @7 pencil #f5dca7 = 1,20 1,20 #f5dca7
-"Exhaust FX" @3 pencil #889ba1 = 0,18 3x3
-    F..
-    F..
-    ..F
-"Exhaust FX" @3 pencil #f5dca7 = 1,18 1,18 #f5dca7
-"Exhaust FX" @8 pencil #889ba1 = 0,18 3x3
-    F..
-    F..
-    ..F
-"Exhaust FX" @8 pencil #f5dca7 = 1,18 1,18 #f5dca7
-"Exhaust FX" @4 pencil #889ba1 = 0,17 3x3
-    F..
-    ...
-    ..F
-"Exhaust FX" @9 pencil #889ba1 = 0,17 3x3
-    F..
-    ...
-    ..F
-Chassis @0 pencil #889ba1 = 20,14 20,15 #889ba1
-Chassis @3 pencil #889ba1 = 20,14 20,15 #889ba1
-Chassis @6 pencil #889ba1 = 20,14 20,15 #889ba1
-Chassis @9 pencil #889ba1 = 20,14 20,15 #889ba1
-Chassis @1 pencil #889ba1 = 20,13 20,14 #889ba1
-Chassis @2 pencil #889ba1 = 20,13 20,14 #889ba1
-Chassis @7 pencil #889ba1 = 20,13 20,14 #889ba1
-Chassis @8 pencil #889ba1 = 20,13 20,14 #889ba1
-Chassis @4 pencil #889ba1 = 20,15 20,16 #889ba1
-Chassis @5 pencil #889ba1 = 20,15 20,16 #889ba1
+layer op=rename index=0 name="Speed Lines"
+layer op=add name="Exhaust FX"
+layer op=add name="Rear Wheel"
+layer op=add name="Front Wheel"
+layer op=add name=Chassis
+palette op=set colors=#1c1a24,#2d3648,#cd3844,#f45c4e,#f5dca7,#889ba1
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=polygon layer=4 frame=0 color=#1c1a24 fill=true points=3,18 6,16 9,15 12,11 19,11 23,15 27,16 29,18 29,21 27,23 5,23 3,21
+draw op=polygon layer=4 frame=0 color=#cd3844 fill=true points=4,18 7,17 10,16 13,12 18,12 22,16 26,17 28,18 28,21 26,22 6,22 4,20
+draw op=polygon layer=4 frame=0 color=#2d3648 fill=true points=12,16 14,12 18,12 21,16
+draw op=line layer=4 frame=0 color=#1c1a24 size=1 x0=18 x1=18 y0=12 y1=16
+draw op=line layer=4 frame=0 color=#f45c4e size=1 x0=7 x1=25 y0=17 y1=17
+draw op=rect layer=4 frame=0 color=#f5dca7 fill=true x0=26 x1=28 y0=18 y1=19
+draw op=rect layer=4 frame=0 color=#f5dca7 fill=true x0=4 x1=5 y0=18 y1=19
+draw op=rect layer=4 frame=0 color=#f45c4e fill=true x0=13 x1=15 y0=18 y1=19
+draw op=line layer=4 frame=0 color=#1c1a24 size=1 x0=5 x1=27 y0=22 y1=22
+draw op=rect layer=4 frame=0 color=#2d3648 fill=true x0=28 x1=30 y0=21 y1=22
+draw op=polygon layer=4 frame=3 color=#1c1a24 fill=true points=3,18 6,16 9,15 12,11 19,11 23,15 27,16 29,18 29,21 27,23 5,23 3,21
+draw op=polygon layer=4 frame=3 color=#cd3844 fill=true points=4,18 7,17 10,16 13,12 18,12 22,16 26,17 28,18 28,21 26,22 6,22 4,20
+draw op=polygon layer=4 frame=3 color=#2d3648 fill=true points=12,16 14,12 18,12 21,16
+draw op=line layer=4 frame=3 color=#1c1a24 size=1 x0=18 x1=18 y0=12 y1=16
+draw op=line layer=4 frame=3 color=#f45c4e size=1 x0=7 x1=25 y0=17 y1=17
+draw op=rect layer=4 frame=3 color=#f5dca7 fill=true x0=26 x1=28 y0=18 y1=19
+draw op=rect layer=4 frame=3 color=#f5dca7 fill=true x0=4 x1=5 y0=18 y1=19
+draw op=rect layer=4 frame=3 color=#f45c4e fill=true x0=13 x1=15 y0=18 y1=19
+draw op=line layer=4 frame=3 color=#1c1a24 size=1 x0=5 x1=27 y0=22 y1=22
+draw op=rect layer=4 frame=3 color=#2d3648 fill=true x0=28 x1=30 y0=21 y1=22
+draw op=polygon layer=4 frame=6 color=#1c1a24 fill=true points=3,18 6,16 9,15 12,11 19,11 23,15 27,16 29,18 29,21 27,23 5,23 3,21
+draw op=polygon layer=4 frame=6 color=#cd3844 fill=true points=4,18 7,17 10,16 13,12 18,12 22,16 26,17 28,18 28,21 26,22 6,22 4,20
+draw op=polygon layer=4 frame=6 color=#2d3648 fill=true points=12,16 14,12 18,12 21,16
+draw op=line layer=4 frame=6 color=#1c1a24 size=1 x0=18 x1=18 y0=12 y1=16
+draw op=line layer=4 frame=6 color=#f45c4e size=1 x0=7 x1=25 y0=17 y1=17
+draw op=rect layer=4 frame=6 color=#f5dca7 fill=true x0=26 x1=28 y0=18 y1=19
+draw op=rect layer=4 frame=6 color=#f5dca7 fill=true x0=4 x1=5 y0=18 y1=19
+draw op=rect layer=4 frame=6 color=#f45c4e fill=true x0=13 x1=15 y0=18 y1=19
+draw op=line layer=4 frame=6 color=#1c1a24 size=1 x0=5 x1=27 y0=22 y1=22
+draw op=rect layer=4 frame=6 color=#2d3648 fill=true x0=28 x1=30 y0=21 y1=22
+draw op=polygon layer=4 frame=9 color=#1c1a24 fill=true points=3,18 6,16 9,15 12,11 19,11 23,15 27,16 29,18 29,21 27,23 5,23 3,21
+draw op=polygon layer=4 frame=9 color=#cd3844 fill=true points=4,18 7,17 10,16 13,12 18,12 22,16 26,17 28,18 28,21 26,22 6,22 4,20
+draw op=polygon layer=4 frame=9 color=#2d3648 fill=true points=12,16 14,12 18,12 21,16
+draw op=line layer=4 frame=9 color=#1c1a24 size=1 x0=18 x1=18 y0=12 y1=16
+draw op=line layer=4 frame=9 color=#f45c4e size=1 x0=7 x1=25 y0=17 y1=17
+draw op=rect layer=4 frame=9 color=#f5dca7 fill=true x0=26 x1=28 y0=18 y1=19
+draw op=rect layer=4 frame=9 color=#f5dca7 fill=true x0=4 x1=5 y0=18 y1=19
+draw op=rect layer=4 frame=9 color=#f45c4e fill=true x0=13 x1=15 y0=18 y1=19
+draw op=line layer=4 frame=9 color=#1c1a24 size=1 x0=5 x1=27 y0=22 y1=22
+draw op=rect layer=4 frame=9 color=#2d3648 fill=true x0=28 x1=30 y0=21 y1=22
+draw op=polygon layer=4 frame=1 color=#1c1a24 fill=true points=3,17 6,15 9,14 12,10 19,10 23,14 27,15 29,17 29,20 27,22 5,22 3,20
+draw op=polygon layer=4 frame=1 color=#cd3844 fill=true points=4,17 7,16 10,15 13,11 18,11 22,15 26,16 28,17 28,20 26,21 6,21 4,19
+draw op=polygon layer=4 frame=1 color=#2d3648 fill=true points=12,15 14,11 18,11 21,15
+draw op=line layer=4 frame=1 color=#1c1a24 size=1 x0=18 x1=18 y0=11 y1=15
+draw op=line layer=4 frame=1 color=#f45c4e size=1 x0=7 x1=25 y0=16 y1=16
+draw op=rect layer=4 frame=1 color=#f5dca7 fill=true x0=26 x1=28 y0=17 y1=18
+draw op=rect layer=4 frame=1 color=#f5dca7 fill=true x0=4 x1=5 y0=17 y1=18
+draw op=rect layer=4 frame=1 color=#f45c4e fill=true x0=13 x1=15 y0=17 y1=18
+draw op=line layer=4 frame=1 color=#1c1a24 size=1 x0=5 x1=27 y0=21 y1=21
+draw op=rect layer=4 frame=1 color=#2d3648 fill=true x0=28 x1=30 y0=20 y1=21
+draw op=polygon layer=4 frame=2 color=#1c1a24 fill=true points=3,17 6,15 9,14 12,10 19,10 23,14 27,15 29,17 29,20 27,22 5,22 3,20
+draw op=polygon layer=4 frame=2 color=#cd3844 fill=true points=4,17 7,16 10,15 13,11 18,11 22,15 26,16 28,17 28,20 26,21 6,21 4,19
+draw op=polygon layer=4 frame=2 color=#2d3648 fill=true points=12,15 14,11 18,11 21,15
+draw op=line layer=4 frame=2 color=#1c1a24 size=1 x0=18 x1=18 y0=11 y1=15
+draw op=line layer=4 frame=2 color=#f45c4e size=1 x0=7 x1=25 y0=16 y1=16
+draw op=rect layer=4 frame=2 color=#f5dca7 fill=true x0=26 x1=28 y0=17 y1=18
+draw op=rect layer=4 frame=2 color=#f5dca7 fill=true x0=4 x1=5 y0=17 y1=18
+draw op=rect layer=4 frame=2 color=#f45c4e fill=true x0=13 x1=15 y0=17 y1=18
+draw op=line layer=4 frame=2 color=#1c1a24 size=1 x0=5 x1=27 y0=21 y1=21
+draw op=rect layer=4 frame=2 color=#2d3648 fill=true x0=28 x1=30 y0=20 y1=21
+draw op=polygon layer=4 frame=7 color=#1c1a24 fill=true points=3,17 6,15 9,14 12,10 19,10 23,14 27,15 29,17 29,20 27,22 5,22 3,20
+draw op=polygon layer=4 frame=7 color=#cd3844 fill=true points=4,17 7,16 10,15 13,11 18,11 22,15 26,16 28,17 28,20 26,21 6,21 4,19
+draw op=polygon layer=4 frame=7 color=#2d3648 fill=true points=12,15 14,11 18,11 21,15
+draw op=line layer=4 frame=7 color=#1c1a24 size=1 x0=18 x1=18 y0=11 y1=15
+draw op=line layer=4 frame=7 color=#f45c4e size=1 x0=7 x1=25 y0=16 y1=16
+draw op=rect layer=4 frame=7 color=#f5dca7 fill=true x0=26 x1=28 y0=17 y1=18
+draw op=rect layer=4 frame=7 color=#f5dca7 fill=true x0=4 x1=5 y0=17 y1=18
+draw op=rect layer=4 frame=7 color=#f45c4e fill=true x0=13 x1=15 y0=17 y1=18
+draw op=line layer=4 frame=7 color=#1c1a24 size=1 x0=5 x1=27 y0=21 y1=21
+draw op=rect layer=4 frame=7 color=#2d3648 fill=true x0=28 x1=30 y0=20 y1=21
+draw op=polygon layer=4 frame=8 color=#1c1a24 fill=true points=3,17 6,15 9,14 12,10 19,10 23,14 27,15 29,17 29,20 27,22 5,22 3,20
+draw op=polygon layer=4 frame=8 color=#cd3844 fill=true points=4,17 7,16 10,15 13,11 18,11 22,15 26,16 28,17 28,20 26,21 6,21 4,19
+draw op=polygon layer=4 frame=8 color=#2d3648 fill=true points=12,15 14,11 18,11 21,15
+draw op=line layer=4 frame=8 color=#1c1a24 size=1 x0=18 x1=18 y0=11 y1=15
+draw op=line layer=4 frame=8 color=#f45c4e size=1 x0=7 x1=25 y0=16 y1=16
+draw op=rect layer=4 frame=8 color=#f5dca7 fill=true x0=26 x1=28 y0=17 y1=18
+draw op=rect layer=4 frame=8 color=#f5dca7 fill=true x0=4 x1=5 y0=17 y1=18
+draw op=rect layer=4 frame=8 color=#f45c4e fill=true x0=13 x1=15 y0=17 y1=18
+draw op=line layer=4 frame=8 color=#1c1a24 size=1 x0=5 x1=27 y0=21 y1=21
+draw op=rect layer=4 frame=8 color=#2d3648 fill=true x0=28 x1=30 y0=20 y1=21
+draw op=polygon layer=4 frame=4 color=#1c1a24 fill=true points=3,19 6,17 9,16 12,12 19,12 23,16 27,17 29,19 29,22 27,24 5,24 3,22
+draw op=polygon layer=4 frame=4 color=#cd3844 fill=true points=4,19 7,18 10,17 13,13 18,13 22,17 26,18 28,19 28,22 26,23 6,23 4,21
+draw op=polygon layer=4 frame=4 color=#2d3648 fill=true points=12,17 14,13 18,13 21,17
+draw op=line layer=4 frame=4 color=#1c1a24 size=1 x0=18 x1=18 y0=13 y1=17
+draw op=line layer=4 frame=4 color=#f45c4e size=1 x0=7 x1=25 y0=18 y1=18
+draw op=rect layer=4 frame=4 color=#f5dca7 fill=true x0=26 x1=28 y0=19 y1=20
+draw op=rect layer=4 frame=4 color=#f5dca7 fill=true x0=4 x1=5 y0=19 y1=20
+draw op=rect layer=4 frame=4 color=#f45c4e fill=true x0=13 x1=15 y0=19 y1=20
+draw op=line layer=4 frame=4 color=#1c1a24 size=1 x0=5 x1=27 y0=23 y1=23
+draw op=rect layer=4 frame=4 color=#2d3648 fill=true x0=28 x1=30 y0=22 y1=23
+draw op=polygon layer=4 frame=5 color=#1c1a24 fill=true points=3,19 6,17 9,16 12,12 19,12 23,16 27,17 29,19 29,22 27,24 5,24 3,22
+draw op=polygon layer=4 frame=5 color=#cd3844 fill=true points=4,19 7,18 10,17 13,13 18,13 22,17 26,18 28,19 28,22 26,23 6,23 4,21
+draw op=polygon layer=4 frame=5 color=#2d3648 fill=true points=12,17 14,13 18,13 21,17
+draw op=line layer=4 frame=5 color=#1c1a24 size=1 x0=18 x1=18 y0=13 y1=17
+draw op=line layer=4 frame=5 color=#f45c4e size=1 x0=7 x1=25 y0=18 y1=18
+draw op=rect layer=4 frame=5 color=#f5dca7 fill=true x0=26 x1=28 y0=19 y1=20
+draw op=rect layer=4 frame=5 color=#f5dca7 fill=true x0=4 x1=5 y0=19 y1=20
+draw op=rect layer=4 frame=5 color=#f45c4e fill=true x0=13 x1=15 y0=19 y1=20
+draw op=line layer=4 frame=5 color=#1c1a24 size=1 x0=5 x1=27 y0=23 y1=23
+draw op=rect layer=4 frame=5 color=#2d3648 fill=true x0=28 x1=30 y0=22 y1=23
+draw op=ellipse layer=2 frame=0 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=0 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=0 color=#f5dca7 size=1 x0=10 x1=10 y0=22 y1=20
+draw op=line layer=2 frame=0 color=#f45c4e size=1 x0=10 x1=10 y0=22 y1=24
+draw op=pencil layer=2 frame=0 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=5 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=5 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=5 color=#f5dca7 size=1 x0=10 x1=10 y0=22 y1=20
+draw op=line layer=2 frame=5 color=#f45c4e size=1 x0=10 x1=10 y0=22 y1=24
+draw op=pencil layer=2 frame=5 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=1 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=1 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=1 color=#f5dca7 size=1 x0=10 x1=12 y0=22 y1=21
+draw op=line layer=2 frame=1 color=#f45c4e size=1 x0=10 x1=8 y0=22 y1=23
+draw op=pencil layer=2 frame=1 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=6 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=6 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=6 color=#f5dca7 size=1 x0=10 x1=12 y0=22 y1=21
+draw op=line layer=2 frame=6 color=#f45c4e size=1 x0=10 x1=8 y0=22 y1=23
+draw op=pencil layer=2 frame=6 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=2 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=2 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=2 color=#f5dca7 size=1 x0=10 x1=12 y0=22 y1=23
+draw op=line layer=2 frame=2 color=#f45c4e size=1 x0=10 x1=8 y0=22 y1=21
+draw op=pencil layer=2 frame=2 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=7 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=7 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=7 color=#f5dca7 size=1 x0=10 x1=12 y0=22 y1=23
+draw op=line layer=2 frame=7 color=#f45c4e size=1 x0=10 x1=8 y0=22 y1=21
+draw op=pencil layer=2 frame=7 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=3 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=3 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=3 color=#f5dca7 size=1 x0=10 x1=10 y0=22 y1=24
+draw op=line layer=2 frame=3 color=#f45c4e size=1 x0=10 x1=10 y0=22 y1=20
+draw op=pencil layer=2 frame=3 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=8 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=8 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=8 color=#f5dca7 size=1 x0=10 x1=10 y0=22 y1=24
+draw op=line layer=2 frame=8 color=#f45c4e size=1 x0=10 x1=10 y0=22 y1=20
+draw op=pencil layer=2 frame=8 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=4 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=4 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=4 color=#f5dca7 size=1 x0=10 x1=8 y0=22 y1=23
+draw op=line layer=2 frame=4 color=#f45c4e size=1 x0=10 x1=12 y0=22 y1=21
+draw op=pencil layer=2 frame=4 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=2 frame=9 color=#1c1a24 cx=10 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=2 frame=9 color=#2d3648 cx=10 cy=22 fill=true rx=2 ry=2
+draw op=line layer=2 frame=9 color=#f5dca7 size=1 x0=10 x1=8 y0=22 y1=23
+draw op=line layer=2 frame=9 color=#f45c4e size=1 x0=10 x1=12 y0=22 y1=21
+draw op=pencil layer=2 frame=9 color=#f5dca7 points=[[10,22]]
+draw op=ellipse layer=3 frame=0 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=0 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=0 color=#f5dca7 size=1 x0=23 x1=23 y0=22 y1=20
+draw op=line layer=3 frame=0 color=#f45c4e size=1 x0=23 x1=23 y0=22 y1=24
+draw op=pencil layer=3 frame=0 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=5 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=5 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=5 color=#f5dca7 size=1 x0=23 x1=23 y0=22 y1=20
+draw op=line layer=3 frame=5 color=#f45c4e size=1 x0=23 x1=23 y0=22 y1=24
+draw op=pencil layer=3 frame=5 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=1 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=1 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=1 color=#f5dca7 size=1 x0=23 x1=25 y0=22 y1=21
+draw op=line layer=3 frame=1 color=#f45c4e size=1 x0=23 x1=21 y0=22 y1=23
+draw op=pencil layer=3 frame=1 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=6 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=6 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=6 color=#f5dca7 size=1 x0=23 x1=25 y0=22 y1=21
+draw op=line layer=3 frame=6 color=#f45c4e size=1 x0=23 x1=21 y0=22 y1=23
+draw op=pencil layer=3 frame=6 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=2 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=2 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=2 color=#f5dca7 size=1 x0=23 x1=25 y0=22 y1=23
+draw op=line layer=3 frame=2 color=#f45c4e size=1 x0=23 x1=21 y0=22 y1=21
+draw op=pencil layer=3 frame=2 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=7 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=7 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=7 color=#f5dca7 size=1 x0=23 x1=25 y0=22 y1=23
+draw op=line layer=3 frame=7 color=#f45c4e size=1 x0=23 x1=21 y0=22 y1=21
+draw op=pencil layer=3 frame=7 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=3 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=3 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=3 color=#f5dca7 size=1 x0=23 x1=23 y0=22 y1=24
+draw op=line layer=3 frame=3 color=#f45c4e size=1 x0=23 x1=23 y0=22 y1=20
+draw op=pencil layer=3 frame=3 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=8 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=8 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=8 color=#f5dca7 size=1 x0=23 x1=23 y0=22 y1=24
+draw op=line layer=3 frame=8 color=#f45c4e size=1 x0=23 x1=23 y0=22 y1=20
+draw op=pencil layer=3 frame=8 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=4 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=4 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=4 color=#f5dca7 size=1 x0=23 x1=21 y0=22 y1=23
+draw op=line layer=3 frame=4 color=#f45c4e size=1 x0=23 x1=25 y0=22 y1=21
+draw op=pencil layer=3 frame=4 color=#f5dca7 points=[[23,22]]
+draw op=ellipse layer=3 frame=9 color=#1c1a24 cx=23 cy=22 fill=true rx=3 ry=3
+draw op=ellipse layer=3 frame=9 color=#2d3648 cx=23 cy=22 fill=true rx=2 ry=2
+draw op=line layer=3 frame=9 color=#f5dca7 size=1 x0=23 x1=21 y0=22 y1=23
+draw op=line layer=3 frame=9 color=#f45c4e size=1 x0=23 x1=25 y0=22 y1=21
+draw op=pencil layer=3 frame=9 color=#f5dca7 points=[[23,22]]
+draw op=line layer=0 frame=0 color=#889ba1 size=1 x0=1 x1=7 y0=11 y1=11
+draw op=line layer=0 frame=0 color=#889ba1 size=1 x0=22 x1=29 y0=8 y1=8
+draw op=line layer=0 frame=0 color=#889ba1 size=1 x0=0 x1=5 y0=27 y1=27
+draw op=line layer=0 frame=0 color=#889ba1 size=1 x0=17 x1=23 y0=29 y1=29
+draw op=line layer=0 frame=5 color=#889ba1 size=1 x0=1 x1=7 y0=11 y1=11
+draw op=line layer=0 frame=5 color=#889ba1 size=1 x0=22 x1=29 y0=8 y1=8
+draw op=line layer=0 frame=5 color=#889ba1 size=1 x0=0 x1=5 y0=27 y1=27
+draw op=line layer=0 frame=5 color=#889ba1 size=1 x0=17 x1=23 y0=29 y1=29
+draw op=line layer=0 frame=1 color=#889ba1 size=1 x0=0 x1=2 y0=11 y1=11
+draw op=line layer=0 frame=1 color=#889ba1 size=1 x0=28 x1=31 y0=11 y1=11
+draw op=line layer=0 frame=1 color=#889ba1 size=1 x0=17 x1=24 y0=8 y1=8
+draw op=line layer=0 frame=1 color=#889ba1 size=1 x0=27 x1=31 y0=27 y1=27
+draw op=line layer=0 frame=1 color=#889ba1 size=1 x0=12 x1=18 y0=29 y1=29
+draw op=line layer=0 frame=6 color=#889ba1 size=1 x0=0 x1=2 y0=11 y1=11
+draw op=line layer=0 frame=6 color=#889ba1 size=1 x0=28 x1=31 y0=11 y1=11
+draw op=line layer=0 frame=6 color=#889ba1 size=1 x0=17 x1=24 y0=8 y1=8
+draw op=line layer=0 frame=6 color=#889ba1 size=1 x0=27 x1=31 y0=27 y1=27
+draw op=line layer=0 frame=6 color=#889ba1 size=1 x0=12 x1=18 y0=29 y1=29
+draw op=line layer=0 frame=2 color=#889ba1 size=1 x0=23 x1=29 y0=11 y1=11
+draw op=line layer=0 frame=2 color=#889ba1 size=1 x0=12 x1=19 y0=8 y1=8
+draw op=line layer=0 frame=2 color=#889ba1 size=1 x0=22 x1=27 y0=27 y1=27
+draw op=line layer=0 frame=2 color=#889ba1 size=1 x0=7 x1=13 y0=29 y1=29
+draw op=line layer=0 frame=7 color=#889ba1 size=1 x0=23 x1=29 y0=11 y1=11
+draw op=line layer=0 frame=7 color=#889ba1 size=1 x0=12 x1=19 y0=8 y1=8
+draw op=line layer=0 frame=7 color=#889ba1 size=1 x0=22 x1=27 y0=27 y1=27
+draw op=line layer=0 frame=7 color=#889ba1 size=1 x0=7 x1=13 y0=29 y1=29
+draw op=line layer=0 frame=3 color=#889ba1 size=1 x0=18 x1=24 y0=11 y1=11
+draw op=line layer=0 frame=3 color=#889ba1 size=1 x0=7 x1=14 y0=8 y1=8
+draw op=line layer=0 frame=3 color=#889ba1 size=1 x0=17 x1=22 y0=27 y1=27
+draw op=line layer=0 frame=3 color=#889ba1 size=1 x0=2 x1=8 y0=29 y1=29
+draw op=line layer=0 frame=8 color=#889ba1 size=1 x0=18 x1=24 y0=11 y1=11
+draw op=line layer=0 frame=8 color=#889ba1 size=1 x0=7 x1=14 y0=8 y1=8
+draw op=line layer=0 frame=8 color=#889ba1 size=1 x0=17 x1=22 y0=27 y1=27
+draw op=line layer=0 frame=8 color=#889ba1 size=1 x0=2 x1=8 y0=29 y1=29
+draw op=line layer=0 frame=4 color=#889ba1 size=1 x0=13 x1=19 y0=11 y1=11
+draw op=line layer=0 frame=4 color=#889ba1 size=1 x0=2 x1=9 y0=8 y1=8
+draw op=line layer=0 frame=4 color=#889ba1 size=1 x0=12 x1=17 y0=27 y1=27
+draw op=line layer=0 frame=4 color=#889ba1 size=1 x0=0 x1=3 y0=29 y1=29
+draw op=line layer=0 frame=4 color=#889ba1 size=1 x0=29 x1=31 y0=29 y1=29
+draw op=line layer=0 frame=9 color=#889ba1 size=1 x0=13 x1=19 y0=11 y1=11
+draw op=line layer=0 frame=9 color=#889ba1 size=1 x0=2 x1=9 y0=8 y1=8
+draw op=line layer=0 frame=9 color=#889ba1 size=1 x0=12 x1=17 y0=27 y1=27
+draw op=line layer=0 frame=9 color=#889ba1 size=1 x0=0 x1=3 y0=29 y1=29
+draw op=line layer=0 frame=9 color=#889ba1 size=1 x0=29 x1=31 y0=29 y1=29
+draw op=pencil layer=1 frame=0 color=#889ba1 points=[[2,21]]
+draw op=pencil layer=1 frame=5 color=#889ba1 points=[[2,21]]
+draw op=pencil layer=1 frame=1 color=#889ba1 points=1,21 2,20 2,21
+draw op=pencil layer=1 frame=6 color=#889ba1 points=1,21 2,20 2,21
+draw op=pencil layer=1 frame=2 color=#889ba1 points=0,20 1,19 1,20 2,21
+draw op=pencil layer=1 frame=2 color=#f5dca7 points=[[1,20]]
+draw op=pencil layer=1 frame=7 color=#889ba1 points=0,20 1,19 1,20 2,21
+draw op=pencil layer=1 frame=7 color=#f5dca7 points=[[1,20]]
+draw op=pencil layer=1 frame=3 color=#889ba1 points=0,18 0,19 2,20
+draw op=pencil layer=1 frame=3 color=#f5dca7 points=[[1,18]]
+draw op=pencil layer=1 frame=8 color=#889ba1 points=0,18 0,19 2,20
+draw op=pencil layer=1 frame=8 color=#f5dca7 points=[[1,18]]
+draw op=pencil layer=1 frame=4 color=#889ba1 points=0,17 2,19
+draw op=pencil layer=1 frame=9 color=#889ba1 points=0,17 2,19
+draw op=pencil layer=4 frame=0 color=#889ba1 points=20,14 20,15
+draw op=pencil layer=4 frame=3 color=#889ba1 points=20,14 20,15
+draw op=pencil layer=4 frame=6 color=#889ba1 points=20,14 20,15
+draw op=pencil layer=4 frame=9 color=#889ba1 points=20,14 20,15
+draw op=pencil layer=4 frame=1 frame_to=2 color=#889ba1 points=20,13 20,14
+draw op=pencil layer=4 frame=7 frame_to=8 color=#889ba1 points=20,13 20,14
+draw op=pencil layer=4 frame=4 frame_to=5 color=#889ba1 points=20,15 20,16
 add_tag name=drive direction=forward from=0 to=9

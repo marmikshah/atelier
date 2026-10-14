@@ -1,415 +1,532 @@
-atelier 5 41d15758-3510-4c72-8ee0-53545c53bcde 0.1.0
+atelier 4 41d15758-3510-4c72-8ee0-53545c53bcde 0.1.0
 new name="Emberwatch — wall torch" width=32 height=32
-palette set colors=#2b2435,#765449,#df6335,#ffb642,#ffe7a0
-layer rename index=0 name="Wall plate and curved arm"
-layer add name="Torch cup and stem"
-layer add name="Living flame"
-layer add name="Rising embers"
-layer add name="Bracket light pulse"
-legend A=#2b2435
-"Wall plate and curved arm" @0 grid 6,17 = 6,17 14x13
-    ..A...........
-    .AAA..........
-    AAAAA.........
-    AAAAA.........
-    AAAAA.........
-    AAAAA.........
-    AAAAAA........
-    AAAAAAAA......
-    AAAAAAAAAA....
-    AAAAA.AAAAAAAA
-    AAAAA...AAAAAA
-    .AAA..........
-    ..A...........
-"Torch cup and stem" @0 grid 13,17 = 13,17 12x13
-    AAAAAAAAAAAA
-    AAAAAAAAAAAA
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    ..AAAAAAAA..
-    ...AAAAAA...
-    .....AAA....
-    .....AAA....
-    .....AAA....
-    .....AAA....
-    .....AAA....
-    ....AAAAA...
-    .....AAA....
-"Living flame" @0 grid 13,4 = 13,4 11x14
-    .......A...
-    ......AA...
-    .....AAA...
-    .....AA....
-    .....AA....
-    .A..AAAA...
-    .AA.AAAAA..
-    .AAAAAAAA.A
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    .AAAAAAAAAA
-    .AAAAAAAAA.
-    ..AAAAAAA..
-legend B=#765449
-"Wall plate and curved arm" @0 grid 7,18 = 7,18 11x11
-    ABA........
-    BBBA.......
-    BBBA.......
-    BBBA.......
-    BBBA.......
-    BBBBA......
-    BBBBBBA....
-    BBBABBBBA..
-    BBBA.ABBBBB
-    BBBA...ABBB
-    ABA........
-"Torch cup and stem" @0 grid 14,18 = 14,18 10x11
-    BBBBBBBBBB
-    ABBBBBBBBA
-    ABBBBBBBBA
-    .ABBBBBBA.
-    ..ABBBBA..
-    ....ABA...
-    ....ABA...
-    ....ABA...
-    ....ABA...
-    ....ABA...
-    ...ABBBA..
-legend C=#df6335 D=#ffb642
-"Living flame" @0 grid 13,4 = 13,4 11x14
-    .......C...
-    ......CC...
-    .....CDC...
-    .....DC....
-    .....DC....
-    .C..CDDC...
-    .CC.CDDCC..
-    .CCCDDDDC.C
-    CCDDDDDDCCC
-    CDDDDDDDDCC
-    CDDDDDDDDDC
-    .CDDDDDDDCC
-    .CDDDDDDDC.
-    ..CDDDDDC..
-"Wall plate and curved arm" @0 grid 7,20 = 7,20 3x8
-    ACA
-    BAB
-    ABB
-    ABB
-    ABB
-    ABB
-    ACA
-    BAB
-"Torch cup and stem" @0 grid 15,19 = 15,19 6x10
-    CBBCCB
-    BCABBA
-    ABBCBB
-    .ABBBB
-    ...ABA
-    ...ABA
-    ...ABA
-    ...ABA
-    ...ABA
-    ..ACBB
-legend E=#ffe7a0
-"Living flame" @0 grid 13,4 = 14,10 9x8
-    DC.CDDCC.
-    CDCDEDDC.
-    CDDDEEDCD
-    DDDEEEDDD
-    DDEEEEDDD
-    CDDEEEEDC
-    CDDEEEEDC
-    .CDDEEEC.
-"Rising embers" @0 grid 13,4 = 13,4 10x6
-    B.........
-    ..........
-    ..........
-    ..........
-    .........D
-    .........C
-"Bracket light pulse" @0 grid 9,18 = 9,18 15x11
-    .....CCCDDDDCCC
-    C..............
-    ...............
-    C..............
-    B..............
-    BB........C....
-    ..BB......B....
-    ....BB.........
-    ......CCC......
-    ...............
-    .........B.....
-frame add copy_from=0 duration_ms=100
-"Living flame" @1 grid 12,2 replace = 13,4 11x12
-    ........C..
-    .......DC..
-    ......DC...
-    .....CDC...
-    .C...DDC...
-    .DC.CDDDC..
-    .CDCDDEDC.C
-    CCCDDEEDCCD
-    CCDDDEEEDCC
-    CDDDEEEEDCC
-    CDDDEEEEDDC
-    .CDEEEEDDCC
-"Rising embers" @1 grid 11,2 replace = 12,3 12x7
-    B...........
-    ............
-    ............
-    ............
-    ...........C
-    ............
-    ............
-"Bracket light pulse" @1 grid 6,17 replace = 9,18 11x11
-    .....CCDDDD
-    C..........
-    ...........
-    C..........
-    C..........
-    BB........C
-    ..BB......C
-    ....BC.....
-    ......CCC..
-    ...........
-    .........C.
-frame add copy_from=0 duration_ms=100
-"Living flame" @2 grid 12,2 replace = 14,3 10x14
-    .......C..
-    ......DC..
-    .....CDC..
-    ....CDC...
-    .C..DC....
-    .DCCDC....
-    .CDCDDC..C
-    CCCDEDDCCD
-    ..CDEEDCCC
-    CDDEEEDCCC
-    DDDEEEEDCC
-    DDEEEEEDDC
-    CDDEEEEEDC
-    CDDDEEEDC.
-"Rising embers" @2 grid 11,2 replace = 13,4 11x6
-    ...........
-    ...........
-    ..........C
-    ...........
-    ...........
-    ...........
-"Bracket light pulse" @2 grid 6,17 replace = 9,18 11x11
-    .....CCDDDD
-    C..........
-    ...........
-    C..........
-    C..........
-    BB........C
-    ..BB......C
-    ....BC.....
-    ......CCC..
-    ...........
-    .........C.
-frame add copy_from=0 duration_ms=100
-"Living flame" @3 grid 12,2 replace = 14,3 10x13
-    ......C...
-    ......DC..
-    .....DC...
-    ....CDC...
-    .C..DC....
-    .DCCDC....
-    .CDDDDC.C.
-    CCCDEDDCD.
-    ..DEEDDCC.
-    CDDEEEDCCC
-    DDEEEEDDCC
-    DDDEEEEDDC
-    CDDEEEEEDC
-"Rising embers" @3 grid 11,2 replace = 13,4 12x6
-    ............
-    ...........B
-    ............
-    ............
-    ............
-    ............
-"Bracket light pulse" @3 grid 6,17 replace = 9,18 13x11
-    .....CCDDDDDD
-    C............
-    .............
-    C............
-    C............
-    CB........C..
-    ..BB......C..
-    ....CC.......
-    ......CCC....
-    .............
-    .........C...
-frame add copy_from=0 duration_ms=100
-"Living flame" @4 grid 12,2 replace = 13,4 11x11
-    ......C....
-    .....DC....
-    ....CDC....
-    ....DC.....
-    .C..DDC..C.
-    .DCCDDDCCD.
-    .CDCDDDCCC.
-    CCCDEDDDC..
-    CCDDEEDDCCC
-    CCDEEEDDDCC
-    .CDEEEEDDDC
-"Rising embers" @4 grid 11,2 replace = 13,4 12x7
-    ...........B
-    ............
-    ............
-    ............
-    ............
-    ............
-    ...D........
-"Bracket light pulse" @4 grid 6,17 replace = 9,18 13x11
-    .....CCDDDDDD
-    C............
-    .............
-    C............
-    C............
-    CB........C..
-    ..BB......C..
-    ....CC.......
-    ......CCC....
-    .............
-    .........C...
-frame add copy_from=0 duration_ms=100
-"Living flame" @5 grid 12,2 replace = 12,4 13x13
-    .............
-    ......C......
-    .....DC......
-    .....CDC.....
-    .....CDC..C..
-    ....CCDDCCD..
-    .C..CDDDDCC..
-    .DC.DDDDDDC..
-    .CDDDDEDDDCC.
-    CCCDDEEEDDDCC
-    ..CDDEEEEDDC.
-    ..CDDDEEEDCC.
-    ..CDDDEEEDC..
-"Rising embers" @5 grid 11,2 replace = 13,3 13x8
-    ............B
-    .............
-    .............
-    .............
-    .............
-    .............
-    ..D..........
-    ..C..........
-"Bracket light pulse" @5 grid 6,17 replace = 9,18 11x11
-    .....CCDDDD
-    C..........
-    ...........
-    C..........
-    C..........
-    BB........C
-    ..BB......C
-    ....BC.....
-    ......CCC..
-    ...........
-    .........C.
-frame add copy_from=0 duration_ms=100
-"Living flame" @6 grid 12,2 replace = 12,4 12x13
-    ............
-    .....C......
-    .....DC.....
-    .....CDC....
-    ......CDC...
-    .....CDDDC.C
-    .C..CDDDDDCD
-    .DC.CDDDDDCC
-    .CDDDDDEDDCC
-    CCCDDDEEEDDC
-    ..CDDEEEEDDC
-    ..CDDEEEEDCC
-    ..CDDEEEDDC.
-"Rising embers" @6 grid 11,2 replace = 13,4 10x6
-    ..........
-    ..........
-    ..........
-    ..........
-    ..D.......
-    ..C.......
-"Bracket light pulse" @6 grid 6,17 replace ~
-frame add copy_from=0 duration_ms=100
-"Living flame" @7 grid 12,2 replace = 13,4 11x13
-    ...........
-    ...........
-    .....C.....
-    ....DC.....
-    ....CDC....
-    .C..CDDC...
-    .DCCDDDCC.C
-    .CDDDDDDCCD
-    CCDDDEDDCCC
-    CCDDDEEDDCC
-    .CDDEEEEDDC
-    .CDDEEEEDCC
-    .CDDDEEEDC.
-"Rising embers" @7 grid 11,2 replace = 13,4 10x6
-    ..........
-    ..........
-    ..........
-    .C........
-    ..........
-    ..........
-"Bracket light pulse" @7 grid 6,17 replace ~
-frame add copy_from=0 duration_ms=100
-"Living flame" @8 grid 12,2 replace = 13,4 11x10
-    ...........
-    ......C....
-    .....DC....
-    ....CDC....
-    .C..DDC....
-    .DCCDDDC...
-    .CDCDDDDC..
-    CCCCDEDDC.C
-    CCDDEEDDCCD
-    CDDDEEEDDCC
-"Rising embers" @8 grid 11,2 replace = 13,4 10x7
-    ..........
-    ..........
-    .C........
-    ..........
-    ..........
-    ..........
-    ........D.
-"Bracket light pulse" @8 grid 6,17 replace = 9,21 11x6
-    B..........
-    B..........
-    BB........B
-    ..BB......B
-    ....BB.....
-    ......BCC..
-frame add copy_from=0 duration_ms=100
-"Living flame" @9 grid 12,2 replace = 18,4 6x10
-    ......
-    ..C...
-    .DC...
-    CDC...
-    DC....
-    DDC...
-    DDDC..
-    DEDC.C
-    EEDCCD
-    EEDDCC
-"Rising embers" @9 grid 11,2 replace = 13,4 10x7
-    ..........
-    B.........
-    ..........
-    ..........
-    ..........
-    .........D
-    .........C
-"Bracket light pulse" @9 grid 6,17 replace = 9,21 11x6
-    B..........
-    B..........
-    BB........B
-    ..BB......B
-    ....BB.....
-    ......BCC..
+palette op=set colors=#2b2435,#765449,#df6335,#ffb642,#ffe7a0
+layer op=rename index=0 name="Wall plate and curved arm"
+layer op=add name="Torch cup and stem"
+layer op=add name="Living flame"
+layer op=add name="Rising embers"
+layer op=add name="Bracket light pulse"
+paint_grid layer=0 frame=0 x=6 y=17 legend=D:0 rows:13
+  |..D...........|
+  |.DDD..........|
+  |DDDDD.........|
+  |DDDDD.........|
+  |DDDDD.........|
+  |DDDDD.........|
+  |DDDDDD........|
+  |DDDDDDDD......|
+  |DDDDDDDDDD....|
+  |DDDDD.DDDDDDDD|
+  |DDDDD...DDDDDD|
+  |.DDD..........|
+  |..D...........|
+paint_grid layer=1 frame=0 x=13 y=17 legend=D:0 rows:13
+  |DDDDDDDDDDDD|
+  |DDDDDDDDDDDD|
+  |.DDDDDDDDDD.|
+  |.DDDDDDDDDD.|
+  |..DDDDDDDD..|
+  |...DDDDDD...|
+  |.....DDD....|
+  |.....DDD....|
+  |.....DDD....|
+  |.....DDD....|
+  |.....DDD....|
+  |....DDDDD...|
+  |.....DDD....|
+paint_grid layer=2 frame=0 x=13 y=4 legend=D:0 rows:14
+  |.......D...|
+  |......DD...|
+  |.....DDD...|
+  |.....DD....|
+  |.....DD....|
+  |.D..DDDD...|
+  |.DD.DDDDD..|
+  |.DDDDDDDD.D|
+  |DDDDDDDDDDD|
+  |DDDDDDDDDDD|
+  |DDDDDDDDDDD|
+  |.DDDDDDDDDD|
+  |.DDDDDDDDD.|
+  |..DDDDDDD..|
+paint_grid layer=0 frame=0 x=7 y=18 legend=M:1 rows:11
+  |.M.........|
+  |MMM........|
+  |MMM........|
+  |MMM........|
+  |MMM........|
+  |MMMM.......|
+  |MMMMMM.....|
+  |MMM.MMMM...|
+  |MMM...MMMMM|
+  |MMM.....MMM|
+  |.M.........|
+paint_grid layer=1 frame=0 x=14 y=18 legend=M:1 rows:11
+  |MMMMMMMMMM|
+  |.MMMMMMMM.|
+  |.MMMMMMMM.|
+  |..MMMMMM..|
+  |...MMMM...|
+  |.....M....|
+  |.....M....|
+  |.....M....|
+  |.....M....|
+  |.....M....|
+  |....MMM...|
+paint_grid layer=2 frame=0 x=13 y=4 legend=G:3,O:2 rows:14
+  |.......O...|
+  |......OO...|
+  |.....OGO...|
+  |.....GO....|
+  |.....GO....|
+  |.O..OGGO...|
+  |.OO.OGGOO..|
+  |.OOOGGGGO.O|
+  |OOGGGGGGOOO|
+  |OGGGGGGGGOO|
+  |OGGGGGGGGGO|
+  |.OGGGGGGGOO|
+  |.OGGGGGGGO.|
+  |..OGGGGGO..|
+paint_grid layer=0 frame=0 x=7 y=20 legend=D:0,O:2 rows:8
+  |DOD|
+  |.D.|
+  |D..|
+  |D..|
+  |D..|
+  |D..|
+  |DOD|
+  |.D.|
+paint_grid layer=1 frame=0 x=15 y=19 legend=D:0,O:2 rows:10
+  |O..OO.|
+  |.OD..D|
+  |...O..|
+  |......|
+  |......|
+  |......|
+  |......|
+  |......|
+  |......|
+  |...O..|
+paint_grid layer=2 frame=0 x=13 y=4 legend=G:3,H:4,O:2 rows:14
+  |.......O...|
+  |......OO...|
+  |.....OGO...|
+  |.....GO....|
+  |.....GO....|
+  |.O..OGGO...|
+  |.GO.OGGOO..|
+  |.OGOGHGGO.O|
+  |OOGGGHHGOGO|
+  |OGGGHHHGGGO|
+  |OGGHHHHGGGO|
+  |.OGGHHHHGOO|
+  |.OGGHHHHGO.|
+  |..OGGHHHO..|
+paint_grid layer=3 frame=0 x=13 y=4 legend=G:3,M:1,O:2 rows:6
+  |M.........|
+  |..........|
+  |..........|
+  |..........|
+  |.........G|
+  |.........O|
+paint_grid layer=4 frame=0 x=9 y=18 legend=G:3,M:1,O:2 rows:11
+  |.....OOOGGGGOOO|
+  |O..............|
+  |...............|
+  |O..............|
+  |M..............|
+  |MM........O....|
+  |..MM......M....|
+  |....MM.........|
+  |......OOO......|
+  |...............|
+  |.........M.....|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=1 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.............|
+  |.........O...|
+  |........GO...|
+  |.......GO....|
+  |......OGO....|
+  |..O...GGO....|
+  |..GO.OGGGO...|
+  |..OGOGGHGO.O.|
+  |.OOOGGHHGOOG.|
+  |.OOGGGHHHGOO.|
+  |.OGGGHHHHGOO.|
+  |.OGGGHHHHGGO.|
+  |..OGHHHHGGOO.|
+  |..OGGHHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=1 x=11 y=2 replace=true legend=M:1,O:2 rows:10
+  |................|
+  |.M..............|
+  |................|
+  |................|
+  |................|
+  |............O...|
+  |................|
+  |................|
+  |................|
+  |................|
+paint_grid layer=4 frame=1 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOGGGGGOOO.|
+  |...O...............|
+  |...................|
+  |...O...............|
+  |...O...............|
+  |...MM........O.....|
+  |.....MM......O.....|
+  |.......MO..........|
+  |.........OOO.......|
+  |...................|
+  |............O......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=2 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.........O...|
+  |........GO...|
+  |.......OGO...|
+  |......OGO....|
+  |...O..GO.....|
+  |...GOOGO.....|
+  |...OGOGGO..O.|
+  |..OOOGHGGOOG.|
+  |....OGHHGOOO.|
+  |.OOGGHHHGOOO.|
+  |.OGGGHHHHGOO.|
+  |.OGGHHHHHGGO.|
+  |..OGGHHHHHGO.|
+  |..OGGGHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=2 x=11 y=2 replace=true legend=O:2 rows:10
+  |................|
+  |................|
+  |................|
+  |................|
+  |............O...|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+paint_grid layer=4 frame=2 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOGGGGGOOO.|
+  |...O...............|
+  |...................|
+  |...O...............|
+  |...O...............|
+  |...MM........O.....|
+  |.....MM......O.....|
+  |.......MO..........|
+  |.........OOO.......|
+  |...................|
+  |............O......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=3 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |........O....|
+  |........GO...|
+  |.......GO....|
+  |......OGO....|
+  |...O..GO.....|
+  |...GOOGO.....|
+  |...OGGGGO.O..|
+  |..OOOGHGGOG..|
+  |....GHHGGOO..|
+  |.OOGGHHHGOOO.|
+  |.OGGHHHHGGOO.|
+  |.OGGGHHHHGGO.|
+  |..OGGHHHHHGO.|
+  |..OGGHHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=3 x=11 y=2 replace=true legend=M:1 rows:10
+  |................|
+  |................|
+  |................|
+  |.............M..|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+paint_grid layer=4 frame=3 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOGGGGGGOO.|
+  |...O...............|
+  |...................|
+  |...O...............|
+  |...O...............|
+  |...OM........O.....|
+  |.....MM......O.....|
+  |.......OO..........|
+  |.........OOO.......|
+  |...................|
+  |............O......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=4 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.............|
+  |.......O.....|
+  |......GO.....|
+  |.....OGO.....|
+  |.....GO......|
+  |..O..GGO..O..|
+  |..GOOGGGOOG..|
+  |..OGOGGGOOO..|
+  |.OOOGHGGGO...|
+  |.OOGGHHGGOOO.|
+  |.OOGHHHGGGOO.|
+  |..OGHHHHGGGO.|
+  |..OGGHHHHGOO.|
+  |..OGGHHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=4 x=11 y=2 replace=true legend=G:3,M:1 rows:10
+  |................|
+  |................|
+  |.............M..|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |.....G..........|
+  |................|
+paint_grid layer=4 frame=4 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOGGGGGGOO.|
+  |...O...............|
+  |...................|
+  |...O...............|
+  |...O...............|
+  |...OM........O.....|
+  |.....MM......O.....|
+  |.......OO..........|
+  |.........OOO.......|
+  |...................|
+  |............O......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=5 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.............|
+  |.............|
+  |......O......|
+  |.....GO......|
+  |.....OGO.....|
+  |.....OGO..O..|
+  |....OOGGOOG..|
+  |.O..OGGGGOO..|
+  |.GO.GGGGGGO..|
+  |.OGGGGHGGGOO.|
+  |OOOGGHHHGGGOO|
+  |..OGGHHHHGGO.|
+  |..OGGGHHHGOO.|
+  |..OGGGHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=5 x=11 y=2 replace=true legend=G:3,M:1,O:2 rows:10
+  |................|
+  |..............M.|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |....G...........|
+  |....O...........|
+  |................|
+paint_grid layer=4 frame=5 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOGGGGGOOO.|
+  |...O...............|
+  |...................|
+  |...O...............|
+  |...O...............|
+  |...MM........O.....|
+  |.....MM......O.....|
+  |.......MO..........|
+  |.........OOO.......|
+  |...................|
+  |............O......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=6 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.............|
+  |.............|
+  |.....O.......|
+  |.....GO......|
+  |.....OGO.....|
+  |......OGO....|
+  |.....OGGGO.O.|
+  |.O..OGGGGGOG.|
+  |.GO.OGGGGGOO.|
+  |.OGGGGGHGGOO.|
+  |OOOGGGHHHGGO.|
+  |..OGGHHHHGGO.|
+  |..OGGHHHHGOO.|
+  |..OGGHHHGGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=6 x=11 y=2 replace=true legend=G:3,O:2 rows:10
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |....G...........|
+  |....O...........|
+  |................|
+  |................|
+paint_grid layer=4 frame=6 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOOGGGGOOO.|
+  |...O...............|
+  |...................|
+  |...O...............|
+  |...M...............|
+  |...MM........O.....|
+  |.....MM......M.....|
+  |.......MM..........|
+  |.........OOO.......|
+  |...................|
+  |............M......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=7 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |......O......|
+  |.....GO......|
+  |.....OGO.....|
+  |..O..OGGO....|
+  |..GOOGGGOO.O.|
+  |..OGGGGGGOOG.|
+  |.OOGGGHGGOOO.|
+  |.OOGGGHHGGOO.|
+  |..OGGHHHHGGO.|
+  |..OGGHHHHGOO.|
+  |..OGGGHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=7 x=11 y=2 replace=true legend=O:2 rows:10
+  |................|
+  |................|
+  |................|
+  |................|
+  |................|
+  |...O............|
+  |................|
+  |................|
+  |................|
+  |................|
+paint_grid layer=4 frame=7 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOOGGGGOOO.|
+  |...O...............|
+  |...................|
+  |...O...............|
+  |...M...............|
+  |...MM........O.....|
+  |.....MM......M.....|
+  |.......MM..........|
+  |.........OOO.......|
+  |...................|
+  |............M......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=8 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.............|
+  |.............|
+  |.......O.....|
+  |......GO.....|
+  |.....OGO.....|
+  |..O..GGO.....|
+  |..GOOGGGO....|
+  |..OGOGGGGO...|
+  |.OOOOGHGGO.O.|
+  |.OOGGHHGGOOG.|
+  |.OGGGHHHGGOO.|
+  |.OGGHHHHGGGO.|
+  |..OGGHHHHGOO.|
+  |..OGGHHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=8 x=11 y=2 replace=true legend=G:3,O:2 rows:10
+  |................|
+  |................|
+  |................|
+  |................|
+  |...O............|
+  |................|
+  |................|
+  |................|
+  |..........G.....|
+  |................|
+paint_grid layer=4 frame=8 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOOGGGGOOO.|
+  |...O...............|
+  |...................|
+  |...M...............|
+  |...M...............|
+  |...MM........M.....|
+  |.....MM......M.....|
+  |.......MM..........|
+  |.........MOO.......|
+  |...................|
+  |............M......|
+  |...................|
+frame op=add copy_from=0 duration_ms=100
+paint_grid layer=2 frame=9 x=12 y=2 replace=true legend=G:3,H:4,O:2 rows:16
+  |.............|
+  |.............|
+  |.............|
+  |........O....|
+  |.......GO....|
+  |......OGO....|
+  |......GO.....|
+  |..O..OGGO....|
+  |..GO.OGGGO...|
+  |..OGOGGHGO.O.|
+  |.OOGGGHHGOOG.|
+  |.OGGGHHHGGOO.|
+  |.OGGHHHHGGGO.|
+  |..OGGHHHHGOO.|
+  |..OGGHHHHGO..|
+  |...OGGHHHO...|
+paint_grid layer=3 frame=9 x=11 y=2 replace=true legend=G:3,M:1,O:2 rows:10
+  |................|
+  |................|
+  |................|
+  |..M.............|
+  |................|
+  |................|
+  |................|
+  |...........G....|
+  |...........O....|
+  |................|
+paint_grid layer=4 frame=9 x=6 y=17 replace=true legend=G:3,M:1,O:2 rows:13
+  |...................|
+  |........OOOGGGGOOO.|
+  |...O...............|
+  |...................|
+  |...M...............|
+  |...M...............|
+  |...MM........M.....|
+  |.....MM......M.....|
+  |.......MM..........|
+  |.........MOO.......|
+  |...................|
+  |............M......|
+  |...................|
 add_tag name="Torch — seamless flicker" direction=forward from=0 to=9

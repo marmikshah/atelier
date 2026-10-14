@@ -1,379 +1,387 @@
-atelier 5 cb393a3b-460c-4679-b61a-be7d89192296 0.1.0
+atelier 4 cb393a3b-460c-4679-b61a-be7d89192296 0.1.0
 new name=sc-gpt-6-astra-xhigh-torch width=32 height=32
-palette set colors=#231d2a,#703b2f,#de5223,#ffa62f,#ffea9b
-layer rename index=0 name="Iron wall plate and curved arm"
-layer add name="Bronze cup and wooden shaft"
-layer add name="Firelight on metal"
-layer add name=Flame
-layer add name="Rising embers"
-legend A=#231d2a
-"Iron wall plate and curved arm" @0 grid 20,14 = 20,14 6x14
-    ...A..
-    ..AAA.
-    .AAAAA
-    .AAAAA
-    .AAAAA
-    ..AAA.
-    ..AAA.
-    ..AAA.
-    AAAAA.
-    AAAAA.
-    ..AAA.
-    .AAAAA
-    ..AAA.
-    ...A..
-"Iron wall plate and curved arm" @0 grid 15,20 = 15,20 7x5
-    AA.....
-    AAA....
-    .AAA.AA
-    ..AAAAA
-    ...AAAA
-"Bronze cup and wooden shaft" @0 grid 8,17 = 8,17 12x12
-    AAAAAAAAAAAA
-    .AAAAAAAAAA.
-    .AAAAAAAAAA.
-    ..AAAAAAAA..
-    ...AAAAAA...
-    ....AAAA....
-    ....AAAA....
-    ....AAAA....
-    ....AAAA....
-    ....AAAA....
-    ....AAAA....
-    .....AA.....
-Flame @0 grid 9,4 = 9,4 11x13
-    ......A....
-    .....AA....
-    .....AA....
-    ....AAA....
-    ....AAAA...
-    .A..AAAA...
-    .A.AAAAA...
-    .AAAAAAAA..
-    AAAAAAAAA.A
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    .AAAAAAAAA.
-    ..AAAAAAA..
-legend B=#703b2f
-"Iron wall plate and curved arm" @0 grid 20,14 = 21,15 4x12
-    .ABA
-    ABBB
-    ABAB
-    ABBB
-    .ABA
-    .ABA
-    .ABA
-    AABA
-    BBBA
-    AABA
-    ABAB
-    .ABA
-"Iron wall plate and curved arm" @0 grid 15,20 = 16,21 8x3
-    BA....AB
-    ABA.AAAA
-    .ABBBBBA
-legend C=#ffa62f D=#de5223
-"Bronze cup and wooden shaft" @0 grid 8,17 = 10,18 8x10
-    CBBBBBBC
-    BBDDDBBB
-    ABBDBBBA
-    .AAAAAA.
-    ..ABBA..
-    ..ABBA..
-    ..ABBA..
-    ..ABAA..
-    ..ABBA..
-    ..ABBA..
-legend E=#ffea9b
-Flame @0 grid 9,4 = 9,4 11x13
-    ......D....
-    .....DD....
-    .....DC....
-    ....DDC....
-    ....DCCD...
-    .D..DCCD...
-    .D.DCCCD...
-    .DDDCECCD..
-    DDCCCECCD.D
-    DCCCEEECCDD
-    DCCEEEEECCD
-    .DCCEEECCD.
-    ..DDCCCCD..
-"Bronze cup and wooden shaft" @0 line #703b2f 9,17 18,17 = 9,17 18,17 #703b2f
-"Firelight on metal" @0 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD......
-    ..C.........
-    ............
-    ............
-    ............
-    .B..........
-    .......D....
-"Rising embers" @0 grid 8,4 = 8,4 12x8
-    B...........
-    ............
-    ............
-    ............
-    ............
-    ............
-    ...........C
-    ...........D
-frame duration frame=0 duration_ms=100
-frame add copy_from=0 count=9 duration_ms=100
-"Firelight on metal" @1 clear_cel = 11,16 22,23 .
-Flame @1 clear_cel = 9,4 19,16 .
-"Rising embers" @1 clear_cel = 8,4 19,11 .
-Flame @1 grid 9,3 = 9,3 10x14
-    .......D..
-    ......DD..
-    .....DCD..
-    .....CCD..
-    ....DCCD..
-    ..D.DCC...
-    .DD.DCCD..
-    .DCDCCCD..
-    .DCCCECCD.
-    DDCCEECCD.
-    DCCEEEECCD
-    DCCEEEECCD
-    .DCCEEECCD
-    ..DDCCCCD.
-"Firelight on metal" @1 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD.....D
-    .DCC........
-    ............
-    ............
-    ............
-    .B..........
-    .......DD...
-"Rising embers" @1 grid 8,3 = 8,3 13x8
-    B............
-    .............
-    .............
-    .............
-    .............
-    .............
-    ............C
-    ............D
-"Firelight on metal" @2 clear_cel = 11,16 22,23 .
-Flame @2 clear_cel = 9,4 19,16 .
-"Rising embers" @2 clear_cel = 8,4 19,11 .
-Flame @2 grid 9,4 = 9,4 11x13
-    .......D...
-    ......DD...
-    .....DCD...
-    .....CCD...
-    ..D.DCCD...
-    .DD.DCC....
-    .DCDCCCD...
-    DDCCCCCD..D
-    DCCCECCD.DD
-    DCCEEECCCCD
-    .CCEEEECCCD
-    .DCCEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @2 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD.....D
-    .DCC........
-    ............
-    ............
-    ............
-    .B..........
-    .......DD...
-"Rising embers" @2 grid 20,8 = 20,8 20,8 #ffa62f
-"Firelight on metal" @3 clear_cel = 11,16 22,23 .
-Flame @3 clear_cel = 9,4 19,16 .
-"Rising embers" @3 clear_cel = 8,4 19,11 .
-Flame @3 grid 9,5 = 9,5 11x12
-    ......D....
-    .....DD....
-    ....DCD....
-    ...DCCD....
-    .D.DCCD..D.
-    .DDCCCD.DD.
-    DDCCCCDDCD.
-    DCCECCCCCD.
-    DCEEECCCCCD
-    DCEEEEECCCD
-    .DCEEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @3 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD......
-    ..C.........
-    ............
-    ............
-    ............
-    .B..........
-    .......D....
-"Rising embers" @3 grid 21,7 = 21,7 21,7 #de5223
-"Firelight on metal" @4 clear_cel = 11,16 22,23 .
-Flame @4 clear_cel = 9,4 19,16 .
-"Rising embers" @4 clear_cel = 8,4 19,11 .
-Flame @4 grid 9,5 = 9,5 11x12
-    ....D......
-    ....DD.....
-    ....DCD....
-    ...DCCD....
-    ...DCC...D.
-    .D.DCCD.DD.
-    DCDDCCDDCD.
-    DCCECCCCCD.
-    DCEEECCCCCD
-    DCEEEECCCCD
-    .DCEEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @4 grid 11,17 = 11,17 6x6
-    DDDDDD
-    ......
-    ......
-    ......
-    ......
-    .B....
-"Rising embers" @4 grid 21,6 = 21,6 21,6 #de5223
-"Firelight on metal" @5 clear_cel = 11,16 22,23 .
-Flame @5 clear_cel = 9,4 19,16 .
-"Rising embers" @5 clear_cel = 8,4 19,11 .
-Flame @5 grid 9,4 = 9,4 11x13
-    ...D.......
-    ...DD......
-    ....DD.....
-    ....DCD....
-    ...DCCD.D..
-    ...DCC..DD.
-    ..DCCCDDCD.
-    .DDCCCDCCD.
-    DCCCECCCCD.
-    DCCEEECCCCD
-    DCCEEEECCCD
-    .DCCEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @5 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD......
-    ..C.........
-    ............
-    ............
-    ............
-    .B..........
-    .......D....
-"Rising embers" @5 grid 10,5 = 10,5 12x5
-    ...........B
-    ............
-    ............
-    ............
-    C...........
-"Firelight on metal" @6 clear_cel = 11,16 22,23 .
-Flame @6 clear_cel = 9,4 19,16 .
-"Rising embers" @6 clear_cel = 8,4 19,11 .
-Flame @6 grid 9,5 = 9,5 11x12
-    ...D.......
-    ...DD......
-    ....DD.....
-    ....CCD.D..
-    ...DCC.DCD.
-    ..DCCCDCCD.
-    .DDCCCCCCD.
-    .DCCCECCCD.
-    DDCCEEECCD.
-    DCCEEEEECCD
-    .DCCEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @6 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD.....D
-    .DCC........
-    ............
-    ............
-    ............
-    .B..........
-    .......DD...
-"Rising embers" @6 grid 9,4 = 9,4 14x6
-    .............B
-    ..............
-    ..............
-    ..............
-    C.............
-    D.............
-"Firelight on metal" @7 clear_cel = 11,16 22,23 .
-Flame @7 clear_cel = 9,4 19,16 .
-"Rising embers" @7 clear_cel = 8,4 19,11 .
-Flame @7 grid 9,6 = 9,6 11x11
-    ....D......
-    ....DD.....
-    ....DCD.D..
-    ...DCCDDCD.
-    ...DCCCCCD.
-    .D.DCCCCCD.
-    .DDCCECCCD.
-    DDCCEEECCD.
-    DCCEEEEECCD
-    .DCCEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @7 grid 11,16 = 11,16 13x8
-    ...........DD
-    DDCDDD.....D.
-    .DCC.........
-    .............
-    .............
-    .............
-    .B...........
-    .......DDD...
-"Rising embers" @7 grid 9,7 = 9,7 9,7 #ffa62f
-"Firelight on metal" @8 clear_cel = 11,16 22,23 .
-Flame @8 clear_cel = 9,4 19,16 .
-"Rising embers" @8 clear_cel = 8,4 19,11 .
-Flame @8 grid 9,5 = 9,5 11x12
-    .....D.....
-    .....DD....
-    ....DCD....
-    ....DCCD...
-    ....DCCD.D.
-    ...DCCCDDD.
-    .D.DCCCCCD.
-    .DDCCECCCD.
-    DDCCEEECCD.
-    DCCEEEEECCD
-    .DCCEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @8 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD.....D
-    .DCC........
-    ............
-    ............
-    ............
-    .B..........
-    .......DD...
-"Rising embers" @8 grid 9,6 = 9,6 9,6 #de5223
-"Firelight on metal" @9 clear_cel = 11,16 22,23 .
-Flame @9 clear_cel = 9,4 19,16 .
-"Rising embers" @9 clear_cel = 8,4 19,11 .
-Flame @9 grid 9,4 = 9,4 11x13
-    .....D.....
-    .....DD....
-    .....DC....
-    ....DDC....
-    ....DCCD...
-    .D..DCCD...
-    .D.DCCCD...
-    .DDDCCCCD..
-    DDCCCECCD.D
-    DCCCEEECCDD
-    DCCEEEEECCD
-    .DCCEEECCD.
-    ..DDCCCCD..
-"Firelight on metal" @9 grid 11,16 = 11,16 12x8
-    ...........D
-    DDDDDD......
-    ..C.........
-    ............
-    ............
-    ............
-    .B..........
-    .......D....
-"Rising embers" @9 grid 8,5 = 8,5 8,5 #de5223
+palette op=set colors=#231d2a,#703b2f,#de5223,#ffa62f,#ffea9b
+layer op=rename index=0 name="Iron wall plate and curved arm"
+layer op=add name="Bronze cup and wooden shaft"
+layer op=add name="Firelight on metal"
+layer op=add name=Flame
+layer op=add name="Rising embers"
+paint_grid layer=0 frame=0 x=20 y=14 legend=B:0,K:0 rows:14
+  |...K..|
+  |..KBK.|
+  |.KBBBK|
+  |.KBKBK|
+  |.KBBBK|
+  |..KBK.|
+  |..KBK.|
+  |..KBK.|
+  |KKKBK.|
+  |KBBBK.|
+  |..KBK.|
+  |.KBKBK|
+  |..KBK.|
+  |...K..|
+paint_grid layer=0 frame=0 x=15 y=20 legend=B:0,K:0 rows:5
+  |KK.......|
+  |KBK......|
+  |.KBK...KK|
+  |..KBBBBBK|
+  |...KKKKK.|
+paint_grid layer=1 frame=0 x=8 y=17 legend=B:0,G:0,K:0,R:0 rows:12
+  |KKKKKKKKKKKK|
+  |.KGBBBBBBGK.|
+  |.KBBRRRBBBK.|
+  |..KBBRBBBK..|
+  |...KKKKKK...|
+  |....KBBK....|
+  |....KBBK....|
+  |....KBBK....|
+  |....KBKK....|
+  |....KBBK....|
+  |....KBBK....|
+  |.....KK.....|
+paint_grid layer=3 frame=0 x=9 y=4 legend=G:0,H:0,R:0 rows:13
+  |......R....|
+  |.....RR....|
+  |.....RG....|
+  |....RRG....|
+  |....RGGR...|
+  |.R..RGGR...|
+  |.R.RGGGR...|
+  |.RRRGHGGR..|
+  |RRGGGHGGR.R|
+  |RGGGHHHGGRR|
+  |RGGHHHHHGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=0 frame=0 x=20 y=14 legend=B:1,K:0 rows:14
+  |...K..|
+  |..KBK.|
+  |.KBBBK|
+  |.KBKBK|
+  |.KBBBK|
+  |..KBK.|
+  |..KBK.|
+  |..KBK.|
+  |KKKBK.|
+  |KBBBK.|
+  |..KBK.|
+  |.KBKBK|
+  |..KBK.|
+  |...K..|
+paint_grid layer=0 frame=0 x=15 y=20 legend=B:1,K:0 rows:5
+  |KK.......|
+  |KBK......|
+  |.KBK...KK|
+  |..KBBBBBK|
+  |...KKKKK.|
+paint_grid layer=1 frame=0 x=8 y=17 legend=B:1,G:3,K:0,R:2 rows:12
+  |KKKKKKKKKKKK|
+  |.KGBBBBBBGK.|
+  |.KBBRRRBBBK.|
+  |..KBBRBBBK..|
+  |...KKKKKK...|
+  |....KBBK....|
+  |....KBBK....|
+  |....KBBK....|
+  |....KBKK....|
+  |....KBBK....|
+  |....KBBK....|
+  |.....KK.....|
+paint_grid layer=3 frame=0 x=9 y=4 legend=G:3,H:4,R:2 rows:13
+  |......R....|
+  |.....RR....|
+  |.....RG....|
+  |....RRG....|
+  |....RGGR...|
+  |.R..RGGR...|
+  |.R.RGGGR...|
+  |.RRRGHGGR..|
+  |RRGGGHGGR.R|
+  |RGGGHHHGGRR|
+  |RGGHHHHHGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+draw op=line layer=1 frame=0 color=#703b2f x0=9 x1=18 y0=17 y1=17
+paint_grid layer=2 frame=0 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR......|
+  |..G.........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......R....|
+paint_grid layer=4 frame=0 x=8 y=4 legend=B:1,G:3,R:2 rows:8
+  |B...........|
+  |............|
+  |............|
+  |............|
+  |............|
+  |............|
+  |...........G|
+  |...........R|
+frame op=duration frame=0 duration_ms=100
+frame op=add copy_from=0 count=9 duration_ms=100
+draw op=clear_cel layer=2 frame=1
+draw op=clear_cel layer=3 frame=1
+draw op=clear_cel layer=4 frame=1
+paint_grid layer=3 frame=1 x=9 y=3 legend=G:3,H:4,R:2 rows:14
+  |.......R..|
+  |......RR..|
+  |.....RGR..|
+  |.....GGR..|
+  |....RGGR..|
+  |..R.RGG...|
+  |.RR.RGGR..|
+  |.RGRGGGR..|
+  |.RGGGHGGR.|
+  |RRGGHHGGR.|
+  |RGGHHHHGGR|
+  |RGGHHHHGGR|
+  |.RGGHHHGGR|
+  |..RRGGGGR.|
+paint_grid layer=2 frame=1 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR.....R|
+  |.RGG........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......RR...|
+paint_grid layer=4 frame=1 x=8 y=3 legend=B:1,G:3,R:2 rows:8
+  |B............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |.............|
+  |............G|
+  |............R|
+draw op=clear_cel layer=2 frame=2
+draw op=clear_cel layer=3 frame=2
+draw op=clear_cel layer=4 frame=2
+paint_grid layer=3 frame=2 x=9 y=4 legend=G:3,H:4,R:2 rows:13
+  |.......R...|
+  |......RR...|
+  |.....RGR...|
+  |.....GGR...|
+  |..R.RGGR...|
+  |.RR.RGG....|
+  |.RGRGGGR...|
+  |RRGGGGGR..R|
+  |RGGGHGGR.RR|
+  |RGGHHHGGGGR|
+  |.GGHHHHGGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=2 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR.....R|
+  |.RGG........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......RR...|
+paint_grid layer=4 frame=2 x=20 y=8 legend=G:3 rows:1
+  |G|
+draw op=clear_cel layer=2 frame=3
+draw op=clear_cel layer=3 frame=3
+draw op=clear_cel layer=4 frame=3
+paint_grid layer=3 frame=3 x=9 y=5 legend=G:3,H:4,R:2 rows:12
+  |......R....|
+  |.....RR....|
+  |....RGR....|
+  |...RGGR....|
+  |.R.RGGR..R.|
+  |.RRGGGR.RR.|
+  |RRGGGGRRGR.|
+  |RGGHGGGGGR.|
+  |RGHHHGGGGGR|
+  |RGHHHHHGGGR|
+  |.RGHHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=3 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR......|
+  |..G.........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......R....|
+paint_grid layer=4 frame=3 x=21 y=7 legend=R:2 rows:1
+  |R|
+draw op=clear_cel layer=2 frame=4
+draw op=clear_cel layer=3 frame=4
+draw op=clear_cel layer=4 frame=4
+paint_grid layer=3 frame=4 x=9 y=5 legend=G:3,H:4,R:2 rows:12
+  |....R......|
+  |....RR.....|
+  |....RGR....|
+  |...RGGR....|
+  |...RGG...R.|
+  |.R.RGGR.RR.|
+  |RGRRGGRRGR.|
+  |RGGHGGGGGR.|
+  |RGHHHGGGGGR|
+  |RGHHHHGGGGR|
+  |.RGHHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=4 x=11 y=17 legend=B:1,R:2 rows:6
+  |RRRRRR|
+  |......|
+  |......|
+  |......|
+  |......|
+  |.B....|
+paint_grid layer=4 frame=4 x=21 y=6 legend=R:2 rows:1
+  |R|
+draw op=clear_cel layer=2 frame=5
+draw op=clear_cel layer=3 frame=5
+draw op=clear_cel layer=4 frame=5
+paint_grid layer=3 frame=5 x=9 y=4 legend=G:3,H:4,R:2 rows:13
+  |...R.......|
+  |...RR......|
+  |....RR.....|
+  |....RGR....|
+  |...RGGR.R..|
+  |...RGG..RR.|
+  |..RGGGRRGR.|
+  |.RRGGGRGGR.|
+  |RGGGHGGGGR.|
+  |RGGHHHGGGGR|
+  |RGGHHHHGGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=5 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR......|
+  |..G.........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......R....|
+paint_grid layer=4 frame=5 x=10 y=5 legend=B:1,G:3 rows:5
+  |...........B|
+  |............|
+  |............|
+  |............|
+  |G...........|
+draw op=clear_cel layer=2 frame=6
+draw op=clear_cel layer=3 frame=6
+draw op=clear_cel layer=4 frame=6
+paint_grid layer=3 frame=6 x=9 y=5 legend=G:3,H:4,R:2 rows:12
+  |...R.......|
+  |...RR......|
+  |....RR.....|
+  |....GGR.R..|
+  |...RGG.RGR.|
+  |..RGGGRGGR.|
+  |.RRGGGGGGR.|
+  |.RGGGHGGGR.|
+  |RRGGHHHGGR.|
+  |RGGHHHHHGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=6 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR.....R|
+  |.RGG........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......RR...|
+paint_grid layer=4 frame=6 x=9 y=4 legend=B:1,G:3,R:2 rows:6
+  |.............B|
+  |..............|
+  |..............|
+  |..............|
+  |G.............|
+  |R.............|
+draw op=clear_cel layer=2 frame=7
+draw op=clear_cel layer=3 frame=7
+draw op=clear_cel layer=4 frame=7
+paint_grid layer=3 frame=7 x=9 y=6 legend=G:3,H:4,R:2 rows:11
+  |....R......|
+  |....RR.....|
+  |....RGR.R..|
+  |...RGGRRGR.|
+  |...RGGGGGR.|
+  |.R.RGGGGGR.|
+  |.RRGGHGGGR.|
+  |RRGGHHHGGR.|
+  |RGGHHHHHGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=7 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........RR|
+  |RRGRRR.....R.|
+  |.RGG.........|
+  |.............|
+  |.............|
+  |.............|
+  |.B...........|
+  |.......RRR...|
+paint_grid layer=4 frame=7 x=9 y=7 legend=G:3 rows:1
+  |G|
+draw op=clear_cel layer=2 frame=8
+draw op=clear_cel layer=3 frame=8
+draw op=clear_cel layer=4 frame=8
+paint_grid layer=3 frame=8 x=9 y=5 legend=G:3,H:4,R:2 rows:12
+  |.....R.....|
+  |.....RR....|
+  |....RGR....|
+  |....RGGR...|
+  |....RGGR.R.|
+  |...RGGGRRR.|
+  |.R.RGGGGGR.|
+  |.RRGGHGGGR.|
+  |RRGGHHHGGR.|
+  |RGGHHHHHGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=8 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR.....R|
+  |.RGG........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......RR...|
+paint_grid layer=4 frame=8 x=9 y=6 legend=R:2 rows:1
+  |R|
+draw op=clear_cel layer=2 frame=9
+draw op=clear_cel layer=3 frame=9
+draw op=clear_cel layer=4 frame=9
+paint_grid layer=3 frame=9 x=9 y=4 legend=G:3,H:4,R:2 rows:13
+  |.....R.....|
+  |.....RR....|
+  |.....RG....|
+  |....RRG....|
+  |....RGGR...|
+  |.R..RGGR...|
+  |.R.RGGGR...|
+  |.RRRGGGGR..|
+  |RRGGGHGGR.R|
+  |RGGGHHHGGRR|
+  |RGGHHHHHGGR|
+  |.RGGHHHGGR.|
+  |..RRGGGGR..|
+paint_grid layer=2 frame=9 x=11 y=16 legend=B:1,G:3,R:2 rows:8
+  |...........R|
+  |RRRRRR......|
+  |..G.........|
+  |............|
+  |............|
+  |............|
+  |.B..........|
+  |.......R....|
+paint_grid layer=4 frame=9 x=8 y=5 legend=R:2 rows:1
+  |R|
 add_tag name="Wall torch — flicker and embers" direction=forward from=0 to=9

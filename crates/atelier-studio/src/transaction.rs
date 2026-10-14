@@ -384,7 +384,7 @@ mod tests {
         let live = studio("rollback");
         let created = live.doc_new("d", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        live.journal_call(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
+        live.journal_append(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
             .unwrap();
 
         let transaction = live.begin_transaction(Some(id)).unwrap();
@@ -401,7 +401,7 @@ mod tests {
             .unwrap();
         transaction
             .studio()
-            .journal_call(id, ToolName::DocLayer, &json!({"doc_id":id,"op":"add"}))
+            .journal_append(id, ToolName::DocDraw, &json!({"doc_id":id,"op":"fill_cel"}))
             .unwrap();
 
         assert_eq!(
@@ -418,7 +418,7 @@ mod tests {
         let live = studio("commit");
         let created = live.doc_new("d", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        live.journal_call(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
+        live.journal_append(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
             .unwrap();
         let transaction = live.begin_transaction(Some(id)).unwrap();
         transaction
@@ -434,7 +434,7 @@ mod tests {
             .unwrap();
         transaction
             .studio()
-            .journal_call(id, ToolName::DocLayer, &json!({"doc_id":id,"op":"add"}))
+            .journal_append(id, ToolName::DocDraw, &json!({"doc_id":id,"op":"fill_cel"}))
             .unwrap();
         transaction.commit(id).unwrap();
 
@@ -465,7 +465,7 @@ mod tests {
         let live = studio("checkpoint-io-profile");
         let created = live.doc_new("d", 4, 4).unwrap();
         let id = created["doc_id"].as_str().unwrap();
-        live.journal_call(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
+        live.journal_append(id, ToolName::DocNew, &json!({"name":"d","doc_id":id}))
             .unwrap();
         for label in ["first", "second"] {
             live.checkpoint(id, CheckpointAction::Save, Some(label), None)

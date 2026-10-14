@@ -1,449 +1,60 @@
-atelier 5 514966af-df25-440f-80d8-df368c758797 0.1.0
+atelier 4 514966af-df25-440f-80d8-df368c758797 0.1.0
 new name=rubber_ball width=32 height=32
-layer add name=shadow
-layer rename index=0 name=ball
-layer move index=1 to_index=0
-palette set colors=#2a0a0a,#9c231c,#e2483a,#ffb199
-frame add copy_from=0 count=9
-legend A=#2a0a0a
-ball @0 ellipse #2a0a0a 16,6 6,6 fill = 10,0 13x13
-    ....AAAAA....
-    ..AAAAAAAAA..
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    ..AAAAAAAAA..
-    ....AAAAA....
-legend B=#e2483a
-ball @0 ellipse #e2483a 16,6 5,5 fill = 11,1 11x11
-    .AABBBBBAA.
-    AABBBBBBBAA
-    ABBBBBBBBBA
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    ABBBBBBBBBA
-    AABBBBBBBAA
-    .AABBBBBAA.
-legend C=#9c231c
-ball @0 ellipse #9c231c 17,7 4,4 fill = 13,3 9x9
-    BBCCCCCBA
-    BCCCCCCCB
-    CCCCCCCCC
-    CCCCCCCCC
-    CCCCCCCCC
-    CCCCCCCCC
-    CCCCCCCCC
-    BCCCCCCCA
-    ABCCCCCA.
-ball @0 ellipse #ffb199 14,4 1,1 fill = 13,3 15,5 #ffb199
-ball @0 ellipse #e2483a 16,6 5,5 fill = 13,3 9x9
-    BBBBBBBBA
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBC
-    BBBBBBBCA
-    ABBBBBCA.
-ball @0 ellipse #9c231c 18,8 3,3 fill = 15,5 7x7
-    BBCCCBB
-    BCCCCCB
-    CCCCCCC
-    CCCCCCC
-    CCCCCCC
-    BCCCCCA
-    BBCCCA.
-ball @0 ellipse #ffb199 14,4 1,1 fill = 13,3 15,5 #ffb199
-shadow @0 ellipse #2a0a0a 16,29 3,2 fill = 13,27 7x5
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-ball @4 ellipse #2a0a0a 16,14 4,8 fill = 12,6 9x17
-    ...AAA...
-    ..AAAAA..
-    .AAAAAAA.
-    .AAAAAAA.
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    .AAAAAAA.
-    .AAAAAAA.
-    ..AAAAA..
-    ...AAA...
-ball @4 ellipse #e2483a 16,14 3,7 fill = 13,7 7x15
-    .ABBBA.
-    ABBBBBA
-    ABBBBBA
-    ABBBBBA
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    ABBBBBA
-    ABBBBBA
-    ABBBBBA
-    .ABBBA.
-ball @4 ellipse #9c231c 17,16 2,3 fill = 15,13 5x7
-    BCCCB
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    BCCCA
-ball @4 ellipse #ffb199 15,8 1,1 fill = 14,7 16,9 #ffb199
-shadow @4 ellipse #2a0a0a 16,29 6,2 fill = 10,27 13x5
-    ...AAAAAAA...
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    ...AAAAAAA...
-ball @5 ellipse #2a0a0a 16,25 8,3 fill = 8,22 17x7
-    ....AAAAAAAAA....
-    ..AAAAAAAAAAAAA..
-    AAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAA
-    AAAAAAAAAAAAAAAAA
-    ..AAAAAAAAAAAAA..
-    ....AAAAAAAAA....
-ball @5 ellipse #e2483a 16,25 7,2 fill = 9,23 15x5
-    .AABBBBBBBBBAA.
-    ABBBBBBBBBBBBBA
-    BBBBBBBBBBBBBBB
-    ABBBBBBBBBBBBBA
-    .AABBBBBBBBBAA.
-ball @5 ellipse #9c231c 19,25 3,1 fill = 16,24 7x3
-    BCCCCCB
-    CCCCCCC
-    BCCCCCB
-ball @5 ellipse #ffb199 12,24 1,1 fill = 11,23 13,25 #ffb199
-shadow @5 ellipse #2a0a0a 16,29 8,2 fill = 8,27 17x5
-    ...AAAAAAAAAAA...
-    .AAAAAAAAAAAAAAA.
-    AAAAAAAAAAAAAAAAA
-    .AAAAAAAAAAAAAAA.
-    ...AAAAAAAAAAA...
-shadow @1 ellipse #2a0a0a 16,29 3,2 fill = 13,27 7x5
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-ball @1 ellipse #2a0a0a 16,7 6,6 fill = 10,1 13x13
-    ....AAAAA....
-    ..AAAAAAAAA..
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    ..AAAAAAAAA..
-    ....AAAAA....
-ball @1 ellipse #e2483a 16,7 5,5 fill = 11,2 11x11
-    .AABBBBBAA.
-    AABBBBBBBAA
-    ABBBBBBBBBA
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    ABBBBBBBBBA
-    AABBBBBBBAA
-    .AABBBBBAA.
-ball @1 ellipse #9c231c 18,9 3,3 fill = 15,6 7x7
-    BBCCCBB
-    BCCCCCB
-    CCCCCCC
-    CCCCCCC
-    CCCCCCC
-    BCCCCCA
-    BBCCCA.
-ball @1 ellipse #ffb199 14,5 1,1 fill = 13,4 15,6 #ffb199
-shadow @2 ellipse #2a0a0a 16,29 4,2 fill = 12,27 9x5
-    ..AAAAA..
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    ..AAAAA..
-ball @2 ellipse #2a0a0a 16,9 6,6 fill = 10,3 13x13
-    ....AAAAA....
-    ..AAAAAAAAA..
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    ..AAAAAAAAA..
-    ....AAAAA....
-ball @2 ellipse #e2483a 16,9 5,5 fill = 11,4 11x11
-    .AABBBBBAA.
-    AABBBBBBBAA
-    ABBBBBBBBBA
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    ABBBBBBBBBA
-    AABBBBBBBAA
-    .AABBBBBAA.
-ball @2 ellipse #9c231c 18,11 3,3 fill = 15,8 7x7
-    BBCCCBB
-    BCCCCCB
-    CCCCCCC
-    CCCCCCC
-    CCCCCCC
-    BCCCCCA
-    BBCCCA.
-ball @2 ellipse #ffb199 14,7 1,1 fill = 13,6 15,8 #ffb199
-shadow @3 ellipse #2a0a0a 16,29 5,2 fill = 11,27 11x5
-    ..AAAAAAA..
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    ..AAAAAAA..
-ball @3 ellipse #2a0a0a 16,11 5,7 fill = 11,4 11x15
-    ....AAA....
-    ..AAAAAAA..
-    .AAAAAAAAA.
-    .AAAAAAAAA.
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    .AAAAAAAAA.
-    .AAAAAAAAA.
-    ..AAAAAAA..
-    ....AAA....
-ball @3 ellipse #e2483a 16,11 4,6 fill = 12,5 9x13
-    .AABBBAA.
-    AABBBBBAA
-    ABBBBBBBA
-    ABBBBBBBA
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    ABBBBBBBA
-    ABBBBBBBA
-    AABBBBBAA
-    .AABBBAA.
-ball @3 ellipse #9c231c 17,13 2,3 fill = 15,10 5x7
-    BCCCB
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    BCCCA
-ball @3 ellipse #ffb199 14,8 1,1 fill = 13,7 15,9 #ffb199
-shadow @6 ellipse #2a0a0a 16,29 6,2 fill = 10,27 13x5
-    ...AAAAAAA...
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    ...AAAAAAA...
-ball @6 ellipse #2a0a0a 16,14 4,8 fill = 12,6 9x17
-    ...AAA...
-    ..AAAAA..
-    .AAAAAAA.
-    .AAAAAAA.
-    .AAAAAAA.
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    .AAAAAAA.
-    .AAAAAAA.
-    .AAAAAAA.
-    ..AAAAA..
-    ...AAA...
-ball @6 ellipse #e2483a 16,14 3,7 fill = 13,7 7x15
-    .ABBBA.
-    ABBBBBA
-    ABBBBBA
-    ABBBBBA
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    BBBBBBB
-    ABBBBBA
-    ABBBBBA
-    ABBBBBA
-    .ABBBA.
-ball @6 ellipse #9c231c 17,16 2,3 fill = 15,13 5x7
-    BCCCB
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    BCCCA
-ball @6 ellipse #ffb199 15,8 1,1 fill = 14,7 16,9 #ffb199
-shadow @7 ellipse #2a0a0a 16,29 5,2 fill = 11,27 11x5
-    ..AAAAAAA..
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    ..AAAAAAA..
-ball @7 ellipse #2a0a0a 16,11 5,7 fill = 11,4 11x15
-    ....AAA....
-    ..AAAAAAA..
-    .AAAAAAAAA.
-    .AAAAAAAAA.
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    AAAAAAAAAAA
-    .AAAAAAAAA.
-    .AAAAAAAAA.
-    ..AAAAAAA..
-    ....AAA....
-ball @7 ellipse #e2483a 16,11 4,6 fill = 12,5 9x13
-    .AABBBAA.
-    AABBBBBAA
-    ABBBBBBBA
-    ABBBBBBBA
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    BBBBBBBBB
-    ABBBBBBBA
-    ABBBBBBBA
-    AABBBBBAA
-    .AABBBAA.
-ball @7 ellipse #9c231c 17,13 2,3 fill = 15,10 5x7
-    BCCCB
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    CCCCC
-    BCCCA
-ball @7 ellipse #ffb199 14,8 1,1 fill = 13,7 15,9 #ffb199
-shadow @8 ellipse #2a0a0a 16,29 4,2 fill = 12,27 9x5
-    ..AAAAA..
-    AAAAAAAAA
-    AAAAAAAAA
-    AAAAAAAAA
-    ..AAAAA..
-ball @8 ellipse #2a0a0a 16,9 6,6 fill = 10,3 13x13
-    ....AAAAA....
-    ..AAAAAAAAA..
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    ..AAAAAAAAA..
-    ....AAAAA....
-ball @8 ellipse #e2483a 16,9 5,5 fill = 11,4 11x11
-    .AABBBBBAA.
-    AABBBBBBBAA
-    ABBBBBBBBBA
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    ABBBBBBBBBA
-    AABBBBBBBAA
-    .AABBBBBAA.
-ball @8 ellipse #9c231c 18,11 3,3 fill = 15,8 7x7
-    BBCCCBB
-    BCCCCCB
-    CCCCCCC
-    CCCCCCC
-    CCCCCCC
-    BCCCCCA
-    BBCCCA.
-ball @8 ellipse #ffb199 14,7 1,1 fill = 13,6 15,8 #ffb199
-shadow @9 ellipse #2a0a0a 16,29 3,2 fill = 13,27 7x5
-    .AAAAA.
-    AAAAAAA
-    AAAAAAA
-    AAAAAAA
-    .AAAAA.
-ball @9 ellipse #2a0a0a 16,7 6,6 fill = 10,1 13x13
-    ....AAAAA....
-    ..AAAAAAAAA..
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    AAAAAAAAAAAAA
-    .AAAAAAAAAAA.
-    .AAAAAAAAAAA.
-    ..AAAAAAAAA..
-    ....AAAAA....
-ball @9 ellipse #e2483a 16,7 5,5 fill = 11,2 11x11
-    .AABBBBBAA.
-    AABBBBBBBAA
-    ABBBBBBBBBA
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    BBBBBBBBBBB
-    ABBBBBBBBBA
-    AABBBBBBBAA
-    .AABBBBBAA.
-ball @9 ellipse #9c231c 18,9 3,3 fill = 15,6 7x7
-    BBCCCBB
-    BCCCCCB
-    CCCCCCC
-    CCCCCCC
-    CCCCCCC
-    BCCCCCA
-    BBCCCA.
-ball @9 ellipse #ffb199 14,5 1,1 fill = 13,4 15,6 #ffb199
+layer op=add name=shadow
+layer op=rename index=0 name=ball
+layer op=move index=1 to_index=0
+palette op=set colors=#2a0a0a,#9c231c,#e2483a,#ffb199
+frame op=add copy_from=0 count=9
+draw op=ellipse layer=1 frame=0 color=#2a0a0a cx=16 cy=6 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=0 color=#e2483a cx=16 cy=6 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=0 color=#9c231c cx=17 cy=7 fill=true rx=4 ry=4
+draw op=ellipse layer=1 frame=0 color=#ffb199 cx=14 cy=4 fill=true rx=1 ry=1
+draw op=ellipse layer=1 frame=0 color=#e2483a cx=16 cy=6 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=0 color=#9c231c cx=18 cy=8 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=0 color=#ffb199 cx=14 cy=4 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=0 color=#2a0a0a cx=16 cy=29 fill=true rx=3 ry=2
+draw op=ellipse layer=1 frame=4 color=#2a0a0a cx=16 cy=14 fill=true rx=4 ry=8
+draw op=ellipse layer=1 frame=4 color=#e2483a cx=16 cy=14 fill=true rx=3 ry=7
+draw op=ellipse layer=1 frame=4 color=#9c231c cx=17 cy=16 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=4 color=#ffb199 cx=15 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=4 color=#2a0a0a cx=16 cy=29 fill=true rx=6 ry=2
+draw op=ellipse layer=1 frame=5 color=#2a0a0a cx=16 cy=25 fill=true rx=8 ry=3
+draw op=ellipse layer=1 frame=5 color=#e2483a cx=16 cy=25 fill=true rx=7 ry=2
+draw op=ellipse layer=1 frame=5 color=#9c231c cx=19 cy=25 fill=true rx=3 ry=1
+draw op=ellipse layer=1 frame=5 color=#ffb199 cx=12 cy=24 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=5 color=#2a0a0a cx=16 cy=29 fill=true rx=8 ry=2
+draw op=ellipse layer=0 frame=1 color=#2a0a0a cx=16 cy=29 fill=true rx=3 ry=2
+draw op=ellipse layer=1 frame=1 color=#2a0a0a cx=16 cy=7 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=1 color=#e2483a cx=16 cy=7 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=1 color=#9c231c cx=18 cy=9 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=1 color=#ffb199 cx=14 cy=5 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=2 color=#2a0a0a cx=16 cy=29 fill=true rx=4 ry=2
+draw op=ellipse layer=1 frame=2 color=#2a0a0a cx=16 cy=9 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=2 color=#e2483a cx=16 cy=9 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=2 color=#9c231c cx=18 cy=11 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=2 color=#ffb199 cx=14 cy=7 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=3 color=#2a0a0a cx=16 cy=29 fill=true rx=5 ry=2
+draw op=ellipse layer=1 frame=3 color=#2a0a0a cx=16 cy=11 fill=true rx=5 ry=7
+draw op=ellipse layer=1 frame=3 color=#e2483a cx=16 cy=11 fill=true rx=4 ry=6
+draw op=ellipse layer=1 frame=3 color=#9c231c cx=17 cy=13 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=3 color=#ffb199 cx=14 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=6 color=#2a0a0a cx=16 cy=29 fill=true rx=6 ry=2
+draw op=ellipse layer=1 frame=6 color=#2a0a0a cx=16 cy=14 fill=true rx=4 ry=8
+draw op=ellipse layer=1 frame=6 color=#e2483a cx=16 cy=14 fill=true rx=3 ry=7
+draw op=ellipse layer=1 frame=6 color=#9c231c cx=17 cy=16 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=6 color=#ffb199 cx=15 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=7 color=#2a0a0a cx=16 cy=29 fill=true rx=5 ry=2
+draw op=ellipse layer=1 frame=7 color=#2a0a0a cx=16 cy=11 fill=true rx=5 ry=7
+draw op=ellipse layer=1 frame=7 color=#e2483a cx=16 cy=11 fill=true rx=4 ry=6
+draw op=ellipse layer=1 frame=7 color=#9c231c cx=17 cy=13 fill=true rx=2 ry=3
+draw op=ellipse layer=1 frame=7 color=#ffb199 cx=14 cy=8 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=8 color=#2a0a0a cx=16 cy=29 fill=true rx=4 ry=2
+draw op=ellipse layer=1 frame=8 color=#2a0a0a cx=16 cy=9 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=8 color=#e2483a cx=16 cy=9 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=8 color=#9c231c cx=18 cy=11 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=8 color=#ffb199 cx=14 cy=7 fill=true rx=1 ry=1
+draw op=ellipse layer=0 frame=9 color=#2a0a0a cx=16 cy=29 fill=true rx=3 ry=2
+draw op=ellipse layer=1 frame=9 color=#2a0a0a cx=16 cy=7 fill=true rx=6 ry=6
+draw op=ellipse layer=1 frame=9 color=#e2483a cx=16 cy=7 fill=true rx=5 ry=5
+draw op=ellipse layer=1 frame=9 color=#9c231c cx=18 cy=9 fill=true rx=3 ry=3
+draw op=ellipse layer=1 frame=9 color=#ffb199 cx=14 cy=5 fill=true rx=1 ry=1

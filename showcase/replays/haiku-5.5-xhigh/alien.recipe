@@ -1,374 +1,372 @@
-atelier 5 69f3de24-cc3e-4761-b08d-e11d0eb62197 0.1.0
+atelier 4 69f3de24-cc3e-4761-b08d-e11d0eb62197 0.1.0
 new name=alien width=32 height=32
-layer add name=body
-palette set colors=#102a14,#3fa34d,#9be36f,#f4fff0
-layer rename index=0 name=antenna
-layer add name=head
-layer add name=eyes
-legend A=#102a14
-head @0 grid 1,0 = 1,0 4x2
-    .AA.
-    AAAA
-head @0 grid 1,0 ~
-head @0 clear 0,0 32,32 = 1,0 4,1 .
-head @0 shift dx=0 dy=0
-antenna @0 clear 0,0 32,32 ~
-legend B=#9be36f
-antenna @0 grid 8,2 = 8,2 16x6
-    BB............BB
-    BB............BB
-    ..A..........A..
-    ..A..........A..
-    ...A........A...
-    ...A........A...
-body @0 clear 0,0 32,32 ~
-legend C=#3fa34d
-body @0 grid 10,23 = 10,23 12x5
-    ACCCCCCCCCCA
-    ACBCCCCCCBCA
-    ACCCCCCCCCCA
-    .ACCCCCCCCA.
-    ..AAAAAAAA..
-head @0 clear 0,0 32,32 ~
-head @0 grid 4,7 = 4,7 24x16
-    ......AAAAAAAAAAAA......
-    ....ACCCCCCCCCCCCCCA....
-    ...ACBBCCCCCCCCCCBBCA...
-    ..ACBCCCCCCCCCCCCCCBCA..
-    .ACCCCCCCCCCCCCCCCCCCCA.
-    ACCCCCCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCCCCCA
-    ACCCCCCCCCCCCCCCCCCCCCCA
-    .ACCCCCCCACCCCACCCCCCCA.
-    .ACCCCCCCCAAAACCCCCCCCA.
-    ..ACCCCCCCCCCCCCCCCCCA..
-    ...ACCCCCCCCCCCCCCCCA...
-    .....AAAAAAAAAAAAAA.....
-eyes @0 clear 0,0 32,32 ~
-legend D=#f4fff0
-eyes @0 grid 8,12 = 8,12 16x4
-    DDDD........DDDD
-    DAAD........DAAD
-    DAAD........DAAD
-    DDDD........DDDD
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-frame add copy_from=0
-head @1 shift dx=0 dy=-1
-body @1 shift dx=0 dy=-1
-eyes @1 shift dx=0 dy=-1
-antenna @1 clear 0,0 32,32 = 8,2 23,7 .
-antenna @1 grid 7,1 = 7,1 18x6
-    BB..............BB
-    BB..............BB
-    ..A............A..
-    ...A..........A...
-    ...A..........A...
-    ....A........A....
-body @2 shift dx=0 dy=-2
-head @2 shift dx=0 dy=-2
-eyes @2 shift dx=0 dy=-2
-antenna @2 clear 0,0 32,32 = 8,2 23,7 .
-antenna @2 grid 6,0 = 6,0 20x6
-    BB................BB
-    BB................BB
-    ..A..............A..
-    ...A............A...
-    ....A..........A....
-    .....A........A.....
-body @3 shift dx=0 dy=-2
-head @3 shift dx=0 dy=-2
-eyes @3 shift dx=0 dy=-2
-antenna @3 clear 0,0 32,32 = 8,2 23,7 .
-antenna @3 grid 6,0 = 6,0 20x6
-    BB................BB
-    BB................BB
-    ..A..............A..
-    ...A............A...
-    ....A..........A....
-    .....A........A.....
-body @4 shift dx=0 dy=-1
-head @4 shift dx=0 dy=-1
-eyes @4 shift dx=0 dy=-1
-antenna @4 clear 0,0 32,32 = 8,2 23,7 .
-antenna @4 grid 7,1 = 7,1 18x6
-    BB..............BB
-    BB..............BB
-    ..A............A..
-    ...A..........A...
-    ...A..........A...
-    ....A........A....
-body @5 shift dx=0 dy=0
-head @5 shift dx=0 dy=0
-antenna @5 clear 0,0 32,32 = 8,2 23,7 .
-antenna @5 grid 8,2 = 8,2 16x6
-    BB............BB
-    BB............BB
-    ..A..........A..
-    ..A..........A..
-    ...A........A...
-    ...A........A...
-body @6 shift dx=0 dy=1
-head @6 shift dx=0 dy=1
-eyes @6 clear 0,0 32,32 = 8,12 23,15 .
-eyes @6 grid 8,14 = 8,14 16x3
-    AAAA........AAAA
-    DAAD........DAAD
-    DDDD........DDDD
-antenna @6 clear 0,0 32,32 = 8,2 23,7 .
-antenna @6 grid 9,3 = 9,3 14x6
-    BB..........BB
-    BB..........BB
-    .A..........A.
-    ..A........A..
-    ..A........A..
-    ..A........A..
-body @7 shift dx=0 dy=2
-head @7 shift dx=0 dy=2
-eyes @7 clear 0,0 32,32 = 8,12 23,15 .
-eyes @7 grid 8,16 = 8,16 16x1
-    AAAA........AAAA
-antenna @7 clear 0,0 32,32 = 8,2 23,7 .
-antenna @7 grid 10,4 = 10,4 12x6
-    BB........BB
-    BB........BB
-    .A........A.
-    .A........A.
-    .A........A.
-    .A........A.
-body @8 shift dx=0 dy=2
-head @8 shift dx=0 dy=2
-eyes @8 clear 0,0 32,32 = 8,12 23,15 .
-eyes @8 grid 8,15 = 8,15 16x3
-    AAAA........AAAA
-    DAAD........DAAD
-    DDDD........DDDD
-antenna @8 clear 0,0 32,32 = 8,2 23,7 .
-antenna @8 grid 10,4 = 10,4 12x6
-    BB........BB
-    BB........BB
-    .A........A.
-    .A........A.
-    .A........A.
-    .A........A.
-body @9 shift dx=0 dy=1
-head @9 shift dx=0 dy=1
-eyes @9 shift dx=0 dy=1
-antenna @9 clear 0,0 32,32 = 8,2 23,7 .
-antenna @9 grid 9,3 = 9,3 14x6
-    BB..........BB
-    BB..........BB
-    .A..........A.
-    ..A........A..
-    ..A........A..
-    ..A........A..
-antenna @0 clear 0,0 32,32 = 8,2 23,7 .
-antenna @0 grid 8,2 = 8,2 16x6
-    BB............BB
-    BB............BB
-    ..C..........C..
-    ..C..........C..
-    ...C........C...
-    ...C........C...
-antenna @1 clear 0,0 32,32 = 7,1 24,6 .
-antenna @1 grid 7,1 = 7,1 18x6
-    BB..............BB
-    BB..............BB
-    ..C............C..
-    ...C..........C...
-    ...C..........C...
-    ....C........C....
-antenna @2 clear 0,0 32,32 = 6,0 25,5 .
-antenna @2 grid 6,0 = 6,0 20x6
-    BB................BB
-    BB................BB
-    ..C..............C..
-    ...C............C...
-    ....C..........C....
-    .....C........C.....
-antenna @3 clear 0,0 32,32 = 6,0 25,5 .
-antenna @3 grid 6,0 = 6,0 20x6
-    BB................BB
-    BB................BB
-    ..C..............C..
-    ...C............C...
-    ....C..........C....
-    .....C........C.....
-antenna @4 clear 0,0 32,32 = 7,1 24,6 .
-antenna @4 grid 7,1 = 7,1 18x6
-    BB..............BB
-    BB..............BB
-    ..C............C..
-    ...C..........C...
-    ...C..........C...
-    ....C........C....
-antenna @5 clear 0,0 32,32 = 8,2 23,7 .
-antenna @5 grid 8,2 = 8,2 16x6
-    BB............BB
-    BB............BB
-    ..C..........C..
-    ..C..........C..
-    ...C........C...
-    ...C........C...
-antenna @6 clear 0,0 32,32 = 9,3 22,8 .
-antenna @6 grid 9,3 = 9,3 14x6
-    BB..........BB
-    BB..........BB
-    .C..........C.
-    ..C........C..
-    ..C........C..
-    ..C........C..
-antenna @7 clear 0,0 32,32 = 10,4 21,9 .
-antenna @7 grid 10,4 = 10,4 12x6
-    BB........BB
-    BB........BB
-    .C........C.
-    .C........C.
-    .C........C.
-    .C........C.
-antenna @8 clear 0,0 32,32 = 10,4 21,9 .
-antenna @8 grid 10,4 = 10,4 12x6
-    BB........BB
-    BB........BB
-    .C........C.
-    .C........C.
-    .C........C.
-    .C........C.
-antenna @9 clear 0,0 32,32 = 9,3 22,8 .
-antenna @9 grid 9,3 = 9,3 14x6
-    BB..........BB
-    BB..........BB
-    .C..........C.
-    ..C........C..
-    ..C........C..
-    ..C........C..
-antenna @0 clear 0,0 32,32 = 8,2 23,7 .
-antenna @0 grid 8,2 = 8,2 16x6
-    BB............BB
-    BB............BB
-    .CC..........CC.
-    ..C..........C..
-    ..CC........CC..
-    ...C........C...
-antenna @1 clear 0,0 32,32 = 7,1 24,6 .
-antenna @1 grid 7,1 = 7,1 18x6
-    BB..............BB
-    BB..............BB
-    .CC............CC.
-    ..CC..........CC..
-    ...C..........C...
-    ...CC........CC...
-antenna @2 clear 0,0 32,32 = 6,0 25,5 .
-antenna @2 grid 6,0 = 6,0 20x6
-    BB................BB
-    BB................BB
-    .CC..............CC.
-    ..CC............CC..
-    ...CC..........CC...
-    ....CC........CC....
-antenna @3 clear 0,0 32,32 = 6,0 25,5 .
-antenna @3 grid 6,0 = 6,0 20x6
-    BB................BB
-    BB................BB
-    .CC..............CC.
-    ..CC............CC..
-    ...CC..........CC...
-    ....CC........CC....
-antenna @4 clear 0,0 32,32 = 7,1 24,6 .
-antenna @4 grid 7,1 = 7,1 18x6
-    BB..............BB
-    BB..............BB
-    .CC............CC.
-    ..CC..........CC..
-    ...C..........C...
-    ...CC........CC...
-antenna @5 clear 0,0 32,32 = 8,2 23,7 .
-antenna @5 grid 8,2 = 8,2 16x6
-    BB............BB
-    BB............BB
-    .CC..........CC.
-    ..C..........C..
-    ..CC........CC..
-    ...C........C...
-antenna @6 clear 0,0 32,32 = 9,3 22,8 .
-antenna @6 grid 9,3 = 9,3 14x6
-    BB..........BB
-    BB..........BB
-    .C..........C.
-    .CC........CC.
-    ..C........C..
-    ..C........C..
-antenna @7 clear 0,0 32,32 = 10,4 21,9 .
-antenna @7 grid 10,4 = 10,4 12x6
-    BB........BB
-    BB........BB
-    .C........C.
-    .C........C.
-    .C........C.
-    .C........C.
-antenna @8 clear 0,0 32,32 = 10,4 21,9 .
-antenna @8 grid 10,4 = 10,4 12x6
-    BB........BB
-    BB........BB
-    .C........C.
-    .C........C.
-    .C........C.
-    .C........C.
-antenna @9 clear 0,0 32,32 = 9,3 22,8 .
-antenna @9 grid 9,3 = 9,3 14x6
-    BB..........BB
-    BB..........BB
-    .C..........C.
-    .CC........CC.
-    ..C........C..
-    ..C........C..
-antenna @0 shift dx=0 dy=1
-body @0 shift dx=0 dy=1
-head @0 shift dx=0 dy=1
-eyes @0 shift dx=0 dy=1
-antenna @1 shift dx=0 dy=1
-body @1 shift dx=0 dy=1
-head @1 shift dx=0 dy=1
-eyes @1 shift dx=0 dy=1
-antenna @2 shift dx=0 dy=1
-body @2 shift dx=0 dy=1
-head @2 shift dx=0 dy=1
-eyes @2 shift dx=0 dy=1
-antenna @3 shift dx=0 dy=1
-body @3 shift dx=0 dy=1
-head @3 shift dx=0 dy=1
-eyes @3 shift dx=0 dy=1
-antenna @4 shift dx=0 dy=1
-body @4 shift dx=0 dy=1
-head @4 shift dx=0 dy=1
-eyes @4 shift dx=0 dy=1
-antenna @5 shift dx=0 dy=1
-body @5 shift dx=0 dy=1
-head @5 shift dx=0 dy=1
-eyes @5 shift dx=0 dy=1
-antenna @6 shift dx=0 dy=1
-body @6 shift dx=0 dy=1
-head @6 shift dx=0 dy=1
-eyes @6 shift dx=0 dy=1
-antenna @7 shift dx=0 dy=1
-body @7 shift dx=0 dy=1
-head @7 shift dx=0 dy=1
-eyes @7 shift dx=0 dy=1
-antenna @8 shift dx=0 dy=1
-body @8 shift dx=0 dy=1
-head @8 shift dx=0 dy=1
-eyes @8 shift dx=0 dy=1
-antenna @9 shift dx=0 dy=1
-body @9 shift dx=0 dy=1
-head @9 shift dx=0 dy=1
-eyes @9 shift dx=0 dy=1
+layer op=add name=body
+palette op=set colors=#102a14,#3fa34d,#9be36f,#f4fff0
+layer op=rename index=0 name=antenna
+layer op=add name=head
+layer op=add name=eyes
+paint_grid layer=2 frame=0 x=1 y=0 legend=o:0 rows:2
+  |.oo.|
+  |oooo|
+paint_grid layer=2 frame=0 x=1 y=0 legend=o:#102a14 rows:2
+  |.oo.|
+  |oooo|
+region op=clear layer=2 frame=0 rect=0,0,32,32
+fx op=shift layer=2 frame=0 dx=0 dy=0
+region op=clear layer=0 frame=0 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=8 y=2 legend=0:0,2:2 rows:6
+  |22............22|
+  |22............22|
+  |..0..........0..|
+  |..0..........0..|
+  |...0........0...|
+  |...0........0...|
+region op=clear layer=1 frame=0 rect=0,0,32,32
+paint_grid layer=1 frame=0 x=10 y=23 legend=0:0,1:1,2:2 rows:5
+  |011111111110|
+  |012111111210|
+  |011111111110|
+  |.0111111110.|
+  |..00000000..|
+region op=clear layer=2 frame=0 rect=0,0,32,32
+paint_grid layer=2 frame=0 x=4 y=7 legend=0:0,1:1,2:2 rows:16
+  |......000000000000......|
+  |....0111111111111110....|
+  |...012211111111112210...|
+  |..01211111111111111210..|
+  |.0111111111111111111110.|
+  |011111111111111111111110|
+  |011111111111111111111110|
+  |011111111111111111111110|
+  |011111111111111111111110|
+  |011111111111111111111110|
+  |011111111111111111111110|
+  |.0111111101111011111110.|
+  |.0111111110000111111110.|
+  |..01111111111111111110..|
+  |...011111111111111110...|
+  |.....00000000000000.....|
+region op=clear layer=3 frame=0 rect=0,0,32,32
+paint_grid layer=3 frame=0 x=8 y=12 legend=0:0,3:3 rows:4
+  |3333........3333|
+  |3003........3003|
+  |3003........3003|
+  |3333........3333|
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+frame op=add copy_from=0
+fx op=shift layer=2 frame=1 dx=0 dy=-1
+fx op=shift layer=1 frame=1 dx=0 dy=-1
+fx op=shift layer=3 frame=1 dx=0 dy=-1
+region op=clear layer=0 frame=1 rect=0,0,32,32
+paint_grid layer=0 frame=1 x=7 y=1 legend=0:0,2:2 rows:6
+  |22..............22|
+  |22..............22|
+  |..0............0..|
+  |...0..........0...|
+  |...0..........0...|
+  |....0........0....|
+fx op=shift layer=1 frame=2 dx=0 dy=-2
+fx op=shift layer=2 frame=2 dx=0 dy=-2
+fx op=shift layer=3 frame=2 dx=0 dy=-2
+region op=clear layer=0 frame=2 rect=0,0,32,32
+paint_grid layer=0 frame=2 x=6 y=0 legend=0:0,2:2 rows:6
+  |22................22|
+  |22................22|
+  |..0..............0..|
+  |...0............0...|
+  |....0..........0....|
+  |.....0........0.....|
+fx op=shift layer=1 frame=3 dx=0 dy=-2
+fx op=shift layer=2 frame=3 dx=0 dy=-2
+fx op=shift layer=3 frame=3 dx=0 dy=-2
+region op=clear layer=0 frame=3 rect=0,0,32,32
+paint_grid layer=0 frame=3 x=6 y=0 legend=0:0,2:2 rows:6
+  |22................22|
+  |22................22|
+  |..0..............0..|
+  |...0............0...|
+  |....0..........0....|
+  |.....0........0.....|
+fx op=shift layer=1 frame=4 dx=0 dy=-1
+fx op=shift layer=2 frame=4 dx=0 dy=-1
+fx op=shift layer=3 frame=4 dx=0 dy=-1
+region op=clear layer=0 frame=4 rect=0,0,32,32
+paint_grid layer=0 frame=4 x=7 y=1 legend=0:0,2:2 rows:6
+  |22..............22|
+  |22..............22|
+  |..0............0..|
+  |...0..........0...|
+  |...0..........0...|
+  |....0........0....|
+fx op=shift layer=1 frame=5 dx=0 dy=0
+fx op=shift layer=2 frame=5 dx=0 dy=0
+region op=clear layer=0 frame=5 rect=0,0,32,32
+paint_grid layer=0 frame=5 x=8 y=2 legend=0:0,2:2 rows:6
+  |22............22|
+  |22............22|
+  |..0..........0..|
+  |..0..........0..|
+  |...0........0...|
+  |...0........0...|
+fx op=shift layer=1 frame=6 dx=0 dy=1
+fx op=shift layer=2 frame=6 dx=0 dy=1
+region op=clear layer=3 frame=6 rect=0,0,32,32
+paint_grid layer=3 frame=6 x=8 y=14 legend=0:0,3:3 rows:3
+  |0000........0000|
+  |3003........3003|
+  |3333........3333|
+region op=clear layer=0 frame=6 rect=0,0,32,32
+paint_grid layer=0 frame=6 x=9 y=3 legend=0:0,2:2 rows:6
+  |22..........22|
+  |22..........22|
+  |.0..........0.|
+  |..0........0..|
+  |..0........0..|
+  |..0........0..|
+fx op=shift layer=1 frame=7 dx=0 dy=2
+fx op=shift layer=2 frame=7 dx=0 dy=2
+region op=clear layer=3 frame=7 rect=0,0,32,32
+paint_grid layer=3 frame=7 x=8 y=16 legend=0:0 rows:1
+  |0000........0000|
+region op=clear layer=0 frame=7 rect=0,0,32,32
+paint_grid layer=0 frame=7 x=10 y=4 legend=0:0,2:2 rows:6
+  |22........22|
+  |22........22|
+  |.0........0.|
+  |.0........0.|
+  |.0........0.|
+  |.0........0.|
+fx op=shift layer=1 frame=8 dx=0 dy=2
+fx op=shift layer=2 frame=8 dx=0 dy=2
+region op=clear layer=3 frame=8 rect=0,0,32,32
+paint_grid layer=3 frame=8 x=8 y=15 legend=0:0,3:3 rows:3
+  |0000........0000|
+  |3003........3003|
+  |3333........3333|
+region op=clear layer=0 frame=8 rect=0,0,32,32
+paint_grid layer=0 frame=8 x=10 y=4 legend=0:0,2:2 rows:6
+  |22........22|
+  |22........22|
+  |.0........0.|
+  |.0........0.|
+  |.0........0.|
+  |.0........0.|
+fx op=shift layer=1 frame=9 dx=0 dy=1
+fx op=shift layer=2 frame=9 dx=0 dy=1
+fx op=shift layer=3 frame=9 dx=0 dy=1
+region op=clear layer=0 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=9 x=9 y=3 legend=0:0,2:2 rows:6
+  |22..........22|
+  |22..........22|
+  |.0..........0.|
+  |..0........0..|
+  |..0........0..|
+  |..0........0..|
+region op=clear layer=0 frame=0 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=8 y=2 legend=1:1,2:2 rows:6
+  |22............22|
+  |22............22|
+  |..1..........1..|
+  |..1..........1..|
+  |...1........1...|
+  |...1........1...|
+region op=clear layer=0 frame=1 rect=0,0,32,32
+paint_grid layer=0 frame=1 x=7 y=1 legend=1:1,2:2 rows:6
+  |22..............22|
+  |22..............22|
+  |..1............1..|
+  |...1..........1...|
+  |...1..........1...|
+  |....1........1....|
+region op=clear layer=0 frame=2 rect=0,0,32,32
+paint_grid layer=0 frame=2 x=6 y=0 legend=1:1,2:2 rows:6
+  |22................22|
+  |22................22|
+  |..1..............1..|
+  |...1............1...|
+  |....1..........1....|
+  |.....1........1.....|
+region op=clear layer=0 frame=3 rect=0,0,32,32
+paint_grid layer=0 frame=3 x=6 y=0 legend=1:1,2:2 rows:6
+  |22................22|
+  |22................22|
+  |..1..............1..|
+  |...1............1...|
+  |....1..........1....|
+  |.....1........1.....|
+region op=clear layer=0 frame=4 rect=0,0,32,32
+paint_grid layer=0 frame=4 x=7 y=1 legend=1:1,2:2 rows:6
+  |22..............22|
+  |22..............22|
+  |..1............1..|
+  |...1..........1...|
+  |...1..........1...|
+  |....1........1....|
+region op=clear layer=0 frame=5 rect=0,0,32,32
+paint_grid layer=0 frame=5 x=8 y=2 legend=1:1,2:2 rows:6
+  |22............22|
+  |22............22|
+  |..1..........1..|
+  |..1..........1..|
+  |...1........1...|
+  |...1........1...|
+region op=clear layer=0 frame=6 rect=0,0,32,32
+paint_grid layer=0 frame=6 x=9 y=3 legend=1:1,2:2 rows:6
+  |22..........22|
+  |22..........22|
+  |.1..........1.|
+  |..1........1..|
+  |..1........1..|
+  |..1........1..|
+region op=clear layer=0 frame=7 rect=0,0,32,32
+paint_grid layer=0 frame=7 x=10 y=4 legend=1:1,2:2 rows:6
+  |22........22|
+  |22........22|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+region op=clear layer=0 frame=8 rect=0,0,32,32
+paint_grid layer=0 frame=8 x=10 y=4 legend=1:1,2:2 rows:6
+  |22........22|
+  |22........22|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+region op=clear layer=0 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=9 x=9 y=3 legend=1:1,2:2 rows:6
+  |22..........22|
+  |22..........22|
+  |.1..........1.|
+  |..1........1..|
+  |..1........1..|
+  |..1........1..|
+region op=clear layer=0 frame=0 rect=0,0,32,32
+paint_grid layer=0 frame=0 x=8 y=2 legend=1:1,2:2 rows:6
+  |22............22|
+  |22............22|
+  |.11..........11.|
+  |..1..........1..|
+  |..11........11..|
+  |...1........1...|
+region op=clear layer=0 frame=1 rect=0,0,32,32
+paint_grid layer=0 frame=1 x=7 y=1 legend=1:1,2:2 rows:6
+  |22..............22|
+  |22..............22|
+  |.11............11.|
+  |..11..........11..|
+  |...1..........1...|
+  |...11........11...|
+region op=clear layer=0 frame=2 rect=0,0,32,32
+paint_grid layer=0 frame=2 x=6 y=0 legend=1:1,2:2 rows:6
+  |22................22|
+  |22................22|
+  |.11..............11.|
+  |..11............11..|
+  |...11..........11...|
+  |....11........11....|
+region op=clear layer=0 frame=3 rect=0,0,32,32
+paint_grid layer=0 frame=3 x=6 y=0 legend=1:1,2:2 rows:6
+  |22................22|
+  |22................22|
+  |.11..............11.|
+  |..11............11..|
+  |...11..........11...|
+  |....11........11....|
+region op=clear layer=0 frame=4 rect=0,0,32,32
+paint_grid layer=0 frame=4 x=7 y=1 legend=1:1,2:2 rows:6
+  |22..............22|
+  |22..............22|
+  |.11............11.|
+  |..11..........11..|
+  |...1..........1...|
+  |...11........11...|
+region op=clear layer=0 frame=5 rect=0,0,32,32
+paint_grid layer=0 frame=5 x=8 y=2 legend=1:1,2:2 rows:6
+  |22............22|
+  |22............22|
+  |.11..........11.|
+  |..1..........1..|
+  |..11........11..|
+  |...1........1...|
+region op=clear layer=0 frame=6 rect=0,0,32,32
+paint_grid layer=0 frame=6 x=9 y=3 legend=1:1,2:2 rows:6
+  |22..........22|
+  |22..........22|
+  |.1..........1.|
+  |.11........11.|
+  |..1........1..|
+  |..1........1..|
+region op=clear layer=0 frame=7 rect=0,0,32,32
+paint_grid layer=0 frame=7 x=10 y=4 legend=1:1,2:2 rows:6
+  |22........22|
+  |22........22|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+region op=clear layer=0 frame=8 rect=0,0,32,32
+paint_grid layer=0 frame=8 x=10 y=4 legend=1:1,2:2 rows:6
+  |22........22|
+  |22........22|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+  |.1........1.|
+region op=clear layer=0 frame=9 rect=0,0,32,32
+paint_grid layer=0 frame=9 x=9 y=3 legend=1:1,2:2 rows:6
+  |22..........22|
+  |22..........22|
+  |.1..........1.|
+  |.11........11.|
+  |..1........1..|
+  |..1........1..|
+fx op=shift layer=0 frame=0 dx=0 dy=1
+fx op=shift layer=1 frame=0 dx=0 dy=1
+fx op=shift layer=2 frame=0 dx=0 dy=1
+fx op=shift layer=3 frame=0 dx=0 dy=1
+fx op=shift layer=0 frame=1 dx=0 dy=1
+fx op=shift layer=1 frame=1 dx=0 dy=1
+fx op=shift layer=2 frame=1 dx=0 dy=1
+fx op=shift layer=3 frame=1 dx=0 dy=1
+fx op=shift layer=0 frame=2 dx=0 dy=1
+fx op=shift layer=1 frame=2 dx=0 dy=1
+fx op=shift layer=2 frame=2 dx=0 dy=1
+fx op=shift layer=3 frame=2 dx=0 dy=1
+fx op=shift layer=0 frame=3 dx=0 dy=1
+fx op=shift layer=1 frame=3 dx=0 dy=1
+fx op=shift layer=2 frame=3 dx=0 dy=1
+fx op=shift layer=3 frame=3 dx=0 dy=1
+fx op=shift layer=0 frame=4 dx=0 dy=1
+fx op=shift layer=1 frame=4 dx=0 dy=1
+fx op=shift layer=2 frame=4 dx=0 dy=1
+fx op=shift layer=3 frame=4 dx=0 dy=1
+fx op=shift layer=0 frame=5 dx=0 dy=1
+fx op=shift layer=1 frame=5 dx=0 dy=1
+fx op=shift layer=2 frame=5 dx=0 dy=1
+fx op=shift layer=3 frame=5 dx=0 dy=1
+fx op=shift layer=0 frame=6 dx=0 dy=1
+fx op=shift layer=1 frame=6 dx=0 dy=1
+fx op=shift layer=2 frame=6 dx=0 dy=1
+fx op=shift layer=3 frame=6 dx=0 dy=1
+fx op=shift layer=0 frame=7 dx=0 dy=1
+fx op=shift layer=1 frame=7 dx=0 dy=1
+fx op=shift layer=2 frame=7 dx=0 dy=1
+fx op=shift layer=3 frame=7 dx=0 dy=1
+fx op=shift layer=0 frame=8 dx=0 dy=1
+fx op=shift layer=1 frame=8 dx=0 dy=1
+fx op=shift layer=2 frame=8 dx=0 dy=1
+fx op=shift layer=3 frame=8 dx=0 dy=1
+fx op=shift layer=0 frame=9 dx=0 dy=1
+fx op=shift layer=1 frame=9 dx=0 dy=1
+fx op=shift layer=2 frame=9 dx=0 dy=1
+fx op=shift layer=3 frame=9 dx=0 dy=1
 add_tag name=idle direction=forward from=0 to=9
