@@ -126,6 +126,6 @@ Actions page on `master`. The run:
 
 The `publish` and `registry` jobs run in the `release` environment, where
 protection rules such as required reviewers can be added. The registry reads
-the image's labels anonymously, so the GHCR package must be public; after the
-first release, set its visibility and re-run the registry job. No native
-binaries are published.
+the image's labels anonymously, so the GHCR package must stay public; a
+package pushed by this public repository's workflow is public from its first
+release. No native binaries are published.
