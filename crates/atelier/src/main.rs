@@ -28,7 +28,7 @@
 //! ```text
 //! atelier install                # asks for port; systemd --user
 //! atelier status
-//! atelier uninstall
+//! atelier uninstall              # remove the daemon, skills, and binary
 //! atelier tools [--markdown]     # the tool surface / the full reference
 //! atelier library [COMMAND]      # inspect, archive, or prune the document store
 //! atelier replay <journal|id>    # rebuild a document from its journal
@@ -56,6 +56,7 @@ mod library;
 mod replay;
 mod service;
 mod skills;
+mod uninstall;
 
 const HELP: &str = "atelier — offline, headless pixel-art editing through a CLI and MCP server.
 
@@ -65,7 +66,9 @@ USAGE:
     atelier install               install/reconfigure the background daemon; asks for port
             [--port PORT | --bind LOOPBACK_ADDR] [--home DIR]
     atelier status                show daemon state and log locations
-    atelier uninstall             stop + remove the daemon
+    atelier uninstall             remove atelier from this machine: the daemon, the
+            [--documents] [--yes]  installed agent skills, and this binary; keeps your
+                                  documents unless --documents is passed; confirms first
     atelier library [--home DIR]  list the documents in the store
             verify [--json] [--home DIR]
                                   validate stored metadata, cels, references, and journals
@@ -253,9 +256,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match args.get(1).map(|s| s.as_str()) {
         // Background daemon management (systemd --user). The verb is
         // args[1], which service::run dispatches on directly.
-        Some("install") | Some("uninstall") | Some("status") => {
-            std::process::exit(service::run(&args[1..]))
-        }
+        Some("install") | Some("status") => std::process::exit(service::run(&args[1..])),
+        // Remove the daemon, installed skills, and this binary.
+        Some("uninstall") => std::process::exit(uninstall::run(&args[2..])),
         // Inspect / prune the document store.
         Some("library") => std::process::exit(library::run(&args[2..]).await),
         // The CLI front door: one tool call, in-process, through dispatch.

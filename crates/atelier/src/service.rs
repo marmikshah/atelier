@@ -18,16 +18,17 @@ struct InstallOptions {
     home: Option<PathBuf>,
 }
 
-/// Entry point for `atelier <install|uninstall|status>`. Returns a process exit
-/// code. Interactive installs ask for a port; scripts can pass `--port`, while
+/// Entry point for `atelier <install|status>`. Returns a process exit code.
+/// Interactive installs ask for a port; scripts can pass `--port`, while
 /// `--bind` remains a loopback-only host-and-port override. Network-facing
 /// servers require bearer authentication and must be run explicitly instead
-/// of persisting a secret in a systemd command or unit.
+/// of persisting a secret in a systemd command or unit. Removal is part of
+/// `atelier uninstall`, which calls [`remove_daemon`].
 pub fn run(args: &[String]) -> i32 {
     let cmd = args.first().map(|s| s.as_str());
     // The daemon is a `systemd --user` unit. Say so plainly rather than letting
     // a missing `systemctl` surface as a confusing spawn failure.
-    if !cfg!(target_os = "linux") && matches!(cmd, Some("install" | "uninstall" | "status")) {
+    if !cfg!(target_os = "linux") && matches!(cmd, Some("install" | "status")) {
         eprintln!(
             "atelier: `atelier {}` needs systemd and is available on Linux only. \
              The CLI and the stdio/HTTP MCP server work on this platform.",
@@ -80,16 +81,16 @@ pub fn run(args: &[String]) -> i32 {
             }
             install(&bind, &home_dir)
         }
-        Some("uninstall") if args.len() == 1 => uninstall(),
         Some("status") if args.len() == 1 => status(),
         _ => {
             eprintln!(
                 "usage: atelier install [--port PORT | --bind LOOPBACK_ADDR] [--home DIR]\n\
-                 \x20      atelier <uninstall|status>\n\
+                 \x20      atelier status\n\
                  \n\
                  install    set up or reconfigure the background daemon; asks for a port\n\
-                 uninstall  stop + remove the daemon\n\
-                 status     show whether the daemon is running and where logs live"
+                 status     show whether the daemon is running and where logs live\n\
+                 \n\
+                 `atelier uninstall` stops the daemon and removes Atelier from this machine."
             );
             2
         }
@@ -312,7 +313,7 @@ fn systemd_manifest(home: &Path) -> PathBuf {
         .join("atelier.service")
 }
 
-fn daemon_manifest() -> Option<PathBuf> {
+pub(crate) fn daemon_manifest() -> Option<PathBuf> {
     home().map(|home| systemd_manifest(&home))
 }
 
@@ -396,24 +397,23 @@ fn install(bind: &str, home_dir: &std::path::Path) -> i32 {
     0
 }
 
-fn uninstall() -> i32 {
-    let Some(home) = home() else {
-        eprintln!("no HOME directory");
-        return 1;
-    };
-    let unit_path = systemd_manifest(&home);
+/// Stop, disable, and delete the systemd unit; part of `atelier uninstall`.
+/// systemctl failures are ignored so a broken session never blocks teardown,
+/// but a unit file that cannot be deleted is reported.
+pub(crate) fn remove_daemon() -> Result<PathBuf, String> {
+    let unit_path = daemon_manifest().ok_or("no HOME directory")?;
     let _ = Command::new("systemctl")
         .args(["--user", "disable", "--now", "atelier"])
         .output();
-    let _ = std::fs::remove_file(&unit_path);
+    match std::fs::remove_file(&unit_path) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(format!("{}: {error}", unit_path.display())),
+    }
     let _ = Command::new("systemctl")
         .args(["--user", "daemon-reload"])
         .output();
-    println!(
-        "✓ systemd service stopped and removed ({})",
-        unit_path.display()
-    );
-    0
+    Ok(unit_path)
 }
 
 /// Whether the systemd user service is active.

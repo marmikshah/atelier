@@ -51,7 +51,8 @@ cargo install --locked --path crates/atelier
 ```
 
 Then follow [your first sprite](docs/getting-started.md) to create a document,
-draw pixels, and save an image.
+draw pixels, and save an image. `atelier uninstall` removes it again, keeping
+your documents unless you ask otherwise.
 
 | I want to… | Start here |
 | --- | --- |
