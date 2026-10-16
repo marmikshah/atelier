@@ -77,9 +77,9 @@ MCP client, register `atelier` as a stdio server with no arguments:
 }
 ```
 
-In Claude Code, `claude mcp add atelier -- atelier` does the same. Then run
-`atelier skills install --for claude` (or `codex`, `cursor`, `all`) to give
-the agent the bundled drawing guides. [Running Atelier](docs/running.md)
+In Claude Code, `claude mcp add atelier -e ATELIER_HOME=/absolute/path/to/your/art -- atelier`
+registers the same server. Then run `atelier skills install --for claude`
+(or `codex`, `cursor`, `all`) to give the agent the bundled drawing guides. [Running Atelier](docs/running.md)
 covers HTTP, Docker, and storage.
 
 ## Stability

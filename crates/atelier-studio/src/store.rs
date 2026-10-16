@@ -4,7 +4,7 @@
 
 use std::fs;
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
 
@@ -178,6 +178,12 @@ impl Studio {
     pub fn with_docs_dir(docs_dir: PathBuf) -> Studio {
         let _ = fs::create_dir_all(&docs_dir);
         Studio { docs_dir }
+    }
+
+    /// The directory this studio keeps documents in, `<home>/documents`,
+    /// whichever way the home was chosen.
+    pub fn documents_dir(&self) -> &Path {
+        &self.docs_dir
     }
 
     fn lock_store(&self, exclusive: bool) -> Result<StoreLock, String> {

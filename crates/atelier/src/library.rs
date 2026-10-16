@@ -284,7 +284,7 @@ fn list(args: &[String]) -> i32 {
         return 0;
     };
     if docs.is_empty() {
-        println!("no documents in {}", home_display(home.as_deref()));
+        println!("no documents in {}", home_display(&s));
         return 0;
     }
     let width = docs
@@ -335,24 +335,19 @@ fn list(args: &[String]) -> i32 {
             width = width
         );
     }
-    println!(
-        "\n{} documents in {}",
-        rows.len(),
-        home_display(home.as_deref())
-    );
+    println!("\n{} documents in {}", rows.len(), home_display(&s));
     if replayable > 0 {
         println!("{replayable} replayable — atelier replay <id>");
     }
     0
 }
 
-/// The store path to name in listing output: the `--home` the caller gave,
-/// then `ATELIER_HOME`, then the default. Must agree with `studio_at`.
-fn home_display(home: Option<&Path>) -> String {
-    match home {
-        Some(path) => path.display().to_string(),
-        None => std::env::var("ATELIER_HOME").unwrap_or_else(|_| "~/.atelier".into()),
-    }
+/// The store to name in listing output: the home the studio actually
+/// resolved, so `--home`, `ATELIER_HOME`, `./.atelier`, and the default all
+/// print the directory that was listed.
+fn home_display(studio: &Studio) -> String {
+    let docs = studio.documents_dir();
+    docs.parent().unwrap_or(docs).display().to_string()
 }
 
 #[derive(Debug, PartialEq, Eq)]
