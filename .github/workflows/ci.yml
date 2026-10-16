@@ -5,12 +5,13 @@ on:
     branches: [master]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, edited]
+  workflow_call: {} # the Release workflow runs this as its gate
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -73,6 +74,7 @@ jobs:
   container:
     if: >
       (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
        github.event.pull_request.base.ref == 'master' &&
        github.event.pull_request.draft == false)

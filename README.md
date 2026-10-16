@@ -84,8 +84,9 @@ covers HTTP, Docker, and storage.
 
 ## Stability
 
-Atelier is at 0.1. `master` is the current source; version tags publish the
-container image.
+Atelier is at 0.1. `master` is the current source; releases are dispatched
+from it and publish the container image, a `vX.Y.Z` tag, and the MCP Registry
+entry.
 
 - **Your documents are not discarded.** Edits are journaled and committed
   atomically. A document that is damaged, or saved by a build with a different

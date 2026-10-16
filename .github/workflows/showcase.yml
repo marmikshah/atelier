@@ -25,12 +25,13 @@ on:
       - "tools/showcase.py"
       - ".github/workflows/showcase.yml"
   workflow_dispatch: {}
+  workflow_call: {} # the Release workflow runs this as its gate
 
 permissions:
   contents: read
 
 concurrency:
-  group: showcase-${{ github.event.pull_request.number || github.ref }}
+  group: showcase-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:

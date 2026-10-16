@@ -1,0 +1,210 @@
+name: Release
+
+# Dispatched by hand from master. Nothing here runs on pushes, tags, or pull
+# requests. The run verifies that it was started on the live master commit and
+# that the version in Cargo.toml and server.json has no tag, release, or image
+# yet; runs CI and the showcase replays as its gate; publishes the container
+# image; then creates the tag and GitHub Release and publishes server.json to
+# the MCP Registry. The tag is written last, so a failed run leaves no tag.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  preflight:
+    name: Verify release identity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      commit: ${{ steps.identity.outputs.commit }}
+      tag: ${{ steps.identity.outputs.tag }}
+      version: ${{ steps.identity.outputs.version }}
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: master
+          persist-credentials: false
+      - name: Verify release identity
+        id: identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*" >&2; exit 1; }
+
+          [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || fail "a release must be dispatched by hand"
+          [ "$GITHUB_REF" = refs/heads/master ] || fail "a release must be dispatched from master, not $GITHUB_REF"
+          [ "$(git symbolic-ref --short HEAD)" = master ] || fail "checkout is not on master"
+          [ -z "$(git status --porcelain --untracked-files=all)" ] || fail "release checkout is dirty"
+          [ "$(git rev-parse --is-shallow-repository)" = false ] || fail "release requires full Git history"
+
+          COMMIT=$(git rev-parse HEAD)
+          [ "$COMMIT" = "$GITHUB_SHA" ] || fail "dispatch commit $GITHUB_SHA differs from checkout $COMMIT"
+          LIVE=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/master" --jq .object.sha)
+          [ "$COMMIT" = "$LIVE" ] || fail "release commit $COMMIT is not the live master ($LIVE)"
+          [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = master ] \
+            || fail "the default branch is not master"
+
+          for REQUIRED in Cargo.toml Cargo.lock server.json Dockerfile \
+              tools/check-version.sh tools/container-smoke.sh tools/release-vacancy.sh; do
+            [ -e "$REQUIRED" ] || fail "release input missing: $REQUIRED"
+          done
+
+          VERSION=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)
+          [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "Cargo.toml version is not X.Y.Z: '$VERSION'"
+          tools/check-version.sh "$VERSION"
+          SERVER_NAME=$(jq -r .name server.json)
+          grep -Fq "io.modelcontextprotocol.server.name=\"$SERVER_NAME\"" Dockerfile \
+            || fail "Dockerfile does not label the image with server.json name $SERVER_NAME"
+
+          TAG="v$VERSION"
+          tools/release-vacancy.sh "$GITHUB_REPOSITORY" "$TAG"
+
+          {
+            echo "commit=$COMMIT"
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
+          # Literal Markdown backticks belong in the summary format string.
+          # shellcheck disable=SC2016
+          printf '## Release preflight\n\n- Tag: `%s`\n- Version: `%s`\n- Commit: `%s`\n' \
+            "$TAG" "$VERSION" "$COMMIT" >> "$GITHUB_STEP_SUMMARY"
+
+  ci:
+    name: CI
+    needs: preflight
+    uses: ./.github/workflows/ci.yml
+
+  showcase:
+    name: Showcase
+    needs: preflight
+    uses: ./.github/workflows/showcase.yml
+
+  publish:
+    name: Publish the container image and release
+    needs: [preflight, ci, showcase]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: write
+      packages: write
+    env:
+      COMMIT: ${{ needs.preflight.outputs.commit }}
+      TAG: ${{ needs.preflight.outputs.tag }}
+      VERSION: ${{ needs.preflight.outputs.version }}
+    steps:
+      - name: Checkout the release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.commit }}
+          persist-credentials: false
+      - name: Verify the release commit is still live master
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*" >&2; exit 1; }
+          [[ $COMMIT =~ ^[0-9a-f]{40}$ ]] || fail "release commit is not a full SHA"
+          [ "$(git rev-parse HEAD)" = "$COMMIT" ] || fail "checkout is not the release commit"
+          LIVE=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/master" --jq .object.sha)
+          [ "$COMMIT" = "$LIVE" ] || fail "master moved to $LIVE during the release; dispatch again"
+          tools/check-version.sh "$VERSION"
+          [ "$TAG" = "v$VERSION" ] || fail "tag $TAG does not name version $VERSION"
+          tools/release-vacancy.sh "$GITHUB_REPOSITORY" "$TAG"
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - name: Build the linux/amd64 image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: atelier:release
+          cache-from: type=gha
+      - name: Smoke test before publishing
+        run: |
+          docker run --rm atelier:release --version
+          tools/container-smoke.sh atelier:release
+      - name: Verify the image version is unpublished
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          if docker manifest inspect "$IMAGE:$VERSION" >/dev/null 2>&1; then
+            echo "::error::$IMAGE:$VERSION is already published" >&2
+            exit 1
+          fi
+      - name: Push the version and latest tags
+        id: push
+        run: |
+          set -euo pipefail
+          for tag in "$VERSION" latest; do
+            docker tag atelier:release "$IMAGE:$tag"
+            docker push "$IMAGE:$tag"
+          done
+          DIGEST=$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{.Manifest.Digest}}')
+          [[ $DIGEST =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "::error::could not read the pushed digest" >&2; exit 1; }
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+      - name: Create the tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          tools/release-vacancy.sh "$GITHUB_REPOSITORY" "$TAG"
+          NOTES="$RUNNER_TEMP/release.md"
+          # Literal Markdown backticks belong in the notes format string.
+          # shellcheck disable=SC2016
+          printf -- '- Version: `%s`\n- Commit: `%s`\n- Image: `%s:%s`\n- Digest: `%s`\n- MCP server: `%s`\n' \
+            "$VERSION" "$COMMIT" "$IMAGE" "$VERSION" "$DIGEST" "$(jq -r .name server.json)" > "$NOTES"
+          gh release create "$TAG" --target "$COMMIT" --title "v$VERSION" --notes-file "$NOTES"
+          TAGGED=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)
+          [ "$TAGGED" = "$COMMIT" ] || { echo "::error::tag $TAG points at $TAGGED, not $COMMIT" >&2; exit 1; }
+          gh release view "$TAG" --json url --jq .url
+          { echo "## Published"; echo; cat "$NOTES"; } >> "$GITHUB_STEP_SUMMARY"
+
+  registry:
+    name: Publish the MCP Registry entry
+    needs: [preflight, publish]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+      MCP_PUBLISHER_SHA256: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+    steps:
+      - name: Checkout the release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.commit }}
+          persist-credentials: false
+      - name: Install mcp-publisher
+        run: |
+          set -euo pipefail
+          curl -fsSL -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/$MCP_PUBLISHER_VERSION/mcp-publisher_linux_amd64.tar.gz"
+          echo "$MCP_PUBLISHER_SHA256  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+      - name: Publish server.json
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          set -euo pipefail
+          tools/check-version.sh "$VERSION"
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
