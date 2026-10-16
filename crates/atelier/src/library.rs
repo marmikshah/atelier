@@ -687,7 +687,9 @@ fn reset(args: &[String]) -> i32 {
 
 /// Ask on the terminal. No terminal (piped/CI) = refuse rather than assume yes:
 /// a destructive default is how someone loses their artwork.
-fn confirm() -> bool {
+/// Ask for a typed "yes" on the terminal; refuses when there is no terminal
+/// so scripts must pass `--yes` explicitly. Shared with `atelier uninstall`.
+pub(crate) fn confirm() -> bool {
     use std::io::{BufRead, IsTerminal, Write};
     if !std::io::stdin().is_terminal() {
         eprintln!("not a terminal — re-run with --yes to confirm");

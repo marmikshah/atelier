@@ -129,13 +129,13 @@ For a background server on Linux with `systemd --user`:
 ```sh
 atelier install --port 8765
 atelier status
-atelier uninstall
 ```
 
 Use `atelier install --port 8765 --home /absolute/path/to/store` to select the
 daemon's store explicitly. Without it, the daemon uses `ATELIER_HOME` or
 `~/.atelier`, rather than the directory-local store. `atelier status` reports
-daemon state and log locations.
+daemon state and log locations. `atelier uninstall` stops and removes the
+daemon as part of [removing Atelier](#uninstall).
 
 HTTP binds to loopback by default. A non-loopback bind requires
 `ATELIER_HTTP_TOKEN`; whenever it is set, clients must send
@@ -154,6 +154,25 @@ for network and file-access boundaries.
 
 HTTP external file access is disabled unless the corresponding roots are set.
 CLI and stdio calls use normal local filesystem access.
+
+## Uninstall
+
+```sh
+atelier uninstall                 # shows what will go, then asks
+atelier uninstall --documents -y  # also delete ~/.atelier, without asking
+```
+
+The command removes everything Atelier placed on the machine: the Linux
+daemon and its unit file, the skills that `atelier skills install` wrote for
+Claude Code, Codex, and Cursor, and the `atelier` binary itself. A binary
+that `cargo install` placed is removed through `cargo uninstall`, so cargo's
+record of it goes too. It prints the plan and waits for a typed `yes`
+unless `--yes` is passed; without a terminal, `--yes` is required.
+
+Your documents are kept. The global store, `ATELIER_HOME` or `~/.atelier`, is
+deleted only with `--documents`. Directory-local `./.atelier` stores made with
+`atelier init` are never touched, and neither is an MCP client's registration;
+in Claude Code, run `claude mcp remove atelier`.
 
 ## Container image
 
