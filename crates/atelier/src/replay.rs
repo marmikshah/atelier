@@ -606,10 +606,9 @@ mod tests {
             std::env::temp_dir().join(format!("atelier-replay-show-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&home);
         let recipe = parse_journal(&format!(
-            "atelier 4 {RECORDED_ID} 0.1.0\n\
-             new name=shown width=4 height=4\n\
-             layer op=add name=ink\n\
-             paint_grid layer=1 frame=0 x=1 y=2 legend=K:#102030 rows:1\n  |K.K|\n"
+            "{{\"name\":\"doc_new\",\"arguments\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"shown\",\"width\":4,\"height\":4}}}}\n\
+             {{\"name\":\"doc_layer\",\"arguments\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"add\",\"name\":\"ink\"}}}}\n\
+             {{\"name\":\"doc_paint_grid\",\"arguments\":{{\"doc_id\":\"{RECORDED_ID}\",\"layer\":1,\"frame\":0,\"x\":1,\"y\":2,\"legend\":{{\"K\":\"#102030\"}},\"rows\":[\"K.K\"]}}}}\n"
         ))
         .unwrap();
         let studio = Studio::with_home(home.clone());
@@ -661,7 +660,7 @@ mod tests {
             std::env::temp_dir().join(format!("atelier-replay-home-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&home);
         let recipe = parse_journal(&format!(
-            "atelier 4 {RECORDED_ID} 0.1.0\nnew name=home-layout width=4 height=4\n"
+            "{{\"name\":\"doc_new\",\"arguments\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"home-layout\",\"width\":4,\"height\":4}}}}\n"
         ))
         .unwrap();
 
@@ -693,9 +692,8 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let studio = Studio::with_docs_dir(dir.clone());
         let recipe = parse_journal(&format!(
-            "atelier 4 {RECORDED_ID} 0.1.0\n\
-             new name=rolled-back width=4 height=4\n\
-             draw op=not_a_real_operation\n"
+            "{{\"name\":\"doc_new\",\"arguments\":{{\"doc_id\":\"{RECORDED_ID}\",\"name\":\"rolled-back\",\"width\":4,\"height\":4}}}}\n\
+             {{\"name\":\"doc_draw\",\"arguments\":{{\"doc_id\":\"{RECORDED_ID}\",\"op\":\"not_a_real_operation\"}}}}\n"
         ))
         .unwrap();
 

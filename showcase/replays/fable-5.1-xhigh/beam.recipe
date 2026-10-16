@@ -1,428 +1,94 @@
-atelier 4 a010e5bd-11be-4e60-b5ca-d8f0356d796b 0.1.0
-new name=beam width=48 height=48
-palette op=set colors=#1c162e,#ba3452,#f2c69c,#ffffec,#6cecff,#346ce4
-layer op=rename index=0 name=legs
-layer op=add name=torso
-layer op=add name=head
-layer op=add name=arms
-layer op=add name=fx
-paint_grid layer=0 frame=0 x=5 y=31 legend=c:1,h:5,o:0 rows:14
-  |....occcccccco.....|
-  |....occcocccco.....|
-  |...occco.occco.....|
-  |...occco.occco.....|
-  |..occco...occco....|
-  |..occco...occco....|
-  |.occco.....occco...|
-  |.occco.....occco...|
-  |occco.......occco..|
-  |occco.......occco..|
-  |occco.......occco..|
-  |ohhhho......ohhhho.|
-  |ohhhhho.....ohhhhho|
-  |ooooooo.....ooooooo|
-paint_grid layer=1 frame=0 x=9 y=19 legend=c:1,h:5,o:0,s:2 rows:12
-  |.oooossooo|
-  |occccsscco|
-  |occcccscco|
-  |occcccccco|
-  |occcccccco|
-  |.occcccco.|
-  |.occcccco.|
-  |.occcccco.|
-  |.occcccco.|
-  |.ohhhhhho.|
-  |occcccccco|
-  |occcccccco|
-paint_grid layer=2 frame=0 x=8 y=9 legend=h:5,o:0,s:2 rows:10
-  |...ooooo....|
-  |..ohhhhho...|
-  |.ohhhhhhho..|
-  |ohhhhhhhsso.|
-  |.ohhhhhsssso|
-  |ohhhhhssosso|
-  |.ohhhhsssso.|
-  |..ohhsssso..|
-  |...oossso...|
-  |.....osso...|
-paint_grid layer=3 frame=0 x=5 y=20 legend=h:5,o:0,s:2 rows:11
-  |..........ooo|
-  |.........osso|
-  |........osso.|
-  |.......osso..|
-  |......osso...|
-  |.....osso....|
-  |....ohho.....|
-  |.ossso.......|
-  |ossso........|
-  |osso.........|
-  |.oo..........|
-layer op=move index=4 to_index=3
-frame op=add copy_from=0 count=9 duration_ms=100
-draw op=clear_cel layer=4 frame=0
-paint_grid layer=4 frame=0 x=5 y=20 legend=h:5,o:0,s:2 rows:11
-  |..........ooo|
-  |.........osso|
-  |........osso.|
-  |.......osso..|
-  |......osso...|
-  |.....osso....|
-  |....ohho.....|
-  |.ossso.......|
-  |ossso........|
-  |osso.........|
-  |.oo..........|
-draw op=clear_cel layer=3 frame=0
-paint_grid layer=3 frame=0 x=3 y=27 legend=m:4,w:3 rows:3
-  |mmm|
-  |mwm|
-  |mmm|
-draw op=clear_cel layer=4 frame=1
-paint_grid layer=4 frame=1 x=5 y=20 legend=h:5,o:0,s:2 rows:11
-  |..........ooo|
-  |.........osso|
-  |........osso.|
-  |.......osso..|
-  |......osso...|
-  |.....osso....|
-  |....ohho.....|
-  |.ossso.......|
-  |ossso........|
-  |osso.........|
-  |.oo..........|
-draw op=clear_cel layer=3 frame=1
-paint_grid layer=3 frame=1 x=2 y=26 legend=h:5,m:4,w:3 rows:5
-  |.hhh.|
-  |hmmmh|
-  |hmwmh|
-  |hmmmh|
-  |.hhh.|
-region op=move layer=2 frame=2 offset=-1,0 rect=8,9,19,18
-draw op=clear_cel layer=4 frame=2
-paint_grid layer=4 frame=2 x=4 y=20 legend=h:5,o:0,s:2 rows:11
-  |..........ooo|
-  |.........osso|
-  |........osso.|
-  |.......osso..|
-  |......osso...|
-  |.....osso....|
-  |....ohho.....|
-  |.ossso.......|
-  |ossso........|
-  |osso.........|
-  |.oo..........|
-draw op=clear_cel layer=3 frame=2
-paint_grid layer=3 frame=2 x=0 y=22 legend=h:5,m:4,w:3 rows:13
-  |...m......|
-  |..........|
-  |h........h|
-  |..hhh.....|
-  |.hmmmh....|
-  |hmwwwmh...|
-  |hmwwwmh...|
-  |hmwwwmh...|
-  |.hmmmh....|
-  |..hhh....m|
-  |m.........|
-  |..........|
-  |......h...|
-region op=move layer=2 frame=3 offset=2,0 rect=8,9,19,18
-region op=move layer=1 frame=3 offset=1,0 rect=9,19,18,23
-draw op=clear_cel layer=4 frame=3
-paint_grid layer=4 frame=3 x=15 y=21 legend=h:5,o:0,s:2 rows:6
-  |.ooooooooo....|
-  |ossssssshhsso.|
-  |ossssssshhssso|
-  |ossssssshhssso|
-  |.ooooooooosso.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=3
-paint_grid layer=3 frame=3 x=23 y=17 legend=h:5,m:4,w:3 rows:13
-  |.....h..........|
-  |h.........h.....|
-  |.m.......m......|
-  |....hhh.........|
-  |...hmmhhhh......|
-  |..hmwwmmmmmmm...|
-  |..hmwwwwwwwwwwww|
-  |..hmwwmmmmmmm...|
-  |...hmmhhhh......|
-  |....hhh.........|
-  |.m.......m......|
-  |h.........h.....|
-  |.....h..........|
-region op=move layer=2 frame=4 offset=-1,0 rect=8,9,19,18
-region op=move layer=1 frame=4 offset=-1,0 rect=9,19,18,23
-draw op=clear_cel layer=4 frame=4
-paint_grid layer=4 frame=4 x=13 y=21 legend=h:5,o:0,s:2 rows:6
-  |.ooooooooo....|
-  |ossssssshhsso.|
-  |ossssssshhssso|
-  |ossssssshhssso|
-  |.ooooooooosso.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=4
-paint_grid layer=3 frame=4 x=22 y=19 legend=h:5,m:4,w:3 rows:9
-  |..hhhhh....hh......hh.....|
-  |.hhmmmhhh.hhh.hhh.hhh.hhh.|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |hmwwwwwmhwwwwwwwwwwwwwwwww|
-  |hmwwwwwmhwwwwmmwwwwwmmwwww|
-  |hmwwwwwmhwwwwwwwwwwwwwwwww|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |.hhmmmhhh.hhh.hhh.hhh.hhh.|
-  |..hhhhh....hh......hh.....|
-region op=move layer=2 frame=5 offset=-2,0 rect=8,9,19,18
-region op=move layer=1 frame=5 offset=-1,0 rect=9,19,18,23
-draw op=clear_cel layer=4 frame=5
-paint_grid layer=4 frame=5 x=13 y=21 legend=h:5,o:0,s:2 rows:6
-  |.ooooooooo....|
-  |ossssssshhsso.|
-  |ossssssshhssso|
-  |ossssssshhssso|
-  |.ooooooooosso.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=5
-paint_grid layer=3 frame=5 x=21 y=18 legend=h:5,m:4,w:3 rows:11
-  |...hhhhh..hh......hh......h|
-  |..hmmmmmhhhh.hhh.hhh.hhh.hh|
-  |.hmmwwwmmhmmmmmmmmmmmmmmmmm|
-  |hmmwwwwwmmhwwwwwwwwwwwwwwww|
-  |hmwwwwwwwmhwwwwwwwwwwwwwwww|
-  |hmwwwwwwwmhwmmwwwwwmmwwwwwm|
-  |hmwwwwwwwmhwwwwwwwwwwwwwwww|
-  |hmmwwwwwmmhwwwwwwwwwwwwwwww|
-  |.hmmwwwmmhmmmmmmmmmmmmmmmmm|
-  |..hmmmmmhhhh.hhh.hhh.hhh.hh|
-  |...hhhhh..hh......hh......h|
-region op=move layer=2 frame=6 offset=-1,0 rect=8,9,19,18
-region op=move layer=1 frame=6 offset=-1,0 rect=9,19,18,23
-draw op=clear_cel layer=4 frame=6
-paint_grid layer=4 frame=6 x=13 y=21 legend=h:5,o:0,s:2 rows:6
-  |.ooooooooo....|
-  |ossssssshhsso.|
-  |ossssssshhssso|
-  |ossssssshhssso|
-  |.ooooooooosso.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=6
-paint_grid layer=3 frame=6 x=22 y=19 legend=h:5,m:4,w:3 rows:9
-  |..hhhhhhh......hh......hh.|
-  |.hhmmmhhh.hhh.hhh.hhh.hhh.|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |hmwwwwwmhwwwwwwwwwwwwwwwww|
-  |hmwwwwwmhmmwwwwwmmwwwwwmmw|
-  |hmwwwwwmhwwwwwwwwwwwwwwwww|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |.hhmmmhhh.hhh.hhh.hhh.hhh.|
-  |..hhhhhhh......hh......hh.|
-draw op=clear_cel layer=4 frame=7
-paint_grid layer=4 frame=7 x=14 y=21 legend=h:5,o:0,s:2 rows:6
-  |.ooooooooo....|
-  |ossssssshhsso.|
-  |ossssssshhssso|
-  |ossssssshhssso|
-  |.ooooooooosso.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=7
-paint_grid layer=3 frame=7 x=25 y=21 legend=h:5,m:4,w:3 rows:5
-  |.hhh..h......h......h..|
-  |hmmmhmm.mm.mm.mm.mm....|
-  |hmwwhwwww.wwww.wwww.www|
-  |hmmmhmm.mm.mm.mm.mm....|
-  |.hhh.....h......h......|
-draw op=clear_cel layer=4 frame=8
-paint_grid layer=4 frame=8 x=14 y=20 legend=h:5,o:0,s:2 rows:10
-  |.ooo.......|
-  |osso.......|
-  |.osso......|
-  |..osso.....|
-  |...osso....|
-  |....ohho...|
-  |.....ossso.|
-  |......ossso|
-  |.......osso|
-  |........oo.|
-draw op=clear_cel layer=3 frame=8
-paint_grid layer=3 frame=8 x=24 y=20 legend=h:5,m:4 rows:8
-  |...h...................|
-  |................h......|
-  |.....m.................|
-  |...................m...|
-  |............m.........h|
-  |........h..............|
-  |.h.....................|
-  |m......................|
-draw op=clear_cel layer=4 frame=9
-paint_grid layer=4 frame=9 x=5 y=20 legend=h:5,o:0,s:2 rows:11
-  |..........ooo|
-  |.........osso|
-  |........osso.|
-  |.......osso..|
-  |......osso...|
-  |.....osso....|
-  |....ohho.....|
-  |.ossso.......|
-  |ossso........|
-  |osso.........|
-  |.oo..........|
-draw op=clear_cel layer=3 frame=9
-draw op=clear_cel layer=4 frame=3
-paint_grid layer=4 frame=3 x=15 y=21 legend=h:5,o:0,s:2,w:3 rows:6
-  |.ooooooooo....|
-  |ossssssshhswo.|
-  |ossssssshhsswo|
-  |ossssssshhsswo|
-  |.oooooooooswo.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=3
-paint_grid layer=3 frame=3 x=23 y=17 legend=h:5,m:4,w:3 rows:13
-  |.....h..........|
-  |h.........h.....|
-  |.m.......m......|
-  |....hhh.........|
-  |...hmmhhhh......|
-  |..hmwwmmmmmmm...|
-  |..hmwwwwwwwwwwww|
-  |..hmwwmmmmmmm...|
-  |...hmmhhhh......|
-  |....hhh.........|
-  |.m.......m......|
-  |h.........h.....|
-  |.....h..........|
-paint_grid layer=2 frame=3 x=18 y=13 legend=w:3 rows:4
-  |..w|
-  |..w|
-  |.w.|
-  |w..|
-draw op=clear_cel layer=4 frame=4
-paint_grid layer=4 frame=4 x=13 y=21 legend=h:5,o:0,s:2,w:3 rows:6
-  |.ooooooooo....|
-  |ossssssshhswo.|
-  |ossssssshhsswo|
-  |ossssssshhsswo|
-  |.oooooooooswo.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=4
-paint_grid layer=3 frame=4 x=22 y=19 legend=h:5,m:4,w:3 rows:9
-  |..hhhhh..h...hh....h...hh.|
-  |.hhmmmhhmmmhhhhhhhmmmhhhhh|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |hmwwwwwmhmwwwwwwwmmwwwwwww|
-  |hmwwwwwmhwwwwwwwwwwwwwwwww|
-  |hmwwwwwmhwwwwmmwwwwwwwmmww|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |.hhmmmhhmmmhhhhhhhmmmhhhhh|
-  |..hhhhh..h...hh....h...hh.|
-paint_grid layer=2 frame=4 x=15 y=13 legend=w:3 rows:4
-  |..w|
-  |..w|
-  |.w.|
-  |w..|
-draw op=clear_cel layer=4 frame=5
-paint_grid layer=4 frame=5 x=13 y=21 legend=h:5,o:0,s:2,w:3 rows:6
-  |.ooooooooo....|
-  |ossssssshhswo.|
-  |ossssssshhsswo|
-  |ossssssshhsswo|
-  |.oooooooooswo.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=5
-paint_grid layer=3 frame=5 x=21 y=18 legend=h:5,m:4,w:3 rows:11
-  |...hhhhhh...hh....h...hh...|
-  |..hmmmmmhmhhhhhhhmmmhhhhhhh|
-  |.hmmwwwmmhmmmmmmmmmmmmmmmmm|
-  |hmmwwwwwmmhwwwwwmmwwwwwwwmm|
-  |hmwwwwwwwmhwwwwwwwwwwwwwwww|
-  |hmwwwwwwwmhwwwwwwwwwwwwwwww|
-  |hmwwwwwwwmhwwwwwwwwwwwwwwww|
-  |hmmwwwwwmmhwmmwwwwwwwmmwwww|
-  |.hmmwwwmmhmmmmmmmmmmmmmmmmm|
-  |..hmmmmmhmhhhhhhhmmmhhhhhhh|
-  |...hhhhhh...hh....h...hh...|
-paint_grid layer=2 frame=5 x=14 y=13 legend=w:3 rows:4
-  |..w|
-  |..w|
-  |.w.|
-  |w..|
-draw op=clear_cel layer=4 frame=6
-paint_grid layer=4 frame=6 x=13 y=21 legend=h:5,o:0,s:2,w:3 rows:6
-  |.ooooooooo....|
-  |ossssssshhswo.|
-  |ossssssshhsswo|
-  |ossssssshhsswo|
-  |.oooooooooswo.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=6
-paint_grid layer=3 frame=6 x=22 y=19 legend=h:5,m:4,w:3 rows:9
-  |..hhhhh..hh....h...hh....h|
-  |.hhmmmhhhhhhhhmmmhhhhhhhmm|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |hmwwwwwmhwwwwmmwwwwwwwmmww|
-  |hmwwwwwmhwwwwwwwwwwwwwwwww|
-  |hmwwwwwmhmmwwwwwwwmmwwwwww|
-  |hhmwwwmhhmmmmmmmmmmmmmmmmm|
-  |.hhmmmhhhhhhhhmmmhhhhhhhmm|
-  |..hhhhh..hh....h...hh....h|
-paint_grid layer=2 frame=6 x=15 y=13 legend=w:3 rows:4
-  |..w|
-  |..w|
-  |.w.|
-  |w..|
-draw op=clear_cel layer=4 frame=7
-paint_grid layer=4 frame=7 x=14 y=21 legend=h:5,o:0,s:2 rows:6
-  |.ooooooooo....|
-  |ossssssshhsso.|
-  |ossssssshhssso|
-  |ossssssshhssso|
-  |.ooooooooosso.|
-  |..........oo..|
-draw op=clear_cel layer=3 frame=7
-paint_grid layer=3 frame=7 x=25 y=21 legend=h:5,m:4,w:3 rows:6
-  |.hhhhhh....h......h....|
-  |hmmmmmmmm.mm.....m...h.|
-  |hmwwwwwwwwwww.www..w..m|
-  |hmmmmmmmm...mm......m..|
-  |.hhhhhh........h.......|
-  |.........h.............|
-paint_grid layer=2 frame=3 x=18 y=15 legend=s:2 rows:2
-  |.s|
-  |s.|
-paint_grid layer=2 frame=4 x=15 y=15 legend=s:2 rows:2
-  |.s|
-  |s.|
-paint_grid layer=2 frame=5 x=14 y=15 legend=s:2 rows:2
-  |.s|
-  |s.|
-paint_grid layer=2 frame=6 x=15 y=15 legend=s:2 rows:2
-  |.s|
-  |s.|
-add_tag name=beam direction=forward from=0 to=9
-draw op=clear_cel layer=4 frame=2
-paint_grid layer=4 frame=2 x=4 y=20 legend=h:5,o:0,s:2 rows:11
-  |..........ooo|
-  |.........osso|
-  |........osso.|
-  |.......osso..|
-  |......osso...|
-  |.....osso....|
-  |....ohho.....|
-  |.ossso.......|
-  |ossso........|
-  |osso.........|
-  |.oo..........|
-draw op=clear_cel layer=3 frame=2
-paint_grid layer=3 frame=2 x=1 y=22 legend=h:5,m:4,w:3 rows:13
-  |...m.....|
-  |.........|
-  |h.......h|
-  |..hhh....|
-  |.hmmmh...|
-  |hmwwwmh..|
-  |hmwwwmh..|
-  |hmwwwmh..|
-  |.hmmmh...|
-  |..hhh...m|
-  |m........|
-  |.........|
-  |.....h...|
+{"name":"doc_new","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","height":48,"name":"beam","width":48}}
+{"name":"doc_palette","arguments":{"colors":["#1c162e","#ba3452","#f2c69c","#ffffec","#6cecff","#346ce4"],"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","op":"set"}}
+{"name":"doc_layer","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","index":0,"name":"legs","op":"rename"}}
+{"name":"doc_layer","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","name":"torso","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","name":"head","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","name":"arms","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","name":"fx","op":"add"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":0,"legend":{"c":1,"h":5,"o":0},"rows":["....occcccccco.....","....occcocccco.....","...occco.occco.....","...occco.occco.....","..occco...occco....","..occco...occco....",".occco.....occco...",".occco.....occco...","occco.......occco..","occco.......occco..","occco.......occco..","ohhhho......ohhhho.","ohhhhho.....ohhhhho","ooooooo.....ooooooo"],"x":5,"y":31}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":1,"legend":{"c":1,"h":5,"o":0,"s":2},"rows":[".oooossooo","occccsscco","occcccscco","occcccccco","occcccccco",".occcccco.",".occcccco.",".occcccco.",".occcccco.",".ohhhhhho.","occcccccco","occcccccco"],"x":9,"y":19}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":2,"legend":{"h":5,"o":0,"s":2},"rows":["...ooooo....","..ohhhhho...",".ohhhhhhho..","ohhhhhhhsso.",".ohhhhhsssso","ohhhhhssosso",".ohhhhsssso.","..ohhsssso..","...oossso...",".....osso..."],"x":8,"y":9}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":3,"legend":{"h":5,"o":0,"s":2},"rows":["..........ooo",".........osso","........osso.",".......osso..","......osso...",".....osso....","....ohho.....",".ossso.......","ossso........","osso.........",".oo.........."],"x":5,"y":20}}
+{"name":"doc_layer","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","index":4,"op":"move","to_index":3}}
+{"name":"doc_frame","arguments":{"copy_from":0,"count":9,"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","duration_ms":100,"op":"add"}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":["..........ooo",".........osso","........osso.",".......osso..","......osso...",".....osso....","....ohho.....",".ossso.......","ossso........","osso.........",".oo.........."],"x":5,"y":20}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":0,"layer":3,"legend":{"m":4,"w":3},"rows":["mmm","mwm","mmm"],"x":3,"y":27}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":1,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":1,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":["..........ooo",".........osso","........osso.",".......osso..","......osso...",".....osso....","....ohho.....",".ossso.......","ossso........","osso.........",".oo.........."],"x":5,"y":20}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":1,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":1,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":[".hhh.","hmmmh","hmwmh","hmmmh",".hhh."],"x":2,"y":26}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":2,"offset":[-1,0],"op":"move","rect":[8,9,19,18]}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":["..........ooo",".........osso","........osso.",".......osso..","......osso...",".....osso....","....ohho.....",".ossso.......","ossso........","osso.........",".oo.........."],"x":4,"y":20}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["...m......","..........","h........h","..hhh.....",".hmmmh....","hmwwwmh...","hmwwwmh...","hmwwwmh...",".hmmmh....","..hhh....m","m.........","..........","......h..."],"x":0,"y":22}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":2,"offset":[2,0],"op":"move","rect":[8,9,19,18]}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":1,"offset":[1,0],"op":"move","rect":[9,19,18,23]}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":[".ooooooooo....","ossssssshhsso.","ossssssshhssso","ossssssshhssso",".ooooooooosso.","..........oo.."],"x":15,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":[".....h..........","h.........h.....",".m.......m......","....hhh.........","...hmmhhhh......","..hmwwmmmmmmm...","..hmwwwwwwwwwwww","..hmwwmmmmmmm...","...hmmhhhh......","....hhh.........",".m.......m......","h.........h.....",".....h.........."],"x":23,"y":17}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":2,"offset":[-1,0],"op":"move","rect":[8,9,19,18]}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":1,"offset":[-1,0],"op":"move","rect":[9,19,18,23]}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":[".ooooooooo....","ossssssshhsso.","ossssssshhssso","ossssssshhssso",".ooooooooosso.","..........oo.."],"x":13,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["..hhhhh....hh......hh.....",".hhmmmhhh.hhh.hhh.hhh.hhh.","hhmwwwmhhmmmmmmmmmmmmmmmmm","hmwwwwwmhwwwwwwwwwwwwwwwww","hmwwwwwmhwwwwmmwwwwwmmwwww","hmwwwwwmhwwwwwwwwwwwwwwwww","hhmwwwmhhmmmmmmmmmmmmmmmmm",".hhmmmhhh.hhh.hhh.hhh.hhh.","..hhhhh....hh......hh....."],"x":22,"y":19}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":2,"offset":[-2,0],"op":"move","rect":[8,9,19,18]}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":1,"offset":[-1,0],"op":"move","rect":[9,19,18,23]}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":[".ooooooooo....","ossssssshhsso.","ossssssshhssso","ossssssshhssso",".ooooooooosso.","..........oo.."],"x":13,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["...hhhhh..hh......hh......h","..hmmmmmhhhh.hhh.hhh.hhh.hh",".hmmwwwmmhmmmmmmmmmmmmmmmmm","hmmwwwwwmmhwwwwwwwwwwwwwwww","hmwwwwwwwmhwwwwwwwwwwwwwwww","hmwwwwwwwmhwmmwwwwwmmwwwwwm","hmwwwwwwwmhwwwwwwwwwwwwwwww","hmmwwwwwmmhwwwwwwwwwwwwwwww",".hmmwwwmmhmmmmmmmmmmmmmmmmm","..hmmmmmhhhh.hhh.hhh.hhh.hh","...hhhhh..hh......hh......h"],"x":21,"y":18}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":2,"offset":[-1,0],"op":"move","rect":[8,9,19,18]}}
+{"name":"doc_region","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":1,"offset":[-1,0],"op":"move","rect":[9,19,18,23]}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":[".ooooooooo....","ossssssshhsso.","ossssssshhssso","ossssssshhssso",".ooooooooosso.","..........oo.."],"x":13,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["..hhhhhhh......hh......hh.",".hhmmmhhh.hhh.hhh.hhh.hhh.","hhmwwwmhhmmmmmmmmmmmmmmmmm","hmwwwwwmhwwwwwwwwwwwwwwwww","hmwwwwwmhmmwwwwwmmwwwwwmmw","hmwwwwwmhwwwwwwwwwwwwwwwww","hhmwwwmhhmmmmmmmmmmmmmmmmm",".hhmmmhhh.hhh.hhh.hhh.hhh.","..hhhhhhh......hh......hh."],"x":22,"y":19}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":[".ooooooooo....","ossssssshhsso.","ossssssshhssso","ossssssshhssso",".ooooooooosso.","..........oo.."],"x":14,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":[".hhh..h......h......h..","hmmmhmm.mm.mm.mm.mm....","hmwwhwwww.wwww.wwww.www","hmmmhmm.mm.mm.mm.mm....",".hhh.....h......h......"],"x":25,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":8,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":8,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":[".ooo.......","osso.......",".osso......","..osso.....","...osso....","....ohho...",".....ossso.","......ossso",".......osso","........oo."],"x":14,"y":20}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":8,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":8,"layer":3,"legend":{"h":5,"m":4},"rows":["...h...................","................h......",".....m.................","...................m...","............m.........h","........h..............",".h.....................","m......................"],"x":24,"y":20}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":9,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":9,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":["..........ooo",".........osso","........osso.",".......osso..","......osso...",".....osso....","....ohho.....",".ossso.......","ossso........","osso.........",".oo.........."],"x":5,"y":20}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":9,"layer":3,"op":"clear_cel"}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":4,"legend":{"h":5,"o":0,"s":2,"w":3},"rows":[".ooooooooo....","ossssssshhswo.","ossssssshhsswo","ossssssshhsswo",".oooooooooswo.","..........oo.."],"x":15,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":[".....h..........","h.........h.....",".m.......m......","....hhh.........","...hmmhhhh......","..hmwwmmmmmmm...","..hmwwwwwwwwwwww","..hmwwmmmmmmm...","...hmmhhhh......","....hhh.........",".m.......m......","h.........h.....",".....h.........."],"x":23,"y":17}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":2,"legend":{"w":3},"rows":["..w","..w",".w.","w.."],"x":18,"y":13}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":4,"legend":{"h":5,"o":0,"s":2,"w":3},"rows":[".ooooooooo....","ossssssshhswo.","ossssssshhsswo","ossssssshhsswo",".oooooooooswo.","..........oo.."],"x":13,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["..hhhhh..h...hh....h...hh.",".hhmmmhhmmmhhhhhhhmmmhhhhh","hhmwwwmhhmmmmmmmmmmmmmmmmm","hmwwwwwmhmwwwwwwwmmwwwwwww","hmwwwwwmhwwwwwwwwwwwwwwwww","hmwwwwwmhwwwwmmwwwwwwwmmww","hhmwwwmhhmmmmmmmmmmmmmmmmm",".hhmmmhhmmmhhhhhhhmmmhhhhh","..hhhhh..h...hh....h...hh."],"x":22,"y":19}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":2,"legend":{"w":3},"rows":["..w","..w",".w.","w.."],"x":15,"y":13}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":4,"legend":{"h":5,"o":0,"s":2,"w":3},"rows":[".ooooooooo....","ossssssshhswo.","ossssssshhsswo","ossssssshhsswo",".oooooooooswo.","..........oo.."],"x":13,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["...hhhhhh...hh....h...hh...","..hmmmmmhmhhhhhhhmmmhhhhhhh",".hmmwwwmmhmmmmmmmmmmmmmmmmm","hmmwwwwwmmhwwwwwmmwwwwwwwmm","hmwwwwwwwmhwwwwwwwwwwwwwwww","hmwwwwwwwmhwwwwwwwwwwwwwwww","hmwwwwwwwmhwwwwwwwwwwwwwwww","hmmwwwwwmmhwmmwwwwwwwmmwwww",".hmmwwwmmhmmmmmmmmmmmmmmmmm","..hmmmmmhmhhhhhhhmmmhhhhhhh","...hhhhhh...hh....h...hh..."],"x":21,"y":18}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":2,"legend":{"w":3},"rows":["..w","..w",".w.","w.."],"x":14,"y":13}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":4,"legend":{"h":5,"o":0,"s":2,"w":3},"rows":[".ooooooooo....","ossssssshhswo.","ossssssshhsswo","ossssssshhsswo",".oooooooooswo.","..........oo.."],"x":13,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["..hhhhh..hh....h...hh....h",".hhmmmhhhhhhhhmmmhhhhhhhmm","hhmwwwmhhmmmmmmmmmmmmmmmmm","hmwwwwwmhwwwwmmwwwwwwwmmww","hmwwwwwmhwwwwwwwwwwwwwwwww","hmwwwwwmhmmwwwwwwwmmwwwwww","hhmwwwmhhmmmmmmmmmmmmmmmmm",".hhmmmhhhhhhhhmmmhhhhhhhmm","..hhhhh..hh....h...hh....h"],"x":22,"y":19}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":2,"legend":{"w":3},"rows":["..w","..w",".w.","w.."],"x":15,"y":13}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":[".ooooooooo....","ossssssshhsso.","ossssssshhssso","ossssssshhssso",".ooooooooosso.","..........oo.."],"x":14,"y":21}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":7,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":[".hhhhhh....h......h....","hmmmmmmmm.mm.....m...h.","hmwwwwwwwwwww.www..w..m","hmmmmmmmm...mm......m..",".hhhhhh........h.......",".........h............."],"x":25,"y":21}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":3,"layer":2,"legend":{"s":2},"rows":[".s","s."],"x":18,"y":15}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":4,"layer":2,"legend":{"s":2},"rows":[".s","s."],"x":15,"y":15}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":5,"layer":2,"legend":{"s":2},"rows":[".s","s."],"x":14,"y":15}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":6,"layer":2,"legend":{"s":2},"rows":[".s","s."],"x":15,"y":15}}
+{"name":"doc_add_tag","arguments":{"direction":"forward","doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","from":0,"name":"beam","to":9}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":4,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":4,"legend":{"h":5,"o":0,"s":2},"rows":["..........ooo",".........osso","........osso.",".......osso..","......osso...",".....osso....","....ohho.....",".ossso.......","ossso........","osso.........",".oo.........."],"x":4,"y":20}}
+{"name":"doc_draw","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":3,"op":"clear_cel"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"d7feb67a-7532-4d2f-9e53-c664cf04feb3","frame":2,"layer":3,"legend":{"h":5,"m":4,"w":3},"rows":["...m.....",".........","h.......h","..hhh....",".hmmmh...","hmwwwmh..","hmwwwmh..","hmwwwmh..",".hmmmh...","..hhh...m","m........",".........",".....h..."],"x":1,"y":22}}

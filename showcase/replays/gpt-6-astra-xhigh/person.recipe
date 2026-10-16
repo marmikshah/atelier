@@ -1,508 +1,135 @@
-atelier 4 88e1121c-e33a-4184-b233-e1d280262dc5 0.1.0
-new name=sc-gpt-6-astra-xhigh-person width=32 height=32
-palette op=set colors=#232234,#734537,#e8a364,#ffde9d,#358984,#cb4d42
-layer op=rename index=0 name="Tunic and belt"
-layer op=add name="Left leg"
-layer op=add name="Right leg"
-layer op=add name="Left arm"
-layer op=add name="Right arm"
-layer op=add name="Red scarf"
-layer op=add name="Head and hair"
-frame op=duration frame=0 duration_ms=100
-paint_grid layer=0 frame=0 x=12 y=17 legend=K:#232234 rows:8
-  |.KKKKKK.|
-  |KKKKKKKK|
-  |KKKKKKKK|
-  |KKKKKKKK|
-  |KKKKKKKK|
-  |KKKKKKKK|
-  |KKKKKKKK|
-  |.KK..KK.|
-paint_grid layer=1 frame=0 x=11 y=24 legend=K:#232234 rows:7
-  |.KKKK|
-  |.KKKK|
-  |.KKKK|
-  |.KKKK|
-  |.KKKK|
-  |KKKKK|
-  |KKKKK|
-paint_grid layer=2 frame=0 x=16 y=24 legend=K:#232234 rows:7
-  |KKKK.|
-  |KKKK.|
-  |KKKK.|
-  |KKKK.|
-  |KKKK.|
-  |KKKKK|
-  |KKKKK|
-paint_grid layer=3 frame=0 x=9 y=17 legend=K:#232234 rows:8
-  |..KK|
-  |.KKK|
-  |KKKK|
-  |KKK.|
-  |KKK.|
-  |KKKK|
-  |.KKK|
-  |.KK.|
-paint_grid layer=4 frame=0 x=19 y=17 legend=K:#232234 rows:8
-  |KK..|
-  |KKK.|
-  |KKKK|
-  |.KKK|
-  |.KKK|
-  |KKKK|
-  |KKK.|
-  |.KK.|
-paint_grid layer=5 frame=0 x=12 y=16 legend=K:#232234 rows:6
-  |.KKKKKK...|
-  |KKKKKKKK..|
-  |.KKKKKKKK.|
-  |......KKKK|
-  |.......KKK|
-  |........KK|
-paint_grid layer=6 frame=0 x=11 y=8 legend=K:#232234 rows:9
-  |..KKKKK...|
-  |.KKKKKKK..|
-  |KKKKKKKKK.|
-  |KKKKKKKKKK|
-  |KKKKKKKKKK|
-  |KKKKKKKKKK|
-  |.KKKKKKKK.|
-  |..KKKKKK..|
-  |...KKKK...|
-region op=move layer=1 frame=0 offset=-1,0 rect=11,24,15,30
-region op=move layer=2 frame=0 offset=1,0 rect=16,24,20,30
-region op=move layer=3 frame=0 offset=-2,0 rect=8,21,12,24
-region op=move layer=4 frame=0 offset=2,0 rect=19,21,23,24
-paint_grid layer=0 frame=0 x=12 y=17 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:8
-  |.KTTTTK.|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KTTTTTTK|
-  |KBBLLBBK|
-  |KTTKKTTK|
-  |.KK..KK.|
-paint_grid layer=1 frame=0 x=10 y=24 legend=B:#734537,K:#232234 rows:7
-  |.KBBK|
-  |.KBBK|
-  |.KBBK|
-  |.KKKK|
-  |.KBBK|
-  |KBBBK|
-  |KKKKK|
-paint_grid layer=2 frame=0 x=17 y=24 legend=B:#734537,K:#232234 rows:7
-  |KBBK.|
-  |KBBK.|
-  |KBBK.|
-  |KKKK.|
-  |KBBK.|
-  |KBBBK|
-  |KKKKK|
-paint_grid layer=3 frame=0 x=7 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
-  |....KK|
-  |...KTT|
-  |..KTTK|
-  |..KTK.|
-  |KSK...|
-  |KLSK..|
-  |.KSK..|
-  |.KK...|
-paint_grid layer=4 frame=0 x=19 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
-  |KK....|
-  |TTK...|
-  |KTTK..|
-  |.KTK..|
-  |...KSK|
-  |..KSLK|
-  |..KSK.|
-  |...KK.|
-paint_grid layer=5 frame=0 x=12 y=16 legend=K:#232234,R:#cb4d42 rows:6
-  |.KRRRRK...|
-  |KRRRRRRK..|
-  |.KKRRKKRK.|
-  |......KRRK|
-  |.......KRK|
-  |........KK|
-paint_grid layer=6 frame=0 x=11 y=8 legend=B:#734537,K:#232234,S:#e8a364 rows:9
-  |..KKKKK...|
-  |.KBBBBBK..|
-  |KBBBBBBBK.|
-  |KBBSSSSBBK|
-  |KBSSSSSSBK|
-  |KSSSSSSSSK|
-  |.KSSSSSSK.|
-  |..KSSSSK..|
-  |...KKKK...|
-draw op=pencil layer=6 frame=0 color=#232234 points=14,12 17,12 size=1
-draw op=pencil layer=6 frame=0 color=#734537 points=15,14 16,14 size=1
-draw op=pencil layer=6 frame=0 color=#ffde9d points=14,11 13,13 size=1
-frame op=add copy_from=0 duration_ms=100
-region op=clear layer=0 frame=1 rect=12,17,19,24
-paint_grid layer=0 frame=1 x=11 y=20 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:7
-  |.KKTTTTKK.|
-  |KBBTTTTBBK|
-  |KBBTTTTBBK|
-  |KTTTTTTTTK|
-  |KBBBLLBBBK|
-  |KTTTKKTTTK|
-  |.KKK..KKK.|
-region op=clear layer=1 frame=1 rect=10,24,14,30
-paint_grid layer=1 frame=1 x=8 y=25 legend=B:#734537,K:#232234 rows:6
-  |...KKKK|
-  |..KBBBK|
-  |.KBBKK.|
-  |.KBK...|
-  |KBBBK..|
-  |KKKKK..|
-region op=clear layer=2 frame=1 rect=17,24,21,30
-paint_grid layer=2 frame=1 x=17 y=25 legend=B:#734537,K:#232234 rows:6
-  |KKKK...|
-  |KBBBK..|
-  |.KKBBK.|
-  |...KBK.|
-  |..KBBBK|
-  |..KKKKK|
-region op=clear layer=3 frame=1 rect=7,17,12,24
-paint_grid layer=3 frame=1 x=6 y=20 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
-  |....KKK|
-  |..KKTTK|
-  |.KTTTK.|
-  |KTTKK..|
-  |KSK....|
-  |KLSK...|
-  |.KK....|
-region op=clear layer=4 frame=1 rect=19,17,24,24
-paint_grid layer=4 frame=1 x=19 y=20 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
-  |KKK....|
-  |KTTKK..|
-  |.KTTTK.|
-  |..KKTTK|
-  |....KSK|
-  |...KSLK|
-  |....KK.|
-region op=move layer=5 frame=1 offset=0,3 rect=12,16,22,21
-region op=move layer=6 frame=1 offset=0,3 rect=11,8,20,16
-frame op=add copy_from=1 duration_ms=100
-region op=clear layer=0 frame=2 rect=11,20,20,26
-paint_grid layer=0 frame=2 x=12 y=15 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:9
-  |.KTTTTK.|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KTTTTTTK|
-  |KBBLLBBK|
-  |KTTKKTTK|
-  |.KK..KK.|
-region op=clear layer=1 frame=2 rect=8,25,14,30
-paint_grid layer=1 frame=2 x=11 y=23 legend=B:#734537,K:#232234 rows:8
-  |KBBK|
-  |KBBK|
-  |KBBK|
-  |KBBK|
-  |KKKK|
-  |KBBK|
-  |KBBK|
-  |KKKK|
-region op=clear layer=2 frame=2 rect=17,25,23,30
-paint_grid layer=2 frame=2 x=17 y=23 legend=B:#734537,K:#232234 rows:8
-  |KBBK|
-  |KBBK|
-  |KBBK|
-  |KBBK|
-  |KKKK|
-  |KBBK|
-  |KBBK|
-  |KKKK|
-region op=clear layer=3 frame=2 rect=6,20,12,26
-paint_grid layer=3 frame=2 x=5 y=10 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
-  |.KK.....|
-  |KLSK....|
-  |KSSK....|
-  |.KTTK...|
-  |..KTTK..|
-  |...KTTK.|
-  |....KTTK|
-  |.....KTK|
-  |......KK|
-region op=clear layer=4 frame=2 rect=19,20,25,26
-paint_grid layer=4 frame=2 x=19 y=10 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
-  |.....KK.|
-  |....KSLK|
-  |....KSSK|
-  |...KTTK.|
-  |..KTTK..|
-  |.KTTK...|
-  |KTTK....|
-  |KTK.....|
-  |KK......|
-region op=move layer=5 frame=2 offset=0,-5 rect=12,19,22,24
-region op=move layer=6 frame=2 offset=0,-5 rect=11,11,20,19
-frame op=add copy_from=2 duration_ms=100
-region op=clear layer=0 frame=3 rect=12,15,19,23
-paint_grid layer=0 frame=3 x=12 y=12 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:8
-  |.KTTTTK.|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KTTTTTTK|
-  |KBBLLBBK|
-  |KTTKKTTK|
-  |.KK..KK.|
-region op=clear layer=1 frame=3 rect=10,23,14,30
-paint_grid layer=1 frame=3 x=9 y=19 legend=B:#734537,K:#232234 rows:7
-  |..KKKK|
-  |.KBBBK|
-  |KBBKK.|
-  |KBBK..|
-  |.KBBK.|
-  |.KBBK.|
-  |.KKKK.|
-region op=clear layer=2 frame=3 rect=17,23,21,30
-paint_grid layer=2 frame=3 x=17 y=19 legend=B:#734537,K:#232234 rows:7
-  |KKKK..|
-  |KBBBK.|
-  |.KKBBK|
-  |..KBBK|
-  |.KBBK.|
-  |.KBBK.|
-  |.KKKK.|
-region op=clear layer=3 frame=3 rect=5,10,12,18
-paint_grid layer=3 frame=3 x=6 y=2 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:11
-  |.KK....|
-  |KLSK...|
-  |KSSK...|
-  |.KSK...|
-  |.KTTK..|
-  |..KTK..|
-  |..KTTK.|
-  |...KTK.|
-  |...KTTK|
-  |....KTT|
-  |.....KK|
-region op=clear layer=4 frame=3 rect=19,10,26,18
-paint_grid layer=4 frame=3 x=19 y=2 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:11
-  |....KK.|
-  |...KSLK|
-  |...KSSK|
-  |...KSK.|
-  |..KTTK.|
-  |..KTK..|
-  |.KTTK..|
-  |.KTK...|
-  |KTTK...|
-  |TTK....|
-  |KK.....|
-region op=move layer=5 frame=3 offset=0,-3 rect=12,14,22,19
-region op=move layer=6 frame=3 offset=0,-3 rect=11,6,20,14
-frame op=add copy_from=3 duration_ms=100
-region op=move layer=0 frame=4 offset=0,-1 rect=12,12,19,19
-region op=clear layer=1 frame=4 rect=9,19,14,25
-paint_grid layer=1 frame=4 x=8 y=17 legend=B:#734537,K:#232234 rows:6
-  |...KKKK|
-  |.KKBBBK|
-  |KBBBKK.|
-  |KBBBK..|
-  |.KKBBK.|
-  |..KKKK.|
-region op=clear layer=2 frame=4 rect=17,19,22,25
-paint_grid layer=2 frame=4 x=17 y=17 legend=B:#734537,K:#232234 rows:6
-  |KKKK...|
-  |KBBBKK.|
-  |.KKBBBK|
-  |..KBBBK|
-  |.KBBKK.|
-  |.KKKK..|
-region op=move layer=3 frame=4 offset=0,-1 rect=6,2,12,12
-region op=move layer=4 frame=4 offset=0,-1 rect=19,2,25,12
-region op=clear layer=5 frame=4 rect=12,11,22,16
-paint_grid layer=5 frame=4 x=12 y=10 legend=K:#232234,R:#cb4d42 rows:5
-  |.KRRRRK.....|
-  |KRRRRRRK.KK.|
-  |.KKRRKKRKRRK|
-  |.......KRRK.|
-  |........KK..|
-region op=move layer=6 frame=4 offset=0,-1 rect=11,3,20,11
-frame op=add copy_from=4 duration_ms=100
-region op=clear layer=1 frame=5 rect=8,17,14,22
-paint_grid layer=1 frame=5 x=8 y=18 legend=B:#734537,K:#232234 rows:6
-  |...KKKK|
-  |.KKBBBK|
-  |KBBBKK.|
-  |KBBBK..|
-  |.KBBK..|
-  |.KKKK..|
-region op=clear layer=2 frame=5 rect=17,17,23,22
-paint_grid layer=2 frame=5 x=17 y=18 legend=B:#734537,K:#232234 rows:6
-  |KKKK...|
-  |KBBBKK.|
-  |.KKBBBK|
-  |..KBBBK|
-  |..KBBK.|
-  |..KKKK.|
-region op=move layer=3 frame=5 offset=0,1 rect=6,1,12,11
-region op=move layer=4 frame=5 offset=0,1 rect=19,1,25,11
-frame op=add copy_from=5 duration_ms=100
-region op=move layer=0 frame=6 offset=0,2 rect=12,11,19,18
-region op=clear layer=1 frame=6 rect=8,18,14,23
-paint_grid layer=1 frame=6 x=10 y=20 legend=B:#734537,K:#232234 rows:7
-  |.KBBK|
-  |.KBBK|
-  |.KBBK|
-  |.KKKK|
-  |.KBBK|
-  |KBBBK|
-  |KKKKK|
-region op=clear layer=2 frame=6 rect=17,18,23,23
-paint_grid layer=2 frame=6 x=17 y=20 legend=B:#734537,K:#232234 rows:7
-  |KBBK.|
-  |KBBK.|
-  |KBBK.|
-  |KKKK.|
-  |KBBK.|
-  |KBBBK|
-  |KKKKK|
-region op=clear layer=3 frame=6 rect=6,2,12,12
-paint_grid layer=3 frame=6 x=5 y=8 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
-  |.KK.....|
-  |KLSK....|
-  |KSSK....|
-  |.KTTK...|
-  |..KTTK..|
-  |...KTTK.|
-  |....KTTK|
-  |.....KTK|
-  |......KK|
-region op=clear layer=4 frame=6 rect=19,2,25,12
-paint_grid layer=4 frame=6 x=19 y=8 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:9
-  |.....KK.|
-  |....KSLK|
-  |....KSSK|
-  |...KTTK.|
-  |..KTTK..|
-  |.KTTK...|
-  |KTTK....|
-  |KTK.....|
-  |KK......|
-paint_grid layer=5 frame=6 x=12 y=10 replace=true legend=K:#232234,R:#cb4d42 rows:5
-  |.......KKK..|
-  |.......KRRK.|
-  |.KRRRRKKRK..|
-  |KRRRRRRRK...|
-  |.KKRRKKK....|
-region op=move layer=6 frame=6 offset=0,2 rect=11,2,20,10
-frame op=add copy_from=6 duration_ms=100
-region op=move layer=0 frame=7 offset=0,4 rect=12,13,19,20
-region op=move layer=1 frame=7 offset=0,4 rect=10,20,14,26
-region op=move layer=2 frame=7 offset=0,4 rect=17,20,21,26
-region op=clear layer=3 frame=7 rect=5,8,12,16
-paint_grid layer=3 frame=7 x=6 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
-  |....KKK|
-  |..KKTTK|
-  |.KTTTK.|
-  |KTTKK..|
-  |KSK....|
-  |KLSK...|
-  |.KK....|
-region op=clear layer=4 frame=7 rect=19,8,26,16
-paint_grid layer=4 frame=7 x=19 y=17 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:7
-  |KKK....|
-  |KTTKK..|
-  |.KTTTK.|
-  |..KKTTK|
-  |....KSK|
-  |...KSLK|
-  |....KK.|
-region op=move layer=5 frame=7 offset=0,4 rect=12,10,23,14
-region op=move layer=6 frame=7 offset=0,4 rect=11,4,20,12
-frame op=add copy_from=7 duration_ms=100
-region op=clear layer=0 frame=8 rect=12,17,19,24
-paint_grid layer=0 frame=8 x=11 y=20 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:7
-  |.KKTTTTKK.|
-  |KBBTTTTBBK|
-  |KBBTTTTBBK|
-  |KTTTTTTTTK|
-  |KBBBLLBBBK|
-  |KTTTKKTTTK|
-  |.KKK..KKK.|
-region op=clear layer=1 frame=8 rect=10,24,14,30
-paint_grid layer=1 frame=8 x=8 y=25 legend=B:#734537,K:#232234 rows:6
-  |...KKKK|
-  |..KBBBK|
-  |.KBBKK.|
-  |.KBK...|
-  |KBBBK..|
-  |KKKKK..|
-region op=clear layer=2 frame=8 rect=17,24,21,30
-paint_grid layer=2 frame=8 x=17 y=25 legend=B:#734537,K:#232234 rows:6
-  |KKKK...|
-  |KBBBK..|
-  |.KKBBK.|
-  |...KBK.|
-  |..KBBBK|
-  |..KKKKK|
-region op=clear layer=3 frame=8 rect=6,17,12,23
-paint_grid layer=3 frame=8 x=7 y=21 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
-  |....KK|
-  |...KTT|
-  |..KTTK|
-  |..KTK.|
-  |KSK...|
-  |KLSK..|
-  |.KSK..|
-  |.KK...|
-region op=clear layer=4 frame=8 rect=19,17,25,23
-paint_grid layer=4 frame=8 x=19 y=21 legend=K:#232234,L:#ffde9d,S:#e8a364,T:#358984 rows:8
-  |KK....|
-  |TTK...|
-  |KTTK..|
-  |.KTK..|
-  |...KSK|
-  |..KSLK|
-  |..KSK.|
-  |...KK.|
-region op=clear layer=5 frame=8 rect=12,14,23,18
-paint_grid layer=5 frame=8 x=12 y=19 legend=K:#232234,R:#cb4d42 rows:5
-  |.KRRRRK.....|
-  |KRRRRRRK.KK.|
-  |.KKRRKKRKRRK|
-  |.......KRRK.|
-  |........KK..|
-region op=move layer=6 frame=8 offset=0,3 rect=11,8,20,16
-frame op=add copy_from=8 duration_ms=100
-region op=clear layer=0 frame=9 rect=11,20,20,26
-paint_grid layer=0 frame=9 x=12 y=18 legend=B:#734537,K:#232234,L:#ffde9d,T:#358984 rows:8
-  |.KTTTTK.|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KBTTTTBK|
-  |KTTTTTTK|
-  |KBBLLBBK|
-  |KTTKKTTK|
-  |.KK..KK.|
-paint_grid layer=1 frame=9 x=8 y=25 replace=true legend=B:#734537,K:#232234 rows:6
-  |...KBBK|
-  |...KBBK|
-  |...KKKK|
-  |...KBBK|
-  |..KBBBK|
-  |..KKKKK|
-paint_grid layer=2 frame=9 x=17 y=25 replace=true legend=B:#734537,K:#232234 rows:6
-  |KBBK...|
-  |KBBK...|
-  |KKKK...|
-  |KBBK...|
-  |KBBBK..|
-  |KKKKK..|
-region op=move layer=3 frame=9 offset=0,-3 rect=7,21,12,28
-region op=move layer=4 frame=9 offset=0,-3 rect=19,21,24,28
-region op=clear layer=5 frame=9 rect=12,19,23,23
-paint_grid layer=5 frame=9 x=12 y=17 legend=K:#232234,R:#cb4d42 rows:6
-  |.KRRRRK...|
-  |KRRRRRRK..|
-  |.KKRRKKRK.|
-  |......KRRK|
-  |.......KRK|
-  |........KK|
-region op=move layer=6 frame=9 offset=0,-2 rect=11,11,20,19
-add_tag name=Jump direction=forward from=0 to=9
+{"name":"doc_new","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","height":32,"name":"sc-gpt-6-astra-xhigh-person","width":32}}
+{"name":"doc_palette","arguments":{"colors":["#232234","#734537","#e8a364","#ffde9d","#358984","#cb4d42"],"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","op":"set"}}
+{"name":"doc_layer","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","index":0,"name":"Tunic and belt","op":"rename"}}
+{"name":"doc_layer","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","name":"Left leg","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","name":"Right leg","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","name":"Left arm","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","name":"Right arm","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","name":"Red scarf","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","name":"Head and hair","op":"add"}}
+{"name":"doc_frame","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"frame":0,"op":"duration"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":0,"legend":{"K":"#232234"},"rows":[".KKKKKK.","KKKKKKKK","KKKKKKKK","KKKKKKKK","KKKKKKKK","KKKKKKKK","KKKKKKKK",".KK..KK."],"x":12,"y":17}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":1,"legend":{"K":"#232234"},"rows":[".KKKK",".KKKK",".KKKK",".KKKK",".KKKK","KKKKK","KKKKK"],"x":11,"y":24}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":2,"legend":{"K":"#232234"},"rows":["KKKK.","KKKK.","KKKK.","KKKK.","KKKK.","KKKKK","KKKKK"],"x":16,"y":24}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":3,"legend":{"K":"#232234"},"rows":["..KK",".KKK","KKKK","KKK.","KKK.","KKKK",".KKK",".KK."],"x":9,"y":17}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":4,"legend":{"K":"#232234"},"rows":["KK..","KKK.","KKKK",".KKK",".KKK","KKKK","KKK.",".KK."],"x":19,"y":17}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":5,"legend":{"K":"#232234"},"rows":[".KKKKKK...","KKKKKKKK..",".KKKKKKKK.","......KKKK",".......KKK","........KK"],"x":12,"y":16}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":6,"legend":{"K":"#232234"},"rows":["..KKKKK...",".KKKKKKK..","KKKKKKKKK.","KKKKKKKKKK","KKKKKKKKKK","KKKKKKKKKK",".KKKKKKKK.","..KKKKKK..","...KKKK..."],"x":11,"y":8}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":1,"offset":[-1,0],"op":"move","rect":[11,24,15,30]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":2,"offset":[1,0],"op":"move","rect":[16,24,20,30]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":3,"offset":[-2,0],"op":"move","rect":[8,21,12,24]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":4,"offset":[2,0],"op":"move","rect":[19,21,23,24]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":0,"legend":{"B":"#734537","K":"#232234","L":"#ffde9d","T":"#358984"},"rows":[".KTTTTK.","KBTTTTBK","KBTTTTBK","KBTTTTBK","KTTTTTTK","KBBLLBBK","KTTKKTTK",".KK..KK."],"x":12,"y":17}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":[".KBBK",".KBBK",".KBBK",".KKKK",".KBBK","KBBBK","KKKKK"],"x":10,"y":24}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KBBK.","KBBK.","KBBK.","KKKK.","KBBK.","KBBBK","KKKKK"],"x":17,"y":24}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":3,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["....KK","...KTT","..KTTK","..KTK.","KSK...","KLSK..",".KSK..",".KK..."],"x":7,"y":17}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":4,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["KK....","TTK...","KTTK..",".KTK..","...KSK","..KSLK","..KSK.","...KK."],"x":19,"y":17}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":5,"legend":{"K":"#232234","R":"#cb4d42"},"rows":[".KRRRRK...","KRRRRRRK..",".KKRRKKRK.","......KRRK",".......KRK","........KK"],"x":12,"y":16}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":6,"legend":{"B":"#734537","K":"#232234","S":"#e8a364"},"rows":["..KKKKK...",".KBBBBBK..","KBBBBBBBK.","KBBSSSSBBK","KBSSSSSSBK","KSSSSSSSSK",".KSSSSSSK.","..KSSSSK..","...KKKK..."],"x":11,"y":8}}
+{"name":"doc_draw","arguments":{"color":"#232234","doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":6,"op":"pencil","points":[[14,12],[17,12]],"size":1}}
+{"name":"doc_draw","arguments":{"color":"#734537","doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":6,"op":"pencil","points":[[15,14],[16,14]],"size":1}}
+{"name":"doc_draw","arguments":{"color":"#ffde9d","doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":0,"layer":6,"op":"pencil","points":[[14,11],[13,13]],"size":1}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":0,"op":"clear","rect":[12,17,19,24]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":0,"legend":{"B":"#734537","K":"#232234","L":"#ffde9d","T":"#358984"},"rows":[".KKTTTTKK.","KBBTTTTBBK","KBBTTTTBBK","KTTTTTTTTK","KBBBLLBBBK","KTTTKKTTTK",".KKK..KKK."],"x":11,"y":20}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":1,"op":"clear","rect":[10,24,14,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":["...KKKK","..KBBBK",".KBBKK.",".KBK...","KBBBK..","KKKKK.."],"x":8,"y":25}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":2,"op":"clear","rect":[17,24,21,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KKKK...","KBBBK..",".KKBBK.","...KBK.","..KBBBK","..KKKKK"],"x":17,"y":25}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":3,"op":"clear","rect":[7,17,12,24]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":3,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["....KKK","..KKTTK",".KTTTK.","KTTKK..","KSK....","KLSK...",".KK...."],"x":6,"y":20}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":4,"op":"clear","rect":[19,17,24,24]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":4,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["KKK....","KTTKK..",".KTTTK.","..KKTTK","....KSK","...KSLK","....KK."],"x":19,"y":20}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":5,"offset":[0,3],"op":"move","rect":[12,16,22,21]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":1,"layer":6,"offset":[0,3],"op":"move","rect":[11,8,20,16]}}
+{"name":"doc_frame","arguments":{"copy_from":1,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":0,"op":"clear","rect":[11,20,20,26]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":0,"legend":{"B":"#734537","K":"#232234","L":"#ffde9d","T":"#358984"},"rows":[".KTTTTK.","KBTTTTBK","KBTTTTBK","KBTTTTBK","KBTTTTBK","KTTTTTTK","KBBLLBBK","KTTKKTTK",".KK..KK."],"x":12,"y":15}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":1,"op":"clear","rect":[8,25,14,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":["KBBK","KBBK","KBBK","KBBK","KKKK","KBBK","KBBK","KKKK"],"x":11,"y":23}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":2,"op":"clear","rect":[17,25,23,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KBBK","KBBK","KBBK","KBBK","KKKK","KBBK","KBBK","KKKK"],"x":17,"y":23}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":3,"op":"clear","rect":[6,20,12,26]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":3,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":[".KK.....","KLSK....","KSSK....",".KTTK...","..KTTK..","...KTTK.","....KTTK",".....KTK","......KK"],"x":5,"y":10}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":4,"op":"clear","rect":[19,20,25,26]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":4,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":[".....KK.","....KSLK","....KSSK","...KTTK.","..KTTK..",".KTTK...","KTTK....","KTK.....","KK......"],"x":19,"y":10}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":5,"offset":[0,-5],"op":"move","rect":[12,19,22,24]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":2,"layer":6,"offset":[0,-5],"op":"move","rect":[11,11,20,19]}}
+{"name":"doc_frame","arguments":{"copy_from":2,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":0,"op":"clear","rect":[12,15,19,23]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":0,"legend":{"B":"#734537","K":"#232234","L":"#ffde9d","T":"#358984"},"rows":[".KTTTTK.","KBTTTTBK","KBTTTTBK","KBTTTTBK","KTTTTTTK","KBBLLBBK","KTTKKTTK",".KK..KK."],"x":12,"y":12}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":1,"op":"clear","rect":[10,23,14,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":["..KKKK",".KBBBK","KBBKK.","KBBK..",".KBBK.",".KBBK.",".KKKK."],"x":9,"y":19}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":2,"op":"clear","rect":[17,23,21,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KKKK..","KBBBK.",".KKBBK","..KBBK",".KBBK.",".KBBK.",".KKKK."],"x":17,"y":19}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":3,"op":"clear","rect":[5,10,12,18]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":3,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":[".KK....","KLSK...","KSSK...",".KSK...",".KTTK..","..KTK..","..KTTK.","...KTK.","...KTTK","....KTT",".....KK"],"x":6,"y":2}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":4,"op":"clear","rect":[19,10,26,18]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":4,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["....KK.","...KSLK","...KSSK","...KSK.","..KTTK.","..KTK..",".KTTK..",".KTK...","KTTK...","TTK....","KK....."],"x":19,"y":2}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":5,"offset":[0,-3],"op":"move","rect":[12,14,22,19]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":3,"layer":6,"offset":[0,-3],"op":"move","rect":[11,6,20,14]}}
+{"name":"doc_frame","arguments":{"copy_from":3,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":0,"offset":[0,-1],"op":"move","rect":[12,12,19,19]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":1,"op":"clear","rect":[9,19,14,25]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":["...KKKK",".KKBBBK","KBBBKK.","KBBBK..",".KKBBK.","..KKKK."],"x":8,"y":17}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":2,"op":"clear","rect":[17,19,22,25]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KKKK...","KBBBKK.",".KKBBBK","..KBBBK",".KBBKK.",".KKKK.."],"x":17,"y":17}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":3,"offset":[0,-1],"op":"move","rect":[6,2,12,12]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":4,"offset":[0,-1],"op":"move","rect":[19,2,25,12]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":5,"op":"clear","rect":[12,11,22,16]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":5,"legend":{"K":"#232234","R":"#cb4d42"},"rows":[".KRRRRK.....","KRRRRRRK.KK.",".KKRRKKRKRRK",".......KRRK.","........KK.."],"x":12,"y":10}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":4,"layer":6,"offset":[0,-1],"op":"move","rect":[11,3,20,11]}}
+{"name":"doc_frame","arguments":{"copy_from":4,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":5,"layer":1,"op":"clear","rect":[8,17,14,22]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":5,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":["...KKKK",".KKBBBK","KBBBKK.","KBBBK..",".KBBK..",".KKKK.."],"x":8,"y":18}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":5,"layer":2,"op":"clear","rect":[17,17,23,22]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":5,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KKKK...","KBBBKK.",".KKBBBK","..KBBBK","..KBBK.","..KKKK."],"x":17,"y":18}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":5,"layer":3,"offset":[0,1],"op":"move","rect":[6,1,12,11]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":5,"layer":4,"offset":[0,1],"op":"move","rect":[19,1,25,11]}}
+{"name":"doc_frame","arguments":{"copy_from":5,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":0,"offset":[0,2],"op":"move","rect":[12,11,19,18]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":1,"op":"clear","rect":[8,18,14,23]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":[".KBBK",".KBBK",".KBBK",".KKKK",".KBBK","KBBBK","KKKKK"],"x":10,"y":20}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":2,"op":"clear","rect":[17,18,23,23]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KBBK.","KBBK.","KBBK.","KKKK.","KBBK.","KBBBK","KKKKK"],"x":17,"y":20}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":3,"op":"clear","rect":[6,2,12,12]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":3,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":[".KK.....","KLSK....","KSSK....",".KTTK...","..KTTK..","...KTTK.","....KTTK",".....KTK","......KK"],"x":5,"y":8}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":4,"op":"clear","rect":[19,2,25,12]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":4,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":[".....KK.","....KSLK","....KSSK","...KTTK.","..KTTK..",".KTTK...","KTTK....","KTK.....","KK......"],"x":19,"y":8}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":5,"legend":{"K":"#232234","R":"#cb4d42"},"replace":true,"rows":[".......KKK..",".......KRRK.",".KRRRRKKRK..","KRRRRRRRK...",".KKRRKKK...."],"x":12,"y":10}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":6,"layer":6,"offset":[0,2],"op":"move","rect":[11,2,20,10]}}
+{"name":"doc_frame","arguments":{"copy_from":6,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":0,"offset":[0,4],"op":"move","rect":[12,13,19,20]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":1,"offset":[0,4],"op":"move","rect":[10,20,14,26]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":2,"offset":[0,4],"op":"move","rect":[17,20,21,26]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":3,"op":"clear","rect":[5,8,12,16]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":3,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["....KKK","..KKTTK",".KTTTK.","KTTKK..","KSK....","KLSK...",".KK...."],"x":6,"y":17}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":4,"op":"clear","rect":[19,8,26,16]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":4,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["KKK....","KTTKK..",".KTTTK.","..KKTTK","....KSK","...KSLK","....KK."],"x":19,"y":17}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":5,"offset":[0,4],"op":"move","rect":[12,10,23,14]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":7,"layer":6,"offset":[0,4],"op":"move","rect":[11,4,20,12]}}
+{"name":"doc_frame","arguments":{"copy_from":7,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":0,"op":"clear","rect":[12,17,19,24]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":0,"legend":{"B":"#734537","K":"#232234","L":"#ffde9d","T":"#358984"},"rows":[".KKTTTTKK.","KBBTTTTBBK","KBBTTTTBBK","KTTTTTTTTK","KBBBLLBBBK","KTTTKKTTTK",".KKK..KKK."],"x":11,"y":20}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":1,"op":"clear","rect":[10,24,14,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":1,"legend":{"B":"#734537","K":"#232234"},"rows":["...KKKK","..KBBBK",".KBBKK.",".KBK...","KBBBK..","KKKKK.."],"x":8,"y":25}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":2,"op":"clear","rect":[17,24,21,30]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":2,"legend":{"B":"#734537","K":"#232234"},"rows":["KKKK...","KBBBK..",".KKBBK.","...KBK.","..KBBBK","..KKKKK"],"x":17,"y":25}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":3,"op":"clear","rect":[6,17,12,23]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":3,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["....KK","...KTT","..KTTK","..KTK.","KSK...","KLSK..",".KSK..",".KK..."],"x":7,"y":21}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":4,"op":"clear","rect":[19,17,25,23]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":4,"legend":{"K":"#232234","L":"#ffde9d","S":"#e8a364","T":"#358984"},"rows":["KK....","TTK...","KTTK..",".KTK..","...KSK","..KSLK","..KSK.","...KK."],"x":19,"y":21}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":5,"op":"clear","rect":[12,14,23,18]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":5,"legend":{"K":"#232234","R":"#cb4d42"},"rows":[".KRRRRK.....","KRRRRRRK.KK.",".KKRRKKRKRRK",".......KRRK.","........KK.."],"x":12,"y":19}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":8,"layer":6,"offset":[0,3],"op":"move","rect":[11,8,20,16]}}
+{"name":"doc_frame","arguments":{"copy_from":8,"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":0,"op":"clear","rect":[11,20,20,26]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":0,"legend":{"B":"#734537","K":"#232234","L":"#ffde9d","T":"#358984"},"rows":[".KTTTTK.","KBTTTTBK","KBTTTTBK","KBTTTTBK","KTTTTTTK","KBBLLBBK","KTTKKTTK",".KK..KK."],"x":12,"y":18}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":1,"legend":{"B":"#734537","K":"#232234"},"replace":true,"rows":["...KBBK","...KBBK","...KKKK","...KBBK","..KBBBK","..KKKKK"],"x":8,"y":25}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":2,"legend":{"B":"#734537","K":"#232234"},"replace":true,"rows":["KBBK...","KBBK...","KKKK...","KBBK...","KBBBK..","KKKKK.."],"x":17,"y":25}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":3,"offset":[0,-3],"op":"move","rect":[7,21,12,28]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":4,"offset":[0,-3],"op":"move","rect":[19,21,24,28]}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":5,"op":"clear","rect":[12,19,23,23]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":5,"legend":{"K":"#232234","R":"#cb4d42"},"rows":[".KRRRRK...","KRRRRRRK..",".KKRRKKRK.","......KRRK",".......KRK","........KK"],"x":12,"y":17}}
+{"name":"doc_region","arguments":{"doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","frame":9,"layer":6,"offset":[0,-2],"op":"move","rect":[11,11,20,19]}}
+{"name":"doc_add_tag","arguments":{"direction":"forward","doc_id":"dd5c14f1-57f6-4cac-8acc-12da2ebc587b","from":0,"name":"Jump","to":9}}

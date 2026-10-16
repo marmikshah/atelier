@@ -1,677 +1,138 @@
-atelier 4 7ca066bc-6471-4525-ab94-5663a315954c 0.1.0
-new name=rubber-ball width=32 height=32
-layer op=rename index=0 name=shadow
-layer op=add name=ball
-layer op=add name=shine
-palette op=set colors=#2a1533,#a8203a,#e8453c,#ffb59a
-paint_grid layer=1 frame=0 x=10 y=3 legend=R:#e8453c rows:12
-  |....RRRR....|
-  |..RRRRRRRR..|
-  |.RRRRRRRRRR.|
-  |.RRRRRRRRRR.|
-  |RRRRRRRRRRRR|
-  |RRRRRRRRRRRR|
-  |RRRRRRRRRRRR|
-  |RRRRRRRRRRRR|
-  |.RRRRRRRRRR.|
-  |.RRRRRRRRRR.|
-  |..RRRRRRRR..|
-  |....RRRR....|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-frame op=add copy_from=0 count=9
-paint_grid layer=1 frame=0 x=10 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:12
-  |....DDDD....|
-  |..DDRRRRDD..|
-  |.DRRRRRRRRD.|
-  |.DRRRRRRRRD.|
-  |DRRRRRRRRRSD|
-  |DRRRRRRRRSSD|
-  |DRRRRRRRSSSD|
-  |DRRRRRRSSSSD|
-  |.DRRRRSSSSD.|
-  |.DRRRSSSSSD.|
-  |..DDSSSSDD..|
-  |....DDDD....|
-paint_grid layer=1 frame=1 x=11 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRRSSSD|
-  |.DRRRRSSSD.|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=2 x=11 y=5 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:14
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |DRRRRRSSSD|
-  |.DRRRSSSD.|
-  |.DRRSSSSD.|
-  |..DRSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=3 x=11 y=8 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:15
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |DRRRRSSSSD|
-  |.DRRRSSSD.|
-  |.DRRSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=4 x=7 y=20 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:8
-  |.....DDDDDDDD.....|
-  |..DDDRRRRRRRRDDD..|
-  |.DRRRRRRRRRRRRRRD.|
-  |DRRRRRRRRRRRRRRSSD|
-  |DRRRRRRRRRRRSSSSSD|
-  |.DRRRRRRRRSSSSSSD.|
-  |..DDDRRRSSSSSDDD..|
-  |.....DDDDDDDD.....|
-paint_grid layer=1 frame=5 x=12 y=8 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:16
-  |...DDD...|
-  |..DRRRD..|
-  |.DRRRRRD.|
-  |.DRRRRRD.|
-  |DRRRRRRRD|
-  |DRRRRRRRD|
-  |DRRRRRRRD|
-  |DRRRRRRSD|
-  |DRRRRRSSD|
-  |DRRRRRSSD|
-  |DRRRRSSSD|
-  |DRRRRSSSD|
-  |.DRRSSSD.|
-  |.DRRSSSD.|
-  |..DSSSD..|
-  |...DDD...|
-paint_grid layer=1 frame=6 x=11 y=5 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:14
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |DRRRRRSSSD|
-  |.DRRRSSSD.|
-  |.DRRSSSSD.|
-  |..DRSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=7 x=11 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRRSSSD|
-  |.DRRRRSSSD.|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=8 x=11 y=2 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRRSSSD|
-  |.DRRRRSSSD.|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=9 x=10 y=2 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:12
-  |....DDDD....|
-  |..DDRRRRDD..|
-  |.DRRRRRRRRD.|
-  |.DRRRRRRRRD.|
-  |DRRRRRRRRRSD|
-  |DRRRRRRRRSSD|
-  |DRRRRRRRSSSD|
-  |DRRRRRRSSSSD|
-  |.DRRRRSSSSD.|
-  |.DRRRSSSSSD.|
-  |..DDSSSSDD..|
-  |....DDDD....|
-paint_grid layer=2 frame=0 x=12 y=5 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=1 x=13 y=5 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=2 x=12 y=7 legend=H:#ffb59a rows:4
-  |.HH|
-  |.HH|
-  |HHH|
-  |.HH|
-paint_grid layer=2 frame=3 x=12 y=10 legend=H:#ffb59a rows:4
-  |.HH|
-  |.HH|
-  |HHH|
-  |.HH|
-paint_grid layer=2 frame=4 x=10 y=21 legend=H:#ffb59a rows:2
-  |..HH.|
-  |HHHHH|
-paint_grid layer=2 frame=5 x=13 y=10 legend=H:#ffb59a rows:5
-  |.H.|
-  |.HH|
-  |HHH|
-  |HHH|
-  |.H.|
-paint_grid layer=2 frame=6 x=12 y=7 legend=H:#ffb59a rows:4
-  |.HH|
-  |.HH|
-  |HHH|
-  |.HH|
-paint_grid layer=2 frame=7 x=13 y=5 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=8 x=13 y=4 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=9 x=12 y=4 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=0 frame=0 x=12 y=28 legend=D:#2a1533 rows:1
-  |D.D.D.D|
-paint_grid layer=0 frame=1 x=12 y=28 legend=D:#2a1533 rows:1
-  |D.D.D.D.D|
-paint_grid layer=0 frame=2 x=10 y=28 legend=D:#2a1533 rows:1
-  |D.D.D.D.D.D|
-paint_grid layer=0 frame=3 x=9 y=27 legend=D:#2a1533 rows:3
-  |..DDDDDDDDDD..|
-  |DDDDDDDDDDDDDD|
-  |..DDDDDDDDDD..|
-paint_grid layer=0 frame=4 x=6 y=27 legend=D:#2a1533 rows:3
-  |.DDDDDDDDDDDDDDDDDD.|
-  |DDDDDDDDDDDDDDDDDDDD|
-  |.DDDDDDDDDDDDDDDDDD.|
-paint_grid layer=0 frame=5 x=8 y=27 legend=D:#2a1533 rows:3
-  |..DDDDDDDDDDDD..|
-  |DDDDDDDDDDDDDDDD|
-  |..DDDDDDDDDDDD..|
-paint_grid layer=0 frame=6 x=10 y=28 legend=D:#2a1533 rows:1
-  |D.D.D.D.D.D|
-paint_grid layer=0 frame=7 x=12 y=28 legend=D:#2a1533 rows:1
-  |D.D.D.D.D|
-paint_grid layer=0 frame=8 frame_to=9 x=12 y=28 legend=D:#2a1533 rows:1
-  |D.D.D.D|
-region op=clear layer=0 frame=0 rect=0,0,32,32
-region op=clear layer=0 frame=1 rect=0,0,32,32
-region op=clear layer=0 frame=2 rect=0,0,32,32
-region op=clear layer=0 frame=3 rect=0,0,32,32
-region op=clear layer=0 frame=4 rect=0,0,32,32
-region op=clear layer=0 frame=5 rect=0,0,32,32
-region op=clear layer=0 frame=6 rect=0,0,32,32
-region op=clear layer=0 frame=7 rect=0,0,32,32
-region op=clear layer=0 frame=8 rect=0,0,32,32
-region op=clear layer=0 frame=9 rect=0,0,32,32
-paint_grid layer=0 frame=0 x=13 y=28 legend=D:#2a1533 rows:1
-  |DDDDDD|
-paint_grid layer=0 frame=1 x=12 y=28 legend=D:#2a1533 rows:1
-  |DDDDDDDD|
-paint_grid layer=0 frame=2 x=11 y=28 legend=D:#2a1533 rows:2
-  |DDDDDDDDDD|
-  |...DDDD...|
-paint_grid layer=0 frame=3 x=9 y=28 legend=D:#2a1533 rows:2
-  |DDDDDDDDDDDDDD|
-  |...DDDDDDDD...|
-paint_grid layer=0 frame=4 x=6 y=28 legend=D:#2a1533 rows:2
-  |DDDDDDDDDDDDDDDDDDDD|
-  |...DDDDDDDDDDDDDD...|
-paint_grid layer=0 frame=5 x=8 y=28 legend=D:#2a1533 rows:2
-  |DDDDDDDDDDDDDDDD|
-  |...DDDDDDDDDD...|
-paint_grid layer=0 frame=6 x=11 y=28 legend=D:#2a1533 rows:2
-  |DDDDDDDDDD|
-  |...DDDD...|
-paint_grid layer=0 frame=7 x=12 y=28 legend=D:#2a1533 rows:1
-  |DDDDDDDD|
-paint_grid layer=0 frame=8 x=13 y=28 legend=D:#2a1533 rows:1
-  |DDDDDD|
-paint_grid layer=0 frame=9 x=14 y=28 legend=D:#2a1533 rows:1
-  |DDDD|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=10 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:12
-  |...DDDDDD...|
-  |..DRRRRRRD..|
-  |.DRRRRRRRRD.|
-  |DRRRRRRRRRRD|
-  |DRRRRRRRRRSD|
-  |DRRRRRRRRSSD|
-  |DRRRRRRRSSSD|
-  |DRRRRRRSSSSD|
-  |DRRRRRSSSSSD|
-  |.DRRRSSSSSD.|
-  |..DRSSSSSD..|
-  |...DDDDDD...|
-paint_grid layer=1 frame=1 x=11 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRSSSSD|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=2 x=11 y=5 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:14
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |DRRRRRSSSD|
-  |.DRRRSSSD.|
-  |.DRRSSSSD.|
-  |..DRSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=3 x=11 y=8 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:15
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |DRRRRSSSSD|
-  |.DRRRSSSD.|
-  |.DRRSSSSD.|
-  |..DSSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=4 x=7 y=20 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:8
-  |...DDDDDDDDDDDD...|
-  |.DDRRRRRRRRRRRRDD.|
-  |DRRRRRRRRRRRRRRRRD|
-  |DRRRRRRRRRRRRRRSSD|
-  |DRRRRRRRRRRRSSSSSD|
-  |DRRRRRRRRRSSSSSSSD|
-  |.DDRRRRRSSSSSSSDD.|
-  |...DDDDDDDDDDDD...|
-paint_grid layer=1 frame=5 x=12 y=8 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:16
-  |...DDD...|
-  |..DRRRD..|
-  |.DRRRRRD.|
-  |.DRRRRRD.|
-  |DRRRRRRRD|
-  |DRRRRRRRD|
-  |DRRRRRRRD|
-  |DRRRRRRSD|
-  |DRRRRRSSD|
-  |DRRRRRSSD|
-  |DRRRRSSSD|
-  |DRRRRSSSD|
-  |.DRRSSSD.|
-  |.DRRSSSD.|
-  |..DSSSD..|
-  |...DDD...|
-paint_grid layer=1 frame=6 x=11 y=5 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:14
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |DRRRRRSSSD|
-  |.DRRRSSSD.|
-  |.DRRSSSSD.|
-  |..DRSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=7 x=11 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRSSSSD|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=8 x=11 y=2 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRSSSSD|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=9 x=10 y=2 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:12
-  |...DDDDDD...|
-  |..DRRRRRRD..|
-  |.DRRRRRRRRD.|
-  |DRRRRRRRRRRD|
-  |DRRRRRRRRRSD|
-  |DRRRRRRRRSSD|
-  |DRRRRRRRSSSD|
-  |DRRRRRRSSSSD|
-  |DRRRRRSSSSSD|
-  |.DRRRSSSSSD.|
-  |..DRSSSSSD..|
-  |...DDDDDD...|
-paint_grid layer=2 frame=0 x=12 y=5 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=1 x=13 y=5 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=2 x=12 y=7 legend=H:#ffb59a rows:4
-  |.HH|
-  |.HH|
-  |HHH|
-  |.HH|
-paint_grid layer=2 frame=3 x=12 y=10 legend=H:#ffb59a rows:4
-  |.HH|
-  |.HH|
-  |HHH|
-  |.HH|
-paint_grid layer=2 frame=4 x=10 y=21 legend=H:#ffb59a rows:2
-  |HHHH.|
-  |HHHHH|
-paint_grid layer=2 frame=5 x=13 y=10 legend=H:#ffb59a rows:5
-  |.H.|
-  |.HH|
-  |HHH|
-  |HHH|
-  |.H.|
-paint_grid layer=2 frame=6 x=12 y=7 legend=H:#ffb59a rows:4
-  |.HH|
-  |.HH|
-  |HHH|
-  |.HH|
-paint_grid layer=2 frame=7 x=13 y=5 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=8 x=13 y=4 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-paint_grid layer=2 frame=9 x=12 y=4 legend=H:#ffb59a rows:3
-  |HHH|
-  |HHH|
-  |HHH|
-region op=clear layer=1 frame=0 rect=0,0,32,32
-region op=clear layer=2 frame=0 rect=0,0,32,32
-region op=clear layer=1 frame=1 rect=0,0,32,32
-region op=clear layer=2 frame=1 rect=0,0,32,32
-region op=clear layer=1 frame=2 rect=0,0,32,32
-region op=clear layer=2 frame=2 rect=0,0,32,32
-region op=clear layer=1 frame=3 rect=0,0,32,32
-region op=clear layer=2 frame=3 rect=0,0,32,32
-region op=clear layer=1 frame=4 rect=0,0,32,32
-region op=clear layer=2 frame=4 rect=0,0,32,32
-region op=clear layer=1 frame=5 rect=0,0,32,32
-region op=clear layer=2 frame=5 rect=0,0,32,32
-region op=clear layer=1 frame=6 rect=0,0,32,32
-region op=clear layer=2 frame=6 rect=0,0,32,32
-region op=clear layer=1 frame=7 rect=0,0,32,32
-region op=clear layer=2 frame=7 rect=0,0,32,32
-region op=clear layer=1 frame=8 rect=0,0,32,32
-region op=clear layer=2 frame=8 rect=0,0,32,32
-region op=clear layer=1 frame=9 rect=0,0,32,32
-region op=clear layer=2 frame=9 rect=0,0,32,32
-paint_grid layer=1 frame=0 x=10 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:12
-  |...DDDDDD...|
-  |..DRRRRRRD..|
-  |.DRRRRRRRRD.|
-  |DRRRRRRRRRRD|
-  |DRRRRRRRRRRD|
-  |DRRRRRRRRRSD|
-  |DRRRRRRRRSSD|
-  |DRRRRRRRSSSD|
-  |DRRRRRRSSSSD|
-  |.DRRRRSSSSD.|
-  |..DRRSSSSD..|
-  |...DDDDDD...|
-paint_grid layer=1 frame=1 x=11 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRSSSSD|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=2 x=11 y=5 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:14
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |.DRRRSSSD.|
-  |.DRRRSSSD.|
-  |..DRSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=3 x=11 y=8 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:15
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |DRRRRRSSSD|
-  |.DRRRSSSD.|
-  |.DRRSSSSD.|
-  |..DRSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=4 x=7 y=20 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:8
-  |...DDDDDDDDDDDD...|
-  |.DDRRRRRRRRRRRRDD.|
-  |DRRRRRRRRRRRRRRRRD|
-  |DRRRRRRRRRRRRRRSSD|
-  |DRRRRRRRRRRRRSSSSD|
-  |DRRRRRRRRRRSSSSSSD|
-  |.DDRRRRRSSSSSSSDD.|
-  |...DDDDDDDDDDDD...|
-paint_grid layer=1 frame=5 x=12 y=8 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:16
-  |...DDD...|
-  |..DRRRD..|
-  |.DRRRRRD.|
-  |.DRRRRRD.|
-  |DRRRRRRRD|
-  |DRRRRRRRD|
-  |DRRRRRRRD|
-  |DRRRRRRSD|
-  |DRRRRRRSD|
-  |DRRRRRSSD|
-  |DRRRRRSSD|
-  |DRRRRSSSD|
-  |.DRRRSSD.|
-  |.DRRSSSD.|
-  |..DSSSD..|
-  |...DDD...|
-paint_grid layer=1 frame=6 x=11 y=5 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:14
-  |...DDDD...|
-  |..DRRRRD..|
-  |.DRRRRRRD.|
-  |.DRRRRRRD.|
-  |DRRRRRRRRD|
-  |DRRRRRRRRD|
-  |DRRRRRRRSD|
-  |DRRRRRRSSD|
-  |DRRRRRRSSD|
-  |DRRRRRSSSD|
-  |.DRRRSSSD.|
-  |.DRRRSSSD.|
-  |..DRSSSD..|
-  |...DDDD...|
-paint_grid layer=1 frame=7 x=11 y=3 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRSSSSD|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=8 x=11 y=2 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:13
-  |...DDDDD...|
-  |..DRRRRRD..|
-  |.DRRRRRRRD.|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRRD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRRSD|
-  |DRRRRRRRSSD|
-  |DRRRRRRSSSD|
-  |DRRRRRSSSSD|
-  |.DRRRSSSSD.|
-  |..DRSSSSD..|
-  |...DDDDD...|
-paint_grid layer=1 frame=9 x=10 y=2 legend=D:#2a1533,R:#e8453c,S:#a8203a rows:12
-  |...DDDDDD...|
-  |..DRRRRRRD..|
-  |.DRRRRRRRRD.|
-  |DRRRRRRRRRRD|
-  |DRRRRRRRRRRD|
-  |DRRRRRRRRRSD|
-  |DRRRRRRRRSSD|
-  |DRRRRRRRSSSD|
-  |DRRRRRRSSSSD|
-  |.DRRRRSSSSD.|
-  |..DRRSSSSD..|
-  |...DDDDDD...|
-paint_grid layer=2 frame=0 x=12 y=5 legend=H:#ffb59a rows:3
-  |.HH|
-  |HH.|
-  |H..|
-paint_grid layer=2 frame=1 x=13 y=5 legend=H:#ffb59a rows:4
-  |.HH|
-  |HH.|
-  |H..|
-  |H..|
-paint_grid layer=2 frame=2 x=13 y=7 legend=H:#ffb59a rows:4
-  |.H|
-  |.H|
-  |HH|
-  |H.|
-paint_grid layer=2 frame=3 x=13 y=10 legend=H:#ffb59a rows:5
-  |.H|
-  |.H|
-  |HH|
-  |H.|
-  |H.|
-paint_grid layer=2 frame=4 x=10 y=22 legend=H:#ffb59a rows:2
-  |HHHH|
-  |H...|
-paint_grid layer=2 frame=5 x=14 y=10 legend=H:#ffb59a rows:5
-  |.H|
-  |.H|
-  |HH|
-  |H.|
-  |H.|
-paint_grid layer=2 frame=6 x=13 y=7 legend=H:#ffb59a rows:4
-  |.H|
-  |.H|
-  |HH|
-  |H.|
-paint_grid layer=2 frame=7 x=13 y=5 legend=H:#ffb59a rows:4
-  |.HH|
-  |HH.|
-  |H..|
-  |H..|
-paint_grid layer=2 frame=8 x=13 y=4 legend=H:#ffb59a rows:4
-  |.HH|
-  |HH.|
-  |H..|
-  |H..|
-paint_grid layer=2 frame=9 x=12 y=4 legend=H:#ffb59a rows:3
-  |.HH|
-  |HH.|
-  |H..|
-add_tag name=bounce from=0 to=9
+{"name":"doc_new","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","height":32,"name":"rubber-ball","width":32}}
+{"name":"doc_layer","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","index":0,"name":"shadow","op":"rename"}}
+{"name":"doc_layer","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","name":"ball","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","name":"shine","op":"add"}}
+{"name":"doc_palette","arguments":{"colors":["#2a1533","#a8203a","#e8453c","#ffb59a"],"doc_id":"74023868-558d-401e-a543-a5accf77fb69","op":"set"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":1,"legend":{"R":"#e8453c"},"rows":["....RRRR....","..RRRRRRRR..",".RRRRRRRRRR.",".RRRRRRRRRR.","RRRRRRRRRRRR","RRRRRRRRRRRR","RRRRRRRRRRRR","RRRRRRRRRRRR",".RRRRRRRRRR.",".RRRRRRRRRR.","..RRRRRRRR..","....RRRR...."],"x":10,"y":3}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_frame","arguments":{"copy_from":0,"count":9,"doc_id":"74023868-558d-401e-a543-a5accf77fb69","op":"add"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["....DDDD....","..DDRRRRDD..",".DRRRRRRRRD.",".DRRRRRRRRD.","DRRRRRRRRRSD","DRRRRRRRRSSD","DRRRRRRRSSSD","DRRRRRRSSSSD",".DRRRRSSSSD.",".DRRRSSSSSD.","..DDSSSSDD..","....DDDD...."],"x":10,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRRSSSD",".DRRRRSSSD.",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRSSSD","DRRRRRSSSD",".DRRRSSSD.",".DRRSSSSD.","..DRSSSD..","...DDDD..."],"x":11,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRRSSD","DRRRRRSSSD","DRRRRSSSSD",".DRRRSSSD.",".DRRSSSSD.","..DSSSSD..","...DDDD..."],"x":11,"y":8}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":[".....DDDDDDDD.....","..DDDRRRRRRRRDDD..",".DRRRRRRRRRRRRRRD.","DRRRRRRRRRRRRRRSSD","DRRRRRRRRRRRSSSSSD",".DRRRRRRRRSSSSSSD.","..DDDRRRSSSSSDDD..",".....DDDDDDDD....."],"x":7,"y":20}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDD...","..DRRRD..",".DRRRRRD.",".DRRRRRD.","DRRRRRRRD","DRRRRRRRD","DRRRRRRRD","DRRRRRRSD","DRRRRRSSD","DRRRRRSSD","DRRRRSSSD","DRRRRSSSD",".DRRSSSD.",".DRRSSSD.","..DSSSD..","...DDD..."],"x":12,"y":8}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRSSSD","DRRRRRSSSD",".DRRRSSSD.",".DRRSSSSD.","..DRSSSD..","...DDDD..."],"x":11,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRRSSSD",".DRRRRSSSD.",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRRSSSD",".DRRRRSSSD.",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":2}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["....DDDD....","..DDRRRRDD..",".DRRRRRRRRD.",".DRRRRRRRRD.","DRRRRRRRRRSD","DRRRRRRRRSSD","DRRRRRRRSSSD","DRRRRRRSSSSD",".DRRRRSSSSD.",".DRRRSSSSSD.","..DDSSSSDD..","....DDDD...."],"x":10,"y":2}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":12,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":13,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH",".HH","HHH",".HH"],"x":12,"y":7}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH",".HH","HHH",".HH"],"x":12,"y":10}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":2,"legend":{"H":"#ffb59a"},"rows":["..HH.","HHHHH"],"x":10,"y":21}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".H.",".HH","HHH","HHH",".H."],"x":13,"y":10}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH",".HH","HHH",".HH"],"x":12,"y":7}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":13,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":13,"y":4}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":12,"y":4}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":0,"legend":{"D":"#2a1533"},"rows":["D.D.D.D"],"x":12,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":0,"legend":{"D":"#2a1533"},"rows":["D.D.D.D.D"],"x":12,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":0,"legend":{"D":"#2a1533"},"rows":["D.D.D.D.D.D"],"x":10,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":0,"legend":{"D":"#2a1533"},"rows":["..DDDDDDDDDD..","DDDDDDDDDDDDDD","..DDDDDDDDDD.."],"x":9,"y":27}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":0,"legend":{"D":"#2a1533"},"rows":[".DDDDDDDDDDDDDDDDDD.","DDDDDDDDDDDDDDDDDDDD",".DDDDDDDDDDDDDDDDDD."],"x":6,"y":27}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":0,"legend":{"D":"#2a1533"},"rows":["..DDDDDDDDDDDD..","DDDDDDDDDDDDDDDD","..DDDDDDDDDDDD.."],"x":8,"y":27}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":0,"legend":{"D":"#2a1533"},"rows":["D.D.D.D.D.D"],"x":10,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":0,"legend":{"D":"#2a1533"},"rows":["D.D.D.D.D"],"x":12,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"frame_to":9,"layer":0,"legend":{"D":"#2a1533"},"rows":["D.D.D.D"],"x":12,"y":28}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":0,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDD"],"x":13,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDDDD"],"x":12,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDDDDDD","...DDDD..."],"x":11,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDDDDDDDDDD","...DDDDDDDD..."],"x":9,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDDDDDDDDDDDDDDDD","...DDDDDDDDDDDDDD..."],"x":6,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDDDDDDDDDDDD","...DDDDDDDDDD..."],"x":8,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDDDDDD","...DDDD..."],"x":11,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDDDD"],"x":12,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDDDD"],"x":13,"y":28}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":0,"legend":{"D":"#2a1533"},"rows":["DDDD"],"x":14,"y":28}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDDD...","..DRRRRRRD..",".DRRRRRRRRD.","DRRRRRRRRRRD","DRRRRRRRRRSD","DRRRRRRRRSSD","DRRRRRRRSSSD","DRRRRRRSSSSD","DRRRRRSSSSSD",".DRRRSSSSSD.","..DRSSSSSD..","...DDDDDD..."],"x":10,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRRSSSD","DRRRRRSSSSD",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRSSSD","DRRRRRSSSD",".DRRRSSSD.",".DRRSSSSD.","..DRSSSD..","...DDDD..."],"x":11,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRRSSD","DRRRRRSSSD","DRRRRSSSSD",".DRRRSSSD.",".DRRSSSSD.","..DSSSSD..","...DDDD..."],"x":11,"y":8}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDDDDDDDDD...",".DDRRRRRRRRRRRRDD.","DRRRRRRRRRRRRRRRRD","DRRRRRRRRRRRRRRSSD","DRRRRRRRRRRRSSSSSD","DRRRRRRRRRSSSSSSSD",".DDRRRRRSSSSSSSDD.","...DDDDDDDDDDDD..."],"x":7,"y":20}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDD...","..DRRRD..",".DRRRRRD.",".DRRRRRD.","DRRRRRRRD","DRRRRRRRD","DRRRRRRRD","DRRRRRRSD","DRRRRRSSD","DRRRRRSSD","DRRRRSSSD","DRRRRSSSD",".DRRSSSD.",".DRRSSSD.","..DSSSD..","...DDD..."],"x":12,"y":8}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRSSSD","DRRRRRSSSD",".DRRRSSSD.",".DRRSSSSD.","..DRSSSD..","...DDDD..."],"x":11,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRRSSSD","DRRRRRSSSSD",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRRSSSD","DRRRRRSSSSD",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":2}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDDD...","..DRRRRRRD..",".DRRRRRRRRD.","DRRRRRRRRRRD","DRRRRRRRRRSD","DRRRRRRRRSSD","DRRRRRRRSSSD","DRRRRRRSSSSD","DRRRRRSSSSSD",".DRRRSSSSSD.","..DRSSSSSD..","...DDDDDD..."],"x":10,"y":2}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":12,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":13,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH",".HH","HHH",".HH"],"x":12,"y":7}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH",".HH","HHH",".HH"],"x":12,"y":10}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHHH.","HHHHH"],"x":10,"y":21}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".H.",".HH","HHH","HHH",".H."],"x":13,"y":10}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH",".HH","HHH",".HH"],"x":12,"y":7}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":13,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":13,"y":4}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHH","HHH","HHH"],"x":12,"y":4}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":1,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_region","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":2,"op":"clear","rect":[0,0,32,32]}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDDD...","..DRRRRRRD..",".DRRRRRRRRD.","DRRRRRRRRRRD","DRRRRRRRRRRD","DRRRRRRRRRSD","DRRRRRRRRSSD","DRRRRRRRSSSD","DRRRRRRSSSSD",".DRRRRSSSSD.","..DRRSSSSD..","...DDDDDD..."],"x":10,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRSSSSD",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRRSSD","DRRRRRSSSD",".DRRRSSSD.",".DRRRSSSD.","..DRSSSD..","...DDDD..."],"x":11,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRSSSD","DRRRRRSSSD",".DRRRSSSD.",".DRRSSSSD.","..DRSSSD..","...DDDD..."],"x":11,"y":8}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDDDDDDDDD...",".DDRRRRRRRRRRRRDD.","DRRRRRRRRRRRRRRRRD","DRRRRRRRRRRRRRRSSD","DRRRRRRRRRRRRSSSSD","DRRRRRRRRRRSSSSSSD",".DDRRRRRSSSSSSSDD.","...DDDDDDDDDDDD..."],"x":7,"y":20}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDD...","..DRRRD..",".DRRRRRD.",".DRRRRRD.","DRRRRRRRD","DRRRRRRRD","DRRRRRRRD","DRRRRRRSD","DRRRRRRSD","DRRRRRSSD","DRRRRRSSD","DRRRRSSSD",".DRRRSSD.",".DRRSSSD.","..DSSSD..","...DDD..."],"x":12,"y":8}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDD...","..DRRRRD..",".DRRRRRRD.",".DRRRRRRD.","DRRRRRRRRD","DRRRRRRRRD","DRRRRRRRSD","DRRRRRRSSD","DRRRRRRSSD","DRRRRRSSSD",".DRRRSSSD.",".DRRRSSSD.","..DRSSSD..","...DDDD..."],"x":11,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRSSSSD",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":3}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDD...","..DRRRRRD..",".DRRRRRRRD.","DRRRRRRRRRD","DRRRRRRRRRD","DRRRRRRRRSD","DRRRRRRRRSD","DRRRRRRRSSD","DRRRRRRSSSD","DRRRRRSSSSD",".DRRRSSSSD.","..DRSSSSD..","...DDDDD..."],"x":11,"y":2}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":1,"legend":{"D":"#2a1533","R":"#e8453c","S":"#a8203a"},"rows":["...DDDDDD...","..DRRRRRRD..",".DRRRRRRRRD.","DRRRRRRRRRRD","DRRRRRRRRRRD","DRRRRRRRRRSD","DRRRRRRRRSSD","DRRRRRRRSSSD","DRRRRRRSSSSD",".DRRRRSSSSD.","..DRRSSSSD..","...DDDDDD..."],"x":10,"y":2}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":0,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH","HH.","H.."],"x":12,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":1,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH","HH.","H..","H.."],"x":13,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":2,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".H",".H","HH","H."],"x":13,"y":7}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":3,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".H",".H","HH","H.","H."],"x":13,"y":10}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":4,"layer":2,"legend":{"H":"#ffb59a"},"rows":["HHHH","H..."],"x":10,"y":22}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":5,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".H",".H","HH","H.","H."],"x":14,"y":10}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":6,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".H",".H","HH","H."],"x":13,"y":7}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":7,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH","HH.","H..","H.."],"x":13,"y":5}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":8,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH","HH.","H..","H.."],"x":13,"y":4}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","frame":9,"layer":2,"legend":{"H":"#ffb59a"},"rows":[".HH","HH.","H.."],"x":12,"y":4}}
+{"name":"doc_add_tag","arguments":{"doc_id":"74023868-558d-401e-a543-a5accf77fb69","from":0,"name":"bounce","to":9}}
