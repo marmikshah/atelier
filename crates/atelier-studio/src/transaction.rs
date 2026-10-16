@@ -216,7 +216,8 @@ impl Studio {
         let live_exists = directory_state(&live, "archive destination")?;
         if live_exists && !replace {
             return Err(format!(
-                "document '{id}' already exists; pass replace=true to replace it atomically"
+                "document '{id}' already exists and was left unchanged; \
+                 pass --replace --yes to replace it atomically"
             ));
         }
         let transactions = self.docs_dir.join(TRANSACTIONS_DIR);
