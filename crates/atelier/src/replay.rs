@@ -335,7 +335,7 @@ fn take_recorded_id(args: &mut Map<String, Value>) -> Result<String, String> {
         Some(Value::String(id)) if !id.is_empty() => Ok(id),
         Some(_) => Err("doc_new doc_id must be a non-empty string".into()),
         None => Err(
-            "journal doc_new is missing required args.doc_id — rewrite the journal in the current format"
+            "journal doc_new is missing required args.doc_id — a recipe starts with the doc_new call that stamps its document id"
                 .into(),
         ),
     }

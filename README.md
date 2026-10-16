@@ -90,9 +90,13 @@ container image.
 - **Your documents are not discarded.** Edits are journaled and committed
   atomically. A document that is damaged, or saved by a build with a different
   document schema, is refused with an error and left unchanged on disk.
-- **The document and journal formats are versioned, with no migration.** If
-  an update changes either one, documents saved before it are refused, stay
-  on disk untouched, and open again with the commit that wrote them.
+- **The document format is versioned, with no migration.** If an update
+  changes it, documents saved before it are refused, stay on disk untouched,
+  and open again with the commit that wrote them.
+- **A recipe is the plain log of the calls that built a document**, one JSON
+  line each. It has no version of its own: what it draws depends on how the
+  tools behave, so a recipe from one commit replays exactly on commits whose
+  tools draw the same way.
 - **Tool names and arguments can still change** between commits. Pin a commit
   if you script against them, and read the current surface from
   `atelier tools --markdown`.
