@@ -1,86 +1,85 @@
-atelier 4 6d246f9a-fd88-4212-b846-a80757011ffd 0.1.0
-new name=beam-cast width=48 height=48
-layer op=rename index=0 name=legs
-layer op=add name=torso
-layer op=add name=head
-layer op=add name=arms
-layer op=add name=fx
-palette op=set colors=#15131a,#2c3347,#5b6b89,#eaf6ff,#4fd6f0,#1f4d8c
-draw op=rect layer=0 frame=0 color=#15131a fill=true x0=10 x1=30 y0=10 y1=40
-region op=clear layer=0 frame=0 rect=0,0,48,48
-draw op=polygon layer=1 frame=0 color=#5b6b89 fill=true points=14,16 24,15 27,24 26,38 12,40 10,22
-draw op=ellipse layer=2 frame=0 color=#5b6b89 cx=19 cy=13 fill=true rx=7 ry=7
-draw op=polygon layer=2 frame=0 color=#5b6b89 fill=true points=14,9 6,15 14,19
-draw op=rect layer=0 frame=0 color=#5b6b89 fill=true x0=10 x1=16 y0=40 y1=44
-draw op=rect layer=0 frame=0 color=#5b6b89 fill=true x0=23 x1=30 y0=42 y1=46
-draw op=polygon layer=3 frame=0 color=#5b6b89 fill=true points=23,17 27,19 30,23 33,27 29,30 26,27 24,22
-draw op=ellipse layer=3 frame=0 color=#5b6b89 cx=32 cy=25 fill=true rx=3 ry=2
-draw op=ellipse layer=3 frame=0 color=#5b6b89 cx=32 cy=30 fill=true rx=3 ry=2
-region op=clear layer=3 frame=0 rect=0,0,48,48
-draw op=polygon layer=3 frame=0 color=#5b6b89 fill=true points=22,17 26,18 29,21 33,25 31,28 28,27 25,24 22,21
-draw op=ellipse layer=3 frame=0 color=#5b6b89 cx=33 cy=24 fill=true rx=3 ry=2
-draw op=ellipse layer=3 frame=0 color=#5b6b89 cx=33 cy=30 fill=true rx=3 ry=2
-draw op=polygon layer=3 frame=0 color=#5b6b89 fill=true points=28,27 31,28 32,30 29,31 27,29
-draw op=polygon layer=0 frame=0 color=#5b6b89 fill=true points=21,36 27,37 28,43 22,44 20,40
-draw op=polygon layer=1 frame=0 color=#15131a fill=false points=14,16 24,15 27,24 26,38 12,40 10,22
-draw op=polygon layer=0 frame=0 color=#15131a fill=false points=21,36 27,37 28,43 22,44 20,40
-draw op=rect layer=0 frame=0 color=#15131a fill=false x0=10 x1=16 y0=40 y1=44
-draw op=ellipse layer=2 frame=0 color=#15131a cx=19 cy=13 fill=false rx=7 ry=7
-draw op=polygon layer=2 frame=0 color=#15131a fill=false points=14,9 6,15 14,19
-draw op=polygon layer=3 frame=0 color=#15131a fill=false points=22,17 26,18 29,21 33,25 31,28 28,27 25,24 22,21
-draw op=ellipse layer=3 frame=0 color=#15131a cx=33 cy=24 fill=false rx=3 ry=2
-draw op=ellipse layer=3 frame=0 color=#15131a cx=33 cy=30 fill=false rx=3 ry=2
-draw op=ellipse layer=2 frame=0 color=#2c3347 cx=14 cy=13 fill=true rx=3 ry=5
-draw op=polygon layer=1 frame=0 color=#2c3347 fill=true points=13,19 18,18 16,38 12,39 11,22
-draw op=polygon layer=3 frame=0 color=#2c3347 fill=true points=24,23 27,26 25,27 23,25
-draw op=rect layer=0 frame=0 color=#2c3347 fill=true x0=11 x1=15 y0=41 y1=43
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-frame op=add copy_from=0 duration_ms=100
-region op=move layer=1 frame=4 offset=-1,0 rect=0,0,48,48
-region op=move layer=2 frame=4 offset=-1,0 rect=0,0,48,48
-region op=move layer=3 frame=4 offset=-1,0 rect=0,0,48,48
-region op=move layer=1 frame=5 offset=-2,0 rect=0,0,48,48
-region op=move layer=2 frame=5 offset=-2,0 rect=0,0,48,48
-region op=move layer=3 frame=5 offset=-2,0 rect=0,0,48,48
-region op=move layer=1 frame=6 offset=-2,0 rect=0,0,48,48
-region op=move layer=2 frame=6 offset=-2,0 rect=0,0,48,48
-region op=move layer=3 frame=6 offset=-2,0 rect=0,0,48,48
-region op=move layer=1 frame=7 offset=-1,0 rect=0,0,48,48
-region op=move layer=2 frame=7 offset=-1,0 rect=0,0,48,48
-region op=move layer=3 frame=7 offset=-1,0 rect=0,0,48,48
-draw op=pencil layer=4 frame=0 color=#1f4d8c points=[[32,27]]
-draw op=ellipse layer=4 frame=1 color=#1f4d8c cx=32 cy=27 fill=true rx=2 ry=2
-draw op=ellipse layer=4 frame=1 color=#4fd6f0 cx=32 cy=27 fill=true rx=1 ry=1
-draw op=ellipse layer=4 frame=2 color=#1f4d8c cx=32 cy=27 fill=true rx=3 ry=3
-draw op=ellipse layer=4 frame=2 color=#4fd6f0 cx=32 cy=27 fill=true rx=2 ry=2
-draw op=pencil layer=4 frame=2 color=#eaf6ff points=[[32,27]]
-draw op=ellipse layer=4 frame=3 color=#1f4d8c cx=32 cy=27 fill=true rx=4 ry=4
-draw op=ellipse layer=4 frame=3 color=#4fd6f0 cx=32 cy=27 fill=true rx=3 ry=3
-draw op=ellipse layer=4 frame=3 color=#eaf6ff cx=32 cy=27 fill=true rx=1 ry=1
-draw op=pencil layer=4 frame=3 color=#4fd6f0 points=28,27 36,27 32,23 32,31
-draw op=ellipse layer=4 frame=4 color=#1f4d8c cx=31 cy=27 fill=true rx=3 ry=3
-draw op=ellipse layer=4 frame=4 color=#4fd6f0 cx=31 cy=27 fill=true rx=2 ry=2
-draw op=ellipse layer=4 frame=4 color=#eaf6ff cx=31 cy=27 fill=true rx=1 ry=1
-draw op=line layer=4 frame=4 color=#1f4d8c size=5 x0=35 x1=41 y0=27 y1=27
-draw op=line layer=4 frame=4 color=#4fd6f0 size=3 x0=35 x1=41 y0=27 y1=27
-draw op=line layer=4 frame=4 color=#eaf6ff size=1 x0=35 x1=41 y0=27 y1=27
-draw op=line layer=4 frame=5 color=#1f4d8c size=5 x0=34 x1=47 y0=27 y1=27
-draw op=line layer=4 frame=5 color=#4fd6f0 size=3 x0=34 x1=47 y0=27 y1=27
-draw op=line layer=4 frame=5 color=#eaf6ff size=1 x0=34 x1=47 y0=27 y1=27
-draw op=ellipse layer=4 frame=5 color=#4fd6f0 cx=30 cy=27 fill=true rx=1 ry=1
-draw op=line layer=4 frame=6 color=#1f4d8c size=4 x0=34 x1=46 y0=27 y1=27
-draw op=line layer=4 frame=6 color=#4fd6f0 size=2 x0=34 x1=46 y0=27 y1=27
-draw op=line layer=4 frame=6 color=#eaf6ff size=1 x0=34 x1=40 y0=27 y1=27
-draw op=pencil layer=4 frame=6 color=#4fd6f0 points=[[30,27]]
-draw op=line layer=4 frame=7 color=#1f4d8c size=3 x0=35 x1=41 y0=27 y1=27
-draw op=line layer=4 frame=7 color=#4fd6f0 size=1 x0=35 x1=38 y0=27 y1=27
-draw op=pencil layer=4 frame=7 color=#1f4d8c points=[[31,27]]
-draw op=line layer=4 frame=8 color=#1f4d8c size=2 x0=36 x1=39 y0=27 y1=27
-draw op=pencil layer=4 frame=9 color=#1f4d8c points=[[32,27]]
+{"name":"doc_new","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","height":48,"name":"beam-cast","width":48}}
+{"name":"doc_layer","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","index":0,"name":"legs","op":"rename"}}
+{"name":"doc_layer","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","name":"torso","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","name":"head","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","name":"arms","op":"add"}}
+{"name":"doc_layer","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","name":"fx","op":"add"}}
+{"name":"doc_palette","arguments":{"colors":["#15131a","#2c3347","#5b6b89","#eaf6ff","#4fd6f0","#1f4d8c"],"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","op":"set"}}
+{"name":"doc_draw","arguments":{"color":"#15131a","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":0,"op":"rect","x0":10,"x1":30,"y0":10,"y1":40}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":0,"layer":0,"op":"clear","rect":[0,0,48,48]}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":1,"op":"polygon","points":[[14,16],[24,15],[27,24],[26,38],[12,40],[10,22]]}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","cx":19,"cy":13,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":2,"op":"ellipse","rx":7,"ry":7}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":2,"op":"polygon","points":[[14,9],[6,15],[14,19]]}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":0,"op":"rect","x0":10,"x1":16,"y0":40,"y1":44}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":0,"op":"rect","x0":23,"x1":30,"y0":42,"y1":46}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"polygon","points":[[23,17],[27,19],[30,23],[33,27],[29,30],[26,27],[24,22]]}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","cx":32,"cy":25,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"ellipse","rx":3,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","cx":32,"cy":30,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"ellipse","rx":3,"ry":2}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":0,"layer":3,"op":"clear","rect":[0,0,48,48]}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"polygon","points":[[22,17],[26,18],[29,21],[33,25],[31,28],[28,27],[25,24],[22,21]]}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","cx":33,"cy":24,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"ellipse","rx":3,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","cx":33,"cy":30,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"ellipse","rx":3,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"polygon","points":[[28,27],[31,28],[32,30],[29,31],[27,29]]}}
+{"name":"doc_draw","arguments":{"color":"#5b6b89","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":0,"op":"polygon","points":[[21,36],[27,37],[28,43],[22,44],[20,40]]}}
+{"name":"doc_draw","arguments":{"color":"#15131a","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":1,"op":"polygon","points":[[14,16],[24,15],[27,24],[26,38],[12,40],[10,22]]}}
+{"name":"doc_draw","arguments":{"color":"#15131a","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":0,"op":"polygon","points":[[21,36],[27,37],[28,43],[22,44],[20,40]]}}
+{"name":"doc_draw","arguments":{"color":"#15131a","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":0,"op":"rect","x0":10,"x1":16,"y0":40,"y1":44}}
+{"name":"doc_draw","arguments":{"color":"#15131a","cx":19,"cy":13,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":2,"op":"ellipse","rx":7,"ry":7}}
+{"name":"doc_draw","arguments":{"color":"#15131a","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":2,"op":"polygon","points":[[14,9],[6,15],[14,19]]}}
+{"name":"doc_draw","arguments":{"color":"#15131a","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":3,"op":"polygon","points":[[22,17],[26,18],[29,21],[33,25],[31,28],[28,27],[25,24],[22,21]]}}
+{"name":"doc_draw","arguments":{"color":"#15131a","cx":33,"cy":24,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":3,"op":"ellipse","rx":3,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#15131a","cx":33,"cy":30,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":false,"frame":0,"layer":3,"op":"ellipse","rx":3,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#2c3347","cx":14,"cy":13,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":2,"op":"ellipse","rx":3,"ry":5}}
+{"name":"doc_draw","arguments":{"color":"#2c3347","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":1,"op":"polygon","points":[[13,19],[18,18],[16,38],[12,39],[11,22]]}}
+{"name":"doc_draw","arguments":{"color":"#2c3347","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":3,"op":"polygon","points":[[24,23],[27,26],[25,27],[23,25]]}}
+{"name":"doc_draw","arguments":{"color":"#2c3347","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":0,"layer":0,"op":"rect","x0":11,"x1":15,"y0":41,"y1":43}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_frame","arguments":{"copy_from":0,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","duration_ms":100,"op":"add"}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":4,"layer":1,"offset":[-1,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":4,"layer":2,"offset":[-1,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":4,"layer":3,"offset":[-1,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":5,"layer":1,"offset":[-2,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":5,"layer":2,"offset":[-2,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":5,"layer":3,"offset":[-2,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":6,"layer":1,"offset":[-2,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":6,"layer":2,"offset":[-2,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":6,"layer":3,"offset":[-2,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":7,"layer":1,"offset":[-1,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":7,"layer":2,"offset":[-1,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_region","arguments":{"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":7,"layer":3,"offset":[-1,0],"op":"move","rect":[0,0,48,48]}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":0,"layer":4,"op":"pencil","points":[[32,27]]}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","cx":32,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":1,"layer":4,"op":"ellipse","rx":2,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","cx":32,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":1,"layer":4,"op":"ellipse","rx":1,"ry":1}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","cx":32,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":2,"layer":4,"op":"ellipse","rx":3,"ry":3}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","cx":32,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":2,"layer":4,"op":"ellipse","rx":2,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#eaf6ff","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":2,"layer":4,"op":"pencil","points":[[32,27]]}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","cx":32,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":3,"layer":4,"op":"ellipse","rx":4,"ry":4}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","cx":32,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":3,"layer":4,"op":"ellipse","rx":3,"ry":3}}
+{"name":"doc_draw","arguments":{"color":"#eaf6ff","cx":32,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":3,"layer":4,"op":"ellipse","rx":1,"ry":1}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":3,"layer":4,"op":"pencil","points":[[28,27],[36,27],[32,23],[32,31]]}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","cx":31,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":4,"layer":4,"op":"ellipse","rx":3,"ry":3}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","cx":31,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":4,"layer":4,"op":"ellipse","rx":2,"ry":2}}
+{"name":"doc_draw","arguments":{"color":"#eaf6ff","cx":31,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":4,"layer":4,"op":"ellipse","rx":1,"ry":1}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":4,"layer":4,"op":"line","size":5,"x0":35,"x1":41,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":4,"layer":4,"op":"line","size":3,"x0":35,"x1":41,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#eaf6ff","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":4,"layer":4,"op":"line","size":1,"x0":35,"x1":41,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":5,"layer":4,"op":"line","size":5,"x0":34,"x1":47,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":5,"layer":4,"op":"line","size":3,"x0":34,"x1":47,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#eaf6ff","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":5,"layer":4,"op":"line","size":1,"x0":34,"x1":47,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","cx":30,"cy":27,"doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","fill":true,"frame":5,"layer":4,"op":"ellipse","rx":1,"ry":1}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":6,"layer":4,"op":"line","size":4,"x0":34,"x1":46,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":6,"layer":4,"op":"line","size":2,"x0":34,"x1":46,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#eaf6ff","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":6,"layer":4,"op":"line","size":1,"x0":34,"x1":40,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":6,"layer":4,"op":"pencil","points":[[30,27]]}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":7,"layer":4,"op":"line","size":3,"x0":35,"x1":41,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#4fd6f0","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":7,"layer":4,"op":"line","size":1,"x0":35,"x1":38,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":7,"layer":4,"op":"pencil","points":[[31,27]]}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":8,"layer":4,"op":"line","size":2,"x0":36,"x1":39,"y0":27,"y1":27}}
+{"name":"doc_draw","arguments":{"color":"#1f4d8c","doc_id":"3ede3835-750b-4033-a859-8b1331a166cc","frame":9,"layer":4,"op":"pencil","points":[[32,27]]}}

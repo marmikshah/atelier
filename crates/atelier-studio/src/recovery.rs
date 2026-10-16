@@ -11,7 +11,7 @@ use crate::{CommitOutcome, Studio, ToolName};
 /// intact but saved in a format this build does not read. Such a document
 /// opens again with the Atelier version that wrote it.
 pub fn is_format_mismatch(reason: &str) -> bool {
-    reason.contains("unsupported document format") || reason.contains("unsupported journal format")
+    reason.contains("unsupported document format")
 }
 
 impl Studio {
@@ -45,15 +45,6 @@ impl Studio {
                 super::open_bounded(&path)?;
             }
             self.document_revision(id)?;
-            // A document from before the recipe format keeps its journal
-            // under the earlier name; that is a version mismatch, not damage.
-            if !dir.join(crate::JOURNAL_FILE).exists() && dir.join("recipe.jsonl").exists() {
-                return Err(format!(
-                    "unsupported journal format: recipe.jsonl predates {} (this build supports {})",
-                    crate::JOURNAL_FILE,
-                    crate::JOURNAL_SCHEMA
-                ));
-            }
             let journal = super::store::parse_journal_file(id, &dir.join(crate::JOURNAL_FILE))?;
             if journal.entries.is_empty() {
                 return Err("document has no complete recipe".into());

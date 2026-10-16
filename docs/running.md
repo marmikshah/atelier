@@ -84,41 +84,30 @@ passed; open it with the Atelier version that wrote it instead.
 
 ## Recipes
 
-Every document keeps a recipe, `doc.recipe`, beside its pixels: a text file
-with one line per call that changed it. `atelier replay` rebuilds the document
-from that file alone.
+Every document keeps a recipe, `doc.recipe`, beside its pixels: the calls
+that changed it, one per line, exactly as the tools received them. `atelier
+replay` rebuilds the document from that file alone.
 
 ```text
-atelier 4 48080aae-72aa-4f03-94ec-70b69e2791b0 0.1.0
-new name=potion-flask width=32 height=32
-palette op=set colors=#1a1630,#f0b07a,#5ad8f8
-layer op=rename index=0 name="glass back"
-region op=clear layer=3 frame=0 rect=0,0,32,32
-paint_grid layer=3 frame=0 x=12 y=2 legend=C:#5ad8f8,K:0 rows:4
-  |.KKKKKK.|
-  |KCCCCCCK|
-  |KCCCCCCK|
-  |.KKKKKK.|
+{"name":"doc_new","arguments":{"doc_id":"48080aae-72aa-4f03-94ec-70b69e2791b0","height":32,"name":"potion-flask","width":32}}
+{"name":"doc_palette","arguments":{"colors":["#1a1630","#f0b07a","#5ad8f8"],"doc_id":"48080aae-72aa-4f03-94ec-70b69e2791b0","op":"set"}}
+{"name":"doc_layer","arguments":{"doc_id":"48080aae-72aa-4f03-94ec-70b69e2791b0","index":0,"name":"glass back","op":"rename"}}
+{"name":"doc_paint_grid","arguments":{"doc_id":"48080aae-72aa-4f03-94ec-70b69e2791b0","frame":0,"layer":3,"legend":{"C":"#5ad8f8","K":0},"rows":[".KKKKKK.","KCCCCCCK","KCCCCCCK",".KKKKKK."],"x":12,"y":2}}
 ```
 
-- The first line gives the format number, the document ID, and the Atelier
-  version that created the file. Calls do not repeat the document ID.
-- Each call is the tool name without its `doc_` prefix, followed by
-  `key=value` arguments.
-- Numbers, plain words, and `#` colours are written as they are. A list of
-  them is joined by commas (`0,0,32,32`), a list of such lists by spaces
-  (`points=7,33 17,33 18,33`), and a map of them is written as `key:value`
-  pairs (`C:#5ad8f8,K:0`). Any other value is JSON, such as `"glass back"`.
-- `rows:N` ends a grid call and is followed by N rows between `|` bars.
+- Each line is one MCP `tools/call`: the tool `name` and its `arguments`,
+  as JSON. Argument keys are written in sorted order; nothing else is
+  changed, abbreviated, or implied.
+- Only calls that change the document are recorded. Reads, exports, and
+  failed calls are not.
 - Blank lines and lines that start with `#` are ignored, so a recipe can carry
   notes.
 
 A recipe records calls, not pixels, so what it draws depends on how the tools
-behave. The header names the Atelier version that wrote it, and later versions
-are expected to replay it to the same picture. When a fix changes what a tool
-draws, the recipes that depend on it are re-recorded rather than edited; the
-showcase's CI job replays every recipe and compares the result with the
-committed animation, so such a change cannot slip through unnoticed.
+behave. When a fix changes what a tool draws, the recipes that depend on it
+are re-recorded rather than edited; the showcase's CI job replays every recipe
+and compares the result with the committed animation, so such a change cannot
+slip through unnoticed.
 
 To see what a recipe draws without saving anything, add `--show`. Each step is
 printed with its layer name and the pixels it changed, in terminal colour:

@@ -97,12 +97,6 @@ container image.
   if you script against them, and read the current surface from
   `atelier tools --markdown`.
 
-> [!WARNING]
-> **The recipe format is not settled.** I have not yet found a recipe structure
-> I am happy with, so expect breaking changes to it until I do. Each change
-> bumps the format number, and older recipes are refused rather than converted;
-> replay them with the commit that wrote them.
-
 ## How it is built
 
 **100% of this code was written by AI.** Atelier began as an experiment in

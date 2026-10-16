@@ -229,30 +229,6 @@ fn failed_reset_writes_leave_the_saved_generation_untouched() {
 }
 
 #[test]
-fn an_earlier_journal_format_is_a_version_mismatch_not_damage() {
-    let store = Store::new();
-    let id = store.create();
-    // Documents from before the recipe format carry `recipe.jsonl` instead.
-    fs::remove_file(store.document(&id).join("doc.recipe")).unwrap();
-    let journal = store.document(&id).join("recipe.jsonl");
-    let legacy = format!(
-        "{}\n",
-        json!({"schema":1,"tool":"doc_new","args":{"doc_id":id,"name":"named canvas","width":8,"height":6}})
-    );
-    fs::write(&journal, &legacy).unwrap();
-    let (ok, result) = store.call(
-        "doc_draw",
-        json!({"doc_id":id,"layer":0,"frame":0,"op":"fill_cel","color":"#010203"}),
-    );
-    assert!(!ok, "{result}");
-    let error = result["error"].as_str().unwrap();
-    assert!(error.contains("unsupported journal format"), "{error}");
-    assert!(!error.contains("library reset"), "{error}");
-    assert!(!store.reset(&id, &["--yes"]).0);
-    assert_eq!(fs::read_to_string(&journal).unwrap(), legacy);
-}
-
-#[test]
 fn reset_leaves_healthy_and_missing_documents_alone() {
     let store = Store::new();
     let id = store.create();

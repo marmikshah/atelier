@@ -581,7 +581,7 @@ impl Studio {
     /// document carries its own provenance and nothing has to be turned on
     /// beforehand to get it.
     ///
-    /// JSON Lines, appended: one versioned call per line. Failure is explicit;
+    /// JSON Lines, appended: one call per line. Failure is explicit;
     /// the dispatch transaction must not publish pixels whose recipe could not
     /// be persisted.
     pub fn journal_append(&self, id: &str, tool: ToolName, args: &Value) -> Result<(), String> {
@@ -600,8 +600,8 @@ impl Studio {
             .ok_or_else(|| format!("refusing to journal non-object args for {tool}"))?;
         let entry = JournalEntry::new(tool, args.clone());
         let path = self.journal_path(id);
-        let (mut existing_entries, existing_bytes, headed) = match fs::symlink_metadata(&path) {
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (Vec::new(), 0, false),
+        let (mut existing_entries, existing_bytes) = match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (Vec::new(), 0),
             Err(error) => return Err(format!("cannot inspect journal for '{id}': {error}")),
             Ok(metadata) if !metadata.file_type().is_file() => {
                 return Err(format!(
@@ -615,7 +615,7 @@ impl Studio {
                         "journal for '{id}' has an incomplete final line; run `atelier library verify` and repair it before editing"
                     ));
                 }
-                (parsed.entries, metadata.len(), parsed.headed)
+                (parsed.entries, metadata.len())
             }
         };
         if existing_entries.len() >= MAX_JOURNAL_ENTRIES {
@@ -637,12 +637,7 @@ impl Studio {
             ));
         }
 
-        let mut line = if !headed {
-            crate::journal::encode_header(id)
-        } else {
-            String::new()
-        };
-        line.push_str(&crate::journal::encode_entry(&entry, id)?);
+        let line = crate::journal::encode_entry(&entry, id)?;
         let line_bytes = u64::try_from(line.len()).unwrap_or(u64::MAX);
         if existing_bytes > MAX_JOURNAL_BYTES.saturating_sub(line_bytes) {
             return Err(format!(
@@ -697,7 +692,6 @@ impl Studio {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::JOURNAL_SCHEMA;
 
     fn studio(tag: &str) -> Studio {
         let dir = std::env::temp_dir().join(format!("atelier-test-{}", tag));
@@ -813,10 +807,14 @@ mod tests {
             "new writes must not cement a torn tail into the journal"
         );
 
-        fs::write(&path, format!("{clean}draw op=\n")).unwrap();
+        fs::write(
+            &path,
+            format!("{clean}{{\"name\":\"doc_draw\",\"arguments\":\n"),
+        )
+        .unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
-            err.contains("line 4"),
+            err.contains("line 3"),
             "a newline-terminated incomplete call is corruption: {err}"
         );
 
@@ -827,20 +825,20 @@ mod tests {
         fs::write(&path, format!("{clean}not a call\n")).unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
-            err.contains("line 4"),
+            err.contains("line 3"),
             "complete final corruption errors: {err}"
         );
 
-        fs::write(&path, "atelier 4 not-an-id 0.1.0\n").unwrap();
+        fs::write(&path, "atelier 4 not-an-id 0.1.0\nnew name=d\n").unwrap();
         let err = s.journal(id).unwrap_err();
         assert!(
             err.contains("line 1"),
-            "non-current entry shape errors: {err}"
+            "an earlier recipe format is not read: {err}"
         );
 
         fs::write(
             &path,
-            "atelier 4 123e4567-e89b-42d3-a456-426614174000 0.1.0\nnew name=d\n",
+            "{\"name\":\"doc_new\",\"arguments\":{\"doc_id\":\"123e4567-e89b-42d3-a456-426614174000\",\"name\":\"d\"}}\n",
         )
         .unwrap();
         let err = s.journal(id).unwrap_err();
@@ -912,40 +910,24 @@ mod tests {
     }
 
     #[test]
-    fn journals_require_an_explicit_supported_version() {
-        let s = studio("journal-version");
+    fn journals_are_the_calls_as_dispatched() {
+        let s = studio("journal-lines");
         let created = s.doc_new("d", 8, 8).unwrap();
         let id = created["doc_id"].as_str().unwrap();
         s.journal_append(id, ToolName::DocNew, &json!({"name": "d", "doc_id": id}))
             .unwrap();
         s.journal_append(id, ToolName::DocDraw, &json!({"doc_id": id, "op": "rect"}))
             .unwrap();
-        let path = s.journal_path(id);
-        let written = fs::read_to_string(&path).unwrap();
+        let written = fs::read_to_string(s.journal_path(id)).unwrap();
         assert_eq!(
             written,
             format!(
-                "atelier {JOURNAL_SCHEMA} {id} {}\nnew name=d\ndraw op=rect\n",
-                env!("CARGO_PKG_VERSION")
+                "{{\"name\":\"doc_new\",\"arguments\":{{\"doc_id\":\"{id}\",\"name\":\"d\"}}}}\n\
+                 {{\"name\":\"doc_draw\",\"arguments\":{{\"doc_id\":\"{id}\",\"op\":\"rect\"}}}}\n"
             ),
-            "one header, then calls that leave the document id to it"
+            "one MCP call per line, nothing else"
         );
         assert_eq!(s.journal(id).unwrap()[1].args["doc_id"], id);
-
-        let calls = written.split_once('\n').unwrap().1;
-        fs::write(&path, calls).unwrap();
-        assert!(
-            s.journal(id).is_err(),
-            "a recipe without its header is not read"
-        );
-
-        fs::write(
-            &path,
-            format!("atelier {} {id} 9.9.9\n{calls}", JOURNAL_SCHEMA + 1),
-        )
-        .unwrap();
-        let error = s.journal(id).unwrap_err();
-        assert!(error.contains("unsupported journal format"), "got: {error}");
     }
 
     #[test]
