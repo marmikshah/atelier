@@ -107,10 +107,25 @@ The Pages workflow checks and builds website changes, then publishes the showcas
 from `master`. See [Running Atelier](running.md#docker-compose) for local
 container use.
 
-Pushing a `vX.Y.Z` tag runs the Image workflow. It requires the tag,
-`Cargo.toml`, and [server.json](../server.json) to name the same version
-(`tools/check-version.sh`), smoke-tests the linux/amd64 image, pushes it to
-`ghcr.io/marmikshah/atelier`, and publishes `server.json` to the MCP Registry.
-The registry reads the image's labels anonymously, so the GHCR package must be
-public; after the first tag, set its visibility and re-run the registry job.
-No native binaries are published.
+## Releasing
+
+Releases are never tagged by hand. Merge the version bump to `master`, with
+`Cargo.toml` and [server.json](../server.json) naming the same `X.Y.Z`
+(`tools/check-version.sh`), then dispatch the Release workflow from the
+Actions page on `master`. The run:
+
+1. Verifies it was started on the live `master` commit, that the version is
+   consistent, and that no tag, GitHub Release, or image for `vX.Y.Z` exists
+   yet (`tools/release-vacancy.sh`).
+2. Runs the CI and Showcase workflows as its gate.
+3. Builds and smoke-tests the linux/amd64 image, then pushes it to
+   `ghcr.io/marmikshah/atelier` as `X.Y.Z` and `latest`.
+4. Creates the `vX.Y.Z` tag and a GitHub Release recording the commit and
+   image digest. The tag is written last, so a failed run leaves no tag.
+5. Publishes `server.json` to the MCP Registry.
+
+The `publish` and `registry` jobs run in the `release` environment, where
+protection rules such as required reviewers can be added. The registry reads
+the image's labels anonymously, so the GHCR package must be public; after the
+first release, set its visibility and re-run the registry job. No native
+binaries are published.
