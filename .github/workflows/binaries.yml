@@ -1,0 +1,138 @@
+name: Binaries
+
+# Builds the prebuilt binaries that install.sh downloads, one per supported
+# platform, each on a native runner. Every build is then installed through
+# install.sh from the packaged files, used, and uninstalled again, on its own
+# runner and on fresh Ubuntu LTS images, so a release cannot publish an
+# archive the installer fails on. The Release workflow calls this as its
+# build step; pull requests that touch the installer or this workflow run it
+# too.
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to build
+        type: string
+        required: true
+  pull_request:
+    paths:
+      - .github/workflows/binaries.yml
+      - install.sh
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-24.04
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-24.04-arm
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+          - target: aarch64-apple-darwin
+            os: macos-15
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: 1.98.0
+          targets: ${{ matrix.target }}
+      # Linux builds target musl, so the binary is static and runs on any
+      # distribution, as the container image's does.
+      - name: Build
+        run: cargo build --release --locked -p atelier --target "$TARGET"
+      - name: Package
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stage" "$RUNNER_TEMP/release"
+          cp "target/$TARGET/release/atelier" LICENSE "$RUNNER_TEMP/stage/"
+          # No macOS metadata files in the archive.
+          COPYFILE_DISABLE=1 tar -C "$RUNNER_TEMP/stage" -czf "$RUNNER_TEMP/release/atelier-$TARGET.tar.gz" atelier LICENSE
+          (cd "$RUNNER_TEMP/release" && shasum -a 256 "atelier-$TARGET.tar.gz" > SHA256SUMS)
+      - name: Install, use, and uninstall through install.sh
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/home"
+          mkdir -p "$HOME"
+          ATELIER_DOWNLOAD_URL="file://$RUNNER_TEMP/release" sh install.sh
+          bin="$HOME/.local/bin/atelier"
+          "$bin" --version
+          "$bin" call doc_new '{"name":"smoke","width":8,"height":8}' > /dev/null
+          "$bin" uninstall --yes
+          test ! -e "$bin"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: atelier-${{ matrix.target }}
+          path: ${{ runner.temp }}/release/atelier-${{ matrix.target }}.tar.gz
+          if-no-files-found: error
+
+  ubuntu:
+    name: ${{ matrix.image }} ${{ matrix.target }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["ubuntu:22.04", "ubuntu:24.04", "ubuntu:26.04"]
+        target: [x86_64-unknown-linux-musl, aarch64-unknown-linux-musl]
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-24.04
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.image }}
+    timeout-minutes: 15
+    env:
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: atelier-${{ matrix.target }}
+          path: /srv/release
+      # Ubuntu Desktop ships wget but not curl, so the installer is fetched
+      # and run the way the README tells those users to, by a fresh account
+      # whose login shell is bash, over a loopback web server.
+      - name: Install, use, and uninstall as a fresh Ubuntu user
+        shell: bash
+        run: |
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends wget python3 > /dev/null
+          command -v curl && { echo "::error::this image should not have curl" >&2; exit 1; }
+          (cd /srv/release && sha256sum "atelier-$TARGET.tar.gz" > SHA256SUMS)
+          cp install.sh /srv/release/
+          chmod -R a+rX /srv/release
+          python3 -m http.server 8000 --bind 127.0.0.1 --directory /srv/release > /dev/null 2>&1 &
+          for _ in $(seq 50); do wget -q -O /dev/null http://127.0.0.1:8000/SHA256SUMS && break; sleep 0.1; done
+          useradd --create-home --shell /bin/bash ada
+          # Each command runs in ada's login shell, which expands it.
+          as_ada() { su - ada -c "$1"; }
+
+          as_ada 'wget -qO- http://127.0.0.1:8000/install.sh | ATELIER_DOWNLOAD_URL=http://127.0.0.1:8000 sh'
+          # A new login finds the command, and ~/.bashrc carries one PATH line.
+          as_ada 'atelier --version'
+          # shellcheck disable=SC2016
+          as_ada 'test "$(grep -c "added by the atelier installer" ~/.bashrc)" = 1'
+          # shellcheck disable=SC2016
+          as_ada 'cd "$(mktemp -d)" && atelier call doc_new "{\"name\":\"smoke\",\"width\":8,\"height\":8}" > /dev/null'
+          as_ada 'atelier uninstall --yes'
+          as_ada '! grep -q "added by the atelier installer" ~/.bashrc'
+          as_ada 'test ! -e ~/.local/bin/atelier'

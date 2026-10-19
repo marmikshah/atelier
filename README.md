@@ -9,9 +9,9 @@ Atelier is an offline, headless pixel-art editor for command-line tools and AI
 agents. Create layered sprites and animations, inspect pixels, and export PNGs,
 spritesheets, GIFs, APNGs, and TrueType pixel fonts. Documents stay local.
 
-Use it directly from a shell or connect an agent through MCP (Model Context
-Protocol). Both interfaces expose the same editing tools; no graphical editor
-or running server is needed for CLI calls.
+Use it directly from a shell, or connect an agent such as Claude Code or
+Codex through MCP (Model Context Protocol). Both interfaces expose the same
+editing tools; no graphical editor or running server is needed for CLI calls.
 
 <p align="center">
   <img src="showcase/gifs/opus-5.5-xhigh/cat.gif" width="128" height="128" alt="Animated pixel-art cat">
@@ -30,64 +30,100 @@ or running server is needed for CLI calls.
 - [Animation showcase](https://marmikshah.github.io/atelier/) — compare models and briefs, view animations, and download replays.
 - [Frayed](https://apps.apple.com/app/id6806894761)
 
-## Get started
+## Install
 
-Atelier builds from source on **Linux or macOS** with Rust 1.98+ and a native
-build toolchain. A [container image](docs/running.md#container-image) is
-published for MCP clients; no native binaries are.
+On macOS, Ubuntu, or any other Linux, paste this into a terminal:
+
+```sh
+curl -fsSL https://github.com/marmikshah/atelier/releases/latest/download/install.sh | sh
+```
+
+Ubuntu Desktop comes without curl; use wget instead:
+
+```sh
+wget -qO- https://github.com/marmikshah/atelier/releases/latest/download/install.sh | sh
+```
+
+It downloads Atelier for your machine, checks it, puts it in `~/.local/bin`,
+and adds that to your `PATH`. If Claude Code or Codex is installed, it also
+connects Atelier to them: they get its drawing tools in every project and its
+guides for drawing sprites and scenes and reviewing art. Nothing else is
+needed, not even Rust.
+
+Then start a new agent session and ask for something:
+
+> Use atelier to draw a 32×32 animated torch and save it as torch.gif.
+
+Your art is kept in `~/.atelier`. To keep a project's art inside the project
+instead, run `atelier init` in its folder before you start the agent.
+
+- **Update:** run the install command again.
+- **Installed Claude Code or Codex afterwards?** Run `atelier connect`.
+- **A specific version or folder, or no profile changes:** set
+  `ATELIER_VERSION`, `ATELIER_INSTALL_DIR`, or `ATELIER_NO_MODIFY_PATH=1`;
+  [install.sh](install.sh) lists every option.
+
+## Uninstall
+
+```sh
+atelier uninstall
+```
+
+It lists what it will remove and asks before deleting anything: Atelier's
+registration in Claude Code and Codex, its skills, the `PATH` line it added,
+the `atelier` program, and the Linux background server if you set one up.
+Your art in `~/.atelier` is kept; add `--documents` to delete it as well.
+Folders set up with `atelier init` are never touched.
+
+## Other ways to run it
+
+- **From the terminal.** Every tool is one command:
+  `atelier call TOOL '<json>'`. [Your first sprite](docs/getting-started.md)
+  walks through creating, drawing, and saving an image.
+- **In Cursor and other MCP clients.** Install as above, then register the
+  path `command -v atelier` prints as a stdio server with no arguments, and
+  run `atelier skills install --for cursor` (or `--dir PATH` for another
+  skills folder) for the drawing guides:
+
+  ```json
+  {
+    "mcpServers": {
+      "atelier": { "command": "/full/path/to/atelier" }
+    }
+  }
+  ```
+
+- **In Docker.** A [container image](docs/running.md#container-image) is
+  published for MCP clients that can launch Docker.
+- **As an HTTP server or background service.** See
+  [Running Atelier](docs/running.md).
+
+### Build from source
+
+On other platforms, or to build it yourself, install
+[Rust](https://rustup.rs) 1.98 or later, then:
 
 ```sh
 cargo install --locked --git https://github.com/marmikshah/atelier atelier
-atelier --help
+atelier connect
 ```
 
-To work from a checkout instead, which also pins the Rust version used for
-development:
-
-```sh
-git clone https://github.com/marmikshah/atelier.git
-cd atelier
-cargo install --locked --path crates/atelier
-```
-
-Then follow [your first sprite](docs/getting-started.md) to create a document,
-draw pixels, and save an image. `atelier uninstall` removes it again, keeping
-your documents unless you ask otherwise.
+`atelier uninstall` removes a build installed this way too, through
+`cargo uninstall`.
 
 | I want to… | Start here |
 | --- | --- |
 | Make art from the terminal | [Getting started](docs/getting-started.md) |
-| Connect an agent, run a server, or choose where art is stored | [Running Atelier](docs/running.md) |
+| Run a server, use Docker, or choose where art is stored | [Running Atelier](docs/running.md) |
 | Find a tool's arguments | `atelier tools --markdown` or `atelier tools --schema NAME` |
-| Understand the code or work on the showcase | [Development guide](docs/development.md) |
+| Build from a checkout, understand the code, or work on the showcase | [Development guide](docs/development.md) |
 | Report a bug or security issue | [Issues](https://github.com/marmikshah/atelier/issues) · [Security](.github/SECURITY.md) |
-
-## Connect an agent
-
-Agents with shell access can call `atelier call TOOL '<json>'` directly. For an
-MCP client, register `atelier` as a stdio server with no arguments:
-
-```json
-{
-  "mcpServers": {
-    "atelier": {
-      "command": "atelier",
-      "env": { "ATELIER_HOME": "/absolute/path/to/your/art" }
-    }
-  }
-}
-```
-
-In Claude Code, `claude mcp add atelier -e ATELIER_HOME=/absolute/path/to/your/art -- atelier`
-registers the same server. Then run `atelier skills install --for claude`
-(or `codex`, `cursor`, `all`) to give the agent the bundled drawing guides. [Running Atelier](docs/running.md)
-covers HTTP, Docker, and storage.
 
 ## Stability
 
-Atelier is at 0.1. `master` is the current source; releases are dispatched
-from it and publish the container image, a `vX.Y.Z` tag, and the MCP Registry
-entry.
+Atelier is at 0.2. `master` is the current source; releases are dispatched
+from it and publish the macOS and Linux binaries, the container image, a
+`vX.Y.Z` tag, and the MCP Registry entry.
 
 - **Your documents are not discarded.** Edits are journaled and committed
   atomically. A document that is damaged, or saved by a build with a different

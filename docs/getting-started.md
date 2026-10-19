@@ -2,7 +2,7 @@
 
 [README](../README.md) · [Running Atelier](running.md) · [Development](development.md)
 
-Install Atelier using the [README instructions](../README.md#get-started).
+Install Atelier using the [README instructions](../README.md#install).
 The examples below use a POSIX shell, such as Bash or Zsh.
 
 ## Your first sprite

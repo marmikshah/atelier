@@ -61,7 +61,7 @@ dependencies = [
 
 [[package]]
 name = "atelier"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "atelier-mcp",
  "atelier-studio",
@@ -74,7 +74,7 @@ dependencies = [
 
 [[package]]
 name = "atelier-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ab_glyph",
  "image",
@@ -88,7 +88,7 @@ dependencies = [
 
 [[package]]
 name = "atelier-mcp"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "atelier-core",
  "atelier-studio",
@@ -104,7 +104,7 @@ dependencies = [
 
 [[package]]
 name = "atelier-studio"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "atelier-core",
  "crc32fast",

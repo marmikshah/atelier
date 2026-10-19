@@ -8,7 +8,7 @@ members = [
 ]
 # Shared package metadata — each crate inherits with `field.workspace = true`.
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 description = "Offline, headless pixel-art editor with CLI and MCP interfaces."
 edition = "2024"
 rust-version = "1.98"

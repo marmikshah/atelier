@@ -8,11 +8,11 @@
     "source": "github"
   },
   "websiteUrl": "https://marmikshah.github.io/atelier/",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/marmikshah/atelier:0.1.0",
+      "identifier": "ghcr.io/marmikshah/atelier:0.2.0",
       "runtimeHint": "docker",
       "runtimeArguments": [
         {
