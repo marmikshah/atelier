@@ -59,9 +59,11 @@ jobs:
             exit 1
           fi
       - name: Shell scripts
-        run: shellcheck tools/*.sh
-      - name: One version across Cargo.toml and server.json
+        run: shellcheck install.sh tools/*.sh
+      - name: One version across Cargo.toml, server.json, and npm/package.json
         run: tools/check-version.sh
+      - name: npm wrapper parses
+        run: node --check npm/bin/atelier.js && node --check npm/test/wrapper.test.js
       - name: Python tooling
         run: |
           python3 -m venv "$RUNNER_TEMP/atelier-lint"

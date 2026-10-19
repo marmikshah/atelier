@@ -28,7 +28,8 @@
 //! ```text
 //! atelier install                # asks for port; systemd --user
 //! atelier status
-//! atelier uninstall              # remove the daemon, skills, and binary
+//! atelier connect                # register with Claude Code / Codex, install skills
+//! atelier uninstall              # remove the registrations, daemon, skills, and binary
 //! atelier tools [--markdown]     # the tool surface / the full reference
 //! atelier library [COMMAND]      # inspect, archive, or prune the document store
 //! atelier replay <journal|id>    # rebuild a document from its journal
@@ -50,6 +51,7 @@ compile_error!("atelier needs an atomic directory exchange; only Linux and macOS
 use atelier_mcp::server;
 
 mod call;
+mod connect;
 mod fsutil;
 mod init;
 mod library;
@@ -66,9 +68,13 @@ USAGE:
     atelier install               install/reconfigure the background daemon; asks for port
             [--port PORT | --bind LOOPBACK_ADDR] [--home DIR]
     atelier status                show daemon state and log locations
-    atelier uninstall             remove atelier from this machine: the daemon, the
-            [--documents] [--yes]  installed agent skills, and this binary; keeps your
-                                  documents unless --documents is passed; confirms first
+    atelier connect [AGENT]...    register the MCP server with Claude Code and Codex
+                                  (claude, codex; default: those on PATH) and install
+                                  their skills
+    atelier uninstall             remove atelier from this machine: its agent registrations,
+            [--documents] [--yes]  the daemon, the installed agent skills, and this binary;
+                                  keeps your documents unless --documents is passed;
+                                  confirms first
     atelier library [--home DIR]  list the documents in the store
             verify [--json] [--home DIR]
                                   validate stored metadata, cels, references, and journals
@@ -165,24 +171,13 @@ fn skills_cmd(args: &[String]) -> i32 {
                 }
             };
             for dir in &dirs {
-                for sk in skills::ALL {
-                    let out = dir.join(sk.name).join("SKILL.md");
-                    if let Some(p) = out.parent()
-                        && let Err(e) = std::fs::create_dir_all(p)
-                    {
-                        eprintln!("atelier: {}: {e}", p.display());
-                        return 1;
-                    }
-                    if let Err(e) = fsutil::write_text(&out, &sk.skill_md()) {
-                        eprintln!("atelier: {}: {e}", out.display());
+                match write_skills(dir) {
+                    Ok(count) => eprintln!("installed {count} skills into {}", dir.display()),
+                    Err(e) => {
+                        eprintln!("atelier: {e}");
                         return 1;
                     }
                 }
-                eprintln!(
-                    "installed {} skills into {}",
-                    skills::ALL.len(),
-                    dir.display()
-                );
             }
             0
         }
@@ -208,6 +203,15 @@ fn skills_cmd(args: &[String]) -> i32 {
             2
         }
     }
+}
+
+/// Write each shipped skill to `<dir>/<name>/SKILL.md`, replacing existing
+/// copies. Returns how many were written.
+fn write_skills(dir: &std::path::Path) -> Result<usize, String> {
+    for sk in skills::ALL {
+        fsutil::write_text(&dir.join(sk.name).join("SKILL.md"), &sk.skill_md())?;
+    }
+    Ok(skills::ALL.len())
 }
 
 /// Value following `flag` in `args`, if present.
@@ -257,7 +261,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Background daemon management (systemd --user). The verb is
         // args[1], which service::run dispatches on directly.
         Some("install") | Some("status") => std::process::exit(service::run(&args[1..])),
-        // Remove the daemon, installed skills, and this binary.
+        // Register with the agents on PATH and install their skills.
+        Some("connect") => std::process::exit(connect::run(&args[2..])),
+        // Remove the registrations, daemon, installed skills, and this binary.
         Some("uninstall") => std::process::exit(uninstall::run(&args[2..])),
         // Inspect / prune the document store.
         Some("library") => std::process::exit(library::run(&args[2..]).await),

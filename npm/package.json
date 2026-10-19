@@ -1,0 +1,27 @@
+{
+  "name": "@marmikshah/atelier",
+  "version": "0.1.0",
+  "description": "Atelier, the offline pixel-art editor for AI agents, as an MCP server that starts with npx.",
+  "mcpName": "io.github.marmikshah/atelier",
+  "license": "MIT",
+  "homepage": "https://marmikshah.github.io/atelier/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marmikshah/atelier.git",
+    "directory": "npm"
+  },
+  "bugs": "https://github.com/marmikshah/atelier/issues",
+  "keywords": ["mcp", "mcp-server", "pixel-art", "sprites", "gif"],
+  "bin": {
+    "atelier": "bin/atelier.js"
+  },
+  "files": ["bin/"],
+  "os": ["darwin", "linux"],
+  "cpu": ["x64", "arm64"],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

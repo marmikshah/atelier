@@ -3,9 +3,11 @@ name: Release
 # Dispatched by hand from master. Nothing here runs on pushes, tags, or pull
 # requests. The run verifies that it was started on the live master commit and
 # that the version in Cargo.toml and server.json has no tag, release, or image
-# yet; runs CI and the showcase replays as its gate; publishes the container
-# image; then creates the tag and GitHub Release and publishes server.json to
-# the MCP Registry. The tag is written last, so a failed run leaves no tag.
+# yet; runs CI and the showcase replays as its gate and builds the native
+# binaries; publishes the container image; then creates the tag and GitHub
+# Release, with the binaries and install.sh attached, publishes the npm
+# wrapper that downloads them, and publishes server.json to the MCP Registry.
+# The tag is written last, so a failed run leaves no tag.
 on:
   workflow_dispatch:
 
@@ -56,7 +58,7 @@ jobs:
           [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = master ] \
             || fail "the default branch is not master"
 
-          for REQUIRED in Cargo.toml Cargo.lock server.json Dockerfile \
+          for REQUIRED in Cargo.toml Cargo.lock server.json Dockerfile install.sh npm/package.json \
               tools/check-version.sh tools/container-smoke.sh tools/release-vacancy.sh; do
             [ -e "$REQUIRED" ] || fail "release input missing: $REQUIRED"
           done
@@ -67,6 +69,8 @@ jobs:
           SERVER_NAME=$(jq -r .name server.json)
           grep -Fq "io.modelcontextprotocol.server.name=\"$SERVER_NAME\"" Dockerfile \
             || fail "Dockerfile does not label the image with server.json name $SERVER_NAME"
+          [ "$(jq -r .mcpName npm/package.json)" = "$SERVER_NAME" ] \
+            || fail "npm/package.json mcpName is not server.json name $SERVER_NAME"
 
           TAG="v$VERSION"
           tools/release-vacancy.sh "$GITHUB_REPOSITORY" "$TAG"
@@ -91,9 +95,16 @@ jobs:
     needs: preflight
     uses: ./.github/workflows/showcase.yml
 
+  binaries:
+    name: Binaries
+    needs: preflight
+    uses: ./.github/workflows/binaries.yml
+    with:
+      ref: ${{ needs.preflight.outputs.commit }}
+
   publish:
     name: Publish the container image and release
-    needs: [preflight, ci, showcase]
+    needs: [preflight, ci, showcase, binaries]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: release
@@ -123,6 +134,22 @@ jobs:
           tools/check-version.sh "$VERSION"
           [ "$TAG" = "v$VERSION" ] || fail "tag $TAG does not name version $VERSION"
           tools/release-vacancy.sh "$GITHUB_REPOSITORY" "$TAG"
+      - name: Collect the binaries
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: atelier-*
+          # Outside the checkout, which is the image's build context.
+          path: ${{ runner.temp }}/dist
+          merge-multiple: true
+      - name: Checksum the release files
+        run: |
+          set -euo pipefail
+          DIST=$RUNNER_TEMP/dist
+          [ "$(find "$DIST" -name 'atelier-*.tar.gz' | wc -l)" -eq 4 ] \
+            || { echo "::error::expected four binary archives" >&2; ls -l "$DIST" >&2; exit 1; }
+          cp install.sh "$DIST/"
+          (cd "$DIST" && sha256sum atelier-*.tar.gz install.sh > SHA256SUMS)
+          cat "$DIST/SHA256SUMS"
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       - name: Build the linux/amd64 image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
@@ -169,15 +196,56 @@ jobs:
           # shellcheck disable=SC2016
           printf -- '- Version: `%s`\n- Commit: `%s`\n- Image: `%s:%s`\n- Digest: `%s`\n- MCP server: `%s`\n' \
             "$VERSION" "$COMMIT" "$IMAGE" "$VERSION" "$DIGEST" "$(jq -r .name server.json)" > "$NOTES"
-          gh release create "$TAG" --target "$COMMIT" --title "v$VERSION" --notes-file "$NOTES"
+          # shellcheck disable=SC2016
+          printf -- '\nInstall or update:\n\n```sh\ncurl -fsSL https://github.com/%s/releases/latest/download/install.sh | sh\n```\n\nOr start it from any MCP client with `npx -y %s`.\n' \
+            "$GITHUB_REPOSITORY" "$(jq -r .name npm/package.json)" >> "$NOTES"
+          gh release create "$TAG" --target "$COMMIT" --title "v$VERSION" --notes-file "$NOTES" "$RUNNER_TEMP"/dist/*
           TAGGED=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)
           [ "$TAGGED" = "$COMMIT" ] || { echo "::error::tag $TAG points at $TAGGED, not $COMMIT" >&2; exit 1; }
           gh release view "$TAG" --json url --jq .url
           { echo "## Published"; echo; cat "$NOTES"; } >> "$GITHUB_STEP_SUMMARY"
 
+  # Publishes with npm trusted publishing: npm exchanges this job's OIDC token,
+  # so no npm token is stored, and attaches provenance. The very first publish
+  # of the package has to be made by hand; docs/development.md says how.
+  npm:
+    name: Publish the npm package
+    needs: [preflight, publish]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout the release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Publish npm/
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          set -euo pipefail
+          tools/check-version.sh "$VERSION"
+          PACKAGE=$(jq -r .name npm/package.json)
+          if [ "$(npm view "$PACKAGE@$VERSION" version 2>/dev/null || true)" = "$VERSION" ]; then
+            echo "$PACKAGE@$VERSION is already published"
+            exit 0
+          fi
+          # Trusted publishing needs npm 11.5.1 or later.
+          npm install -g npm@11.6.2
+          cp LICENSE npm/LICENSE
+          npm publish ./npm
+
   registry:
     name: Publish the MCP Registry entry
-    needs: [preflight, publish]
+    needs: [preflight, publish, npm]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: release
