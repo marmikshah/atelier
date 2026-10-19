@@ -52,10 +52,12 @@ The Python tests cover showcase tooling. The replay verifier rebuilds every
 committed showcase GIF offline and checks for byte-identical output; build the
 editor first so `target/debug/atelier` exists.
 
-For an optimized binary or browsable Rust API documentation:
+For an optimized binary, an installed build of your checkout, or browsable
+Rust API documentation:
 
 ```sh
 cargo build --release --locked -p atelier
+cargo install --locked --path crates/atelier
 cargo doc --locked --no-deps --open
 ```
 
@@ -101,7 +103,11 @@ or Claude Code CLI, chosen with `--client`, and writes to the ignored
 ## CI and publishing
 
 CI checks native builds on Ubuntu and macOS and the showcase tooling. A separate workflow verifies replay bytes. Linux container
-checks run on pushes to `master` and non-draft PRs targeting `master`.
+checks run on pushes to `master` and non-draft PRs targeting `master`. Pull
+requests that change [install.sh](../install.sh), the [npm wrapper](../npm),
+or [binaries.yml](../.github/workflows/binaries.yml) build the release
+binaries and install each one through both installers, on its own platform
+and on fresh Ubuntu 22.04, 24.04, and 26.04 images.
 
 The Pages workflow checks and builds website changes, then publishes the showcase
 from `master`. See [Running Atelier](running.md#docker-compose) for local
@@ -110,7 +116,8 @@ container use.
 ## Releasing
 
 Releases are never tagged by hand. Merge the version bump to `master`, with
-`Cargo.toml` and [server.json](../server.json) naming the same `X.Y.Z`
+`Cargo.toml`, [server.json](../server.json), and
+[npm/package.json](../npm/package.json) naming the same `X.Y.Z`
 (`tools/check-version.sh`), then dispatch the Release workflow from the
 Actions page on `master`. The run:
 
@@ -118,14 +125,40 @@ Actions page on `master`. The run:
    consistent, and that no tag, GitHub Release, or image for `vX.Y.Z` exists
    yet (`tools/release-vacancy.sh`).
 2. Runs the CI and Showcase workflows as its gate.
-3. Builds and smoke-tests the linux/amd64 image, then pushes it to
+3. Builds the native binaries for macOS and Linux on x86-64 and arm64
+   ([binaries.yml](../.github/workflows/binaries.yml)), installing,
+   using, and uninstalling each through [install.sh](../install.sh) and
+   the npm wrapper.
+4. Builds and smoke-tests the linux/amd64 image, then pushes it to
    `ghcr.io/marmikshah/atelier` as `X.Y.Z` and `latest`.
-4. Creates the `vX.Y.Z` tag and a GitHub Release recording the commit and
-   image digest. The tag is written last, so a failed run leaves no tag.
-5. Publishes `server.json` to the MCP Registry.
+5. Creates the `vX.Y.Z` tag and a GitHub Release recording the commit and
+   image digest, with the binary archives, `install.sh`, and `SHA256SUMS`
+   attached. The installer downloads from the latest release. The tag is
+   written last, so a failed run leaves no tag.
+6. Publishes [npm/](../npm) as `@marmikshah/atelier`, whose first start
+   downloads that release's binary, with npm trusted publishing: no npm
+   token is stored, and the package carries provenance. A version that is
+   already on npm is skipped.
+7. Publishes `server.json` to the MCP Registry, which checks that the npm
+   package's `mcpName` names this server.
 
-The `publish` and `registry` jobs run in the `release` environment, where
-protection rules such as required reviewers can be added. The registry reads
+The `publish`, `npm`, and `registry` jobs run in the `release` environment,
+where protection rules such as required reviewers can be added. The registry reads
 the image's labels anonymously, so the GHCR package must stay public; a
 package pushed by this public repository's workflow is public from its first
-release. No native binaries are published.
+release.
+
+npm only accepts trusted publishing for a package that already exists, so
+the first release that ships the npm package needs one hand step. Its `npm`
+job fails; then, from a checkout of the release commit, signed in to npm as
+`marmikshah`:
+
+```sh
+cp LICENSE npm/LICENSE
+npm publish ./npm
+```
+
+On the package's settings page on npmjs.com, add a trusted publisher:
+GitHub Actions, repository `marmikshah/atelier`, workflow `release.yml`,
+environment `release`. Re-run the failed jobs; the `npm` job finds the
+version published and the `registry` job goes ahead.

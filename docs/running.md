@@ -7,7 +7,7 @@
 | Interface | How to use it | Best for |
 | --- | --- | --- |
 | CLI | `atelier call TOOL '<json>'` | Shell scripts and agents with shell access |
-| MCP over stdio | Have your client launch `atelier` with no arguments | Clients that manage their own server process |
+| MCP over stdio | Have your client launch `atelier` with no arguments, or `npx -y @marmikshah/atelier` | Clients that manage their own server process |
 | MCP over HTTP | Run `atelier --http`, then connect to `http://127.0.0.1:8765/mcp` | Clients connecting to a running server |
 
 All three use the same tools and document format. CLI calls run in-process and
@@ -15,10 +15,11 @@ need no server. Running bare `atelier` in a terminal waits for MCP input; use
 `atelier --help` for interactive command help.
 
 For a stdio client, set its server command to `atelier` (or the absolute path to
-the binary) and leave its arguments empty. Set `ATELIER_HOME` in the client's
-server environment to an absolute directory so its working directory does not
-change which store it uses. Client configuration formats vary; many accept
-this shape:
+the binary) and leave its arguments empty. Without `ATELIER_HOME`, the server
+uses `./.atelier` in the directory the client starts it from, if one exists,
+and `~/.atelier` otherwise. To pin one store whatever the working directory,
+set `ATELIER_HOME` in the client's server environment to an absolute
+directory. Client configuration formats vary; many accept this shape:
 
 ```json
 {
@@ -32,6 +33,13 @@ this shape:
 ```
 
 ## Agent skills
+
+`atelier connect` registers the MCP server with Claude Code and Codex and
+installs the skills for each; the [installer](../README.md#install) runs it.
+With no arguments it connects every agent whose command is on `PATH`; name
+`claude` or `codex` to choose. It registers the binary by its absolute path,
+so desktop apps that do not see your shell's `PATH` can start it, and running
+it again replaces the earlier registration.
 
 The bundled skills describe sprite creation, scene composition, and review:
 
@@ -162,17 +170,19 @@ atelier uninstall                 # shows what will go, then asks
 atelier uninstall --documents -y  # also delete ~/.atelier, without asking
 ```
 
-The command removes everything Atelier placed on the machine: the Linux
-daemon and its unit file, the skills that `atelier skills install` wrote for
-Claude Code, Codex, and Cursor, and the `atelier` binary itself. A binary
+The command removes everything Atelier placed on the machine: the MCP
+server registrations in Claude Code and Codex, the Linux daemon and its unit
+file, the skills that `atelier skills install` wrote for Claude Code, Codex,
+and Cursor, the `PATH` line the installer added to your shell profile, the
+binaries the npm package cached, and the `atelier` binary itself. A binary
 that `cargo install` placed is removed through `cargo uninstall`, so cargo's
 record of it goes too. It prints the plan and waits for a typed `yes`
 unless `--yes` is passed; without a terminal, `--yes` is required.
 
 Your documents are kept. The global store, `ATELIER_HOME` or `~/.atelier`, is
 deleted only with `--documents`. Directory-local `./.atelier` stores made with
-`atelier init` are never touched, and neither is an MCP client's registration;
-in Claude Code, run `claude mcp remove atelier`.
+`atelier init` are never touched, and neither are registrations in other MCP
+clients.
 
 ## Container image
 
