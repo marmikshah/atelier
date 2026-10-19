@@ -134,7 +134,7 @@ atelier connect
 
 ## Stability
 
-Atelier is at 0.1. `master` is the current source; releases are dispatched
+Atelier is at 0.2. `master` is the current source; releases are dispatched
 from it and publish the macOS and Linux binaries, the npm package, the
 container image, a `vX.Y.Z` tag, and the MCP Registry entry.
 

@@ -1,6 +1,6 @@
 {
   "name": "@marmikshah/atelier",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Atelier, the offline pixel-art editor for AI agents, as an MCP server that starts with npx.",
   "mcpName": "io.github.marmikshah/atelier",
   "license": "MIT",
