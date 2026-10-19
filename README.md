@@ -63,29 +63,6 @@ instead, run `atelier init` in its folder before you start the agent.
   `ATELIER_VERSION`, `ATELIER_INSTALL_DIR`, or `ATELIER_NO_MODIFY_PATH=1`;
   [install.sh](install.sh) lists every option.
 
-### Cursor, VS Code, and other MCP clients
-
-No install step: the client starts Atelier through npx, which needs Node.js
-18 or later.
-
-[<img src="https://cursor.com/deeplink/mcp-install-dark.svg" alt="Add atelier to Cursor" height="32">](https://cursor.com/en/install-mcp?name=atelier&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkBtYXJtaWtzaGFoL2F0ZWxpZXIiXX0%3D)
-[<img src="https://img.shields.io/badge/VS_Code-Install_atelier-0098FF?style=flat-square" alt="Install atelier in VS Code" height="32">](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522atelier%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522-y%2522%252C%2522%2540marmikshah%252Fatelier%2522%255D%257D)
-
-For any other client, add this to its MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "atelier": { "command": "npx", "args": ["-y", "@marmikshah/atelier"] }
-  }
-}
-```
-
-The first start downloads Atelier for your machine and caches it. To give
-the client Atelier's drawing guides too, install it as above and run
-`atelier skills install --for cursor`, or `--dir PATH` for another skills
-folder.
-
 ## Uninstall
 
 ```sh
@@ -94,18 +71,28 @@ atelier uninstall
 
 It lists what it will remove and asks before deleting anything: Atelier's
 registration in Claude Code and Codex, its skills, the `PATH` line it added,
-the `atelier` program, cached downloads, and the Linux background server if
-you set one up. Your art in `~/.atelier` is kept; add `--documents` to delete
-it as well. Folders set up with `atelier init` are never touched.
-
-If you only used npx, remove the entry from your client and run
-`npx -y @marmikshah/atelier uninstall` to delete the cached download.
+the `atelier` program, and the Linux background server if you set one up.
+Your art in `~/.atelier` is kept; add `--documents` to delete it as well.
+Folders set up with `atelier init` are never touched.
 
 ## Other ways to run it
 
 - **From the terminal.** Every tool is one command:
   `atelier call TOOL '<json>'`. [Your first sprite](docs/getting-started.md)
   walks through creating, drawing, and saving an image.
+- **In Cursor and other MCP clients.** Install as above, then register the
+  path `command -v atelier` prints as a stdio server with no arguments, and
+  run `atelier skills install --for cursor` (or `--dir PATH` for another
+  skills folder) for the drawing guides:
+
+  ```json
+  {
+    "mcpServers": {
+      "atelier": { "command": "/full/path/to/atelier" }
+    }
+  }
+  ```
+
 - **In Docker.** A [container image](docs/running.md#container-image) is
   published for MCP clients that can launch Docker.
 - **As an HTTP server or background service.** See
@@ -135,8 +122,8 @@ atelier connect
 ## Stability
 
 Atelier is at 0.2. `master` is the current source; releases are dispatched
-from it and publish the macOS and Linux binaries, the npm package, the
-container image, a `vX.Y.Z` tag, and the MCP Registry entry.
+from it and publish the macOS and Linux binaries, the container image, a
+`vX.Y.Z` tag, and the MCP Registry entry.
 
 - **Your documents are not discarded.** Edits are journaled and committed
   atomically. A document that is damaged, or saved by a build with a different

@@ -3,8 +3,7 @@
 //! Removes what Atelier itself put there: the MCP registrations that
 //! `atelier connect` made, the background daemon, the skills that `atelier
 //! skills install` wrote for each agent, the `PATH` line install.sh added to
-//! a shell profile, the binaries the npm package downloaded, and the binary
-//! that is running. Documents are the user's art, so the global store is kept
+//! a shell profile, and the binary that is running. Documents are the user's art, so the global store is kept
 //! unless `--documents` is passed, and the plan is shown and confirmed before
 //! anything is deleted.
 
@@ -17,8 +16,8 @@ use crate::{library, service, skills};
 const USAGE: &str = "usage: atelier uninstall [--documents] [--yes]
 
 Remove atelier's MCP server from Claude Code and Codex, the daemon, the
-installed agent skills, the PATH line the installer added, downloaded
-binaries, and this binary. Shows the plan and asks for confirmation first.
+installed agent skills, the PATH line the installer added, and this binary.
+Shows the plan and asks for confirmation first.
 
   --documents  also delete the global document store (ATELIER_HOME or
                ~/.atelier) — your artwork; never implied
@@ -70,8 +69,6 @@ struct Places {
     binary: Option<PathBuf>,
     /// Shell profiles install.sh may have added a `PATH` line to.
     profiles: Vec<PathBuf>,
-    /// The npm package's download cache.
-    download_cache: Option<PathBuf>,
 }
 
 impl Places {
@@ -94,7 +91,6 @@ impl Places {
             },
             binary: std::env::current_exe().ok(),
             profiles,
-            download_cache: home.as_deref().map(download_cache),
             home,
         }
     }
@@ -114,8 +110,6 @@ struct Plan {
     profiles: Vec<PathBuf>,
     /// The running binary.
     binary: Option<PathBuf>,
-    /// `<cache>/<version>` directories the npm package downloaded into.
-    downloads: Vec<PathBuf>,
     /// The global document store, when `--documents` asked for it and it exists.
     documents: Option<PathBuf>,
     /// The global store that is being kept, named so the user knows where it is.
@@ -129,7 +123,6 @@ impl Plan {
             && self.skills.is_empty()
             && self.profiles.is_empty()
             && self.binary.is_none()
-            && self.downloads.is_empty()
             && self.documents.is_none()
     }
 }
@@ -160,42 +153,6 @@ fn profile_candidates(home: &Path, zdotdir: Option<&Path>) -> Vec<PathBuf> {
     ]
 }
 
-/// Where npm/bin/atelier.js caches binaries; it applies the same rule.
-fn download_cache(home: &Path) -> PathBuf {
-    if let Some(dir) = std::env::var_os("ATELIER_CACHE_DIR") {
-        return PathBuf::from(dir);
-    }
-    if cfg!(target_os = "macos") {
-        return home.join("Library/Caches/atelier");
-    }
-    std::env::var_os("XDG_CACHE_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| home.join(".cache"))
-        .join("atelier")
-}
-
-/// The cache's `X.Y.Z` directories. Nothing else in it is touched, so a cache
-/// directory that turns out to be shared loses only what looks like ours.
-fn downloads_in(cache: &Path) -> Vec<PathBuf> {
-    let is_version = |name: &str| {
-        let parts: Vec<&str> = name.split('.').collect();
-        parts.len() == 3
-            && parts
-                .iter()
-                .all(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit()))
-    };
-    let mut found: Vec<PathBuf> = std::fs::read_dir(cache)
-        .into_iter()
-        .flatten()
-        .flatten()
-        .filter(|entry| entry.path().is_dir())
-        .filter(|entry| entry.file_name().to_str().is_some_and(is_version))
-        .map(|entry| entry.path())
-        .collect();
-    found.sort();
-    found
-}
-
 fn has_installer_line(profile: &Path) -> bool {
     std::fs::read_to_string(profile).is_ok_and(|text| {
         text.lines()
@@ -223,11 +180,6 @@ fn plan(places: Places, store: &Path, remove_documents: bool) -> Plan {
             .filter(|profile| has_installer_line(profile))
             .collect(),
         binary: places.binary.filter(|path| path.is_file()),
-        downloads: places
-            .download_cache
-            .as_deref()
-            .map(downloads_in)
-            .unwrap_or_default(),
         documents: (remove_documents && store_exists).then(|| store.to_path_buf()),
         kept_documents: (!remove_documents && store_exists).then(|| store.to_path_buf()),
     }
@@ -341,13 +293,9 @@ fn apply(plan: &Plan, cargo_bin: Option<&Path>) -> (Vec<String>, Vec<String>) {
     if let Some(store) = &plan.documents {
         record(remove_dir("documents", store));
     }
-    // Last, so a failure above still leaves a binary to retry with. The
-    // running binary may itself be a download, so the downloads go after it.
+    // Last, so a failure above still leaves a binary to retry with.
     if let Some(binary) = &plan.binary {
         record(remove_binary(binary, cargo_bin).map(|what| format!("binary {what}")));
-    }
-    for dir in &plan.downloads {
-        record(remove_dir("downloads", dir));
     }
     (removed, failed)
 }
@@ -378,12 +326,6 @@ fn describe(plan: &Plan) -> String {
     match &plan.binary {
         Some(binary) => lines.push(format!("  binary:    {}", binary.display())),
         None => lines.push("  binary:    could not be resolved; remove it by hand".into()),
-    }
-    for dir in &plan.downloads {
-        lines.push(format!(
-            "  downloads: {} (fetched by the npm package)",
-            dir.display()
-        ));
     }
     if let Some(store) = &plan.documents {
         lines.push(format!(
@@ -594,22 +536,6 @@ mod tests {
         let installer = include_str!("../../../install.sh");
         assert!(installer.contains(PROFILE_MARKER));
         assert!(installer.contains(FISH_SNIPPET));
-    }
-
-    #[test]
-    fn only_version_directories_of_the_download_cache_go() {
-        let home = fake_home();
-        let cache = home.join("cache");
-        touch(&cache.join("0.2.0/aarch64-apple-darwin/atelier"));
-        touch(&cache.join("0.10.1/x86_64-unknown-linux-musl/atelier"));
-        touch(&cache.join("someone-else/data"));
-        touch(&cache.join("1.2/data"));
-        assert_eq!(
-            downloads_in(&cache),
-            vec![cache.join("0.10.1"), cache.join("0.2.0")]
-        );
-        assert!(downloads_in(&home.join("missing")).is_empty());
-        std::fs::remove_dir_all(&home).unwrap();
     }
 
     #[test]

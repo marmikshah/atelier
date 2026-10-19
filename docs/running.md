@@ -7,7 +7,7 @@
 | Interface | How to use it | Best for |
 | --- | --- | --- |
 | CLI | `atelier call TOOL '<json>'` | Shell scripts and agents with shell access |
-| MCP over stdio | Have your client launch `atelier` with no arguments, or `npx -y @marmikshah/atelier` | Clients that manage their own server process |
+| MCP over stdio | Have your client launch `atelier` with no arguments | Clients that manage their own server process |
 | MCP over HTTP | Run `atelier --http`, then connect to `http://127.0.0.1:8765/mcp` | Clients connecting to a running server |
 
 All three use the same tools and document format. CLI calls run in-process and
@@ -173,8 +173,8 @@ atelier uninstall --documents -y  # also delete ~/.atelier, without asking
 The command removes everything Atelier placed on the machine: the MCP
 server registrations in Claude Code and Codex, the Linux daemon and its unit
 file, the skills that `atelier skills install` wrote for Claude Code, Codex,
-and Cursor, the `PATH` line the installer added to your shell profile, the
-binaries the npm package cached, and the `atelier` binary itself. A binary
+and Cursor, the `PATH` line the installer added to your shell profile, and
+the `atelier` binary itself. A binary
 that `cargo install` placed is removed through `cargo uninstall`, so cargo's
 record of it goes too. It prints the plan and waits for a typed `yes`
 unless `--yes` is passed; without a terminal, `--yes` is required.

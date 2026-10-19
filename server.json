@@ -11,14 +11,6 @@
   "version": "0.2.0",
   "packages": [
     {
-      "registryType": "npm",
-      "identifier": "@marmikshah/atelier",
-      "version": "0.2.0",
-      "transport": {
-        "type": "stdio"
-      }
-    },
-    {
       "registryType": "oci",
       "identifier": "ghcr.io/marmikshah/atelier:0.2.0",
       "runtimeHint": "docker",

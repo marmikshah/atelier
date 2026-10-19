@@ -5,9 +5,9 @@ name: Release
 # that the version in Cargo.toml and server.json has no tag, release, or image
 # yet; runs CI and the showcase replays as its gate and builds the native
 # binaries; publishes the container image; then creates the tag and GitHub
-# Release, with the binaries and install.sh attached, publishes the npm
-# wrapper that downloads them, and publishes server.json to the MCP Registry.
-# The tag is written last, so a failed run leaves no tag.
+# Release, with the binaries and install.sh attached, and publishes
+# server.json to the MCP Registry. The tag is written last, so a failed run
+# leaves no tag.
 on:
   workflow_dispatch:
 
@@ -58,7 +58,7 @@ jobs:
           [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = master ] \
             || fail "the default branch is not master"
 
-          for REQUIRED in Cargo.toml Cargo.lock server.json Dockerfile install.sh npm/package.json \
+          for REQUIRED in Cargo.toml Cargo.lock server.json Dockerfile install.sh \
               tools/check-version.sh tools/container-smoke.sh tools/release-vacancy.sh; do
             [ -e "$REQUIRED" ] || fail "release input missing: $REQUIRED"
           done
@@ -69,8 +69,6 @@ jobs:
           SERVER_NAME=$(jq -r .name server.json)
           grep -Fq "io.modelcontextprotocol.server.name=\"$SERVER_NAME\"" Dockerfile \
             || fail "Dockerfile does not label the image with server.json name $SERVER_NAME"
-          [ "$(jq -r .mcpName npm/package.json)" = "$SERVER_NAME" ] \
-            || fail "npm/package.json mcpName is not server.json name $SERVER_NAME"
 
           TAG="v$VERSION"
           tools/release-vacancy.sh "$GITHUB_REPOSITORY" "$TAG"
@@ -197,55 +195,17 @@ jobs:
           printf -- '- Version: `%s`\n- Commit: `%s`\n- Image: `%s:%s`\n- Digest: `%s`\n- MCP server: `%s`\n' \
             "$VERSION" "$COMMIT" "$IMAGE" "$VERSION" "$DIGEST" "$(jq -r .name server.json)" > "$NOTES"
           # shellcheck disable=SC2016
-          printf -- '\nInstall or update:\n\n```sh\ncurl -fsSL https://github.com/%s/releases/latest/download/install.sh | sh\n```\n\nOr start it from any MCP client with `npx -y %s`.\n' \
-            "$GITHUB_REPOSITORY" "$(jq -r .name npm/package.json)" >> "$NOTES"
+          printf -- '\nInstall or update:\n\n```sh\ncurl -fsSL https://github.com/%s/releases/latest/download/install.sh | sh\n```\n' \
+            "$GITHUB_REPOSITORY" >> "$NOTES"
           gh release create "$TAG" --target "$COMMIT" --title "v$VERSION" --notes-file "$NOTES" "$RUNNER_TEMP"/dist/*
           TAGGED=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)
           [ "$TAGGED" = "$COMMIT" ] || { echo "::error::tag $TAG points at $TAGGED, not $COMMIT" >&2; exit 1; }
           gh release view "$TAG" --json url --jq .url
           { echo "## Published"; echo; cat "$NOTES"; } >> "$GITHUB_STEP_SUMMARY"
 
-  # Publishes with npm trusted publishing: npm exchanges this job's OIDC token,
-  # so no npm token is stored, and attaches provenance. The very first publish
-  # of the package has to be made by hand; docs/development.md says how.
-  npm:
-    name: Publish the npm package
-    needs: [preflight, publish]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    environment: release
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout the release commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ needs.preflight.outputs.commit }}
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org
-      - name: Publish npm/
-        env:
-          VERSION: ${{ needs.preflight.outputs.version }}
-        run: |
-          set -euo pipefail
-          tools/check-version.sh "$VERSION"
-          PACKAGE=$(jq -r .name npm/package.json)
-          if [ "$(npm view "$PACKAGE@$VERSION" version 2>/dev/null || true)" = "$VERSION" ]; then
-            echo "$PACKAGE@$VERSION is already published"
-            exit 0
-          fi
-          # Trusted publishing needs npm 11.5.1 or later.
-          npm install -g npm@11.6.2
-          cp LICENSE npm/LICENSE
-          npm publish ./npm
-
   registry:
     name: Publish the MCP Registry entry
-    needs: [preflight, publish, npm]
+    needs: [preflight, publish]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: release

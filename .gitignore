@@ -17,6 +17,3 @@ __pycache__/
 /site/public/.nojekyll
 /site/public/font-licenses.txt
 /site/dist/
-
-# Copied in at publish time.
-/npm/LICENSE
