@@ -34,6 +34,7 @@ Use it directly from a shell, or connect an agent such as Claude Code or Codex t
 
 - [Animation showcase](https://marmikshah.github.io/atelier/) — compare models and briefs, view animations, and download replays.
 - [Frayed](https://apps.apple.com/app/id6806894761)
+- [Orbital Dodge](https://apps.apple.com/app/id6740900205)
 
 ## Install
 
