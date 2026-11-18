@@ -340,7 +340,7 @@ export function App() {
       </main>
       <footer className="colophon">
         <p>
-          Runs use xhigh effort, except two GPT Sol sets at max, which are not directly comparable.{' '}
+          All runs use xhigh reasoning effort.{' '}
           <button type="button" className="text-button" onClick={() => setMethodOpen(true)}>
             Read the methodology
           </button>
@@ -395,11 +395,8 @@ export function App() {
           <section>
             <h3>Reasoning effort</h3>
             <p>
-              Every model is tested at xhigh reasoning effort. All eight Claude models and GPT-6
-              Astra are shown at xhigh. GPT-5.6 Sol and GPT-6.1 Sol were recorded at max effort, so
-              they are not directly comparable; xhigh runs for them will be added as access becomes
-              available. Tool-call and token counts follow each client’s reporting method; they are
-              not an efficiency ranking.
+              Every model is tested at xhigh reasoning effort. Tool-call and token counts follow
+              each client’s reporting method.
             </p>
           </section>
           <section>

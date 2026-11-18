@@ -21,6 +21,7 @@ const data: Dataset = JSON.parse(
   readFileSync(new URL('../../../showcase/runs.json', import.meta.url), 'utf8'),
 );
 const models = getModels(data);
+const gptModels = ['gpt-6.2-sol-xhigh', 'gpt-6.2-astra-xhigh'];
 const shown = (patch: object) =>
   visibleModels({ ...defaultState(models), ...patch }, models, data.tasks).map((model) => model.id);
 
@@ -50,7 +51,7 @@ test('every model belongs to one model line and one effort level', () => {
 test('model line, effort, hidden model, brief, and command filters combine', () => {
   const opus = shown({ families: ['opus'] });
   assert.ok(opus.length > 1);
-  assert.deepEqual(shown({ families: ['gpt'], efforts: ['xhigh'] }), ['gpt-6-astra-xhigh']);
+  assert.deepEqual(shown({ families: ['gpt'], efforts: ['xhigh'] }), gptModels);
   assert.deepEqual(shown({ families: ['opus'], models: [opus[1]] }), [opus[1]]);
   const results = filterRuns(
     data,
@@ -65,7 +66,7 @@ test('model line, effort, hidden model, brief, and command filters combine', () 
   );
   assert.deepEqual(
     results.map((run) => `${run.model}/${run.task}`),
-    ['gpt-6-astra-xhigh/cat'],
+    ['gpt-6.2-astra-xhigh/cat', 'gpt-6.2-sol-xhigh/cat'],
   );
   assert.deepEqual(
     visibleTasks({ ...defaultState(models), task: 'cat', query: 'alien' }, models, data.tasks),
@@ -75,7 +76,7 @@ test('model line, effort, hidden model, brief, and command filters combine', () 
 
 test('typed commands name models and briefs by the start of a word', () => {
   assert.deepEqual(shown({ query: 'haiku' }), shown({ families: ['haiku'] }));
-  assert.deepEqual(shown({ query: 'GPT XHIGH' }), ['gpt-6-astra-xhigh']);
+  assert.deepEqual(shown({ query: 'GPT XHIGH' }), gptModels);
   assert.deepEqual(
     shown({ query: 'anthropic' }),
     shown({}).filter((id) => !id.startsWith('gpt-')),
@@ -138,8 +139,10 @@ test('invalid identifiers fall back safely and valid mixed selections are dedupl
 });
 
 test('token sorting is numeric with unreported values last in both directions', () => {
+  const missing = { ...data.runs[0], tokens: null };
+  const sample = [...data.runs.slice(1), missing];
   for (const direction of ['asc', 'desc'] as const) {
-    const runs = sortRuns(data.runs, models, 'tokens', direction);
+    const runs = sortRuns(sample, models, 'tokens', direction);
     const firstMissing = runs.findIndex((run) => run.tokens === null);
     assert.ok(firstMissing > 0);
     assert.ok(runs.slice(firstMissing).every((run) => run.tokens === null));
@@ -154,7 +157,7 @@ test('token sorting is numeric with unreported values last in both directions', 
 });
 
 test('CSV uses original counts, blank missing totals, and artifact URLs under the Pages prefix', () => {
-  const run = data.runs.find((run) => run.tokens === null)!;
+  const run = { ...data.runs[0], tokens: null };
   const csv = runsCSV([run], 'https://example.test/atelier/?task=cat#gallery');
   assert.ok(csv.includes(`"${run.tool_calls}","${run.looks}","","${run.frames}"`));
   assert.ok(csv.includes(`"https://example.test/atelier/showcase/${run.gif}"`));
